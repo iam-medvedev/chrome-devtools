@@ -60,6 +60,7 @@ export class SourcesSearchScope {
     }
     projects() {
         const searchInAnonymousAndContentScripts = Common.Settings.Settings.instance().moduleSetting('search-in-anonymous-and-content-scripts').get();
+        const localOverridesEnabled = Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').get();
         return Workspace.Workspace.WorkspaceImpl.instance().projects().filter(project => {
             if (project.type() === Workspace.Workspace.projectTypes.Service) {
                 return false;
@@ -69,6 +70,9 @@ export class SourcesSearchScope {
                 return false;
             }
             if (!searchInAnonymousAndContentScripts && project.type() === Workspace.Workspace.projectTypes.ContentScripts) {
+                return false;
+            }
+            if (!localOverridesEnabled && project.type() === Workspace.Workspace.projectTypes.FileSystem) {
                 return false;
             }
             return true;

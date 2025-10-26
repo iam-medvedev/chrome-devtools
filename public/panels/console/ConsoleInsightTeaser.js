@@ -89,50 +89,6 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         return;
     }
     const showPlaceholder = !Boolean(input.mainText);
-    const renderFooter = () => {
-        // clang-format off
-        return html `
-      <div class="tooltip-footer">
-        ${input.hasTellMeMoreButton ? html `
-          <devtools-button
-            title=${lockedString(UIStringsNotTranslate.tellMeMore)}
-            .jslogContext=${'insights-teaser-tell-me-more'},
-            .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}
-            @click=${input.onTellMeMoreClick}
-          >
-            <devtools-icon class="lightbulb-icon" name="lightbulb-spark"></devtools-icon>
-            ${lockedString(UIStringsNotTranslate.tellMeMore)}
-          </devtools-button>
-        ` : Lit.nothing}
-        ${showPlaceholder ? Lit.nothing : html `
-          <devtools-button
-            .iconName=${'info'}
-            .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-            aria-details=${'teaser-info-tooltip-' + input.uuid}
-            aria-label=${lockedString(UIStringsNotTranslate.learnDataUsage)}
-          ></devtools-button>
-          <devtools-tooltip id=${'teaser-info-tooltip-' + input.uuid} variant="rich">
-            <div class="info-tooltip-text">${lockedString(UIStringsNotTranslate.infoTooltipText)}</div>
-            <div class="learn-more">
-              <x-link
-                class="devtools-link"
-                title=${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}
-                href=${DATA_USAGE_URL}
-                jslog=${VisualLogging.link().track({ click: true, keydown: 'Enter|Space' }).context('explain.teaser.learn-more')}
-              >${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}</x-link>
-            </div>
-          </devtools-tooltip>
-        `}
-        <devtools-checkbox
-          aria-label=${lockedString(UIStringsNotTranslate.dontShow)}
-          @change=${input.dontShowChanged}
-          jslog=${VisualLogging.toggle('explain.teaser.dont-show').track({ change: true })}>
-          ${lockedString(UIStringsNotTranslate.dontShow)}
-        </devtools-checkbox>
-      </div>
-    `;
-        // clang-format on
-    };
     // clang-format off
     render(html `
     <style>${consoleInsightTeaserStyles}</style>
@@ -148,30 +104,69 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           <h2>${lockedString(UIStringsNotTranslate.summaryNotAvailable)}</h2>
         ` :
         showPlaceholder ? html `
-            <h2>${input.isSlowGeneration ?
+            <div class="response-container">
+              <h2>${input.isSlowGeneration ?
             lockedString(UIStringsNotTranslate.summarizingTakesABitLonger) :
             lockedString(UIStringsNotTranslate.summarizing)}</h2>
-            <div
-              role="presentation"
-              aria-label=${lockedString(UIStringsNotTranslate.loading)}
-              class="loader"
-              style="clip-path: url(${'#clipPath-' + input.uuid});"
-            >
-              <svg width="100%" height="52">
-                <defs>
-                <clipPath id=${'clipPath-' + input.uuid}>
-                  <rect x="0" y="0" width="100%" height="12" rx="8"></rect>
-                  <rect x="0" y="20" width="100%" height="12" rx="8"></rect>
-                  <rect x="0" y="40" width="100%" height="12" rx="8"></rect>
-                </clipPath>
-              </defs>
-              </svg>
+              <div
+                role="presentation"
+                aria-label=${lockedString(UIStringsNotTranslate.loading)}
+                class="loader"
+                style="clip-path: url(${'#clipPath-' + input.uuid});"
+              >
+                <svg width="100%" height="58">
+                  <defs>
+                  <clipPath id=${'clipPath-' + input.uuid}>
+                    <rect x="0" y="0" width="100%" height="12" rx="8"></rect>
+                    <rect x="0" y="20" width="100%" height="12" rx="8"></rect>
+                    <rect x="0" y="40" width="100%" height="12" rx="8"></rect>
+                  </clipPath>
+                </defs>
+                </svg>
+              </div>
             </div>
           ` : html `
-            <h2>${input.headerText}</h2>
-            <div>${input.mainText}</div>
+            <div class="response-container">
+              <h2>${input.headerText}</h2>
+              <div class="main-text">${input.mainText}</div>
+            </div>
           `}
-        ${input.isError || input.isSlowGeneration || !showPlaceholder ? renderFooter() : Lit.nothing}
+        <div class="tooltip-footer">
+          ${input.hasTellMeMoreButton ? html `
+            <devtools-button
+              title=${lockedString(UIStringsNotTranslate.tellMeMore)}
+              .jslogContext=${'insights-teaser-tell-me-more'},
+              .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}
+              @click=${input.onTellMeMoreClick}
+            >
+              <devtools-icon class="lightbulb-icon" name="lightbulb-spark"></devtools-icon>
+              ${lockedString(UIStringsNotTranslate.tellMeMore)}
+            </devtools-button>
+          ` : Lit.nothing}
+          <devtools-button
+            .iconName=${'info'}
+            .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+            aria-details=${'teaser-info-tooltip-' + input.uuid}
+            .accessibleLabel=${lockedString(UIStringsNotTranslate.learnDataUsage)}
+          ></devtools-button>
+          <devtools-tooltip id=${'teaser-info-tooltip-' + input.uuid} variant="rich">
+            <div class="info-tooltip-text">${lockedString(UIStringsNotTranslate.infoTooltipText)}</div>
+            <div class="learn-more">
+              <x-link
+                class="devtools-link"
+                title=${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}
+                href=${DATA_USAGE_URL}
+                jslog=${VisualLogging.link().track({ click: true, keydown: 'Enter|Space' }).context('explain.teaser.learn-more')}
+              >${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}</x-link>
+            </div>
+          </devtools-tooltip>
+          <devtools-checkbox
+            aria-label=${lockedString(UIStringsNotTranslate.dontShow)}
+            @change=${input.dontShowChanged}
+            jslog=${VisualLogging.toggle('explain.teaser.dont-show').track({ change: true })}>
+            ${lockedString(UIStringsNotTranslate.dontShow)}
+          </devtools-checkbox>
+        </div>
       </div>
     </devtools-tooltip>
   `, target);
@@ -191,12 +186,15 @@ export class ConsoleInsightTeaser extends UI.Widget.Widget {
     #isSlow = false;
     #timeoutId = null;
     #isError = false;
+    #aidaAvailability;
+    #boundOnAidaAvailabilityChange;
     constructor(uuid, consoleViewMessage, element, view) {
         super(element);
         this.#view = view ?? DEFAULT_VIEW;
         this.#uuid = uuid;
         this.#promptBuilder = new PromptBuilder(consoleViewMessage);
         this.#consoleViewMessage = consoleViewMessage;
+        this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
         this.requestUpdate();
     }
     #getConsoleInsightsEnabledSetting() {
@@ -209,6 +207,13 @@ export class ConsoleInsightTeaser extends UI.Widget.Widget {
     }
     #getOnboardingCompletedSetting() {
         return Common.Settings.Settings.instance().createLocalSetting('console-insights-onboarding-finished', true);
+    }
+    async #onAidaAvailabilityChange() {
+        const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+        if (currentAidaAvailability !== this.#aidaAvailability) {
+            this.#aidaAvailability = currentAidaAvailability;
+            this.requestUpdate();
+        }
     }
     #executeConsoleInsightAction() {
         UI.Context.Context.instance().setFlavor(ConsoleViewMessage, this.#consoleViewMessage);
@@ -275,6 +280,9 @@ export class ConsoleInsightTeaser extends UI.Widget.Widget {
         if (this.#abortController) {
             this.#abortController.abort();
         }
+        if (this.#isGenerating) {
+            this.#mainText = '';
+        }
         this.#isGenerating = false;
         if (this.#timeoutId) {
             clearTimeout(this.#timeoutId);
@@ -292,12 +300,16 @@ export class ConsoleInsightTeaser extends UI.Widget.Widget {
         this.requestUpdate();
     }
     async #generateTeaserText() {
+        this.#headerText = this.#consoleViewMessage.toMessageTextString().substring(0, 70);
         this.#isGenerating = true;
         this.#timeoutId = setTimeout(this.#setSlow.bind(this), SLOW_GENERATION_CUTOFF_MILLISECONDS);
+        const startTime = performance.now();
         let teaserText = '';
         try {
             for await (const chunk of this.#getOnDeviceInsight()) {
                 teaserText += chunk;
+                this.#mainText = teaserText;
+                this.requestUpdate();
             }
         }
         catch (err) {
@@ -312,25 +324,9 @@ export class ConsoleInsightTeaser extends UI.Widget.Widget {
             return;
         }
         clearTimeout(this.#timeoutId);
+        Host.userMetrics.consoleInsightTeaserGenerated(performance.now() - startTime);
         this.#isGenerating = false;
-        let responseObject = {
-            header: null,
-            explanation: null,
-        };
-        try {
-            responseObject = JSON.parse(teaserText);
-        }
-        catch (err) {
-            console.error(err.name, err.message);
-            this.#isError = true;
-            this.requestUpdate();
-            return;
-        }
-        this.#headerText = responseObject.header || '';
-        this.#mainText = responseObject.explanation || '';
-        if (!this.#headerText || !this.#mainText) {
-            this.#isError = true;
-        }
+        this.#mainText = teaserText;
         this.requestUpdate();
     }
     async *#getOnDeviceInsight() {
@@ -360,7 +356,7 @@ export class ConsoleInsightTeaser extends UI.Widget.Widget {
         if (Root.Runtime.hostConfig.aidaAvailability?.blockedByAge || Root.Runtime.hostConfig.isOffTheRecord) {
             return false;
         }
-        if (!"available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
+        if (this.#aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
             return false;
         }
         return true;
@@ -378,6 +374,15 @@ export class ConsoleInsightTeaser extends UI.Widget.Widget {
             isSlowGeneration: this.#isSlow,
             isError: this.#isError,
         }, undefined, this.contentElement);
+    }
+    wasShown() {
+        super.wasShown();
+        Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+        void this.#onAidaAvailabilityChange();
+    }
+    willHide() {
+        super.willHide();
+        Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
     }
 }
 //# sourceMappingURL=ConsoleInsightTeaser.js.map

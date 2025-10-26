@@ -8,14 +8,12 @@ const errStruct = 'data form error';
 function assertNotError(result) {
     if (typeof result === 'string') {
         assert.fail('Unexpected error');
-        return [];
     }
     return result;
 }
 function assertError(result, expectedError) {
     if (typeof result !== 'string') {
         assert.fail('Expected error, but got result');
-        return;
     }
     assert.strictEqual(result, expectedError);
 }

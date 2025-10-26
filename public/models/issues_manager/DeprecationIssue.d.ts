@@ -4,12 +4,12 @@ import { Issue, IssueCategory, IssueKind } from './Issue.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare class DeprecationIssue extends Issue {
     #private;
-    constructor(issueDetails: Protocol.Audits.DeprecationIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
+    constructor(issueDetails: Protocol.Audits.DeprecationIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null);
     getCategory(): IssueCategory;
     details(): Protocol.Audits.DeprecationIssueDetails;
     getDescription(): MarkdownIssueDescription;
     sources(): Iterable<Protocol.Audits.SourceCodeLocation>;
     primaryKey(): string;
     getKind(): IssueKind;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): DeprecationIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): DeprecationIssue[];
 }

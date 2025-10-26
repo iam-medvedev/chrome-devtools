@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../../../ui/components/markdown_view/markdown_view.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Root from '../../../../core/root/root.js';
@@ -62,7 +62,7 @@ export class BaseInsightComponent extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     // This flag tracks if the Insights AI feature is enabled within Chrome for
     // the active user.
-    #insightsAskAiEnabled = false;
+    #askAiEnabled = false;
     #selected = false;
     #model = null;
     #agentFocus = null;
@@ -94,8 +94,7 @@ export class BaseInsightComponent extends HTMLElement {
         // Used for unit test purposes when querying the DOM.
         this.dataset.insightName = this.internalName;
         const { devToolsAiAssistancePerformanceAgent } = Root.Runtime.hostConfig;
-        this.#insightsAskAiEnabled =
-            Boolean(devToolsAiAssistancePerformanceAgent?.enabled && devToolsAiAssistancePerformanceAgent?.insightsEnabled);
+        this.#askAiEnabled = Boolean(devToolsAiAssistancePerformanceAgent?.enabled);
     }
     set selected(selected) {
         if (!this.#selected && selected) {
@@ -289,7 +288,7 @@ export class BaseInsightComponent extends HTMLElement {
             return;
         }
         // matches the one in ai_assistance-meta.ts
-        const actionId = 'drjones.performance-insight-context';
+        const actionId = 'drjones.performance-panel-context';
         if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
             return;
         }
@@ -308,7 +307,7 @@ export class BaseInsightComponent extends HTMLElement {
     #canShowAskAI() {
         const aiAvailable = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !==
             Root.Runtime.GenAiEnterprisePolicyValue.DISABLE &&
-            this.#insightsAskAiEnabled && Root.Runtime.hostConfig.aidaAvailability?.enabled === true;
+            this.#askAiEnabled && Root.Runtime.hostConfig.aidaAvailability?.enabled === true;
         return aiAvailable && this.hasAskAiSupport();
     }
     #renderInsightContent(insightModel) {

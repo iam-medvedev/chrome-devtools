@@ -4852,7 +4852,17 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       }
     }
   }
-  handleAction(actionId, opts) {
+  #canExecuteQuery() {
+    const isBrandedBuild = Boolean(Root5.Runtime.hostConfig.aidaAvailability?.enabled);
+    const isBlockedByAge = Boolean(Root5.Runtime.hostConfig.aidaAvailability?.blockedByAge);
+    const isAidaAvailable = Boolean(
+      this.#aidaAvailability === "available"
+      /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */
+    );
+    const isUserOptedIn = Boolean(this.#aiAssistanceEnabledSetting?.getIfNotDisabled());
+    return isBrandedBuild && isAidaAvailable && isUserOptedIn && !isBlockedByAge;
+  }
+  async handleAction(actionId, opts) {
     if (this.#isLoading && !opts?.["prompt"]) {
       this.#viewOutput.chatView?.focusTextInput();
       return;
@@ -4884,16 +4894,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
         targetConversationType = "drjones-performance-full";
         break;
       }
-      case "drjones.performance-insight-context": {
-        Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceOpenedFromPerformanceInsight);
-        targetConversationType = "drjones-performance-full";
-        break;
-      }
-      case "drjones.performance-panel-full-context": {
-        Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceOpenedFromPerformanceFullButton);
-        targetConversationType = "drjones-performance-full";
-        break;
-      }
       case "drjones.sources-floating-button": {
         Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceOpenedFromSourcesPanelFloatingButton);
         targetConversationType = "drjones-file";
@@ -4915,13 +4915,16 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#updateConversationState({ agent });
     const predefinedPrompt = opts?.["prompt"];
     if (predefinedPrompt && typeof predefinedPrompt === "string") {
+      if (!this.#canExecuteQuery()) {
+        return;
+      }
       this.#imageInput = void 0;
       this.#isTextInputEmpty = true;
       Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceQuerySubmitted);
       if (this.#blockedByCrossOrigin) {
         this.#handleNewChatRequest();
       }
-      void this.#startConversation(predefinedPrompt);
+      await this.#startConversation(predefinedPrompt);
     } else {
       this.#viewOutput.chatView?.focusTextInput();
     }
@@ -5339,9 +5342,7 @@ var ActionDelegate = class {
       case "freestyler.main-menu":
       case "drjones.network-floating-button":
       case "drjones.network-panel-context":
-      case "drjones.performance-panel-full-context":
       case "drjones.performance-panel-context":
-      case "drjones.performance-insight-context":
       case "drjones.sources-floating-button":
       case "drjones.sources-panel-context": {
         void (async () => {
@@ -5355,7 +5356,7 @@ var ActionDelegate = class {
             UI6.InspectorView.InspectorView.instance().setDrawerSize(minDrawerSize);
           }
           const widget = await view.widget();
-          widget.handleAction(actionId, opts);
+          void widget.handleAction(actionId, opts);
         })();
         return true;
       }

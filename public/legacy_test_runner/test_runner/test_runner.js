@@ -442,7 +442,13 @@ function startDumpingProtocolMessages() {
 function addScriptForFrame(url2, content, frame) {
   content += "\n//# sourceURL=" + url2;
   const executionContext = TestRunner.runtimeModel.executionContexts().find((context) => context.frameId === frame.id);
-  TestRunner.RuntimeAgent.evaluate(content, "console", false, false, executionContext.id);
+  TestRunner.RuntimeAgent.invoke_evaluate({
+    expression: content,
+    objectGroup: "console",
+    includeCommandLineAPI: false,
+    silent: false,
+    contextId: executionContext.id
+  });
 }
 var formatters = {
   /**

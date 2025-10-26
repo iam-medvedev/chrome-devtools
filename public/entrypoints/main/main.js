@@ -439,7 +439,6 @@ import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as Breakpoints from "./../../models/breakpoints/breakpoints.js";
 import * as CrUXManager from "./../../models/crux-manager/crux-manager.js";
-import * as Extensions from "./../../models/extensions/extensions.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as LiveMetrics from "./../../models/live-metrics/live-metrics.js";
 import * as Logs from "./../../models/logs/logs.js";
@@ -654,8 +653,6 @@ var MainImpl = class {
     Root2.Runtime.experiments.register("timeline-invalidation-tracking", "Performance panel: invalidation tracking", true);
     Root2.Runtime.experiments.register("timeline-show-all-events", "Performance panel: show all events", true);
     Root2.Runtime.experiments.register("timeline-v8-runtime-call-stats", "Performance panel: V8 runtime call stats", true);
-    Root2.Runtime.experiments.register("timeline-enhanced-traces", "Performance panel: Enable collecting enhanced traces", true);
-    Root2.Runtime.experiments.register("timeline-compiled-sources", "Performance panel: Enable collecting source text for compiled script", true);
     Root2.Runtime.experiments.register("timeline-debug-mode", "Performance panel: Enable debug mode (trace event details, etc)", true);
     Root2.Runtime.experiments.register("instrumentation-breakpoints", "Enable instrumentation breakpoints", true);
     Root2.Runtime.experiments.register("use-source-map-scopes", "Use scope information from source maps", true);
@@ -753,7 +750,7 @@ var MainImpl = class {
       targetManager,
       debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
     });
-    self.Extensions.extensionServer = Extensions.ExtensionServer.ExtensionServer.instance({ forceNew: true });
+    self.Extensions.extensionServer = PanelCommon.ExtensionServer.ExtensionServer.instance({ forceNew: true });
     new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, Workspace.Workspace.WorkspaceImpl.instance());
     isolatedFileSystemManager.addPlatformFileSystem("snippet://", new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
     const persistenceImpl = Persistence.Persistence.PersistenceImpl.instance({
@@ -889,7 +886,7 @@ var MainImpl = class {
   }
   async #lateInitialization() {
     _a.time("Main._lateInitialization");
-    Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
+    PanelCommon.ExtensionServer.ExtensionServer.instance().initializeExtensions();
     const promises = Common2.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
       const runnable = await lateInitializationLoader();
       return await runnable.run();

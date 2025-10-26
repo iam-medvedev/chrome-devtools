@@ -25,6 +25,7 @@ console.log("foo");
                 endColumn: 0,
                 executionContextId: 1,
                 hash: '',
+                buildId: '',
                 hasSourceURL: true,
             });
             setMockConnectionResponseHandler('Debugger.getScriptSource', () => {
@@ -46,7 +47,7 @@ console.log("foo");
             const target = createTarget();
             const model = target.model(SDK.DebuggerModel.DebuggerModel);
             dispatchEvent(target, 'Debugger.scriptParsed', {
-                scriptId,
+                scriptId: scriptId,
                 url: 'https://example.com/test.js',
                 startLine: 0,
                 startColumn: 0,
@@ -54,6 +55,7 @@ console.log("foo");
                 endColumn: 0,
                 executionContextId: 1,
                 hash: '',
+                buildId: '',
                 hasSourceURL: false,
             });
             setMockConnectionResponseHandler('Debugger.getScriptSource', () => {

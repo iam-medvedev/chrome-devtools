@@ -51,7 +51,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/subresource.js',
             },
             pipelineId: 'pipelineId:1',
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
             requestId: 'requestId:1',
         });
         assert.deepEqual(model.getAllRuleSets(), [
@@ -138,7 +138,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/page.html',
             },
             pipelineId: 'pipelineId:2',
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
         });
         assert.deepEqual(model.getAllRuleSets(), [
             {
@@ -237,7 +237,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/subresource.js',
             },
             pipelineId: 'pipelineId:1',
-            status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+            status: "Failure" /* Protocol.Preload.PreloadingStatus.Failure */,
             prefetchStatus: "PrefetchEvictedAfterCandidateRemoved" /* Protocol.Preload.PrefetchStatus.PrefetchEvictedAfterCandidateRemoved */,
             requestId: 'requestId:1',
         });
@@ -382,7 +382,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/subresource1.js',
             },
             pipelineId: 'pipelineId:1',
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
         });
         loaderId = 'loaderId:2';
         navigate(getMainFrame(target), { loaderId });
@@ -423,7 +423,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/subresource2.js',
             },
             pipelineId: 'pipelineId:1',
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
             requestId: 'requestId:1',
         });
         assert.deepEqual(model.getAllRuleSets(), [
@@ -508,7 +508,6 @@ describeWithMockConnection('PreloadingModel', () => {
             loaderId,
             preloadingAttemptSources: [
                 {
-                    action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
@@ -518,7 +517,6 @@ describeWithMockConnection('PreloadingModel', () => {
                     nodeIds: [1, 2],
                 },
                 {
-                    action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                     key: {
                         loaderId,
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
@@ -536,7 +534,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/subresource12.js',
             },
             pipelineId: 'pipelineId:1',
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
             requestId: 'requestId:1',
         });
         dispatchEvent(target, 'Preload.prefetchStatusUpdated', {
@@ -546,7 +544,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/subresource2.js',
             },
             pipelineId: 'pipelineId:2',
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
             requestId: 'requestId:2',
         });
         assert.deepEqual(model.getRepresentativePreloadingAttempts(null), [
@@ -668,7 +666,6 @@ describeWithMockConnection('PreloadingModel', () => {
             loaderId,
             preloadingAttemptSources: [
                 {
-                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
                     key: {
                         loaderId,
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
@@ -706,7 +703,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/prerendered.html',
             },
             pipelineId: 'pipelineId:1',
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
             requestId: 'requestId:1',
         });
         // Here, we get two different attemtps, which should sit in the same pipeline actually.
@@ -762,7 +759,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/prerendered.html',
             },
             pipelineId: 'pipelineId:1',
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
         });
         // Converges to an entry.
         assert.deepEqual(model.getRepresentativePreloadingAttempts(null), [
@@ -792,7 +789,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/prerendered.html',
             },
             pipelineId: 'pipelineId:1',
-            status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
+            status: "Success" /* Protocol.Preload.PreloadingStatus.Success */,
             requestId: 'requestId:1',
         });
         dispatchEvent(target, 'Preload.prerenderStatusUpdated', {
@@ -802,7 +799,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/prerendered.html',
             },
             pipelineId: 'pipelineId:1',
-            status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+            status: "Failure" /* Protocol.Preload.PreloadingStatus.Failure */,
             prerenderStatus: "MojoBinderPolicy" /* Protocol.Preload.PrerenderFinalStatus.MojoBinderPolicy */,
             disallowedMojoInterface: 'device.mojom.GamepadMonitor',
         });
@@ -871,7 +868,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/page.html',
             },
             pipelineId: 'pipelineId:1',
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
         });
         assert.deepEqual(model.getRepresentativePreloadingAttempts(null), [
             {

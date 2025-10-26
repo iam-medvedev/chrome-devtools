@@ -186,7 +186,7 @@ export const updateStyle = (currentStyle, styleToAdd) => {
     // The capture group is not intended to grab the whole URL exactly, just enough so we can check the scheme.
     const URL_REGEX = /url\([\'\"]?([^\)]*)/g;
     currentStyle.clear();
-    /* eslint-disable-next-line rulesdir/no-imperative-dom-api --
+    /* eslint-disable-next-line @devtools/no-imperative-dom-api --
      * We're not mutating the DOM here, but just need a temporary
      * `<span>` to parse `styleToAdd` into a `CSSStyleDeclaration`.
      **/

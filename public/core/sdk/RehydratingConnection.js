@@ -59,11 +59,15 @@ export class RehydratingConnection {
     }
     #setupMessagePassing() {
         this.#rehydratingWindow.addEventListener('message', this.#onReceiveHostWindowPayloadBound);
-        if (!this.#rehydratingWindow.opener) {
-            this.#onConnectionLost(i18nString(UIStrings.noHostWindow));
-            return;
+        if (this.#rehydratingWindow.opener) {
+            this.#rehydratingWindow.opener.postMessage({ type: 'REHYDRATING_WINDOW_READY' });
         }
-        this.#rehydratingWindow.opener.postMessage({ type: 'REHYDRATING_WINDOW_READY' });
+        else if (this.#rehydratingWindow !== window.top) {
+            this.#rehydratingWindow.parent.postMessage({ type: 'REHYDRATING_IFRAME_READY' }, '*');
+        }
+        else {
+            this.#onConnectionLost(i18nString(UIStrings.noHostWindow));
+        }
     }
     /**
      * This is a callback for rehydrated session to receive payload from host window. Payload includes but not limited to

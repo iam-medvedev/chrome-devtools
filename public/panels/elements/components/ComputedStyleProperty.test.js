@@ -19,10 +19,7 @@ describe('ComputedStyleProperty', () => {
         component.inherited = false;
         const navigateEvent = getEventPromise(component, ElementsComponents.ComputedStyleProperty.NavigateToSourceEvent.eventName);
         const goto = component.shadowRoot.querySelector('.goto');
-        if (!goto) {
-            assert.fail('goto icon should exist');
-            return;
-        }
+        assert.exists(goto, 'goto icon should exist');
         goto.click();
         const event = await navigateEvent;
         assert.exists(event);

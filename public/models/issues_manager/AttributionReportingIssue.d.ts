@@ -28,7 +28,7 @@ export declare const enum IssueCode {
 }
 export declare class AttributionReportingIssue extends Issue<IssueCode> {
     issueDetails: Readonly<Protocol.Audits.AttributionReportingIssueDetails>;
-    constructor(issueDetails: Protocol.Audits.AttributionReportingIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
+    constructor(issueDetails: Protocol.Audits.AttributionReportingIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null);
     getCategory(): IssueCategory;
     getHeaderValidatorLink(name: string): {
         link: string;
@@ -37,5 +37,5 @@ export declare class AttributionReportingIssue extends Issue<IssueCode> {
     getDescription(): MarkdownIssueDescription | null;
     primaryKey(): string;
     getKind(): IssueKind;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): AttributionReportingIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): AttributionReportingIssue[];
 }

@@ -76,6 +76,7 @@ class NavigationEmulator {
                 crossOriginIsolatedContextType: "Isolated" /* Protocol.Page.CrossOriginIsolatedContextType.Isolated */,
                 gatedAPIFeatures: [],
             },
+            type: "Navigation" /* Protocol.Page.NavigationType.Navigation */,
         });
     }
     async activateAndDispatchEvents(path) {
@@ -102,7 +103,7 @@ class NavigationEmulator {
         // It's not so important and omitted.
         dispatchEvent(this.primaryTarget, 'Preload.prerenderStatusUpdated', {
             ...this.prerenderStatusUpdatedEvent,
-            status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
+            status: "Success" /* Protocol.Preload.PreloadingStatus.Success */,
         });
     }
     async addSpecRules(specrules) {
@@ -146,7 +147,7 @@ class NavigationEmulator {
                 },
                 initiatingFrameId: this.frameId,
                 prefetchUrl: url,
-                status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                status: "Running" /* Protocol.Preload.PreloadingStatus.Running */,
             });
         }
         if (json['prerender'] === undefined) {
@@ -192,6 +193,7 @@ class NavigationEmulator {
                 crossOriginIsolatedContextType: "Isolated" /* Protocol.Page.CrossOriginIsolatedContextType.Isolated */,
                 gatedAPIFeatures: [],
             },
+            type: "Navigation" /* Protocol.Page.NavigationType.Navigation */,
         });
     }
 }

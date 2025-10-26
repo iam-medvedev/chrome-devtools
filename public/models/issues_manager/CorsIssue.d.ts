@@ -28,11 +28,11 @@ export declare const enum IssueCode {
 }
 export declare class CorsIssue extends Issue<IssueCode> {
     #private;
-    constructor(issueDetails: Protocol.Audits.CorsIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel, issueId: Protocol.Audits.IssueId | undefined);
+    constructor(issueDetails: Protocol.Audits.CorsIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null, issueId: Protocol.Audits.IssueId | undefined);
     getCategory(): IssueCategory;
     details(): Protocol.Audits.CorsIssueDetails;
     getDescription(): MarkdownIssueDescription | null;
     primaryKey(): string;
     getKind(): IssueKind;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): CorsIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): CorsIssue[];
 }

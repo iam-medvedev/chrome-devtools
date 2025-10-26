@@ -24,7 +24,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         ++id;
         dispatchEvent(target, 'Runtime.executionContextCreated', {
             context: {
-                id,
+                id: id,
                 origin: 'http://example.com',
                 name: `c${id}`,
                 uniqueId: `c${id}`,

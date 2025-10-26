@@ -1,7 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import * as UI from '../../legacy/legacy.js';
 import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
@@ -409,6 +409,10 @@ export class Tooltip extends HTMLElement {
     };
     #globalKeyDown = (event) => {
         if (!this.open || event.key !== 'Escape') {
+            return;
+        }
+        const childTooltip = this.querySelector('devtools-tooltip');
+        if (childTooltip?.open) {
             return;
         }
         this.#openedViaHotkey = false;

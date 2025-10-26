@@ -4,15 +4,37 @@
 export const config = {
     "attributes": [
         {
+            "isGlobal": true,
             "name": "aria-actions",
             "type": "IDREF_list"
         },
         {
             "name": "aria-activedescendant",
+            "supportedOnRoles": [
+                "application",
+                "combobox",
+                "composite",
+                "grid",
+                "group",
+                "listbox",
+                "menu",
+                "menubar",
+                "radiogroup",
+                "row",
+                "searchbox",
+                "select",
+                "spinbutton",
+                "tablist",
+                "textbox",
+                "toolbar",
+                "tree",
+                "treegrid"
+            ],
             "type": "IDREF"
         },
         {
             "default": "false",
+            "isGlobal": true,
             "name": "aria-atomic",
             "type": "boolean"
         },
@@ -25,18 +47,47 @@ export const config = {
                 "none"
             ],
             "name": "aria-autocomplete",
+            "supportedOnRoles": [
+                "combobox",
+                "searchbox",
+                "textbox"
+            ],
             "type": "token"
         },
         {
+            "isGlobal": true,
             "name": "aria-braillelabel",
+            "preventedOnRoles": [
+                "caption",
+                "code",
+                "definition",
+                "deletion",
+                "emphasis",
+                "generic",
+                "insertion",
+                "mark",
+                "none",
+                "paragraph",
+                "strong",
+                "subscript",
+                "suggestion",
+                "superscript",
+                "term",
+                "time"
+            ],
             "type": "string"
         },
         {
+            "isGlobal": true,
             "name": "aria-brailleroledescription",
+            "preventedOnRoles": [
+                "generic"
+            ],
             "type": "string"
         },
         {
             "default": "false",
+            "isGlobal": true,
             "name": "aria-busy",
             "type": "boolean"
         },
@@ -49,25 +100,58 @@ export const config = {
                 "undefined"
             ],
             "name": "aria-checked",
+            "supportedOnRoles": [
+                "checkbox",
+                "menuitemcheckbox",
+                "menuitemradio",
+                "option",
+                "radio",
+                "switch",
+                "treeitem"
+            ],
             "type": "token"
         },
         {
             "name": "aria-colcount",
+            "supportedOnRoles": [
+                "grid",
+                "table",
+                "treegrid"
+            ],
             "type": "integer"
         },
         {
             "name": "aria-colindex",
+            "supportedOnRoles": [
+                "cell",
+                "columnheader",
+                "gridcell",
+                "row",
+                "rowheader"
+            ],
             "type": "integer"
         },
         {
             "name": "aria-colindextext",
+            "supportedOnRoles": [
+                "cell",
+                "columnheader",
+                "gridcell",
+                "rowheader"
+            ],
             "type": "string"
         },
         {
             "name": "aria-colspan",
+            "supportedOnRoles": [
+                "cell",
+                "columnheader",
+                "rowheader"
+            ],
             "type": "integer"
         },
         {
+            "isGlobal": true,
             "name": "aria-controls",
             "type": "IDREF_list"
         },
@@ -82,28 +166,87 @@ export const config = {
                 "true",
                 "false"
             ],
+            "isGlobal": true,
             "name": "aria-current",
             "type": "token"
         },
         {
+            "isGlobal": true,
             "name": "aria-describedby",
             "type": "IDREF_list"
         },
         {
+            "isGlobal": true,
             "name": "aria-description",
             "type": "string"
         },
         {
+            "isGlobal": true,
             "name": "aria-details",
             "type": "IDREF"
         },
         {
             "default": "false",
             "name": "aria-disabled",
+            "supportedOnRoles": [
+                "application",
+                "button",
+                "checkbox",
+                "columnheader",
+                "combobox",
+                "composite",
+                "grid",
+                "gridcell",
+                "group",
+                "input",
+                "link",
+                "listbox",
+                "menu",
+                "menubar",
+                "menuitem",
+                "menuitemcheckbox",
+                "menuitemradio",
+                "option",
+                "radio",
+                "radiogroup",
+                "row",
+                "rowheader",
+                "scrollbar",
+                "searchbox",
+                "select",
+                "separator",
+                "slider",
+                "spinbutton",
+                "switch",
+                "tab",
+                "tablist",
+                "textbox",
+                "toolbar",
+                "tree",
+                "treegrid",
+                "treeitem"
+            ],
             "type": "boolean"
         },
         {
             "name": "aria-errormessage",
+            "supportedOnRoles": [
+                "application",
+                "checkbox",
+                "columnheader",
+                "combobox",
+                "gridcell",
+                "listbox",
+                "radiogroup",
+                "rowheader",
+                "searchbox",
+                "slider",
+                "spinbutton",
+                "switch",
+                "textbox",
+                "tree",
+                "treegrid"
+            ],
             "type": "IDREF"
         },
         {
@@ -114,9 +257,27 @@ export const config = {
                 "undefined"
             ],
             "name": "aria-expanded",
+            "supportedOnRoles": [
+                "application",
+                "button",
+                "checkbox",
+                "columnheader",
+                "combobox",
+                "gridcell",
+                "link",
+                "menuitem",
+                "menuitemcheckbox",
+                "menuitemradio",
+                "row",
+                "rowheader",
+                "switch",
+                "tab",
+                "treeitem"
+            ],
             "type": "token"
         },
         {
+            "isGlobal": true,
             "name": "aria-flowto",
             "type": "IDREF_list"
         },
@@ -132,6 +293,23 @@ export const config = {
                 "dialog"
             ],
             "name": "aria-haspopup",
+            "supportedOnRoles": [
+                "application",
+                "button",
+                "columnheader",
+                "combobox",
+                "gridcell",
+                "link",
+                "menuitem",
+                "menuitemcheckbox",
+                "menuitemradio",
+                "rowheader",
+                "searchbox",
+                "slider",
+                "tab",
+                "textbox",
+                "treeitem"
+            ],
             "type": "token"
         },
         {
@@ -141,6 +319,7 @@ export const config = {
                 "false",
                 "undefined"
             ],
+            "isGlobal": true,
             "name": "aria-hidden",
             "type": "token"
         },
@@ -153,51 +332,149 @@ export const config = {
                 "true"
             ],
             "name": "aria-invalid",
+            "supportedOnRoles": [
+                "application",
+                "checkbox",
+                "columnheader",
+                "combobox",
+                "gridcell",
+                "listbox",
+                "radiogroup",
+                "rowheader",
+                "searchbox",
+                "slider",
+                "spinbutton",
+                "switch",
+                "textbox",
+                "tree",
+                "treegrid"
+            ],
             "type": "token"
         },
         {
+            "isGlobal": true,
             "name": "aria-keyshortcuts",
             "type": "string"
         },
         {
+            "isGlobal": true,
             "name": "aria-label",
+            "preventedOnRoles": [
+                "caption",
+                "code",
+                "definition",
+                "deletion",
+                "emphasis",
+                "generic",
+                "insertion",
+                "mark",
+                "none",
+                "paragraph",
+                "strong",
+                "subscript",
+                "suggestion",
+                "superscript",
+                "term",
+                "time"
+            ],
             "type": "string"
         },
         {
+            "isGlobal": true,
             "name": "aria-labelledby",
+            "preventedOnRoles": [
+                "caption",
+                "code",
+                "definition",
+                "deletion",
+                "emphasis",
+                "generic",
+                "insertion",
+                "mark",
+                "none",
+                "paragraph",
+                "strong",
+                "subscript",
+                "suggestion",
+                "superscript",
+                "term",
+                "time"
+            ],
             "type": "IDREF_list"
         },
         {
+            "isGlobal": true,
             "name": "aria-labeledby",
+            "preventedOnRoles": [
+                "caption",
+                "code",
+                "definition",
+                "deletion",
+                "emphasis",
+                "generic",
+                "insertion",
+                "mark",
+                "none",
+                "paragraph",
+                "strong",
+                "subscript",
+                "suggestion",
+                "superscript",
+                "term",
+                "time"
+            ],
             "type": "IDREF_list"
         },
         {
             "name": "aria-level",
+            "supportedOnRoles": [
+                "comment",
+                "heading",
+                "row",
+                "treeitem"
+            ],
             "type": "integer"
         },
         {
-            "default": "off",
+            "default": "undefined",
             "enum": [
                 "off",
                 "polite",
-                "assertive"
+                "assertive",
+                "undefined"
             ],
+            "isGlobal": true,
             "name": "aria-live",
             "type": "token"
         },
         {
             "default": "false",
             "name": "aria-modal",
+            "supportedOnRoles": [
+                "alertdialog",
+                "dialog"
+            ],
             "type": "boolean"
         },
         {
             "default": "false",
             "name": "aria-multiline",
+            "supportedOnRoles": [
+                "searchbox",
+                "textbox"
+            ],
             "type": "boolean"
         },
         {
             "default": "false",
             "name": "aria-multiselectable",
+            "supportedOnRoles": [
+                "grid",
+                "listbox",
+                "tablist",
+                "tree",
+                "treegrid"
+            ],
             "type": "boolean"
         },
         {
@@ -208,18 +485,50 @@ export const config = {
                 "vertical"
             ],
             "name": "aria-orientation",
+            "supportedOnRoles": [
+                "listbox",
+                "menu",
+                "menubar",
+                "radiogroup",
+                "scrollbar",
+                "select",
+                "separator",
+                "slider",
+                "tablist",
+                "toolbar",
+                "tree",
+                "treegrid"
+            ],
             "type": "token"
         },
         {
+            "isGlobal": true,
             "name": "aria-owns",
             "type": "IDREF_list"
         },
         {
             "name": "aria-placeholder",
+            "supportedOnRoles": [
+                "searchbox",
+                "textbox"
+            ],
             "type": "string"
         },
         {
             "name": "aria-posinset",
+            "supportedOnRoles": [
+                "article",
+                "comment",
+                "listitem",
+                "menuitem",
+                "menuitemcheckbox",
+                "menuitemradio",
+                "option",
+                "radio",
+                "row",
+                "tab",
+                "treeitem"
+            ],
             "type": "integer"
         },
         {
@@ -231,11 +540,30 @@ export const config = {
                 "undefined"
             ],
             "name": "aria-pressed",
+            "supportedOnRoles": [
+                "button"
+            ],
             "type": "token"
         },
         {
             "default": "false",
             "name": "aria-readonly",
+            "supportedOnRoles": [
+                "checkbox",
+                "columnheader",
+                "combobox",
+                "grid",
+                "gridcell",
+                "listbox",
+                "radiogroup",
+                "rowheader",
+                "searchbox",
+                "slider",
+                "spinbutton",
+                "switch",
+                "textbox",
+                "treegrid"
+            ],
             "type": "boolean"
         },
         {
@@ -246,32 +574,76 @@ export const config = {
                 "text",
                 "all"
             ],
+            "isGlobal": true,
             "name": "aria-relevant",
             "type": "token_list"
         },
         {
             "default": "false",
             "name": "aria-required",
+            "supportedOnRoles": [
+                "checkbox",
+                "columnheader",
+                "combobox",
+                "gridcell",
+                "listbox",
+                "radiogroup",
+                "rowheader",
+                "searchbox",
+                "spinbutton",
+                "switch",
+                "textbox",
+                "tree",
+                "treegrid"
+            ],
             "type": "boolean"
         },
         {
+            "isGlobal": true,
             "name": "aria-roledescription",
+            "preventedOnRoles": [
+                "generic"
+            ],
             "type": "string"
         },
         {
             "name": "aria-rowcount",
+            "supportedOnRoles": [
+                "grid",
+                "table",
+                "treegrid"
+            ],
             "type": "integer"
         },
         {
             "name": "aria-rowindex",
+            "supportedOnRoles": [
+                "cell",
+                "columnheader",
+                "gridcell",
+                "row",
+                "rowheader"
+            ],
             "type": "integer"
         },
         {
             "name": "aria-rowindextext",
+            "supportedOnRoles": [
+                "cell",
+                "columnheader",
+                "gridcell",
+                "row",
+                "rowheader"
+            ],
             "type": "string"
         },
         {
             "name": "aria-rowspan",
+            "supportedOnRoles": [
+                "cell",
+                "columnheader",
+                "rowheader"
+            ],
             "type": "integer"
         },
         {
@@ -282,10 +654,32 @@ export const config = {
                 "undefined"
             ],
             "name": "aria-selected",
+            "supportedOnRoles": [
+                "columnheader",
+                "gridcell",
+                "option",
+                "row",
+                "rowheader",
+                "tab",
+                "treeitem"
+            ],
             "type": "token"
         },
         {
             "name": "aria-setsize",
+            "supportedOnRoles": [
+                "article",
+                "comment",
+                "listitem",
+                "menuitem",
+                "menuitemcheckbox",
+                "menuitemradio",
+                "option",
+                "radio",
+                "row",
+                "tab",
+                "treeitem"
+            ],
             "type": "integer"
         },
         {
@@ -297,22 +691,58 @@ export const config = {
                 "other"
             ],
             "name": "aria-sort",
+            "supportedOnRoles": [
+                "columnheader",
+                "rowheader"
+            ],
             "type": "token"
         },
         {
             "name": "aria-valuemax",
+            "supportedOnRoles": [
+                "meter",
+                "progressbar",
+                "scrollbar",
+                "separator",
+                "slider",
+                "spinbutton"
+            ],
             "type": "decimal"
         },
         {
             "name": "aria-valuemin",
+            "supportedOnRoles": [
+                "meter",
+                "progressbar",
+                "scrollbar",
+                "separator",
+                "slider",
+                "spinbutton"
+            ],
             "type": "decimal"
         },
         {
             "name": "aria-valuenow",
+            "supportedOnRoles": [
+                "meter",
+                "progressbar",
+                "scrollbar",
+                "separator",
+                "slider",
+                "spinbutton"
+            ],
             "type": "decimal"
         },
         {
             "name": "aria-valuetext",
+            "supportedOnRoles": [
+                "meter",
+                "progressbar",
+                "scrollbar",
+                "separator",
+                "slider",
+                "spinbutton"
+            ],
             "type": "string"
         },
         {
@@ -342,6 +772,9 @@ export const config = {
             ]
         },
         {
+            "internalRoles": [
+                "kAlertDialog"
+            ],
             "name": "alertdialog",
             "nameFrom": [
                 "author"
@@ -369,13 +802,13 @@ export const config = {
             ],
             "superclasses": [
                 "document"
-            ],
-            "supportedAttributes": [
-                "aria-posinset",
-                "aria-setsize"
             ]
         },
         {
+            "internalRoles": [
+                "kBanner",
+                "kHeader"
+            ],
             "name": "banner",
             "nameFrom": [
                 "author"
@@ -385,7 +818,21 @@ export const config = {
             ]
         },
         {
+            "name": "blockquote",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
             "childrenPresentational": true,
+            "internalRoles": [
+                "kButton",
+                "kToggleButton",
+                "kPopUpButton"
+            ],
             "name": "button",
             "nameFrom": [
                 "contents",
@@ -394,33 +841,35 @@ export const config = {
             "nameRequired": true,
             "superclasses": [
                 "command"
+            ]
+        },
+        {
+            "name": "caption",
+            "nameFrom": [
+                "prohibited"
             ],
-            "supportedAttributes": [
-                "aria-expanded",
-                "aria-pressed"
+            "superclasses": [
+                "structure"
             ]
         },
         {
             "name": "cell",
-            "namefrom": [
+            "nameFrom": [
                 "contents",
                 "author"
             ],
             "scope": "row",
             "superclasses": [
                 "section"
-            ],
-            "supportedAttributes": [
-                "aria-colindex",
-                "aria-colspan",
-                "aria-rowindex",
-                "aria-rowspan"
             ]
         },
         {
             "implicitValues": {
                 "aria-checked": false
             },
+            "internalRoles": [
+                "kCheckBox"
+            ],
             "name": "checkbox",
             "nameFrom": [
                 "contents",
@@ -432,12 +881,21 @@ export const config = {
             ],
             "superclasses": [
                 "input"
-            ],
-            "supportedAttributes": [
-                "aria-readonly"
             ]
         },
         {
+            "name": "code",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kColumnHeader"
+            ],
             "name": "columnheader",
             "nameFrom": [
                 "contents",
@@ -451,9 +909,6 @@ export const config = {
                 "gridcell",
                 "sectionhead",
                 "widget"
-            ],
-            "supportedAttributes": [
-                "aria-sort"
             ]
         },
         {
@@ -461,6 +916,12 @@ export const config = {
                 "aria-expanded": "false",
                 "aria-haspopup": "listbox"
             },
+            "internalRoles": [
+                "kComboBoxGrouping",
+                "kComboBoxMenuButton",
+                "kComboBoxSelect",
+                "kTextFieldWithComboBox"
+            ],
             "mustContain": [
                 "textbox"
             ],
@@ -475,11 +936,15 @@ export const config = {
             ],
             "superclasses": [
                 "select"
+            ]
+        },
+        {
+            "name": "comment",
+            "nameFrom": [
+                "author"
             ],
-            "supportedAttributes": [
-                "aria-autocomplete",
-                "aria-readonly",
-                "aria-required"
+            "superclasses": [
+                "structure"
             ]
         },
         {
@@ -509,12 +974,13 @@ export const config = {
             ],
             "superclasses": [
                 "widget"
-            ],
-            "supportedAttributes": [
-                "aria-activedescendant"
             ]
         },
         {
+            "internalRoles": [
+                "kContentInfo",
+                "kFooter"
+            ],
             "name": "contentinfo",
             "nameFrom": [
                 "author"
@@ -526,10 +992,22 @@ export const config = {
         {
             "name": "definition",
             "nameFrom": [
-                "author"
+                "prohibited"
             ],
             "superclasses": [
                 "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kContentDeletion"
+            ],
+            "name": "deletion",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
             ]
         },
         {
@@ -543,6 +1021,10 @@ export const config = {
             ]
         },
         {
+            "deprecated": true,
+            "internalRoles": [
+                "kList"
+            ],
             "name": "directory",
             "nameFrom": [
                 "author"
@@ -559,9 +1041,15 @@ export const config = {
             "nameRequired": false,
             "superclasses": [
                 "structure"
+            ]
+        },
+        {
+            "name": "emphasis",
+            "nameFrom": [
+                "prohibited"
             ],
-            "supportedAttributes": [
-                "aria-expanded"
+            "superclasses": [
+                "structure"
             ]
         },
         {
@@ -579,10 +1067,10 @@ export const config = {
         },
         {
             "name": "figure",
-            "nameRequired": false,
-            "namefrom": [
+            "nameFrom": [
                 "author"
             ],
+            "nameRequired": false,
             "superclasses": [
                 "section"
             ]
@@ -592,8 +1080,22 @@ export const config = {
             "nameFrom": [
                 "author"
             ],
+            "nameRequired": true,
             "superclasses": [
                 "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kGenericContainer",
+                "kSectionWithoutName"
+            ],
+            "name": "generic",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
             ]
         },
         {
@@ -608,14 +1110,12 @@ export const config = {
             "superclasses": [
                 "composite",
                 "table"
-            ],
-            "supportedAttributes": [
-                "aria-level",
-                "aria-multiselectable",
-                "aria-readonly"
             ]
         },
         {
+            "internalRoles": [
+                "kGridCell"
+            ],
             "name": "gridcell",
             "nameFrom": [
                 "contents",
@@ -628,23 +1128,19 @@ export const config = {
             "superclasses": [
                 "cell",
                 "widget"
-            ],
-            "supportedAttributes": [
-                "aria-readonly",
-                "aria-required",
-                "aria-selected"
             ]
         },
         {
+            "internalRoles": [
+                "kGroup",
+                "kDetails"
+            ],
             "name": "group",
             "nameFrom": [
                 "author"
             ],
             "superclasses": [
                 "section"
-            ],
-            "supportedAttributes": [
-                "aria-activedescendant"
             ]
         },
         {
@@ -652,20 +1148,33 @@ export const config = {
                 "aria-level": "2"
             },
             "name": "heading",
-            "nameRequired": true,
-            "namefrom": [
+            "nameFrom": [
                 "contents",
                 "author"
             ],
+            "nameRequired": true,
             "superclasses": [
                 "sectionhead"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kImage"
             ],
-            "supportedAttributes": [
-                "aria-level"
+            "name": "image",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "structure"
             ]
         },
         {
             "childrenPresentational": true,
+            "deprecated": true,
+            "internalRoles": [
+                "kImage"
+            ],
             "name": "img",
             "nameFrom": [
                 "author"
@@ -673,6 +1182,18 @@ export const config = {
             "nameRequired": true,
             "superclasses": [
                 "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kContentInsertion"
+            ],
+            "name": "insertion",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
             ]
         },
         {
@@ -705,15 +1226,15 @@ export const config = {
             "nameRequired": true,
             "superclasses": [
                 "command"
-            ],
-            "supportedAttributes": [
-                "aria-expanded"
             ]
         },
         {
             "implicitValues": {
                 "aria-orientation": "vertical"
             },
+            "internalRoles": [
+                "kList"
+            ],
             "mustContain": [
                 "listitem"
             ],
@@ -729,6 +1250,9 @@ export const config = {
             "implicitValues": {
                 "aria-orientation": "vertical"
             },
+            "internalRoles": [
+                "kListBox"
+            ],
             "mustContain": [
                 "option"
             ],
@@ -739,14 +1263,12 @@ export const config = {
             "nameRequired": true,
             "superclasses": [
                 "select"
-            ],
-            "supportedAttributes": [
-                "aria-multiselectable",
-                "aria-readonly",
-                "aria-required"
             ]
         },
         {
+            "internalRoles": [
+                "kListItem"
+            ],
             "name": "listitem",
             "nameFrom": [
                 "author"
@@ -757,11 +1279,6 @@ export const config = {
             ],
             "superclasses": [
                 "section"
-            ],
-            "supportedAttributes": [
-                "aria-level",
-                "aria-posinset",
-                "aria-setsize"
             ]
         },
         {
@@ -787,6 +1304,18 @@ export const config = {
             ]
         },
         {
+            "name": "mark",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
+            ]
+        },
+        {
+            "implicitValues": {
+                "aria-live": "off"
+            },
             "name": "marquee",
             "nameFrom": [
                 "author"
@@ -830,6 +1359,9 @@ export const config = {
             "implicitValues": {
                 "aria-orientation": "horizontal"
             },
+            "internalRoles": [
+                "kMenuBar"
+            ],
             "mustContain": [
                 "menuitem",
                 "menuitemradio",
@@ -844,6 +1376,9 @@ export const config = {
             ]
         },
         {
+            "internalRoles": [
+                "kMenuItem"
+            ],
             "name": "menuitem",
             "nameFrom": [
                 "contents",
@@ -864,6 +1399,9 @@ export const config = {
             "implicitValues": {
                 "aria-checked": false
             },
+            "internalRoles": [
+                "kMenuItemCheckBox"
+            ],
             "name": "menuitemcheckbox",
             "nameFrom": [
                 "contents",
@@ -884,6 +1422,9 @@ export const config = {
             "implicitValues": {
                 "aria-checked": false
             },
+            "internalRoles": [
+                "kMenuItemRadio"
+            ],
             "name": "menuitemradio",
             "nameFrom": [
                 "contents",
@@ -901,6 +1442,20 @@ export const config = {
             ]
         },
         {
+            "implicitValues": {
+                "aria-valuemax": "100",
+                "aria-valuemin": "0"
+            },
+            "name": "meter",
+            "nameFrom": [
+                "author"
+            ],
+            "nameRequired": true,
+            "superclasses": [
+                "structure"
+            ]
+        },
+        {
             "name": "navigation",
             "nameFrom": [
                 "author"
@@ -910,7 +1465,13 @@ export const config = {
             ]
         },
         {
+            "internalRoles": [
+                "kNone"
+            ],
             "name": "none",
+            "nameFrom": [
+                "prohibited"
+            ],
             "superclasses": [
                 "structure"
             ]
@@ -929,6 +1490,10 @@ export const config = {
             "implicitValues": {
                 "aria-selected": "false"
             },
+            "internalRoles": [
+                "kListBoxOption",
+                "kMenuListOption"
+            ],
             "name": "option",
             "nameFrom": [
                 "contents",
@@ -943,14 +1508,22 @@ export const config = {
             ],
             "superclasses": [
                 "input"
-            ],
-            "supportedAttributes": [
-                "aria-checked",
-                "aria-posinset",
-                "aria-setsize"
             ]
         },
         {
+            "name": "paragraph",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
+            ]
+        },
+        {
+            "deprecated": true,
+            "internalRoles": [
+                "kNone"
+            ],
             "name": "presentation",
             "superclasses": [
                 "structure"
@@ -958,6 +1531,13 @@ export const config = {
         },
         {
             "childrenPresentational": true,
+            "implicitValues": {
+                "aria-valuemax": "100",
+                "aria-valuemin": "0"
+            },
+            "internalRoles": [
+                "kProgressIndicator"
+            ],
             "name": "progressbar",
             "nameFrom": [
                 "author"
@@ -972,6 +1552,9 @@ export const config = {
             "implicitValues": {
                 "aria-checked": "false"
             },
+            "internalRoles": [
+                "kRadioButton"
+            ],
             "name": "radio",
             "nameFrom": [
                 "contents",
@@ -983,13 +1566,12 @@ export const config = {
             ],
             "superclasses": [
                 "input"
-            ],
-            "supportedAttributes": [
-                "aria-posinset",
-                "aria-setsize"
             ]
         },
         {
+            "internalRoles": [
+                "kRadioGroup"
+            ],
             "mustContain": [
                 "radio"
             ],
@@ -1000,10 +1582,6 @@ export const config = {
             "nameRequired": true,
             "superclasses": [
                 "select"
-            ],
-            "supportedAttributes": [
-                "aria-readonly",
-                "aria-required"
             ]
         },
         {
@@ -1014,12 +1592,6 @@ export const config = {
             ],
             "superclasses": [
                 "widget"
-            ],
-            "supportedAttributes": [
-                "aria-valuemax",
-                "aria-valuemin",
-                "aria-valuenow",
-                "aria-valuetext"
             ]
         },
         {
@@ -1034,30 +1606,7 @@ export const config = {
         },
         {
             "abstract": true,
-            "name": "roletype",
-            "supportedAttributes": [
-                "aria-atomic",
-                "aria-busy",
-                "aria-controls",
-                "aria-current",
-                "aria-describedby",
-                "aria-details",
-                "aria-disabled",
-                "aria-dropeffect",
-                "aria-errormessage",
-                "aria-flowto",
-                "aria-grabbed",
-                "aria-haspopup",
-                "aria-hidden",
-                "aria-invalid",
-                "aria-keyshortcuts",
-                "aria-label",
-                "aria-labelledby",
-                "aria-live",
-                "aria-owns",
-                "aria-relevant",
-                "aria-roledescription"
-            ]
+            "name": "roletype"
         },
         {
             "mustContain": [
@@ -1080,23 +1629,17 @@ export const config = {
             "superclasses": [
                 "group",
                 "widget"
-            ],
-            "supportedAttributes": [
-                "aria-colindex",
-                "aria-level",
-                "aria-rowindex",
-                "aria-selected",
-                "aria-setsize",
-                "aria-posinset"
             ]
         },
         {
+            "internalRoles": [
+                "kRowGroup"
+            ],
             "mustContain": [
                 "row"
             ],
             "name": "rowgroup",
             "nameFrom": [
-                "contents",
                 "author"
             ],
             "scope": [
@@ -1109,6 +1652,9 @@ export const config = {
             ]
         },
         {
+            "internalRoles": [
+                "kRowHeader"
+            ],
             "name": "rowheader",
             "nameFrom": [
                 "contents",
@@ -1122,9 +1668,6 @@ export const config = {
                 "cell",
                 "gridcell",
                 "sectionhead"
-            ],
-            "supportedAttributes": [
-                "aria-sort"
             ]
         },
         {
@@ -1134,6 +1677,9 @@ export const config = {
                 "aria-valuemax": "100",
                 "aria-valuemin": "0"
             },
+            "internalRoles": [
+                "kScrollBar"
+            ],
             "name": "scrollbar",
             "nameFrom": [
                 "author"
@@ -1160,6 +1706,9 @@ export const config = {
             ]
         },
         {
+            "internalRoles": [
+                "kSearchBox"
+            ],
             "name": "searchbox",
             "nameFrom": [
                 "author"
@@ -1174,9 +1723,6 @@ export const config = {
             "name": "section",
             "superclasses": [
                 "structure"
-            ],
-            "supportedAttributes": [
-                "aria-expanded"
             ]
         },
         {
@@ -1188,9 +1734,6 @@ export const config = {
             ],
             "superclasses": [
                 "structure"
-            ],
-            "supportedAttributes": [
-                "aria-expanded"
             ]
         },
         {
@@ -1205,19 +1748,20 @@ export const config = {
             ]
         },
         {
+            "implicitValues": {
+                "aria-orientation": "horizontal",
+                "aria-valuemax": "100",
+                "aria-valuemin": "0"
+            },
+            "internalRoles": [
+                "kSplitter"
+            ],
             "name": "separator",
             "nameFrom": [
                 "author"
             ],
             "superclasses": [
                 "structure"
-            ],
-            "supportedAttributes": [
-                "aria-orientation",
-                "aria-valuemin",
-                "aria-valuemax",
-                "aria-valuenow",
-                "aria-valuetext"
             ]
         },
         {
@@ -1240,15 +1784,12 @@ export const config = {
             "superclasses": [
                 "input",
                 "range"
-            ],
-            "supportedAttributes": [
-                "aria-orientation"
             ]
         },
         {
-            "implicitValues": {
-                "aria-valuenow": "0"
-            },
+            "internalRoles": [
+                "kSpinButton"
+            ],
             "name": "spinbutton",
             "nameFrom": [
                 "author"
@@ -1263,10 +1804,6 @@ export const config = {
                 "composite",
                 "input",
                 "range"
-            ],
-            "supportedAttributes": [
-                "aria-required",
-                "aria-readonly"
             ]
         },
         {
@@ -1283,10 +1820,46 @@ export const config = {
             ]
         },
         {
+            "name": "strong",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
+            ]
+        },
+        {
             "abstract": true,
             "name": "structure",
             "superclasses": [
                 "roletype"
+            ]
+        },
+        {
+            "name": "subscript",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
+            ]
+        },
+        {
+            "name": "suggestion",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
+            ]
+        },
+        {
+            "name": "superscript",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
             ]
         },
         {
@@ -1323,9 +1896,6 @@ export const config = {
             "superclasses": [
                 "sectionhead",
                 "widget"
-            ],
-            "supportedAttributes": [
-                "aria-selected"
             ]
         },
         {
@@ -1339,16 +1909,15 @@ export const config = {
             "nameRequired": true,
             "superclasses": [
                 "section"
-            ],
-            "supportedAttributes": [
-                "aria-colcount",
-                "aria-rowcount"
             ]
         },
         {
             "implicitValues": {
                 "aria-orientation": "horizontal"
             },
+            "internalRoles": [
+                "kTabList"
+            ],
             "mustContain": [
                 "tab"
             ],
@@ -1358,14 +1927,12 @@ export const config = {
             ],
             "superclasses": [
                 "composite"
-            ],
-            "supportedAttributes": [
-                "aria-level",
-                "aria-multiselectable",
-                "aria-orientation"
             ]
         },
         {
+            "internalRoles": [
+                "kTabPanel"
+            ],
             "name": "tabpanel",
             "nameFrom": [
                 "author"
@@ -1378,13 +1945,25 @@ export const config = {
         {
             "name": "term",
             "nameFrom": [
-                "author"
+                "prohibited"
             ],
             "superclasses": [
                 "section"
             ]
         },
         {
+            "name": "time",
+            "nameFrom": [
+                "prohibited"
+            ],
+            "superclasses": [
+                "structure"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kTextField"
+            ],
             "name": "textbox",
             "nameFrom": [
                 "author"
@@ -1392,17 +1971,12 @@ export const config = {
             "nameRequired": true,
             "superclasses": [
                 "input"
-            ],
-            "supportedAttributes": [
-                "aria-activedescendant",
-                "aria-autocomplete",
-                "aria-multiline",
-                "aria-placeholder",
-                "aria-readonly",
-                "aria-required"
             ]
         },
         {
+            "implicitValues": {
+                "aria-live": "off"
+            },
             "name": "timer",
             "nameFrom": [
                 "author"
@@ -1421,9 +1995,6 @@ export const config = {
             ],
             "superclasses": [
                 "group"
-            ],
-            "supportedAttributes": [
-                "aria-orientation"
             ]
         },
         {
@@ -1452,13 +2023,12 @@ export const config = {
             "nameRequired": true,
             "superclasses": [
                 "select"
-            ],
-            "supportedAttributes": [
-                "aria-multiselectable",
-                "aria-required"
             ]
         },
         {
+            "internalRoles": [
+                "kTreeGrid"
+            ],
             "mustContain": [
                 "row"
             ],
@@ -1473,6 +2043,9 @@ export const config = {
             ]
         },
         {
+            "internalRoles": [
+                "kTreeItem"
+            ],
             "name": "treeitem",
             "nameFrom": [
                 "contents",
@@ -1503,10 +2076,564 @@ export const config = {
             ],
             "superclasses": [
                 "roletype"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kSectionFooter"
             ],
-            "supportedAttributes": [
-                "aria-expanded",
-                "aria-modal"
+            "name": "sectionfooter",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "contentinfo"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kSectionHeader"
+            ],
+            "name": "sectionheader",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "banner"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocAbstract"
+            ],
+            "name": "doc-abstract",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocAcknowledgments"
+            ],
+            "name": "doc-acknowledgments",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocAfterword"
+            ],
+            "name": "doc-afterword",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocAppendix"
+            ],
+            "name": "doc-appendix",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocBackLink"
+            ],
+            "name": "doc-backlink",
+            "nameFrom": [
+                "contents",
+                "author"
+            ],
+            "superclasses": [
+                "link"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocBiblioEntry"
+            ],
+            "name": "doc-biblioentry",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "listitem"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocBibliography"
+            ],
+            "name": "doc-bibliography",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocBiblioRef"
+            ],
+            "name": "doc-biblioref",
+            "nameFrom": [
+                "contents",
+                "author"
+            ],
+            "superclasses": [
+                "link"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocChapter"
+            ],
+            "name": "doc-chapter",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocColophon"
+            ],
+            "name": "doc-colophon",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocConclusion"
+            ],
+            "name": "doc-conclusion",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocCover"
+            ],
+            "name": "doc-cover",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "img"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocCredit"
+            ],
+            "name": "doc-credit",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocCredits"
+            ],
+            "name": "doc-credits",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocDedication"
+            ],
+            "name": "doc-dedication",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocEndnote"
+            ],
+            "name": "doc-endnote",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "listitem"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocEndnotes"
+            ],
+            "name": "doc-endnotes",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocEpigraph"
+            ],
+            "name": "doc-epigraph",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocEpilogue"
+            ],
+            "name": "doc-epilogue",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocErrata"
+            ],
+            "name": "doc-errata",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocExample"
+            ],
+            "name": "doc-example",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocFootnote"
+            ],
+            "name": "doc-footnote",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocForeword"
+            ],
+            "name": "doc-foreword",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocGlossary"
+            ],
+            "name": "doc-glossary",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocGlossRef"
+            ],
+            "name": "doc-glossref",
+            "nameFrom": [
+                "contents",
+                "author"
+            ],
+            "superclasses": [
+                "link"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocIndex"
+            ],
+            "name": "doc-index",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "navigation"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocIntroduction"
+            ],
+            "name": "doc-introduction",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocNoteRef"
+            ],
+            "name": "doc-noteref",
+            "nameFrom": [
+                "contents",
+                "author"
+            ],
+            "superclasses": [
+                "link"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocNotice"
+            ],
+            "name": "doc-notice",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "note"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocPageBreak"
+            ],
+            "name": "doc-pagebreak",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "separator"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocPageFooter"
+            ],
+            "name": "doc-pagefooter",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "contentinfo"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocPageHeader"
+            ],
+            "name": "doc-pageheader",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "banner"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocPageList"
+            ],
+            "name": "doc-pagelist",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "navigation"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocPart"
+            ],
+            "name": "doc-part",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocPreface"
+            ],
+            "name": "doc-preface",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocPrologue"
+            ],
+            "name": "doc-prologue",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "landmark"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocPullquote"
+            ],
+            "name": "doc-pullquote",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocQna"
+            ],
+            "name": "doc-qna",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "section"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocSubtitle"
+            ],
+            "name": "doc-subtitle",
+            "nameFrom": [
+                "contents",
+                "author"
+            ],
+            "superclasses": [
+                "sectionhead"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocTip"
+            ],
+            "name": "doc-tip",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "note"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kDocToc"
+            ],
+            "name": "doc-toc",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "navigation"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kGraphicsDocument"
+            ],
+            "name": "graphics-document",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "document"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kGraphicsObject"
+            ],
+            "name": "graphics-object",
+            "nameFrom": [
+                "contents",
+                "author"
+            ],
+            "superclasses": [
+                "group"
+            ]
+        },
+        {
+            "internalRoles": [
+                "kGraphicsSymbol"
+            ],
+            "name": "graphics-symbol",
+            "nameFrom": [
+                "author"
+            ],
+            "superclasses": [
+                "img"
             ]
         }
     ]

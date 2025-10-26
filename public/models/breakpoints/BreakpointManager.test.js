@@ -285,7 +285,7 @@ describeWithMockConnection('BreakpointManager', () => {
             clearMockConnectionResponseHandler('Debugger.setBreakpointByUrl');
             const requests = new Map();
             setMockConnectionResponseHandler('Debugger.setBreakpointByUrl', request => {
-                requests.set(request.url, request);
+                requests.set(request.url ?? '', request);
                 if (requests.size === 2) {
                     res(requests);
                 }
@@ -333,7 +333,7 @@ describeWithMockConnection('BreakpointManager', () => {
         const modelBreakpoint = breakpoint.modelBreakpoint(debuggerModel);
         assert.exists(modelBreakpoint);
         // Make sure that we do not have a linked script yet.
-        // eslint-disable-next-line rulesdir/no-assert-equal-boolean-null-undefined
+        // eslint-disable-next-line @devtools/no-assert-equal-boolean-null-undefined
         assert.strictEqual(modelBreakpoint.currentState, null);
         // Now await restoring the breakpoint.
         // A successful restore should update the ModelBreakpoint of the DebuggerModel

@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Lit from '../../../ui/lit/lit.js';
@@ -135,6 +135,14 @@ export class GridEditor extends StylePropertyEditor {
     }
 }
 customElements.define('devtools-grid-editor', GridEditor);
+export class MasonryEditor extends StylePropertyEditor {
+    jslogContext = 'cssMasonryEditor';
+    editableProperties = MasonryEditableProperties;
+    findIcon(query, computedProperties) {
+        return findGridContainerIcon(query, computedProperties);
+    }
+}
+customElements.define('devtools-masonry-editor', MasonryEditor);
 export const FlexboxEditableProperties = [
     {
         propertyName: 'flex-direction',
@@ -190,6 +198,8 @@ export const GridEditableProperties = [
         propertyName: 'align-content',
         propertyValues: [
             'center',
+            'start',
+            'end',
             'space-between',
             'space-around',
             'space-evenly',
@@ -205,6 +215,7 @@ export const GridEditableProperties = [
             'space-between',
             'space-around',
             'space-evenly',
+            'stretch',
         ],
     },
     {
@@ -215,6 +226,50 @@ export const GridEditableProperties = [
             'end',
             'stretch',
             'baseline',
+        ],
+    },
+    {
+        propertyName: 'justify-items',
+        propertyValues: [
+            'center',
+            'start',
+            'end',
+            'stretch',
+        ],
+    },
+];
+export const MasonryEditableProperties = [
+    {
+        propertyName: 'align-content',
+        propertyValues: [
+            'center',
+            'start',
+            'end',
+            'space-between',
+            'space-around',
+            'space-evenly',
+            'stretch',
+        ],
+    },
+    {
+        propertyName: 'justify-content',
+        propertyValues: [
+            'center',
+            'start',
+            'end',
+            'space-between',
+            'space-around',
+            'space-evenly',
+            'stretch',
+        ],
+    },
+    {
+        propertyName: 'align-items',
+        propertyValues: [
+            'center',
+            'start',
+            'end',
+            'stretch',
         ],
     },
     {

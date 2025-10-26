@@ -4,6 +4,34 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/core/protocol_client/ConnectionTransport.js
+var ConnectionTransport_exports = {};
+__export(ConnectionTransport_exports, {
+  ConnectionTransport: () => ConnectionTransport
+});
+var connectionFactory;
+var ConnectionTransport = class {
+  static setFactory(factory) {
+    connectionFactory = factory;
+  }
+  static getFactory() {
+    return connectionFactory;
+  }
+};
+
+// gen/front_end/core/protocol_client/InspectorBackend.js
+var InspectorBackend_exports = {};
+__export(InspectorBackend_exports, {
+  DevToolsStubErrorCode: () => DevToolsStubErrorCode,
+  InspectorBackend: () => InspectorBackend,
+  SessionRouter: () => SessionRouter,
+  TargetBase: () => TargetBase,
+  inspectorBackend: () => inspectorBackend,
+  qualifyName: () => qualifyName,
+  splitQualifiedName: () => splitQualifiedName,
+  test: () => test
+});
+
 // gen/front_end/generated/InspectorBackendCommands.js
 function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerEnum("Accessibility.AXValueType", { Boolean: "boolean", Tristate: "tristate", BooleanOrUndefined: "booleanOrUndefined", Idref: "idref", IdrefList: "idrefList", Integer: "integer", Node: "node", NodeList: "nodeList", Number: "number", String: "string", ComputedString: "computedString", Token: "token", TokenList: "tokenList", DomRelation: "domRelation", Role: "role", InternalRole: "internalRole", ValueUndefined: "valueUndefined" });
@@ -609,6 +637,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerEvent("Inspector.detached", ["reason"]);
   inspectorBackend2.registerEvent("Inspector.targetCrashed", []);
   inspectorBackend2.registerEvent("Inspector.targetReloadedAfterCrash", []);
+  inspectorBackend2.registerEvent("Inspector.workerScriptLoaded", []);
   inspectorBackend2.registerCommand("Inspector.disable", [], [], "Disables inspector domain notifications.");
   inspectorBackend2.registerCommand("Inspector.enable", [], [], "Enables inspector domain notifications.");
   inspectorBackend2.registerEnum("LayerTree.ScrollRectType", { RepaintsOnScroll: "RepaintsOnScroll", TouchEventHandler: "TouchEventHandler", WheelEventHandler: "WheelEventHandler" });
@@ -741,10 +770,6 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerEnum("Network.TrustTokenOperationDoneEventStatus", { Ok: "Ok", InvalidArgument: "InvalidArgument", MissingIssuerKeys: "MissingIssuerKeys", FailedPrecondition: "FailedPrecondition", ResourceExhausted: "ResourceExhausted", AlreadyExists: "AlreadyExists", ResourceLimited: "ResourceLimited", Unauthorized: "Unauthorized", BadResponse: "BadResponse", InternalError: "InternalError", UnknownError: "UnknownError", FulfilledLocally: "FulfilledLocally", SiteIssuerLimit: "SiteIssuerLimit" });
   inspectorBackend2.registerEvent("Network.trustTokenOperationDone", ["status", "type", "requestId", "topLevelOrigin", "issuerOrigin", "issuedTokenCount"]);
   inspectorBackend2.registerEvent("Network.policyUpdated", []);
-  inspectorBackend2.registerEvent("Network.subresourceWebBundleMetadataReceived", ["requestId", "urls"]);
-  inspectorBackend2.registerEvent("Network.subresourceWebBundleMetadataError", ["requestId", "errorMessage"]);
-  inspectorBackend2.registerEvent("Network.subresourceWebBundleInnerResponseParsed", ["innerRequestId", "innerRequestURL", "bundleRequestId"]);
-  inspectorBackend2.registerEvent("Network.subresourceWebBundleInnerResponseError", ["innerRequestId", "innerRequestURL", "errorMessage", "bundleRequestId"]);
   inspectorBackend2.registerEvent("Network.reportingApiReportAdded", ["report"]);
   inspectorBackend2.registerEvent("Network.reportingApiReportUpdated", ["report"]);
   inspectorBackend2.registerEvent("Network.reportingApiEndpointsChangedForOrigin", ["origin", "endpoints"]);
@@ -1480,20 +1505,6 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerType("Schema.Domain", [{ "name": "name", "type": "string", "optional": false, "description": "Domain name.", "typeRef": null }, { "name": "version", "type": "string", "optional": false, "description": "Domain version.", "typeRef": null }]);
 }
 
-// gen/front_end/core/protocol_client/InspectorBackend.js
-var InspectorBackend_exports = {};
-__export(InspectorBackend_exports, {
-  Connection: () => Connection,
-  DevToolsStubErrorCode: () => DevToolsStubErrorCode,
-  InspectorBackend: () => InspectorBackend,
-  SessionRouter: () => SessionRouter,
-  TargetBase: () => TargetBase,
-  inspectorBackend: () => inspectorBackend,
-  qualifyName: () => qualifyName,
-  splitQualifiedName: () => splitQualifiedName,
-  test: () => test
-});
-
 // gen/front_end/core/protocol_client/NodeURL.js
 var NodeURL_exports = {};
 __export(NodeURL_exports, {
@@ -1540,10 +1551,13 @@ var qualifyName = (domain, name) => {
 };
 var InspectorBackend = class {
   agentPrototypes = /* @__PURE__ */ new Map();
-  #initialized = false;
   #eventParameterNamesForDomain = /* @__PURE__ */ new Map();
   typeMap = /* @__PURE__ */ new Map();
   enumMap = /* @__PURE__ */ new Map();
+  constructor() {
+    globalThis.Protocol ||= {};
+    registerCommands(this);
+  }
   getOrCreateEventParameterNamesForDomain(domain) {
     let map = this.#eventParameterNamesForDomain.get(domain);
     if (!map) {
@@ -1564,9 +1578,6 @@ var InspectorBackend = class {
   static reportProtocolWarning(error, messageObject) {
     console.warn(error + ": " + JSON.stringify(messageObject));
   }
-  isInitialized() {
-    return this.#initialized;
-  }
   agentPrototype(domain) {
     let prototype = this.agentPrototypes.get(domain);
     if (!prototype) {
@@ -1578,7 +1589,6 @@ var InspectorBackend = class {
   registerCommand(method, parameters, replyArgs, description) {
     const [domain, command] = splitQualifiedName(method);
     this.agentPrototype(domain).registerCommand(command, parameters, replyArgs, description);
-    this.#initialized = true;
   }
   registerEnum(type, values) {
     const [domain, name] = splitQualifiedName(type);
@@ -1587,37 +1597,14 @@ var InspectorBackend = class {
     }
     globalThis.Protocol[domain][name] = values;
     this.enumMap.set(type, values);
-    this.#initialized = true;
   }
   registerType(method, parameters) {
     this.typeMap.set(method, parameters);
-    this.#initialized = true;
   }
   registerEvent(eventName, params) {
     const domain = eventName.split(".")[0];
     const eventParameterNames = this.getOrCreateEventParameterNamesForDomain(domain);
     eventParameterNames.set(eventName, params);
-    this.#initialized = true;
-  }
-};
-var connectionFactory;
-var Connection = class {
-  // on message from browser
-  setOnMessage(_onMessage) {
-  }
-  setOnDisconnect(_onDisconnect) {
-  }
-  // send raw CDP message to browser
-  sendRawMessage(_message) {
-  }
-  disconnect() {
-    throw new Error("not implemented");
-  }
-  static setFactory(factory) {
-    connectionFactory = factory;
-  }
-  static getFactory() {
-    return connectionFactory;
   }
 };
 var test = {
@@ -1690,13 +1677,6 @@ var SessionRouter = class _SessionRouter {
     }
     this.#sessions.delete(sessionId);
   }
-  getTargetBySessionId(sessionId) {
-    const session = this.#sessions.get(sessionId ? sessionId : "");
-    if (!session) {
-      return null;
-    }
-    return session.target;
-  }
   nextMessageId() {
     return this.#lastMessageId++;
   }
@@ -1720,7 +1700,7 @@ var SessionRouter = class _SessionRouter {
     }
     if (test.onMessageSent) {
       const paramsObject = JSON.parse(JSON.stringify(params || {}));
-      test.onMessageSent({ domain, method, params: paramsObject, id: messageId, sessionId }, this.getTargetBySessionId(sessionId));
+      test.onMessageSent({ domain, method, params: paramsObject, id: messageId, sessionId });
     }
     ++this.#pendingResponsesCount;
     if (LongPollingMethods.has(method)) {
@@ -1744,7 +1724,7 @@ var SessionRouter = class _SessionRouter {
     }
     if (test.onMessageReceived) {
       const messageObjectCopy = JSON.parse(typeof message === "string" ? message : JSON.stringify(message));
-      test.onMessageReceived(messageObjectCopy, this.getTargetBySessionId(messageObjectCopy.sessionId));
+      test.onMessageReceived(messageObjectCopy);
     }
     const messageObject = typeof message === "string" ? JSON.parse(message) : message;
     let suppressUnknownMessageErrors = false;
@@ -1762,9 +1742,6 @@ var SessionRouter = class _SessionRouter {
     const sessionId = messageObject.sessionId || "";
     const session = this.#sessions.get(sessionId);
     if (!session) {
-      if (!suppressUnknownMessageErrors) {
-        InspectorBackend.reportProtocolError("Protocol Error: the message with wrong session id", messageObject);
-      }
       return;
     }
     if (session.proxyConnection) {
@@ -1850,16 +1827,16 @@ var TargetBase = class {
   constructor(needsNodeJSPatching, parentTarget, sessionId, connection) {
     this.needsNodeJSPatching = needsNodeJSPatching;
     this.sessionId = sessionId;
-    if (!parentTarget && connection || !parentTarget && sessionId || connection && sessionId) {
-      throw new Error("Either connection or sessionId (but not both) must be supplied for a child target");
+    if (parentTarget && !sessionId) {
+      throw new Error("Specifying a parent target requires a session ID");
     }
     let router;
-    if (sessionId && parentTarget && parentTarget.#router) {
+    if (parentTarget && parentTarget.#router) {
       router = parentTarget.#router;
     } else if (connection) {
       router = new SessionRouter(connection);
     } else {
-      router = new SessionRouter(connectionFactory());
+      router = new SessionRouter(ConnectionTransport.getFactory()());
     }
     this.#router = router;
     router.registerSession(this, this.sessionId);
@@ -2149,88 +2126,22 @@ var TargetBase = class {
     return this.needsNodeJSPatching;
   }
 };
-var AgentPrototype = class _AgentPrototype {
-  replyArgs;
+var AgentPrototype = class {
   description = "";
   metadata;
   domain;
   target;
   constructor(domain) {
-    this.replyArgs = {};
     this.domain = domain;
     this.metadata = {};
   }
   registerCommand(methodName, parameters, replyArgs, description) {
     const domainAndMethod = qualifyName(this.domain, methodName);
-    function sendMessagePromise(...args) {
-      return _AgentPrototype.prototype.sendMessageToBackendPromise.call(this, domainAndMethod, parameters, args);
-    }
-    this[methodName] = sendMessagePromise;
     this.metadata[domainAndMethod] = { parameters, description, replyArgs };
     function invoke(request = {}) {
       return this.invoke(domainAndMethod, request);
     }
     this["invoke_" + methodName] = invoke;
-    this.replyArgs[domainAndMethod] = replyArgs;
-  }
-  prepareParameters(method, parameters, args, errorCallback) {
-    const params = {};
-    let hasParams = false;
-    for (const param of parameters) {
-      const paramName = param.name;
-      const typeName = param.type;
-      const optionalFlag = param.optional;
-      if (!args.length && !optionalFlag) {
-        errorCallback(`Protocol Error: Invalid number of arguments for method '${method}' call. It must have the following arguments ${JSON.stringify(parameters)}'.`);
-        return null;
-      }
-      const value = args.shift();
-      if (optionalFlag && typeof value === "undefined") {
-        continue;
-      }
-      const expectedJSType = typeName === "array" ? "object" : typeName;
-      if (typeof value !== expectedJSType) {
-        errorCallback(`Protocol Error: Invalid type of argument '${paramName}' for method '${method}' call. It must be '${typeName}' but it is '${typeof value}'.`);
-        return null;
-      }
-      params[paramName] = value;
-      hasParams = true;
-    }
-    if (args.length) {
-      errorCallback(`Protocol Error: Extra ${args.length} arguments in a call to method '${method}'.`);
-      return null;
-    }
-    return hasParams ? params : null;
-  }
-  sendMessageToBackendPromise(method, parameters, args) {
-    let errorMessage;
-    function onError(message) {
-      console.error(message);
-      errorMessage = message;
-    }
-    const params = this.prepareParameters(method, parameters, args, onError);
-    if (errorMessage) {
-      return Promise.resolve(null);
-    }
-    return new Promise((resolve) => {
-      const callback = (error, result) => {
-        if (error) {
-          if (!test.suppressRequestErrors && error.code !== DevToolsStubErrorCode && error.code !== GenericErrorCode && error.code !== ConnectionClosedErrorCode) {
-            console.error("Request " + method + " failed. " + JSON.stringify(error));
-          }
-          resolve(null);
-          return;
-        }
-        const args2 = this.replyArgs[method];
-        resolve(result && args2.length ? result[args2[0]] : void 0);
-      };
-      const router = this.target.router();
-      if (!router) {
-        SessionRouter.dispatchConnectionError(callback, method);
-      } else {
-        router.sendMessage(this.target.sessionId, this.domain, method, params, callback);
-      }
-    });
   }
   invoke(method, request) {
     return new Promise((fulfill) => {
@@ -2284,11 +2195,8 @@ var DispatcherManager = class {
   }
 };
 var inspectorBackend = new InspectorBackend();
-
-// gen/front_end/core/protocol_client/protocol_client.prebundle.js
-globalThis.Protocol = globalThis.Protocol || {};
-registerCommands(inspectorBackend);
 export {
+  ConnectionTransport_exports as ConnectionTransport,
   InspectorBackend_exports as InspectorBackend,
   NodeURL_exports as NodeURL
 };

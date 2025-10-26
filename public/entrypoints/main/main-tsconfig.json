@@ -95,6 +95,9 @@
       "path": "../../panels/ai_assistance/bundle-tsconfig.json"
     },
     {
+      "path": "../../panels/common/bundle-tsconfig.json"
+    },
+    {
       "path": "../../panels/snippets/bundle-tsconfig.json"
     },
     {

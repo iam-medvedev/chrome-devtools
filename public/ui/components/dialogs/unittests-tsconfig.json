@@ -58,10 +58,10 @@
       "path": "../../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../../services/window_bounds/bundle-tsconfig.json"
+      "path": "../../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../../testing/testing-tsconfig.json"
+      "path": "../../legacy/bundle-tsconfig.json"
     },
     {
       "path": "../render_coordinator/bundle-tsconfig.json"

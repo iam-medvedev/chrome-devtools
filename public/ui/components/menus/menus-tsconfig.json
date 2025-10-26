@@ -45,9 +45,6 @@
       "path": "../../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../../services/window_bounds/bundle-tsconfig.json"
-    },
-    {
       "path": "../buttons/bundle-tsconfig.json"
     },
     {
@@ -55,6 +52,9 @@
     },
     {
       "path": "../render_coordinator/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../legacy/bundle-tsconfig.json"
     },
     {
       "path": "../dialogs/bundle-tsconfig.json"

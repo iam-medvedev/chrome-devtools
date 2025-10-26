@@ -5,9 +5,9 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
-import * as Extensions from '../../models/extensions/extensions.js';
 import * as LiveMetrics from '../../models/live-metrics/live-metrics.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as PanelCommon from '../../panels/common/common.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import * as RecordingMetadata from './RecordingMetadata.js';
 const UIStrings = {
@@ -198,7 +198,7 @@ export class TimelineController {
         this.tracingCompletePromise = Promise.withResolvers();
         const response = await this.tracingManager.start(this, categories);
         await this.warmupJsProfiler();
-        Extensions.ExtensionServer.ExtensionServer.instance().profilingStarted();
+        PanelCommon.ExtensionServer.ExtensionServer.instance().profilingStarted();
         return response;
     }
     // CPUProfiler::StartProfiling has a non-trivial cost and we'd prefer it not happen within an
@@ -227,7 +227,7 @@ export class TimelineController {
         this.tracingCompletePromise = null;
     }
     async allSourcesFinished() {
-        Extensions.ExtensionServer.ExtensionServer.instance().profilingStopped();
+        PanelCommon.ExtensionServer.ExtensionServer.instance().profilingStopped();
         this.client.processingStarted();
         const metadata = await RecordingMetadata.forTrace({
             recordingStartTime: this.#recordingStartTime ?? undefined,

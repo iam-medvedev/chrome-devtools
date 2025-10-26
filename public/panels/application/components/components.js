@@ -3429,7 +3429,7 @@ var InterestGroupAccessGrid = class extends HTMLElement {
   connectedCallback() {
     this.#render();
   }
-  // eslint-disable-next-line rulesdir/set-data-type-reference
+  // eslint-disable-next-line @devtools/set-data-type-reference
   set data(data) {
     this.#datastores = data;
     this.#render();

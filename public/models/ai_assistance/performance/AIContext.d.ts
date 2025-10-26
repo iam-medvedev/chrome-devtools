@@ -2,7 +2,6 @@ import * as Trace from '../../../models/trace/trace.js';
 import { AICallTree } from './AICallTree.js';
 interface AgentFocusData {
     parsedTrace: Trace.TraceModel.ParsedTrace;
-    insightSet: Trace.Insights.Types.InsightSet | null;
     /** Note: at most one of event or callTree is non-null. */
     event: Trace.Types.Events.Event | null;
     /** Note: at most one of event or callTree is non-null. */
@@ -18,7 +17,7 @@ export declare class AgentFocus {
     readonly eventsSerializer: Trace.EventsSerializer.EventsSerializer;
     constructor(data: AgentFocusData);
     get parsedTrace(): Trace.TraceModel.ParsedTrace;
-    get insightSet(): Trace.Insights.Types.InsightSet | null;
+    get primaryInsightSet(): Trace.Insights.Types.InsightSet | null;
     /** Note: at most one of event or callTree is non-null. */
     get event(): Trace.Types.Events.Event | null;
     /** Note: at most one of event or callTree is non-null. */

@@ -57,12 +57,6 @@
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAnnotationsAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StylingAgent.test.ts",
-    "../../../../../../front_end/models/ai_assistance/data_formatters/FileFormatter.test.ts",
-    "../../../../../../front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.test.ts",
-    "../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.ts",
-    "../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.ts",
-    "../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatterBounds.test.ts",
-    "../../../../../../front_end/models/ai_assistance/data_formatters/UnitFormatters.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AICallTree.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AIQueries.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
@@ -102,6 +96,9 @@
     },
     {
       "path": "../trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "data_formatters/unittests-tsconfig.json"
     }
   ]
 }

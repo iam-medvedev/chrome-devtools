@@ -1,11 +1,10 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api */
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as TextUtils from '../../../models/text_utils/text_utils.js';
-import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 import * as CM from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as UI from '../../legacy/legacy.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
@@ -287,8 +286,7 @@ export function theme() {
 let sideBarElement = null;
 function getTooltipSpace() {
     if (!sideBarElement) {
-        sideBarElement =
-            WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
+        sideBarElement = UI.UIUtils.getDevToolsBoundingElement();
     }
     return sideBarElement.getBoundingClientRect();
 }

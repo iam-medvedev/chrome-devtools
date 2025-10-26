@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Helpers from '../../../testing/DOMHelpers.js'; // eslint-disable-line rulesdir/es-modules-import
+import * as Helpers from '../../../testing/DOMHelpers.js'; // eslint-disable-line @devtools/es-modules-import
 import { describeWithLocale, } from '../../../testing/EnvironmentHelpers.js';
 import { html } from '../../lit/lit.js';
 import * as Dialogs from '../dialogs/dialogs.js';
@@ -45,39 +45,27 @@ describeWithLocale('SelectMenu', () => {
     it('will use the buttonTitle property if that is provided', async () => {
         const menu = await createMenu();
         const firsItem = menu.querySelector('devtools-menu-item');
-        if (!firsItem) {
-            assert.fail('No item was found.');
-            return;
-        }
+        assert.exists(firsItem);
         menu.buttonTitle = 'Override Title';
         Helpers.renderElementIntoDOM(menu);
         await RenderCoordinator.done();
         assert.isNotNull(menu.shadowRoot);
         const button = menu.shadowRoot.querySelector('devtools-select-menu-button');
-        if (!button) {
-            assert.fail('devtools-select-menu-button not found');
-            return;
-        }
+        assert.exists(button);
         assert.instanceOf(button, HTMLElement);
         assert.strictEqual(button.innerText, 'Override Title');
     });
     it('allows the buttonTitle to be a function', async () => {
         const menu = await createMenu();
         const firsItem = menu.querySelector('devtools-menu-item');
-        if (!firsItem) {
-            assert.fail('No item was found.');
-            return;
-        }
+        assert.exists(firsItem);
         firsItem.selected = true;
         menu.buttonTitle = () => html `Override Title`;
         Helpers.renderElementIntoDOM(menu);
         await RenderCoordinator.done();
         assert.isNotNull(menu.shadowRoot);
         const button = menu.shadowRoot.querySelector('devtools-select-menu-button');
-        if (!button) {
-            assert.fail('devtools-select-menu-button not found');
-            return;
-        }
+        assert.exists(button);
         assert.instanceOf(button, HTMLElement);
         assert.strictEqual(button.innerText, 'Override Title');
     });

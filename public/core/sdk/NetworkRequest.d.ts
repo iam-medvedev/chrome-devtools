@@ -34,6 +34,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     get parsedURL(): Common.ParsedURL.ParsedURL;
     get frameId(): Protocol.Page.FrameId | null;
     get loaderId(): Protocol.Network.LoaderId | null;
+    get appliedNetworkConditionsId(): string | undefined;
     setRemoteAddress(ip: string, port: number): void;
     remoteAddress(): string;
     remoteAddressSpace(): Protocol.Network.IPAddressSpace;
@@ -343,6 +344,7 @@ export interface ExtraRequestInfo {
     clientSecurityState?: Protocol.Network.ClientSecurityState;
     connectTiming: Protocol.Network.ConnectTiming;
     siteHasCookieInOtherPartition?: boolean;
+    appliedNetworkConditionsId?: string;
 }
 export interface ExtraResponseInfo {
     blockedResponseCookies: Array<{

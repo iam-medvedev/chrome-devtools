@@ -636,7 +636,6 @@ import "./../../../ui/components/buttons/buttons.js";
 import * as Common2 from "./../../../core/common/common.js";
 import * as Host from "./../../../core/host/host.js";
 import * as i18n7 from "./../../../core/i18n/i18n.js";
-import * as Root from "./../../../core/root/root.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as Dialogs from "./../../../ui/components/dialogs/dialogs.js";
 import * as ComponentHelpers2 from "./../../../ui/components/helpers/helpers.js";
@@ -819,18 +818,10 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     return this.#state;
   }
   updateContentVisibility(options) {
-    const showIncludeScriptContentCheckbox = Root.Runtime.experiments.isEnabled(
-      "timeline-enhanced-traces"
-      /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */
-    );
-    const showIncludeSourceMapCheckbox = Root.Runtime.experiments.isEnabled(
-      "timeline-compiled-sources"
-      /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */
-    );
     const newState = Object.assign({}, this.#state, {
       displayAnnotationsCheckbox: options.annotationsExist,
-      displayScriptContentCheckbox: showIncludeScriptContentCheckbox,
-      displaySourceMapsCheckbox: showIncludeSourceMapCheckbox
+      displayScriptContentCheckbox: true,
+      displaySourceMapsCheckbox: true
     });
     this.state = newState;
   }
@@ -4138,7 +4129,7 @@ customElements.define("devtools-metric-card", MetricCard);
 // gen/front_end/panels/timeline/components/LiveMetricsView.js
 import * as Common5 from "./../../../core/common/common.js";
 import * as i18n27 from "./../../../core/i18n/i18n.js";
-import * as Root2 from "./../../../core/root/root.js";
+import * as Root from "./../../../core/root/root.js";
 import * as SDK6 from "./../../../core/sdk/sdk.js";
 import * as CrUXManager9 from "./../../../models/crux-manager/crux-manager.js";
 import * as EmulationModel from "./../../../models/emulation/emulation.js";
@@ -4834,7 +4825,7 @@ var str_14 = i18n27.i18n.registerUIStrings("panels/timeline/components/LiveMetri
 var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableComponent {
   #shadow = this.attachShadow({ mode: "open" });
-  isNode = Root2.Runtime.Runtime.isNode();
+  isNode = Root.Runtime.Runtime.isNode();
   #lcpValue;
   #clsValue;
   #inpValue;

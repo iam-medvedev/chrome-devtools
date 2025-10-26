@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Helpers from '../../../testing/DOMHelpers.js'; // eslint-disable-line rulesdir/es-modules-import
+import * as Helpers from '../../../testing/DOMHelpers.js'; // eslint-disable-line @devtools/es-modules-import
 import { assertScreenshot, raf } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale, } from '../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';

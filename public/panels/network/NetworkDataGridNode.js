@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api */
 /*
  * Copyright (C) 2007, 2008 Apple Inc.  All rights reserved.
  * Copyright (C) 2008, 2009 Anthony Ricaud <rik@webkit.org>
@@ -207,6 +207,11 @@ const UIStrings = {
      * @example {10 B} PH2
      */
     servedFromNetwork: '{PH1} transferred over network, resource size: {PH2}',
+    /**
+     * @description Cell title in Network Data Grid Node of the Network panel
+     * @example {Fast 4G} PH1
+     */
+    wasThrottled: 'Request was throttled ({PH1})',
     /**
      * @description Cell title in Network Data Grid Node of the Network panel
      * @example {4 B} PH1
@@ -804,6 +809,9 @@ export class NetworkRequestNode extends NetworkNode {
     isPrefetch() {
         return this.requestInternal.resourceType() === Common.ResourceType.resourceTypes.Prefetch;
     }
+    throttlingConditions() {
+        return SDK.NetworkManager.MultitargetNetworkManager.instance().appliedRequestConditions(this.requestInternal);
+    }
     isWarning() {
         return this.isFailed() && this.isPrefetch();
     }
@@ -812,6 +820,7 @@ export class NetworkRequestNode extends NetworkNode {
     }
     createCells(element) {
         this.initiatorCell = null;
+        element.classList.toggle('network-throttled-row', Boolean(this.throttlingConditions()?.urlPattern));
         element.classList.toggle('network-warning-row', this.isWarning());
         element.classList.toggle('network-error-row', this.isError());
         element.classList.toggle('network-navigation-row', this.isNavigationRequestInternal);
@@ -1001,7 +1010,7 @@ export class NetworkRequestNode extends NetworkNode {
                 cell.appendChild(ippIcon);
             }
             const iconElement = PanelUtils.getIconForNetworkRequest(this.requestInternal);
-            // eslint-disable-next-line rulesdir/no-lit-render-outside-of-view
+            // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
             render(iconElement, cell);
             // render Ask AI button
             const aiButtonContainer = this.createAiButtonIfAvailable();
@@ -1313,6 +1322,15 @@ export class NetworkRequestNode extends NetworkNode {
         this.appendSubtitle(cell, resourceSize);
     }
     renderTimeCell(cell) {
+        const throttlingConditions = this.throttlingConditions();
+        if (throttlingConditions?.urlPattern) {
+            const throttlingConditionsTitle = typeof throttlingConditions.conditions.title === 'string' ?
+                throttlingConditions.conditions.title :
+                throttlingConditions.conditions.title();
+            const icon = IconButton.Icon.create('watch');
+            icon.title = i18nString(UIStrings.wasThrottled, { PH1: throttlingConditionsTitle });
+            cell.append(icon);
+        }
         if (this.requestInternal.duration > 0) {
             this.setTextAndTitle(cell, i18n.TimeUtilities.secondsToString(this.requestInternal.duration));
             this.appendSubtitle(cell, i18n.TimeUtilities.secondsToString(this.requestInternal.latency), false, i18nString(UIStrings.timeSubtitleTooltipText));

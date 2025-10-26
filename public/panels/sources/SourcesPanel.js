@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api */
 /*
  * Copyright (C) 2008 Apple Inc. All Rights Reserved.
  * Copyright (C) 2011 Google Inc. All rights reserved.
@@ -37,8 +37,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
-import * as Extensions from '../../models/extensions/extensions.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as PanelCommon from '../../panels/common/common.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -290,7 +290,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebugInfoAttached, this.debugInfoAttached, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, event => this.debuggerResumed(event.data));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, event => this.debuggerResumed(event.data));
-        Extensions.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded" /* Extensions.ExtensionServer.Events.SidebarPaneAdded */, this.extensionSidebarPaneAdded, this);
+        PanelCommon.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded" /* PanelCommon.ExtensionServer.Events.SidebarPaneAdded */, this.extensionSidebarPaneAdded, this);
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
         this.lastModificationTime = -Infinity;
     }
@@ -315,11 +315,13 @@ export class SourcesPanel extends UI.Panel.Panel {
         }
         if (!isInWrapper) {
             panel.#sourcesView.leftToolbar().appendToolbarItem(panel.toggleNavigatorSidebarButton);
-            if (panel.splitWidget.isVertical()) {
-                panel.#sourcesView.rightToolbar().appendToolbarItem(panel.toggleDebuggerSidebarButton);
-            }
-            else {
-                panel.#sourcesView.bottomToolbar().appendToolbarItem(panel.toggleDebuggerSidebarButton);
+            if (!Root.Runtime.Runtime.isTraceApp()) {
+                if (panel.splitWidget.isVertical()) {
+                    panel.#sourcesView.rightToolbar().appendToolbarItem(panel.toggleDebuggerSidebarButton);
+                }
+                else {
+                    panel.#sourcesView.bottomToolbar().appendToolbarItem(panel.toggleDebuggerSidebarButton);
+                }
             }
         }
     }
@@ -1014,13 +1016,12 @@ export class SourcesPanel extends UI.Panel.Panel {
         if (this.sidebarPaneView) {
             this.sidebarPaneView.detach();
         }
-        if (Root.Runtime.Runtime.isTraceApp()) {
-            this.splitWidget.hideSidebar();
-            return;
-        }
         this.splitWidget.setVertical(!vertically);
         this.splitWidget.element.classList.toggle('sources-split-view-vertical', vertically);
         SourcesPanel.updateResizerAndSidebarButtons(this);
+        if (Root.Runtime.Runtime.isTraceApp()) {
+            return;
+        }
         // Create vertical box with stack.
         const vbox = new UI.Widget.VBox();
         vbox.element.appendChild(this.debugToolbar);
@@ -1068,7 +1069,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             this.sidebarPaneView = splitWidget;
         }
         this.sidebarPaneStack.appendApplicableItems('sources.sidebar-bottom');
-        const extensionSidebarPanes = Extensions.ExtensionServer.ExtensionServer.instance().sidebarPanes();
+        const extensionSidebarPanes = PanelCommon.ExtensionServer.ExtensionServer.instance().sidebarPanes();
         for (let i = 0; i < extensionSidebarPanes.length; ++i) {
             this.addExtensionSidebarPane(extensionSidebarPanes[i]);
         }

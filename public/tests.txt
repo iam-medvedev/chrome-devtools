@@ -1,7 +1,4 @@
-testing/MockScopeChain.test.js
-testing/MutationHelpers.test.js
-testing/SnapshotTester.test.js
-testing/SourceMapEncoder.test.js
+models/ai_assistance/data_formatters/PerformanceTraceFormatterBounds.test.js
 core/common/Base64.test.js
 core/common/CharacterIdMap.test.js
 core/common/Color.test.js
@@ -114,6 +111,11 @@ entrypoints/main/ExecutionContextSelector.test.js
 entrypoints/main/GlobalAiButton.test.js
 entrypoints/main/MainImpl.test.js
 entrypoints/wasmparser_worker/wasmparser_worker.test.js
+models/ai_assistance/data_formatters/FileFormatter.test.js
+models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
+models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
+models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
+models/ai_assistance/data_formatters/UnitFormatters.test.js
 models/ai_assistance/AgentProject.test.js
 models/ai_assistance/AiHistoryStorage.test.js
 models/ai_assistance/BuiltInAi.test.js
@@ -128,12 +130,6 @@ models/ai_assistance/agents/PatchAgent.test.js
 models/ai_assistance/agents/PerformanceAgent.test.js
 models/ai_assistance/agents/PerformanceAnnotationsAgent.test.js
 models/ai_assistance/agents/StylingAgent.test.js
-models/ai_assistance/data_formatters/FileFormatter.test.js
-models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
-models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
-models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
-models/ai_assistance/data_formatters/PerformanceTraceFormatterBounds.test.js
-models/ai_assistance/data_formatters/UnitFormatters.test.js
 models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIQueries.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
@@ -157,7 +153,6 @@ models/cpu_profile/CPUProfileDataModel.test.js
 models/crux-manager/CrUXManager.test.js
 models/emulation/DeviceModeModel.test.js
 models/emulation/EmulatedDevices.test.js
-models/extensions/ExtensionServer.test.js
 models/extensions/HostUrlPattern.test.js
 models/extensions/LanguageExtensionEndpoint.test.js
 models/extensions/RecorderPluginManager.test.js
@@ -359,6 +354,7 @@ panels/common/AiCodeCompletionDisclaimer.test.js
 panels/common/AiCodeCompletionSummaryToolbar.test.js
 panels/common/AiCodeCompletionTeaser.test.js
 panels/common/BadgeNotification.test.js
+panels/common/ExtensionServer.test.js
 panels/common/GdpSignUpDialog.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
@@ -444,7 +440,6 @@ panels/media/TickingFlameChartHelpers.test.js
 panels/mobile_throttling/NetworkThrottlingSelector.test.js
 panels/mobile_throttling/ThrottlingManager.test.js
 panels/mobile_throttling/ThrottlingSettingsTab.test.js
-panels/network/BlockedURLsPane.test.js
 panels/network/NetworkConfigView.test.js
 panels/network/NetworkDataGridNode.test.js
 panels/network/NetworkItemView.test.js
@@ -452,6 +447,7 @@ panels/network/NetworkLogView.test.js
 panels/network/NetworkOverview.test.js
 panels/network/NetworkPanel.test.js
 panels/network/NetworkSearchScope.test.js
+panels/network/RequestConditionsDrawer.test.js
 panels/network/RequestCookiesView.test.js
 panels/network/RequestHTMLView.test.js
 panels/network/RequestPayloadView.test.js
@@ -605,6 +601,10 @@ panels/whats_new/ReleaseNoteView.test.js
 services/trace_bounds/TraceBounds.test.js
 services/tracing/FreshRecording.test.js
 services/tracing/TracingManager.test.js
+testing/MockScopeChain.test.js
+testing/MutationHelpers.test.js
+testing/SnapshotTester.test.js
+testing/SourceMapEncoder.test.js
 third_party/chromium/client-variations/ClientVariations.test.js
 third_party/i18n/i18n.test.js
 ui/components/adorners/Adorner.test.js

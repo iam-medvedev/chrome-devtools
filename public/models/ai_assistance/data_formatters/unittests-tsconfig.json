@@ -1,0 +1,87 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowUmdGlobalAccess": true,
+    "checkJs": true,
+    "composite": true,
+    "declaration": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "inlineSources": true,
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2023",
+      "ES2024.Promise",
+      "ESNext.Iterator",
+      "ESNext.Collection",
+      "ESNext.Array"
+    ],
+    "module": "esnext",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "outDir": ".",
+    "rootDir": "../../../../../../../front_end/models/ai_assistance/data_formatters",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES2023",
+    "tsBuildInfoFile": "unittests-tsconfig.json.tsbuildinfo",
+    "typeRoots": [
+      "../../../../../../../node_modules/@types"
+    ],
+    "types": [
+      "mocha",
+      "chai",
+      "sinon",
+      "karma-chai-sinon"
+    ],
+    "useUnknownInCatchVariables": false
+  },
+  "files": [
+    "../../../../../../../front_end/models/ai_assistance/data_formatters/FileFormatter.test.ts",
+    "../../../../../../../front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.test.ts",
+    "../../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.ts",
+    "../../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.ts",
+    "../../../../../../../front_end/models/ai_assistance/data_formatters/UnitFormatters.test.ts",
+    "../../../../../../../front_end/legacy/legacy-defs.d.ts",
+    "../../../../../../../front_end/global_typings/global_defs.d.ts",
+    "../../../../../../../node_modules/@types/filesystem/index.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/host/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/platform/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../generated/protocol-tsconfig.json"
+    },
+    {
+      "path": "../../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../../bindings/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../text_utils/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../trace/bundle-tsconfig.json"
+    }
+  ]
+}

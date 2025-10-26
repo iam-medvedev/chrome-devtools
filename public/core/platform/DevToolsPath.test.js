@@ -15,7 +15,7 @@ describe('Platform', () => {
         }
         describe('UrlString', () => {
             it('is correctly type checked', () => {
-                // eslint-disable-next-line rulesdir/prefer-url-string
+                // eslint-disable-next-line @devtools/prefer-url-string
                 const urlString = 'urlStr';
                 fnExpectingUrlString(urlString);
                 // @ts-expect-error Passing a UrlString when RawPathString is expected

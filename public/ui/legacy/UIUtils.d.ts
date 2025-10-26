@@ -342,4 +342,5 @@ export declare class HTMLElementWithLightDOMTemplate extends HTMLElement {
  * were other UI changes that visually indicated this copy happened.
  */
 export declare function copyTextToClipboard(text: string, alert?: string): void;
+export declare function getDevToolsBoundingElement(): HTMLElement;
 export {};

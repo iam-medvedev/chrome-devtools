@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../../core/host/host.js';
-let fontFamily = null;
 /**
  * Because we run our UI in a couple of contexts (actual app & test
  * environments) and on multiple platforms, the font is not consistent, so this
@@ -17,17 +16,7 @@ let fontFamily = null;
  * to ensure that the screenshot tests are consistent.
  **/
 export function getFontFamilyForCanvas() {
-    if (fontFamily) {
-        return fontFamily;
-    }
-    const bodyStyles = getComputedStyle(document.body);
-    if (bodyStyles.fontFamily) {
-        fontFamily = bodyStyles.fontFamily;
-    }
-    else {
-        fontFamily = Host.Platform.fontFamily();
-    }
-    return fontFamily;
+    return Host.Platform.fontFamily();
 }
 export const DEFAULT_FONT_SIZE = '11px';
 //# sourceMappingURL=Font.js.map

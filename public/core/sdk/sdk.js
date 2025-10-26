@@ -10816,7 +10816,7 @@ var NetworkDispatcher = class {
   }
   requestIntercepted({}) {
   }
-  requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition }) {
+  requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition, appliedNetworkConditionsId }) {
     const blockedRequestCookies = [];
     const includedRequestCookies = [];
     for (const { blockedReasons, exemptionReason, cookie } of associatedCookies) {
@@ -10832,7 +10832,8 @@ var NetworkDispatcher = class {
       requestHeaders: this.headersMapToHeadersArray(headers),
       clientSecurityState,
       connectTiming,
-      siteHasCookieInOtherPartition
+      siteHasCookieInOtherPartition,
+      appliedNetworkConditionsId
     };
     this.getExtraInfoBuilder(requestId).addRequestExtraInfo(extraRequestInfo);
   }
@@ -11212,14 +11213,6 @@ var NetworkDispatcher = class {
     }
     request.setTrustTokenOperationDoneEvent(event);
   }
-  subresourceWebBundleMetadataReceived() {
-  }
-  subresourceWebBundleMetadataError() {
-  }
-  subresourceWebBundleInnerResponseParsed() {
-  }
-  subresourceWebBundleInnerResponseError() {
-  }
   reportingApiReportAdded(data) {
     this.#manager.dispatchEventToListeners(Events2.ReportingApiReportAdded, data.report);
   }
@@ -11292,6 +11285,7 @@ var RequestCondition = class extends Common5.ObjectWrapper.ObjectWrapper {
   #pattern;
   #enabled;
   #conditions;
+  #ruleIds = /* @__PURE__ */ new Set();
   static createFromSetting(setting) {
     if ("urlPattern" in setting) {
       const pattern2 = RequestURLPattern.create(setting.urlPattern) ?? {
@@ -11320,6 +11314,12 @@ var RequestCondition = class extends Common5.ObjectWrapper.ObjectWrapper {
     this.#pattern = pattern;
     this.#enabled = enabled;
     this.#conditions = conditions;
+  }
+  get isBlocking() {
+    return this.conditions === BlockingConditions;
+  }
+  get ruleIds() {
+    return this.#ruleIds;
   }
   get constructorString() {
     return this.#pattern instanceof RequestURLPattern ? this.#pattern.constructorString : this.#pattern.upgradedPattern?.constructorString;
@@ -11362,6 +11362,7 @@ var RequestCondition = class extends Common5.ObjectWrapper.ObjectWrapper {
   }
   set conditions(conditions) {
     this.#conditions = conditions;
+    this.#ruleIds = /* @__PURE__ */ new Set();
     this.dispatchEventToListeners(
       "request-condition-changed"
       /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */
@@ -11385,6 +11386,8 @@ var RequestConditions = class extends Common5.ObjectWrapper.ObjectWrapper {
   #setting = Common5.Settings.Settings.instance().createSetting("network-blocked-patterns", []);
   #conditionsEnabledSetting = Common5.Settings.Settings.instance().moduleSetting("request-blocking-enabled");
   #conditions = [];
+  #requestConditionsById = /* @__PURE__ */ new Map();
+  #conditionsAppliedForTestPromise = Promise.resolve();
   constructor() {
     super();
     for (const condition of this.#setting.get()) {
@@ -11430,6 +11433,28 @@ var RequestConditions = class extends Common5.ObjectWrapper.ObjectWrapper {
     }
     this.#conditionsChanged();
   }
+  decreasePriority(condition) {
+    const index = this.#conditions.indexOf(condition);
+    if (index < 0 || index >= this.#conditions.length - 1) {
+      return;
+    }
+    Platform3.ArrayUtilities.swap(this.#conditions, index, index + 1);
+    this.dispatchEventToListeners(
+      "request-conditions-changed"
+      /* RequestConditions.Events.REQUEST_CONDITIONS_CHANGED */
+    );
+  }
+  increasePriority(condition) {
+    const index = this.#conditions.indexOf(condition);
+    if (index <= 0) {
+      return;
+    }
+    Platform3.ArrayUtilities.swap(this.#conditions, index - 1, index);
+    this.dispatchEventToListeners(
+      "request-conditions-changed"
+      /* RequestConditions.Events.REQUEST_CONDITIONS_CHANGED */
+    );
+  }
   delete(condition) {
     const index = this.#conditions.indexOf(condition);
     if (index < 0) {
@@ -11473,41 +11498,49 @@ var RequestConditions = class extends Common5.ObjectWrapper.ObjectWrapper {
           const block = !isNonBlockingCondition(conditions);
           urlPatterns.push({ urlPattern, block });
           if (!block) {
-            matchedNetworkConditions.push({
-              urlPattern,
-              latency: conditions.latency,
-              downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
-              uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
-              packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
-              packetQueueLength: conditions.packetQueueLength,
-              packetReordering: conditions.packetReordering,
-              connectionType: NetworkManager.connectionType(conditions)
-            });
+            const { ruleIds } = condition;
+            matchedNetworkConditions.push({ ruleIds, urlPattern, conditions });
           }
         }
         if (globalConditions) {
-          matchedNetworkConditions.push({
-            urlPattern: "",
-            latency: globalConditions.latency,
-            downloadThroughput: globalConditions.download < 0 ? 0 : globalConditions.download,
-            uploadThroughput: globalConditions.upload < 0 ? 0 : globalConditions.upload,
-            packetLoss: (globalConditions.packetLoss ?? 0) < 0 ? 0 : globalConditions.packetLoss,
-            packetQueueLength: globalConditions.packetQueueLength,
-            packetReordering: globalConditions.packetReordering,
-            connectionType: NetworkManager.connectionType(globalConditions)
-          });
+          matchedNetworkConditions.push({ conditions: globalConditions });
         }
       }
+      const promises = [];
       for (const agent of agents) {
-        void agent.invoke_setBlockedURLs({ urlPatterns });
-        void agent.invoke_emulateNetworkConditionsByRule({ offline, matchedNetworkConditions });
-        void agent.invoke_overrideNetworkState({
+        promises.push(agent.invoke_setBlockedURLs({ urlPatterns }));
+        promises.push(agent.invoke_emulateNetworkConditionsByRule({
+          offline,
+          matchedNetworkConditions: matchedNetworkConditions.map(({ urlPattern, conditions }) => ({
+            urlPattern: urlPattern ?? "",
+            latency: conditions.latency,
+            downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
+            uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
+            packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
+            packetQueueLength: conditions.packetQueueLength,
+            packetReordering: conditions.packetReordering,
+            connectionType: NetworkManager.connectionType(conditions)
+          }))
+        }).then((response) => {
+          if (!response.getError()) {
+            for (let i = 0; i < response.ruleIds.length; ++i) {
+              const ruleId = response.ruleIds[i];
+              const { ruleIds, conditions, urlPattern } = matchedNetworkConditions[i];
+              if (ruleIds) {
+                this.#requestConditionsById.set(ruleId, { urlPattern, conditions });
+                matchedNetworkConditions[i].ruleIds?.add(ruleId);
+              }
+            }
+          }
+        }));
+        promises.push(agent.invoke_overrideNetworkState({
           offline,
           latency: globalConditions?.latency ?? 0,
           downloadThroughput: !globalConditions || globalConditions.download < 0 ? 0 : globalConditions.download,
           uploadThroughput: !globalConditions || globalConditions.upload < 0 ? 0 : globalConditions.upload
-        });
+        }));
       }
+      this.#conditionsAppliedForTestPromise = this.#conditionsAppliedForTestPromise.then(() => Promise.all(promises));
       return urlPatterns.length > 0;
     }
     const urls = this.conditionsEnabled ? this.#conditions.filter((condition) => condition.enabled && condition.wildcardURL).map((condition) => condition.wildcardURL) : [];
@@ -11515,6 +11548,12 @@ var RequestConditions = class extends Common5.ObjectWrapper.ObjectWrapper {
       void agent.invoke_setBlockedURLs({ urls });
     }
     return urls.length > 0;
+  }
+  conditionsAppliedForTest() {
+    return this.#conditionsAppliedForTestPromise;
+  }
+  conditionsForId(appliedNetworkConditionsId) {
+    return this.#requestConditionsById.get(appliedNetworkConditionsId);
   }
 };
 _a = RequestConditions;
@@ -11830,6 +11869,12 @@ var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common5
     return await new Promise((resolve) => Host2.ResourceLoader.load(url, headers, (success, _responseHeaders, content, errorDescription) => {
       resolve({ success, content, errorDescription });
     }, allowRemoteFilePaths));
+  }
+  appliedRequestConditions(requestInternal) {
+    if (!requestInternal.appliedNetworkConditionsId) {
+      return void 0;
+    }
+    return this.requestConditions.conditionsForId(requestInternal.appliedNetworkConditionsId);
   }
 };
 var InterceptedRequest = class _InterceptedRequest {
@@ -12241,8 +12286,8 @@ __export(CSSPropertyParserMatchers_exports, {
   CustomFunctionMatcher: () => CustomFunctionMatcher,
   EnvFunctionMatch: () => EnvFunctionMatch,
   EnvFunctionMatcher: () => EnvFunctionMatcher,
-  FlexGridMatch: () => FlexGridMatch,
-  FlexGridMatcher: () => FlexGridMatcher,
+  FlexGridMasonryMatch: () => FlexGridMasonryMatch,
+  FlexGridMasonryMatcher: () => FlexGridMasonryMatcher,
   FontMatch: () => FontMatch,
   FontMatcher: () => FontMatcher,
   GridTemplateMatch: () => GridTemplateMatch,
@@ -13236,20 +13281,21 @@ var CustomFunctionMatcher = class extends matcherBase(CustomFunctionMatch) {
     return new CustomFunctionMatch(text, node, callee, args);
   }
 };
-var FlexGridMatch = class {
+var FlexGridMasonryMatch = class {
   text;
   node;
-  isFlex;
-  constructor(text, node, isFlex) {
+  layoutType;
+  constructor(text, node, layoutType) {
     this.text = text;
     this.node = node;
-    this.isFlex = isFlex;
+    this.layoutType = layoutType;
   }
 };
-var FlexGridMatcher = class _FlexGridMatcher extends matcherBase(FlexGridMatch) {
+var FlexGridMasonryMatcher = class _FlexGridMasonryMatcher extends matcherBase(FlexGridMasonryMatch) {
   // clang-format on
   static FLEX = ["flex", "inline-flex", "block flex", "inline flex"];
   static GRID = ["grid", "inline-grid", "block grid", "inline grid"];
+  static MASONRY = ["masonry", "inline-masonry", "block masonry", "inline masonry"];
   accepts(propertyName) {
     return propertyName === "display";
   }
@@ -13263,11 +13309,29 @@ var FlexGridMatcher = class _FlexGridMatcher extends matcherBase(FlexGridMatch) 
     }
     const values = valueNodes.filter((node2) => node2.name !== "Important").map((node2) => matching.getComputedText(node2).trim()).filter((value) => value);
     const text = values.join(" ");
-    if (_FlexGridMatcher.FLEX.includes(text)) {
-      return new FlexGridMatch(matching.ast.text(node), node, true);
+    if (_FlexGridMasonryMatcher.FLEX.includes(text)) {
+      return new FlexGridMasonryMatch(
+        matching.ast.text(node),
+        node,
+        "flex"
+        /* LayoutType.FLEX */
+      );
     }
-    if (_FlexGridMatcher.GRID.includes(text)) {
-      return new FlexGridMatch(matching.ast.text(node), node, false);
+    if (_FlexGridMasonryMatcher.GRID.includes(text)) {
+      return new FlexGridMasonryMatch(
+        matching.ast.text(node),
+        node,
+        "grid"
+        /* LayoutType.GRID */
+      );
+    }
+    if (_FlexGridMasonryMatcher.MASONRY.includes(text)) {
+      return new FlexGridMasonryMatch(
+        matching.ast.text(node),
+        node,
+        "masonry"
+        /* LayoutType.MASONRY */
+      );
     }
     return null;
   }
@@ -16040,7 +16104,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       new LinearGradientMatcher(),
       new AnchorFunctionMatcher(),
       new PositionAnchorMatcher(),
-      new FlexGridMatcher(),
+      new FlexGridMasonryMatcher(),
       new PositionTryMatcher(),
       new LengthMatcher(),
       new MathFunctionMatcher(),
@@ -27948,6 +28012,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   #directSocketChunks = [];
   #isIpProtectionUsed;
   #isAdRelated;
+  #appliedNetworkConditionsId;
   constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
     super();
     this.#requestId = requestId;
@@ -28015,6 +28080,9 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   }
   get loaderId() {
     return this.#loaderId;
+  }
+  get appliedNetworkConditionsId() {
+    return this.#appliedNetworkConditionsId;
   }
   setRemoteAddress(ip, port) {
     this.#remoteAddress = ip + ":" + port;
@@ -28861,6 +28929,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.#hasExtraRequestInfo = true;
     this.setRequestHeadersText("");
     this.#clientSecurityState = extraRequestInfo.clientSecurityState;
+    this.#appliedNetworkConditionsId = extraRequestInfo.appliedNetworkConditionsId;
     if (extraRequestInfo.connectTiming) {
       this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
     }
@@ -30950,11 +31019,13 @@ var RehydratingConnection = class {
   }
   #setupMessagePassing() {
     this.#rehydratingWindow.addEventListener("message", this.#onReceiveHostWindowPayloadBound);
-    if (!this.#rehydratingWindow.opener) {
+    if (this.#rehydratingWindow.opener) {
+      this.#rehydratingWindow.opener.postMessage({ type: "REHYDRATING_WINDOW_READY" });
+    } else if (this.#rehydratingWindow !== window.top) {
+      this.#rehydratingWindow.parent.postMessage({ type: "REHYDRATING_IFRAME_READY" }, "*");
+    } else {
       this.#onConnectionLost(i18nString10(UIStrings10.noHostWindow));
-      return;
     }
-    this.#rehydratingWindow.opener.postMessage({ type: "REHYDRATING_WINDOW_READY" });
   }
   /**
    * This is a callback for rehydrated session to receive payload from host window. Payload includes but not limited to
@@ -31400,7 +31471,7 @@ var ParallelConnection = class {
   }
 };
 async function initMainConnection(createRootTarget, onConnectionLost) {
-  ProtocolClient2.InspectorBackend.Connection.setFactory(createMainConnection.bind(null, onConnectionLost));
+  ProtocolClient2.ConnectionTransport.ConnectionTransport.setFactory(createMainConnection.bind(null, onConnectionLost));
   await createRootTarget();
   Host8.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
 }

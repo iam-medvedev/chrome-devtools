@@ -4,12 +4,12 @@ import { Issue, IssueCategory, IssueKind } from './Issue.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare class UnencodedDigestIssue extends Issue<string> {
     #private;
-    constructor(issueDetails: Protocol.Audits.UnencodedDigestIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
+    constructor(issueDetails: Protocol.Audits.UnencodedDigestIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null);
     details(): Protocol.Audits.UnencodedDigestIssueDetails;
     primaryKey(): string;
     getDescription(): MarkdownIssueDescription | null;
     getCategory(): IssueCategory;
     getKind(): IssueKind;
     requests(): Iterable<Protocol.Audits.AffectedRequest>;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): UnencodedDigestIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): UnencodedDigestIssue[];
 }

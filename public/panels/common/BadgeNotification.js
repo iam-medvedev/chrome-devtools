@@ -5,7 +5,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Badges from '../../models/badges/badges.js';
-import * as WindowBoundsService from '../../services/window_bounds/window_bounds.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -129,7 +128,7 @@ export class BadgeNotification extends UI.Widget.Widget {
     }
     #positionNotification() {
         const boundingRect = this.contentElement.getBoundingClientRect();
-        const container = WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
+        const container = UI.UIUtils.getDevToolsBoundingElement();
         this.contentElement.positionAt(LEFT_OFFSET, container.clientHeight - boundingRect.height - BOTTOM_OFFSET, container);
     }
     #show(properties) {

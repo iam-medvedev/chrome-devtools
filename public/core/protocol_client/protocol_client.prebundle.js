@@ -1,14 +1,8 @@
 // Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as InspectorBackendCommands from '../../generated/InspectorBackendCommands.js';
+import * as ConnectionTransport from './ConnectionTransport.js';
 import * as InspectorBackend from './InspectorBackend.js';
 import * as NodeURL from './NodeURL.js';
-export { InspectorBackend, NodeURL, };
-// Create the global here because registering commands will involve putting
-// items onto the global.
-// @ts-expect-error Global namespace instantiation
-globalThis.Protocol = globalThis.Protocol || {};
-// FIXME: This instance of InspectorBackend should not be a side effect of importing this module.
-InspectorBackendCommands.registerCommands(InspectorBackend.inspectorBackend);
+export { ConnectionTransport, InspectorBackend, NodeURL, };
 //# sourceMappingURL=protocol_client.prebundle.js.map

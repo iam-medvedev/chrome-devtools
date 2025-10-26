@@ -32,7 +32,7 @@ import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform10 from "./../../core/platform/platform.js";
 import * as Root7 from "./../../core/root/root.js";
 import * as SDK19 from "./../../core/sdk/sdk.js";
-import * as Extensions from "./../../models/extensions/extensions.js";
+import * as PanelCommon from "./../common/common.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as TreeOutline12 from "./../../ui/components/tree_outline/tree_outline.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
@@ -2868,6 +2868,7 @@ var { html: html5, nothing, render: render4, Directives: { classMap: classMap2 }
 var ASTUtils = SDK6.CSSPropertyParser.ASTUtils;
 var FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 var GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
+var MasonryEditor = ElementsComponents.StylePropertyEditor.MasonryEditor;
 var UIStrings5 = {
   /**
    * @description Text in Color Swatch Popover Icon of the Elements panel
@@ -2918,6 +2919,10 @@ var UIStrings5 = {
    * @description Title of the button that opens the CSS Grid editor in the Styles panel.
    */
   gridEditorButton: "Open `grid` editor",
+  /**
+   * @description Title of the button that opens the CSS Masonry editor in the Styles panel.
+   */
+  masonryEditorButton: "Open `masonry` editor",
   /**
    * @description A context menu item in Styles panel to copy CSS declaration as JavaScript property.
    */
@@ -2989,7 +2994,7 @@ var EnvFunctionRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatch
     return [span];
   }
 };
-var FlexGridRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.FlexGridMatch) {
+var FlexGridRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.FlexGridMasonryMatch) {
   // clang-format on
   #treeElement;
   #stylesPane;
@@ -3004,15 +3009,42 @@ var FlexGridRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers
       return children;
     }
     const key2 = `${this.#treeElement.section().getSectionIdx()}_${this.#treeElement.section().nextEditorTriggerButtonIdx}`;
-    const button = StyleEditorWidget.createTriggerButton(this.#stylesPane, this.#treeElement.section(), match.isFlex ? FlexboxEditor : GridEditor, match.isFlex ? i18nString5(UIStrings5.flexboxEditorButton) : i18nString5(UIStrings5.gridEditorButton), key2);
+    function getEditorClass(layoutType) {
+      switch (layoutType) {
+        case "flex":
+          return FlexboxEditor;
+        case "grid":
+          return GridEditor;
+        case "masonry":
+          return MasonryEditor;
+      }
+    }
+    function getButtonTitle(layoutType) {
+      switch (layoutType) {
+        case "flex":
+          return i18nString5(UIStrings5.flexboxEditorButton);
+        case "grid":
+          return i18nString5(UIStrings5.gridEditorButton);
+        case "masonry":
+          return i18nString5(UIStrings5.masonryEditorButton);
+      }
+    }
+    function getSwatchType(layoutType) {
+      switch (layoutType) {
+        case "flex":
+          return 6;
+        case "grid":
+          return 5;
+        case "masonry":
+          return 12;
+      }
+    }
+    const button = StyleEditorWidget.createTriggerButton(this.#stylesPane, this.#treeElement.section(), getEditorClass(match.layoutType), getButtonTitle(match.layoutType), key2);
     button.tabIndex = -1;
-    button.setAttribute("jslog", `${VisualLogging3.showStyleEditor().track({ click: true }).context(match.isFlex ? "flex" : "grid")}`);
+    button.setAttribute("jslog", `${VisualLogging3.showStyleEditor().track({ click: true }).context(match.layoutType)}`);
     this.#treeElement.section().nextEditorTriggerButtonIdx++;
     button.addEventListener("click", () => {
-      Host.userMetrics.swatchActivated(
-        match.isFlex ? 6 : 5
-        /* Host.UserMetrics.SwatchType.GRID */
-      );
+      Host.userMetrics.swatchActivated(getSwatchType(match.layoutType));
     });
     const helper = this.#stylesPane.swatchPopoverHelper();
     if (helper.isShowing(StyleEditorWidget.instance()) && StyleEditorWidget.instance().getTriggerKey() === key2) {
@@ -17218,7 +17250,7 @@ var ElementsPanel = class _ElementsPanel extends UI22.Panel.Panel {
     SDK19.TargetManager.TargetManager.instance().observeModels(SDK19.DOMModel.DOMModel, this, { scoped: true });
     SDK19.TargetManager.TargetManager.instance().addEventListener("NameChanged", (event) => this.targetNameChanged(event.data));
     Common16.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").addChangeListener(this.showUAShadowDOMChanged.bind(this));
-    Extensions.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded", this.extensionSidebarPaneAdded, this);
+    PanelCommon.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded", this.extensionSidebarPaneAdded, this);
   }
   initializeFullAccessibilityTreeView() {
     this.accessibilityTreeButton = createAccessibilityTreeToggleButton(false);
@@ -17774,7 +17806,7 @@ ${node.simpleSelector()} {}`, false);
     this.sidebarPaneView.appendView(computedView);
     this.stylesViewToReveal = stylesView;
     this.sidebarPaneView.appendApplicableItems("elements-sidebar");
-    const extensionSidebarPanes = Extensions.ExtensionServer.ExtensionServer.instance().sidebarPanes();
+    const extensionSidebarPanes = PanelCommon.ExtensionServer.ExtensionServer.instance().sidebarPanes();
     for (let i = 0; i < extensionSidebarPanes.length; ++i) {
       this.addExtensionSidebarPane(extensionSidebarPanes[i]);
     }

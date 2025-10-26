@@ -5,7 +5,6 @@
     },
     "files": [
         "binaryResourceView.css.js",
-        "blockedURLsPane.css.js",
         "eventSourceMessagesView.css.js",
         "networkConfigView.css.js",
         "networkLogView.css.js",
@@ -13,6 +12,7 @@
         "networkPanel.css.js",
         "networkTimingTable.css.js",
         "networkWaterfallColumn.css.js",
+        "requestConditionsDrawer.css.js",
         "requestCookiesView.css.js",
         "requestHTMLView.css.js",
         "requestHeadersTree.css.js",

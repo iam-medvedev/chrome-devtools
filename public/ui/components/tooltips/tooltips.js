@@ -410,6 +410,10 @@ var Tooltip = class _Tooltip extends HTMLElement {
     if (!this.open || event.key !== "Escape") {
       return;
     }
+    const childTooltip = this.querySelector("devtools-tooltip");
+    if (childTooltip?.open) {
+      return;
+    }
     this.#openedViaHotkey = false;
     this.toggle();
     event.consume(true);

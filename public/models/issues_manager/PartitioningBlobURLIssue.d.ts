@@ -4,11 +4,11 @@ import { Issue, IssueCategory, IssueKind } from './Issue.js';
 import type { MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare class PartitioningBlobURLIssue extends Issue {
     #private;
-    constructor(issueDetails: Protocol.Audits.PartitioningBlobURLIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
+    constructor(issueDetails: Protocol.Audits.PartitioningBlobURLIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null);
     getCategory(): IssueCategory;
     getDescription(): MarkdownIssueDescription;
     details(): Protocol.Audits.PartitioningBlobURLIssueDetails;
     getKind(): IssueKind;
     primaryKey(): string;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): PartitioningBlobURLIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): PartitioningBlobURLIssue[];
 }

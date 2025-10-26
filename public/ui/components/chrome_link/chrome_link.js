@@ -68,7 +68,7 @@ var ChromeLink = class extends HTMLElement {
     const jslogContext = Platform.StringUtilities.toKebabCase(urlForContext.toString());
     render(
       /* x-link doesn't work with custom click/keydown handlers */
-      /* eslint-disable rulesdir/no-a-tags-in-lit */
+      /* eslint-disable @devtools/no-a-tags-in-lit */
       html`
         <style>${chromeLink_css_default}</style>
         <a href=${this.#href} class="link" target="_blank"

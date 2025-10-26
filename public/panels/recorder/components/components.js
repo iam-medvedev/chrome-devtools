@@ -4141,8 +4141,8 @@ var stepView_css_default = `/*
   }
 
   .title-container {
-    /* 18px for 3 dot menu icon */
-    max-width: calc(100% - 18px);
+    /* Vertically center items with min-width: 0; */
+    min-width: 0;
     font-size: 13px;
     line-height: 16px;
     letter-spacing: 0.03em;

@@ -1,7 +1,7 @@
 // Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api */
 import '../../ui/legacy/legacy.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Host from '../../core/host/host.js';
@@ -306,6 +306,7 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
     #selectedMessage;
     #filter = '';
     #editorWidget;
+    #targetsBySessionId = new Map();
     constructor(view = DEFAULT_VIEW) {
         super('protocol-monitor', true);
         this.#view = view;
@@ -321,6 +322,13 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
         SDK.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED */, () => {
             this.requestUpdate();
         });
+        SDK.TargetManager.TargetManager.instance().observeTargets(this);
+    }
+    targetAdded(target) {
+        this.#targetsBySessionId.set(target.sessionId, target);
+    }
+    targetRemoved(target) {
+        this.#targetsBySessionId.delete(target.sessionId);
     }
     #populateToolbarInput() {
         const commandJson = this.#editorWidget.getCommandJson();
@@ -473,7 +481,7 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
             test.onMessageReceived = null;
         }
     }
-    messageReceived(message, target) {
+    messageReceived(message) {
         if ('id' in message && message.id) {
             const existingMessage = this.messageForId.get(message.id);
             if (!existingMessage) {
@@ -487,22 +495,24 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
             this.requestUpdate();
             return;
         }
+        const target = message.sessionId !== undefined ? this.#targetsBySessionId.get(message.sessionId) : undefined;
         this.#messages.push({
             method: message.method,
             sessionId: message.sessionId,
-            target: (target ?? undefined),
+            target,
             requestTime: Date.now() - this.startTime,
             result: message.params,
         });
         this.requestUpdate();
     }
-    messageSent(message, target) {
+    messageSent(message) {
+        const target = message.sessionId !== undefined ? this.#targetsBySessionId.get(message.sessionId) : undefined;
         const messageRecord = {
             method: message.method,
             params: message.params,
             id: message.id,
             sessionId: message.sessionId,
-            target: (target ?? undefined),
+            target,
             requestTime: Date.now() - this.startTime,
         };
         this.#messages.push(messageRecord);

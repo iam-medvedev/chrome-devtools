@@ -5,7 +5,7 @@ import * as Common from '../core/common/common.js';
 import * as Host from '../core/host/host.js';
 import * as i18n from '../core/i18n/i18n.js';
 // @ts-expect-error tsc doesn't like import assertions.
-// eslint-disable-next-line  rulesdir/es-modules-import
+// eslint-disable-next-line  @devtools/es-modules-import
 import EnUsLocaleData from '../core/i18n/locales/en-US.json' with { type: 'json' };
 import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';
@@ -116,8 +116,6 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
     "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
-    "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
-    "timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -305,7 +303,7 @@ describeWithEnvironment.only = function (title, fn, opts = {
 describeWithEnvironment.skip = function (title, fn, _opts = {
     reset: true,
 }) {
-    // eslint-disable-next-line rulesdir/check-test-definitions
+    // eslint-disable-next-line @devtools/check-test-definitions
     return describe.skip(title, function () {
         fn.call(this);
     });
@@ -344,7 +342,7 @@ describeWithLocale.only = function (title, fn) {
     });
 };
 describeWithLocale.skip = function (title, fn) {
-    // eslint-disable-next-line rulesdir/check-test-definitions
+    // eslint-disable-next-line @devtools/check-test-definitions
     return describe.skip(title, function () {
         fn.call(this);
     });

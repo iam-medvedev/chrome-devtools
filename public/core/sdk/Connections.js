@@ -219,7 +219,7 @@ export class ParallelConnection {
     }
 }
 export async function initMainConnection(createRootTarget, onConnectionLost) {
-    ProtocolClient.InspectorBackend.Connection.setFactory(createMainConnection.bind(null, onConnectionLost));
+    ProtocolClient.ConnectionTransport.ConnectionTransport.setFactory(createMainConnection.bind(null, onConnectionLost));
     await createRootTarget();
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
 }

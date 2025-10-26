@@ -1,15 +1,22 @@
 export interface LanguageModel {
     promptStreaming: (arg0: string, opts?: {
-        responseConstraint: Object;
         signal?: AbortSignal;
     }) => AsyncGenerator<string>;
     clone: () => LanguageModel;
     destroy: () => void;
 }
+export declare const enum LanguageModelAvailability {
+    UNAVAILABLE = "unavailable",
+    DOWNLOADABLE = "downloadable",
+    DOWNLOADING = "downloading",
+    AVAILABLE = "available",
+    DISABLED = "disabled"
+}
 export declare class BuiltInAi {
     #private;
-    static isAvailable(): Promise<boolean>;
+    static getLanguageModelAvailability(): Promise<LanguageModelAvailability>;
     static cachedIsAvailable(): boolean;
+    static isGpuAvailable(): boolean;
     private constructor();
     static instance(): Promise<BuiltInAi | undefined>;
     static removeInstance(): void;

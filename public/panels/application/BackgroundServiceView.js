@@ -1,7 +1,7 @@
 // Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api */
 import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -9,7 +9,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
-// eslint-disable-next-line rulesdir/es-modules-import
+// eslint-disable-next-line @devtools/es-modules-import
 import emptyWidgetStyles from '../../ui/legacy/emptyWidget.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -262,7 +262,14 @@ export class BackgroundServiceView extends UI.Widget.VBox {
      * Called when the `Toggle Record` button is clicked.
      */
     toggleRecording() {
-        this.model.setRecording(!this.recordButton.isToggled(), this.serviceName);
+        const isRecording = !this.recordButton.isToggled();
+        this.model.setRecording(isRecording, this.serviceName);
+        const featureName = BackgroundServiceView.getUIString(this.serviceName).toLowerCase();
+        if (isRecording) {
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.recordingSActivity, { PH1: featureName }) + ' ' +
+                i18nString(UIStrings.devtoolsWillRecordAllSActivity, { PH1: featureName }));
+            this.preview?.focus();
+        }
     }
     /**
      * Called when the `Clear` button is clicked.
@@ -428,6 +435,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
             const button = UI.UIUtils.createTextButton(i18nString(UIStrings.startRecordingEvents), () => this.toggleRecording(), { jslogContext: 'start-recording', variant: "tonal" /* Buttons.Button.Variant.TONAL */ });
             emptyWidget.contentElement.appendChild(button);
         }
+        emptyWidget.setDefaultFocusedElement(emptyWidget.contentElement);
         this.preview = emptyWidget;
         this.preview.show(this.previewPanel.contentElement);
     }

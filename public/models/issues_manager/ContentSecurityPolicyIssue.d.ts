@@ -4,13 +4,13 @@ import { Issue, IssueCategory, IssueKind } from './Issue.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare class ContentSecurityPolicyIssue extends Issue {
     #private;
-    constructor(issueDetails: Protocol.Audits.ContentSecurityPolicyIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel, issueId?: Protocol.Audits.IssueId);
+    constructor(issueDetails: Protocol.Audits.ContentSecurityPolicyIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null, issueId?: Protocol.Audits.IssueId);
     getCategory(): IssueCategory;
     primaryKey(): string;
     getDescription(): MarkdownIssueDescription | null;
     details(): Protocol.Audits.ContentSecurityPolicyIssueDetails;
     getKind(): IssueKind;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): ContentSecurityPolicyIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): ContentSecurityPolicyIssue[];
 }
 export declare const urlViolationCode: string;
 export declare const inlineViolationCode: string;

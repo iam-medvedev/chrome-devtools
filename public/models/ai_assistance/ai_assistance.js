@@ -2166,7 +2166,7 @@ var PerformanceTraceFormatter = class {
   constructor(focus) {
     this.#focus = focus;
     this.#parsedTrace = focus.parsedTrace;
-    this.#insightSet = focus.insightSet;
+    this.#insightSet = focus.primaryInsightSet;
     this.#eventsSerializer = focus.eventsSerializer;
   }
   serializeEvent(event) {
@@ -3160,7 +3160,7 @@ ${Trace4.Insights.Models.ForcedReflow.UIStrings.totalReflowTime}: ${this.#format
       output += "No top-level functions causing forced reflows were identified.\n";
     }
     if (insight.aggregatedBottomUpData.length > 0) {
-      output += "\n" + Trace4.Insights.Models.ForcedReflow.UIStrings.relatedStackTrace + " (including total time):\n";
+      output += "\n" + Trace4.Insights.Models.ForcedReflow.UIStrings.reflowCallFrames + " (including total time):\n";
       for (const data of insight.aggregatedBottomUpData) {
         output += `
  - ${this.#formatMicro(data.totalTime)} in ${callFrameToString(data.bottomUpData)}`;
@@ -3738,7 +3738,7 @@ __export(AIContext_exports, {
   getPerformanceAgentFocusFromModel: () => getPerformanceAgentFocusFromModel
 });
 import * as Trace5 from "./../trace/trace.js";
-function getFirstInsightSet(insights) {
+function getPrimaryInsightSet(insights) {
   const insightSets = Array.from(insights.values());
   if (insightSets.length === 0) {
     return null;
@@ -3753,10 +3753,8 @@ var AgentFocus = class _AgentFocus {
     if (!parsedTrace.insights) {
       throw new Error("missing insights");
     }
-    const insightSet = getFirstInsightSet(parsedTrace.insights);
     return new _AgentFocus({
       parsedTrace,
-      insightSet,
       event: null,
       callTree: null,
       insight: null
@@ -3766,10 +3764,8 @@ var AgentFocus = class _AgentFocus {
     if (!parsedTrace.insights) {
       throw new Error("missing insights");
     }
-    const insightSet = getFirstInsightSet(parsedTrace.insights);
     return new _AgentFocus({
       parsedTrace,
-      insightSet,
       event: null,
       callTree: null,
       insight
@@ -3779,32 +3775,27 @@ var AgentFocus = class _AgentFocus {
     if (!parsedTrace.insights) {
       throw new Error("missing insights");
     }
-    const insightSet = getFirstInsightSet(parsedTrace.insights);
     const result = _AgentFocus.#getCallTreeOrEvent(parsedTrace, event);
-    return new _AgentFocus({ parsedTrace, insightSet, event: result.event, callTree: result.callTree, insight: null });
+    return new _AgentFocus({ parsedTrace, event: result.event, callTree: result.callTree, insight: null });
   }
   static fromCallTree(callTree) {
-    const insights = callTree.parsedTrace.insights;
-    let insightSet = null;
-    if (insights) {
-      const callTreeTimeRange = Trace5.Helpers.Timing.traceWindowFromEvent(callTree.rootNode.event);
-      insightSet = insights.values().find((set) => Trace5.Helpers.Timing.boundsIncludeTimeRange({
-        timeRange: callTreeTimeRange,
-        bounds: set.bounds
-      })) ?? getFirstInsightSet(insights);
-    }
-    return new _AgentFocus({ parsedTrace: callTree.parsedTrace, insightSet, event: null, callTree, insight: null });
+    return new _AgentFocus({ parsedTrace: callTree.parsedTrace, event: null, callTree, insight: null });
   }
   #data;
+  #primaryInsightSet;
   eventsSerializer = new Trace5.EventsSerializer.EventsSerializer();
   constructor(data) {
+    if (!data.parsedTrace.insights) {
+      throw new Error("missing insights");
+    }
     this.#data = data;
+    this.#primaryInsightSet = getPrimaryInsightSet(data.parsedTrace.insights);
   }
   get parsedTrace() {
     return this.#data.parsedTrace;
   }
-  get insightSet() {
-    return this.#data.insightSet;
+  get primaryInsightSet() {
+    return this.#primaryInsightSet;
   }
   /** Note: at most one of event or callTree is non-null. */
   get event() {
@@ -3996,7 +3987,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
   }
   getTitle() {
     const focus = this.#focus;
-    let url = focus.insightSet?.url;
+    let url = focus.primaryInsightSet?.url;
     if (!url) {
       url = new URL(focus.parsedTrace.data.Meta.mainFrameURL);
     }
@@ -4030,10 +4021,11 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       return new PerformanceInsightFormatter(focus, focus.insight).getSuggestions();
     }
     const suggestions = [{ title: "What performance issues exist with my page?", jslogContext: "performance-default" }];
-    if (focus.insightSet) {
-      const lcp = focus.insightSet ? Trace6.Insights.Common.getLCP(focus.insightSet) : null;
-      const cls = focus.insightSet ? Trace6.Insights.Common.getCLS(focus.insightSet) : null;
-      const inp = focus.insightSet ? Trace6.Insights.Common.getINP(focus.insightSet) : null;
+    const insightSet = focus.primaryInsightSet;
+    if (insightSet) {
+      const lcp = insightSet ? Trace6.Insights.Common.getLCP(insightSet) : null;
+      const cls = insightSet ? Trace6.Insights.Common.getCLS(insightSet) : null;
+      const inp = insightSet ? Trace6.Insights.Common.getINP(insightSet) : null;
       const ModelHandlers = Trace6.Handlers.ModelHandlers;
       const GOOD = "good";
       if (lcp && ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(lcp.value) !== GOOD) {
@@ -4045,7 +4037,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       if (cls && ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(cls.value) !== GOOD) {
         suggestions.push({ title: "How can I improve CLS?", jslogContext: "performance-default" });
       }
-      const top3FailingInsightSuggestions = Object.values(focus.insightSet.model).filter((model) => model.state !== "pass").map((model) => new PerformanceInsightFormatter(focus, model).getSuggestions().at(-1)).filter((suggestion) => !!suggestion).slice(0, 3);
+      const top3FailingInsightSuggestions = Object.values(insightSet.model).filter((model) => model.state !== "pass").map((model) => new PerformanceInsightFormatter(focus, model).getSuggestions().at(-1)).filter((suggestion) => !!suggestion).slice(0, 3);
       suggestions.push(...top3FailingInsightSuggestions);
     }
     return suggestions;
@@ -4340,7 +4332,8 @@ ${result}`,
   }
   #declareFunctions(context) {
     const focus = context.getItem();
-    const { parsedTrace, insightSet } = focus;
+    const { parsedTrace } = focus;
+    const insightSet = focus.primaryInsightSet;
     this.declareFunction("getInsightDetails", {
       description: "Returns detailed information about a specific insight. Use this before commenting on any specific issue to get more information.",
       parameters: {
@@ -6329,73 +6322,179 @@ var BuiltInAi_exports = {};
 __export(BuiltInAi_exports, {
   BuiltInAi: () => BuiltInAi
 });
+import * as Host9 from "./../../core/host/host.js";
 import * as Root9 from "./../../core/root/root.js";
 var builtInAiInstance;
-var availability = "";
-var RESPONSE_SCHEMA = {
-  type: "object",
-  properties: {
-    header: { type: "string", maxLength: 60, description: "Label for the console message which is being analyzed" },
-    // No hard `maxLength` for `explanation`. This would often result in responses which are cut off in the middle of a
-    // sentence. Instead provide a soft `maxLength` via the prompt.
-    explanation: {
-      type: "string",
-      description: "Actual explanation of the console message being analyzed"
-    }
-  },
-  required: ["header", "explanation"],
-  additionalProperties: false
-};
+var availability;
+var hasGpu;
+var isFirstRun = true;
 var BuiltInAi = class _BuiltInAi {
   #consoleInsightsSession;
-  static async isAvailable() {
+  static async getLanguageModelAvailability() {
     if (!Root9.Runtime.hostConfig.devToolsAiPromptApi?.enabled) {
-      return false;
+      return "disabled";
     }
-    availability = await window.LanguageModel.availability({ expectedOutputs: [{ type: "text", languages: ["en"] }] });
-    return availability === "available";
+    try {
+      availability = await window.LanguageModel.availability({ expectedOutputs: [{ type: "text", languages: ["en"] }] });
+      return availability;
+    } catch {
+      return "unavailable";
+    }
   }
   static cachedIsAvailable() {
     return availability === "available";
+  }
+  static isGpuAvailable() {
+    const hasGpuHelper = () => {
+      const canvas = document.createElement("canvas");
+      try {
+        const webgl = canvas.getContext("webgl");
+        if (!webgl) {
+          return false;
+        }
+        const debugInfo = webgl.getExtension("WEBGL_debug_renderer_info");
+        if (!debugInfo) {
+          return false;
+        }
+        const renderer = webgl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        if (renderer.includes("SwiftShader")) {
+          return false;
+        }
+      } catch {
+        return false;
+      }
+      return true;
+    };
+    if (hasGpu !== void 0) {
+      return hasGpu;
+    }
+    hasGpu = hasGpuHelper();
+    return hasGpu;
   }
   constructor(consoleInsightsSession) {
     this.#consoleInsightsSession = consoleInsightsSession;
   }
   static async instance() {
     if (builtInAiInstance === void 0) {
-      if (!await _BuiltInAi.isAvailable()) {
+      if (isFirstRun) {
+        const languageModelAvailability = await _BuiltInAi.getLanguageModelAvailability();
+        const hasGpu2 = _BuiltInAi.isGpuAvailable();
+        if (hasGpu2) {
+          switch (languageModelAvailability) {
+            case "unavailable":
+              Host9.userMetrics.builtInAiAvailability(
+                0
+                /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_HAS_GPU */
+              );
+              break;
+            case "downloadable":
+              Host9.userMetrics.builtInAiAvailability(
+                1
+                /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_HAS_GPU */
+              );
+              break;
+            case "downloading":
+              Host9.userMetrics.builtInAiAvailability(
+                2
+                /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_HAS_GPU */
+              );
+              break;
+            case "available":
+              Host9.userMetrics.builtInAiAvailability(
+                3
+                /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_HAS_GPU */
+              );
+              break;
+            case "disabled":
+              Host9.userMetrics.builtInAiAvailability(
+                4
+                /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_HAS_GPU */
+              );
+              break;
+          }
+        } else {
+          switch (languageModelAvailability) {
+            case "unavailable":
+              Host9.userMetrics.builtInAiAvailability(
+                5
+                /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_NO_GPU */
+              );
+              break;
+            case "downloadable":
+              Host9.userMetrics.builtInAiAvailability(
+                6
+                /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_NO_GPU */
+              );
+              break;
+            case "downloading":
+              Host9.userMetrics.builtInAiAvailability(
+                7
+                /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_NO_GPU */
+              );
+              break;
+            case "available":
+              Host9.userMetrics.builtInAiAvailability(
+                8
+                /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_NO_GPU */
+              );
+              break;
+            case "disabled":
+              Host9.userMetrics.builtInAiAvailability(
+                9
+                /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_NO_GPU */
+              );
+              break;
+          }
+        }
+        isFirstRun = false;
+        if (!Root9.Runtime.hostConfig.devToolsAiPromptApi?.allowWithoutGpu && !hasGpu2) {
+          return void 0;
+        }
+        if (languageModelAvailability !== "available") {
+          return void 0;
+        }
+      } else {
+        if (!Root9.Runtime.hostConfig.devToolsAiPromptApi?.allowWithoutGpu && !_BuiltInAi.isGpuAvailable()) {
+          return void 0;
+        }
+        if (await _BuiltInAi.getLanguageModelAvailability() !== "available") {
+          return void 0;
+        }
+      }
+      try {
+        const consoleInsightsSession = await window.LanguageModel.create({
+          initialPrompts: [{
+            role: "system",
+            content: `
+  You are an expert web developer. Your goal is to help a human web developer who
+  is using Chrome DevTools to debug a web site or web app. The Chrome DevTools
+  console is showing a message which is either an error or a warning. Please help
+  the user understand the problematic console message.
+
+  Your instructions are as follows:
+    - Explain the reason why the error or warning is showing up.
+    - The explanation has a maximum length of 200 characters. Anything beyond this
+      length will be cut off. Make sure that your explanation is at most 200 characters long.
+    - Your explanation should not end in the middle of a sentence.
+    - Your explanation should consist of a single paragraph only. Do not include any
+      headings or code blocks. Only write a single paragraph of text.
+    - Your response should be concise and to the point. Avoid lengthy explanations
+      or unnecessary details.
+            `
+          }],
+          expectedInputs: [{
+            type: "text",
+            languages: ["en"]
+          }],
+          expectedOutputs: [{
+            type: "text",
+            languages: ["en"]
+          }]
+        });
+        builtInAiInstance = new _BuiltInAi(consoleInsightsSession);
+      } catch {
         return void 0;
       }
-      const consoleInsightsSession = await window.LanguageModel.create({
-        initialPrompts: [{
-          role: "system",
-          content: `
-You are an expert web developer. Your goal is to help a human web developer who
-is using Chrome DevTools to debug a web site or web app. The Chrome DevTools
-console is showing a message which is either an error or a warning. Please help
-the user understand the problematic console message.
-
-Your instructions are as follows:
-  - Explain the reason why the error or warning is showing up.
-  - The explanation has a maximum length of 200 characters. Anything beyond this
-    length will be cut off. Make sure that your explanation is at most 200 characters long.
-  - Your explanation should not end in the middle of a sentence.
-  - Your explanation should consist of a single paragraph only. Do not include any
-    headings or code blocks. Only write a single paragraph of text.
-  - Your response should be concise and to the point. Avoid lengthy explanations
-    or unnecessary details.
-          `
-        }],
-        expectedInputs: [{
-          type: "text",
-          languages: ["en"]
-        }],
-        expectedOutputs: [{
-          type: "text",
-          languages: ["en"]
-        }]
-      });
-      builtInAiInstance = new _BuiltInAi(consoleInsightsSession);
     }
     return builtInAiInstance;
   }
@@ -6405,8 +6504,7 @@ Your instructions are as follows:
   async *getConsoleInsight(prompt, abortController) {
     const session = await this.#consoleInsightsSession.clone();
     const stream = session.promptStreaming(prompt, {
-      signal: abortController.signal,
-      responseConstraint: RESPONSE_SCHEMA
+      signal: abortController.signal
     });
     for await (const chunk of stream) {
       yield chunk;
@@ -6421,7 +6519,7 @@ __export(ConversationHandler_exports, {
   ConversationHandler: () => ConversationHandler
 });
 import * as Common7 from "./../../core/common/common.js";
-import * as Host9 from "./../../core/host/host.js";
+import * as Host10 from "./../../core/host/host.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Root10 from "./../../core/root/root.js";
@@ -6481,7 +6579,7 @@ var ConversationHandler = class _ConversationHandler extends Common7.ObjectWrapp
   }
   static instance(opts) {
     if (opts?.forceNew || conversationHandlerInstance === void 0) {
-      const aidaClient = opts?.aidaClient ?? new Host9.AidaClient.AidaClient();
+      const aidaClient = opts?.aidaClient ?? new Host10.AidaClient.AidaClient();
       conversationHandlerInstance = new _ConversationHandler(aidaClient, opts?.aidaAvailability ?? void 0);
     }
     return conversationHandlerInstance;
@@ -6498,7 +6596,7 @@ var ConversationHandler = class _ConversationHandler extends Common7.ObjectWrapp
   }
   async #getDisabledReasons() {
     if (this.#aidaAvailability === void 0) {
-      this.#aidaAvailability = await Host9.AidaClient.AidaClient.checkAccessPreconditions();
+      this.#aidaAvailability = await Host10.AidaClient.AidaClient.checkAccessPreconditions();
     }
     return getDisabledReasons(this.#aidaAvailability);
   }

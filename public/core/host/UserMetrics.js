@@ -193,7 +193,7 @@ export class UserMetrics {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseCategoryUsed" /* EnumeratedHistogram.LighthouseCategoryUsed */, type, 6 /* LighthouseCategoryUsed.MAX_VALUE */);
     }
     swatchActivated(swatch) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 12 /* SwatchType.MAX_VALUE */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 13 /* SwatchType.MAX_VALUE */);
     }
     animationPlaybackRateChanged(playbackRate) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.AnimationPlaybackRateChanged" /* EnumeratedHistogram.AnimationPlaybackRateChanged */, playbackRate, 4 /* AnimationsPlaybackRate.MAX_VALUE */);
@@ -218,6 +218,12 @@ export class UserMetrics {
     }
     performanceAIMainThreadActivityResponseSize(bytes) {
         InspectorFrontendHostInstance.recordCountHistogram('DevTools.PerformanceAI.MainThreadActivityResponseSize', bytes, 0, 100_000, 100);
+    }
+    builtInAiAvailability(availability) {
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.BuiltInAiAvailability" /* EnumeratedHistogram.BuiltInAiAvailability */, availability, 10 /* BuiltInAiAvailability.MAX_VALUE */);
+    }
+    consoleInsightTeaserGenerated(timeInMilliseconds) {
+        InspectorFrontendHostInstance.recordPerformanceHistogram('DevTools.Insights.TeaserGenerationTime', timeInMilliseconds);
     }
 }
 /**
@@ -417,8 +423,6 @@ export var Action;
     Action[Action["AiAssistanceSideEffectConfirmed"] = 179] = "AiAssistanceSideEffectConfirmed";
     Action[Action["AiAssistanceSideEffectRejected"] = 180] = "AiAssistanceSideEffectRejected";
     Action[Action["AiAssistanceError"] = 181] = "AiAssistanceError";
-    Action[Action["AiAssistanceOpenedFromPerformanceInsight"] = 182] = "AiAssistanceOpenedFromPerformanceInsight";
-    Action[Action["AiAssistanceOpenedFromPerformanceFullButton"] = 183] = "AiAssistanceOpenedFromPerformanceFullButton";
     Action[Action["AiCodeCompletionResponseServedFromCache"] = 184] = "AiCodeCompletionResponseServedFromCache";
     Action[Action["AiCodeCompletionRequestTriggered"] = 185] = "AiCodeCompletionRequestTriggered";
     Action[Action["AiCodeCompletionSuggestionDisplayed"] = 186] = "AiCodeCompletionSuggestionDisplayed";
@@ -702,8 +706,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["just-my-code"] = 65] = "just-my-code";
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.

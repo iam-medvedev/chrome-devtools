@@ -57,6 +57,32 @@ var UIStrings = {
    */
   size: "Size",
   /**
+   * @description Text for the "Domain" of the cookie
+   * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#domaindomain-value
+   */
+  domain: "Domain",
+  /**
+   * @description Text for the "Path" of the cookie
+   * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#pathpath-value
+   */
+  path: "Path",
+  /**
+   * @description Text for the "Secure" property of the cookie
+   * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#secure
+   */
+  secure: "Secure",
+  /**
+   * @description Text for the "Partition Key Site" property of the cookie
+   * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#partitioned
+   */
+  partitionKeySite: "Partition Key Site",
+  /**
+   * @description Text for the "Priority" property of the cookie
+   * Contains Low, Medium (default), or High if using deprecated cookie Priority attribute.
+   * https://bugs.chromium.org/p/chromium/issues/detail?id=232693
+   */
+  priority: "Priority",
+  /**
    * @description Data grid name for Editable Cookies data grid
    */
   editableCookies: "Editable Cookies",
@@ -144,10 +170,10 @@ var CookiesTable = class extends UI.Widget.VBox {
                    ${i18nString(UIStrings.value)}
                  </th>
                  <th id=${"domain"} sortable weight="7" ?editable=${input.editable}>
-                   Domain
+                   ${i18nString(UIStrings.domain)}
                  </th>
                  <th id=${"path"} sortable weight="7" ?editable=${input.editable}>
-                   Path
+                   ${i18nString(UIStrings.path)}
                  </th>
                  <th id=${"expires"} sortable weight="7" ?editable=${input.editable}>
                    Expires / Max-Age
@@ -159,19 +185,19 @@ var CookiesTable = class extends UI.Widget.VBox {
                    HttpOnly
                  </th>
                  <th id=${"secure"} sortable align="center" weight="7" ?editable=${input.editable} type="boolean">
-                   Secure
+                   ${i18nString(UIStrings.secure)}
                  </th>
                  <th id=${"same-site"} sortable weight="7" ?editable=${input.editable}>
                    SameSite
                  </th>
                  <th id=${"partition-key-site"} sortable weight="7" ?editable=${input.editable}>
-                   Partition Key Site
+                   ${i18nString(UIStrings.partitionKeySite)}
                  </th>
                  <th id=${"has-cross-site-ancestor"} sortable align="center" weight="7" ?editable=${input.editable} type="boolean">
                    Cross Site
                  </th>
                  <th id=${"priority"} sortable weight="7" ?editable=${input.editable}>
-                   Priority
+                   ${i18nString(UIStrings.priority)}
                  </th>
                  ${input.schemeBindingEnabled ? html`
                  <th id=${"source-scheme"} sortable align="center" weight="7" ?editable=${input.editable} type="string">

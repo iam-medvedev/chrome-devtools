@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import type { LighthouseRun, ProtocolService } from './LighthouseProtocolService.js';
+import type { LighthouseRun as LighthouseRunType, ProtocolService } from './LighthouseProtocolService.js';
 import type { RunnerResult } from './LighthouseReporterTypes.js';
 export declare class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SDK.TargetManager.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
     private readonly protocolService;
@@ -10,7 +10,7 @@ export declare class LighthouseController extends Common.ObjectWrapper.ObjectWra
     private serviceWorkerListeners?;
     private inspectedURL?;
     private currentLighthouseRun?;
-    private emulationStateBefore?;
+    private lastAction;
     constructor(protocolService: ProtocolService);
     modelAdded(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void;
     modelRemoved(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void;
@@ -20,7 +20,7 @@ export declare class LighthouseController extends Common.ObjectWrapper.ObjectWra
     private javaScriptDisabled;
     private hasImportantResourcesNotCleared;
     private evaluateInspectedURL;
-    getCurrentRun(): LighthouseRun | undefined;
+    getCurrentRun(): LighthouseRunType | undefined;
     getFlags(): {
         formFactor: (string | undefined);
         mode: string;
@@ -34,13 +34,6 @@ export declare class LighthouseController extends Common.ObjectWrapper.ObjectWra
     startLighthouse(): Promise<void>;
     collectLighthouseResults(): Promise<RunnerResult>;
     cancelLighthouse(): Promise<void>;
-    /**
-     * We set the device emulation on the DevTools-side for two reasons:
-     * 1. To workaround some odd device metrics emulation bugs like occuluding viewports
-     * 2. To get the attractive device outline
-     */
-    private setupEmulationAndProtocolConnection;
-    private restoreEmulationAndProtocolConnection;
 }
 export declare const Presets: Preset[];
 export type Flags = Record<string, string | boolean>;

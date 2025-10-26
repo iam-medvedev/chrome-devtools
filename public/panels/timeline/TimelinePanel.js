@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api */
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  * Copyright (C) 2012 Intel Inc. All rights reserved.
@@ -2350,8 +2350,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         await this.#traceEngineModel.parse(collectedEvents, config);
         // Store all source maps on the trace metadata.
         // If not fresh, we can't validate the maps are still accurate.
-        if (isFreshRecording && metadata &&
-            Root.Runtime.experiments.isEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */)) {
+        if (isFreshRecording && metadata) {
             const traceIndex = this.#traceEngineModel.lastTraceIndex();
             const parsedTrace = this.#traceEngineModel.parsedTrace(traceIndex);
             if (parsedTrace) {

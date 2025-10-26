@@ -1,4 +1,3 @@
-import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 /**
  * Height in pixels of the dialog's connector. The connector is represented as
  * as a diamond and the height corresponds to half the height of the diamond.
@@ -29,8 +28,6 @@ export declare class Dialog extends HTMLElement {
     set position(position: DialogVerticalPosition);
     get horizontalAlignment(): DialogHorizontalAlignment;
     set horizontalAlignment(alignment: DialogHorizontalAlignment);
-    get windowBoundsService(): WindowBoundsService.WindowBoundsService.WindowBoundsService;
-    set windowBoundsService(windowBoundsService: WindowBoundsService.WindowBoundsService.WindowBoundsService);
     get bestVerticalPosition(): DialogVerticalPosition | null;
     get bestHorizontalAlignment(): DialogHorizontalAlignment | null;
     get getConnectorCustomXPosition(): (() => number) | null;
@@ -49,6 +46,7 @@ export declare class Dialog extends HTMLElement {
     getHitArea(): DOMRect;
     setDialogVisible(show: boolean): Promise<void>;
     getDialogBounds(): DOMRect;
+    setBoundingElementForTesting(element: HTMLElement): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

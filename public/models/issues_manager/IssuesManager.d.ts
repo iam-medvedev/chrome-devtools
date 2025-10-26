@@ -8,7 +8,7 @@ export { Events } from './IssuesManagerEvents.js';
  * Each issue reported by the backend can result in multiple `Issue` instances.
  * Handlers are simple functions hard-coded into a map.
  */
-export declare function createIssuesFromProtocolIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): Issue[];
+export declare function createIssuesFromProtocolIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): Issue[];
 export interface IssuesManagerCreationOptions {
     forceNew: boolean;
     /** Throw an error if this is not the first instance created */

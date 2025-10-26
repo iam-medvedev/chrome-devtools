@@ -19,16 +19,14 @@ async function assertThrowsAsync(fn, errorMessage) {
     assert.isOk(caught, 'Expected error but got none.');
 }
 async function assertNotThrowsAsync(fn) {
-    let errorMessage = '';
+    let errorMessage;
     try {
         await fn();
     }
     catch (e) {
         errorMessage = e.message;
     }
-    if (errorMessage) {
-        assert.fail(`Expected no error but got:\n${errorMessage}`);
-    }
+    assert.notExists(errorMessage);
 }
 describe('MutationHelpers', () => {
     describe('withMutations', () => {

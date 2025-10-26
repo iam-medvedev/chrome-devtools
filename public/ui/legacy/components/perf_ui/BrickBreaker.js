@@ -1,9 +1,9 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api */
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as WindowBounds from '../../../../services/window_bounds/window_bounds.js';
+import * as UI from '../../legacy.js';
 import * as ThemeSupport from '../../theme_support/theme_support.js';
 const UIStrings = {
     /**
@@ -103,7 +103,7 @@ export class BrickBreaker extends HTMLElement {
     #keyPressHandlerBound = this.#keyPressHandler.bind(this);
     #closeGameBound = this.#closeGame.bind(this);
     #mouseMoveHandlerBound = this.#mouseMoveHandler.bind(this);
-    #boundingElement = WindowBounds.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
+    #boundingElement = UI.UIUtils.getDevToolsBoundingElement();
     // Value by which we moved the game up relative to the viewport
     #gameViewportOffset = 0;
     #running = false;

@@ -1,6 +1,8 @@
 // Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as InspectorBackendCommands from '../../generated/InspectorBackendCommands.js';
+import { ConnectionTransport } from './ConnectionTransport.js';
 import { NodeURL } from './NodeURL.js';
 export const DevToolsStubErrorCode = -32015;
 // TODO(dgozman): we are not reporting generic errors in tests, but we should
@@ -16,10 +18,16 @@ export const qualifyName = (domain, name) => {
 };
 export class InspectorBackend {
     agentPrototypes = new Map();
-    #initialized = false;
     #eventParameterNamesForDomain = new Map();
     typeMap = new Map();
     enumMap = new Map();
+    constructor() {
+        // Create the global here because registering commands will involve putting
+        // items onto the global.
+        // @ts-expect-error Global namespace instantiation
+        globalThis.Protocol ||= {};
+        InspectorBackendCommands.registerCommands(this);
+    }
     getOrCreateEventParameterNamesForDomain(domain) {
         let map = this.#eventParameterNamesForDomain.get(domain);
         if (!map) {
@@ -40,9 +48,6 @@ export class InspectorBackend {
     static reportProtocolWarning(error, messageObject) {
         console.warn(error + ': ' + JSON.stringify(messageObject));
     }
-    isInitialized() {
-        return this.#initialized;
-    }
     agentPrototype(domain) {
         let prototype = this.agentPrototypes.get(domain);
         if (!prototype) {
@@ -54,7 +59,6 @@ export class InspectorBackend {
     registerCommand(method, parameters, replyArgs, description) {
         const [domain, command] = splitQualifiedName(method);
         this.agentPrototype(domain).registerCommand(command, parameters, replyArgs, description);
-        this.#initialized = true;
     }
     registerEnum(type, values) {
         const [domain, name] = splitQualifiedName(type);
@@ -66,37 +70,14 @@ export class InspectorBackend {
         // @ts-expect-error globalThis global namespace pollution
         globalThis.Protocol[domain][name] = values;
         this.enumMap.set(type, values);
-        this.#initialized = true;
     }
     registerType(method, parameters) {
         this.typeMap.set(method, parameters);
-        this.#initialized = true;
     }
     registerEvent(eventName, params) {
         const domain = eventName.split('.')[0];
         const eventParameterNames = this.getOrCreateEventParameterNamesForDomain(domain);
         eventParameterNames.set(eventName, params);
-        this.#initialized = true;
-    }
-}
-let connectionFactory;
-export class Connection {
-    // on message from browser
-    setOnMessage(_onMessage) {
-    }
-    setOnDisconnect(_onDisconnect) {
-    }
-    // send raw CDP message to browser
-    sendRawMessage(_message) {
-    }
-    disconnect() {
-        throw new Error('not implemented');
-    }
-    static setFactory(factory) {
-        connectionFactory = factory;
-    }
-    static getFactory() {
-        return connectionFactory;
     }
 }
 export const test = {
@@ -171,13 +152,6 @@ export class SessionRouter {
         }
         this.#sessions.delete(sessionId);
     }
-    getTargetBySessionId(sessionId) {
-        const session = this.#sessions.get(sessionId ? sessionId : '');
-        if (!session) {
-            return null;
-        }
-        return session.target;
-    }
     nextMessageId() {
         return this.#lastMessageId++;
     }
@@ -201,7 +175,7 @@ export class SessionRouter {
         }
         if (test.onMessageSent) {
             const paramsObject = JSON.parse(JSON.stringify(params || {}));
-            test.onMessageSent({ domain, method, params: paramsObject, id: messageId, sessionId }, this.getTargetBySessionId(sessionId));
+            test.onMessageSent({ domain, method, params: paramsObject, id: messageId, sessionId });
         }
         ++this.#pendingResponsesCount;
         if (LongPollingMethods.has(method)) {
@@ -224,7 +198,7 @@ export class SessionRouter {
         }
         if (test.onMessageReceived) {
             const messageObjectCopy = JSON.parse((typeof message === 'string') ? message : JSON.stringify(message));
-            test.onMessageReceived(messageObjectCopy, this.getTargetBySessionId(messageObjectCopy.sessionId));
+            test.onMessageReceived(messageObjectCopy);
         }
         const messageObject = ((typeof message === 'string') ? JSON.parse(message) : message);
         // Send all messages to proxy connections.
@@ -243,9 +217,8 @@ export class SessionRouter {
         const sessionId = messageObject.sessionId || '';
         const session = this.#sessions.get(sessionId);
         if (!session) {
-            if (!suppressUnknownMessageErrors) {
-                InspectorBackend.reportProtocolError('Protocol Error: the message with wrong session id', messageObject);
-            }
+            // In the DevTools MCP case, we may share the transport with puppeteer so we silently
+            // ignore unknown sessions.
             return;
         }
         // If this message is directly for the target controlled by the proxy connection, don't handle it.
@@ -337,18 +310,18 @@ export class TargetBase {
     constructor(needsNodeJSPatching, parentTarget, sessionId, connection) {
         this.needsNodeJSPatching = needsNodeJSPatching;
         this.sessionId = sessionId;
-        if ((!parentTarget && connection) || (!parentTarget && sessionId) || (connection && sessionId)) {
-            throw new Error('Either connection or sessionId (but not both) must be supplied for a child target');
+        if (parentTarget && !sessionId) {
+            throw new Error('Specifying a parent target requires a session ID');
         }
         let router;
-        if (sessionId && parentTarget && parentTarget.#router) {
+        if (parentTarget && parentTarget.#router) {
             router = parentTarget.#router;
         }
         else if (connection) {
             router = new SessionRouter(connection);
         }
         else {
-            router = new SessionRouter(connectionFactory());
+            router = new SessionRouter(ConnectionTransport.getFactory()());
         }
         this.#router = router;
         router.registerSession(this, this.sessionId);
@@ -648,95 +621,22 @@ export class TargetBase {
  * of the invoke_enable, etc. methods that the front-end uses.
  */
 class AgentPrototype {
-    replyArgs;
     description = '';
     metadata;
     domain;
     target;
     constructor(domain) {
-        this.replyArgs = {};
         this.domain = domain;
         this.metadata = {};
     }
     registerCommand(methodName, parameters, replyArgs, description) {
         const domainAndMethod = qualifyName(this.domain, methodName);
-        function sendMessagePromise(...args) {
-            return AgentPrototype.prototype.sendMessageToBackendPromise.call(this, domainAndMethod, parameters, args);
-        }
-        // @ts-expect-error Method code generation
-        this[methodName] = sendMessagePromise;
         this.metadata[domainAndMethod] = { parameters, description, replyArgs };
         function invoke(request = {}) {
             return this.invoke(domainAndMethod, request);
         }
         // @ts-expect-error Method code generation
         this['invoke_' + methodName] = invoke;
-        this.replyArgs[domainAndMethod] = replyArgs;
-    }
-    prepareParameters(method, parameters, args, errorCallback) {
-        const params = {};
-        let hasParams = false;
-        for (const param of parameters) {
-            const paramName = param.name;
-            const typeName = param.type;
-            const optionalFlag = param.optional;
-            if (!args.length && !optionalFlag) {
-                errorCallback(`Protocol Error: Invalid number of arguments for method '${method}' call. ` +
-                    `It must have the following arguments ${JSON.stringify(parameters)}'.`);
-                return null;
-            }
-            const value = args.shift();
-            if (optionalFlag && typeof value === 'undefined') {
-                continue;
-            }
-            const expectedJSType = typeName === 'array' ? 'object' : typeName;
-            if (typeof value !== expectedJSType) {
-                errorCallback(`Protocol Error: Invalid type of argument '${paramName}' for method '${method}' call. ` +
-                    `It must be '${typeName}' but it is '${typeof value}'.`);
-                return null;
-            }
-            params[paramName] = value;
-            hasParams = true;
-        }
-        if (args.length) {
-            errorCallback(`Protocol Error: Extra ${args.length} arguments in a call to method '${method}'.`);
-            return null;
-        }
-        return hasParams ? params : null;
-    }
-    sendMessageToBackendPromise(method, parameters, args) {
-        let errorMessage;
-        function onError(message) {
-            console.error(message);
-            errorMessage = message;
-        }
-        const params = this.prepareParameters(method, parameters, args, onError);
-        if (errorMessage) {
-            return Promise.resolve(null);
-        }
-        return new Promise(resolve => {
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const callback = (error, result) => {
-                if (error) {
-                    if (!test.suppressRequestErrors && error.code !== DevToolsStubErrorCode && error.code !== GenericErrorCode &&
-                        error.code !== ConnectionClosedErrorCode) {
-                        console.error('Request ' + method + ' failed. ' + JSON.stringify(error));
-                    }
-                    resolve(null);
-                    return;
-                }
-                const args = this.replyArgs[method];
-                resolve(result && args.length ? result[args[0]] : undefined);
-            };
-            const router = this.target.router();
-            if (!router) {
-                SessionRouter.dispatchConnectionError(callback, method);
-            }
-            else {
-                router.sendMessage(this.target.sessionId, this.domain, method, params, callback);
-            }
-        });
     }
     invoke(method, request) {
         return new Promise(fulfill => {

@@ -1,8 +1,8 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable @devtools/no-imperative-dom-api */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 /*
  * Copyright (C) 2009 Apple Inc.  All rights reserved.
  * Copyright (C) 2009 Joseph Pecoraro
@@ -61,6 +61,32 @@ const UIStrings = {
      * @description Text for the size of something
      */
     size: 'Size',
+    /**
+     * @description Text for the "Domain" of the cookie
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#domaindomain-value
+     */
+    domain: 'Domain',
+    /**
+     * @description Text for the "Path" of the cookie
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#pathpath-value
+     */
+    path: 'Path',
+    /**
+     * @description Text for the "Secure" property of the cookie
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#secure
+     */
+    secure: 'Secure',
+    /**
+     * @description Text for the "Partition Key Site" property of the cookie
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#partitioned
+     */
+    partitionKeySite: 'Partition Key Site',
+    /**
+     * @description Text for the "Priority" property of the cookie
+     * Contains Low, Medium (default), or High if using deprecated cookie Priority attribute.
+     * https://bugs.chromium.org/p/chromium/issues/detail?id=232693
+     */
+    priority: 'Priority',
     /**
      * @description Data grid name for Editable Cookies data grid
      */
@@ -150,10 +176,10 @@ export class CookiesTable extends UI.Widget.VBox {
                    ${i18nString(UIStrings.value)}
                  </th>
                  <th id=${"domain" /* SDK.Cookie.Attribute.DOMAIN */} sortable weight="7" ?editable=${input.editable}>
-                   Domain
+                   ${i18nString(UIStrings.domain)}
                  </th>
                  <th id=${"path" /* SDK.Cookie.Attribute.PATH */} sortable weight="7" ?editable=${input.editable}>
-                   Path
+                   ${i18nString(UIStrings.path)}
                  </th>
                  <th id=${"expires" /* SDK.Cookie.Attribute.EXPIRES */} sortable weight="7" ?editable=${input.editable}>
                    Expires / Max-Age
@@ -165,19 +191,19 @@ export class CookiesTable extends UI.Widget.VBox {
                    HttpOnly
                  </th>
                  <th id=${"secure" /* SDK.Cookie.Attribute.SECURE */} sortable align="center" weight="7" ?editable=${input.editable} type="boolean">
-                   Secure
+                   ${i18nString(UIStrings.secure)}
                  </th>
                  <th id=${"same-site" /* SDK.Cookie.Attribute.SAME_SITE */} sortable weight="7" ?editable=${input.editable}>
                    SameSite
                  </th>
                  <th id=${"partition-key-site" /* SDK.Cookie.Attribute.PARTITION_KEY_SITE */} sortable weight="7" ?editable=${input.editable}>
-                   Partition Key Site
+                   ${i18nString(UIStrings.partitionKeySite)}
                  </th>
                  <th id=${"has-cross-site-ancestor" /* SDK.Cookie.Attribute.HAS_CROSS_SITE_ANCESTOR */} sortable align="center" weight="7" ?editable=${input.editable} type="boolean">
                    Cross Site
                  </th>
                  <th id=${"priority" /* SDK.Cookie.Attribute.PRIORITY */} sortable weight="7" ?editable=${input.editable}>
-                   Priority
+                   ${i18nString(UIStrings.priority)}
                  </th>
                  ${input.schemeBindingEnabled ? html `
                  <th id=${"source-scheme" /* SDK.Cookie.Attribute.SOURCE_SCHEME */} sortable align="center" weight="7" ?editable=${input.editable} type="string">

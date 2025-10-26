@@ -27,11 +27,11 @@ describeWithMockConnection('InspectorMainImpl', () => {
         const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
         const runPromise = inspectorMain.run();
         const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
-        SDK.TargetManager.TargetManager.instance().createTarget('someTargetID', 'someName', SDK.Target.Type.FRAME, rootTarget, undefined);
+        SDK.TargetManager.TargetManager.instance().createTarget('someTargetID', 'someName', SDK.Target.Type.FRAME, rootTarget, 'session ID');
         await runPromise;
     };
     beforeEach(() => {
-        sinon.stub(ProtocolClient.InspectorBackend.Connection, 'setFactory');
+        sinon.stub(ProtocolClient.ConnectionTransport.ConnectionTransport, 'setFactory');
     });
     describe('comparingBrowserSettingWithCookieControlSetting', () => {
         // Before the tests, we need to add these settings to allow the InspectorMain.run to work
@@ -145,7 +145,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             await new Promise(resolve => setTimeout(resolve, 0));
             assert.isFalse(finished);
             const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
-            SDK.TargetManager.TargetManager.instance().createTarget('someTargetID', 'someName', SDK.Target.Type.FRAME, rootTarget, undefined);
+            SDK.TargetManager.TargetManager.instance().createTarget('someTargetID', 'someName', SDK.Target.Type.FRAME, rootTarget, 'session ID');
             await new Promise(resolve => setTimeout(resolve, 0));
             assert.isTrue(finished);
         });

@@ -1,6 +1,9 @@
 import type * as Platform from '../../core/platform/platform.js';
 import type * as Common from '../common/common.js';
 import type * as Root from '../root/root.js';
+/**
+ * This values should match the one getting called from Chromium
+ */
 export declare enum Events {
     AppendedToURL = "appendedToURL",
     CanceledSaveURL = "canceledSaveURL",
@@ -18,7 +21,7 @@ export declare enum Events {
     FileSystemsLoaded = "fileSystemsLoaded",
     FileSystemRemoved = "fileSystemRemoved",
     FileSystemAdded = "fileSystemAdded",
-    FileSystemFilesChangedAddedRemoved = "FileSystemFilesChangedAddedRemoved",
+    FileSystemFilesChangedAddedRemoved = "fileSystemFilesChangedAddedRemoved",
     IndexingTotalWorkCalculated = "indexingTotalWorkCalculated",
     IndexingWorked = "indexingWorked",
     IndexingDone = "indexingDone",
@@ -31,7 +34,7 @@ export declare enum Events {
     SetUseSoftMenu = "setUseSoftMenu",
     ShowPanel = "showPanel"
 }
-export declare const EventDescriptors: readonly [readonly [Events.AppendedToURL, "appendedToURL", readonly ["url"]], readonly [Events.CanceledSaveURL, "canceledSaveURL", readonly ["url"]], readonly [Events.ColorThemeChanged, "colorThemeChanged", readonly []], readonly [Events.ContextMenuCleared, "contextMenuCleared", readonly []], readonly [Events.ContextMenuItemSelected, "contextMenuItemSelected", readonly ["id"]], readonly [Events.DeviceCountUpdated, "deviceCountUpdated", readonly ["count"]], readonly [Events.DevicesDiscoveryConfigChanged, "devicesDiscoveryConfigChanged", readonly ["config"]], readonly [Events.DevicesPortForwardingStatusChanged, "devicesPortForwardingStatusChanged", readonly ["status"]], readonly [Events.DevicesUpdated, "devicesUpdated", readonly ["devices"]], readonly [Events.DispatchMessage, "dispatchMessage", readonly ["messageObject"]], readonly [Events.DispatchMessageChunk, "dispatchMessageChunk", readonly ["messageChunk", "messageSize"]], readonly [Events.EnterInspectElementMode, "enterInspectElementMode", readonly []], readonly [Events.EyeDropperPickedColor, "eyeDropperPickedColor", readonly ["color"]], readonly [Events.FileSystemsLoaded, "fileSystemsLoaded", readonly ["fileSystems"]], readonly [Events.FileSystemRemoved, "fileSystemRemoved", readonly ["fileSystemPath"]], readonly [Events.FileSystemAdded, "fileSystemAdded", readonly ["errorMessage", "fileSystem"]], readonly [Events.FileSystemFilesChangedAddedRemoved, "fileSystemFilesChangedAddedRemoved", readonly ["changed", "added", "removed"]], readonly [Events.IndexingTotalWorkCalculated, "indexingTotalWorkCalculated", readonly ["requestId", "fileSystemPath", "totalWork"]], readonly [Events.IndexingWorked, "indexingWorked", readonly ["requestId", "fileSystemPath", "worked"]], readonly [Events.IndexingDone, "indexingDone", readonly ["requestId", "fileSystemPath"]], readonly [Events.KeyEventUnhandled, "keyEventUnhandled", readonly ["event"]], readonly [Events.ReloadInspectedPage, "reloadInspectedPage", readonly ["hard"]], readonly [Events.RevealSourceLine, "revealSourceLine", readonly ["url", "lineNumber", "columnNumber"]], readonly [Events.SavedURL, "savedURL", readonly ["url", "fileSystemPath"]], readonly [Events.SearchCompleted, "searchCompleted", readonly ["requestId", "fileSystemPath", "files"]], readonly [Events.SetInspectedTabId, "setInspectedTabId", readonly ["tabId"]], readonly [Events.SetUseSoftMenu, "setUseSoftMenu", readonly ["useSoftMenu"]], readonly [Events.ShowPanel, "showPanel", readonly ["panelName"]]];
+export declare const EventDescriptors: readonly [readonly [Events.AppendedToURL, readonly ["url"]], readonly [Events.CanceledSaveURL, readonly ["url"]], readonly [Events.ColorThemeChanged, readonly []], readonly [Events.ContextMenuCleared, readonly []], readonly [Events.ContextMenuItemSelected, readonly ["id"]], readonly [Events.DeviceCountUpdated, readonly ["count"]], readonly [Events.DevicesDiscoveryConfigChanged, readonly ["config"]], readonly [Events.DevicesPortForwardingStatusChanged, readonly ["status"]], readonly [Events.DevicesUpdated, readonly ["devices"]], readonly [Events.DispatchMessage, readonly ["messageObject"]], readonly [Events.DispatchMessageChunk, readonly ["messageChunk", "messageSize"]], readonly [Events.EnterInspectElementMode, readonly []], readonly [Events.EyeDropperPickedColor, readonly ["color"]], readonly [Events.FileSystemsLoaded, readonly ["fileSystems"]], readonly [Events.FileSystemRemoved, readonly ["fileSystemPath"]], readonly [Events.FileSystemAdded, readonly ["errorMessage", "fileSystem"]], readonly [Events.FileSystemFilesChangedAddedRemoved, readonly ["changed", "added", "removed"]], readonly [Events.IndexingTotalWorkCalculated, undefined, readonly ["requestId", "fileSystemPath", "totalWork"]], readonly [Events.IndexingWorked, readonly ["requestId", "fileSystemPath", "worked"]], readonly [Events.IndexingDone, readonly ["requestId", "fileSystemPath"]], readonly [Events.KeyEventUnhandled, readonly ["event"]], readonly [Events.ReloadInspectedPage, readonly ["hard"]], readonly [Events.RevealSourceLine, readonly ["url", "lineNumber", "columnNumber"]], readonly [Events.SavedURL, readonly ["url", "fileSystemPath"]], readonly [Events.SearchCompleted, readonly ["requestId", "fileSystemPath", "files"]], readonly [Events.SetInspectedTabId, readonly ["tabId"]], readonly [Events.SetUseSoftMenu, readonly ["useSoftMenu"]], readonly [Events.ShowPanel, readonly ["panelName"]]];
 export interface DispatchMessageChunkEvent {
     messageChunk: string;
     messageSize: number;
@@ -403,6 +406,7 @@ export declare const enum EnumeratedHistogram {
     LighthouseModeRun = "DevTools.LighthouseModeRun",
     LighthouseCategoryUsed = "DevTools.LighthouseCategoryUsed",
     SwatchActivated = "DevTools.SwatchActivated",
-    AnimationPlaybackRateChanged = "DevTools.AnimationPlaybackRateChanged"
+    AnimationPlaybackRateChanged = "DevTools.AnimationPlaybackRateChanged",
+    BuiltInAiAvailability = "DevTools.BuiltInAiAvailability"
 }
 export {};

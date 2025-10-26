@@ -16,6 +16,10 @@ export default `/*
     margin-top: var(--sys-size-2);
   }
 
+  .response-container {
+    height: 85px;
+  }
+
   @keyframes gradient {
     0% { background-position: 100% 0; }
     100% { background-position: -100% 0; }
@@ -56,6 +60,19 @@ export default `/*
   h2 {
     font: var(--sys-typescale-body4-bold);
     margin: 0 0 var(--sys-size-3);
+    line-clamp: 1;
+    -webkit-line-clamp: 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .main-text {
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .lightbulb-icon {

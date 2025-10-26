@@ -803,7 +803,7 @@ export class ContextMenu extends SubMenu {
         'footer'
     ];
 }
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 /**
  * @property jslogContext - Reflects the `"jslogContext"` attribute.
  * @property populateMenuCall - Callback function to populate the menu.

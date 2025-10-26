@@ -51,9 +51,9 @@ async function enable({ reset = true } = {}) {
     // minimally there.
     await initializeGlobalVars({ reset });
     setMockResourceTree(true);
-    ProtocolClient.InspectorBackend.Connection.setFactory(() => new MockConnection());
+    ProtocolClient.ConnectionTransport.ConnectionTransport.setFactory(() => new MockConnection());
 }
-class MockConnection extends ProtocolClient.InspectorBackend.Connection {
+class MockConnection extends ProtocolClient.ConnectionTransport.ConnectionTransport {
     messageCallback;
     setOnMessage(callback) {
         this.messageCallback = callback;
@@ -70,6 +70,7 @@ class MockConnection extends ProtocolClient.InspectorBackend.Connection {
             if (!handler) {
                 return;
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let result = handler.call(undefined, outgoingMessage.params) || {};
             if ('then' in result) {
                 result = await result;
@@ -85,6 +86,12 @@ class MockConnection extends ProtocolClient.InspectorBackend.Connection {
             });
         })();
     }
+    setOnDisconnect() {
+        // Do nothing
+    }
+    async disconnect() {
+        // Do nothing
+    }
 }
 async function disable() {
     if (outgoingMessageListenerEntryMap.size > 0) {
@@ -96,7 +103,7 @@ async function disable() {
     await raf();
     await deinitializeGlobalVars();
     // @ts-expect-error Setting back to undefined as a hard reset.
-    ProtocolClient.InspectorBackend.Connection.setFactory(undefined);
+    ProtocolClient.ConnectionTransport.ConnectionTransport.setFactory(undefined);
 }
 export function describeWithMockConnection(title, fn, opts = {
     reset: true,

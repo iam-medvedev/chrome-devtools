@@ -276,8 +276,8 @@ import * as Common3 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
-import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
+import * as PanelCommon from "./../../panels/common/common.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as NetworkForward from "./../../panels/network/forward/forward.js";
 var UIStrings3 = {
@@ -294,9 +294,17 @@ var UIStrings3 = {
    */
   showNetworkRequestBlocking: "Show Network request blocking",
   /**
+   * @description Command for showing the 'Network request blocking' tool
+   */
+  showRequestConditions: "Show Request conditions",
+  /**
    * @description Title of the 'Network request blocking' tool in the bottom drawer
    */
   networkRequestBlocking: "Network request blocking",
+  /**
+   * @description Title of the 'Request conditions' tool in the bottom drawer
+   */
+  networkRequestConditions: "Request conditions",
   /**
    * @description Command for showing the 'Network conditions' tool
    */
@@ -390,6 +398,14 @@ var UIStrings3 = {
    */
   removeAllNetworkRequestBlockingPatterns: "Remove all network request blocking patterns",
   /**
+   * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
+   */
+  addNetworkRequestBlockingOrThrottlingPattern: "Add network request blocking or throttling pattern",
+  /**
+   * @description Title of an action in the Network request blocking panel to clear all URL patterns.
+   */
+  removeAllNetworkRequestBlockingOrThrottlingPatterns: "Remove all network request blocking or throttling patterns",
+  /**
    * @description Title of an action in the Network panel (and title of a setting in the Network category)
    *              that enables options in the UI to copy or export HAR (not translatable) with sensitive data.
    */
@@ -407,6 +423,7 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/network/network-meta.ts", UIStrings3);
 var i18nLazyString3 = i18n5.i18n.getLazilyComputedLocalizedString.bind(void 0, str_3);
+var i18nString = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var loadedNetworkModule;
 var isNode = Root.Runtime.Runtime.isNode();
 async function loadNetworkModule() {
@@ -433,16 +450,17 @@ UI3.ViewManager.registerViewExtension({
     return Network.NetworkPanel.NetworkPanel.instance();
   }
 });
+var individualThrottlingEnabled = () => Boolean(Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled);
 UI3.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "network.blocked-urls",
-  commandPrompt: i18nLazyString3(UIStrings3.showNetworkRequestBlocking),
-  title: i18nLazyString3(UIStrings3.networkRequestBlocking),
+  commandPrompt: () => individualThrottlingEnabled() ? i18nString(UIStrings3.showRequestConditions) : i18nString(UIStrings3.showNetworkRequestBlocking),
+  title: () => individualThrottlingEnabled() ? i18nString(UIStrings3.networkRequestConditions) : i18nString(UIStrings3.networkRequestBlocking),
   persistence: "closeable",
   order: 60,
   async loadView() {
     const Network = await loadNetworkModule();
-    return new Network.BlockedURLsPane.BlockedURLsPane();
+    return new Network.RequestConditionsDrawer.RequestConditionsDrawer();
   }
 });
 UI3.ViewManager.registerViewExtension({
@@ -582,27 +600,27 @@ UI3.ActionRegistration.registerActionExtension({
 UI3.ActionRegistration.registerActionExtension({
   actionId: "network.add-network-request-blocking-pattern",
   category: "NETWORK",
-  title: i18nLazyString3(UIStrings3.addNetworkRequestBlockingPattern),
+  title: () => individualThrottlingEnabled() ? i18nString(UIStrings3.addNetworkRequestBlockingOrThrottlingPattern) : i18nString(UIStrings3.addNetworkRequestBlockingPattern),
   iconClass: "plus",
   contextTypes() {
-    return maybeRetrieveContextTypes((Network) => [Network.BlockedURLsPane.BlockedURLsPane]);
+    return maybeRetrieveContextTypes((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
   },
   async loadActionDelegate() {
     const Network = await loadNetworkModule();
-    return new Network.BlockedURLsPane.ActionDelegate();
+    return new Network.RequestConditionsDrawer.ActionDelegate();
   }
 });
 UI3.ActionRegistration.registerActionExtension({
   actionId: "network.remove-all-network-request-blocking-patterns",
   category: "NETWORK",
-  title: i18nLazyString3(UIStrings3.removeAllNetworkRequestBlockingPatterns),
+  title: () => individualThrottlingEnabled() ? i18nString(UIStrings3.removeAllNetworkRequestBlockingOrThrottlingPatterns) : i18nString(UIStrings3.removeAllNetworkRequestBlockingPatterns),
   iconClass: "clear",
   contextTypes() {
-    return maybeRetrieveContextTypes((Network) => [Network.BlockedURLsPane.BlockedURLsPane]);
+    return maybeRetrieveContextTypes((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
   },
   async loadActionDelegate() {
     const Network = await loadNetworkModule();
-    return new Network.BlockedURLsPane.ActionDelegate();
+    return new Network.RequestConditionsDrawer.ActionDelegate();
   }
 });
 Common3.Settings.registerSettingExtension({
@@ -732,7 +750,7 @@ Common3.Revealer.registerRevealer({
 });
 Common3.Revealer.registerRevealer({
   contextTypes() {
-    return [NetworkForward.UIFilter.UIRequestFilter, Extensions.ExtensionServer.RevealableNetworkRequestFilter];
+    return [NetworkForward.UIFilter.UIRequestFilter, PanelCommon.ExtensionServer.RevealableNetworkRequestFilter];
   },
   destination: Common3.Revealer.RevealerDestination.NETWORK_PANEL,
   async loadRevealer() {
@@ -764,7 +782,7 @@ var UIStrings4 = {
   showNode: "Show Scripts"
 };
 var str_4 = i18n7.i18n.registerUIStrings("entrypoints/js_app/js_app.ts", UIStrings4);
-var i18nString = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var i18nString2 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var i18nLazyString4 = i18n7.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
 var jsMainImplInstance;
 var loadedSourcesModule;
@@ -785,7 +803,7 @@ var JsMainImpl = class _JsMainImpl {
   async run() {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConnectToNodeJSDirectly);
     void SDK2.Connections.initMainConnection(async () => {
-      const target = SDK2.TargetManager.TargetManager.instance().createTarget("main", i18nString(UIStrings4.main), SDK2.Target.Type.NODE, null);
+      const target = SDK2.TargetManager.TargetManager.instance().createTarget("main", i18nString2(UIStrings4.main), SDK2.Target.Type.NODE, null);
       void target.runtimeAgent().invoke_runIfWaitingForDebugger();
     }, Components.TargetDetachedDialog.TargetDetachedDialog.connectionLost);
   }

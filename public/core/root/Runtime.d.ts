@@ -86,9 +86,7 @@ export declare const enum ExperimentName {
     JUST_MY_CODE = "just-my-code",
     USE_SOURCE_MAP_SCOPES = "use-source-map-scopes",
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
-    TIMELINE_DEBUG_MODE = "timeline-debug-mode",
-    TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
-    TIMELINE_COMPILED_SOURCES = "timeline-compiled-sources"
+    TIMELINE_DEBUG_MODE = "timeline-debug-mode"
 }
 export declare enum GenAiEnterprisePolicyValue {
     ALLOW = 0,
@@ -138,7 +136,6 @@ export interface HostConfigAiAssistancePerformanceAgent {
     temperature: number;
     enabled: boolean;
     userTier: string;
-    insightsEnabled?: boolean;
     featureName?: string;
 }
 export interface HostConfigAiAssistanceFileAgent {
@@ -232,6 +229,7 @@ interface DevToolsStartingStyleDebugging {
 }
 interface AiPromptApi {
     enabled: boolean;
+    allowWithoutGpu: boolean;
 }
 interface DevToolsIndividualRequestThrottling {
     enabled: boolean;

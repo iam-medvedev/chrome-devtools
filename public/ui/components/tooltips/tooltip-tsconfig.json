@@ -41,9 +41,6 @@
   ],
   "references": [
     {
-      "path": "../../../services/window_bounds/bundle-tsconfig.json"
-    },
-    {
       "path": "../../legacy/bundle-tsconfig.json"
     },
     {

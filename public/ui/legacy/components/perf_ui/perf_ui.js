@@ -10,7 +10,7 @@ __export(BrickBreaker_exports, {
   BrickBreaker: () => BrickBreaker
 });
 import * as i18n from "./../../../../core/i18n/i18n.js";
-import * as WindowBounds from "./../../../../services/window_bounds/window_bounds.js";
+import * as UI from "./../../legacy.js";
 import * as ThemeSupport from "./../../theme_support/theme_support.js";
 var UIStrings = {
   /**
@@ -110,7 +110,7 @@ var BrickBreaker = class extends HTMLElement {
   #keyPressHandlerBound = this.#keyPressHandler.bind(this);
   #closeGameBound = this.#closeGame.bind(this);
   #mouseMoveHandlerBound = this.#mouseMoveHandler.bind(this);
-  #boundingElement = WindowBounds.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
+  #boundingElement = UI.UIUtils.getDevToolsBoundingElement();
   // Value by which we moved the game up relative to the viewport
   #gameViewportOffset = 0;
   #running = false;
@@ -497,7 +497,7 @@ __export(ChartViewport_exports, {
 import * as Common2 from "./../../../../core/common/common.js";
 import * as Platform4 from "./../../../../core/platform/platform.js";
 import * as RenderCoordinator from "./../../../components/render_coordinator/render_coordinator.js";
-import * as UI2 from "./../../legacy.js";
+import * as UI3 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/chartViewport.css.js
 var chartViewport_css_default = `/*
@@ -593,7 +593,7 @@ import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as Trace from "./../../../../models/trace/trace.js";
 import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
 import * as Buttons from "./../../../components/buttons/buttons.js";
-import * as UI from "./../../legacy.js";
+import * as UI2 from "./../../legacy.js";
 import * as ThemeSupport7 from "./../../theme_support/theme_support.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/CanvasHelper.js
@@ -733,18 +733,8 @@ __export(Font_exports, {
   getFontFamilyForCanvas: () => getFontFamilyForCanvas
 });
 import * as Host from "./../../../../core/host/host.js";
-var fontFamily = null;
 function getFontFamilyForCanvas() {
-  if (fontFamily) {
-    return fontFamily;
-  }
-  const bodyStyles = getComputedStyle(document.body);
-  if (bodyStyles.fontFamily) {
-    fontFamily = bodyStyles.fontFamily;
-  } else {
-    fontFamily = Host.Platform.fontFamily();
-  }
-  return fontFamily;
+  return Host.Platform.fontFamily();
 }
 var DEFAULT_FONT_SIZE = "11px";
 
@@ -1065,7 +1055,7 @@ var moveUpIconPath = "M9.25 17V5.875L7.062 8.062L6 7L10 3L14 7L12.938 8.062L10.7
 var moveDownIconPath = "M9.25 3V14.125L7.062 11.938L6 13L10 17L14 13L12.938 11.938L10.75 14.125V3H9.25Z";
 var hideIconPath = "M13.2708 11.1459L11.9792 9.85419C12.0347 9.32641 11.875 8.87155 11.5 8.4896C11.125 8.10766 10.6736 7.94446 10.1458 8.00002L8.85417 6.70835C9.03472 6.63891 9.22222 6.58683 9.41667 6.5521C9.61111 6.51738 9.80556 6.50002 10 6.50002C10.9722 6.50002 11.7986 6.8403 12.4792 7.52085C13.1597 8.20141 13.5 9.0278 13.5 10C13.5 10.1945 13.4826 10.3889 13.4479 10.5834C13.4132 10.7778 13.3542 10.9653 13.2708 11.1459ZM16.0417 13.9167L14.9583 12.8334C15.4583 12.4445 15.9132 12.0174 16.3229 11.5521C16.7326 11.0868 17.0764 10.5695 17.3542 10C16.6736 8.59724 15.6701 7.49655 14.3438 6.69794C13.0174 5.89933 11.5694 5.50002 10 5.50002C9.63889 5.50002 9.28472 5.52085 8.9375 5.56252C8.59028 5.60419 8.25 5.67363 7.91667 5.77085L6.70833 4.56252C7.23611 4.35419 7.77431 4.20835 8.32292 4.12502C8.87153 4.04169 9.43056 4.00002 10 4.00002C11.9861 4.00002 13.8021 4.53821 15.4479 5.6146C17.0938 6.69099 18.2778 8.1528 19 10C18.6944 10.7917 18.2882 11.5104 17.7813 12.1563C17.2743 12.8021 16.6944 13.3889 16.0417 13.9167ZM16 18.125L13.2917 15.4167C12.7639 15.6111 12.2257 15.757 11.6771 15.8542C11.1285 15.9514 10.5694 16 10 16C8.01389 16 6.19792 15.4618 4.55208 14.3854C2.90625 13.309 1.72222 11.8472 1 10C1.30556 9.20835 1.70833 8.48613 2.20833 7.83335C2.70833 7.18058 3.29167 6.5903 3.95833 6.06252L1.875 3.97919L2.9375 2.91669L17.0625 17.0625L16 18.125ZM5.02083 7.14585C4.53472 7.53474 4.08333 7.96183 3.66667 8.4271C3.25 8.89238 2.90972 9.41669 2.64583 10C3.32639 11.4028 4.32986 12.5035 5.65625 13.3021C6.98264 14.1007 8.43056 14.5 10 14.5C10.3611 14.5 10.7153 14.4757 11.0625 14.4271C11.4097 14.3785 11.7569 14.3125 12.1042 14.2292L11.1667 13.2917C10.9722 13.3611 10.7778 13.4132 10.5833 13.4479C10.3889 13.4827 10.1944 13.5 10 13.5C9.02778 13.5 8.20139 13.1597 7.52083 12.4792C6.84028 11.7986 6.5 10.9722 6.5 10C6.5 9.80558 6.52431 9.61113 6.57292 9.41669C6.62153 9.22224 6.66667 9.0278 6.70833 8.83335L5.02083 7.14585Z";
 var showIconPath = "M10 13.5C10.972 13.5 11.7983 13.1597 12.479 12.479C13.1597 11.7983 13.5 10.972 13.5 10C13.5 9.028 13.1597 8.20167 12.479 7.521C11.7983 6.84033 10.972 6.5 10 6.5C9.028 6.5 8.20167 6.84033 7.521 7.521C6.84033 8.20167 6.5 9.028 6.5 10C6.5 10.972 6.84033 11.7983 7.521 12.479C8.20167 13.1597 9.028 13.5 10 13.5ZM10 12C9.44467 12 8.97233 11.8057 8.583 11.417C8.19433 11.0277 8 10.5553 8 10C8 9.44467 8.19433 8.97233 8.583 8.583C8.97233 8.19433 9.44467 8 10 8C10.5553 8 11.0277 8.19433 11.417 8.583C11.8057 8.97233 12 9.44467 12 10C12 10.5553 11.8057 11.0277 11.417 11.417C11.0277 11.8057 10.5553 12 10 12ZM10 16C8.014 16 6.20833 15.455 4.583 14.365C2.95833 13.2743 1.764 11.8193 1 10C1.764 8.18067 2.95833 6.72567 4.583 5.635C6.20833 4.545 8.014 4 10 4C11.986 4 13.7917 4.545 15.417 5.635C17.0417 6.72567 18.236 8.18067 19 10C18.236 11.8193 17.0417 13.2743 15.417 14.365C13.7917 15.455 11.986 16 10 16ZM10 14.5C11.5553 14.5 12.9927 14.0973 14.312 13.292C15.632 12.486 16.646 11.3887 17.354 10C16.646 8.61133 15.632 7.514 14.312 6.708C12.9927 5.90267 11.5553 5.5 10 5.5C8.44467 5.5 7.00733 5.90267 5.688 6.708C4.368 7.514 3.354 8.61133 2.646 10C3.354 11.3887 4.368 12.486 5.688 13.292C7.00733 14.0973 8.44467 14.5 10 14.5Z";
-var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI2.Widget.VBox) {
   flameChartDelegate;
   chartViewport;
   dataProvider;
@@ -1143,7 +1133,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
     this.#subtitleFont = `${SUBTITLE_FONT_SIZE_AND_STYLE} ${getFontFamilyForCanvas()}`;
     this.registerRequiredCSS(flameChart_css_default);
-    this.registerRequiredCSS(UI.inspectorCommonStyles);
+    this.registerRequiredCSS(UI2.inspectorCommonStyles);
     this.contentElement.classList.add("flame-chart-main-pane");
     if (typeof optionalConfig.selectedElementOutline === "boolean") {
       this.#selectedElementOutlineEnabled = optionalConfig.selectedElementOutline;
@@ -1169,8 +1159,8 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.context = this.canvas.getContext("2d");
     this.candyStripePattern = this.candyStripePatternGray = null;
     this.canvas.tabIndex = 0;
-    UI.ARIAUtils.setLabel(this.canvas, i18nString2(UIStrings2.flameChart));
-    UI.ARIAUtils.markAsTree(this.canvas);
+    UI2.ARIAUtils.setLabel(this.canvas, i18nString2(UIStrings2.flameChart));
+    UI2.ARIAUtils.markAsTree(this.canvas);
     this.setDefaultFocusedElement(this.canvas);
     this.canvas.classList.add("flame-chart-canvas");
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this), false);
@@ -1192,7 +1182,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         /* Events.CANVAS_FOCUSED */
       );
     }, false);
-    UI.UIUtils.installDragHandle(this.viewportElement, this.startDragging.bind(this), this.dragging.bind(this), this.endDragging.bind(this), null);
+    UI2.UIUtils.installDragHandle(this.viewportElement, this.startDragging.bind(this), this.dragging.bind(this), this.endDragging.bind(this), null);
     this.rulerEnabled = true;
     this.barHeight = 17;
     this.hitMarginPx = 3;
@@ -1770,12 +1760,12 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     const groupName = groups[groupIndex].name;
     if (!groups[groupIndex].selectable) {
       this.deselectAllGroups();
-      UI.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.sHovered, { PH1: groupName }));
+      UI2.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.sHovered, { PH1: groupName }));
     } else {
       this.selectedGroupIndex = groupIndex;
       this.flameChartDelegate.updateSelectedGroup(this, groups[groupIndex]);
       this.draw();
-      UI.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.sSelected, { PH1: groupName }));
+      UI2.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.sSelected, { PH1: groupName }));
     }
   }
   deselectAllGroups() {
@@ -1863,7 +1853,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     if (!propagatedExpand) {
       const groupName = groups[groupIndex].name;
       const content = group.expanded ? i18nString2(UIStrings2.sExpanded, { PH1: groupName }) : i18nString2(UIStrings2.sCollapsed, { PH1: groupName });
-      UI.ARIAUtils.LiveAnnouncer.alert(content);
+      UI2.ARIAUtils.LiveAnnouncer.alert(content);
     }
   }
   moveGroupUp(groupIndex) {
@@ -2007,7 +1997,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     if (this.#inTrackConfigEditMode) {
       return;
     }
-    this.contextMenu = new UI.ContextMenu.ContextMenu(event);
+    this.contextMenu = new UI2.ContextMenu.ContextMenu(event);
     const label = i18nString2(UIStrings2.enterTrackConfigurationMode);
     this.contextMenu.defaultSection().appendItem(label, () => {
       this.enterTrackConfigurationMode();
@@ -2020,7 +2010,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     if (this.#inTrackConfigEditMode === false) {
       return;
     }
-    this.contextMenu = new UI.ContextMenu.ContextMenu(event);
+    this.contextMenu = new UI2.ContextMenu.ContextMenu(event);
     const label = i18nString2(UIStrings2.exitTrackConfigurationMode);
     this.contextMenu.defaultSection().appendItem(label, () => {
       this.#exitEditMode();
@@ -2051,7 +2041,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       this.setSelectedEntry(entryIndexToUse);
       this.#selectGroup(groupIndex);
     }
-    this.contextMenu = this.dataProvider.customizedContextMenu?.(event, this.selectedEntryIndex, groupIndex) ?? new UI.ContextMenu.ContextMenu(event);
+    this.contextMenu = this.dataProvider.customizedContextMenu?.(event, this.selectedEntryIndex, groupIndex) ?? new UI2.ContextMenu.ContextMenu(event);
     const annotationSection = this.contextMenu.annotationSection();
     annotationSection.appendItem(i18nString2(UIStrings2.labelEntry), () => {
       this.dispatchEventToListeners("EntryLabelAnnotationAdded", { entryIndex: this.selectedEntryIndex, withLinkCreationButton: false });
@@ -2094,7 +2084,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.canvas.dispatchEvent(event);
   }
   onKeyDown(e) {
-    if (UI.KeyboardShortcut.KeyboardShortcut.hasAtLeastOneModifier(e) || !this.timelineData()) {
+    if (UI2.KeyboardShortcut.KeyboardShortcut.hasAtLeastOneModifier(e) || !this.timelineData()) {
       return;
     }
     if (e.key === " " && this.selectedEntryIndex > -1) {
@@ -2240,7 +2230,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     );
     const eventName = this.dataProvider.entryTitle(firstEntryIndex);
     if (eventName) {
-      UI.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.eventSelectedFromGroup, {
+      UI2.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.eventSelectedFromGroup, {
         PH1: eventName,
         PH2: group.name
       }));
@@ -2325,7 +2315,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       return start1 < end2 && start2 < end1;
     }
     const keyboardEvent = event;
-    const keys = UI.KeyboardShortcut.Keys;
+    const keys = UI2.KeyboardShortcut.Keys;
     if (keyboardEvent.keyCode === keys.Left.code || keyboardEvent.keyCode === keys.Right.code) {
       const level = timelineData.entryLevels[this.selectedEntryIndex];
       const levelIndexes = this.timelineLevels ? this.timelineLevels[level] : [];
@@ -2952,7 +2942,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     const { entryTotalTimes, entryStartTimes } = timelineData;
     const top = this.chartViewport.scrollOffset();
     const textPadding = this.textPadding;
-    const minTextWidth = 2 * textPadding + UI.UIUtils.measureTextWidth(context, "\u2026");
+    const minTextWidth = 2 * textPadding + UI2.UIUtils.measureTextWidth(context, "\u2026");
     const minTextWidthDuration = this.chartViewport.pixelToTimeOffset(minTextWidth);
     const keysByColorWithOutline = /* @__PURE__ */ new Map();
     const keysByColorWithNoOutline = /* @__PURE__ */ new Map();
@@ -3108,7 +3098,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         context.font = this.#font;
       }
       if (this.#inTrackConfigEditMode && group.hidden) {
-        context.fillRect(titleStart, offset + group.style.height / 2, UI.UIUtils.measureTextWidth(context, group.name), 1);
+        context.fillRect(titleStart, offset + group.style.height / 2, UI2.UIUtils.measureTextWidth(context, group.name), 1);
       }
       if (trackConfigurationAllowed) {
         if (this.#inTrackConfigEditMode) {
@@ -3169,7 +3159,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       const y = this.levelToOffset(level);
       const h = this.levelHeight(level);
       const padding = 4;
-      const width = Math.ceil(UI.UIUtils.measureTextWidth(context, title)) + 2 * padding;
+      const width = Math.ceil(UI2.UIUtils.measureTextWidth(context, title)) + 2 * padding;
       lastMarkerX = x + width + 1;
       lastMarkerLevel = level;
       this.markerPositions.set(entryIndex, { x, width });
@@ -3242,7 +3232,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
           /* FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */
         );
         const maxBarWidth = hasArrowDecoration && barWidth > barHeight * 2 ? barWidth - textPadding - this.barHeight : barWidth - 2 * textPadding;
-        text = UI.UIUtils.trimTextMiddle(context, text, maxBarWidth);
+        text = UI2.UIUtils.trimTextMiddle(context, text, maxBarWidth);
       }
       const unclippedBarX = this.chartViewport.timeToPosition(entryStartTime);
       if (this.dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixel, (color) => this.#transformColor(entryIndex, color))) {
@@ -3343,7 +3333,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
    * @returns the width of the label of the group.
    */
   labelWidthForGroup(context, group) {
-    return EXPANSION_ARROW_INDENT * (group.style.nestingLevel + 1) + ARROW_SIDE / 2 + HEADER_LABEL_X_PADDING + UI.UIUtils.measureTextWidth(context, group.name) + HEADER_LABEL_X_PADDING - HEADER_LEFT_PADDING;
+    return EXPANSION_ARROW_INDENT * (group.style.nestingLevel + 1) + ARROW_SIDE / 2 + HEADER_LABEL_X_PADDING + UI2.UIUtils.measureTextWidth(context, group.name) + HEADER_LABEL_X_PADDING - HEADER_LEFT_PADDING;
   }
   drawCollapsedOverviewForGroup(group, y, endLevel) {
     const range = new Common.SegmentedRange.SegmentedRange(mergeCallback);
@@ -3560,7 +3550,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     }
     const marker = timelineData.markers[markerIndex];
     const barX = this.timeToPositionClipped(marker.startTime());
-    UI.Tooltip.Tooltip.install(element, marker.title() || "");
+    UI2.Tooltip.Tooltip.install(element, marker.title() || "");
     const style = element.style;
     style.left = barX + "px";
     style.backgroundColor = marker.color();
@@ -4194,7 +4184,7 @@ var FlameChartTimelineData = class _FlameChartTimelineData {
 };
 
 // gen/front_end/ui/legacy/components/perf_ui/ChartViewport.js
-var ChartViewport = class extends UI2.Widget.VBox {
+var ChartViewport = class extends UI3.Widget.VBox {
   delegate;
   viewportElement;
   #alwaysShowVerticalScroll;
@@ -4236,8 +4226,8 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.viewportElement.addEventListener("wheel", this.onMouseWheel.bind(this), false);
     this.viewportElement.addEventListener("keydown", this.onChartKeyDown.bind(this), false);
     this.viewportElement.addEventListener("keyup", this.onChartKeyUp.bind(this), false);
-    UI2.UIUtils.installDragHandle(this.viewportElement, this.startDragging.bind(this), this.dragging.bind(this), this.endDragging.bind(this), "-webkit-grabbing", null);
-    UI2.UIUtils.installDragHandle(this.viewportElement, this.startRangeSelection.bind(this), this.rangeSelectionDragging.bind(this), this.endRangeSelection.bind(this), "text", null);
+    UI3.UIUtils.installDragHandle(this.viewportElement, this.startDragging.bind(this), this.dragging.bind(this), this.endDragging.bind(this), "-webkit-grabbing", null);
+    UI3.UIUtils.installDragHandle(this.viewportElement, this.startRangeSelection.bind(this), this.rangeSelectionDragging.bind(this), this.endRangeSelection.bind(this), "text", null);
     this.#alwaysShowVerticalScroll = false;
     this.rangeSelectionEnabled = true;
     this.vScrollElement = this.contentElement.createChild("div", "chart-viewport-v-scroll");
@@ -4378,7 +4368,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
         this.handleZoomGesture(zoomDelta);
       }
     } else if (navigation === "modern") {
-      const isCtrlOrCmd = UI2.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(wheelEvent);
+      const isCtrlOrCmd = UI3.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(wheelEvent);
       if (wheelEvent.shiftKey) {
         this.handleHorizontalPanGesture(
           panDelta,
@@ -4505,7 +4495,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.showCursor(keyboardEvent.shiftKey);
   }
   handleZoomPanScrollKeys(keyboardEvent) {
-    if (UI2.KeyboardShortcut.KeyboardShortcut.hasAtLeastOneModifier(keyboardEvent) && !keyboardEvent.shiftKey) {
+    if (UI3.KeyboardShortcut.KeyboardShortcut.hasAtLeastOneModifier(keyboardEvent) && !keyboardEvent.shiftKey) {
       return;
     }
     const zoomFactor = keyboardEvent.shiftKey ? 0.8 : 0.3;
@@ -4640,7 +4630,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     }
     this.targetLeftTime = startTime;
     this.targetRightTime = endTime;
-    this.cancelWindowTimesAnimation = UI2.UIUtils.animateFunction(this.element.window(), animateWindowTimes.bind(this), [{ from: this.visibleLeftTime, to: startTime }, { from: this.visibleRightTime, to: endTime }], 100, () => {
+    this.cancelWindowTimesAnimation = UI3.UIUtils.animateFunction(this.element.window(), animateWindowTimes.bind(this), [{ from: this.visibleLeftTime, to: startTime }, { from: this.visibleRightTime, to: endTime }], 100, () => {
       this.cancelWindowTimesAnimation = null;
     });
     function animateWindowTimes(startTime2, endTime2) {
@@ -4671,7 +4661,7 @@ import * as Host2 from "./../../../../core/host/host.js";
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
 import * as Trace2 from "./../../../../models/trace/trace.js";
 import * as VisualLogging2 from "./../../../visual_logging/visual_logging.js";
-import * as UI3 from "./../../legacy.js";
+import * as UI4 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/filmStripView.css.js
 var filmStripView_css_default = `/*
@@ -4793,7 +4783,7 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("ui/legacy/components/perf_ui/FilmStripView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
-var FilmStripView = class _FilmStripView extends Common3.ObjectWrapper.eventMixin(UI3.Widget.HBox) {
+var FilmStripView = class _FilmStripView extends Common3.ObjectWrapper.eventMixin(UI4.Widget.HBox) {
   statusLabel;
   zeroTime = Trace2.Types.Timing.Milli(0);
   #filmStrip = null;
@@ -4823,12 +4813,12 @@ var FilmStripView = class _FilmStripView extends Common3.ObjectWrapper.eventMixi
     const frameTime = i18n5.TimeUtilities.millisToString(time - this.zeroTime);
     const element = document.createElement("button");
     element.classList.add("frame");
-    UI3.Tooltip.Tooltip.install(element, i18nString3(UIStrings3.doubleclickToZoomImageClickTo));
+    UI4.Tooltip.Tooltip.install(element, i18nString3(UIStrings3.doubleclickToZoomImageClickTo));
     element.createChild("div", "time").textContent = frameTime;
     element.tabIndex = 0;
     element.setAttribute("jslog", `${VisualLogging2.preview("film-strip").track({ click: true, dblclick: true })}`);
     element.setAttribute("aria-label", i18nString3(UIStrings3.screenshotForSSelectToView, { PH1: frameTime }));
-    UI3.ARIAUtils.markAsButton(element);
+    UI4.ARIAUtils.markAsButton(element);
     const imageElement = element.createChild("div", "thumbnail").createChild("img");
     imageElement.alt = i18nString3(UIStrings3.screenshot);
     element.addEventListener("mousedown", this.onMouseEvent.bind(this, "FrameSelected", time), false);
@@ -4887,11 +4877,11 @@ var Dialog2 = class _Dialog {
   constructor(data) {
     this.#data = data;
     this.index = data.index;
-    const prevButton = UI3.UIUtils.createTextButton("\u25C0", this.onPrevFrame.bind(this));
-    UI3.Tooltip.Tooltip.install(prevButton, i18nString3(UIStrings3.previousFrame));
-    const nextButton = UI3.UIUtils.createTextButton("\u25B6", this.onNextFrame.bind(this));
-    UI3.Tooltip.Tooltip.install(nextButton, i18nString3(UIStrings3.nextFrame));
-    this.widget = new UI3.Widget.Widget({ classes: ["film-strip-image-dialog"] });
+    const prevButton = UI4.UIUtils.createTextButton("\u25C0", this.onPrevFrame.bind(this));
+    UI4.Tooltip.Tooltip.install(prevButton, i18nString3(UIStrings3.previousFrame));
+    const nextButton = UI4.UIUtils.createTextButton("\u25B6", this.onNextFrame.bind(this));
+    UI4.Tooltip.Tooltip.install(nextButton, i18nString3(UIStrings3.nextFrame));
+    this.widget = new UI4.Widget.Widget({ classes: ["film-strip-image-dialog"] });
     this.widget.registerRequiredCSS(filmStripView_css_default);
     const imageBox = document.createElement("div");
     imageBox.classList.add("image-box");
@@ -4926,7 +4916,7 @@ var Dialog2 = class _Dialog {
   }
   resize() {
     if (!this.dialog) {
-      this.dialog = new UI3.Dialog.Dialog();
+      this.dialog = new UI4.Dialog.Dialog();
       this.widget.show(this.dialog.contentElement);
       this.dialog.setDefaultFocusedElement(this.widget.element);
       this.dialog.show();
@@ -5381,7 +5371,7 @@ import * as i18n9 from "./../../../../core/i18n/i18n.js";
 import * as Platform6 from "./../../../../core/platform/platform.js";
 import * as IconButton from "./../../../components/icon_button/icon_button.js";
 import * as VisualLogging3 from "./../../../visual_logging/visual_logging.js";
-import * as UI4 from "./../../legacy.js";
+import * as UI5 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/overviewGrid.css.js
 var overviewGrid_css_default = `/*
@@ -5664,27 +5654,27 @@ var Window = class extends Common5.ObjectWrapper.ObjectWrapper {
     super();
     this.parentElement = parentElement;
     this.parentElement.classList.add("parent-element");
-    UI4.ARIAUtils.markAsGroup(this.parentElement);
+    UI5.ARIAUtils.markAsGroup(this.parentElement);
     this.calculator = calculator;
-    UI4.ARIAUtils.setLabel(this.parentElement, i18nString5(UIStrings5.overviewGridWindow));
-    UI4.UIUtils.installDragHandle(this.parentElement, this.startWindowSelectorDragging.bind(this), this.windowSelectorDragging.bind(this), this.endWindowSelectorDragging.bind(this), "text", null);
+    UI5.ARIAUtils.setLabel(this.parentElement, i18nString5(UIStrings5.overviewGridWindow));
+    UI5.UIUtils.installDragHandle(this.parentElement, this.startWindowSelectorDragging.bind(this), this.windowSelectorDragging.bind(this), this.endWindowSelectorDragging.bind(this), "text", null);
     if (dividersLabelBarElement) {
-      UI4.UIUtils.installDragHandle(dividersLabelBarElement, this.startWindowDragging.bind(this), this.windowDragging.bind(this), null, "-webkit-grabbing", "-webkit-grab");
+      UI5.UIUtils.installDragHandle(dividersLabelBarElement, this.startWindowDragging.bind(this), this.windowDragging.bind(this), null, "-webkit-grabbing", "-webkit-grab");
     }
     this.parentElement.addEventListener("wheel", this.onMouseWheel.bind(this), true);
     this.parentElement.addEventListener("dblclick", this.resizeWindowMaximum.bind(this), true);
     Platform6.DOMUtilities.appendStyle(this.parentElement, overviewGrid_css_default);
     this.leftResizeElement = parentElement.createChild("div", "overview-grid-window-resizer");
-    UI4.UIUtils.installDragHandle(this.leftResizeElement, this.resizerElementStartDragging.bind(this), this.leftResizeElementDragging.bind(this), null, "ew-resize");
+    UI5.UIUtils.installDragHandle(this.leftResizeElement, this.resizerElementStartDragging.bind(this), this.leftResizeElementDragging.bind(this), null, "ew-resize");
     this.rightResizeElement = parentElement.createChild("div", "overview-grid-window-resizer");
-    UI4.UIUtils.installDragHandle(this.rightResizeElement, this.resizerElementStartDragging.bind(this), this.rightResizeElementDragging.bind(this), null, "ew-resize");
-    UI4.ARIAUtils.setLabel(this.leftResizeElement, i18nString5(UIStrings5.leftResizer));
-    UI4.ARIAUtils.markAsSlider(this.leftResizeElement);
+    UI5.UIUtils.installDragHandle(this.rightResizeElement, this.resizerElementStartDragging.bind(this), this.rightResizeElementDragging.bind(this), null, "ew-resize");
+    UI5.ARIAUtils.setLabel(this.leftResizeElement, i18nString5(UIStrings5.leftResizer));
+    UI5.ARIAUtils.markAsSlider(this.leftResizeElement);
     const leftKeyDown = (event) => this.handleKeyboardResizing(event, false);
     this.leftResizeElement.addEventListener("keydown", leftKeyDown);
     this.leftResizeElement.addEventListener("click", this.onResizerClicked);
-    UI4.ARIAUtils.setLabel(this.rightResizeElement, i18nString5(UIStrings5.rightResizer));
-    UI4.ARIAUtils.markAsSlider(this.rightResizeElement);
+    UI5.ARIAUtils.setLabel(this.rightResizeElement, i18nString5(UIStrings5.rightResizer));
+    UI5.ARIAUtils.markAsSlider(this.rightResizeElement);
     const rightKeyDown = (event) => this.handleKeyboardResizing(event, true);
     this.rightResizeElement.addEventListener("keydown", rightKeyDown);
     this.rightResizeElement.addEventListener("focus", this.onRightResizeElementFocused.bind(this));
@@ -5913,12 +5903,12 @@ var Window = class extends Common5.ObjectWrapper.ObjectWrapper {
   updateResizeElementAriaValue(leftPercentValue, rightPercentValue) {
     const roundedLeftValue = leftPercentValue.toFixed(2);
     const roundedRightValue = rightPercentValue.toFixed(2);
-    UI4.ARIAUtils.setAriaValueNow(this.leftResizeElement, roundedLeftValue);
-    UI4.ARIAUtils.setAriaValueNow(this.rightResizeElement, roundedRightValue);
+    UI5.ARIAUtils.setAriaValueNow(this.leftResizeElement, roundedLeftValue);
+    UI5.ARIAUtils.setAriaValueNow(this.rightResizeElement, roundedRightValue);
     const leftResizeCeiling = Number(roundedRightValue) - 0.5;
     const rightResizeFloor = Number(roundedLeftValue) + 0.5;
-    UI4.ARIAUtils.setAriaValueMinMax(this.leftResizeElement, "0", leftResizeCeiling.toString());
-    UI4.ARIAUtils.setAriaValueMinMax(this.rightResizeElement, rightResizeFloor.toString(), "100");
+    UI5.ARIAUtils.setAriaValueMinMax(this.leftResizeElement, "0", leftResizeCeiling.toString());
+    UI5.ARIAUtils.setAriaValueMinMax(this.rightResizeElement, rightResizeFloor.toString(), "100");
   }
   updateResizeElementPositionLabels() {
     if (!this.calculator) {
@@ -5932,12 +5922,12 @@ var Window = class extends Common5.ObjectWrapper.ObjectWrapper {
       /* leftSlider */
       false
     ));
-    UI4.ARIAUtils.setAriaValueText(this.leftResizeElement, String(startValue));
-    UI4.ARIAUtils.setAriaValueText(this.rightResizeElement, String(endValue));
+    UI5.ARIAUtils.setAriaValueText(this.leftResizeElement, String(startValue));
+    UI5.ARIAUtils.setAriaValueText(this.rightResizeElement, String(endValue));
   }
   updateResizeElementPercentageLabels(leftValue, rightValue) {
-    UI4.ARIAUtils.setAriaValueText(this.leftResizeElement, leftValue);
-    UI4.ARIAUtils.setAriaValueText(this.rightResizeElement, rightValue);
+    UI5.ARIAUtils.setAriaValueText(this.leftResizeElement, leftValue);
+    UI5.ARIAUtils.setAriaValueText(this.rightResizeElement, rightValue);
   }
   /**
    * This function will return the raw value of the slider window.
@@ -6489,7 +6479,7 @@ import * as Common6 from "./../../../../core/common/common.js";
 import * as Trace4 from "./../../../../models/trace/trace.js";
 import * as TraceBounds from "./../../../../services/trace_bounds/trace_bounds.js";
 import * as VisualLoggging from "./../../../visual_logging/visual_logging.js";
-import * as UI5 from "./../../legacy.js";
+import * as UI6 from "./../../legacy.js";
 import * as ThemeSupport9 from "./../../theme_support/theme_support.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/timelineOverviewInfo.css.js
@@ -6519,7 +6509,7 @@ var timelineOverviewInfo_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineOverviewInfo.css")} */`;
 
 // gen/front_end/ui/legacy/components/perf_ui/TimelineOverviewPane.js
-var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI5.Widget.VBox) {
+var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI6.Widget.VBox) {
   overviewCalculator;
   overviewGrid;
   cursorArea;
@@ -6556,7 +6546,7 @@ var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI5.Wi
     this.overviewGrid.addEventListener("BreadcrumbAdded", this.onBreadcrumbAdded, this);
     this.overviewGrid.setClickHandler(this.onClick.bind(this));
     this.overviewInfo = new OverviewInfo(this.cursorElement);
-    this.#dimHighlightSVG = UI5.UIUtils.createSVGChild(this.element, "svg", "timeline-minimap-dim-highlight-svg hidden");
+    this.#dimHighlightSVG = UI6.UIUtils.createSVGChild(this.element, "svg", "timeline-minimap-dim-highlight-svg hidden");
     this.#initializeDimHighlightSVG();
   }
   enableCreateBreadcrumbsButton() {
@@ -6792,25 +6782,25 @@ var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI5.Wi
    * This function will create three rectangles and a polygon, which will be use to highlight the time range.
    */
   #initializeDimHighlightSVG() {
-    const defs = UI5.UIUtils.createSVGChild(this.#dimHighlightSVG, "defs");
-    const mask = UI5.UIUtils.createSVGChild(defs, "mask");
+    const defs = UI6.UIUtils.createSVGChild(this.#dimHighlightSVG, "defs");
+    const mask = UI6.UIUtils.createSVGChild(defs, "mask");
     mask.id = "dim-highlight-cutouts";
-    const showAllRect = UI5.UIUtils.createSVGChild(mask, "rect");
+    const showAllRect = UI6.UIUtils.createSVGChild(mask, "rect");
     showAllRect.setAttribute("width", "100%");
     showAllRect.setAttribute("height", "100%");
     showAllRect.setAttribute("fill", "hsl(0deg 0% 95%)");
-    const desaturateRect = UI5.UIUtils.createSVGChild(this.#dimHighlightSVG, "rect", "background");
+    const desaturateRect = UI6.UIUtils.createSVGChild(this.#dimHighlightSVG, "rect", "background");
     desaturateRect.setAttribute("width", "100%");
     desaturateRect.setAttribute("height", "100%");
     desaturateRect.setAttribute("fill", ThemeSupport9.ThemeSupport.instance().getComputedValue("--color-background"));
     desaturateRect.setAttribute("mask", `url(#${mask.id})`);
     desaturateRect.style.mixBlendMode = "saturation";
-    const punchRect = UI5.UIUtils.createSVGChild(mask, "rect", "punch");
+    const punchRect = UI6.UIUtils.createSVGChild(mask, "rect", "punch");
     punchRect.setAttribute("y", "0");
     punchRect.setAttribute("height", "100%");
     punchRect.setAttribute("fill", "black");
     const bracketColor = ThemeSupport9.ThemeSupport.instance().getComputedValue("--sys-color-state-on-header-hover");
-    const bracket = UI5.UIUtils.createSVGChild(this.#dimHighlightSVG, "polygon");
+    const bracket = UI6.UIUtils.createSVGChild(this.#dimHighlightSVG, "polygon");
     bracket.setAttribute("fill", bracketColor);
     ThemeSupport9.ThemeSupport.instance().addEventListener(ThemeSupport9.ThemeChangeEvent.eventName, () => {
       const desaturateRect2 = this.#dimHighlightSVG.querySelector("rect.background");
@@ -6848,7 +6838,7 @@ var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI5.Wi
     this.#dimHighlightSVG.classList.add("hidden");
   }
 };
-var TimelineOverviewBase = class extends UI5.Widget.VBox {
+var TimelineOverviewBase = class extends UI6.Widget.VBox {
   #calculator;
   canvas;
   #context;
@@ -6907,7 +6897,7 @@ var OverviewInfo = class {
   element;
   constructor(anchor) {
     this.anchorElement = anchor;
-    this.glassPane = new UI5.GlassPane.GlassPane();
+    this.glassPane = new UI6.GlassPane.GlassPane();
     this.glassPane.setPointerEventsBehavior(
       "PierceContents"
       /* UI.GlassPane.PointerEventsBehavior.PIERCE_CONTENTS */
@@ -6921,7 +6911,7 @@ var OverviewInfo = class {
       /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */
     );
     this.visible = false;
-    this.element = UI5.UIUtils.createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: timelineOverviewInfo_css_default }).createChild("div", "overview-info");
+    this.element = UI6.UIUtils.createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: timelineOverviewInfo_css_default }).createChild("div", "overview-info");
   }
   async setContent(contentPromise) {
     this.visible = true;

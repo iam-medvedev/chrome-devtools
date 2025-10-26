@@ -4,12 +4,12 @@ import { Issue, IssueCategory, IssueKind } from './Issue.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare class ElementAccessibilityIssue extends Issue {
     private issueDetails;
-    constructor(issueDetails: Protocol.Audits.ElementAccessibilityIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel, issueId?: Protocol.Audits.IssueId);
+    constructor(issueDetails: Protocol.Audits.ElementAccessibilityIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null, issueId?: Protocol.Audits.IssueId);
     primaryKey(): string;
     getDescription(): MarkdownIssueDescription | null;
     getKind(): IssueKind;
     getCategory(): IssueCategory;
     details(): Protocol.Audits.ElementAccessibilityIssueDetails;
     isInteractiveContentAttributesSelectDescendantIssue(): boolean;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): ElementAccessibilityIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): ElementAccessibilityIssue[];
 }

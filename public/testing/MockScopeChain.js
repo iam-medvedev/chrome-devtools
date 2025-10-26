@@ -75,13 +75,14 @@ export class MockProtocolBackend {
             endColumn += startColumn;
         }
         dispatchEvent(target, 'Debugger.scriptParsed', {
-            scriptId,
+            scriptId: scriptId,
             url: scriptDescription.url,
             startLine,
             startColumn,
             endLine,
             endColumn,
-            executionContextId: scriptDescription?.executionContextId ?? 1,
+            buildId: '',
+            executionContextId: (scriptDescription?.executionContextId ?? 1),
             executionContextAuxData: { isDefault: !scriptDescription.isContentScript },
             hash: '',
             hasSourceURL: Boolean(scriptDescription.hasSourceURL),

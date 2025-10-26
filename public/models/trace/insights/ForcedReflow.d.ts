@@ -15,7 +15,7 @@ export declare const UIStrings: {
     /**
      * @description Title of a list to provide related stack trace data
      */
-    readonly relatedStackTrace: "Stack trace";
+    readonly reflowCallFrames: "Call frames that trigger reflow";
     /**
      * @description Text to describe the top time-consuming function call
      */

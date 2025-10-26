@@ -276,8 +276,8 @@ import * as Common3 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
-import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
+import * as PanelCommon from "./../../panels/common/common.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as NetworkForward from "./../../panels/network/forward/forward.js";
 var UIStrings3 = {
@@ -294,9 +294,17 @@ var UIStrings3 = {
    */
   showNetworkRequestBlocking: "Show Network request blocking",
   /**
+   * @description Command for showing the 'Network request blocking' tool
+   */
+  showRequestConditions: "Show Request conditions",
+  /**
    * @description Title of the 'Network request blocking' tool in the bottom drawer
    */
   networkRequestBlocking: "Network request blocking",
+  /**
+   * @description Title of the 'Request conditions' tool in the bottom drawer
+   */
+  networkRequestConditions: "Request conditions",
   /**
    * @description Command for showing the 'Network conditions' tool
    */
@@ -390,6 +398,14 @@ var UIStrings3 = {
    */
   removeAllNetworkRequestBlockingPatterns: "Remove all network request blocking patterns",
   /**
+   * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
+   */
+  addNetworkRequestBlockingOrThrottlingPattern: "Add network request blocking or throttling pattern",
+  /**
+   * @description Title of an action in the Network request blocking panel to clear all URL patterns.
+   */
+  removeAllNetworkRequestBlockingOrThrottlingPatterns: "Remove all network request blocking or throttling patterns",
+  /**
    * @description Title of an action in the Network panel (and title of a setting in the Network category)
    *              that enables options in the UI to copy or export HAR (not translatable) with sensitive data.
    */
@@ -407,6 +423,7 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/network/network-meta.ts", UIStrings3);
 var i18nLazyString3 = i18n5.i18n.getLazilyComputedLocalizedString.bind(void 0, str_3);
+var i18nString = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var loadedNetworkModule;
 var isNode = Root.Runtime.Runtime.isNode();
 async function loadNetworkModule() {
@@ -433,16 +450,17 @@ UI3.ViewManager.registerViewExtension({
     return Network.NetworkPanel.NetworkPanel.instance();
   }
 });
+var individualThrottlingEnabled = () => Boolean(Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled);
 UI3.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "network.blocked-urls",
-  commandPrompt: i18nLazyString3(UIStrings3.showNetworkRequestBlocking),
-  title: i18nLazyString3(UIStrings3.networkRequestBlocking),
+  commandPrompt: () => individualThrottlingEnabled() ? i18nString(UIStrings3.showRequestConditions) : i18nString(UIStrings3.showNetworkRequestBlocking),
+  title: () => individualThrottlingEnabled() ? i18nString(UIStrings3.networkRequestConditions) : i18nString(UIStrings3.networkRequestBlocking),
   persistence: "closeable",
   order: 60,
   async loadView() {
     const Network = await loadNetworkModule();
-    return new Network.BlockedURLsPane.BlockedURLsPane();
+    return new Network.RequestConditionsDrawer.RequestConditionsDrawer();
   }
 });
 UI3.ViewManager.registerViewExtension({
@@ -582,27 +600,27 @@ UI3.ActionRegistration.registerActionExtension({
 UI3.ActionRegistration.registerActionExtension({
   actionId: "network.add-network-request-blocking-pattern",
   category: "NETWORK",
-  title: i18nLazyString3(UIStrings3.addNetworkRequestBlockingPattern),
+  title: () => individualThrottlingEnabled() ? i18nString(UIStrings3.addNetworkRequestBlockingOrThrottlingPattern) : i18nString(UIStrings3.addNetworkRequestBlockingPattern),
   iconClass: "plus",
   contextTypes() {
-    return maybeRetrieveContextTypes((Network) => [Network.BlockedURLsPane.BlockedURLsPane]);
+    return maybeRetrieveContextTypes((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
   },
   async loadActionDelegate() {
     const Network = await loadNetworkModule();
-    return new Network.BlockedURLsPane.ActionDelegate();
+    return new Network.RequestConditionsDrawer.ActionDelegate();
   }
 });
 UI3.ActionRegistration.registerActionExtension({
   actionId: "network.remove-all-network-request-blocking-patterns",
   category: "NETWORK",
-  title: i18nLazyString3(UIStrings3.removeAllNetworkRequestBlockingPatterns),
+  title: () => individualThrottlingEnabled() ? i18nString(UIStrings3.removeAllNetworkRequestBlockingOrThrottlingPatterns) : i18nString(UIStrings3.removeAllNetworkRequestBlockingPatterns),
   iconClass: "clear",
   contextTypes() {
-    return maybeRetrieveContextTypes((Network) => [Network.BlockedURLsPane.BlockedURLsPane]);
+    return maybeRetrieveContextTypes((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
   },
   async loadActionDelegate() {
     const Network = await loadNetworkModule();
-    return new Network.BlockedURLsPane.ActionDelegate();
+    return new Network.RequestConditionsDrawer.ActionDelegate();
   }
 });
 Common3.Settings.registerSettingExtension({
@@ -732,7 +750,7 @@ Common3.Revealer.registerRevealer({
 });
 Common3.Revealer.registerRevealer({
   contextTypes() {
-    return [NetworkForward.UIFilter.UIRequestFilter, Extensions.ExtensionServer.RevealableNetworkRequestFilter];
+    return [NetworkForward.UIFilter.UIRequestFilter, PanelCommon.ExtensionServer.RevealableNetworkRequestFilter];
   },
   destination: Common3.Revealer.RevealerDestination.NETWORK_PANEL,
   async loadRevealer() {
@@ -893,7 +911,7 @@ var UIStrings4 = {
   networkAddressEgLocalhost: "Network address (e.g. localhost:9229)"
 };
 var str_4 = i18n7.i18n.registerUIStrings("entrypoints/node_app/NodeConnectionsPanel.ts", UIStrings4);
-var i18nString = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var i18nString2 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var nodejsIconUrl = new URL("../../Images/node-stack-icon.svg", import.meta.url).toString();
 var NodeConnectionsPanel = class extends UI4.Panel.Panel {
   #config;
@@ -934,18 +952,18 @@ var NodeConnectionsView = class extends UI4.Widget.VBox {
     this.#callback = callback;
     this.element.classList.add("network-discovery-view");
     const networkDiscoveryFooter = this.element.createChild("div", "network-discovery-footer");
-    const documentationLink = UI4.XLink.XLink.create("https://nodejs.org/en/docs/inspector/", i18nString(UIStrings4.nodejsDebuggingGuide), void 0, void 0, "node-js-debugging");
+    const documentationLink = UI4.XLink.XLink.create("https://nodejs.org/en/docs/inspector/", i18nString2(UIStrings4.nodejsDebuggingGuide), void 0, void 0, "node-js-debugging");
     networkDiscoveryFooter.appendChild(i18n7.i18n.getFormatLocalizedString(str_4, UIStrings4.specifyNetworkEndpointAnd, { PH1: documentationLink }));
     this.#list = new UI4.ListWidget.ListWidget(this);
     this.#list.registerRequiredCSS(nodeConnectionsPanel_css_default);
     this.#list.element.classList.add("network-discovery-list");
     const placeholder = document.createElement("div");
     placeholder.classList.add("network-discovery-list-empty");
-    placeholder.textContent = i18nString(UIStrings4.noConnectionsSpecified);
+    placeholder.textContent = i18nString2(UIStrings4.noConnectionsSpecified);
     this.#list.setEmptyPlaceholder(placeholder);
     this.#list.show(this.element);
     this.#editor = null;
-    const addButton = UI4.UIUtils.createTextButton(i18nString(UIStrings4.addConnection), this.#addNetworkTargetButtonClicked.bind(this), {
+    const addButton = UI4.UIUtils.createTextButton(i18nString2(UIStrings4.addConnection), this.#addNetworkTargetButtonClicked.bind(this), {
       className: "add-network-target-button",
       variant: "primary"
       /* Buttons.Button.Variant.PRIMARY */
@@ -1001,7 +1019,7 @@ var NodeConnectionsView = class extends UI4.Widget.VBox {
     this.#editor = editor;
     const content = editor.contentElement();
     const fields = content.createChild("div", "network-discovery-edit-row");
-    const input = editor.createInput("address", "text", i18nString(UIStrings4.networkAddressEgLocalhost), addressValidator);
+    const input = editor.createInput("address", "text", i18nString2(UIStrings4.networkAddressEgLocalhost), addressValidator);
     fields.createChild("div", "network-discovery-value network-discovery-address").appendChild(input);
     return editor;
     function addressValidator(_rule, _index, input2) {
@@ -1043,7 +1061,7 @@ var UIStrings5 = {
   NodejsTitleS: "DevTools - Node.js: {PH1}"
 };
 var str_5 = i18n9.i18n.registerUIStrings("entrypoints/node_app/NodeMain.ts", UIStrings5);
-var i18nString2 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var i18nString3 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var nodeMainImplInstance;
 var NodeMainImpl = class _NodeMainImpl {
   static instance(opts = { forceNew: null }) {
@@ -1059,7 +1077,7 @@ var NodeMainImpl = class _NodeMainImpl {
       const target = SDK2.TargetManager.TargetManager.instance().createTarget(
         // TODO: Use SDK.Target.Type.NODE rather thatn BROWSER once DevTools is loaded appropriately in that case.
         "main",
-        i18nString2(UIStrings5.main),
+        i18nString3(UIStrings5.main),
         SDK2.Target.Type.BROWSER,
         null
       );
@@ -1117,8 +1135,8 @@ var NodeChildTargetManager = class extends SDK2.SDKModel.SDKModel {
     if (targetInfo.type === "node_worker") {
       target = this.#targetManager.createTarget(targetInfo.targetId, targetInfo.title, SDK2.Target.Type.NODE_WORKER, this.#parentTarget, sessionId, true, void 0, targetInfo);
     } else {
-      const name = i18nString2(UIStrings5.nodejsS, { PH1: targetInfo.url });
-      document.title = i18nString2(UIStrings5.NodejsTitleS, { PH1: targetInfo.url });
+      const name = i18nString3(UIStrings5.nodejsS, { PH1: targetInfo.url });
+      document.title = i18nString3(UIStrings5.NodejsTitleS, { PH1: targetInfo.url });
       const connection = new NodeConnection(this.#targetAgent, sessionId);
       this.#childConnections.set(sessionId, connection);
       target = this.#targetManager.createTarget(targetInfo.targetId, name, SDK2.Target.Type.NODE, this.#parentTarget, void 0, void 0, connection);

@@ -306,6 +306,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #directSocketChunks = [];
     #isIpProtectionUsed;
     #isAdRelated;
+    #appliedNetworkConditionsId;
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         super();
         this.#requestId = requestId;
@@ -373,6 +374,9 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     get loaderId() {
         return this.#loaderId;
+    }
+    get appliedNetworkConditionsId() {
+        return this.#appliedNetworkConditionsId;
     }
     setRemoteAddress(ip, port) {
         this.#remoteAddress = ip + ':' + port;
@@ -1251,6 +1255,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#hasExtraRequestInfo = true;
         this.setRequestHeadersText(''); // Mark request headers as non-provisional
         this.#clientSecurityState = extraRequestInfo.clientSecurityState;
+        this.#appliedNetworkConditionsId = extraRequestInfo.appliedNetworkConditionsId;
         if (extraRequestInfo.connectTiming) {
             this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
         }

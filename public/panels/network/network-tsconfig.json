@@ -35,7 +35,6 @@
   },
   "files": [
     "../../../../../../front_end/panels/network/BinaryResourceView.ts",
-    "../../../../../../front_end/panels/network/BlockedURLsPane.ts",
     "../../../../../../front_end/panels/network/EventSourceMessagesView.ts",
     "../../../../../../front_end/panels/network/NetworkConfigView.ts",
     "../../../../../../front_end/panels/network/NetworkDataGridNode.ts",
@@ -48,6 +47,7 @@
     "../../../../../../front_end/panels/network/NetworkPanel.ts",
     "../../../../../../front_end/panels/network/NetworkSearchScope.ts",
     "../../../../../../front_end/panels/network/NetworkWaterfallColumn.ts",
+    "../../../../../../front_end/panels/network/RequestConditionsDrawer.ts",
     "../../../../../../front_end/panels/network/RequestCookiesView.ts",
     "../../../../../../front_end/panels/network/RequestHTMLView.ts",
     "../../../../../../front_end/panels/network/RequestInitiatorView.ts",
@@ -105,6 +105,9 @@
     },
     {
       "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../common/bundle-tsconfig.json"
     },
     {
       "path": "../elements/bundle-tsconfig.json"

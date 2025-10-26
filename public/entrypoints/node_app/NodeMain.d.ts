@@ -21,7 +21,7 @@ export declare class NodeChildTargetManager extends SDK.SDKModel.SDKModel<void> 
     receivedMessageFromTarget({ sessionId, message }: Protocol.Target.ReceivedMessageFromTargetEvent): void;
     targetCrashed(_event: Protocol.Target.TargetCrashedEvent): void;
 }
-export declare class NodeConnection implements ProtocolClient.InspectorBackend.Connection {
+export declare class NodeConnection implements ProtocolClient.ConnectionTransport.ConnectionTransport {
     #private;
     onMessage: ((arg0: Object | string) => void) | null;
     constructor(targetAgent: ProtocolProxyApi.TargetApi, sessionId: Protocol.Target.SessionID);

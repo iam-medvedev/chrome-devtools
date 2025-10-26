@@ -1730,7 +1730,13 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
    * Called when the `Toggle Record` button is clicked.
    */
   toggleRecording() {
-    this.model.setRecording(!this.recordButton.isToggled(), this.serviceName);
+    const isRecording = !this.recordButton.isToggled();
+    this.model.setRecording(isRecording, this.serviceName);
+    const featureName = _BackgroundServiceView.getUIString(this.serviceName).toLowerCase();
+    if (isRecording) {
+      UI4.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.recordingSActivity, { PH1: featureName }) + " " + i18nString3(UIStrings3.devtoolsWillRecordAllSActivity, { PH1: featureName }));
+      this.preview?.focus();
+    }
   }
   /**
    * Called when the `Clear` button is clicked.
@@ -1894,6 +1900,7 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
       });
       emptyWidget.contentElement.appendChild(button);
     }
+    emptyWidget.setDefaultFocusedElement(emptyWidget.contentElement);
     this.preview = emptyWidget;
     this.preview.show(this.previewPanel.contentElement);
   }
@@ -8139,7 +8146,7 @@ var StorageItemsToolbar = class extends Common12.ObjectWrapper.eventMixin(UI16.W
 };
 
 // gen/front_end/panels/application/KeyValueStorageItemsView.js
-var { ARIAUtils: ARIAUtils6 } = UI17;
+var { ARIAUtils: ARIAUtils7 } = UI17;
 var { EmptyWidget: EmptyWidget7 } = UI17.EmptyWidget;
 var { VBox, widgetConfig: widgetConfig2 } = UI17.Widget;
 var { Size } = Geometry;
@@ -8354,7 +8361,7 @@ var KeyValueStorageItemsView = class extends UI17.Widget.VBox {
     }
     this.performUpdate();
     this.#toolbar?.setCanDeleteSelected(Boolean(this.#selectedKey));
-    ARIAUtils6.LiveAnnouncer.alert(i18nString21(UIStrings21.numberEntries, { PH1: this.#items.length }));
+    ARIAUtils7.LiveAnnouncer.alert(i18nString21(UIStrings21.numberEntries, { PH1: this.#items.length }));
   }
   deleteSelectedItem() {
     if (!this.#selectedKey) {

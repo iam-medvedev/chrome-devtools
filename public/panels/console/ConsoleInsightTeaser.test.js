@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -31,6 +33,7 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         updateHostConfig({
             devToolsAiPromptApi: {
                 enabled: true,
+                allowWithoutGpu: true,
             },
         });
         const mockLanguageModel = {
@@ -56,18 +59,16 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
     };
     it('renders the generated response', async () => {
         const consoleViewMessage = setupBuiltInAi(async function* () {
-            yield JSON.stringify({
-                header: 'test header',
-                explanation: 'test explanation',
-            });
+            yield 'This is the';
+            yield ' explanation';
         });
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
         const teaser = new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
         await teaser.maybeGenerateTeaser();
         const input = await view.nextInput;
         assert.isFalse(input.isInactive);
-        assert.strictEqual(input.headerText, 'test header');
-        assert.strictEqual(input.mainText, 'test explanation');
+        assert.strictEqual(input.headerText, 'message text string');
+        assert.strictEqual(input.mainText, 'This is the explanation');
     });
     it('executes action on "Tell me more" click if onboarding is completed', async () => {
         const action = sinon.spy();
@@ -90,18 +91,6 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         sinon.assert.calledOnce(show);
         Common.Settings.settingForTest('console-insights-enabled').set(true);
         show.restore();
-    });
-    it('executes action on "Tell me more" click if onboarding is completed', async () => {
-        const action = sinon.spy();
-        const getAction = sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'getAction').returns({
-            execute: action,
-        });
-        const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
-        new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', {}, undefined, view);
-        const input = await view.nextInput;
-        input.onTellMeMoreClick(new Event('click'));
-        sinon.assert.calledOnce(action);
-        getAction.restore();
     });
     it('disables teasers on "Dont show" change', async () => {
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
@@ -135,16 +124,16 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         input = await view.nextInput;
         assert.isFalse(input.isInactive);
         assert.isEmpty(input.mainText);
-        assert.isEmpty(input.headerText);
+        assert.strictEqual(input.headerText, 'message text string');
         assert.isTrue(input.isSlowGeneration);
         clock.restore();
     });
     it('can show error state', async () => {
         const consoleViewMessage = setupBuiltInAi(async function* () {
-            yield 'Not a JSON, causes error';
+            yield 'This is an incomplete';
+            throw new Error('something went wrong');
         });
-        // A console error is emitted when the response cannot be parsed correctly.
-        // We don't need that noise in the test output.
+        // The error is logged to the console. We don't need that noise in the test output.
         sinon.stub(console, 'error');
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
         const teaser = new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
@@ -156,9 +145,32 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         await teaser.maybeGenerateTeaser();
         input = await view.nextInput;
         assert.isFalse(input.isInactive);
-        assert.isEmpty(input.mainText);
-        assert.isEmpty(input.headerText);
+        assert.strictEqual(input.mainText, 'This is an incomplete');
+        assert.strictEqual(input.headerText, 'message text string');
         assert.isTrue(input.isError);
+    });
+    it('show the "Tell me more" button only when AIDA is available', async () => {
+        const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
+        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'hasAction').returns(true);
+        const consoleViewMessage = setupBuiltInAi(async function* () {
+            yield JSON.stringify({
+                header: 'test header',
+                explanation: 'test explanation',
+            });
+        });
+        const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
+        const teaser = new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
+        teaser.markAsRoot();
+        renderElementIntoDOM(teaser);
+        await teaser.maybeGenerateTeaser();
+        let input = await view.nextInput;
+        assert.isTrue(input.hasTellMeMoreButton);
+        checkAccessPreconditionsStub.resolves("no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        input = await view.nextInput;
+        assert.isFalse(input.hasTellMeMoreButton);
+        teaser.detach();
     });
 });
 //# sourceMappingURL=ConsoleInsightTeaser.test.js.map

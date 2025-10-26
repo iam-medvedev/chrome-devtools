@@ -131,11 +131,11 @@ __export(Dialog_exports, {
 });
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
-import * as WindowBoundsService from "./../../../services/window_bounds/window_bounds.js";
 import * as ComponentHelpers2 from "./../helpers/helpers.js";
 import * as RenderCoordinator from "./../render_coordinator/render_coordinator.js";
 import * as Lit from "./../../lit/lit.js";
 import * as VisualLogging from "./../../visual_logging/visual_logging.js";
+import * as UI from "./../../legacy/legacy.js";
 import * as Buttons from "./../buttons/buttons.js";
 
 // gen/front_end/ui/components/dialogs/dialog.css.js
@@ -254,7 +254,6 @@ var Dialog = class extends HTMLElement {
     horizontalAlignment: "center",
     getConnectorCustomXPosition: null,
     dialogShownCallback: null,
-    windowBoundsService: WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance(),
     closeOnESC: true,
     closeOnScroll: true,
     closeButton: false,
@@ -281,7 +280,7 @@ var Dialog = class extends HTMLElement {
     this.#forceDialogCloseInDevToolsBound();
   });
   #dialogResizeObserver = new ResizeObserver(this.#updateDialogBounds.bind(this));
-  #devToolsBoundingElement = this.windowBoundsService.getDevToolsBoundingElement();
+  #devToolsBoundingElement = UI.UIUtils.getDevToolsBoundingElement();
   // We bind here because we have to listen to keydowns on the entire window,
   // not on the Dialog element itself. This is because if the user has the
   // dialog open, but their focus is elsewhere, and they hit ESC, we should
@@ -312,14 +311,6 @@ var Dialog = class extends HTMLElement {
   }
   set horizontalAlignment(alignment) {
     this.#props.horizontalAlignment = alignment;
-    this.#onStateChange();
-  }
-  get windowBoundsService() {
-    return this.#props.windowBoundsService;
-  }
-  set windowBoundsService(windowBoundsService) {
-    this.#props.windowBoundsService = windowBoundsService;
-    this.#devToolsBoundingElement = this.windowBoundsService.getDevToolsBoundingElement();
     this.#onStateChange();
   }
   get bestVerticalPosition() {
@@ -722,6 +713,10 @@ var Dialog = class extends HTMLElement {
       </dialog>
     `, this.#shadow, { host: this });
     VisualLogging.setMappedParent(this.#getDialog(), this.parentElementOrShadowHost());
+  }
+  setBoundingElementForTesting(element) {
+    this.#devToolsBoundingElement = element;
+    this.#onStateChange();
   }
 };
 customElements.define("devtools-dialog", Dialog);
