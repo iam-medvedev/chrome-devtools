@@ -31,12 +31,12 @@ describeWithMockConnection('PropertiesWidget', () => {
             getOwnProperties: () => ({}),
         });
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
-        view = new Elements.PropertiesWidget.PropertiesWidget(0);
+        view = new Elements.PropertiesWidget.PropertiesWidget();
         renderElementIntoDOM(view);
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await view.updateComplete;
         const populateWithProperties = sinon.spy(ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement, 'populateWithProperties');
         model.dispatchEventToListeners(event, ...[node]);
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await view.updateComplete;
         assert.strictEqual(populateWithProperties.called, inScope);
     };
     it('updates UI on in scope attribute modified event', updatesUiOnEvent(SDK.DOMModel.Events.AttrModified, true));

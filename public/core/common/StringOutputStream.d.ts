@@ -4,7 +4,6 @@ export interface OutputStream {
 }
 export declare class StringOutputStream implements OutputStream {
     #private;
-    constructor();
     write(chunk: string): Promise<void>;
     close(): Promise<void>;
     data(): string;

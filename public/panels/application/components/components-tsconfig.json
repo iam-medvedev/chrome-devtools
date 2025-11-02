@@ -98,6 +98,9 @@
       "path": "../../../ui/components/icon_button/bundle-tsconfig.json"
     },
     {
+      "path": "../../../ui/components/input/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../ui/components/legacy_wrapper/bundle-tsconfig.json"
     },
     {
@@ -108,6 +111,9 @@
     },
     {
       "path": "../../../ui/components/tree_outline/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/i18n/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/legacy/bundle-tsconfig.json"

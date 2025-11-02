@@ -40,10 +40,9 @@ interface CommandParameter {
     optional: boolean;
     description: string;
 }
-type Callback = (error: MessageError | null, arg1: Object | null) => void;
-interface CallbackWithDebugInfo {
-    callback: Callback;
-    method: string;
+interface ResponseWithError {
+    error: MessageError | null;
+    result: Object | null;
 }
 export declare class InspectorBackend {
     #private;
@@ -105,14 +104,12 @@ export declare class SessionRouter {
     unregisterSession(sessionId: string): void;
     private nextMessageId;
     connection(): ConnectionTransport;
-    sendMessage(sessionId: string, domain: string, method: QualifiedName, params: Object | null, callback: Callback): void;
+    sendMessage(sessionId: string, domain: string, method: QualifiedName, params: Object | null): Promise<ResponseWithError>;
     private sendRawMessageForTesting;
     private onMessage;
     private hasOutstandingNonLongPollingRequests;
     private deprecatedRunAfterPendingDispatches;
     private executeAfterPendingDispatches;
-    static dispatchConnectionError(callback: Callback, method: string): void;
-    static dispatchUnregisterSessionError({ callback, method }: CallbackWithDebugInfo): void;
 }
 export declare class TargetBase {
     #private;

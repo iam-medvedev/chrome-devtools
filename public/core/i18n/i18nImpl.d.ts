@@ -41,10 +41,6 @@ export declare function getLocalizedString(registeredStrings: I18n.LocalizedStri
  * Register a file's UIStrings with i18n, return function to generate the string ids.
  */
 export declare function registerUIStrings(path: string, stringStructure: Record<string, string>): I18n.LocalizedStringSet.RegisteredFileStrings;
-/**
- * Returns a span element that may contains other DOM element as placeholders
- */
-export declare function getFormatLocalizedString(registeredStrings: I18n.LocalizedStringSet.RegisteredFileStrings, stringId: string, placeholders: Record<string, Object>): HTMLSpanElement;
 export declare function serializeUIString(string: string, values?: Record<string, Object>): string;
 export declare function deserializeUIString(serializedMessage: string): i18nTypes.SerializedMessage;
 /**

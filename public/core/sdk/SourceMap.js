@@ -57,7 +57,7 @@ export class SourceMap {
     #compiledURL;
     #sourceMappingURL;
     #baseURL;
-    #mappings;
+    #mappings = null;
     #sourceInfos = [];
     #sourceInfoByURL = new Map();
     #script;
@@ -75,7 +75,6 @@ export class SourceMap {
         this.#sourceMappingURL = sourceMappingURL;
         this.#baseURL = (Common.ParsedURL.schemeIs(sourceMappingURL, 'data:')) ? compiledURL : sourceMappingURL;
         this.#debugId = 'debugId' in payload ? payload.debugId : undefined;
-        this.#mappings = null;
         if ('sections' in this.#json) {
             if (this.#json.sections.find(section => 'url' in section)) {
                 Common.Console.Console.instance().warn(`SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
@@ -306,7 +305,7 @@ export class SourceMap {
     #computeReverseMappings(mappings) {
         const reverseMappingsPerUrl = new Map();
         for (let i = 0; i < mappings.length; i++) {
-            const entryUrl = mappings[i].sourceURL;
+            const entryUrl = mappings[i]?.sourceURL;
             if (!entryUrl) {
                 continue;
             }

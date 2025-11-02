@@ -106,5 +106,6 @@ export class SizeInputElement extends HTMLElement {
         this.dispatchEvent(new SizeChangedEvent(modifiedValue));
     }
 }
+// eslint-disable-next-line @devtools/enforce-custom-element-prefix
 customElements.define('device-mode-emulation-size-input', SizeInputElement);
 //# sourceMappingURL=DeviceSizeInputElement.js.map

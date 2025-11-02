@@ -3689,14 +3689,7 @@ var RevealerDestination = {
 // gen/front_end/core/common/Console.js
 var consoleInstance;
 var Console = class _Console extends ObjectWrapper {
-  #messages;
-  /**
-   * Instantiable via the instance() factory below.
-   */
-  constructor() {
-    super();
-    this.#messages = [];
-  }
+  #messages = [];
   static instance(opts) {
     if (!consoleInstance || opts?.forceNew) {
       consoleInstance = new _Console();
@@ -4037,32 +4030,22 @@ function schemeIs(url, scheme) {
   }
 }
 var ParsedURL = class _ParsedURL {
-  isValid;
+  isValid = false;
   url;
-  scheme;
-  user;
-  host;
-  port;
-  path;
-  queryParams;
-  fragment;
-  folderPathComponents;
-  lastPathComponent;
+  scheme = "";
+  user = "";
+  host = "";
+  port = "";
+  path = "";
+  queryParams = "";
+  fragment = "";
+  folderPathComponents = "";
+  lastPathComponent = "";
   blobInnerScheme;
   #displayName;
   #dataURLDisplayName;
   constructor(url) {
-    this.isValid = false;
     this.url = url;
-    this.scheme = "";
-    this.user = "";
-    this.host = "";
-    this.port = "";
-    this.path = "";
-    this.queryParams = "";
-    this.fragment = "";
-    this.folderPathComponents = "";
-    this.lastPathComponent = "";
     const isBlobUrl = this.url.startsWith("blob:");
     const urlToMatch = isBlobUrl ? url.substring(5) : url;
     const match = urlToMatch.match(_ParsedURL.urlRegex());
@@ -5177,10 +5160,9 @@ var Segment = class {
   }
 };
 var SegmentedRange = class {
-  #segments;
+  #segments = [];
   #mergeCallback;
   constructor(mergeCallback) {
-    this.#segments = [];
     this.#mergeCallback = mergeCallback;
   }
   append(newSegment) {
@@ -5878,6 +5860,9 @@ var Setting = class {
     }
     return null;
   }
+  /**
+   * See {@link LearnMore} for more info
+   */
   learnMore() {
     return this.#registration?.learnMore ?? null;
   }
@@ -6684,10 +6669,7 @@ __export(StringOutputStream_exports, {
   StringOutputStream: () => StringOutputStream
 });
 var StringOutputStream = class {
-  #data;
-  constructor() {
-    this.#data = "";
-  }
+  #data = "";
   async write(chunk) {
     this.#data += chunk;
   }

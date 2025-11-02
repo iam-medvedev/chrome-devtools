@@ -1,11 +1,12 @@
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
+export declare class ConsolePinPane extends UI.Widget.VBox {
     private readonly liveExpressionButton;
     private readonly focusOut;
     private pins;
     private readonly pinsSetting;
+    private readonly throttler;
     constructor(liveExpressionButton: UI.Toolbar.ToolbarButton, focusOut: () => void);
     willHide(): void;
     savePins(): void;
@@ -14,7 +15,8 @@ export declare class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
     removePin(pin: ConsolePin): void;
     addPin(expression: string, userGesture?: boolean): void;
     private focusedPinAfterDeletion;
-    doUpdate(): Promise<void>;
+    wasShown(): void;
+    performUpdate(): Promise<void>;
     private updatedForTest;
 }
 export declare class ConsolePin {

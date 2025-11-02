@@ -9,6 +9,7 @@ import * as Badges from '../../models/badges/badges.js';
 import * as Geometry from '../../models/geometry/geometry.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html, render } from '../../ui/lit/lit.js';
 import styles from './gdpSignUpDialog.css.js';
@@ -129,7 +130,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             <h2 class="section-title">${i18nString(UIStrings.tailorProfile)}</h2>
             <div class="section-text">
               <div>${i18nString(UIStrings.tailorProfileBody)}</div><br/>
-              <div>${i18n.i18n.getFormatLocalizedString(str_, UIStrings.tailorProfileBodyDisclaimer, {
+              <div>${uiI18n.getFormatLocalizedString(str_, UIStrings.tailorProfileBodyDisclaimer, {
         PH1: UI.XLink.XLink.create(CONTENT_POLICY_URL, i18nString(UIStrings.contentPolicy), 'link', undefined, 'content-policy'),
         PH2: UI.XLink.XLink.create(TERMS_OF_SERVICE_URL, i18nString(UIStrings.termsOfService), 'link', undefined, 'terms-of-service'),
         PH3: UI.XLink.XLink.create(PRIVACY_POLICY_URL, i18nString(UIStrings.privacyPolicy), 'link', undefined, 'privacy-policy'),

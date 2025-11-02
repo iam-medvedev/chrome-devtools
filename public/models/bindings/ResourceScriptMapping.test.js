@@ -33,8 +33,8 @@ describeWithMockConnection('ResourceScriptMapping', () => {
             targetManager,
             ignoreListManager,
         });
-        target = createTarget();
         backend = new MockProtocolBackend();
+        target = createTarget();
         resourceScriptMapping = new Bindings.ResourceScriptMapping.ResourceScriptMapping(target.model(SDK.DebuggerModel.DebuggerModel), workspace, debuggerWorkspaceBinding);
     });
     describe('uiLocationRangeToRawLocationRanges', () => {

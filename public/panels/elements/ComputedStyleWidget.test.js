@@ -58,7 +58,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
         it('renders colors correctly', async () => {
             computedStyleWidget =
                 createComputedStyleWidgetForTest(SDK.CSSStyleDeclaration.Type.Animation, '--animation-name');
-            computedStyleWidget.update();
+            computedStyleWidget.requestUpdate();
             await computedStyleWidget.updateComplete;
             const treeOutline = computedStyleWidget.contentElement.querySelector('devtools-tree-outline');
             await treeOutline.expandRecursively(2);
@@ -68,7 +68,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
         it('renders trace element with correct selector for declarations coming from animations', async () => {
             computedStyleWidget =
                 createComputedStyleWidgetForTest(SDK.CSSStyleDeclaration.Type.Animation, '--animation-name');
-            computedStyleWidget.update();
+            computedStyleWidget.requestUpdate();
             await computedStyleWidget.updateComplete;
             const treeOutline = computedStyleWidget.contentElement.querySelector('devtools-tree-outline');
             await treeOutline.expandRecursively(2);
@@ -78,7 +78,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
         });
         it('renders trace element with correct selector for declarations coming from WAAPI animations', async () => {
             computedStyleWidget = createComputedStyleWidgetForTest(SDK.CSSStyleDeclaration.Type.Animation);
-            computedStyleWidget.update();
+            computedStyleWidget.requestUpdate();
             await computedStyleWidget.updateComplete;
             const treeOutline = computedStyleWidget.contentElement.querySelector('devtools-tree-outline');
             await treeOutline.expandRecursively(2);
@@ -88,7 +88,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
         });
         it('renders trace element with correct selector for declarations transitions', async () => {
             computedStyleWidget = createComputedStyleWidgetForTest(SDK.CSSStyleDeclaration.Type.Transition);
-            computedStyleWidget.update();
+            computedStyleWidget.requestUpdate();
             await computedStyleWidget.updateComplete;
             const treeOutline = computedStyleWidget.contentElement.querySelector('devtools-tree-outline');
             await treeOutline.expandRecursively(2);
@@ -98,7 +98,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
         });
         it('renders trace element with correct selector for declarations coming from CSS rules', async () => {
             computedStyleWidget = createComputedStyleWidgetForTest(SDK.CSSStyleDeclaration.Type.Regular, undefined, SDK.CSSRule.CSSStyleRule.createDummyRule({}, '.container'));
-            computedStyleWidget.update();
+            computedStyleWidget.requestUpdate();
             await computedStyleWidget.updateComplete;
             const treeOutline = computedStyleWidget.contentElement.querySelector('devtools-tree-outline');
             await treeOutline.expandRecursively(5);
@@ -108,7 +108,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
         });
         it('renders trace element with correct selector for declarations coming from inline styles', async () => {
             computedStyleWidget = createComputedStyleWidgetForTest(SDK.CSSStyleDeclaration.Type.Inline);
-            computedStyleWidget.update();
+            computedStyleWidget.requestUpdate();
             await computedStyleWidget.updateComplete;
             const treeOutline = computedStyleWidget.contentElement.querySelector('devtools-tree-outline');
             await treeOutline.expandRecursively(5);

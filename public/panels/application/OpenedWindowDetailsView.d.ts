@@ -1,7 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget {
+export declare class OpenedWindowDetailsView extends UI.Widget.VBox {
     #private;
     private targetInfo;
     private isWindowClosed;
@@ -11,13 +11,13 @@ export declare class OpenedWindowDetailsView extends UI.ThrottledWidget.Throttle
     private readonly openerElementField;
     private hasDOMAccessValue;
     constructor(targetInfo: Protocol.Target.TargetInfo, isWindowClosed: boolean);
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
     maybeDisplayOpenerFrame(): Promise<void>;
     buildTitle(): string;
     setIsWindowClosed(isWindowClosed: boolean): void;
     setTargetInfo(targetInfo: Protocol.Target.TargetInfo): void;
 }
-export declare class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidget {
+export declare class WorkerDetailsView extends UI.Widget.VBox {
     private readonly targetInfo;
     private readonly reportView;
     private readonly documentSection;
@@ -27,5 +27,5 @@ export declare class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidge
     workerTypeToString(type: string): Common.UIString.LocalizedString;
     private updateCoopCoepStatus;
     private fillCrossOriginPolicy;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
 }

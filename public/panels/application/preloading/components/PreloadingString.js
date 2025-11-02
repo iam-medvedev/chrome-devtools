@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
+import * as Platform from '../../../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
@@ -662,6 +663,34 @@ export function capitalizedAction(action) {
             return i18n.i18n.lockedString('Prerender');
         case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
             return i18n.i18n.lockedString('Prerender until script');
+    }
+}
+export function sortOrder(attempt) {
+    switch (attempt.status) {
+        case "NotSupported" /* SDK.PreloadingModel.PreloadingStatus.NOT_SUPPORTED */:
+            return 0;
+        case "Pending" /* SDK.PreloadingModel.PreloadingStatus.PENDING */:
+            return 1;
+        case "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */:
+            return 2;
+        case "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */:
+            return 3;
+        case "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */:
+            return 4;
+        case "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */: {
+            switch (attempt.action) {
+                case "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */:
+                    return 5;
+                case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
+                    return 6;
+                case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
+                    return 7;
+            }
+        }
+        case "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */:
+            return 8;
+        default:
+            Platform.assertNever(attempt.status, 'Unknown Preloading attempt status');
     }
 }
 export function status(status) {

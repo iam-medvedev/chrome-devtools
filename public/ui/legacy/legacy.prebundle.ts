@@ -33,7 +33,6 @@ import * as ReportView from './ReportView.js';
 import * as ResizerWidget from './ResizerWidget.js';
 import * as RootView from './RootView.js';
 import * as SearchableView from './SearchableView.js';
-import * as SettingsUI from './SettingsUI.js';
 import * as ShortcutRegistry from './ShortcutRegistry.js';
 import * as SoftContextMenu from './SoftContextMenu.js';
 import * as SoftDropDown from './SoftDropDown.js';
@@ -42,7 +41,6 @@ import * as SuggestBox from './SuggestBox.js';
 import * as TabbedPane from './TabbedPane.js';
 import * as TargetCrashedScreen from './TargetCrashedScreen.js';
 import * as TextPrompt from './TextPrompt.js';
-import * as ThrottledWidget from './ThrottledWidget.js';
 import * as Toolbar from './Toolbar.js';
 import * as Tooltip from './Tooltip.js';
 import * as TreeOutline from './Treeoutline.js';
@@ -86,7 +84,6 @@ export {
   ResizerWidget,
   RootView,
   SearchableView,
-  SettingsUI,
   ShortcutRegistry,
   SoftContextMenu,
   SoftDropDown,
@@ -95,7 +92,6 @@ export {
   TabbedPane,
   TargetCrashedScreen,
   TextPrompt,
-  ThrottledWidget,
   Toolbar,
   Tooltip,
   TreeOutline,

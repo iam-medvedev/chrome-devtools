@@ -1089,14 +1089,13 @@ export class Scope {
     #name;
     #ordinal;
     #locationRange;
-    #object;
+    #object = null;
     constructor(callFrame, ordinal) {
         this.#callFrame = callFrame;
         this.#payload = callFrame.getPayload().scopeChain[ordinal];
         this.#type = this.#payload.type;
         this.#name = this.#payload.name;
         this.#ordinal = ordinal;
-        this.#object = null;
         const start = this.#payload.startLocation ? Location.fromPayload(callFrame.debuggerModel, this.#payload.startLocation) : null;
         const end = this.#payload.endLocation ? Location.fromPayload(callFrame.debuggerModel, this.#payload.endLocation) : null;
         if (start && end && start.scriptId === end.scriptId) {

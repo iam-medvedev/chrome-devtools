@@ -6,7 +6,9 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as CookieTable from '../../ui/legacy/components/cookie_table/cookie_table.js';
+import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import requestCookiesViewStyles from './requestCookiesView.css.js';
@@ -87,7 +89,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
         const titleText = this.requestCookiesTitle.createChild('span', 'request-cookies-title');
         titleText.textContent = i18nString(UIStrings.requestCookies);
         UI.Tooltip.Tooltip.install(titleText, i18nString(UIStrings.cookiesThatWereSentToTheServerIn));
-        const requestCookiesCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.showFilteredOutRequestCookies), this.showFilteredOutCookiesSetting);
+        const requestCookiesCheckbox = SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.showFilteredOutRequestCookies), this.showFilteredOutCookiesSetting);
         requestCookiesCheckbox.addEventListener('change', () => {
             this.refreshRequestCookiesView();
         });
@@ -99,7 +101,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
         this.requestCookiesTable.show(this.element);
         this.siteHasCookieInOtherPartition =
             this.element.createChild('div', 'cookies-panel-item site-has-cookies-in-other-partition');
-        this.siteHasCookieInOtherPartition.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.siteHasCookieInOtherPartition, {
+        this.siteHasCookieInOtherPartition.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.siteHasCookieInOtherPartition, {
             PH1: UI.XLink.XLink.create('https://developer.chrome.com/en/docs/privacy-sandbox/chips/', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more'),
         }));
         this.responseCookiesTitle = this.element.createChild('div', 'request-cookies-title');

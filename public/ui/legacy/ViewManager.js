@@ -109,13 +109,11 @@ export class PreRegisteredView {
 }
 let viewManagerInstance;
 export class ViewManager extends Common.ObjectWrapper.ObjectWrapper {
-    views;
-    locationNameByViewId;
+    views = new Map();
+    locationNameByViewId = new Map();
     locationOverrideSetting;
     constructor() {
         super();
-        this.views = new Map();
-        this.locationNameByViewId = new Map();
         // Read override setting for location
         this.locationOverrideSetting = Common.Settings.Settings.instance().createSetting('views-location-override', {});
         const preferredExtensionLocations = this.locationOverrideSetting.get();

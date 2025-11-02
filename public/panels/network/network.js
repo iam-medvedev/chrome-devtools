@@ -995,6 +995,7 @@ import * as Common3 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling2 from "./../mobile_throttling/mobile_throttling.js";
@@ -1285,7 +1286,7 @@ var NetworkConfigView = class _NetworkConfigView extends UI4.Widget.VBox {
   }
   createCacheSection() {
     const section4 = this.createSection(i18nString4(UIStrings4.caching), "network-config-disable-cache");
-    section4.appendChild(UI4.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.disableCache), Common3.Settings.Settings.instance().moduleSetting("cache-disabled")));
+    section4.appendChild(SettingsUI.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.disableCache), Common3.Settings.Settings.instance().moduleSetting("cache-disabled")));
   }
   createNetworkThrottlingSection() {
     const title = i18nString4(UIStrings4.networkThrottling);
@@ -2647,11 +2648,11 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
     UI5.Tooltip.Tooltip.install(element, title || text);
   }
   setTextAndTitleAsLink(element, cellText, titleText, handler) {
-    const link2 = document.createElement("span");
-    link2.classList.add("devtools-link");
-    link2.textContent = cellText;
-    link2.addEventListener("click", handler);
-    element.appendChild(link2);
+    const link3 = document.createElement("span");
+    link3.classList.add("devtools-link");
+    link3.textContent = cellText;
+    link3.addEventListener("click", handler);
+    element.appendChild(link3);
     UI5.Tooltip.Tooltip.install(element, titleText);
   }
   renderCell(c, columnId) {
@@ -3038,9 +3039,9 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
         cell.appendChild(document.createTextNode(i18nString5(UIStrings5.preflight)));
         if (initiator.initiatorRequest) {
           const icon = IconButton.Icon.create("arrow-up-down-circle");
-          const link2 = Components.Linkifier.Linkifier.linkifyRevealable(initiator.initiatorRequest, icon, void 0, i18nString5(UIStrings5.selectTheRequestThatTriggered), "trailing-link-icon", "initator-request");
-          UI5.ARIAUtils.setLabel(link2, i18nString5(UIStrings5.selectTheRequestThatTriggered));
-          cell.appendChild(link2);
+          const link3 = Components.Linkifier.Linkifier.linkifyRevealable(initiator.initiatorRequest, icon, void 0, i18nString5(UIStrings5.selectTheRequestThatTriggered), "trailing-link-icon", "initator-request");
+          UI5.ARIAUtils.setLabel(link3, i18nString5(UIStrings5.selectTheRequestThatTriggered));
+          cell.appendChild(link3);
         }
         break;
       }
@@ -3186,7 +3187,7 @@ __export(NetworkItemView_exports, {
 });
 import * as Common12 from "./../../core/common/common.js";
 import * as i18n31 from "./../../core/i18n/i18n.js";
-import * as Platform7 from "./../../core/platform/platform.js";
+import * as Platform8 from "./../../core/platform/platform.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as NetworkForward2 from "./forward/forward.js";
 import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
@@ -3204,7 +3205,9 @@ import * as Common5 from "./../../core/common/common.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as CookieTable from "./../../ui/legacy/components/cookie_table/cookie_table.js";
+import * as SettingsUI3 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -3324,7 +3327,7 @@ var RequestCookiesView = class extends UI6.Widget.Widget {
     const titleText = this.requestCookiesTitle.createChild("span", "request-cookies-title");
     titleText.textContent = i18nString6(UIStrings6.requestCookies);
     UI6.Tooltip.Tooltip.install(titleText, i18nString6(UIStrings6.cookiesThatWereSentToTheServerIn));
-    const requestCookiesCheckbox = UI6.SettingsUI.createSettingCheckbox(i18nString6(UIStrings6.showFilteredOutRequestCookies), this.showFilteredOutCookiesSetting);
+    const requestCookiesCheckbox = SettingsUI3.SettingsUI.createSettingCheckbox(i18nString6(UIStrings6.showFilteredOutRequestCookies), this.showFilteredOutCookiesSetting);
     requestCookiesCheckbox.addEventListener("change", () => {
       this.refreshRequestCookiesView();
     });
@@ -3338,7 +3341,7 @@ var RequestCookiesView = class extends UI6.Widget.Widget {
     this.requestCookiesTable.contentElement.classList.add("cookie-table", "cookies-panel-item");
     this.requestCookiesTable.show(this.element);
     this.siteHasCookieInOtherPartition = this.element.createChild("div", "cookies-panel-item site-has-cookies-in-other-partition");
-    this.siteHasCookieInOtherPartition.appendChild(i18n11.i18n.getFormatLocalizedString(str_6, UIStrings6.siteHasCookieInOtherPartition, {
+    this.siteHasCookieInOtherPartition.appendChild(uiI18n.getFormatLocalizedString(str_6, UIStrings6.siteHasCookieInOtherPartition, {
       PH1: UI6.XLink.XLink.create("https://developer.chrome.com/en/docs/privacy-sandbox/chips/", i18nString6(UIStrings6.learnMore), void 0, void 0, "learn-more")
     }));
     this.responseCookiesTitle = this.element.createChild("div", "request-cookies-title");
@@ -5121,16 +5124,20 @@ var RequestResponseView = class extends UI12.Widget.VBox {
 // gen/front_end/panels/network/RequestTimingView.js
 var RequestTimingView_exports = {};
 __export(RequestTimingView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   RequestTimingView: () => RequestTimingView
 });
 import * as Common8 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
+import * as Platform4 from "./../../core/platform/platform.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as Logs4 from "./../../models/logs/logs.js";
 import * as NetworkTimeCalculator from "./../../models/network_time_calculator/network_time_calculator.js";
+import * as uiI18n2 from "./../../ui/i18n/i18n.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html4, nothing as nothing3, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/networkTimingTable.css.js
@@ -5214,8 +5221,8 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
 .network-timing-bar {
   position: absolute;
   min-width: 1px;
-  top: 0;
-  bottom: 0;
+  inset: 0 attr(data-right %) 0 attr(data-left %); /* stylelint-disable-line declaration-property-value-no-unknown */
+  background-color: attr(data-background <color>); /* stylelint-disable-line declaration-property-value-no-unknown */
 }
 
 .network-timing-bar-title {
@@ -5281,6 +5288,16 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
   left: -12px;
 }
 
+tr:has([aria-checked="false"].network-fetch-timing-bar-clickable) ~ .router-evaluation-timing-bar-details,
+tr:has([aria-checked="false"].network-fetch-timing-bar-clickable) ~ .network-fetch-timing-bar-details {
+  display: none;
+}
+
+tr:has([aria-checked].network-fetch-timing-bar-clickable) ~ .router-evaluation-timing-bar-details,
+tr:has([aria-checked].network-fetch-timing-bar-clickable) ~ .network-fetch-timing-bar-details {
+  display: block;
+}
+
 .network-fetch-timing-bar-clickable:focus-visible {
   background-color: var(--sys-color-state-focus-highlight);
 }
@@ -5315,6 +5332,16 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
 .network-timing-bar.waiting,
 .-theme-preserve {
   background-color: var(--network-overview-waiting); /* stylelint-disable-line plugin/use_theme_colors */
+}
+
+.throttled devtools-icon {
+  vertical-align: middle;
+  margin-right: var(--sys-size-3);
+  color: var(--sys-color-yellow);
+}
+
+td.throttled {
+  color: var(--sys-color-yellow);
 }
 
 .network-timing-bar.receiving,
@@ -5385,6 +5412,7 @@ tr.synthetic {
 /*# sourceURL=${import.meta.resolve("./networkTimingTable.css")} */`;
 
 // gen/front_end/panels/network/RequestTimingView.js
+var { repeat, classMap, ifDefined } = Directives2;
 var UIStrings12 = {
   /**
    * @description Text used to label the time taken to receive an HTTP/2 Push message.
@@ -5491,7 +5519,7 @@ var UIStrings12 = {
   /**
    * @description Text in Request Timing View of the Network panel
    */
-  requestresponse: "Request/Response",
+  requestResponse: "Request/Response",
   /**
    * @description Text of a DOM element in Request Timing View of the Network panel
    */
@@ -5577,287 +5605,326 @@ var UIStrings12 = {
    * @description Name of the actually used source for SW static routing API.
    * @example {network} PH1
    */
-  routerActualSource: "Actual source: {PH1}"
+  routerActualSource: "Actual source: {PH1}",
+  /**
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {Fast 4G} PH1
+   */
+  wasThrottled: "Request was throttled ({PH1})"
 };
 var str_12 = i18n23.i18n.registerUIStrings("panels/network/RequestTimingView.ts", UIStrings12);
 var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
-var RequestTimingView = class _RequestTimingView extends UI13.Widget.VBox {
-  request;
-  calculator;
-  lastMinimumBoundary;
-  tableElement;
-  constructor(request, calculator) {
-    super();
-    this.registerRequiredCSS(networkTimingTable_css_default);
-    this.element.classList.add("resource-timing-view");
-    this.request = request;
-    this.calculator = calculator;
-    this.lastMinimumBoundary = -1;
+function timeRangeTitle(name) {
+  switch (name) {
+    case "push":
+      return i18nString12(UIStrings12.receivingPush);
+    case "queueing":
+      return i18nString12(UIStrings12.queueing);
+    case "blocking":
+      return i18nString12(UIStrings12.stalled);
+    case "connecting":
+      return i18nString12(UIStrings12.initialConnection);
+    case "dns":
+      return i18nString12(UIStrings12.dnsLookup);
+    case "proxy":
+      return i18nString12(UIStrings12.proxyNegotiation);
+    case "receiving-push":
+      return i18nString12(UIStrings12.readingPush);
+    case "receiving":
+      return i18nString12(UIStrings12.contentDownload);
+    case "sending":
+      return i18nString12(UIStrings12.requestSent);
+    case "serviceworker":
+      return i18nString12(UIStrings12.requestToServiceworker);
+    case "serviceworker-preparation":
+      return i18nString12(UIStrings12.startup);
+    case "serviceworker-routerevaluation":
+      return i18nString12(UIStrings12.routerEvaluation);
+    case "serviceworker-cachelookup":
+      return i18nString12(UIStrings12.routerCacheLookup);
+    case "serviceworker-respondwith":
+      return i18nString12(UIStrings12.respondwith);
+    case "ssl":
+      return i18nString12(UIStrings12.ssl);
+    case "total":
+      return i18nString12(UIStrings12.total);
+    case "waiting":
+      return i18nString12(UIStrings12.waitingTtfb);
+    default:
+      return name;
   }
-  static timeRangeTitle(name) {
-    switch (name) {
-      case "push":
-        return i18nString12(UIStrings12.receivingPush);
-      case "queueing":
-        return i18nString12(UIStrings12.queueing);
-      case "blocking":
-        return i18nString12(UIStrings12.stalled);
-      case "connecting":
-        return i18nString12(UIStrings12.initialConnection);
-      case "dns":
-        return i18nString12(UIStrings12.dnsLookup);
-      case "proxy":
-        return i18nString12(UIStrings12.proxyNegotiation);
-      case "receiving-push":
-        return i18nString12(UIStrings12.readingPush);
-      case "receiving":
-        return i18nString12(UIStrings12.contentDownload);
-      case "sending":
-        return i18nString12(UIStrings12.requestSent);
-      case "serviceworker":
-        return i18nString12(UIStrings12.requestToServiceworker);
-      case "serviceworker-preparation":
-        return i18nString12(UIStrings12.startup);
-      case "serviceworker-routerevaluation":
-        return i18nString12(UIStrings12.routerEvaluation);
-      case "serviceworker-cachelookup":
-        return i18nString12(UIStrings12.routerCacheLookup);
-      case "serviceworker-respondwith":
-        return i18nString12(UIStrings12.respondwith);
-      case "ssl":
-        return i18nString12(UIStrings12.ssl);
-      case "total":
-        return i18nString12(UIStrings12.total);
-      case "waiting":
-        return i18nString12(UIStrings12.waitingTtfb);
-      default:
-        return name;
+}
+function groupHeader(name) {
+  if (name === "push") {
+    return i18nString12(UIStrings12.serverPush);
+  }
+  if (name === "queueing") {
+    return i18nString12(UIStrings12.resourceScheduling);
+  }
+  if (NetworkTimeCalculator.ConnectionSetupRangeNames.has(name)) {
+    return i18nString12(UIStrings12.connectionStart);
+  }
+  if (NetworkTimeCalculator.ServiceWorkerRangeNames.has(name)) {
+    return "Service Worker";
+  }
+  return i18nString12(UIStrings12.requestResponse);
+}
+function getLocalizedResponseSourceForCode(swResponseSource) {
+  switch (swResponseSource) {
+    case "cache-storage":
+      return i18nString12(UIStrings12.serviceworkerCacheStorage);
+    case "http-cache":
+      return i18nString12(UIStrings12.fromHttpCache);
+    case "network":
+      return i18nString12(UIStrings12.networkFetch);
+    default:
+      return i18nString12(UIStrings12.fallbackCode);
+  }
+}
+var DEFAULT_VIEW4 = (input, output, target) => {
+  const scale = 100 / (input.endTime - input.startTime);
+  const isClickable = (range) => range.name === "serviceworker-respondwith" || range.name === "serviceworker-routerevaluation";
+  const addServerTiming = (serverTiming) => {
+    const colorGenerator = new Common8.Color.Generator({ min: 0, max: 360, count: 36 }, { min: 50, max: 80, count: void 0 }, 80);
+    const isTotal = serverTiming.metric.toLowerCase() === "total";
+    const metricDesc = [serverTiming.metric, serverTiming.description].filter(Boolean).join(" \u2014 ");
+    const left = serverTiming.value === null ? -1 : scale * (input.endTime - input.startTime - serverTiming.value / 1e3);
+    const lastRange = input.timeRanges.findLast(
+      (range) => range.name !== "total"
+      /* NetworkTimeCalculator.RequestTimeRangeNames.TOTAL */
+    );
+    const lastTimingRightEdge = lastRange ? scale * (input.endTime - lastRange.end) : 100;
+    const classes2 = classMap({
+      ["network-timing-footer"]: isTotal,
+      ["server-timing-row"]: !isTotal,
+      // Mark entries from a bespoke format
+      ["synthetic"]: serverTiming.metric.startsWith("(c")
+    });
+    return html4`
+      <tr class=${classes2}>
+        <td title=${metricDesc} class=network-timing-metric>
+          ${metricDesc}
+        </td>
+        ${serverTiming.value === null ? nothing3 : html4`
+          <td class=server-timing-cell--value-bar>
+            <div class=network-timing-row>
+              ${left < 0 ? nothing3 : html4`<span
+                    class="network-timing-bar server-timing"
+                    data-background=${ifDefined(isTotal ? void 0 : colorGenerator.colorForID(serverTiming.metric))}
+                    data-left=${left}
+                    data-right=${lastTimingRightEdge}>${"\u200B"}</span>`}
+            </div>
+          </td>
+          <td class=server-timing-cell--value-text>
+            <div class=network-timing-bar-title>
+              ${i18n23.TimeUtilities.millisToString(serverTiming.value, true)}
+            </div>
+          </td>
+        `}
+      </tr>`;
+  };
+  const onActivate = (e) => {
+    if ("key" in e && !Platform4.KeyboardUtilities.isEnterOrSpaceKey(e)) {
+      return;
+    }
+    const target2 = e.target;
+    if (!target2?.classList.contains("network-fetch-timing-bar-clickable")) {
+      return;
+    }
+    const isChecked = target2.ariaChecked === "false";
+    target2.ariaChecked = isChecked ? "true" : "false";
+    if (!isChecked) {
+      Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.NetworkPanelServiceWorkerRespondWith);
+    }
+  };
+  const throttledRequestTitle = input.wasThrottled ? i18nString12(UIStrings12.wasThrottled, { PH1: typeof input.wasThrottled.title === "string" ? input.wasThrottled.title : input.wasThrottled.title() }) : void 0;
+  const classes = classMap({
+    ["network-timing-table"]: true,
+    ["resource-timing-table"]: true
+  });
+  const timeRangeGroups = [];
+  for (const range of input.timeRanges) {
+    if (range.name === "total") {
+      continue;
+    }
+    const groupName = groupHeader(range.name);
+    const tail = timeRangeGroups.at(-1);
+    if (tail?.name !== groupName) {
+      timeRangeGroups.push({ name: groupName, ranges: [range] });
+    } else {
+      tail.ranges.push(range);
     }
   }
-  static createTimingTable(request, calculator) {
-    const tableElement = document.createElement("table");
-    tableElement.classList.add("network-timing-table");
-    tableElement.setAttribute("jslog", `${VisualLogging8.pane("timing").track({ resize: true })}`);
-    const colgroup = tableElement.createChild("colgroup");
-    colgroup.createChild("col", "labels");
-    colgroup.createChild("col", "bars");
-    colgroup.createChild("col", "duration");
-    const timeRanges = NetworkTimeCalculator.calculateRequestTimeRanges(request, calculator.minimumBoundary());
+  render5(
+    // clang-format off
+    html4`<style>${networkTimingTable_css_default}</style>
+    <table
+      class=${classes}
+      jslog=${VisualLogging8.pane("timing").track({
+      resize: true
+    })}>
+        <colgroup>
+          <col class=labels></col>
+          <col class=bars> </col>
+          <col class=duration></col>
+        </colgroup>
+        <thead class=network-timing-start>
+          <tr>
+            <th scope=col>
+              <span class=network-timing-hidden-header>${i18nString12(UIStrings12.label)}</span>
+            </th>
+            <th scope=col>
+              <span class=network-timing-hidden-header>${i18nString12(UIStrings12.waterfall)}</span>
+            </th>
+            <th scope=col>
+              <span class=network-timing-hidden-header>${i18nString12(UIStrings12.duration)}</span>
+            </th>
+          </tr>
+          <tr>
+            <td colspan = 3>
+              ${i18nString12(UIStrings12.queuedAtS, { PH1: input.calculator.formatValue(input.requestIssueTime, 2) })}
+            </td>
+          </tr>
+          <tr>
+            <td colspan=3>
+              ${i18nString12(UIStrings12.startedAtS, { PH1: input.calculator.formatValue(input.requestStartTime, 2) })}
+            </td>
+          </tr>
+        </thead>
+        ${timeRangeGroups.map((group) => html4`
+          <tr class=network-timing-table-header>
+            <td role=heading aria-level=2>
+              ${group.name}
+            </td>
+            <td></td>
+            <td>${i18nString12(UIStrings12.durationC)}</td>
+          </tr>
+          ${repeat(group.ranges, (range) => html4`
+            <tr>
+              ${isClickable(range) ? html4`<td
+                  tabindex=0
+                  role=switch
+                  aria-checked=false
+                  @click=${onActivate}
+                  @keydown=${onActivate}
+                  class=network-fetch-timing-bar-clickable>
+                    ${timeRangeTitle(range.name)}
+                </td>` : html4`<td>
+                    ${timeRangeTitle(range.name)}
+                </td>`}
+              <td>
+                <div
+                  class=network-timing-row
+                  aria-label=${i18nString12(UIStrings12.startedAtS, { PH1: input.calculator.formatValue(range.start, 2) })}>
+                    <span
+                      class="network-timing-bar ${range.name}"
+                      data-left=${scale * (range.start - input.startTime)}
+                      data-right=${scale * (input.endTime - range.end)}>${"\u200B"}</span>
+                </div>
+              </td>
+              <td>
+                <div class=network-timing-bar-title>
+                  ${i18n23.TimeUtilities.secondsToString(range.end - range.start, true)}
+                </div>
+              </td>
+            </tr>
+            ${range.name === "serviceworker-respondwith" && input.fetchDetails ? html4`
+              <tr class="network-fetch-timing-bar-details network-fetch-timing-bar-details-collapsed">
+                ${input.fetchDetails.element}
+              </tr>` : nothing3}
+            ${range.name === "serviceworker-routerevaluation" && input.routerDetails ? html4`
+              <tr class="router-evaluation-timing-bar-details network-fetch-timing-bar-details-collapsed">
+                ${input.routerDetails.element}
+              </tr>` : nothing3}
+          `)}
+        `)}
+        ${input.requestUnfinished ? html4`
+          <tr>
+            <td class=caution colspan=3>
+              ${i18nString12(UIStrings12.cautionRequestIsNotFinishedYet)}
+            </td>
+          </tr>` : nothing3}
+       <tr class=network-timing-footer>
+         <td colspan=1>
+           <x-link
+             href="https://developer.chrome.com/docs/devtools/network/reference/#timing-explanation"
+             class=devtools-link
+             jslog=${VisualLogging8.link().track({ click: true, keydown: "Enter|Space" }).context("explanation")}>
+               ${i18nString12(UIStrings12.explanation)}
+           </x-link>
+         <td></td>
+         <td class=${input.wasThrottled ? "throttled" : ""} title=${ifDefined(throttledRequestTitle)}>
+           ${input.wasThrottled ? html4` <devtools-icon name=watch ></devtools-icon>` : nothing3}
+           ${i18n23.TimeUtilities.secondsToString(input.totalDuration, true)}
+         </td>
+       </tr>
+       <tr class=network-timing-table-header>
+         <td colspan=3>
+           <hr class=break />
+         </td>
+       </tr>
+       <tr class=network-timing-table-header>
+         <td>${i18nString12(UIStrings12.serverTiming)}</td>
+         <td></td>
+         <td>${i18nString12(UIStrings12.time)}</td>
+       </tr>
+       ${repeat(input.serverTimings.filter((item) => item.metric.toLowerCase() !== "total"), addServerTiming)}
+       ${repeat(input.serverTimings.filter((item) => item.metric.toLowerCase() === "total"), addServerTiming)}
+       ${input.serverTimings.length === 0 ? html4`
+         <tr>
+           <td colspan=3>
+             ${uiI18n2.getFormatLocalizedString(str_12, UIStrings12.duringDevelopmentYouCanUseSToAdd, { PH1: UI13.XLink.XLink.create("https://web.dev/custom-metrics/#server-timing-api", i18nString12(UIStrings12.theServerTimingApi), void 0, void 0, "server-timing-api") })}
+           </td>
+         </tr>` : nothing3}
+   </table>`,
+    // clang-format on
+    target
+  );
+};
+var RequestTimingView = class _RequestTimingView extends UI13.Widget.VBox {
+  #request;
+  #calculator;
+  #lastMinimumBoundary = -1;
+  #view;
+  constructor(target, view = DEFAULT_VIEW4) {
+    super(target, { classes: ["resource-timing-view"] });
+    this.#view = view;
+  }
+  static create(request, calculator) {
+    const view = new _RequestTimingView();
+    view.request = request;
+    view.calculator = calculator;
+    view.requestUpdate();
+    return view;
+  }
+  performUpdate() {
+    if (!this.#request || !this.#calculator) {
+      return;
+    }
+    const timeRanges = NetworkTimeCalculator.calculateRequestTimeRanges(this.#request, this.#calculator.minimumBoundary());
     const startTime = timeRanges.map((r) => r.start).reduce((a, b) => Math.min(a, b));
     const endTime = timeRanges.map((r) => r.end).reduce((a, b) => Math.max(a, b));
-    const scale = 100 / (endTime - startTime);
-    let connectionHeader;
-    let serviceworkerHeader;
-    let dataHeader;
-    let queueingHeader;
-    let totalDuration = 0;
-    const startTimeHeader = tableElement.createChild("thead", "network-timing-start");
-    const tableHeaderRow = startTimeHeader.createChild("tr");
-    const activityHeaderCell = tableHeaderRow.createChild("th");
-    activityHeaderCell.createChild("span", "network-timing-hidden-header").textContent = i18nString12(UIStrings12.label);
-    activityHeaderCell.scope = "col";
-    const waterfallHeaderCell = tableHeaderRow.createChild("th");
-    waterfallHeaderCell.createChild("span", "network-timing-hidden-header").textContent = i18nString12(UIStrings12.waterfall);
-    waterfallHeaderCell.scope = "col";
-    const durationHeaderCell = tableHeaderRow.createChild("th");
-    durationHeaderCell.createChild("span", "network-timing-hidden-header").textContent = i18nString12(UIStrings12.duration);
-    durationHeaderCell.scope = "col";
-    const queuedCell = startTimeHeader.createChild("tr").createChild("td");
-    const startedCell = startTimeHeader.createChild("tr").createChild("td");
-    queuedCell.colSpan = startedCell.colSpan = 3;
-    UI13.UIUtils.createTextChild(queuedCell, i18nString12(UIStrings12.queuedAtS, { PH1: calculator.formatValue(request.issueTime(), 2) }));
-    UI13.UIUtils.createTextChild(startedCell, i18nString12(UIStrings12.startedAtS, { PH1: calculator.formatValue(request.startTime, 2) }));
-    let right;
-    for (let i = 0; i < timeRanges.length; ++i) {
-      const range = timeRanges[i];
-      const rangeName = range.name;
-      if (rangeName === "total") {
-        totalDuration = range.end - range.start;
-        continue;
-      }
-      if (rangeName === "push") {
-        createHeader(i18nString12(UIStrings12.serverPush));
-      } else if (rangeName === "queueing") {
-        if (!queueingHeader) {
-          queueingHeader = createHeader(i18nString12(UIStrings12.resourceScheduling));
-        }
-      } else if (NetworkTimeCalculator.ConnectionSetupRangeNames.has(rangeName)) {
-        if (!connectionHeader) {
-          connectionHeader = createHeader(i18nString12(UIStrings12.connectionStart));
-        }
-      } else if (NetworkTimeCalculator.ServiceWorkerRangeNames.has(rangeName)) {
-        if (!serviceworkerHeader) {
-          serviceworkerHeader = createHeader("Service Worker");
-        }
-      } else if (!dataHeader) {
-        dataHeader = createHeader(i18nString12(UIStrings12.requestresponse));
-      }
-      const left = scale * (range.start - startTime);
-      right = scale * (endTime - range.end);
-      const duration = range.end - range.start;
-      const tr = tableElement.createChild("tr");
-      const timingBarTitleElement = tr.createChild("td");
-      UI13.UIUtils.createTextChild(timingBarTitleElement, _RequestTimingView.timeRangeTitle(rangeName));
-      const row = tr.createChild("td").createChild("div", "network-timing-row");
-      const bar = row.createChild("span", "network-timing-bar " + rangeName);
-      bar.style.left = left + "%";
-      bar.style.right = right + "%";
-      bar.textContent = "\u200B";
-      UI13.ARIAUtils.setLabel(row, i18nString12(UIStrings12.startedAtS, { PH1: calculator.formatValue(range.start, 2) }));
-      const label = tr.createChild("td").createChild("div", "network-timing-bar-title");
-      label.textContent = i18n23.TimeUtilities.secondsToString(duration, true);
-      if (range.name === "serviceworker-respondwith") {
-        timingBarTitleElement.classList.add("network-fetch-timing-bar-clickable");
-        tableElement.createChild("tr", "network-fetch-timing-bar-details");
-        timingBarTitleElement.setAttribute("tabindex", "0");
-        timingBarTitleElement.setAttribute("role", "switch");
-        UI13.ARIAUtils.setChecked(timingBarTitleElement, false);
-      }
-      if (range.name === "serviceworker-routerevaluation") {
-        timingBarTitleElement.classList.add("network-fetch-timing-bar-clickable");
-        tableElement.createChild("tr", "router-evaluation-timing-bar-details");
-        timingBarTitleElement.setAttribute("tabindex", "0");
-        timingBarTitleElement.setAttribute("role", "switch");
-        UI13.ARIAUtils.setChecked(timingBarTitleElement, false);
-      }
-    }
-    if (!request.finished && !request.preserved) {
-      const cell = tableElement.createChild("tr").createChild("td", "caution");
-      cell.colSpan = 3;
-      UI13.UIUtils.createTextChild(cell, i18nString12(UIStrings12.cautionRequestIsNotFinishedYet));
-    }
-    const footer = tableElement.createChild("tr", "network-timing-footer");
-    const note = footer.createChild("td");
-    note.colSpan = 1;
-    const explanationLink = UI13.XLink.XLink.create("https://developer.chrome.com/docs/devtools/network/reference/#timing-explanation", i18nString12(UIStrings12.explanation), void 0, void 0, "explanation");
-    note.appendChild(explanationLink);
-    footer.createChild("td");
-    UI13.UIUtils.createTextChild(footer.createChild("td"), i18n23.TimeUtilities.secondsToString(totalDuration, true));
-    const serverTimings = request.serverTimings;
-    const lastTimingRightEdge = right === void 0 ? 100 : right;
-    const breakElement = tableElement.createChild("tr", "network-timing-table-header").createChild("td");
-    breakElement.colSpan = 3;
-    breakElement.createChild("hr", "break");
-    const serverHeader = tableElement.createChild("tr", "network-timing-table-header");
-    UI13.UIUtils.createTextChild(serverHeader.createChild("td"), i18nString12(UIStrings12.serverTiming));
-    serverHeader.createChild("td");
-    UI13.UIUtils.createTextChild(serverHeader.createChild("td"), i18nString12(UIStrings12.time));
-    if (!serverTimings) {
-      const informationRow = tableElement.createChild("tr");
-      const information = informationRow.createChild("td");
-      information.colSpan = 3;
-      const link2 = UI13.XLink.XLink.create("https://web.dev/custom-metrics/#server-timing-api", i18nString12(UIStrings12.theServerTimingApi), void 0, void 0, "server-timing-api");
-      information.appendChild(i18n23.i18n.getFormatLocalizedString(str_12, UIStrings12.duringDevelopmentYouCanUseSToAdd, { PH1: link2 }));
-      return tableElement;
-    }
-    serverTimings.filter((item) => item.metric.toLowerCase() !== "total").forEach((item) => addServerTiming(item, lastTimingRightEdge));
-    serverTimings.filter((item) => item.metric.toLowerCase() === "total").forEach((item) => addServerTiming(item, lastTimingRightEdge));
-    return tableElement;
-    function addServerTiming(serverTiming, right2) {
-      const colorGenerator = new Common8.Color.Generator({ min: 0, max: 360, count: 36 }, { min: 50, max: 80, count: void 0 }, 80);
-      const isTotal = serverTiming.metric.toLowerCase() === "total";
-      const tr = tableElement.createChild("tr", isTotal ? "network-timing-footer" : "server-timing-row");
-      const metricEl = tr.createChild("td", "network-timing-metric");
-      const metricDesc = [serverTiming.metric, serverTiming.description].filter(Boolean).join(" \u2014 ");
-      if (serverTiming.metric.startsWith("(c")) {
-        tr.classList.add("synthetic");
-      }
-      UI13.UIUtils.createTextChild(metricEl, metricDesc);
-      UI13.Tooltip.Tooltip.install(metricEl, metricDesc);
-      const row = tr.createChild("td", "server-timing-cell--value-bar").createChild("div", "network-timing-row");
-      if (serverTiming.value === null) {
-        return;
-      }
-      const left = scale * (endTime - startTime - serverTiming.value / 1e3);
-      if (left >= 0) {
-        const bar = row.createChild("span", "network-timing-bar server-timing");
-        bar.style.left = left + "%";
-        bar.style.right = right2 + "%";
-        bar.textContent = "\u200B";
-        if (!isTotal) {
-          bar.style.backgroundColor = colorGenerator.colorForID(serverTiming.metric);
-        }
-      }
-      const label = tr.createChild("td", "server-timing-cell--value-text").createChild("div", "network-timing-bar-title");
-      label.textContent = i18n23.TimeUtilities.millisToString(serverTiming.value, true);
-    }
-    function createHeader(title) {
-      const dataHeader2 = tableElement.createChild("tr", "network-timing-table-header");
-      const headerCell = dataHeader2.createChild("td");
-      UI13.UIUtils.createTextChild(headerCell, title);
-      UI13.ARIAUtils.markAsHeading(headerCell, 2);
-      UI13.UIUtils.createTextChild(dataHeader2.createChild("td"), "");
-      UI13.UIUtils.createTextChild(dataHeader2.createChild("td"), i18nString12(UIStrings12.durationC));
-      return dataHeader2;
-    }
-  }
-  constructFetchDetailsView() {
-    if (!this.tableElement) {
-      return;
-    }
-    const document2 = this.tableElement.ownerDocument;
-    const fetchDetailsElement = document2.querySelector(".network-fetch-timing-bar-details");
-    if (!fetchDetailsElement) {
-      return;
-    }
-    fetchDetailsElement.classList.add("network-fetch-timing-bar-details-collapsed");
-    self.onInvokeElement(this.tableElement, this.onToggleFetchDetails.bind(this, fetchDetailsElement));
-    const detailsView = new UI13.TreeOutline.TreeOutlineInShadow();
-    fetchDetailsElement.appendChild(detailsView.element);
-    const origRequest = Logs4.NetworkLog.NetworkLog.instance().originalRequestForURL(this.request.url());
-    if (origRequest) {
-      const requestObject = SDK8.RemoteObject.RemoteObject.fromLocalObject(origRequest);
-      const requestTreeElement = new ObjectUI2.ObjectPropertiesSection.RootElement(requestObject);
-      requestTreeElement.title = i18nString12(UIStrings12.originalRequest);
-      detailsView.appendChild(requestTreeElement);
-    }
-    const response = Logs4.NetworkLog.NetworkLog.instance().originalResponseForURL(this.request.url());
-    if (response) {
-      const responseObject = SDK8.RemoteObject.RemoteObject.fromLocalObject(response);
-      const responseTreeElement = new ObjectUI2.ObjectPropertiesSection.RootElement(responseObject);
-      responseTreeElement.title = i18nString12(UIStrings12.responseReceived);
-      detailsView.appendChild(responseTreeElement);
-    }
-    const serviceWorkerResponseSource = document2.createElement("div");
-    serviceWorkerResponseSource.classList.add("network-fetch-details-treeitem");
-    let swResponseSourceString = i18nString12(UIStrings12.unknown);
-    const swResponseSource = this.request.serviceWorkerResponseSource();
-    if (swResponseSource) {
-      swResponseSourceString = this.getLocalizedResponseSourceForCode(swResponseSource);
-    }
-    serviceWorkerResponseSource.textContent = i18nString12(UIStrings12.sourceOfResponseS, { PH1: swResponseSourceString });
-    const responseSourceTreeElement = new UI13.TreeOutline.TreeElement(serviceWorkerResponseSource);
-    detailsView.appendChild(responseSourceTreeElement);
-    const cacheNameElement = document2.createElement("div");
-    cacheNameElement.classList.add("network-fetch-details-treeitem");
-    const responseCacheStorageName = this.request.getResponseCacheStorageCacheName();
-    if (responseCacheStorageName) {
-      cacheNameElement.textContent = i18nString12(UIStrings12.cacheStorageCacheNameS, { PH1: responseCacheStorageName });
-    } else {
-      cacheNameElement.textContent = i18nString12(UIStrings12.cacheStorageCacheNameUnknown);
-    }
-    const cacheNameTreeElement = new UI13.TreeOutline.TreeElement(cacheNameElement);
-    detailsView.appendChild(cacheNameTreeElement);
-    const retrievalTime = this.request.getResponseRetrievalTime();
-    if (retrievalTime) {
-      const responseTimeElement = document2.createElement("div");
-      responseTimeElement.classList.add("network-fetch-details-treeitem");
-      responseTimeElement.textContent = i18nString12(UIStrings12.retrievalTimeS, { PH1: retrievalTime.toString() });
-      const responseTimeTreeElement = new UI13.TreeOutline.TreeElement(responseTimeElement);
-      detailsView.appendChild(responseTimeTreeElement);
-    }
-  }
-  getLocalizedResponseSourceForCode(swResponseSource) {
-    switch (swResponseSource) {
-      case "cache-storage":
-        return i18nString12(UIStrings12.serviceworkerCacheStorage);
-      case "http-cache":
-        return i18nString12(UIStrings12.fromHttpCache);
-      case "network":
-        return i18nString12(UIStrings12.networkFetch);
-      default:
-        return i18nString12(UIStrings12.fallbackCode);
-    }
+    const total = timeRanges.findLast(
+      (range) => range.name === "total"
+      /* NetworkTimeCalculator.RequestTimeRangeNames.TOTAL */
+    );
+    const totalDuration = total ? total?.end - total?.start : 0;
+    const conditions = SDK8.NetworkManager.MultitargetNetworkManager.instance().appliedRequestConditions(this.#request);
+    const input = {
+      startTime,
+      endTime,
+      totalDuration,
+      serverTimings: this.#request.serverTimings ?? [],
+      calculator: this.#calculator,
+      requestStartTime: this.#request.startTime,
+      requestIssueTime: this.#request.issueTime(),
+      requestUnfinished: false,
+      fetchDetails: this.#fetchDetailsTree(),
+      routerDetails: this.#routerDetailsTree(),
+      wasThrottled: conditions?.urlPattern ? conditions.conditions : void 0,
+      timeRanges
+    };
+    this.#view(input, {}, this.contentElement);
   }
   onToggleFetchDetails(fetchDetailsElement, event) {
     if (!event.target) {
@@ -5865,91 +5932,119 @@ var RequestTimingView = class _RequestTimingView extends UI13.Widget.VBox {
     }
     const target = event.target;
     if (target.classList.contains("network-fetch-timing-bar-clickable")) {
-      if (fetchDetailsElement.classList.contains("network-fetch-timing-bar-details-collapsed")) {
-        Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.NetworkPanelServiceWorkerRespondWith);
-      }
       const expanded = target.getAttribute("aria-checked") === "true";
       target.setAttribute("aria-checked", String(!expanded));
       fetchDetailsElement.classList.toggle("network-fetch-timing-bar-details-collapsed");
       fetchDetailsElement.classList.toggle("network-fetch-timing-bar-details-expanded");
     }
   }
-  constructRouterEvaluationView() {
-    if (!this.tableElement) {
-      return;
+  #fetchDetailsTree() {
+    if (!this.#request?.fetchedViaServiceWorker) {
+      return void 0;
     }
-    const routerEvaluationDetailsElement = this.tableElement.querySelector(".router-evaluation-timing-bar-details");
-    if (!routerEvaluationDetailsElement) {
-      return;
-    }
-    routerEvaluationDetailsElement.classList.add("network-fetch-timing-bar-details-collapsed");
-    self.onInvokeElement(this.tableElement, this.onToggleRouterEvaluationDetails.bind(this, routerEvaluationDetailsElement));
     const detailsView = new UI13.TreeOutline.TreeOutlineInShadow();
-    routerEvaluationDetailsElement.appendChild(detailsView.element);
-    const { serviceWorkerRouterInfo } = this.request;
+    const origRequest = Logs4.NetworkLog.NetworkLog.instance().originalRequestForURL(this.#request.url());
+    if (origRequest) {
+      const requestObject = SDK8.RemoteObject.RemoteObject.fromLocalObject(origRequest);
+      const requestTreeElement = new ObjectUI2.ObjectPropertiesSection.RootElement(requestObject);
+      requestTreeElement.title = i18nString12(UIStrings12.originalRequest);
+      detailsView.appendChild(requestTreeElement);
+    }
+    const response = Logs4.NetworkLog.NetworkLog.instance().originalResponseForURL(this.#request.url());
+    if (response) {
+      const responseObject = SDK8.RemoteObject.RemoteObject.fromLocalObject(response);
+      const responseTreeElement = new ObjectUI2.ObjectPropertiesSection.RootElement(responseObject);
+      responseTreeElement.title = i18nString12(UIStrings12.responseReceived);
+      detailsView.appendChild(responseTreeElement);
+    }
+    const serviceWorkerResponseSource = document.createElement("div");
+    serviceWorkerResponseSource.classList.add("network-fetch-details-treeitem");
+    let swResponseSourceString = i18nString12(UIStrings12.unknown);
+    const swResponseSource = this.#request.serviceWorkerResponseSource();
+    if (swResponseSource) {
+      swResponseSourceString = getLocalizedResponseSourceForCode(swResponseSource);
+    }
+    serviceWorkerResponseSource.textContent = i18nString12(UIStrings12.sourceOfResponseS, { PH1: swResponseSourceString });
+    const responseSourceTreeElement = new UI13.TreeOutline.TreeElement(serviceWorkerResponseSource);
+    detailsView.appendChild(responseSourceTreeElement);
+    const cacheNameElement = document.createElement("div");
+    cacheNameElement.classList.add("network-fetch-details-treeitem");
+    const responseCacheStorageName = this.#request.getResponseCacheStorageCacheName();
+    if (responseCacheStorageName) {
+      cacheNameElement.textContent = i18nString12(UIStrings12.cacheStorageCacheNameS, { PH1: responseCacheStorageName });
+    } else {
+      cacheNameElement.textContent = i18nString12(UIStrings12.cacheStorageCacheNameUnknown);
+    }
+    const cacheNameTreeElement = new UI13.TreeOutline.TreeElement(cacheNameElement);
+    detailsView.appendChild(cacheNameTreeElement);
+    const retrievalTime = this.#request.getResponseRetrievalTime();
+    if (retrievalTime) {
+      const responseTimeElement = document.createElement("div");
+      responseTimeElement.classList.add("network-fetch-details-treeitem");
+      responseTimeElement.textContent = i18nString12(UIStrings12.retrievalTimeS, { PH1: retrievalTime.toString() });
+      const responseTimeTreeElement = new UI13.TreeOutline.TreeElement(responseTimeElement);
+      detailsView.appendChild(responseTimeTreeElement);
+    }
+    return detailsView;
+  }
+  #routerDetailsTree() {
+    if (!this.#request?.serviceWorkerRouterInfo) {
+      return void 0;
+    }
+    const detailsView = new UI13.TreeOutline.TreeOutlineInShadow();
+    const { serviceWorkerRouterInfo } = this.#request;
     if (!serviceWorkerRouterInfo) {
       return;
     }
-    const document2 = this.tableElement.ownerDocument;
-    const matchedSourceTypeElement = document2.createElement("div");
+    const matchedSourceTypeElement = document.createElement("div");
     matchedSourceTypeElement.classList.add("network-fetch-details-treeitem");
     const matchedSourceType = serviceWorkerRouterInfo.matchedSourceType;
     const matchedSourceTypeString = String(matchedSourceType) || i18nString12(UIStrings12.unknown);
     matchedSourceTypeElement.textContent = i18nString12(UIStrings12.routerMatchedSource, { PH1: matchedSourceTypeString });
     const matchedSourceTypeTreeElement = new UI13.TreeOutline.TreeElement(matchedSourceTypeElement);
     detailsView.appendChild(matchedSourceTypeTreeElement);
-    const actualSourceTypeElement = document2.createElement("div");
+    const actualSourceTypeElement = document.createElement("div");
     actualSourceTypeElement.classList.add("network-fetch-details-treeitem");
     const actualSourceType = serviceWorkerRouterInfo.actualSourceType;
     const actualSourceTypeString = String(actualSourceType) || i18nString12(UIStrings12.unknown);
     actualSourceTypeElement.textContent = i18nString12(UIStrings12.routerActualSource, { PH1: actualSourceTypeString });
     const actualSourceTypeTreeElement = new UI13.TreeOutline.TreeElement(actualSourceTypeElement);
     detailsView.appendChild(actualSourceTypeTreeElement);
+    return detailsView;
   }
-  onToggleRouterEvaluationDetails(routerEvaluationDetailsElement, event) {
-    if (!event.target) {
-      return;
+  set request(request) {
+    this.#request = request;
+    if (this.isShowing()) {
+      this.#request.addEventListener(SDK8.NetworkRequest.Events.TIMING_CHANGED, this.requestUpdate, this);
+      this.#request.addEventListener(SDK8.NetworkRequest.Events.FINISHED_LOADING, this.requestUpdate, this);
+      this.requestUpdate();
     }
-    const target = event.target;
-    if (target.classList.contains("network-fetch-timing-bar-clickable")) {
-      const expanded = target.getAttribute("aria-checked") === "true";
-      target.setAttribute("aria-checked", String(!expanded));
-      routerEvaluationDetailsElement.classList.toggle("network-fetch-timing-bar-details-collapsed");
-      routerEvaluationDetailsElement.classList.toggle("network-fetch-timing-bar-details-expanded");
+  }
+  set calculator(calculator) {
+    this.#calculator = calculator;
+    if (this.isShowing()) {
+      this.#calculator.addEventListener("BoundariesChanged", this.boundaryChanged, this);
+      this.requestUpdate();
     }
   }
   wasShown() {
     super.wasShown();
-    this.request.addEventListener(SDK8.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
-    this.request.addEventListener(SDK8.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
-    this.calculator.addEventListener("BoundariesChanged", this.boundaryChanged, this);
-    this.refresh();
+    this.#request?.addEventListener(SDK8.NetworkRequest.Events.TIMING_CHANGED, this.requestUpdate, this);
+    this.#request?.addEventListener(SDK8.NetworkRequest.Events.FINISHED_LOADING, this.requestUpdate, this);
+    this.#calculator?.addEventListener("BoundariesChanged", this.boundaryChanged, this);
+    this.requestUpdate();
   }
   willHide() {
     super.willHide();
-    this.request.removeEventListener(SDK8.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
-    this.request.removeEventListener(SDK8.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
-    this.calculator.removeEventListener("BoundariesChanged", this.boundaryChanged, this);
-  }
-  refresh() {
-    if (this.tableElement) {
-      this.tableElement.remove();
-    }
-    this.tableElement = _RequestTimingView.createTimingTable(this.request, this.calculator);
-    this.tableElement.classList.add("resource-timing-table");
-    this.element.appendChild(this.tableElement);
-    if (this.request.fetchedViaServiceWorker) {
-      this.constructFetchDetailsView();
-    }
-    if (this.request.serviceWorkerRouterInfo) {
-      this.constructRouterEvaluationView();
-    }
+    this.#request?.removeEventListener(SDK8.NetworkRequest.Events.TIMING_CHANGED, this.requestUpdate, this);
+    this.#request?.removeEventListener(SDK8.NetworkRequest.Events.FINISHED_LOADING, this.requestUpdate, this);
+    this.#calculator?.removeEventListener("BoundariesChanged", this.boundaryChanged, this);
   }
   boundaryChanged() {
     const minimumBoundary = this.calculator.minimumBoundary();
-    if (minimumBoundary !== this.lastMinimumBoundary) {
-      this.lastMinimumBoundary = minimumBoundary;
-      this.refresh();
+    if (minimumBoundary !== this.#lastMinimumBoundary) {
+      this.#lastMinimumBoundary = minimumBoundary;
+      this.requestUpdate();
     }
   }
 };
@@ -5961,7 +6056,7 @@ __export(ResourceDirectSocketChunkView_exports, {
 });
 import * as Common10 from "./../../core/common/common.js";
 import * as i18n27 from "./../../core/i18n/i18n.js";
-import * as Platform5 from "./../../core/platform/platform.js";
+import * as Platform6 from "./../../core/platform/platform.js";
 import * as SDK9 from "./../../core/sdk/sdk.js";
 import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
 import * as DataGrid6 from "./../../ui/legacy/components/data_grid/data_grid.js";
@@ -5972,7 +6067,7 @@ import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 import * as Common9 from "./../../core/common/common.js";
 import * as Host8 from "./../../core/host/host.js";
 import * as i18n25 from "./../../core/i18n/i18n.js";
-import * as Platform4 from "./../../core/platform/platform.js";
+import * as Platform5 from "./../../core/platform/platform.js";
 import * as TextUtils4 from "./../../models/text_utils/text_utils.js";
 import * as DataGrid4 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as SourceFrame4 from "./../../ui/legacy/components/source_frame/source_frame.js";
@@ -6200,7 +6295,7 @@ var ResourceChunkView = class extends UI14.Widget.VBox {
       try {
         this.filterRegex = new RegExp(text, "i");
       } catch {
-        this.filterRegex = new RegExp(Platform4.StringUtilities.escapeForRegExp(text), "i");
+        this.filterRegex = new RegExp(Platform5.StringUtilities.escapeForRegExp(text), "i");
       }
     } else {
       this.filterRegex = null;
@@ -6379,7 +6474,7 @@ var ResourceChunkNode = class extends DataGridItem {
     UI15.UIUtils.createTextChild(timeNode, timeText);
     UI15.Tooltip.Tooltip.install(timeNode, time.toLocaleString());
     let description;
-    const length = i18n27.ByteUtilities.bytesToString(Platform5.StringUtilities.base64ToSize(chunk.data));
+    const length = i18n27.ByteUtilities.bytesToString(Platform6.StringUtilities.base64ToSize(chunk.data));
     const maxDisplayLen = 30;
     if (chunk.data.length > maxDisplayLen) {
       description = chunk.data.substring(0, maxDisplayLen) + "\u2026";
@@ -6407,7 +6502,7 @@ var ResourceChunkNode = class extends DataGridItem {
   binaryView() {
     if (!this.#binaryView) {
       if (this.dataText().length > 0) {
-        this.#binaryView = new BinaryResourceView(TextUtils5.StreamingContentData.StreamingContentData.from(new TextUtils5.ContentData.ContentData(this.dataText(), true, "application/octet-stream")), Platform5.DevToolsPath.EmptyUrlString, Common10.ResourceType.resourceTypes.DirectSocket);
+        this.#binaryView = new BinaryResourceView(TextUtils5.StreamingContentData.StreamingContentData.from(new TextUtils5.ContentData.ContentData(this.dataText(), true, "application/octet-stream")), Platform6.DevToolsPath.EmptyUrlString, Common10.ResourceType.resourceTypes.DirectSocket);
       }
     }
     return this.#binaryView;
@@ -6424,7 +6519,7 @@ __export(ResourceWebSocketFrameView_exports, {
 });
 import * as Common11 from "./../../core/common/common.js";
 import * as i18n29 from "./../../core/i18n/i18n.js";
-import * as Platform6 from "./../../core/platform/platform.js";
+import * as Platform7 from "./../../core/platform/platform.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
 import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
@@ -6573,7 +6668,7 @@ var ResourceFrameNode = class extends DataGridItem {
     } else if (isTextFrame) {
       description = dataText;
     } else if (frame.opCode === 2) {
-      length = i18n29.ByteUtilities.bytesToString(Platform6.StringUtilities.base64ToSize(frame.text));
+      length = i18n29.ByteUtilities.bytesToString(Platform7.StringUtilities.base64ToSize(frame.text));
       description = opCodeDescriptions[frame.opCode]();
     } else {
       dataText = description;
@@ -6602,7 +6697,7 @@ var ResourceFrameNode = class extends DataGridItem {
     }
     if (!this.#binaryView) {
       if (this.#dataText.length > 0) {
-        this.#binaryView = new BinaryResourceView(TextUtils6.StreamingContentData.StreamingContentData.from(new TextUtils6.ContentData.ContentData(this.#dataText, true, "applicaiton/octet-stream")), Platform6.DevToolsPath.EmptyUrlString, Common11.ResourceType.resourceTypes.WebSocket);
+        this.#binaryView = new BinaryResourceView(TextUtils6.StreamingContentData.StreamingContentData.from(new TextUtils6.ContentData.ContentData(this.#dataText, true, "applicaiton/octet-stream")), Platform7.DevToolsPath.EmptyUrlString, Common11.ResourceType.resourceTypes.WebSocket);
       }
     }
     return this.#binaryView;
@@ -6781,7 +6876,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
       }
     }
     this.appendTab("initiator", i18nString16(UIStrings16.initiator), new RequestInitiatorView(request), i18nString16(UIStrings16.requestInitiatorCallStack));
-    this.appendTab("timing", i18nString16(UIStrings16.timing), new RequestTimingView(request, calculator), i18nString16(UIStrings16.requestAndResponseTimeline));
+    this.appendTab("timing", i18nString16(UIStrings16.timing), RequestTimingView.create(request, calculator), i18nString16(UIStrings16.requestAndResponseTimeline));
     if (request.trustTokenParams()) {
       this.appendTab("trust-tokens", i18nString16(UIStrings16.trustTokens), LegacyWrapper.LegacyWrapper.legacyWrapper(UI17.Widget.VBox, new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView(request)), i18nString16(UIStrings16.trustTokenOperationDetails));
     }
@@ -6910,7 +7005,7 @@ import "./../../ui/legacy/legacy.js";
 import * as Common16 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
 import * as i18n37 from "./../../core/i18n/i18n.js";
-import * as Platform9 from "./../../core/platform/platform.js";
+import * as Platform10 from "./../../core/platform/platform.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
@@ -8299,11 +8394,11 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
     anchorBox.height = barHeight;
     return {
       box: anchorBox,
-      show: (popover) => {
-        const content = RequestTimingView.createTimingTable(request, this.calculator);
-        popover.registerRequiredCSS(networkTimingTable_css_default);
-        popover.contentElement.appendChild(content);
-        return Promise.resolve(true);
+      show: async (popover) => {
+        const content = RequestTimingView.create(request, this.calculator);
+        await content.updateComplete;
+        content.show(popover.contentElement);
+        return true;
       },
       hide: void 0
     };
@@ -10159,7 +10254,7 @@ var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventM
       name: category.name,
       label: () => category.shortTitle(),
       title: category.title(),
-      jslogContext: Platform9.StringUtilities.toKebabCase(key)
+      jslogContext: Platform10.StringUtilities.toKebabCase(key)
     }));
     this.moreFiltersDropDownUI = new MoreFiltersDropDownUI();
     this.moreFiltersDropDownUI.addEventListener("FilterChanged", this.filterChanged, this);
@@ -10230,7 +10325,7 @@ var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventM
     return result;
   }
   static createRequestDomainFilter(value) {
-    const escapedPattern = value.split("*").map(Platform9.StringUtilities.escapeForRegExp).join(".*");
+    const escapedPattern = value.split("*").map(Platform10.StringUtilities.escapeForRegExp).join(".*");
     return _NetworkLogView.requestDomainFilter.bind(null, new RegExp("^" + escapedPattern + "$", "i"));
   }
   static requestDomainFilter(regex, request) {
@@ -10336,7 +10431,7 @@ var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventM
     return request.resourceType().name() === value;
   }
   static requestUrlFilter(value, request) {
-    const regex = new RegExp(Platform9.StringUtilities.escapeForRegExp(value), "i");
+    const regex = new RegExp(Platform10.StringUtilities.escapeForRegExp(value), "i");
     return regex.test(request.url());
   }
   static requestTimeFilter(windowStart, windowEnd, request) {
@@ -10588,7 +10683,7 @@ var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventM
           initiatorLink.focus();
         }
       }
-      if (Platform9.KeyboardUtilities.isEnterOrSpaceKey(event)) {
+      if (Platform10.KeyboardUtilities.isEnterOrSpaceKey(event)) {
         this.dispatchEventToListeners("RequestActivated", { showPanel: "ShowPanel", takeFocus: true });
         event.consume(true);
       }
@@ -11144,14 +11239,14 @@ var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventM
         if (urlWithoutScheme && !manager.requestConditions.has(urlWithoutScheme)) {
           contextMenu.debugSection().appendItem(i18nString19(UIStrings19.blockRequestUrl), addBlockedURL.bind(null, urlWithoutScheme), { jslogContext: "block-request-url" });
         } else if (urlWithoutScheme) {
-          const croppedURL = Platform9.StringUtilities.trimMiddle(urlWithoutScheme, maxBlockedURLLength);
+          const croppedURL = Platform10.StringUtilities.trimMiddle(urlWithoutScheme, maxBlockedURLLength);
           contextMenu.debugSection().appendItem(i18nString19(UIStrings19.unblockS, { PH1: croppedURL }), removeBlockedURL.bind(null, urlWithoutScheme), { jslogContext: "unblock" });
         }
         const domain = request.parsedURL.domain();
         if (domain && !manager.requestConditions.has(domain)) {
           contextMenu.debugSection().appendItem(i18nString19(UIStrings19.blockRequestDomain), addBlockedURL.bind(null, domain), { jslogContext: "block-request-domain" });
         } else if (domain) {
-          const croppedDomain = Platform9.StringUtilities.trimMiddle(domain, maxBlockedURLLength);
+          const croppedDomain = Platform10.StringUtilities.trimMiddle(domain, maxBlockedURLLength);
           contextMenu.debugSection().appendItem(i18nString19(UIStrings19.unblockS, { PH1: croppedDomain }), removeBlockedURL.bind(null, domain), { jslogContext: "unblock" });
         }
       } else {
@@ -11354,14 +11449,14 @@ var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventM
       const regex = descriptor.regex;
       let filter;
       if (key) {
-        const defaultText = Platform9.StringUtilities.escapeForRegExp(key + ":" + text);
+        const defaultText = Platform10.StringUtilities.escapeForRegExp(key + ":" + text);
         filter = this.createSpecialFilter(key, text) || _NetworkLogView.requestPathFilter.bind(null, new RegExp(defaultText, "i"));
       } else if (descriptor.regex) {
         filter = _NetworkLogView.requestPathFilter.bind(null, regex);
       } else if (this.isValidUrl(text)) {
         filter = _NetworkLogView.requestUrlFilter.bind(null, text);
       } else {
-        filter = _NetworkLogView.requestPathFilter.bind(null, new RegExp(Platform9.StringUtilities.escapeForRegExp(text), "i"));
+        filter = _NetworkLogView.requestPathFilter.bind(null, new RegExp(Platform10.StringUtilities.escapeForRegExp(text), "i"));
       }
       if (descriptor.negative && !invert || !descriptor.negative && invert) {
         return _NetworkLogView.negativeFilter.bind(null, filter);
@@ -11895,7 +11990,7 @@ __export(NetworkSearchScope_exports, {
   NetworkSearchScope: () => NetworkSearchScope
 });
 import * as i18n39 from "./../../core/i18n/i18n.js";
-import * as Platform10 from "./../../core/platform/platform.js";
+import * as Platform11 from "./../../core/platform/platform.js";
 import * as TextUtils9 from "./../../models/text_utils/text_utils.js";
 import * as NetworkForward4 from "./forward/forward.js";
 var UIStrings20 = {
@@ -11967,7 +12062,7 @@ var NetworkSearchScope = class _NetworkSearchScope {
     }
     function stringMatchesQuery(string) {
       const flags = searchConfig.ignoreCase() ? "i" : "";
-      const regExps = searchConfig.queries().map((query) => new RegExp(Platform10.StringUtilities.escapeForRegExp(query), flags));
+      const regExps = searchConfig.queries().map((query) => new RegExp(Platform11.StringUtilities.escapeForRegExp(query), flags));
       let pos = 0;
       for (const regExp of regExps) {
         const match = string.substr(pos).match(regExp);
@@ -11989,7 +12084,7 @@ var NetworkSearchScope = class _NetworkSearchScope {
       if (tmpMatches.length === 0) {
         return [];
       }
-      matches = Platform10.ArrayUtilities.mergeOrdered(matches, tmpMatches, TextUtils9.ContentProvider.SearchMatch.comparator);
+      matches = Platform11.ArrayUtilities.mergeOrdered(matches, tmpMatches, TextUtils9.ContentProvider.SearchMatch.comparator);
     }
     return matches;
   }
@@ -12067,7 +12162,7 @@ import "./../../ui/legacy/legacy.js";
 import * as Common17 from "./../../core/common/common.js";
 import * as Host10 from "./../../core/host/host.js";
 import * as i18n41 from "./../../core/i18n/i18n.js";
-import * as Platform11 from "./../../core/platform/platform.js";
+import * as Platform12 from "./../../core/platform/platform.js";
 import * as SDK15 from "./../../core/sdk/sdk.js";
 import * as Logs6 from "./../../models/logs/logs.js";
 import * as NetworkTimeCalculator5 from "./../../models/network_time_calculator/network_time_calculator.js";
@@ -12076,6 +12171,7 @@ import * as Workspace from "./../../models/workspace/workspace.js";
 import * as NetworkForward5 from "./forward/forward.js";
 import * as Tracing from "./../../services/tracing/tracing.js";
 import * as PerfUI5 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as SettingsUI5 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI23 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling3 from "./../mobile_throttling/mobile_throttling.js";
@@ -12449,7 +12545,7 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     this.filterBar.show(panel3.contentElement);
     this.filterBar.addEventListener("Changed", this.handleFilterChanged.bind(this));
     const settingsPane = panel3.contentElement.createChild("div", "network-settings-pane");
-    settingsPane.append(UI23.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.useLargeRequestRows), this.networkLogLargeRowsSetting, i18nString21(UIStrings21.showMoreInformationInRequestRows)), UI23.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.groupByFrame), Common17.Settings.Settings.instance().moduleSetting("network.group-by-frame"), i18nString21(UIStrings21.groupRequestsByTopLevelRequest)), UI23.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.showOverview), this.networkLogShowOverviewSetting, i18nString21(UIStrings21.showOverviewOfNetworkRequests)), UI23.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.captureScreenshots), this.networkRecordFilmStripSetting, i18nString21(UIStrings21.captureScreenshotsWhenLoadingA)));
+    settingsPane.append(SettingsUI5.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.useLargeRequestRows), this.networkLogLargeRowsSetting, i18nString21(UIStrings21.showMoreInformationInRequestRows)), SettingsUI5.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.groupByFrame), Common17.Settings.Settings.instance().moduleSetting("network.group-by-frame"), i18nString21(UIStrings21.groupRequestsByTopLevelRequest)), SettingsUI5.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.showOverview), this.networkLogShowOverviewSetting, i18nString21(UIStrings21.showOverviewOfNetworkRequests)), SettingsUI5.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.captureScreenshots), this.networkRecordFilmStripSetting, i18nString21(UIStrings21.captureScreenshotsWhenLoadingA)));
     this.showSettingsPaneSetting = Common17.Settings.Settings.instance().createSetting("network-show-settings-toolbar", false);
     settingsPane.classList.toggle("hidden", !this.showSettingsPaneSetting.get());
     this.showSettingsPaneSetting.addChangeListener(() => settingsPane.classList.toggle("hidden", !this.showSettingsPaneSetting.get()));
@@ -12478,7 +12574,7 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     tabbedPane.setMinimumSize(100, 25);
     tabbedPane.element.classList.add("network-tabbed-pane");
     tabbedPane.element.addEventListener("keydown", (event) => {
-      if (event.key !== Platform11.KeyboardUtilities.ESCAPE_KEY) {
+      if (event.key !== Platform12.KeyboardUtilities.ESCAPE_KEY) {
         return;
       }
       splitWidget.hideSidebar();

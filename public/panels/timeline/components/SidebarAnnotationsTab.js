@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
+import '../../../ui/components/settings/settings.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -384,6 +384,6 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             textOverride: 'Hide annotations',
         }}>
             </setting-checkbox>`}
-    </span>`, target, { host: target });
+    </span>`, target);
 };
 //# sourceMappingURL=SidebarAnnotationsTab.js.map

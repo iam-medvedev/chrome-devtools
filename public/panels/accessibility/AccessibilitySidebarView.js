@@ -10,7 +10,7 @@ import { ARIAAttributesPane } from './ARIAAttributesView.js';
 import { AXBreadcrumbsPane } from './AXBreadcrumbsPane.js';
 import { SourceOrderPane } from './SourceOrderView.js';
 let accessibilitySidebarViewInstance;
-export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget {
+export class AccessibilitySidebarView extends UI.Widget.VBox {
     #node;
     #axNode;
     skipNextPullNode;
@@ -19,8 +19,8 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
     ariaSubPane;
     axNodeSubPane;
     sourceOrderSubPane;
-    constructor(throttlingTimeout) {
-        super(false /* useShadowDom */, throttlingTimeout);
+    constructor() {
+        super();
         this.element.classList.add('accessibility-sidebar-view');
         this.#node = null;
         this.#axNode = null;
@@ -40,7 +40,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
     }
     static instance(opts) {
         if (!accessibilitySidebarViewInstance || opts?.forceNew) {
-            accessibilitySidebarViewInstance = new AccessibilitySidebarView(opts?.throttlingTimeout);
+            accessibilitySidebarViewInstance = new AccessibilitySidebarView();
         }
         return accessibilitySidebarViewInstance;
     }
@@ -53,7 +53,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
     setNode(node, fromAXTree) {
         this.skipNextPullNode = Boolean(fromAXTree);
         this.#node = node;
-        this.update();
+        this.requestUpdate();
     }
     accessibilityNodeCallback(axNode) {
         if (!axNode) {
@@ -69,7 +69,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
         this.axNodeSubPane.setAXNode(axNode);
         this.breadcrumbsSubPane.setAXNode(axNode);
     }
-    async doUpdate() {
+    async performUpdate() {
         const node = this.node();
         this.axNodeSubPane.setNode(node);
         this.ariaSubPane.setNode(node);
@@ -91,7 +91,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
     wasShown() {
         super.wasShown();
         // Pull down the latest date for this node.
-        void this.doUpdate();
+        void this.performUpdate();
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.onNodeChange, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.onNodeChange, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.CharacterDataModified, this.onNodeChange, this, { scoped: true });
@@ -120,7 +120,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
         if (this.node() !== node) {
             return;
         }
-        this.update();
+        this.requestUpdate();
     }
 }
 //# sourceMappingURL=AccessibilitySidebarView.js.map

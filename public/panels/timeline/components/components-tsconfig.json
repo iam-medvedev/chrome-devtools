@@ -117,6 +117,12 @@
       "path": "../../../ui/components/request_link_icon/bundle-tsconfig.json"
     },
     {
+      "path": "../../../ui/components/settings/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/i18n/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../ui/legacy/bundle-tsconfig.json"
     },
     {

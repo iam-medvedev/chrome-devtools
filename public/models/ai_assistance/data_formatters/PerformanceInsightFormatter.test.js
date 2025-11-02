@@ -1,22 +1,21 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError } from '../../../testing/InsightHelpers.js';
+import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import { AIContext, PerformanceInsightFormatter } from '../ai_assistance.js';
-describeWithEnvironment('PerformanceInsightFormatter', () => {
-    let snapshotTester;
-    before(async () => {
-        snapshotTester = new SnapshotTester(import.meta);
-        await snapshotTester.load();
-    });
-    after(async () => {
-        await snapshotTester.finish();
-    });
+describeWithLocale('PerformanceInsightFormatter', function () {
+    const snapshotTester = new SnapshotTester(this, import.meta);
+    setupRuntimeHooks();
+    setupSettingsHooks();
     it('gracefully handles the insight being an error', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {
+            withTimelinePanel: false,
+        });
         // Although our types don't show it, Insights can end up as Errors if there
         // is an issue in the processing stage.
         const errorInsight = new Error();
@@ -27,7 +26,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('LCP breakdown', () => {
         it('serializes the correct details', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
@@ -38,7 +39,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('formats correctly when the LCP is text based and has no load delay or time phases', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
@@ -49,7 +52,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
         });
     });
     it('formats correctly when the LCP image has nodeName', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'dpr.json.gz');
+        const parsedTrace = await TraceLoader.traceEngine(this, 'dpr.json.gz', undefined, {
+            withTimelinePanel: false,
+        });
         assert.isOk(parsedTrace.insights);
         const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
         const insight = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
@@ -60,7 +65,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('Render blocking requests', () => {
         it('tells the LLM if there are no render blocking requests', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'bad-document-request-latency.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'bad-document-request-latency.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('RenderBlocking', parsedTrace.insights, firstNav);
@@ -70,7 +77,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'render-blocking-requests.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'render-blocking-requests.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('RenderBlocking', parsedTrace.insights, firstNav);
@@ -82,7 +91,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('LCP Request discovery', () => {
         it('serializes the correct details', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('LCPDiscovery', parsedTrace.insights, firstNav);
@@ -95,7 +106,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('Document request latency', () => {
         it('serializes the correct details', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'bad-document-request-latency.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'bad-document-request-latency.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('DocumentLatency', parsedTrace.insights, firstNav);
@@ -109,7 +122,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('CLS', () => {
         it('serializes the correct details', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'layout-shifts-root-causes.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'layout-shifts-root-causes.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('CLSCulprits', parsedTrace.insights, firstNav);
@@ -119,7 +134,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('includes iframe root causes', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'cls-with-iframes.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'cls-with-iframes.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('CLSCulprits', parsedTrace.insights, firstNav);
@@ -129,7 +146,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes correctly when there are no layout shifts', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'render-blocking-requests.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'render-blocking-requests.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('CLSCulprits', parsedTrace.insights, firstNav);
@@ -139,7 +158,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('outputs information on non-composited animations', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'layout-shifts-with-animation-culprit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'layout-shifts-with-animation-culprit.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('CLSCulprits', parsedTrace.insights, firstNav);
@@ -151,7 +172,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('INP breakdown', () => {
         it('serializes the correct details', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const insight = getInsightOrError('INPBreakdown', parsedTrace.insights);
             const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
@@ -162,7 +185,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('ModernHTTP', () => {
         it('serializes the correct details when no requests are using legacy http', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('ModernHTTP', parsedTrace.insights, firstNav);
@@ -172,7 +197,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details when requests are using legacy http', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'http1.1.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'http1.1.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('ModernHTTP', parsedTrace.insights, firstNav);
@@ -184,7 +211,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('DomSize', () => {
         it('serializes correctly when there are no results', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('DOMSize', parsedTrace.insights, firstNav);
@@ -194,7 +223,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details showing DOM issues', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'dom-size.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'dom-size.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('DOMSize', parsedTrace.insights, firstNav);
@@ -206,7 +237,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('Duplicated javascript', () => {
         it('serializes the correct details', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'dupe-js.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'dupe-js.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('DuplicatedJavaScript', parsedTrace.insights, firstNav);
@@ -216,7 +249,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes no details if there is no duplicate javascript', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('DuplicatedJavaScript', parsedTrace.insights, firstNav);
@@ -228,7 +263,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('Legacy JavaScript', () => {
         it('serializes the correct details when there is no legacy javascript in modules', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('LegacyJavaScript', parsedTrace.insights, firstNav);
@@ -238,7 +275,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details when modules contain legacy javascript', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'yahoo-news.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'yahoo-news.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('LegacyJavaScript', parsedTrace.insights, firstNav);
@@ -250,7 +289,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('FontDisplay', () => {
         it('serializes correctly when there are no results', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('FontDisplay', parsedTrace.insights, firstNav);
@@ -260,7 +301,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details when problems are found with font display', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'font-display.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'font-display.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('FontDisplay', parsedTrace.insights, firstNav);
@@ -272,7 +315,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('ImageDelivery', () => {
         it('serializes the correct details when there are no optimizable images', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('ImageDelivery', parsedTrace.insights, firstNav);
@@ -282,7 +327,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details when there are images that can be optimized', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'image-delivery.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'image-delivery.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('ImageDelivery', parsedTrace.insights, firstNav);
@@ -294,7 +341,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('ForcedReflow', () => {
         it('serializes correctly when there are no results', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('ForcedReflow', parsedTrace.insights, firstNav);
@@ -304,7 +353,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details when there are problems found in the network dependency tree', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'forced-reflow.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'forced-reflow.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('ForcedReflow', parsedTrace.insights, firstNav);
@@ -316,7 +367,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('NetworkDependencyTree', () => {
         it('serializes correctly when there are no results', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('NetworkDependencyTree', parsedTrace.insights, firstNav);
@@ -326,7 +379,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details when there are problems found in the network dependency tree', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-multiple-frames.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-multiple-frames.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('NetworkDependencyTree', parsedTrace.insights, firstNav);
@@ -338,7 +393,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('SlowCssSelector', () => {
         it('serializes correctly when there are no results', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('SlowCSSSelector', parsedTrace.insights, firstNav);
@@ -348,7 +405,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details when CSS selectors are found', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'selector-stats.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'selector-stats.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('SlowCSSSelector', parsedTrace.insights, firstNav);
@@ -360,7 +419,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('ThirdParties', () => {
         it('serializes correctly when there are no results', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('ThirdParties', parsedTrace.insights, firstNav);
@@ -370,7 +431,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes 3rd party scripts correctly', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('ThirdParties', parsedTrace.insights, firstNav);
@@ -382,7 +445,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('Cache', () => {
         it('serializes correctly when there are no results', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('Cache', parsedTrace.insights, firstNav);
@@ -392,7 +457,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details showing cache problems', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('Cache', parsedTrace.insights, firstNav);
@@ -404,7 +471,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
     });
     describe('Viewport', () => {
         it('serializes correctly when there are no results', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'image-delivery.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'image-delivery.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('Viewport', parsedTrace.insights, firstNav);
@@ -414,7 +483,9 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             snapshotTester.assert(this, output);
         });
         it('serializes the correct details showing viewport problems on mobile', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz', undefined, {
+                withTimelinePanel: false,
+            });
             assert.isOk(parsedTrace.insights);
             const firstNav = getFirstOrError(parsedTrace.data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('Viewport', parsedTrace.insights, firstNav);

@@ -1,31 +1,26 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { getElementWithinComponent, renderElementIntoDOM, stripLitHtmlCommentNodes, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
-import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import * as TreeOutline from '../../../ui/components/tree_outline/tree_outline.js';
+import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components.js';
 async function renderOriginTrialTreeView(data) {
     const component = new ApplicationComponents.OriginTrialTreeView.OriginTrialTreeView();
     component.data = data;
     renderElementIntoDOM(component);
-    assert.isNotNull(component.shadowRoot);
-    await RenderCoordinator.done();
-    return {
-        component,
-        shadowRoot: component.shadowRoot,
-    };
+    await component.updateComplete;
+    return component;
 }
 /**
  * Extract `TreeOutline` component from `OriginTrialTreeView` for inspection.
  */
 async function renderOriginTrialTreeViewTreeOutline(data) {
-    const { component } = await renderOriginTrialTreeView(data);
-    const treeOutline = getElementWithinComponent(component, 'devtools-tree-outline', TreeOutline.TreeOutline.TreeOutline);
+    const component = await renderOriginTrialTreeView(data);
+    const treeOutline = component.contentElement.querySelector('devtools-tree');
     assert.isNotNull(treeOutline.shadowRoot);
     return {
-        component: treeOutline,
+        component: treeOutline.getInternalTreeOutlineForTest().rootElement(),
         shadowRoot: treeOutline.shadowRoot,
     };
 }
@@ -101,26 +96,11 @@ const trialWithUnparsableToken = {
     ],
 };
 function extractBadgeTextFromTreeNode(node) {
-    return [...node.querySelectorAll('devtools-resources-origin-trial-tree-view-badge')].map(badgeElement => {
-        const adornerElement = badgeElement.shadowRoot.querySelector('devtools-adorner');
-        assert.isNotNull(adornerElement);
-        if (adornerElement === null) {
-            return '';
-        }
-        const contentElement = adornerElement.firstElementChild;
-        assert.isNotNull(contentElement);
-        if (contentElement === null) {
-            return '';
-        }
-        return contentElement.innerHTML;
+    return [...node.querySelectorAll('devtools-adorner')]
+        .filter(adornerElement => adornerElement.checkVisibility())
+        .map(adornerElement => {
+        return adornerElement.deepInnerText();
     });
-}
-function nodeKeyInnerHTML(node) {
-    const keyNode = node.querySelector('[data-node-key]');
-    if (!keyNode) {
-        throw new Error('Found tree node without a key within it.');
-    }
-    return stripLitHtmlCommentNodes(keyNode.innerHTML);
 }
 /**
  * Converts the nodes into a tree structure that we can assert against.
@@ -133,14 +113,14 @@ function visibleNodesToTree(shadowRoot) {
         };
         if (node.getAttribute('aria-expanded') && node.getAttribute('aria-expanded') === 'true') {
             item.children = [];
-            const childNodes = node.querySelectorAll(':scope > ul[role="group"]>li');
+            const childNodes = node.nextElementSibling?.querySelectorAll(':scope > li') ?? [];
             for (const child of childNodes) {
                 item.children.push(buildTreeNode(child));
             }
         }
         return item;
     }
-    const rootNodes = shadowRoot.querySelectorAll('ul[role="tree"]>li');
+    const rootNodes = shadowRoot.querySelectorAll('ol[role="tree"]>li');
     for (const root of rootNodes) {
         tree.push(buildTreeNode(root));
     }
@@ -152,7 +132,7 @@ function visibleNodesToTree(shadowRoot) {
  * render coordinator's control.
  */
 async function waitForRenderedTreeNodeCount(shadowRoot, expectedNodeCount) {
-    const actualNodeCount = shadowRoot.querySelectorAll('li[role="treeitem"]').length;
+    const actualNodeCount = shadowRoot.querySelectorAll('ol[role="tree"] > li[role="treeitem"], ol.expanded > li[role="treeitem"]').length;
     if (actualNodeCount === expectedNodeCount) {
         return;
     }
@@ -172,11 +152,11 @@ describeWithLocale('OriginTrialTreeView', () => {
                 trialWithUnparsableToken,
             ],
         });
-        const visibleItems = shadowRoot.querySelectorAll('li[role="treeitem"]');
+        const visibleItems = shadowRoot.querySelectorAll('ol[role="tree"] > li[role="treeitem"], ol.expanded > li[role="treeitem"]');
         assert.lengthOf(visibleItems, 3);
-        assert.include(nodeKeyInnerHTML(visibleItems[0]), trialWithMultipleTokens.trialName);
-        assert.include(nodeKeyInnerHTML(visibleItems[1]), trialWithSingleToken.trialName);
-        assert.include(nodeKeyInnerHTML(visibleItems[2]), trialWithUnparsableToken.trialName);
+        assert.include(visibleItems[0].deepInnerText(), trialWithMultipleTokens.trialName);
+        assert.include(visibleItems[1].deepInnerText(), trialWithSingleToken.trialName);
+        assert.include(visibleItems[2].deepInnerText(), trialWithUnparsableToken.trialName);
     });
     it('renders token with status when there are more than 1 tokens', async () => {
         const { component, shadowRoot } = await renderOriginTrialTreeViewTreeOutline({
@@ -184,7 +164,7 @@ describeWithLocale('OriginTrialTreeView', () => {
                 trialWithMultipleTokens, // Node counts by level: 1/3/6/3
             ],
         });
-        await component.expandRecursively(/* maxDepth= */ 0);
+        await component.expandRecursively(/* maxDepth= */ 2);
         await waitForRenderedTreeNodeCount(shadowRoot, 4);
         const visibleTree = visibleNodesToTree(shadowRoot);
         // When there are more than 1 tokens in a trial, second level nodes
@@ -205,7 +185,7 @@ describeWithLocale('OriginTrialTreeView', () => {
                 trialWithSingleToken, // Node counts by level: 1/2/1
             ],
         });
-        await component.expandRecursively(/* maxDepth= */ 1);
+        await component.expandRecursively(/* maxDepth= */ 2);
         await waitForRenderedTreeNodeCount(shadowRoot, 3);
         const visibleTree = visibleNodesToTree(shadowRoot);
         // When there is only 1 token, token with status level should be skipped.
@@ -222,7 +202,7 @@ describeWithLocale('OriginTrialTreeView', () => {
                 trialWithSingleToken, // Node counts by level: 1/2/1
             ],
         });
-        await component.expandRecursively(/* maxDepth= */ 1);
+        await component.expandRecursively(/* maxDepth= */ 2);
         await waitForRenderedTreeNodeCount(shadowRoot, 3);
         const visibleTree = visibleNodesToTree(shadowRoot);
         const tokenDetailNodes = visibleTree[0].children;
@@ -232,7 +212,8 @@ describeWithLocale('OriginTrialTreeView', () => {
         }
         assert.lengthOf(tokenDetailNodes, 2);
         const tokenFieldsNode = tokenDetailNodes[0];
-        const rowsComponent = tokenFieldsNode.nodeElement.querySelector('devtools-resources-origin-trial-token-rows');
+        const rowsComponent = tokenFieldsNode.nodeElement.querySelector('devtools-widget');
+        await UI.Widget.Widget.get(rowsComponent).updateComplete;
         const { innerHTML } = rowsComponent.shadowRoot;
         const parsedToken = trialWithSingleToken.tokensWithStatus[0].parsedToken;
         assert.exists(parsedToken);
@@ -252,7 +233,7 @@ describeWithLocale('OriginTrialTreeView', () => {
                 trialWithSingleToken, // Node counts by level: 1/2/1
             ],
         });
-        await component.expandRecursively(/* maxDepth= */ 2);
+        await component.expandRecursively(/* maxDepth= */ 3);
         await waitForRenderedTreeNodeCount(shadowRoot, 4);
         const visibleTree = visibleNodesToTree(shadowRoot);
         const tokenDetailNodes = visibleTree[0].children;
@@ -267,8 +248,8 @@ describeWithLocale('OriginTrialTreeView', () => {
             return;
         }
         assert.lengthOf(rawTokenNode.children, 1);
-        const innerHTML = nodeKeyInnerHTML(rawTokenNode.children[0].nodeElement);
-        assert.include(innerHTML, trialWithSingleToken.tokensWithStatus[0].rawTokenText);
+        const innerText = rawTokenNode.children[0].nodeElement.deepInnerText();
+        assert.include(innerText, trialWithSingleToken.tokensWithStatus[0].rawTokenText);
     });
     it('shows token count when there are more than 1 tokens in a trial', async () => {
         const { shadowRoot } = await renderOriginTrialTreeViewTreeOutline({
@@ -302,7 +283,7 @@ describeWithLocale('OriginTrialTreeView', () => {
                 trialWithMultipleTokens, // Node counts by level: 1/3/6/3
             ],
         });
-        await component.expandRecursively(/* maxDepth= */ 0);
+        await component.expandRecursively(/* maxDepth= */ 2);
         await waitForRenderedTreeNodeCount(shadowRoot, 4);
         const visibleTree = visibleNodesToTree(shadowRoot);
         const trialNameNode = visibleTree[0];
@@ -325,8 +306,8 @@ describeWithLocale('OriginTrialTreeView', () => {
                 trialWithMultipleTokens, // Node counts by level: 1/3/6/3
             ],
         });
-        await component.expandRecursively(/* maxDepth= */ 1);
-        await waitForRenderedTreeNodeCount(shadowRoot, 4);
+        await component.expandRecursively(/* maxDepth= */ 3);
+        await waitForRenderedTreeNodeCount(shadowRoot, 10);
         const visibleTree = visibleNodesToTree(shadowRoot);
         const trialNameNode = visibleTree[0];
         assert.exists(trialNameNode.children);
@@ -360,7 +341,7 @@ describeWithLocale('OriginTrialTreeView', () => {
                 },
             ],
         }); // Node counts by level: 1/2/1
-        await component.expandRecursively(/* maxDepth= */ 1);
+        await component.expandRecursively(/* maxDepth= */ 2);
         await waitForRenderedTreeNodeCount(shadowRoot, 3);
         const visibleTree = visibleNodesToTree(shadowRoot);
         const tokenDetailNodes = visibleTree[0].children;
@@ -370,7 +351,8 @@ describeWithLocale('OriginTrialTreeView', () => {
         }
         assert.lengthOf(tokenDetailNodes, 2);
         const tokenFieldsNode = tokenDetailNodes[0];
-        const rowsComponent = tokenFieldsNode.nodeElement.querySelector('devtools-resources-origin-trial-token-rows');
+        const rowsComponent = tokenFieldsNode.nodeElement.querySelector('devtools-widget');
+        await UI.Widget.Widget.get(rowsComponent).updateComplete;
         const { innerHTML } = rowsComponent.shadowRoot;
         assert.include(innerHTML, unknownTrialName);
     });

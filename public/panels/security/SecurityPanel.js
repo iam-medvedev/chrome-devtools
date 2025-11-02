@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-imperative-dom-api */
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -496,6 +495,22 @@ export function createHighlightedUrl(url, securityState) {
     highlightedUrl.createChild('span').textContent = content;
     return highlightedUrl;
 }
+const DEFAULT_VIEW = (input, output, target) => {
+    // clang-format off
+    render(html `
+    <devtools-split-view direction="column" name="security"
+      ${UI.Widget.widgetRef(UI.SplitWidget.SplitWidget, e => { output.splitWidget = e; })}>
+      <devtools-widget
+        slot="sidebar"
+        .widgetConfig=${widgetConfig(SecurityPanelSidebar)}
+        @showIPProtection=${() => output.setVisibleView(new IPProtectionView())}
+        @showCookieReport=${() => output.setVisibleView(new CookieReportView())}
+        @showFlagControls=${() => output.setVisibleView(new CookieControlsView())}
+        ${UI.Widget.widgetRef(SecurityPanelSidebar, e => { output.sidebar = e; })}>
+      </devtools-widget>
+  </devtools-split-view>`, target);
+    // clang-format on
+};
 export class SecurityPanel extends UI.Panel.Panel {
     view;
     mainView;
@@ -507,22 +522,7 @@ export class SecurityPanel extends UI.Panel.Panel {
     eventListeners;
     securityModel;
     splitWidget;
-    constructor(view = (_input, output, target) => {
-        // clang-format off
-        render(html `
-    <devtools-split-view direction="column" name="security"
-      ${UI.Widget.widgetRef(UI.SplitWidget.SplitWidget, e => { output.splitWidget = e; })}>
-        <devtools-widget
-          slot="sidebar"
-          .widgetConfig=${widgetConfig(SecurityPanelSidebar)}
-          @showIPProtection=${() => output.setVisibleView(new IPProtectionView())}
-          @showCookieReport=${() => output.setVisibleView(new CookieReportView())}
-          @showFlagControls=${() => output.setVisibleView(new CookieControlsView())}
-          ${UI.Widget.widgetRef(SecurityPanelSidebar, e => { output.sidebar = e; })}>
-        </devtools-widget>
-    </devtools-split-view>`, target, { host: this });
-        // clang-format on
-    }) {
+    constructor(view = DEFAULT_VIEW) {
         super('security');
         this.view = view;
         this.update();

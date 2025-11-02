@@ -14,6 +14,7 @@ export class EnhancedTracesParser {
     #targets = [];
     #executionContexts = [];
     #scripts = [];
+    #resources = [];
     static enhancedTraceVersion = 1;
     constructor(trace) {
         this.#trace = trace;
@@ -32,6 +33,9 @@ export class EnhancedTracesParser {
                 const data = event.args?.data;
                 for (const frame of data.frames) {
                     if (frame.url === 'about:blank') {
+                        continue;
+                    }
+                    if (!frame.isInPrimaryMainFrame) {
                         continue;
                     }
                     const frameId = frame.frame;
@@ -184,7 +188,8 @@ export class EnhancedTracesParser {
             // this fake event. Would avoid a lot of wasteful (de)serialization. Maybe add SDK.Script.hydratedSourceMap.
             this.resolveSourceMap(script);
         }
-        return this.groupContextsAndScriptsUnderTarget(this.#targets, this.#executionContexts, this.#scripts);
+        this.#resources = this.#trace.metadata.resources ?? [];
+        return this.groupContextsAndScriptsUnderTarget(this.#targets, this.#executionContexts, this.#scripts, this.#resources);
     }
     resolveSourceMap(script) {
         if (script.sourceMapURL?.startsWith('data:')) {
@@ -253,7 +258,7 @@ export class EnhancedTracesParser {
     isFunctionCallEvent(event) {
         return this.isTraceEvent(event) && event.cat === 'devtools.timeline' && event.name === 'FunctionCall';
     }
-    groupContextsAndScriptsUnderTarget(targets, executionContexts, scripts) {
+    groupContextsAndScriptsUnderTarget(targets, executionContexts, scripts, resources) {
         const data = [];
         const targetIds = new Set();
         const targetToExecutionContexts = new Map();
@@ -262,11 +267,13 @@ export class EnhancedTracesParser {
         const executionContextIsolateToTarget = new Map();
         const targetToScripts = new Map();
         const orphanScripts = [];
+        const targetToResources = new Map();
         // Initialize all the mapping needed
         for (const target of targets) {
             targetIds.add(target.targetId);
             targetToExecutionContexts.set(target.targetId, []);
             targetToScripts.set(target.targetId, []);
+            targetToResources.set(target.targetId, []);
         }
         // Put all of the known execution contexts under respective targets
         for (const executionContext of executionContexts) {
@@ -318,12 +325,19 @@ export class EnhancedTracesParser {
                 console.error('Script can\'t be linked to any target', orphanScript);
             }
         }
+        for (const resource of resources) {
+            const frameId = resource.frame;
+            if (targetIds.has(frameId)) {
+                targetToResources.get(frameId)?.push(resource);
+            }
+        }
         // Now all the scripts are linked to a target, we want to make sure all the scripts are pointing to a valid
         // execution context. If not, we will create an artificial execution context for the script
         for (const target of targets) {
             const targetId = target.targetId;
             const executionContexts = targetToExecutionContexts.get(targetId) || [];
             const scripts = targetToScripts.get(targetId) || [];
+            const resources = targetToResources.get(targetId) || [];
             for (const script of scripts) {
                 if (!executionContexts.find(context => context.id === script.executionContextId)) {
                     const artificialContext = {
@@ -343,7 +357,7 @@ export class EnhancedTracesParser {
                 }
             }
             // Finally, we put all the information into the data structure we want to return as.
-            data.push({ target, executionContexts, scripts });
+            data.push({ target, executionContexts, scripts, resources });
         }
         return data;
     }

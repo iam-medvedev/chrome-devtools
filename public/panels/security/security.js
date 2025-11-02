@@ -21,10 +21,10 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as ChromeLink from "./../../ui/components/chrome_link/chrome_link.js";
 import * as Input from "./../../ui/components/input/input.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
+import { Directives, html, nothing, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/security/cookieControlsView.css.js
@@ -158,7 +158,7 @@ input[type="checkbox"] {
 /*# sourceURL=${import.meta.resolve("./cookieControlsView.css")} */`;
 
 // gen/front_end/panels/security/CookieControlsView.js
-var { render, html } = Lit;
+var { ref } = Directives;
 var UIStrings = {
   /**
    * @description Title in the view's header for the controls tool in the Privacy & Security panel
@@ -247,40 +247,39 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/security/CookieControlsView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var i18nFormatString = i18n.i18n.getFormatLocalizedString.bind(void 0, str_);
-function showInfobar() {
-  UI.InspectorView.InspectorView.instance().displayDebuggedTabReloadRequiredWarning(i18nString(UIStrings.siteReloadMessage));
+var i18nFormatString = uiI18n.getFormatLocalizedString.bind(void 0, str_);
+function getChromeFlagsLink(flag) {
+  return html`
+    <devtools-chrome-link href="chrome://flags/#${flag}" tabindex="0">
+     ${flag}
+    </devtools-chrome-link>`;
 }
-var CookieControlsView = class extends UI.Widget.VBox {
-  #view;
-  #isGracePeriodActive;
-  #thirdPartyControlsDict;
-  constructor(element, view = (input, _, target) => {
-    const enterpriseEnabledSetting = Common.Settings.Settings.instance().createSetting(
-      "enterprise-enabled",
-      this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.managedBlockThirdPartyCookies && typeof this.#thirdPartyControlsDict.managedBlockThirdPartyCookies === "boolean" ? this.#thirdPartyControlsDict.managedBlockThirdPartyCookies : false,
-      "Global"
-      /* Common.Settings.SettingStorageType.GLOBAL */
-    );
-    const toggleEnabledSetting = Common.Settings.Settings.instance().createSetting(
-      "cookie-control-override-enabled",
-      this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled ? this.#thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled : false,
-      "Global"
-      /* Common.Settings.SettingStorageType.GLOBAL */
-    );
-    const gracePeriodDisabledSetting = Common.Settings.Settings.instance().createSetting(
-      "grace-period-mitigation-disabled",
-      this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled ? this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled : true,
-      "Global"
-      /* Common.Settings.SettingStorageType.GLOBAL */
-    );
-    const heuristicsDisabledSetting = Common.Settings.Settings.instance().createSetting(
-      "heuristic-mitigation-disabled",
-      this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled ? this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : true,
-      "Global"
-      /* Common.Settings.SettingStorageType.GLOBAL */
-    );
-    const cardHeader = html`
+var DEFAULT_VIEW = (input, _output, target) => {
+  const enterpriseEnabledSetting = Common.Settings.Settings.instance().createSetting(
+    "enterprise-enabled",
+    input.thirdPartyControlsDict && input.thirdPartyControlsDict.managedBlockThirdPartyCookies && typeof input.thirdPartyControlsDict.managedBlockThirdPartyCookies === "boolean" ? input.thirdPartyControlsDict.managedBlockThirdPartyCookies : false,
+    "Global"
+    /* Common.Settings.SettingStorageType.GLOBAL */
+  );
+  const toggleEnabledSetting = Common.Settings.Settings.instance().createSetting(
+    "cookie-control-override-enabled",
+    input.thirdPartyControlsDict?.thirdPartyCookieRestrictionEnabled ? input.thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled : false,
+    "Global"
+    /* Common.Settings.SettingStorageType.GLOBAL */
+  );
+  const gracePeriodDisabledSetting = Common.Settings.Settings.instance().createSetting(
+    "grace-period-mitigation-disabled",
+    input.thirdPartyControlsDict?.thirdPartyCookieMetadataEnabled ? input.thirdPartyControlsDict.thirdPartyCookieMetadataEnabled : true,
+    "Global"
+    /* Common.Settings.SettingStorageType.GLOBAL */
+  );
+  const heuristicsDisabledSetting = Common.Settings.Settings.instance().createSetting(
+    "heuristic-mitigation-disabled",
+    input.thirdPartyControlsDict?.thirdPartyCookieHeuristicsEnabled ? input.thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : true,
+    "Global"
+    /* Common.Settings.SettingStorageType.GLOBAL */
+  );
+  const cardHeader = html`
       <div class="card-header">
         <div class="lhs">
           <div class="text">
@@ -291,11 +290,11 @@ var CookieControlsView = class extends UI.Widget.VBox {
             <devtools-icon
               tabindex="0"
               name="domain"
-              ${Lit.Directives.ref((el) => {
-      UI.Tooltip.Tooltip.install(el, i18nString(UIStrings.enterpriseTooltip));
-      el.role = "img";
-    })}>
-            </devtools-icon>` : Lit.nothing}
+              ${ref((el) => {
+    UI.Tooltip.Tooltip.install(el, i18nString(UIStrings.enterpriseTooltip));
+    el.role = "img";
+  })}>
+            </devtools-icon>` : nothing}
         </div>
         <div>
           <devtools-switch
@@ -304,69 +303,69 @@ var CookieControlsView = class extends UI.Widget.VBox {
             .label=${"Temporarily limit third-party cookies, only when DevTools is open"}
             data-testid="cookie-control-override"
             @switchchange=${() => {
-      input.inputChanged(!toggleEnabledSetting.get(), toggleEnabledSetting);
-    }}
+    input.inputChanged(!toggleEnabledSetting.get(), toggleEnabledSetting);
+  }}
             jslog=${VisualLogging.toggle(toggleEnabledSetting.name).track({ click: true })}
           >
           </devtools-switch>
         </div>
       </div>
     `;
-    const gracePeriodControlDisabled = (this.#thirdPartyControlsDict ? !this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled : false) || enterpriseEnabledSetting.get() || !toggleEnabledSetting.get() || !this.#isGracePeriodActive;
-    const gracePeriodControl = html`
+  const gracePeriodControlDisabled = (input.thirdPartyControlsDict ? !input.thirdPartyControlsDict.thirdPartyCookieMetadataEnabled : false) || enterpriseEnabledSetting.get() || !toggleEnabledSetting.get() || !input.isGracePeriodActive;
+  const gracePeriodControl = html`
       <div class="card-row">
         <label class='checkbox-label'>
           <input type='checkbox'
             .disabled=${gracePeriodControlDisabled}
             .checked=${!gracePeriodControlDisabled && !Boolean(gracePeriodDisabledSetting.get())}
             @change=${() => {
-      input.inputChanged(!gracePeriodDisabledSetting.get(), gracePeriodDisabledSetting);
-    }}
+    input.inputChanged(!gracePeriodDisabledSetting.get(), gracePeriodDisabledSetting);
+  }}
             jslog=${VisualLogging.toggle(gracePeriodDisabledSetting.name).track({ click: true })}
           >
           <div class="text">
             <div class="body main-text">${i18nString(UIStrings.gracePeriodTitle)}</div>
             <div class="body subtext">
               ${Boolean(enterpriseEnabledSetting.get()) ? i18nFormatString(UIStrings.gracePeriodExplanation, {
-      PH1: i18nString(UIStrings.gracePeriod)
-    }) : (this.#thirdPartyControlsDict ? !this.#thirdPartyControlsDict?.thirdPartyCookieMetadataEnabled : false) ? i18nFormatString(UIStrings.enableFlag, {
-      PH1: this.getChromeFlagsLink(UIStrings.tpcdMetadataGrants)
-    }) : i18nFormatString(this.#isGracePeriodActive ? UIStrings.gracePeriodExplanation : UIStrings.enrollGracePeriod, {
-      PH1: UI.Fragment.html`<x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/grace-period" jslog=${VisualLogging.link("grace-period-link").track({ click: true })}>${i18nString(UIStrings.gracePeriod)}</x-link>`
-    })}
+    PH1: i18nString(UIStrings.gracePeriod)
+  }) : (input.thirdPartyControlsDict ? !input.thirdPartyControlsDict?.thirdPartyCookieMetadataEnabled : false) ? i18nFormatString(UIStrings.enableFlag, {
+    PH1: getChromeFlagsLink(UIStrings.tpcdMetadataGrants)
+  }) : i18nFormatString(input.isGracePeriodActive ? UIStrings.gracePeriodExplanation : UIStrings.enrollGracePeriod, {
+    PH1: UI.Fragment.html`<x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/grace-period" jslog=${VisualLogging.link("grace-period-link").track({ click: true })}>${i18nString(UIStrings.gracePeriod)}</x-link>`
+  })}
             </div>
           </div>
         </label>
       </div>
     `;
-    const heuristicsControlDisabled = (this.#thirdPartyControlsDict ? !this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : false) || enterpriseEnabledSetting.get() || !toggleEnabledSetting.get();
-    const heuristicControl = html`
+  const heuristicsControlDisabled = (input.thirdPartyControlsDict ? !input.thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : false) || enterpriseEnabledSetting.get() || !toggleEnabledSetting.get();
+  const heuristicControl = html`
       <div class="card-row">
         <label class='checkbox-label'>
           <input type='checkbox'
             .disabled=${heuristicsControlDisabled}
             .checked=${!heuristicsControlDisabled && !Boolean(heuristicsDisabledSetting.get())}
             @change=${() => {
-      input.inputChanged(!heuristicsDisabledSetting.get(), heuristicsDisabledSetting);
-    }}
+    input.inputChanged(!heuristicsDisabledSetting.get(), heuristicsDisabledSetting);
+  }}
             jslog=${VisualLogging.toggle(heuristicsDisabledSetting.name).track({ click: true })}
           >
           <div class='text'>
             <div class="body main-text">${i18nString(UIStrings.heuristicTitle)}</div>
             <div class="body subtext">
               ${Boolean(enterpriseEnabledSetting.get()) ? i18nFormatString(UIStrings.heuristicExplanation, {
-      PH1: i18nString(UIStrings.scenarios)
-    }) : (this.#thirdPartyControlsDict ? !this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : false) ? i18nFormatString(UIStrings.enableFlag, {
-      PH1: this.getChromeFlagsLink(UIStrings.tpcdHeuristicsGrants)
-    }) : i18nFormatString(UIStrings.heuristicExplanation, {
-      PH1: UI.Fragment.html`<x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/heuristics-based-exceptions" jslog=${VisualLogging.link("heuristic-link").track({ click: true })}>${i18nString(UIStrings.scenarios)}</x-link>`
-    })}
+    PH1: i18nString(UIStrings.scenarios)
+  }) : (input.thirdPartyControlsDict ? !input.thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : false) ? i18nFormatString(UIStrings.enableFlag, {
+    PH1: getChromeFlagsLink(UIStrings.tpcdHeuristicsGrants)
+  }) : i18nFormatString(UIStrings.heuristicExplanation, {
+    PH1: UI.Fragment.html`<x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/heuristics-based-exceptions" jslog=${VisualLogging.link("heuristic-link").track({ click: true })}>${i18nString(UIStrings.scenarios)}</x-link>`
+  })}
             </div>
           </div>
         </label>
       </div>
     `;
-    const enterpriseDisclaimer = html`
+  const enterpriseDisclaimer = html`
       <div class="enterprise">
         <div class="text body">${i18nString(UIStrings.enterpriseDisclaimer)}</div>
           <div class="anchor">
@@ -383,7 +382,7 @@ var CookieControlsView = class extends UI.Widget.VBox {
         </div>
       </div>
     `;
-    render(html`
+  render(html`
       <div class="overflow-auto">
         <div class="controls">
           <div class="header">
@@ -403,11 +402,19 @@ var CookieControlsView = class extends UI.Widget.VBox {
               </div>
             </div>
           </devtools-card>
-          ${Boolean(enterpriseEnabledSetting.get()) ? enterpriseDisclaimer : Lit.nothing}
+          ${Boolean(enterpriseEnabledSetting.get()) ? enterpriseDisclaimer : nothing}
         </div>
       </div>
-    `, target, { host: this });
-  }) {
+    `, target);
+};
+function showInfobar() {
+  UI.InspectorView.InspectorView.instance().displayDebuggedTabReloadRequiredWarning(i18nString(UIStrings.siteReloadMessage));
+}
+var CookieControlsView = class extends UI.Widget.VBox {
+  #view;
+  #isGracePeriodActive;
+  #thirdPartyControlsDict;
+  constructor(element, view = DEFAULT_VIEW) {
     super(element, { useShadowDom: true });
     this.#view = view;
     this.#isGracePeriodActive = false;
@@ -421,7 +428,12 @@ var CookieControlsView = class extends UI.Widget.VBox {
     this.requestUpdate();
   }
   performUpdate() {
-    this.#view(this, this, this.contentElement);
+    this.#view({
+      thirdPartyControlsDict: this.#thirdPartyControlsDict,
+      isGracePeriodActive: this.#isGracePeriodActive,
+      inputChanged: this.inputChanged.bind(this),
+      openChromeCookieSettings: this.openChromeCookieSettings.bind(this)
+    }, this, this.contentElement);
   }
   inputChanged(newValue, setting) {
     setting.set(newValue);
@@ -474,13 +486,6 @@ var CookieControlsView = class extends UI.Widget.VBox {
       this.requestUpdate();
     }
   }
-  getChromeFlagsLink(flag) {
-    const link3 = new ChromeLink.ChromeLink.ChromeLink();
-    link3.textContent = flag;
-    link3.href = "chrome://flags/" + flag;
-    link3.setAttribute("tabindex", "0");
-    return link3;
-  }
 };
 
 // gen/front_end/panels/security/CookieReportView.js
@@ -495,8 +500,9 @@ import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
+import * as uiI18n2 from "./../../ui/i18n/i18n.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../ui/lit/lit.js";
+import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 import * as NetworkForward from "./../network/forward/forward.js";
 
@@ -579,7 +585,7 @@ devtools-data-grid {
 /*# sourceURL=${import.meta.resolve("./cookieReportView.css")} */`;
 
 // gen/front_end/panels/security/CookieReportView.js
-var { render: render2, html: html2, Directives: { ref } } = Lit2;
+var { render: render2, html: html2, Directives: { ref: ref2 } } = Lit;
 var UIStrings2 = {
   /**
    * @description Title in the header for the third-party cookie report in the Security & Privacy Panel
@@ -730,15 +736,8 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/security/CookieReportView.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
-  #issuesManager;
-  namedBitSetFilterUI;
-  #cookieRows = /* @__PURE__ */ new Map();
-  #view;
-  filterItems = [];
-  searchText;
-  constructor(element, view = (input, output, target) => {
-    render2(html2`
+var DEFAULT_VIEW2 = (input, output, target) => {
+  render2(html2`
         <div class="report overflow-auto">
             <div class="header">
               <h1>${i18nString2(UIStrings2.title)}</h1>
@@ -759,11 +758,11 @@ var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
                     aria-label="Third-party cookie status filters"
                     @filterChanged=${input.onFilterChanged}
                     .options=${{ items: input.filterItems }}
-                    ${ref((el) => {
-      if (el instanceof UI2.FilterBar.NamedBitSetFilterUIElement) {
-        output.namedBitSetFilterUI = el.getOrCreateNamedBitSetFilterUI();
-      }
-    })}
+                    ${ref2((el) => {
+    if (el instanceof UI2.FilterBar.NamedBitSetFilterUIElement) {
+      output.namedBitSetFilterUI = el.getOrCreateNamedBitSetFilterUI();
+    }
+  })}
                   ></devtools-named-bit-set-filter>
                 </div>
                 <!-- @ts-ignore -->
@@ -787,10 +786,10 @@ var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
                       <tr data-name=${row.name} data-domain=${row.domain}>
                         <td>${row.name}</td>
                         <td>${row.domain}</td>
-                        <td>${_CookieReportView.getCookieTypeString(row.type)}</td>
+                        <td>${CookieReportView.getCookieTypeString(row.type)}</td>
                         <td>${row.platform ?? i18nString2(UIStrings2.unknown)}</td>
-                        <td>${_CookieReportView.getStatusString(row.status)}</td>
-                        <td>${_CookieReportView.getRecommendation(row.domain, row.insight)}</td>
+                        <td>${CookieReportView.getStatusString(row.status)}</td>
+                        <td>${CookieReportView.getRecommendation(row.domain, row.insight)}</td>
                       </tr>
                     `)}
                   </table>
@@ -811,8 +810,16 @@ var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
               `}
 
         </div>
-    `, target, { host: this });
-  }) {
+    `, target);
+};
+var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
+  #issuesManager;
+  namedBitSetFilterUI;
+  #cookieRows = /* @__PURE__ */ new Map();
+  #view;
+  filterItems = [];
+  searchText;
+  constructor(element, view = DEFAULT_VIEW2) {
     super(element, { useShadowDom: true });
     this.#view = view;
     this.registerRequiredCSS(cookieReportView_css_default);
@@ -955,7 +962,7 @@ var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
     switch (insight.type) {
       case "GitHubResource": {
         const githubLink = UI2.XLink.XLink.create(insight.tableEntryUrl ? insight.tableEntryUrl : "https://github.com/privacysandbox/privacy-sandbox-dev-support/blob/main/3pc-migration-readiness.md", i18nString2(UIStrings2.guidance), void 0, void 0, "readiness-list-link");
-        return html2`${i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.gitHubResource, {
+        return html2`${uiI18n2.getFormatLocalizedString(str_2, UIStrings2.gitHubResource, {
           PH1: githubLink
         })}`;
       }
@@ -963,7 +970,7 @@ var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
         const url = SDK2.TargetManager.TargetManager.instance().primaryPageTarget()?.inspectedURL();
         const gracePeriodLink = UI2.XLink.XLink.create("https://developers.google.com/privacy-sandbox/cookies/dashboard?url=" + // The order of the URLs matters - needs to be 1P + 3P.
         (url ? Common2.ParsedURL.ParsedURL.fromString(url)?.host + "+" : "") + (domain.charAt(0) === "." ? domain.substring(1) : domain), i18nString2(UIStrings2.reportedIssues), void 0, void 0, "compatibility-lookup-link");
-        return html2`${i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.gracePeriod, {
+        return html2`${uiI18n2.getFormatLocalizedString(str_2, UIStrings2.gracePeriod, {
           PH1: gracePeriodLink
         })}`;
       }
@@ -1011,7 +1018,7 @@ var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
 // gen/front_end/panels/security/IPProtectionView.js
 var IPProtectionView_exports = {};
 __export(IPProtectionView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   IPProtectionView: () => IPProtectionView,
   i18nString: () => i18nString3
 });
@@ -1023,7 +1030,7 @@ import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
-import * as Lit3 from "./../../ui/lit/lit.js";
+import * as Lit2 from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/security/ipProtectionView.css.js
 var ipProtectionView_css_default = `/*
@@ -1171,7 +1178,7 @@ var ipProtectionView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./ipProtectionView.css")} */`;
 
 // gen/front_end/panels/security/IPProtectionView.js
-var { render: render3, html: html3 } = Lit3;
+var { render: render3, html: html3 } = Lit2;
 var { widgetConfig } = UI3.Widget;
 var UIStrings3 = {
   /**
@@ -1268,7 +1275,7 @@ var allStatusStrings = [
   UIStrings3.statusUnknown
 ];
 var INCOGNITO_EXPLANATION_URL = "https://support.google.com/chrome/answer/95464?hl=en&co=GENIE.Platform%3DDesktop";
-var DEFAULT_VIEW = (input, _, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   const { status } = input;
   const statusText = status ? i18nString3(UIStrings3[status]) : i18nString3(UIStrings3.statusUnknown);
   const cardHeader = html3`
@@ -1353,7 +1360,7 @@ var IPProtectionView = class extends UI3.Widget.VBox {
   #view;
   #proxyRequests = [];
   #status = null;
-  constructor(element, view = DEFAULT_VIEW) {
+  constructor(element, view = DEFAULT_VIEW3) {
     super(element, { useShadowDom: true });
     this.#view = view;
     this.#proxyRequests = [
@@ -2947,6 +2954,24 @@ function createHighlightedUrl(url, securityState) {
   highlightedUrl.createChild("span").textContent = content;
   return highlightedUrl;
 }
+var DEFAULT_VIEW4 = (input, output, target) => {
+  render4(html4`
+    <devtools-split-view direction="column" name="security"
+      ${UI6.Widget.widgetRef(UI6.SplitWidget.SplitWidget, (e) => {
+    output.splitWidget = e;
+  })}>
+      <devtools-widget
+        slot="sidebar"
+        .widgetConfig=${widgetConfig2(SecurityPanelSidebar)}
+        @showIPProtection=${() => output.setVisibleView(new IPProtectionView())}
+        @showCookieReport=${() => output.setVisibleView(new CookieReportView())}
+        @showFlagControls=${() => output.setVisibleView(new CookieControlsView())}
+        ${UI6.Widget.widgetRef(SecurityPanelSidebar, (e) => {
+    output.sidebar = e;
+  })}>
+      </devtools-widget>
+  </devtools-split-view>`, target);
+};
 var SecurityPanel = class _SecurityPanel extends UI6.Panel.Panel {
   view;
   mainView;
@@ -2958,24 +2983,7 @@ var SecurityPanel = class _SecurityPanel extends UI6.Panel.Panel {
   eventListeners;
   securityModel;
   splitWidget;
-  constructor(view = (_input, output, target) => {
-    render4(html4`
-    <devtools-split-view direction="column" name="security"
-      ${UI6.Widget.widgetRef(UI6.SplitWidget.SplitWidget, (e) => {
-      output.splitWidget = e;
-    })}>
-        <devtools-widget
-          slot="sidebar"
-          .widgetConfig=${widgetConfig2(SecurityPanelSidebar)}
-          @showIPProtection=${() => output.setVisibleView(new IPProtectionView())}
-          @showCookieReport=${() => output.setVisibleView(new CookieReportView())}
-          @showFlagControls=${() => output.setVisibleView(new CookieControlsView())}
-          ${UI6.Widget.widgetRef(SecurityPanelSidebar, (e) => {
-      output.sidebar = e;
-    })}>
-        </devtools-widget>
-    </devtools-split-view>`, target, { host: this });
-  }) {
+  constructor(view = DEFAULT_VIEW4) {
     super("security");
     this.view = view;
     this.update();

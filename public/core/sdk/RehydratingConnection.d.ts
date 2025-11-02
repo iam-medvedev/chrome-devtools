@@ -1,6 +1,6 @@
 import type * as Platform from '../platform/platform.js';
 import type * as ProtocolClient from '../protocol_client/protocol_client.js';
-import type { ProtocolMessage, RehydratingExecutionContext, RehydratingScript, RehydratingTarget, ServerMessage } from './RehydratingObject.js';
+import type { ProtocolMessage, RehydratingExecutionContext, RehydratingResource, RehydratingScript, RehydratingTarget, ServerMessage } from './RehydratingObject.js';
 import { TraceObject } from './TraceObject.js';
 export interface RehydratingConnectionInterface {
     postToFrontend: (arg: ServerMessage) => void;
@@ -42,12 +42,16 @@ export declare class RehydratingSession extends RehydratingSessionBase {
     target: RehydratingTarget;
     executionContexts: RehydratingExecutionContext[];
     scripts: RehydratingScript[];
-    constructor(sessionId: number, target: RehydratingTarget, executionContexts: RehydratingExecutionContext[], scripts: RehydratingScript[], connection: RehydratingConnectionInterface);
+    resources: RehydratingResource[];
+    constructor(sessionId: number, target: RehydratingTarget, executionContexts: RehydratingExecutionContext[], scripts: RehydratingScript[], resources: RehydratingResource[], connection: RehydratingConnectionInterface);
     sendMessageToFrontend(payload: ServerMessage, attachSessionId?: boolean): void;
     handleFrontendMessageAsFakeCDPAgent(data: ProtocolMessage): void;
     declareSessionAttachedToTarget(): void;
     private handleRuntimeEnabled;
     private handleDebuggerGetScriptSource;
     private handleDebuggerEnable;
+    private handleGetResourceTree;
+    private handleGetResourceContent;
+    private handleGetStyleSheetText;
 }
 export {};

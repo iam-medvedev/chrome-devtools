@@ -678,12 +678,11 @@ export class AnimationGroup {
     #id;
     #scrollNode;
     #animations;
-    #paused;
+    #paused = false;
     constructor(animationModel, id, animations) {
         this.#animationModel = animationModel;
         this.#id = id;
         this.#animations = animations;
-        this.#paused = false;
     }
     isScrollDriven() {
         return Boolean(this.#animations[0]?.viewOrScrollTimeline());

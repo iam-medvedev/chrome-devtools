@@ -547,6 +547,7 @@ import * as Badges from "./../../models/badges/badges.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as Snackbars2 from "./../../ui/components/snackbars/snackbars.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import { html as html3, render as render3 } from "./../../ui/lit/lit.js";
 
@@ -768,7 +769,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
             <h2 class="section-title">${i18nString2(UIStrings2.tailorProfile)}</h2>
             <div class="section-text">
               <div>${i18nString2(UIStrings2.tailorProfileBody)}</div><br/>
-              <div>${i18n5.i18n.getFormatLocalizedString(str_2, UIStrings2.tailorProfileBodyDisclaimer, {
+              <div>${uiI18n.getFormatLocalizedString(str_2, UIStrings2.tailorProfileBodyDisclaimer, {
     PH1: UI3.XLink.XLink.create(CONTENT_POLICY_URL, i18nString2(UIStrings2.contentPolicy), "link", void 0, "content-policy"),
     PH2: UI3.XLink.XLink.create(TERMS_OF_SERVICE_URL, i18nString2(UIStrings2.termsOfService), "link", void 0, "terms-of-service"),
     PH3: UI3.XLink.XLink.create(PRIVACY_POLICY_URL, i18nString2(UIStrings2.privacyPolicy), "link", void 0, "privacy-policy")
@@ -1357,6 +1358,7 @@ import * as Host5 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Badges2 from "./../../models/badges/badges.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
+import * as uiI18n2 from "./../../ui/i18n/i18n.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
@@ -1505,7 +1507,7 @@ var UIStrings3 = {
 };
 var str_3 = i18n11.i18n.registerUIStrings("panels/common/BadgeNotification.ts", UIStrings3);
 var i18nString3 = i18n11.i18n.getLocalizedString.bind(void 0, str_3);
-var i18nFormatString = i18n11.i18n.getFormatLocalizedString.bind(void 0, str_3);
+var i18nFormatString = uiI18n2.getFormatLocalizedString.bind(void 0, str_3);
 var lockedString4 = i18n11.i18n.lockedString;
 var LEFT_OFFSET = 5;
 var BOTTOM_OFFSET = 5;

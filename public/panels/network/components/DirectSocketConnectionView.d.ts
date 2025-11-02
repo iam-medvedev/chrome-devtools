@@ -10,7 +10,7 @@ export interface ViewInput {
     onToggleCategory: (event: Event, categoryName: string) => void;
     onCopyRow: () => void;
 }
-export type View = (input: ViewInput, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class DirectSocketConnectionView extends UI.Widget.Widget {
     #private;

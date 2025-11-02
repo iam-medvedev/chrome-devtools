@@ -4,7 +4,7 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { Directives, html, render } from '../../ui/lit/lit.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import dialogStyles from './dialog.css.js';
 const UIStrings = {
@@ -23,40 +23,40 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/AddSourceMapURLDialog.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { ref } = Directives;
-export const DEFAULT_VIEW = (input, output, target) => {
+export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
     <style>${dialogStyles}</style>
     <label>${input.label}</label>
     <input class="harmony-input add-source-map" spellcheck="false" type="text"
         jslog=${VisualLogging.textField('url').track({ keydown: 'Enter', change: true })}
-        @keydown=${input.onKeyDown} ${ref(e => { output.input = e; })}>
+        @keydown=${(e) => {
+        if (e.key === 'Enter') {
+            e.consume(true);
+            input.onEnter(e.target.value);
+        }
+    }}
+        @change=${(e) => input.onInputChange(e.target.value)}
+        autofocus>
     <devtools-button @click=${input.apply} .jslogContext=${'add'}
         .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>${i18nString(UIStrings.add)}</devtools-button>`, target);
     // clang-format on
 };
 export class AddDebugInfoURLDialog extends UI.Widget.HBox {
-    input;
+    url = '';
     dialog;
     callback;
     constructor(label, jslogContext, callback, view = DEFAULT_VIEW) {
         super({ useShadowDom: true });
         const viewInput = {
             label,
-            onKeyDown: this.onKeyDown.bind(this),
+            onEnter: this.onEnter.bind(this),
+            onInputChange: this.onInputChange.bind(this),
             apply: this.apply.bind(this),
         };
-        const that = this;
-        const viewOutput = {
-            set input(input) {
-                that.input = input;
-            },
-        };
-        view(viewInput, viewOutput, this.contentElement);
+        view(viewInput, undefined, this.contentElement);
         this.dialog = new UI.Dialog.Dialog(jslogContext);
         this.dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
-        this.dialog.setDefaultFocusedElement(this.input);
         this.callback = callback;
     }
     static createAddSourceMapURLDialog(callback) {
@@ -73,14 +73,15 @@ export class AddDebugInfoURLDialog extends UI.Widget.HBox {
         this.dialog.hide();
         this.callback(value);
     }
-    apply() {
-        this.done(this.input.value);
+    onInputChange(value) {
+        this.url = value;
     }
-    onKeyDown(event) {
-        if (event.key === 'Enter') {
-            event.consume(true);
-            this.apply();
-        }
+    apply() {
+        this.done(this.url);
+    }
+    onEnter(value) {
+        this.url = value;
+        this.apply();
     }
 }
 //# sourceMappingURL=AddSourceMapURLDialog.js.map

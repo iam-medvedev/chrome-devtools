@@ -137,6 +137,9 @@
       "path": "../../ui/components/report_view/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/i18n/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
@@ -150,6 +153,9 @@
     },
     {
       "path": "../../ui/legacy/components/object_ui/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/components/settings_ui/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/source_frame/bundle-tsconfig.json"

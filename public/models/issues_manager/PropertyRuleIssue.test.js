@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Issues from '../../panels/issues/issues.js';
-import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../testing/LocaleHelpers.js';
 import { MockIssuesManager } from '../../testing/MockIssuesManager.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';

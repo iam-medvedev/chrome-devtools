@@ -28,8 +28,8 @@ describeWithMockConnection('NameResolver', () => {
             targetManager,
             ignoreListManager,
         });
-        target = createTarget();
         backend = new MockProtocolBackend();
+        target = createTarget();
     });
     // Given a function scope <fn-start>,<fn-end> and a nested scope <start>,<end>,
     // we expect the scope parser to return a list of identifiers of the form [{name, offset}]

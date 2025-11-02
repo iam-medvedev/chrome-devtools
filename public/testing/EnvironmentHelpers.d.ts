@@ -11,7 +11,7 @@ export declare function createTarget({ id, name, type, parentTarget, subtype, ur
     subtype?: string;
     url?: string;
 }): SDK.Target.Target;
-export declare function stubNoopSettings(): void;
+export { stubNoopSettings } from './SettingsHelpers.js';
 export declare function registerActions(actions: UIModule.ActionRegistration.ActionRegistration[]): void;
 export declare function registerNoopActions(actionIds: string[]): void;
 export declare function initializeGlobalVars({ reset }?: {
@@ -28,13 +28,6 @@ export declare namespace describeWithEnvironment {
     var skip: (title: string, fn: (this: Mocha.Suite) => void, _opts?: {
         reset: boolean;
     }) => void | Mocha.Suite;
-}
-export declare function initializeGlobalLocaleVars(): Promise<void>;
-export declare function deinitializeGlobalLocaleVars(): void;
-export declare function describeWithLocale(title: string, fn: (this: Mocha.Suite) => void): Mocha.Suite;
-export declare namespace describeWithLocale {
-    var only: (title: string, fn: (this: Mocha.Suite) => void) => Mocha.Suite;
-    var skip: (title: string, fn: (this: Mocha.Suite) => void) => void | Mocha.Suite;
 }
 export declare function createFakeSetting<T>(name: string, defaultValue: T): Common.Settings.Setting<T>;
 export declare function createFakeRegExpSetting(name: string, defaultValue: string): Common.Settings.RegExpSetting;

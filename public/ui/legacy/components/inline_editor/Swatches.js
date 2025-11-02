@@ -25,5 +25,6 @@ export class CSSShadowSwatch extends HTMLElement {
         return this.#icon;
     }
 }
+// eslint-disable-next-line @devtools/enforce-custom-element-prefix
 customElements.define('css-shadow-swatch', CSSShadowSwatch);
 //# sourceMappingURL=Swatches.js.map

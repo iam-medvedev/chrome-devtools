@@ -1,7 +1,6 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../ui/components/switch/switch.js';
 import '../../ui/components/cards/cards.js';
 import '../../ui/components/chrome_link/chrome_link.js';
@@ -11,13 +10,13 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as ChromeLink from '../../ui/components/chrome_link/chrome_link.js';
 import * as Input from '../../ui/components/input/input.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Lit from '../../ui/lit/lit.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import cookieControlsViewStyles from './cookieControlsView.css.js';
-const { render, html } = Lit;
+const { ref } = Directives;
 const UIStrings = {
     /**
      * @description Title in the view's header for the controls tool in the Privacy & Security panel
@@ -106,32 +105,31 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/security/CookieControlsView.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export const i18nFormatString = i18n.i18n.getFormatLocalizedString.bind(undefined, str_);
-export function showInfobar() {
-    UI.InspectorView.InspectorView.instance().displayDebuggedTabReloadRequiredWarning(i18nString(UIStrings.siteReloadMessage));
+export const i18nFormatString = uiI18n.getFormatLocalizedString.bind(undefined, str_);
+function getChromeFlagsLink(flag) {
+    return html `
+    <devtools-chrome-link href="chrome://flags/#${flag}" tabindex="0">
+     ${flag}
+    </devtools-chrome-link>`;
 }
-export class CookieControlsView extends UI.Widget.VBox {
-    #view;
-    #isGracePeriodActive;
-    #thirdPartyControlsDict;
-    constructor(element, view = (input, _, target) => {
-        // createSetting() allows us to initialize the settings with the UI binding values the first
-        // time that the browser starts, and use the existing setting value for all subsequent uses.
-        const enterpriseEnabledSetting = Common.Settings.Settings.instance().createSetting('enterprise-enabled', this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.managedBlockThirdPartyCookies &&
-            typeof this.#thirdPartyControlsDict.managedBlockThirdPartyCookies === 'boolean' ?
-            this.#thirdPartyControlsDict.managedBlockThirdPartyCookies :
-            false, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
-        const toggleEnabledSetting = Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled ?
-            this.#thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled :
-            false, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
-        const gracePeriodDisabledSetting = Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled ?
-            this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled :
-            true, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
-        const heuristicsDisabledSetting = Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled ?
-            this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled :
-            true, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
-        // clang-format off
-        const cardHeader = html `
+const DEFAULT_VIEW = (input, _output, target) => {
+    // createSetting() allows us to initialize the settings with the UI binding values the first
+    // time that the browser starts, and use the existing setting value for all subsequent uses.
+    const enterpriseEnabledSetting = Common.Settings.Settings.instance().createSetting('enterprise-enabled', input.thirdPartyControlsDict && input.thirdPartyControlsDict.managedBlockThirdPartyCookies &&
+        typeof input.thirdPartyControlsDict.managedBlockThirdPartyCookies === 'boolean' ?
+        input.thirdPartyControlsDict.managedBlockThirdPartyCookies :
+        false, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
+    const toggleEnabledSetting = Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', input.thirdPartyControlsDict?.thirdPartyCookieRestrictionEnabled ?
+        input.thirdPartyControlsDict.thirdPartyCookieRestrictionEnabled :
+        false, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
+    const gracePeriodDisabledSetting = Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', input.thirdPartyControlsDict?.thirdPartyCookieMetadataEnabled ?
+        input.thirdPartyControlsDict.thirdPartyCookieMetadataEnabled :
+        true, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
+    const heuristicsDisabledSetting = Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', input.thirdPartyControlsDict?.thirdPartyCookieHeuristicsEnabled ?
+        input.thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled :
+        true, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
+    // clang-format off
+    const cardHeader = html `
       <div class="card-header">
         <div class="lhs">
           <div class="text">
@@ -142,11 +140,11 @@ export class CookieControlsView extends UI.Widget.VBox {
             <devtools-icon
               tabindex="0"
               name="domain"
-              ${Lit.Directives.ref((el) => {
-            UI.Tooltip.Tooltip.install(el, i18nString(UIStrings.enterpriseTooltip));
-            el.role = 'img';
-        })}>
-            </devtools-icon>` : Lit.nothing}
+              ${ref((el) => {
+        UI.Tooltip.Tooltip.install(el, i18nString(UIStrings.enterpriseTooltip));
+        el.role = 'img';
+    })}>
+            </devtools-icon>` : nothing}
         </div>
         <div>
           <devtools-switch
@@ -161,9 +159,9 @@ export class CookieControlsView extends UI.Widget.VBox {
         </div>
       </div>
     `;
-        const gracePeriodControlDisabled = (this.#thirdPartyControlsDict ? (!this.#thirdPartyControlsDict.thirdPartyCookieMetadataEnabled) : false) ||
-            enterpriseEnabledSetting.get() || !toggleEnabledSetting.get() || !this.#isGracePeriodActive;
-        const gracePeriodControl = html `
+    const gracePeriodControlDisabled = (input.thirdPartyControlsDict ? (!input.thirdPartyControlsDict.thirdPartyCookieMetadataEnabled) : false) ||
+        enterpriseEnabledSetting.get() || !toggleEnabledSetting.get() || !input.isGracePeriodActive;
+    const gracePeriodControl = html `
       <div class="card-row">
         <label class='checkbox-label'>
           <input type='checkbox'
@@ -176,24 +174,24 @@ export class CookieControlsView extends UI.Widget.VBox {
             <div class="body main-text">${i18nString(UIStrings.gracePeriodTitle)}</div>
             <div class="body subtext">
               ${Boolean(enterpriseEnabledSetting.get()) ?
-            i18nFormatString(UIStrings.gracePeriodExplanation, {
-                PH1: i18nString(UIStrings.gracePeriod),
+        i18nFormatString(UIStrings.gracePeriodExplanation, {
+            PH1: i18nString(UIStrings.gracePeriod),
+        }) :
+        (input.thirdPartyControlsDict ? !input.thirdPartyControlsDict?.thirdPartyCookieMetadataEnabled : false) ?
+            i18nFormatString(UIStrings.enableFlag, {
+                PH1: getChromeFlagsLink(UIStrings.tpcdMetadataGrants),
             }) :
-            (this.#thirdPartyControlsDict ? !this.#thirdPartyControlsDict?.thirdPartyCookieMetadataEnabled : false) ?
-                i18nFormatString(UIStrings.enableFlag, {
-                    PH1: this.getChromeFlagsLink(UIStrings.tpcdMetadataGrants),
-                }) :
-                i18nFormatString(this.#isGracePeriodActive ? UIStrings.gracePeriodExplanation : UIStrings.enrollGracePeriod, {
-                    PH1: UI.Fragment.html `<x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/grace-period" jslog=${VisualLogging.link('grace-period-link').track({ click: true })}>${i18nString(UIStrings.gracePeriod)}</x-link>`,
-                })}
+            i18nFormatString(input.isGracePeriodActive ? UIStrings.gracePeriodExplanation : UIStrings.enrollGracePeriod, {
+                PH1: UI.Fragment.html `<x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/grace-period" jslog=${VisualLogging.link('grace-period-link').track({ click: true })}>${i18nString(UIStrings.gracePeriod)}</x-link>`,
+            })}
             </div>
           </div>
         </label>
       </div>
     `;
-        const heuristicsControlDisabled = (this.#thirdPartyControlsDict ? (!this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled) : false) ||
-            enterpriseEnabledSetting.get() || !toggleEnabledSetting.get();
-        const heuristicControl = html `
+    const heuristicsControlDisabled = (input.thirdPartyControlsDict ? (!input.thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled) : false) ||
+        enterpriseEnabledSetting.get() || !toggleEnabledSetting.get();
+    const heuristicControl = html `
       <div class="card-row">
         <label class='checkbox-label'>
           <input type='checkbox'
@@ -206,22 +204,22 @@ export class CookieControlsView extends UI.Widget.VBox {
             <div class="body main-text">${i18nString(UIStrings.heuristicTitle)}</div>
             <div class="body subtext">
               ${Boolean(enterpriseEnabledSetting.get()) ?
-            i18nFormatString(UIStrings.heuristicExplanation, {
-                PH1: i18nString(UIStrings.scenarios),
+        i18nFormatString(UIStrings.heuristicExplanation, {
+            PH1: i18nString(UIStrings.scenarios),
+        }) :
+        (input.thirdPartyControlsDict ? !input.thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : false) ?
+            i18nFormatString(UIStrings.enableFlag, {
+                PH1: getChromeFlagsLink(UIStrings.tpcdHeuristicsGrants),
             }) :
-            (this.#thirdPartyControlsDict ? !this.#thirdPartyControlsDict.thirdPartyCookieHeuristicsEnabled : false) ?
-                i18nFormatString(UIStrings.enableFlag, {
-                    PH1: this.getChromeFlagsLink(UIStrings.tpcdHeuristicsGrants),
-                }) :
-                i18nFormatString(UIStrings.heuristicExplanation, {
-                    PH1: UI.Fragment.html `<x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/heuristics-based-exceptions" jslog=${VisualLogging.link('heuristic-link').track({ click: true })}>${i18nString(UIStrings.scenarios)}</x-link>`,
-                })}
+            i18nFormatString(UIStrings.heuristicExplanation, {
+                PH1: UI.Fragment.html `<x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/temporary-exceptions/heuristics-based-exceptions" jslog=${VisualLogging.link('heuristic-link').track({ click: true })}>${i18nString(UIStrings.scenarios)}</x-link>`,
+            })}
             </div>
           </div>
         </label>
       </div>
     `;
-        const enterpriseDisclaimer = html `
+    const enterpriseDisclaimer = html `
       <div class="enterprise">
         <div class="text body">${i18nString(UIStrings.enterpriseDisclaimer)}</div>
           <div class="anchor">
@@ -238,7 +236,7 @@ export class CookieControlsView extends UI.Widget.VBox {
         </div>
       </div>
     `;
-        render(html `
+    render(html `
       <div class="overflow-auto">
         <div class="controls">
           <div class="header">
@@ -258,12 +256,20 @@ export class CookieControlsView extends UI.Widget.VBox {
               </div>
             </div>
           </devtools-card>
-          ${Boolean(enterpriseEnabledSetting.get()) ? enterpriseDisclaimer : Lit.nothing}
+          ${Boolean(enterpriseEnabledSetting.get()) ? enterpriseDisclaimer : nothing}
         </div>
       </div>
-    `, target, { host: this });
-        // clang-format on
-    }) {
+    `, target);
+    // clang-format on
+};
+export function showInfobar() {
+    UI.InspectorView.InspectorView.instance().displayDebuggedTabReloadRequiredWarning(i18nString(UIStrings.siteReloadMessage));
+}
+export class CookieControlsView extends UI.Widget.VBox {
+    #view;
+    #isGracePeriodActive;
+    #thirdPartyControlsDict;
+    constructor(element, view = DEFAULT_VIEW) {
         super(element, { useShadowDom: true });
         this.#view = view;
         this.#isGracePeriodActive = false;
@@ -277,7 +283,12 @@ export class CookieControlsView extends UI.Widget.VBox {
         this.requestUpdate();
     }
     performUpdate() {
-        this.#view(this, this, this.contentElement);
+        this.#view({
+            thirdPartyControlsDict: this.#thirdPartyControlsDict,
+            isGracePeriodActive: this.#isGracePeriodActive,
+            inputChanged: this.inputChanged.bind(this),
+            openChromeCookieSettings: this.openChromeCookieSettings.bind(this),
+        }, this, this.contentElement);
     }
     inputChanged(newValue, setting) {
         setting.set(newValue);
@@ -330,13 +341,6 @@ export class CookieControlsView extends UI.Widget.VBox {
             this.#isGracePeriodActive = true;
             this.requestUpdate();
         }
-    }
-    getChromeFlagsLink(flag) {
-        const link = new ChromeLink.ChromeLink.ChromeLink();
-        link.textContent = flag;
-        link.href = ('chrome://flags/' + flag);
-        link.setAttribute('tabindex', '0');
-        return link;
     }
 }
 //# sourceMappingURL=CookieControlsView.js.map

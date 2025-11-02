@@ -2,7 +2,6 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import type * as Adorners from '../components/adorners/adorners.js';
 import { type Action } from './ActionRegistration.js';
 import { ContextMenu } from './ContextMenu.js';
 import type { Suggestion } from './SuggestBox.js';
@@ -119,7 +118,7 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes,
     setSize(size: Buttons.Button.Size): void;
     setReducedFocusRing(): void;
     setText(text: string): void;
-    setAdorner(adorner: Adorners.Adorner.Adorner): void;
+    setAdorner(adorner: HTMLElement): void;
     setGlyph(iconName: string): void;
     setToggledIcon(toggledIconName: string): void;
     setBackgroundImage(iconURL: string): void;
@@ -195,7 +194,7 @@ export declare class ToolbarMenuButton extends ToolbarItem<ToolbarButton.EventTy
     private triggerTimeoutId?;
     constructor(contextMenuHandler: (arg0: ContextMenu) => void, isIconDropdown?: boolean, useSoftMenu?: boolean, jslogContext?: string, iconName?: string, keepOpen?: boolean);
     setText(text: string): void;
-    setAdorner(adorner: Adorners.Adorner.Adorner): void;
+    setAdorner(adorner: HTMLElement): void;
     setDarkText(): void;
     turnShrinkable(): void;
     setTriggerDelay(x: number): void;

@@ -32,7 +32,6 @@ export class SoftDropDown {
     list;
     rowHeight;
     width;
-    listWasShowing200msAgo;
     constructor(model, delegate, jslogContext) {
         this.delegate = delegate;
         this.selectedItem = null;
@@ -63,9 +62,8 @@ export class SoftDropDown {
         ARIAUtils.markAsMenu(this.list.element);
         VisualLogging.setMappedParent(this.list.element, this.element);
         this.list.element.setAttribute('jslog', `${VisualLogging.menu().parent('mapped').track({ resize: true, keydown: 'ArrowUp|ArrowDown|PageUp|PageDown' })}`);
-        this.listWasShowing200msAgo = false;
         this.element.addEventListener('mousedown', event => {
-            if (this.listWasShowing200msAgo) {
+            if (this.glassPane.isShowing()) {
                 this.hide(event);
             }
             else if (!this.element.disabled) {
@@ -78,9 +76,6 @@ export class SoftDropDown {
         this.list.element.addEventListener('mousedown', event => event.consume(true), false);
         this.list.element.addEventListener('mouseup', event => {
             if (event.target === this.list.element) {
-                return;
-            }
-            if (!this.listWasShowing200msAgo) {
                 return;
             }
             this.selectHighlightedItem();
@@ -105,9 +100,6 @@ export class SoftDropDown {
             this.list.selectItem(this.selectedItem);
         }
         event.consume(true);
-        window.setTimeout(() => {
-            this.listWasShowing200msAgo = true;
-        }, 200);
     }
     updateGlasspaneSize() {
         const maxHeight = this.rowHeight * (Math.min(this.model.length, 9));
@@ -115,9 +107,6 @@ export class SoftDropDown {
         this.list.viewportResized();
     }
     hide(event) {
-        window.setTimeout(() => {
-            this.listWasShowing200msAgo = false;
-        }, 200);
         this.glassPane.hide();
         this.list.selectItem(null);
         ARIAUtils.setExpanded(this.element, false);

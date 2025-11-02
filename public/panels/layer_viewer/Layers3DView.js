@@ -6,6 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Geometry from '../../models/geometry/geometry.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import layers3DViewStyles from './layers3DView.css.js';
@@ -660,7 +661,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     }
     webglDisabledBanner() {
         const emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.cantDisplayLayers), i18nString(UIStrings.webglSupportIsDisabledInYour));
-        emptyWidget.contentElement.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.checkSForPossibleReasons, { PH1: UI.XLink.XLink.create('about:gpu', undefined, undefined, undefined, 'about-gpu') }));
+        emptyWidget.contentElement.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.checkSForPossibleReasons, { PH1: UI.XLink.XLink.create('about:gpu', undefined, undefined, undefined, 'about-gpu') }));
         return emptyWidget;
     }
     selectionFromEventPoint(event) {

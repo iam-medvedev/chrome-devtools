@@ -18,6 +18,7 @@ export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
     set widgetConfig(config: WidgetConfig<WidgetT>);
     getWidget(): WidgetT | undefined;
     connectedCallback(): void;
+    disconnectedCallback(): void;
     appendChild<T extends Node>(child: T): T;
     insertBefore<T extends Node>(child: T, referenceChild: Node): T;
     removeChild<T extends Node>(child: T): T;
@@ -133,6 +134,7 @@ export declare class Widget {
     private collectWidgetHierarchy;
     setDefaultFocusedElement(element: Element | null): void;
     setDefaultFocusedChild(child: Widget): void;
+    getDefaultFocusedElement(): HTMLElement | null;
     focus(): void;
     hasFocus(): boolean;
     calculateConstraints(): Geometry.Constraints;
@@ -189,7 +191,7 @@ export declare class Widget {
      *          updating, the value is `true` if there are no more pending updates,
      *          and `false` if the update cycle triggered another update.
      */
-    get updateComplete(): Promise<boolean>;
+    get updateComplete(): Promise<void>;
 }
 export declare class VBox extends Widget {
     /**

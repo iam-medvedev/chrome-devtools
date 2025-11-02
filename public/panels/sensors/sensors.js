@@ -481,6 +481,7 @@ import * as Host from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
+import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
@@ -1272,7 +1273,7 @@ var SensorsView = class extends UI2.Widget.VBox {
   }
   createPressureSection() {
     const container = this.contentElement.createChild("div", "pressure-section");
-    const control = UI2.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().moduleSetting("emulation.cpu-pressure"), i18nString2(UIStrings2.forcesSelectedPressureStateEmulation));
+    const control = SettingsUI.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().moduleSetting("emulation.cpu-pressure"), i18nString2(UIStrings2.forcesSelectedPressureStateEmulation));
     if (control) {
       container.appendChild(control);
     }
@@ -1452,14 +1453,14 @@ var SensorsView = class extends UI2.Widget.VBox {
   }
   appendTouchControl() {
     const container = this.contentElement.createChild("div", "touch-section");
-    const control = UI2.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().moduleSetting("emulation.touch"), i18nString2(UIStrings2.forcesTouchInsteadOfClick));
+    const control = SettingsUI.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().moduleSetting("emulation.touch"), i18nString2(UIStrings2.forcesTouchInsteadOfClick));
     if (control) {
       container.appendChild(control);
     }
   }
   appendIdleEmulator() {
     const container = this.contentElement.createChild("div", "idle-section");
-    const control = UI2.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().moduleSetting("emulation.idle-detection"), i18nString2(UIStrings2.forcesSelectedIdleStateEmulation));
+    const control = SettingsUI.SettingsUI.createControlForSetting(Common2.Settings.Settings.instance().moduleSetting("emulation.idle-detection"), i18nString2(UIStrings2.forcesSelectedIdleStateEmulation));
     if (control) {
       container.appendChild(control);
     }

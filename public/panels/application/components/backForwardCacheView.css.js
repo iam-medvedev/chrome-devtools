@@ -9,6 +9,10 @@ export default `/*
  * found in the LICENSE file.
  */
 
+devtools-report-value {
+  overflow: hidden;
+}
+
 .inline-icon {
   vertical-align: sub;
 }
@@ -76,6 +80,10 @@ export default `/*
 
 devtools-report-value:has(devtools-tree-outline) {
   margin-left: var(--sys-size-7);
+}
+
+.cache-status-section:focus-visible {
+ outline: 0;
 }
 
 .tree-outline li .selection {

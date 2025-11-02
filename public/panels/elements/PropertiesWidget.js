@@ -41,7 +41,7 @@ import { html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import propertiesWidgetStyles from './propertiesWidget.css.js';
 const OBJECT_GROUP_NAME = 'properties-sidebar-pane';
-const { bindToSetting } = UI.SettingsUI;
+const { bindToSetting } = UI.UIUtils;
 const UIStrings = {
     /**
      * @description Text on the checkbox in the Properties tab of the Elements panel, which controls whether
@@ -84,7 +84,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format on
 };
 const getShowAllPropertiesSetting = () => Common.Settings.Settings.instance().createSetting('show-all-properties', /* defaultValue */ false);
-export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
+export class PropertiesWidget extends UI.Widget.VBox {
     node;
     showAllPropertiesSetting;
     filterRegex = null;
@@ -92,8 +92,8 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     lastRequestedNode;
     #view;
     #displayNoMatchingPropertyMessage = false;
-    constructor(throttlingTimeout, view = DEFAULT_VIEW) {
-        super(true /* isWebComponent */, throttlingTimeout);
+    constructor(view = DEFAULT_VIEW) {
+        super({ useShadowDom: true });
         this.registerRequiredCSS(propertiesWidgetStyles);
         this.showAllPropertiesSetting = getShowAllPropertiesSetting();
         this.showAllPropertiesSetting.addChangeListener(this.filterAndScheduleUpdate.bind(this));
@@ -109,7 +109,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
         this.treeOutline.addEventListener(UI.TreeOutline.Events.ElementExpanded, () => {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.DOMPropertiesExpanded);
         });
-        void this.doUpdate();
+        void this.performUpdate();
     }
     onFilterChanged(event) {
         this.filterRegex = event.detail ? new RegExp(Platform.StringUtilities.escapeForRegExp(event.detail), 'i') : null;
@@ -119,7 +119,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
         const previousDisplay = this.#displayNoMatchingPropertyMessage;
         this.internalFilterProperties();
         if (previousDisplay !== this.#displayNoMatchingPropertyMessage) {
-            this.update();
+            this.requestUpdate();
         }
     }
     internalFilterProperties() {
@@ -136,9 +136,9 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     }
     setNode(event) {
         this.node = event.data;
-        this.update();
+        this.requestUpdate();
     }
-    async doUpdate() {
+    async performUpdate() {
         if (this.lastRequestedNode) {
             this.lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(OBJECT_GROUP_NAME);
             delete this.lastRequestedNode;
@@ -177,7 +177,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
         if (this.node !== node) {
             return;
         }
-        this.update();
+        this.requestUpdate();
     }
 }
 //# sourceMappingURL=PropertiesWidget.js.map

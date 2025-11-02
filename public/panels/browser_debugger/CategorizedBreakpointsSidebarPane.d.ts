@@ -1,7 +1,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 interface ViewOutput {
-    defaultFocus: Element | undefined;
     userExpandedCategories: Set<SDK.CategorizedBreakpoint.Category>;
 }
 interface ViewInput {

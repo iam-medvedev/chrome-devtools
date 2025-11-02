@@ -20,9 +20,9 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
     implicit;
     text;
     range;
-    #active;
-    #nameRange;
-    #valueRange;
+    #active = true;
+    #nameRange = null;
+    #valueRange = null;
     #invalidString;
     #longhandProperties = [];
     constructor(ownerStyle, index, name, value, important, disabled, parsedOk, implicit, text, range, longhandProperties) {
@@ -37,9 +37,6 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
         this.implicit = implicit; // A longhand, implicitly set by missing values of shorthand.
         this.text = text;
         this.range = range ? TextUtils.TextRange.TextRange.fromObject(range) : null;
-        this.#active = true;
-        this.#nameRange = null;
-        this.#valueRange = null;
         if (longhandProperties && longhandProperties.length > 0) {
             for (const property of longhandProperties) {
                 this.#longhandProperties.push(new CSSProperty(ownerStyle, ++index, property.name, property.value, important, disabled, parsedOk, true));

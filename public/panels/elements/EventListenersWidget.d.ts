@@ -22,7 +22,7 @@ interface ViewInput {
 }
 type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
+export declare class EventListenersWidget extends UI.Widget.VBox {
     #private;
     private showForAncestorsSetting;
     private readonly dispatchFilterBySetting;
@@ -32,7 +32,7 @@ export declare class EventListenersWidget extends UI.ThrottledWidget.ThrottledWi
     static instance(opts?: {
         forceNew: boolean | null;
     } | undefined): EventListenersWidget;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
     wasShown(): void;
     willHide(): void;
     private windowObjectInNodeContext;

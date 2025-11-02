@@ -14,6 +14,7 @@ import * as ElementsPanel from '../../../panels/elements/elements.js';
 import * as PanelUtils from '../../../panels/utils/utils.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
+import * as uiI18n from '../../../ui/i18n/i18n.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -191,10 +192,6 @@ const UIStringsNotTranslate = {
      * @description Title for the add image button.
      */
     addImageButtonTitle: 'Add image',
-    /**
-     * @description Disclaimer text right after the chat input.
-     */
-    inputDisclaimerForEmptyState: 'This is an experimental AI feature and won\'t always get it right.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/ai_assistance/components/ChatView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -378,37 +375,62 @@ export class ChatView extends HTMLElement {
     };
     #render() {
         const renderFooter = () => {
+            if (this.#props.state !== "chat-view" /* State.CHAT_VIEW */) {
+                return Lit.nothing;
+            }
             const classes = Lit.Directives.classMap({
                 'chat-view-footer': true,
                 'has-conversation': !!this.#props.conversationType,
                 'is-read-only': this.#props.isReadOnly,
             });
             // clang-format off
-            const footerContents = this.#props.conversationType
-                ? renderRelevantDataDisclaimer({
-                    isLoading: this.#props.isLoading,
-                    blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
-                    tooltipId: RELEVANT_DATA_LINK_FOOTER_ID,
-                    disclaimerText: this.#props.disclaimerText,
-                })
-                : html `<p>
-            ${lockedString(UIStringsNotTranslate.inputDisclaimerForEmptyState)}
-            <button
-              class="link"
-              role="link"
-              jslog=${VisualLogging.link('open-ai-settings').track({
-                    click: true,
-                })}
-              @click=${() => {
-                    void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
-                }}
-            >${i18nString(UIStrings.learnAbout)}</button>
-          </p>`;
             return html `
         <footer class=${classes} jslog=${VisualLogging.section('footer')}>
-          ${footerContents}
+          ${renderRelevantDataDisclaimer({
+                isLoading: this.#props.isLoading,
+                blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
+                tooltipId: RELEVANT_DATA_LINK_FOOTER_ID,
+                disclaimerText: this.#props.disclaimerText
+            })}
         </footer>
       `;
+            // clang-format on
+        };
+        const renderInputOrReadOnlySection = () => {
+            if (this.#props.state !== "chat-view" /* State.CHAT_VIEW */) {
+                return Lit.nothing;
+            }
+            if (this.#props.conversationType && this.#props.isReadOnly) {
+                return renderReadOnlySection({
+                    conversationType: this.#props.conversationType,
+                    onNewConversation: this.#props.onNewConversation,
+                });
+            }
+            return renderChatInput({
+                isLoading: this.#props.isLoading,
+                blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
+                isTextInputDisabled: this.#props.isTextInputDisabled,
+                inputPlaceholder: this.#props.inputPlaceholder,
+                disclaimerText: this.#props.disclaimerText,
+                selectedContext: this.#props.selectedContext,
+                inspectElementToggled: this.#props.inspectElementToggled,
+                multimodalInputEnabled: this.#props.multimodalInputEnabled,
+                conversationType: this.#props.conversationType,
+                imageInput: this.#props.imageInput,
+                aidaAvailability: this.#props.aidaAvailability,
+                isTextInputEmpty: this.#props.isTextInputEmpty,
+                uploadImageInputEnabled: this.#props.uploadImageInputEnabled,
+                onContextClick: this.#props.onContextClick,
+                onInspectElementClick: this.#props.onInspectElementClick,
+                onSubmit: this.#handleSubmit,
+                onTextAreaKeyDown: this.#handleTextAreaKeyDown,
+                onCancel: this.#handleCancel,
+                onNewConversation: this.#props.onNewConversation,
+                onTakeScreenshot: this.#props.onTakeScreenshot,
+                onRemoveImageInput: this.#props.onRemoveImageInput,
+                onTextInputChange: this.#props.onTextInputChange,
+                onImageUpload: this.#handleImageUpload
+            });
         };
         // clang-format off
         Lit.render(html `
@@ -434,37 +456,7 @@ export class ChatView extends HTMLElement {
             onMessageContainerRef: this.#handleMessageContainerRef,
             onCopyResponseClick: this.#props.onCopyResponseClick,
         })}
-          ${this.#props.isReadOnly
-            ? renderReadOnlySection({
-                conversationType: this.#props.conversationType,
-                onNewConversation: this.#props.onNewConversation,
-            })
-            : renderChatInput({
-                isLoading: this.#props.isLoading,
-                blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
-                isTextInputDisabled: this.#props.isTextInputDisabled,
-                inputPlaceholder: this.#props.inputPlaceholder,
-                state: this.#props.state,
-                disclaimerText: this.#props.disclaimerText,
-                selectedContext: this.#props.selectedContext,
-                inspectElementToggled: this.#props.inspectElementToggled,
-                multimodalInputEnabled: this.#props.multimodalInputEnabled,
-                conversationType: this.#props.conversationType,
-                imageInput: this.#props.imageInput,
-                isTextInputEmpty: this.#props.isTextInputEmpty,
-                aidaAvailability: this.#props.aidaAvailability,
-                uploadImageInputEnabled: this.#props.uploadImageInputEnabled,
-                onContextClick: this.#props.onContextClick,
-                onInspectElementClick: this.#props.onInspectElementClick,
-                onSubmit: this.#handleSubmit,
-                onTextAreaKeyDown: this.#handleTextAreaKeyDown,
-                onCancel: this.#handleCancel,
-                onNewConversation: this.#props.onNewConversation,
-                onTakeScreenshot: this.#props.onTakeScreenshot,
-                onRemoveImageInput: this.#props.onRemoveImageInput,
-                onTextInputChange: this.#props.onTextInputChange,
-                onImageUpload: this.#handleImageUpload,
-            })}
+          ${renderInputOrReadOnlySection()}
         </main>
        ${renderFooter()}
       </div>
@@ -1053,12 +1045,11 @@ function renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin, tooltip
   `;
     // clang-format on
 }
-function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, state, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, aidaAvailability, disclaimerText, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload, }) {
+function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, aidaAvailability, disclaimerText, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload, }) {
     if (!conversationType) {
         return Lit.nothing;
     }
-    const shouldShowMultiLine = state !== "consent-view" /* State.CONSENT_VIEW */ &&
-        aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ && selectedContext;
+    const shouldShowMultiLine = aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ && selectedContext;
     const chatInputContainerCls = Lit.Directives.classMap({
         'chat-input-container': true,
         'single-line-layout': !shouldShowMultiLine,
@@ -1133,18 +1124,18 @@ function renderConsentViewContents() {
         return html `${i18nString(UIStrings.notAvailableInIncognitoMode)}`;
     }
     if (config.devToolsAiAssistancePerformanceAgent?.enabled) {
-        consentViewContents = i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesRequestsPerformanceAndFiles, { PH1: settingsLink });
+        consentViewContents = uiI18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesRequestsPerformanceAndFiles, { PH1: settingsLink });
     }
     else if (config.devToolsAiAssistanceFileAgent?.enabled) {
         consentViewContents =
-            i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesRequestsAndFiles, { PH1: settingsLink });
+            uiI18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesRequestsAndFiles, { PH1: settingsLink });
     }
     else if (config.devToolsAiAssistanceNetworkAgent?.enabled) {
         consentViewContents =
-            i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesAndRequests, { PH1: settingsLink });
+            uiI18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesAndRequests, { PH1: settingsLink });
     }
     else {
-        consentViewContents = i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStyles, { PH1: settingsLink });
+        consentViewContents = uiI18n.getFormatLocalizedString(str_, UIStrings.turnOnForStyles, { PH1: settingsLink });
     }
     return html `${consentViewContents}`;
 }
@@ -1167,10 +1158,10 @@ function renderDisabledState(contents) {
     // clang-format on
 }
 function renderMainContents({ state, aidaAvailability, messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, conversationType, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef, }) {
-    if (state === "consent-view" /* State.CONSENT_VIEW */) {
-        return renderDisabledState(renderConsentViewContents());
-    }
-    if (aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
+    if (state === "disabled-view" /* State.DISABLED_VIEW */) {
+        if (aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
+            return renderDisabledState(renderConsentViewContents());
+        }
         return renderDisabledState(renderAidaUnavailableContents(aidaAvailability));
     }
     if (!conversationType) {

@@ -5,6 +5,7 @@
 import './Checklist.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
+import * as uiI18n from '../../../../ui/i18n/i18n.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { imageRef } from './EventRef.js';
@@ -46,7 +47,7 @@ export class LCPDiscovery extends BaseInsightComponent {
         const timeWrapper = document.createElement('span');
         timeWrapper.classList.add('discovery-time-ms');
         timeWrapper.innerText = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(delay);
-        return i18n.i18n.getFormatLocalizedString(str_, UIStrings.lcpLoadDelay, { PH1: timeWrapper });
+        return uiI18n.getFormatLocalizedString(str_, UIStrings.lcpLoadDelay, { PH1: timeWrapper });
     }
     renderContent() {
         if (!this.model) {

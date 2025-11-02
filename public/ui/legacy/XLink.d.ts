@@ -16,4 +16,3 @@ export declare class XLink extends XElement {
 export declare class ContextMenuProvider implements Provider<Node> {
     appendApplicableItems(_event: Event, contextMenu: ContextMenu, target: Node): void;
 }
-export declare const sample: import("../lit/lit.js").TemplateResult;

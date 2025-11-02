@@ -48,6 +48,7 @@ export declare class RecorderController extends LitElement {
     setCurrentRecordingForTesting(recording: StoredRecording | undefined): void;
     getSectionsForTesting(): Models.Section.Section[] | undefined;
     getUserFlow(): Models.Schema.UserFlow | undefined;
+    onRecordingCancelled(): Promise<void>;
     handleActions(actionId: Actions.RecorderActions): void;
     isActionPossible(actionId: Actions.RecorderActions): boolean;
     protected render(): Lit.TemplateResult;

@@ -226,6 +226,7 @@ export class AiCodeCompletionPlugin extends Plugin {
         }
     }
     #removeAiCodeCompletionCitationsToolbar() {
+        this.#aiCodeCompletionCitationsToolbar?.detach();
         if (this.#editor) {
             this.#editor.dispatch({
                 effects: SourceFrame.SourceFrame.removeSourceFrameInfobar.of({ element: this.#aiCodeCompletionCitationsToolbarContainer })
@@ -267,7 +268,7 @@ export class AiCodeCompletionPlugin extends Plugin {
         this.#aiCodeCompletion?.remove();
         this.#aiCodeCompletion = undefined;
         this.#aiCodeCompletionCitations = [];
-        this.#aiCodeCompletionDisclaimerContainer.removeChildren();
+        this.#aiCodeCompletionDisclaimer?.detach();
         this.#aiCodeCompletionDisclaimer = undefined;
         this.#removeAiCodeCompletionCitationsToolbar();
         this.#aiCodeCompletionCitationsToolbar = undefined;

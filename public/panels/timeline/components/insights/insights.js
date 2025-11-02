@@ -2013,6 +2013,7 @@ __export(LCPDiscovery_exports, {
 });
 import * as i18n16 from "./../../../../core/i18n/i18n.js";
 import * as Trace12 from "./../../../../models/trace/trace.js";
+import * as uiI18n from "./../../../../ui/i18n/i18n.js";
 import * as Lit17 from "./../../../../ui/lit/lit.js";
 var { UIStrings: UIStrings13, i18nString: i18nString13, getImageData } = Trace12.Insights.Models.LCPDiscovery;
 var { html: html17 } = Lit17;
@@ -2051,7 +2052,7 @@ var LCPDiscovery = class extends BaseInsightComponent {
     const timeWrapper = document.createElement("span");
     timeWrapper.classList.add("discovery-time-ms");
     timeWrapper.innerText = i18n16.TimeUtilities.formatMicroSecondsAsMillisFixed(delay);
-    return i18n16.i18n.getFormatLocalizedString(str_4, UIStrings13.lcpLoadDelay, { PH1: timeWrapper });
+    return uiI18n.getFormatLocalizedString(str_4, UIStrings13.lcpLoadDelay, { PH1: timeWrapper });
   }
   renderContent() {
     if (!this.model) {

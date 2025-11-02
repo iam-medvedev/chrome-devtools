@@ -53,6 +53,7 @@ import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -1084,12 +1085,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         cpuThrottlingPane.append(i18nString(UIStrings.cpu));
         this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
         cpuThrottlingPane.append(this.cpuThrottlingSelect.control.element);
-        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString(UIStrings.capturesSelectorStats)));
+        this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString(UIStrings.capturesSelectorStats)));
         const networkThrottlingPane = this.settingsPane.createChild('div');
         networkThrottlingPane.append(i18nString(UIStrings.network));
         networkThrottlingPane.append(this.createNetworkConditionsSelectToolbarItem().element);
-        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString(UIStrings.capturesAdvancedPaint)));
-        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString(UIStrings.disablesJavascriptSampling)));
+        this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString(UIStrings.capturesAdvancedPaint)));
+        this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString(UIStrings.disablesJavascriptSampling)));
         const thirdPartyCheckbox = this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString(UIStrings.showDataAddedByExtensions));
         const localLink = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/performance/extension', i18nString(UIStrings.learnMore));
         // Has to be done in JS because the element is inserted into the
@@ -1156,9 +1157,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const traceEvents = parsedTrace.traceEvents.map(event => {
             if (Trace.Types.Events.isAnyScriptSourceEvent(event) && event.name !== 'StubScriptCatchup') {
                 const mappedScript = scriptByIdMap.get(`${event.args.data.isolate}.${event.args.data.scriptId}`);
-                // If the checkbox to include script content is not checked or if it comes from and
-                // extension we dont include the script content.
-                if (!config.includeScriptContent ||
+                if (!config.includeResourceContent ||
                     (mappedScript?.url && Trace.Helpers.Trace.isExtensionUrl(mappedScript.url))) {
                     return {
                         cat: event.cat,
@@ -1187,7 +1186,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         // export the config.
         try {
             await this.innerSaveToFile(traceEvents, metadata, {
-                includeScriptContent: config.includeScriptContent,
+                includeResourceContent: config.includeResourceContent,
                 includeSourceMaps: config.includeSourceMaps,
                 addModifications: config.addModifications,
                 shouldCompress: config.shouldCompress,
@@ -1208,9 +1207,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         // Base the filename on the trace's time of recording
         const isoDate = Platform.DateUtilities.toISO8601Compact(metadata.startTime ? new Date(metadata.startTime) : new Date());
         const isCpuProfile = metadata.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */;
-        const { includeScriptContent, includeSourceMaps } = config;
+        const { includeResourceContent, includeSourceMaps } = config;
         metadata.enhancedTraceVersion =
-            includeScriptContent ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
+            includeResourceContent ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
         let fileName = (isCpuProfile ? `CPU-${isoDate}.cpuprofile` : `Trace-${isoDate}.json`);
         let blobParts = [];
         if (isCpuProfile) {
@@ -1218,10 +1217,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             blobParts = [JSON.stringify(profile)];
         }
         else {
-            const filteredMetadataSourceMaps = includeScriptContent && includeSourceMaps ? this.#filterMetadataSourceMaps(metadata) : undefined;
+            const filteredMetadataSourceMaps = includeResourceContent && includeSourceMaps ? this.#filterMetadataSourceMaps(metadata) : undefined;
+            const filteredResources = includeResourceContent ? this.#filterMetadataResoures(metadata) : undefined;
             const formattedTraceIter = traceJsonGenerator(traceEvents, {
                 ...metadata,
                 sourceMaps: filteredMetadataSourceMaps,
+                resources: filteredResources,
             });
             blobParts = Array.from(formattedTraceIter);
         }
@@ -1267,7 +1268,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const exportTraceOptionsElement = this.saveButton.element;
         const state = exportTraceOptionsElement.state;
         await this.saveToFile({
-            includeScriptContent: state.includeScriptContent,
+            includeResourceContent: state.includeResourceContent,
             includeSourceMaps: state.includeSourceMaps,
             addModifications: state.includeAnnotations,
             shouldCompress: state.shouldCompress,
@@ -1282,6 +1283,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         return metadata.sourceMaps.filter(value => {
             return !Trace.Helpers.Trace.isExtensionUrl(value.url);
         });
+    }
+    #filterMetadataResoures(metadata) {
+        if (!metadata.resources) {
+            return undefined;
+        }
+        return metadata.resources;
     }
     #showExportTraceErrorDialog(error) {
         if (this.statusDialog) {
@@ -2327,6 +2334,36 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             return payload ? new SDK.SourceMap.SourceMap(sourceUrl, sourceMapUrl, payload) : null;
         };
     }
+    async #retainResourceContentsForEnhancedTrace(parsedTrace, metadata) {
+        // Scripts are already stored as trace events.
+        const resourceTypesToRetain = new Set(["Document" /* Protocol.Network.ResourceType.Document */, "Stylesheet" /* Protocol.Network.ResourceType.Stylesheet */]);
+        for (const request of parsedTrace.data.NetworkRequests.byId.values()) {
+            if (!resourceTypesToRetain.has(request.args.data.resourceType)) {
+                continue;
+            }
+            const url = request.args.data.url;
+            const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+            if (!resource) {
+                continue;
+            }
+            const content = await resource.requestContentData();
+            if ('error' in content) {
+                continue;
+            }
+            if (!content.isTextContent) {
+                continue;
+            }
+            if (!metadata.resources) {
+                metadata.resources = [];
+            }
+            metadata.resources.push({
+                url,
+                frame: resource.frameId ?? '',
+                content: content.text,
+                mimeType: content.mimeType,
+            });
+        }
+    }
     async #executeNewTrace(collectedEvents, isFreshRecording, metadata) {
         const config = {
             metadata: metadata ?? undefined,
@@ -2350,11 +2387,13 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         await this.#traceEngineModel.parse(collectedEvents, config);
         // Store all source maps on the trace metadata.
         // If not fresh, we can't validate the maps are still accurate.
+        // Also handle HTML content.
         if (isFreshRecording && metadata) {
             const traceIndex = this.#traceEngineModel.lastTraceIndex();
             const parsedTrace = this.#traceEngineModel.parsedTrace(traceIndex);
             if (parsedTrace) {
                 await this.#retainSourceMapsForEnhancedTrace(parsedTrace, metadata);
+                await this.#retainResourceContentsForEnhancedTrace(parsedTrace, metadata);
             }
         }
     }

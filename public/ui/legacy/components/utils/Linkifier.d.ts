@@ -80,7 +80,7 @@ export declare namespace LinkDecorator {
 export declare class LinkContextMenuProvider implements UI.ContextMenu.Provider<Node> {
     appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Node): void;
 }
-export declare class LinkHandlerSettingUI implements UI.SettingsUI.SettingUI {
+export declare class LinkHandlerSettingUI {
     private element;
     private constructor();
     static instance(opts?: {
@@ -88,7 +88,7 @@ export declare class LinkHandlerSettingUI implements UI.SettingsUI.SettingUI {
     }): LinkHandlerSettingUI;
     update(): void;
     private onChange;
-    settingElement(): Element | null;
+    settingElement(): Element;
 }
 export declare class ContentProviderContextMenuProvider implements UI.ContextMenu
     .Provider<Workspace.UISourceCode.UISourceCode | SDK.Resource.Resource | SDK.NetworkRequest.NetworkRequest> {

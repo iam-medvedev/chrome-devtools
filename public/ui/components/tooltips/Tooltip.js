@@ -136,7 +136,7 @@ const proposedRectForSimpleTooltip = ({ inspectorViewRect, anchorRect, currentPo
  * @property hoverDelay - reflects the `"hover-delay"` attribute.
  * @property variant - reflects the `"variant"` attribute.
  * @property padding - reflects the `"padding"` attribute.
- * @property useClick - reflects the `"click"` attribute.
+ * @property trigger - reflects the `"trigger"` attribute.
  * @property verticalDistanceIncrease - reflects the `"vertical-distance-increase"` attribute.
  * @property preferSpanLeft - reflects the `"prefer-span-left"` attribute.
  * @attribute id - Id of the tooltip. Used for searching an anchor element with aria-describedby.
@@ -144,17 +144,19 @@ const proposedRectForSimpleTooltip = ({ inspectorViewRect, anchorRect, currentPo
  * @attribute variant - Variant of the tooltip, `"simple"` for strings only, inverted background,
  *                 `"rich"` for interactive content, background according to theme's surface.
  * @attribute padding - Which padding to use, defaults to `"small"`. Use `"large"` for richer content.
- * @attribute use-click - If present, the tooltip will be shown on click instead of on hover.
+ * @attribute trigger - Specifies which action triggers the tooltip. `"hover"` is the default. `"click"` means the
+ *                 tooltip will be shown on click instead of hover. `"both"` means both hover and click trigger the
+ *                 tooltip.
  * @attribute vertical-distance-increase - The tooltip is moved vertically this many pixels further away from its anchor.
  * @attribute prefer-span-left - If present, the tooltip's preferred position is `"span-left"` (The right
  *                 side of the tooltip and its anchor are aligned. The tooltip expands to the left from
  *                 there.). Applies to rich tooltips only.
  * @attribute use-hotkey - If present, the tooltip will be shown on hover but not when receiving focus.
- *                    Requires a hotkey to open when fosed (Alt-down). When `"use-click"` is present
- *                    as well, use-click takes precedence.
+ *                  Requires a hotkey to open when fosed (Alt-down). When `"trigger"` is present
+ *                  as well, `"trigger"` takes precedence.
  */
 export class Tooltip extends HTMLElement {
-    static observedAttributes = ['id', 'variant', 'jslogcontext'];
+    static observedAttributes = ['id', 'variant', 'jslogcontext', 'trigger'];
     static lastOpenedTooltipId = null;
     #shadow = this.attachShadow({ mode: 'open' });
     #anchor = null;
@@ -181,16 +183,19 @@ export class Tooltip extends HTMLElement {
             this.removeAttribute('use-hotkey');
         }
     }
-    get useClick() {
-        return this.hasAttribute('use-click') ?? false;
+    get trigger() {
+        switch (this.getAttribute('trigger')) {
+            case 'click':
+                return 'click';
+            case 'both':
+                return 'both';
+            case 'hover':
+            default:
+                return 'hover';
+        }
     }
-    set useClick(useClick) {
-        if (useClick) {
-            this.setAttribute('use-click', '');
-        }
-        else {
-            this.removeAttribute('use-click');
-        }
+    set trigger(trigger) {
+        this.setAttribute('trigger', trigger);
     }
     get hoverDelay() {
         return this.hasAttribute('hover-delay') ? Number(this.getAttribute('hover-delay')) : 300;
@@ -240,7 +245,7 @@ export class Tooltip extends HTMLElement {
     }
     constructor(properties) {
         super();
-        const { id, variant, padding, jslogContext, anchor } = properties ?? {};
+        const { id, variant, padding, jslogContext, anchor, trigger } = properties ?? {};
         if (id) {
             this.id = id;
         }
@@ -259,6 +264,9 @@ export class Tooltip extends HTMLElement {
                 throw new Error('aria-details or aria-describedby must be set on the anchor');
             }
             this.#anchor = anchor;
+        }
+        if (trigger) {
+            this.trigger = trigger;
         }
     }
     attributeChangedCallback(name, oldValue, newValue) {
@@ -363,7 +371,7 @@ export class Tooltip extends HTMLElement {
         }
         this.#previousAnchorRect = anchorRect;
         this.#previousPopoverRect = currentPopoverRect;
-        const inspectorViewRect = UI.InspectorView.InspectorView.instance().element.getBoundingClientRect();
+        const inspectorViewRect = UI.UIUtils.getDevToolsBoundingElement().getBoundingClientRect();
         const preferredPositions = this.preferSpanLeft ? [PositionOption.BOTTOM_SPAN_LEFT, PositionOption.TOP_SPAN_LEFT] : [];
         const proposedPopoverRect = this.variant === 'rich' ?
             proposedRectForRichTooltip({ inspectorViewRect, anchorRect, currentPopoverRect, preferredPositions }) :
@@ -390,7 +398,7 @@ export class Tooltip extends HTMLElement {
         if (!this.hasAttribute('role')) {
             this.setAttribute('role', 'tooltip');
         }
-        this.setAttribute('popover', this.useClick ? 'auto' : 'manual');
+        this.setAttribute('popover', this.trigger === 'hover' ? 'manual' : 'auto');
         this.#updateJslog();
     }
     #stopPropagation(event) {
@@ -399,6 +407,9 @@ export class Tooltip extends HTMLElement {
     #setClosing = (event) => {
         if (event.newState === 'closed') {
             this.#closing = true;
+            if (this.#timeout) {
+                window.clearTimeout(this.#timeout);
+            }
         }
     };
     #resetClosing = (event) => {
@@ -438,10 +449,10 @@ export class Tooltip extends HTMLElement {
             // We bind the keydown listener regardless of if use-hotkey is enabled
             // as we always want to support ESC to close.
             this.#anchor.addEventListener('keydown', this.#keyDown);
-            if (this.useClick) {
+            if (this.trigger === 'click' || this.trigger === 'both') {
                 this.#anchor.addEventListener('click', this.toggle);
             }
-            else {
+            if (this.trigger === 'hover' || this.trigger === 'both') {
                 this.#anchor.addEventListener('mouseenter', this.showTooltip);
                 if (!this.useHotkey) {
                     this.#anchor.addEventListener('focus', this.showTooltip);

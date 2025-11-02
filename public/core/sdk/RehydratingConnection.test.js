@@ -50,7 +50,7 @@ const mockScript1 = {
     endColumn: 10,
     hash: '',
     isModule: false,
-    url: 'example.com',
+    url: 'example.com', // inline
     hasSourceURL: false,
     sourceMapURL: undefined,
     length: 10,
@@ -73,7 +73,7 @@ const mockScript2 = {
     endColumn: 10,
     hash: '',
     isModule: false,
-    url: 'example.com',
+    url: 'example.com/script.js',
     hasSourceURL: false,
     sourceMapURL: undefined,
     length: 10,
@@ -85,6 +85,12 @@ const mockScript2 = {
     },
     buildId: ''
 };
+const mockResource = {
+    url: 'example.com',
+    frame: 'ABCDE',
+    content: '<html>',
+    mimeType: 'text/html',
+};
 describe('RehydratingSession', () => {
     const sessionId = 1;
     const messageId = 1;
@@ -93,6 +99,7 @@ describe('RehydratingSession', () => {
     let mockRehydratingSession;
     const executionContextsForTarget1 = [mockExecutionContext1, mockExecutionContext2];
     const scriptsForTarget1 = [mockScript1, mockScript2];
+    const resourcesForTarget1 = [mockResource];
     class MockRehydratingConnection {
         messageQueue = [];
         postToFrontend(arg) {
@@ -109,7 +116,7 @@ describe('RehydratingSession', () => {
     }
     beforeEach(() => {
         mockRehydratingConnection = new MockRehydratingConnection();
-        mockRehydratingSession = new RehydratingSessionForTest(sessionId, target, executionContextsForTarget1, scriptsForTarget1, mockRehydratingConnection);
+        mockRehydratingSession = new RehydratingSessionForTest(sessionId, target, executionContextsForTarget1, scriptsForTarget1, resourcesForTarget1, mockRehydratingConnection);
         mockRehydratingSession.declareSessionAttachedToTarget();
     });
     it('send attach to target on construction', async function () {
@@ -118,24 +125,6 @@ describe('RehydratingSession', () => {
         assert.strictEqual(attachToTargetMessage.method, 'Target.attachedToTarget');
         assert.strictEqual(attachToTargetMessage.params.sessionId.toString(), sessionId.toString());
         assert.strictEqual(attachToTargetMessage.params.targetInfo.targetId.toString(), target.targetId.toString());
-    });
-    it('sends script parsed and debugger id while handling debugger enable', async function () {
-        mockRehydratingConnection.clearMessageQueue();
-        mockRehydratingSession.handleFrontendMessageAsFakeCDPAgent({
-            id: messageId,
-            method: 'Debugger.enable',
-            sessionId,
-        });
-        assert.lengthOf(mockRehydratingConnection.messageQueue, 3);
-        const scriptParsedMessages = mockRehydratingConnection.messageQueue.slice(0, 2);
-        const resultMessage = mockRehydratingConnection.messageQueue.slice(2);
-        for (const scriptParsedMessage of scriptParsedMessages) {
-            assert.strictEqual(scriptParsedMessage.method, 'Debugger.scriptParsed');
-            assert.strictEqual(scriptParsedMessage.params.isolate, target.isolate);
-        }
-        assert.isNotNull(resultMessage[0]);
-        assert.strictEqual(resultMessage[0].id, messageId);
-        assert.isNotNull(resultMessage[0].result.debuggerId);
     });
     it('sends execution context created while handling runtime enable', async function () {
         mockRehydratingConnection.clearMessageQueue();
@@ -172,18 +161,15 @@ describe('RehydratingSession', () => {
         assert.strictEqual(scriptSourceTextMessage.result.scriptSource, mockScript1.sourceText);
     });
 });
-describeWithEnvironment('RehydratingConnection emittance', () => {
-    let snapshotTester;
+describeWithEnvironment('RehydratingConnection emittance', function () {
+    const snapshotTester = new SnapshotTester(this, import.meta);
     before(async () => {
-        snapshotTester = new SnapshotTester(import.meta);
-        await snapshotTester.load();
         // Create fake popup opener as rehydrating connection needs it.
         window.opener = {
             postMessage: sinon.stub(),
         };
     });
     after(async () => {
-        await snapshotTester.finish();
         delete window.opener;
     });
     it('emits the expected CDP data', async function () {

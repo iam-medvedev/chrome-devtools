@@ -10,6 +10,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html, render } from '../../ui/lit/lit.js';
@@ -273,9 +274,7 @@ export class GenericSettingsTab extends UI.Widget.VBox {
         const sectionName = "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */;
         const settingUI = Components.Linkifier.LinkHandlerSettingUI.instance();
         const element = settingUI.settingElement();
-        if (element) {
-            this.createStandardSectionElement(sectionName, settings, element);
-        }
+        this.createStandardSectionElement(sectionName, settings, element);
     }
     createSectionElement(category, settings) {
         // Always create the EXTENSIONS section and append the link handling control.
@@ -295,7 +294,7 @@ export class GenericSettingsTab extends UI.Widget.VBox {
         const sectionElement = document.createElement('div');
         for (const settingRegistration of settings) {
             const setting = Common.Settings.Settings.instance().moduleSetting(settingRegistration.settingName);
-            const settingControl = UI.SettingsUI.createControlForSetting(setting);
+            const settingControl = SettingsUI.SettingsUI.createControlForSetting(setting);
             if (settingControl) {
                 this.settingToControl.set(setting, settingControl);
                 sectionElement.appendChild(settingControl);
@@ -337,12 +336,10 @@ export class ExperimentsSettingsTab extends UI.Widget.VBox {
         filterSection.classList.add('experiments-filter');
         render(html `
         <devtools-toolbar>
-          <devtools-toolbar-input type="filter" placeholder=${i18nString(UIStrings.searchExperiments)} style="flex-grow:1" @change=${this.#onFilterChanged.bind(this)}></devtools-toolbar-input>
+          <devtools-toolbar-input autofocus type="filter" placeholder=${i18nString(UIStrings.searchExperiments)} style="flex-grow:1" @change=${this.#onFilterChanged.bind(this)}></devtools-toolbar-input>
         </devtools-toolbar>
     `, filterSection);
         this.renderExperiments('');
-        const filter = filterSection.querySelector('devtools-toolbar-input');
-        this.setDefaultFocusedElement(filter);
     }
     #onFilterChanged(e) {
         this.renderExperiments(e.detail.toLowerCase());

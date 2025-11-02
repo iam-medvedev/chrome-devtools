@@ -1,5 +1,5 @@
 import { getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../../testing/LocaleHelpers.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as EmulationComponents from './components.js';
 describeWithLocale('UserAgentClientHintsForm', () => {

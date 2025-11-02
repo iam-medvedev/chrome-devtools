@@ -406,6 +406,7 @@ var RecorderController = class RecorderController2 extends LitElement {
     /* Common.Settings.SettingStorageType.SYNCED */
   );
   #recordingView;
+  #createRecordingView;
   constructor() {
     super();
     this.isRecording = false;
@@ -934,7 +935,7 @@ var RecorderController = class RecorderController2 extends LitElement {
     );
     this.#clearError();
   }
-  async #onRecordingStarted(event) {
+  async #onRecordingStarted(data) {
     await this.#disableDeviceModeIfEnabled();
     this.isToggling = true;
     this.#clearError();
@@ -943,9 +944,9 @@ var RecorderController = class RecorderController2 extends LitElement {
       /* Host.UserMetrics.RecordingToggled.RECORDING_STARTED */
     );
     this.currentRecordingSession = new Models.RecordingSession.RecordingSession(this.#getMainTarget(), {
-      title: event.name,
-      selectorAttribute: event.selectorAttribute,
-      selectorTypesToRecord: event.selectorTypesToRecord.length ? event.selectorTypesToRecord : Object.values(Models.Schema.SelectorType)
+      title: data.name,
+      selectorAttribute: data.selectorAttribute,
+      selectorTypesToRecord: data.selectorTypesToRecord.length ? data.selectorTypesToRecord : Object.values(Models.Schema.SelectorType)
     });
     this.#setCurrentRecording(await this.#storage.saveRecording(this.currentRecordingSession.cloneUserFlow()));
     let previousSectionIndex = -1;
@@ -967,15 +968,15 @@ var RecorderController = class RecorderController2 extends LitElement {
       previousSectionIndex = currentSectionIndex;
       this.#updateScreenshotsForSections();
     };
-    this.currentRecordingSession.addEventListener("recordingupdated", async ({ data }) => {
+    this.currentRecordingSession.addEventListener("recordingupdated", async ({ data: data2 }) => {
       if (!this.currentRecording) {
         throw new Error("No current recording found");
       }
-      this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, data));
+      this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, data2));
       this.#recordingView?.scrollToBottom();
       await takeScreenshot(this.currentRecording);
     });
-    this.currentRecordingSession.addEventListener("recordingstopped", async ({ data }) => {
+    this.currentRecordingSession.addEventListener("recordingstopped", async ({ data: data2 }) => {
       if (!this.currentRecording) {
         throw new Error("No current recording found");
       }
@@ -983,7 +984,7 @@ var RecorderController = class RecorderController2 extends LitElement {
         "chrome-recorder.start-recording"
         /* Actions.RecorderActions.START_RECORDING */
       );
-      this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, data));
+      this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, data2));
       await this.#onRecordingFinished();
     });
     await this.currentRecordingSession.start();
@@ -1011,7 +1012,7 @@ var RecorderController = class RecorderController2 extends LitElement {
     this.isRecording = false;
     this.dispatchEvent(new RecordingStateChangedEvent(this.currentRecording.flow));
   }
-  async #onRecordingCancelled() {
+  async onRecordingCancelled() {
     if (this.previousPage) {
       this.#setCurrentPage(this.previousPage);
     }
@@ -1154,11 +1155,16 @@ var RecorderController = class RecorderController2 extends LitElement {
         return;
       case "chrome-recorder.start-recording":
         if (this.currentPage !== "CreateRecordingPage" && !this.isRecording) {
-          this.#shortcutHelper.handleShortcut(this.#onRecordingStarted.bind(this, new Components.CreateRecordingView.RecordingStartedEvent(this.#recorderSettings.defaultTitle, this.#recorderSettings.defaultSelectors, this.#recorderSettings.selectorAttribute)));
+          this.#shortcutHelper.handleShortcut(this.#onRecordingStarted.bind(this, {
+            name: this.#recorderSettings.defaultTitle,
+            selectorTypesToRecord: this.#recorderSettings.defaultSelectors,
+            selectorAttribute: this.#recorderSettings.selectorAttribute ? this.#recorderSettings.selectorAttribute : void 0
+          }));
         } else if (this.currentPage === "CreateRecordingPage") {
-          const view = this.renderRoot.querySelector("devtools-create-recording-view");
-          if (view) {
-            this.#shortcutHelper.handleShortcut(view.startRecording.bind(view));
+          if (this.#createRecordingView) {
+            this.#shortcutHelper.handleShortcut(() => {
+              this.#createRecordingView?.startRecording();
+            });
           }
         } else if (this.isRecording) {
           void this.#onRecordingFinished();
@@ -1312,13 +1318,17 @@ var RecorderController = class RecorderController2 extends LitElement {
   }
   #renderCreateRecordingPage() {
     return html`
-      <devtools-create-recording-view
-        .data=${{
-      recorderSettings: this.#recorderSettings
-    }}
-        @recordingstarted=${this.#onRecordingStarted}
-        @recordingcancelled=${this.#onRecordingCancelled}
-      ></devtools-create-recording-view>
+      <devtools-widget
+        class="recording-view"
+        .widgetConfig=${UI.Widget.widgetConfig(Components.CreateRecordingView.CreateRecordingView, {
+      recorderSettings: this.#recorderSettings,
+      onRecordingStarted: this.#onRecordingStarted.bind(this),
+      onRecordingCancelled: this.onRecordingCancelled.bind(this)
+    })}
+        ${UI.Widget.widgetRef(Components.CreateRecordingView.CreateRecordingView, (widget) => {
+      this.#createRecordingView = widget;
+    })}
+      ></devtools-widget>
     `;
   }
   #getExportMenuButton = () => {

@@ -4,7 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as IssueCounter from './issue_counter.js';

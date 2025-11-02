@@ -154,7 +154,7 @@ export class TraceLoader {
         }, 30_000, `Loading fixtureContents for ${name}`);
         const parsedTraceFileAndModel = await wrapInTimeout(context, async () => {
             return await TraceLoader.executeTraceEngineOnFileContents(fileContents, /* emulate fresh recording */ false, config);
-        }, 15_000, `Executing traceEngine for ${name}`);
+        }, 30_000, `Executing traceEngine for ${name}`);
         const cacheByName = traceEngineCache.get(name) ?? new Map();
         cacheByName.set(configCacheKey, parsedTraceFileAndModel);
         traceEngineCache.set(name, cacheByName);

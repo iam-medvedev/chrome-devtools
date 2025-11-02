@@ -155,10 +155,8 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         sinon.assert.calledOnceWithExactly(setTrackingSpy, { enable: true });
         assert.strictEqual(sidebar.sharedStorageListTreeElement.childCount(), 4);
         assert.deepEqual(sidebar.sharedStorageListTreeElement.children().map(e => e.title), [
+            TEST_ORIGIN_A, TEST_ORIGIN_B, TEST_ORIGIN_C,
             'https://example.com', // frame origin
-            TEST_ORIGIN_A,
-            TEST_ORIGIN_B,
-            TEST_ORIGIN_C,
         ]);
         sidebar.sharedStorageListTreeElement.view.setDefaultIdForTesting(ID);
         for (const event of EVENTS) {

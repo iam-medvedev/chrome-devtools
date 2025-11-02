@@ -6,6 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { getLocalizedBreakpointName } from './CategorizedBreakpointL10n.js';
@@ -154,14 +155,14 @@ export class DebuggerPausedMessage {
             let messageElement;
             if (data.insertion) {
                 if (data.targetNode === data.node) {
-                    messageElement = i18n.i18n.getFormatLocalizedString(str_, UIStrings.childSAdded, { PH1: targetNodeLink });
+                    messageElement = uiI18n.getFormatLocalizedString(str_, UIStrings.childSAdded, { PH1: targetNodeLink });
                 }
                 else {
-                    messageElement = i18n.i18n.getFormatLocalizedString(str_, UIStrings.descendantSAdded, { PH1: targetNodeLink });
+                    messageElement = uiI18n.getFormatLocalizedString(str_, UIStrings.descendantSAdded, { PH1: targetNodeLink });
                 }
             }
             else {
-                messageElement = i18n.i18n.getFormatLocalizedString(str_, UIStrings.descendantSRemoved, { PH1: targetNodeLink });
+                messageElement = uiI18n.getFormatLocalizedString(str_, UIStrings.descendantSRemoved, { PH1: targetNodeLink });
             }
             subElement.appendChild(document.createElement('br'));
             subElement.appendChild(messageElement);

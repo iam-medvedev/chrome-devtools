@@ -23,7 +23,7 @@ describeWithEnvironment('DeveloperResourcesView', () => {
             return true;
         });
         assert.isNull(await developerResourcesView.selectedItem());
-        developerResourcesView.update();
+        developerResourcesView.requestUpdate();
         await developerResourcesView.select(resource2);
         assert.deepEqual(await developerResourcesView.selectedItem(), resource2);
         loader.resourceLoadedThroughExtension(resource3);

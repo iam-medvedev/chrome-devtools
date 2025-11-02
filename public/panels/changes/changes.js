@@ -8,7 +8,7 @@ var __export = (target, all) => {
 var ChangesView_exports = {};
 __export(ChangesView_exports, {
   ChangesView: () => ChangesView,
-  DEFAULT_VIEW: () => DEFAULT_VIEW2
+  DEFAULT_VIEW: () => DEFAULT_VIEW3
 });
 import "./../../ui/legacy/legacy.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
@@ -433,6 +433,13 @@ function renderSingleDiffView(singleDiffViewInput) {
     </details>
   `;
 }
+var DEFAULT_VIEW2 = (input, output, target) => {
+  Lit2.render(html2`
+      <div class="combined-diff-view">
+        ${input.singleDiffViewInputs.map((singleDiffViewInput) => renderSingleDiffView(singleDiffViewInput))}
+      </div>
+    `, target);
+};
 var CombinedDiffView = class extends UI2.Widget.Widget {
   /**
    * Ignores urls that start with any in the list
@@ -444,16 +451,7 @@ var CombinedDiffView = class extends UI2.Widget.Widget {
   #copiedFiles = {};
   #view;
   #viewOutput = {};
-  constructor(element, view = (input, output, target) => {
-    output.scrollToSelectedDiff = () => {
-      target.querySelector("details.selected")?.scrollIntoView();
-    };
-    Lit2.render(html2`
-      <div class="combined-diff-view">
-        ${input.singleDiffViewInputs.map((singleDiffViewInput) => renderSingleDiffView(singleDiffViewInput))}
-      </div>
-    `, target, { host: target });
-  }) {
+  constructor(element, view = DEFAULT_VIEW2) {
     super(element);
     this.registerRequiredCSS(combinedDiffView_css_default);
     this.#view = view;
@@ -573,7 +571,7 @@ var UIStrings3 = {
 var str_3 = i18n5.i18n.registerUIStrings("panels/changes/ChangesView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var { render: render3, html: html3 } = Lit3;
-var DEFAULT_VIEW2 = (input, output, target) => {
+var DEFAULT_VIEW3 = (input, output, target) => {
   const onSidebar = (sidebar) => {
     sidebar.addEventListener("SelectedUISourceCodeChanged", () => input.onSelect(sidebar.selectedUISourceCode()));
   };
@@ -614,7 +612,7 @@ var ChangesView = class _ChangesView extends UI3.Widget.VBox {
   #workspaceDiff;
   #selectedUISourceCode = null;
   #view;
-  constructor(target, view = DEFAULT_VIEW2) {
+  constructor(target, view = DEFAULT_VIEW3) {
     super(target, {
       jslog: `${VisualLogging3.panel("changes").track({ resize: true })}`,
       useShadowDom: true

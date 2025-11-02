@@ -147,4 +147,15 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     recordFunctionCall(_event: FunctionCallEvent): void;
 }
 export declare let InspectorFrontendHostInstance: InspectorFrontendHostStub;
+declare class InspectorFrontendAPIImpl {
+    constructor();
+    private dispatch;
+    streamWrite(id: number, chunk: string): void;
+}
+/**
+ * Used in `front_end/devtools_compatibility.js` to verify that calls from there
+ * are valid.
+ */
+export type InspectorFrontendAPIImplMethods = keyof InspectorFrontendAPIImpl;
 export declare function isUnderTest(prefs?: Record<string, string>): boolean;
+export {};

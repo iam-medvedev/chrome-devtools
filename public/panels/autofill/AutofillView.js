@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../ui/components/adorners/adorners.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Common from '../../core/common/common.js';
@@ -15,7 +14,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import autofillViewStyles from './autofillView.css.js';
 const { html, render, Directives: { styleMap } } = Lit;
 const { FillingStrategy } = Protocol.Autofill;
-const { bindToSetting } = UI.SettingsUI;
+const { bindToSetting } = UI.UIUtils;
 const UIStrings = {
     /**
      * @description Text shown when there is no data on autofill available.
@@ -214,7 +213,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
             </div>
           </div>
         </main>
-      `, target, { host: this });
+      `, target);
         // clang-format on
         return;
     }
@@ -250,7 +249,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
           ${renderFilledFields()}
         </div>
       </main>
-    `, target, { host: this });
+    `, target);
     // clang-format on
 };
 export class AutofillView extends UI.Widget.VBox {

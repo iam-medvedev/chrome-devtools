@@ -57,7 +57,7 @@ export declare const enum Events {
 export interface EventTypes {
     [Events.WINDOW_CHANGED]: void;
 }
-export declare class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWidget {
+export declare class PaintProfilerCommandLogView extends UI.Widget.VBox {
     private readonly treeOutline;
     private log;
     private readonly treeItemCache;
@@ -69,7 +69,7 @@ export declare class PaintProfilerCommandLogView extends UI.ThrottledWidget.Thro
         left: number;
         right: number;
     } | null): void;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
 }
 export declare class LogTreeElement extends UI.TreeOutline.TreeElement {
     readonly logItem: SDK.PaintProfiler.PaintProfilerLogItem;

@@ -79,6 +79,7 @@ import * as ElementsPanel from "./../elements/elements.js";
 import * as PanelUtils from "./../utils/utils.js";
 import * as Marked from "./../../third_party/marked/marked.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
@@ -592,61 +593,35 @@ var SelectedProjectType;
   SelectedProjectType2["AUTOMATIC_DISCONNECTED"] = "automaticDisconnected";
   SelectedProjectType2["AUTOMATIC_CONNECTED"] = "automaticConnected";
 })(SelectedProjectType || (SelectedProjectType = {}));
-var PatchWidget = class extends UI2.Widget.Widget {
-  changeSummary = "";
-  changeManager;
-  // Whether the user completed first run experience dialog or not.
-  #aiPatchingFreCompletedSetting = Common2.Settings.Settings.instance().createSetting("ai-assistance-patching-fre-completed", false);
-  #projectIdSetting = Common2.Settings.Settings.instance().createSetting("ai-assistance-patching-selected-project-id", "");
-  #view;
-  #viewOutput = {};
-  #aidaClient;
-  #applyPatchAbortController;
-  #project;
-  #patchSources;
-  #savedToDisk;
-  #noLogging;
-  // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
-  #patchSuggestionState = PatchSuggestionState.INITIAL;
-  #workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
-  #workspace = Workspace3.Workspace.WorkspaceImpl.instance();
-  #automaticFileSystem = Persistence2.AutomaticFileSystemManager.AutomaticFileSystemManager.instance().automaticFileSystem;
-  #applyToDisconnectedAutomaticWorkspace = false;
-  // `rpcId` from the `applyPatch` request
-  #rpcId = null;
-  constructor(element, view, opts) {
-    super(element);
-    this.#aidaClient = opts?.aidaClient ?? new Host2.AidaClient.AidaClient();
-    this.#noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
-    this.#view = view ?? ((input, output, target) => {
-      if (!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL) {
-        return;
-      }
-      output.changeRef = output.changeRef ?? Directives.createRef();
-      output.summaryRef = output.summaryRef ?? Directives.createRef();
-      function renderSourcesLink() {
-        if (!input.sources) {
-          return nothing2;
-        }
-        return html2`<x-link
+var DEFAULT_VIEW = (input, output, target) => {
+  if (!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL) {
+    return;
+  }
+  output.changeRef = output.changeRef ?? Directives.createRef();
+  output.summaryRef = output.summaryRef ?? Directives.createRef();
+  function renderSourcesLink() {
+    if (!input.sources) {
+      return nothing2;
+    }
+    return html2`<x-link
           class="link"
           title="${UIStringsNotTranslate2.viewUploadedFiles} ${UIStringsNotTranslate2.opensInNewTab}"
           href="data:text/plain;charset=utf-8,${encodeURIComponent(input.sources)}"
           jslog=${VisualLogging2.link("files-used-in-patching").track({ click: true })}>
           ${UIStringsNotTranslate2.viewUploadedFiles}
         </x-link>`;
-      }
-      function renderHeader() {
-        if (input.savedToDisk) {
-          return html2`
+  }
+  function renderHeader() {
+    if (input.savedToDisk) {
+      return html2`
             <devtools-icon class="green-bright-icon summary-badge" name="check-circle"></devtools-icon>
             <span class="header-text">
               ${lockedString2(UIStringsNotTranslate2.savedToDisk)}
             </span>
           `;
-        }
-        if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
-          return html2`
+    }
+    if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
+      return html2`
             <devtools-icon class="on-tonal-icon summary-badge" name="difference"></devtools-icon>
             <span class="header-text">
               ${lockedString2(`File changes in ${input.projectName}`)}
@@ -656,8 +631,8 @@ var PatchWidget = class extends UI2.Widget.Widget {
               name="chevron-down"
             ></devtools-icon>
           `;
-        }
-        return html2`
+    }
+    return html2`
           <devtools-icon class="on-tonal-icon summary-badge" name="pen-spark"></devtools-icon>
           <span class="header-text">
             ${lockedString2(UIStringsNotTranslate2.unsavedChanges)}
@@ -667,19 +642,19 @@ var PatchWidget = class extends UI2.Widget.Widget {
             name="chevron-down"
           ></devtools-icon>
         `;
-      }
-      function renderContent() {
-        if (!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL || input.savedToDisk) {
-          return nothing2;
-        }
-        if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
-          return html2`<devtools-widget .widgetConfig=${UI2.Widget.widgetConfig(ChangesPanel.CombinedDiffView.CombinedDiffView, {
-            workspaceDiff: input.workspaceDiff,
-            // Ignore user creates inspector-stylesheets
-            ignoredUrls: ["inspector://"]
-          })}></devtools-widget>`;
-        }
-        return html2`<devtools-code-block
+  }
+  function renderContent() {
+    if (!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL || input.savedToDisk) {
+      return nothing2;
+    }
+    if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
+      return html2`<devtools-widget .widgetConfig=${UI2.Widget.widgetConfig(ChangesPanel.CombinedDiffView.CombinedDiffView, {
+        workspaceDiff: input.workspaceDiff,
+        // Ignore user creates inspector-stylesheets
+        ignoredUrls: ["inspector://"]
+      })}></devtools-widget>`;
+    }
+    return html2`<devtools-code-block
           .code=${input.changeSummary ?? ""}
           .codeLang=${"css"}
           .displayNotice=${true}
@@ -687,18 +662,18 @@ var PatchWidget = class extends UI2.Widget.Widget {
         ${input.patchSuggestionState === PatchSuggestionState.ERROR ? html2`<div class="error-container">
               <devtools-icon name="cross-circle-filled"></devtools-icon>${lockedString2(UIStringsNotTranslate2.genericErrorMessage)} ${renderSourcesLink()}
             </div>` : nothing2}`;
-      }
-      function renderFooter() {
-        if (input.savedToDisk) {
-          return nothing2;
-        }
-        if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
-          return html2`
+  }
+  function renderFooter() {
+    if (input.savedToDisk) {
+      return nothing2;
+    }
+    if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
+      return html2`
           <div class="footer">
             <div class="left-side">
               <x-link class="link disclaimer-link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging2.link("code-disclaimer").track({
-            click: true
-          })}>
+        click: true
+      })}>
                 ${lockedString2(UIStringsNotTranslate2.codeDisclaimer)}
               </x-link>
               ${renderSourcesLink()}
@@ -719,9 +694,9 @@ var PatchWidget = class extends UI2.Widget.Widget {
             </div>
           </div>
           `;
-        }
-        const iconName = input.projectType === SelectedProjectType.AUTOMATIC_DISCONNECTED ? "folder-off" : input.projectType === SelectedProjectType.AUTOMATIC_CONNECTED ? "folder-asterisk" : "folder";
-        return html2`
+    }
+    const iconName = input.projectType === SelectedProjectType.AUTOMATIC_DISCONNECTED ? "folder-off" : input.projectType === SelectedProjectType.AUTOMATIC_CONNECTED ? "folder-asterisk" : "folder";
+    return html2`
         <div class="footer">
           ${input.projectName ? html2`
             <div class="change-workspace" jslog=${VisualLogging2.section("patch-widget.workspace")}>
@@ -777,16 +752,16 @@ var PatchWidget = class extends UI2.Widget.Widget {
                  class="link tooltip-link"
                  role="link"
                  jslog=${VisualLogging2.link("open-ai-settings").track({
-          click: true
-        })}
+      click: true
+    })}
                  @click=${input.onLearnMoreTooltipClick}
                >${lockedString2(UIStringsNotTranslate2.learnMore)}</button>
              </div>
             </devtools-tooltip>
           </div>
         </div>`;
-      }
-      const template = input.savedToDisk ? html2`
+  }
+  const template = input.savedToDisk ? html2`
           <div class="change-summary saved-to-disk" role="status" aria-live="polite">
             <div class="header-container">
              ${renderHeader()}
@@ -800,8 +775,35 @@ var PatchWidget = class extends UI2.Widget.Widget {
             ${renderFooter()}
           </details>
         `;
-      render2(template, target, { host: target });
-    });
+  render2(template, target);
+};
+var PatchWidget = class extends UI2.Widget.Widget {
+  changeSummary = "";
+  changeManager;
+  // Whether the user completed first run experience dialog or not.
+  #aiPatchingFreCompletedSetting = Common2.Settings.Settings.instance().createSetting("ai-assistance-patching-fre-completed", false);
+  #projectIdSetting = Common2.Settings.Settings.instance().createSetting("ai-assistance-patching-selected-project-id", "");
+  #view;
+  #viewOutput = {};
+  #aidaClient;
+  #applyPatchAbortController;
+  #project;
+  #patchSources;
+  #savedToDisk;
+  #noLogging;
+  // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
+  #patchSuggestionState = PatchSuggestionState.INITIAL;
+  #workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
+  #workspace = Workspace3.Workspace.WorkspaceImpl.instance();
+  #automaticFileSystem = Persistence2.AutomaticFileSystemManager.AutomaticFileSystemManager.instance().automaticFileSystem;
+  #applyToDisconnectedAutomaticWorkspace = false;
+  // `rpcId` from the `applyPatch` request
+  #rpcId = null;
+  constructor(element, view = DEFAULT_VIEW, opts) {
+    super(element);
+    this.#aidaClient = opts?.aidaClient ?? new Host2.AidaClient.AidaClient();
+    this.#noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+    this.#view = view;
     this.requestUpdate();
   }
   #onLearnMoreTooltipClick() {
@@ -2104,7 +2106,7 @@ main {
 // gen/front_end/panels/ai_assistance/components/UserActionRow.js
 var UserActionRow_exports = {};
 __export(UserActionRow_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   UserActionRow: () => UserActionRow
 });
 import * as Common3 from "./../../core/common/common.js";
@@ -2296,7 +2298,7 @@ var UIStringsNotTranslate3 = {
 var lockedString3 = i18n5.i18n.lockedString;
 var REPORT_URL = "https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504";
 var SCROLL_ROUNDING_OFFSET = 1;
-var DEFAULT_VIEW = (input, output, target) => {
+var DEFAULT_VIEW2 = (input, output, target) => {
   Lit.render(html3`
     <style>${Input.textInputStyles}</style>
     <style>${userActionRow_css_default}</style>
@@ -2467,7 +2469,7 @@ var UserActionRow = class extends UI3.Widget.Widget {
   #viewOutput = {};
   constructor(element, view) {
     super(element);
-    this.#view = view ?? DEFAULT_VIEW;
+    this.#view = view ?? DEFAULT_VIEW2;
   }
   wasShown() {
     super.wasShown();
@@ -2739,11 +2741,7 @@ var UIStringsNotTranslate4 = {
   /**
    * @description Title for the add image button.
    */
-  addImageButtonTitle: "Add image",
-  /**
-   * @description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForEmptyState: "This is an experimental AI feature and won't always get it right."
+  addImageButtonTitle: "Add image"
 };
 var str_ = i18n7.i18n.registerUIStrings("panels/ai_assistance/components/ChatView.ts", UIStrings);
 var i18nString = i18n7.i18n.getLocalizedString.bind(void 0, str_);
@@ -2916,34 +2914,60 @@ var ChatView = class extends HTMLElement {
   };
   #render() {
     const renderFooter = () => {
+      if (this.#props.state !== "chat-view") {
+        return Lit2.nothing;
+      }
       const classes = Lit2.Directives.classMap({
         "chat-view-footer": true,
         "has-conversation": !!this.#props.conversationType,
         "is-read-only": this.#props.isReadOnly
       });
-      const footerContents = this.#props.conversationType ? renderRelevantDataDisclaimer({
+      return html4`
+        <footer class=${classes} jslog=${VisualLogging4.section("footer")}>
+          ${renderRelevantDataDisclaimer({
         isLoading: this.#props.isLoading,
         blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
         tooltipId: RELEVANT_DATA_LINK_FOOTER_ID,
         disclaimerText: this.#props.disclaimerText
-      }) : html4`<p>
-            ${lockedString4(UIStringsNotTranslate4.inputDisclaimerForEmptyState)}
-            <button
-              class="link"
-              role="link"
-              jslog=${VisualLogging4.link("open-ai-settings").track({
-        click: true
       })}
-              @click=${() => {
-        void UI4.ViewManager.ViewManager.instance().showView("chrome-ai");
-      }}
-            >${i18nString(UIStrings.learnAbout)}</button>
-          </p>`;
-      return html4`
-        <footer class=${classes} jslog=${VisualLogging4.section("footer")}>
-          ${footerContents}
         </footer>
       `;
+    };
+    const renderInputOrReadOnlySection = () => {
+      if (this.#props.state !== "chat-view") {
+        return Lit2.nothing;
+      }
+      if (this.#props.conversationType && this.#props.isReadOnly) {
+        return renderReadOnlySection({
+          conversationType: this.#props.conversationType,
+          onNewConversation: this.#props.onNewConversation
+        });
+      }
+      return renderChatInput({
+        isLoading: this.#props.isLoading,
+        blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
+        isTextInputDisabled: this.#props.isTextInputDisabled,
+        inputPlaceholder: this.#props.inputPlaceholder,
+        disclaimerText: this.#props.disclaimerText,
+        selectedContext: this.#props.selectedContext,
+        inspectElementToggled: this.#props.inspectElementToggled,
+        multimodalInputEnabled: this.#props.multimodalInputEnabled,
+        conversationType: this.#props.conversationType,
+        imageInput: this.#props.imageInput,
+        aidaAvailability: this.#props.aidaAvailability,
+        isTextInputEmpty: this.#props.isTextInputEmpty,
+        uploadImageInputEnabled: this.#props.uploadImageInputEnabled,
+        onContextClick: this.#props.onContextClick,
+        onInspectElementClick: this.#props.onInspectElementClick,
+        onSubmit: this.#handleSubmit,
+        onTextAreaKeyDown: this.#handleTextAreaKeyDown,
+        onCancel: this.#handleCancel,
+        onNewConversation: this.#props.onNewConversation,
+        onTakeScreenshot: this.#props.onTakeScreenshot,
+        onRemoveImageInput: this.#props.onRemoveImageInput,
+        onTextInputChange: this.#props.onTextInputChange,
+        onImageUpload: this.#handleImageUpload
+      });
     };
     Lit2.render(html4`
       <style>${chatView_css_default}</style>
@@ -2968,35 +2992,7 @@ var ChatView = class extends HTMLElement {
       onMessageContainerRef: this.#handleMessageContainerRef,
       onCopyResponseClick: this.#props.onCopyResponseClick
     })}
-          ${this.#props.isReadOnly ? renderReadOnlySection({
-      conversationType: this.#props.conversationType,
-      onNewConversation: this.#props.onNewConversation
-    }) : renderChatInput({
-      isLoading: this.#props.isLoading,
-      blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
-      isTextInputDisabled: this.#props.isTextInputDisabled,
-      inputPlaceholder: this.#props.inputPlaceholder,
-      state: this.#props.state,
-      disclaimerText: this.#props.disclaimerText,
-      selectedContext: this.#props.selectedContext,
-      inspectElementToggled: this.#props.inspectElementToggled,
-      multimodalInputEnabled: this.#props.multimodalInputEnabled,
-      conversationType: this.#props.conversationType,
-      imageInput: this.#props.imageInput,
-      isTextInputEmpty: this.#props.isTextInputEmpty,
-      aidaAvailability: this.#props.aidaAvailability,
-      uploadImageInputEnabled: this.#props.uploadImageInputEnabled,
-      onContextClick: this.#props.onContextClick,
-      onInspectElementClick: this.#props.onInspectElementClick,
-      onSubmit: this.#handleSubmit,
-      onTextAreaKeyDown: this.#handleTextAreaKeyDown,
-      onCancel: this.#handleCancel,
-      onNewConversation: this.#props.onNewConversation,
-      onTakeScreenshot: this.#props.onTakeScreenshot,
-      onRemoveImageInput: this.#props.onRemoveImageInput,
-      onTextInputChange: this.#props.onTextInputChange,
-      onImageUpload: this.#handleImageUpload
-    })}
+          ${renderInputOrReadOnlySection()}
         </main>
        ${renderFooter()}
       </div>
@@ -3512,11 +3508,11 @@ function renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin, tooltip
     </p>
   `;
 }
-function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, state, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, aidaAvailability, disclaimerText, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload }) {
+function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, aidaAvailability, disclaimerText, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload }) {
   if (!conversationType) {
     return Lit2.nothing;
   }
-  const shouldShowMultiLine = state !== "consent-view" && aidaAvailability === "available" && selectedContext;
+  const shouldShowMultiLine = aidaAvailability === "available" && selectedContext;
   const chatInputContainerCls = Lit2.Directives.classMap({
     "chat-input-container": true,
     "single-line-layout": !shouldShowMultiLine,
@@ -3600,13 +3596,13 @@ function renderConsentViewContents() {
     return html4`${i18nString(UIStrings.notAvailableInIncognitoMode)}`;
   }
   if (config.devToolsAiAssistancePerformanceAgent?.enabled) {
-    consentViewContents = i18n7.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesRequestsPerformanceAndFiles, { PH1: settingsLink });
+    consentViewContents = uiI18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesRequestsPerformanceAndFiles, { PH1: settingsLink });
   } else if (config.devToolsAiAssistanceFileAgent?.enabled) {
-    consentViewContents = i18n7.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesRequestsAndFiles, { PH1: settingsLink });
+    consentViewContents = uiI18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesRequestsAndFiles, { PH1: settingsLink });
   } else if (config.devToolsAiAssistanceNetworkAgent?.enabled) {
-    consentViewContents = i18n7.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesAndRequests, { PH1: settingsLink });
+    consentViewContents = uiI18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesAndRequests, { PH1: settingsLink });
   } else {
-    consentViewContents = i18n7.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStyles, { PH1: settingsLink });
+    consentViewContents = uiI18n.getFormatLocalizedString(str_, UIStrings.turnOnForStyles, { PH1: settingsLink });
   }
   return html4`${consentViewContents}`;
 }
@@ -3627,10 +3623,10 @@ function renderDisabledState(contents) {
   `;
 }
 function renderMainContents({ state, aidaAvailability, messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, conversationType, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef }) {
-  if (state === "consent-view") {
-    return renderDisabledState(renderConsentViewContents());
-  }
-  if (aidaAvailability !== "available") {
+  if (state === "disabled-view") {
+    if (aidaAvailability === "available") {
+      return renderDisabledState(renderConsentViewContents());
+    }
     return renderDisabledState(renderAidaUnavailableContents(aidaAvailability));
   }
   if (!conversationType) {
@@ -3680,7 +3676,7 @@ customElements.define("devtools-ai-chat-view", ChatView);
 // gen/front_end/panels/ai_assistance/components/ExploreWidget.js
 var ExploreWidget_exports = {};
 __export(ExploreWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   ExploreWidget: () => ExploreWidget
 });
 import * as i18n9 from "./../../core/i18n/i18n.js";
@@ -3840,7 +3836,7 @@ var UIStringsNotTranslate5 = {
   learnAbout: "Learn about AI in DevTools"
 };
 var lockedString5 = i18n9.i18n.lockedString;
-var DEFAULT_VIEW2 = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   function renderFeatureCardContent(featureCard) {
     return html5`Open
      <button
@@ -3891,13 +3887,13 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
             `)}
         </div>
       </div>
-    `, target, { host: target });
+    `, target);
 };
 var ExploreWidget = class extends UI5.Widget.Widget {
   view;
   constructor(element, view) {
     super(element);
-    this.view = view ?? DEFAULT_VIEW2;
+    this.view = view ?? DEFAULT_VIEW3;
   }
   wasShown() {
     super.wasShown();
@@ -4444,11 +4440,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
   #getChatUiState() {
     const blockedByAge = Root5.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
-    if (this.#aidaAvailability !== "available") {
-      return "chat-view";
-    }
-    if (!this.#aiAssistanceEnabledSetting?.getIfNotDisabled() || blockedByAge) {
-      return "consent-view";
+    if (this.#aidaAvailability !== "available" || !this.#aiAssistanceEnabledSetting?.getIfNotDisabled() || blockedByAge) {
+      return "disabled-view";
     }
     if (this.#conversation?.type) {
       return "chat-view";
@@ -4760,7 +4753,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
   #getChatInputPlaceholder() {
     const state = this.#getChatUiState();
-    if (state === "consent-view" || !this.#conversation) {
+    if (state === "disabled-view" || !this.#conversation) {
       return i18nString2(UIStrings2.followTheSteps);
     }
     if (this.#blockedByCrossOrigin) {
@@ -4784,7 +4777,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
   #getDisclaimerText() {
     const state = this.#getChatUiState();
-    if (state === "consent-view" || !this.#conversation || this.#conversation.isReadOnly) {
+    if (state === "disabled-view" || !this.#conversation || this.#conversation.isReadOnly) {
       return i18nString2(UIStrings2.inputDisclaimerForEmptyState);
     }
     const noLogging = Root5.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root5.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;

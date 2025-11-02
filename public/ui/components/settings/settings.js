@@ -9,6 +9,7 @@ var SettingCheckbox_exports = {};
 __export(SettingCheckbox_exports, {
   SettingCheckbox: () => SettingCheckbox
 });
+import "./../tooltips/tooltips.js";
 
 // gen/front_end/ui/components/settings/SettingDeprecationWarning.js
 var SettingDeprecationWarning_exports = {};
@@ -61,6 +62,7 @@ var SettingDeprecationWarning = class extends HTMLElement {
 customElements.define("devtools-setting-deprecation-warning", SettingDeprecationWarning);
 
 // gen/front_end/ui/components/settings/SettingCheckbox.js
+import "./../../legacy/legacy.js";
 import * as Host from "./../../../core/host/host.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as Lit2 from "./../../lit/lit.js";
@@ -106,13 +108,18 @@ p {
   height: var(--sys-size-9);
 }
 
-.learn-more {
+.info-icon {
   cursor: pointer;
   position: relative;
   margin-left: var(--sys-size-2);
   top: var(--sys-size-2);
   width: var(--sys-size-9);
   height: var(--sys-size-9);
+}
+
+.link {
+  color: var(--text-link);
+  text-decoration: underline;
 }
 
 /*# sourceURL=${import.meta.resolve("./settingCheckbox.css")} */`;
@@ -151,23 +158,49 @@ var SettingCheckbox = class extends HTMLElement {
       return html2`<devtools-setting-deprecation-warning .data=${this.#setting.deprecation}></devtools-setting-deprecation-warning>`;
     }
     const learnMore = this.#setting.learnMore();
-    if (learnMore?.url) {
-      const url = learnMore.url;
+    if (learnMore) {
+      const jsLogContext = `${this.#setting.name}-documentation`;
       const data = {
-        iconName: "help",
+        iconName: "info",
         variant: "icon",
         size: "SMALL",
-        jslogContext: `${this.#setting.name}-documentation`,
-        title: i18nString(UIStrings.learnMore)
+        jslogContext: jsLogContext
       };
-      const handleClick = (event) => {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(url);
-        event.consume();
-      };
-      return html2`<devtools-button
-                    class=learn-more
-                    @click=${handleClick}
-                    .data=${data}></devtools-button>`;
+      const url = learnMore.url;
+      if (learnMore.tooltip) {
+        const id = `${this.#setting.name}-information`;
+        return html2`
+          <devtools-button
+            class="info-icon"
+            aria-details=${id}
+            .data=${data}
+          ></devtools-button>
+          <devtools-tooltip id=${id} variant="rich">
+            <span>${learnMore.tooltip()}</span><br />
+            ${url ? html2`<x-link
+                  href=${url}
+                  class="link"
+                  jslog=${VisualLogging.link(jsLogContext).track({
+          click: true
+        })}
+                  >${i18nString(UIStrings.learnMore)}</x-link
+                >` : Lit2.nothing}
+          </devtools-tooltip>
+        `;
+      }
+      if (url) {
+        const handleClick = (event) => {
+          Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(url);
+          event.consume();
+        };
+        data.iconName = "help";
+        data.title = i18nString(UIStrings.learnMore);
+        return html2`<devtools-button
+          class="info-icon"
+          @click=${handleClick}
+          .data=${data}
+        ></devtools-button>`;
+      }
     }
     return void 0;
   }
@@ -182,7 +215,7 @@ var SettingCheckbox = class extends HTMLElement {
       throw new Error('No "Setting" object provided for rendering');
     }
     const icon = this.icon();
-    const title = `${this.#setting.learnMore() ? this.#setting.learnMore()?.tooltip() : ""}`;
+    const title = `${this.#setting.learnMore() ? this.#setting.learnMore()?.tooltip?.() : ""}`;
     const disabledReasons = this.#setting.disabledReasons();
     const reason = disabledReasons.length ? html2`
       <devtools-button class="disabled-reason" .iconName=${"info"} .variant=${"icon"} .size=${"SMALL"} title=${ifDefined(disabledReasons.join("\n"))} @click=${onclick}></devtools-button>

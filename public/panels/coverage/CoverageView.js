@@ -112,8 +112,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/coverage/CoverageView.ts', UISt
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nTemplate = unboundI18nTemplate.bind(undefined, str_);
 const { ref } = Directives;
-const { bindToAction } = UI.UIUtils;
-const { bindToSetting } = UI.SettingsUI;
+const { bindToAction, bindToSetting } = UI.UIUtils;
 const { widgetConfig } = UI.Widget;
 let coverageViewInstance;
 export const DEFAULT_VIEW = (input, output, target) => {

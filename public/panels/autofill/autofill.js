@@ -120,7 +120,7 @@ var autofillView_css_default = `/*
 // gen/front_end/panels/autofill/AutofillView.js
 var { html, render, Directives: { styleMap } } = Lit;
 var { FillingStrategy } = Protocol.Autofill;
-var { bindToSetting } = UI.SettingsUI;
+var { bindToSetting } = UI.UIUtils;
 var UIStrings = {
   /**
    * @description Text shown when there is no data on autofill available.
@@ -303,7 +303,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
             </div>
           </div>
         </main>
-      `, target, { host: void 0 });
+      `, target);
     return;
   }
   render(html`
@@ -336,7 +336,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
           ${renderFilledFields()}
         </div>
       </main>
-    `, target, { host: void 0 });
+    `, target);
 };
 var AutofillView = class extends UI.Widget.VBox {
   #view;

@@ -242,7 +242,7 @@ export class CSSMatchedStyles {
         for (const inheritedResult of inheritedPayload) {
             inheritedResult.matchedCSSRules = cleanUserAgentPayload(inheritedResult.matchedCSSRules);
         }
-        this.#environmentVariables = await this.cssModel().getEnvironmentVariales();
+        this.#environmentVariables = await this.cssModel().getEnvironmentVariables();
         this.#mainDOMCascade = await this.buildMainCascade(inlinePayload, attributesPayload, matchedPayload, inheritedPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload);
         [this.#pseudoDOMCascades, this.#customHighlightPseudoDOMCascades] =
             this.buildPseudoCascades(pseudoPayload, inheritedPseudoPayload);

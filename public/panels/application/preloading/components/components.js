@@ -19,6 +19,7 @@ import * as Lit from "./../../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/preloading/components/PreloadingString.js
 import * as i18n from "./../../../../core/i18n/i18n.js";
+import * as Platform from "./../../../../core/platform/platform.js";
 import { assertNotNullOrUndefined } from "./../../../../core/platform/platform.js";
 import * as SDK from "./../../../../core/sdk/sdk.js";
 import * as Bindings from "./../../../../models/bindings/bindings.js";
@@ -646,6 +647,34 @@ function capitalizedAction(action4) {
       return i18n.i18n.lockedString("Prerender until script");
   }
 }
+function sortOrder(attempt) {
+  switch (attempt.status) {
+    case "NotSupported":
+      return 0;
+    case "Pending":
+      return 1;
+    case "Running":
+      return 2;
+    case "Ready":
+      return 3;
+    case "Success":
+      return 4;
+    case "Failure": {
+      switch (attempt.action) {
+        case "Prefetch":
+          return 5;
+        case "Prerender":
+          return 6;
+        case "PrerenderUntilScript":
+          return 7;
+      }
+    }
+    case "NotTriggered":
+      return 8;
+    default:
+      Platform.assertNever(attempt.status, "Unknown Preloading attempt status");
+  }
+}
 function status(status2) {
   switch (status2) {
     case "NotTriggered":
@@ -1227,6 +1256,7 @@ import * as ChromeLink from "./../../../../ui/components/chrome_link/chrome_link
 import * as Dialogs from "./../../../../ui/components/dialogs/dialogs.js";
 import * as LegacyWrapper5 from "./../../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator2 from "./../../../../ui/components/render_coordinator/render_coordinator.js";
+import * as uiI18n from "./../../../../ui/i18n/i18n.js";
 import * as UI2 from "./../../../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../../../ui/visual_logging/visual_logging.js";
@@ -1442,7 +1472,7 @@ var PreloadingDisabledInfobar = class extends LegacyWrapper5.LegacyWrapper.Wrapp
     const extensionsSettingLink = new ChromeLink.ChromeLink.ChromeLink();
     extensionsSettingLink.href = "chrome://extensions";
     extensionsSettingLink.textContent = i18nString4(UIStrings4.extensionsSettings);
-    const description = i18n7.i18n.getFormatLocalizedString(str_4, UIStrings4.descriptionDisabledByPreference, { PH1: preloadingSettingLink, PH2: extensionsSettingLink });
+    const description = uiI18n.getFormatLocalizedString(str_4, UIStrings4.descriptionDisabledByPreference, { PH1: preloadingSettingLink, PH2: extensionsSettingLink });
     return this.#maybeKeyValue(this.#data.disabledByPreference, i18nString4(UIStrings4.headerDisabledByPreference), description);
   }
   #maybeDisableByDataSaver() {
@@ -1577,7 +1607,7 @@ var PreloadingGrid = class extends LegacyWrapper7.LegacyWrapper.WrappableCompone
                 <td title=${attempt.key.url}>${this.#urlShort(row, securityOrigin)}</td>
                 <td>${capitalizedAction(attempt.action)}</td>
                 <td>${row.ruleSets.length === 0 ? "" : ruleSetTagOrLocationShort(row.ruleSets[0], pageURL)}</td>
-                <td>
+                <td data-value=${sortOrder(attempt)}>
                   <div style=${styleMap2({ color: hasWarning ? "var(--sys-color-orange-bright)" : hasError ? "var(--sys-color-error)" : "var(--sys-color-on-surface)" })}>
                     ${hasError || hasWarning ? html4`
                       <devtools-icon

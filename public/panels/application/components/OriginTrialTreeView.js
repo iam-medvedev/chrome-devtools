@@ -1,17 +1,16 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../../ui/components/icon_button/icon_button.js';
-import '../../../ui/components/tree_outline/tree_outline.js';
+import '../../../ui/legacy/legacy.js';
+import '../../../ui/components/adorners/adorners.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Adorners from '../../../ui/components/adorners/adorners.js';
-import * as Lit from '../../../ui/lit/lit.js';
-import badgeStyles from './badge.css.js';
+import * as UI from '../../../ui/legacy/legacy.js';
+import { Directives, html, nothing, render } from '../../../ui/lit/lit.js';
 import originTrialTokenRowsStyles from './originTrialTokenRows.css.js';
 import originTrialTreeViewStyles from './originTrialTreeView.css.js';
-const { html, Directives: { ifDefined } } = Lit;
+const { classMap } = Directives;
+const { widgetConfig } = UI.Widget;
 const UIStrings = {
     /**
      * @description Label for the 'origin' field in a parsed Origin Trial Token.
@@ -66,124 +65,115 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/OriginTrialTreeView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class Badge extends HTMLElement {
-    #shadow = this.attachShadow({ mode: 'open' });
-    #adorner = new Adorners.Adorner.Adorner();
-    set data(data) {
-        this.#render(data);
-    }
-    #render(data) {
-        const adornerContent = document.createElement('span');
-        adornerContent.textContent = data.badgeContent;
-        this.#adorner.data = {
-            name: 'badge',
-            content: adornerContent,
-        };
-        this.#adorner.classList.add(`badge-${data.style}`);
-        Lit.render(html `
-      <style>${badgeStyles}</style>
-      ${this.#adorner}
-    `, this.#shadow, { host: this });
-    }
-}
-customElements.define('devtools-resources-origin-trial-tree-view-badge', Badge);
-function constructOriginTrialTree(originTrial) {
-    return {
-        treeNodeData: originTrial,
-        id: 'OriginTrialTreeNode#' + originTrial.trialName,
-        children: async () => originTrial.tokensWithStatus.length > 1 ?
-            originTrial.tokensWithStatus.map(constructTokenNode) :
-            constructTokenDetailsNodes(originTrial.tokensWithStatus[0]),
-        renderer: (node) => {
-            const trial = node.treeNodeData;
-            const tokenCountBadge = html `
-        <devtools-resources-origin-trial-tree-view-badge .data=${{
-                badgeContent: i18nString(UIStrings.tokens, { PH1: trial.tokensWithStatus.length }),
-                style: 'secondary',
-            }}></devtools-resources-origin-trial-tree-view-badge>
-      `;
-            return html `
-        ${trial.trialName}
-        <devtools-resources-origin-trial-tree-view-badge .data=${{
-                badgeContent: trial.status,
-                style: trial.status === "Enabled" /* Protocol.Page.OriginTrialStatus.Enabled */ ? 'success' : 'error',
-            }}></devtools-resources-origin-trial-tree-view-badge>
-        ${trial.tokensWithStatus.length > 1 ? tokenCountBadge : Lit.nothing}
-      `;
-        },
-    };
-}
-function constructTokenNode(token) {
-    return {
-        treeNodeData: token.status,
-        id: 'TokenNode#' + token.rawTokenText,
-        children: async () => constructTokenDetailsNodes(token),
-        renderer: (node, state) => {
-            const tokenStatus = node.treeNodeData;
-            const statusBadge = html `
-        <devtools-resources-origin-trial-tree-view-badge .data=${{
-                badgeContent: tokenStatus,
-                style: tokenStatus === "Success" /* Protocol.Page.OriginTrialTokenStatus.Success */ ? 'success' : 'error',
-            }}></devtools-resources-origin-trial-tree-view-badge>
-      `;
-            // Only display token status for convenience when the node is not expanded.
-            return html `${i18nString(UIStrings.token)} ${state.isExpanded ? Lit.nothing : statusBadge}`;
-        },
-    };
-}
-function renderTokenDetails(node) {
+function renderOriginTrialTree(originTrial) {
+    const success = originTrial.status === "Enabled" /* Protocol.Page.OriginTrialStatus.Enabled */;
+    // clang-format off
     return html `
-    <devtools-resources-origin-trial-token-rows .data=${{ node }}>
-    </devtools-resources-origin-trial-token-rows>
-    `;
+    <li role="treeitem">
+      ${originTrial.trialName}
+      <devtools-adorner class="badge-${success ? 'success' : 'error'}">
+        ${originTrial.status}
+      </devtools-adorner>
+      ${originTrial.tokensWithStatus.length > 1 ? html `
+        <devtools-adorner class="badge-secondary">
+          ${i18nString(UIStrings.tokens, { PH1: originTrial.tokensWithStatus.length })}
+        </devtools-adorner>`
+        : nothing}
+      <ul role="group" hidden>
+        ${originTrial.tokensWithStatus.length > 1 ?
+        originTrial.tokensWithStatus.map(renderTokenNode) :
+        renderTokenDetailsNodes(originTrial.tokensWithStatus[0])}
+      </ul>
+    </li>`;
+    // clang-format on
 }
-function constructTokenDetailsNodes(token) {
-    return [
-        {
-            treeNodeData: token,
-            id: 'TokenDetailsNode#' + token.rawTokenText,
-            renderer: renderTokenDetails,
-        },
-        constructRawTokenTextNode(token.rawTokenText),
-    ];
+function renderTokenNode(token) {
+    const success = token.status === "Success" /* Protocol.Page.OriginTrialTokenStatus.Success */;
+    // Only display token status for convenience when the node is not expanded.
+    // clang-format off
+    return html `
+    <li role="treeitem">
+      ${i18nString(UIStrings.token)}
+      <devtools-adorner class="token-status-badge badge-${success ? 'success' : 'error'}">
+        ${token.status}
+      </devtools-adorner>
+      <ul role="group" hidden>
+        ${renderTokenDetailsNodes(token)}
+      </ul>
+    </li>`;
 }
-function constructRawTokenTextNode(tokenText) {
-    return {
-        treeNodeData: i18nString(UIStrings.rawTokenText),
-        id: 'TokenRawTextContainerNode#' + tokenText,
-        children: async () => [{
-                treeNodeData: tokenText,
-                id: 'TokenRawTextNode#' + tokenText,
-                renderer: (data) => {
-                    const tokenText = data.treeNodeData;
-                    return html `
-        <div style="overflow-wrap: break-word;">
-          ${tokenText}
+function renderTokenDetails(token) {
+    return html `
+    <li role="treeitem">
+      <devtools-widget .widgetConfig=${widgetConfig(OriginTrialTokenRows, { data: token })}>
+      </devtools-widget>
+    </li>`;
+}
+function renderTokenDetailsNodes(token) {
+    // clang-format off
+    return html `
+    ${renderTokenDetails(token)}
+    ${renderRawTokenTextNode(token.rawTokenText)}
+  `;
+    // clang-format on
+}
+function renderRawTokenTextNode(tokenText) {
+    // clang-format off
+    return html `
+    <li role="treeitem">
+      ${i18nString(UIStrings.rawTokenText)}
+      <ul role="group" hidden>
+        <li role="treeitem">
+          <div style="overflow-wrap: break-word;">
+            ${tokenText}
+          </div>
+        </li>
+      </ul>
+    </li>`;
+    // clang-format on
+}
+const ROWS_DEFAULT_VIEW = (input, _output, target) => {
+    const success = input.tokenWithStatus.status === "Success" /* Protocol.Page.OriginTrialTokenStatus.Success */;
+    // clang-format off
+    render(html `
+    <style>
+      ${originTrialTokenRowsStyles}
+      ${originTrialTreeViewStyles}
+    </style>
+    <div class="content">
+      <div class="key">${i18nString(UIStrings.status)}</div>
+      <div class="value">
+        <devtools-adorner class="badge-${success ? 'success' : 'error'}">
+          ${input.tokenWithStatus.status}
+        </devtools-adorner>
+      </div>
+      ${input.parsedTokenDetails.map((field) => html `
+        <div class="key">${field.name}</div>
+        <div class="value">
+          <div class=${classMap({ 'error-text': Boolean(field.value.hasError) })}>
+            ${field.value.text}
+          </div>
         </div>
-        `;
-                },
-            }],
-    };
-}
-function defaultRenderer(node) {
-    return html `${String(node.treeNodeData)}`;
-}
-export class OriginTrialTokenRows extends HTMLElement {
-    #shadow = this.attachShadow({ mode: 'open' });
+      `)}
+    </div>`, target);
+    // clang-format on
+};
+export class OriginTrialTokenRows extends UI.Widget.Widget {
+    #view;
     #tokenWithStatus = null;
     #parsedTokenDetails = [];
     #dateFormatter = new Intl.DateTimeFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, { dateStyle: 'long', timeStyle: 'long' });
+    constructor(element, view = ROWS_DEFAULT_VIEW) {
+        super(element, { useShadowDom: true });
+        this.#view = view;
+    }
     set data(data) {
-        this.#tokenWithStatus = data.node.treeNodeData;
+        this.#tokenWithStatus = data;
         this.#setTokenFields();
     }
     connectedCallback() {
-        this.#render();
+        this.requestUpdate();
     }
-    #renderTokenField = (fieldValue, hasError) => html `
-        <div class=${ifDefined(hasError ? 'error-text' : undefined)}>
-          ${fieldValue}
-        </div>`;
     #setTokenFields() {
         if (!this.#tokenWithStatus?.parsedToken) {
             return;
@@ -191,89 +181,90 @@ export class OriginTrialTokenRows extends HTMLElement {
         this.#parsedTokenDetails = [
             {
                 name: i18nString(UIStrings.origin),
-                value: this.#renderTokenField(this.#tokenWithStatus.parsedToken.origin, this.#tokenWithStatus.status === "WrongOrigin" /* Protocol.Page.OriginTrialTokenStatus.WrongOrigin */),
+                value: {
+                    text: this.#tokenWithStatus.parsedToken.origin,
+                    hasError: this.#tokenWithStatus.status === "WrongOrigin" /* Protocol.Page.OriginTrialTokenStatus.WrongOrigin */,
+                },
             },
             {
                 name: i18nString(UIStrings.expiryTime),
-                value: this.#renderTokenField(this.#dateFormatter.format(this.#tokenWithStatus.parsedToken.expiryTime * 1000), this.#tokenWithStatus.status === "Expired" /* Protocol.Page.OriginTrialTokenStatus.Expired */),
+                value: {
+                    text: this.#dateFormatter.format(this.#tokenWithStatus.parsedToken.expiryTime * 1000),
+                    hasError: this.#tokenWithStatus.status === "Expired" /* Protocol.Page.OriginTrialTokenStatus.Expired */
+                },
             },
             {
                 name: i18nString(UIStrings.usageRestriction),
-                value: this.#renderTokenField(this.#tokenWithStatus.parsedToken.usageRestriction),
+                value: { text: this.#tokenWithStatus.parsedToken.usageRestriction },
             },
             {
                 name: i18nString(UIStrings.isThirdParty),
-                value: this.#renderTokenField(this.#tokenWithStatus.parsedToken.isThirdParty.toString()),
+                value: { text: this.#tokenWithStatus.parsedToken.isThirdParty.toString() },
             },
             {
                 name: i18nString(UIStrings.matchSubDomains),
-                value: this.#renderTokenField(this.#tokenWithStatus.parsedToken.matchSubDomains.toString()),
+                value: { text: this.#tokenWithStatus.parsedToken.matchSubDomains.toString() },
             },
         ];
         if (this.#tokenWithStatus.status === "UnknownTrial" /* Protocol.Page.OriginTrialTokenStatus.UnknownTrial */) {
             this.#parsedTokenDetails = [
                 {
                     name: i18nString(UIStrings.trialName),
-                    value: this.#renderTokenField(this.#tokenWithStatus.parsedToken.trialName),
+                    value: { text: this.#tokenWithStatus.parsedToken.trialName },
                 },
                 ...this.#parsedTokenDetails,
             ];
         }
+        this.requestUpdate();
     }
-    #render() {
+    performUpdate() {
         if (!this.#tokenWithStatus) {
             return;
         }
-        const tokenDetails = [
-            {
-                name: i18nString(UIStrings.status),
-                value: html `
-          <devtools-resources-origin-trial-tree-view-badge .data=${{
-                    badgeContent: this.#tokenWithStatus.status,
-                    style: this.#tokenWithStatus.status === "Success" /* Protocol.Page.OriginTrialTokenStatus.Success */ ? 'success' : 'error',
-                }}></devtools-resources-origin-trial-tree-view-badge>`,
-            },
-            ...this.#parsedTokenDetails,
-        ];
-        const tokenDetailRows = tokenDetails.map((field) => {
-            return html `
-          <div class="key">${field.name}</div>
-          <div class="value">${field.value}</div>
-          `;
-        });
-        Lit.render(html `
-      <style>${originTrialTokenRowsStyles}</style>
-      <div class="content">
-        ${tokenDetailRows}
-      </div>
-    `, this.#shadow, { host: this });
+        const viewInput = {
+            tokenWithStatus: this.#tokenWithStatus,
+            parsedTokenDetails: this.#parsedTokenDetails,
+        };
+        this.#view(viewInput, undefined, this.contentElement);
     }
 }
-customElements.define('devtools-resources-origin-trial-token-rows', OriginTrialTokenRows);
-export class OriginTrialTreeView extends HTMLElement {
-    #shadow = this.attachShadow({ mode: 'open' });
-    set data(data) {
-        this.#render(data.trials);
+const DEFAULT_VIEW = (input, _output, target) => {
+    if (!input.trials.length) {
+        // clang-format off
+        render(html `
+      <span class="status-badge">
+        <devtools-icon class="medium" name="clear"></devtools-icon>
+        <span>${i18nString(UIStrings.noTrialTokens)}</span>
+      </span>`, target);
+        // clang-format on
+        return;
     }
-    #render(trials) {
-        if (!trials.length) {
-            Lit.render(html `
+    // clang-format off
+    render(html `
     <style>${originTrialTreeViewStyles}</style>
-    <span class="status-badge">
-      <devtools-icon class="medium" name="clear"></devtools-icon>
-      <span>${i18nString(UIStrings.noTrialTokens)}</span>
-    </span>`, this.#shadow, { host: this });
-            return;
-        }
-        Lit.render(html `
+    <devtools-tree .template=${html `
       <style>${originTrialTreeViewStyles}</style>
-      <devtools-tree-outline .data=${{
-            tree: trials.map(constructOriginTrialTree),
-            defaultRenderer,
-        }}>
-      </devtools-tree-outline>
-    `, this.#shadow, { host: this });
+      <ul role="tree">
+        ${input.trials.map(renderOriginTrialTree)}
+      </ul>
+    `}>
+    </devtools-tree>
+  `, target);
+    // clang-format on
+};
+export class OriginTrialTreeView extends UI.Widget.Widget {
+    #data = { trials: [] };
+    #view;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element, { useShadowDom: true });
+        this.#view = view;
+    }
+    set data(data) {
+        this.#data = data;
+        this.requestUpdate();
+    }
+    performUpdate() {
+        this.#view(this.#data, undefined, this.contentElement);
     }
 }
-customElements.define('devtools-resources-origin-trial-tree-view', OriginTrialTreeView);
 //# sourceMappingURL=OriginTrialTreeView.js.map

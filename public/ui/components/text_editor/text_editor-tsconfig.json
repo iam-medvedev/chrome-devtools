@@ -34,6 +34,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionProvider.ts",
     "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionTeaserPlaceholder.ts",
     "../../../../../../../front_end/ui/components/text_editor/AutocompleteHistory.ts",
     "../../../../../../../front_end/ui/components/text_editor/ExecutionPositionHighlighter.ts",
@@ -51,6 +52,9 @@
   "references": [
     {
       "path": "../../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/host/bundle-tsconfig.json"
     },
     {
       "path": "../../../core/i18n/bundle-tsconfig.json"

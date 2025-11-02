@@ -119,6 +119,9 @@
       "path": "../../ui/legacy/components/object_ui/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/legacy/components/settings_ui/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"
     },
     {

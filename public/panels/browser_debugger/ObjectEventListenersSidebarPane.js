@@ -7,7 +7,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as EventListeners from '../event_listeners/event_listeners.js';
-export class ObjectEventListenersSidebarPane extends UI.ThrottledWidget.ThrottledWidget {
+export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
     #lastRequestedContext;
     // TODO(bmeurer): This is only public for web tests.
     eventListenersView;
@@ -15,18 +15,18 @@ export class ObjectEventListenersSidebarPane extends UI.ThrottledWidget.Throttle
         super();
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.global-listeners')}`);
         this.eventListenersView = new EventListeners.EventListenersView.EventListenersView();
-        this.eventListenersView.changeCallback = this.update.bind(this);
+        this.eventListenersView.changeCallback = this.requestUpdate.bind(this);
         this.eventListenersView.enableDefaultTreeFocus = true;
         this.eventListenersView.show(this.element);
         this.setDefaultFocusedChild(this.eventListenersView);
-        this.update();
+        this.requestUpdate();
     }
     toolbarItems() {
         const refreshButton = UI.Toolbar.Toolbar.createActionButton('browser-debugger.refresh-global-event-listeners');
         refreshButton.setSize("SMALL" /* Buttons.Button.Size.SMALL */);
         return [refreshButton];
     }
-    async doUpdate() {
+    async performUpdate() {
         if (this.#lastRequestedContext) {
             this.#lastRequestedContext.runtimeModel.releaseObjectGroup(objectGroupName);
             this.#lastRequestedContext = undefined;
@@ -53,12 +53,12 @@ export class ObjectEventListenersSidebarPane extends UI.ThrottledWidget.Throttle
     }
     wasShown() {
         super.wasShown();
-        UI.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.update, this);
+        UI.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.requestUpdate, this);
         UI.Context.Context.instance().setFlavor(ObjectEventListenersSidebarPane, this);
     }
     willHide() {
         UI.Context.Context.instance().setFlavor(ObjectEventListenersSidebarPane, null);
-        UI.Context.Context.instance().removeFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.update, this);
+        UI.Context.Context.instance().removeFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.requestUpdate, this);
         super.willHide();
         if (this.#lastRequestedContext) {
             this.#lastRequestedContext.runtimeModel.releaseObjectGroup(objectGroupName);
@@ -72,7 +72,7 @@ export class ActionDelegate {
             case 'browser-debugger.refresh-global-event-listeners': {
                 const eventListenersSidebarPane = context.flavor(ObjectEventListenersSidebarPane);
                 if (eventListenersSidebarPane) {
-                    eventListenersSidebarPane.update();
+                    eventListenersSidebarPane.requestUpdate();
                     return true;
                 }
                 return false;

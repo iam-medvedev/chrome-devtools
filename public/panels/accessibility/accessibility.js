@@ -20,6 +20,7 @@ __export(AccessibilityNodeView_exports, {
 import * as Common from "./../../core/common/common.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
@@ -1500,63 +1501,63 @@ var AXNodeIgnoredReasonTreeElement = class _AXNodeIgnoredReasonTreeElement exten
     let reasonElement = null;
     switch (reason) {
       case "activeModalDialog":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementIsHiddenBy, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsHiddenBy, {});
         break;
       case "hiddenByChildTree":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementIsHiddenByChildTree, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsHiddenByChildTree, {});
         break;
       case "ancestorIsLeafNode":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.ancestorChildrenAreAll, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.ancestorChildrenAreAll, {});
         break;
       case "ariaHiddenElement": {
         const ariaHiddenSpan = document.createElement("span", { is: "source-code" }).textContent = "aria-hidden";
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementIsPlaceholder, { PH1: ariaHiddenSpan });
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsPlaceholder, { PH1: ariaHiddenSpan });
         break;
       }
       case "ariaHiddenSubtree": {
         const ariaHiddenSpan = document.createElement("span", { is: "source-code" }).textContent = "aria-hidden";
         const trueSpan = document.createElement("span", { is: "source-code" }).textContent = "true";
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.placeholderIsPlaceholderOnAncestor, { PH1: ariaHiddenSpan, PH2: trueSpan });
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.placeholderIsPlaceholderOnAncestor, { PH1: ariaHiddenSpan, PH2: trueSpan });
         break;
       }
       case "emptyAlt":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementHasEmptyAltText, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementHasEmptyAltText, {});
         break;
       case "emptyText":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.noTextContent, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.noTextContent, {});
         break;
       case "inertElement":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementIsInert, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsInert, {});
         break;
       case "inertSubtree":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementIsInAnInertSubTree, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsInAnInertSubTree, {});
         break;
       case "inheritsPresentation":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementsInheritsPresentational, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementsInheritsPresentational, {});
         break;
       case "labelContainer":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.partOfLabelElement, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.partOfLabelElement, {});
         break;
       case "labelFor":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.labelFor, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.labelFor, {});
         break;
       case "notRendered":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementIsNotRendered, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsNotRendered, {});
         break;
       case "notVisible":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementIsNotVisible, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsNotVisible, {});
         break;
       case "presentationalRole": {
         const role = axNode?.role()?.value || "";
         const rolePresentationSpan = document.createElement("span", { is: "source-code" }).textContent = "role=" + role;
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementHasPlaceholder, { PH1: rolePresentationSpan });
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementHasPlaceholder, { PH1: rolePresentationSpan });
         break;
       }
       case "probablyPresentational":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementIsPresentational, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementIsPresentational, {});
         break;
       case "uninteresting":
-        reasonElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.elementNotInteresting, {});
+        reasonElement = uiI18n.getFormatLocalizedString(str_2, UIStrings2.elementNotInteresting, {});
         break;
     }
     if (reasonElement) {
@@ -5260,7 +5261,7 @@ var SourceOrderPane = class extends AccessibilitySubPane {
 
 // gen/front_end/panels/accessibility/AccessibilitySidebarView.js
 var accessibilitySidebarViewInstance;
-var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.ThrottledWidget.ThrottledWidget {
+var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widget.VBox {
   #node;
   #axNode;
   skipNextPullNode;
@@ -5269,8 +5270,8 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
   ariaSubPane;
   axNodeSubPane;
   sourceOrderSubPane;
-  constructor(throttlingTimeout) {
-    super(false, throttlingTimeout);
+  constructor() {
+    super();
     this.element.classList.add("accessibility-sidebar-view");
     this.#node = null;
     this.#axNode = null;
@@ -5290,7 +5291,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
   }
   static instance(opts) {
     if (!accessibilitySidebarViewInstance || opts?.forceNew) {
-      accessibilitySidebarViewInstance = new _AccessibilitySidebarView(opts?.throttlingTimeout);
+      accessibilitySidebarViewInstance = new _AccessibilitySidebarView();
     }
     return accessibilitySidebarViewInstance;
   }
@@ -5303,7 +5304,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
   setNode(node, fromAXTree) {
     this.skipNextPullNode = Boolean(fromAXTree);
     this.#node = node;
-    this.update();
+    this.requestUpdate();
   }
   accessibilityNodeCallback(axNode) {
     if (!axNode) {
@@ -5318,7 +5319,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
     this.axNodeSubPane.setAXNode(axNode);
     this.breadcrumbsSubPane.setAXNode(axNode);
   }
-  async doUpdate() {
+  async performUpdate() {
     const node = this.node();
     this.axNodeSubPane.setNode(node);
     this.ariaSubPane.setNode(node);
@@ -5339,7 +5340,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
   }
   wasShown() {
     super.wasShown();
-    void this.doUpdate();
+    void this.performUpdate();
     SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrModified, this.onNodeChange, this, { scoped: true });
     SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrRemoved, this.onNodeChange, this, { scoped: true });
     SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.CharacterDataModified, this.onNodeChange, this, { scoped: true });
@@ -5368,7 +5369,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
     if (this.node() !== node) {
       return;
     }
-    this.update();
+    this.requestUpdate();
   }
 };
 export {

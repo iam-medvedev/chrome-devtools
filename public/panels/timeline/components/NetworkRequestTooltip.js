@@ -5,13 +5,14 @@
 import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as TimelineUtils from '../utils/utils.js';
 import networkRequestTooltipStyles from './networkRequestTooltip.css.js';
 import { colorForNetworkRequest, networkResourceCategory } from './Utils.js';
-const { html } = Lit;
+const { html, nothing, Directives: { classMap, ifDefined } } = Lit;
 const MAX_URL_LENGTH = 60;
 const UIStrings = {
     /**
@@ -46,6 +47,11 @@ const UIStrings = {
      * @description Text to refer to the list of redirects.
      */
     redirects: 'Redirects',
+    /**
+     * @description Cell title in Network Data Grid Node of the Network panel
+     * @example {Fast 4G} PH1
+     */
+    wasThrottled: 'Request was throttled ({PH1})',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/NetworkRequestTooltip.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -86,6 +92,14 @@ export class NetworkRequestTooltip extends HTMLElement {
         const styleForDownloading = {
             backgroundColor: color,
         };
+        const sdkNetworkRequest = SDK.TraceObject.RevealableNetworkRequest.create(networkRequest);
+        const wasThrottled = sdkNetworkRequest &&
+            SDK.NetworkManager.MultitargetNetworkManager.instance().appliedRequestConditions(sdkNetworkRequest.networkRequest);
+        const throttledTitle = wasThrottled ? i18nString(UIStrings.wasThrottled, {
+            PH1: typeof wasThrottled.conditions.title === 'string' ? wasThrottled.conditions.title :
+                wasThrottled.conditions.title()
+        }) :
+            undefined;
         // The outside spans are transparent with a border on the outside edge.
         // The inside spans are 1px tall rectangles, vertically centered, with background color.
         //                   |
@@ -93,9 +107,19 @@ export class NetworkRequestTooltip extends HTMLElement {
         //   whisker-left->  |  ^ horizontal
         const leftWhisker = html `<span class="whisker-left"> <span class="horizontal"></span> </span>`;
         const rightWhisker = html `<span class="whisker-right"> <span class="horizontal"></span> </span>`;
+        const classes = classMap({
+            ['timings-row timings-row--duration']: true,
+            throttled: Boolean(wasThrottled?.urlPattern),
+        });
         return html `
-      <div class="timings-row timings-row--duration">
-        <span class="indicator"></span>
+      <div
+        class=${classes}
+        title=${ifDefined(throttledTitle)}>
+        ${wasThrottled?.urlPattern ? html `<devtools-icon
+          class=indicator
+          name=watch
+          ></devtools-icon>` :
+            html `<span class="indicator"></span>`}
         ${i18nString(UIStrings.duration)}
          <span class="time"> ${i18n.TimeUtilities.formatMicroSecondsTime(networkRequest.dur)} </span>
       </div>
@@ -147,6 +171,9 @@ export class NetworkRequestTooltip extends HTMLElement {
         const entity = (this.#data.entityMapper) ? this.#data.entityMapper.entityForEvent(this.#data.networkRequest) : null;
         const originWithEntity = TimelineUtils.Helpers.formatOriginWithEntity(url, entity, true);
         const redirectsHtml = NetworkRequestTooltip.renderRedirects(this.#data.networkRequest);
+        const sdkNetworkRequest = SDK.TraceObject.RevealableNetworkRequest.create(this.#data.networkRequest);
+        const wasThrottled = sdkNetworkRequest &&
+            SDK.NetworkManager.MultitargetNetworkManager.instance().appliedRequestConditions(sdkNetworkRequest.networkRequest);
         // clang-format off
         const output = html `
       <style>${networkRequestTooltipStyles}</style>
@@ -160,6 +187,13 @@ export class NetworkRequestTooltip extends HTMLElement {
           </span>${networkResourceCategory(this.#data.networkRequest)}
         </div>
         <div class="priority-row">${i18nString(UIStrings.priority)}: ${NetworkRequestTooltip.renderPriorityValue(this.#data.networkRequest)}</div>
+        ${wasThrottled ? html `
+        <div class="throttled-row">
+          ${i18nString(UIStrings.wasThrottled, {
+            PH1: typeof wasThrottled.conditions.title === 'string' ? wasThrottled.conditions.title :
+                wasThrottled.conditions.title()
+        })}
+        </div>` : nothing}
         ${Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#data.networkRequest) ?
             html `<div class="render-blocking"> ${i18nString(UIStrings.renderBlocking)} </div>` : Lit.nothing}
         <div class="divider"></div>

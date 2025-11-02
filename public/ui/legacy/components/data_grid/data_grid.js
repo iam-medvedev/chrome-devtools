@@ -3438,6 +3438,13 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
       this.#updateColumns();
     }
     this.#updateCreationNode();
+    const hadAddedNodes = mutationList.some((m) => m.addedNodes.length > 0);
+    if (this.#dataGrid.sortColumnId() !== null && !hadAddedNodes) {
+      this.#dataGrid.dispatchEventToListeners(
+        "SortingChanged"
+        /* DataGridEvents.SORTING_CHANGED */
+      );
+    }
   }
   #editCallback(node, columnId, valueBeforeEditing, newText, moveDirection) {
     if (node.isCreationNode) {

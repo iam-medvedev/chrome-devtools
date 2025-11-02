@@ -53,15 +53,17 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/console/ConsolePinPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const elementToConsolePin = new WeakMap();
-export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
+export class ConsolePinPane extends UI.Widget.VBox {
     liveExpressionButton;
     focusOut;
     pins;
     pinsSetting;
+    throttler;
     constructor(liveExpressionButton, focusOut) {
-        super(true, 250);
+        super({ useShadowDom: true });
         this.liveExpressionButton = liveExpressionButton;
         this.focusOut = focusOut;
+        this.throttler = new Common.Throttler.Throttler(250);
         this.registerRequiredCSS(consolePinPaneStyles, objectValueStyles);
         this.contentElement.classList.add('console-pins', 'monospace');
         this.contentElement.addEventListener('contextmenu', this.contextMenuEventFired.bind(this), false);
@@ -123,7 +125,7 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
         if (userGesture) {
             void pin.focus();
         }
-        this.update();
+        this.requestUpdate();
     }
     focusedPinAfterDeletion(deletedPin) {
         const pinArray = Array.from(this.pins);
@@ -140,16 +142,18 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
         }
         return null;
     }
-    async doUpdate() {
+    wasShown() {
+        super.wasShown();
+        void this.throttler.schedule(this.requestUpdate.bind(this));
+    }
+    async performUpdate() {
         if (!this.pins.size || !this.isShowing()) {
             return;
-        }
-        if (this.isShowing()) {
-            this.update();
         }
         const updatePromises = Array.from(this.pins, pin => pin.updatePreview());
         await Promise.all(updatePromises);
         this.updatedForTest();
+        void this.throttler.schedule(this.requestUpdate.bind(this));
     }
     updatedForTest() {
     }

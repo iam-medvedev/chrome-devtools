@@ -9,6 +9,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import keybindsSettingsTabStyles from './keybindsSettingsTab.css.js';
@@ -38,6 +39,11 @@ const UIStrings = {
      * @description Link text in the settings pane to add another shortcut for an action
      */
     addAShortcut: 'Add a shortcut',
+    /**
+     * @description Placeholder text in the settings pane when adding a new shortcut.
+     * Explaining that key strokes are going to be recoded.
+     */
+    recordingKeys: 'Recoding keys',
     /**
      * @description Label for a button in the settings pane that confirms changes to a keyboard shortcut
      */
@@ -112,7 +118,7 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
         const keybindsSetSetting = Common.Settings.Settings.instance().moduleSetting('active-keybind-set');
         const userShortcutsSetting = Common.Settings.Settings.instance().moduleSetting('user-shortcuts');
         keybindsSetSetting.addChangeListener(this.update, this);
-        const keybindsSetSelect = UI.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString(UIStrings.matchShortcutsFromPreset));
+        const keybindsSetSelect = SettingsUI.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString(UIStrings.matchShortcutsFromPreset));
         const card = settingsContent.createChild('devtools-card');
         card.heading = i18nString(UIStrings.shortcuts);
         if (keybindsSetSelect) {
@@ -392,6 +398,7 @@ export class ShortcutListItem {
         if (this.isEditing) {
             const shortcutInput = shortcutElement.createChild('input', 'harmony-input');
             shortcutInput.setAttribute('jslog', `${VisualLogging.textField().track({ change: true })}`);
+            shortcutInput.setAttribute('placeholder', i18nString(UIStrings.recordingKeys));
             shortcutInput.spellcheck = false;
             shortcutInput.maxLength = 0;
             this.shortcutInputs.set(shortcut, shortcutInput);

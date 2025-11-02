@@ -46,10 +46,6 @@ export interface GetProfileResponse {
     profile: Profile | null;
     isEligible: boolean;
 }
-export declare enum GdpErrorType {
-    HTTP_RESPONSE_UNAVAILABLE = "HTTP_RESPONSE_UNAVAILABLE",
-    NOT_FOUND = "NOT_FOUND"
-}
 export declare const GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = "https://developers.google.com/profile/u/me";
 export declare class GdpClient {
     #private;

@@ -2236,56 +2236,62 @@ var PerformanceTraceFormatter = class {
   }
   formatTraceSummary() {
     const parsedTrace = this.#parsedTrace;
-    const insightSet = this.#insightSet;
     const traceMetadata = this.#parsedTrace.metadata;
     const data = parsedTrace.data;
     const parts = [];
-    const lcp = insightSet ? Trace3.Insights.Common.getLCP(insightSet) : null;
-    const cls = insightSet ? Trace3.Insights.Common.getCLS(insightSet) : null;
-    const inp = insightSet ? Trace3.Insights.Common.getINP(insightSet) : null;
     parts.push(`URL: ${data.Meta.mainFrameURL}`);
-    parts.push(`Bounds: ${this.serializeBounds(data.Meta.traceBounds)}`);
+    parts.push(`Trace bounds: ${this.serializeBounds(data.Meta.traceBounds)}`);
     parts.push("CPU throttling: " + (traceMetadata.cpuThrottling ? `${traceMetadata.cpuThrottling}x` : "none"));
     parts.push(`Network throttling: ${traceMetadata.networkThrottling ?? "none"}`);
-    if (lcp || cls || inp) {
-      parts.push("Metrics (lab / observed):");
-      if (lcp) {
-        const nodeId = insightSet?.model.LCPBreakdown.lcpEvent?.args.data?.nodeId;
-        const nodeIdText = nodeId !== void 0 ? `, nodeId: ${nodeId}` : "";
-        parts.push(`  - LCP: ${Math.round(lcp.value / 1e3)} ms, event: ${this.serializeEvent(lcp.event)}${nodeIdText}`);
-        const subparts = insightSet?.model.LCPBreakdown.subparts;
-        if (subparts) {
-          const serializeSubpart = (subpart) => {
-            return `${micros(subpart.range)}, bounds: ${this.serializeBounds(subpart)}`;
-          };
-          parts.push("  - LCP breakdown:");
-          parts.push(`    - TTFB: ${serializeSubpart(subparts.ttfb)}`);
-          if (subparts.loadDelay !== void 0) {
-            parts.push(`    - Load delay: ${serializeSubpart(subparts.loadDelay)}`);
+    parts.push("\n# Available insight sets\n");
+    parts.push("The following is a list of insight sets. An insight set covers a specific part of the trace, split by navigations. The insights within each insight set are specific to that part of the trace. Be sure to consider the insight set id and bounds when calling functions. If no specific insight set or navigation is mentioned, assume the user is referring to the first one.");
+    for (const insightSet of parsedTrace.insights?.values() ?? []) {
+      const lcp = insightSet ? Trace3.Insights.Common.getLCP(insightSet) : null;
+      const cls = insightSet ? Trace3.Insights.Common.getCLS(insightSet) : null;
+      const inp = insightSet ? Trace3.Insights.Common.getINP(insightSet) : null;
+      parts.push(`
+## insight set id: ${insightSet.id}
+`);
+      parts.push(`URL: ${insightSet.url}`);
+      parts.push(`Bounds: ${this.serializeBounds(insightSet.bounds)}`);
+      if (lcp || cls || inp) {
+        parts.push("Metrics (lab / observed):");
+        if (lcp) {
+          const nodeId = insightSet?.model.LCPBreakdown.lcpEvent?.args.data?.nodeId;
+          const nodeIdText = nodeId !== void 0 ? `, nodeId: ${nodeId}` : "";
+          parts.push(`  - LCP: ${Math.round(lcp.value / 1e3)} ms, event: ${this.serializeEvent(lcp.event)}${nodeIdText}`);
+          const subparts = insightSet?.model.LCPBreakdown.subparts;
+          if (subparts) {
+            const serializeSubpart = (subpart) => {
+              return `${micros(subpart.range)}, bounds: ${this.serializeBounds(subpart)}`;
+            };
+            parts.push("  - LCP breakdown:");
+            parts.push(`    - TTFB: ${serializeSubpart(subparts.ttfb)}`);
+            if (subparts.loadDelay !== void 0) {
+              parts.push(`    - Load delay: ${serializeSubpart(subparts.loadDelay)}`);
+            }
+            if (subparts.loadDuration !== void 0) {
+              parts.push(`    - Load duration: ${serializeSubpart(subparts.loadDuration)}`);
+            }
+            parts.push(`    - Render delay: ${serializeSubpart(subparts.renderDelay)}`);
           }
-          if (subparts.loadDuration !== void 0) {
-            parts.push(`    - Load duration: ${serializeSubpart(subparts.loadDuration)}`);
-          }
-          parts.push(`    - Render delay: ${serializeSubpart(subparts.renderDelay)}`);
         }
+        if (inp) {
+          parts.push(`  - INP: ${Math.round(inp.value / 1e3)} ms, event: ${this.serializeEvent(inp.event)}`);
+        }
+        if (cls) {
+          const eventText = cls.worstClusterEvent ? `, event: ${this.serializeEvent(cls.worstClusterEvent)}` : "";
+          parts.push(`  - CLS: ${cls.value.toFixed(2)}${eventText}`);
+        }
+      } else {
+        parts.push("Metrics (lab / observed): n/a");
       }
-      if (inp) {
-        parts.push(`  - INP: ${Math.round(inp.value / 1e3)} ms, event: ${this.serializeEvent(inp.event)}`);
+      const cruxParts = insightSet && this.#getCruxTraceSummary(insightSet);
+      if (cruxParts?.length) {
+        parts.push(...cruxParts);
+      } else {
+        parts.push("Metrics (field / real users): n/a \u2013 no data for this page in CrUX");
       }
-      if (cls) {
-        const eventText = cls.worstClusterEvent ? `, event: ${this.serializeEvent(cls.worstClusterEvent)}` : "";
-        parts.push(`  - CLS: ${cls.value.toFixed(2)}${eventText}`);
-      }
-    } else {
-      parts.push("Metrics (lab / observed): n/a");
-    }
-    const cruxParts = insightSet && this.#getCruxTraceSummary(insightSet);
-    if (cruxParts?.length) {
-      parts.push(...cruxParts);
-    } else {
-      parts.push("Metrics (field / real users): n/a \u2013 no data for this page in CrUX");
-    }
-    if (insightSet) {
       parts.push("Available insights:");
       for (const [insightName, model] of Object.entries(insightSet.model)) {
         if (model.state === "pass") {
@@ -2314,8 +2320,6 @@ var PerformanceTraceFormatter = class {
         const insightPartsText = insightParts.join("\n    ");
         parts.push(`  - ${insightPartsText}`);
       }
-    } else {
-      parts.push("Available insights: none");
     }
     return parts.join("\n");
   }
@@ -4333,17 +4337,21 @@ ${result}`,
   #declareFunctions(context) {
     const focus = context.getItem();
     const { parsedTrace } = focus;
-    const insightSet = focus.primaryInsightSet;
     this.declareFunction("getInsightDetails", {
-      description: "Returns detailed information about a specific insight. Use this before commenting on any specific issue to get more information.",
+      description: "Returns detailed information about a specific insight of an insight set. Use this before commenting on any specific issue to get more information.",
       parameters: {
         type: 6,
         description: "",
         nullable: false,
         properties: {
+          insightSetId: {
+            type: 1,
+            description: 'The id for the specific insight set. Only use the ids given in the "Available insight sets" list.',
+            nullable: false
+          },
           insightName: {
             type: 1,
-            description: "The name of the insight. Only use the insight names given in the Available Insights list.",
+            description: 'The name of the insight. Only use the insight names given in the "Available insights" list.',
             nullable: false
           }
         }
@@ -4351,17 +4359,23 @@ ${result}`,
       displayInfoFromArgs: (params) => {
         return {
           title: lockedString3(`Investigating insight ${params.insightName}\u2026`),
-          action: `getInsightDetails('${params.insightName}')`
+          action: `getInsightDetails('${params.insightSetId}', '${params.insightName}')`
         };
       },
       handler: async (params) => {
         debugLog("Function call: getInsightDetails", params);
+        const insightSet = parsedTrace.insights?.get(params.insightSetId);
+        if (!insightSet) {
+          const valid = [...parsedTrace.insights?.values() ?? []].map((insightSet2) => `id: ${insightSet2.id}, url: ${insightSet2.url}, bounds: ${this.#formatter?.serializeBounds(insightSet2.bounds)}`).join("; ");
+          return { error: `Invalid insight set id. Valid insight set ids are: ${valid}` };
+        }
         const insight = insightSet?.model[params.insightName];
         if (!insight) {
-          return { error: "No insight available" };
+          const valid = Object.keys(insightSet?.model).join(", ");
+          return { error: `No insight available. Valid insight names are: ${valid}` };
         }
         const details = new PerformanceInsightFormatter(focus, insight).formatInsight();
-        const key = `getInsightDetails('${params.insightName}')`;
+        const key = `getInsightDetails('${params.insightSetId}', '${params.insightName}')`;
         this.#cacheFunctionResult(focus, key, details);
         return { result: { details } };
       }

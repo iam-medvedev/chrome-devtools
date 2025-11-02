@@ -770,6 +770,7 @@ import * as Main from "./../main/main.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/entrypoints/node_app/nodeConnectionsPanel.css.js
@@ -953,7 +954,7 @@ var NodeConnectionsView = class extends UI4.Widget.VBox {
     this.element.classList.add("network-discovery-view");
     const networkDiscoveryFooter = this.element.createChild("div", "network-discovery-footer");
     const documentationLink = UI4.XLink.XLink.create("https://nodejs.org/en/docs/inspector/", i18nString2(UIStrings4.nodejsDebuggingGuide), void 0, void 0, "node-js-debugging");
-    networkDiscoveryFooter.appendChild(i18n7.i18n.getFormatLocalizedString(str_4, UIStrings4.specifyNetworkEndpointAnd, { PH1: documentationLink }));
+    networkDiscoveryFooter.appendChild(uiI18n.getFormatLocalizedString(str_4, UIStrings4.specifyNetworkEndpointAnd, { PH1: documentationLink }));
     this.#list = new UI4.ListWidget.ListWidget(this);
     this.#list.registerRequiredCSS(nodeConnectionsPanel_css_default);
     this.#list.element.classList.add("network-discovery-list");

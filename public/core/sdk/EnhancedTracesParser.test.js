@@ -206,7 +206,7 @@ describe('EnhancedTracesParser', () => {
         pid: 8052,
     };
     beforeEach(async function () {
-        const events = await TraceLoader.rawEvents(this, 'enhanced-traces.json.gz');
+        const events = await TraceLoader.rawEvents(this, 'enhanced-traces.json');
         enhancedTracesParser =
             new SDK.EnhancedTracesParser.EnhancedTracesParser({ traceEvents: events, metadata: {} });
     });

@@ -127,7 +127,7 @@ async function maybeCreateLinkToElementsPanel(opener) {
     });
     return linkElement;
 }
-export class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget {
+export class OpenedWindowDetailsView extends UI.Widget.VBox {
     targetInfo;
     isWindowClosed;
     reportView;
@@ -155,9 +155,9 @@ export class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget 
         this.securitySection.setFieldVisible(i18nString(UIStrings.openerFrame), false);
         this.hasDOMAccessValue = this.securitySection.appendField(i18nString(UIStrings.accessToOpener));
         UI.Tooltip.Tooltip.install(this.hasDOMAccessValue, i18nString(UIStrings.showsWhetherTheOpenedWindowIs));
-        this.update();
+        this.requestUpdate();
     }
-    async doUpdate() {
+    async performUpdate() {
         this.reportView.setTitle(this.buildTitle());
         this.#urlFieldValue.textContent = this.targetInfo.url;
         this.#urlFieldValue.title = this.targetInfo.url;
@@ -188,7 +188,7 @@ export class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget 
         this.targetInfo = targetInfo;
     }
 }
-export class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidget {
+export class WorkerDetailsView extends UI.Widget.VBox {
     targetInfo;
     reportView;
     documentSection;
@@ -213,7 +213,7 @@ export class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidget {
         workerType.textContent = this.workerTypeToString(this.targetInfo.type);
         this.isolationSection = this.reportView.appendSection(i18nString(UIStrings.securityIsolation));
         this.coepPolicy = this.isolationSection.appendField(i18nString(UIStrings.crossoriginEmbedderPolicy));
-        this.update();
+        this.requestUpdate();
     }
     workerTypeToString(type) {
         if (type === 'worker') {
@@ -258,7 +258,7 @@ export class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidget {
             reportingEndpointName.textContent = endpoint;
         }
     }
-    async doUpdate() {
+    async performUpdate() {
         await this.updateCoopCoepStatus();
     }
 }

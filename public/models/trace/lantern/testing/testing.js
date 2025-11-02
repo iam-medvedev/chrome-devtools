@@ -124,7 +124,7 @@ var TraceLoader = class _TraceLoader {
         false,
         config
       );
-    }, 15e3, `Executing traceEngine for ${name}`);
+    }, 3e4, `Executing traceEngine for ${name}`);
     const cacheByName = traceEngineCache.get(name) ?? /* @__PURE__ */ new Map();
     cacheByName.set(configCacheKey, parsedTraceFileAndModel);
     traceEngineCache.set(name, cacheByName);

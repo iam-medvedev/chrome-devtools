@@ -108,6 +108,7 @@ export class RehydratingConnection {
             const target = hydratingDataPerTarget.target;
             const executionContexts = hydratingDataPerTarget.executionContexts;
             const scripts = hydratingDataPerTarget.scripts;
+            const resources = hydratingDataPerTarget.resources;
             this.postToFrontend({
                 method: 'Target.targetCreated',
                 params: {
@@ -122,7 +123,7 @@ export class RehydratingConnection {
                 },
             });
             sessionId += 1;
-            const session = new RehydratingSession(sessionId, target, executionContexts, scripts, this);
+            const session = new RehydratingSession(sessionId, target, executionContexts, scripts, resources, this);
             this.sessions.set(sessionId, session);
             session.declareSessionAttachedToTarget();
         }
@@ -208,12 +209,14 @@ export class RehydratingSession extends RehydratingSessionBase {
     target;
     executionContexts = [];
     scripts = [];
-    constructor(sessionId, target, executionContexts, scripts, connection) {
+    resources = [];
+    constructor(sessionId, target, executionContexts, scripts, resources, connection) {
         super(connection);
         this.sessionId = sessionId;
         this.target = target;
         this.executionContexts = executionContexts;
         this.scripts = scripts;
+        this.resources = resources;
     }
     sendMessageToFrontend(payload, attachSessionId = true) {
         // Attach the session's Id to the message.
@@ -230,12 +233,31 @@ export class RehydratingSession extends RehydratingSessionBase {
             case 'Debugger.enable':
                 this.handleDebuggerEnable(data.id);
                 break;
+            case 'CSS.enable':
+                this.sendMessageToFrontend({
+                    id: data.id,
+                    result: {},
+                });
+                break;
             case 'Debugger.getScriptSource':
                 if (data.params) {
                     const params = data.params;
                     this.handleDebuggerGetScriptSource(data.id, params.scriptId);
                 }
                 break;
+            case 'Page.getResourceTree':
+                this.handleGetResourceTree(data.id);
+                break;
+            case 'Page.getResourceContent': {
+                const request = data.params;
+                this.handleGetResourceContent(request.frameId, request.url, data.id);
+                break;
+            }
+            case 'CSS.getStyleSheetText': {
+                const request = data.params;
+                this.handleGetStyleSheetText(request.styleSheetId, data.id);
+                break;
+            }
             default:
                 this.sendMessageToFrontend({
                     id: data.id,
@@ -298,7 +320,20 @@ export class RehydratingSession extends RehydratingSessionBase {
     // script parsed event to communicate the current script state and respond with a mock
     // debugger id.
     handleDebuggerEnable(id) {
+        const htmlResourceUrls = new Set(this.resources.filter(r => r.mimeType === 'text/html').map(r => r.url));
         for (const script of this.scripts) {
+            // Handle inline scripts.
+            if (htmlResourceUrls.has(script.url)) {
+                script.embedderName = script.url;
+                // We don't have the actual embedded offset from this trace event. Non-zero
+                // values are important though: that is what `Script.isInlineScript()`
+                // checks. Otherwise these scripts would try to show individually within the
+                // Sources panel.
+                script.startColumn = 1;
+                script.startLine = 1;
+                script.endColumn = 1;
+                script.endLine = 1;
+            }
             this.sendMessageToFrontend({
                 method: 'Debugger.scriptParsed',
                 params: script,
@@ -309,6 +344,69 @@ export class RehydratingSession extends RehydratingSessionBase {
             id,
             result: {
                 debuggerId: mockDebuggerId,
+            },
+        });
+    }
+    handleGetResourceTree(id) {
+        const resources = this.resources.filter(r => r.mimeType === 'text/html' || r.mimeType === 'text/css');
+        if (!resources.length) {
+            return;
+        }
+        const frameTree = {
+            frame: {
+                id: this.target.targetId,
+                url: this.target.url,
+            },
+            childFrames: [],
+            resources: resources.map(r => ({
+                url: r.url,
+                type: r.mimeType === 'text/html' ? 'Document' : 'Stylesheet',
+                mimeType: r.mimeType,
+                contentSize: r.content.length,
+            })),
+        };
+        this.sendMessageToFrontend({
+            id,
+            result: {
+                frameTree,
+            },
+        });
+        const stylesheets = this.resources.filter(r => r.mimeType === 'text/css');
+        for (const stylesheet of stylesheets) {
+            this.sendMessageToFrontend({
+                method: 'CSS.styleSheetAdded',
+                params: {
+                    header: {
+                        styleSheetId: `sheet.${stylesheet.frame}.${stylesheet.url}`,
+                        frameId: stylesheet.frame,
+                        sourceURL: stylesheet.url,
+                    },
+                },
+            });
+        }
+    }
+    handleGetResourceContent(frame, url, id) {
+        const resource = this.resources.find(r => r.frame === frame && r.url === url);
+        if (!resource) {
+            return;
+        }
+        this.sendMessageToFrontend({
+            id,
+            result: {
+                content: resource.content,
+                base64Encoded: false,
+            },
+        });
+    }
+    handleGetStyleSheetText(stylesheetId, id) {
+        const resource = this.resources.find(r => `sheet.${r.frame}.${r.url}` === stylesheetId);
+        if (!resource) {
+            return;
+        }
+        this.sendMessageToFrontend({
+            id,
+            result: {
+                text: resource.content,
             },
         });
     }

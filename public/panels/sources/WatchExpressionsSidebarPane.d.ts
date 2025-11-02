@@ -3,7 +3,7 @@ import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
-export declare class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWidget implements UI.ActionRegistration.ActionDelegate, UI.Toolbar.ItemsProvider, UI.ContextMenu.Provider<ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement | UISourceCodeFrame> {
+export declare class WatchExpressionsSidebarPane extends UI.Widget.VBox implements UI.ActionRegistration.ActionDelegate, UI.Toolbar.ItemsProvider, UI.ContextMenu.Provider<ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement | UISourceCodeFrame> {
     private watchExpressions;
     private emptyElement;
     private readonly watchExpressionsSetting;
@@ -18,7 +18,7 @@ export declare class WatchExpressionsSidebarPane extends UI.ThrottledWidget.Thro
     focus(): void;
     private saveExpressions;
     private addButtonClicked;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
     private createWatchExpression;
     private watchExpressionUpdated;
     private contextMenu;

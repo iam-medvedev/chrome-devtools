@@ -336,7 +336,7 @@ var developerResourcesView_css_default = `/*
 
 // gen/front_end/panels/developer_resources/DeveloperResourcesView.js
 var { widgetConfig } = UI2.Widget;
-var { bindToSetting } = UI2.SettingsUI;
+var { bindToSetting } = UI2.UIUtils;
 var UIStrings2 = {
   /**
    * @description Placeholder for a search field in a toolbar
@@ -415,19 +415,19 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
       </div>
     </div>`, target);
 };
-var DeveloperResourcesView = class extends UI2.ThrottledWidget.ThrottledWidget {
+var DeveloperResourcesView = class extends UI2.Widget.VBox {
   #loader;
   #view;
   #selectedItem = null;
   #filters = [];
   constructor(view = DEFAULT_VIEW2) {
-    super(true);
+    super({ useShadowDom: true });
     this.#view = view;
     this.#loader = SDK2.PageResourceLoader.PageResourceLoader.instance();
-    this.#loader.addEventListener("Update", this.update, this);
-    this.update();
+    this.#loader.addEventListener("Update", this.requestUpdate, this);
+    this.requestUpdate();
   }
-  async doUpdate() {
+  async performUpdate() {
     const { loading, resources } = this.#loader.getScopedNumberOfResources();
     const input = {
       onFilterChanged: (e) => {
@@ -446,12 +446,12 @@ var DeveloperResourcesView = class extends UI2.ThrottledWidget.ThrottledWidget {
     this.#view(input, output, this.contentElement);
   }
   async select(resource) {
-    await this.lastUpdatePromise;
+    await this.updateComplete;
     this.#selectedItem = resource;
-    this.update();
+    this.requestUpdate();
   }
   async selectedItem() {
-    await this.lastUpdatePromise;
+    await this.updateComplete;
     return this.#selectedItem;
   }
   onFilterChanged(text) {
@@ -463,7 +463,7 @@ var DeveloperResourcesView = class extends UI2.ThrottledWidget.ThrottledWidget {
     } else {
       this.#filters = [];
     }
-    this.update();
+    this.requestUpdate();
   }
 };
 export {

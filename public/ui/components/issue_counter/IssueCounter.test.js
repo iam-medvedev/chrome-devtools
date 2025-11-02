@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 import { assertElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
 import { MockIssuesManager } from '../../../testing/MockIssuesManager.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import * as IssueCounter from './issue_counter.js';

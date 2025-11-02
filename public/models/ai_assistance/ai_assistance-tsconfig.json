@@ -80,10 +80,7 @@
       "path": "../network_time_calculator/bundle-tsconfig.json"
     },
     {
-      "path": "../../panels/elements/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../panels/utils/bundle-tsconfig.json"
+      "path": "../persistence/bundle-tsconfig.json"
     },
     {
       "path": "../../services/tracing/bundle-tsconfig.json"

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-lit-render-outside-of-view */
+import '../tooltips/tooltips.js';
 import './SettingDeprecationWarning.js';
+import '../../legacy/legacy.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Lit from '../../lit/lit.js';
@@ -46,23 +48,55 @@ export class SettingCheckbox extends HTMLElement {
             return html `<devtools-setting-deprecation-warning .data=${this.#setting.deprecation}></devtools-setting-deprecation-warning>`;
         }
         const learnMore = this.#setting.learnMore();
-        if (learnMore?.url) {
-            const url = learnMore.url;
+        if (learnMore) {
+            const jsLogContext = `${this.#setting.name}-documentation`;
             const data = {
-                iconName: 'help',
+                iconName: 'info',
                 variant: "icon" /* Buttons.Button.Variant.ICON */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
-                jslogContext: `${this.#setting.name}-documentation`,
-                title: i18nString(UIStrings.learnMore),
+                jslogContext: jsLogContext,
             };
-            const handleClick = (event) => {
-                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(url);
-                event.consume();
-            };
-            return html `<devtools-button
-                    class=learn-more
-                    @click=${handleClick}
-                    .data=${data}></devtools-button>`;
+            const url = learnMore.url;
+            if (learnMore.tooltip) {
+                const id = `${this.#setting.name}-information`;
+                // clang-format off
+                return html `
+          <devtools-button
+            class="info-icon"
+            aria-details=${id}
+            .data=${data}
+          ></devtools-button>
+          <devtools-tooltip id=${id} variant="rich">
+            <span>${learnMore.tooltip()}</span><br />
+            ${url
+                    ? html `<x-link
+                  href=${url}
+                  class="link"
+                  jslog=${VisualLogging.link(jsLogContext).track({
+                        click: true,
+                    })}
+                  >${i18nString(UIStrings.learnMore)}</x-link
+                >`
+                    : Lit.nothing}
+          </devtools-tooltip>
+        `;
+                // clang-format on
+            }
+            if (url) {
+                const handleClick = (event) => {
+                    Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(url);
+                    event.consume();
+                };
+                data.iconName = 'help';
+                data.title = i18nString(UIStrings.learnMore);
+                // clang-format off
+                return html `<devtools-button
+          class="info-icon"
+          @click=${handleClick}
+          .data=${data}
+        ></devtools-button>`;
+                // clang-format on
+            }
         }
         return undefined;
     }
@@ -77,7 +111,7 @@ export class SettingCheckbox extends HTMLElement {
             throw new Error('No "Setting" object provided for rendering');
         }
         const icon = this.icon();
-        const title = `${this.#setting.learnMore() ? this.#setting.learnMore()?.tooltip() : ''}`;
+        const title = `${this.#setting.learnMore() ? this.#setting.learnMore()?.tooltip?.() : ''}`;
         const disabledReasons = this.#setting.disabledReasons();
         const reason = disabledReasons.length ?
             html `
@@ -110,5 +144,6 @@ export class SettingCheckbox extends HTMLElement {
         }));
     }
 }
+// eslint-disable-next-line @devtools/enforce-custom-element-prefix
 customElements.define('setting-checkbox', SettingCheckbox);
 //# sourceMappingURL=SettingCheckbox.js.map

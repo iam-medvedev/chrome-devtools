@@ -1059,18 +1059,18 @@ var DEFAULT_VIEW = (input, _output, target) => {
       `}
     </div>`, target);
 };
-var PlatformFontsWidget = class extends UI4.ThrottledWidget.ThrottledWidget {
+var PlatformFontsWidget = class extends UI4.Widget.VBox {
   sharedModel;
   #view;
   constructor(sharedModel, view = DEFAULT_VIEW) {
-    super(true);
+    super({ useShadowDom: true });
     this.#view = view;
     this.registerRequiredCSS(platformFontsWidget_css_default);
     this.sharedModel = sharedModel;
-    this.sharedModel.addEventListener("CSSModelChanged", this.update, this);
-    this.sharedModel.addEventListener("ComputedStyleChanged", this.update, this);
+    this.sharedModel.addEventListener("CSSModelChanged", this.requestUpdate, this);
+    this.sharedModel.addEventListener("ComputedStyleChanged", this.requestUpdate, this);
   }
-  async doUpdate() {
+  async performUpdate() {
     const cssModel = this.sharedModel.cssModel();
     const node = this.sharedModel.node();
     if (!node || !cssModel) {
@@ -10209,7 +10209,7 @@ var propertySorter = (propA, propB) => {
   const canonicalB = SDK11.CSSMetadata.cssMetadata().canonicalPropertyName(propB);
   return Platform6.StringUtilities.compare(canonicalA, canonicalB);
 };
-var ComputedStyleWidget = class _ComputedStyleWidget extends UI14.ThrottledWidget.ThrottledWidget {
+var ComputedStyleWidget = class _ComputedStyleWidget extends UI14.Widget.VBox {
   computedStyleModel;
   showInheritedComputedStylePropertiesSetting;
   groupComputedStylesSetting;
@@ -10221,17 +10221,17 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI14.ThrottledWidge
   #computedStylesTree = new TreeOutline6.TreeOutline.TreeOutline();
   #treeData;
   constructor(computedStyleModel) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(computedStyleSidebarPane_css_default);
     this.contentElement.classList.add("styles-sidebar-computed-style-widget");
     this.computedStyleModel = computedStyleModel;
-    this.computedStyleModel.addEventListener("CSSModelChanged", this.update, this);
-    this.computedStyleModel.addEventListener("ComputedStyleChanged", this.update, this);
+    this.computedStyleModel.addEventListener("CSSModelChanged", this.requestUpdate, this);
+    this.computedStyleModel.addEventListener("ComputedStyleChanged", this.requestUpdate, this);
     this.showInheritedComputedStylePropertiesSetting = Common8.Settings.Settings.instance().createSetting("show-inherited-computed-style-properties", false);
-    this.showInheritedComputedStylePropertiesSetting.addChangeListener(this.update.bind(this));
+    this.showInheritedComputedStylePropertiesSetting.addChangeListener(this.requestUpdate.bind(this));
     this.groupComputedStylesSetting = Common8.Settings.Settings.instance().createSetting("group-computed-styles", false);
     this.groupComputedStylesSetting.addChangeListener(() => {
-      this.update();
+      this.requestUpdate();
     });
     const hbox = this.contentElement.createChild("div", "hbox styles-sidebar-pane-toolbar");
     const toolbar2 = hbox.createChild("devtools-toolbar", "styles-pane-toolbar");
@@ -10268,7 +10268,7 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI14.ThrottledWidge
     super.willHide();
     UI14.Context.Context.instance().setFlavor(_ComputedStyleWidget, null);
   }
-  async doUpdate() {
+  async performUpdate() {
     const [nodeStyles, matchedStyles] = await Promise.all([this.computedStyleModel.fetchComputedStyle(), this.fetchMatchedCascade()]);
     if (!nodeStyles || !matchedStyles) {
       this.noMatchesElement.classList.remove("hidden");
@@ -14577,7 +14577,7 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
       if (domModel.parentModel()) {
         continue;
       }
-      if (!this.rootDOMNode) {
+      if (!this.rootDOMNode || this.rootDOMNode.domModel() !== domModel) {
         if (domModel.existingDocument()) {
           this.rootDOMNode = domModel.existingDocument();
           this.onDocumentUpdated(domModel);
@@ -18257,8 +18257,7 @@ import * as UI24 from "./../../ui/legacy/legacy.js";
 import { html as html11, render as render8 } from "./../../ui/lit/lit.js";
 import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 import * as EventListeners from "./../event_listeners/event_listeners.js";
-var { bindToSetting } = UI24.SettingsUI;
-var { bindToAction } = UI24.UIUtils;
+var { bindToAction, bindToSetting } = UI24.UIUtils;
 var UIStrings19 = {
   /**
    * @description Title of show framework listeners setting in event listeners widget of the elements panel
@@ -18329,7 +18328,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
   })}></devtools-widget>
     </div>`, target);
 };
-var EventListenersWidget = class _EventListenersWidget extends UI24.ThrottledWidget.ThrottledWidget {
+var EventListenersWidget = class _EventListenersWidget extends UI24.Widget.VBox {
   showForAncestorsSetting;
   dispatchFilterBySetting;
   showFrameworkListenersSetting;
@@ -18339,14 +18338,14 @@ var EventListenersWidget = class _EventListenersWidget extends UI24.ThrottledWid
     super();
     this.#view = view;
     this.showForAncestorsSetting = Common18.Settings.Settings.instance().moduleSetting("show-event-listeners-for-ancestors");
-    this.showForAncestorsSetting.addChangeListener(this.update.bind(this));
+    this.showForAncestorsSetting.addChangeListener(this.requestUpdate.bind(this));
     this.dispatchFilterBySetting = Common18.Settings.Settings.instance().createSetting("event-listener-dispatch-filter-type", DispatchFilterBy.All);
-    this.dispatchFilterBySetting.addChangeListener(this.update.bind(this));
+    this.dispatchFilterBySetting.addChangeListener(this.requestUpdate.bind(this));
     this.showFrameworkListenersSetting = Common18.Settings.Settings.instance().createSetting("show-frameowkr-listeners", true);
     this.showFrameworkListenersSetting.setTitle(i18nString18(UIStrings19.frameworkListeners));
-    this.showFrameworkListenersSetting.addChangeListener(this.update.bind(this));
-    UI24.Context.Context.instance().addFlavorChangeListener(SDK21.DOMModel.DOMNode, this.update, this);
-    this.update();
+    this.showFrameworkListenersSetting.addChangeListener(this.requestUpdate.bind(this));
+    UI24.Context.Context.instance().addFlavorChangeListener(SDK21.DOMModel.DOMNode, this.requestUpdate.bind(this));
+    this.requestUpdate();
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -18355,7 +18354,7 @@ var EventListenersWidget = class _EventListenersWidget extends UI24.ThrottledWid
     }
     return eventListenersWidgetInstance;
   }
-  async doUpdate() {
+  async performUpdate() {
     const dispatchFilter = this.dispatchFilterBySetting.get();
     const showPassive = dispatchFilter === DispatchFilterBy.All || dispatchFilter === DispatchFilterBy.Passive;
     const showBlocking = dispatchFilter === DispatchFilterBy.All || dispatchFilter === DispatchFilterBy.Blocking;
@@ -18367,7 +18366,7 @@ var EventListenersWidget = class _EventListenersWidget extends UI24.ThrottledWid
       onDispatchFilterTypeChange: (value4) => {
         this.dispatchFilterBySetting.set(value4);
       },
-      onEventListenersViewChange: this.update.bind(this),
+      onEventListenersViewChange: this.requestUpdate.bind(this),
       dispatchFilters: [
         { name: i18nString18(UIStrings19.all), value: DispatchFilterBy.All },
         { name: i18nString18(UIStrings19.passive), value: DispatchFilterBy.Passive },
@@ -18451,7 +18450,7 @@ var ActionDelegate2 = class {
   handleAction(_context, actionId) {
     switch (actionId) {
       case "elements.refresh-event-listeners": {
-        EventListenersWidget.instance().update();
+        EventListenersWidget.instance().requestUpdate();
         return true;
       }
     }
@@ -18501,7 +18500,7 @@ var propertiesWidget_css_default = `/*
 
 // gen/front_end/panels/elements/PropertiesWidget.js
 var OBJECT_GROUP_NAME = "properties-sidebar-pane";
-var { bindToSetting: bindToSetting2 } = UI25.SettingsUI;
+var { bindToSetting: bindToSetting2 } = UI25.UIUtils;
 var UIStrings20 = {
   /**
    * @description Text on the checkbox in the Properties tab of the Elements panel, which controls whether
@@ -18546,7 +18545,7 @@ var getShowAllPropertiesSetting = () => Common19.Settings.Settings.instance().cr
   /* defaultValue */
   false
 );
-var PropertiesWidget = class extends UI25.ThrottledWidget.ThrottledWidget {
+var PropertiesWidget = class extends UI25.Widget.VBox {
   node;
   showAllPropertiesSetting;
   filterRegex = null;
@@ -18554,8 +18553,8 @@ var PropertiesWidget = class extends UI25.ThrottledWidget.ThrottledWidget {
   lastRequestedNode;
   #view;
   #displayNoMatchingPropertyMessage = false;
-  constructor(throttlingTimeout, view = DEFAULT_VIEW7) {
-    super(true, throttlingTimeout);
+  constructor(view = DEFAULT_VIEW7) {
+    super({ useShadowDom: true });
     this.registerRequiredCSS(propertiesWidget_css_default);
     this.showAllPropertiesSetting = getShowAllPropertiesSetting();
     this.showAllPropertiesSetting.addChangeListener(this.filterAndScheduleUpdate.bind(this));
@@ -18576,7 +18575,7 @@ var PropertiesWidget = class extends UI25.ThrottledWidget.ThrottledWidget {
     this.treeOutline.addEventListener(UI25.TreeOutline.Events.ElementExpanded, () => {
       Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.DOMPropertiesExpanded);
     });
-    void this.doUpdate();
+    void this.performUpdate();
   }
   onFilterChanged(event) {
     this.filterRegex = event.detail ? new RegExp(Platform11.StringUtilities.escapeForRegExp(event.detail), "i") : null;
@@ -18586,7 +18585,7 @@ var PropertiesWidget = class extends UI25.ThrottledWidget.ThrottledWidget {
     const previousDisplay = this.#displayNoMatchingPropertyMessage;
     this.internalFilterProperties();
     if (previousDisplay !== this.#displayNoMatchingPropertyMessage) {
-      this.update();
+      this.requestUpdate();
     }
   }
   internalFilterProperties() {
@@ -18603,9 +18602,9 @@ var PropertiesWidget = class extends UI25.ThrottledWidget.ThrottledWidget {
   }
   setNode(event) {
     this.node = event.data;
-    this.update();
+    this.requestUpdate();
   }
-  async doUpdate() {
+  async performUpdate() {
     if (this.lastRequestedNode) {
       this.lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(OBJECT_GROUP_NAME);
       delete this.lastRequestedNode;
@@ -18647,7 +18646,7 @@ var PropertiesWidget = class extends UI25.ThrottledWidget.ThrottledWidget {
     if (this.node !== node) {
       return;
     }
-    this.update();
+    this.requestUpdate();
   }
 };
 
@@ -18697,26 +18696,23 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
                 .widgetConfig=${UI26.Widget.widgetConfig(Components6.JSPresentationUtils.StackTracePreviewContent, { target: sdkTarget, linkifier, options })}>
               </devtools-widget>` : html13`<div class="gray-info-message">${i18nString20(UIStrings21.noStackTraceAvailable)}</div>`}`, target);
 };
-var NodeStackTraceWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
+var NodeStackTraceWidget = class extends UI26.Widget.VBox {
   #linkifier = new Components6.Linkifier.Linkifier(MaxLengthForLinks);
   #view;
   constructor(view = DEFAULT_VIEW8) {
-    super(
-      true
-      /* isWebComponent */
-    );
+    super({ useShadowDom: true });
     this.#view = view;
   }
   wasShown() {
     super.wasShown();
-    UI26.Context.Context.instance().addFlavorChangeListener(SDK23.DOMModel.DOMNode, this.update, this);
-    this.update();
+    UI26.Context.Context.instance().addFlavorChangeListener(SDK23.DOMModel.DOMNode, this.requestUpdate, this);
+    this.requestUpdate();
   }
   willHide() {
     super.willHide();
-    UI26.Context.Context.instance().removeFlavorChangeListener(SDK23.DOMModel.DOMNode, this.update, this);
+    UI26.Context.Context.instance().removeFlavorChangeListener(SDK23.DOMModel.DOMNode, this.requestUpdate, this);
   }
-  async doUpdate() {
+  async performUpdate() {
     const node = UI26.Context.Context.instance().flavor(SDK23.DOMModel.DOMNode);
     const stackTrace = await node?.creationStackTrace() ?? void 0;
     const input = {
@@ -19170,7 +19166,7 @@ var elementStatePaneWidget_css_default = `/**
 /*# sourceURL=${import.meta.resolve("./elementStatePaneWidget.css")} */`;
 
 // gen/front_end/panels/elements/ElementStatePaneWidget.js
-var { bindToSetting: bindToSetting3 } = UI28.SettingsUI;
+var { bindToSetting: bindToSetting3 } = UI28.UIUtils;
 var UIStrings23 = {
   /**
    * @description Title of a section in the Element State Pane Widget of the Elements panel. The

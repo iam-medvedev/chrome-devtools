@@ -1143,7 +1143,13 @@ var LinkHandlerSettingUI = class _LinkHandlerSettingUI {
     Linkifier.linkHandlerSetting().set(value);
   }
   settingElement() {
-    return UI.SettingsUI.createCustomSetting(i18nString2(UIStrings2.linkHandling), this.element);
+    const p = document.createElement("p");
+    p.classList.add("settings-select");
+    const label = p.createChild("label");
+    label.textContent = i18nString2(UIStrings2.linkHandling);
+    UI.ARIAUtils.bindLabelToControl(label, this.element);
+    p.appendChild(this.element);
+    return p;
   }
 };
 var listeningToNewEvents = false;

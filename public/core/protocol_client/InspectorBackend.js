@@ -147,8 +147,15 @@ export class SessionRouter {
         if (!session) {
             return;
         }
-        for (const callback of session.callbacks.values()) {
-            SessionRouter.dispatchUnregisterSessionError(callback);
+        for (const { resolve, method } of session.callbacks.values()) {
+            resolve({
+                result: null,
+                error: {
+                    message: `Session is unregistering, can\'t dispatch pending call to ${method}`,
+                    code: ConnectionClosedErrorCode,
+                    data: null,
+                }
+            });
         }
         this.#sessions.delete(sessionId);
     }
@@ -158,7 +165,7 @@ export class SessionRouter {
     connection() {
         return this.#connection;
     }
-    sendMessage(sessionId, domain, method, params, callback) {
+    sendMessage(sessionId, domain, method, params) {
         const messageId = this.nextMessageId();
         const messageObject = {
             id: messageId,
@@ -183,14 +190,16 @@ export class SessionRouter {
         }
         const session = this.#sessions.get(sessionId);
         if (!session) {
-            return;
+            return Promise.resolve({ error: null, result: null });
         }
-        session.callbacks.set(messageId, { callback, method });
-        this.#connection.sendRawMessage(JSON.stringify(messageObject));
+        return new Promise(resolve => {
+            session.callbacks.set(messageId, { resolve, method });
+            this.#connection.sendRawMessage(JSON.stringify(messageObject));
+        });
     }
     sendRawMessageForTesting(method, params, callback, sessionId = '') {
         const domain = method.split('.')[0];
-        this.sendMessage(sessionId, domain, method, params, callback || (() => { }));
+        void this.sendMessage(sessionId, domain, method, params).then(({ error, result }) => callback?.(error, result));
     }
     onMessage(message) {
         if (test.dumpProtocol) {
@@ -241,7 +250,7 @@ export class SessionRouter {
                 }
                 return;
             }
-            callback.callback(messageObject.error || null, messageObject.result || null);
+            callback.resolve({ error: messageObject.error || null, result: messageObject.result || null });
             --this.#pendingResponsesCount;
             this.#pendingLongPollingMessageIds.delete(messageObject.id);
             if (this.#pendingScripts.length && !this.hasOutstandingNonLongPollingRequests()) {
@@ -283,22 +292,6 @@ export class SessionRouter {
                 scripts[id]();
             }
         }
-    }
-    static dispatchConnectionError(callback, method) {
-        const error = {
-            message: `Connection is closed, can\'t dispatch pending call to ${method}`,
-            code: ConnectionClosedErrorCode,
-            data: null,
-        };
-        window.setTimeout(() => callback(error, null), 0);
-    }
-    static dispatchUnregisterSessionError({ callback, method }) {
-        const error = {
-            message: `Session is unregistering, can\'t dispatch pending call to ${method}`,
-            code: ConnectionClosedErrorCode,
-            data: null,
-        };
-        window.setTimeout(() => callback(error, null), 0);
     }
 }
 export class TargetBase {
@@ -639,22 +632,17 @@ class AgentPrototype {
         this['invoke_' + methodName] = invoke;
     }
     invoke(method, request) {
-        return new Promise(fulfill => {
-            const callback = (error, result) => {
-                if (error && !test.suppressRequestErrors && error.code !== DevToolsStubErrorCode &&
-                    error.code !== GenericErrorCode && error.code !== ConnectionClosedErrorCode) {
-                    console.error('Request ' + method + ' failed. ' + JSON.stringify(error));
-                }
-                const errorMessage = error?.message;
-                fulfill({ ...result, getError: () => errorMessage });
-            };
-            const router = this.target.router();
-            if (!router) {
-                SessionRouter.dispatchConnectionError(callback, method);
+        const router = this.target.router();
+        if (!router) {
+            return Promise.resolve({ result: null, getError: () => `Connection is closed, can\'t dispatch pending call to ${method}` });
+        }
+        return router.sendMessage(this.target.sessionId, this.domain, method, request).then(({ error, result }) => {
+            if (error && !test.suppressRequestErrors && error.code !== DevToolsStubErrorCode &&
+                error.code !== GenericErrorCode && error.code !== ConnectionClosedErrorCode) {
+                console.error('Request ' + method + ' failed. ' + JSON.stringify(error));
             }
-            else {
-                router.sendMessage(this.target.sessionId, this.domain, method, request, callback);
-            }
+            const errorMessage = error?.message;
+            return { ...result, getError: () => errorMessage };
         });
     }
 }

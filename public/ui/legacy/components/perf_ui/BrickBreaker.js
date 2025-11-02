@@ -515,5 +515,6 @@ export class BrickBreaker extends HTMLElement {
         return confettiElement;
     }
 }
+// eslint-disable-next-line @devtools/enforce-custom-element-prefix
 customElements.define('brick-breaker', BrickBreaker);
 //# sourceMappingURL=BrickBreaker.js.map

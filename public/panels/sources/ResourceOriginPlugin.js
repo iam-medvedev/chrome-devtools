@@ -4,6 +4,7 @@
 /* eslint-disable @devtools/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Plugin } from './Plugin.js';
@@ -54,13 +55,13 @@ export class ResourceOriginPlugin extends Plugin {
                 }
                 element.append(link);
             });
-            return [new UI.Toolbar.ToolbarItem(i18n.i18n.getFormatLocalizedString(str_, UIStrings.fromS, { PH1: element }))];
+            return [new UI.Toolbar.ToolbarItem(uiI18n.getFormatLocalizedString(str_, UIStrings.fromS, { PH1: element }))];
         }
         // Handle anonymous scripts with an originStackTrace.
         for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(this.uiSourceCode)) {
             if (script.originStackTrace?.callFrames.length) {
                 const link = linkifier.linkifyStackTraceTopFrame(script.debuggerModel.target(), script.originStackTrace);
-                return [new UI.Toolbar.ToolbarItem(i18n.i18n.getFormatLocalizedString(str_, UIStrings.fromS, { PH1: link }))];
+                return [new UI.Toolbar.ToolbarItem(uiI18n.getFormatLocalizedString(str_, UIStrings.fromS, { PH1: link }))];
             }
         }
         return [];

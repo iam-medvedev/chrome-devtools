@@ -4,6 +4,9 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/core/protocol_client/CDPConnection.js
+var CDPConnection_exports = {};
+
 // gen/front_end/core/protocol_client/ConnectionTransport.js
 var ConnectionTransport_exports = {};
 __export(ConnectionTransport_exports, {
@@ -1251,8 +1254,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerType("SystemInfo.Size", [{ "name": "width", "type": "number", "optional": false, "description": "Width in pixels.", "typeRef": null }, { "name": "height", "type": "number", "optional": false, "description": "Height in pixels.", "typeRef": null }]);
   inspectorBackend2.registerType("SystemInfo.VideoDecodeAcceleratorCapability", [{ "name": "profile", "type": "string", "optional": false, "description": "Video codec profile that is supported, e.g. VP9 Profile 2.", "typeRef": null }, { "name": "maxResolution", "type": "object", "optional": false, "description": "Maximum video dimensions in pixels supported for this |profile|.", "typeRef": "SystemInfo.Size" }, { "name": "minResolution", "type": "object", "optional": false, "description": "Minimum video dimensions in pixels supported for this |profile|.", "typeRef": "SystemInfo.Size" }]);
   inspectorBackend2.registerType("SystemInfo.VideoEncodeAcceleratorCapability", [{ "name": "profile", "type": "string", "optional": false, "description": "Video codec profile that is supported, e.g H264 Main.", "typeRef": null }, { "name": "maxResolution", "type": "object", "optional": false, "description": "Maximum video dimensions in pixels supported for this |profile|.", "typeRef": "SystemInfo.Size" }, { "name": "maxFramerateNumerator", "type": "number", "optional": false, "description": "Maximum encoding framerate in frames per second supported for this |profile|, as fraction's numerator and denominator, e.g. 24/1 fps, 24000/1001 fps, etc.", "typeRef": null }, { "name": "maxFramerateDenominator", "type": "number", "optional": false, "description": "", "typeRef": null }]);
-  inspectorBackend2.registerType("SystemInfo.ImageDecodeAcceleratorCapability", [{ "name": "imageType", "type": "string", "optional": false, "description": "Image coded, e.g. Jpeg.", "typeRef": "SystemInfo.ImageType" }, { "name": "maxDimensions", "type": "object", "optional": false, "description": "Maximum supported dimensions of the image in pixels.", "typeRef": "SystemInfo.Size" }, { "name": "minDimensions", "type": "object", "optional": false, "description": "Minimum supported dimensions of the image in pixels.", "typeRef": "SystemInfo.Size" }, { "name": "subsamplings", "type": "array", "optional": false, "description": "Optional array of supported subsampling formats, e.g. 4:2:0, if known.", "typeRef": "SystemInfo.SubsamplingFormat" }]);
-  inspectorBackend2.registerType("SystemInfo.GPUInfo", [{ "name": "devices", "type": "array", "optional": false, "description": "The graphics devices on the system. Element 0 is the primary GPU.", "typeRef": "SystemInfo.GPUDevice" }, { "name": "auxAttributes", "type": "object", "optional": true, "description": "An optional dictionary of additional GPU related attributes.", "typeRef": null }, { "name": "featureStatus", "type": "object", "optional": true, "description": "An optional dictionary of graphics features and their status.", "typeRef": null }, { "name": "driverBugWorkarounds", "type": "array", "optional": false, "description": "An optional array of GPU driver bug workarounds.", "typeRef": "string" }, { "name": "videoDecoding", "type": "array", "optional": false, "description": "Supported accelerated video decoding capabilities.", "typeRef": "SystemInfo.VideoDecodeAcceleratorCapability" }, { "name": "videoEncoding", "type": "array", "optional": false, "description": "Supported accelerated video encoding capabilities.", "typeRef": "SystemInfo.VideoEncodeAcceleratorCapability" }, { "name": "imageDecoding", "type": "array", "optional": false, "description": "Supported accelerated image decoding capabilities.", "typeRef": "SystemInfo.ImageDecodeAcceleratorCapability" }]);
+  inspectorBackend2.registerType("SystemInfo.GPUInfo", [{ "name": "devices", "type": "array", "optional": false, "description": "The graphics devices on the system. Element 0 is the primary GPU.", "typeRef": "SystemInfo.GPUDevice" }, { "name": "auxAttributes", "type": "object", "optional": true, "description": "An optional dictionary of additional GPU related attributes.", "typeRef": null }, { "name": "featureStatus", "type": "object", "optional": true, "description": "An optional dictionary of graphics features and their status.", "typeRef": null }, { "name": "driverBugWorkarounds", "type": "array", "optional": false, "description": "An optional array of GPU driver bug workarounds.", "typeRef": "string" }, { "name": "videoDecoding", "type": "array", "optional": false, "description": "Supported accelerated video decoding capabilities.", "typeRef": "SystemInfo.VideoDecodeAcceleratorCapability" }, { "name": "videoEncoding", "type": "array", "optional": false, "description": "Supported accelerated video encoding capabilities.", "typeRef": "SystemInfo.VideoEncodeAcceleratorCapability" }]);
   inspectorBackend2.registerType("SystemInfo.ProcessInfo", [{ "name": "type", "type": "string", "optional": false, "description": "Specifies process type.", "typeRef": null }, { "name": "id", "type": "number", "optional": false, "description": "Specifies process id.", "typeRef": null }, { "name": "cpuTime", "type": "number", "optional": false, "description": "Specifies cumulative CPU usage in seconds across all threads of the process since the process start.", "typeRef": null }]);
   inspectorBackend2.registerEnum("Target.WindowState", { Normal: "normal", Minimized: "minimized", Maximized: "maximized", Fullscreen: "fullscreen" });
   inspectorBackend2.registerEvent("Target.attachedToTarget", ["sessionId", "targetInfo", "waitingForDebugger"]);
@@ -1637,7 +1639,7 @@ var test = {
   onMessageReceived: null
 };
 var LongPollingMethods = /* @__PURE__ */ new Set(["CSS.takeComputedStyleUpdates"]);
-var SessionRouter = class _SessionRouter {
+var SessionRouter = class {
   #connection;
   #lastMessageId = 1;
   #pendingResponsesCount = 0;
@@ -1672,8 +1674,15 @@ var SessionRouter = class _SessionRouter {
     if (!session) {
       return;
     }
-    for (const callback of session.callbacks.values()) {
-      _SessionRouter.dispatchUnregisterSessionError(callback);
+    for (const { resolve, method } of session.callbacks.values()) {
+      resolve({
+        result: null,
+        error: {
+          message: `Session is unregistering, can't dispatch pending call to ${method}`,
+          code: ConnectionClosedErrorCode,
+          data: null
+        }
+      });
     }
     this.#sessions.delete(sessionId);
   }
@@ -1683,7 +1692,7 @@ var SessionRouter = class _SessionRouter {
   connection() {
     return this.#connection;
   }
-  sendMessage(sessionId, domain, method, params, callback) {
+  sendMessage(sessionId, domain, method, params) {
     const messageId = this.nextMessageId();
     const messageObject = {
       id: messageId,
@@ -1708,15 +1717,16 @@ var SessionRouter = class _SessionRouter {
     }
     const session = this.#sessions.get(sessionId);
     if (!session) {
-      return;
+      return Promise.resolve({ error: null, result: null });
     }
-    session.callbacks.set(messageId, { callback, method });
-    this.#connection.sendRawMessage(JSON.stringify(messageObject));
+    return new Promise((resolve) => {
+      session.callbacks.set(messageId, { resolve, method });
+      this.#connection.sendRawMessage(JSON.stringify(messageObject));
+    });
   }
   sendRawMessageForTesting(method, params, callback, sessionId = "") {
     const domain = method.split(".")[0];
-    this.sendMessage(sessionId, domain, method, params, callback || (() => {
-    }));
+    void this.sendMessage(sessionId, domain, method, params).then(({ error, result }) => callback?.(error, result));
   }
   onMessage(message) {
     if (test.dumpProtocol) {
@@ -1762,7 +1772,7 @@ var SessionRouter = class _SessionRouter {
         }
         return;
       }
-      callback.callback(messageObject.error || null, messageObject.result || null);
+      callback.resolve({ error: messageObject.error || null, result: messageObject.result || null });
       --this.#pendingResponsesCount;
       this.#pendingLongPollingMessageIds.delete(messageObject.id);
       if (this.#pendingScripts.length && !this.hasOutstandingNonLongPollingRequests()) {
@@ -1800,22 +1810,6 @@ var SessionRouter = class _SessionRouter {
         scripts[id]();
       }
     }
-  }
-  static dispatchConnectionError(callback, method) {
-    const error = {
-      message: `Connection is closed, can't dispatch pending call to ${method}`,
-      code: ConnectionClosedErrorCode,
-      data: null
-    };
-    window.setTimeout(() => callback(error, null), 0);
-  }
-  static dispatchUnregisterSessionError({ callback, method }) {
-    const error = {
-      message: `Session is unregistering, can't dispatch pending call to ${method}`,
-      code: ConnectionClosedErrorCode,
-      data: null
-    };
-    window.setTimeout(() => callback(error, null), 0);
   }
 };
 var TargetBase = class {
@@ -2144,20 +2138,16 @@ var AgentPrototype = class {
     this["invoke_" + methodName] = invoke;
   }
   invoke(method, request) {
-    return new Promise((fulfill) => {
-      const callback = (error, result) => {
-        if (error && !test.suppressRequestErrors && error.code !== DevToolsStubErrorCode && error.code !== GenericErrorCode && error.code !== ConnectionClosedErrorCode) {
-          console.error("Request " + method + " failed. " + JSON.stringify(error));
-        }
-        const errorMessage = error?.message;
-        fulfill({ ...result, getError: () => errorMessage });
-      };
-      const router = this.target.router();
-      if (!router) {
-        SessionRouter.dispatchConnectionError(callback, method);
-      } else {
-        router.sendMessage(this.target.sessionId, this.domain, method, request, callback);
+    const router = this.target.router();
+    if (!router) {
+      return Promise.resolve({ result: null, getError: () => `Connection is closed, can't dispatch pending call to ${method}` });
+    }
+    return router.sendMessage(this.target.sessionId, this.domain, method, request).then(({ error, result }) => {
+      if (error && !test.suppressRequestErrors && error.code !== DevToolsStubErrorCode && error.code !== GenericErrorCode && error.code !== ConnectionClosedErrorCode) {
+        console.error("Request " + method + " failed. " + JSON.stringify(error));
       }
+      const errorMessage = error?.message;
+      return { ...result, getError: () => errorMessage };
     });
   }
 };
@@ -2196,6 +2186,7 @@ var DispatcherManager = class {
 };
 var inspectorBackend = new InspectorBackend();
 export {
+  CDPConnection_exports as CDPConnection,
   ConnectionTransport_exports as ConnectionTransport,
   InspectorBackend_exports as InspectorBackend,
   NodeURL_exports as NodeURL

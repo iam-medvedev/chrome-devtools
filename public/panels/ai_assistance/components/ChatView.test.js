@@ -71,9 +71,9 @@ describeWithEnvironment('ChatView', () => {
             const sideEffect = chat.shadowRoot.querySelector('.side-effect-confirmation');
             assert.exists(sideEffect);
         });
-        it('shows the disabled view when the state is CONSENT_VIEW', async () => {
+        it('shows the disabled view when the state is DISABLED_VIEW', async () => {
             const props = getProp({
-                state: "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */,
+                state: "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */,
             });
             const chat = new AiAssistancePanel.ChatView(props);
             renderElementIntoDOM(chat);
@@ -82,7 +82,7 @@ describeWithEnvironment('ChatView', () => {
         });
         it('shows the disabled view when the AIDA is not available', async () => {
             const props = getProp({
-                state: "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */,
+                state: "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */,
                 aidaAvailability: "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */,
             });
             const chat = new AiAssistancePanel.ChatView(props);

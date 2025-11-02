@@ -8,6 +8,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -614,7 +615,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
                     UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
                     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
                 });
-                suggestedIdNote.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.appIdNote, { PH1: suggestedIdSpan, PH2: copyButton }));
+                suggestedIdNote.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.appIdNote, { PH1: suggestedIdSpan, PH2: copyButton }));
             }
         }
         else {
@@ -675,7 +676,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         });
         this.iconsSection.appendRow().appendChild(setIconMaskedCheckbox);
         const documentationLink = UI.XLink.XLink.create('https://web.dev/maskable-icon/', i18nString(UIStrings.documentationOnMaskableIcons), undefined, undefined, 'learn-more');
-        this.iconsSection.appendRow().appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.needHelpReadOurS, { PH1: documentationLink }));
+        this.iconsSection.appendRow().appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.needHelpReadOurS, { PH1: documentationLink }));
         let squareSizedIconAvailable = false;
         for (const icon of icons) {
             const result = await this.appendImageResourceToSection(url, icon, this.iconsSection, /** isScreenshot= */ false);
@@ -805,7 +806,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             const wco = document.createElement('code');
             wco.classList.add('wco');
             wco.textContent = 'window-controls-overlay';
-            wcoStatusMessage.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.wcoFound, { PH1: wco, PH2: displayOverrideText, PH3: link }));
+            wcoStatusMessage.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.wcoFound, { PH1: wco, PH2: displayOverrideText, PH3: link }));
             if (this.overlayModel) {
                 await this.appendWindowControlsToSection(this.overlayModel, url, stringProperty('theme_color'));
             }
@@ -813,10 +814,10 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         else {
             const infoIcon = IconButton.Icon.create('info', 'inline-icon');
             wcoStatusMessage.appendChild(infoIcon);
-            wcoStatusMessage.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.wcoNotFound, { PH1: displayOverrideText }));
+            wcoStatusMessage.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.wcoNotFound, { PH1: displayOverrideText }));
         }
         const wcoDocumentationLink = UI.XLink.XLink.create('https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay', i18nString(UIStrings.customizePwaTitleBar), undefined, undefined, 'customize-pwa-tittle-bar');
-        this.windowControlsSection.appendRow().appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.wcoNeedHelpReadMore, { PH1: wcoDocumentationLink }));
+        this.windowControlsSection.appendRow().appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.wcoNeedHelpReadMore, { PH1: wcoDocumentationLink }));
         this.dispatchEventToListeners("ManifestRendered" /* Events.MANIFEST_RENDERED */);
     }
     getInstallabilityErrorMessages(installabilityErrors) {

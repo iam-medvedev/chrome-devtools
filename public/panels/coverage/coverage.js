@@ -1587,8 +1587,7 @@ var str_2 = i18n3.i18n.registerUIStrings("panels/coverage/CoverageView.ts", UISt
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var i18nTemplate = unboundI18nTemplate.bind(void 0, str_2);
 var { ref } = Directives2;
-var { bindToAction } = UI2.UIUtils;
-var { bindToSetting } = UI2.SettingsUI;
+var { bindToAction, bindToSetting } = UI2.UIUtils;
 var { widgetConfig } = UI2.Widget;
 var coverageViewInstance;
 var DEFAULT_VIEW2 = (input, output, target) => {

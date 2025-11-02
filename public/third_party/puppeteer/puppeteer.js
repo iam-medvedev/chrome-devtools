@@ -2596,7 +2596,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.26.1";
+var packageVersion = "24.27.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -11944,7 +11944,8 @@ var AXNode = class _AXNode {
         } finally {
           __disposeResources11(env_2);
         }
-      }
+      },
+      backendNodeId: this.payload.backendDOMNodeId
     };
     const userStringProperties = [
       "name",
@@ -16525,7 +16526,9 @@ var CdpPage = class _CdpPage extends Page {
         ...options,
         ignoreSameDocumentNavigation: true
       }),
-      this.#primaryTargetClient.send("Page.reload")
+      this.#primaryTargetClient.send("Page.reload", {
+        ignoreCache: options?.ignoreCache ?? false
+      })
     ]);
     return result;
   }
@@ -16882,11 +16885,11 @@ var CdpBrowserContext = class extends BrowserContext {
       browserContextId: this.#id || void 0
     });
   }
-  async newPage() {
+  async newPage(options) {
     const env_1 = { stack: [], error: void 0, hasError: false };
     try {
       const _guard = __addDisposableResource13(env_1, await this.waitForScreenshotOperations(), false);
-      return await this.#browser._createPageInContext(this.#id);
+      return await this.#browser._createPageInContext(this.#id, options);
     } catch (e_1) {
       env_1.error = e_1;
       env_1.hasError = true;
@@ -17574,10 +17577,15 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   async newPage() {
     return await this.#defaultContext.newPage();
   }
-  async _createPageInContext(contextId) {
+  async _createPageInContext(contextId, options) {
+    const hasTargets = this.targets().filter((t) => {
+      return t.browserContext().id === contextId;
+    }).length > 0;
     const { targetId } = await this.#connection.send("Target.createTarget", {
       url: "about:blank",
-      browserContextId: contextId || void 0
+      browserContextId: contextId || void 0,
+      // Works around crbug.com/454825274.
+      newWindow: hasTargets && options?.type === "window" ? true : void 0
     });
     const target = await this.waitForTarget((t) => {
       return t._targetId === targetId;

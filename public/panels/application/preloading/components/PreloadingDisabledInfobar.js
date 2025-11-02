@@ -9,6 +9,7 @@ import * as ChromeLink from '../../../../ui/components/chrome_link/chrome_link.j
 import * as Dialogs from '../../../../ui/components/dialogs/dialogs.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
+import * as uiI18n from '../../../../ui/i18n/i18n.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
@@ -188,7 +189,7 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
         const extensionsSettingLink = new ChromeLink.ChromeLink.ChromeLink();
         extensionsSettingLink.href = 'chrome://extensions';
         extensionsSettingLink.textContent = i18nString(UIStrings.extensionsSettings);
-        const description = i18n.i18n.getFormatLocalizedString(str_, UIStrings.descriptionDisabledByPreference, { PH1: preloadingSettingLink, PH2: extensionsSettingLink });
+        const description = uiI18n.getFormatLocalizedString(str_, UIStrings.descriptionDisabledByPreference, { PH1: preloadingSettingLink, PH2: extensionsSettingLink });
         return this.#maybeKeyValue(this.#data.disabledByPreference, i18nString(UIStrings.headerDisabledByPreference), description);
     }
     #maybeDisableByDataSaver() {

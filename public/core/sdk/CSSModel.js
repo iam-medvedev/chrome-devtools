@@ -321,7 +321,7 @@ export class CSSModel extends SDKModel {
             hasScroll,
         };
     }
-    async getEnvironmentVariales() {
+    async getEnvironmentVariables() {
         const response = await this.agent.invoke_getEnvironmentVariables();
         if (response.getError()) {
             return {};

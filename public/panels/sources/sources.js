@@ -13,7 +13,7 @@ __export(AddSourceMapURLDialog_exports, {
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI from "./../../ui/legacy/legacy.js";
-import { Directives, html, render } from "./../../ui/lit/lit.js";
+import { html, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/dialog.css.js
@@ -60,43 +60,41 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/sources/AddSourceMapURLDialog.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var { ref } = Directives;
-var DEFAULT_VIEW = (input, output, target) => {
+var DEFAULT_VIEW = (input, _output, target) => {
   render(html`
     <style>${dialog_css_default}</style>
     <label>${input.label}</label>
     <input class="harmony-input add-source-map" spellcheck="false" type="text"
         jslog=${VisualLogging.textField("url").track({ keydown: "Enter", change: true })}
-        @keydown=${input.onKeyDown} ${ref((e) => {
-    output.input = e;
-  })}>
+        @keydown=${(e) => {
+    if (e.key === "Enter") {
+      e.consume(true);
+      input.onEnter(e.target.value);
+    }
+  }}
+        @change=${(e) => input.onInputChange(e.target.value)}
+        autofocus>
     <devtools-button @click=${input.apply} .jslogContext=${"add"}
         .variant=${"outlined"}>${i18nString(UIStrings.add)}</devtools-button>`, target);
 };
 var AddDebugInfoURLDialog = class _AddDebugInfoURLDialog extends UI.Widget.HBox {
-  input;
+  url = "";
   dialog;
   callback;
   constructor(label, jslogContext, callback, view = DEFAULT_VIEW) {
     super({ useShadowDom: true });
     const viewInput = {
       label,
-      onKeyDown: this.onKeyDown.bind(this),
+      onEnter: this.onEnter.bind(this),
+      onInputChange: this.onInputChange.bind(this),
       apply: this.apply.bind(this)
     };
-    const that = this;
-    const viewOutput = {
-      set input(input) {
-        that.input = input;
-      }
-    };
-    view(viewInput, viewOutput, this.contentElement);
+    view(viewInput, void 0, this.contentElement);
     this.dialog = new UI.Dialog.Dialog(jslogContext);
     this.dialog.setSizeBehavior(
       "MeasureContent"
       /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */
     );
-    this.dialog.setDefaultFocusedElement(this.input);
     this.callback = callback;
   }
   static createAddSourceMapURLDialog(callback) {
@@ -113,14 +111,15 @@ var AddDebugInfoURLDialog = class _AddDebugInfoURLDialog extends UI.Widget.HBox 
     this.dialog.hide();
     this.callback(value2);
   }
-  apply() {
-    this.done(this.input.value);
+  onInputChange(value2) {
+    this.url = value2;
   }
-  onKeyDown(event) {
-    if (event.key === "Enter") {
-      event.consume(true);
-      this.apply();
-    }
+  apply() {
+    this.done(this.url);
+  }
+  onEnter(value2) {
+    this.url = value2;
+    this.apply();
   }
 };
 
@@ -393,6 +392,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
     }
   }
   #removeAiCodeCompletionCitationsToolbar() {
+    this.#aiCodeCompletionCitationsToolbar?.detach();
     if (this.#editor) {
       this.#editor.dispatch({
         effects: SourceFrame.SourceFrame.removeSourceFrameInfobar.of({ element: this.#aiCodeCompletionCitationsToolbarContainer })
@@ -432,7 +432,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
     this.#aiCodeCompletion?.remove();
     this.#aiCodeCompletion = void 0;
     this.#aiCodeCompletionCitations = [];
-    this.#aiCodeCompletionDisclaimerContainer.removeChildren();
+    this.#aiCodeCompletionDisclaimer?.detach();
     this.#aiCodeCompletionDisclaimer = void 0;
     this.#removeAiCodeCompletionCitationsToolbar();
     this.#aiCodeCompletionCitationsToolbar = void 0;
@@ -3858,6 +3858,7 @@ import * as Common7 from "./../../core/common/common.js";
 import * as i18n18 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -4052,12 +4053,12 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage {
       let messageElement;
       if (data.insertion) {
         if (data.targetNode === data.node) {
-          messageElement = i18n18.i18n.getFormatLocalizedString(str_9, UIStrings9.childSAdded, { PH1: targetNodeLink });
+          messageElement = uiI18n.getFormatLocalizedString(str_9, UIStrings9.childSAdded, { PH1: targetNodeLink });
         } else {
-          messageElement = i18n18.i18n.getFormatLocalizedString(str_9, UIStrings9.descendantSAdded, { PH1: targetNodeLink });
+          messageElement = uiI18n.getFormatLocalizedString(str_9, UIStrings9.descendantSAdded, { PH1: targetNodeLink });
         }
       } else {
-        messageElement = i18n18.i18n.getFormatLocalizedString(str_9, UIStrings9.descendantSRemoved, { PH1: targetNodeLink });
+        messageElement = uiI18n.getFormatLocalizedString(str_9, UIStrings9.descendantSRemoved, { PH1: targetNodeLink });
       }
       subElement.appendChild(document.createElement("br"));
       subElement.appendChild(messageElement);
@@ -4221,6 +4222,7 @@ import * as Breakpoints2 from "./../../models/breakpoints/breakpoints.js";
 import * as Workspace19 from "./../../models/workspace/workspace.js";
 import * as PanelCommon3 from "./../common/common.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
+import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
 import * as Snippets4 from "./../snippets/snippets.js";
@@ -6706,6 +6708,7 @@ import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
 import * as Workspace15 from "./../../models/workspace/workspace.js";
 import * as IconButton7 from "./../../ui/components/icon_button/icon_button.js";
 import * as Tooltips from "./../../ui/components/tooltips/tooltips.js";
+import * as uiI18n3 from "./../../ui/i18n/i18n.js";
 import * as SourceFrame10 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
@@ -6921,6 +6924,7 @@ __export(ResourceOriginPlugin_exports, {
 });
 import * as i18n24 from "./../../core/i18n/i18n.js";
 import * as Bindings6 from "./../../models/bindings/bindings.js";
+import * as uiI18n2 from "./../../ui/i18n/i18n.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
@@ -6969,12 +6973,12 @@ var ResourceOriginPlugin = class extends Plugin {
         }
         element.append(link2);
       });
-      return [new UI12.Toolbar.ToolbarItem(i18n24.i18n.getFormatLocalizedString(str_12, UIStrings12.fromS, { PH1: element }))];
+      return [new UI12.Toolbar.ToolbarItem(uiI18n2.getFormatLocalizedString(str_12, UIStrings12.fromS, { PH1: element }))];
     }
     for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(this.uiSourceCode)) {
       if (script.originStackTrace?.callFrames.length) {
         const link2 = linkifier.linkifyStackTraceTopFrame(script.debuggerModel.target(), script.originStackTrace);
-        return [new UI12.Toolbar.ToolbarItem(i18n24.i18n.getFormatLocalizedString(str_12, UIStrings12.fromS, { PH1: link2 }))];
+        return [new UI12.Toolbar.ToolbarItem(uiI18n2.getFormatLocalizedString(str_12, UIStrings12.fromS, { PH1: link2 }))];
       }
     }
     return [];
@@ -8204,10 +8208,10 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
               true
             );
           });
-          tooltip2.append(i18n29.i18n.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace, { PH1: link2 }));
+          tooltip2.append(uiI18n3.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace, { PH1: link2 }));
         } else {
           const link2 = UI15.XLink.XLink.create("https://developer.chrome.com/docs/devtools/workspaces/", "Workspace");
-          tooltip2.append(i18n29.i18n.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace, { PH1: link2 }));
+          tooltip2.append(uiI18n3.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace, { PH1: link2 }));
         }
         suffixElement.append(icon, tooltip2);
         this.tabbedPane.setSuffixElement(tabId2, suffixElement);
@@ -9859,7 +9863,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     debugToolbarDrawer.classList.add("scripts-debug-toolbar-drawer");
     const label = i18nString16(UIStrings17.pauseOnCaughtExceptions);
     const setting = Common14.Settings.Settings.instance().moduleSetting("pause-on-caught-exception");
-    debugToolbarDrawer.appendChild(UI18.SettingsUI.createSettingCheckbox(label, setting));
+    debugToolbarDrawer.appendChild(SettingsUI.SettingsUI.createSettingCheckbox(label, setting));
     return debugToolbarDrawer;
   }
   appendApplicableItems(event, contextMenu, target) {
@@ -13832,6 +13836,7 @@ import * as Bindings11 from "./../../models/bindings/bindings.js";
 import * as Persistence18 from "./../../models/persistence/persistence.js";
 import * as TextUtils13 from "./../../models/text_utils/text_utils.js";
 import * as Workspace28 from "./../../models/workspace/workspace.js";
+import * as uiI18n4 from "./../../ui/i18n/i18n.js";
 import * as UI26 from "./../../ui/legacy/legacy.js";
 import * as Snippets5 from "./../snippets/snippets.js";
 
@@ -14012,7 +14017,7 @@ var FilesNavigatorView = class extends NavigatorView {
     this.setPlaceholder(placeholder2);
     placeholder2.link = "https://developer.chrome.com/docs/devtools/workspaces/";
     const link2 = UI26.XLink.XLink.create("https://goo.gle/devtools-automatic-workspace-folders", "com.chrome.devtools.json");
-    this.#automaticFileSystemNudge = i18n51.i18n.getFormatLocalizedString(str_25, UIStrings25.automaticWorkspaceNudge, { PH1: link2 });
+    this.#automaticFileSystemNudge = uiI18n4.getFormatLocalizedString(str_25, UIStrings25.automaticWorkspaceNudge, { PH1: link2 });
     this.#automaticFileSystemNudge.classList.add("automatic-file-system-nudge");
     this.contentElement.insertBefore(this.#automaticFileSystemNudge, this.contentElement.firstChild);
     const toolbar4 = document.createElement("devtools-toolbar");
@@ -14552,7 +14557,7 @@ var UIStrings26 = {
 var str_26 = i18n53.i18n.registerUIStrings("panels/sources/WatchExpressionsSidebarPane.ts", UIStrings26);
 var i18nString25 = i18n53.i18n.getLocalizedString.bind(void 0, str_26);
 var watchExpressionsSidebarPaneInstance;
-var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI27.ThrottledWidget.ThrottledWidget {
+var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI27.Widget.VBox {
   watchExpressions;
   emptyElement;
   watchExpressionsSetting;
@@ -14562,7 +14567,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
   expandController;
   linkifier;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(watchExpressionsSidebarPane_css_default, objectValue_css_default);
     this.watchExpressions = [];
     this.watchExpressionsSetting = Common20.Settings.Settings.instance().createLocalSetting("watch-expressions", []);
@@ -14579,7 +14584,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
       "SMALL"
       /* Buttons.Button.Size.SMALL */
     );
-    this.refreshButton.addEventListener("Click", this.update, this);
+    this.refreshButton.addEventListener("Click", this.requestUpdate, this);
     this.contentElement.classList.add("watch-expressions");
     this.contentElement.setAttribute("jslog", `${VisualLogging15.section("sources.watch")}`);
     this.contentElement.addEventListener("contextmenu", this.contextMenu.bind(this), false);
@@ -14591,10 +14596,10 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
       true
     );
     this.expandController = new ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController(this.treeOutline);
-    UI27.Context.Context.instance().addFlavorChangeListener(SDK16.RuntimeModel.ExecutionContext, this.update, this);
-    UI27.Context.Context.instance().addFlavorChangeListener(SDK16.DebuggerModel.CallFrame, this.update, this);
+    UI27.Context.Context.instance().addFlavorChangeListener(SDK16.RuntimeModel.ExecutionContext, this.requestUpdate, this);
+    UI27.Context.Context.instance().addFlavorChangeListener(SDK16.DebuggerModel.CallFrame, this.requestUpdate, this);
     this.linkifier = new Components4.Linkifier.Linkifier();
-    this.update();
+    this.requestUpdate();
   }
   static instance() {
     if (!watchExpressionsSidebarPaneInstance) {
@@ -14628,7 +14633,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     this.emptyElement.classList.add("hidden");
     this.createWatchExpression(null).startEditing();
   }
-  async doUpdate() {
+  async performUpdate() {
     this.linkifier.reset();
     this.contentElement.removeChildren();
     this.treeOutline.removeChildren();
@@ -14696,13 +14701,13 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
   deleteAllButtonClicked() {
     this.watchExpressions = [];
     this.saveExpressions();
-    this.update();
+    this.requestUpdate();
   }
   async focusAndAddExpressionToWatch(expression) {
     await UI27.ViewManager.ViewManager.instance().showView("sources.watch");
     this.createWatchExpression(expression);
     this.saveExpressions();
-    this.update();
+    this.requestUpdate();
   }
   handleAction(_context, _actionId) {
     const frame = UI27.Context.Context.instance().flavor(UISourceCodeFrame);

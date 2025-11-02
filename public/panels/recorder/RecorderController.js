@@ -163,6 +163,7 @@ let RecorderController = class RecorderController extends LitElement {
     #disableRecorderImportWarningSetting = Common.Settings.Settings.instance().createSetting('disable-recorder-import-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
     #selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
     #recordingView;
+    #createRecordingView;
     constructor() {
         super();
         this.isRecording = false;
@@ -663,7 +664,7 @@ let RecorderController = class RecorderController extends LitElement {
         this.#setCurrentPage("CreateRecordingPage" /* Pages.CREATE_RECORDING_PAGE */);
         this.#clearError();
     }
-    async #onRecordingStarted(event) {
+    async #onRecordingStarted(data) {
         // Recording is not available in device mode.
         await this.#disableDeviceModeIfEnabled();
         // Setting up some variables to notify the user we are initializing a recording.
@@ -672,9 +673,9 @@ let RecorderController = class RecorderController extends LitElement {
         // -- Recording logic starts here --
         Host.userMetrics.recordingToggled(1 /* Host.UserMetrics.RecordingToggled.RECORDING_STARTED */);
         this.currentRecordingSession = new Models.RecordingSession.RecordingSession(this.#getMainTarget(), {
-            title: event.name,
-            selectorAttribute: event.selectorAttribute,
-            selectorTypesToRecord: event.selectorTypesToRecord.length ? event.selectorTypesToRecord :
+            title: data.name,
+            selectorAttribute: data.selectorAttribute,
+            selectorTypesToRecord: data.selectorTypesToRecord.length ? data.selectorTypesToRecord :
                 Object.values(Models.Schema.SelectorType),
         });
         this.#setCurrentRecording(await this.#storage.saveRecording(this.currentRecordingSession.cloneUserFlow()));
@@ -740,7 +741,7 @@ let RecorderController = class RecorderController extends LitElement {
         // Dispatch an event for e2e testing.
         this.dispatchEvent(new Events.RecordingStateChangedEvent(this.currentRecording.flow));
     }
-    async #onRecordingCancelled() {
+    async onRecordingCancelled() {
         if (this.previousPage) {
             this.#setCurrentPage(this.previousPage);
         }
@@ -881,12 +882,18 @@ let RecorderController = class RecorderController extends LitElement {
                 return;
             case "chrome-recorder.start-recording" /* Actions.RecorderActions.START_RECORDING */:
                 if (this.currentPage !== "CreateRecordingPage" /* Pages.CREATE_RECORDING_PAGE */ && !this.isRecording) {
-                    this.#shortcutHelper.handleShortcut(this.#onRecordingStarted.bind(this, new Components.CreateRecordingView.RecordingStartedEvent(this.#recorderSettings.defaultTitle, this.#recorderSettings.defaultSelectors, this.#recorderSettings.selectorAttribute)));
+                    this.#shortcutHelper.handleShortcut(this.#onRecordingStarted.bind(this, {
+                        name: this.#recorderSettings.defaultTitle,
+                        selectorTypesToRecord: this.#recorderSettings.defaultSelectors,
+                        selectorAttribute: this.#recorderSettings.selectorAttribute ? this.#recorderSettings.selectorAttribute :
+                            undefined,
+                    }));
                 }
                 else if (this.currentPage === "CreateRecordingPage" /* Pages.CREATE_RECORDING_PAGE */) {
-                    const view = this.renderRoot.querySelector('devtools-create-recording-view');
-                    if (view) {
-                        this.#shortcutHelper.handleShortcut(view.startRecording.bind(view));
+                    if (this.#createRecordingView) {
+                        this.#shortcutHelper.handleShortcut(() => {
+                            this.#createRecordingView?.startRecording();
+                        });
                     }
                 }
                 else if (this.isRecording) {
@@ -1039,13 +1046,17 @@ let RecorderController = class RecorderController extends LitElement {
     #renderCreateRecordingPage() {
         // clang-format off
         return html `
-      <devtools-create-recording-view
-        .data=${{
+      <devtools-widget
+        class="recording-view"
+        .widgetConfig=${UI.Widget.widgetConfig(Components.CreateRecordingView.CreateRecordingView, {
             recorderSettings: this.#recorderSettings,
-        }}
-        @recordingstarted=${this.#onRecordingStarted}
-        @recordingcancelled=${this.#onRecordingCancelled}
-      ></devtools-create-recording-view>
+            onRecordingStarted: this.#onRecordingStarted.bind(this),
+            onRecordingCancelled: this.onRecordingCancelled.bind(this),
+        })}
+        ${UI.Widget.widgetRef(Components.CreateRecordingView.CreateRecordingView, widget => {
+            this.#createRecordingView = widget;
+        })}
+      ></devtools-widget>
     `;
         // clang-format on
     }

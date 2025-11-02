@@ -1,7 +1,6 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../ui/legacy/legacy.js';
 import '../../ui/components/markdown_view/markdown_view.js';
 import '../../ui/components/spinners/spinners.js';
@@ -153,62 +152,35 @@ var SelectedProjectType;
      */
     SelectedProjectType["AUTOMATIC_CONNECTED"] = "automaticConnected";
 })(SelectedProjectType || (SelectedProjectType = {}));
-export class PatchWidget extends UI.Widget.Widget {
-    changeSummary = '';
-    changeManager;
-    // Whether the user completed first run experience dialog or not.
-    #aiPatchingFreCompletedSetting = Common.Settings.Settings.instance().createSetting('ai-assistance-patching-fre-completed', false);
-    #projectIdSetting = Common.Settings.Settings.instance().createSetting('ai-assistance-patching-selected-project-id', '');
-    #view;
-    #viewOutput = {};
-    #aidaClient;
-    #applyPatchAbortController;
-    #project;
-    #patchSources;
-    #savedToDisk;
-    #noLogging; // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
-    #patchSuggestionState = PatchSuggestionState.INITIAL;
-    #workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
-    #workspace = Workspace.Workspace.WorkspaceImpl.instance();
-    #automaticFileSystem = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance().automaticFileSystem;
-    #applyToDisconnectedAutomaticWorkspace = false;
-    // `rpcId` from the `applyPatch` request
-    #rpcId = null;
-    constructor(element, view, opts) {
-        super(element);
-        this.#aidaClient = opts?.aidaClient ?? new Host.AidaClient.AidaClient();
-        this.#noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
-            Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
-        // clang-format off
-        this.#view = view ?? ((input, output, target) => {
-            if (!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL) {
-                return;
-            }
-            output.changeRef = output.changeRef ?? Directives.createRef();
-            output.summaryRef = output.summaryRef ?? Directives.createRef();
-            function renderSourcesLink() {
-                if (!input.sources) {
-                    return nothing;
-                }
-                return html `<x-link
+const DEFAULT_VIEW = (input, output, target) => {
+    if (!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL) {
+        return;
+    }
+    output.changeRef = output.changeRef ?? Directives.createRef();
+    output.summaryRef = output.summaryRef ?? Directives.createRef();
+    function renderSourcesLink() {
+        if (!input.sources) {
+            return nothing;
+        }
+        return html `<x-link
           class="link"
           title="${UIStringsNotTranslate.viewUploadedFiles} ${UIStringsNotTranslate.opensInNewTab}"
           href="data:text/plain;charset=utf-8,${encodeURIComponent(input.sources)}"
           jslog=${VisualLogging.link('files-used-in-patching').track({ click: true })}>
           ${UIStringsNotTranslate.viewUploadedFiles}
         </x-link>`;
-            }
-            function renderHeader() {
-                if (input.savedToDisk) {
-                    return html `
+    }
+    function renderHeader() {
+        if (input.savedToDisk) {
+            return html `
             <devtools-icon class="green-bright-icon summary-badge" name="check-circle"></devtools-icon>
             <span class="header-text">
               ${lockedString(UIStringsNotTranslate.savedToDisk)}
             </span>
           `;
-                }
-                if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
-                    return html `
+        }
+        if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
+            return html `
             <devtools-icon class="on-tonal-icon summary-badge" name="difference"></devtools-icon>
             <span class="header-text">
               ${lockedString(`File changes in ${input.projectName}`)}
@@ -218,8 +190,8 @@ export class PatchWidget extends UI.Widget.Widget {
               name="chevron-down"
             ></devtools-icon>
           `;
-                }
-                return html `
+        }
+        return html `
           <devtools-icon class="on-tonal-icon summary-badge" name="pen-spark"></devtools-icon>
           <span class="header-text">
             ${lockedString(UIStringsNotTranslate.unsavedChanges)}
@@ -229,40 +201,40 @@ export class PatchWidget extends UI.Widget.Widget {
             name="chevron-down"
           ></devtools-icon>
         `;
-            }
-            function renderContent() {
-                if ((!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL) || input.savedToDisk) {
-                    return nothing;
-                }
-                if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
-                    return html `<devtools-widget .widgetConfig=${UI.Widget.widgetConfig(ChangesPanel.CombinedDiffView.CombinedDiffView, {
-                        workspaceDiff: input.workspaceDiff,
-                        // Ignore user creates inspector-stylesheets
-                        ignoredUrls: ['inspector://']
-                    })}></devtools-widget>`;
-                }
-                return html `<devtools-code-block
+    }
+    function renderContent() {
+        if ((!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL) || input.savedToDisk) {
+            return nothing;
+        }
+        if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
+            return html `<devtools-widget .widgetConfig=${UI.Widget.widgetConfig(ChangesPanel.CombinedDiffView.CombinedDiffView, {
+                workspaceDiff: input.workspaceDiff,
+                // Ignore user creates inspector-stylesheets
+                ignoredUrls: ['inspector://']
+            })}></devtools-widget>`;
+        }
+        return html `<devtools-code-block
           .code=${input.changeSummary ?? ''}
           .codeLang=${'css'}
           .displayNotice=${true}
         ></devtools-code-block>
         ${input.patchSuggestionState === PatchSuggestionState.ERROR
-                    ? html `<div class="error-container">
+            ? html `<div class="error-container">
               <devtools-icon name="cross-circle-filled"></devtools-icon>${lockedString(UIStringsNotTranslate.genericErrorMessage)} ${renderSourcesLink()}
             </div>`
-                    : nothing}`;
-            }
-            function renderFooter() {
-                if (input.savedToDisk) {
-                    return nothing;
-                }
-                if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
-                    return html `
+            : nothing}`;
+    }
+    function renderFooter() {
+        if (input.savedToDisk) {
+            return nothing;
+        }
+        if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
+            return html `
           <div class="footer">
             <div class="left-side">
               <x-link class="link disclaimer-link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging.link('code-disclaimer').track({
-                        click: true,
-                    })}>
+                click: true,
+            })}>
                 ${lockedString(UIStringsNotTranslate.codeDisclaimer)}
               </x-link>
               ${renderSourcesLink()}
@@ -283,9 +255,9 @@ export class PatchWidget extends UI.Widget.Widget {
             </div>
           </div>
           `;
-                }
-                const iconName = input.projectType === SelectedProjectType.AUTOMATIC_DISCONNECTED ? 'folder-off' : input.projectType === SelectedProjectType.AUTOMATIC_CONNECTED ? 'folder-asterisk' : 'folder';
-                return html `
+        }
+        const iconName = input.projectType === SelectedProjectType.AUTOMATIC_DISCONNECTED ? 'folder-off' : input.projectType === SelectedProjectType.AUTOMATIC_CONNECTED ? 'folder-asterisk' : 'folder';
+        return html `
         <div class="footer">
           ${input.projectName ? html `
             <div class="change-workspace" jslog=${VisualLogging.section('patch-widget.workspace')}>
@@ -341,25 +313,25 @@ export class PatchWidget extends UI.Widget.Widget {
                  class="link tooltip-link"
                  role="link"
                  jslog=${VisualLogging.link('open-ai-settings').track({
-                    click: true,
-                })}
+            click: true,
+        })}
                  @click=${input.onLearnMoreTooltipClick}
                >${lockedString(UIStringsNotTranslate.learnMore)}</button>
              </div>
             </devtools-tooltip>
           </div>
         </div>`;
-            }
-            // Use a simple div for the "Saved to disk" state as it's not expandable,
-            // otherwise use the interactive <details> element.
-            const template = input.savedToDisk
-                ? html `
+    }
+    // Use a simple div for the "Saved to disk" state as it's not expandable,
+    // otherwise use the interactive <details> element.
+    const template = input.savedToDisk
+        ? html `
           <div class="change-summary saved-to-disk" role="status" aria-live="polite">
             <div class="header-container">
              ${renderHeader()}
              </div>
           </div>`
-                : html `
+        : html `
           <details class="change-summary" jslog=${VisualLogging.section('patch-widget')}>
             <summary class="header-container" ${Directives.ref(output.summaryRef)}>
               ${renderHeader()}
@@ -368,9 +340,35 @@ export class PatchWidget extends UI.Widget.Widget {
             ${renderFooter()}
           </details>
         `;
-            render(template, target, { host: target });
-        });
-        // clang-format on
+    render(template, target);
+};
+export class PatchWidget extends UI.Widget.Widget {
+    changeSummary = '';
+    changeManager;
+    // Whether the user completed first run experience dialog or not.
+    #aiPatchingFreCompletedSetting = Common.Settings.Settings.instance().createSetting('ai-assistance-patching-fre-completed', false);
+    #projectIdSetting = Common.Settings.Settings.instance().createSetting('ai-assistance-patching-selected-project-id', '');
+    #view;
+    #viewOutput = {};
+    #aidaClient;
+    #applyPatchAbortController;
+    #project;
+    #patchSources;
+    #savedToDisk;
+    #noLogging; // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
+    #patchSuggestionState = PatchSuggestionState.INITIAL;
+    #workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
+    #workspace = Workspace.Workspace.WorkspaceImpl.instance();
+    #automaticFileSystem = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance().automaticFileSystem;
+    #applyToDisconnectedAutomaticWorkspace = false;
+    // `rpcId` from the `applyPatch` request
+    #rpcId = null;
+    constructor(element, view = DEFAULT_VIEW, opts) {
+        super(element);
+        this.#aidaClient = opts?.aidaClient ?? new Host.AidaClient.AidaClient();
+        this.#noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
+            Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+        this.#view = view;
         this.requestUpdate();
     }
     #onLearnMoreTooltipClick() {

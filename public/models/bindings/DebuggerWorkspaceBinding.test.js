@@ -6,18 +6,16 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
+import { setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { loadBasicSourceMapExample } from '../../testing/SourceMapHelpers.js';
 import { protocolCallFrame, stringifyStackTrace } from '../../testing/StackTraceHelpers.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('DebuggerWorkspaceBinding', () => {
-    let target;
-    let backend;
     let debuggerWorkspaceBinding;
     beforeEach(() => {
-        target = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
-        const targetManager = target.targetManager();
+        const targetManager = SDK.TargetManager.TargetManager.instance();
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
         const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
@@ -27,9 +25,11 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
             targetManager,
             ignoreListManager,
         });
+        setMockResourceTree(false);
     });
     it('can wait for a uiSourceCode if it is not yet available', async () => {
-        backend = new MockProtocolBackend();
+        const backend = new MockProtocolBackend();
+        const target = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         const scriptUrl = urlString `http://script-host/script.js`;
         const scriptInfo = { url: scriptUrl, content: 'console.log(1);', startLine: 0, startColumn: 0, hasSourceURL: false };
@@ -54,6 +54,7 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
         assert.deepEqual(Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode), target);
     });
     it('augments sourcemap with scopes via DebuggerWorkspaceBindings.setFunctionRanges', async () => {
+        const target = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
         const validFunctionRanges = [{ start: { line: 0, column: 0 }, end: { line: 10, column: 1 }, name: 'foo' }];
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
@@ -70,6 +71,7 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
     });
     describe('createStackTraceFromProtocolRuntime', () => {
         it('identity translates frames by default', async () => {
+            const target = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
             const stackTrace = await debuggerWorkspaceBinding.createStackTraceFromProtocolRuntime({
                 callFrames: [
                     'foo.js:1:foo:1:10',
@@ -84,6 +86,7 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
             ].join('\n'));
         });
         it('identity translates frames for disposed targets (no ModelData instance)', async () => {
+            const target = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
             target.dispose('disposed for testing');
             const stackTrace = await debuggerWorkspaceBinding.createStackTraceFromProtocolRuntime({
                 callFrames: [
@@ -99,6 +102,7 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
             ].join('\n'));
         });
         it('calls the debugger language plugin', async () => {
+            const target = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
             const spy = sinon.spy(debuggerWorkspaceBinding.pluginManager, 'translateRawFramesStep');
             await debuggerWorkspaceBinding.createStackTraceFromProtocolRuntime({
                 callFrames: [
@@ -110,7 +114,8 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
             sinon.assert.calledThrice(spy);
         });
         it('translates source location via the fallback script mapping', async () => {
-            backend = new MockProtocolBackend();
+            const backend = new MockProtocolBackend();
+            const target = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
             const script = await backend.addScript(target, {
                 url: Platform.DevToolsPath.urlString `http://example.com/foo.js`,
                 content: '// content omitted as its not required',
