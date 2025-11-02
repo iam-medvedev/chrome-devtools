@@ -1,3 +1,4 @@
+import '../../../ui/components/settings/settings.js';
 import * as Common from '../../../core/common/common.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as UI from '../../../ui/legacy/legacy.js';

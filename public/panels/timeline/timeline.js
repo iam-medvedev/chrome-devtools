@@ -3053,6 +3053,7 @@ var codeHighlighter_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./codeHighlighter.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineUIUtils.js
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as PerfUI13 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 
 // gen/front_end/ui/legacy/components/utils/imagePreview.css.js
@@ -4790,6 +4791,7 @@ import * as Dialogs from "./../../ui/components/dialogs/dialogs.js";
 import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
 import * as PerfUI12 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport17 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
@@ -8920,12 +8922,12 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     cpuThrottlingPane.append(i18nString20(UIStrings20.cpu));
     this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
     cpuThrottlingPane.append(this.cpuThrottlingSelect.control.element);
-    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString20(UIStrings20.capturesSelectorStats)));
+    this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString20(UIStrings20.capturesSelectorStats)));
     const networkThrottlingPane = this.settingsPane.createChild("div");
     networkThrottlingPane.append(i18nString20(UIStrings20.network));
     networkThrottlingPane.append(this.createNetworkConditionsSelectToolbarItem().element);
-    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString20(UIStrings20.capturesAdvancedPaint)));
-    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString20(UIStrings20.disablesJavascriptSampling)));
+    this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString20(UIStrings20.capturesAdvancedPaint)));
+    this.settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString20(UIStrings20.disablesJavascriptSampling)));
     const thirdPartyCheckbox = this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString20(UIStrings20.showDataAddedByExtensions));
     const localLink = UI10.XLink.XLink.create("https://developer.chrome.com/docs/devtools/performance/extension", i18nString20(UIStrings20.learnMore));
     localLink.style.marginLeft = "5px";
@@ -8989,7 +8991,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     const traceEvents = parsedTrace.traceEvents.map((event) => {
       if (Trace23.Types.Events.isAnyScriptSourceEvent(event) && event.name !== "StubScriptCatchup") {
         const mappedScript = scriptByIdMap.get(`${event.args.data.isolate}.${event.args.data.scriptId}`);
-        if (!config.includeScriptContent || mappedScript?.url && Trace23.Helpers.Trace.isExtensionUrl(mappedScript.url)) {
+        if (!config.includeResourceContent || mappedScript?.url && Trace23.Helpers.Trace.isExtensionUrl(mappedScript.url)) {
           return {
             cat: event.cat,
             name: "StubScriptCatchup",
@@ -9010,7 +9012,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     metadata.modifications = config.addModifications ? ModificationsManager.activeManager()?.toJSON() : void 0;
     try {
       await this.innerSaveToFile(traceEvents, metadata, {
-        includeScriptContent: config.includeScriptContent,
+        includeResourceContent: config.includeResourceContent,
         includeSourceMaps: config.includeSourceMaps,
         addModifications: config.addModifications,
         shouldCompress: config.shouldCompress
@@ -9027,18 +9029,20 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   async innerSaveToFile(traceEvents, metadata, config) {
     const isoDate = Platform11.DateUtilities.toISO8601Compact(metadata.startTime ? new Date(metadata.startTime) : /* @__PURE__ */ new Date());
     const isCpuProfile = metadata.dataOrigin === "CPUProfile";
-    const { includeScriptContent, includeSourceMaps } = config;
-    metadata.enhancedTraceVersion = includeScriptContent ? SDK8.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : void 0;
+    const { includeResourceContent, includeSourceMaps } = config;
+    metadata.enhancedTraceVersion = includeResourceContent ? SDK8.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : void 0;
     let fileName = isCpuProfile ? `CPU-${isoDate}.cpuprofile` : `Trace-${isoDate}.json`;
     let blobParts = [];
     if (isCpuProfile) {
       const profile = Trace23.Helpers.SamplesIntegrator.SamplesIntegrator.extractCpuProfileFromFakeTrace(traceEvents);
       blobParts = [JSON.stringify(profile)];
     } else {
-      const filteredMetadataSourceMaps = includeScriptContent && includeSourceMaps ? this.#filterMetadataSourceMaps(metadata) : void 0;
+      const filteredMetadataSourceMaps = includeResourceContent && includeSourceMaps ? this.#filterMetadataSourceMaps(metadata) : void 0;
+      const filteredResources = includeResourceContent ? this.#filterMetadataResoures(metadata) : void 0;
       const formattedTraceIter = traceJsonGenerator(traceEvents, {
         ...metadata,
-        sourceMaps: filteredMetadataSourceMaps
+        sourceMaps: filteredMetadataSourceMaps,
+        resources: filteredResources
       });
       blobParts = Array.from(formattedTraceIter);
     }
@@ -9085,7 +9089,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     const exportTraceOptionsElement = this.saveButton.element;
     const state = exportTraceOptionsElement.state;
     await this.saveToFile({
-      includeScriptContent: state.includeScriptContent,
+      includeResourceContent: state.includeResourceContent,
       includeSourceMaps: state.includeSourceMaps,
       addModifications: state.includeAnnotations,
       shouldCompress: state.shouldCompress
@@ -9098,6 +9102,12 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     return metadata.sourceMaps.filter((value) => {
       return !Trace23.Helpers.Trace.isExtensionUrl(value.url);
     });
+  }
+  #filterMetadataResoures(metadata) {
+    if (!metadata.resources) {
+      return void 0;
+    }
+    return metadata.resources;
   }
   #showExportTraceErrorDialog(error) {
     if (this.statusDialog) {
@@ -10085,6 +10095,39 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       return payload ? new SDK8.SourceMap.SourceMap(sourceUrl, sourceMapUrl, payload) : null;
     };
   }
+  async #retainResourceContentsForEnhancedTrace(parsedTrace, metadata) {
+    const resourceTypesToRetain = /* @__PURE__ */ new Set([
+      "Document",
+      "Stylesheet"
+      /* Protocol.Network.ResourceType.Stylesheet */
+    ]);
+    for (const request of parsedTrace.data.NetworkRequests.byId.values()) {
+      if (!resourceTypesToRetain.has(request.args.data.resourceType)) {
+        continue;
+      }
+      const url = request.args.data.url;
+      const resource = SDK8.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+      if (!resource) {
+        continue;
+      }
+      const content = await resource.requestContentData();
+      if ("error" in content) {
+        continue;
+      }
+      if (!content.isTextContent) {
+        continue;
+      }
+      if (!metadata.resources) {
+        metadata.resources = [];
+      }
+      metadata.resources.push({
+        url,
+        frame: resource.frameId ?? "",
+        content: content.text,
+        mimeType: content.mimeType
+      });
+    }
+  }
   async #executeNewTrace(collectedEvents, isFreshRecording, metadata) {
     const config = {
       metadata: metadata ?? void 0,
@@ -10109,6 +10152,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       const parsedTrace = this.#traceEngineModel.parsedTrace(traceIndex);
       if (parsedTrace) {
         await this.#retainSourceMapsForEnhancedTrace(parsedTrace, metadata);
+        await this.#retainResourceContentsForEnhancedTrace(parsedTrace, metadata);
       }
     }
   }
@@ -11065,25 +11109,6 @@ var TimelineUIUtils = class _TimelineUIUtils {
         });
         break;
       }
-      case "V8.CompileScript":
-      case "v8.produceCache":
-      case "EvaluateScript": {
-        const url = unsafeEventData["url"];
-        if (url) {
-          const { lineNumber } = Trace24.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
-          details = this.linkifyLocation({
-            scriptId: null,
-            url,
-            lineNumber: lineNumber || 0,
-            columnNumber: 0,
-            target,
-            isFreshOrEnhanced,
-            linkifier,
-            omitOrigin: true
-          });
-        }
-        break;
-      }
       case "v8.deserializeOnBackground":
       case "v8.parseOnBackground": {
         const url = unsafeEventData["url"];
@@ -11830,6 +11855,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
   static stackTraceFromCallFrames(callFrames) {
     return { callFrames };
   }
+  /** This renders a stack trace... and other cool stuff. */
   static async generateCauses(event, contentHelper, parsedTrace) {
     const { startTime } = Trace24.Helpers.Timing.eventTimingsMilliSeconds(event);
     let initiatorStackLabel = i18nString21(UIStrings21.initiatorStackTrace);
@@ -11970,7 +11996,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         scriptLink = contentHelper.linkifier()?.maybeLinkifyScriptLocation(SDK9.TargetManager.TargetManager.instance().rootTarget(), callFrame.scriptId, callFrame.url, callFrame.lineNumber) || null;
       }
       const niceNodeLink = createLinkForInvalidationNode(invalidation);
-      const text = scriptLink ? i18n41.i18n.getFormatLocalizedString(str_21, UIStrings21.invalidationWithCallFrame, { PH1: niceNodeLink, PH2: scriptLink }) : niceNodeLink;
+      const text = scriptLink ? uiI18n.getFormatLocalizedString(str_21, UIStrings21.invalidationWithCallFrame, { PH1: niceNodeLink, PH2: scriptLink }) : niceNodeLink;
       const generatedText = typeof text === "string" ? text : text.innerText;
       if (generatedItems.has(generatedText)) {
         continue;
@@ -12195,7 +12221,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       PH1: i18n41.TimeUtilities.millisToString(durationMilli, true),
       PH2: i18n41.TimeUtilities.millisToString(offsetMilli, true)
     });
-    return i18n41.i18n.getFormatLocalizedString(str_21, UIStrings21.emptyPlaceholder, { PH1: durationText });
+    return uiI18n.getFormatLocalizedString(str_21, UIStrings21.emptyPlaceholder, { PH1: durationText });
   }
   static quadWidth(quad) {
     return Math.round(Math.sqrt(Math.pow(quad[0] - quad[2], 2) + Math.pow(quad[1] - quad[3], 2)));
@@ -13595,22 +13621,8 @@ var UIStrings23 = {
 var str_23 = i18n45.i18n.registerUIStrings("panels/timeline/TimelineSelectorStatsView.ts", UIStrings23);
 var i18nString23 = i18n45.i18n.getLocalizedString.bind(void 0, str_23);
 var SelectorTimingsKey = Trace28.Types.Events.SelectorTimingsKey;
-var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
-  #selectorLocations;
-  #parsedTrace = null;
-  /**
-   * We store the last event (or array of events) that we renderered. We do
-   * this because as the user zooms around the panel this view is updated,
-   * however if the set of events that are populating the view is the same as it
-   * was the last time, we can bail without doing any re-rendering work.
-   * If the user views a single event, this will be set to that single event, but if they are viewing a range of events, this will be set to an array.
-   * If it's null, that means we have not rendered yet.
-   */
-  #lastStatsSourceEventOrEvents = null;
-  #view;
-  #timings = [];
-  constructor(parsedTrace, view = (input, _, target) => {
-    render2(html2`
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  render2(html2`
       <devtools-data-grid striped name=${i18nString23(UIStrings23.selectorStats)}
           @contextmenu=${input.onContextMenu.bind(input)}>
         <table>
@@ -13643,12 +13655,12 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
             </th>
           </tr>
           ${input.timings.map((timing) => {
-      const nonMatches = timing[SelectorTimingsKey.MatchAttempts] - timing[SelectorTimingsKey.MatchCount];
-      const slowPathNonMatches = (nonMatches ? 1 - timing[SelectorTimingsKey.FastRejectCount] / nonMatches : 0) * 100;
-      const styleSheetId = timing[SelectorTimingsKey.StyleSheetId];
-      const locations = timing.locations;
-      const locationMessage = locations ? null : locations === null ? "" : i18nString23(UIStrings23.unableToLinkViaStyleSheetId, { PH1: styleSheetId });
-      return html2`<tr>
+    const nonMatches = timing[SelectorTimingsKey.MatchAttempts] - timing[SelectorTimingsKey.MatchCount];
+    const slowPathNonMatches = (nonMatches ? 1 - timing[SelectorTimingsKey.FastRejectCount] / nonMatches : 0) * 100;
+    const styleSheetId = timing[SelectorTimingsKey.StyleSheetId];
+    const locations = timing.locations;
+    const locationMessage = locations ? null : locations === null ? "" : i18nString23(UIStrings23.unableToLinkViaStyleSheetId, { PH1: styleSheetId });
+    return html2`<tr>
             <td data-value=${timing[SelectorTimingsKey.Elapsed]}>
               ${(timing[SelectorTimingsKey.Elapsed] / 1e3).toFixed(3)}
             </td>
@@ -13668,10 +13680,25 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
                 >${itemIndex !== locations.length - 1 ? "," : ""}`)}` : locationMessage}
             </td>
           </tr>`;
-    })}
+  })}
         </table>
-      </devtools-data-grid>`, target, { host: this });
-  }) {
+      </devtools-data-grid>`, target);
+};
+var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
+  #selectorLocations;
+  #parsedTrace = null;
+  /**
+   * We store the last event (or array of events) that we renderered. We do
+   * this because as the user zooms around the panel this view is updated,
+   * however if the set of events that are populating the view is the same as it
+   * was the last time, we can bail without doing any re-rendering work.
+   * If the user views a single event, this will be set to that single event, but if they are viewing a range of events, this will be set to an array.
+   * If it's null, that means we have not rendered yet.
+   */
+  #lastStatsSourceEventOrEvents = null;
+  #view;
+  #timings = [];
+  constructor(parsedTrace, view = DEFAULT_VIEW2) {
     super({ jslog: `${VisualLogging8.pane("selector-stats").track({ resize: true })}` });
     this.registerRequiredCSS(timelineSelectorStatsView_css_default);
     this.#view = view;

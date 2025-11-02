@@ -9,7 +9,8 @@ import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTes
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { StylingAgent, AiAgent } = AiAssistance;
-describeWithEnvironment('StylingAgent', () => {
+describeWithEnvironment('StylingAgent', function () {
+    const snapshotTester = new SnapshotTester(this, import.meta);
     function mockHostConfig(modelId, temperature, userTier, executionMode, multimodal) {
         updateHostConfig({
             devToolsFreestyler: {
@@ -41,14 +42,6 @@ describeWithEnvironment('StylingAgent', () => {
         element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         element.domModel.returns(domModel);
         element.backendNodeId.returns(99);
-    });
-    let snapshotTester;
-    before(async () => {
-        snapshotTester = new SnapshotTester(import.meta);
-        await snapshotTester.load();
-    });
-    after(async () => {
-        await snapshotTester.finish();
     });
     describe('describeElement', () => {
         it('should describe an element with no children, siblings, or parent', async function () {

@@ -1,7 +1,6 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../ui/components/switch/switch.js';
 import '../../ui/components/cards/cards.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
@@ -111,7 +110,7 @@ const allStatusStrings = [
     UIStrings.statusUnknown,
 ];
 const INCOGNITO_EXPLANATION_URL = 'https://support.google.com/chrome/answer/95464?hl=en&co=GENIE.Platform%3DDesktop';
-export const DEFAULT_VIEW = (input, _, target) => {
+export const DEFAULT_VIEW = (input, _output, target) => {
     const { status } = input;
     const statusText = status ? i18nString(UIStrings[status]) : i18nString(UIStrings.statusUnknown);
     // clang-format off

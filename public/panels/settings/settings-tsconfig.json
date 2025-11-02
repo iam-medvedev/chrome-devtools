@@ -100,10 +100,16 @@
       "path": "../../ui/components/switch/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/i18n/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/data_grid/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/components/settings_ui/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"

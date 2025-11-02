@@ -7,14 +7,14 @@ import { CSSProperty } from './CSSProperty.js';
 export class CSSStyleDeclaration {
     #cssModel;
     parentRule;
-    #allProperties;
+    #allProperties = [];
     styleSheetId;
-    range;
+    range = null;
     cssText;
     #shorthandValues = new Map();
     #shorthandIsImportant = new Set();
     #activePropertyMap = new Map();
-    #leadingProperties;
+    #leadingProperties = null;
     type;
     // For CSSStyles coming from animations,
     // This holds the name of the animation.
@@ -82,7 +82,7 @@ export class CSSStyleDeclaration {
         this.#generateSyntheticPropertiesIfNeeded();
         this.#computeInactiveProperties();
         // TODO(changhaohan): verify if this #activePropertyMap is still necessary, or if it is
-        // providing different information against the activeness in allPropertiesInternal.
+        // providing different information against the activeness in #allProperties.
         this.#activePropertyMap = new Map();
         for (const property of this.#allProperties) {
             if (!property.activeInStyle()) {

@@ -8,12 +8,12 @@ interface ViewInput {
 }
 type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWidget {
+export declare class NodeStackTraceWidget extends UI.Widget.VBox {
     #private;
     constructor(view?: View);
     wasShown(): void;
     willHide(): void;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
 }
 export declare const MaxLengthForLinks = 40;
 export {};

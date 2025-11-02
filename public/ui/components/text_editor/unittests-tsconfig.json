@@ -43,6 +43,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionProvider.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionTeaserPlaceholder.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AutocompleteHistory.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/ExecutionPositionHighlighter.test.ts",

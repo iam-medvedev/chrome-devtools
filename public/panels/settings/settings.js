@@ -20,6 +20,7 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
+import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import { html, render } from "./../../ui/lit/lit.js";
@@ -491,9 +492,7 @@ var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
     const sectionName = "EXTENSIONS";
     const settingUI = Components.Linkifier.LinkHandlerSettingUI.instance();
     const element = settingUI.settingElement();
-    if (element) {
-      this.createStandardSectionElement(sectionName, settings, element);
-    }
+    this.createStandardSectionElement(sectionName, settings, element);
   }
   createSectionElement(category, settings) {
     if (category === "EXTENSIONS") {
@@ -513,7 +512,7 @@ var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
     const sectionElement = document.createElement("div");
     for (const settingRegistration of settings) {
       const setting = Common.Settings.Settings.instance().moduleSetting(settingRegistration.settingName);
-      const settingControl = UI.SettingsUI.createControlForSetting(setting);
+      const settingControl = SettingsUI.SettingsUI.createControlForSetting(setting);
       if (settingControl) {
         this.settingToControl.set(setting, settingControl);
         sectionElement.appendChild(settingControl);
@@ -553,12 +552,10 @@ var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.VBo
     filterSection.classList.add("experiments-filter");
     render(html`
         <devtools-toolbar>
-          <devtools-toolbar-input type="filter" placeholder=${i18nString(UIStrings.searchExperiments)} style="flex-grow:1" @change=${this.#onFilterChanged.bind(this)}></devtools-toolbar-input>
+          <devtools-toolbar-input autofocus type="filter" placeholder=${i18nString(UIStrings.searchExperiments)} style="flex-grow:1" @change=${this.#onFilterChanged.bind(this)}></devtools-toolbar-input>
         </devtools-toolbar>
     `, filterSection);
     this.renderExperiments("");
-    const filter = filterSection.querySelector("devtools-toolbar-input");
-    this.setDefaultFocusedElement(filter);
   }
   #onFilterChanged(e) {
     this.renderExperiments(e.detail.toLowerCase());
@@ -733,7 +730,8 @@ var Revealer = class {
 // gen/front_end/panels/settings/AISettingsTab.js
 var AISettingsTab_exports = {};
 __export(AISettingsTab_exports, {
-  AISettingsTab: () => AISettingsTab
+  AISettingsTab: () => AISettingsTab,
+  AI_SETTINGS_TAB_DEFAULT_VIEW: () => AI_SETTINGS_TAB_DEFAULT_VIEW
 });
 import * as Common2 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
@@ -742,8 +740,8 @@ import * as Root2 from "./../../core/root/root.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as Input from "./../../ui/components/input/input.js";
-import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as Switch from "./../../ui/components/switch/switch.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
@@ -755,193 +753,196 @@ var aiSettingsTab_css_default = `/*
  * found in the LICENSE file.
  */
 
-* {
-  box-sizing: border-box;
-}
+@scope to (devtools-widget > *){
+  .ai-settings-container {
+    container-type: inline-size;
+    container-name: ai-settings;
 
-:host {
-  container-type: inline-size;
-  container-name: ai-settings;
-}
-
-.shared-disclaimer {
-  background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
-  border-radius: var(--sys-size-5);
-  padding: var(--sys-size-9) var(--sys-size-11);
-  max-width: var(--sys-size-35);
-  min-width: var(--sys-size-28);
-
-  h2 {
-    font: var(--sys-typescale-headline5);
-    margin: 0 0 var(--sys-size-6);
+    @container ai-settings (min-width: 480px) {
+      .settings-container-wrapper {
+        align-items: center;
+      }
+    }
   }
-}
 
-.disclaimer-list-header {
-  font: var(--sys-typescale-body5-medium);
-  margin: 0;
-}
-
-.disclaimer-list {
-  padding: var(--sys-size-6) 0 0;
-  display: grid;
-  grid-template-columns: var(--sys-size-12) auto;
-  gap: var(--sys-size-6) 0;
-  line-height: var(--sys-typescale-body5-line-height);
-}
-
-.settings-container {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  border-radius: var(--sys-size-5);
-  box-shadow: var(--sys-elevation-level2);
-  margin: var(--sys-size-11) 0 var(--sys-size-4);
-  line-height: var(--sys-typescale-body5-line-height);
-  min-width: var(--sys-size-28);
-  max-width: var(--sys-size-35);
-  background-color: var(--app-color-card-background);
-}
-
-.accordion-header {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-
-  &:hover {
-    background-color: var(--sys-color-state-hover-on-subtle);
+  * {
+    box-sizing: border-box;
+    min-height: auto;
   }
-}
 
-.icon-container,
-.dropdown {
-  padding: 0 var(--sys-size-8);
-}
+  .shared-disclaimer {
+    background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
+    border-radius: var(--sys-size-5);
+    padding: var(--sys-size-9) var(--sys-size-11);
+    max-width: var(--sys-size-35);
+    min-width: var(--sys-size-28);
 
-.toggle-container {
-  padding: 0 var(--sys-size-8) 0 var(--sys-size-9);
-
-  &:hover {
-    background-color: var(--sys-color-state-hover-on-subtle);
+    h2 {
+      font: var(--sys-typescale-headline5);
+      margin: 0 0 var(--sys-size-6);
+    }
   }
-}
 
-.expansion-grid {
-  padding: var(--sys-size-4) var(--sys-size-8) var(--sys-size-6);
-  display: grid;
-  grid-template-columns: var(--sys-size-9) auto;
-  gap: var(--sys-size-6) var(--sys-size-8);
-  line-height: var(--sys-typescale-body5-line-height);
-  color: var(--sys-color-on-surface-subtle);
-}
-
-.expansion-grid-whole-row {
-  grid-column: span 2;
-  font-weight: var(--ref-typeface-weight-medium);
-  color: var(--sys-color-on-surface);
-  padding-top: var(--sys-size-4);
-  margin: 0;
-  font-size: inherit;
-}
-
-.setting-description {
-  color: var(--sys-color-on-surface-subtle);
-}
-
-.centered {
-  display: grid;
-  place-content: center;
-}
-
-.setting-card {
-  padding: var(--sys-size-6) 0;
-
-  h2 {
+  .disclaimer-list-header {
+    font: var(--sys-typescale-body5-medium);
     margin: 0;
-    font: inherit;
   }
-}
 
-.divider {
-  margin: var(--sys-size-5) 0;
-  border-left: var(--sys-size-1) solid var(--sys-color-divider);
-}
+  .disclaimer-list {
+    padding: var(--sys-size-6) 0 0;
+    display: grid;
+    grid-template-columns: var(--sys-size-12) auto;
+    gap: var(--sys-size-6) 0;
+    line-height: var(--sys-typescale-body5-line-height);
+  }
 
-.accordion-header ~ .accordion-header,
-.divider ~ .divider,
-.toggle-container ~ .toggle-container {
-  border-top: var(--sys-size-1) solid var(--sys-color-divider);
-}
+  .settings-container {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    border-radius: var(--sys-size-5);
+    box-shadow: var(--sys-elevation-level2);
+    margin: var(--sys-size-11) 0 var(--sys-size-4);
+    line-height: var(--sys-typescale-body5-line-height);
+    min-width: var(--sys-size-28);
+    max-width: var(--sys-size-35);
+    background-color: var(--app-color-card-background);
+  }
 
-.whole-row {
-  grid-column: span 5;
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--sys-motion-duration-short4) ease-in;
-}
+  .accordion-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
 
-.whole-row.open {
-  grid-template-rows: 1fr;
-}
+    &:hover {
+      background-color: var(--sys-color-state-hover-on-subtle);
+    }
+  }
 
-.overflow-hidden {
-  overflow: hidden;
-}
+  .icon-container,
+  .dropdown {
+    padding: 0 var(--sys-size-8);
+  }
 
-.link,
-.devtools-link {
-  color: var(--sys-color-primary);
-  text-decoration: underline;
-  cursor: pointer;
-  outline-offset: var(--sys-size-2);
-  padding: 0;
-  font-weight: var(--ref-typeface-weight-regular);
-}
+  .toggle-container {
+    padding: 0 var(--sys-size-8) 0 var(--sys-size-9);
 
-.padded {
-  padding: var(--sys-size-2) 0;
-}
+    &:hover {
+      background-color: var(--sys-color-state-hover-on-subtle);
+    }
+  }
 
-.settings-container-wrapper {
-  position: absolute;
-  inset: var(--sys-size-8) 0 0;
-  overflow: auto;
-  padding: var(--sys-size-3) var(--sys-size-6) var(--sys-size-6);
-  display: flex;
-  flex-direction: column;
-}
+  .expansion-grid {
+    padding: var(--sys-size-4) var(--sys-size-8) var(--sys-size-6);
+    display: grid;
+    grid-template-columns: var(--sys-size-9) auto;
+    gap: var(--sys-size-6) var(--sys-size-8);
+    line-height: var(--sys-typescale-body5-line-height);
+    color: var(--sys-color-on-surface-subtle);
+  }
 
-@container ai-settings (min-width: 480px) {
+  .expansion-grid-whole-row {
+    grid-column: span 2;
+    font-weight: var(--ref-typeface-weight-medium);
+    color: var(--sys-color-on-surface);
+    padding-top: var(--sys-size-4);
+    margin: 0;
+    font-size: inherit;
+  }
+
+  .setting-description {
+    color: var(--sys-color-on-surface-subtle);
+  }
+
+  .centered {
+    display: grid;
+    place-content: center;
+  }
+
+  .setting-card {
+    padding: var(--sys-size-6) 0;
+
+    h2 {
+      margin: 0;
+      font: inherit;
+    }
+  }
+
+  .divider {
+    margin: var(--sys-size-5) 0;
+    border-left: var(--sys-size-1) solid var(--sys-color-divider);
+  }
+
+  .accordion-header ~ .accordion-header,
+  .divider ~ .divider,
+  .toggle-container ~ .toggle-container {
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
+  }
+
+  .whole-row {
+    grid-column: span 5;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--sys-motion-duration-short4) ease-in;
+  }
+
+  .whole-row.open {
+    grid-template-rows: 1fr;
+  }
+
+  .overflow-hidden {
+    overflow: hidden;
+  }
+
+  .link,
+  .devtools-link {
+    color: var(--sys-color-primary);
+    text-decoration: underline;
+    cursor: pointer;
+    outline-offset: var(--sys-size-2);
+    padding: 0;
+    font-weight: var(--ref-typeface-weight-regular);
+  }
+
+  .padded {
+    padding: var(--sys-size-2) 0;
+  }
+
   .settings-container-wrapper {
-    align-items: center;
+    position: absolute;
+    inset: var(--sys-size-8) 0 0;
+    overflow: auto;
+    padding: var(--sys-size-3) var(--sys-size-6) var(--sys-size-6);
+    display: flex;
+    flex-direction: column;
   }
-}
 
-header {
-  font-size: var(--sys-typescale-headline3-size);
-  font-weight: var(--ref-typeface-weight-regular);
-}
+  header {
+    font-size: var(--sys-typescale-headline3-size);
+    font-weight: var(--ref-typeface-weight-regular);
+  }
 
-.disabled-explainer {
-  background-color: var(--sys-color-surface-yellow);
-  border-radius: var(--sys-shape-corner-medium-small);
-  margin-top: var(--sys-size-11);
-  padding: var(--sys-size-6) var(--sys-size-11) var(--sys-size-8);
-  width: 100%;
-  max-width: var(--sys-size-35);
-  min-width: var(--sys-size-28);
-  color: var(--sys-color-yellow);
-}
+  .disabled-explainer {
+    background-color: var(--sys-color-surface-yellow);
+    border-radius: var(--sys-shape-corner-medium-small);
+    margin-top: var(--sys-size-11);
+    padding: var(--sys-size-6) var(--sys-size-11) var(--sys-size-8);
+    width: 100%;
+    max-width: var(--sys-size-35);
+    min-width: var(--sys-size-28);
+    color: var(--sys-color-yellow);
+  }
 
-.disabled-explainer-row {
-  display: flex;
-  gap: var(--sys-size-6);
-  margin-top: var(--sys-size-4);
+  .disabled-explainer-row {
+    display: flex;
+    gap: var(--sys-size-6);
+    margin-top: var(--sys-size-4);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./aiSettingsTab.css")} */`;
 
 // gen/front_end/panels/settings/AISettingsTab.js
-var { html: html2, Directives: { ifDefined, classMap } } = Lit;
+var { html: html2, nothing, render: render2, Directives: { ifDefined, classMap } } = Lit;
 var UIStrings2 = {
   /**
    * @description Header text for for a list of things to consider in the context of generative AI features
@@ -1116,8 +1117,123 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/settings/AISettingsTab.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-  #shadow = this.attachShadow({ mode: "open" });
+var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, _output, target) => {
+  const disabledReasonsExplainer = input.disabledReasons.length ? html2`
+    <div class="disabled-explainer">
+      ${input.disabledReasons.map((reason) => html2`
+        <div class="disabled-explainer-row">
+          <devtools-icon name="warning" class="medium" style="color: var(--icon-warning);">
+          </devtools-icon>
+          ${reason}
+        </div>
+      `)}
+    </div>
+  ` : nothing;
+  const sharedDisclaimer = html2`
+    <div class="shared-disclaimer">
+      <h2>${i18nString2(UIStrings2.boostYourProductivity)}</h2>
+      <h3 class="disclaimer-list-header">${i18nString2(UIStrings2.thingsToConsider)}</h3>
+      <div class="disclaimer-list">
+        ${input.sharedDisclaimerBulletPoints.map((item2) => html2`<div><devtools-icon .name=${item2.icon} class="medium"></devtools-icon>
+              </div><div>${item2.text}</div>`)}
+      </div>
+    </div>
+  `;
+  const renderSettingItem = (settingItem) => {
+    return html2`
+      <div>
+        <devtools-icon class="extra-large" .name=${settingItem.iconName}>
+        </devtools-icon>
+      </div>
+      <div class="padded">${settingItem.text}</div>
+    `;
+  };
+  const isDisabled = input.disabledReasons.length > 0;
+  const disabledReasonsJoined = input.disabledReasons.join("\n") || void 0;
+  const settings = Array.from(input.settingToParams.keys()).map((setting) => {
+    const settingData = input.settingToParams.get(setting);
+    if (!settingData) {
+      return nothing;
+    }
+    const detailsClasses = {
+      "whole-row": true,
+      open: settingData.settingExpandState.isSettingExpanded
+    };
+    const tabindex = settingData.settingExpandState.isSettingExpanded ? "0" : "-1";
+    return html2`
+      <div class="accordion-header" @click=${input.expandSetting.bind(void 0, setting)}>
+        <div class="icon-container centered">
+          <devtools-icon name=${settingData.iconName}></devtools-icon>
+        </div>
+        <div class="setting-card">
+          <h2>${settingData.settingName}</h2>
+          <div class="setting-description">${settingData.settingDescription}</div>
+        </div>
+        <div class="dropdown centered">
+          <devtools-button
+            .data=${{
+      title: settingData.settingExpandState.isSettingExpanded ? i18nString2(UIStrings2.showLess) : i18nString2(UIStrings2.showMore),
+      size: "SMALL",
+      iconName: settingData.settingExpandState.isSettingExpanded ? "chevron-up" : "chevron-down",
+      variant: "icon",
+      jslogContext: settingData.settingExpandState.expandSettingJSLogContext
+    }}
+          ></devtools-button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="toggle-container centered"
+        title=${ifDefined(disabledReasonsJoined)}
+        @click=${input.toggleSetting.bind(void 0, setting)}
+      >
+        <devtools-switch
+          .checked=${Boolean(setting.get()) && !isDisabled}
+          .jslogContext=${setting.name || ""}
+          .disabled=${isDisabled}
+          .label=${disabledReasonsJoined || settingData.enableSettingText}
+          data-testid=${settingData.enableSettingText}
+          @switchchange=${input.toggleSetting.bind(void 0, setting)}
+        ></devtools-switch>
+      </div>
+      <div class=${classMap(detailsClasses)}>
+        <div class="overflow-hidden">
+          <div class="expansion-grid">
+            <h3 class="expansion-grid-whole-row">${i18nString2(UIStrings2.whenOn)}</h3>
+            ${settingData.settingItems.map((item2) => renderSettingItem(item2))}
+            <h3 class="expansion-grid-whole-row">${i18nString2(UIStrings2.thingsToConsider)}</h3>
+            ${settingData.toConsiderSettingItems.map((item2) => renderSettingItem(item2))}
+            <div class="expansion-grid-whole-row">
+              <x-link
+                href=${settingData.learnMoreLink.url}
+                class="link"
+                tabindex=${tabindex}
+                jslog=${VisualLogging2.link(settingData.learnMoreLink.linkJSLogContext).track({
+      click: true
+    })}
+              >${i18nString2(UIStrings2.learnMore)}</x-link>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  render2(html2`
+    <style>${Input.checkboxStyles}</style>
+    <style>${aiSettingsTab_css_default}</style>
+    <div class="ai-settings-container">
+    <div class="settings-container-wrapper" jslog=${VisualLogging2.pane("chrome-ai")}>
+      ${sharedDisclaimer}
+      ${input.settingToParams.size ? html2`
+        ${disabledReasonsExplainer}
+        <div class="settings-container">
+          ${settings}
+        </div>
+      ` : nothing}
+    </div></div>
+  `, target);
+};
+var AISettingsTab = class extends UI2.Widget.VBox {
+  #view;
   #consoleInsightsSetting;
   #aiAnnotationsSetting;
   #aiAssistanceSetting;
@@ -1127,7 +1243,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
   // Setting to parameters needed to display it in the UI.
   // To display a a setting, it needs to be added to this map.
   #settingToParams = /* @__PURE__ */ new Map();
-  constructor() {
+  constructor(view) {
     super();
     try {
       this.#consoleInsightsSetting = Common2.Settings.Settings.instance().moduleSetting("console-insights-enabled");
@@ -1147,12 +1263,27 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     }
     this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
     this.#initSettings();
+    this.#view = view ?? AI_SETTINGS_TAB_DEFAULT_VIEW;
   }
-  connectedCallback() {
+  performUpdate() {
+    const disabledReasons = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
+    const viewInput = {
+      disabledReasons,
+      sharedDisclaimerBulletPoints: this.#getSharedDisclaimerBulletPoints(),
+      settingToParams: this.#settingToParams,
+      expandSetting: this.#expandSetting.bind(this),
+      toggleSetting: this.#toggleSetting.bind(this)
+    };
+    this.#view(viewInput, void 0, this.contentElement);
+  }
+  wasShown() {
+    super.wasShown();
     Host2.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
     void this.#onAidaAvailabilityChange();
+    this.requestUpdate();
   }
-  disconnectedCallback() {
+  willHide() {
+    super.willHide();
     Host2.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
   }
   // Define all parameter needed to render a setting
@@ -1259,7 +1390,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     const currentAidaAvailability = await Host2.AidaClient.AidaClient.checkAccessPreconditions();
     if (currentAidaAvailability !== this.#aidaAvailability) {
       this.#aidaAvailability = currentAidaAvailability;
-      void this.render();
+      this.requestUpdate();
     }
   }
   #getAiAssistanceSettingDescription() {
@@ -1294,7 +1425,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
       return;
     }
     settingData.settingExpandState.isSettingExpanded = !settingData.settingExpandState.isSettingExpanded;
-    void this.render();
+    this.requestUpdate();
   }
   #toggleSetting(setting, ev) {
     if (ev.target instanceof Switch.Switch.Switch && ev.type !== Switch.Switch.SwitchChangeEvent.eventName) {
@@ -1323,22 +1454,13 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     } else if (setting.name === "ai-assistance-enabled" && !setting.get()) {
       void AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
     }
-    void this.render();
+    this.requestUpdate();
   }
-  #renderSharedDisclaimerItem(icon, text) {
-    return html2`
-      <div>
-        <devtools-icon .name=${icon} class="medium">
-        </devtools-icon>
-      </div>
-      <div>${text}</div>
-    `;
-  }
-  #renderSharedDisclaimer() {
+  #getSharedDisclaimerBulletPoints() {
     const tosLink = UI2.XLink.XLink.create("https://policies.google.com/terms", i18nString2(UIStrings2.termsOfService), void 0, void 0, "terms-of-service");
     const privacyNoticeLink = UI2.XLink.XLink.create("https://policies.google.com/privacy", i18nString2(UIStrings2.privacyNotice), void 0, void 0, "privacy-notice");
     const noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
-    const bulletPoints = [
+    return [
       { icon: "psychiatry", text: i18nString2(UIStrings2.experimentalFeatures) },
       {
         icon: "google",
@@ -1350,132 +1472,14 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
       },
       {
         icon: "policy",
-        text: html2`${i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.termsOfServicePrivacyNotice, {
+        text: html2`${uiI18n.getFormatLocalizedString(str_2, UIStrings2.termsOfServicePrivacyNotice, {
           PH1: tosLink,
           PH2: privacyNoticeLink
         })}`
       }
     ];
-    return html2`
-      <div class="shared-disclaimer">
-        <h2>${i18nString2(UIStrings2.boostYourProductivity)}</h2>
-        <h3 class="disclaimer-list-header">${i18nString2(UIStrings2.thingsToConsider)}</h3>
-        <div class="disclaimer-list">
-          ${bulletPoints.map((item2) => this.#renderSharedDisclaimerItem(item2.icon, item2.text))}
-        </div>
-      </div>
-    `;
-  }
-  #renderSettingItem(settingItem) {
-    return html2`
-      <div>
-        <devtools-icon class="extra-large" .name=${settingItem.iconName}>
-        </devtools-icon>
-      </div>
-      <div class="padded">${settingItem.text}</div>
-    `;
-  }
-  #renderSetting(setting) {
-    const settingData = this.#settingToParams.get(setting);
-    if (!settingData) {
-      return Lit.nothing;
-    }
-    const disabledReasons = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
-    const isDisabled = disabledReasons.length > 0;
-    const disabledReasonsJoined = disabledReasons.join("\n") || void 0;
-    const detailsClasses = {
-      "whole-row": true,
-      open: settingData.settingExpandState.isSettingExpanded
-    };
-    const tabindex = settingData.settingExpandState.isSettingExpanded ? "0" : "-1";
-    return html2`
-      <div class="accordion-header" @click=${this.#expandSetting.bind(this, setting)}>
-        <div class="icon-container centered">
-          <devtools-icon name=${settingData.iconName}></devtools-icon>
-        </div>
-        <div class="setting-card">
-          <h2>${settingData.settingName}</h2>
-          <div class="setting-description">${settingData.settingDescription}</div>
-        </div>
-        <div class="dropdown centered">
-          <devtools-button
-            .data=${{
-      title: settingData.settingExpandState.isSettingExpanded ? i18nString2(UIStrings2.showLess) : i18nString2(UIStrings2.showMore),
-      size: "SMALL",
-      iconName: settingData.settingExpandState.isSettingExpanded ? "chevron-up" : "chevron-down",
-      variant: "icon",
-      jslogContext: settingData.settingExpandState.expandSettingJSLogContext
-    }}
-          ></devtools-button>
-        </div>
-      </div>
-      <div class="divider"></div>
-      <div class="toggle-container centered"
-        title=${ifDefined(disabledReasonsJoined)}
-        @click=${this.#toggleSetting.bind(this, setting)}
-      >
-        <devtools-switch
-          .checked=${Boolean(setting.get()) && !isDisabled}
-          .jslogContext=${setting.name || ""}
-          .disabled=${isDisabled}
-          .label=${disabledReasonsJoined || settingData.enableSettingText}
-          data-testid=${settingData.enableSettingText}
-          @switchchange=${this.#toggleSetting.bind(this, setting)}
-        ></devtools-switch>
-      </div>
-      <div class=${classMap(detailsClasses)}>
-        <div class="overflow-hidden">
-          <div class="expansion-grid">
-            <h3 class="expansion-grid-whole-row">${i18nString2(UIStrings2.whenOn)}</h3>
-            ${settingData.settingItems.map((item2) => this.#renderSettingItem(item2))}
-            <h3 class="expansion-grid-whole-row">${i18nString2(UIStrings2.thingsToConsider)}</h3>
-            ${settingData.toConsiderSettingItems.map((item2) => this.#renderSettingItem(item2))}
-            <div class="expansion-grid-whole-row">
-              <x-link
-                href=${settingData.learnMoreLink.url}
-                class="link"
-                tabindex=${tabindex}
-                jslog=${VisualLogging2.link(settingData.learnMoreLink.linkJSLogContext).track({
-      click: true
-    })}
-              >${i18nString2(UIStrings2.learnMore)}</x-link>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  #renderDisabledExplainer(disabledReasons) {
-    return html2`
-      <div class="disabled-explainer">
-        ${disabledReasons.map((reason) => html2`
-          <div class="disabled-explainer-row">
-            <devtools-icon name="warning" class="medium" style="color: var(--icon-warning);">
-            </devtools-icon>
-            ${reason}
-          </div>
-        `)}
-      </div>
-    `;
-  }
-  async render() {
-    const disabledReasons = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
-    Lit.render(html2`
-      <style>${Input.checkboxStyles}</style>
-      <style>${aiSettingsTab_css_default}</style>
-      <div class="settings-container-wrapper" jslog=${VisualLogging2.pane("chrome-ai")}>
-        ${this.#renderSharedDisclaimer()}
-        ${this.#settingToParams.size > 0 ? html2`
-          ${disabledReasons.length ? this.#renderDisabledExplainer(disabledReasons) : Lit.nothing}
-          <div class="settings-container">
-            ${this.#settingToParams.keys().map((setting) => this.#renderSetting(setting))}
-          </div>
-        ` : Lit.nothing}
-      </div>
-    `, this.#shadow, { host: this });
   }
 };
-customElements.define("devtools-settings-ai-settings-tab", AISettingsTab);
 
 // gen/front_end/panels/settings/EditFileSystemView.js
 var EditFileSystemView_exports = {};
@@ -1698,6 +1702,7 @@ import "./../../ui/components/cards/cards.js";
 import * as Common3 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
+import * as SettingsUI3 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -1893,16 +1898,16 @@ var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
     ignoreListingDescription.textContent = i18nString4(UIStrings4.ignoreListingDescription);
     const enabledSetting = Common3.Settings.Settings.instance().moduleSetting("enable-ignore-listing");
     const enableIgnoreListing = this.contentElement.createChild("div", "enable-ignore-listing");
-    enableIgnoreListing.appendChild(UI4.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.enableIgnoreListing), enabledSetting));
+    enableIgnoreListing.appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.enableIgnoreListing), enabledSetting));
     UI4.Tooltip.Tooltip.install(enableIgnoreListing, i18nString4(UIStrings4.enableIgnoreListingTooltip));
     const enableIgnoreListingCard = settingsContent.createChild("devtools-card");
     enableIgnoreListingCard.heading = i18nString4(UIStrings4.frameworkIgnoreList);
     enableIgnoreListingCard.append(ignoreListingDescription, enableIgnoreListing);
     const generalExclusionGroup = this.createSettingGroup();
     generalExclusionGroup.classList.add("general-exclusion-group");
-    const ignoreListContentScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI4.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListContentScripts), Common3.Settings.Settings.instance().moduleSetting("skip-content-scripts")));
+    const ignoreListContentScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListContentScripts), Common3.Settings.Settings.instance().moduleSetting("skip-content-scripts")));
     const automaticallyIgnoreListContainer = generalExclusionGroup.createChild("div", "ignore-list-option");
-    const automaticallyIgnoreList = automaticallyIgnoreListContainer.appendChild(UI4.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.automaticallyIgnoreListKnownThirdPartyScripts), Common3.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts")));
+    const automaticallyIgnoreList = automaticallyIgnoreListContainer.appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.automaticallyIgnoreListKnownThirdPartyScripts), Common3.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts")));
     const automaticallyIgnoreLinkButton = new Buttons3.Button.Button();
     automaticallyIgnoreLinkButton.data = {
       iconName: "help",
@@ -1913,7 +1918,7 @@ var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
     };
     automaticallyIgnoreLinkButton.addEventListener("click", () => UI4.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party"));
     automaticallyIgnoreListContainer.appendChild(automaticallyIgnoreLinkButton);
-    const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI4.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListAnonymousScripts), Common3.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts")));
+    const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListAnonymousScripts), Common3.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts")));
     const generalExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
     generalExclusionGroupCard.heading = i18nString4(UIStrings4.generalExclusionRules);
     generalExclusionGroupCard.append(generalExclusionGroup);
@@ -2057,6 +2062,7 @@ import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
+import * as SettingsUI5 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -2255,6 +2261,11 @@ var UIStrings5 = {
    */
   addAShortcut: "Add a shortcut",
   /**
+   * @description Placeholder text in the settings pane when adding a new shortcut.
+   * Explaining that key strokes are going to be recoded.
+   */
+  recordingKeys: "Recoding keys",
+  /**
    * @description Label for a button in the settings pane that confirms changes to a keyboard shortcut
    */
   confirmChanges: "Confirm changes",
@@ -2328,7 +2339,7 @@ var KeybindsSettingsTab = class extends UI5.Widget.VBox {
     const keybindsSetSetting = Common4.Settings.Settings.instance().moduleSetting("active-keybind-set");
     const userShortcutsSetting = Common4.Settings.Settings.instance().moduleSetting("user-shortcuts");
     keybindsSetSetting.addChangeListener(this.update, this);
-    const keybindsSetSelect = UI5.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString5(UIStrings5.matchShortcutsFromPreset));
+    const keybindsSetSelect = SettingsUI5.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString5(UIStrings5.matchShortcutsFromPreset));
     const card = settingsContent.createChild("devtools-card");
     card.heading = i18nString5(UIStrings5.shortcuts);
     if (keybindsSetSelect) {
@@ -2613,6 +2624,7 @@ var ShortcutListItem = class {
     if (this.isEditing) {
       const shortcutInput = shortcutElement.createChild("input", "harmony-input");
       shortcutInput.setAttribute("jslog", `${VisualLogging4.textField().track({ change: true })}`);
+      shortcutInput.setAttribute("placeholder", i18nString5(UIStrings5.recordingKeys));
       shortcutInput.spellcheck = false;
       shortcutInput.maxLength = 0;
       this.shortcutInputs.set(shortcut, shortcutInput);
@@ -2887,7 +2899,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
             <input
               class="harmony-input"
               jslog=${VisualLogging5.textField().track({ keydown: "Enter", change: true }).context(input.excludePatternSetting.name)}
-              ${UI6.SettingsUI.bindToSetting(input.excludePatternSetting)}
+              ${UI6.UIUtils.bindToSetting(input.excludePatternSetting)}
               id="workspace-setting-folder-exclude-pattern"></input>
           </div>
           <div class="mappings-info">${i18nString6(UIStrings6.mappingsAreInferredAutomatically)}</div>

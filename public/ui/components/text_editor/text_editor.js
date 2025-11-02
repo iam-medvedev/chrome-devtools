@@ -4,6 +4,25 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/ui/components/text_editor/AiCodeCompletionProvider.js
+var AiCodeCompletionProvider_exports = {};
+__export(AiCodeCompletionProvider_exports, {
+  AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS: () => AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS,
+  AiCodeCompletionProvider: () => AiCodeCompletionProvider,
+  AiCodeCompletionTeaserMode: () => AiCodeCompletionTeaserMode,
+  DELAY_BEFORE_SHOWING_RESPONSE_MS: () => DELAY_BEFORE_SHOWING_RESPONSE_MS,
+  aiCodeCompletionTeaserModeState: () => aiCodeCompletionTeaserModeState,
+  setAiCodeCompletionTeaserMode: () => setAiCodeCompletionTeaserMode
+});
+import * as Common2 from "./../../../core/common/common.js";
+import * as Host from "./../../../core/host/host.js";
+import * as i18n3 from "./../../../core/i18n/i18n.js";
+import * as Root from "./../../../core/root/root.js";
+import * as PanelCommon from "./../../../panels/common/common.js";
+import * as CodeMirror from "./../../../third_party/codemirror.next/codemirror.next.js";
+import * as UI2 from "./../../legacy/legacy.js";
+import * as VisualLogging2 from "./../../visual_logging/visual_logging.js";
+
 // gen/front_end/ui/components/text_editor/AiCodeCompletionTeaserPlaceholder.js
 var AiCodeCompletionTeaserPlaceholder_exports = {};
 __export(AiCodeCompletionTeaserPlaceholder_exports, {
@@ -70,99 +89,6 @@ function aiCodeCompletionTeaserPlaceholder(teaser) {
   }, { decorations: (v) => v.decorations });
   return plugin;
 }
-
-// gen/front_end/ui/components/text_editor/AutocompleteHistory.js
-var AutocompleteHistory_exports = {};
-__export(AutocompleteHistory_exports, {
-  AutocompleteHistory: () => AutocompleteHistory
-});
-var AutocompleteHistory = class _AutocompleteHistory {
-  static #historySize = 300;
-  #setting;
-  /**
-   * The data mirrors the setting. We have the mirror for 2 reasons:
-   *   1) The setting is size limited
-   *   2) We track the user's current input, even though it's not committed yet.
-   */
-  #data = [];
-  /** 1-based entry in the history stack. */
-  #historyOffset = 1;
-  #uncommittedIsTop = false;
-  /**
-   * Creates a new settings-backed history. The class assumes it has sole
-   * ownership of the setting.
-   */
-  constructor(setting) {
-    this.#setting = setting;
-    this.#data = this.#setting.get();
-  }
-  clear() {
-    this.#data = [];
-    this.#setting.set([]);
-    this.#historyOffset = 1;
-  }
-  length() {
-    return this.#data.length;
-  }
-  /**
-   * Pushes a committed text into the history.
-   */
-  pushHistoryItem(text) {
-    if (this.#uncommittedIsTop) {
-      this.#data.pop();
-      this.#uncommittedIsTop = false;
-    }
-    this.#historyOffset = 1;
-    if (text !== this.#currentHistoryItem()) {
-      this.#data.push(text);
-    }
-    this.#store();
-  }
-  /**
-   * Pushes the current (uncommitted) text into the history.
-   */
-  #pushCurrentText(currentText) {
-    if (this.#uncommittedIsTop) {
-      this.#data.pop();
-    }
-    this.#uncommittedIsTop = true;
-    this.#data.push(currentText);
-  }
-  previous(currentText) {
-    if (this.#historyOffset > this.#data.length) {
-      return void 0;
-    }
-    if (this.#historyOffset === 1) {
-      this.#pushCurrentText(currentText);
-    }
-    ++this.#historyOffset;
-    return this.#currentHistoryItem();
-  }
-  next() {
-    if (this.#historyOffset === 1) {
-      return void 0;
-    }
-    --this.#historyOffset;
-    return this.#currentHistoryItem();
-  }
-  /** Returns a de-duplicated list of history entries that start with the specified prefix */
-  matchingEntries(prefix, limit = 50) {
-    const result = /* @__PURE__ */ new Set();
-    for (let i = this.#data.length - 1; i >= 0 && result.size < limit; --i) {
-      const entry = this.#data[i];
-      if (entry.startsWith(prefix)) {
-        result.add(entry);
-      }
-    }
-    return result;
-  }
-  #currentHistoryItem() {
-    return this.#data[this.#data.length - this.#historyOffset];
-  }
-  #store() {
-    this.#setting.set(this.#data.slice(-_AutocompleteHistory.#historySize));
-  }
-};
 
 // gen/front_end/ui/components/text_editor/config.js
 var config_exports = {};
@@ -904,6 +830,317 @@ var aiAutoCompleteSuggestion = [
   }, { decorations: (p) => p.decorations })
 ];
 
+// gen/front_end/ui/components/text_editor/AiCodeCompletionProvider.js
+var AiCodeCompletionTeaserMode;
+(function(AiCodeCompletionTeaserMode2) {
+  AiCodeCompletionTeaserMode2["OFF"] = "off";
+  AiCodeCompletionTeaserMode2["ON"] = "on";
+  AiCodeCompletionTeaserMode2["ONLY_SHOW_ON_EMPTY"] = "onlyShowOnEmpty";
+})(AiCodeCompletionTeaserMode || (AiCodeCompletionTeaserMode = {}));
+var setAiCodeCompletionTeaserMode = CodeMirror.StateEffect.define();
+var aiCodeCompletionTeaserModeState = CodeMirror.StateField.define({
+  create: () => AiCodeCompletionTeaserMode.OFF,
+  update(value, tr) {
+    return tr.effects.find((effect) => effect.is(setAiCodeCompletionTeaserMode))?.value ?? value;
+  }
+});
+var DELAY_BEFORE_SHOWING_RESPONSE_MS = 500;
+var AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS = 200;
+var AiCodeCompletionProvider = class {
+  #aidaClient;
+  #aiCodeCompletionSetting = Common2.Settings.Settings.instance().createSetting("ai-code-completion-enabled", false);
+  #aiCodeCompletionTeaserDismissedSetting = Common2.Settings.Settings.instance().createSetting("ai-code-completion-teaser-dismissed", false);
+  #teaserCompartment = new CodeMirror.Compartment();
+  #teaser;
+  #suggestionRenderingTimeout;
+  #editor;
+  #aiCodeCompletionConfig;
+  #boundOnUpdateAiCodeCompletionState = this.#updateAiCodeCompletionState.bind(this);
+  constructor(aiCodeCompletionConfig) {
+    if (!this.#isAiCodeCompletionEnabled()) {
+      throw new Error("AI code completion feature is not enabled.");
+    }
+    this.#aiCodeCompletionConfig = aiCodeCompletionConfig;
+  }
+  extension() {
+    return [
+      this.#teaserCompartment.of([]),
+      aiAutoCompleteSuggestion,
+      aiCodeCompletionTeaserModeState,
+      aiAutoCompleteSuggestionState
+    ];
+  }
+  dispose() {
+    this.#detachTeaser();
+    this.#teaser = void 0;
+    this.#aiCodeCompletionSetting.removeChangeListener(this.#boundOnUpdateAiCodeCompletionState);
+    Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#boundOnUpdateAiCodeCompletionState);
+    this.#cleanupAiCodeCompletion();
+  }
+  editorInitialized(editor) {
+    this.#editor = editor;
+    if (!this.#aiCodeCompletionSetting.get() && !this.#aiCodeCompletionTeaserDismissedSetting.get()) {
+      this.#teaser = new PanelCommon.AiCodeCompletionTeaser({
+        onDetach: () => this.#detachTeaser.bind(this)
+      });
+      this.#editor.editor.dispatch({ effects: this.#teaserCompartment.reconfigure([aiCodeCompletionTeaserExtension(this.#teaser)]) });
+    }
+    Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnUpdateAiCodeCompletionState);
+    this.#aiCodeCompletionSetting.addChangeListener(this.#boundOnUpdateAiCodeCompletionState);
+    void this.#updateAiCodeCompletionState();
+  }
+  #setupAiCodeCompletion() {
+    if (!this.#editor || !this.#aiCodeCompletionConfig) {
+      return;
+    }
+    if (!this.#aidaClient) {
+      this.#aidaClient = new Host.AidaClient.AidaClient();
+    }
+    this.#aiCodeCompletionConfig.onFeatureEnabled();
+  }
+  #cleanupAiCodeCompletion() {
+    if (this.#suggestionRenderingTimeout) {
+      clearTimeout(this.#suggestionRenderingTimeout);
+      this.#suggestionRenderingTimeout = void 0;
+    }
+    this.#editor?.dispatch({
+      effects: setAiAutoCompleteSuggestion.of(null)
+    });
+    this.#aiCodeCompletionConfig?.onFeatureDisabled();
+  }
+  async #updateAiCodeCompletionState() {
+    const aidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+    const isAvailable = aidaAvailability === "available";
+    const isEnabled = this.#aiCodeCompletionSetting.get();
+    if (isAvailable && isEnabled) {
+      this.#detachTeaser();
+      this.#setupAiCodeCompletion();
+    } else if (isAvailable && !isEnabled) {
+      if (this.#teaser && !this.#aiCodeCompletionTeaserDismissedSetting.get()) {
+        this.#editor?.editor.dispatch({ effects: this.#teaserCompartment.reconfigure([aiCodeCompletionTeaserExtension(this.#teaser)]) });
+      }
+      this.#cleanupAiCodeCompletion();
+    } else if (!isAvailable) {
+      this.#detachTeaser();
+      this.#cleanupAiCodeCompletion();
+    }
+  }
+  #detachTeaser() {
+    if (!this.#teaser) {
+      return;
+    }
+    this.#editor?.editor.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
+  }
+  // TODO(samiyac): Define static method in AiCodeCompletion and use that instead
+  #isAiCodeCompletionEnabled() {
+    const devtoolsLocale = i18n3.DevToolsLocale.DevToolsLocale.instance();
+    const aidaAvailability = Root.Runtime.hostConfig.aidaAvailability;
+    if (!devtoolsLocale.locale.startsWith("en-")) {
+      return false;
+    }
+    if (!aidaAvailability || aidaAvailability.blockedByGeo || aidaAvailability.blockedByAge || aidaAvailability.blockedByEnterprisePolicy) {
+      return false;
+    }
+    return Boolean(aidaAvailability.enabled && Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
+  }
+};
+function aiCodeCompletionTeaserExtension(teaser) {
+  return CodeMirror.ViewPlugin.fromClass(class {
+    view;
+    teaser;
+    #teaserDecoration = CodeMirror.Decoration.none;
+    #teaserMode;
+    #teaserDisplayTimeout;
+    constructor(view) {
+      this.view = view;
+      this.teaser = teaser;
+      this.#teaserMode = view.state.field(aiCodeCompletionTeaserModeState);
+      this.#setupDecoration();
+    }
+    destroy() {
+      window.clearTimeout(this.#teaserDisplayTimeout);
+    }
+    update(update) {
+      const currentTeaserMode = update.state.field(aiCodeCompletionTeaserModeState);
+      if (currentTeaserMode !== this.#teaserMode) {
+        this.#teaserMode = currentTeaserMode;
+        this.#setupDecoration();
+        return;
+      }
+      if (this.#teaserMode === AiCodeCompletionTeaserMode.ONLY_SHOW_ON_EMPTY && update.docChanged) {
+        this.#updateTeaserDecorationForOnlyShowOnEmptyMode();
+      } else if (this.#teaserMode === AiCodeCompletionTeaserMode.ON) {
+        if (update.docChanged) {
+          this.#teaserDecoration = CodeMirror.Decoration.none;
+          window.clearTimeout(this.#teaserDisplayTimeout);
+          this.#updateTeaserDecorationForOnMode();
+        } else if (update.selectionSet && update.state.doc.length > 0) {
+          this.#teaserDecoration = CodeMirror.Decoration.none;
+        }
+      }
+    }
+    get decorations() {
+      return this.#teaserDecoration;
+    }
+    #setupDecoration() {
+      switch (this.#teaserMode) {
+        case AiCodeCompletionTeaserMode.ON:
+          this.#updateTeaserDecorationForOnModeImmediately();
+          return;
+        case AiCodeCompletionTeaserMode.ONLY_SHOW_ON_EMPTY:
+          this.#updateTeaserDecorationForOnlyShowOnEmptyMode();
+          return;
+        case AiCodeCompletionTeaserMode.OFF:
+          this.#teaserDecoration = CodeMirror.Decoration.none;
+          return;
+      }
+    }
+    #updateTeaserDecorationForOnlyShowOnEmptyMode() {
+      if (this.view.state.doc.length === 0) {
+        this.#addTeaserWidget(0);
+      } else {
+        this.#teaserDecoration = CodeMirror.Decoration.none;
+      }
+    }
+    #updateTeaserDecorationForOnMode = Common2.Debouncer.debounce(() => {
+      this.#teaserDisplayTimeout = window.setTimeout(() => {
+        this.#updateTeaserDecorationForOnModeImmediately();
+        this.view.dispatch({});
+      }, DELAY_BEFORE_SHOWING_RESPONSE_MS);
+    }, AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+    #updateTeaserDecorationForOnModeImmediately() {
+      const cursorPosition = this.view.state.selection.main.head;
+      const line = this.view.state.doc.lineAt(cursorPosition);
+      if (cursorPosition >= line.to) {
+        this.#addTeaserWidget(cursorPosition);
+      }
+    }
+    #addTeaserWidget(pos) {
+      this.#teaserDecoration = CodeMirror.Decoration.set([
+        CodeMirror.Decoration.widget({ widget: new AiCodeCompletionTeaserPlaceholder(this.teaser), side: 1 }).range(pos)
+      ]);
+    }
+  }, {
+    decorations: (v) => v.decorations,
+    eventHandlers: {
+      mousedown(event) {
+        return event.target instanceof Node && teaser.contentElement.contains(event.target);
+      },
+      keydown(event) {
+        if (!UI2.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) || !teaser.isShowing()) {
+          return false;
+        }
+        if (event.key === "i") {
+          event.consume(true);
+          void VisualLogging2.logKeyDown(event.currentTarget, event, "ai-code-completion-teaser.fre");
+          void this.teaser.onAction(event);
+          return true;
+        }
+        if (event.key === "x") {
+          event.consume(true);
+          void VisualLogging2.logKeyDown(event.currentTarget, event, "ai-code-completion-teaser.dismiss");
+          this.teaser.onDismiss(event);
+          return true;
+        }
+        return false;
+      }
+    }
+  });
+}
+
+// gen/front_end/ui/components/text_editor/AutocompleteHistory.js
+var AutocompleteHistory_exports = {};
+__export(AutocompleteHistory_exports, {
+  AutocompleteHistory: () => AutocompleteHistory
+});
+var AutocompleteHistory = class _AutocompleteHistory {
+  static #historySize = 300;
+  #setting;
+  /**
+   * The data mirrors the setting. We have the mirror for 2 reasons:
+   *   1) The setting is size limited
+   *   2) We track the user's current input, even though it's not committed yet.
+   */
+  #data = [];
+  /** 1-based entry in the history stack. */
+  #historyOffset = 1;
+  #uncommittedIsTop = false;
+  /**
+   * Creates a new settings-backed history. The class assumes it has sole
+   * ownership of the setting.
+   */
+  constructor(setting) {
+    this.#setting = setting;
+    this.#data = this.#setting.get();
+  }
+  clear() {
+    this.#data = [];
+    this.#setting.set([]);
+    this.#historyOffset = 1;
+  }
+  length() {
+    return this.#data.length;
+  }
+  /**
+   * Pushes a committed text into the history.
+   */
+  pushHistoryItem(text) {
+    if (this.#uncommittedIsTop) {
+      this.#data.pop();
+      this.#uncommittedIsTop = false;
+    }
+    this.#historyOffset = 1;
+    if (text !== this.#currentHistoryItem()) {
+      this.#data.push(text);
+    }
+    this.#store();
+  }
+  /**
+   * Pushes the current (uncommitted) text into the history.
+   */
+  #pushCurrentText(currentText) {
+    if (this.#uncommittedIsTop) {
+      this.#data.pop();
+    }
+    this.#uncommittedIsTop = true;
+    this.#data.push(currentText);
+  }
+  previous(currentText) {
+    if (this.#historyOffset > this.#data.length) {
+      return void 0;
+    }
+    if (this.#historyOffset === 1) {
+      this.#pushCurrentText(currentText);
+    }
+    ++this.#historyOffset;
+    return this.#currentHistoryItem();
+  }
+  next() {
+    if (this.#historyOffset === 1) {
+      return void 0;
+    }
+    --this.#historyOffset;
+    return this.#currentHistoryItem();
+  }
+  /** Returns a de-duplicated list of history entries that start with the specified prefix */
+  matchingEntries(prefix, limit = 50) {
+    const result = /* @__PURE__ */ new Set();
+    for (let i = this.#data.length - 1; i >= 0 && result.size < limit; --i) {
+      const entry = this.#data[i];
+      if (entry.startsWith(prefix)) {
+        result.add(entry);
+      }
+    }
+    return result;
+  }
+  #currentHistoryItem() {
+    return this.#data[this.#data.length - this.#historyOffset];
+  }
+  #store() {
+    this.#setting.set(this.#data.slice(-_AutocompleteHistory.#historySize));
+  }
+};
+
 // gen/front_end/ui/components/text_editor/ExecutionPositionHighlighter.js
 var ExecutionPositionHighlighter_exports = {};
 __export(ExecutionPositionHighlighter_exports, {
@@ -911,19 +1148,19 @@ __export(ExecutionPositionHighlighter_exports, {
   positionHighlighter: () => positionHighlighter,
   setHighlightedPosition: () => setHighlightedPosition
 });
-import * as CodeMirror from "./../../../third_party/codemirror.next/codemirror.next.js";
-var setHighlightedPosition = CodeMirror.StateEffect.define();
-var clearHighlightedPosition = CodeMirror.StateEffect.define();
+import * as CodeMirror2 from "./../../../third_party/codemirror.next/codemirror.next.js";
+var setHighlightedPosition = CodeMirror2.StateEffect.define();
+var clearHighlightedPosition = CodeMirror2.StateEffect.define();
 function positionHighlighter(executionLineClassName, executionTokenClassName) {
-  const executionLine = CodeMirror.Decoration.line({ attributes: { class: executionLineClassName } });
-  const executionToken = CodeMirror.Decoration.mark({ attributes: { class: executionTokenClassName } });
-  const positionHighlightedState = CodeMirror.StateField.define({
+  const executionLine = CodeMirror2.Decoration.line({ attributes: { class: executionLineClassName } });
+  const executionToken = CodeMirror2.Decoration.mark({ attributes: { class: executionTokenClassName } });
+  const positionHighlightedState = CodeMirror2.StateField.define({
     create() {
       return null;
     },
     update(pos, tr) {
       if (pos) {
-        pos = tr.changes.mapPos(pos, -1, CodeMirror.MapMode.TrackDel);
+        pos = tr.changes.mapPos(pos, -1, CodeMirror2.MapMode.TrackDel);
       }
       for (const effect of tr.effects) {
         if (effect.is(clearHighlightedPosition)) {
@@ -942,11 +1179,11 @@ function positionHighlighter(executionLineClassName, executionTokenClassName) {
     tree;
     decorations;
     constructor({ state }) {
-      this.tree = CodeMirror.syntaxTree(state);
+      this.tree = CodeMirror2.syntaxTree(state);
       this.decorations = this.#computeDecorations(state, getHighlightedPosition(state));
     }
     update(update) {
-      const tree = CodeMirror.syntaxTree(update.state);
+      const tree = CodeMirror2.syntaxTree(update.state);
       const position = getHighlightedPosition(update.state);
       const positionChanged = position !== getHighlightedPosition(update.startState);
       if (tree.length !== this.tree.length || positionChanged) {
@@ -957,12 +1194,12 @@ function positionHighlighter(executionLineClassName, executionTokenClassName) {
       }
     }
     #computeDecorations(state, position) {
-      const builder = new CodeMirror.RangeSetBuilder();
+      const builder = new CodeMirror2.RangeSetBuilder();
       if (position !== null) {
         const { doc } = state;
         const line = doc.lineAt(position);
         builder.add(line.from, line.from, executionLine);
-        const syntaxTree3 = CodeMirror.syntaxTree(state);
+        const syntaxTree3 = CodeMirror2.syntaxTree(state);
         const syntaxNode = syntaxTree3.resolveInner(position, 1);
         const tokenEnd = Math.min(line.to, syntaxNode.to);
         if (tokenEnd > position) {
@@ -977,7 +1214,7 @@ function positionHighlighter(executionLineClassName, executionTokenClassName) {
   };
   return [
     positionHighlightedState,
-    CodeMirror.ViewPlugin.fromClass(PositionHighlighter, positionHighlighterSpec)
+    CodeMirror2.ViewPlugin.fromClass(PositionHighlighter, positionHighlighterSpec)
   ];
 }
 
@@ -997,15 +1234,15 @@ import * as SDK from "./../../../core/sdk/sdk.js";
 import * as Bindings from "./../../../models/bindings/bindings.js";
 import * as JavaScriptMetaData from "./../../../models/javascript_metadata/javascript_metadata.js";
 import * as SourceMapScopes from "./../../../models/source_map_scopes/source_map_scopes.js";
-import * as CodeMirror3 from "./../../../third_party/codemirror.next/codemirror.next.js";
-import * as UI2 from "./../../legacy/legacy.js";
+import * as CodeMirror4 from "./../../../third_party/codemirror.next/codemirror.next.js";
+import * as UI3 from "./../../legacy/legacy.js";
 
 // gen/front_end/ui/components/text_editor/cursor_tooltip.js
-import * as CodeMirror2 from "./../../../third_party/codemirror.next/codemirror.next.js";
-var closeTooltip = CodeMirror2.StateEffect.define();
+import * as CodeMirror3 from "./../../../third_party/codemirror.next/codemirror.next.js";
+var closeTooltip = CodeMirror3.StateEffect.define();
 function cursorTooltip(source) {
-  const openTooltip = CodeMirror2.StateEffect.define();
-  const state = CodeMirror2.StateField.define({
+  const openTooltip = CodeMirror3.StateEffect.define();
+  const state = CodeMirror3.StateField.define({
     create() {
       return null;
     },
@@ -1014,7 +1251,7 @@ function cursorTooltip(source) {
         val = null;
       }
       if (val && !tr.changes.empty) {
-        const newPos = tr.changes.mapPos(val.pos, -1, CodeMirror2.MapMode.TrackDel);
+        const newPos = tr.changes.mapPos(val.pos, -1, CodeMirror3.MapMode.TrackDel);
         val = newPos === null ? null : { pos: newPos, create: val.create, above: true };
       }
       for (const effect of tr.effects) {
@@ -1026,9 +1263,9 @@ function cursorTooltip(source) {
       }
       return val;
     },
-    provide: (field) => CodeMirror2.showTooltip.from(field)
+    provide: (field) => CodeMirror3.showTooltip.from(field)
   });
-  const plugin = CodeMirror2.ViewPlugin.fromClass(class {
+  const plugin = CodeMirror3.ViewPlugin.fromClass(class {
     pending = -1;
     updateID = 0;
     update(update) {
@@ -1067,17 +1304,17 @@ function cursorTooltip(source) {
 
 // gen/front_end/ui/components/text_editor/javascript.js
 function completion() {
-  return CodeMirror3.javascript.javascriptLanguage.data.of({
+  return CodeMirror4.javascript.javascriptLanguage.data.of({
     autocomplete: javascriptCompletionSource
   });
 }
 async function completeInContext(textBefore, query, force = false) {
-  const state = CodeMirror3.EditorState.create({
+  const state = CodeMirror4.EditorState.create({
     doc: textBefore + query,
     selection: { anchor: textBefore.length },
-    extensions: CodeMirror3.javascript.javascriptLanguage
+    extensions: CodeMirror4.javascript.javascriptLanguage
   });
-  const result = await javascriptCompletionSource(new CodeMirror3.CompletionContext(state, state.doc.length, force));
+  const result = await javascriptCompletionSource(new CodeMirror4.CompletionContext(state, state.doc.length, force));
   return result ? result.options.filter((o) => o.label.startsWith(query)).map((o) => ({
     text: o.label,
     priority: 100 + (o.boost || 0),
@@ -1232,7 +1469,7 @@ function getQueryType(tree, pos, doc) {
   };
 }
 async function javascriptCompletionSource(cx) {
-  const query = getQueryType(CodeMirror3.syntaxTree(cx.state), cx.pos, cx.state.doc);
+  const query = getQueryType(CodeMirror4.syntaxTree(cx.state), cx.pos, cx.state.doc);
   if (!query || query.from === void 0 && !cx.explicit && query.type === 0) {
     return null;
   }
@@ -1283,7 +1520,7 @@ var SPAN_IDENT = /^#?(?:[$_\p{ID_Start}])(?:[$_\u200C\u200D\p{ID_Continue}])*$/u
 var SPAN_SINGLE_QUOTE = /^\'(\\.|[^\\'\n])*'?$/;
 var SPAN_DOUBLE_QUOTE = /^"(\\.|[^\\"\n])*"?$/;
 function getExecutionContext() {
-  return UI2.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
+  return UI3.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
 }
 async function evaluateExpression(context, expression, group) {
   const result = await context.evaluate({
@@ -1316,7 +1553,7 @@ var PropertyCache = class _PropertyCache {
   constructor() {
     const clear = () => this.#cache.clear();
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ConsoleModel.ConsoleModel, SDK.ConsoleModel.Events.CommandEvaluated, clear);
-    UI2.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, clear);
+    UI3.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, clear);
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, clear);
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, clear);
   }
@@ -1466,7 +1703,7 @@ async function completeExpressionGlobal() {
   return await fetchNames;
 }
 async function isExpressionComplete(expression) {
-  const currentExecutionContext = UI2.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
+  const currentExecutionContext = UI3.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
   if (!currentExecutionContext) {
     return true;
   }
@@ -1491,7 +1728,7 @@ function closeArgumentsHintsTooltip(view, tooltip) {
   return true;
 }
 async function getArgumentHints(state, pos) {
-  const node = CodeMirror3.syntaxTree(state).resolveInner(pos).enterUnfinishedNodesBefore(pos);
+  const node = CodeMirror4.syntaxTree(state).resolveInner(pos).enterUnfinishedNodesBefore(pos);
   if (node.name !== "ArgList") {
     return null;
   }
@@ -1567,14 +1804,14 @@ function argumentsList(input) {
   }
   try {
     try {
-      const { parser } = CodeMirror3.javascript.javascriptLanguage.configure({ strict: true, top: "SingleClassItem" });
+      const { parser } = CodeMirror4.javascript.javascriptLanguage.configure({ strict: true, top: "SingleClassItem" });
       const cursor = parser.parse(input).cursor();
       if (cursor.firstChild() && cursor.name === "MethodDeclaration" && cursor.firstChild()) {
         return parseParamList(cursor);
       }
       throw new Error("SingleClassItem rule is expected to have exactly one MethodDeclaration child");
     } catch {
-      const { parser } = CodeMirror3.javascript.javascriptLanguage.configure({ strict: true, top: "SingleExpression" });
+      const { parser } = CodeMirror4.javascript.javascriptLanguage.configure({ strict: true, top: "SingleExpression" });
       const cursor = parser.parse(input).cursor();
       if (!cursor.firstChild()) {
         throw new Error("SingleExpression rule is expected to have children");
@@ -1762,9 +1999,9 @@ var TextEditor_exports = {};
 __export(TextEditor_exports, {
   TextEditor: () => TextEditor
 });
-import * as Common2 from "./../../../core/common/common.js";
-import * as CodeMirror4 from "./../../../third_party/codemirror.next/codemirror.next.js";
-import * as UI3 from "./../../legacy/legacy.js";
+import * as Common3 from "./../../../core/common/common.js";
+import * as CodeMirror5 from "./../../../third_party/codemirror.next/codemirror.next.js";
+import * as UI4 from "./../../legacy/legacy.js";
 import * as ThemeSupport from "./../../legacy/theme_support/theme_support.js";
 import * as CodeHighlighter3 from "./../code_highlighter/code_highlighter.js";
 var TextEditor = class extends HTMLElement {
@@ -1780,7 +2017,7 @@ var TextEditor = class extends HTMLElement {
       this.#resizeTimeout = window.setTimeout(() => {
         this.#resizeTimeout = -1;
         if (this.#activeEditor) {
-          CodeMirror4.repositionTooltips(this.#activeEditor);
+          CodeMirror5.repositionTooltips(this.#activeEditor);
         }
       }, 50);
     }
@@ -1792,7 +2029,7 @@ var TextEditor = class extends HTMLElement {
     this.#shadow.createChild("style").textContent = CodeHighlighter3.codeHighlighterStyles;
   }
   #createEditor() {
-    this.#activeEditor = new CodeMirror4.EditorView({
+    this.#activeEditor = new CodeMirror5.EditorView({
       state: this.state,
       parent: this.#shadow,
       root: this.#shadow,
@@ -1833,7 +2070,7 @@ var TextEditor = class extends HTMLElement {
       return this.#activeEditor.state;
     }
     if (!this.#pendingState) {
-      this.#pendingState = CodeMirror4.EditorState.create({ extensions: baseConfiguration("") });
+      this.#pendingState = CodeMirror5.EditorState.create({ extensions: baseConfiguration("") });
     }
     return this.#pendingState;
   }
@@ -1889,20 +2126,20 @@ var TextEditor = class extends HTMLElement {
           this.#activeEditor.dispatch({ effects: change });
         }
       };
-      const setting = Common2.Settings.Settings.instance().moduleSetting(dynamicSetting2.settingName);
+      const setting = Common3.Settings.Settings.instance().moduleSetting(dynamicSetting2.settingName);
       setting.addChangeListener(handler);
       this.#activeSettingListeners.push([setting, handler]);
     }
   }
   #startObservingResize() {
-    const devtoolsElement = UI3.UIUtils.getDevToolsBoundingElement();
+    const devtoolsElement = UI4.UIUtils.getDevToolsBoundingElement();
     if (devtoolsElement) {
       this.#devtoolsResizeObserver.observe(devtoolsElement);
     }
     window.addEventListener("resize", this.#resizeListener);
   }
   #maybeDispatchInput(transaction) {
-    const userEvent = transaction.annotation(CodeMirror4.Transaction.userEvent);
+    const userEvent = transaction.annotation(CodeMirror5.Transaction.userEvent);
     const inputType = userEvent ? CODE_MIRROR_USER_EVENT_TO_INPUT_EVENT_TYPE.get(userEvent) : null;
     if (inputType) {
       this.dispatchEvent(new InputEvent("input", { inputType }));
@@ -1917,7 +2154,7 @@ var TextEditor = class extends HTMLElement {
     const effects = [];
     if (highlight) {
       if (!view.state.field(highlightedLineState, false)) {
-        view.dispatch({ effects: CodeMirror4.StateEffect.appendConfig.of(highlightedLineState) });
+        view.dispatch({ effects: CodeMirror5.StateEffect.appendConfig.of(highlightedLineState) });
       } else {
         view.dispatch({ effects: clearHighlightedLine.of(null) });
       }
@@ -1926,11 +2163,11 @@ var TextEditor = class extends HTMLElement {
     const editorRect = view.scrollDOM.getBoundingClientRect();
     const targetPos = view.coordsAtPos(selection.main.head);
     if (!selection.main.empty) {
-      effects.push(CodeMirror4.EditorView.scrollIntoView(selection.main));
+      effects.push(CodeMirror5.EditorView.scrollIntoView(selection.main));
     } else if (!targetPos || targetPos.top < editorRect.top || targetPos.bottom > editorRect.bottom) {
-      effects.push(CodeMirror4.EditorView.scrollIntoView(selection.main, { y: "center" }));
+      effects.push(CodeMirror5.EditorView.scrollIntoView(selection.main, { y: "center" }));
     } else if (targetPos.left < editorRect.left || targetPos.right > editorRect.right) {
-      effects.push(CodeMirror4.EditorView.scrollIntoView(selection.main, { x: "center" }));
+      effects.push(CodeMirror5.EditorView.scrollIntoView(selection.main, { x: "center" }));
     }
     view.dispatch({
       selection,
@@ -1941,7 +2178,7 @@ var TextEditor = class extends HTMLElement {
   createSelection(head, anchor) {
     const { doc } = this.state;
     const headPos = toOffset(doc, head);
-    return CodeMirror4.EditorSelection.single(anchor ? toOffset(doc, anchor) : headPos, headPos);
+    return CodeMirror5.EditorSelection.single(anchor ? toOffset(doc, anchor) : headPos, headPos);
   }
   toLineColumn(pos) {
     return toLineColumn(this.state.doc, pos);
@@ -1951,26 +2188,26 @@ var TextEditor = class extends HTMLElement {
   }
 };
 customElements.define("devtools-text-editor", TextEditor);
-var clearHighlightedLine = CodeMirror4.StateEffect.define();
-var setHighlightedLine = CodeMirror4.StateEffect.define();
-var highlightedLineState = CodeMirror4.StateField.define({
-  create: () => CodeMirror4.Decoration.none,
+var clearHighlightedLine = CodeMirror5.StateEffect.define();
+var setHighlightedLine = CodeMirror5.StateEffect.define();
+var highlightedLineState = CodeMirror5.StateField.define({
+  create: () => CodeMirror5.Decoration.none,
   update(value, tr) {
     if (!tr.changes.empty && value.size) {
       value = value.map(tr.changes);
     }
     for (const effect of tr.effects) {
       if (effect.is(clearHighlightedLine)) {
-        value = CodeMirror4.Decoration.none;
+        value = CodeMirror5.Decoration.none;
       } else if (effect.is(setHighlightedLine)) {
-        value = CodeMirror4.Decoration.set([
-          CodeMirror4.Decoration.line({ attributes: { class: "cm-highlightedLine" } }).range(effect.value)
+        value = CodeMirror5.Decoration.set([
+          CodeMirror5.Decoration.line({ attributes: { class: "cm-highlightedLine" } }).range(effect.value)
         ]);
       }
     }
     return value;
   },
-  provide: (field) => CodeMirror4.EditorView.decorations.from(field, (value) => value)
+  provide: (field) => CodeMirror5.EditorView.decorations.from(field, (value) => value)
 });
 var CODE_MIRROR_USER_EVENT_TO_INPUT_EVENT_TYPE = /* @__PURE__ */ new Map([
   ["input.type", "insertText"],
@@ -1992,7 +2229,7 @@ var TextEditorHistory_exports = {};
 __export(TextEditorHistory_exports, {
   TextEditorHistory: () => TextEditorHistory
 });
-import * as CodeMirror5 from "./../../../third_party/codemirror.next/codemirror.next.js";
+import * as CodeMirror6 from "./../../../third_party/codemirror.next/codemirror.next.js";
 var TextEditorHistory = class {
   #editor;
   #history;
@@ -2026,13 +2263,13 @@ var TextEditorHistory = class {
     const cursorPos = newText.length;
     editor.dispatch({
       changes: { from: 0, to: editor.state.doc.length, insert: newText },
-      selection: CodeMirror5.EditorSelection.cursor(cursorPos),
+      selection: CodeMirror6.EditorSelection.cursor(cursorPos),
       scrollIntoView: true
     });
     if (isBackward) {
       const firstLineBreak = newText.search(/\n|$/);
       editor.dispatch({
-        selection: CodeMirror5.EditorSelection.cursor(firstLineBreak)
+        selection: CodeMirror6.EditorSelection.cursor(firstLineBreak)
       });
     }
     return true;
@@ -2053,6 +2290,7 @@ var TextEditorHistory = class {
   }
 };
 export {
+  AiCodeCompletionProvider_exports as AiCodeCompletionProvider,
   AiCodeCompletionTeaserPlaceholder_exports as AiCodeCompletionTeaserPlaceholder,
   AutocompleteHistory_exports as AutocompleteHistory,
   config_exports as Config,

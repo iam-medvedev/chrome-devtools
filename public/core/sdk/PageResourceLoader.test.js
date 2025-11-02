@@ -1,7 +1,8 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget, describeWithEnvironment, describeWithLocale, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../testing/LocaleHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';

@@ -633,7 +633,7 @@
     "message": "Enable network request blocking"
   },
   "core/sdk/sdk-meta.ts | enableRemoteFileLoading": {
-    "message": "Allow DevTools to load resources, such as source maps, from remote file paths. Disabled by default for security reasons."
+    "message": "Allow loading remote file path resources in DevTools"
   },
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "Enable WebP format"
@@ -712,6 +712,9 @@
   },
   "core/sdk/sdk-meta.ts | reducedContrast": {
     "message": "Reduced contrast"
+  },
+  "core/sdk/sdk-meta.ts | remoteFileLoadingInfo": {
+    "message": "Example resource are source maps. Disabled by default for security reasons."
   },
   "core/sdk/sdk-meta.ts | screen": {
     "message": "screen"
@@ -4084,6 +4087,9 @@
   },
   "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
     "message": "Chrome support for these reasons is pending i.e. they will not prevent the page from being eligible for back/forward cache in a future version of Chrome."
+  },
+  "panels/application/components/BackForwardCacheView.ts | testCompleted": {
+    "message": "Back/forward cache test completed."
   },
   "panels/application/components/BackForwardCacheView.ts | unavailable": {
     "message": "unavailable"
@@ -10601,7 +10607,7 @@
   "panels/network/RequestTimingView.ts | receivingPush": {
     "message": "Receiving Push"
   },
-  "panels/network/RequestTimingView.ts | requestresponse": {
+  "panels/network/RequestTimingView.ts | requestResponse": {
     "message": "Request/Response"
   },
   "panels/network/RequestTimingView.ts | requestSent": {
@@ -10672,6 +10678,9 @@
   },
   "panels/network/RequestTimingView.ts | waitingTtfb": {
     "message": "Waiting for server response"
+  },
+  "panels/network/RequestTimingView.ts | wasThrottled": {
+    "message": "Request was throttled ({PH1})"
   },
   "panels/network/RequestTimingView.ts | waterfall": {
     "message": "Waterfall"
@@ -13307,6 +13316,9 @@
   "panels/settings/KeybindsSettingsTab.ts | noShortcutForAction": {
     "message": "No shortcut for action"
   },
+  "panels/settings/KeybindsSettingsTab.ts | recordingKeys": {
+    "message": "Recoding keys"
+  },
   "panels/settings/KeybindsSettingsTab.ts | removeShortcut": {
     "message": "Remove shortcut"
   },
@@ -14319,7 +14331,10 @@
     "message": "Trailing"
   },
   "panels/sources/sources-meta.ts | wasmAutoStepping": {
-    "message": "When debugging Wasm with debug information, do not pause on wasm bytecode if possible"
+    "message": "Wasm auto-stepping bytecode"
+  },
+  "panels/sources/sources-meta.ts | wasmAutoSteppingInfo": {
+    "message": "When debugging Wasm with debug information, try to skip wasm bytecode"
   },
   "panels/sources/sources-meta.ts | watch": {
     "message": "Watch"
@@ -14624,8 +14639,8 @@
   "panels/timeline/components/ExportTraceOptions.ts | includeAnnotations": {
     "message": "Include annotations"
   },
-  "panels/timeline/components/ExportTraceOptions.ts | includeScriptContent": {
-    "message": "Include script content"
+  "panels/timeline/components/ExportTraceOptions.ts | includeResourceContent": {
+    "message": "Include resource content"
   },
   "panels/timeline/components/ExportTraceOptions.ts | includeSourcemap": {
     "message": "Include script source maps"
@@ -14633,11 +14648,11 @@
   "panels/timeline/components/ExportTraceOptions.ts | moreInfoLabel": {
     "message": "Additional information:"
   },
+  "panels/timeline/components/ExportTraceOptions.ts | resourceContentPrivacyInfo": {
+    "message": "Includes the full content of all loaded HTML, CSS, and scripts (except extensions)."
+  },
   "panels/timeline/components/ExportTraceOptions.ts | saveButtonTitle": {
     "message": "Save"
-  },
-  "panels/timeline/components/ExportTraceOptions.ts | scriptContentPrivacyInfo": {
-    "message": "Includes the full content of all loaded scripts (except extensions)."
   },
   "panels/timeline/components/ExportTraceOptions.ts | shouldCompress": {
     "message": "Compress with gzip"
@@ -15184,6 +15199,9 @@
   },
   "panels/timeline/components/NetworkRequestTooltip.ts | waitingOnMainThread": {
     "message": "Waiting on main thread"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | wasThrottled": {
+    "message": "Request was throttled ({PH1})"
   },
   "panels/timeline/components/NetworkThrottlingSelector.ts | add": {
     "message": "Add…"
@@ -17171,6 +17189,12 @@
   "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
     "message": "Type ? to see available commands"
   },
+  "ui/legacy/components/settings_ui/SettingsUI.ts | oneOrMoreSettingsHaveChanged": {
+    "message": "One or more settings have changed which requires a reload to take effect"
+  },
+  "ui/legacy/components/settings_ui/SettingsUI.ts | srequiresReload": {
+    "message": "*Requires reload"
+  },
   "ui/legacy/components/source_frame/FontView.ts | font": {
     "message": "Font"
   },
@@ -17503,12 +17527,6 @@
   },
   "ui/legacy/SearchableView.ts | useRegularExpression": {
     "message": "Use regular expression"
-  },
-  "ui/legacy/SettingsUI.ts | oneOrMoreSettingsHaveChanged": {
-    "message": "One or more settings have changed which requires a reload to take effect"
-  },
-  "ui/legacy/SettingsUI.ts | srequiresReload": {
-    "message": "*Requires reload"
   },
   "ui/legacy/SoftContextMenu.ts | checked": {
     "message": "checked"

@@ -1,15 +1,9 @@
 import '../../../ui/components/icon_button/icon_button.js';
-import '../../../ui/components/tree_outline/tree_outline.js';
+import '../../../ui/legacy/legacy.js';
+import '../../../ui/components/adorners/adorners.js';
 import * as Protocol from '../../../generated/protocol.js';
 import type * as TreeOutline from '../../../ui/components/tree_outline/tree_outline.js';
-export interface BadgeData {
-    badgeContent: string;
-    style: 'error' | 'success' | 'secondary';
-}
-export declare class Badge extends HTMLElement {
-    #private;
-    set data(data: BadgeData);
-}
+import * as UI from '../../../ui/legacy/legacy.js';
 type TreeNode<DataType> = TreeOutline.TreeOutlineUtils.TreeNode<DataType>;
 /**
  * The Origin Trial Tree has 4 levels of content:
@@ -19,26 +13,36 @@ type TreeNode<DataType> = TreeOutline.TreeOutlineUtils.TreeNode<DataType>;
  * - Raw Origin Trial Token text (folded because the content is long)
  **/
 export type OriginTrialTreeNodeData = Protocol.Page.OriginTrial | Protocol.Page.OriginTrialTokenWithStatus | string;
+interface TokenField {
+    name: string;
+    value: {
+        text: string;
+        hasError?: boolean;
+    };
+}
 export interface OriginTrialTokenRowsData {
     node: TreeNode<OriginTrialTreeNodeData>;
 }
-export declare class OriginTrialTokenRows extends HTMLElement {
+interface RowsViewInput {
+    tokenWithStatus: Protocol.Page.OriginTrialTokenWithStatus;
+    parsedTokenDetails: TokenField[];
+}
+type RowsView = (input: RowsViewInput, output: undefined, target: HTMLElement) => void;
+export declare class OriginTrialTokenRows extends UI.Widget.Widget {
     #private;
-    set data(data: OriginTrialTokenRowsData);
+    constructor(element?: HTMLElement, view?: RowsView);
+    set data(data: Protocol.Page.OriginTrialTokenWithStatus);
     connectedCallback(): void;
+    performUpdate(): void;
 }
 export interface OriginTrialTreeViewData {
     trials: Protocol.Page.OriginTrial[];
 }
-export declare class OriginTrialTreeView extends HTMLElement {
+type View = (input: OriginTrialTreeViewData, output: undefined, target: HTMLElement) => void;
+export declare class OriginTrialTreeView extends UI.Widget.Widget {
     #private;
+    constructor(element?: HTMLElement, view?: View);
     set data(data: OriginTrialTreeViewData);
-}
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-resources-origin-trial-tree-view': OriginTrialTreeView;
-        'devtools-resources-origin-trial-token-rows': OriginTrialTokenRows;
-        'devtools-resources-origin-trial-tree-view-badge': Badge;
-    }
+    performUpdate(): void;
 }
 export {};

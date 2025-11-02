@@ -29,16 +29,14 @@ describeWithEnvironment('RecorderController', () => {
         return controller;
     }
     describe('Navigation', () => {
-        it('should return back to the previous page on recordingcancelled event', async () => {
+        it('should return back to the previous page if recording was cancelled', async () => {
             const previousPage = "AllRecordingsPage" /* RecorderController.Pages.ALL_RECORDINGS_PAGE */;
             const controller = new RecorderController.RecorderController();
             controller.setCurrentPageForTesting(previousPage);
             controller.setCurrentPageForTesting("CreateRecordingPage" /* RecorderController.Pages.CREATE_RECORDING_PAGE */);
             controller.connectedCallback();
             await RenderCoordinator.done();
-            const createRecordingView = controller.shadowRoot?.querySelector('devtools-create-recording-view');
-            assert.isOk(createRecordingView);
-            createRecordingView?.dispatchEvent(new Components.CreateRecordingView.RecordingCancelledEvent());
+            await controller.onRecordingCancelled();
             assert.strictEqual(controller.getCurrentPageForTesting(), previousPage);
         });
     });

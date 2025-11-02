@@ -532,7 +532,6 @@ export default `/* Copyright 2021 The Chromium Authors
 }
 
 .console-view-pinpane {
-  flex: none;
   max-height: 50%;
 }
 

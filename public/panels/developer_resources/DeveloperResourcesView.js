@@ -11,7 +11,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { DeveloperResourcesListView } from './DeveloperResourcesListView.js';
 import developerResourcesViewStyles from './developerResourcesView.css.js';
 const { widgetConfig } = UI.Widget;
-const { bindToSetting } = UI.SettingsUI;
+const { bindToSetting } = UI.UIUtils;
 const UIStrings = {
     /**
      * @description Placeholder for a search field in a toolbar
@@ -94,19 +94,19 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     </div>`, target);
     // clang-format on
 };
-export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
+export class DeveloperResourcesView extends UI.Widget.VBox {
     #loader;
     #view;
     #selectedItem = null;
     #filters = [];
     constructor(view = DEFAULT_VIEW) {
-        super(true);
+        super({ useShadowDom: true });
         this.#view = view;
         this.#loader = SDK.PageResourceLoader.PageResourceLoader.instance();
-        this.#loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.UPDATE */, this.update, this);
-        this.update();
+        this.#loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.UPDATE */, this.requestUpdate, this);
+        this.requestUpdate();
     }
-    async doUpdate() {
+    async performUpdate() {
         const { loading, resources } = this.#loader.getScopedNumberOfResources();
         const input = {
             onFilterChanged: (e) => {
@@ -125,12 +125,12 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         this.#view(input, output, this.contentElement);
     }
     async select(resource) {
-        await this.lastUpdatePromise;
+        await this.updateComplete;
         this.#selectedItem = resource;
-        this.update();
+        this.requestUpdate();
     }
     async selectedItem() {
-        await this.lastUpdatePromise;
+        await this.updateComplete;
         return this.#selectedItem;
     }
     onFilterChanged(text) {
@@ -143,7 +143,7 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         else {
             this.#filters = [];
         }
-        this.update();
+        this.requestUpdate();
     }
 }
 //# sourceMappingURL=DeveloperResourcesView.js.map

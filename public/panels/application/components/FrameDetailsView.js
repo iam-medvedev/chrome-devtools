@@ -18,12 +18,14 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import frameDetailsReportViewStyles from './frameDetailsReportView.css.js';
 import { OriginTrialTreeView } from './OriginTrialTreeView.js';
 import { renderIconLink, } from './PermissionsPolicySection.js';
 const { html } = Lit;
+const { widgetConfig } = UI.Widget;
 const UIStrings = {
     /**
      * @description Section header in the Frame Details view
@@ -256,7 +258,6 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     #protocolMonitorExperimentEnabled = false;
     #permissionsPolicies = null;
     #permissionsPolicySectionData = { policies: [], showDetails: false };
-    #originTrialTreeView = new OriginTrialTreeView();
     #linkifier = new Components.Linkifier.Linkifier();
     #adScriptAncestry = null;
     constructor(frame) {
@@ -285,7 +286,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         if (!this.#permissionsPolicies && this.#frame) {
             this.#permissionsPolicies = this.#frame.getPermissionsPolicyState();
         }
-        await RenderCoordinator.write('FrameDetailsView render', () => {
+        await RenderCoordinator.write('FrameDetailsView render', async () => {
             if (!this.#frame) {
                 return;
             }
@@ -298,7 +299,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
           ${this.#renderDocumentSection()}
           ${this.#renderIsolationSection()}
           ${this.#renderApiAvailabilitySection()}
-          ${this.#renderOriginTrial()}
+          ${await this.#renderOriginTrial()}
           ${Lit.Directives.until(this.#permissionsPolicies?.then(policies => {
                 this.#permissionsPolicySectionData.policies = policies || [];
                 return html `
@@ -314,14 +315,11 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
             // clang-format on
         });
     }
-    #renderOriginTrial() {
+    async #renderOriginTrial() {
         if (!this.#frame) {
             return Lit.nothing;
         }
-        this.#originTrialTreeView.classList.add('span-cols');
-        void this.#frame.getOriginTrials().then(trials => {
-            this.#originTrialTreeView.data = { trials };
-        });
+        const data = { trials: await this.#frame.getOriginTrials() };
         // clang-format off
         return html `
     <devtools-report-section-header>
@@ -336,7 +334,8 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         </x-link>
       </span>
     </devtools-report-section>
-    ${this.#originTrialTreeView}
+    <devtools-widget class="span-cols" .widgetConfig=${widgetConfig(OriginTrialTreeView, { data })}>
+    </devtools-widget>
     <devtools-report-divider></devtools-report-divider>`;
         // clang-format on
     }

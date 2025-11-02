@@ -185,7 +185,7 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("panels/browser_debugger/CategorizedBreakpointsSidebarPane.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
-var { html, render, Directives: { ref } } = Lit;
+var { html, render } = Lit;
 var DEFAULT_VIEW = (input, output, target) => {
   const shouldExpandCategory = (breakpoints) => Boolean(input.filterText) || input.highlightedItem && breakpoints.includes(input.highlightedItem) || breakpoints.some((breakpoint) => breakpoint.enabled());
   const filter = (breakpoint) => !input.filterText || Boolean(Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name).match(input.filterText)) || breakpoint === input.highlightedItem;
@@ -231,50 +231,44 @@ var DEFAULT_VIEW = (input, output, target) => {
         style="flex: 1;"
         ></devtools-toolbar-input>
     </devtools-toolbar>
-    <devtools-tree
-      ${ref((e) => {
-      output.defaultFocus = e;
-    })}
-      .template=${html`
-        <ul role="tree">
-          ${filteredCategories.map(([category, breakpoints]) => html`
-            <li @expand=${(e) => onExpand(category, e)}
-                role="treeitem"
-                jslog-context=${category}
-                aria-checked=${breakpoints.some((breakpoint) => breakpoint.enabled()) ? breakpoints.some((breakpoint) => !breakpoint.enabled()) ? "mixed" : true : false}>
-              <style>${categorizedBreakpointsSidebarPane_css_default}</style>
-              <devtools-checkbox
-                class="small"
-                tabIndex=-1
-                title=${getLocalizedCategory(category)}
-                ?indeterminate=${breakpoints.some((breakpoint) => !breakpoint.enabled()) && breakpoints.some((breakpoint) => breakpoint.enabled())}
-                ?checked=${!breakpoints.some((breakpoint) => !breakpoint.enabled())}
-                @change=${(e) => onCheckboxClicked(e, category)}
-              >${getLocalizedCategory(category)}</devtools-checkbox>
-              <ul
-                  role="group"
-                  ?hidden=${!shouldExpandCategory(breakpoints) && !input.userExpandedCategories.has(category)}>
-                ${breakpoints.map((breakpoint) => html`
-                <li
-                    role="treeitem"
-                    aria-checked=${breakpoint.enabled()}
-                    jslog-context=${Platform.StringUtilities.toKebabCase(breakpoint.name)}>
-                  <div ?hidden=${breakpoint !== input.highlightedItem} class="breakpoint-hit-marker"></div>
-                  <devtools-checkbox
-                    class=${classes(breakpoint)}
-                    tabIndex=-1
-                    title=${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}
-                    ?checked=${breakpoint.enabled()}
-                    aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit) : Lit.nothing}
-                    @change=${(e) => onCheckboxClicked(e, breakpoint)}
-                  >${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}</devtools-checkbox>
-                </li>`)}
-              </ul>
-            </li>`)}
-        </ul>
-      `}>
+    <devtools-tree autofocus .template=${html`
+      <ul role="tree">
+        ${filteredCategories.map(([category, breakpoints]) => html`
+          <li @expand=${(e) => onExpand(category, e)}
+              role="treeitem"
+              jslog-context=${category}
+              aria-checked=${breakpoints.some((breakpoint) => breakpoint.enabled()) ? breakpoints.some((breakpoint) => !breakpoint.enabled()) ? "mixed" : true : false}>
+            <style>${categorizedBreakpointsSidebarPane_css_default}</style>
+            <devtools-checkbox
+              class="small"
+              tabIndex=-1
+              title=${getLocalizedCategory(category)}
+              ?indeterminate=${breakpoints.some((breakpoint) => !breakpoint.enabled()) && breakpoints.some((breakpoint) => breakpoint.enabled())}
+              ?checked=${!breakpoints.some((breakpoint) => !breakpoint.enabled())}
+              @change=${(e) => onCheckboxClicked(e, category)}
+            >${getLocalizedCategory(category)}</devtools-checkbox>
+            <ul
+                role="group"
+                ?hidden=${!shouldExpandCategory(breakpoints) && !input.userExpandedCategories.has(category)}>
+              ${breakpoints.map((breakpoint) => html`
+              <li
+                  role="treeitem"
+                  aria-checked=${breakpoint.enabled()}
+                  jslog-context=${Platform.StringUtilities.toKebabCase(breakpoint.name)}>
+                <div ?hidden=${breakpoint !== input.highlightedItem} class="breakpoint-hit-marker"></div>
+                <devtools-checkbox
+                  class=${classes(breakpoint)}
+                  tabIndex=-1
+                  title=${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}
+                  ?checked=${breakpoint.enabled()}
+                  aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit) : Lit.nothing}
+                  @change=${(e) => onCheckboxClicked(e, breakpoint)}
+                >${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}</devtools-checkbox>
+              </li>`)}
+            </ul>
+          </li>`)}
+      </ul>`}>
     </devtools-tree>`,
-    // clang-format on
     target
   );
 };
@@ -342,11 +336,7 @@ var CategorizedBreakpointsSidebarPane = class extends UI.Widget.VBox {
       highlightedItem: this.#highlightedItem,
       userExpandedCategories: this.#userExpandedCategories
     };
-    const that = this;
     const output = {
-      set defaultFocus(e) {
-        that.setDefaultFocusedElement(e ?? null);
-      },
       userExpandedCategories: this.#userExpandedCategories
     };
     this.#view(input, output, this.contentElement);
@@ -954,7 +944,7 @@ import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 import * as EventListeners from "./../event_listeners/event_listeners.js";
-var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane extends UI3.ThrottledWidget.ThrottledWidget {
+var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane extends UI3.Widget.VBox {
   #lastRequestedContext;
   // TODO(bmeurer): This is only public for web tests.
   eventListenersView;
@@ -962,11 +952,11 @@ var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane ext
     super();
     this.contentElement.setAttribute("jslog", `${VisualLogging5.section("sources.global-listeners")}`);
     this.eventListenersView = new EventListeners.EventListenersView.EventListenersView();
-    this.eventListenersView.changeCallback = this.update.bind(this);
+    this.eventListenersView.changeCallback = this.requestUpdate.bind(this);
     this.eventListenersView.enableDefaultTreeFocus = true;
     this.eventListenersView.show(this.element);
     this.setDefaultFocusedChild(this.eventListenersView);
-    this.update();
+    this.requestUpdate();
   }
   toolbarItems() {
     const refreshButton = UI3.Toolbar.Toolbar.createActionButton("browser-debugger.refresh-global-event-listeners");
@@ -976,7 +966,7 @@ var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane ext
     );
     return [refreshButton];
   }
-  async doUpdate() {
+  async performUpdate() {
     if (this.#lastRequestedContext) {
       this.#lastRequestedContext.runtimeModel.releaseObjectGroup(objectGroupName);
       this.#lastRequestedContext = void 0;
@@ -1007,12 +997,12 @@ var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane ext
   }
   wasShown() {
     super.wasShown();
-    UI3.Context.Context.instance().addFlavorChangeListener(SDK5.RuntimeModel.ExecutionContext, this.update, this);
+    UI3.Context.Context.instance().addFlavorChangeListener(SDK5.RuntimeModel.ExecutionContext, this.requestUpdate, this);
     UI3.Context.Context.instance().setFlavor(_ObjectEventListenersSidebarPane, this);
   }
   willHide() {
     UI3.Context.Context.instance().setFlavor(_ObjectEventListenersSidebarPane, null);
-    UI3.Context.Context.instance().removeFlavorChangeListener(SDK5.RuntimeModel.ExecutionContext, this.update, this);
+    UI3.Context.Context.instance().removeFlavorChangeListener(SDK5.RuntimeModel.ExecutionContext, this.requestUpdate, this);
     super.willHide();
     if (this.#lastRequestedContext) {
       this.#lastRequestedContext.runtimeModel.releaseObjectGroup(objectGroupName);
@@ -1026,7 +1016,7 @@ var ActionDelegate = class {
       case "browser-debugger.refresh-global-event-listeners": {
         const eventListenersSidebarPane = context.flavor(ObjectEventListenersSidebarPane);
         if (eventListenersSidebarPane) {
-          eventListenersSidebarPane.update();
+          eventListenersSidebarPane.requestUpdate();
           return true;
         }
         return false;

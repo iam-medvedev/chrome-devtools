@@ -5,7 +5,6 @@
     },
     "files": [
         "backForwardCacheView.css.js",
-        "badge.css.js",
         "bounceTrackingMitigationsView.css.js",
         "endpointsGrid.css.js",
         "frameDetailsReportView.css.js",

@@ -1,11 +1,13 @@
 export type TooltipVariant = 'simple' | 'rich';
 export type PaddingMode = 'small' | 'large';
+export type TooltipTrigger = 'hover' | 'click' | 'both';
 export interface TooltipProperties {
     id: string;
     variant?: TooltipVariant;
     padding?: PaddingMode;
     anchor?: HTMLElement;
     jslogContext?: string;
+    trigger?: TooltipTrigger;
 }
 /**
  * @property useHotkey - reflects the `"use-hotkey"` attribute.
@@ -13,7 +15,7 @@ export interface TooltipProperties {
  * @property hoverDelay - reflects the `"hover-delay"` attribute.
  * @property variant - reflects the `"variant"` attribute.
  * @property padding - reflects the `"padding"` attribute.
- * @property useClick - reflects the `"click"` attribute.
+ * @property trigger - reflects the `"trigger"` attribute.
  * @property verticalDistanceIncrease - reflects the `"vertical-distance-increase"` attribute.
  * @property preferSpanLeft - reflects the `"prefer-span-left"` attribute.
  * @attribute id - Id of the tooltip. Used for searching an anchor element with aria-describedby.
@@ -21,14 +23,16 @@ export interface TooltipProperties {
  * @attribute variant - Variant of the tooltip, `"simple"` for strings only, inverted background,
  *                 `"rich"` for interactive content, background according to theme's surface.
  * @attribute padding - Which padding to use, defaults to `"small"`. Use `"large"` for richer content.
- * @attribute use-click - If present, the tooltip will be shown on click instead of on hover.
+ * @attribute trigger - Specifies which action triggers the tooltip. `"hover"` is the default. `"click"` means the
+ *                 tooltip will be shown on click instead of hover. `"both"` means both hover and click trigger the
+ *                 tooltip.
  * @attribute vertical-distance-increase - The tooltip is moved vertically this many pixels further away from its anchor.
  * @attribute prefer-span-left - If present, the tooltip's preferred position is `"span-left"` (The right
  *                 side of the tooltip and its anchor are aligned. The tooltip expands to the left from
  *                 there.). Applies to rich tooltips only.
  * @attribute use-hotkey - If present, the tooltip will be shown on hover but not when receiving focus.
- *                    Requires a hotkey to open when fosed (Alt-down). When `"use-click"` is present
- *                    as well, use-click takes precedence.
+ *                  Requires a hotkey to open when fosed (Alt-down). When `"trigger"` is present
+ *                  as well, `"trigger"` takes precedence.
  */
 export declare class Tooltip extends HTMLElement {
     #private;
@@ -38,8 +42,8 @@ export declare class Tooltip extends HTMLElement {
     get open(): boolean;
     get useHotkey(): boolean;
     set useHotkey(useHotkey: boolean);
-    get useClick(): boolean;
-    set useClick(useClick: boolean);
+    get trigger(): TooltipTrigger;
+    set trigger(trigger: TooltipTrigger);
     get hoverDelay(): number;
     set hoverDelay(delay: number);
     get variant(): TooltipVariant;

@@ -111,7 +111,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     private createFileSelector;
     private contextMenu;
     saveToFile(config: {
-        includeScriptContent: boolean;
+        includeResourceContent: boolean;
         includeSourceMaps: boolean;
         /**
          * Includes many things:
@@ -123,7 +123,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
         shouldCompress: boolean;
     }): Promise<void>;
     innerSaveToFile(traceEvents: readonly Trace.Types.Events.Event[], metadata: Trace.Types.File.MetaData, config: {
-        includeScriptContent: boolean;
+        includeResourceContent: boolean;
         includeSourceMaps: boolean;
         addModifications: boolean;
         shouldCompress: boolean;

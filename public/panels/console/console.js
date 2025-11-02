@@ -1425,7 +1425,6 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .console-view-pinpane {
-  flex: none;
   max-height: 50%;
 }
 
@@ -3944,6 +3943,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
       variant="rich"
       vertical-distance-increase=-6
       prefer-span-left
+      jslogContext="console-insight-teaser"
     >
       <div class="teaser-tooltip-container">
         ${input.isError ? html`
@@ -3978,7 +3978,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
           ${input.hasTellMeMoreButton ? html`
             <devtools-button
               title=${lockedString(UIStringsNotTranslate.tellMeMore)}
-              .jslogContext=${"insights-teaser-tell-me-more"},
+              .jslogContext=${"insights-teaser-tell-me-more"}
               .variant=${"primary"}
               @click=${input.onTellMeMoreClick}
             >
@@ -3992,7 +3992,13 @@ var DEFAULT_VIEW = (input, _output, target) => {
             aria-details=${"teaser-info-tooltip-" + input.uuid}
             .accessibleLabel=${lockedString(UIStringsNotTranslate.learnDataUsage)}
           ></devtools-button>
-          <devtools-tooltip id=${"teaser-info-tooltip-" + input.uuid} variant="rich">
+          <devtools-tooltip
+            id=${"teaser-info-tooltip-" + input.uuid}
+            variant="rich"
+            jslogContext="teaser-info-tooltip"
+            trigger="both"
+            hover-delay=500
+          >
             <div class="info-tooltip-text">${lockedString(UIStringsNotTranslate.infoTooltipText)}</div>
             <div class="learn-more">
               <x-link
@@ -4119,6 +4125,7 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
     }
     if (this.#isGenerating) {
       this.#mainText = "";
+      Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.InsightTeaserGenerationAborted);
     }
     this.#isGenerating = false;
     if (this.#timeoutId) {
@@ -4139,6 +4146,7 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
   async #generateTeaserText() {
     this.#headerText = this.#consoleViewMessage.toMessageTextString().substring(0, 70);
     this.#isGenerating = true;
+    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.InsightTeaserGenerationStarted);
     this.#timeoutId = setTimeout(this.#setSlow.bind(this), SLOW_GENERATION_CUTOFF_MILLISECONDS);
     const startTime = performance.now();
     let teaserText = "";
@@ -4152,6 +4160,7 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
       if (err.name !== "AbortError") {
         console.error(err.name, err.message);
         this.#isError = true;
+        Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.InsightTeaserGenerationErrored);
       }
       this.#isGenerating = false;
       clearTimeout(this.#timeoutId);
@@ -4162,6 +4171,7 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
     Host2.userMetrics.consoleInsightTeaserGenerated(performance.now() - startTime);
     this.#isGenerating = false;
     this.#mainText = teaserText;
+    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.InsightTeaserGenerationCompleted);
     this.requestUpdate();
   }
   async *#getOnDeviceInsight() {
@@ -4354,15 +4364,17 @@ var UIStrings3 = {
 var str_3 = i18n7.i18n.registerUIStrings("panels/console/ConsolePinPane.ts", UIStrings3);
 var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_3);
 var elementToConsolePin = /* @__PURE__ */ new WeakMap();
-var ConsolePinPane = class extends UI4.ThrottledWidget.ThrottledWidget {
+var ConsolePinPane = class extends UI4.Widget.VBox {
   liveExpressionButton;
   focusOut;
   pins;
   pinsSetting;
+  throttler;
   constructor(liveExpressionButton, focusOut) {
-    super(true, 250);
+    super({ useShadowDom: true });
     this.liveExpressionButton = liveExpressionButton;
     this.focusOut = focusOut;
+    this.throttler = new Common6.Throttler.Throttler(250);
     this.registerRequiredCSS(consolePinPane_css_default, objectValue_css_default);
     this.contentElement.classList.add("console-pins", "monospace");
     this.contentElement.addEventListener("contextmenu", this.contextMenuEventFired.bind(this), false);
@@ -4423,7 +4435,7 @@ var ConsolePinPane = class extends UI4.ThrottledWidget.ThrottledWidget {
     if (userGesture) {
       void pin.focus();
     }
-    this.update();
+    this.requestUpdate();
   }
   focusedPinAfterDeletion(deletedPin) {
     const pinArray = Array.from(this.pins);
@@ -4440,16 +4452,18 @@ var ConsolePinPane = class extends UI4.ThrottledWidget.ThrottledWidget {
     }
     return null;
   }
-  async doUpdate() {
+  wasShown() {
+    super.wasShown();
+    void this.throttler.schedule(this.requestUpdate.bind(this));
+  }
+  async performUpdate() {
     if (!this.pins.size || !this.isShowing()) {
       return;
-    }
-    if (this.isShowing()) {
-      this.update();
     }
     const updatePromises = Array.from(this.pins, (pin) => pin.updatePreview());
     await Promise.all(updatePromises);
     this.updatedForTest();
+    void this.throttler.schedule(this.requestUpdate.bind(this));
   }
   updatedForTest() {
   }
@@ -5607,6 +5621,7 @@ import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
 import * as CodeHighlighter3 from "./../../ui/components/code_highlighter/code_highlighter.js";
 import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
 import * as IssueCounter2 from "./../../ui/components/issue_counter/issue_counter.js";
+import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
@@ -5977,13 +5992,14 @@ var ConsoleView = class _ConsoleView extends UI7.Widget.VBox {
     const consoleEagerEvalSetting = Common8.Settings.Settings.instance().moduleSetting("console-eager-eval");
     const preserveConsoleLogSetting = Common8.Settings.Settings.instance().moduleSetting("preserve-console-log");
     const userActivationEvalSetting = Common8.Settings.Settings.instance().moduleSetting("console-user-activation-eval");
-    settingsPane.append(UI7.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.hideNetwork), this.filter.hideNetworkMessagesSetting, this.filter.hideNetworkMessagesSetting.title()), UI7.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.logXMLHttpRequests), monitoringXHREnabledSetting), UI7.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.preserveLog), preserveConsoleLogSetting, i18nString5(UIStrings5.doNotClearLogOnPageReload)), UI7.SettingsUI.createSettingCheckbox(consoleEagerEvalSetting.title(), consoleEagerEvalSetting, i18nString5(UIStrings5.eagerlyEvaluateTextInThePrompt)), UI7.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.selectedContextOnly), this.filter.filterByExecutionContextSetting, i18nString5(UIStrings5.onlyShowMessagesFromTheCurrentContext)), UI7.SettingsUI.createSettingCheckbox(this.consoleHistoryAutocompleteSetting.title(), this.consoleHistoryAutocompleteSetting, i18nString5(UIStrings5.autocompleteFromHistory)), UI7.SettingsUI.createSettingCheckbox(this.groupSimilarSetting.title(), this.groupSimilarSetting, i18nString5(UIStrings5.groupSimilarMessagesInConsole)), UI7.SettingsUI.createSettingCheckbox(userActivationEvalSetting.title(), userActivationEvalSetting, i18nString5(UIStrings5.treatEvaluationAsUserActivation)), UI7.SettingsUI.createSettingCheckbox(this.showCorsErrorsSetting.title(), this.showCorsErrorsSetting, i18nString5(UIStrings5.showCorsErrorsInConsole)));
+    settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.hideNetwork), this.filter.hideNetworkMessagesSetting, this.filter.hideNetworkMessagesSetting.title()), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.logXMLHttpRequests), monitoringXHREnabledSetting), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.preserveLog), preserveConsoleLogSetting, i18nString5(UIStrings5.doNotClearLogOnPageReload)), SettingsUI.SettingsUI.createSettingCheckbox(consoleEagerEvalSetting.title(), consoleEagerEvalSetting, i18nString5(UIStrings5.eagerlyEvaluateTextInThePrompt)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.selectedContextOnly), this.filter.filterByExecutionContextSetting, i18nString5(UIStrings5.onlyShowMessagesFromTheCurrentContext)), SettingsUI.SettingsUI.createSettingCheckbox(this.consoleHistoryAutocompleteSetting.title(), this.consoleHistoryAutocompleteSetting, i18nString5(UIStrings5.autocompleteFromHistory)), SettingsUI.SettingsUI.createSettingCheckbox(this.groupSimilarSetting.title(), this.groupSimilarSetting, i18nString5(UIStrings5.groupSimilarMessagesInConsole)), SettingsUI.SettingsUI.createSettingCheckbox(userActivationEvalSetting.title(), userActivationEvalSetting, i18nString5(UIStrings5.treatEvaluationAsUserActivation)), SettingsUI.SettingsUI.createSettingCheckbox(this.showCorsErrorsSetting.title(), this.showCorsErrorsSetting, i18nString5(UIStrings5.showCorsErrorsInConsole)));
     if (!this.showSettingsPaneSetting.get()) {
       settingsPane.classList.add("hidden");
     }
     this.showSettingsPaneSetting.addChangeListener(() => settingsPane.classList.toggle("hidden", !this.showSettingsPaneSetting.get()));
     this.pinPane = new ConsolePinPane(liveExpressionButton, () => this.prompt.focus());
     this.pinPane.element.classList.add("console-view-pinpane");
+    this.pinPane.element.classList.remove("flex-auto");
     this.pinPane.show(this.contentsElement);
     this.viewport = new ConsoleViewport(this);
     this.viewport.setStickToBottom(true);

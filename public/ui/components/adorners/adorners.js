@@ -10,6 +10,7 @@ __export(Adorner_exports, {
   Adorner: () => Adorner
 });
 import { html, render } from "./../../lit/lit.js";
+import * as UI from "./../../legacy/legacy.js";
 import * as VisualElements from "./../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/components/adorners/adorner.css.js
@@ -106,7 +107,7 @@ var Adorner = class extends HTMLElement {
     this.#render();
   }
   cloneNode(deep) {
-    const node = super.cloneNode(deep);
+    const node = UI.UIUtils.cloneCustomElement(this, deep);
     node.data = { name: this.name, content: this.#content, jslogContext: this.#jslogContext };
     return node;
   }
@@ -117,6 +118,7 @@ var Adorner = class extends HTMLElement {
     if (this.#jslogContext && !this.getAttribute("jslog")) {
       this.setAttribute("jslog", `${VisualElements.adorner(this.#jslogContext)}`);
     }
+    this.#render();
   }
   isActive() {
     return this.getAttribute("aria-pressed") === "true";

@@ -10,6 +10,7 @@ import { findMenuItemWithLabel } from '../../../../testing/ContextMenuHelpers.js
 import { createTarget, describeWithEnvironment, } from '../../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../../../testing/MockConnection.js';
 import { MockProtocolBackend } from '../../../../testing/MockScopeChain.js';
+import { setMockResourceTree } from '../../../../testing/ResourceTreeHelpers.js';
 import * as UI from '../../legacy.js';
 import * as Components from './utils.js';
 const { urlString } = Platform.DevToolsPath;
@@ -24,6 +25,7 @@ function foo(x) {
 `;
 describeWithMockConnection('Linkifier', () => {
     function setUpEnvironment() {
+        setMockResourceTree(false);
         const target = createTarget();
         const linkifier = new Components.Linkifier.Linkifier(100, false);
         linkifier.targetAdded(target);

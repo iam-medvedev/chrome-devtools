@@ -1,7 +1,6 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -76,7 +75,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             `)}
         </div>
       </div>
-    `, target, { host: target });
+    `, target);
     // clang-format on
 };
 export class ExploreWidget extends UI.Widget.Widget {

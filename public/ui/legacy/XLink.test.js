@@ -20,14 +20,6 @@ describe('XLink', () => {
             assert.strictEqual(link.title, 'test');
         });
     });
-    describe('HTML minification', () => {
-        it('properly minifies whitespaces in release mode', () => {
-            const target = document.createElement('section');
-            render(UI.XLink.sample, target, { host: this });
-            const result = target.querySelector('p')?.innerText;
-            assert.strictEqual(result, 'Hello, world!');
-        });
-    });
     describe('tabindex', () => {
         it('is 0 by default', () => {
             const link = UI.XLink.XLink.create('https://example.com/', 'Click me');

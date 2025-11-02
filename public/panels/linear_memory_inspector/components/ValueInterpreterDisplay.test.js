@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { dispatchClickEvent, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 export const DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR = '[data-jump]';
 describeWithLocale('ValueInterpreterDisplay', () => {

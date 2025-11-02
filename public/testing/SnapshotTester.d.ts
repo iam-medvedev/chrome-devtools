@@ -7,7 +7,7 @@
 declare class BaseSnapshotTester {
     #private;
     protected snapshotPath: string;
-    constructor(meta: ImportMeta);
+    constructor(context: Mocha.Suite, meta: ImportMeta);
     load(): Promise<void>;
     assert(context: Mocha.Context, actual: string): void;
     finish(): Promise<void>;

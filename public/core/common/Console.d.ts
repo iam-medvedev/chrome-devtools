@@ -1,10 +1,6 @@
 import { ObjectWrapper } from './Object.js';
 export declare class Console extends ObjectWrapper<EventTypes> {
     #private;
-    /**
-     * Instantiable via the instance() factory below.
-     */
-    constructor();
     static instance(opts?: {
         forceNew: boolean;
     }): Console;

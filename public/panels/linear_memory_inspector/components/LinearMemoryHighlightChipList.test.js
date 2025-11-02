@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 export const HIGHLIGHT_CHIP = '.highlight-chip';
 export const HIGHLIGHT_PILL_JUMP_BUTTON_SELECTOR = '.jump-to-highlight-button';

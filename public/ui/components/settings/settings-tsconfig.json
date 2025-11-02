@@ -45,6 +45,9 @@
       "path": "../../../core/common/bundle-tsconfig.json"
     },
     {
+      "path": "../../legacy/bundle-tsconfig.json"
+    },
+    {
       "path": "../../lit/bundle-tsconfig.json"
     },
     {
@@ -58,6 +61,9 @@
     },
     {
       "path": "../input/bundle-tsconfig.json"
+    },
+    {
+      "path": "../tooltips/bundle-tsconfig.json"
     }
   ]
 }

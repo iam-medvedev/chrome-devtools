@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import { dispatchClickEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as Linkifier from './linkifier.js';
 const { urlString } = Platform.DevToolsPath;

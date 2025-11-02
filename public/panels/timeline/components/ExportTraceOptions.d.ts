@@ -3,7 +3,7 @@ import '../../../ui/components/buttons/buttons.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 export interface ExportTraceOptionsData {
     onExport: (config: {
-        includeScriptContent: boolean;
+        includeResourceContent: boolean;
         includeSourceMaps: boolean;
         addModifications: boolean;
         shouldCompress: boolean;
@@ -14,11 +14,11 @@ export type ExportTraceDialogState = Dialogs.Dialog.DialogState;
 export interface ExportTraceOptionsState {
     dialogState: ExportTraceDialogState;
     includeAnnotations: boolean;
-    includeScriptContent: boolean;
+    includeResourceContent: boolean;
     includeSourceMaps: boolean;
     shouldCompress: boolean;
     displayAnnotationsCheckbox?: boolean;
-    displayScriptContentCheckbox?: boolean;
+    displayResourceContentCheckbox?: boolean;
     displaySourceMapsCheckbox?: boolean;
 }
 export declare class ExportTraceOptions extends HTMLElement {

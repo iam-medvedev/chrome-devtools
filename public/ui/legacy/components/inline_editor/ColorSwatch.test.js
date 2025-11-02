@@ -4,7 +4,7 @@
 import * as Common from '../../../../core/common/common.js';
 import { findMenuItemWithLabel, getMenuForShiftClick, getMenuItemLabels, } from '../../../../testing/ContextMenuHelpers.js';
 import { dispatchClickEvent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../../testing/LocaleHelpers.js';
 import * as InlineEditor from './inline_editor.js';
 function assertSwatch(swatch, expected) {
     const swatchEl = swatch.shadowRoot.querySelector('.color-swatch');

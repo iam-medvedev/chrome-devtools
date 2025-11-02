@@ -1510,7 +1510,11 @@ var UIStrings3 = {
   /**
    * @description Label of a checkbox in the DevTools settings UI.
    */
-  enableRemoteFileLoading: "Allow `DevTools` to load resources, such as source maps, from remote file paths. Disabled by default for security reasons.",
+  enableRemoteFileLoading: "Allow loading remote file path resources in DevTools",
+  /**
+   * @description Tooltip text for a setting that controls whether external resource can be loaded in DevTools.
+   */
+  remoteFileLoadingInfo: "Example resource are source maps. Disabled by default for security reasons.",
   /**
    * @description Tooltip text for a setting that controls the network cache. Disabling the network cache can simulate the network connections of users that are visiting a page for the first time.
    */
@@ -2272,7 +2276,10 @@ Common3.Settings.registerSettingExtension({
   title: i18nLazyString3(UIStrings3.enableRemoteFileLoading),
   settingName: "network.enable-remote-file-loading",
   settingType: "boolean",
-  defaultValue: false
+  defaultValue: false,
+  learnMore: {
+    tooltip: i18nLazyString3(UIStrings3.remoteFileLoadingInfo)
+  }
 });
 
 // gen/front_end/entrypoints/trace_app/trace_app.prebundle.js
@@ -2887,7 +2894,6 @@ import * as UI7 from "./../../ui/legacy/legacy.js";
 import * as Common8 from "./../../core/common/common.js";
 import * as i18n32 from "./../../core/i18n/i18n.js";
 import * as Root4 from "./../../core/root/root.js";
-import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
 var UIStrings10 = {
   /**
@@ -3023,7 +3029,7 @@ UI22.ViewManager.registerViewExtension({
   order: 2,
   async loadView() {
     const Settings22 = await loadSettingsModule();
-    return LegacyWrapper.LegacyWrapper.legacyWrapper(UI22.Widget.VBox, new Settings22.AISettingsTab.AISettingsTab());
+    return new Settings22.AISettingsTab.AISettingsTab();
   },
   iconName: "button-magic",
   settings: ["console-insights-enabled"],
@@ -3561,7 +3567,11 @@ var UIStrings11 = {
   /**
    * @description Title of a setting under the Sources category in Settings
    */
-  wasmAutoStepping: "When debugging Wasm with debug information, do not pause on wasm bytecode if possible",
+  wasmAutoStepping: "Wasm auto-stepping bytecode",
+  /**
+   * @description Tooltip text for a setting that controls Wasm will try to skip wasm bytecode
+   */
+  wasmAutoSteppingInfo: "When debugging Wasm with debug information, try to skip wasm bytecode",
   /**
    * @description Title of a setting under the Sources category in Settings
    */
@@ -4947,7 +4957,10 @@ Common9.Settings.registerSettingExtension({
       value: false,
       title: i18nLazyString11(UIStrings11.disableWasmAutoStepping)
     }
-  ]
+  ],
+  learnMore: {
+    tooltip: i18nLazyString11(UIStrings11.wasmAutoSteppingInfo)
+  }
 });
 UI8.ViewManager.registerLocationResolver({
   name: "navigator-view",

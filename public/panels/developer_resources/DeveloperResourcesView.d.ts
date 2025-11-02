@@ -17,10 +17,10 @@ interface ViewInput {
 }
 type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
+export declare class DeveloperResourcesView extends UI.Widget.VBox {
     #private;
     constructor(view?: View);
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
     select(resource: SDK.PageResourceLoader.PageResource): Promise<void>;
     selectedItem(): Promise<SDK.PageResourceLoader.PageResource | null>;
     private onFilterChanged;

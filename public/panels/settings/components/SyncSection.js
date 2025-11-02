@@ -11,6 +11,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as Badges from '../../../models/badges/badges.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
+import * as uiI18n from '../../../ui/i18n/i18n.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as PanelCommon from '../../common/common.js';
@@ -99,7 +100,7 @@ function renderDataDisclaimer() {
     </devtools-tooltip>`;
     const container = document.createElement('span');
     Lit.render(relevantDataTooltipTemplate, container);
-    cachedTooltipElement = i18n.i18n.getFormatLocalizedString(str_, UIStrings.dataDisclaimer, {
+    cachedTooltipElement = uiI18n.getFormatLocalizedString(str_, UIStrings.dataDisclaimer, {
         PH1: container,
     });
     return cachedTooltipElement;

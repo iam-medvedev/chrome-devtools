@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as Trace from '../../../models/trace/trace.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import { AICallTree, AIContext, PerformanceTraceFormatter } from '../ai_assistance.js';
@@ -16,15 +18,10 @@ async function createFormatter(context, name) {
     const formatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(focus);
     return { formatter, parsedTrace };
 }
-describeWithEnvironment('PerformanceTraceFormatter', () => {
-    let snapshotTester;
-    before(async () => {
-        snapshotTester = new SnapshotTester(import.meta);
-        await snapshotTester.load();
-    });
-    after(async () => {
-        await snapshotTester.finish();
-    });
+describeWithLocale('PerformanceTraceFormatter', function () {
+    const snapshotTester = new SnapshotTester(this, import.meta);
+    setupRuntimeHooks();
+    setupSettingsHooks();
     describe('formatTraceSummary', () => {
         it('web-dev.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'web-dev.json.gz');
@@ -33,6 +30,11 @@ describeWithEnvironment('PerformanceTraceFormatter', () => {
         });
         it('yahoo-news.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'yahoo-news.json.gz');
+            const output = formatter.formatTraceSummary();
+            snapshotTester.assert(this, output);
+        });
+        it('multiple-navigations-render-blocking.json.gz', async function () {
+            const { formatter } = await createFormatter(this, 'multiple-navigations-render-blocking.json.gz');
             const output = formatter.formatTraceSummary();
             snapshotTester.assert(this, output);
         });

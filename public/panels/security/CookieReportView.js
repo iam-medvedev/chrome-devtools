@@ -8,6 +8,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -164,23 +165,16 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/security/CookieReportView.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class CookieReportView extends UI.Widget.VBox {
-    #issuesManager;
-    namedBitSetFilterUI;
-    #cookieRows = new Map();
-    #view;
-    filterItems = [];
-    searchText;
-    constructor(element, view = (input, output, target) => {
-        // clang-format off
-        render(html `
+const DEFAULT_VIEW = (input, output, target) => {
+    // clang-format off
+    render(html `
         <div class="report overflow-auto">
             <div class="header">
               <h1>${i18nString(UIStrings.title)}</h1>
               <div class="body">${i18nString(UIStrings.body)} <x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/prepare/audit-cookies" jslog=${VisualLogging.link('learn-more').track({ click: true })}>${i18nString(UIStrings.learnMoreLink)}</x-link></div>
             </div>
             ${input.cookieRows.length > 0 ?
-            html `
+        html `
                 <div class="filters-container">
                   <devtools-toolbar>
                     <devtools-toolbar-input
@@ -196,10 +190,10 @@ export class CookieReportView extends UI.Widget.VBox {
                     @filterChanged=${input.onFilterChanged}
                     .options=${{ items: input.filterItems }}
                     ${ref((el) => {
-                if (el instanceof UI.FilterBar.NamedBitSetFilterUIElement) {
-                    output.namedBitSetFilterUI = el.getOrCreateNamedBitSetFilterUI();
-                }
-            })}
+            if (el instanceof UI.FilterBar.NamedBitSetFilterUIElement) {
+                output.namedBitSetFilterUI = el.getOrCreateNamedBitSetFilterUI();
+            }
+        })}
                   ></devtools-named-bit-set-filter>
                 </div>
                 <!-- @ts-ignore -->
@@ -232,7 +226,7 @@ export class CookieReportView extends UI.Widget.VBox {
                   </table>
                 </devtools-data-grid>
               ` :
-            html `
+        html `
                 <div class="empty-report">
                   <devtools-icon
                     class="cookie-off"
@@ -248,9 +242,17 @@ export class CookieReportView extends UI.Widget.VBox {
               `}
 
         </div>
-    `, target, { host: this });
-        // clang-format on
-    }) {
+    `, target);
+    // clang-format on
+};
+export class CookieReportView extends UI.Widget.VBox {
+    #issuesManager;
+    namedBitSetFilterUI;
+    #cookieRows = new Map();
+    #view;
+    filterItems = [];
+    searchText;
+    constructor(element, view = DEFAULT_VIEW) {
         super(element, { useShadowDom: true });
         this.#view = view;
         this.registerRequiredCSS(cookieReportViewStyles);
@@ -387,7 +389,7 @@ export class CookieReportView extends UI.Widget.VBox {
                 const githubLink = UI.XLink.XLink.create(insight.tableEntryUrl ?
                     insight.tableEntryUrl :
                     'https://github.com/privacysandbox/privacy-sandbox-dev-support/blob/main/3pc-migration-readiness.md', i18nString(UIStrings.guidance), undefined, undefined, 'readiness-list-link');
-                return html `${i18n.i18n.getFormatLocalizedString(str_, UIStrings.gitHubResource, {
+                return html `${uiI18n.getFormatLocalizedString(str_, UIStrings.gitHubResource, {
                     PH1: githubLink,
                 })}`;
             }
@@ -397,7 +399,7 @@ export class CookieReportView extends UI.Widget.VBox {
                     // The order of the URLs matters - needs to be 1P + 3P.
                     (url ? Common.ParsedURL.ParsedURL.fromString(url)?.host + '+' : '') +
                     (domain.charAt(0) === '.' ? domain.substring(1) : domain), i18nString(UIStrings.reportedIssues), undefined, undefined, 'compatibility-lookup-link');
-                return html `${i18n.i18n.getFormatLocalizedString(str_, UIStrings.gracePeriod, {
+                return html `${uiI18n.getFormatLocalizedString(str_, UIStrings.gracePeriod, {
                     PH1: gracePeriodLink,
                 })}`;
             }

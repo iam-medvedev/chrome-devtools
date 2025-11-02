@@ -44,6 +44,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
@@ -241,7 +242,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.filterBar.show(panel.contentElement);
         this.filterBar.addEventListener("Changed" /* UI.FilterBar.FilterBarEvents.CHANGED */, this.handleFilterChanged.bind(this));
         const settingsPane = panel.contentElement.createChild('div', 'network-settings-pane');
-        settingsPane.append(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.useLargeRequestRows), this.networkLogLargeRowsSetting, i18nString(UIStrings.showMoreInformationInRequestRows)), UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.groupByFrame), Common.Settings.Settings.instance().moduleSetting('network.group-by-frame'), i18nString(UIStrings.groupRequestsByTopLevelRequest)), UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.showOverview), this.networkLogShowOverviewSetting, i18nString(UIStrings.showOverviewOfNetworkRequests)), UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.captureScreenshots), this.networkRecordFilmStripSetting, i18nString(UIStrings.captureScreenshotsWhenLoadingA)));
+        settingsPane.append(SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.useLargeRequestRows), this.networkLogLargeRowsSetting, i18nString(UIStrings.showMoreInformationInRequestRows)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.groupByFrame), Common.Settings.Settings.instance().moduleSetting('network.group-by-frame'), i18nString(UIStrings.groupRequestsByTopLevelRequest)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.showOverview), this.networkLogShowOverviewSetting, i18nString(UIStrings.showOverviewOfNetworkRequests)), SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.captureScreenshots), this.networkRecordFilmStripSetting, i18nString(UIStrings.captureScreenshotsWhenLoadingA)));
         this.showSettingsPaneSetting =
             Common.Settings.Settings.instance().createSetting('network-show-settings-toolbar', false);
         settingsPane.classList.toggle('hidden', !this.showSettingsPaneSetting.get());

@@ -31,7 +31,7 @@ import '../../core/dom_extension/dom_extension.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Geometry from '../../models/geometry/geometry.js';
 import * as Lit from '../../ui/lit/lit.js';
-import { createShadowRootWithCoreStyles } from './UIUtils.js';
+import { cloneCustomElement, createShadowRootWithCoreStyles } from './UIUtils.js';
 // Remember the original DOM mutation methods here, since we
 // will override them below to sanity check the Widget system.
 const originalAppendChild = Element.prototype.appendChild;
@@ -53,6 +53,59 @@ export class WidgetConfig {
 }
 export function widgetConfig(widgetClass, widgetParams) {
     return new WidgetConfig(widgetClass, widgetParams);
+}
+let currentUpdateQueue = null;
+const currentlyProcessed = new Set();
+let nextUpdateQueue = new Map();
+let pendingAnimationFrame = null;
+function enqueueIntoNextUpdateQueue(widget) {
+    const scheduledUpdate = nextUpdateQueue.get(widget) ?? Promise.withResolvers();
+    nextUpdateQueue.delete(widget);
+    nextUpdateQueue.set(widget, scheduledUpdate);
+    if (pendingAnimationFrame === null) {
+        pendingAnimationFrame = requestAnimationFrame(runNextUpdate);
+    }
+    return scheduledUpdate.promise;
+}
+function enqueueWidgetUpdate(widget) {
+    if (currentUpdateQueue) {
+        if (currentlyProcessed.has(widget)) {
+            return enqueueIntoNextUpdateQueue(widget);
+        }
+        const scheduledUpdate = currentUpdateQueue.get(widget) ?? Promise.withResolvers();
+        currentUpdateQueue.delete(widget);
+        currentUpdateQueue.set(widget, scheduledUpdate);
+        return scheduledUpdate.promise;
+    }
+    return enqueueIntoNextUpdateQueue(widget);
+}
+function cancelUpdate(widget) {
+    if (currentUpdateQueue) {
+        const scheduledUpdate = currentUpdateQueue.get(widget);
+        if (scheduledUpdate) {
+            scheduledUpdate.resolve();
+            currentUpdateQueue.delete(widget);
+        }
+    }
+    const scheduledUpdate = nextUpdateQueue.get(widget);
+    if (scheduledUpdate) {
+        scheduledUpdate.resolve();
+        nextUpdateQueue.delete(widget);
+    }
+}
+function runNextUpdate() {
+    pendingAnimationFrame = null;
+    currentUpdateQueue = nextUpdateQueue;
+    nextUpdateQueue = new Map();
+    for (const [widget, { resolve }] of currentUpdateQueue) {
+        currentlyProcessed.add(widget);
+        void (async () => {
+            await widget.performUpdate();
+            resolve();
+        })();
+    }
+    currentUpdateQueue = null;
+    currentlyProcessed.clear();
 }
 export class WidgetElement extends HTMLElement {
     #widgetClass;
@@ -103,6 +156,13 @@ export class WidgetElement extends HTMLElement {
         }
         widget.show(this.parentElement, undefined, /* suppressOrphanWidgetError= */ true);
     }
+    disconnectedCallback() {
+        const widget = Widget.get(this);
+        if (widget) {
+            widget.setHideOnDetach();
+            widget.detach();
+        }
+    }
     appendChild(child) {
         if (child instanceof HTMLElement && child.tagName !== 'STYLE') {
             Widget.getOrCreateWidget(child).show(this);
@@ -135,12 +195,14 @@ export class WidgetElement extends HTMLElement {
         super.removeChildren();
     }
     cloneNode(deep) {
-        const clone = super.cloneNode(deep);
+        const clone = cloneCustomElement(this, deep);
         if (!this.#widgetClass) {
             throw new Error('No widgetClass defined');
         }
-        clone.#widgetClass = this.#widgetClass;
-        clone.#widgetParams = this.#widgetParams;
+        clone.widgetConfig = {
+            widgetClass: this.#widgetClass,
+            widgetParams: this.#widgetParams,
+        };
         return clone;
     }
 }
@@ -177,8 +239,7 @@ function decrementWidgetCounter(parentElement, childElement) {
 // The resolved `updateComplete` promise, which is used as a marker for the
 // Widget's `#updateComplete` private property to indicate that there's no
 // pending update.
-const UPDATE_COMPLETE = Promise.resolve(true);
-const UPDATE_COMPLETE_RESOLVE = (_result) => { };
+const UPDATE_COMPLETE = Promise.resolve();
 export class Widget {
     element;
     contentElement;
@@ -192,14 +253,11 @@ export class Widget {
     #notificationDepth = 0;
     #invalidationsSuspended = 0;
     #parentWidget = null;
-    #defaultFocusedElement;
     #cachedConstraints;
     #constraints;
     #invalidationsRequested;
     #externallyManaged;
     #updateComplete = UPDATE_COMPLETE;
-    #updateCompleteResolve = UPDATE_COMPLETE_RESOLVE;
-    #updateRequestID = 0;
     constructor(elementOrOptions, options) {
         if (elementOrOptions instanceof HTMLElement) {
             this.element = elementOrOptions;
@@ -477,14 +535,7 @@ export class Widget {
         if (!this.#parentWidget && !this.#isRoot) {
             return;
         }
-        // Cancel any pending update.
-        if (this.#updateRequestID !== 0) {
-            cancelAnimationFrame(this.#updateRequestID);
-            this.#updateCompleteResolve(true);
-            this.#updateCompleteResolve = UPDATE_COMPLETE_RESOLVE;
-            this.#updateComplete = UPDATE_COMPLETE;
-            this.#updateRequestID = 0;
-        }
+        cancelUpdate(this);
         // hideOnDetach means that we should never remove element from dom - content
         // has iframes and detaching it will hurt.
         //
@@ -579,25 +630,39 @@ export class Widget {
         }
     }
     setDefaultFocusedElement(element) {
-        this.#defaultFocusedElement = element;
+        const defaultFocusedElement = this.getDefaultFocusedElement();
+        if (defaultFocusedElement) {
+            defaultFocusedElement.removeAttribute('autofocus');
+        }
+        if (element) {
+            element.setAttribute('autofocus', '');
+        }
     }
     setDefaultFocusedChild(child) {
         assert(child.#parentWidget === this, 'Attempt to set non-child widget as default focused.');
         this.defaultFocusedChild = child;
     }
+    getDefaultFocusedElement() {
+        const autofocusElement = this.contentElement.hasAttribute('autofocus') ?
+            this.contentElement :
+            this.contentElement.querySelector('[autofocus]');
+        let widgetElement = autofocusElement;
+        while (widgetElement) {
+            const widget = Widget.get(widgetElement);
+            if (widget) {
+                return widget === this ? autofocusElement : null;
+            }
+            widgetElement = widgetElement.parentElementOrShadowHost();
+        }
+        return null;
+    }
     focus() {
         if (!this.isShowing()) {
             return;
         }
-        if (this.#shadowRoot?.delegatesFocus && this.contentElement.querySelector('[autofocus]')) {
-            this.element.focus();
-            return;
-        }
-        const element = this.#defaultFocusedElement;
-        if (element) {
-            if (!element.hasFocus()) {
-                element.focus();
-            }
+        const autofocusElement = this.getDefaultFocusedElement();
+        if (autofocusElement) {
+            autofocusElement.focus();
             return;
         }
         if (this.defaultFocusedChild && this.defaultFocusedChild.#visible) {
@@ -609,10 +674,6 @@ export class Widget {
                     child.focus();
                     return;
                 }
-            }
-            let child = this.contentElement.traverseNextNode(this.contentElement);
-            while (child) {
-                child = child.traverseNextNode(this.contentElement);
             }
         }
     }
@@ -698,18 +759,6 @@ export class Widget {
      */
     performUpdate() {
     }
-    async #performUpdateCallback() {
-        // Mark this update cycle as complete by assigning
-        // the marker sentinel.
-        this.#updateComplete = UPDATE_COMPLETE;
-        this.#updateCompleteResolve = UPDATE_COMPLETE_RESOLVE;
-        this.#updateRequestID = 0;
-        // Run the actual update logic.
-        await this.performUpdate();
-        // Resolve the `updateComplete` with `true` if no
-        // new update was triggered during this cycle.
-        return this.#updateComplete === UPDATE_COMPLETE;
-    }
     /**
      * Schedules an asynchronous update for this widget.
      *
@@ -717,12 +766,7 @@ export class Widget {
      * frame.
      */
     requestUpdate() {
-        if (this.#updateComplete === UPDATE_COMPLETE) {
-            this.#updateComplete = new Promise((resolve, reject) => {
-                this.#updateCompleteResolve = resolve;
-                this.#updateRequestID = requestAnimationFrame(() => this.#performUpdateCallback().then(resolve, reject));
-            });
-        }
+        this.#updateComplete = enqueueWidgetUpdate(this);
     }
     /**
      * The `updateComplete` promise resolves when the widget has finished updating.

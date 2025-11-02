@@ -1,16 +1,34 @@
 import '../../../ui/components/chrome_link/chrome_link.js';
 import '../../../ui/components/expandable_list/expandable_list.js';
 import '../../../ui/components/report_view/report_view.js';
-import '../../../ui/components/tree_outline/tree_outline.js';
-import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-export declare class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
+import '../../../ui/legacy/legacy.js';
+import * as SDK from '../../../core/sdk/sdk.js';
+import * as Protocol from '../../../generated/protocol.js';
+import * as UI from '../../../ui/legacy/legacy.js';
+declare const enum ScreenStatusType {
+    RUNNING = "Running",
+    RESULT = "Result"
+}
+interface ViewInput {
+    frame: SDK.ResourceTreeModel.ResourceTreeFrame | null;
+    frameTreeData: {
+        node: FrameTreeNodeData;
+        frameCount: number;
+        issueCount: number;
+    } | undefined;
+    reasonToFramesMap: Map<Protocol.Page.BackForwardCacheNotRestoredReason, string[]>;
+    screenStatus: ScreenStatusType;
+    navigateAwayAndBack: () => Promise<void>;
+}
+type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
+export declare class BackForwardCacheView extends UI.Widget.Widget {
     #private;
-    constructor();
-    connectedCallback(): void;
-    render(): Promise<void>;
+    constructor(view?: View);
+    performUpdate(): Promise<void>;
 }
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-resources-back-forward-cache-view': BackForwardCacheView;
-    }
+interface FrameTreeNodeData {
+    text: string;
+    iconName?: string;
+    children?: FrameTreeNodeData[];
 }
+export {};

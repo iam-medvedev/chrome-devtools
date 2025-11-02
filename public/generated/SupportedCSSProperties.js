@@ -420,6 +420,7 @@ export const generatedProperties = [
             "column-rule-color",
             "column-rule-outset",
             "column-rule-style",
+            "column-rule-visibility-items",
             "column-rule-width",
             "column-span",
             "column-width",
@@ -517,6 +518,7 @@ export const generatedProperties = [
             "inset-block-start",
             "inset-inline-end",
             "inset-inline-start",
+            "interactivity",
             "interest-delay-end",
             "interest-delay-start",
             "interpolate-size",
@@ -638,6 +640,7 @@ export const generatedProperties = [
             "row-rule-color",
             "row-rule-outset",
             "row-rule-style",
+            "row-rule-visibility-items",
             "row-rule-width",
             "ruby-align",
             "ruby-overhang",
@@ -719,6 +722,7 @@ export const generatedProperties = [
             "text-emphasis-style",
             "text-grow",
             "text-indent",
+            "text-justify",
             "text-orientation",
             "text-overflow",
             "text-rendering",
@@ -1734,6 +1738,16 @@ export const generatedProperties = [
             "double"
         ],
         "name": "column-rule-style"
+    },
+    {
+        "inherited": false,
+        "keywords": [
+            "all",
+            "around",
+            "between",
+            "none"
+        ],
+        "name": "column-rule-visibility-items"
     },
     {
         "keywords": [
@@ -3714,6 +3728,16 @@ export const generatedProperties = [
         "name": "row-rule-style"
     },
     {
+        "inherited": false,
+        "keywords": [
+            "all",
+            "around",
+            "between",
+            "none"
+        ],
+        "name": "row-rule-visibility-items"
+    },
+    {
         "keywords": [
             "thin",
             "medium",
@@ -4319,6 +4343,16 @@ export const generatedProperties = [
     {
         "inherited": true,
         "name": "text-indent"
+    },
+    {
+        "inherited": true,
+        "keywords": [
+            "auto",
+            "none",
+            "inter-word",
+            "inter-character"
+        ],
+        "name": "text-justify"
     },
     {
         "inherited": true,
@@ -5361,6 +5395,14 @@ export const generatedPropertyValues = {
             "dashed",
             "solid",
             "double"
+        ]
+    },
+    "column-rule-visibility-items": {
+        "values": [
+            "all",
+            "around",
+            "between",
+            "none"
         ]
     },
     "column-rule-width": {
@@ -6479,6 +6521,14 @@ export const generatedPropertyValues = {
             "double"
         ]
     },
+    "row-rule-visibility-items": {
+        "values": [
+            "all",
+            "around",
+            "between",
+            "none"
+        ]
+    },
     "row-rule-width": {
         "values": [
             "thin",
@@ -6770,6 +6820,14 @@ export const generatedPropertyValues = {
     "text-emphasis-color": {
         "values": [
             "currentcolor"
+        ]
+    },
+    "text-justify": {
+        "values": [
+            "auto",
+            "none",
+            "inter-word",
+            "inter-character"
         ]
     },
     "text-orientation": {

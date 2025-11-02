@@ -109,7 +109,6 @@ describeWithMockConnection('CategorizedBreakpointsSidebarPane', () => {
                 sortedCategoryNames: categories.keys().toArray().toSorted(),
                 userExpandedCategories: new Set(),
             }, {
-                defaultFocus: undefined,
                 userExpandedCategories: new Set(),
             }, target);
             await assertScreenshot('browser_debugger/categorized_breakpoint_sidebar_pane.png');
@@ -130,7 +129,6 @@ describeWithMockConnection('CategorizedBreakpointsSidebarPane', () => {
                 sortedCategoryNames: categories.keys().toArray().toSorted(),
                 userExpandedCategories: new Set(),
             }, {
-                defaultFocus: undefined,
                 userExpandedCategories: new Set(),
             }, target);
             await assertScreenshot('browser_debugger/categorized_breakpoint_sidebar_pane_highlight.png');
@@ -152,7 +150,6 @@ describeWithMockConnection('CategorizedBreakpointsSidebarPane', () => {
                 highlightedItem: null,
                 userExpandedCategories: new Set(),
             }, {
-                defaultFocus: undefined,
                 userExpandedCategories: new Set(),
             }, target);
             await assertScreenshot('browser_debugger/categorized_breakpoint_sidebar_pane_expand.png');

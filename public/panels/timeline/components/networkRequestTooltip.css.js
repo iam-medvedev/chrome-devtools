@@ -27,6 +27,11 @@ export default `/*
     margin-left: 15px;
   }
 
+  .throttled-row {
+    margin-left: 15px;
+    color: var(--sys-color-yellow);
+  }
+
   .network-category-chip {
     box-sizing: border-box;
     width: 10px;
@@ -66,6 +71,16 @@ export default `/*
     border: 1px solid var(--sys-color-on-surface-subtle);
     box-sizing: border-box;
   }
+
+  devtools-icon.indicator {
+    vertical-align: middle;
+    height: 12px;
+    width: 12px;
+    margin-right: 4px;
+    color: var(--sys-color-yellow);
+    border: none;
+  }
+
 
   .whisker-left {
     align-self: center;
@@ -108,6 +123,10 @@ export default `/*
 
     .time {
       font-weight: var(--ref-typeface-weight-medium);
+    }
+
+    &.throttled {
+      color: var(--sys-color-yellow);
     }
   }
 

@@ -288,7 +288,7 @@ function getDirectSocketStatusString(status) {
 var CATEGORY_NAME_GENERAL = "general";
 var CATEGORY_NAME_OPTIONS = "options";
 var CATEGORY_NAME_OPEN_INFO = "open-info";
-var DEFAULT_VIEW = (input, target) => {
+var DEFAULT_VIEW = (input, _output, target) => {
   function isCategoryOpen(name) {
     return input.openCategories.includes(name);
   }
@@ -365,7 +365,7 @@ var DEFAULT_VIEW = (input, target) => {
     ${renderCategory(CATEGORY_NAME_GENERAL, i18nString(UIStrings.general), generalContent)}
     ${renderCategory(CATEGORY_NAME_OPTIONS, i18nString(UIStrings.options), optionsContent)}
     ${socketInfo.openInfo ? renderCategory(CATEGORY_NAME_OPEN_INFO, i18nString(UIStrings.openInfo), openInfoContent) : Lit.nothing}
-  `, target, { host: input });
+  `, target);
 };
 var DirectSocketConnectionView = class extends UI.Widget.Widget {
   #request;
@@ -429,7 +429,7 @@ var DirectSocketConnectionView = class extends UI.Widget.Widget {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.NetworkPanelCopyValue);
       }
     };
-    this.#view(viewInput, this.contentElement);
+    this.#view(viewInput, void 0, this.contentElement);
   }
   #setIsOpen(categoryName, open) {
     const setting = this.#getCategorySetting(categoryName);

@@ -58,7 +58,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     getClassNames(styleSheetId: Protocol.CSS.StyleSheetId): Promise<string[]>;
     getComputedStyle(nodeId: Protocol.DOM.NodeId): Promise<Map<string, string> | null>;
     getLayoutPropertiesFromComputedStyle(nodeId: Protocol.DOM.NodeId): Promise<LayoutProperties | null>;
-    getEnvironmentVariales(): Promise<Record<string, string>>;
+    getEnvironmentVariables(): Promise<Record<string, string>>;
     getBackgroundColors(nodeId: Protocol.DOM.NodeId): Promise<ContrastInfo | null>;
     getPlatformFonts(nodeId: Protocol.DOM.NodeId): Promise<Protocol.CSS.PlatformFontUsage[] | null>;
     allStyleSheets(): CSSStyleSheetHeader[];

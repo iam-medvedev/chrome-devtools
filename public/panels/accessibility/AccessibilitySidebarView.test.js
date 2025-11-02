@@ -29,13 +29,13 @@ describeWithMockConnection('AccessibilitySidebarView', () => {
         const requestPartialAXTree = sinon.stub(accessibilityModel, 'requestPartialAXTree');
         requestPartialAXTree.resolves();
         const node = new SDK.DOMModel.DOMNode(domModel);
-        view = Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance({ forceNew: true, throttlingTimeout: 0 });
+        view = Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance({ forceNew: true });
         renderElementIntoDOM(view);
         view.setNode(node);
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await view.updateComplete;
         requestPartialAXTree.resetHistory();
         domModel.dispatchEventToListeners(event, { node });
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await view.updateComplete;
         assert.strictEqual(requestPartialAXTree.called, inScope);
     };
     it('updates UI on in scope attribute modified event', updatesUiOnEvent(SDK.DOMModel.Events.AttrModified, true));

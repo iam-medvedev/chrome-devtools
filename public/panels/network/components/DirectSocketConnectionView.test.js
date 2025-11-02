@@ -157,7 +157,7 @@ describeWithEnvironment('view', () => {
             onToggleCategory: () => { },
             onCopyRow: () => { }
         };
-        view(viewInput, target);
+        view(viewInput, undefined, target);
         await assertScreenshot('direct_socket_connection_view/all_categories_open.png');
     });
     it('all categories are opened with some values absent', async () => {
@@ -180,7 +180,7 @@ describeWithEnvironment('view', () => {
             onToggleCategory: () => { },
             onCopyRow: () => { }
         };
-        view(viewInput, target);
+        view(viewInput, undefined, target);
         await assertScreenshot('direct_socket_connection_view/all_categories_open_values_absent.png');
     });
     it('all categories are closed', async () => {
@@ -204,7 +204,7 @@ describeWithEnvironment('view', () => {
             onToggleCategory: () => { },
             onCopyRow: () => { }
         };
-        view(viewInput, target);
+        view(viewInput, undefined, target);
         await assertScreenshot('direct_socket_connection_view/all_categories_closed.png');
     });
 });

@@ -194,7 +194,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             }
         }
         this.appendTab("initiator" /* NetworkForward.UIRequestLocation.UIRequestTabs.INITIATOR */, i18nString(UIStrings.initiator), new RequestInitiatorView(request), i18nString(UIStrings.requestInitiatorCallStack));
-        this.appendTab("timing" /* NetworkForward.UIRequestLocation.UIRequestTabs.TIMING */, i18nString(UIStrings.timing), new RequestTimingView(request, calculator), i18nString(UIStrings.requestAndResponseTimeline));
+        this.appendTab("timing" /* NetworkForward.UIRequestLocation.UIRequestTabs.TIMING */, i18nString(UIStrings.timing), RequestTimingView.create(request, calculator), i18nString(UIStrings.requestAndResponseTimeline));
         if (request.trustTokenParams()) {
             this.appendTab("trust-tokens" /* NetworkForward.UIRequestLocation.UIRequestTabs.TRUST_TOKENS */, i18nString(UIStrings.trustTokens), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView(request)), i18nString(UIStrings.trustTokenOperationDetails));
         }

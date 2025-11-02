@@ -6,10 +6,10 @@ interface PlatformFontsWidgetInput {
 }
 type View = (input: PlatformFontsWidgetInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class PlatformFontsWidget extends UI.ThrottledWidget.ThrottledWidget {
+export declare class PlatformFontsWidget extends UI.Widget.VBox {
     #private;
     private readonly sharedModel;
     constructor(sharedModel: ComputedStyleModel, view?: View);
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
 }
 export {};

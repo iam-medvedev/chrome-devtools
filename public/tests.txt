@@ -1,4 +1,10 @@
-models/ai_assistance/data_formatters/PerformanceTraceFormatterBounds.test.js
+core/i18n/ByteUtilities.test.js
+core/i18n/DevToolsLocale.test.js
+core/i18n/NumberFormatter.test.js
+core/i18n/i18n.test.js
+core/i18n/time-utilities.test.js
+models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
+models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
 core/common/Base64.test.js
 core/common/CharacterIdMap.test.js
 core/common/Color.test.js
@@ -28,11 +34,7 @@ core/common/Trie.test.js
 core/dom_extension/DOMExtension.test.js
 core/host/AidaClient.test.js
 core/host/GdpClient.test.js
-core/i18n/ByteUtilities.test.js
-core/i18n/DevToolsLocale.test.js
-core/i18n/NumberFormatter.test.js
-core/i18n/i18n.test.js
-core/i18n/time-utilities.test.js
+core/i18n/i18nImpl.test.js
 core/platform/ArrayUtilities.test.js
 core/platform/DOMUtilities.test.js
 core/platform/DateUtilities.test.js
@@ -113,8 +115,6 @@ entrypoints/main/MainImpl.test.js
 entrypoints/wasmparser_worker/wasmparser_worker.test.js
 models/ai_assistance/data_formatters/FileFormatter.test.js
 models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
-models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
-models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
 models/ai_assistance/data_formatters/UnitFormatters.test.js
 models/ai_assistance/AgentProject.test.js
 models/ai_assistance/AiHistoryStorage.test.js
@@ -133,6 +133,7 @@ models/ai_assistance/agents/StylingAgent.test.js
 models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIQueries.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
+models/ai_code_generation/AiCodeGeneration.test.js
 models/autofill_manager/AutofillManager.test.js
 models/badges/AiExplorerBadge.test.js
 models/badges/Badge.test.js
@@ -560,6 +561,7 @@ panels/timeline/components/LayoutShiftDetails.test.js
 panels/timeline/components/LiveMetricsView.test.js
 panels/timeline/components/MetricCard.test.js
 panels/timeline/components/NetworkRequestDetails.test.js
+panels/timeline/components/NetworkRequestTooltip.test.js
 panels/timeline/components/NetworkThrottlingSelector.test.js
 panels/timeline/components/OriginMap.test.js
 panels/timeline/components/RelatedInsightChips.test.js
@@ -643,6 +645,7 @@ ui/components/settings/SettingDeprecationWarning.test.js
 ui/components/snackbars/Snackbar.test.js
 ui/components/survey_link/SurveyLink.test.js
 ui/components/switch/SwitchImpl.test.js
+ui/components/text_editor/AiCodeCompletionProvider.test.js
 ui/components/text_editor/AiCodeCompletionTeaserPlaceholder.test.js
 ui/components/text_editor/AutocompleteHistory.test.js
 ui/components/text_editor/ExecutionPositionHighlighter.test.js
@@ -652,6 +655,7 @@ ui/components/text_editor/javascript.test.js
 ui/components/text_prompt/TextPrompt.test.js
 ui/components/tooltips/Tooltip.test.js
 ui/components/tree_outline/TreeOutline.test.js
+ui/i18n/i18n.test.js
 ui/legacy/ARIAUtils.test.js
 ui/legacy/ActionRegistration.test.js
 ui/legacy/Context.test.js
@@ -666,7 +670,6 @@ ui/legacy/KeyboardShortcut.test.js
 ui/legacy/ListModel.test.js
 ui/legacy/ListWidget.test.js
 ui/legacy/SearchableView.test.js
-ui/legacy/SettingsUI.test.js
 ui/legacy/ShortcutRegistry.test.js
 ui/legacy/SplitWidget.test.js
 ui/legacy/SuggestBox.test.js

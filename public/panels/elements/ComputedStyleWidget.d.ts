@@ -1,7 +1,7 @@
 import '../../ui/legacy/legacy.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type ComputedStyleModel } from './ComputedStyleModel.js';
-export declare class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
+export declare class ComputedStyleWidget extends UI.Widget.VBox {
     #private;
     private computedStyleModel;
     private readonly showInheritedComputedStylePropertiesSetting;
@@ -15,7 +15,7 @@ export declare class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWid
     onResize(): void;
     wasShown(): void;
     willHide(): void;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
     private fetchMatchedCascade;
     private rebuildAlphabeticalList;
     private rebuildGroupedList;

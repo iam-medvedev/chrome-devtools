@@ -51,26 +51,26 @@ describeWithMockConnection('AI Assistance Panel', () => {
         cleanup();
         viewManagerIsViewVisibleStub.reset();
     });
-    describe('consent view', () => {
-        it('should render chat view when no account email', async () => {
+    describe('disabled view', () => {
+        it('should render disabled view when no account email', async () => {
             const { view } = await createAiAssistancePanel({ aidaAvailability: "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */ });
-            assert.strictEqual(view.input.state, "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */);
+            assert.strictEqual(view.input.state, "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */);
         });
-        it('should render chat view when sync paused', async () => {
+        it('should render disabled view when sync paused', async () => {
             const { view } = await createAiAssistancePanel({ aidaAvailability: "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */ });
-            assert.strictEqual(view.input.state, "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */);
+            assert.strictEqual(view.input.state, "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */);
         });
-        it('should render chat view when no internet', async () => {
+        it('should render disabled view when no internet', async () => {
             const { view } = await createAiAssistancePanel({ aidaAvailability: "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */ });
-            assert.strictEqual(view.input.state, "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */);
+            assert.strictEqual(view.input.state, "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */);
         });
-        it('should render consent view when the consent is not given before', async () => {
+        it('should render disabled view when the consent is not given before', async () => {
             const { view } = await createAiAssistancePanel();
-            assert.strictEqual(view.input.state, "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */);
+            assert.strictEqual(view.input.state, "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */);
         });
-        it('should switch from consent view to empty state when enabling setting', async () => {
+        it('should switch from disabled view to empty state when enabling setting', async () => {
             const { view } = await createAiAssistancePanel();
-            assert.strictEqual(view.input.state, "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */);
+            assert.strictEqual(view.input.state, "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */);
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             assert.strictEqual((await view.nextInput).state, "explore-view" /* AiAssistancePanel.State.EXPLORE_VIEW */);
         });
@@ -79,14 +79,14 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const { view } = await createAiAssistancePanel();
             assert.strictEqual(view.input.state, "explore-view" /* AiAssistancePanel.State.EXPLORE_VIEW */);
         });
-        it('should render the consent view when the setting is disabled', async () => {
+        it('should render the disabled view when the setting is disabled', async () => {
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             Common.Settings.moduleSetting('ai-assistance-enabled').setDisabled(true);
             const { view } = await createAiAssistancePanel();
-            assert.strictEqual(view.input.state, "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */);
+            assert.strictEqual(view.input.state, "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */);
             Common.Settings.moduleSetting('ai-assistance-enabled').setDisabled(false);
         });
-        it('should render the consent view when blocked by age', async () => {
+        it('should render the disabled view when blocked by age', async () => {
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             updateHostConfig({
                 aidaAvailability: {
@@ -97,12 +97,12 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 },
             });
             const { view } = await createAiAssistancePanel();
-            assert.strictEqual(view.input.state, "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */);
+            assert.strictEqual(view.input.state, "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */);
         });
         it('updates when the user logs in', async () => {
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             const { view, stubAidaCheckAccessPreconditions } = await createAiAssistancePanel({ aidaAvailability: "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */ });
-            assert.strictEqual(view.input.state, "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */);
+            assert.strictEqual(view.input.state, "disabled-view" /* AiAssistancePanel.State.DISABLED_VIEW */);
             assert.strictEqual(view.input.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
             stubAidaCheckAccessPreconditions("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
@@ -1416,15 +1416,8 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert.isUndefined((await view.nextInput).imageInput);
         });
     });
-    describe('getResponseMarkdown', () => {
-        let snapshotTester;
-        before(async () => {
-            snapshotTester = new SnapshotTester(import.meta);
-            await snapshotTester.load();
-        });
-        after(async () => {
-            await snapshotTester.finish();
-        });
+    describe('getResponseMarkdown', function () {
+        const snapshotTester = new SnapshotTester(this, import.meta);
         it('should generate correct markdown from a message object', function () {
             const message = {
                 entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
@@ -1505,6 +1498,71 @@ describeWithMockConnection('AI Assistance Panel', () => {
             (await view.nextInput).onTextSubmit('test');
             await view.nextInput;
             assert.isTrue(liveAnnouncerStatusStub.calledWith('Answer ready'), 'Expected live announcer status to be called with the text "Answer loading"');
+        });
+    });
+    describe('external requests', () => {
+        it('can switch contexts', async () => {
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+            updateHostConfig({
+                devToolsFreestyler: {
+                    enabled: true,
+                }
+            });
+            const aidaClient = mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test2' }], [{ explanation: 'test3' }]]);
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
+                aidaClient,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+            });
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('drjones.network-floating-button');
+            (await view.nextInput).onTextSubmit('User question to DrJones?');
+            assert.deepEqual((await view.nextInput).messages, [
+                {
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    text: 'User question to DrJones?',
+                    imageInput: undefined,
+                },
+                {
+                    answer: 'test',
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            const generator = await conversationHandler.handleExternalRequest({
+                prompt: 'Please help me debug this problem',
+                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */
+            });
+            const response = await generator.next();
+            assert.strictEqual(response.value.message, 'test2');
+            view.input.onTextSubmit('Follow-up question to DrJones?');
+            assert.deepEqual((await view.nextInput).messages, [
+                {
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    text: 'User question to DrJones?',
+                    imageInput: undefined,
+                },
+                {
+                    answer: 'test',
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+                {
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    text: 'Follow-up question to DrJones?',
+                    imageInput: undefined,
+                },
+                {
+                    answer: 'test3',
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
         });
     });
 });

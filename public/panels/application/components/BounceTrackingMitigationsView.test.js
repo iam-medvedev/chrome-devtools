@@ -30,6 +30,7 @@ describeWithMockConnection('BounceTrackingMitigationsView', () => {
         setMockConnectionResponseHandler('Storage.runBounceTrackingMitigations', () => ({ deletedSites: [] }));
         const component = await renderBounceTrackingMitigationsView();
         await RenderCoordinator.done();
+        await component.wrapper?.updateComplete;
         const nullGridElement = component.shadowRoot.querySelector('devtools-data-grid');
         assert.isNull(nullGridElement);
         const sections = component.shadowRoot.querySelectorAll('devtools-report-section');
@@ -45,6 +46,7 @@ describeWithMockConnection('BounceTrackingMitigationsView', () => {
         setMockConnectionResponseHandler('SystemInfo.getFeatureState', () => ({ featureEnabled: false }));
         const component = await renderBounceTrackingMitigationsView();
         await RenderCoordinator.done();
+        await component.wrapper?.updateComplete;
         const nullGridElement = component.shadowRoot.querySelector('devtools-data-grid');
         assert.isNull(nullGridElement);
         const sections = component.shadowRoot.querySelectorAll('devtools-report-section');
@@ -65,11 +67,13 @@ describeWithMockConnection('BounceTrackingMitigationsView', () => {
         });
         const component = await renderBounceTrackingMitigationsView();
         await RenderCoordinator.done();
+        await component.wrapper?.updateComplete;
         const forceRunButton = component.shadowRoot.querySelector('[aria-label="Force run"]');
         assert.instanceOf(forceRunButton, HTMLElement);
         dispatchClickEvent(forceRunButton);
         await runBounceTrackingMitigationsPromise;
         await RenderCoordinator.done();
+        await component.wrapper?.updateComplete;
         const nullGridElement = component.shadowRoot.querySelector('devtools-data-grid');
         assert.isNull(nullGridElement);
         const sections = component.shadowRoot.querySelectorAll('devtools-report-section');
@@ -87,10 +91,12 @@ describeWithMockConnection('BounceTrackingMitigationsView', () => {
         setMockConnectionResponseHandler('Storage.runBounceTrackingMitigations', () => ({ deletedSites: ['tracker-1.example', 'tracker-2.example'] }));
         const component = await renderBounceTrackingMitigationsView();
         await RenderCoordinator.done();
+        await component.wrapper?.updateComplete;
         const forceRunButton = component.shadowRoot.querySelector('[aria-label="Force run"]');
         assert.instanceOf(forceRunButton, HTMLElement);
         dispatchClickEvent(forceRunButton);
         await RenderCoordinator.done({ waitForWork: true });
+        await component.wrapper?.updateComplete;
         const dataGridShadowRoot = getInternalDataGridShadowRoot(component);
         const rowValues = getValuesOfAllBodyRows(dataGridShadowRoot);
         assert.deepEqual(rowValues, [

@@ -65,6 +65,7 @@ import * as i18n3 from "./../../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as SDK3 from "./../../../../core/sdk/sdk.js";
 import * as TextUtils from "./../../../../models/text_utils/text_utils.js";
+import * as uiI18n from "./../../../i18n/i18n.js";
 import * as IconButton from "./../../../components/icon_button/icon_button.js";
 import * as TextEditor from "./../../../components/text_editor/text_editor.js";
 import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
@@ -1058,7 +1059,7 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI3.TreeOut
       const wrapperElement = document.createElement("span");
       wrapperElement.classList.add("error");
       wrapperElement.classList.add("value");
-      wrapperElement.appendChild(i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.exceptionS, { PH1: propertyValue.element }));
+      wrapperElement.appendChild(uiI18n.getFormatLocalizedString(str_2, UIStrings2.exceptionS, { PH1: propertyValue.element }));
       propertyValue.element = wrapperElement;
     }
     propertyValue.element.classList.add("value");

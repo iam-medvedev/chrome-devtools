@@ -483,6 +483,7 @@ var generatedProperties = [
       "column-rule-color",
       "column-rule-outset",
       "column-rule-style",
+      "column-rule-visibility-items",
       "column-rule-width",
       "column-span",
       "column-width",
@@ -580,6 +581,7 @@ var generatedProperties = [
       "inset-block-start",
       "inset-inline-end",
       "inset-inline-start",
+      "interactivity",
       "interest-delay-end",
       "interest-delay-start",
       "interpolate-size",
@@ -701,6 +703,7 @@ var generatedProperties = [
       "row-rule-color",
       "row-rule-outset",
       "row-rule-style",
+      "row-rule-visibility-items",
       "row-rule-width",
       "ruby-align",
       "ruby-overhang",
@@ -782,6 +785,7 @@ var generatedProperties = [
       "text-emphasis-style",
       "text-grow",
       "text-indent",
+      "text-justify",
       "text-orientation",
       "text-overflow",
       "text-rendering",
@@ -1797,6 +1801,16 @@ var generatedProperties = [
       "double"
     ],
     "name": "column-rule-style"
+  },
+  {
+    "inherited": false,
+    "keywords": [
+      "all",
+      "around",
+      "between",
+      "none"
+    ],
+    "name": "column-rule-visibility-items"
   },
   {
     "keywords": [
@@ -3777,6 +3791,16 @@ var generatedProperties = [
     "name": "row-rule-style"
   },
   {
+    "inherited": false,
+    "keywords": [
+      "all",
+      "around",
+      "between",
+      "none"
+    ],
+    "name": "row-rule-visibility-items"
+  },
+  {
     "keywords": [
       "thin",
       "medium",
@@ -4382,6 +4406,16 @@ var generatedProperties = [
   {
     "inherited": true,
     "name": "text-indent"
+  },
+  {
+    "inherited": true,
+    "keywords": [
+      "auto",
+      "none",
+      "inter-word",
+      "inter-character"
+    ],
+    "name": "text-justify"
   },
   {
     "inherited": true,
@@ -5424,6 +5458,14 @@ var generatedPropertyValues = {
       "dashed",
       "solid",
       "double"
+    ]
+  },
+  "column-rule-visibility-items": {
+    "values": [
+      "all",
+      "around",
+      "between",
+      "none"
     ]
   },
   "column-rule-width": {
@@ -6542,6 +6584,14 @@ var generatedPropertyValues = {
       "double"
     ]
   },
+  "row-rule-visibility-items": {
+    "values": [
+      "all",
+      "around",
+      "between",
+      "none"
+    ]
+  },
   "row-rule-width": {
     "values": [
       "thin",
@@ -6833,6 +6883,14 @@ var generatedPropertyValues = {
   "text-emphasis-color": {
     "values": [
       "currentcolor"
+    ]
+  },
+  "text-justify": {
+    "values": [
+      "auto",
+      "none",
+      "inter-word",
+      "inter-character"
     ]
   },
   "text-orientation": {
@@ -14151,9 +14209,9 @@ var CSSProperty = class _CSSProperty extends Common7.ObjectWrapper.ObjectWrapper
   implicit;
   text;
   range;
-  #active;
-  #nameRange;
-  #valueRange;
+  #active = true;
+  #nameRange = null;
+  #valueRange = null;
   #invalidString;
   #longhandProperties = [];
   constructor(ownerStyle, index, name, value, important, disabled, parsedOk, implicit, text, range, longhandProperties) {
@@ -14168,9 +14226,6 @@ var CSSProperty = class _CSSProperty extends Common7.ObjectWrapper.ObjectWrapper
     this.implicit = implicit;
     this.text = text;
     this.range = range ? TextUtils3.TextRange.TextRange.fromObject(range) : null;
-    this.#active = true;
-    this.#nameRange = null;
-    this.#valueRange = null;
     if (longhandProperties && longhandProperties.length > 0) {
       for (const property of longhandProperties) {
         this.#longhandProperties.push(new _CSSProperty(ownerStyle, ++index, property.name, property.value, important, disabled, parsedOk, true));
@@ -14777,14 +14832,14 @@ import * as TextUtils10 from "./../../models/text_utils/text_utils.js";
 var CSSStyleDeclaration = class {
   #cssModel;
   parentRule;
-  #allProperties;
+  #allProperties = [];
   styleSheetId;
-  range;
+  range = null;
   cssText;
   #shorthandValues = /* @__PURE__ */ new Map();
   #shorthandIsImportant = /* @__PURE__ */ new Set();
   #activePropertyMap = /* @__PURE__ */ new Map();
-  #leadingProperties;
+  #leadingProperties = null;
   type;
   // For CSSStyles coming from animations,
   // This holds the name of the animation.
@@ -15628,7 +15683,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     for (const inheritedResult of inheritedPayload) {
       inheritedResult.matchedCSSRules = cleanUserAgentPayload(inheritedResult.matchedCSSRules);
     }
-    this.#environmentVariables = await this.cssModel().getEnvironmentVariales();
+    this.#environmentVariables = await this.cssModel().getEnvironmentVariables();
     this.#mainDOMCascade = await this.buildMainCascade(inlinePayload, attributesPayload, matchedPayload, inheritedPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload);
     [this.#pseudoDOMCascades, this.#customHighlightPseudoDOMCascades] = this.buildPseudoCascades(pseudoPayload, inheritedPseudoPayload);
     for (const domCascade of Array.from(this.#customHighlightPseudoDOMCascades.values()).concat(Array.from(this.#pseudoDOMCascades.values())).concat(this.#mainDOMCascade)) {
@@ -19076,7 +19131,7 @@ var SourceMap = class {
   #compiledURL;
   #sourceMappingURL;
   #baseURL;
-  #mappings;
+  #mappings = null;
   #sourceInfos = [];
   #sourceInfoByURL = /* @__PURE__ */ new Map();
   #script;
@@ -19094,7 +19149,6 @@ var SourceMap = class {
     this.#sourceMappingURL = sourceMappingURL;
     this.#baseURL = Common12.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
     this.#debugId = "debugId" in payload ? payload.debugId : void 0;
-    this.#mappings = null;
     if ("sections" in this.#json) {
       if (this.#json.sections.find((section) => "url" in section)) {
         Common12.Console.Console.instance().warn(`SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
@@ -19297,7 +19351,7 @@ var SourceMap = class {
   #computeReverseMappings(mappings) {
     const reverseMappingsPerUrl = /* @__PURE__ */ new Map();
     for (let i = 0; i < mappings.length; i++) {
-      const entryUrl = mappings[i].sourceURL;
+      const entryUrl = mappings[i]?.sourceURL;
       if (!entryUrl) {
         continue;
       }
@@ -20153,7 +20207,7 @@ var CSSModel = class _CSSModel extends SDKModel {
       hasScroll
     };
   }
-  async getEnvironmentVariales() {
+  async getEnvironmentVariables() {
     const response = await this.agent.invoke_getEnvironmentVariables();
     if (response.getError()) {
       return {};
@@ -22820,14 +22874,13 @@ var Scope = class {
   #name;
   #ordinal;
   #locationRange;
-  #object;
+  #object = null;
   constructor(callFrame, ordinal) {
     this.#callFrame = callFrame;
     this.#payload = callFrame.getPayload().scopeChain[ordinal];
     this.#type = this.#payload.type;
     this.#name = this.#payload.name;
     this.#ordinal = ordinal;
-    this.#object = null;
     const start = this.#payload.startLocation ? Location.fromPayload(callFrame.debuggerModel, this.#payload.startLocation) : null;
     const end = this.#payload.endLocation ? Location.fromPayload(callFrame.debuggerModel, this.#payload.endLocation) : null;
     if (start && end && start.scriptId === end.scriptId) {
@@ -30248,12 +30301,11 @@ var AnimationGroup = class {
   #id;
   #scrollNode;
   #animations;
-  #paused;
+  #paused = false;
   constructor(animationModel, id, animations) {
     this.#animationModel = animationModel;
     this.#id = id;
     this.#animations = animations;
-    this.#paused = false;
   }
   isScrollDriven() {
     return Boolean(this.#animations[0]?.viewOrScrollTimeline());
@@ -30635,6 +30687,7 @@ var EnhancedTracesParser = class {
   #targets = [];
   #executionContexts = [];
   #scripts = [];
+  #resources = [];
   static enhancedTraceVersion = 1;
   constructor(trace) {
     this.#trace = trace;
@@ -30650,6 +30703,9 @@ var EnhancedTracesParser = class {
         const data = event.args?.data;
         for (const frame of data.frames) {
           if (frame.url === "about:blank") {
+            continue;
+          }
+          if (!frame.isInPrimaryMainFrame) {
             continue;
           }
           const frameId = frame.frame;
@@ -30781,7 +30837,8 @@ var EnhancedTracesParser = class {
     for (const script of this.#scripts) {
       this.resolveSourceMap(script);
     }
-    return this.groupContextsAndScriptsUnderTarget(this.#targets, this.#executionContexts, this.#scripts);
+    this.#resources = this.#trace.metadata.resources ?? [];
+    return this.groupContextsAndScriptsUnderTarget(this.#targets, this.#executionContexts, this.#scripts, this.#resources);
   }
   resolveSourceMap(script) {
     if (script.sourceMapURL?.startsWith("data:")) {
@@ -30843,17 +30900,19 @@ var EnhancedTracesParser = class {
   isFunctionCallEvent(event) {
     return this.isTraceEvent(event) && event.cat === "devtools.timeline" && event.name === "FunctionCall";
   }
-  groupContextsAndScriptsUnderTarget(targets, executionContexts, scripts) {
+  groupContextsAndScriptsUnderTarget(targets, executionContexts, scripts, resources) {
     const data = [];
     const targetIds = /* @__PURE__ */ new Set();
     const targetToExecutionContexts = /* @__PURE__ */ new Map();
     const executionContextIsolateToTarget = /* @__PURE__ */ new Map();
     const targetToScripts = /* @__PURE__ */ new Map();
     const orphanScripts = [];
+    const targetToResources = /* @__PURE__ */ new Map();
     for (const target of targets) {
       targetIds.add(target.targetId);
       targetToExecutionContexts.set(target.targetId, []);
       targetToScripts.set(target.targetId, []);
+      targetToResources.set(target.targetId, []);
     }
     for (const executionContext of executionContexts) {
       const frameId = executionContext.auxData?.frameId;
@@ -30894,10 +30953,17 @@ var EnhancedTracesParser = class {
         console.error("Script can't be linked to any target", orphanScript);
       }
     }
+    for (const resource of resources) {
+      const frameId = resource.frame;
+      if (targetIds.has(frameId)) {
+        targetToResources.get(frameId)?.push(resource);
+      }
+    }
     for (const target of targets) {
       const targetId = target.targetId;
       const executionContexts2 = targetToExecutionContexts.get(targetId) || [];
       const scripts2 = targetToScripts.get(targetId) || [];
+      const resources2 = targetToResources.get(targetId) || [];
       for (const script of scripts2) {
         if (!executionContexts2.find((context) => context.id === script.executionContextId)) {
           const artificialContext = {
@@ -30916,7 +30982,7 @@ var EnhancedTracesParser = class {
           executionContexts2.push(artificialContext);
         }
       }
-      data.push({ target, executionContexts: executionContexts2, scripts: scripts2 });
+      data.push({ target, executionContexts: executionContexts2, scripts: scripts2, resources: resources2 });
     }
     return data;
   }
@@ -31062,6 +31128,7 @@ var RehydratingConnection = class {
       const target = hydratingDataPerTarget.target;
       const executionContexts = hydratingDataPerTarget.executionContexts;
       const scripts = hydratingDataPerTarget.scripts;
+      const resources = hydratingDataPerTarget.resources;
       this.postToFrontend({
         method: "Target.targetCreated",
         params: {
@@ -31076,7 +31143,7 @@ var RehydratingConnection = class {
         }
       });
       sessionId += 1;
-      const session = new RehydratingSession(sessionId, target, executionContexts, scripts, this);
+      const session = new RehydratingSession(sessionId, target, executionContexts, scripts, resources, this);
       this.sessions.set(sessionId, session);
       session.declareSessionAttachedToTarget();
     }
@@ -31153,12 +31220,14 @@ var RehydratingSession = class extends RehydratingSessionBase {
   target;
   executionContexts = [];
   scripts = [];
-  constructor(sessionId, target, executionContexts, scripts, connection) {
+  resources = [];
+  constructor(sessionId, target, executionContexts, scripts, resources, connection) {
     super(connection);
     this.sessionId = sessionId;
     this.target = target;
     this.executionContexts = executionContexts;
     this.scripts = scripts;
+    this.resources = resources;
   }
   sendMessageToFrontend(payload, attachSessionId = true) {
     if (this.sessionId !== 0 && attachSessionId) {
@@ -31174,12 +31243,31 @@ var RehydratingSession = class extends RehydratingSessionBase {
       case "Debugger.enable":
         this.handleDebuggerEnable(data.id);
         break;
+      case "CSS.enable":
+        this.sendMessageToFrontend({
+          id: data.id,
+          result: {}
+        });
+        break;
       case "Debugger.getScriptSource":
         if (data.params) {
           const params = data.params;
           this.handleDebuggerGetScriptSource(data.id, params.scriptId);
         }
         break;
+      case "Page.getResourceTree":
+        this.handleGetResourceTree(data.id);
+        break;
+      case "Page.getResourceContent": {
+        const request = data.params;
+        this.handleGetResourceContent(request.frameId, request.url, data.id);
+        break;
+      }
+      case "CSS.getStyleSheetText": {
+        const request = data.params;
+        this.handleGetStyleSheetText(request.styleSheetId, data.id);
+        break;
+      }
       default:
         this.sendMessageToFrontend({
           id: data.id,
@@ -31245,7 +31333,15 @@ var RehydratingSession = class extends RehydratingSessionBase {
   // script parsed event to communicate the current script state and respond with a mock
   // debugger id.
   handleDebuggerEnable(id) {
+    const htmlResourceUrls = new Set(this.resources.filter((r) => r.mimeType === "text/html").map((r) => r.url));
     for (const script of this.scripts) {
+      if (htmlResourceUrls.has(script.url)) {
+        script.embedderName = script.url;
+        script.startColumn = 1;
+        script.startLine = 1;
+        script.endColumn = 1;
+        script.endLine = 1;
+      }
       this.sendMessageToFrontend({
         method: "Debugger.scriptParsed",
         params: script
@@ -31256,6 +31352,69 @@ var RehydratingSession = class extends RehydratingSessionBase {
       id,
       result: {
         debuggerId: mockDebuggerId
+      }
+    });
+  }
+  handleGetResourceTree(id) {
+    const resources = this.resources.filter((r) => r.mimeType === "text/html" || r.mimeType === "text/css");
+    if (!resources.length) {
+      return;
+    }
+    const frameTree = {
+      frame: {
+        id: this.target.targetId,
+        url: this.target.url
+      },
+      childFrames: [],
+      resources: resources.map((r) => ({
+        url: r.url,
+        type: r.mimeType === "text/html" ? "Document" : "Stylesheet",
+        mimeType: r.mimeType,
+        contentSize: r.content.length
+      }))
+    };
+    this.sendMessageToFrontend({
+      id,
+      result: {
+        frameTree
+      }
+    });
+    const stylesheets = this.resources.filter((r) => r.mimeType === "text/css");
+    for (const stylesheet of stylesheets) {
+      this.sendMessageToFrontend({
+        method: "CSS.styleSheetAdded",
+        params: {
+          header: {
+            styleSheetId: `sheet.${stylesheet.frame}.${stylesheet.url}`,
+            frameId: stylesheet.frame,
+            sourceURL: stylesheet.url
+          }
+        }
+      });
+    }
+  }
+  handleGetResourceContent(frame, url, id) {
+    const resource = this.resources.find((r) => r.frame === frame && r.url === url);
+    if (!resource) {
+      return;
+    }
+    this.sendMessageToFrontend({
+      id,
+      result: {
+        content: resource.content,
+        base64Encoded: false
+      }
+    });
+  }
+  handleGetStyleSheetText(stylesheetId, id) {
+    const resource = this.resources.find((r) => `sheet.${r.frame}.${r.url}` === stylesheetId);
+    if (!resource) {
+      return;
+    }
+    this.sendMessageToFrontend({
+      id,
+      result: {
+        text: resource.content
       }
     });
   }

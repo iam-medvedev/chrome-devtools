@@ -1,3 +1,4 @@
+import '../../../ui/components/settings/settings.js';
 import '../../../ui/components/icon_button/icon_button.js';
 import './FieldSettingsDialog.js';
 import './NetworkThrottlingSelector.js';

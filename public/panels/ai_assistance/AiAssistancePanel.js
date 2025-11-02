@@ -437,12 +437,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #getChatUiState() {
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
-        // Special case due to the way its handled downstream quirks
-        if (this.#aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
-            return "chat-view" /* ChatViewState.CHAT_VIEW */;
-        }
-        if (!this.#aiAssistanceEnabledSetting?.getIfNotDisabled() || blockedByAge) {
-            return "consent-view" /* ChatViewState.CONSENT_VIEW */;
+        if (this.#aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ ||
+            !this.#aiAssistanceEnabledSetting?.getIfNotDisabled() || blockedByAge) {
+            return "disabled-view" /* ChatViewState.DISABLED_VIEW */;
         }
         if (this.#conversation?.type) {
             return "chat-view" /* ChatViewState.CHAT_VIEW */;
@@ -789,7 +786,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #getChatInputPlaceholder() {
         const state = this.#getChatUiState();
-        if (state === "consent-view" /* ChatViewState.CONSENT_VIEW */ || !this.#conversation) {
+        if (state === "disabled-view" /* ChatViewState.DISABLED_VIEW */ || !this.#conversation) {
             return i18nString(UIStrings.followTheSteps);
         }
         if (this.#blockedByCrossOrigin) {
@@ -818,7 +815,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #getDisclaimerText() {
         const state = this.#getChatUiState();
-        if (state === "consent-view" /* ChatViewState.CONSENT_VIEW */ || !this.#conversation || this.#conversation.isReadOnly) {
+        if (state === "disabled-view" /* ChatViewState.DISABLED_VIEW */ || !this.#conversation || this.#conversation.isReadOnly) {
             return i18nString(UIStrings.inputDisclaimerForEmptyState);
         }
         const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===

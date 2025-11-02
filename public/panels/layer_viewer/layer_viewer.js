@@ -824,6 +824,7 @@ import * as Common5 from "./../../core/common/common.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -1756,7 +1757,7 @@ var Layers3DView = class extends Common5.ObjectWrapper.eventMixin(UI4.Widget.VBo
   }
   webglDisabledBanner() {
     const emptyWidget = new UI4.EmptyWidget.EmptyWidget(i18nString5(UIStrings5.cantDisplayLayers), i18nString5(UIStrings5.webglSupportIsDisabledInYour));
-    emptyWidget.contentElement.appendChild(i18n9.i18n.getFormatLocalizedString(str_5, UIStrings5.checkSForPossibleReasons, { PH1: UI4.XLink.XLink.create("about:gpu", void 0, void 0, void 0, "about-gpu") }));
+    emptyWidget.contentElement.appendChild(uiI18n.getFormatLocalizedString(str_5, UIStrings5.checkSForPossibleReasons, { PH1: UI4.XLink.XLink.create("about:gpu", void 0, void 0, void 0, "about-gpu") }));
     return emptyWidget;
   }
   selectionFromEventPoint(event) {
@@ -2527,7 +2528,7 @@ var PaintProfilerView = class _PaintProfilerView extends Common6.ObjectWrapper.e
     this.#selectionWindow.setResizeEnabled(false);
   }
 };
-var PaintProfilerCommandLogView = class extends UI5.ThrottledWidget.ThrottledWidget {
+var PaintProfilerCommandLogView = class extends UI5.Widget.VBox {
   treeOutline;
   log;
   treeItemCache;
@@ -2559,9 +2560,9 @@ var PaintProfilerCommandLogView = class extends UI5.ThrottledWidget.ThrottledWid
   }
   updateWindow(selectionWindow) {
     this.selectionWindow = selectionWindow;
-    this.update();
+    this.requestUpdate();
   }
-  doUpdate() {
+  performUpdate() {
     if (!this.selectionWindow || !this.log.length) {
       this.treeOutline.removeChildren();
       return Promise.resolve();

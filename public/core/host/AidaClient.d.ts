@@ -149,6 +149,18 @@ export interface CompleteCodeOptions {
     inference_language?: AidaInferenceLanguage;
     stop_sequences?: string[];
 }
+export interface GenerateCodeOptions {
+    temperature?: number;
+    model_id?: string;
+    inference_language?: AidaInferenceLanguage;
+    expect_code_output?: boolean;
+}
+export interface ContextFile {
+    path: string;
+    full_content: string;
+    selected_content?: string;
+    programming_language: AidaInferenceLanguage;
+}
 export declare enum EditType {
     EDIT_TYPE_UNSPECIFIED = 0,
     ADD = 1,
@@ -166,6 +178,11 @@ export declare enum Reason {
     COLOCATED = 4,
     RELATED_FILE = 5
 }
+export interface AdditionalFile {
+    path: string;
+    content: string;
+    included_reason: Reason;
+}
 export interface CompletionRequest {
     client: string;
     prefix: string;
@@ -173,11 +190,21 @@ export interface CompletionRequest {
     options?: CompleteCodeOptions;
     metadata: RequestMetadata;
     last_user_action?: EditType;
-    additional_files?: Array<{
-        path: string;
-        content: string;
-        included_reason: Reason;
-    }>;
+    additional_files?: AdditionalFile[];
+}
+export declare enum UseCase {
+    USE_CASE_UNSPECIFIED = 0,
+    CODE_GENERATION = 1
+}
+export interface GenerateCodeRequest {
+    client: string;
+    preamble: string;
+    current_message: Content;
+    options?: GenerateCodeOptions;
+    context_files?: ContextFile[];
+    use_case: UseCase;
+    metadata: RequestMetadata;
+    client_feature?: ClientFeature;
 }
 export interface DoConversationClientEvent {
     user_feedback: {
@@ -208,6 +235,11 @@ export interface AidaRegisterClientEvent {
     disable_user_content_logging: boolean;
     do_conversation_client_event?: DoConversationClientEvent;
     complete_code_client_event?: {
+        user_acceptance: UserAcceptance;
+    } | {
+        user_impression: UserImpression;
+    };
+    generate_code_client_event?: {
         user_acceptance: UserAcceptance;
     } | {
         user_impression: UserImpression;
@@ -263,6 +295,10 @@ export interface CompletionResponse {
     generatedSamples: GenerationSample[];
     metadata: ResponseMetadata;
 }
+export interface GenerateCodeResponse {
+    samples: GenerationSample[];
+    metadata: ResponseMetadata;
+}
 export interface GenerationSample {
     generationString: string;
     score: number;
@@ -293,6 +329,7 @@ export declare const enum AidaInferenceLanguage {
     XML = "XML"
 }
 export declare const CLIENT_NAME = "CHROME_DEVTOOLS";
+export declare const SERVICE_NAME = "aidaService";
 export declare class AidaAbortError extends Error {
 }
 export declare class AidaBlockError extends Error {
@@ -305,6 +342,7 @@ export declare class AidaClient {
     }): AsyncGenerator<DoConversationResponse, void, void>;
     registerClientEvent(clientEvent: AidaRegisterClientEvent): Promise<AidaClientResult>;
     completeCode(request: CompletionRequest): Promise<CompletionResponse | null>;
+    generateCode(request: GenerateCodeRequest): Promise<GenerateCodeResponse | null>;
 }
 export declare function convertToUserTierEnum(userTier: string | undefined): UserTier;
 export declare class HostConfigTracker extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {

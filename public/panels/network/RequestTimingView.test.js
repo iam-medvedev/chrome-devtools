@@ -4,8 +4,9 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
-import { getCleanTextContentFromElements, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import { assertScreenshot, getCleanTextContentFromElements, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../testing/LocaleHelpers.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 function createNetworkRequest(matchedSource, actualSource) {
@@ -103,12 +104,14 @@ describeWithLocale('ResourceTimingView', () => {
         assert.strictEqual(cacheLookup?.end, timingInfo.requestTime + timingInfo.sendStart / 1000);
     });
     it('Timing table has router evaluation field with detail tabs', async () => {
+        stubNoopSettings();
         const request = createNetworkRequest("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */, "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
-        const component = new Network.RequestTimingView.RequestTimingView(request, new NetworkTimeCalculator.NetworkTimeCalculator(true));
+        const component = Network.RequestTimingView.RequestTimingView.create(request, new NetworkTimeCalculator.NetworkTimeCalculator(true));
         const div = document.createElement('div');
         renderElementIntoDOM(div);
         component.markAsRoot();
         component.show(div);
+        await component.updateComplete;
         // Test if we correctly set details element
         const routerEvaluationDetailsElement = document.querySelector('.router-evaluation-timing-bar-details');
         assert.isNotNull(routerEvaluationDetailsElement, 'router evaluation details does not exist');
@@ -124,6 +127,26 @@ describeWithLocale('ResourceTimingView', () => {
         const networkString = String("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
         assert.strictEqual(content[0], `Matched source: ${networkString}`, 'matched source does not match');
         assert.strictEqual(content[1], `Actual source: ${networkString}`, 'actual source does not match');
+    });
+    it('Timing table shows throttling indicator', async () => {
+        const container = document.createElement('div');
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const request = createNetworkRequest("cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */, "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */);
+        const timeRanges = NetworkTimeCalculator.calculateRequestTimeRanges(request, 100);
+        const input = {
+            requestUnfinished: false,
+            requestStartTime: 0,
+            requestIssueTime: 0,
+            totalDuration: 100,
+            startTime: 0,
+            endTime: 100,
+            timeRanges,
+            calculator: new NetworkTimeCalculator.NetworkTimeCalculator(true),
+            serverTimings: [],
+            wasThrottled: SDK.NetworkManager.Slow3GConditions,
+        };
+        Network.RequestTimingView.DEFAULT_VIEW(input, {}, container);
+        await assertScreenshot('network/request-timing-view-throttling.png');
     });
 });
 //# sourceMappingURL=RequestTimingView.test.js.map

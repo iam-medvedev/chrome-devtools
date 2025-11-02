@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../../../models/trace/trace.js';
-import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../../testing/LocaleHelpers.js';
 import * as PerfUI from './perf_ui.js';
 const { Milli: MilliSeconds } = Trace.Types.Timing;
 describeWithLocale('TimelineOverviewCalculator', () => {

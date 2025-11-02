@@ -182,7 +182,7 @@ var proposedRectForSimpleTooltip = ({ inspectorViewRect, anchorRect, currentPopo
   return positioningUtils.insetAdjustedRect({ anchorRect, currentPopoverRect, inspectorViewRect, proposedRect });
 };
 var Tooltip = class _Tooltip extends HTMLElement {
-  static observedAttributes = ["id", "variant", "jslogcontext"];
+  static observedAttributes = ["id", "variant", "jslogcontext", "trigger"];
   static lastOpenedTooltipId = null;
   #shadow = this.attachShadow({ mode: "open" });
   #anchor = null;
@@ -208,15 +208,19 @@ var Tooltip = class _Tooltip extends HTMLElement {
       this.removeAttribute("use-hotkey");
     }
   }
-  get useClick() {
-    return this.hasAttribute("use-click") ?? false;
-  }
-  set useClick(useClick) {
-    if (useClick) {
-      this.setAttribute("use-click", "");
-    } else {
-      this.removeAttribute("use-click");
+  get trigger() {
+    switch (this.getAttribute("trigger")) {
+      case "click":
+        return "click";
+      case "both":
+        return "both";
+      case "hover":
+      default:
+        return "hover";
     }
+  }
+  set trigger(trigger) {
+    this.setAttribute("trigger", trigger);
   }
   get hoverDelay() {
     return this.hasAttribute("hover-delay") ? Number(this.getAttribute("hover-delay")) : 300;
@@ -264,7 +268,7 @@ var Tooltip = class _Tooltip extends HTMLElement {
   }
   constructor(properties) {
     super();
-    const { id, variant, padding, jslogContext, anchor } = properties ?? {};
+    const { id, variant, padding, jslogContext, anchor, trigger } = properties ?? {};
     if (id) {
       this.id = id;
     }
@@ -283,6 +287,9 @@ var Tooltip = class _Tooltip extends HTMLElement {
         throw new Error("aria-details or aria-describedby must be set on the anchor");
       }
       this.#anchor = anchor;
+    }
+    if (trigger) {
+      this.trigger = trigger;
     }
   }
   attributeChangedCallback(name, oldValue, newValue) {
@@ -368,7 +375,7 @@ var Tooltip = class _Tooltip extends HTMLElement {
     }
     this.#previousAnchorRect = anchorRect;
     this.#previousPopoverRect = currentPopoverRect;
-    const inspectorViewRect = UI.InspectorView.InspectorView.instance().element.getBoundingClientRect();
+    const inspectorViewRect = UI.UIUtils.getDevToolsBoundingElement().getBoundingClientRect();
     const preferredPositions = this.preferSpanLeft ? [PositionOption.BOTTOM_SPAN_LEFT, PositionOption.TOP_SPAN_LEFT] : [];
     const proposedPopoverRect = this.variant === "rich" ? proposedRectForRichTooltip({ inspectorViewRect, anchorRect, currentPopoverRect, preferredPositions }) : proposedRectForSimpleTooltip({ inspectorViewRect, anchorRect, currentPopoverRect });
     this.style.left = `${proposedPopoverRect.left}px`;
@@ -389,7 +396,7 @@ var Tooltip = class _Tooltip extends HTMLElement {
     if (!this.hasAttribute("role")) {
       this.setAttribute("role", "tooltip");
     }
-    this.setAttribute("popover", this.useClick ? "auto" : "manual");
+    this.setAttribute("popover", this.trigger === "hover" ? "manual" : "auto");
     this.#updateJslog();
   }
   #stopPropagation(event) {
@@ -398,6 +405,9 @@ var Tooltip = class _Tooltip extends HTMLElement {
   #setClosing = (event) => {
     if (event.newState === "closed") {
       this.#closing = true;
+      if (this.#timeout) {
+        window.clearTimeout(this.#timeout);
+      }
     }
   };
   #resetClosing = (event) => {
@@ -430,9 +440,10 @@ var Tooltip = class _Tooltip extends HTMLElement {
     document.body.addEventListener("keydown", this.#globalKeyDown);
     if (this.#anchor) {
       this.#anchor.addEventListener("keydown", this.#keyDown);
-      if (this.useClick) {
+      if (this.trigger === "click" || this.trigger === "both") {
         this.#anchor.addEventListener("click", this.toggle);
-      } else {
+      }
+      if (this.trigger === "hover" || this.trigger === "both") {
         this.#anchor.addEventListener("mouseenter", this.showTooltip);
         if (!this.useHotkey) {
           this.#anchor.addEventListener("focus", this.showTooltip);

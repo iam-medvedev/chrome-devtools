@@ -162,6 +162,9 @@
       "path": "../../ui/components/tooltips/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/i18n/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
@@ -175,6 +178,9 @@
     },
     {
       "path": "../../ui/legacy/components/quick_open/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/components/settings_ui/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/source_frame/bundle-tsconfig.json"

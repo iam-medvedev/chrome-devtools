@@ -54,6 +54,7 @@
     "../../../../../../../front_end/panels/timeline/components/LiveMetricsView.test.ts",
     "../../../../../../../front_end/panels/timeline/components/MetricCard.test.ts",
     "../../../../../../../front_end/panels/timeline/components/NetworkRequestDetails.test.ts",
+    "../../../../../../../front_end/panels/timeline/components/NetworkRequestTooltip.test.ts",
     "../../../../../../../front_end/panels/timeline/components/NetworkThrottlingSelector.test.ts",
     "../../../../../../../front_end/panels/timeline/components/OriginMap.test.ts",
     "../../../../../../../front_end/panels/timeline/components/RelatedInsightChips.test.ts",

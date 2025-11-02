@@ -26,7 +26,6 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         if (jslogContext) {
             this.contentElement.setAttribute('jslog', `${VisualLogging.dialog(jslogContext).track({ resize: true, keydown: 'Escape' })}`);
         }
-        this.widget().setDefaultFocusedElement(this.contentElement);
         this.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
         this.setOutsideClickCallback(event => {
             // If there are stacked dialogs, we only want to

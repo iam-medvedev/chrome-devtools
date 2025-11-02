@@ -249,7 +249,13 @@ export declare enum Action {
     AiCodeCompletionError = 188,
     AttributeLinkClicked = 189,
     InsightRequestedViaTeaser = 190,
-    MAX_VALUE = 191
+    InsightTeaserGenerationStarted = 191,
+    InsightTeaserGenerationCompleted = 192,
+    InsightTeaserGenerationAborted = 193,
+    InsightTeaserGenerationErrored = 194,
+    AiCodeGenerationSuggestionDisplayed = 195,
+    AiCodeGenerationSuggestionAccepted = 196,
+    MAX_VALUE = 197
 }
 export declare enum PanelCodes {
     elements = 1,

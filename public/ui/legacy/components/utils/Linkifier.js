@@ -805,7 +805,13 @@ export class LinkHandlerSettingUI {
         Linkifier.linkHandlerSetting().set(value);
     }
     settingElement() {
-        return UI.SettingsUI.createCustomSetting(i18nString(UIStrings.linkHandling), this.element);
+        const p = document.createElement('p');
+        p.classList.add('settings-select');
+        const label = p.createChild('label');
+        label.textContent = i18nString(UIStrings.linkHandling);
+        UI.ARIAUtils.bindLabelToControl(label, this.element);
+        p.appendChild(this.element);
+        return p;
     }
 }
 let listeningToNewEvents = false;

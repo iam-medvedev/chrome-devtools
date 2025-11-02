@@ -28,23 +28,23 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         html `<div class="gray-info-message">${i18nString(UIStrings.noStackTraceAvailable)}</div>`}`, target);
     // clang-format on
 };
-export class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWidget {
+export class NodeStackTraceWidget extends UI.Widget.VBox {
     #linkifier = new Components.Linkifier.Linkifier(MaxLengthForLinks);
     #view;
     constructor(view = DEFAULT_VIEW) {
-        super(true /* isWebComponent */);
+        super({ useShadowDom: true });
         this.#view = view;
     }
     wasShown() {
         super.wasShown();
-        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);
-        this.update();
+        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.requestUpdate, this);
+        this.requestUpdate();
     }
     willHide() {
         super.willHide();
-        UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);
+        UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.requestUpdate, this);
     }
-    async doUpdate() {
+    async performUpdate() {
         const node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         const stackTrace = await node?.creationStackTrace() ?? undefined;
         const input = {

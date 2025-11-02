@@ -7,19 +7,19 @@ interface PropertiesWidgetInput {
 }
 type View = (input: PropertiesWidgetInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
+export declare class PropertiesWidget extends UI.Widget.VBox {
     #private;
     private node;
     private readonly showAllPropertiesSetting;
     private filterRegex;
     private readonly treeOutline;
     private lastRequestedNode?;
-    constructor(throttlingTimeout?: number, view?: View);
+    constructor(view?: View);
     private onFilterChanged;
     private filterAndScheduleUpdate;
     private internalFilterProperties;
     private setNode;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
     private onNodeChange;
 }
 export {};

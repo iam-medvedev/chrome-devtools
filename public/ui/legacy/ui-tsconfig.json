@@ -64,7 +64,6 @@
     "../../../../../../front_end/ui/legacy/ResizerWidget.ts",
     "../../../../../../front_end/ui/legacy/RootView.ts",
     "../../../../../../front_end/ui/legacy/SearchableView.ts",
-    "../../../../../../front_end/ui/legacy/SettingsUI.ts",
     "../../../../../../front_end/ui/legacy/ShortcutRegistry.ts",
     "../../../../../../front_end/ui/legacy/SoftContextMenu.ts",
     "../../../../../../front_end/ui/legacy/SoftDropDown.ts",
@@ -73,7 +72,6 @@
     "../../../../../../front_end/ui/legacy/TabbedPane.ts",
     "../../../../../../front_end/ui/legacy/TargetCrashedScreen.ts",
     "../../../../../../front_end/ui/legacy/TextPrompt.ts",
-    "../../../../../../front_end/ui/legacy/ThrottledWidget.ts",
     "../../../../../../front_end/ui/legacy/Toolbar.ts",
     "../../../../../../front_end/ui/legacy/Tooltip.ts",
     "../../../../../../front_end/ui/legacy/Treeoutline.ts",
@@ -121,9 +119,6 @@
       "path": "theme_support/bundle-tsconfig.json"
     },
     {
-      "path": "../components/adorners/bundle-tsconfig.json"
-    },
-    {
       "path": "../components/buttons/bundle-tsconfig.json"
     },
     {
@@ -134,9 +129,6 @@
     },
     {
       "path": "../components/icon_button/bundle-tsconfig.json"
-    },
-    {
-      "path": "../components/settings/bundle-tsconfig.json"
     },
     {
       "path": "../lit/bundle-tsconfig.json"

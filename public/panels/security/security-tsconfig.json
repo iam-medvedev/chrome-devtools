@@ -84,7 +84,13 @@
       "path": "../../ui/components/chrome_link/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/input/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/switch/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/i18n/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

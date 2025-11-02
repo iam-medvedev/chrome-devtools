@@ -462,6 +462,7 @@ __export(DetailsView_exports, {
 import * as i18n5 from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
 import * as Trace2 from "./../../../models/trace/trace.js";
+import * as uiI18n from "./../../../ui/i18n/i18n.js";
 import * as UI3 from "./../../../ui/legacy/legacy.js";
 var UIStrings3 = {
   /**
@@ -529,7 +530,7 @@ function buildWarningElementsForEvent(event, parsedTrace) {
     switch (warning) {
       case "FORCED_REFLOW": {
         const forcedReflowLink = UI3.XLink.XLink.create("https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts", i18nString3(UIStrings3.forcedReflow), void 0, void 0, "forced-reflow");
-        span.appendChild(i18n5.i18n.getFormatLocalizedString(str_3, UIStrings3.sIsALikelyPerformanceBottleneck, { PH1: forcedReflowLink }));
+        span.appendChild(uiI18n.getFormatLocalizedString(str_3, UIStrings3.sIsALikelyPerformanceBottleneck, { PH1: forcedReflowLink }));
         break;
       }
       case "IDLE_CALLBACK_OVER_TIME": {
@@ -542,12 +543,12 @@ function buildWarningElementsForEvent(event, parsedTrace) {
       }
       case "LONG_TASK": {
         const longTaskLink = UI3.XLink.XLink.create("https://web.dev/optimize-long-tasks/", i18nString3(UIStrings3.longTask), void 0, void 0, "long-tasks");
-        span.appendChild(i18n5.i18n.getFormatLocalizedString(str_3, UIStrings3.sTookS, { PH1: longTaskLink, PH2: i18n5.TimeUtilities.millisToString(duration || 0, true) }));
+        span.appendChild(uiI18n.getFormatLocalizedString(str_3, UIStrings3.sTookS, { PH1: longTaskLink, PH2: i18n5.TimeUtilities.millisToString(duration || 0, true) }));
         break;
       }
       case "LONG_INTERACTION": {
         const longInteractionINPLink = UI3.XLink.XLink.create("https://web.dev/inp", i18nString3(UIStrings3.longInteractionINP), void 0, void 0, "long-interaction");
-        span.appendChild(i18n5.i18n.getFormatLocalizedString(str_3, UIStrings3.sIsLikelyPoorPageResponsiveness, { PH1: longInteractionINPLink }));
+        span.appendChild(uiI18n.getFormatLocalizedString(str_3, UIStrings3.sIsLikelyPoorPageResponsiveness, { PH1: longInteractionINPLink }));
         break;
       }
       default: {
@@ -691,7 +692,7 @@ var UIStrings4 = {
   /**
    * @description Text for the include script content option.
    */
-  includeScriptContent: "Include script content",
+  includeResourceContent: "Include resource content",
   /**
    * @description Text for the include script source maps option.
    */
@@ -709,9 +710,9 @@ var UIStrings4 = {
    */
   saveButtonTitle: "Save",
   /**
-   * @description Text shown in the information pop-up next to the "Include script content" option.
+   * @description Text shown in the information pop-up next to the "Include resource content" option.
    */
-  scriptContentPrivacyInfo: "Includes the full content of all loaded scripts (except extensions).",
+  resourceContentPrivacyInfo: "Includes the full content of all loaded HTML, CSS, and scripts (except extensions).",
   /**
    * @description Text shown in the information pop-up next to the "Include script sourcemaps" option.
    */
@@ -723,12 +724,12 @@ var UIStrings4 = {
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/timeline/components/ExportTraceOptions.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var checkboxesWithInfoDialog = /* @__PURE__ */ new Set(["script-content", "script-source-maps"]);
+var checkboxesWithInfoDialog = /* @__PURE__ */ new Set(["resource-content", "script-source-maps"]);
 var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #data = null;
   static #includeAnnotationsSettingString = "export-performance-trace-include-annotations";
-  static #includeScriptContentSettingString = "export-performance-trace-include-scripts";
+  static #includeResourceContentSettingString = "export-performance-trace-include-resources";
   static #includeSourceMapsSettingString = "export-performance-trace-include-sourcemaps";
   static #shouldCompressSettingString = "export-performance-trace-should-compress";
   #includeAnnotationsSetting = Common2.Settings.Settings.instance().createSetting(
@@ -737,8 +738,8 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     "Session"
     /* Common.Settings.SettingStorageType.SESSION */
   );
-  #includeScriptContentSetting = Common2.Settings.Settings.instance().createSetting(
-    _ExportTraceOptions.#includeScriptContentSettingString,
+  #includeResourceContentSetting = Common2.Settings.Settings.instance().createSetting(
+    _ExportTraceOptions.#includeResourceContentSettingString,
     false,
     "Session"
     /* Common.Settings.SettingStorageType.SESSION */
@@ -758,7 +759,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
   #state = {
     dialogState: "collapsed",
     includeAnnotations: this.#includeAnnotationsSetting.get(),
-    includeScriptContent: this.#includeScriptContentSetting.get(),
+    includeResourceContent: this.#includeResourceContentSetting.get(),
     includeSourceMaps: this.#includeSourceMapsSetting.get(),
     shouldCompress: this.#shouldCompressSetting.get()
   };
@@ -772,15 +773,15 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     /* jslogContext*/
     "timeline.export-trace-options.annotations-checkbox"
   );
-  #includeScriptContentCheckbox = UI4.UIUtils.CheckboxLabel.create(
+  #includeResourceContentCheckbox = UI4.UIUtils.CheckboxLabel.create(
     /* title*/
-    i18nString4(UIStrings4.includeScriptContent),
+    i18nString4(UIStrings4.includeResourceContent),
     /* checked*/
-    this.#state.includeScriptContent,
+    this.#state.includeResourceContent,
     /* subtitle*/
     void 0,
     /* jslogContext*/
-    "timeline.export-trace-options.script-content-checkbox"
+    "timeline.export-trace-options.resource-content-checkbox"
   );
   #includeSourceMapsCheckbox = UI4.UIUtils.CheckboxLabel.create(
     /* title*/
@@ -809,7 +810,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
   set state(state) {
     this.#state = state;
     this.#includeAnnotationsSetting.set(state.includeAnnotations);
-    this.#includeScriptContentSetting.set(state.includeScriptContent);
+    this.#includeResourceContentSetting.set(state.includeResourceContent);
     this.#includeSourceMapsSetting.set(state.includeSourceMaps);
     this.#shouldCompressSetting.set(state.shouldCompress);
     this.#scheduleRender();
@@ -818,12 +819,12 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     return this.#state;
   }
   updateContentVisibility(options) {
-    const newState = Object.assign({}, this.#state, {
+    this.state = {
+      ...this.#state,
       displayAnnotationsCheckbox: options.annotationsExist,
-      displayScriptContentCheckbox: true,
+      displayResourceContentCheckbox: true,
       displaySourceMapsCheckbox: true
-    });
-    this.state = newState;
+    };
   }
   #scheduleRender() {
     void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
@@ -838,9 +839,9 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
         newState.includeAnnotations = checked;
         break;
       }
-      case this.#includeScriptContentCheckbox: {
-        newState.includeScriptContent = checked;
-        if (!newState.includeScriptContent) {
+      case this.#includeResourceContentCheckbox: {
+        newState.includeResourceContent = checked;
+        if (!newState.includeResourceContent) {
           newState.includeSourceMaps = false;
         }
         break;
@@ -860,8 +861,8 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     if (checkboxId === "script-source-maps") {
       return i18nString4(UIStrings4.moreInfoLabel) + " " + i18nString4(UIStrings4.sourceMapsContentPrivacyInfo);
     }
-    if (checkboxId === "script-content") {
-      return i18nString4(UIStrings4.moreInfoLabel) + " " + i18nString4(UIStrings4.scriptContentPrivacyInfo);
+    if (checkboxId === "resource-content") {
+      return i18nString4(UIStrings4.moreInfoLabel) + " " + i18nString4(UIStrings4.resourceContentPrivacyInfo);
     }
     return "";
   }
@@ -870,7 +871,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     checkboxWithLabel.ariaLabel = title;
     checkboxWithLabel.checked = checked;
     checkboxWithLabel.addEventListener("change", this.#checkboxOptionChanged.bind(this, checkboxWithLabel, !checked), false);
-    this.#includeSourceMapsCheckbox.disabled = !this.#state.includeScriptContent;
+    this.#includeSourceMapsCheckbox.disabled = !this.#state.includeResourceContent;
     return html3`
         <div class='export-trace-options-row'>
           ${checkboxWithLabel}
@@ -898,7 +899,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     >
       <div class="info-tooltip-container">
       <p>
-        ${checkboxId === "script-content" ? i18nString4(UIStrings4.scriptContentPrivacyInfo) : Lit3.nothing}
+        ${checkboxId === "resource-content" ? i18nString4(UIStrings4.resourceContentPrivacyInfo) : Lit3.nothing}
         ${checkboxId === "script-source-maps" ? i18nString4(UIStrings4.sourceMapsContentPrivacyInfo) : Lit3.nothing}
       </p>
       </div>
@@ -928,8 +929,8 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
         <div class='export-trace-options-content'>
 
           ${this.#state.displayAnnotationsCheckbox ? this.#renderCheckbox("annotations", this.#includeAnnotationsCheckbox, i18nString4(UIStrings4.includeAnnotations), this.#state.includeAnnotations) : ""}
-          ${this.#state.displayScriptContentCheckbox ? this.#renderCheckbox("script-content", this.#includeScriptContentCheckbox, i18nString4(UIStrings4.includeScriptContent), this.#state.includeScriptContent) : ""}
-          ${this.#state.displayScriptContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderCheckbox("script-source-maps", this.#includeSourceMapsCheckbox, i18nString4(UIStrings4.includeSourcemap), this.#state.includeSourceMaps) : ""}
+          ${this.#state.displayResourceContentCheckbox ? this.#renderCheckbox("resource-content", this.#includeResourceContentCheckbox, i18nString4(UIStrings4.includeResourceContent), this.#state.includeResourceContent) : ""}
+          ${this.#state.displayResourceContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderCheckbox("script-source-maps", this.#includeSourceMapsCheckbox, i18nString4(UIStrings4.includeSourcemap), this.#state.includeSourceMaps) : ""}
           ${this.#renderCheckbox("compress-with-gzip", this.#shouldCompressCheckbox, i18nString4(UIStrings4.shouldCompress), this.#state.shouldCompress)}
           <div class='export-trace-options-row'><div class='export-trace-blank'></div><devtools-button
                   class="setup-button"
@@ -941,8 +942,8 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     }}
                 >${i18nString4(UIStrings4.saveButtonTitle)}</devtools-button>
                 </div>
-          ${this.#state.displayScriptContentCheckbox ? this.#renderInfoTooltip("script-content") : Lit3.nothing}
-          ${this.#state.displayScriptContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderInfoTooltip("script-source-maps") : Lit3.nothing}
+          ${this.#state.displayResourceContentCheckbox ? this.#renderInfoTooltip("resource-content") : Lit3.nothing}
+          ${this.#state.displayResourceContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderInfoTooltip("script-source-maps") : Lit3.nothing}
         </div>
       </devtools-button-dialog>
     `;
@@ -956,7 +957,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
   }
   async #onExportCallback() {
     await this.#data?.onExport({
-      includeScriptContent: this.#state.includeScriptContent,
+      includeResourceContent: this.#state.includeResourceContent,
       includeSourceMaps: this.#state.includeSourceMaps,
       // Note: this also includes track configuration ...
       addModifications: this.#state.includeAnnotations,
@@ -1281,6 +1282,7 @@ import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
 import * as Dialogs2 from "./../../../ui/components/dialogs/dialogs.js";
 import * as ComponentHelpers3 from "./../../../ui/components/helpers/helpers.js";
 import * as Input from "./../../../ui/components/input/input.js";
+import * as uiI18n2 from "./../../../ui/i18n/i18n.js";
 import * as UI6 from "./../../../ui/legacy/legacy.js";
 import * as Lit5 from "./../../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js";
@@ -1673,7 +1675,7 @@ var FieldSettingsDialog = class extends HTMLElement {
   }
   #render = () => {
     const linkEl = UI6.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n11.i18n.lockedString("Chrome UX Report"));
-    const descriptionEl = i18n11.i18n.getFormatLocalizedString(str_6, UIStrings6.fetchAggregated, { PH1: linkEl });
+    const descriptionEl = uiI18n2.getFormatLocalizedString(str_6, UIStrings6.fetchAggregated, { PH1: linkEl });
     const output = html5`
       <style>${fieldSettingsDialog_css_default}</style>
       <style>${Input.textInputStyles}</style>
@@ -2608,6 +2610,7 @@ var LiveMetricsView_exports = {};
 __export(LiveMetricsView_exports, {
   LiveMetricsView: () => LiveMetricsView
 });
+import "./../../../ui/components/settings/settings.js";
 import "./../../../ui/components/icon_button/icon_button.js";
 
 // gen/front_end/panels/timeline/components/NetworkThrottlingSelector.js
@@ -3077,6 +3080,7 @@ details.environment-recs[open] > summary::before {
 
 // gen/front_end/panels/timeline/components/MetricCompareStrings.js
 import * as i18n21 from "./../../../core/i18n/i18n.js";
+import * as uiI18n3 from "./../../../ui/i18n/i18n.js";
 var UIStrings11 = {
   /**
    * @description Text block that compares a local metric value to real user experiences. "local" refers to a developers local testing environment.
@@ -3231,40 +3235,40 @@ function renderCompareText(options) {
     PH2: options.localValue
   };
   if (rating === "good" && compare === "better") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.goodBetterCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.goodBetterCompare, values);
   }
   if (rating === "good" && compare === "worse") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.goodWorseCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.goodWorseCompare, values);
   }
   if (rating === "good" && compare === "similar") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.goodSimilarCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.goodSimilarCompare, values);
   }
   if (rating === "good" && !compare) {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.goodSummarized, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.goodSummarized, values);
   }
   if (rating === "needs-improvement" && compare === "better") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.needsImprovementBetterCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.needsImprovementBetterCompare, values);
   }
   if (rating === "needs-improvement" && compare === "worse") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.needsImprovementWorseCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.needsImprovementWorseCompare, values);
   }
   if (rating === "needs-improvement" && compare === "similar") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.needsImprovementSimilarCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.needsImprovementSimilarCompare, values);
   }
   if (rating === "needs-improvement" && !compare) {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.needsImprovementSummarized, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.needsImprovementSummarized, values);
   }
   if (rating === "poor" && compare === "better") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.poorBetterCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.poorBetterCompare, values);
   }
   if (rating === "poor" && compare === "worse") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.poorWorseCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.poorWorseCompare, values);
   }
   if (rating === "poor" && compare === "similar") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.poorSimilarCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.poorSimilarCompare, values);
   }
   if (rating === "poor" && !compare) {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.poorSummarized, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.poorSummarized, values);
   }
   throw new Error("Compare string not found");
 }
@@ -3277,40 +3281,40 @@ function renderDetailedCompareText(options) {
     PH4: options.percent
   };
   if (localRating === "good" && fieldRating === "good") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.goodGoodDetailedCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.goodGoodDetailedCompare, values);
   }
   if (localRating === "good" && fieldRating === "needs-improvement") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.goodNeedsImprovementDetailedCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.goodNeedsImprovementDetailedCompare, values);
   }
   if (localRating === "good" && fieldRating === "poor") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.goodPoorDetailedCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.goodPoorDetailedCompare, values);
   }
   if (localRating === "good" && !fieldRating) {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.goodSummarized, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.goodSummarized, values);
   }
   if (localRating === "needs-improvement" && fieldRating === "good") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.needsImprovementGoodDetailedCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.needsImprovementGoodDetailedCompare, values);
   }
   if (localRating === "needs-improvement" && fieldRating === "needs-improvement") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.needsImprovementNeedsImprovementDetailedCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.needsImprovementNeedsImprovementDetailedCompare, values);
   }
   if (localRating === "needs-improvement" && fieldRating === "poor") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.needsImprovementPoorDetailedCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.needsImprovementPoorDetailedCompare, values);
   }
   if (localRating === "needs-improvement" && !fieldRating) {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.needsImprovementSummarized, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.needsImprovementSummarized, values);
   }
   if (localRating === "poor" && fieldRating === "good") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.poorGoodDetailedCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.poorGoodDetailedCompare, values);
   }
   if (localRating === "poor" && fieldRating === "needs-improvement") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.poorNeedsImprovementDetailedCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.poorNeedsImprovementDetailedCompare, values);
   }
   if (localRating === "poor" && fieldRating === "poor") {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.poorPoorDetailedCompare, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.poorPoorDetailedCompare, values);
   }
   if (localRating === "poor" && !fieldRating) {
-    return i18n21.i18n.getFormatLocalizedString(str_11, UIStrings11.poorSummarized, values);
+    return uiI18n3.getFormatLocalizedString(str_11, UIStrings11.poorSummarized, values);
   }
   throw new Error("Detailed compare string not found");
 }
@@ -4139,6 +4143,7 @@ import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers8 from "./../../../ui/components/helpers/helpers.js";
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator2 from "./../../../ui/components/render_coordinator/render_coordinator.js";
+import * as uiI18n4 from "./../../../ui/i18n/i18n.js";
 import * as UI10 from "./../../../ui/legacy/legacy.js";
 import * as Lit12 from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
@@ -5078,8 +5083,8 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
       <div class="device-toolbar-description">${md(i18nString13(UIStrings14.useDeviceToolbar))}</div>
       ${fieldEnabled ? html12`
         <ul class="environment-recs-list">
-          <li>${i18n27.i18n.getFormatLocalizedString(str_14, UIStrings14.device, { PH1: deviceRecEl })}</li>
-          <li>${i18n27.i18n.getFormatLocalizedString(str_14, UIStrings14.network, { PH1: networkRecEl })}</li>
+          <li>${uiI18n4.getFormatLocalizedString(str_14, UIStrings14.device, { PH1: deviceRecEl })}</li>
+          <li>${uiI18n4.getFormatLocalizedString(str_14, UIStrings14.network, { PH1: networkRecEl })}</li>
         </ul>
       ` : nothing11}
       <div class="environment-option">
@@ -5251,7 +5256,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     const dateEl = document.createElement("span");
     dateEl.classList.add("collection-period-range");
     dateEl.textContent = range || i18nString13(UIStrings14.notEnoughData);
-    const message = i18n27.i18n.getFormatLocalizedString(str_14, UIStrings14.collectionPeriod, {
+    const message = uiI18n4.getFormatLocalizedString(str_14, UIStrings14.collectionPeriod, {
       PH1: dateEl
     });
     const warnings = this.#cruxManager.pageResult?.warnings || [];
@@ -5269,7 +5274,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
       return this.#renderCollectionPeriod();
     }
     const linkEl = UI10.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n27.i18n.lockedString("Chrome UX Report"));
-    const messageEl = i18n27.i18n.getFormatLocalizedString(str_14, UIStrings14.seeHowYourLocalMetricsCompare, { PH1: linkEl });
+    const messageEl = uiI18n4.getFormatLocalizedString(str_14, UIStrings14.seeHowYourLocalMetricsCompare, { PH1: linkEl });
     return html12`
       <div class="field-data-message">${messageEl}</div>
     `;
@@ -5570,7 +5575,7 @@ __export(NetworkRequestDetails_exports, {
 });
 import "./../../../ui/components/request_link_icon/request_link_icon.js";
 import * as i18n31 from "./../../../core/i18n/i18n.js";
-import * as SDK7 from "./../../../core/sdk/sdk.js";
+import * as SDK8 from "./../../../core/sdk/sdk.js";
 import * as Helpers6 from "./../../../models/trace/helpers/helpers.js";
 import * as Trace7 from "./../../../models/trace/trace.js";
 import * as LegacyComponents2 from "./../../../ui/legacy/components/utils/utils.js";
@@ -5751,6 +5756,11 @@ var networkRequestTooltip_css_default = `/*
     margin-left: 15px;
   }
 
+  .throttled-row {
+    margin-left: 15px;
+    color: var(--sys-color-yellow);
+  }
+
   .network-category-chip {
     box-sizing: border-box;
     width: 10px;
@@ -5790,6 +5800,16 @@ var networkRequestTooltip_css_default = `/*
     border: 1px solid var(--sys-color-on-surface-subtle);
     box-sizing: border-box;
   }
+
+  devtools-icon.indicator {
+    vertical-align: middle;
+    height: 12px;
+    width: 12px;
+    margin-right: 4px;
+    color: var(--sys-color-yellow);
+    border: none;
+  }
+
 
   .whisker-left {
     align-self: center;
@@ -5833,6 +5853,10 @@ var networkRequestTooltip_css_default = `/*
     .time {
       font-weight: var(--ref-typeface-weight-medium);
     }
+
+    &.throttled {
+      color: var(--sys-color-yellow);
+    }
   }
 
   .redirects-row {
@@ -5850,11 +5874,12 @@ __export(NetworkRequestTooltip_exports, {
 import "./../../../ui/components/icon_button/icon_button.js";
 import * as i18n29 from "./../../../core/i18n/i18n.js";
 import * as Platform7 from "./../../../core/platform/platform.js";
+import * as SDK7 from "./../../../core/sdk/sdk.js";
 import * as Trace6 from "./../../../models/trace/trace.js";
 import * as PerfUI from "./../../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as Lit13 from "./../../../ui/lit/lit.js";
 import * as TimelineUtils from "./../utils/utils.js";
-var { html: html13 } = Lit13;
+var { html: html13, nothing: nothing13, Directives: { classMap, ifDefined: ifDefined2 } } = Lit13;
 var MAX_URL_LENGTH2 = 60;
 var UIStrings15 = {
   /**
@@ -5888,7 +5913,12 @@ var UIStrings15 = {
   /**
    * @description Text to refer to the list of redirects.
    */
-  redirects: "Redirects"
+  redirects: "Redirects",
+  /**
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {Fast 4G} PH1
+   */
+  wasThrottled: "Request was throttled ({PH1})"
 };
 var str_15 = i18n29.i18n.registerUIStrings("panels/timeline/components/NetworkRequestTooltip.ts", UIStrings15);
 var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
@@ -5929,11 +5959,25 @@ var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
     const styleForDownloading = {
       backgroundColor: color
     };
+    const sdkNetworkRequest = SDK7.TraceObject.RevealableNetworkRequest.create(networkRequest);
+    const wasThrottled = sdkNetworkRequest && SDK7.NetworkManager.MultitargetNetworkManager.instance().appliedRequestConditions(sdkNetworkRequest.networkRequest);
+    const throttledTitle = wasThrottled ? i18nString14(UIStrings15.wasThrottled, {
+      PH1: typeof wasThrottled.conditions.title === "string" ? wasThrottled.conditions.title : wasThrottled.conditions.title()
+    }) : void 0;
     const leftWhisker = html13`<span class="whisker-left"> <span class="horizontal"></span> </span>`;
     const rightWhisker = html13`<span class="whisker-right"> <span class="horizontal"></span> </span>`;
+    const classes = classMap({
+      ["timings-row timings-row--duration"]: true,
+      throttled: Boolean(wasThrottled?.urlPattern)
+    });
     return html13`
-      <div class="timings-row timings-row--duration">
-        <span class="indicator"></span>
+      <div
+        class=${classes}
+        title=${ifDefined2(throttledTitle)}>
+        ${wasThrottled?.urlPattern ? html13`<devtools-icon
+          class=indicator
+          name=watch
+          ></devtools-icon>` : html13`<span class="indicator"></span>`}
         ${i18nString14(UIStrings15.duration)}
          <span class="time"> ${i18n29.TimeUtilities.formatMicroSecondsTime(networkRequest.dur)} </span>
       </div>
@@ -5985,6 +6029,8 @@ var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
     const entity = this.#data.entityMapper ? this.#data.entityMapper.entityForEvent(this.#data.networkRequest) : null;
     const originWithEntity = TimelineUtils.Helpers.formatOriginWithEntity(url, entity, true);
     const redirectsHtml = _NetworkRequestTooltip.renderRedirects(this.#data.networkRequest);
+    const sdkNetworkRequest = SDK7.TraceObject.RevealableNetworkRequest.create(this.#data.networkRequest);
+    const wasThrottled = sdkNetworkRequest && SDK7.NetworkManager.MultitargetNetworkManager.instance().appliedRequestConditions(sdkNetworkRequest.networkRequest);
     const output = html13`
       <style>${networkRequestTooltip_css_default}</style>
       <div class="performance-card">
@@ -5997,6 +6043,12 @@ var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
           </span>${networkResourceCategory(this.#data.networkRequest)}
         </div>
         <div class="priority-row">${i18nString14(UIStrings15.priority)}: ${_NetworkRequestTooltip.renderPriorityValue(this.#data.networkRequest)}</div>
+        ${wasThrottled ? html13`
+        <div class="throttled-row">
+          ${i18nString14(UIStrings15.wasThrottled, {
+      PH1: typeof wasThrottled.conditions.title === "string" ? wasThrottled.conditions.title : wasThrottled.conditions.title()
+    })}
+        </div>` : nothing13}
         ${Trace6.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#data.networkRequest) ? html13`<div class="render-blocking"> ${i18nString14(UIStrings15.renderBlocking)} </div>` : Lit13.nothing}
         <div class="divider"></div>
 
@@ -6140,7 +6192,7 @@ var NetworkRequestDetails = class extends UI11.Widget.Widget {
       const headerName = header.name.toLocaleLowerCase();
       if (headerName === "server-timing" || headerName === "server-timing-test") {
         header.name = "server-timing";
-        this.#serverTimings = SDK7.ServerTiming.ServerTiming.parseHeaders([header]);
+        this.#serverTimings = SDK8.ServerTiming.ServerTiming.parseHeaders([header]);
         break;
       }
     }
@@ -6228,7 +6280,7 @@ function renderURL(request) {
     maxLength: MAX_URL_LENGTH3
   };
   const linkifiedURL = LegacyComponents2.Linkifier.Linkifier.linkifyURL(request.args.data.url, options);
-  const networkRequest = SDK7.TraceObject.RevealableNetworkRequest.create(request);
+  const networkRequest = SDK8.TraceObject.RevealableNetworkRequest.create(request);
   if (networkRequest) {
     linkifiedURL.addEventListener("contextmenu", (event) => {
       const contextMenu = new UI11.ContextMenu.ContextMenu(event);
@@ -6601,6 +6653,7 @@ __export(SidebarAnnotationsTab_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW5,
   SidebarAnnotationsTab: () => SidebarAnnotationsTab
 });
+import "./../../../ui/components/settings/settings.js";
 import * as Common6 from "./../../../core/common/common.js";
 import * as i18n35 from "./../../../core/i18n/i18n.js";
 import * as Platform8 from "./../../../core/platform/platform.js";
@@ -7058,7 +7111,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
     textOverride: "Hide annotations"
   }}>
             </setting-checkbox>`}
-    </span>`, target, { host: target });
+    </span>`, target);
 };
 
 // gen/front_end/panels/timeline/components/SidebarInsightsTab.js

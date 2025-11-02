@@ -43,7 +43,7 @@ export interface ModelChatMessage {
 }
 export type ChatMessage = UserChatMessage | ModelChatMessage;
 export declare const enum State {
-    CONSENT_VIEW = "consent-view",
+    DISABLED_VIEW = "disabled-view",
     CHAT_VIEW = "chat-view",
     EXPLORE_VIEW = "explore-view"
 }

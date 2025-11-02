@@ -341,7 +341,7 @@ export class PaintProfilerView extends Common.ObjectWrapper.eventMixin(UI.Widget
         this.#selectionWindow.setResizeEnabled(false);
     }
 }
-export class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWidget {
+export class PaintProfilerCommandLogView extends UI.Widget.VBox {
     treeOutline;
     log;
     treeItemCache;
@@ -374,9 +374,9 @@ export class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWid
     }
     updateWindow(selectionWindow) {
         this.selectionWindow = selectionWindow;
-        this.update();
+        this.requestUpdate();
     }
-    doUpdate() {
+    performUpdate() {
         if (!this.selectionWindow || !this.log.length) {
             this.treeOutline.removeChildren();
             return Promise.resolve();

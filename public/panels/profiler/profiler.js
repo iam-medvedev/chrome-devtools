@@ -5133,6 +5133,7 @@ import * as HeapSnapshotModel5 from "./../../models/heap_snapshot_model/heap_sna
 import * as DataGrid11 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as PerfUI5 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
@@ -8704,7 +8705,7 @@ var HeapSnapshotProfileType = class _HeapSnapshotProfileType extends Common13.Ob
   }
   customContent() {
     const showOptionToExposeInternalsInHeapSnapshot = Root2.Runtime.experiments.isEnabled("show-option-tp-expose-internals-in-heap-snapshot");
-    const exposeInternalsInHeapSnapshotCheckbox = UI14.SettingsUI.createSettingCheckbox(i18nString13(UIStrings14.exposeInternals), this.exposeInternals);
+    const exposeInternalsInHeapSnapshotCheckbox = SettingsUI.SettingsUI.createSettingCheckbox(i18nString13(UIStrings14.exposeInternals), this.exposeInternals);
     this.customContentInternal = exposeInternalsInHeapSnapshotCheckbox;
     return showOptionToExposeInternalsInHeapSnapshot ? exposeInternalsInHeapSnapshotCheckbox : null;
   }
@@ -8871,7 +8872,7 @@ var TrackingHeapSnapshotProfileType = class _TrackingHeapSnapshotProfileType ext
     void heapProfilerModel.startTrackingHeapObjects(this.recordAllocationStacksSettingInternal.get());
   }
   customContent() {
-    const checkboxSetting = UI14.SettingsUI.createSettingCheckbox(i18nString13(UIStrings14.recordAllocationStacksExtra), this.recordAllocationStacksSettingInternal);
+    const checkboxSetting = SettingsUI.SettingsUI.createSettingCheckbox(i18nString13(UIStrings14.recordAllocationStacksExtra), this.recordAllocationStacksSettingInternal);
     this.customContentInternal = checkboxSetting;
     return checkboxSetting;
   }

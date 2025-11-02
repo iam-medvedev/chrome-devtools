@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
 import * as Root from '../root/root.js';
+import * as DispatchHttpRequestClient from './DispatchHttpRequestClient.js';
 import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 import { bindOutputStream } from './ResourceLoader.js';
 export var Role;
@@ -95,6 +96,14 @@ export var Reason;
     Reason[Reason["RELATED_FILE"] = 5] = "RELATED_FILE";
 })(Reason || (Reason = {}));
 /* eslint-enable @typescript-eslint/naming-convention */
+export var UseCase;
+(function (UseCase) {
+    // Unspecified usecase.
+    UseCase[UseCase["USE_CASE_UNSPECIFIED"] = 0] = "USE_CASE_UNSPECIFIED";
+    // Code generation use case is expected to generate code from scratch
+    UseCase[UseCase["CODE_GENERATION"] = 1] = "CODE_GENERATION";
+})(UseCase || (UseCase = {}));
+/* eslint-enable @typescript-eslint/naming-convention */
 export var RecitationAction;
 (function (RecitationAction) {
     RecitationAction["ACTION_UNSPECIFIED"] = "ACTION_UNSPECIFIED";
@@ -129,6 +138,7 @@ const AidaLanguageToMarkdown = {
     XML: 'xml',
 };
 export const CLIENT_NAME = 'CHROME_DEVTOOLS';
+export const SERVICE_NAME = 'aidaService';
 const CODE_CHUNK_SEPARATOR = (lang = '') => ('\n`````' + lang + '\n');
 export class AidaAbortError extends Error {
 }
@@ -357,6 +367,15 @@ export class AidaClient {
             return null;
         }
         return { generatedSamples, metadata };
+    }
+    async generateCode(request) {
+        const response = await DispatchHttpRequestClient.makeHttpRequest({
+            service: SERVICE_NAME,
+            path: '/v1/aida:generateCode',
+            method: 'POST',
+            body: JSON.stringify(request),
+        });
+        return response;
     }
 }
 export function convertToUserTierEnum(userTier) {

@@ -87,6 +87,9 @@
       "path": "../../../components/text_editor/bundle-tsconfig.json"
     },
     {
+      "path": "../../../i18n/bundle-tsconfig.json"
+    },
+    {
       "path": "../../bundle-tsconfig.json"
     },
     {

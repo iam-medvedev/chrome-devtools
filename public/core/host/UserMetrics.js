@@ -430,7 +430,13 @@ export var Action;
     Action[Action["AiCodeCompletionError"] = 188] = "AiCodeCompletionError";
     Action[Action["AttributeLinkClicked"] = 189] = "AttributeLinkClicked";
     Action[Action["InsightRequestedViaTeaser"] = 190] = "InsightRequestedViaTeaser";
-    Action[Action["MAX_VALUE"] = 191] = "MAX_VALUE";
+    Action[Action["InsightTeaserGenerationStarted"] = 191] = "InsightTeaserGenerationStarted";
+    Action[Action["InsightTeaserGenerationCompleted"] = 192] = "InsightTeaserGenerationCompleted";
+    Action[Action["InsightTeaserGenerationAborted"] = 193] = "InsightTeaserGenerationAborted";
+    Action[Action["InsightTeaserGenerationErrored"] = 194] = "InsightTeaserGenerationErrored";
+    Action[Action["AiCodeGenerationSuggestionDisplayed"] = 195] = "AiCodeGenerationSuggestionDisplayed";
+    Action[Action["AiCodeGenerationSuggestionAccepted"] = 196] = "AiCodeGenerationSuggestionAccepted";
+    Action[Action["MAX_VALUE"] = 197] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;

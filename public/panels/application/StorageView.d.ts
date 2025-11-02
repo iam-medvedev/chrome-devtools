@@ -4,7 +4,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 /**
  * @implements {SDK.TargetManager.Observer}
  */
-export declare class StorageView extends UI.ThrottledWidget.ThrottledWidget {
+export declare class StorageView extends UI.Widget.VBox {
     private pieColors;
     private reportView;
     private target;
@@ -21,6 +21,7 @@ export declare class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     private quotaOverrideEditor;
     private quotaOverrideErrorMessage;
     private clearButton;
+    private readonly throttler;
     constructor();
     private appendItem;
     targetAdded(target: SDK.Target.Target): void;
@@ -34,7 +35,7 @@ export declare class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     private onClickCheckbox;
     private clear;
     static clear(target: SDK.Target.Target, storageKey: string | null, originForCookies: string | null, selectedStorageTypes: string[], includeThirdPartyCookies: boolean): void;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
     private populatePieChart;
     private getStorageTypeName;
 }

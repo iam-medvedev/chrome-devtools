@@ -122,7 +122,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/browser_debugger/CategorizedBreakpointsSidebarPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
-const { html, render, Directives: { ref } } = Lit;
+const { html, render } = Lit;
 export const DEFAULT_VIEW = (input, output, target) => {
     const shouldExpandCategory = (breakpoints) => Boolean(input.filterText) || (input.highlightedItem && breakpoints.includes(input.highlightedItem)) ||
         breakpoints.some(breakpoint => breakpoint.enabled());
@@ -177,53 +177,49 @@ export const DEFAULT_VIEW = (input, output, target) => {
         style="flex: 1;"
         ></devtools-toolbar-input>
     </devtools-toolbar>
-    <devtools-tree
-      ${ref(e => { output.defaultFocus = e; })}
-      .template=${html `
-        <ul role="tree">
-          ${filteredCategories.map(([category, breakpoints]) => html `
-            <li @expand=${(e) => onExpand(category, e)}
-                role="treeitem"
-                jslog-context=${category}
-                aria-checked=${breakpoints.some(breakpoint => breakpoint.enabled())
+    <devtools-tree autofocus .template=${html `
+      <ul role="tree">
+        ${filteredCategories.map(([category, breakpoints]) => html `
+          <li @expand=${(e) => onExpand(category, e)}
+              role="treeitem"
+              jslog-context=${category}
+              aria-checked=${breakpoints.some(breakpoint => breakpoint.enabled())
         ? breakpoints.some(breakpoint => !breakpoint.enabled()) ? 'mixed' : true
         : false}>
-              <style>${categorizedBreakpointsSidebarPaneStyles}</style>
-              <devtools-checkbox
-                class="small"
-                tabIndex=-1
-                title=${getLocalizedCategory(category)}
-                ?indeterminate=${breakpoints.some(breakpoint => !breakpoint.enabled()) &&
+            <style>${categorizedBreakpointsSidebarPaneStyles}</style>
+            <devtools-checkbox
+              class="small"
+              tabIndex=-1
+              title=${getLocalizedCategory(category)}
+              ?indeterminate=${breakpoints.some(breakpoint => !breakpoint.enabled()) &&
         breakpoints.some(breakpoint => breakpoint.enabled())}
-                ?checked=${!breakpoints.some(breakpoint => !breakpoint.enabled())}
-                @change=${(e) => onCheckboxClicked(e, category)}
-              >${getLocalizedCategory(category)}</devtools-checkbox>
-              <ul
-                  role="group"
-                  ?hidden=${!shouldExpandCategory(breakpoints) && !input.userExpandedCategories.has(category)}>
-                ${breakpoints.map(breakpoint => html `
-                <li
-                    role="treeitem"
-                    aria-checked=${breakpoint.enabled()}
-                    jslog-context=${Platform.StringUtilities.toKebabCase(breakpoint.name)}>
-                  <div ?hidden=${breakpoint !== input.highlightedItem} class="breakpoint-hit-marker"></div>
-                  <devtools-checkbox
-                    class=${classes(breakpoint)}
-                    tabIndex=-1
-                    title=${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}
-                    ?checked=${breakpoint.enabled()}
-                    aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit)
+              ?checked=${!breakpoints.some(breakpoint => !breakpoint.enabled())}
+              @change=${(e) => onCheckboxClicked(e, category)}
+            >${getLocalizedCategory(category)}</devtools-checkbox>
+            <ul
+                role="group"
+                ?hidden=${!shouldExpandCategory(breakpoints) && !input.userExpandedCategories.has(category)}>
+              ${breakpoints.map(breakpoint => html `
+              <li
+                  role="treeitem"
+                  aria-checked=${breakpoint.enabled()}
+                  jslog-context=${Platform.StringUtilities.toKebabCase(breakpoint.name)}>
+                <div ?hidden=${breakpoint !== input.highlightedItem} class="breakpoint-hit-marker"></div>
+                <devtools-checkbox
+                  class=${classes(breakpoint)}
+                  tabIndex=-1
+                  title=${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}
+                  ?checked=${breakpoint.enabled()}
+                  aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit)
         : Lit.nothing}
-                    @change=${(e) => onCheckboxClicked(e, breakpoint)}
-                  >${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}</devtools-checkbox>
-                </li>`)}
-              </ul>
-            </li>`)}
-        </ul>
-      `}>
-    </devtools-tree>`, 
+                  @change=${(e) => onCheckboxClicked(e, breakpoint)}
+                >${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}</devtools-checkbox>
+              </li>`)}
+            </ul>
+          </li>`)}
+      </ul>`}>
+    </devtools-tree>`, target);
     // clang-format on
-    target);
 };
 export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     #viewId;
@@ -289,11 +285,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
             highlightedItem: this.#highlightedItem,
             userExpandedCategories: this.#userExpandedCategories,
         };
-        const that = this;
         const output = {
-            set defaultFocus(e) {
-                that.setDefaultFocusedElement(e ?? null);
-            },
             userExpandedCategories: this.#userExpandedCategories,
         };
         this.#view(input, output, this.contentElement);

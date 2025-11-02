@@ -1,6 +1,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget {
+export declare class AccessibilitySidebarView extends UI.Widget.VBox {
     #private;
     private skipNextPullNode;
     private readonly sidebarPaneStack;
@@ -11,13 +11,12 @@ export declare class AccessibilitySidebarView extends UI.ThrottledWidget.Throttl
     private constructor();
     static instance(opts?: {
         forceNew: boolean;
-        throttlingTimeout: number;
     }): AccessibilitySidebarView;
     node(): SDK.DOMModel.DOMNode | null;
     axNode(): SDK.AccessibilityModel.AccessibilityNode | null;
     setNode(node: SDK.DOMModel.DOMNode | null, fromAXTree?: boolean): void;
     accessibilityNodeCallback(axNode: SDK.AccessibilityModel.AccessibilityNode | null): void;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
     wasShown(): void;
     willHide(): void;
     private pullNode;

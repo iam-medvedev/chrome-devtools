@@ -9,7 +9,6 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { RequestTimeRangeNameToColor } from './NetworkOverview.js';
-import networkingTimingTableStyles from './networkTimingTable.css.js';
 import networkWaterfallColumnStyles from './networkWaterfallColumn.css.js';
 import { RequestTimingView } from './RequestTimingView.js';
 const BAR_SPACING = 1;
@@ -230,11 +229,11 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         anchorBox.height = barHeight;
         return {
             box: anchorBox,
-            show: (popover) => {
-                const content = RequestTimingView.createTimingTable((request), this.calculator);
-                popover.registerRequiredCSS(networkingTimingTableStyles);
-                popover.contentElement.appendChild(content);
-                return Promise.resolve(true);
+            show: async (popover) => {
+                const content = RequestTimingView.create(request, this.calculator);
+                await content.updateComplete;
+                content.show(popover.contentElement);
+                return true;
             },
             hide: undefined,
         };

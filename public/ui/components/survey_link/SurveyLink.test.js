@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
 import * as SurveyLink from './survey_link.js';
 function canShowSuccessfulCallback(_trigger, callback) {
     callback({ canShowSurvey: true });

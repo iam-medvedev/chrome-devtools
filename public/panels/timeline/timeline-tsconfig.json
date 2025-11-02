@@ -162,10 +162,16 @@
       "path": "../../ui/components/snackbars/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/i18n/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/components/data_grid/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/perf_ui/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/components/settings_ui/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"

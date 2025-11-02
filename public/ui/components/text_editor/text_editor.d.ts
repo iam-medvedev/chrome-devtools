@@ -1,3 +1,4 @@
+export * as AiCodeCompletionProvider from './AiCodeCompletionProvider.js';
 export * as AiCodeCompletionTeaserPlaceholder from './AiCodeCompletionTeaserPlaceholder.js';
 export * as AutocompleteHistory from './AutocompleteHistory.js';
 export * as Config from './config.js';

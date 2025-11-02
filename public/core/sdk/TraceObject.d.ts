@@ -1,5 +1,6 @@
 import type * as Protocol from '../../generated/protocol.js';
 import type { NetworkRequest } from './NetworkRequest.js';
+import type { RehydratingResource } from './RehydratingObject.js';
 import type { SourceMapV3 } from './SourceMap.js';
 /** A thin wrapper class, mostly to enable instanceof-based revealing of traces to open in Timeline. **/
 export declare class TraceObject {
@@ -10,6 +11,7 @@ export declare class TraceObject {
             sourceMap: SourceMapV3;
             url: string;
         }>;
+        resources?: RehydratingResource[];
     };
     constructor(payload: Protocol.Tracing.DataCollectedEvent['value'] | TraceObject, meta?: Object);
 }

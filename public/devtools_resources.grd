@@ -809,6 +809,7 @@
       <include file="ui/components/text_prompt/text_prompt.js" name="UI_COMPONENTS_TEXT_PROMPT_TEXT_PROMPT_JS" resource_path="ui/components/text_prompt/text_prompt.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tooltips/tooltips.js" name="UI_COMPONENTS_TOOLTIPS_TOOLTIPS_JS" resource_path="ui/components/tooltips/tooltips.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/tree_outline.js" name="UI_COMPONENTS_TREE_OUTLINE_TREE_OUTLINE_JS" resource_path="ui/components/tree_outline/tree_outline.js" type="BINDATA" compress="false"/>
+      <include file="ui/i18n/i18n.js" name="UI_I18N_I18N_JS" resource_path="ui/i18n/i18n.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/color_picker/color_picker.js" name="UI_LEGACY_COMPONENTS_COLOR_PICKER_COLOR_PICKER_JS" resource_path="ui/legacy/components/color_picker/color_picker.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/cookie_table/cookie_table.js" name="UI_LEGACY_COMPONENTS_COOKIE_TABLE_COOKIE_TABLE_JS" resource_path="ui/legacy/components/cookie_table/cookie_table.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/data_grid.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_DATA_GRID_JS" resource_path="ui/legacy/components/data_grid/data_grid.js" type="BINDATA" compress="false"/>
@@ -819,6 +820,7 @@
       <include file="ui/legacy/components/perf_ui/perf_ui.js" name="UI_LEGACY_COMPONENTS_PERF_UI_PERF_UI_JS" resource_path="ui/legacy/components/perf_ui/perf_ui.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/quick_open/quick_open-meta.js" name="UI_LEGACY_COMPONENTS_QUICK_OPEN_QUICK_OPEN_META_JS" resource_path="ui/legacy/components/quick_open/quick_open-meta.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/quick_open/quick_open.js" name="UI_LEGACY_COMPONENTS_QUICK_OPEN_QUICK_OPEN_JS" resource_path="ui/legacy/components/quick_open/quick_open.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/components/settings_ui/settings_ui.js" name="UI_LEGACY_COMPONENTS_SETTINGS_UI_SETTINGS_UI_JS" resource_path="ui/legacy/components/settings_ui/settings_ui.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/source_frame-meta.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_SOURCE_FRAME_META_JS" resource_path="ui/legacy/components/source_frame/source_frame-meta.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/source_frame.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_SOURCE_FRAME_JS" resource_path="ui/legacy/components/source_frame/source_frame.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/utils/utils.js" name="UI_LEGACY_COMPONENTS_UTILS_UTILS_JS" resource_path="ui/legacy/components/utils/utils.js" type="BINDATA" compress="false"/>

@@ -287,6 +287,9 @@ export const generatedPropertyValues: {
     "column-rule-style": {
         values: string[];
     };
+    "column-rule-visibility-items": {
+        values: string[];
+    };
     "column-rule-width": {
         values: string[];
     };
@@ -731,6 +734,9 @@ export const generatedPropertyValues: {
     "row-rule-style": {
         values: string[];
     };
+    "row-rule-visibility-items": {
+        values: string[];
+    };
     "row-rule-width": {
         values: string[];
     };
@@ -861,6 +867,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "text-emphasis-color": {
+        values: string[];
+    };
+    "text-justify": {
         values: string[];
     };
     "text-orientation": {

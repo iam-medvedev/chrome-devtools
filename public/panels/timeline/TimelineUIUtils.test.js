@@ -31,6 +31,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
     const SCRIPT_ID_NUMBER = 1;
     const SCRIPT_ID_STRING = String(SCRIPT_ID_NUMBER);
     beforeEach(() => {
+        setMockConnectionResponseHandler('Debugger.enable', () => ({ debuggerId: 'DEBUGGER_ID' }));
+        setMockConnectionResponseHandler('Debugger.setInstrumentationBreakpoint', () => ({}));
         target = createTarget();
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();

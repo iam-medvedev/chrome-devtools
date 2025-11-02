@@ -1,94 +1,123 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
+import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as Models from '../models/models.js';
 import * as Components from './components.js';
 describeWithEnvironment('CreateRecordingView', () => {
     setupActionRegistry();
-    function createView() {
-        const view = new Components.CreateRecordingView.CreateRecordingView();
-        view.data = {
-            recorderSettings: new Models.RecorderSettings.RecorderSettings(),
-        };
-        renderElementIntoDOM(view, {
-            allowMultipleChildren: true,
-        });
-        return view;
+    const widgets = [];
+    afterEach(() => {
+        // Unregister global listeners in willHide to prevent leaks.
+        for (const widget of widgets) {
+            widget.willHide();
+        }
+    });
+    async function createWidget(params, output) {
+        const view = createViewFunctionStub(Components.CreateRecordingView.CreateRecordingView, output);
+        const component = new Components.CreateRecordingView.CreateRecordingView(undefined, view);
+        component.recorderSettings = params?.recorderSettings ?? new Models.RecorderSettings.RecorderSettings();
+        if (params?.onRecordingStarted) {
+            component.onRecordingStarted = params?.onRecordingStarted;
+        }
+        component.wasShown();
+        widgets.push(component);
+        await view.nextInput;
+        return [view, component];
     }
-    it('should render create recording view', async () => {
-        const view = createView();
-        const input = view.shadowRoot?.querySelector('#user-flow-name');
-        assert.isOk(input);
-        const button = view.shadowRoot?.querySelector('devtools-control-button');
-        assert.isOk(button);
-        const onceClicked = new Promise(resolve => {
-            view.addEventListener('recordingstarted', resolve, { once: true });
+    it('starts a recording if data is correct', async () => {
+        const recordingStartedStub = sinon.stub();
+        const [view] = await createWidget({
+            onRecordingStarted: recordingStartedStub,
         });
-        input.value = 'Test';
-        button.dispatchEvent(new Event('click'));
-        const event = await onceClicked;
-        assert.deepEqual(event.name, 'Test');
-    });
-    it('should dispatch recordingcancelled event on the close button click', async () => {
-        const view = createView();
-        const onceClicked = new Promise(resolve => {
-            view.addEventListener('recordingcancelled', resolve, { once: true });
+        view.input.onUpdate({ name: 'test' });
+        view.input.onUpdate({ selectorAttribute: 'test-attr' });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.CSS, checked: true });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.ARIA, checked: false });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.Pierce, checked: false });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.Text, checked: false });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.XPath, checked: false });
+        view.input.onRecordingStarted();
+        sinon.assert.calledOnceWithExactly(recordingStartedStub, {
+            selectorTypesToRecord: [Models.Schema.SelectorType.CSS],
+            selectorAttribute: 'test-attr',
+            name: 'test',
         });
-        const closeButton = view.shadowRoot?.querySelector('[title="Cancel recording"]');
-        closeButton.dispatchEvent(new Event('click'));
-        const event = await onceClicked;
-        assert.instanceOf(event, Components.CreateRecordingView.RecordingCancelledEvent);
     });
-    it('should generate a default name', async () => {
-        const view = createView();
-        const input = view.shadowRoot?.querySelector('#user-flow-name');
-        assert.isAtLeast(input.value.length, 'Recording'.length);
-    });
-    it('should remember the most recent selector attribute', async () => {
-        let view = createView();
-        let input = view.shadowRoot?.querySelector('#selector-attribute');
-        assert.isOk(input);
-        const button = view.shadowRoot?.querySelector('devtools-control-button');
-        assert.isOk(button);
-        const onceClicked = new Promise(resolve => {
-            view.addEventListener('recordingstarted', resolve, { once: true });
+    it('renders an error if the name is empty', async () => {
+        const recordingStartedStub = sinon.stub();
+        const [view] = await createWidget({
+            onRecordingStarted: recordingStartedStub,
         });
-        input.value = 'data-custom-attribute';
-        button.dispatchEvent(new Event('click'));
-        await onceClicked;
-        view = createView();
-        input = view.shadowRoot?.querySelector('#selector-attribute');
-        assert.isOk(input);
-        assert.strictEqual(input.value, 'data-custom-attribute');
+        view.input.onUpdate({ name: '' });
+        view.input.onUpdate({ selectorAttribute: 'test-attr' });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.CSS, checked: true });
+        view.input.onRecordingStarted();
+        const input = await view.nextInput;
+        assert.deepEqual(input.error?.message, 'Recording name is required');
+        sinon.assert.notCalled(recordingStartedStub);
     });
-    it('should remember recorded selector types', async () => {
-        let view = createView();
-        let checkboxes = view.shadowRoot?.querySelectorAll('.selector-type input[type=checkbox]');
-        assert.lengthOf(checkboxes, 5);
-        const button = view.shadowRoot?.querySelector('devtools-control-button');
-        assert.isOk(button);
-        const onceClicked = new Promise(resolve => {
-            view.addEventListener('recordingstarted', resolve, { once: true });
+    it('renders an error if the selector attributes are turned off', async () => {
+        const recordingStartedStub = sinon.stub();
+        const [view] = await createWidget({
+            onRecordingStarted: recordingStartedStub,
         });
-        checkboxes[0].checked = false;
-        button.dispatchEvent(new Event('click'));
-        const event = await onceClicked;
-        assert.deepEqual(event.selectorTypesToRecord, [
-            'aria',
-            'text',
-            'xpath',
-            'pierce',
-        ]);
-        view = createView();
-        checkboxes = view.shadowRoot?.querySelectorAll('.selector-type input[type=checkbox]');
-        assert.lengthOf(checkboxes, 5);
-        assert.isFalse(checkboxes[0].checked);
-        assert.isTrue(checkboxes[1].checked);
-        assert.isTrue(checkboxes[2].checked);
-        assert.isTrue(checkboxes[3].checked);
-        assert.isTrue(checkboxes[4].checked);
+        view.input.onUpdate({ name: 'test' });
+        view.input.onUpdate({ selectorAttribute: 'test-attr' });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.CSS, checked: false });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.ARIA, checked: false });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.Pierce, checked: false });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.Text, checked: false });
+        view.input.onUpdate({ selectorType: Models.Schema.SelectorType.XPath, checked: false });
+        view.input.onRecordingStarted();
+        const input = await view.nextInput;
+        assert.deepEqual(input.error?.message, 'You must choose CSS, Pierce, or XPath as one of your options. Only these selectors are guaranteed to be recorded since ARIA and text selectors may not be unique.');
+        sinon.assert.notCalled(recordingStartedStub);
+    });
+    describe('view', () => {
+        it('renders default view', async () => {
+            const target = document.createElement('div');
+            renderElementIntoDOM(target);
+            Components.CreateRecordingView.DEFAULT_VIEW({
+                name: 'test',
+                selectorAttribute: '',
+                selectorTypes: [
+                    { selectorType: Models.Schema.SelectorType.CSS, checked: false },
+                    { selectorType: Models.Schema.SelectorType.ARIA, checked: false },
+                    { selectorType: Models.Schema.SelectorType.Text, checked: false },
+                    { selectorType: Models.Schema.SelectorType.XPath, checked: false },
+                    { selectorType: Models.Schema.SelectorType.Pierce, checked: false }
+                ],
+                onRecordingStarted: sinon.stub(),
+                onRecordingCancelled: sinon.stub(),
+                onErrorReset: sinon.stub(),
+                onUpdate: sinon.stub(),
+            }, {}, target);
+            await assertScreenshot('CreateRecordingView/default-view.png');
+        });
+        it('renders the error view', async () => {
+            const target = document.createElement('div');
+            renderElementIntoDOM(target);
+            Components.CreateRecordingView.DEFAULT_VIEW({
+                name: 'test',
+                selectorAttribute: '',
+                selectorTypes: [
+                    { selectorType: Models.Schema.SelectorType.CSS, checked: false },
+                    { selectorType: Models.Schema.SelectorType.ARIA, checked: false },
+                    { selectorType: Models.Schema.SelectorType.Text, checked: false },
+                    { selectorType: Models.Schema.SelectorType.XPath, checked: false },
+                    { selectorType: Models.Schema.SelectorType.Pierce, checked: false }
+                ],
+                error: new Error('error'),
+                onRecordingStarted: sinon.stub(),
+                onRecordingCancelled: sinon.stub(),
+                onErrorReset: sinon.stub(),
+                onUpdate: sinon.stub(),
+            }, {}, target);
+            await assertScreenshot('CreateRecordingView/error-view.png');
+        });
     });
 });
 //# sourceMappingURL=CreateRecordingView.test.js.map

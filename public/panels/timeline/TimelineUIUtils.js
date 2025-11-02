@@ -45,6 +45,7 @@ import * as Tracing from '../../services/tracing/tracing.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
 // eslint-disable-next-line @devtools/es-modules-import
 import codeHighlighterStyles from '../../ui/components/code_highlighter/codeHighlighter.css.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 // eslint-disable-next-line @devtools/es-modules-import
 import imagePreviewStyles from '../../ui/legacy/components/utils/imagePreview.css.js';
@@ -684,25 +685,6 @@ export class TimelineUIUtils {
                     isFreshOrEnhanced,
                     linkifier,
                 });
-                break;
-            }
-            case "V8.CompileScript" /* Trace.Types.Events.Name.COMPILE_SCRIPT */:
-            case "v8.produceCache" /* Trace.Types.Events.Name.CACHE_SCRIPT */:
-            case "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */: {
-                const url = unsafeEventData['url'];
-                if (url) {
-                    const { lineNumber } = Trace.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
-                    details = this.linkifyLocation({
-                        scriptId: null,
-                        url,
-                        lineNumber: lineNumber || 0,
-                        columnNumber: 0,
-                        target,
-                        isFreshOrEnhanced,
-                        linkifier,
-                        omitOrigin: true,
-                    });
-                }
                 break;
             }
             case "v8.deserializeOnBackground" /* Trace.Types.Events.Name.BACKGROUND_DESERIALIZE */:
@@ -1506,6 +1488,7 @@ export class TimelineUIUtils {
     static stackTraceFromCallFrames(callFrames) {
         return { callFrames };
     }
+    /** This renders a stack trace... and other cool stuff. */
     static async generateCauses(event, contentHelper, parsedTrace) {
         const { startTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
         let initiatorStackLabel = i18nString(UIStrings.initiatorStackTrace);
@@ -1664,7 +1647,7 @@ export class TimelineUIUtils {
             }
             const niceNodeLink = createLinkForInvalidationNode(invalidation);
             const text = scriptLink ?
-                i18n.i18n.getFormatLocalizedString(str_, UIStrings.invalidationWithCallFrame, { PH1: niceNodeLink, PH2: scriptLink }) :
+                uiI18n.getFormatLocalizedString(str_, UIStrings.invalidationWithCallFrame, { PH1: niceNodeLink, PH2: scriptLink }) :
                 niceNodeLink;
             // Sometimes we can get different Invalidation events which cause
             // the same text for the same element for the same reason to be
@@ -1910,7 +1893,7 @@ export class TimelineUIUtils {
             PH1: i18n.TimeUtilities.millisToString(durationMilli, true),
             PH2: i18n.TimeUtilities.millisToString(offsetMilli, true),
         });
-        return i18n.i18n.getFormatLocalizedString(str_, UIStrings.emptyPlaceholder, { PH1: durationText });
+        return uiI18n.getFormatLocalizedString(str_, UIStrings.emptyPlaceholder, { PH1: durationText });
     }
     static quadWidth(quad) {
         return Math.round(Math.sqrt(Math.pow(quad[0] - quad[2], 2) + Math.pow(quad[1] - quad[3], 2)));
@@ -2142,6 +2125,8 @@ export class TimelineDetailsContentHelper {
         if (!this.#linkifier) {
             return;
         }
+        // We resolve the original function name here. StackTracePreviewContent uses
+        // Linkifier to resolve the source code location.
         const resolvedStackTrace = structuredClone(stackTrace);
         let currentResolvedStackTrace = resolvedStackTrace;
         while (currentResolvedStackTrace) {

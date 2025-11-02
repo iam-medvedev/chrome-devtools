@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-lit-render-outside-of-view */
 import { html, render } from '../../../ui/lit/lit.js';
+import * as UI from '../../legacy/legacy.js';
 import * as VisualElements from '../../visual_logging/visual_logging.js';
 import adornerStyles from './adorner.css.js';
 export class Adorner extends HTMLElement {
@@ -24,7 +25,7 @@ export class Adorner extends HTMLElement {
         this.#render();
     }
     cloneNode(deep) {
-        const node = super.cloneNode(deep);
+        const node = UI.UIUtils.cloneCustomElement(this, deep);
         node.data = { name: this.name, content: this.#content, jslogContext: this.#jslogContext };
         return node;
     }
@@ -35,6 +36,7 @@ export class Adorner extends HTMLElement {
         if (this.#jslogContext && !this.getAttribute('jslog')) {
             this.setAttribute('jslog', `${VisualElements.adorner(this.#jslogContext)}`);
         }
+        this.#render();
     }
     isActive() {
         return this.getAttribute('aria-pressed') === 'true';

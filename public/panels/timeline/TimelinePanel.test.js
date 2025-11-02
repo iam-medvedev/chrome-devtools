@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
 import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
@@ -151,7 +153,7 @@ describeWithEnvironment('TimelinePanel', function () {
         const fileManager = stubFileManager();
         await timeline.loadingComplete(events, null, metadata);
         await timeline.saveToFile({
-            includeScriptContent: false,
+            includeResourceContent: false,
             includeSourceMaps: false,
             addModifications: false,
             shouldCompress: false,
@@ -223,6 +225,33 @@ describeWithEnvironment('TimelinePanel', function () {
             }
         });
     });
+    describe('handleExternalRequest', function () {
+        beforeEach(async () => {
+            AIAssistance.ConversationHandler.ConversationHandler.removeInstance();
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+        });
+        it('handles performance requests', async function () {
+            const explanation = 'I need more information';
+            const conversationHandler = AIAssistance.ConversationHandler.ConversationHandler.instance({
+                aidaClient: mockAidaClient([[{ explanation }]]),
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+            });
+            // Create a timeline panel that has a trace imported with insights.
+            const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
+            const traceModel = Trace.TraceModel.Model.createWithAllHandlers();
+            await traceModel.parse(events);
+            Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, traceModel });
+            const generator = await conversationHandler.handleExternalRequest({
+                prompt: 'Please help me debug this problem',
+                conversationType: "drjones-performance-full" /* AIAssistance.AiHistoryStorage.ConversationType.PERFORMANCE */,
+                data: Timeline.TimelinePanel.TimelinePanel.instance().getOrCreateExternalAIConversationData(),
+            });
+            let response = await generator.next();
+            assert.strictEqual(response.value.message, 'Analyzing trace');
+            response = await generator.next();
+            assert.strictEqual(response.value.message, explanation);
+        });
+    });
     describe('saveToFile', function () {
         let fileManager;
         let saveSpy;
@@ -236,7 +265,7 @@ describeWithEnvironment('TimelinePanel', function () {
             it('saves a regular trace file', async function () {
                 const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'web-dev.json.gz');
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    includeScriptContent: false,
+                    includeResourceContent: false,
                     includeSourceMaps: false,
                     addModifications: false,
                     shouldCompress: true,
@@ -260,7 +289,7 @@ describeWithEnvironment('TimelinePanel', function () {
                 const file = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
                 const { traceEvents, metadata } = file;
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    includeScriptContent: false,
+                    includeResourceContent: false,
                     includeSourceMaps: false,
                     addModifications: false,
                     shouldCompress: true,
@@ -275,9 +304,9 @@ describeWithEnvironment('TimelinePanel', function () {
                 assert.deepEqual(cpuFile, profile2);
             });
             it('saves an enhanced trace file without sourcemaps', async function () {
-                const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'enhanced-traces.json.gz');
+                const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'enhanced-traces.json');
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    includeScriptContent: true,
+                    includeResourceContent: true,
                     includeSourceMaps: false,
                     addModifications: false,
                     shouldCompress: true,
@@ -293,7 +322,7 @@ describeWithEnvironment('TimelinePanel', function () {
             it('saves an enhanced trace file with sourcemaps', async function () {
                 const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'dupe-js-inline-maps.json.gz');
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    includeScriptContent: true,
+                    includeResourceContent: true,
                     includeSourceMaps: true,
                     addModifications: false,
                     shouldCompress: true,
@@ -318,7 +347,7 @@ describeWithEnvironment('TimelinePanel', function () {
                     label: 'Test Annotation',
                 }, { loadedFromFile: false, muteAriaNotifications: false });
                 await timeline.saveToFile({
-                    includeScriptContent: false,
+                    includeResourceContent: false,
                     includeSourceMaps: false,
                     addModifications: true,
                     shouldCompress: true,
@@ -336,7 +365,7 @@ describeWithEnvironment('TimelinePanel', function () {
             it('saves a regular trace file', async function () {
                 const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'web-dev.json.gz');
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    includeScriptContent: false,
+                    includeResourceContent: false,
                     includeSourceMaps: false,
                     addModifications: false,
                     shouldCompress: false,
@@ -364,7 +393,7 @@ describeWithEnvironment('TimelinePanel', function () {
                 assert.lengthOf(extensionTracesWithContent, 1);
                 assert.isDefined(castedEvent.args.data.sourceText);
                 await timeline.saveToFile({
-                    includeScriptContent: true,
+                    includeResourceContent: true,
                     includeSourceMaps: false,
                     addModifications: false,
                     shouldCompress: false,
@@ -396,7 +425,7 @@ describeWithEnvironment('TimelinePanel', function () {
             it('from trace sourcemaps when saving a trace with "Include source map" on', async function () {
                 const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'chrome-ext-sourcemap-script-content.json.gz');
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    includeScriptContent: true,
+                    includeResourceContent: true,
                     includeSourceMaps: true,
                     addModifications: false,
                     shouldCompress: false,

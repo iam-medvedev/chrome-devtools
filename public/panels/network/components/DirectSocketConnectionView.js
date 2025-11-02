@@ -1,7 +1,6 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -92,7 +91,7 @@ function getDirectSocketStatusString(status) {
 export const CATEGORY_NAME_GENERAL = 'general';
 export const CATEGORY_NAME_OPTIONS = 'options';
 export const CATEGORY_NAME_OPEN_INFO = 'open-info';
-export const DEFAULT_VIEW = (input, target) => {
+export const DEFAULT_VIEW = (input, _output, target) => {
     function isCategoryOpen(name) {
         return input.openCategories.includes(name);
     }
@@ -172,7 +171,7 @@ export const DEFAULT_VIEW = (input, target) => {
     ${renderCategory(CATEGORY_NAME_GENERAL, i18nString(UIStrings.general), generalContent)}
     ${renderCategory(CATEGORY_NAME_OPTIONS, i18nString(UIStrings.options), optionsContent)}
     ${socketInfo.openInfo ? renderCategory(CATEGORY_NAME_OPEN_INFO, i18nString(UIStrings.openInfo), openInfoContent) : Lit.nothing}
-  `, target, { host: input });
+  `, target);
     // clang-format on
 };
 export class DirectSocketConnectionView extends UI.Widget.Widget {
@@ -237,7 +236,7 @@ export class DirectSocketConnectionView extends UI.Widget.Widget {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.NetworkPanelCopyValue);
             }
         };
-        this.#view(viewInput, this.contentElement);
+        this.#view(viewInput, undefined, this.contentElement);
     }
     #setIsOpen(categoryName, open) {
         const setting = this.#getCategorySetting(categoryName);

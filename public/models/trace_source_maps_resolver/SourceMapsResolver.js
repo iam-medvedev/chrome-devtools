@@ -142,7 +142,7 @@ export class SourceMapsResolver extends EventTarget {
                 for (const node of nodes) {
                     const resolvedFunctionName = await SourceMapScopes.NamesResolver.resolveProfileFrameFunctionName(node.callFrame, target);
                     updatedMappings ||= Boolean(resolvedFunctionName);
-                    node.setFunctionName(resolvedFunctionName);
+                    node.setOriginalFunctionName(resolvedFunctionName);
                     const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
                     const script = debuggerModel?.scriptForId(node.scriptId) || null;
                     const location = debuggerModel &&
