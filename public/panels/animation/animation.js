@@ -731,7 +731,7 @@ var DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
       const isSelected = input.selectedPlaybackRate === playbackRate;
       const textContent = playbackRate ? i18nString(UIStrings.playbackRatePlaceholder, { PH1: playbackRate * 100 }) : i18nString(UIStrings.pause);
       return html`
-            <button class="animation-playback-rate-button" jslog=${VisualLogging.action().context(`animations.playback-rate-${playbackRate * 100}`).track({
+            <button jslog=${VisualLogging.action().context(`animations.playback-rate-${playbackRate * 100}`).track({
         click: true,
         keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight"
       })}
@@ -781,6 +781,7 @@ var DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
     </div>
   `, target, { host: target });
 };
+var DEFAULT_DURATION = 100;
 var animationTimelineInstance;
 var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   #gridWrapper;
@@ -794,7 +795,6 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   #clearButton;
   #selectedGroup;
   #renderQueue;
-  #defaultDuration;
   #duration;
   #timelineControlsWidth;
   #nodesMap;
@@ -848,8 +848,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     const timelineHint = this.contentElement.createChild("div", "animation-timeline-rows-hint");
     const noEffectSelectedPlaceholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noEffectSelected), i18nString(UIStrings.selectAnEffectAboveToInspectAnd));
     noEffectSelectedPlaceholder.show(timelineHint);
-    this.#defaultDuration = 100;
-    this.#duration = this.#defaultDuration;
+    this.#duration = DEFAULT_DURATION;
     this.#nodesMap = /* @__PURE__ */ new Map();
     this.#uiAnimations = [];
     this.#groupBuffer = [];
@@ -1098,7 +1097,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     this.#nodesMap.clear();
     this.#animationsMap.clear();
     this.#animationsContainer.removeChildren();
-    this.#duration = this.#defaultDuration;
+    this.#duration = DEFAULT_DURATION;
     this.#timelineScrubber.classList.add("hidden");
     this.#gridHeader.classList.remove("scrubber-enabled");
     this.#selectedGroup = null;
@@ -1665,9 +1664,9 @@ var AnimationUI = class _AnimationUI {
   #nameElement;
   #svg;
   #activeIntervalGroup;
-  #cachedElements;
-  #movementInMs;
-  #keyboardMovementRateMs;
+  #cachedElements = [];
+  #movementInMs = 0;
+  #keyboardMovementRateMs = 50;
   #color;
   #node;
   #delayLine;
@@ -1698,9 +1697,6 @@ var AnimationUI = class _AnimationUI {
       UI2.UIUtils.installDragHandle(this.#activeIntervalGroup, this.mouseDown.bind(this, "AnimationDrag", null), this.mouseMove.bind(this), this.mouseUp.bind(this), "-webkit-grabbing", "-webkit-grab");
       _AnimationUI.installDragHandleKeyboard(this.#activeIntervalGroup, this.keydownMove.bind(this, "AnimationDrag", null));
     }
-    this.#cachedElements = [];
-    this.#movementInMs = 0;
-    this.#keyboardMovementRateMs = 50;
     this.#color = _AnimationUI.colorForAnimation(this.#animation);
   }
   static colorForAnimation(animation) {

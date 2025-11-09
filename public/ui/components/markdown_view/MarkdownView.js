@@ -192,7 +192,7 @@ export class MarkdownLitRenderer {
             case 'code':
                 return this.renderCodeBlock(token);
             case 'space':
-                return html ``;
+                return Lit.nothing;
             case 'link':
                 return html `<devtools-markdown-link
         class=${this.customClassMapForToken('link')}

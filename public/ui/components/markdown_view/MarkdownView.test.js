@@ -61,6 +61,9 @@ describeWithEnvironment('MarkdownView', () => {
     });
     describe('MarkdownLitRenderer renderToken', () => {
         const renderer = new MarkdownView.MarkdownView.MarkdownLitRenderer();
+        function getRenderedResultString(token) {
+            return renderer.renderToken(token).strings.join('');
+        }
         it('wraps paragraph tokens in <p> tags', () => {
             const container = renderTemplateResult(renderer.renderToken(getFakeToken({ type: 'paragraph', tokens: [] })));
             assert.exists(container.querySelector('p'));
@@ -103,7 +106,7 @@ describeWithEnvironment('MarkdownView', () => {
         });
         it('renders link with valid key', () => {
             MarkdownView.MarkdownLinksMap.markdownLinks.set('exampleLink', 'https://web.dev/');
-            const renderResult = renderer.renderToken(getFakeToken({ type: 'link', text: 'learn more', href: 'exampleLink' })).strings.join('');
+            const renderResult = getRenderedResultString(getFakeToken({ type: 'link', text: 'learn more', href: 'exampleLink' }));
             assert.isTrue(renderResult.includes('<devtools-markdown-link'));
         });
         it('throws an error if invalid link key is provided', () => {
@@ -114,7 +117,7 @@ describeWithEnvironment('MarkdownView', () => {
                 src: 'devices',
                 isIcon: true,
             });
-            const renderResult = renderer.renderToken(getFakeToken({ type: 'image', text: 'phone', href: 'testExampleImage' })).strings.join('');
+            const renderResult = getRenderedResultString(getFakeToken({ type: 'image', text: 'phone', href: 'testExampleImage' }));
             assert.isTrue(renderResult.includes('<devtools-markdown-image'));
         });
         it('renders image with valid key', () => {
@@ -122,22 +125,22 @@ describeWithEnvironment('MarkdownView', () => {
                 src: 'Images/phone-logo.png',
                 isIcon: false,
             });
-            const renderResult = renderer.renderToken(getFakeToken({ type: 'image', text: 'phone', href: 'exampleImage' })).strings.join('');
+            const renderResult = getRenderedResultString(getFakeToken({ type: 'image', text: 'phone', href: 'exampleImage' }));
             assert.isTrue(renderResult.includes('<devtools-markdown-image'));
         });
         it('throws an error if invalid image key is provided', () => {
             assert.throws(() => MarkdownView.MarkdownImagesMap.getMarkdownImage('testErrorImageLink'));
         });
         it('renders a heading correctly', () => {
-            const renderResult = renderer.renderToken(getFakeToken({ type: 'heading', text: 'a heading text', depth: 3 })).strings.join('');
+            const renderResult = getRenderedResultString(getFakeToken({ type: 'heading', text: 'a heading text', depth: 3 }));
             assert.isTrue(renderResult.includes('<h3'));
         });
         it('renders strong correctly', () => {
-            const renderResult = renderer.renderToken(getFakeToken({ type: 'strong', text: 'a strong text' })).strings.join('');
+            const renderResult = getRenderedResultString(getFakeToken({ type: 'strong', text: 'a strong text' }));
             assert.isTrue(renderResult.includes('<strong'));
         });
         it('renders em correctly', () => {
-            const renderResult = renderer.renderToken(getFakeToken({ type: 'em', text: 'em text' })).strings.join('');
+            const renderResult = getRenderedResultString(getFakeToken({ type: 'em', text: 'em text' }));
             assert.isTrue(renderResult.includes('<em'));
         });
         it('sets custom classes on the token types', () => {
@@ -149,41 +152,44 @@ describeWithEnvironment('MarkdownView', () => {
     });
     describe('MarkdownInsightRenderer renderToken', () => {
         const renderer = new MarkdownView.MarkdownView.MarkdownInsightRenderer();
+        function getRenderedLitTemplate(token) {
+            return renderer.renderToken(token);
+        }
         it('renders link as texts', () => {
-            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'https://example.test' });
+            const result = getRenderedLitTemplate({ type: 'link', text: 'learn more', href: 'https://example.test' });
             assert.strictEqual(result.values[0], 'learn more');
         });
         it('renders link urls as texts', () => {
-            const result = renderer.renderToken({ type: 'link', href: 'https://example.test' });
+            const result = getRenderedLitTemplate({ type: 'link', href: 'https://example.test' });
             assert.strictEqual(result.values[0], 'https://example.test');
         });
         it('does not render URLs with "javascript:"', () => {
-            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'javascript:alert("test")' });
+            const result = getRenderedLitTemplate({ type: 'link', text: 'learn more', href: 'javascript:alert("test")' });
             assert.isUndefined(result.values[0]);
         });
         it('does not render chrome:// URLs', () => {
-            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'chrome://settings' });
+            const result = getRenderedLitTemplate({ type: 'link', text: 'learn more', href: 'chrome://settings' });
             assert.isUndefined(result.values[0]);
         });
         it('does not render invalid URLs', () => {
-            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: '123' });
+            const result = getRenderedLitTemplate({ type: 'link', text: 'learn more', href: '123' });
             assert.isUndefined(result.values[0]);
         });
         it('renders images as text', () => {
-            const result = renderer.renderToken({ type: 'image', text: 'learn more', href: 'https://example.test' });
+            const result = getRenderedLitTemplate({ type: 'image', text: 'learn more', href: 'https://example.test' });
             assert.strictEqual(result.values[0], 'learn more');
         });
         it('renders image urls as text', () => {
-            const result = renderer.renderToken({ type: 'image', href: 'https://example.test' });
+            const result = getRenderedLitTemplate({ type: 'image', href: 'https://example.test' });
             assert.strictEqual(result.values[0], 'https://example.test');
         });
         it('renders headings as headings with the `insight` class', () => {
-            const renderResult = renderer.renderToken(getFakeToken({ type: 'heading', text: 'a heading text', depth: 3 }));
+            const renderResult = getRenderedLitTemplate(getFakeToken({ type: 'heading', text: 'a heading text', depth: 3 }));
             const container = renderTemplateResult(renderResult);
             assert.isTrue(container.querySelector('h3')?.classList.contains('insight'), 'Expected `insight`-class to be applied');
         });
         it('renders unsupported tokens', () => {
-            const result = renderer.renderToken({ type: 'html', raw: '<!DOCTYPE html>' });
+            const result = getRenderedLitTemplate({ type: 'html', raw: '<!DOCTYPE html>' });
             assert(result.values.join('').includes('<!DOCTYPE html>'));
         });
         it('detects language but default to provided', () => {

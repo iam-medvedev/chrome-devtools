@@ -176,7 +176,7 @@ describeWithEnvironment('RehydratingConnection emittance', function () {
         const contents = await TraceLoader.fixtureContents(this, 'enhanced-paul.json.gz');
         const reveal = sinon.stub(Common.Revealer.RevealerRegistry.prototype, 'reveal').resolves();
         const messageLog = [];
-        const conn = new SDK.RehydratingConnection.RehydratingConnection((e) => {
+        const conn = new SDK.RehydratingConnection.RehydratingConnectionTransport((e) => {
             throw new Error(`Connection lost: ${e}`);
         });
         // Impractical to invoke the real devtools frontend, so we fake the 3 CDP handlers that

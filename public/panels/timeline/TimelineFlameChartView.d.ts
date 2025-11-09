@@ -112,8 +112,8 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     zoomEvent(event: Trace.Types.Events.Event): void;
     revealEvent(event: Trace.Types.Events.Event): void;
     revealEventVertically(event: Trace.Types.Events.Event): void;
-    setSelectionAndReveal(selection: TimelineSelection | null): void;
-    openSelectionDetailsView(selection: TimelineSelection | null): void;
+    setSelectionAndReveal(selection: TimelineSelection | null): Promise<void>;
+    openSelectionDetailsView(selection: TimelineSelection | null): Promise<void>;
     /**
      * Used to create multiple overlays at once without triggering a redraw for each one.
      */

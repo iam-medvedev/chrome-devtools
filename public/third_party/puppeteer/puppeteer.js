@@ -2596,7 +2596,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.27.0";
+var packageVersion = "24.29.1";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -3056,12 +3056,14 @@ var Browser = class extends EventEmitter {
    * returns all {@link Page | pages} in all
    * {@link BrowserContext | browser contexts}.
    *
+   * @param includeAll - experimental, setting to true includes all kinds of pages.
+   *
    * @remarks Non-visible {@link Page | pages}, such as `"background_page"`,
    * will not be listed here. You can find them using {@link Target.page}.
    */
-  async pages() {
+  async pages(includeAll = false) {
     const contextPages = await Promise.all(this.browserContexts().map((context2) => {
-      return context2.pages();
+      return context2.pages(includeAll);
     }));
     return contextPages.reduce((acc, x) => {
       return acc.concat(x);
@@ -6212,22 +6214,13 @@ var Binding = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/incremental-id-generator.js
-function createIncrementalIdGenerator() {
-  let id = 0;
-  return () => {
-    if (id === Number.MAX_SAFE_INTEGER) {
-      id = 0;
-    }
-    return ++id;
-  };
-}
-
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/CallbackRegistry.js
-var idGenerator = createIncrementalIdGenerator();
 var CallbackRegistry = class {
   #callbacks = /* @__PURE__ */ new Map();
-  #idGenerator = idGenerator;
+  #idGenerator;
+  constructor(idGenerator) {
+    this.#idGenerator = idGenerator;
+  }
   create(label, timeout2, request) {
     const callback = new Callback(this.#idGenerator(), label, timeout2);
     this.#callbacks.set(callback.id, callback);
@@ -6336,7 +6329,7 @@ var Callback = class {
 var CdpCDPSession = class extends CDPSession {
   #sessionId;
   #targetType;
-  #callbacks = new CallbackRegistry();
+  #callbacks;
   #connection;
   #parentSessionId;
   #target;
@@ -6349,6 +6342,7 @@ var CdpCDPSession = class extends CDPSession {
     super();
     this.#connection = connection;
     this.#targetType = targetType;
+    this.#callbacks = new CallbackRegistry(connection._idGenerator);
     this.#sessionId = sessionId;
     this.#parentSessionId = parentSessionId;
     this.#rawErrors = rawErrors;
@@ -6443,6 +6437,17 @@ var CdpCDPSession = class extends CDPSession {
   }
 };
 
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/incremental-id-generator.js
+function createIncrementalIdGenerator() {
+  let id = 0;
+  return () => {
+    if (id === Number.MAX_SAFE_INTEGER) {
+      id = 0;
+    }
+    return ++id;
+  };
+}
+
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Connection.js
 var debugProtocolSend = debug("puppeteer:protocol:SEND \u25BA");
 var debugProtocolReceive = debug("puppeteer:protocol:RECV \u25C0");
@@ -6456,10 +6461,12 @@ var Connection = class extends EventEmitter {
   #manuallyAttached = /* @__PURE__ */ new Set();
   #callbacks;
   #rawErrors = false;
-  constructor(url, transport, delay = 0, timeout2, rawErrors = false) {
+  #idGenerator;
+  constructor(url, transport, delay = 0, timeout2, rawErrors = false, idGenerator = createIncrementalIdGenerator()) {
     super();
     this.#rawErrors = rawErrors;
-    this.#callbacks = new CallbackRegistry();
+    this.#idGenerator = idGenerator;
+    this.#callbacks = new CallbackRegistry(idGenerator);
     this.#url = url;
     this.#delay = delay;
     this.#timeout = timeout2 ?? 18e4;
@@ -6484,6 +6491,12 @@ var Connection = class extends EventEmitter {
    */
   get _closed() {
     return this.#closed;
+  }
+  /**
+   * @internal
+   */
+  get _idGenerator() {
+    return this.#idGenerator;
   }
   /**
    * @internal
@@ -11684,8 +11697,12 @@ var Accessibility = class {
           if (!frame) {
             return;
           }
-          const iframeSnapshot = await frame.accessibility.snapshot(options);
-          root2.iframeSnapshot = iframeSnapshot ?? void 0;
+          try {
+            const iframeSnapshot = await frame.accessibility.snapshot(options);
+            root2.iframeSnapshot = iframeSnapshot ?? void 0;
+          } catch (error) {
+            debugError(error);
+          }
         } catch (e_1) {
           env_1.error = e_1;
           env_1.hasError = true;
@@ -13880,7 +13897,7 @@ var NetworkManager = class extends EventEmitter {
     this.#networkEnabled = networkEnabled ?? true;
   }
   #canIgnoreError(error) {
-    return isErrorLike(error) && (isTargetClosedError(error) || error.message.includes("Not supported"));
+    return isErrorLike(error) && (isTargetClosedError(error) || error.message.includes("Not supported") || error.message.includes("wasn't found"));
   }
   async addClient(client) {
     if (!this.#networkEnabled || this.#clients.has(client)) {
@@ -16206,6 +16223,12 @@ var CdpPage = class _CdpPage extends Page {
   isJavaScriptEnabled() {
     return this.#emulationManager.javascriptEnabled;
   }
+  async openDevTools() {
+    const pageTargetId = this.target()._targetId;
+    const browser = this.browser();
+    const devtoolsPage = await browser._createDevToolsPage(pageTargetId);
+    return devtoolsPage;
+  }
   async waitForFileChooser(options = {}) {
     const needsEnable = this.#fileChooserDeferreds.size === 0;
     const { timeout: timeout2 = this._timeoutSettings.timeout() } = options;
@@ -16856,9 +16879,9 @@ var CdpBrowserContext = class extends BrowserContext {
       return target.browserContext() === this;
     });
   }
-  async pages() {
+  async pages(includeAll = false) {
     const pages = await Promise.all(this.targets().filter((target) => {
-      return target.type() === "page" || target.type() === "other" && this.#browser._getIsPageTargetCallback()?.(target);
+      return target.type() === "page" || (target.type() === "other" || includeAll) && this.#browser._getIsPageTargetCallback()?.(target);
     }).map((target) => {
       return target.page();
     }));
@@ -17200,9 +17223,19 @@ var TargetManager = class extends EventEmitter {
   #attachedToTargetListenersBySession = /* @__PURE__ */ new WeakMap();
   #detachedFromTargetListenersBySession = /* @__PURE__ */ new WeakMap();
   #initializeDeferred = Deferred.create();
-  #targetsIdsForInit = /* @__PURE__ */ new Set();
   #waitForInitiallyDiscoveredTargets = true;
   #discoveryFilter = [{}];
+  // IDs of tab targets detected while running the initial Target.setAutoAttach
+  // request. These are the targets whose initialization we want to await for
+  // before resolving puppeteer.connect() or launch() to avoid flakiness.
+  // Whenever a sub-target whose parent is a tab target is attached, we remove
+  // the tab target from this list. Once the list is empty, we resolve the
+  // initializeDeferred.
+  #targetsIdsForInit = /* @__PURE__ */ new Set();
+  // This is false until the connection-level Target.setAutoAttach request is
+  // done. It indicates whethere we are running the initial auto-attach step or
+  // if we are handling targets after that.
+  #initialAttachDone = false;
   constructor(connection, targetFactory, targetFilterCallback, waitForInitiallyDiscoveredTargets = true) {
     super();
     this.#connection = connection;
@@ -17215,25 +17248,11 @@ var TargetManager = class extends EventEmitter {
     this.#connection.on(CDPSessionEvent.SessionDetached, this.#onSessionDetached);
     this.#setupAttachmentListeners(this.#connection);
   }
-  #storeExistingTargetsForInit = () => {
-    if (!this.#waitForInitiallyDiscoveredTargets) {
-      return;
-    }
-    for (const [targetId, targetInfo] of this.#discoveredTargetsByTargetId.entries()) {
-      const targetForFilter = new CdpTarget(targetInfo, void 0, void 0, this, void 0);
-      const isPageOrFrame = targetInfo.type === "page" || targetInfo.type === "iframe";
-      const isExtension = targetInfo.url.startsWith("chrome-extension://");
-      if ((!this.#targetFilterCallback || this.#targetFilterCallback(targetForFilter)) && isPageOrFrame && !isExtension) {
-        this.#targetsIdsForInit.add(targetId);
-      }
-    }
-  };
   async initialize() {
     await this.#connection.send("Target.setDiscoverTargets", {
       discover: true,
       filter: this.#discoveryFilter
     });
-    this.#storeExistingTargetsForInit();
     await this.#connection.send("Target.setAutoAttach", {
       waitForDebuggerOnStart: true,
       flatten: true,
@@ -17246,6 +17265,7 @@ var TargetManager = class extends EventEmitter {
         ...this.#discoveryFilter
       ]
     });
+    this.#initialAttachDone = true;
     this.#finishInitializationIfReady();
     await this.#initializeDeferred.valueOrThrow();
   }
@@ -17355,7 +17375,6 @@ var TargetManager = class extends EventEmitter {
       return;
     }
     if (targetInfo.type === "service_worker") {
-      this.#finishInitializationIfReady(targetInfo.targetId);
       await silentDetach();
       if (this.#attachedTargetsByTargetId.has(targetInfo.targetId)) {
         return;
@@ -17368,11 +17387,17 @@ var TargetManager = class extends EventEmitter {
     }
     const isExistingTarget = this.#attachedTargetsByTargetId.has(targetInfo.targetId);
     const target = isExistingTarget ? this.#attachedTargetsByTargetId.get(targetInfo.targetId) : this.#targetFactory(targetInfo, session, parentSession instanceof CdpCDPSession ? parentSession : void 0);
+    const parentTarget = parentSession instanceof CdpCDPSession ? parentSession.target() : null;
     if (this.#targetFilterCallback && !this.#targetFilterCallback(target)) {
       this.#ignoredTargets.add(targetInfo.targetId);
-      this.#finishInitializationIfReady(targetInfo.targetId);
+      if (parentTarget?.type() === "tab") {
+        this.#finishInitializationIfReady(parentTarget._targetId);
+      }
       await silentDetach();
       return;
+    }
+    if (this.#waitForInitiallyDiscoveredTargets && event.targetInfo.type === "tab" && !this.#initialAttachDone) {
+      this.#targetsIdsForInit.add(event.targetInfo.targetId);
     }
     this.#setupAttachmentListeners(session);
     if (isExistingTarget) {
@@ -17383,14 +17408,14 @@ var TargetManager = class extends EventEmitter {
       this.#attachedTargetsByTargetId.set(targetInfo.targetId, target);
       this.#attachedTargetsBySessionId.set(session.id(), target);
     }
-    const parentTarget = parentSession instanceof CDPSession ? parentSession.target() : null;
     parentTarget?._addChildTarget(target);
     parentSession.emit(CDPSessionEvent.Ready, session);
-    this.#targetsIdsForInit.delete(target._targetId);
     if (!isExistingTarget) {
       this.emit("targetAvailable", target);
     }
-    this.#finishInitializationIfReady();
+    if (parentTarget?.type() === "tab") {
+      this.#finishInitializationIfReady(parentTarget._targetId);
+    }
     await Promise.all([
       session.send("Target.setAutoAttach", {
         waitForDebuggerOnStart: true,
@@ -17404,6 +17429,9 @@ var TargetManager = class extends EventEmitter {
   #finishInitializationIfReady(targetId) {
     if (targetId !== void 0) {
       this.#targetsIdsForInit.delete(targetId);
+    }
+    if (!this.#initialAttachDone) {
+      return;
     }
     if (this.#targetsIdsForInit.size === 0) {
       this.#initializeDeferred.resolve();
@@ -17600,6 +17628,26 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     const page = await target.page();
     if (!page) {
       throw new Error(`Failed to create a page for context (id = ${contextId})`);
+    }
+    return page;
+  }
+  async _createDevToolsPage(pageTargetId) {
+    const openDevToolsResponse = await this.#connection.send("Target.openDevTools", {
+      targetId: pageTargetId
+    });
+    const target = await this.waitForTarget((t) => {
+      return t._targetId === openDevToolsResponse.targetId;
+    });
+    if (!target) {
+      throw new Error(`Missing target for DevTools page (id = ${pageTargetId})`);
+    }
+    const initialized = await target._initializedDeferred.valueOrThrow() === InitializationStatus.SUCCESS;
+    if (!initialized) {
+      throw new Error(`Failed to create target for DevTools page (id = ${pageTargetId})`);
+    }
+    const page = await target.page();
+    if (!page) {
+      throw new Error(`Failed to create a DevTools Page for target (id = ${pageTargetId})`);
     }
     return page;
   }

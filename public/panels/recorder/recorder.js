@@ -21,7 +21,6 @@ import * as PanelCommon from "./../common/common.js";
 import * as Emulation from "./../emulation/emulation.js";
 import * as Tracing from "./../../services/tracing/tracing.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers from "./../../ui/components/helpers/helpers.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
@@ -248,7 +247,7 @@ var __decorate = function(decorators, target, key, desc) {
   else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
   return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var { html, Decorators, LitElement } = Lit;
+var { html, Decorators, Directives: { ref }, LitElement } = Lit;
 var { customElement, state } = Decorators;
 var UIStrings = {
   /**
@@ -1407,8 +1406,10 @@ var RecorderController = class RecorderController2 extends LitElement {
             <devtools-button
               id='origin'
               @click=${this.#onExportRecording}
-              on-render=${ComponentHelpers.Directives.nodeRenderedCallback((node) => {
-      this.#exportMenuButton = node;
+              ${ref((el) => {
+      if (el instanceof HTMLElement) {
+        this.#exportMenuButton = el;
+      }
     })}
               .data=${{
       variant: "toolbar",

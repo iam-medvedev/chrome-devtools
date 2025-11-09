@@ -4705,7 +4705,7 @@ function viewFunction(input, _output, target) {
     void menu.show();
   }}
       data-step-index=${input.stepIndex} data-section-index=${input.sectionIndex} class=${Lit10.Directives.classMap(stepClasses)}>
-      <svg slot="icon" width="24" height="24" height="100%" class="icon">
+      <svg slot="icon" width="24" height="24" class="icon">
         <circle class="circle-icon"/>
         <g class="error-icon">
           <path d="M1.5 1.5L6.5 6.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>

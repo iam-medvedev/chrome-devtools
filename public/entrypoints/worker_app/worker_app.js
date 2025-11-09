@@ -1115,6 +1115,16 @@ Common4.Revealer.registerRevealer({
     return new Network.NetworkPanel.NetworkLogWithFilterRevealer();
   }
 });
+Common4.Revealer.registerRevealer({
+  contextTypes() {
+    return [SDK3.NetworkManager.AppliedNetworkConditions];
+  },
+  destination: Common4.Revealer.RevealerDestination.NETWORK_PANEL,
+  async loadRevealer() {
+    const Network = await loadNetworkModule();
+    return new Network.RequestConditionsDrawer.AppliedConditionsRevealer();
+  }
+});
 
 // gen/front_end/panels/application/application-meta.js
 import * as Common5 from "./../../core/common/common.js";

@@ -574,4 +574,7 @@ export function isRundownScriptSourceLarge(event) {
 export function isAnyScriptSourceEvent(event) {
     return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources';
 }
+export function isPreloadRenderBlockingStatusChangeEvent(event) {
+    return event.name === "PreloadRenderBlockingStatusChange" /* Name.PRELOAD_RENDER_BLOCKING_STATUS_CHANGE */;
+}
 //# sourceMappingURL=TraceEvents.js.map

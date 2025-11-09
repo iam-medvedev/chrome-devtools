@@ -22,6 +22,7 @@ import * as NetworkPanel from '../network/network.js';
 import * as TimelinePanel from '../timeline/timeline.js';
 import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
 import { ChatView } from './components/ChatView.js';
+import { DisabledWidget } from './components/DisabledWidget.js';
 import { ExploreWidget } from './components/ExploreWidget.js';
 import { MarkdownRendererWithCodeBlock } from './components/MarkdownRendererWithCodeBlock.js';
 import { PerformanceAgentMarkdownRenderer } from './components/PerformanceAgentMarkdownRenderer.js';
@@ -314,24 +315,35 @@ function toolbarView(input) {
 }
 function defaultView(input, output, target) {
     // clang-format off
+    function renderState() {
+        switch (input.state) {
+            case "chat-view" /* ViewState.CHAT_VIEW */:
+                return html `<devtools-ai-chat-view
+          .props=${input}
+          ${Lit.Directives.ref((el) => {
+                    if (!el || !(el instanceof ChatView)) {
+                        return;
+                    }
+                    output.chatView = el;
+                })}
+        ></devtools-ai-chat-view>`;
+            case "explore-view" /* ViewState.EXPLORE_VIEW */:
+                return html `<devtools-widget
+          class="fill-panel"
+          .widgetConfig=${UI.Widget.widgetConfig(ExploreWidget)}
+        ></devtools-widget>`;
+            case "disabled-view" /* ViewState.DISABLED_VIEW */:
+                return html `<devtools-widget
+          class="fill-panel"
+          .widgetConfig=${UI.Widget.widgetConfig(DisabledWidget, {
+                    aidaAvailability: input.aidaAvailability,
+                })}
+        ></devtools-widget>`;
+        }
+    }
     Lit.render(html `
       ${toolbarView(input)}
-      <div class="ai-assistance-view-container">
-        ${input.state !== "explore-view" /* ChatViewState.EXPLORE_VIEW */
-        ? html ` <devtools-ai-chat-view
-              .props=${input}
-              ${Lit.Directives.ref((el) => {
-            if (!el || !(el instanceof ChatView)) {
-                return;
-            }
-            output.chatView = el;
-        })}
-            ></devtools-ai-chat-view>`
-        : html `<devtools-widget
-              class="explore"
-              .widgetConfig=${UI.Widget.widgetConfig(ExploreWidget)}
-            ></devtools-widget>`}
-      </div>
+      <div class="ai-assistance-view-container">${renderState()}</div>
     `, target);
     // clang-format on
 }
@@ -439,12 +451,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
         if (this.#aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ ||
             !this.#aiAssistanceEnabledSetting?.getIfNotDisabled() || blockedByAge) {
-            return "disabled-view" /* ChatViewState.DISABLED_VIEW */;
+            return "disabled-view" /* ViewState.DISABLED_VIEW */;
         }
         if (this.#conversation?.type) {
-            return "chat-view" /* ChatViewState.CHAT_VIEW */;
+            return "chat-view" /* ViewState.CHAT_VIEW */;
         }
-        return "explore-view" /* ChatViewState.EXPLORE_VIEW */;
+        return "explore-view" /* ViewState.EXPLORE_VIEW */;
     }
     #getAiAssistanceEnabledSetting() {
         try {
@@ -786,7 +798,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #getChatInputPlaceholder() {
         const state = this.#getChatUiState();
-        if (state === "disabled-view" /* ChatViewState.DISABLED_VIEW */ || !this.#conversation) {
+        if (state === "disabled-view" /* ViewState.DISABLED_VIEW */ || !this.#conversation) {
             return i18nString(UIStrings.followTheSteps);
         }
         if (this.#blockedByCrossOrigin) {
@@ -815,7 +827,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #getDisclaimerText() {
         const state = this.#getChatUiState();
-        if (state === "disabled-view" /* ChatViewState.DISABLED_VIEW */ || !this.#conversation || this.#conversation.isReadOnly) {
+        if (state === "disabled-view" /* ViewState.DISABLED_VIEW */ || !this.#conversation || this.#conversation.isReadOnly) {
             return i18nString(UIStrings.inputDisclaimerForEmptyState);
         }
         const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===

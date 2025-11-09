@@ -259,18 +259,18 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
         const properties = [];
         const eventListener = this.#eventListener;
         const runtimeModel = eventListener.domDebuggerModel().runtimeModel();
-        properties.push(runtimeModel.createRemotePropertyFromPrimitiveValue('useCapture', eventListener.useCapture()));
-        properties.push(runtimeModel.createRemotePropertyFromPrimitiveValue('passive', eventListener.passive()));
-        properties.push(runtimeModel.createRemotePropertyFromPrimitiveValue('once', eventListener.once()));
+        properties.push(new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(runtimeModel.createRemotePropertyFromPrimitiveValue('useCapture', eventListener.useCapture())));
+        properties.push(new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(runtimeModel.createRemotePropertyFromPrimitiveValue('passive', eventListener.passive())));
+        properties.push(new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(runtimeModel.createRemotePropertyFromPrimitiveValue('once', eventListener.once())));
         if (typeof eventListener.handler() !== 'undefined') {
-            properties.push(new SDK.RemoteObject.RemoteObjectProperty('handler', eventListener.handler()));
+            properties.push(new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(new SDK.RemoteObject.RemoteObjectProperty('handler', eventListener.handler())));
         }
-        ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.populateWithProperties(this, properties, [], true, true, null);
+        ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.populateWithProperties(this, { properties }, true, true, undefined);
     }
     setTitle(object, linkifier) {
         const title = this.listItemElement.createChild('span', 'event-listener-details');
         const propertyValue = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(object, /* wasThrown */ false, /* showPreview */ false);
-        this.valueTitle = propertyValue.element;
+        this.valueTitle = propertyValue;
         title.appendChild(this.valueTitle);
         if (this.#eventListener.canRemove()) {
             const deleteButton = new Buttons.Button.Button();

@@ -212,14 +212,17 @@ var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.Objec
     if (!rootChildTargetManager) {
       throw new Error("Could not find the child target manager class for the root target");
     }
-    const result = await rootChildTargetManager.createParallelConnection(() => {
-    });
-    const connection = result.connection;
+    const connection = rootTarget.router()?.connection;
+    if (!connection) {
+      throw new Error("Expected root target to have a router");
+    }
     const mainTargetId = await childTargetManager.getParentTargetId();
     const rootTargetId = await rootChildTargetManager.getParentTargetId();
+    const { sessionId } = await rootTarget.targetAgent().invoke_attachToTarget({ targetId: rootTargetId, flatten: true });
     const { page, browser, puppeteerConnection } = await PuppeteerService.PuppeteerConnection.PuppeteerConnectionHelper.connectPuppeteerToConnectionViaTab({
       connection,
-      rootTargetId,
+      targetId: rootTargetId,
+      sessionId,
       isPageTargetCallback: isPageTarget
     });
     if (!page) {

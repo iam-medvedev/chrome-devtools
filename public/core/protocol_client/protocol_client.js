@@ -6,6 +6,20 @@ var __export = (target, all) => {
 
 // gen/front_end/core/protocol_client/CDPConnection.js
 var CDPConnection_exports = {};
+__export(CDPConnection_exports, {
+  CDPErrorStatus: () => CDPErrorStatus
+});
+var CDPErrorStatus;
+(function(CDPErrorStatus2) {
+  CDPErrorStatus2[CDPErrorStatus2["PARSE_ERROR"] = -32700] = "PARSE_ERROR";
+  CDPErrorStatus2[CDPErrorStatus2["INVALID_REQUEST"] = -32600] = "INVALID_REQUEST";
+  CDPErrorStatus2[CDPErrorStatus2["METHOD_NOT_FOUND"] = -32601] = "METHOD_NOT_FOUND";
+  CDPErrorStatus2[CDPErrorStatus2["INVALID_PARAMS"] = -32602] = "INVALID_PARAMS";
+  CDPErrorStatus2[CDPErrorStatus2["INTERNAL_ERROR"] = -32603] = "INTERNAL_ERROR";
+  CDPErrorStatus2[CDPErrorStatus2["SERVER_ERROR"] = -32e3] = "SERVER_ERROR";
+  CDPErrorStatus2[CDPErrorStatus2["SESSION_NOT_FOUND"] = -32001] = "SESSION_NOT_FOUND";
+  CDPErrorStatus2[CDPErrorStatus2["DEVTOOLS_STUB_ERROR"] = -32015] = "DEVTOOLS_STUB_ERROR";
+})(CDPErrorStatus || (CDPErrorStatus = {}));
 
 // gen/front_end/core/protocol_client/ConnectionTransport.js
 var ConnectionTransport_exports = {};
@@ -22,10 +36,15 @@ var ConnectionTransport = class {
   }
 };
 
+// gen/front_end/core/protocol_client/DevToolsCDPConnection.js
+var DevToolsCDPConnection_exports = {};
+__export(DevToolsCDPConnection_exports, {
+  DevToolsCDPConnection: () => DevToolsCDPConnection
+});
+
 // gen/front_end/core/protocol_client/InspectorBackend.js
 var InspectorBackend_exports = {};
 __export(InspectorBackend_exports, {
-  DevToolsStubErrorCode: () => DevToolsStubErrorCode,
   InspectorBackend: () => InspectorBackend,
   SessionRouter: () => SessionRouter,
   TargetBase: () => TargetBase,
@@ -73,7 +92,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerCommand("Animation.setTiming", [{ "name": "animationId", "type": "string", "optional": false, "description": "Animation id.", "typeRef": null }, { "name": "duration", "type": "number", "optional": false, "description": "Duration of the animation.", "typeRef": null }, { "name": "delay", "type": "number", "optional": false, "description": "Delay of the animation.", "typeRef": null }], [], "Sets the timing of an animation node.");
   inspectorBackend2.registerType("Animation.Animation", [{ "name": "id", "type": "string", "optional": false, "description": "`Animation`'s id.", "typeRef": null }, { "name": "name", "type": "string", "optional": false, "description": "`Animation`'s name.", "typeRef": null }, { "name": "pausedState", "type": "boolean", "optional": false, "description": "`Animation`'s internal paused state.", "typeRef": null }, { "name": "playState", "type": "string", "optional": false, "description": "`Animation`'s play state.", "typeRef": null }, { "name": "playbackRate", "type": "number", "optional": false, "description": "`Animation`'s playback rate.", "typeRef": null }, { "name": "startTime", "type": "number", "optional": false, "description": "`Animation`'s start time. Milliseconds for time based animations and percentage [0 - 100] for scroll driven animations (i.e. when viewOrScrollTimeline exists).", "typeRef": null }, { "name": "currentTime", "type": "number", "optional": false, "description": "`Animation`'s current time.", "typeRef": null }, { "name": "type", "type": "string", "optional": false, "description": "Animation type of `Animation`.", "typeRef": null }, { "name": "source", "type": "object", "optional": true, "description": "`Animation`'s source animation node.", "typeRef": "Animation.AnimationEffect" }, { "name": "cssId", "type": "string", "optional": true, "description": "A unique ID for `Animation` representing the sources that triggered this CSS animation/transition.", "typeRef": null }, { "name": "viewOrScrollTimeline", "type": "object", "optional": true, "description": "View or scroll timeline", "typeRef": "Animation.ViewOrScrollTimeline" }]);
   inspectorBackend2.registerType("Animation.ViewOrScrollTimeline", [{ "name": "sourceNodeId", "type": "number", "optional": true, "description": "Scroll container node", "typeRef": "DOM.BackendNodeId" }, { "name": "startOffset", "type": "number", "optional": true, "description": "Represents the starting scroll position of the timeline as a length offset in pixels from scroll origin.", "typeRef": null }, { "name": "endOffset", "type": "number", "optional": true, "description": "Represents the ending scroll position of the timeline as a length offset in pixels from scroll origin.", "typeRef": null }, { "name": "subjectNodeId", "type": "number", "optional": true, "description": "The element whose principal box's visibility in the scrollport defined the progress of the timeline. Does not exist for animations with ScrollTimeline", "typeRef": "DOM.BackendNodeId" }, { "name": "axis", "type": "string", "optional": false, "description": "Orientation of the scroll", "typeRef": "DOM.ScrollOrientation" }]);
-  inspectorBackend2.registerType("Animation.AnimationEffect", [{ "name": "delay", "type": "number", "optional": false, "description": "`AnimationEffect`'s delay.", "typeRef": null }, { "name": "endDelay", "type": "number", "optional": false, "description": "`AnimationEffect`'s end delay.", "typeRef": null }, { "name": "iterationStart", "type": "number", "optional": false, "description": "`AnimationEffect`'s iteration start.", "typeRef": null }, { "name": "iterations", "type": "number", "optional": false, "description": "`AnimationEffect`'s iterations.", "typeRef": null }, { "name": "duration", "type": "number", "optional": false, "description": "`AnimationEffect`'s iteration duration. Milliseconds for time based animations and percentage [0 - 100] for scroll driven animations (i.e. when viewOrScrollTimeline exists).", "typeRef": null }, { "name": "direction", "type": "string", "optional": false, "description": "`AnimationEffect`'s playback direction.", "typeRef": null }, { "name": "fill", "type": "string", "optional": false, "description": "`AnimationEffect`'s fill mode.", "typeRef": null }, { "name": "backendNodeId", "type": "number", "optional": true, "description": "`AnimationEffect`'s target node.", "typeRef": "DOM.BackendNodeId" }, { "name": "keyframesRule", "type": "object", "optional": true, "description": "`AnimationEffect`'s keyframes.", "typeRef": "Animation.KeyframesRule" }, { "name": "easing", "type": "string", "optional": false, "description": "`AnimationEffect`'s timing function.", "typeRef": null }]);
+  inspectorBackend2.registerType("Animation.AnimationEffect", [{ "name": "delay", "type": "number", "optional": false, "description": "`AnimationEffect`'s delay.", "typeRef": null }, { "name": "endDelay", "type": "number", "optional": false, "description": "`AnimationEffect`'s end delay.", "typeRef": null }, { "name": "iterationStart", "type": "number", "optional": false, "description": "`AnimationEffect`'s iteration start.", "typeRef": null }, { "name": "iterations", "type": "number", "optional": true, "description": "`AnimationEffect`'s iterations. Omitted if the value is infinite.", "typeRef": null }, { "name": "duration", "type": "number", "optional": false, "description": "`AnimationEffect`'s iteration duration. Milliseconds for time based animations and percentage [0 - 100] for scroll driven animations (i.e. when viewOrScrollTimeline exists).", "typeRef": null }, { "name": "direction", "type": "string", "optional": false, "description": "`AnimationEffect`'s playback direction.", "typeRef": null }, { "name": "fill", "type": "string", "optional": false, "description": "`AnimationEffect`'s fill mode.", "typeRef": null }, { "name": "backendNodeId", "type": "number", "optional": true, "description": "`AnimationEffect`'s target node.", "typeRef": "DOM.BackendNodeId" }, { "name": "keyframesRule", "type": "object", "optional": true, "description": "`AnimationEffect`'s keyframes.", "typeRef": "Animation.KeyframesRule" }, { "name": "easing", "type": "string", "optional": false, "description": "`AnimationEffect`'s timing function.", "typeRef": null }]);
   inspectorBackend2.registerType("Animation.KeyframesRule", [{ "name": "name", "type": "string", "optional": true, "description": "CSS keyframed animation's name.", "typeRef": null }, { "name": "keyframes", "type": "array", "optional": false, "description": "List of animation keyframes.", "typeRef": "Animation.KeyframeStyle" }]);
   inspectorBackend2.registerType("Animation.KeyframeStyle", [{ "name": "offset", "type": "string", "optional": false, "description": "Keyframe's time offset.", "typeRef": null }, { "name": "easing", "type": "string", "optional": false, "description": "`AnimationEffect`'s timing function.", "typeRef": null }]);
   inspectorBackend2.registerEnum("Audits.CookieExclusionReason", { ExcludeSameSiteUnspecifiedTreatedAsLax: "ExcludeSameSiteUnspecifiedTreatedAsLax", ExcludeSameSiteNoneInsecure: "ExcludeSameSiteNoneInsecure", ExcludeSameSiteLax: "ExcludeSameSiteLax", ExcludeSameSiteStrict: "ExcludeSameSiteStrict", ExcludeInvalidSameParty: "ExcludeInvalidSameParty", ExcludeSamePartyCrossPartyContext: "ExcludeSamePartyCrossPartyContext", ExcludeDomainNonASCII: "ExcludeDomainNonASCII", ExcludeThirdPartyCookieBlockedInFirstPartySet: "ExcludeThirdPartyCookieBlockedInFirstPartySet", ExcludeThirdPartyPhaseout: "ExcludeThirdPartyPhaseout", ExcludePortMismatch: "ExcludePortMismatch", ExcludeSchemeMismatch: "ExcludeSchemeMismatch" });
@@ -226,6 +245,8 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerEnum("CSS.StyleSheetOrigin", { Injected: "injected", UserAgent: "user-agent", Inspector: "inspector", Regular: "regular" });
   inspectorBackend2.registerEnum("CSS.CSSRuleType", { MediaRule: "MediaRule", SupportsRule: "SupportsRule", ContainerRule: "ContainerRule", LayerRule: "LayerRule", ScopeRule: "ScopeRule", StyleRule: "StyleRule", StartingStyleRule: "StartingStyleRule" });
   inspectorBackend2.registerEnum("CSS.CSSMediaSource", { MediaRule: "mediaRule", ImportRule: "importRule", LinkedSheet: "linkedSheet", InlineSheet: "inlineSheet" });
+  inspectorBackend2.registerEnum("CSS.CSSAtRuleType", { FontFace: "font-face", FontFeatureValues: "font-feature-values", FontPaletteValues: "font-palette-values" });
+  inspectorBackend2.registerEnum("CSS.CSSAtRuleSubsection", { Swash: "swash", Annotation: "annotation", Ornaments: "ornaments", Stylistic: "stylistic", Styleset: "styleset", CharacterVariant: "character-variant" });
   inspectorBackend2.registerEvent("CSS.fontsUpdated", ["font"]);
   inspectorBackend2.registerEvent("CSS.mediaQueryResultChanged", []);
   inspectorBackend2.registerEvent("CSS.styleSheetAdded", ["header"]);
@@ -245,7 +266,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerCommand("CSS.getLonghandProperties", [{ "name": "shorthandName", "type": "string", "optional": false, "description": "", "typeRef": null }, { "name": "value", "type": "string", "optional": false, "description": "", "typeRef": null }], ["longhandProperties"], "");
   inspectorBackend2.registerCommand("CSS.getInlineStylesForNode", [{ "name": "nodeId", "type": "number", "optional": false, "description": "", "typeRef": "DOM.NodeId" }], ["inlineStyle", "attributesStyle"], 'Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by `nodeId`.');
   inspectorBackend2.registerCommand("CSS.getAnimatedStylesForNode", [{ "name": "nodeId", "type": "number", "optional": false, "description": "", "typeRef": "DOM.NodeId" }], ["animationStyles", "transitionsStyle", "inherited"], "Returns the styles coming from animations & transitions including the animation & transition styles coming from inheritance chain.");
-  inspectorBackend2.registerCommand("CSS.getMatchedStylesForNode", [{ "name": "nodeId", "type": "number", "optional": false, "description": "", "typeRef": "DOM.NodeId" }], ["inlineStyle", "attributesStyle", "matchedCSSRules", "pseudoElements", "inherited", "inheritedPseudoElements", "cssKeyframesRules", "cssPositionTryRules", "activePositionFallbackIndex", "cssPropertyRules", "cssPropertyRegistrations", "cssFontPaletteValuesRule", "parentLayoutNodeId", "cssFunctionRules"], "Returns requested styles for a DOM node identified by `nodeId`.");
+  inspectorBackend2.registerCommand("CSS.getMatchedStylesForNode", [{ "name": "nodeId", "type": "number", "optional": false, "description": "", "typeRef": "DOM.NodeId" }], ["inlineStyle", "attributesStyle", "matchedCSSRules", "pseudoElements", "inherited", "inheritedPseudoElements", "cssKeyframesRules", "cssPositionTryRules", "activePositionFallbackIndex", "cssPropertyRules", "cssPropertyRegistrations", "cssFontPaletteValuesRule", "cssAtRules", "parentLayoutNodeId", "cssFunctionRules"], "Returns requested styles for a DOM node identified by `nodeId`.");
   inspectorBackend2.registerCommand("CSS.getEnvironmentVariables", [], ["environmentVariables"], "Returns the values of the default UA-defined environment variables used in env()");
   inspectorBackend2.registerCommand("CSS.getMediaQueries", [], ["medias"], "Returns all media queries parsed by the rendering engine.");
   inspectorBackend2.registerCommand("CSS.getPlatformFontsForNode", [{ "name": "nodeId", "type": "number", "optional": false, "description": "", "typeRef": "DOM.NodeId" }], ["fonts"], "Requests information about platform fonts which we used to render child TextNodes in the given node.");
@@ -304,6 +325,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerType("CSS.CSSKeyframesRule", [{ "name": "animationName", "type": "object", "optional": false, "description": "Animation name.", "typeRef": "CSS.Value" }, { "name": "keyframes", "type": "array", "optional": false, "description": "List of keyframes.", "typeRef": "CSS.CSSKeyframeRule" }]);
   inspectorBackend2.registerType("CSS.CSSPropertyRegistration", [{ "name": "propertyName", "type": "string", "optional": false, "description": "", "typeRef": null }, { "name": "initialValue", "type": "object", "optional": true, "description": "", "typeRef": "CSS.Value" }, { "name": "inherits", "type": "boolean", "optional": false, "description": "", "typeRef": null }, { "name": "syntax", "type": "string", "optional": false, "description": "", "typeRef": null }]);
   inspectorBackend2.registerType("CSS.CSSFontPaletteValuesRule", [{ "name": "styleSheetId", "type": "string", "optional": true, "description": "The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.", "typeRef": "CSS.StyleSheetId" }, { "name": "origin", "type": "string", "optional": false, "description": "Parent stylesheet's origin.", "typeRef": "CSS.StyleSheetOrigin" }, { "name": "fontPaletteName", "type": "object", "optional": false, "description": "Associated font palette name.", "typeRef": "CSS.Value" }, { "name": "style", "type": "object", "optional": false, "description": "Associated style declaration.", "typeRef": "CSS.CSSStyle" }]);
+  inspectorBackend2.registerType("CSS.CSSAtRule", [{ "name": "type", "type": "string", "optional": false, "description": "Type of at-rule.", "typeRef": null }, { "name": "subsection", "type": "string", "optional": true, "description": "Subsection of font-feature-values, if this is a subsection.", "typeRef": null }, { "name": "name", "type": "object", "optional": true, "description": "LINT_SKIP.ThenChange(//third_party/blink/renderer/core/inspector/inspector_style_sheet.cc:FontVariantAlternatesFeatureType,//third_party/blink/renderer/core/inspector/inspector_css_agent.cc:FontVariantAlternatesFeatureType) Associated name, if applicable.", "typeRef": "CSS.Value" }, { "name": "styleSheetId", "type": "string", "optional": true, "description": "The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.", "typeRef": "CSS.StyleSheetId" }, { "name": "origin", "type": "string", "optional": false, "description": "Parent stylesheet's origin.", "typeRef": "CSS.StyleSheetOrigin" }, { "name": "style", "type": "object", "optional": false, "description": "Associated style declaration.", "typeRef": "CSS.CSSStyle" }]);
   inspectorBackend2.registerType("CSS.CSSPropertyRule", [{ "name": "styleSheetId", "type": "string", "optional": true, "description": "The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.", "typeRef": "CSS.StyleSheetId" }, { "name": "origin", "type": "string", "optional": false, "description": "Parent stylesheet's origin.", "typeRef": "CSS.StyleSheetOrigin" }, { "name": "propertyName", "type": "object", "optional": false, "description": "Associated property name.", "typeRef": "CSS.Value" }, { "name": "style", "type": "object", "optional": false, "description": "Associated style declaration.", "typeRef": "CSS.CSSStyle" }]);
   inspectorBackend2.registerType("CSS.CSSFunctionParameter", [{ "name": "name", "type": "string", "optional": false, "description": "The parameter name.", "typeRef": null }, { "name": "type", "type": "string", "optional": false, "description": "The parameter type.", "typeRef": null }]);
   inspectorBackend2.registerType("CSS.CSSFunctionConditionNode", [{ "name": "media", "type": "object", "optional": true, "description": "Media query for this conditional block. Only one type of condition should be set.", "typeRef": "CSS.CSSMedia" }, { "name": "containerQueries", "type": "object", "optional": true, "description": "Container query for this conditional block. Only one type of condition should be set.", "typeRef": "CSS.CSSContainerQuery" }, { "name": "supports", "type": "object", "optional": true, "description": "@supports CSS at-rule condition. Only one type of condition should be set.", "typeRef": "CSS.CSSSupports" }, { "name": "children", "type": "array", "optional": false, "description": "Block body.", "typeRef": "CSS.CSSFunctionNode" }, { "name": "conditionText", "type": "string", "optional": false, "description": "The condition text.", "typeRef": null }]);
@@ -330,7 +352,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerCommand("Cast.startTabMirroring", [{ "name": "sinkName", "type": "string", "optional": false, "description": "", "typeRef": null }], [], "Starts mirroring the tab to the sink.");
   inspectorBackend2.registerCommand("Cast.stopCasting", [{ "name": "sinkName", "type": "string", "optional": false, "description": "", "typeRef": null }], [], "Stops the active Cast session on the sink.");
   inspectorBackend2.registerType("Cast.Sink", [{ "name": "name", "type": "string", "optional": false, "description": "", "typeRef": null }, { "name": "id", "type": "string", "optional": false, "description": "", "typeRef": null }, { "name": "session", "type": "string", "optional": true, "description": "Text describing the current session. Present only if there is an active session on the sink.", "typeRef": null }]);
-  inspectorBackend2.registerEnum("DOM.PseudoType", { FirstLine: "first-line", FirstLetter: "first-letter", Checkmark: "checkmark", Before: "before", After: "after", PickerIcon: "picker-icon", InterestHint: "interest-hint", Marker: "marker", Backdrop: "backdrop", Column: "column", Selection: "selection", SearchText: "search-text", TargetText: "target-text", SpellingError: "spelling-error", GrammarError: "grammar-error", Highlight: "highlight", FirstLineInherited: "first-line-inherited", ScrollMarker: "scroll-marker", ScrollMarkerGroup: "scroll-marker-group", ScrollButton: "scroll-button", Scrollbar: "scrollbar", ScrollbarThumb: "scrollbar-thumb", ScrollbarButton: "scrollbar-button", ScrollbarTrack: "scrollbar-track", ScrollbarTrackPiece: "scrollbar-track-piece", ScrollbarCorner: "scrollbar-corner", Resizer: "resizer", InputListButton: "input-list-button", ViewTransition: "view-transition", ViewTransitionGroup: "view-transition-group", ViewTransitionImagePair: "view-transition-image-pair", ViewTransitionGroupChildren: "view-transition-group-children", ViewTransitionOld: "view-transition-old", ViewTransitionNew: "view-transition-new", Placeholder: "placeholder", FileSelectorButton: "file-selector-button", DetailsContent: "details-content", Picker: "picker", PermissionIcon: "permission-icon" });
+  inspectorBackend2.registerEnum("DOM.PseudoType", { FirstLine: "first-line", FirstLetter: "first-letter", Checkmark: "checkmark", Before: "before", After: "after", PickerIcon: "picker-icon", InterestHint: "interest-hint", Marker: "marker", Backdrop: "backdrop", Column: "column", Selection: "selection", SearchText: "search-text", TargetText: "target-text", SpellingError: "spelling-error", GrammarError: "grammar-error", Highlight: "highlight", FirstLineInherited: "first-line-inherited", ScrollMarker: "scroll-marker", ScrollMarkerGroup: "scroll-marker-group", ScrollButton: "scroll-button", Scrollbar: "scrollbar", ScrollbarThumb: "scrollbar-thumb", ScrollbarButton: "scrollbar-button", ScrollbarTrack: "scrollbar-track", ScrollbarTrackPiece: "scrollbar-track-piece", ScrollbarCorner: "scrollbar-corner", Resizer: "resizer", InputListButton: "input-list-button", ViewTransition: "view-transition", ViewTransitionGroup: "view-transition-group", ViewTransitionImagePair: "view-transition-image-pair", ViewTransitionGroupChildren: "view-transition-group-children", ViewTransitionOld: "view-transition-old", ViewTransitionNew: "view-transition-new", Placeholder: "placeholder", FileSelectorButton: "file-selector-button", DetailsContent: "details-content", Picker: "picker", PermissionIcon: "permission-icon", OverscrollAreaParent: "overscroll-area-parent", OverscrollClientArea: "overscroll-client-area" });
   inspectorBackend2.registerEnum("DOM.ShadowRootType", { UserAgent: "user-agent", Open: "open", Closed: "closed" });
   inspectorBackend2.registerEnum("DOM.CompatibilityMode", { QuirksMode: "QuirksMode", LimitedQuirksMode: "LimitedQuirksMode", NoQuirksMode: "NoQuirksMode" });
   inspectorBackend2.registerEnum("DOM.PhysicalAxes", { Horizontal: "Horizontal", Vertical: "Vertical", Both: "Both" });
@@ -729,7 +751,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerEnum("Network.SignedExchangeErrorField", { SignatureSig: "signatureSig", SignatureIntegrity: "signatureIntegrity", SignatureCertUrl: "signatureCertUrl", SignatureCertSha256: "signatureCertSha256", SignatureValidityUrl: "signatureValidityUrl", SignatureTimestamps: "signatureTimestamps" });
   inspectorBackend2.registerEnum("Network.ContentEncoding", { Deflate: "deflate", Gzip: "gzip", Br: "br", Zstd: "zstd" });
   inspectorBackend2.registerEnum("Network.DirectSocketDnsQueryType", { Ipv4: "ipv4", Ipv6: "ipv6" });
-  inspectorBackend2.registerEnum("Network.PrivateNetworkRequestPolicy", { Allow: "Allow", BlockFromInsecureToMorePrivate: "BlockFromInsecureToMorePrivate", WarnFromInsecureToMorePrivate: "WarnFromInsecureToMorePrivate", PreflightBlock: "PreflightBlock", PreflightWarn: "PreflightWarn", PermissionBlock: "PermissionBlock", PermissionWarn: "PermissionWarn" });
+  inspectorBackend2.registerEnum("Network.PrivateNetworkRequestPolicy", { Allow: "Allow", BlockFromInsecureToMorePrivate: "BlockFromInsecureToMorePrivate", WarnFromInsecureToMorePrivate: "WarnFromInsecureToMorePrivate", PermissionBlock: "PermissionBlock", PermissionWarn: "PermissionWarn" });
   inspectorBackend2.registerEnum("Network.IPAddressSpace", { Loopback: "Loopback", Local: "Local", Public: "Public", Unknown: "Unknown" });
   inspectorBackend2.registerEnum("Network.CrossOriginOpenerPolicyValue", { SameOrigin: "SameOrigin", SameOriginAllowPopups: "SameOriginAllowPopups", RestrictProperties: "RestrictProperties", UnsafeNone: "UnsafeNone", SameOriginPlusCoep: "SameOriginPlusCoep", RestrictPropertiesPlusCoep: "RestrictPropertiesPlusCoep", NoopenerAllowPopups: "NoopenerAllowPopups" });
   inspectorBackend2.registerEnum("Network.CrossOriginEmbedderPolicyValue", { None: "None", Credentialless: "Credentialless", RequireCorp: "RequireCorp" });
@@ -1281,7 +1303,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerCommand("Target.autoAttachRelated", [{ "name": "targetId", "type": "string", "optional": false, "description": "", "typeRef": "Target.TargetID" }, { "name": "waitForDebuggerOnStart", "type": "boolean", "optional": false, "description": "Whether to pause new targets when attaching to them. Use `Runtime.runIfWaitingForDebugger` to run paused targets.", "typeRef": null }, { "name": "filter", "type": "array", "optional": true, "description": "Only targets matching filter will be attached.", "typeRef": "Target.TargetFilter" }], [], "Adds the specified target to the list of targets that will be monitored for any related target creation (such as child frames, child workers and new versions of service worker) and reported through `attachedToTarget`. The specified target is also auto-attached. This cancels the effect of any previous `setAutoAttach` and is also cancelled by subsequent `setAutoAttach`. Only available at the Browser target.");
   inspectorBackend2.registerCommand("Target.setDiscoverTargets", [{ "name": "discover", "type": "boolean", "optional": false, "description": "Whether to discover available targets.", "typeRef": null }, { "name": "filter", "type": "array", "optional": true, "description": "Only targets matching filter will be attached. If `discover` is false, `filter` must be omitted or empty.", "typeRef": "Target.TargetFilter" }], [], "Controls whether to discover available targets and notify via `targetCreated/targetInfoChanged/targetDestroyed` events.");
   inspectorBackend2.registerCommand("Target.setRemoteLocations", [{ "name": "locations", "type": "array", "optional": false, "description": "List of remote locations.", "typeRef": "Target.RemoteLocation" }], [], "Enables target discovery for the specified locations, when `setDiscoverTargets` was set to `true`.");
-  inspectorBackend2.registerCommand("Target.openDevTools", [{ "name": "targetId", "type": "string", "optional": false, "description": "This can be the page or tab target ID.", "typeRef": "Target.TargetID" }], ["targetId"], "Opens a DevTools window for the target.");
+  inspectorBackend2.registerCommand("Target.openDevTools", [{ "name": "targetId", "type": "string", "optional": false, "description": "This can be the page or tab target ID.", "typeRef": "Target.TargetID" }, { "name": "panelId", "type": "string", "optional": true, "description": "The id of the panel we want DevTools to open initially. Currently supported panels are elements, console, network, sources and resources.", "typeRef": null }], ["targetId"], "Opens a DevTools window for the target.");
   inspectorBackend2.registerType("Target.TargetInfo", [{ "name": "targetId", "type": "string", "optional": false, "description": "", "typeRef": "Target.TargetID" }, { "name": "type", "type": "string", "optional": false, "description": "List of types: https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_agent_host_impl.cc?ss=chromium&q=f:devtools%20-f:out%20%22::kTypeTab%5B%5D%22", "typeRef": null }, { "name": "title", "type": "string", "optional": false, "description": "", "typeRef": null }, { "name": "url", "type": "string", "optional": false, "description": "", "typeRef": null }, { "name": "attached", "type": "boolean", "optional": false, "description": "Whether the target has an attached client.", "typeRef": null }, { "name": "openerId", "type": "string", "optional": true, "description": "Opener target Id", "typeRef": "Target.TargetID" }, { "name": "canAccessOpener", "type": "boolean", "optional": false, "description": "Whether the target has access to the originating window.", "typeRef": null }, { "name": "openerFrameId", "type": "string", "optional": true, "description": "Frame id of originating window (is only set if target has an opener).", "typeRef": "Page.FrameId" }, { "name": "parentFrameId", "type": "string", "optional": true, "description": 'Id of the parent frame, only present for the \\"iframe\\" targets.', "typeRef": "Page.FrameId" }, { "name": "browserContextId", "type": "string", "optional": true, "description": "", "typeRef": "Browser.BrowserContextID" }, { "name": "subtype", "type": "string", "optional": true, "description": 'Provides additional details for specific target types. For example, for the type of \\"page\\", this may be set to \\"prerender\\".', "typeRef": null }]);
   inspectorBackend2.registerType("Target.FilterEntry", [{ "name": "exclude", "type": "boolean", "optional": true, "description": "If set, causes exclusion of matching targets from the list.", "typeRef": null }, { "name": "type", "type": "string", "optional": true, "description": "If not present, matches any type.", "typeRef": null }]);
   inspectorBackend2.registerType("Target.TargetFilter", [{ "name": "TargetFilter", "type": "array", "optional": false, "description": 'The entries in TargetFilter are matched sequentially against targets and the first entry that matches determines if the target is included or not, depending on the value of `exclude` field in the entry. If filter is not specified, the one assumed is [{type: \\"browser\\", exclude: true}, {type: \\"tab\\", exclude: true}, {}] (i.e. include everything but `browser` and `tab`).', "typeRef": "Target.FilterEntry" }]);
@@ -1507,43 +1529,7 @@ function registerCommands(inspectorBackend2) {
   inspectorBackend2.registerType("Schema.Domain", [{ "name": "name", "type": "string", "optional": false, "description": "Domain name.", "typeRef": null }, { "name": "version", "type": "string", "optional": false, "description": "Domain version.", "typeRef": null }]);
 }
 
-// gen/front_end/core/protocol_client/NodeURL.js
-var NodeURL_exports = {};
-__export(NodeURL_exports, {
-  NodeURL: () => NodeURL
-});
-import * as Common from "./../common/common.js";
-import * as Host from "./../host/host.js";
-var NodeURL = class _NodeURL {
-  static patch(object) {
-    process(object, "");
-    function process(object2, path) {
-      if (object2.url && _NodeURL.isPlatformPath(object2.url, Host.Platform.isWin())) {
-        object2.url = Common.ParsedURL.ParsedURL.rawPathToUrlString(object2.url);
-      }
-      for (const entry of Object.entries(object2)) {
-        const key = entry[0];
-        const value = entry[1];
-        const entryPath = path + "." + key;
-        if (entryPath !== ".result.result.value" && value !== null && typeof value === "object") {
-          process(value, entryPath);
-        }
-      }
-    }
-  }
-  static isPlatformPath(fileSystemPath, isWindows) {
-    if (isWindows) {
-      const re = /^([a-z]:[\/\\]|\\\\)/i;
-      return re.test(fileSystemPath);
-    }
-    return fileSystemPath.length ? fileSystemPath[0] === "/" : false;
-  }
-};
-
 // gen/front_end/core/protocol_client/InspectorBackend.js
-var DevToolsStubErrorCode = -32015;
-var GenericErrorCode = -32e3;
-var ConnectionClosedErrorCode = -32001;
 var splitQualifiedName = (string) => {
   const [domain, eventName] = string.split(".");
   return [domain, eventName];
@@ -1638,188 +1624,47 @@ var test = {
    */
   onMessageReceived: null
 };
-var LongPollingMethods = /* @__PURE__ */ new Set(["CSS.takeComputedStyleUpdates"]);
 var SessionRouter = class {
   #connection;
-  #lastMessageId = 1;
-  #pendingResponsesCount = 0;
-  #pendingLongPollingMessageIds = /* @__PURE__ */ new Set();
   #sessions = /* @__PURE__ */ new Map();
-  #pendingScripts = [];
   constructor(connection) {
     this.#connection = connection;
-    test.deprecatedRunAfterPendingDispatches = this.deprecatedRunAfterPendingDispatches.bind(this);
-    test.sendRawMessage = this.sendRawMessageForTesting.bind(this);
-    this.#connection.setOnMessage(this.onMessage.bind(this));
-    this.#connection.setOnDisconnect((reason) => {
-      const session = this.#sessions.get("");
-      if (session) {
-        session.target.dispose(reason);
-      }
-    });
+    this.#connection.observe(this);
   }
-  registerSession(target, sessionId, proxyConnection) {
-    if (proxyConnection) {
-      for (const session of this.#sessions.values()) {
-        if (session.proxyConnection) {
-          console.error("Multiple simultaneous proxy connections are currently unsupported");
-          break;
-        }
-      }
-    }
-    this.#sessions.set(sessionId, { target, callbacks: /* @__PURE__ */ new Map(), proxyConnection });
+  registerSession(target, sessionId) {
+    this.#sessions.set(sessionId, { target });
   }
   unregisterSession(sessionId) {
     const session = this.#sessions.get(sessionId);
     if (!session) {
       return;
     }
-    for (const { resolve, method } of session.callbacks.values()) {
-      resolve({
-        result: null,
-        error: {
-          message: `Session is unregistering, can't dispatch pending call to ${method}`,
-          code: ConnectionClosedErrorCode,
-          data: null
-        }
-      });
+    if (this.#connection instanceof DevToolsCDPConnection) {
+      this.#connection.resolvePendingCalls(sessionId);
     }
     this.#sessions.delete(sessionId);
   }
-  nextMessageId() {
-    return this.#lastMessageId++;
+  onDisconnect(reason) {
+    const session = this.#sessions.get("");
+    if (session) {
+      session.target.dispose(reason);
+    }
   }
-  connection() {
+  onEvent(event) {
+    const sessionId = event.sessionId || "";
+    const session = this.#sessions.get(sessionId);
+    session?.target.dispatch(event);
+  }
+  get connection() {
     return this.#connection;
-  }
-  sendMessage(sessionId, domain, method, params) {
-    const messageId = this.nextMessageId();
-    const messageObject = {
-      id: messageId,
-      method
-    };
-    if (params) {
-      messageObject.params = params;
-    }
-    if (sessionId) {
-      messageObject.sessionId = sessionId;
-    }
-    if (test.dumpProtocol) {
-      test.dumpProtocol("frontend: " + JSON.stringify(messageObject));
-    }
-    if (test.onMessageSent) {
-      const paramsObject = JSON.parse(JSON.stringify(params || {}));
-      test.onMessageSent({ domain, method, params: paramsObject, id: messageId, sessionId });
-    }
-    ++this.#pendingResponsesCount;
-    if (LongPollingMethods.has(method)) {
-      this.#pendingLongPollingMessageIds.add(messageId);
-    }
-    const session = this.#sessions.get(sessionId);
-    if (!session) {
-      return Promise.resolve({ error: null, result: null });
-    }
-    return new Promise((resolve) => {
-      session.callbacks.set(messageId, { resolve, method });
-      this.#connection.sendRawMessage(JSON.stringify(messageObject));
-    });
-  }
-  sendRawMessageForTesting(method, params, callback, sessionId = "") {
-    const domain = method.split(".")[0];
-    void this.sendMessage(sessionId, domain, method, params).then(({ error, result }) => callback?.(error, result));
-  }
-  onMessage(message) {
-    if (test.dumpProtocol) {
-      test.dumpProtocol("backend: " + (typeof message === "string" ? message : JSON.stringify(message)));
-    }
-    if (test.onMessageReceived) {
-      const messageObjectCopy = JSON.parse(typeof message === "string" ? message : JSON.stringify(message));
-      test.onMessageReceived(messageObjectCopy);
-    }
-    const messageObject = typeof message === "string" ? JSON.parse(message) : message;
-    let suppressUnknownMessageErrors = false;
-    for (const session2 of this.#sessions.values()) {
-      if (!session2.proxyConnection) {
-        continue;
-      }
-      if (!session2.proxyConnection.onMessage) {
-        InspectorBackend.reportProtocolError("Protocol Error: the session has a proxyConnection with no _onMessage", messageObject);
-        continue;
-      }
-      session2.proxyConnection.onMessage(messageObject);
-      suppressUnknownMessageErrors = true;
-    }
-    const sessionId = messageObject.sessionId || "";
-    const session = this.#sessions.get(sessionId);
-    if (!session) {
-      return;
-    }
-    if (session.proxyConnection) {
-      return;
-    }
-    if (session.target.getNeedsNodeJSPatching()) {
-      NodeURL.patch(messageObject);
-    }
-    if (messageObject.id !== void 0) {
-      const callback = session.callbacks.get(messageObject.id);
-      session.callbacks.delete(messageObject.id);
-      if (!callback) {
-        if (messageObject.error?.code === ConnectionClosedErrorCode) {
-          return;
-        }
-        if (!suppressUnknownMessageErrors) {
-          InspectorBackend.reportProtocolError("Protocol Error: the message with wrong id", messageObject);
-        }
-        return;
-      }
-      callback.resolve({ error: messageObject.error || null, result: messageObject.result || null });
-      --this.#pendingResponsesCount;
-      this.#pendingLongPollingMessageIds.delete(messageObject.id);
-      if (this.#pendingScripts.length && !this.hasOutstandingNonLongPollingRequests()) {
-        this.deprecatedRunAfterPendingDispatches();
-      }
-    } else {
-      if (messageObject.method === void 0) {
-        InspectorBackend.reportProtocolError("Protocol Error: the message without method", messageObject);
-        return;
-      }
-      const eventMessage = messageObject;
-      session.target.dispatch(eventMessage);
-    }
-  }
-  hasOutstandingNonLongPollingRequests() {
-    return this.#pendingResponsesCount - this.#pendingLongPollingMessageIds.size > 0;
-  }
-  deprecatedRunAfterPendingDispatches(script) {
-    if (script) {
-      this.#pendingScripts.push(script);
-    }
-    window.setTimeout(() => {
-      if (!this.hasOutstandingNonLongPollingRequests()) {
-        this.executeAfterPendingDispatches();
-      } else {
-        this.deprecatedRunAfterPendingDispatches();
-      }
-    }, 0);
-  }
-  executeAfterPendingDispatches() {
-    if (!this.hasOutstandingNonLongPollingRequests()) {
-      const scripts = this.#pendingScripts;
-      this.#pendingScripts = [];
-      for (let id = 0; id < scripts.length; ++id) {
-        scripts[id]();
-      }
-    }
   }
 };
 var TargetBase = class {
-  needsNodeJSPatching;
   sessionId;
   #router;
   #agents = /* @__PURE__ */ new Map();
   #dispatchers = /* @__PURE__ */ new Map();
-  constructor(needsNodeJSPatching, parentTarget, sessionId, connection) {
-    this.needsNodeJSPatching = needsNodeJSPatching;
+  constructor(parentTarget, sessionId, connection) {
     this.sessionId = sessionId;
     if (parentTarget && !sessionId) {
       throw new Error("Specifying a parent target requires a session ID");
@@ -1830,7 +1675,7 @@ var TargetBase = class {
     } else if (connection) {
       router = new SessionRouter(connection);
     } else {
-      router = new SessionRouter(ConnectionTransport.getFactory()());
+      router = new SessionRouter(new DevToolsCDPConnection(ConnectionTransport.getFactory()()));
     }
     this.#router = router;
     router.registerSession(this, this.sessionId);
@@ -1861,9 +1706,6 @@ var TargetBase = class {
   }
   isDisposed() {
     return !this.#router;
-  }
-  markAsNodeJSForTest() {
-    this.needsNodeJSPatching = true;
   }
   router() {
     return this.#router;
@@ -2116,10 +1958,12 @@ var TargetBase = class {
   registerWebAuthnDispatcher(dispatcher) {
     this.registerDispatcher("WebAuthn", dispatcher);
   }
-  getNeedsNodeJSPatching() {
-    return this.needsNodeJSPatching;
-  }
 };
+var IGNORED_ERRORS = /* @__PURE__ */ new Set([
+  CDPErrorStatus.DEVTOOLS_STUB_ERROR,
+  CDPErrorStatus.SERVER_ERROR,
+  CDPErrorStatus.SESSION_NOT_FOUND
+]);
 var AgentPrototype = class {
   description = "";
   metadata;
@@ -2138,16 +1982,21 @@ var AgentPrototype = class {
     this["invoke_" + methodName] = invoke;
   }
   invoke(method, request) {
-    const router = this.target.router();
-    if (!router) {
+    const connection = this.target.router()?.connection;
+    if (!connection) {
       return Promise.resolve({ result: null, getError: () => `Connection is closed, can't dispatch pending call to ${method}` });
     }
-    return router.sendMessage(this.target.sessionId, this.domain, method, request).then(({ error, result }) => {
-      if (error && !test.suppressRequestErrors && error.code !== DevToolsStubErrorCode && error.code !== GenericErrorCode && error.code !== ConnectionClosedErrorCode) {
-        console.error("Request " + method + " failed. " + JSON.stringify(error));
+    return connection.send(method, request, this.target.sessionId).then((response) => {
+      if ("error" in response && response.error) {
+        if (!test.suppressRequestErrors && !IGNORED_ERRORS.has(response.error.code)) {
+          console.error("Request " + method + " failed. " + JSON.stringify(response.error));
+        }
+        return { getError: () => response.error.message };
       }
-      const errorMessage = error?.message;
-      return { ...result, getError: () => errorMessage };
+      if ("result" in response) {
+        return { ...response.result, getError: () => void 0 };
+      }
+      return { getError: () => void 0 };
     });
   }
 };
@@ -2185,10 +2034,139 @@ var DispatcherManager = class {
   }
 };
 var inspectorBackend = new InspectorBackend();
+
+// gen/front_end/core/protocol_client/DevToolsCDPConnection.js
+var LongPollingMethods = /* @__PURE__ */ new Set(["CSS.takeComputedStyleUpdates"]);
+var DevToolsCDPConnection = class {
+  #transport;
+  #lastMessageId = 1;
+  #pendingResponsesCount = 0;
+  #pendingLongPollingMessageIds = /* @__PURE__ */ new Set();
+  #pendingScripts = [];
+  #callbacks = /* @__PURE__ */ new Map();
+  #observers = /* @__PURE__ */ new Set();
+  constructor(transport) {
+    this.#transport = transport;
+    test.deprecatedRunAfterPendingDispatches = this.deprecatedRunAfterPendingDispatches.bind(this);
+    test.sendRawMessage = this.sendRawMessageForTesting.bind(this);
+    this.#transport.setOnMessage(this.onMessage.bind(this));
+    this.#transport.setOnDisconnect((reason) => {
+      this.#observers.forEach((observer) => observer.onDisconnect(reason));
+    });
+  }
+  observe(observer) {
+    this.#observers.add(observer);
+  }
+  unobserve(observer) {
+    this.#observers.delete(observer);
+  }
+  send(method, params, sessionId) {
+    const messageId = ++this.#lastMessageId;
+    const messageObject = {
+      id: messageId,
+      method
+    };
+    if (params) {
+      messageObject.params = params;
+    }
+    if (sessionId) {
+      messageObject.sessionId = sessionId;
+    }
+    if (test.dumpProtocol) {
+      test.dumpProtocol("frontend: " + JSON.stringify(messageObject));
+    }
+    if (test.onMessageSent) {
+      const domain = method.split(".")[0];
+      const paramsObject = JSON.parse(JSON.stringify(params || {}));
+      test.onMessageSent({ domain, method, params: paramsObject, id: messageId, sessionId });
+    }
+    ++this.#pendingResponsesCount;
+    if (LongPollingMethods.has(method)) {
+      this.#pendingLongPollingMessageIds.add(messageId);
+    }
+    return new Promise((resolve) => {
+      this.#callbacks.set(messageId, { resolve, method, sessionId });
+      this.#transport.sendRawMessage(JSON.stringify(messageObject));
+    });
+  }
+  resolvePendingCalls(sessionId) {
+    for (const { resolve, method, sessionId: callbackSessionId } of this.#callbacks.values()) {
+      if (sessionId !== callbackSessionId) {
+        continue;
+      }
+      resolve({
+        error: {
+          message: `Session is unregistering, can't dispatch pending call to ${method}`,
+          code: CDPErrorStatus.SESSION_NOT_FOUND
+        }
+      });
+    }
+  }
+  sendRawMessageForTesting(method, params, callback, sessionId = "") {
+    void this.send(method, params, sessionId).then((response) => {
+      if ("error" in response && response.error) {
+        callback?.(response.error, null);
+      } else if ("result" in response) {
+        callback?.(null, response.result);
+      }
+    });
+  }
+  onMessage(message) {
+    if (test.dumpProtocol) {
+      test.dumpProtocol("backend: " + (typeof message === "string" ? message : JSON.stringify(message)));
+    }
+    if (test.onMessageReceived) {
+      const messageObjectCopy = JSON.parse(typeof message === "string" ? message : JSON.stringify(message));
+      test.onMessageReceived(messageObjectCopy);
+    }
+    const messageObject = typeof message === "string" ? JSON.parse(message) : message;
+    if ("id" in messageObject && messageObject.id !== void 0) {
+      const callback = this.#callbacks.get(messageObject.id);
+      this.#callbacks.delete(messageObject.id);
+      if (!callback) {
+        return;
+      }
+      callback.resolve(messageObject);
+      --this.#pendingResponsesCount;
+      this.#pendingLongPollingMessageIds.delete(messageObject.id);
+      if (this.#pendingScripts.length && !this.hasOutstandingNonLongPollingRequests()) {
+        this.deprecatedRunAfterPendingDispatches();
+      }
+    } else if ("method" in messageObject) {
+      this.#observers.forEach((observer) => observer.onEvent(messageObject));
+    } else {
+      InspectorBackend.reportProtocolError("Protocol Error: the message without method", messageObject);
+    }
+  }
+  hasOutstandingNonLongPollingRequests() {
+    return this.#pendingResponsesCount - this.#pendingLongPollingMessageIds.size > 0;
+  }
+  deprecatedRunAfterPendingDispatches(script) {
+    if (script) {
+      this.#pendingScripts.push(script);
+    }
+    setTimeout(() => {
+      if (!this.hasOutstandingNonLongPollingRequests()) {
+        this.executeAfterPendingDispatches();
+      } else {
+        this.deprecatedRunAfterPendingDispatches();
+      }
+    }, 0);
+  }
+  executeAfterPendingDispatches() {
+    if (!this.hasOutstandingNonLongPollingRequests()) {
+      const scripts = this.#pendingScripts;
+      this.#pendingScripts = [];
+      for (let id = 0; id < scripts.length; ++id) {
+        scripts[id]();
+      }
+    }
+  }
+};
 export {
   CDPConnection_exports as CDPConnection,
   ConnectionTransport_exports as ConnectionTransport,
-  InspectorBackend_exports as InspectorBackend,
-  NodeURL_exports as NodeURL
+  DevToolsCDPConnection_exports as DevToolsCDPConnection,
+  InspectorBackend_exports as InspectorBackend
 };
 //# sourceMappingURL=protocol_client.js.map

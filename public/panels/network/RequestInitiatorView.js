@@ -47,7 +47,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
         }
         const networkManager = SDK.NetworkManager.NetworkManager.forRequest(request);
         const target = networkManager ? networkManager.target() : undefined;
-        return new Components.JSPresentationUtils.StackTracePreviewContent(undefined, target, linkifier, { stackTrace: initiator.stack, tabStops: focusableLink });
+        return new Components.JSPresentationUtils.StackTracePreviewContent(undefined, target, linkifier, { runtimeStackTrace: initiator.stack, tabStops: focusableLink });
     }
     createTree() {
         const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();

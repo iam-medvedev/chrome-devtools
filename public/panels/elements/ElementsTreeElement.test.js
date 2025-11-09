@@ -53,8 +53,7 @@ describeWithMockConnection('ElementsTreeElement', () => {
     }
     async function getAdorner(treeElement) {
         await treeElement.updateStyleAdorners();
-        const { tagTypeContext } = treeElement;
-        const adorners = 'adorners' in tagTypeContext ? tagTypeContext.adorners : undefined;
+        const { adorners } = treeElement;
         assert.exists(adorners);
         assert.lengthOf(adorners, 1);
         const { value } = adorners.values().next();
@@ -90,7 +89,9 @@ describeWithMockConnection('ElementsTreeElement', () => {
         const adorner1 = await getAdorner(treeElement1);
         const adorner2 = await getAdorner(treeElement2);
         setMockConnectionResponseHandler('DOM.forceShowPopover', () => ({ nodeIds: adorner2.isActive() ? [treeElement2.node().id] : [] }));
+        const toggleStub2 = spyCall(adorner2, 'toggle');
         adorner2.dispatchEvent(new MouseEvent('click'));
+        await toggleStub2;
         assert.isTrue(adorner2.isActive());
         const toggleStub = spyCall(adorner2, 'toggle');
         adorner1.dispatchEvent(new MouseEvent('click'));

@@ -2083,6 +2083,9 @@ var AIQueries = class {
     }
     const threads = Trace2.Handlers.Threads.threadsInTrace(parsedTrace.data);
     const thread = threads.find((thread2) => {
+      if (!thread2.processIsOnMainFrame) {
+        return false;
+      }
       if (mainThreadPID && mainThreadTID) {
         return thread2.pid === mainThreadPID && thread2.tid === mainThreadTID;
       }
@@ -2091,15 +2094,56 @@ var AIQueries = class {
     return thread ?? null;
   }
   /**
-   * Returns bottom up activity for the given range.
+   * Returns bottom up activity for the given range (within a single navigation / thread).
    */
-  static mainThreadActivityBottomUp(navigationId, bounds, parsedTrace) {
+  static mainThreadActivityBottomUpSingleNavigation(navigationId, bounds, parsedTrace) {
     const thread = this.findMainThread(navigationId, parsedTrace);
     if (!thread) {
       return null;
     }
     const events = AICallTree.findEventsForThread({ thread, parsedTrace, bounds });
     if (!events) {
+      return null;
+    }
+    const visibleEvents = Trace2.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
+    const filter = new Trace2.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat([
+      "SyntheticNetworkRequest"
+      /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
+    ]));
+    const startTime = Trace2.Helpers.Timing.microToMilli(bounds.min);
+    const endTime = Trace2.Helpers.Timing.microToMilli(bounds.max);
+    return new Trace2.Extras.TraceTree.BottomUpRootNode(events, {
+      textFilter: new Trace2.Extras.TraceFilter.ExclusiveNameFilter([]),
+      filters: [filter],
+      startTime,
+      endTime
+    });
+  }
+  /**
+   * Returns bottom up activity for the given range (no matter the navigation / thread).
+   */
+  static mainThreadActivityBottomUp(bounds, parsedTrace) {
+    const threads = [];
+    if (parsedTrace.insights) {
+      for (const insightSet of parsedTrace.insights?.values()) {
+        const thread = this.findMainThread(insightSet.navigation?.args.data?.navigationId, parsedTrace);
+        if (thread) {
+          threads.push(thread);
+        }
+      }
+    } else {
+      const navigationId = parsedTrace.data.Meta.mainFrameNavigations[0].args.data?.navigationId;
+      const thread = this.findMainThread(navigationId, parsedTrace);
+      if (thread) {
+        threads.push(thread);
+      }
+    }
+    if (threads.length === 0) {
+      return null;
+    }
+    const threadEvents = [...new Set(threads)].map((thread) => AICallTree.findEventsForThread({ thread, parsedTrace, bounds }) ?? []);
+    const events = threadEvents.flat();
+    if (events.length === 0) {
       return null;
     }
     const visibleEvents = Trace2.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
@@ -2323,18 +2367,44 @@ var PerformanceTraceFormatter = class {
     }
     return parts.join("\n");
   }
-  formatCriticalRequests() {
-    const insightSet = this.#insightSet;
-    const criticalRequests = [];
-    const walkRequest = (node) => {
-      criticalRequests.push(node.request);
-      node.children.forEach(walkRequest);
-    };
-    insightSet?.model.NetworkDependencyTree.rootNodes.forEach(walkRequest);
-    if (!criticalRequests.length) {
-      return "";
+  #formatFactByInsightSet(options) {
+    const { insights, title, description, empty, cb } = options;
+    const lines = [`# ${title}
+`];
+    if (description) {
+      lines.push(`${description}
+`);
     }
-    return "Critical network requests:\n" + this.formatNetworkRequests(criticalRequests, { verbose: false });
+    if (insights?.size) {
+      const multipleInsightSets = insights.size > 1;
+      for (const insightSet of insights.values()) {
+        if (multipleInsightSets) {
+          lines.push(`## insight set id: ${insightSet.id}
+`);
+        }
+        lines.push((cb(insightSet) ?? empty) + "\n");
+      }
+    } else {
+      lines.push(empty + "\n");
+    }
+    return lines.join("\n");
+  }
+  formatCriticalRequests() {
+    const parsedTrace = this.#parsedTrace;
+    return this.#formatFactByInsightSet({
+      insights: parsedTrace.insights,
+      title: "Critical network requests",
+      empty: "none",
+      cb: (insightSet) => {
+        const criticalRequests = [];
+        const walkRequest = (node) => {
+          criticalRequests.push(node.request);
+          node.children.forEach(walkRequest);
+        };
+        insightSet.model.NetworkDependencyTree.rootNodes.forEach(walkRequest);
+        return criticalRequests.length ? this.formatNetworkRequests(criticalRequests, { verbose: false }) : null;
+      }
+    });
   }
   #serializeBottomUpRootNode(rootNode, limit) {
     const topNodes = [...rootNode.children().values()].filter((n) => n.totalTime >= 1).sort((a, b) => b.selfTime - a.selfTime).slice(0, limit);
@@ -2359,21 +2429,24 @@ var PerformanceTraceFormatter = class {
       }
       return `- self: ${millis(node.selfTime)}, total: ${millis(node.totalTime)}, source: ${source}`;
     }
-    const listText = topNodes.map((node) => nodeToText.call(this, node)).join("\n");
-    const format = `This is the bottom-up summary for the entire trace. Only the top ${limit} activities (sorted by self time) are shown. An activity is all the aggregated time spent on the same type of work. For example, it can be all the time spent in a specific JavaScript function, or all the time spent in a specific browser rendering stage (like layout, v8 compile, parsing html). "Self time" represents the aggregated time spent directly in an activity, across all occurrences. "Total time" represents the aggregated time spent in an activity or any of its children.`;
-    return `${format}
-
-${listText}`;
+    return topNodes.map((node) => nodeToText.call(this, node)).join("\n");
+  }
+  #getSerializeBottomUpRootNodeFormat(limit) {
+    return `This is the bottom-up summary for the entire trace. Only the top ${limit} activities (sorted by self time) are shown. An activity is all the aggregated time spent on the same type of work. For example, it can be all the time spent in a specific JavaScript function, or all the time spent in a specific browser rendering stage (like layout, v8 compile, parsing html). "Self time" represents the aggregated time spent directly in an activity, across all occurrences. "Total time" represents the aggregated time spent in an activity or any of its children.`;
   }
   formatMainThreadBottomUpSummary() {
     const parsedTrace = this.#parsedTrace;
-    const insightSet = this.#insightSet;
-    const bounds = parsedTrace.data.Meta.traceBounds;
-    const rootNode = AIQueries.mainThreadActivityBottomUp(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace);
-    if (!rootNode) {
-      return "";
-    }
-    return this.#serializeBottomUpRootNode(rootNode, 10);
+    const limit = 10;
+    return this.#formatFactByInsightSet({
+      insights: parsedTrace.insights,
+      title: "Main thread bottom-up summary",
+      description: this.#getSerializeBottomUpRootNodeFormat(limit),
+      empty: "no activity",
+      cb: (insightSet) => {
+        const rootNode = AIQueries.mainThreadActivityBottomUpSingleNavigation(insightSet.navigation?.args.data?.navigationId, insightSet.bounds, parsedTrace);
+        return rootNode ? this.#serializeBottomUpRootNode(rootNode, limit) : null;
+      }
+    });
   }
   #formatThirdPartyEntitySummaries(summaries) {
     const topMainThreadTimeEntries = summaries.toSorted((a, b) => b.mainThreadTime - a.mainThreadTime).slice(0, 5);
@@ -2387,36 +2460,34 @@ ${listText}`;
     return listText;
   }
   formatThirdPartySummary() {
-    const insightSet = this.#insightSet;
-    if (!insightSet) {
-      return "";
-    }
-    const thirdParties = insightSet.model.ThirdParties;
-    let summaries = thirdParties.entitySummaries ?? [];
-    if (thirdParties.firstPartyEntity) {
-      summaries = summaries.filter((s) => s.entity !== thirdParties?.firstPartyEntity || null);
-    }
-    const listText = this.#formatThirdPartyEntitySummaries(summaries);
-    if (!listText) {
-      return "";
-    }
-    return `Third party summary:
-${listText}`;
+    const parsedTrace = this.#parsedTrace;
+    return this.#formatFactByInsightSet({
+      insights: parsedTrace.insights,
+      title: "3rd party summary",
+      empty: "no 3rd parties",
+      cb: (insightSet) => {
+        const thirdPartySummaries = Trace3.Extras.ThirdParties.summarizeByThirdParty(parsedTrace.data, insightSet.bounds);
+        return thirdPartySummaries.length ? this.#formatThirdPartyEntitySummaries(thirdPartySummaries) : null;
+      }
+    });
   }
   formatLongestTasks() {
     const parsedTrace = this.#parsedTrace;
-    const insightSet = this.#insightSet;
-    const bounds = parsedTrace.data.Meta.traceBounds;
-    const longestTaskTrees = AIQueries.longestTasks(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace, 3);
-    if (!longestTaskTrees || longestTaskTrees.length === 0) {
-      return "Longest tasks: none";
-    }
-    const listText = longestTaskTrees.map((tree) => {
-      const time = millis(tree.rootNode.totalTime);
-      return `- total time: ${time}, event: ${this.serializeEvent(tree.rootNode.event)}`;
-    }).join("\n");
-    return `Longest ${longestTaskTrees.length} tasks:
-${listText}`;
+    return this.#formatFactByInsightSet({
+      insights: parsedTrace.insights,
+      title: "Longest tasks",
+      empty: "none",
+      cb: (insightSet) => {
+        const longestTaskTrees = AIQueries.longestTasks(insightSet.navigation?.args.data?.navigationId, insightSet.bounds, parsedTrace, 3);
+        if (!longestTaskTrees?.length) {
+          return null;
+        }
+        return longestTaskTrees.map((tree) => {
+          const time = millis(tree.rootNode.totalTime);
+          return `- total time: ${time}, event: ${this.serializeEvent(tree.rootNode.event)}`;
+        }).join("\n");
+      }
+    });
   }
   #serializeRelatedInsightsForEvents(events) {
     if (!events.length) {
@@ -2449,8 +2520,12 @@ ${listText}`;
     return results.join("\n");
   }
   formatMainThreadTrackSummary(bounds) {
+    if (!this.#parsedTrace.insights) {
+      return "No main thread activity found";
+    }
     const results = [];
-    const topDownTree = AIQueries.mainThreadActivityTopDown(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+    const insightSet = this.#parsedTrace.insights?.values().find((insightSet2) => Trace3.Helpers.Timing.boundsIncludeTimeRange({ bounds, timeRange: insightSet2.bounds }));
+    const topDownTree = AIQueries.mainThreadActivityTopDown(insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
     if (topDownTree) {
       results.push("# Top-down main thread summary");
       results.push(this.formatCallTree(
@@ -2459,10 +2534,12 @@ ${listText}`;
         /* headerLevel */
       ));
     }
-    const bottomUpRootNode = AIQueries.mainThreadActivityBottomUp(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+    const bottomUpRootNode = AIQueries.mainThreadActivityBottomUp(bounds, this.#parsedTrace);
     if (bottomUpRootNode) {
       results.push("# Bottom-up main thread summary");
-      results.push(this.#serializeBottomUpRootNode(bottomUpRootNode, 20));
+      const limit = 20;
+      results.push(this.#getSerializeBottomUpRootNodeFormat(limit));
+      results.push(this.#serializeBottomUpRootNode(bottomUpRootNode, limit));
     }
     const thirdPartySummaries = Trace3.Extras.ThirdParties.summarizeByThirdParty(this.#parsedTrace.data, bounds);
     if (thirdPartySummaries.length) {
@@ -4548,44 +4625,49 @@ ${result}`,
       }
     });
     const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace);
-    const hasScriptContents = parsedTrace.metadata.enhancedTraceVersion && parsedTrace.data.Scripts.scripts.some((s) => s.content);
-    if (isFresh || hasScriptContents) {
-      this.declareFunction("getResourceContent", {
-        description: "Returns the content of the resource with the given url. Only use this for text resource types.",
-        parameters: {
-          type: 6,
-          description: "",
-          nullable: false,
-          properties: {
-            url: {
-              type: 1,
-              description: "The url for the resource.",
-              nullable: false
-            }
+    const isTraceApp = Root5.Runtime.Runtime.isTraceApp();
+    this.declareFunction("getResourceContent", {
+      description: "Returns the content of the resource with the given url. Only use this for text resource types. This function is helpful for getting script contents in order to further analyze main thread activity and suggest code improvements. When analyzing the main thread activity, always call this function to get more detail. Always call this function when asked to provide specifics about what is happening in the code. Never ask permission to call this function, just do it.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          url: {
+            type: 1,
+            description: "The url for the resource.",
+            nullable: false
           }
-        },
-        displayInfoFromArgs: (args) => {
-          return { title: lockedString3("Looking at resource content\u2026"), action: `getResourceContent('${args.url}')` };
-        },
-        handler: async (args) => {
-          debugLog("Function call: getResourceContent");
-          const url = args.url;
+        }
+      },
+      displayInfoFromArgs: (args) => {
+        return { title: lockedString3("Looking at resource content\u2026"), action: `getResourceContent('${args.url}')` };
+      },
+      handler: async (args) => {
+        debugLog("Function call: getResourceContent");
+        const url = args.url;
+        let content;
+        const script = parsedTrace.data.Scripts.scripts.find((script2) => script2.url === url);
+        if (script?.content !== void 0) {
+          content = script.content;
+        } else if (isFresh || isTraceApp) {
           const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
           if (!resource) {
-            if (!resource) {
-              return { error: "Resource not found" };
-            }
+            return { error: "Resource not found" };
           }
-          const content = await resource.requestContentData();
-          if ("error" in content) {
-            return { error: `Could not get resource content: ${content.error}` };
+          const data = await resource.requestContentData();
+          if ("error" in data) {
+            return { error: `Could not get resource content: ${data.error}` };
           }
-          const key = `getResourceContent(${args.url})`;
-          this.#cacheFunctionResult(focus, key, content.text);
-          return { result: { content: content.text } };
+          content = data.text;
+        } else {
+          return { error: "Resource not found" };
         }
-      });
-    }
+        const key = `getResourceContent(${args.url})`;
+        this.#cacheFunctionResult(focus, key, content);
+        return { result: { content } };
+      }
+    });
     if (!context.external) {
       this.declareFunction("selectEventByKey", {
         description: "Selects the event in the flamechart for the user. If the user asks to show them something, it's likely a good idea to call this function.",
@@ -4931,111 +5013,11 @@ __export(EvaluateAction_exports, {
   EvaluateAction: () => EvaluateAction,
   SideEffectError: () => SideEffectError,
   formatError: () => formatError,
+  getErrorStackOnThePage: () => getErrorStackOnThePage,
   stringifyObjectOnThePage: () => stringifyObjectOnThePage,
   stringifyRemoteObject: () => stringifyRemoteObject
 });
 import * as SDK3 from "./../../core/sdk/sdk.js";
-function formatError(message) {
-  return `Error: ${message}`;
-}
-var SideEffectError = class extends Error {
-};
-function stringifyObjectOnThePage() {
-  if (this instanceof Error) {
-    return `Error: ${this.message}`;
-  }
-  const seenBefore = /* @__PURE__ */ new WeakMap();
-  return JSON.stringify(this, function replacer(key, value) {
-    if (typeof value === "object" && value !== null) {
-      if (seenBefore.has(value)) {
-        return "(cycle)";
-      }
-      seenBefore.set(value, true);
-    }
-    if (value instanceof HTMLElement) {
-      const idAttribute = value.id ? ` id="${value.id}"` : "";
-      const classAttribute = value.classList.value ? ` class="${value.classList.value}"` : "";
-      return `<${value.nodeName.toLowerCase()}${idAttribute}${classAttribute}>${value.hasChildNodes() ? "..." : ""}</${value.nodeName.toLowerCase()}>`;
-    }
-    if (this instanceof CSSStyleDeclaration) {
-      if (!isNaN(Number(key))) {
-        return void 0;
-      }
-    }
-    return value;
-  });
-}
-async function stringifyRemoteObject(object) {
-  switch (object.type) {
-    case "string":
-      return `'${object.value}'`;
-    case "bigint":
-      return `${object.value}n`;
-    case "boolean":
-    case "number":
-      return `${object.value}`;
-    case "undefined":
-      return "undefined";
-    case "symbol":
-    case "function":
-      return `${object.description}`;
-    case "object": {
-      const res = await object.callFunction(stringifyObjectOnThePage);
-      if (!res.object || res.object.type !== "string") {
-        throw new Error("Could not stringify the object" + object);
-      }
-      return res.object.value;
-    }
-    default:
-      throw new Error("Unknown type to stringify " + object.type);
-  }
-}
-var EvaluateAction = class {
-  static async execute(functionDeclaration, args, executionContext, { throwOnSideEffect }) {
-    if (executionContext.debuggerModel.selectedCallFrame()) {
-      return formatError("Cannot evaluate JavaScript because the execution is paused on a breakpoint.");
-    }
-    const response = await executionContext.callFunctionOn({
-      functionDeclaration,
-      returnByValue: false,
-      allowUnsafeEvalBlockedByCSP: false,
-      throwOnSideEffect,
-      userGesture: true,
-      awaitPromise: true,
-      arguments: args.map((remoteObject) => {
-        return { objectId: remoteObject.objectId };
-      })
-    });
-    try {
-      if (!response) {
-        throw new Error("Response is not found");
-      }
-      if ("error" in response) {
-        return formatError(response.error);
-      }
-      if (response.exceptionDetails) {
-        const exceptionDescription = response.exceptionDetails.exception?.description;
-        if (SDK3.RuntimeModel.RuntimeModel.isSideEffectFailure(response)) {
-          throw new SideEffectError(exceptionDescription);
-        }
-        return formatError(exceptionDescription ?? "JS exception");
-      }
-      return await stringifyRemoteObject(response.object);
-    } finally {
-      executionContext.runtimeModel.releaseEvaluationResult(response);
-    }
-  }
-};
-
-// gen/front_end/models/ai_assistance/ExtensionScope.js
-var ExtensionScope_exports = {};
-__export(ExtensionScope_exports, {
-  ExtensionScope: () => ExtensionScope
-});
-import * as Common4 from "./../../core/common/common.js";
-import * as Platform3 from "./../../core/platform/platform.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as Bindings2 from "./../bindings/bindings.js";
 
 // gen/front_end/models/ai_assistance/injected.js
 var injected_exports = {};
@@ -5043,6 +5025,7 @@ __export(injected_exports, {
   AI_ASSISTANCE_CSS_CLASS_NAME: () => AI_ASSISTANCE_CSS_CLASS_NAME,
   FREESTYLER_BINDING_NAME: () => FREESTYLER_BINDING_NAME,
   FREESTYLER_WORLD_NAME: () => FREESTYLER_WORLD_NAME,
+  PAGE_EXPOSED_FUNCTIONS: () => PAGE_EXPOSED_FUNCTIONS,
   freestylerBinding: () => freestylerBinding,
   injectedFunctions: () => injectedFunctions
 });
@@ -5058,7 +5041,8 @@ function freestylerBindingFunc(bindingName) {
         args: JSON.stringify(args),
         element: args.element,
         resolve,
-        reject
+        reject,
+        error: args.error
       });
       globalThis[bindingName](String(freestyler.id));
       freestyler.id++;
@@ -5076,7 +5060,11 @@ function freestylerBindingFunc(bindingName) {
       if (typeof styleChangesOrError === "string") {
         freestyler.callbacks.get(callbackId)?.resolve(styleChangesOrError);
       } else {
-        freestyler.callbacks.get(callbackId)?.reject(styleChangesOrError);
+        const callback = freestyler.callbacks.get(callbackId);
+        if (callback) {
+          callback.error.message = styleChangesOrError.message;
+          callback.reject(callback?.error);
+        }
       }
       freestyler.callbacks.delete(callbackId);
     };
@@ -5084,6 +5072,7 @@ function freestylerBindingFunc(bindingName) {
   }
 }
 var freestylerBinding = `(${String(freestylerBindingFunc)})('${FREESTYLER_BINDING_NAME}')`;
+var PAGE_EXPOSED_FUNCTIONS = ["setElementStyles"];
 function setupSetElementStyles(prefix) {
   const global = globalThis;
   async function setElementStyles(el, styles) {
@@ -5109,12 +5098,14 @@ function setupSetElementStyles(prefix) {
       el.style.removeProperty(key);
       el.style[key] = "";
     }
+    const bindingError = new Error();
     const result = await global.freestyler({
       method: "setElementStyles",
       selector,
       className,
       styles,
-      element: el
+      element: el,
+      error: bindingError
     });
     const rootNode = el.getRootNode();
     if (rootNode instanceof ShadowRoot) {
@@ -5145,7 +5136,163 @@ function setupSetElementStyles(prefix) {
 }
 var injectedFunctions = `(${String(setupSetElementStyles)})('${AI_ASSISTANCE_CSS_CLASS_NAME}')`;
 
+// gen/front_end/models/ai_assistance/EvaluateAction.js
+function formatError(message) {
+  return `Error: ${message}`;
+}
+var SideEffectError = class extends Error {
+};
+function getErrorStackOnThePage() {
+  return { stack: this.stack, message: this.message };
+}
+function stringifyObjectOnThePage() {
+  const seenBefore = /* @__PURE__ */ new WeakMap();
+  return JSON.stringify(this, function replacer(key, value) {
+    if (typeof value === "object" && value !== null) {
+      if (seenBefore.has(value)) {
+        return "(cycle)";
+      }
+      seenBefore.set(value, true);
+    }
+    if (value instanceof HTMLElement) {
+      const idAttribute = value.id ? ` id="${value.id}"` : "";
+      const classAttribute = value.classList.value ? ` class="${value.classList.value}"` : "";
+      return `<${value.nodeName.toLowerCase()}${idAttribute}${classAttribute}>${value.hasChildNodes() ? "..." : ""}</${value.nodeName.toLowerCase()}>`;
+    }
+    if (this instanceof CSSStyleDeclaration) {
+      if (!isNaN(Number(key))) {
+        return void 0;
+      }
+    }
+    return value;
+  });
+}
+async function stringifyRemoteObject(object, functionDeclaration) {
+  switch (object.type) {
+    case "string":
+      return `'${object.value}'`;
+    case "bigint":
+      return `${object.value}n`;
+    case "boolean":
+    case "number":
+      return `${object.value}`;
+    case "undefined":
+      return "undefined";
+    case "symbol":
+    case "function":
+      return `${object.description}`;
+    case "object": {
+      if (object.subtype === "error") {
+        const res2 = await object.callFunctionJSON(getErrorStackOnThePage, []);
+        if (!res2) {
+          throw new Error("Could not stringify the object" + object);
+        }
+        return EvaluateAction.stringifyError(res2, functionDeclaration);
+      }
+      const res = await object.callFunction(stringifyObjectOnThePage);
+      if (!res.object || res.object.type !== "string") {
+        throw new Error("Could not stringify the object" + object);
+      }
+      return res.object.value;
+    }
+    default:
+      throw new Error("Unknown type to stringify " + object.type);
+  }
+}
+var EvaluateAction = class _EvaluateAction {
+  static async execute(functionDeclaration, args, executionContext, { throwOnSideEffect }) {
+    if (executionContext.debuggerModel.selectedCallFrame()) {
+      return formatError("Cannot evaluate JavaScript because the execution is paused on a breakpoint.");
+    }
+    const response = await executionContext.callFunctionOn({
+      functionDeclaration,
+      returnByValue: false,
+      allowUnsafeEvalBlockedByCSP: false,
+      throwOnSideEffect,
+      userGesture: true,
+      awaitPromise: true,
+      arguments: args.map((remoteObject) => {
+        return { objectId: remoteObject.objectId };
+      })
+    });
+    try {
+      if (!response) {
+        throw new Error("Response is not found");
+      }
+      if ("error" in response) {
+        return formatError(response.error);
+      }
+      if (response.exceptionDetails) {
+        const exceptionDescription = response.exceptionDetails.exception?.description;
+        if (SDK3.RuntimeModel.RuntimeModel.isSideEffectFailure(response)) {
+          throw new SideEffectError(exceptionDescription);
+        }
+        return formatError(exceptionDescription ?? "JS exception");
+      }
+      return await stringifyRemoteObject(response.object, functionDeclaration);
+    } finally {
+      executionContext.runtimeModel.releaseEvaluationResult(response);
+    }
+  }
+  static getExecutedLineFromStack(stack, pageExposedFunctions) {
+    const lines = stack.split("\n");
+    const stackLines = lines.map((curr) => curr.trim()).filter((trimmedLine) => {
+      return trimmedLine.startsWith("at");
+    });
+    const selectedStack = stackLines.find((stackLine) => {
+      const splittedStackLine = stackLine.split(" ");
+      if (splittedStackLine.length < 2) {
+        return false;
+      }
+      const signature = splittedStackLine[1] === "async" ? splittedStackLine[2] : (
+        // if the stack line contains async the function name is the next element
+        splittedStackLine[1]
+      );
+      const lastDotIndex = signature.lastIndexOf(".");
+      const functionName = lastDotIndex !== -1 ? signature.substring(lastDotIndex + 1) : signature;
+      return !pageExposedFunctions.includes(functionName);
+    });
+    if (!selectedStack) {
+      return null;
+    }
+    const frameLocationRegex = /:(\d+)(?::\d+)?\)?$/;
+    const match = selectedStack.match(frameLocationRegex);
+    if (!match?.[1]) {
+      return null;
+    }
+    const lineNum = parseInt(match[1], 10);
+    if (isNaN(lineNum)) {
+      return null;
+    }
+    return lineNum - 1;
+  }
+  static stringifyError(result, functionDeclaration) {
+    if (!result.stack) {
+      return `Error: ${result.message}`;
+    }
+    const lineNum = _EvaluateAction.getExecutedLineFromStack(result.stack, PAGE_EXPOSED_FUNCTIONS);
+    if (!lineNum) {
+      return `Error: ${result.message}`;
+    }
+    const functionLines = functionDeclaration.split("\n");
+    const errorLine = functionLines[lineNum];
+    if (!errorLine) {
+      return `Error: ${result.message}`;
+    }
+    return `Error: executing the line "${errorLine.trim()}" failed with the following error:
+${result.message}`;
+  }
+};
+
 // gen/front_end/models/ai_assistance/ExtensionScope.js
+var ExtensionScope_exports = {};
+__export(ExtensionScope_exports, {
+  ExtensionScope: () => ExtensionScope
+});
+import * as Common4 from "./../../core/common/common.js";
+import * as Platform3 from "./../../core/platform/platform.js";
+import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as Bindings2 from "./../bindings/bindings.js";
 var _a2;
 var ExtensionScope = class {
   #listeners = [];
@@ -6356,7 +6503,7 @@ var BuiltInAi = class _BuiltInAi {
     }
   }
   static cachedIsAvailable() {
-    return availability === "available";
+    return availability === "available" && (hasGpu || Boolean(Root9.Runtime.hostConfig.devToolsAiPromptApi?.allowWithoutGpu));
   }
   static isGpuAvailable() {
     const hasGpuHelper = () => {

@@ -388,12 +388,14 @@
       <include file="entrypoints/main/main-meta.js" name="ENTRYPOINTS_MAIN_MAIN_META_JS" resource_path="entrypoints/main/main-meta.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/main/main.js" name="ENTRYPOINTS_MAIN_MAIN_JS" resource_path="entrypoints/main/main.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/ndb_app/ndb_app.js" name="ENTRYPOINTS_NDB_APP_NDB_APP_JS" resource_path="entrypoints/ndb_app/ndb_app.js" type="BINDATA" compress="false"/>
+      <include file="entrypoints/node_app/app/app.js" name="ENTRYPOINTS_NODE_APP_APP_APP_JS" resource_path="entrypoints/node_app/app/app.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/node_app/node_app.js" name="ENTRYPOINTS_NODE_APP_NODE_APP_JS" resource_path="entrypoints/node_app/node_app.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/shell/shell.js" name="ENTRYPOINTS_SHELL_SHELL_JS" resource_path="entrypoints/shell/shell.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/trace_app/trace_app.js" name="ENTRYPOINTS_TRACE_APP_TRACE_APP_JS" resource_path="entrypoints/trace_app/trace_app.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js" name="ENTRYPOINTS_WASMPARSER_WORKER_WASMPARSER_WORKER_ENTRYPOINT_JS" resource_path="entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/wasmparser_worker/wasmparser_worker.js" name="ENTRYPOINTS_WASMPARSER_WORKER_WASMPARSER_WORKER_JS" resource_path="entrypoints/wasmparser_worker/wasmparser_worker.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/worker_app/worker_app.js" name="ENTRYPOINTS_WORKER_APP_WORKER_APP_JS" resource_path="entrypoints/worker_app/worker_app.js" type="BINDATA" compress="false"/>
+      <include file="foundation/foundation.js" name="FOUNDATION_FOUNDATION_JS" resource_path="foundation/foundation.js" type="BINDATA" compress="false"/>
       <include file="inspector.html" name="INSPECTOR_HTML" resource_path="inspector.html" type="BINDATA" compress="false"/>
       <include file="js_app.html" name="JS_APP_HTML" resource_path="js_app.html" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/ai_assistance.js" name="MODELS_AI_ASSISTANCE_AI_ASSISTANCE_JS" resource_path="models/ai_assistance/ai_assistance.js" type="BINDATA" compress="false"/>
@@ -624,6 +626,7 @@
       <include file="models/trace/trace.js" name="MODELS_TRACE_TRACE_JS" resource_path="models/trace/trace.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/types.js" name="MODELS_TRACE_TYPES_TYPES_JS" resource_path="models/trace/types/types.js" type="BINDATA" compress="false"/>
       <include file="models/trace_source_maps_resolver/trace_source_maps_resolver.js" name="MODELS_TRACE_SOURCE_MAPS_RESOLVER_TRACE_SOURCE_MAPS_RESOLVER_JS" resource_path="models/trace_source_maps_resolver/trace_source_maps_resolver.js" type="BINDATA" compress="false"/>
+      <include file="models/workspace/workspace-meta.js" name="MODELS_WORKSPACE_WORKSPACE_META_JS" resource_path="models/workspace/workspace-meta.js" type="BINDATA" compress="false"/>
       <include file="models/workspace/workspace.js" name="MODELS_WORKSPACE_WORKSPACE_JS" resource_path="models/workspace/workspace.js" type="BINDATA" compress="false"/>
       <include file="models/workspace_diff/workspace_diff.js" name="MODELS_WORKSPACE_DIFF_WORKSPACE_DIFF_JS" resource_path="models/workspace_diff/workspace_diff.js" type="BINDATA" compress="false"/>
       <include file="ndb_app.html" name="NDB_APP_HTML" resource_path="ndb_app.html" type="BINDATA" compress="false"/>

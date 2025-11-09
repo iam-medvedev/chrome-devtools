@@ -1656,8 +1656,10 @@ var FieldSettingsDialog = class extends HTMLElement {
     return html5`
       <div class="origin-mapping-description">${i18nString6(UIStrings6.mapDevelopmentOrigins)}</div>
       <devtools-origin-map
-        on-render=${ComponentHelpers3.Directives.nodeRenderedCallback((node) => {
-      this.#originMap = node;
+        ${Lit5.Directives.ref((el) => {
+      if (el instanceof HTMLElement) {
+        this.#originMap = el;
+      }
     })}
       ></devtools-origin-map>
       <div class="origin-mapping-button-section">
@@ -1668,7 +1670,7 @@ var FieldSettingsDialog = class extends HTMLElement {
       title: i18nString6(UIStrings6.new),
       iconName: "plus"
     }}
-          jslogContext=${"new-origin-mapping"}
+          jslogContext="new-origin-mapping"
         >${i18nString6(UIStrings6.new)}</devtools-button>
       </div>
     `;
@@ -1688,8 +1690,10 @@ var FieldSettingsDialog = class extends HTMLElement {
         .jslogContext=${"timeline.field-data.settings"}
         .expectedMutationsSelector=${".timeline-settings-pane option"}
         .dialogTitle=${i18nString6(UIStrings6.configureFieldData)}
-        on-render=${ComponentHelpers3.Directives.nodeRenderedCallback((node) => {
-      this.#dialog = node;
+        ${Lit5.Directives.ref((el) => {
+      if (el instanceof HTMLElement) {
+        this.#dialog = el;
+      }
     })}
       >
         <div class="content">
@@ -2412,12 +2416,14 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
       </div>
       `, target);
 };
-function renderLayoutShiftDetails(layoutShift, traceInsightsSets, parsedTrace, isFreshRecording, onEventClick) {
-  if (!traceInsightsSets) {
+function findInsightSet(insightSets, navigationId) {
+  return insightSets?.values().find((insightSet) => navigationId ? navigationId === insightSet.navigation?.args.data?.navigationId : !insightSet.navigation);
+}
+function renderLayoutShiftDetails(layoutShift, insightSets, parsedTrace, isFreshRecording, onEventClick) {
+  if (!insightSets) {
     return Lit8.nothing;
   }
-  const insightsId = layoutShift.args.data?.navigationId ?? Trace3.Types.Events.NO_NAVIGATION;
-  const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
+  const clsInsight = findInsightSet(insightSets, layoutShift.args.data?.navigationId)?.model.CLSCulprits;
   if (!clsInsight || clsInsight instanceof Error) {
     return Lit8.nothing;
   }
@@ -2450,12 +2456,11 @@ function renderLayoutShiftDetails(layoutShift, traceInsightsSets, parsedTrace, i
       ${renderParentCluster(parentCluster, onEventClick, parsedTrace)}
     `;
 }
-function renderLayoutShiftClusterDetails(cluster, traceInsightsSets, parsedTrace, onEventClick) {
-  if (!traceInsightsSets) {
+function renderLayoutShiftClusterDetails(cluster, insightSets, parsedTrace, onEventClick) {
+  if (!insightSets) {
     return Lit8.nothing;
   }
-  const insightsId = cluster.navigationId ?? Trace3.Types.Events.NO_NAVIGATION;
-  const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
+  const clsInsight = findInsightSet(insightSets, cluster.navigationId)?.model.CLSCulprits;
   if (!clsInsight || clsInsight instanceof Error) {
     return Lit8.nothing;
   }
@@ -4100,8 +4105,10 @@ var MetricCard = class extends HTMLElement {
             class="tooltip"
             role="tooltip"
             aria-label=${i18nString12(UIStrings13.viewCardDetails)}
-            on-render=${ComponentHelpers7.Directives.nodeRenderedCallback((node) => {
-      this.#tooltipEl = node;
+            ${Lit10.Directives.ref((el) => {
+      if (el instanceof HTMLElement) {
+        this.#tooltipEl = el;
+      }
     })}
           >
             <div class="tooltip-scroll">
@@ -5281,10 +5288,15 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
   }
   #renderLogSection() {
     return html12`
-      <section class="logs-section" aria-label=${i18nString13(UIStrings14.eventLogs)}>
+      <section
+        class="logs-section"
+        aria-label=${i18nString13(UIStrings14.eventLogs)}
+      >
         <devtools-live-metrics-logs
-          on-render=${ComponentHelpers8.Directives.nodeRenderedCallback((node) => {
-      this.#logsEl = node;
+          ${Lit12.Directives.ref((el) => {
+      if (el instanceof HTMLElement) {
+        this.#logsEl = el;
+      }
     })}
         >
           ${this.#renderInteractionsLog()}
@@ -5323,8 +5335,10 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     return html12`
       <ol class="log"
         slot="interactions-log-content"
-        on-render=${ComponentHelpers8.Directives.nodeRenderedCallback((node) => {
-      this.#interactionsListEl = node;
+        ${Lit12.Directives.ref((el) => {
+      if (el instanceof HTMLElement) {
+        this.#interactionsListEl = el;
+      }
     })}
       >
         ${this.#interactions.values().map((interaction) => {
@@ -5414,8 +5428,10 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     return html12`
       <ol class="log"
         slot="layout-shifts-log-content"
-        on-render=${ComponentHelpers8.Directives.nodeRenderedCallback((node) => {
-      this.#layoutShiftsListEl = node;
+        ${Lit12.Directives.ref((el) => {
+      if (el instanceof HTMLElement) {
+        this.#layoutShiftsListEl = el;
+      }
     })}
       >
         ${this.#layoutShifts.map((layoutShift) => {
@@ -5471,8 +5487,10 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
           <main class="live-metrics">
             <h2 class="section-title">${liveMetricsTitle}</h2>
             <div class="metric-cards"
-              on-render=${ComponentHelpers8.Directives.nodeRenderedCallback((node) => {
-      this.#tooltipContainerEl = node;
+              ${Lit12.Directives.ref((el) => {
+      if (el instanceof HTMLElement) {
+        this.#tooltipContainerEl = el;
+      }
     })}
             >
               <div id="lcp">
@@ -7133,6 +7151,7 @@ import * as Trace9 from "./../../../models/trace/trace.js";
 import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers9 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit17 from "./../../../ui/lit/lit.js";
+import { nothing as nothing18 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 import * as Insights4 from "./insights/insights.js";
 
@@ -7570,7 +7589,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
     const renderInsightComponent = (insightData) => {
       const { componentClass, model } = insightData;
       if (!this.#data.parsedTrace?.insights) {
-        return html17``;
+        return nothing18;
       }
       const agentFocus = AIAssistance.AIContext.AgentFocus.fromInsight(this.#data.parsedTrace, model);
       return html17`<div>

@@ -59,7 +59,7 @@ describeWithEnvironment('DataGrid', () => {
     });
     it('can initialize data from template', async () => {
         const element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}>
+        <devtools-data-grid striped name="Display Name">
           <table>
             <tr>
               <th id="column-1">Column 1</th>
@@ -102,7 +102,7 @@ describeWithEnvironment('DataGrid', () => {
     });
     it('can filter data', async () => {
         await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}>
+        <devtools-data-grid striped name="Display Name">
           <table>
             <tr>
               <th id="column-1">Column 1</th>
@@ -121,7 +121,7 @@ describeWithEnvironment('DataGrid', () => {
         // clang-format off
         const element = await renderDataGrid(html `
         <devtools-data-grid
-            striped name=${'Display Name'}
+            striped name="Display Name"
             .filters=${[{ key: 'column-1', text: '3', negative: false }]}>
           <table>
             <tr>
@@ -145,7 +145,7 @@ describeWithEnvironment('DataGrid', () => {
     });
     it('can set selection from template', async () => {
         let element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}>
+        <devtools-data-grid striped name="Display Name">
           <table>
             <tr>
               <th id="column-1">Column 1</th>
@@ -164,7 +164,7 @@ describeWithEnvironment('DataGrid', () => {
         // clang-format off
         assert.strictEqual(getAlertAnnouncement(element), 'Display Name Row  Column 1: Value 3, Column 2: Value 4');
         element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}>
+        <devtools-data-grid striped name="Display Name">
           <table>
             <tr>
               <th id="column-1">Column 1</th>
@@ -186,7 +186,7 @@ describeWithEnvironment('DataGrid', () => {
     it('supports editable columns', async () => {
         const editCallback = sinon.stub();
         const element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}>
+        <devtools-data-grid striped name="Display Name">
           <table>
             <tr>
               <th id="column-1" editable>Column 1</th>
@@ -213,7 +213,7 @@ describeWithEnvironment('DataGrid', () => {
         const createCallback = sinon.stub();
         const editCallback = sinon.stub();
         const element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}
+        <devtools-data-grid striped name="Display Name"
                             @create=${createCallback}>
           <table>
             <tr>
@@ -243,7 +243,7 @@ describeWithEnvironment('DataGrid', () => {
     });
     it('can display nested nodes', async () => {
         const element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}>
+        <devtools-data-grid striped name="Display Name">
           <table>
             <tr>
               <th id="column-1">Column 1</th>
@@ -278,7 +278,7 @@ describeWithEnvironment('DataGrid', () => {
     it('dispatches open event on expanding', async () => {
         const openCallback = sinon.stub();
         const element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}>
+        <devtools-data-grid striped name="Display Name">
           <table>
             <tr>
               <th id="column-1">Column 1</th>
@@ -303,7 +303,7 @@ describeWithEnvironment('DataGrid', () => {
     });
     it('can set initial sort order from template', async () => {
         const element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}>
+        <devtools-data-grid striped name="Display Name">
           <table>
             <tr>
               <th id="column-1" sort="descending">Column 1</th>
@@ -342,7 +342,7 @@ describeWithEnvironment('DataGrid', () => {
     });
     it('resorts when a node is updated', async () => {
         const element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'}>
+        <devtools-data-grid striped name="Display Name">
           <table>
             <tr>
               <th id="column-1" sortable sort="ascending">Column 1</th>

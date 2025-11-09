@@ -8,7 +8,7 @@ import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createFakeSetting, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import * as Lit from '../lit/lit.js';
 import * as UI from './legacy.js';
-const { html } = Lit;
+const { html, nothing } = Lit;
 const { urlString } = Platform.DevToolsPath;
 describe('UIUtils', () => {
     describe('openInNewTab', () => {
@@ -198,7 +198,7 @@ describe('UIUtils', () => {
         it('removes the change listener when the button is removed from the DOM', () => {
             const { button, container, action } = setup();
             const spy = sinon.spy(action, 'removeEventListener');
-            Lit.render(html ``, container);
+            Lit.render(nothing, container);
             assert.isFalse(button.isConnected);
             sinon.assert.calledWith(spy, "Enabled" /* UI.ActionRegistration.Events.ENABLED */);
         });
@@ -265,11 +265,11 @@ describe('UIUtils', () => {
             assert.deepEqual(nodeContents(container.removals), [{ DIV: 'add' }]);
             assert.deepEqual(container.updates, [{ node: 'TEST-ELEMENT', attributeName: null }, { node: 'TEST-ELEMENT', attributeName: null }]);
             container.clear();
-            Lit.render(html ``, container);
+            Lit.render(nothing, container);
             await raf();
             assert.deepEqual(nodeContents(container.additions), []);
             assert.deepEqual(nodeContents(container.removals), [{ DIV: 'inner' }]);
-            assert.deepEqual(container.updates, [{ node: 'TEST-ELEMENT', attributeName: null }, { node: 'TEST-ELEMENT', attributeName: null }]);
+            assert.deepEqual(container.updates, [{ node: 'TEST-ELEMENT', attributeName: null }]);
         });
         it('observes its attributes for modifications', async () => {
             const container = document.createElement('div');
@@ -304,8 +304,7 @@ describe('UIUtils', () => {
             const interception = sinon.stub(UI.UIUtils.InterceptBindingDirective.prototype, 'render');
             Lit.render(html `
         <test-element
-          .template=${html `<button @click=${onClick}>button</button>`}
-        </test-element>`, container);
+          .template=${html `<button @click=${onClick}>button</button>`}></test-element>`, container);
             await raf();
             sinon.assert.calledOnceWithExactly(interception, onClick);
         });
@@ -396,7 +395,7 @@ describe('bindToSetting (string)', () => {
     });
     it('removes the change listener when the input is removed from the DOM', () => {
         const { setting, input, container } = setup();
-        Lit.render(html ``, container);
+        Lit.render(nothing, container);
         setting.set('new value via change listener');
         assert.isFalse(input.isConnected);
         assert.strictEqual(input.value, 'defaultValue');
@@ -431,7 +430,7 @@ describe('bindToSetting (boolean)', () => {
     });
     it('removes the change listener when the input is removed from the DOM', () => {
         const { setting, input, container } = setup();
-        Lit.render(html ``, container);
+        Lit.render(nothing, container);
         setting.set(false);
         assert.isFalse(input.isConnected);
         assert.isTrue(input.checked);

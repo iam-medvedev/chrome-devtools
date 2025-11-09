@@ -33,9 +33,9 @@ export class AnimationUI {
     #nameElement;
     #svg;
     #activeIntervalGroup;
-    #cachedElements;
-    #movementInMs;
-    #keyboardMovementRateMs;
+    #cachedElements = [];
+    #movementInMs = 0;
+    #keyboardMovementRateMs = 50;
     #color;
     #node;
     #delayLine;
@@ -66,9 +66,6 @@ export class AnimationUI {
             UI.UIUtils.installDragHandle(this.#activeIntervalGroup, this.mouseDown.bind(this, "AnimationDrag" /* Events.ANIMATION_DRAG */, null), this.mouseMove.bind(this), this.mouseUp.bind(this), '-webkit-grabbing', '-webkit-grab');
             AnimationUI.installDragHandleKeyboard(this.#activeIntervalGroup, this.keydownMove.bind(this, "AnimationDrag" /* Events.ANIMATION_DRAG */, null));
         }
-        this.#cachedElements = [];
-        this.#movementInMs = 0;
-        this.#keyboardMovementRateMs = 50;
         this.#color = AnimationUI.colorForAnimation(this.#animation);
     }
     static colorForAnimation(animation) {

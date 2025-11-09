@@ -4,6 +4,7 @@
 import * as Common from './common.js';
 describe('Base64 decoder', () => {
     function decode(str) {
+        // @ts-expect-error missing types in devtools_foundation_module.
         const encoded = btoa(str);
         const decoded = Common.Base64.decode(encoded);
         const view = new DataView(decoded.buffer);
@@ -19,16 +20,6 @@ describe('Base64 decoder', () => {
     });
     it('decodes correctly without padding', () => {
         decode('ABCDEF'); // Unpadded: QUJDREVG
-    });
-});
-describe('Base64 encoder', () => {
-    it('encodes ArrayBuffers correctly', async () => {
-        const buffer1 = new Uint8Array([0]);
-        assert.strictEqual(await Common.Base64.encode(buffer1.buffer), 'AA==');
-        const buffer2 = new Uint8Array([0, 1]);
-        assert.strictEqual(await Common.Base64.encode(buffer2.buffer), 'AAE=');
-        const buffer3 = new Uint8Array([0, 1, 2]);
-        assert.strictEqual(await Common.Base64.encode(buffer3.buffer), 'AAEC');
     });
 });
 //# sourceMappingURL=Base64.test.js.map

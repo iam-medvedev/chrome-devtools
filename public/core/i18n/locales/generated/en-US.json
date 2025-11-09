@@ -107,6 +107,9 @@
   "core/common/Revealer.ts | networkPanel": {
     "message": "Network panel"
   },
+  "core/common/Revealer.ts | requestConditionsDrawer": {
+    "message": "Request conditions drawer"
+  },
   "core/common/Revealer.ts | securityPanel": {
     "message": "Security panel"
   },
@@ -1205,6 +1208,30 @@
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "Undock into separate window"
   },
+  "entrypoints/node_app/app/NodeConnectionsPanel.ts | addConnection": {
+    "message": "Add connection"
+  },
+  "entrypoints/node_app/app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+    "message": "Network address (e.g. localhost:9229)"
+  },
+  "entrypoints/node_app/app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+    "message": "No connections specified"
+  },
+  "entrypoints/node_app/app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+    "message": "Node.js debugging guide"
+  },
+  "entrypoints/node_app/app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+    "message": "Specify network endpoint and DevTools will connect to it automatically. Read {PH1} to learn more."
+  },
+  "entrypoints/node_app/app/NodeMain.ts | main": {
+    "message": "Main"
+  },
+  "entrypoints/node_app/app/NodeMain.ts | nodejsS": {
+    "message": "Node.js: {PH1}"
+  },
+  "entrypoints/node_app/app/NodeMain.ts | NodejsTitleS": {
+    "message": "DevTools - Node.js: {PH1}"
+  },
   "entrypoints/node_app/node_app.ts | connection": {
     "message": "Connection"
   },
@@ -1219,30 +1246,6 @@
   },
   "entrypoints/node_app/node_app.ts | showNode": {
     "message": "Show Node"
-  },
-  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
-    "message": "Add connection"
-  },
-  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
-    "message": "Network address (e.g. localhost:9229)"
-  },
-  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
-    "message": "No connections specified"
-  },
-  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
-    "message": "Node.js debugging guide"
-  },
-  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
-    "message": "Specify network endpoint and DevTools will connect to it automatically. Read {PH1} to learn more."
-  },
-  "entrypoints/node_app/NodeMain.ts | main": {
-    "message": "Main"
-  },
-  "entrypoints/node_app/NodeMain.ts | nodejsS": {
-    "message": "Node.js: {PH1}"
-  },
-  "entrypoints/node_app/NodeMain.ts | NodejsTitleS": {
-    "message": "DevTools - Node.js: {PH1}"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "Main"
@@ -1414,6 +1417,9 @@
   },
   "generated/Deprecation.ts | XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload": {
     "message": "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/."
+  },
+  "generated/Deprecation.ts | XSLT": {
+    "message": "XSLTProcessor and XSLT Processing Instructions have been deprecated by all browsers. These features will be removed from this browser soon."
   },
   "models/ai_assistance/AiUtils.ts | ageRestricted": {
     "message": "This feature is only available to users who are 18 years of age or older."
@@ -2256,7 +2262,7 @@
     "message": "Console time"
   },
   "models/trace/Styles.ts | cppGc": {
-    "message": "CPP GC"
+    "message": "C++ GC"
   },
   "models/trace/Styles.ts | createWebsocket": {
     "message": "Create WebSocket"
@@ -3065,31 +3071,31 @@
   "panels/ai_assistance/components/ChatView.ts | learnAbout": {
     "message": "Learn about AI in DevTools"
   },
-  "panels/ai_assistance/components/ChatView.ts | notAvailableInIncognitoMode": {
-    "message": "AI assistance is not available in Incognito mode or Guest mode"
-  },
-  "panels/ai_assistance/components/ChatView.ts | notLoggedIn": {
-    "message": "This feature is only available when you are signed into Chrome with your Google account"
-  },
-  "panels/ai_assistance/components/ChatView.ts | offline": {
-    "message": "Check your internet connection and try again"
-  },
   "panels/ai_assistance/components/ChatView.ts | revealContextDescription": {
     "message": "Reveal the selected context item in DevTools"
   },
-  "panels/ai_assistance/components/ChatView.ts | settingsLink": {
+  "panels/ai_assistance/components/DisabledWidget.ts | notAvailableInIncognitoMode": {
+    "message": "AI assistance is not available in Incognito mode or Guest mode"
+  },
+  "panels/ai_assistance/components/DisabledWidget.ts | notLoggedIn": {
+    "message": "This feature is only available when you are signed into Chrome with your Google account"
+  },
+  "panels/ai_assistance/components/DisabledWidget.ts | offline": {
+    "message": "Check your internet connection and try again"
+  },
+  "panels/ai_assistance/components/DisabledWidget.ts | settingsLink": {
     "message": "AI assistance in Settings"
   },
-  "panels/ai_assistance/components/ChatView.ts | turnOnForStyles": {
+  "panels/ai_assistance/components/DisabledWidget.ts | turnOnForStyles": {
     "message": "Turn on {PH1} to get help with understanding CSS styles"
   },
-  "panels/ai_assistance/components/ChatView.ts | turnOnForStylesAndRequests": {
+  "panels/ai_assistance/components/DisabledWidget.ts | turnOnForStylesAndRequests": {
     "message": "Turn on {PH1} to get help with styles and network requests"
   },
-  "panels/ai_assistance/components/ChatView.ts | turnOnForStylesRequestsAndFiles": {
+  "panels/ai_assistance/components/DisabledWidget.ts | turnOnForStylesRequestsAndFiles": {
     "message": "Turn on {PH1} to get help with styles, network requests, and files"
   },
-  "panels/ai_assistance/components/ChatView.ts | turnOnForStylesRequestsPerformanceAndFiles": {
+  "panels/ai_assistance/components/DisabledWidget.ts | turnOnForStylesRequestsPerformanceAndFiles": {
     "message": "Turn on {PH1} to get help with styles, network requests, performance, and files"
   },
   "panels/animation/animation-meta.ts | animations": {
@@ -10407,7 +10413,7 @@
     "message": "{PH1} blocked"
   },
   "panels/network/RequestConditionsDrawer.ts | decreasePriority": {
-    "message": "Decrease priority"
+    "message": "Move down (higher patterns are checked first)"
   },
   "panels/network/RequestConditionsDrawer.ts | enableBlockingAndThrottling": {
     "message": "Enable blocking and throttling"
@@ -10416,7 +10422,7 @@
     "message": "Enable network request blocking"
   },
   "panels/network/RequestConditionsDrawer.ts | increasePriority": {
-    "message": "Increase priority"
+    "message": "Move up (higher patterns are checked first)"
   },
   "panels/network/RequestConditionsDrawer.ts | itemDeleted": {
     "message": "Item successfully deleted"

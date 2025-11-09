@@ -949,6 +949,9 @@ function handleEvent6(event) {
     storeTraceEventWithRequestId(event.args.data.requestId, "resourceMarkAsCached", event);
     return;
   }
+  if (Types7.Events.isPreloadRenderBlockingStatusChangeEvent(event)) {
+    storeTraceEventWithRequestId(event.args.data.requestId, "preloadRenderBlockingStatusChange", [event]);
+  }
   if (Types7.Events.isWebSocketCreate(event) || Types7.Events.isWebSocketInfo(event) || Types7.Events.isWebSocketTransfer(event)) {
     const identifier = event.args.data.identifier;
     if (!webSocketData.has(identifier)) {
@@ -1099,11 +1102,13 @@ async function finalize6() {
     const proxyNegotiation = timing ? Types7.Timing.Micro((timing.proxyEnd - timing.proxyStart) * MILLISECONDS_TO_MICROSECONDS) : Types7.Timing.Micro(0);
     const requestSent = timing ? Types7.Timing.Micro((timing.sendEnd - timing.sendStart) * MILLISECONDS_TO_MICROSECONDS) : Types7.Timing.Micro(0);
     const initialConnection = timing ? Types7.Timing.Micro((timing.connectEnd - timing.connectStart) * MILLISECONDS_TO_MICROSECONDS) : Types7.Timing.Micro(0);
-    const { frame, url, renderBlocking } = finalSendRequest.args.data;
+    const { frame, url, renderBlocking: sendRequestIsRenderBlocking } = finalSendRequest.args.data;
     const { encodedDataLength, decodedBodyLength } = request.resourceFinish ? request.resourceFinish.args.data : { encodedDataLength: 0, decodedBodyLength: 0 };
     const parsedUrl = new URL(url);
     const isHttps = parsedUrl.protocol === "https:";
     const requestingFrameUrl = Helpers5.Trace.activeURLForFrameAtTime(frame, finalSendRequest.ts, rendererProcessesByFrame) || "";
+    const preloadRenderBlockingStatusChange = request.preloadRenderBlockingStatusChange?.at(-1)?.args.data.renderBlocking;
+    const isRenderBlocking = preloadRenderBlockingStatusChange ?? sendRequestIsRenderBlocking ?? "non_blocking";
     const networkEvent = Helpers5.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
       rawSourceEvent: finalSendRequest,
       args: {
@@ -1143,8 +1148,7 @@ async function finalize6() {
           initialPriority,
           protocol: request.receiveResponse?.args.data.protocol ?? "unknown",
           redirects,
-          // In the event the property isn't set, assume non-blocking.
-          renderBlocking: renderBlocking ?? "non_blocking",
+          renderBlocking: isRenderBlocking,
           requestId,
           requestingFrameUrl,
           requestMethod: finalSendRequest.args.data.requestMethod,

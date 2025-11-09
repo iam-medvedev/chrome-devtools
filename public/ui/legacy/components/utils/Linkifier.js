@@ -283,6 +283,46 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         };
         return this.maybeLinkifyScriptLocation(target, String(callFrame.scriptId), callFrame.url, callFrame.lineNumber, linkifyOptions);
     }
+    maybeLinkifyStackTraceFrame(target, frame, options) {
+        let fallbackAnchor = null;
+        const linkifyURLOptions = {
+            ...options,
+            lineNumber: frame.line,
+            maxLength: this.maxLength,
+            columnNumber: frame.column,
+            showColumnNumber: Boolean(options?.showColumnNumber),
+            className: options?.className,
+            tabStop: options?.tabStop,
+            inlineFrameIndex: options?.inlineFrameIndex ?? 0,
+            userMetric: options?.userMetric,
+            jslogContext: options?.jslogContext || 'script-location',
+            omitOrigin: options?.omitOrigin,
+        };
+        const { className = '' } = linkifyURLOptions;
+        if (frame.url) {
+            fallbackAnchor = Linkifier.linkifyURL(frame.url, linkifyURLOptions);
+        }
+        if (!target || target.isDisposed()) {
+            return fallbackAnchor;
+        }
+        const createLinkOptions = {
+            tabStop: options?.tabStop,
+            jslogContext: 'script-location',
+        };
+        const { link, linkInfo } = Linkifier.createLink(fallbackAnchor?.textContent ? fallbackAnchor.textContent : '', className, createLinkOptions);
+        linkInfo.enableDecorator = this.useLinkDecorator;
+        linkInfo.fallback = fallbackAnchor;
+        linkInfo.userMetric = options?.userMetric;
+        const linkDisplayOptions = {
+            showColumnNumber: linkifyURLOptions.showColumnNumber ?? false,
+            revealBreakpoint: options?.revealBreakpoint,
+        };
+        const uiLocation = frame.uiSourceCode?.uiLocation(frame.line, frame.column) ?? null;
+        this.updateAnchorFromUILocation(link, linkDisplayOptions, uiLocation);
+        const anchors = this.anchorsByTarget.get(target);
+        anchors.push(link);
+        return link;
+    }
     linkifyStackTraceTopFrame(target, stackTrace) {
         console.assert(stackTrace.callFrames.length > 0);
         const { url, lineNumber, columnNumber } = stackTrace.callFrames[0];
@@ -379,15 +419,23 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             anchor.removeAttribute('role');
             return;
         }
+        this.#anchorUpdaters.set(anchor, function (anchor) {
+            void this.updateAnchor(anchor, options, liveLocation);
+        });
+        this.updateAnchorFromUILocation(anchor, options, uiLocation);
+    }
+    updateAnchorFromUILocation(anchor, options, uiLocation) {
+        if (!uiLocation) {
+            anchor.classList.add('invalid-link');
+            anchor.removeAttribute('role');
+            return;
+        }
         Linkifier.bindUILocation(anchor, uiLocation);
         if (options.revealBreakpoint) {
             Linkifier.bindBreakpoint(anchor, uiLocation);
         }
         const text = uiLocation.linkText(true /* skipTrim */, options.showColumnNumber);
         Linkifier.setTrimmedText(anchor, text, this.maxLength);
-        this.#anchorUpdaters.set(anchor, function (anchor) {
-            void this.updateAnchor(anchor, options, liveLocation);
-        });
         let titleText = uiLocation.uiSourceCode.url();
         if (uiLocation.uiSourceCode.mimeType() === 'application/wasm') {
             // For WebAssembly locations, we follow the conventions described in

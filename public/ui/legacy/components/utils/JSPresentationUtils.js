@@ -36,6 +36,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
+import * as StackTrace from '../../../../models/stack_trace/stack_trace.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
@@ -81,7 +82,8 @@ function populateContextMenu(link, event) {
     contextMenu.appendApplicableItems(event);
     void contextMenu.show();
 }
-export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, updateCallback, showColumnNumber) {
+// TODO(crbug.com/456517732): remove when all usages of runtimeStackTrace are migrated.
+export function buildStackTraceRowsForLegacyRuntimeStackTrace(stackTrace, target, linkifier, tabStops, updateCallback, showColumnNumber) {
     const stackTraceRows = [];
     if (updateCallback) {
         const throttler = new Common.Throttler.Throttler(100);
@@ -127,6 +129,50 @@ export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, upd
             buildStackTraceRowsHelper(asyncStackTrace, previousCallFrames);
         }
         previousCallFrames = asyncStackTrace.callFrames;
+    }
+    return stackTraceRows;
+}
+export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, showColumnNumber) {
+    const stackTraceRows = [];
+    function buildStackTraceRowsHelper(fragment, previousFragment = undefined) {
+        let asyncRow = null;
+        const isAsync = 'description' in fragment;
+        if (previousFragment && isAsync) {
+            asyncRow = {
+                asyncDescription: UI.UIUtils.asyncStackTraceLabel(fragment.description, previousFragment.frames.map(f => ({ functionName: f.name ?? '' }))),
+            };
+            stackTraceRows.push(asyncRow);
+        }
+        let previousStackFrameWasBreakpointCondition = false;
+        for (const frame of fragment.frames) {
+            const functionName = UI.UIUtils.beautifyFunctionName(frame.name ?? '');
+            const link = linkifier.maybeLinkifyStackTraceFrame(target, frame, {
+                showColumnNumber,
+                tabStop: Boolean(tabStops),
+                inlineFrameIndex: 0,
+                revealBreakpoint: previousStackFrameWasBreakpointCondition,
+            });
+            if (link) {
+                link.setAttribute('jslog', `${VisualLogging.link('stack-trace').track({ click: true })}`);
+                link.addEventListener('contextmenu', populateContextMenu.bind(null, link));
+                if (!link.textContent) {
+                    link.textContent = i18nString(UIStrings.unknownSource);
+                }
+            }
+            stackTraceRows.push({ functionName, link });
+            previousStackFrameWasBreakpointCondition = [
+                SDK.DebuggerModel.COND_BREAKPOINT_SOURCE_URL,
+                SDK.DebuggerModel.LOGPOINT_SOURCE_URL,
+            ].includes(frame.url ?? '');
+        }
+    }
+    buildStackTraceRowsHelper(stackTrace.syncFragment);
+    let previousFragment = stackTrace.syncFragment;
+    for (const asyncFragment of stackTrace.asyncFragments) {
+        if (asyncFragment.frames.length) {
+            buildStackTraceRowsHelper(asyncFragment, previousFragment);
+        }
+        previousFragment = asyncFragment;
     }
     return stackTraceRows;
 }
@@ -209,15 +255,22 @@ export class StackTracePreviewContent extends UI.Widget.Widget {
         Platform.DOMUtilities.appendStyle(this.element.shadowRoot, jsUtilsStyles);
         this.#table = this.contentElement.createChild('table', 'stack-preview-container');
         this.#table.classList.toggle('width-constrained', this.#options.widthConstrained ?? false);
+        this.#options.stackTrace?.addEventListener("UPDATED" /* StackTrace.StackTrace.Events.UPDATED */, this.performUpdate.bind(this));
         this.performUpdate();
     }
     performUpdate() {
         if (!this.#linkifier) {
             return;
         }
-        const { stackTrace, tabStops } = this.#options;
+        const { runtimeStackTrace, stackTrace, tabStops } = this.#options;
+        if (stackTrace) {
+            const stackTraceRows = buildStackTraceRows(stackTrace, this.#target ?? null, this.#linkifier, tabStops, this.#options.showColumnNumber);
+            this.#links = renderStackTraceTable(this.#table, this.element, stackTraceRows);
+            return;
+        }
+        // TODO(crbug.com/456517732): remove when all usages of runtimeStackTrace are migrated.
         const updateCallback = renderStackTraceTable.bind(null, this.#table, this.element);
-        const stackTraceRows = buildStackTraceRows(stackTrace ?? { callFrames: [] }, this.#target ?? null, this.#linkifier, tabStops, updateCallback, this.#options.showColumnNumber);
+        const stackTraceRows = buildStackTraceRowsForLegacyRuntimeStackTrace(runtimeStackTrace ?? { callFrames: [] }, this.#target ?? null, this.#linkifier, tabStops, updateCallback, this.#options.showColumnNumber);
         this.#links = renderStackTraceTable(this.#table, this.element, stackTraceRows);
     }
     get linkElements() {

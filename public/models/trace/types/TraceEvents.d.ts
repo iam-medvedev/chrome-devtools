@@ -781,7 +781,7 @@ export declare const NO_NAVIGATION = "NO_NAVIGATION";
  * portion of the trace for which we don't have any navigation event for (as it happeneded prior
  * to the trace start).
  */
-export type NavigationId = string | typeof NO_NAVIGATION;
+export type NavigationId = string;
 /**
  * This is a synthetic Layout shift cluster. The rawSourceEvent is the worst layout shift event
  * in the cluster.
@@ -2262,7 +2262,8 @@ export declare const enum Name {
     ANIMATION_FRAME_PRESENTATION = "AnimationFrame::Presentation",
     SYNTHETIC_NETWORK_REQUEST = "SyntheticNetworkRequest",
     USER_TIMING_MEASURE = "UserTiming::Measure",
-    LINK_PRECONNECT = "LinkPreconnect"
+    LINK_PRECONNECT = "LinkPreconnect",
+    PRELOAD_RENDER_BLOCKING_STATUS_CHANGE = "PreloadRenderBlockingStatusChange"
 }
 /**
  * NOT AN EXHAUSTIVE LIST: just some categories we use and refer
@@ -2367,4 +2368,16 @@ export interface RundownScriptStub extends Event {
     };
 }
 export declare function isAnyScriptSourceEvent(event: Event): event is RundownScriptSource | RundownScriptSourceLarge | RundownScriptStub;
+export interface PreloadRenderBlockingStatusChangeEvent extends Instant {
+    name: Name.PRELOAD_RENDER_BLOCKING_STATUS_CHANGE;
+    cat: 'devtools.timeline';
+    args: Args & {
+        data: {
+            requestId: string;
+            url: string;
+            renderBlocking?: RenderBlocking;
+        };
+    };
+}
+export declare function isPreloadRenderBlockingStatusChangeEvent(event: Event): event is PreloadRenderBlockingStatusChangeEvent;
 export {};

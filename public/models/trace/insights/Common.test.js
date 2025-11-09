@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getFirstOrError, processTrace } from '../../../testing/InsightHelpers.js';
+import { getFirstOrError, getInsightSetOrError, processTrace } from '../../../testing/InsightHelpers.js';
 import { microsecondsTraceWindow } from '../../../testing/TraceHelpers.js';
 import * as Insights from './insights.js';
 const { calculateMetricWeightsForSorting, estimateCompressedContentSize } = Insights.Common;
@@ -14,14 +14,7 @@ describeWithEnvironment('Common', function () {
                 throw new Error('missing metadata');
             }
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
-            if (!firstNav.args.data?.navigationId) {
-                throw new Error('expected navigationId');
-            }
-            const insightSetKey = firstNav.args.data.navigationId;
-            const insightSet = insights.get(insightSetKey);
-            if (!insightSet) {
-                throw new Error('missing insight set');
-            }
+            const insightSet = getInsightSetOrError(insights, firstNav);
             // Clone so it may be modified.
             const clonedMetadata = structuredClone(metadata);
             return { insightSet, metadata: clonedMetadata };
