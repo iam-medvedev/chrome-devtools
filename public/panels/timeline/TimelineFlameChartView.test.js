@@ -116,7 +116,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
             });
             assert.isOk(networkRequest);
             const selection = Timeline.TimelineSelection.selectionFromEvent(networkRequest);
-            flameChartView.setSelectionAndReveal(selection);
+            await flameChartView.setSelectionAndReveal(selection);
             await raf();
             await assertScreenshot('timeline/timeline_with_network_selection.png');
         });
@@ -150,7 +150,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
             });
             assert.isOk(event);
             const selection = Timeline.TimelineSelection.selectionFromEvent(event);
-            flameChartView.setSelectionAndReveal(selection);
+            await flameChartView.setSelectionAndReveal(selection);
             await raf();
             await assertScreenshot('timeline/timeline_with_main_thread_selection.png');
         });
@@ -247,6 +247,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         assert.exists(modifications);
         const stub = sinon.stub(modifications, 'createAnnotation');
         flameChartView.getMainDataProvider().dispatchEventToListeners("EntryLabelAnnotationAdded" /* Timeline.TimelineFlameChartDataProvider.Events.ENTRY_LABEL_ANNOTATION_ADDED */, { entryIndex: 0, withLinkCreationButton: false });
+        await doubleRaf();
         sinon.assert.calledOnce(stub);
     });
     it('fires an event when an entry label overlay is clicked', async function () {
@@ -938,7 +939,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
             assert.isOk(task);
             UI.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, null);
             const selection = Timeline.TimelineSelection.selectionFromEvent(task);
-            flameChartView.setSelectionAndReveal(selection);
+            await flameChartView.setSelectionAndReveal(selection);
             await doubleRaf(); // the updating of the AI Call Tree is done in a rAF to not block.
             const flavor = UI.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
             assert.instanceOf(flavor, AIAssistance.AIContext.AgentFocus);

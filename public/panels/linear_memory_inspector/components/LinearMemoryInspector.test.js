@@ -1,11 +1,63 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 const LinearMemoryInspector = LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector;
+describeWithLocale('LinearMemoryInspector', () => {
+    it('renders the inspector', async () => {
+        const target = document.createElement('div');
+        target.style.width = 'var(--sys-size-40)';
+        target.style.height = 'var(--sys-size-30)';
+        renderElementIntoDOM(target);
+        const array = [];
+        const string = 'Hello this is a string from the memory buffer!';
+        for (let i = 0; i < string.length; ++i) {
+            array.push(string.charCodeAt(i));
+        }
+        for (let i = -1000; i < 1000; ++i) {
+            array.push(i);
+        }
+        const memory = new Uint8Array(array);
+        const valueTypes = new Set([
+            "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
+            "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
+            "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */
+        ]);
+        const valueTypeModes = new Map();
+        LinearMemoryInspectorComponents.LinearMemoryInspector.DEFAULT_VIEW({
+            memory: new Uint8Array(memory),
+            address: 0,
+            memoryOffset: 0,
+            valueTypes,
+            outerMemoryLength: memory.length,
+            valueTypeModes,
+            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
+            highlightInfo: undefined,
+            hideValueInspector: false,
+            currentNavigatorMode: "Submitted" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.SUBMITTED */,
+            currentNavigatorAddressLine: '0',
+            canGoBackInHistory: false,
+            canGoForwardInHistory: false,
+            onRefreshRequest: () => { },
+            onAddressChange: () => { },
+            onNavigatePage: () => { },
+            onNavigateHistory: () => false,
+            onJumpToAddress: () => { },
+            onDeleteMemoryHighlight: () => { },
+            onByteSelected: () => { },
+            onResize: () => { },
+            onValueTypeToggled: () => { },
+            onValueTypeModeChanged: () => { },
+            onEndiannessChanged: () => { },
+            memorySlice: new Uint8Array(memory),
+            viewerStart: 0,
+        }, {}, target);
+        await assertScreenshot('linear_memory_inspector/lmi.png');
+    });
+});
 describeWithLocale('LinearMemoryInspector', () => {
     let component;
     let view;

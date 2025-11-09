@@ -13,8 +13,8 @@ interface ViewProps {
 export declare const DEFAULT_VIEW: (input: ViewProps, _output: Record<string, unknown>, target: HTMLElement) => void;
 export type View = typeof DEFAULT_VIEW;
 export declare class ExploreWidget extends UI.Widget.Widget {
-    view: View;
-    constructor(element?: HTMLElement, view?: View);
+    #private;
+    constructor(element?: HTMLElement, view?: (input: ViewProps, _output: Record<string, unknown>, target: HTMLElement) => void);
     wasShown(): void;
     performUpdate(): Promise<void> | void;
 }

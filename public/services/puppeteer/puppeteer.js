@@ -10,57 +10,41 @@ __export(PuppeteerConnection_exports, {
   PuppeteerConnectionHelper: () => PuppeteerConnectionHelper
 });
 import * as puppeteer from "./../../third_party/puppeteer/puppeteer.js";
-var Transport = class {
+var PuppeteerConnectionAdapter = class extends puppeteer.Connection {
   #connection;
-  constructor(connection) {
+  #sessionId;
+  constructor(connection, sessionId) {
+    super("", { close: () => void 0 });
     this.#connection = connection;
+    this.#connection.observe(this);
+    this.#sessionId = sessionId;
   }
-  send(data) {
-    this.#connection.sendRawMessage(data);
+  // eslint-disable-next-line @devtools/no-underscored-properties
+  _rawSend(_callbacks, method, params, sessionId, _options) {
+    return this.#connection.send(method, params, sessionId ?? this.#sessionId).then((response) => "result" in response ? response.result : {});
   }
-  close() {
-    void this.#connection.disconnect();
-  }
-  set onmessage(cb) {
-    this.#connection.setOnMessage((message) => {
-      const data = message;
-      if (!data.sessionId) {
-        return;
-      }
-      return cb(JSON.stringify({
-        ...data,
-        // Puppeteer is expecting to use the default session, but we give it a non-default session in #connection.
-        // Replace that sessionId with undefined so Puppeteer treats it as default.
-        sessionId: data.sessionId === this.#connection.getSessionId() ? void 0 : data.sessionId
-      }));
-    });
-  }
-  set onclose(cb) {
-    const prev = this.#connection.getOnDisconnect();
-    this.#connection.setOnDisconnect((reason) => {
-      if (prev) {
-        prev(reason);
-      }
-      if (cb) {
-        cb();
-      }
-    });
-  }
-};
-var PuppeteerConnection = class extends puppeteer.Connection {
-  async onMessage(message) {
-    const msgObj = JSON.parse(message);
-    if (msgObj.sessionId && !this._sessions.has(msgObj.sessionId)) {
+  onEvent(event) {
+    const { sessionId } = event;
+    if (sessionId === this.#sessionId) {
+      event.sessionId = void 0;
+    } else if (!sessionId || !this._sessions.has(sessionId)) {
       return;
     }
-    void super.onMessage(message);
+    void super.onMessage(JSON.stringify(event));
+  }
+  onDisconnect() {
+    this.dispose();
+  }
+  dispose() {
+    super.dispose();
+    this.#connection.unobserve(this);
+    void this.#connection.send("Target.detachFromTarget", { sessionId: this.#sessionId }, this.#sessionId);
   }
 };
 var PuppeteerConnectionHelper = class {
   static async connectPuppeteerToConnectionViaTab(options) {
-    const { connection, rootTargetId, isPageTargetCallback } = options;
-    const transport = new Transport(connection);
-    const puppeteerConnection = new PuppeteerConnection("", transport);
+    const { connection, targetId, sessionId, isPageTargetCallback } = options;
+    const puppeteerConnection = new PuppeteerConnectionAdapter(connection, sessionId);
     const browserPromise = puppeteer.Browser._create(
       puppeteerConnection,
       [],
@@ -76,7 +60,7 @@ var PuppeteerConnectionHelper = class {
     );
     const [, browser] = await Promise.all([
       puppeteerConnection._createSession(
-        { targetId: rootTargetId },
+        { targetId },
         /* emulateAutoAttach= */
         true
       ),

@@ -1,7 +1,7 @@
+import * as InspectorBackendCommands from '../../generated/InspectorBackendCommands.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Platform from '../platform/platform.js';
-import { ConnectionTransport } from './ConnectionTransport.js';
-export declare const DevToolsStubErrorCode = -32015;
+import { type CDPConnection, type CDPConnectionObserver, type CDPEvent, type Event } from './CDPConnection.js';
 type MessageParams = Record<string, any>;
 type ProtocolDomainName = ProtocolProxyApi.ProtocolDomainName;
 export interface MessageError {
@@ -34,20 +34,11 @@ export declare const splitQualifiedName: (string: QualifiedName) => [string, Unq
 export declare const qualifyName: (domain: string, name: UnqualifiedName) => QualifiedName;
 type EventParameterNames = Map<QualifiedName, string[]>;
 type ReadonlyEventParameterNames = ReadonlyMap<QualifiedName, string[]>;
-interface CommandParameter {
-    name: string;
-    type: string;
-    optional: boolean;
-    description: string;
-}
-interface ResponseWithError {
-    error: MessageError | null;
-    result: Object | null;
-}
-export declare class InspectorBackend {
+type CommandParameter = InspectorBackendCommands.CommandParameter;
+export declare class InspectorBackend implements InspectorBackendCommands.InspectorBackendAPI {
     #private;
     readonly agentPrototypes: Map<keyof ProtocolProxyApi.ProtocolApi, AgentPrototype>;
-    readonly typeMap: Map<QualifiedName, CommandParameter[]>;
+    readonly typeMap: Map<QualifiedName, InspectorBackendCommands.CommandParameter[]>;
     readonly enumMap: Map<QualifiedName, Record<string, string>>;
     constructor();
     private getOrCreateEventParameterNamesForDomain;
@@ -97,29 +88,22 @@ export declare const test: {
      */
     onMessageReceived: ((message: Object) => void) | null;
 };
-export declare class SessionRouter {
+export declare class SessionRouter implements CDPConnectionObserver {
     #private;
-    constructor(connection: ConnectionTransport);
-    registerSession(target: TargetBase, sessionId: string, proxyConnection?: ConnectionTransport | null): void;
+    constructor(connection: CDPConnection);
+    registerSession(target: TargetBase, sessionId: string): void;
     unregisterSession(sessionId: string): void;
-    private nextMessageId;
-    connection(): ConnectionTransport;
-    sendMessage(sessionId: string, domain: string, method: QualifiedName, params: Object | null): Promise<ResponseWithError>;
-    private sendRawMessageForTesting;
-    private onMessage;
-    private hasOutstandingNonLongPollingRequests;
-    private deprecatedRunAfterPendingDispatches;
-    private executeAfterPendingDispatches;
+    onDisconnect(reason: string): void;
+    onEvent<T extends Event>(event: CDPEvent<T>): void;
+    get connection(): CDPConnection;
 }
 export declare class TargetBase {
     #private;
-    needsNodeJSPatching: boolean;
     readonly sessionId: string;
-    constructor(needsNodeJSPatching: boolean, parentTarget: TargetBase | null, sessionId: string, connection: ConnectionTransport | null);
+    constructor(parentTarget: TargetBase | null, sessionId: string, connection: CDPConnection | null);
     dispatch(eventMessage: EventMessage): void;
     dispose(_reason: string): void;
     isDisposed(): boolean;
-    markAsNodeJSForTest(): void;
     router(): SessionRouter | null;
     /**
      * Make sure that `Domain` is only ever instantiated with one protocol domain
@@ -207,7 +191,6 @@ export declare class TargetBase {
     registerTracingDispatcher(dispatcher: ProtocolProxyApi.TracingDispatcher): void;
     registerWebAudioDispatcher(dispatcher: ProtocolProxyApi.WebAudioDispatcher): void;
     registerWebAuthnDispatcher(dispatcher: ProtocolProxyApi.WebAuthnDispatcher): void;
-    getNeedsNodeJSPatching(): boolean;
 }
 /**
  * This is a class that serves as the prototype for a domains #agents (every target

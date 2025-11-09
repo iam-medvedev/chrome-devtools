@@ -42,11 +42,6 @@ export interface ModelChatMessage {
     rpcId?: Host.AidaClient.RpcGlobalId;
 }
 export type ChatMessage = UserChatMessage | ModelChatMessage;
-export declare const enum State {
-    DISABLED_VIEW = "disabled-view",
-    CHAT_VIEW = "chat-view",
-    EXPLORE_VIEW = "explore-view"
-}
 export interface Props {
     onTextSubmit: (text: string, imageInput?: Host.AidaClient.Part, multimodalInputType?: AiAssistanceModel.AiAgent.MultimodalInputType) => void;
     onInspectElementClick: () => void;
@@ -61,7 +56,6 @@ export interface Props {
     onLoadImage?: (file: File) => Promise<void>;
     changeManager: AiAssistanceModel.ChangeManager.ChangeManager;
     inspectElementToggled: boolean;
-    state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
     messages: ChatMessage[];
     selectedContext: AiAssistanceModel.AiAgent.ConversationContext<unknown> | null;

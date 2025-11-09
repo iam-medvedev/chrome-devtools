@@ -1,30 +1,19 @@
 // gen/front_end/entrypoints/lighthouse_worker/LighthouseWorkerService.js
+import * as ProtocolClient from "./../../core/protocol_client/protocol_client.js";
 import * as Root from "./../../core/root/root.js";
 import * as PuppeteerService from "./../../services/puppeteer/puppeteer.js";
 import * as ThirdPartyWeb from "./../../third_party/third-party-web/third-party-web.js";
 function disableLoggingForTest() {
   console.log = () => void 0;
 }
-var ConnectionProxy = class {
-  sessionId;
-  onMessage;
-  onDisconnect;
-  constructor(sessionId) {
-    this.sessionId = sessionId;
-    this.onMessage = null;
-    this.onDisconnect = null;
-  }
+var WorkerConnectionTransport = class {
+  onMessage = null;
+  onDisconnect = null;
   setOnMessage(onMessage) {
     this.onMessage = onMessage;
   }
   setOnDisconnect(onDisconnect) {
     this.onDisconnect = onDisconnect;
-  }
-  getOnDisconnect() {
-    return this.onDisconnect;
-  }
-  getSessionId() {
-    return this.sessionId;
   }
   sendRawMessage(message) {
     notifyFrontendViaWorkerMessage("sendProtocolMessage", { message });
@@ -35,7 +24,7 @@ var ConnectionProxy = class {
     this.onMessage = null;
   }
 };
-var cdpConnection;
+var cdpTransport;
 var endTimespan;
 async function invokeLH(action, args) {
   if (Root.Runtime.Runtime.queryParam("isUnderTest")) {
@@ -64,10 +53,12 @@ async function invokeLH(action, args) {
     const url = args.url;
     self.thirdPartyWeb.provideThirdPartyWeb(ThirdPartyWeb.ThirdPartyWeb);
     const { rootTargetId, mainSessionId } = args;
-    cdpConnection = new ConnectionProxy(mainSessionId);
+    cdpTransport = new WorkerConnectionTransport();
+    const connection = new ProtocolClient.DevToolsCDPConnection.DevToolsCDPConnection(cdpTransport);
     puppeteerHandle = await PuppeteerService.PuppeteerConnection.PuppeteerConnectionHelper.connectPuppeteerToConnectionViaTab({
-      connection: cdpConnection,
-      rootTargetId,
+      connection,
+      targetId: rootTargetId,
+      sessionId: mainSessionId,
       // Lighthouse can only audit normal pages.
       isPageTargetCallback: (targetInfo) => targetInfo.type === "page"
     });
@@ -141,7 +132,7 @@ async function onFrontendMessage(event) {
       break;
     }
     case "dispatchProtocolMessage": {
-      cdpConnection?.onMessage?.(messageFromFrontend.args.message);
+      cdpTransport?.onMessage?.(messageFromFrontend.args.message);
       break;
     }
     default: {

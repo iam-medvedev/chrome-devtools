@@ -98,6 +98,9 @@ export function handleEvent(event) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'resourceMarkAsCached', event);
         return;
     }
+    if (Types.Events.isPreloadRenderBlockingStatusChangeEvent(event)) {
+        storeTraceEventWithRequestId(event.args.data.requestId, 'preloadRenderBlockingStatusChange', [event]);
+    }
     if (Types.Events.isWebSocketCreate(event) || Types.Events.isWebSocketInfo(event) ||
         Types.Events.isWebSocketTransfer(event)) {
         const identifier = event.args.data.identifier;
@@ -387,11 +390,18 @@ export async function finalize() {
             Types.Timing.Micro((timing.connectEnd - timing.connectStart) * MILLISECONDS_TO_MICROSECONDS) :
             Types.Timing.Micro(0);
         // Finally get some of the general data from the trace events.
-        const { frame, url, renderBlocking } = finalSendRequest.args.data;
+        const { frame, url, renderBlocking: sendRequestIsRenderBlocking } = finalSendRequest.args.data;
         const { encodedDataLength, decodedBodyLength } = request.resourceFinish ? request.resourceFinish.args.data : { encodedDataLength: 0, decodedBodyLength: 0 };
         const parsedUrl = new URL(url);
         const isHttps = parsedUrl.protocol === 'https:';
         const requestingFrameUrl = Helpers.Trace.activeURLForFrameAtTime(frame, finalSendRequest.ts, rendererProcessesByFrame) || '';
+        // A resource that is preloaded (and not marked as render blocking) can
+        // become render blocked later via a PreloadRenderBlockingStatusChange. In
+        // this case, we take the render blocking value of the last
+        // PreloadRenderBlockingStatusChange for this request.
+        const preloadRenderBlockingStatusChange = request.preloadRenderBlockingStatusChange?.at(-1)?.args.data.renderBlocking;
+        // In the event the property isn't set, assume non-blocking.
+        const isRenderBlocking = preloadRenderBlockingStatusChange ?? sendRequestIsRenderBlocking ?? 'non_blocking';
         // Construct a synthetic trace event for this network request.
         const networkEvent = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
             rawSourceEvent: finalSendRequest,
@@ -432,8 +442,7 @@ export async function finalize() {
                     initialPriority,
                     protocol: request.receiveResponse?.args.data.protocol ?? 'unknown',
                     redirects,
-                    // In the event the property isn't set, assume non-blocking.
-                    renderBlocking: renderBlocking ?? 'non_blocking',
+                    renderBlocking: isRenderBlocking,
                     requestId,
                     requestingFrameUrl,
                     requestMethod: finalSendRequest.args.data.requestMethod,

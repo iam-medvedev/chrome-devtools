@@ -13,7 +13,15 @@ interface ToolbarViewInput {
     showChatActions: boolean;
     showActiveConversationActions: boolean;
 }
-export type ViewInput = ChatViewProps & ToolbarViewInput;
+export declare const enum ViewState {
+    DISABLED_VIEW = "disabled-view",
+    CHAT_VIEW = "chat-view",
+    EXPLORE_VIEW = "explore-view"
+}
+interface PanelViewProps {
+    state: ViewState;
+}
+export type ViewInput = ChatViewProps & ToolbarViewInput & PanelViewProps;
 export interface PanelViewOutput {
     chatView?: ChatView;
 }

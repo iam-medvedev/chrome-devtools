@@ -140,7 +140,7 @@ const DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
             const isSelected = input.selectedPlaybackRate === playbackRate;
             const textContent = playbackRate ? i18nString(UIStrings.playbackRatePlaceholder, { PH1: playbackRate * 100 }) : i18nString(UIStrings.pause);
             return html `
-            <button class="animation-playback-rate-button" jslog=${VisualLogging.action().context(`animations.playback-rate-${playbackRate * 100}`).track({
+            <button jslog=${VisualLogging.action().context(`animations.playback-rate-${playbackRate * 100}`).track({
                 click: true,
                 keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight',
             })}
@@ -192,6 +192,7 @@ const DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
   `, target, { host: target });
 };
 // clang-format on
+const DEFAULT_DURATION = 100;
 let animationTimelineInstance;
 export class AnimationTimeline extends UI.Widget.VBox {
     #gridWrapper;
@@ -205,7 +206,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
     #clearButton;
     #selectedGroup;
     #renderQueue;
-    #defaultDuration;
     #duration;
     #timelineControlsWidth;
     #nodesMap;
@@ -259,8 +259,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         const timelineHint = this.contentElement.createChild('div', 'animation-timeline-rows-hint');
         const noEffectSelectedPlaceholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noEffectSelected), i18nString(UIStrings.selectAnEffectAboveToInspectAnd));
         noEffectSelectedPlaceholder.show(timelineHint);
-        /** @constant */ this.#defaultDuration = 100;
-        this.#duration = this.#defaultDuration;
+        this.#duration = DEFAULT_DURATION;
         this.#nodesMap = new Map();
         this.#uiAnimations = [];
         this.#groupBuffer = [];
@@ -515,7 +514,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.#nodesMap.clear();
         this.#animationsMap.clear();
         this.#animationsContainer.removeChildren();
-        this.#duration = this.#defaultDuration;
+        this.#duration = DEFAULT_DURATION;
         this.#timelineScrubber.classList.add('hidden');
         this.#gridHeader.classList.remove('scrubber-enabled');
         this.#selectedGroup = null;

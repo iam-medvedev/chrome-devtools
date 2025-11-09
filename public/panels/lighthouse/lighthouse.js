@@ -1053,11 +1053,12 @@ var lastId = 1;
 var ProtocolService = class {
   mainSessionId;
   rootTargetId;
-  parallelConnection;
+  rootTarget;
   lighthouseWorkerPromise;
   lighthouseMessageUpdateCallback;
   removeDialogHandler;
   configForTesting;
+  connection;
   async attach() {
     await SDK2.TargetManager.TargetManager.instance().suspendAllTargets();
     const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -1080,19 +1081,21 @@ var ProtocolService = class {
     if (!rootChildTargetManager) {
       throw new Error("Could not find the child target manager class for the root target");
     }
-    const { connection, sessionId } = await rootChildTargetManager.createParallelConnection((message) => {
-      if (typeof message === "string") {
-        message = JSON.parse(message);
-      }
-      this.dispatchProtocolMessage(message);
-    });
+    const connection = rootTarget.router()?.connection;
+    if (!connection) {
+      throw new Error("Expected root target to have a session router");
+    }
+    const rootTargetId = await rootChildTargetManager.getParentTargetId();
+    const { sessionId } = await rootTarget.targetAgent().invoke_attachToTarget({ targetId: rootTargetId, flatten: true });
+    this.connection = connection;
+    this.connection.observe(this);
     const dialogHandler = () => {
       void mainTarget.pageAgent().invoke_handleJavaScriptDialog({ accept: true });
     };
     resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.JavaScriptDialogOpening, dialogHandler);
     this.removeDialogHandler = () => resourceTreeModel.removeEventListener(SDK2.ResourceTreeModel.Events.JavaScriptDialogOpening, dialogHandler);
-    this.parallelConnection = connection;
-    this.rootTargetId = await rootChildTargetManager.getParentTargetId();
+    this.rootTargetId = rootTargetId;
+    this.rootTarget = rootTarget;
     this.mainSessionId = sessionId;
   }
   getLocales() {
@@ -1134,14 +1137,16 @@ var ProtocolService = class {
   }
   async detach() {
     const oldLighthouseWorker = this.lighthouseWorkerPromise;
-    const oldParallelConnection = this.parallelConnection;
+    const oldRootTarget = this.rootTarget;
     this.lighthouseWorkerPromise = void 0;
-    this.parallelConnection = void 0;
+    this.rootTarget = void 0;
+    this.connection?.unobserve(this);
+    this.connection = void 0;
     if (oldLighthouseWorker) {
       (await oldLighthouseWorker).terminate();
     }
-    if (oldParallelConnection) {
-      await oldParallelConnection.disconnect();
+    if (oldRootTarget && this.mainSessionId) {
+      await oldRootTarget.targetAgent().invoke_detachFromTarget({ sessionId: this.mainSessionId });
     }
     await SDK2.TargetManager.TargetManager.instance().resumeAllTargets();
     this.removeDialogHandler?.();
@@ -1149,11 +1154,15 @@ var ProtocolService = class {
   registerStatusCallback(callback) {
     this.lighthouseMessageUpdateCallback = callback;
   }
+  onEvent(event) {
+    this.dispatchProtocolMessage(event);
+  }
   dispatchProtocolMessage(message) {
-    const protocolMessage = message;
-    if (protocolMessage.sessionId || protocolMessage.method?.startsWith("Target")) {
+    if (message.sessionId || "method" in message && message.method?.startsWith("Target")) {
       void this.send("dispatchProtocolMessage", { message });
     }
+  }
+  onDisconnect() {
   }
   initWorker() {
     this.lighthouseWorkerPromise = new Promise((resolve) => {
@@ -1195,9 +1204,15 @@ var ProtocolService = class {
     }
   }
   sendProtocolMessage(message) {
-    if (this.parallelConnection) {
-      this.parallelConnection.sendRawMessage(message);
-    }
+    const { id, method, params, sessionId } = JSON.parse(message);
+    void this.connection?.send(method, params, sessionId).then((response) => {
+      this.dispatchProtocolMessage({
+        id,
+        sessionId,
+        result: "result" in response ? response.result : void 0,
+        error: "error" in response ? response.error : void 0
+      });
+    });
   }
   async send(action, args = {}) {
     const worker = await this.ensureWorkerExists();

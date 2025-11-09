@@ -485,4 +485,14 @@ Common.Revealer.registerRevealer({
     return new Network.NetworkPanel.NetworkLogWithFilterRevealer();
   }
 });
+Common.Revealer.registerRevealer({
+  contextTypes() {
+    return [SDK.NetworkManager.AppliedNetworkConditions];
+  },
+  destination: Common.Revealer.RevealerDestination.NETWORK_PANEL,
+  async loadRevealer() {
+    const Network = await loadNetworkModule();
+    return new Network.RequestConditionsDrawer.AppliedConditionsRevealer();
+  }
+});
 //# sourceMappingURL=network-meta.js.map

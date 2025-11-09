@@ -246,12 +246,14 @@ var ImagePreview = class {
 var JSPresentationUtils_exports = {};
 __export(JSPresentationUtils_exports, {
   StackTracePreviewContent: () => StackTracePreviewContent,
-  buildStackTraceRows: () => buildStackTraceRows
+  buildStackTraceRows: () => buildStackTraceRows,
+  buildStackTraceRowsForLegacyRuntimeStackTrace: () => buildStackTraceRowsForLegacyRuntimeStackTrace
 });
 import * as Common3 from "./../../../../core/common/common.js";
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as SDK3 from "./../../../../core/sdk/sdk.js";
+import * as StackTrace from "./../../../../models/stack_trace/stack_trace.js";
 import * as Workspace3 from "./../../../../models/workspace/workspace.js";
 import * as VisualLogging2 from "./../../../visual_logging/visual_logging.js";
 import * as UI2 from "./../../legacy.js";
@@ -652,6 +654,46 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
     };
     return this.maybeLinkifyScriptLocation(target, String(callFrame.scriptId), callFrame.url, callFrame.lineNumber, linkifyOptions);
   }
+  maybeLinkifyStackTraceFrame(target, frame, options) {
+    let fallbackAnchor = null;
+    const linkifyURLOptions = {
+      ...options,
+      lineNumber: frame.line,
+      maxLength: this.maxLength,
+      columnNumber: frame.column,
+      showColumnNumber: Boolean(options?.showColumnNumber),
+      className: options?.className,
+      tabStop: options?.tabStop,
+      inlineFrameIndex: options?.inlineFrameIndex ?? 0,
+      userMetric: options?.userMetric,
+      jslogContext: options?.jslogContext || "script-location",
+      omitOrigin: options?.omitOrigin
+    };
+    const { className = "" } = linkifyURLOptions;
+    if (frame.url) {
+      fallbackAnchor = _Linkifier.linkifyURL(frame.url, linkifyURLOptions);
+    }
+    if (!target || target.isDisposed()) {
+      return fallbackAnchor;
+    }
+    const createLinkOptions = {
+      tabStop: options?.tabStop,
+      jslogContext: "script-location"
+    };
+    const { link: link3, linkInfo } = _Linkifier.createLink(fallbackAnchor?.textContent ? fallbackAnchor.textContent : "", className, createLinkOptions);
+    linkInfo.enableDecorator = this.useLinkDecorator;
+    linkInfo.fallback = fallbackAnchor;
+    linkInfo.userMetric = options?.userMetric;
+    const linkDisplayOptions = {
+      showColumnNumber: linkifyURLOptions.showColumnNumber ?? false,
+      revealBreakpoint: options?.revealBreakpoint
+    };
+    const uiLocation = frame.uiSourceCode?.uiLocation(frame.line, frame.column) ?? null;
+    this.updateAnchorFromUILocation(link3, linkDisplayOptions, uiLocation);
+    const anchors = this.anchorsByTarget.get(target);
+    anchors.push(link3);
+    return link3;
+  }
   linkifyStackTraceTopFrame(target, stackTrace) {
     console.assert(stackTrace.callFrames.length > 0);
     const { url, lineNumber, columnNumber } = stackTrace.callFrames[0];
@@ -737,15 +779,23 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       anchor.removeAttribute("role");
       return;
     }
+    this.#anchorUpdaters.set(anchor, function(anchor2) {
+      void this.updateAnchor(anchor2, options, liveLocation);
+    });
+    this.updateAnchorFromUILocation(anchor, options, uiLocation);
+  }
+  updateAnchorFromUILocation(anchor, options, uiLocation) {
+    if (!uiLocation) {
+      anchor.classList.add("invalid-link");
+      anchor.removeAttribute("role");
+      return;
+    }
     _Linkifier.bindUILocation(anchor, uiLocation);
     if (options.revealBreakpoint) {
       _Linkifier.bindBreakpoint(anchor, uiLocation);
     }
     const text = uiLocation.linkText(true, options.showColumnNumber);
     _Linkifier.setTrimmedText(anchor, text, this.maxLength);
-    this.#anchorUpdaters.set(anchor, function(anchor2) {
-      void this.updateAnchor(anchor2, options, liveLocation);
-    });
     let titleText = uiLocation.uiSourceCode.url();
     if (uiLocation.uiSourceCode.mimeType() === "application/wasm") {
       if (typeof uiLocation.columnNumber === "number") {
@@ -1232,7 +1282,7 @@ function populateContextMenu(link3, event) {
   contextMenu.appendApplicableItems(event);
   void contextMenu.show();
 }
-function buildStackTraceRows(stackTrace, target, linkifier, tabStops, updateCallback, showColumnNumber) {
+function buildStackTraceRowsForLegacyRuntimeStackTrace(stackTrace, target, linkifier, tabStops, updateCallback, showColumnNumber) {
   const stackTraceRows = [];
   if (updateCallback) {
     const throttler = new Common3.Throttler.Throttler(100);
@@ -1278,6 +1328,50 @@ function buildStackTraceRows(stackTrace, target, linkifier, tabStops, updateCall
       buildStackTraceRowsHelper(asyncStackTrace, previousCallFrames);
     }
     previousCallFrames = asyncStackTrace.callFrames;
+  }
+  return stackTraceRows;
+}
+function buildStackTraceRows(stackTrace, target, linkifier, tabStops, showColumnNumber) {
+  const stackTraceRows = [];
+  function buildStackTraceRowsHelper(fragment, previousFragment2 = void 0) {
+    let asyncRow = null;
+    const isAsync = "description" in fragment;
+    if (previousFragment2 && isAsync) {
+      asyncRow = {
+        asyncDescription: UI2.UIUtils.asyncStackTraceLabel(fragment.description, previousFragment2.frames.map((f) => ({ functionName: f.name ?? "" })))
+      };
+      stackTraceRows.push(asyncRow);
+    }
+    let previousStackFrameWasBreakpointCondition = false;
+    for (const frame of fragment.frames) {
+      const functionName = UI2.UIUtils.beautifyFunctionName(frame.name ?? "");
+      const link3 = linkifier.maybeLinkifyStackTraceFrame(target, frame, {
+        showColumnNumber,
+        tabStop: Boolean(tabStops),
+        inlineFrameIndex: 0,
+        revealBreakpoint: previousStackFrameWasBreakpointCondition
+      });
+      if (link3) {
+        link3.setAttribute("jslog", `${VisualLogging2.link("stack-trace").track({ click: true })}`);
+        link3.addEventListener("contextmenu", populateContextMenu.bind(null, link3));
+        if (!link3.textContent) {
+          link3.textContent = i18nString3(UIStrings3.unknownSource);
+        }
+      }
+      stackTraceRows.push({ functionName, link: link3 });
+      previousStackFrameWasBreakpointCondition = [
+        SDK3.DebuggerModel.COND_BREAKPOINT_SOURCE_URL,
+        SDK3.DebuggerModel.LOGPOINT_SOURCE_URL
+      ].includes(frame.url ?? "");
+    }
+  }
+  buildStackTraceRowsHelper(stackTrace.syncFragment);
+  let previousFragment = stackTrace.syncFragment;
+  for (const asyncFragment of stackTrace.asyncFragments) {
+    if (asyncFragment.frames.length) {
+      buildStackTraceRowsHelper(asyncFragment, previousFragment);
+    }
+    previousFragment = asyncFragment;
   }
   return stackTraceRows;
 }
@@ -1351,15 +1445,21 @@ var StackTracePreviewContent = class extends UI2.Widget.Widget {
     Platform3.DOMUtilities.appendStyle(this.element.shadowRoot, jsUtils_css_default);
     this.#table = this.contentElement.createChild("table", "stack-preview-container");
     this.#table.classList.toggle("width-constrained", this.#options.widthConstrained ?? false);
+    this.#options.stackTrace?.addEventListener("UPDATED", this.performUpdate.bind(this));
     this.performUpdate();
   }
   performUpdate() {
     if (!this.#linkifier) {
       return;
     }
-    const { stackTrace, tabStops } = this.#options;
+    const { runtimeStackTrace, stackTrace, tabStops } = this.#options;
+    if (stackTrace) {
+      const stackTraceRows2 = buildStackTraceRows(stackTrace, this.#target ?? null, this.#linkifier, tabStops, this.#options.showColumnNumber);
+      this.#links = renderStackTraceTable(this.#table, this.element, stackTraceRows2);
+      return;
+    }
     const updateCallback = renderStackTraceTable.bind(null, this.#table, this.element);
-    const stackTraceRows = buildStackTraceRows(stackTrace ?? { callFrames: [] }, this.#target ?? null, this.#linkifier, tabStops, updateCallback, this.#options.showColumnNumber);
+    const stackTraceRows = buildStackTraceRowsForLegacyRuntimeStackTrace(runtimeStackTrace ?? { callFrames: [] }, this.#target ?? null, this.#linkifier, tabStops, updateCallback, this.#options.showColumnNumber);
     this.#links = renderStackTraceTable(this.#table, this.element, stackTraceRows);
   }
   get linkElements() {

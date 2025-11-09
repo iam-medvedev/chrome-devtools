@@ -116,7 +116,7 @@ hr.section-separator {
 
 .input-field:focus {
   border: 1px solid var(--sys-color-state-focus-ring);
-  outline-width: 0;
+  outline-style: none;
 }
 
 .add-container {
@@ -772,9 +772,9 @@ var UserAgentClientHintsForm = class extends HTMLElement {
         change: true
       })}
           />
-          <devtools-icon name="bin" class="medium"
+          <devtools-icon name="bin"
             title=${i18nString(UIStrings.brandUserAgentDelete)}
-            class="delete-icon"
+            class="medium delete-icon"
             tabindex="0"
             role="button"
             @click=${handleDeleteClick}
@@ -863,9 +863,9 @@ var UserAgentClientHintsForm = class extends HTMLElement {
         change: true
       })}
           />
-          <devtools-icon name="bin" class="medium"
+          <devtools-icon name="bin" 
             title=${i18nString(UIStrings.brandFullVersionListDelete)}
-            class="delete-icon"
+            class="medium delete-icon"
             tabindex="0"
             role="button"
             @click=${handleDeleteClick}

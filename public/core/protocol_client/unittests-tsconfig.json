@@ -43,7 +43,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/core/protocol_client/NodeURL.test.ts",
+    "../../../../../../front_end/core/protocol_client/Dummy.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts"
@@ -51,9 +51,6 @@
   "references": [
     {
       "path": "./bundle-tsconfig.json"
-    },
-    {
-      "path": "../host/bundle-tsconfig.json"
     }
   ]
 }

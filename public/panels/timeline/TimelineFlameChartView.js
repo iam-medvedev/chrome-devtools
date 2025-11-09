@@ -362,11 +362,11 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#overlays.addEventListener(Overlays.Overlays.EventReferenceClick.eventName, event => {
             const eventRef = event;
             const fromTraceEvent = selectionFromEvent(eventRef.event);
-            this.openSelectionDetailsView(fromTraceEvent);
+            void this.openSelectionDetailsView(fromTraceEvent);
         });
         // This is for the detail view of layout shift.
         this.element.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
-            this.setSelectionAndReveal(selectionFromEvent(event.event));
+            void this.setSelectionAndReveal(selectionFromEvent(event.event));
         });
         this.element.addEventListener('keydown', this.#keydownHandler.bind(this));
         this.element.addEventListener('pointerdown', this.#pointerDownHandler.bind(this));
@@ -503,9 +503,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             return;
         }
         const fieldMetricResultsByNavigationId = new Map();
-        for (const [key, insightSet] of insights) {
-            if (insightSet.navigation) {
-                fieldMetricResultsByNavigationId.set(key, Trace.Insights.Common.getFieldMetricsForInsightSet(insightSet, metadata, CrUXManager.CrUXManager.instance().getSelectedScope()));
+        for (const insightSet of insights.values()) {
+            if (insightSet.navigation?.args.data?.navigationId) {
+                fieldMetricResultsByNavigationId.set(insightSet.navigation.args.data.navigationId, Trace.Insights.Common.getFieldMetricsForInsightSet(insightSet, metadata, CrUXManager.CrUXManager.instance().getSelectedScope()));
             }
         }
         for (const marker of this.#markers) {
@@ -1206,7 +1206,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             this.networkFlameChart.revealEntryVertically(networkIndex);
         }
     }
-    setSelectionAndReveal(selection) {
+    async setSelectionAndReveal(selection) {
         if (selection && this.#currentSelection && selectionsEqual(selection, this.#currentSelection)) {
             return;
         }
@@ -1239,8 +1239,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.networkDataProvider.buildFlowForInitiator(networkIndex);
         this.networkFlameChart.setSelectedEntry(networkIndex);
         if (this.detailsView) {
-            // TODO(crbug.com/1459265):  Change to await after migration work.
-            void this.detailsView.setSelection(selection);
+            await this.detailsView.setSelection(selection);
         }
         // Create the entry selected overlay if the selection represents a trace event
         if (selectionIsEvent(selection)) {
@@ -1279,9 +1278,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     // Only opens the details view of a selection. This is used for Timing Markers. Timing markers replace
     // their entry with a new UI. Because of that, their entries can no longer be "selected" in the timings track,
     // so if clicked, we only open their details view.
-    openSelectionDetailsView(selection) {
+    async openSelectionDetailsView(selection) {
         if (this.detailsView) {
-            void this.detailsView.setSelection(selection);
+            await this.detailsView.setSelection(selection);
         }
     }
     /**
@@ -1327,10 +1326,10 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     showAllMainChartTracks() {
         this.mainFlameChart.showAllGroups();
     }
-    onAddEntryLabelAnnotation(dataProvider, event) {
+    async onAddEntryLabelAnnotation(dataProvider, event) {
         const selection = dataProvider.createSelection(event.data.entryIndex);
         if (selectionIsEvent(selection)) {
-            this.setSelectionAndReveal(selection);
+            await this.setSelectionAndReveal(selection);
             ModificationsManager.activeManager()?.createAnnotation({
                 type: 'ENTRY_LABEL',
                 entry: selection.event,

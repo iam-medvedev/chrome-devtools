@@ -758,444 +758,27 @@ Common3.Revealer.registerRevealer({
     return new Network.NetworkPanel.NetworkLogWithFilterRevealer();
   }
 });
+Common3.Revealer.registerRevealer({
+  contextTypes() {
+    return [SDK.NetworkManager.AppliedNetworkConditions];
+  },
+  destination: Common3.Revealer.RevealerDestination.NETWORK_PANEL,
+  async loadRevealer() {
+    const Network = await loadNetworkModule();
+    return new Network.RequestConditionsDrawer.AppliedConditionsRevealer();
+  }
+});
 
 // gen/front_end/entrypoints/node_app/node_app.prebundle.js
 import * as Common4 from "./../../core/common/common.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Root2 from "./../../core/root/root.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import * as Main from "./../main/main.js";
-
-// gen/front_end/entrypoints/node_app/NodeConnectionsPanel.js
-import * as Host from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as uiI18n from "./../../ui/i18n/i18n.js";
+import * as Root2 from "./../../core/root/root.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
-
-// gen/front_end/entrypoints/node_app/nodeConnectionsPanel.css.js
-var nodeConnectionsPanel_css_default = `/*
- * Copyright 2015 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-.add-network-target-button {
-  margin: 10px 25px;
-  align-self: center;
-}
-
-.network-discovery-list {
-  flex: none;
-  max-width: 600px;
-  max-height: 202px;
-  margin: 20px 0 5px;
-}
-
-.network-discovery-list-empty {
-  flex: auto;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.network-discovery-list-item {
-  padding: 3px 5px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  position: relative;
-  flex: auto 1 1;
-}
-
-.network-discovery-value {
-  flex: 3 1 0;
-}
-
-.list-item .network-discovery-value {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  user-select: none;
-  color: var(--sys-color-on-surface);
-  overflow: hidden;
-}
-
-.network-discovery-edit-row {
-  flex: none;
-  display: flex;
-  flex-direction: row;
-  margin: 6px 5px;
-  align-items: center;
-}
-
-.network-discovery-edit-row input {
-  width: 100%;
-  text-align: inherit;
-}
-
-.network-discovery-footer {
-  margin: 0;
-  overflow: hidden;
-  max-width: 500px;
-  padding: 3px;
-}
-
-.network-discovery-footer > * {
-  white-space: pre-wrap;
-}
-
-.node-panel {
-  align-items: center;
-  justify-content: flex-start;
-  overflow-y: auto;
-}
-
-.network-discovery-view {
-  min-width: 400px;
-  text-align: left;
-}
-
-:host-context(.node-frontend) .network-discovery-list-empty {
-  height: 40px;
-}
-
-:host-context(.node-frontend) .network-discovery-list-item {
-  padding: 3px 15px;
-  height: 40px;
-}
-
-.node-panel-center {
-  max-width: 600px;
-  padding-top: 50px;
-  text-align: center;
-}
-
-.node-panel-logo {
-  width: 400px;
-  margin-bottom: 50px;
-}
-
-:host-context(.node-frontend) .network-discovery-edit-row input {
-  height: 30px;
-  padding-left: 5px;
-}
-
-:host-context(.node-frontend) .network-discovery-edit-row {
-  margin: 6px 9px;
-}
-
-/*# sourceURL=${import.meta.resolve("./nodeConnectionsPanel.css")} */`;
-
-// gen/front_end/entrypoints/node_app/NodeConnectionsPanel.js
+import * as Main from "./../main/main.js";
+import * as App from "./app/app.js";
+var { NodeConnectionsPanel: NodeConnectionsPanel2 } = App.NodeConnectionsPanel;
+var { NodeMainImpl } = App.NodeMain;
 var UIStrings4 = {
-  /**
-   * @description Text in Node Connections Panel of the Sources panel when debugging a Node.js app
-   */
-  nodejsDebuggingGuide: "Node.js debugging guide",
-  /**
-   * @description Text in Node Connections Panel of the Sources panel when debugging a Node.js app
-   * @example {Node.js debugging guide} PH1
-   */
-  specifyNetworkEndpointAnd: "Specify network endpoint and DevTools will connect to it automatically. Read {PH1} to learn more.",
-  /**
-   * @description Placeholder text content in Node Connections Panel of the Sources panel when debugging a Node.js app
-   */
-  noConnectionsSpecified: "No connections specified",
-  /**
-   * @description Text of add network target button in Node Connections Panel of the Sources panel when debugging a Node.js app
-   */
-  addConnection: "Add connection",
-  /**
-   * @description Text in Node Connections Panel of the Sources panel when debugging a Node.js app
-   */
-  networkAddressEgLocalhost: "Network address (e.g. localhost:9229)"
-};
-var str_4 = i18n7.i18n.registerUIStrings("entrypoints/node_app/NodeConnectionsPanel.ts", UIStrings4);
-var i18nString2 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var nodejsIconUrl = new URL("../../Images/node-stack-icon.svg", import.meta.url).toString();
-var NodeConnectionsPanel = class extends UI4.Panel.Panel {
-  #config;
-  #networkDiscoveryView;
-  constructor() {
-    super("node-connection");
-    this.contentElement.classList.add("node-panel");
-    const container = this.contentElement.createChild("div", "node-panel-center");
-    const image = container.createChild("img", "node-panel-logo");
-    image.src = nodejsIconUrl;
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.#devicesDiscoveryConfigChanged, this);
-    this.contentElement.tabIndex = 0;
-    this.setDefaultFocusedElement(this.contentElement);
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(false);
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(true);
-    this.#networkDiscoveryView = new NodeConnectionsView((config) => {
-      this.#config.networkDiscoveryConfig = config;
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesDiscoveryConfig(this.#config);
-    });
-    this.#networkDiscoveryView.show(container);
-  }
-  #devicesDiscoveryConfigChanged({ data: config }) {
-    this.#config = config;
-    this.#networkDiscoveryView.discoveryConfigChanged(this.#config.networkDiscoveryConfig);
-  }
-  wasShown() {
-    super.wasShown();
-    this.registerRequiredCSS(nodeConnectionsPanel_css_default);
-  }
-};
-var NodeConnectionsView = class extends UI4.Widget.VBox {
-  #callback;
-  #list;
-  #editor;
-  #networkDiscoveryConfig;
-  constructor(callback) {
-    super();
-    this.#callback = callback;
-    this.element.classList.add("network-discovery-view");
-    const networkDiscoveryFooter = this.element.createChild("div", "network-discovery-footer");
-    const documentationLink = UI4.XLink.XLink.create("https://nodejs.org/en/docs/inspector/", i18nString2(UIStrings4.nodejsDebuggingGuide), void 0, void 0, "node-js-debugging");
-    networkDiscoveryFooter.appendChild(uiI18n.getFormatLocalizedString(str_4, UIStrings4.specifyNetworkEndpointAnd, { PH1: documentationLink }));
-    this.#list = new UI4.ListWidget.ListWidget(this);
-    this.#list.registerRequiredCSS(nodeConnectionsPanel_css_default);
-    this.#list.element.classList.add("network-discovery-list");
-    const placeholder = document.createElement("div");
-    placeholder.classList.add("network-discovery-list-empty");
-    placeholder.textContent = i18nString2(UIStrings4.noConnectionsSpecified);
-    this.#list.setEmptyPlaceholder(placeholder);
-    this.#list.show(this.element);
-    this.#editor = null;
-    const addButton = UI4.UIUtils.createTextButton(i18nString2(UIStrings4.addConnection), this.#addNetworkTargetButtonClicked.bind(this), {
-      className: "add-network-target-button",
-      variant: "primary"
-      /* Buttons.Button.Variant.PRIMARY */
-    });
-    this.element.appendChild(addButton);
-    this.#networkDiscoveryConfig = [];
-    this.element.classList.add("node-frontend");
-  }
-  #update() {
-    const config = this.#networkDiscoveryConfig.map((item) => item.address);
-    this.#callback.call(null, config);
-  }
-  #addNetworkTargetButtonClicked() {
-    this.#list.addNewItem(this.#networkDiscoveryConfig.length, { address: "", port: "" });
-  }
-  discoveryConfigChanged(networkDiscoveryConfig) {
-    this.#networkDiscoveryConfig = [];
-    this.#list.clear();
-    for (const address of networkDiscoveryConfig) {
-      const item = { address, port: "" };
-      this.#networkDiscoveryConfig.push(item);
-      this.#list.appendItem(item, true);
-    }
-  }
-  renderItem(rule, _editable) {
-    const element = document.createElement("div");
-    element.classList.add("network-discovery-list-item");
-    element.createChild("div", "network-discovery-value network-discovery-address").textContent = rule.address;
-    return element;
-  }
-  removeItemRequested(_rule, index) {
-    this.#networkDiscoveryConfig.splice(index, 1);
-    this.#list.removeItem(index);
-    this.#update();
-  }
-  commitEdit(rule, editor, isNew) {
-    rule.address = editor.control("address").value.trim();
-    if (isNew) {
-      this.#networkDiscoveryConfig.push(rule);
-    }
-    this.#update();
-  }
-  beginEdit(rule) {
-    const editor = this.#createEditor();
-    editor.control("address").value = rule.address;
-    return editor;
-  }
-  #createEditor() {
-    if (this.#editor) {
-      return this.#editor;
-    }
-    const editor = new UI4.ListWidget.Editor();
-    this.#editor = editor;
-    const content = editor.contentElement();
-    const fields = content.createChild("div", "network-discovery-edit-row");
-    const input = editor.createInput("address", "text", i18nString2(UIStrings4.networkAddressEgLocalhost), addressValidator);
-    fields.createChild("div", "network-discovery-value network-discovery-address").appendChild(input);
-    return editor;
-    function addressValidator(_rule, _index, input2) {
-      const match = input2.value.trim().match(/^([a-zA-Z0-9\.\-_]+):(\d+)$/);
-      if (!match) {
-        return {
-          valid: false,
-          errorMessage: void 0
-        };
-      }
-      const port = parseInt(match[2], 10);
-      return {
-        valid: port <= 65535,
-        errorMessage: void 0
-      };
-    }
-  }
-};
-
-// gen/front_end/entrypoints/node_app/NodeMain.js
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-var UIStrings5 = {
-  /**
-   * @description Text that refers to the main target
-   */
-  main: "Main",
-  /**
-   * @description Text in Node Main of the Sources panel when debugging a Node.js app
-   * @example {example.com} PH1
-   */
-  nodejsS: "Node.js: {PH1}",
-  /**
-   * @description Text in DevTools window title when debugging a Node.js app
-   * @example {example.com} PH1
-   */
-  NodejsTitleS: "DevTools - Node.js: {PH1}"
-};
-var str_5 = i18n9.i18n.registerUIStrings("entrypoints/node_app/NodeMain.ts", UIStrings5);
-var i18nString3 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
-var nodeMainImplInstance;
-var NodeMainImpl = class _NodeMainImpl {
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!nodeMainImplInstance || forceNew) {
-      nodeMainImplInstance = new _NodeMainImpl();
-    }
-    return nodeMainImplInstance;
-  }
-  async run() {
-    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.ConnectToNodeJSFromFrontend);
-    void SDK2.Connections.initMainConnection(async () => {
-      const target = SDK2.TargetManager.TargetManager.instance().createTarget(
-        // TODO: Use SDK.Target.Type.NODE rather thatn BROWSER once DevTools is loaded appropriately in that case.
-        "main",
-        i18nString3(UIStrings5.main),
-        SDK2.Target.Type.BROWSER,
-        null
-      );
-      target.setInspectedURL("Node.js");
-    }, Components.TargetDetachedDialog.TargetDetachedDialog.connectionLost);
-  }
-};
-var NodeChildTargetManager = class extends SDK2.SDKModel.SDKModel {
-  #targetManager;
-  #parentTarget;
-  #targetAgent;
-  #childTargets = /* @__PURE__ */ new Map();
-  #childConnections = /* @__PURE__ */ new Map();
-  constructor(parentTarget) {
-    super(parentTarget);
-    this.#targetManager = parentTarget.targetManager();
-    this.#parentTarget = parentTarget;
-    this.#targetAgent = parentTarget.targetAgent();
-    parentTarget.registerTargetDispatcher(this);
-    void this.#targetAgent.invoke_setDiscoverTargets({ discover: true });
-    Host2.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host2.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.#devicesDiscoveryConfigChanged, this);
-    Host2.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(false);
-    Host2.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(true);
-  }
-  #devicesDiscoveryConfigChanged({ data: config }) {
-    const locations = [];
-    for (const address of config.networkDiscoveryConfig) {
-      const parts = address.split(":");
-      const port = parseInt(parts[1], 10);
-      if (parts[0] && port) {
-        locations.push({ host: parts[0], port });
-      }
-    }
-    void this.#targetAgent.invoke_setRemoteLocations({ locations });
-  }
-  dispose() {
-    Host2.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(Host2.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.#devicesDiscoveryConfigChanged, this);
-    for (const sessionId of this.#childTargets.keys()) {
-      this.detachedFromTarget({ sessionId });
-    }
-  }
-  targetCreated({ targetInfo }) {
-    if (targetInfo.type === "node" && !targetInfo.attached) {
-      void this.#targetAgent.invoke_attachToTarget({ targetId: targetInfo.targetId, flatten: false });
-    } else if (targetInfo.type === "node_worker") {
-      void this.#targetAgent.invoke_setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: false });
-    }
-  }
-  targetInfoChanged(_event) {
-  }
-  targetDestroyed(_event) {
-  }
-  attachedToTarget({ sessionId, targetInfo }) {
-    let target;
-    if (targetInfo.type === "node_worker") {
-      target = this.#targetManager.createTarget(targetInfo.targetId, targetInfo.title, SDK2.Target.Type.NODE_WORKER, this.#parentTarget, sessionId, true, void 0, targetInfo);
-    } else {
-      const name = i18nString3(UIStrings5.nodejsS, { PH1: targetInfo.url });
-      document.title = i18nString3(UIStrings5.NodejsTitleS, { PH1: targetInfo.url });
-      const connection = new NodeConnection(this.#targetAgent, sessionId);
-      this.#childConnections.set(sessionId, connection);
-      target = this.#targetManager.createTarget(targetInfo.targetId, name, SDK2.Target.Type.NODE, this.#parentTarget, void 0, void 0, connection);
-    }
-    this.#childTargets.set(sessionId, target);
-    void target.runtimeAgent().invoke_runIfWaitingForDebugger();
-  }
-  detachedFromTarget({ sessionId }) {
-    const childTarget = this.#childTargets.get(sessionId);
-    if (childTarget) {
-      childTarget.dispose("target terminated");
-    }
-    this.#childTargets.delete(sessionId);
-    this.#childConnections.delete(sessionId);
-  }
-  receivedMessageFromTarget({ sessionId, message }) {
-    const connection = this.#childConnections.get(sessionId);
-    const onMessage = connection ? connection.onMessage : null;
-    if (onMessage) {
-      onMessage.call(null, message);
-    }
-  }
-  targetCrashed(_event) {
-  }
-};
-var NodeConnection = class {
-  #targetAgent;
-  #sessionId;
-  onMessage;
-  #onDisconnect;
-  constructor(targetAgent, sessionId) {
-    this.#targetAgent = targetAgent;
-    this.#sessionId = sessionId;
-    this.onMessage = null;
-    this.#onDisconnect = null;
-  }
-  setOnMessage(onMessage) {
-    this.onMessage = onMessage;
-  }
-  setOnDisconnect(onDisconnect) {
-    this.#onDisconnect = onDisconnect;
-  }
-  sendRawMessage(message) {
-    void this.#targetAgent.invoke_sendMessageToTarget({ message, sessionId: this.#sessionId });
-  }
-  async disconnect() {
-    if (this.#onDisconnect) {
-      this.#onDisconnect.call(null, "force disconnect");
-    }
-    this.#onDisconnect = null;
-    this.onMessage = null;
-    await this.#targetAgent.invoke_detachFromTarget({ sessionId: this.#sessionId });
-  }
-};
-SDK2.SDKModel.SDKModel.register(NodeChildTargetManager, { capabilities: 32, autostart: true });
-
-// gen/front_end/entrypoints/node_app/node_app.prebundle.js
-var UIStrings6 = {
   /**
    * @description Text that refers to the network connection
    */
@@ -1217,8 +800,8 @@ var UIStrings6 = {
    */
   showNode: "Show Node"
 };
-var str_6 = i18n11.i18n.registerUIStrings("entrypoints/node_app/node_app.ts", UIStrings6);
-var i18nLazyString4 = i18n11.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
+var str_4 = i18n7.i18n.registerUIStrings("entrypoints/node_app/node_app.ts", UIStrings4);
+var i18nLazyString4 = i18n7.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
 var loadedSourcesModule;
 async function loadSourcesModule() {
   if (!loadedSourcesModule) {
@@ -1226,22 +809,22 @@ async function loadSourcesModule() {
   }
   return loadedSourcesModule;
 }
-UI5.ViewManager.registerViewExtension({
+UI4.ViewManager.registerViewExtension({
   location: "panel",
   id: "node-connection",
-  title: i18nLazyString4(UIStrings6.connection),
-  commandPrompt: i18nLazyString4(UIStrings6.showConnection),
+  title: i18nLazyString4(UIStrings4.connection),
+  commandPrompt: i18nLazyString4(UIStrings4.showConnection),
   order: 0,
   async loadView() {
-    return new NodeConnectionsPanel();
+    return new NodeConnectionsPanel2();
   },
-  tags: [i18nLazyString4(UIStrings6.node)]
+  tags: [i18nLazyString4(UIStrings4.node)]
 });
-UI5.ViewManager.registerViewExtension({
+UI4.ViewManager.registerViewExtension({
   location: "navigator-view",
   id: "navigator-network",
-  title: i18nLazyString4(UIStrings6.networkTitle),
-  commandPrompt: i18nLazyString4(UIStrings6.showNode),
+  title: i18nLazyString4(UIStrings4.networkTitle),
+  commandPrompt: i18nLazyString4(UIStrings4.showNode),
   order: 2,
   persistence: "permanent",
   async loadView() {

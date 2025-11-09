@@ -18,11 +18,6 @@ describeWithLocale('GenericIssue', () => {
             details: { genericIssueDetails },
         };
     }
-    beforeEach(() => {
-        // The component warns if not provided with an issue that has details, but
-        // we don't need that noise in the test output.
-        sinon.stub(console, 'warn');
-    });
     it('adds an incorrect form label use issue with valid details', () => {
         const issueDetails = {
             errorType: "FormLabelForNameError" /* Protocol.Audits.GenericIssueErrorType.FormLabelForNameError */,

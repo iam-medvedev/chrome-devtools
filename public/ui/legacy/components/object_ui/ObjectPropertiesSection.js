@@ -36,6 +36,7 @@ import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as uiI18n from '../../../../ui/i18n/i18n.js';
 import * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as TextEditor from '../../../components/text_editor/text_editor.js';
+import { Directives, html, render } from '../../../lit/lit.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import { CustomPreviewComponent } from './CustomPreviewComponent.js';
@@ -43,6 +44,7 @@ import { JavaScriptREPL } from './JavaScriptREPL.js';
 import objectPropertiesSectionStyles from './objectPropertiesSection.css.js';
 import objectValueStyles from './objectValue.css.js';
 import { createSpansForNodeTitle, RemoteObjectPreviewFormatter } from './RemoteObjectPreviewFormatter.js';
+const { ifDefined } = Directives;
 const UIStrings = {
     /**
      * @description Text in Object Properties Section
@@ -130,27 +132,200 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/object_ui/ObjectP
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const EXPANDABLE_MAX_LENGTH = 50;
 const EXPANDABLE_MAX_DEPTH = 100;
-const parentMap = new WeakMap();
 const objectPropertiesSectionMap = new WeakMap();
+class ObjectTreeNodeBase {
+    parent;
+    propertiesMode;
+    #children;
+    extraProperties = [];
+    constructor(parent, propertiesMode = 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */) {
+        this.parent = parent;
+        this.propertiesMode = propertiesMode;
+    }
+    removeChildren() {
+        this.#children = undefined;
+    }
+    removeChild(child) {
+        remove(this.#children?.arrayRanges, child);
+        remove(this.#children?.internalProperties, child);
+        remove(this.#children?.properties, child);
+        function remove(array, element) {
+            if (!array) {
+                return;
+            }
+            const index = array.indexOf(element);
+            if (index >= 0) {
+                array.splice(index, 1);
+            }
+        }
+    }
+    selfOrParentIfInternal() {
+        return this;
+    }
+    async children() {
+        if (!this.#children) {
+            this.#children = await this.populateChildren();
+        }
+        return this.#children;
+    }
+    async populateChildren() {
+        const object = this.object;
+        if (!object) {
+            return {};
+        }
+        const effectiveParent = this.selfOrParentIfInternal();
+        if (this.arrayLength > ARRAY_LOAD_THRESHOLD) {
+            const ranges = await arrayRangeGroups(object, 0, this.arrayLength - 1);
+            const arrayRanges = ranges?.ranges.map(([fromIndex, toIndex, count]) => new ArrayGroupTreeNode(object, { fromIndex, toIndex, count }));
+            if (!arrayRanges) {
+                return {};
+            }
+            const { properties: objectProperties, internalProperties: objectInternalProperties } = await SDK.RemoteObject.RemoteObject.loadFromObjectPerProto(this.object, true /* generatePreview */, true /* nonIndexedPropertiesOnly */);
+            const properties = objectProperties?.map(p => new ObjectTreeNode(p, undefined, effectiveParent, undefined));
+            const internalProperties = objectInternalProperties?.map(p => new ObjectTreeNode(p, undefined, effectiveParent, undefined));
+            return { arrayRanges, properties, internalProperties };
+        }
+        let objectProperties = null;
+        let objectInternalProperties = null;
+        switch (this.propertiesMode) {
+            case 0 /* ObjectPropertiesMode.ALL */:
+                ({ properties: objectProperties } =
+                    await object.getAllProperties(false /* accessorPropertiesOnly */, true /* generatePreview */));
+                break;
+            case 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */:
+                ({ properties: objectProperties, internalProperties: objectInternalProperties } =
+                    await SDK.RemoteObject.RemoteObject.loadFromObjectPerProto(object, true /* generatePreview */));
+                break;
+        }
+        const properties = objectProperties?.map(p => new ObjectTreeNode(p, undefined, effectiveParent, undefined));
+        properties?.push(...this.extraProperties);
+        const internalProperties = objectInternalProperties?.map(p => new ObjectTreeNode(p, undefined, effectiveParent, undefined));
+        return { properties, internalProperties };
+    }
+    get hasChildren() {
+        return this.object?.hasChildren ?? false;
+    }
+    get arrayLength() {
+        return this.object?.arrayLength() ?? 0;
+    }
+    // This is used in web tests
+    async setPropertyValue(name, value) {
+        return await this.object?.setPropertyValue(name, value);
+    }
+    addExtraProperties(...properties) {
+        this.extraProperties.push(...properties.map(p => new ObjectTreeNode(p, undefined, this, undefined)));
+    }
+}
+export class ObjectTree extends ObjectTreeNodeBase {
+    #object;
+    constructor(object, propertiesMode = 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */) {
+        super(undefined, propertiesMode);
+        this.#object = object;
+    }
+    get object() {
+        return this.#object;
+    }
+}
+class ArrayGroupTreeNode extends ObjectTreeNodeBase {
+    #object;
+    #range;
+    constructor(object, range, parent, propertiesMode = 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */) {
+        super(parent, propertiesMode);
+        this.#object = object;
+        this.#range = range;
+    }
+    async populateChildren() {
+        if (this.#range.count > ArrayGroupingTreeElement.bucketThreshold) {
+            const ranges = await arrayRangeGroups(this.object, this.#range.fromIndex, this.#range.toIndex);
+            const arrayRanges = ranges?.ranges.map(([fromIndex, toIndex, count]) => new ArrayGroupTreeNode(this.object, { fromIndex, toIndex, count }));
+            return { arrayRanges };
+        }
+        const result = await this.#object.callFunction(buildArrayFragment, [
+            { value: this.#range.fromIndex },
+            { value: this.#range.toIndex },
+            { value: ArrayGroupingTreeElement.sparseIterationThreshold },
+        ]);
+        if (!result.object || result.wasThrown) {
+            return {};
+        }
+        const arrayFragment = result.object;
+        const allProperties = await arrayFragment.getAllProperties(false /* accessorPropertiesOnly */, true /* generatePreview */);
+        arrayFragment.release();
+        const properties = allProperties.properties?.map(p => new ObjectTreeNode(p, this.propertiesMode, this, undefined));
+        properties?.push(...this.extraProperties);
+        properties?.sort(ObjectPropertiesSection.compareProperties);
+        return { properties };
+    }
+    get singular() {
+        return this.#range.fromIndex === this.#range.toIndex;
+    }
+    get range() {
+        return this.#range;
+    }
+    get object() {
+        return this.#object;
+    }
+}
+export class ObjectTreeNode extends ObjectTreeNodeBase {
+    property;
+    nonSyntheticParent;
+    #path;
+    constructor(property, propertiesMode = 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */, parent, nonSyntheticParent) {
+        super(parent, propertiesMode);
+        this.property = property;
+        this.nonSyntheticParent = nonSyntheticParent;
+    }
+    get object() {
+        return this.property.value;
+    }
+    get name() {
+        return this.property.name;
+    }
+    get path() {
+        if (!this.#path) {
+            if (this.property.synthetic) {
+                this.#path = this.name;
+                return this.name;
+            }
+            // https://tc39.es/ecma262/#prod-IdentifierName
+            const useDotNotation = /^(?:[$_\p{ID_Start}])(?:[$_\u200C\u200D\p{ID_Continue}])*$/u;
+            const isInteger = /^(?:0|[1-9]\d*)$/;
+            const parentPath = (this.parent instanceof ObjectTreeNode && !this.parent.property.synthetic) ? this.parent.path : '';
+            if (this.property.private || useDotNotation.test(this.name)) {
+                this.#path = parentPath ? `${parentPath}.${this.name}` : this.name;
+            }
+            else if (isInteger.test(this.name)) {
+                this.#path = `${parentPath}[${this.name}]`;
+            }
+            else {
+                this.#path = `${parentPath}[${JSON.stringify(this.name)}]`;
+            }
+        }
+        return this.#path;
+    }
+    selfOrParentIfInternal() {
+        return this.name === '[[Prototype]]' ? (this.parent ?? this) : this;
+    }
+}
 export const getObjectPropertiesSectionFrom = (element) => {
     return objectPropertiesSectionMap.get(element);
 };
 export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow {
-    object;
+    root;
     editable;
     #objectTreeElement;
     titleElement;
     skipProtoInternal;
     constructor(object, title, linkifier, showOverflow) {
         super();
-        this.object = object;
+        this.root = new ObjectTree(object);
         this.editable = true;
         if (!showOverflow) {
             this.setHideOverflow(true);
         }
         this.setFocusable(true);
         this.setShowSelectionOnKeyboardFocus(true);
-        this.#objectTreeElement = new RootElement(object, linkifier);
+        this.#objectTreeElement = new RootElement(this.root, linkifier);
         this.appendChild(this.#objectTreeElement);
         if (typeof title === 'string' || !title) {
             this.titleElement = this.element.createChild('span');
@@ -179,7 +354,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         titleElement.classList.add('source-code');
         const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(titleElement, { cssFile: objectValueStyles });
         const propertyValue = ObjectPropertiesSection.createPropertyValue(object, /* wasThrown */ false, /* showPreview */ true);
-        shadowRoot.appendChild(propertyValue.element);
+        shadowRoot.appendChild(propertyValue);
         const objectPropertiesSection = new ObjectPropertiesSection(object, titleElement, linkifier);
         objectPropertiesSection.editable = false;
         if (skipProto) {
@@ -190,7 +365,14 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         }
         return objectPropertiesSection;
     }
+    // The RemoteObjectProperty overload is kept for web test compatibility for now.
     static compareProperties(propertyA, propertyB) {
+        if (propertyA instanceof ObjectTreeNode) {
+            propertyA = propertyA.property;
+        }
+        if (propertyB instanceof ObjectTreeNode) {
+            propertyB = propertyB.property;
+        }
         if (!propertyA.synthetic && propertyB.synthetic) {
             return 1;
         }
@@ -332,7 +514,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         if (value.customPreview()) {
             const result = (new CustomPreviewComponent(value)).element;
             result.classList.add('object-properties-section-custom-section');
-            return new ObjectPropertyValue(result);
+            return result;
         }
         return ObjectPropertiesSection.createPropertyValue(value, wasThrown, showPreview, linkifier, isSyntheticProperty, variableName);
     }
@@ -367,9 +549,9 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         if (type === 'object' && subtype === 'internal#location') {
             const rawLocation = value.debuggerModel().createRawLocationByScriptId(value.value.scriptId, value.value.lineNumber, value.value.columnNumber);
             if (rawLocation && linkifier) {
-                return new ObjectPropertyValue(linkifier.linkifyRawLocation(rawLocation, Platform.DevToolsPath.EmptyUrlString));
+                return linkifier.linkifyRawLocation(rawLocation, Platform.DevToolsPath.EmptyUrlString);
             }
-            propertyValue = new ObjectPropertyValue(createUnknownInternalLocationElement());
+            propertyValue = createUnknownInternalLocationElement();
         }
         else if (type === 'string' && typeof description === 'string') {
             propertyValue = createStringElement();
@@ -378,10 +560,10 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             propertyValue = createTrustedTypeElement();
         }
         else if (type === 'function') {
-            propertyValue = new ObjectPropertyValue(ObjectPropertiesSection.valueElementForFunctionDescription(description));
+            propertyValue = ObjectPropertiesSection.valueElementForFunctionDescription(description);
         }
         else if (type === 'object' && subtype === 'node' && description) {
-            propertyValue = new ObjectPropertyValue(createNodeElement());
+            propertyValue = createNodeElement();
         }
         else {
             const valueElement = document.createElement('span');
@@ -389,16 +571,16 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             if (value.preview && showPreview) {
                 const previewFormatter = new RemoteObjectPreviewFormatter();
                 previewFormatter.appendObjectPreview(valueElement, value.preview, false /* isEntry */);
-                propertyValue = new ObjectPropertyValue(valueElement);
-                UI.Tooltip.Tooltip.install(propertyValue.element, description || '');
+                propertyValue = valueElement;
+                UI.Tooltip.Tooltip.install(propertyValue, description || '');
             }
             else if (description.length > maxRenderableStringLength) {
-                propertyValue = new ExpandableTextPropertyValue(valueElement, description, EXPANDABLE_MAX_LENGTH);
+                propertyValue = new ExpandableTextPropertyValue(valueElement, description, EXPANDABLE_MAX_LENGTH).element;
             }
             else {
-                propertyValue = new ObjectPropertyValue(valueElement);
-                propertyValue.element.textContent = description;
-                UI.Tooltip.Tooltip.install(propertyValue.element, description);
+                propertyValue = valueElement;
+                propertyValue.textContent = description;
+                UI.Tooltip.Tooltip.install(propertyValue, description);
             }
             if (!isSyntheticProperty) {
                 this.appendMemoryIcon(valueElement, value, variableName);
@@ -408,10 +590,10 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             const wrapperElement = document.createElement('span');
             wrapperElement.classList.add('error');
             wrapperElement.classList.add('value');
-            wrapperElement.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.exceptionS, { PH1: propertyValue.element }));
-            propertyValue.element = wrapperElement;
+            wrapperElement.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.exceptionS, { PH1: propertyValue }));
+            propertyValue = wrapperElement;
         }
-        propertyValue.element.classList.add('value');
+        propertyValue.classList.add('value');
         return propertyValue;
         function createUnknownInternalLocationElement() {
             const valueElement = document.createElement('span');
@@ -425,11 +607,11 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             const text = JSON.stringify(description);
             let propertyValue;
             if (description.length > maxRenderableStringLength) {
-                propertyValue = new ExpandableTextPropertyValue(valueElement, text, EXPANDABLE_MAX_LENGTH);
+                propertyValue = new ExpandableTextPropertyValue(valueElement, text, EXPANDABLE_MAX_LENGTH).element;
             }
             else {
                 UI.UIUtils.createTextChild(valueElement, text);
-                propertyValue = new ObjectPropertyValue(valueElement);
+                propertyValue = valueElement;
                 UI.Tooltip.Tooltip.install(valueElement, description);
             }
             return propertyValue;
@@ -440,13 +622,13 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             const text = `${className} "${description}"`;
             let propertyValue;
             if (text.length > maxRenderableStringLength) {
-                propertyValue = new ExpandableTextPropertyValue(valueElement, text, EXPANDABLE_MAX_LENGTH);
+                propertyValue = new ExpandableTextPropertyValue(valueElement, text, EXPANDABLE_MAX_LENGTH).element;
             }
             else {
                 const contentString = createStringElement();
                 UI.UIUtils.createTextChild(valueElement, `${className} `);
-                valueElement.appendChild(contentString.element);
-                propertyValue = new ObjectPropertyValue(valueElement);
+                valueElement.appendChild(contentString);
+                propertyValue = valueElement;
                 UI.Tooltip.Tooltip.install(valueElement, text);
             }
             return propertyValue;
@@ -508,8 +690,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     }
     contextMenuEventFired(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.appendApplicableItems(this.object);
-        if (this.object instanceof SDK.RemoteObject.LocalJSONObject) {
+        contextMenu.appendApplicableItems(this.root);
+        if (this.root.object instanceof SDK.RemoteObject.LocalJSONObject) {
             contextMenu.viewSection().appendItem(i18nString(UIStrings.expandRecursively), this.#objectTreeElement.expandRecursively.bind(this.#objectTreeElement, EXPANDABLE_MAX_DEPTH), { jslogContext: 'expand-recursively' });
             contextMenu.viewSection().appendItem(i18nString(UIStrings.collapseChildren), this.#objectTreeElement.collapseChildren.bind(this.#objectTreeElement), { jslogContext: 'collapse-children' });
         }
@@ -538,24 +720,22 @@ export class RootElement extends UI.TreeOutline.TreeElement {
     object;
     linkifier;
     emptyPlaceholder;
-    propertiesMode;
-    extraProperties;
-    targetObject;
     toggleOnClick;
-    constructor(object, linkifier, emptyPlaceholder, propertiesMode = 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */, extraProperties = [], targetObject = object) {
+    constructor(object, linkifier, emptyPlaceholder) {
         const contentElement = document.createElement('slot');
         super(contentElement);
         this.object = object;
         this.linkifier = linkifier;
         this.emptyPlaceholder = emptyPlaceholder;
-        this.propertiesMode = propertiesMode;
-        this.extraProperties = extraProperties;
-        this.targetObject = targetObject;
         this.setExpandable(true);
         this.selectable = true;
         this.toggleOnClick = true;
         this.listItemElement.classList.add('object-properties-section-root-element');
         this.listItemElement.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
+    }
+    invalidateChildren() {
+        super.invalidateChildren();
+        this.object.removeChildren();
     }
     onexpand() {
         if (this.treeOutline) {
@@ -572,7 +752,7 @@ export class RootElement extends UI.TreeOutline.TreeElement {
     }
     onContextMenu(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.appendApplicableItems(this.object);
+        contextMenu.appendApplicableItems(this.object.object);
         if (this.object instanceof SDK.RemoteObject.LocalJSONObject) {
             const { value } = this.object;
             const propertyValue = typeof value === 'object' ? JSON.stringify(value, null, 2) : value;
@@ -589,7 +769,7 @@ export class RootElement extends UI.TreeOutline.TreeElement {
     async onpopulate() {
         const treeOutline = this.treeOutline;
         const skipProto = treeOutline ? Boolean(treeOutline.skipProtoInternal) : false;
-        return await ObjectPropertyTreeElement.populate(this, this.object, skipProto, false, this.linkifier, this.emptyPlaceholder, this.propertiesMode, this.extraProperties, this.targetObject);
+        return await ObjectPropertyTreeElement.populate(this, this.object, skipProto, false, this.linkifier, this.emptyPlaceholder);
     }
 }
 /**
@@ -623,67 +803,45 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.listItemElement.dataset.objectPropertyNameForTest = property.name;
         this.setExpandRecursively(property.name !== '[[Prototype]]');
     }
-    static async populate(treeElement, value, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder, propertiesMode = 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */, extraProperties, targetValue) {
-        if (value.arrayLength() > ARRAY_LOAD_THRESHOLD) {
-            treeElement.removeChildren();
-            void ArrayGroupingTreeElement.populateArray(treeElement, value, 0, value.arrayLength() - 1, linkifier);
-            return;
+    static async populate(treeElement, value, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder) {
+        const properties = await value.children();
+        if (properties.arrayRanges) {
+            await ArrayGroupingTreeElement.populate(treeElement, properties, linkifier);
         }
-        let properties, internalProperties = null;
-        switch (propertiesMode) {
-            case 0 /* ObjectPropertiesMode.ALL */:
-                ({ properties } = await value.getAllProperties(false /* accessorPropertiesOnly */, true /* generatePreview */));
-                break;
-            case 1 /* ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */:
-                ({ properties, internalProperties } =
-                    await SDK.RemoteObject.RemoteObject.loadFromObjectPerProto(value, true /* generatePreview */));
-                break;
+        else {
+            ObjectPropertyTreeElement.populateWithProperties(treeElement, properties, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder);
         }
-        treeElement.removeChildren();
-        if (!properties) {
-            return;
-        }
-        if (extraProperties !== undefined) {
-            properties.push(...extraProperties);
-        }
-        ObjectPropertyTreeElement.populateWithProperties(treeElement, properties, internalProperties, skipProto, skipGettersAndSetters, targetValue || value, linkifier, emptyPlaceholder);
     }
-    static populateWithProperties(treeNode, properties, internalProperties, skipProto, skipGettersAndSetters, value, linkifier, emptyPlaceholder) {
-        properties.sort(ObjectPropertiesSection.compareProperties);
-        internalProperties = internalProperties || [];
-        const entriesProperty = internalProperties.find(property => property.name === '[[Entries]]');
+    static populateWithProperties(treeNode, { properties, internalProperties }, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder) {
+        properties?.sort(ObjectPropertiesSection.compareProperties);
+        const entriesProperty = internalProperties?.find(({ property }) => property.name === '[[Entries]]');
         if (entriesProperty) {
-            parentMap.set(entriesProperty, value);
             const treeElement = new ObjectPropertyTreeElement(entriesProperty, linkifier);
             treeElement.setExpandable(true);
             treeElement.expand();
             treeNode.appendChild(treeElement);
         }
         const tailProperties = [];
-        for (let i = 0; i < properties.length; ++i) {
-            const property = properties[i];
-            parentMap.set(property, value);
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (!ObjectPropertiesSection.isDisplayableProperty(property, treeNode.property)) {
+        for (const property of properties ?? []) {
+            if (treeNode instanceof ObjectPropertyTreeElement &&
+                !ObjectPropertiesSection.isDisplayableProperty(property.property, treeNode.property?.property)) {
                 continue;
             }
-            if (property.isOwn && !skipGettersAndSetters) {
-                if (property.getter) {
-                    const getterProperty = new SDK.RemoteObject.RemoteObjectProperty('get ' + property.name, property.getter, false);
-                    parentMap.set(getterProperty, value);
-                    tailProperties.push(getterProperty);
+            // FIXME move into node
+            if (property.property.isOwn && !skipGettersAndSetters) {
+                if (property.property.getter) {
+                    const getterProperty = new SDK.RemoteObject.RemoteObjectProperty('get ' + property.property.name, property.property.getter, false);
+                    tailProperties.push(new ObjectTreeNode(getterProperty, property.propertiesMode, property.parent));
                 }
-                if (property.setter) {
-                    const setterProperty = new SDK.RemoteObject.RemoteObjectProperty('set ' + property.name, property.setter, false);
-                    parentMap.set(setterProperty, value);
-                    tailProperties.push(setterProperty);
+                if (property.property.setter) {
+                    const setterProperty = new SDK.RemoteObject.RemoteObjectProperty('set ' + property.property.name, property.property.setter, false);
+                    tailProperties.push(new ObjectTreeNode(setterProperty, property.propertiesMode, property.parent));
                 }
             }
-            const canShowProperty = property.getter || !property.isAccessorProperty();
+            const canShowProperty = property.property.getter || !property.property.isAccessorProperty();
             if (canShowProperty) {
                 const element = new ObjectPropertyTreeElement(property, linkifier);
-                if (property.name === 'memories' && property.value?.className === 'Memories') {
+                if (property.property.name === 'memories' && property.object?.className === 'Memories') {
                     element.updateExpandable();
                     if (element.isExpandable()) {
                         element.expand();
@@ -695,13 +853,12 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         for (let i = 0; i < tailProperties.length; ++i) {
             treeNode.appendChild(new ObjectPropertyTreeElement(tailProperties[i], linkifier));
         }
-        for (const property of internalProperties) {
-            parentMap.set(property, value);
+        for (const property of internalProperties ?? []) {
             const treeElement = new ObjectPropertyTreeElement(property, linkifier);
-            if (property.name === '[[Entries]]') {
+            if (property.property.name === '[[Entries]]') {
                 continue;
             }
-            if (property.name === '[[Prototype]]' && skipProto) {
+            if (property.property.name === '[[Prototype]]' && skipProto) {
                 continue;
             }
             treeNode.appendChild(treeElement);
@@ -752,8 +909,8 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         this.revertHighlightChanges();
         this.applySearch(regex, this.nameElement, cssClasses);
-        if (this.property.value) {
-            const valueType = this.property.value.type;
+        if (this.property.object) {
+            const valueType = this.property.object.type;
             if (valueType !== 'object') {
                 this.applySearch(regex, this.valueElement, cssClasses);
             }
@@ -798,13 +955,12 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.highlightChanges = [];
     }
     async onpopulate() {
-        const propertyValue = this.property.value;
-        console.assert(typeof propertyValue !== 'undefined');
         const treeOutline = this.treeOutline;
         const skipProto = treeOutline ? Boolean(treeOutline.skipProtoInternal) : false;
-        const targetValue = this.property.name !== '[[Prototype]]' ? propertyValue : parentMap.get(this.property);
-        if (targetValue) {
-            await ObjectPropertyTreeElement.populate(this, propertyValue, skipProto, false, this.linkifier, undefined, undefined, undefined, targetValue);
+        this.removeChildren();
+        this.property.removeChildren();
+        if (this.property.object) {
+            await ObjectPropertyTreeElement.populate(this, this.property, skipProto, false, this.linkifier);
             if (this.childCount() > this.maxNumPropertiesToShow) {
                 this.createShowAllPropertiesButton();
             }
@@ -814,15 +970,15 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         const target = event.target;
         const inEditableElement = target.isSelfOrDescendant(this.valueElement) ||
             (this.expandedValueElement && target.isSelfOrDescendant(this.expandedValueElement));
-        if (this.property.value && !this.property.value.customPreview() && inEditableElement &&
-            (this.property.writable || this.property.setter)) {
+        if (this.property.object && !this.property.object.customPreview() && inEditableElement &&
+            (this.property.property.writable || this.property.property.setter)) {
             this.startEditing();
         }
         return false;
     }
     onenter() {
-        if (this.property.value && !this.property.value.customPreview() &&
-            (this.property.writable || this.property.setter)) {
+        if (this.property.object && !this.property.object.customPreview() &&
+            (this.property.property.writable || this.property.property.setter)) {
             this.startEditing();
             return true;
         }
@@ -872,44 +1028,45 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     }
     update() {
         this.nameElement =
-            ObjectPropertiesSection.createNameElement(this.property.name, this.property.private);
-        if (!this.property.enumerable) {
+            ObjectPropertiesSection.createNameElement(this.property.name, this.property.property.private);
+        if (!this.property.property.enumerable) {
             this.nameElement.classList.add('object-properties-section-dimmed');
         }
-        if (this.property.isOwn) {
+        if (this.property.property.isOwn) {
             this.nameElement.classList.add('own-property');
         }
-        if (this.property.synthetic) {
+        if (this.property.property.synthetic) {
             this.nameElement.classList.add('synthetic-property');
         }
-        this.updatePropertyPath();
-        const isInternalEntries = this.property.synthetic && this.property.name === '[[Entries]]';
+        this.nameElement.title = this.property.path;
+        const isInternalEntries = this.property.property.synthetic && this.property.name === '[[Entries]]';
         if (isInternalEntries) {
             this.valueElement = document.createElement('span');
             this.valueElement.classList.add('value');
         }
-        else if (this.property.value) {
+        else if (this.property.object) {
             const showPreview = this.property.name !== '[[Prototype]]';
-            this.propertyValue = ObjectPropertiesSection.createPropertyValueWithCustomSupport(this.property.value, this.property.wasThrown, showPreview, this.linkifier, this.property.synthetic, this.path() /* variableName */);
-            this.valueElement = this.propertyValue.element;
+            this.propertyValue = ObjectPropertiesSection.createPropertyValueWithCustomSupport(this.property.object, this.property.property.wasThrown, showPreview, this.linkifier, this.property.property.synthetic, this.property.path /* variableName */);
+            this.valueElement = this.propertyValue;
         }
-        else if (this.property.getter) {
+        else if (this.property.property.getter) {
             this.valueElement = document.createElement('span');
             const element = this.valueElement.createChild('span');
             element.textContent = i18nString(UIStrings.dots);
             element.classList.add('object-value-calculate-value-button');
             UI.Tooltip.Tooltip.install(element, i18nString(UIStrings.invokePropertyGetter));
-            const object = parentMap.get(this.property);
-            const getter = this.property.getter;
+            const getter = this.property.property.getter;
             element.addEventListener('click', (event) => {
                 event.consume();
                 const invokeGetter = `
           function invokeGetter(getter) {
             return Reflect.apply(getter, this, []);
           }`;
-                // @ts-expect-error No way to teach TypeScript to preserve the Function-ness of `getter`.
                 // Also passing a string instead of a Function to avoid coverage implementation messing with it.
-                void object.callFunction(invokeGetter, [SDK.RemoteObject.RemoteObject.toCallArgument(getter)])
+                void this.property.parent
+                    ?.object
+                    // @ts-expect-error No way to teach TypeScript to preserve the Function-ness of `getter`.
+                    ?.callFunction(invokeGetter, [SDK.RemoteObject.RemoteObject.toCallArgument(getter)])
                     .then(this.onInvokeGetterClick.bind(this));
             }, false);
         }
@@ -920,8 +1077,9 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
             UI.Tooltip.Tooltip.install(this.valueElement, i18nString(UIStrings.valueNotAccessibleToTheDebugger));
         }
         const valueText = this.valueElement.textContent;
-        if (this.property.value && valueText && !this.property.wasThrown) {
-            this.expandedValueElement = this.createExpandedValueElement(this.property.value, this.property.synthetic);
+        if (this.property.object && valueText && !this.property.property.wasThrown) {
+            this.expandedValueElement =
+                this.createExpandedValueElement(this.property.object, this.property.property.synthetic);
         }
         const adorner = '';
         let container;
@@ -939,43 +1097,17 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.rowContainer = container;
         this.listItemElement.appendChild(this.rowContainer);
     }
-    updatePropertyPath() {
-        if (this.nameElement.title) {
-            return;
-        }
-        const name = this.property.name;
-        if (this.property.synthetic) {
-            UI.Tooltip.Tooltip.install(this.nameElement, name);
-            return;
-        }
-        // https://tc39.es/ecma262/#prod-IdentifierName
-        const useDotNotation = /^(?:[$_\p{ID_Start}])(?:[$_\u200C\u200D\p{ID_Continue}])*$/u;
-        const isInteger = /^(?:0|[1-9]\d*)$/;
-        const parentPath = (this.parent instanceof ObjectPropertyTreeElement && this.parent.nameElement &&
-            !this.parent.property.synthetic) ?
-            this.parent.nameElement.title :
-            '';
-        if (this.property.private || useDotNotation.test(name)) {
-            UI.Tooltip.Tooltip.install(this.nameElement, parentPath ? `${parentPath}.${name}` : name);
-        }
-        else if (isInteger.test(name)) {
-            UI.Tooltip.Tooltip.install(this.nameElement, `${parentPath}[${name}]`);
-        }
-        else {
-            UI.Tooltip.Tooltip.install(this.nameElement, `${parentPath}[${JSON.stringify(name)}]`);
-        }
-    }
-    contextMenuFired(event) {
+    getContextMenu(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         contextMenu.appendApplicableItems(this);
-        if (this.property.symbol) {
-            contextMenu.appendApplicableItems(this.property.symbol);
+        if (this.property.property.symbol) {
+            contextMenu.appendApplicableItems(this.property.property.symbol);
         }
-        if (this.property.value) {
-            contextMenu.appendApplicableItems(this.property.value);
-            if (parentMap.get(this.property) instanceof SDK.RemoteObject.LocalJSONObject) {
-                const { value: { value } } = this.property;
-                const propertyValue = typeof value === 'object' ? JSON.stringify(value, null, 2) : value;
+        if (this.property.object) {
+            contextMenu.appendApplicableItems(this.property.object);
+            if (this.property.parent?.object instanceof SDK.RemoteObject.LocalJSONObject) {
+                const propertyValue = typeof this.property.object === 'object' ? JSON.stringify(this.property.object, null, 2) :
+                    this.property.object;
                 const copyValueHandler = () => {
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.NetworkPanelCopyValue);
                     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(propertyValue);
@@ -983,17 +1115,18 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
                 contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyValue), copyValueHandler, { jslogContext: 'copy-value' });
             }
         }
-        if (!this.property.synthetic && this.nameElement?.title) {
+        if (!this.property.property.synthetic && this.nameElement?.title) {
             const copyPathHandler = Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, this.nameElement.title);
             contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyPropertyPath), copyPathHandler, { jslogContext: 'copy-property-path' });
         }
-        if (parentMap.get(this.property) instanceof SDK.RemoteObject.LocalJSONObject) {
+        if (this.property.parent?.object instanceof SDK.RemoteObject.LocalJSONObject) {
             contextMenu.viewSection().appendItem(i18nString(UIStrings.expandRecursively), this.expandRecursively.bind(this, EXPANDABLE_MAX_DEPTH), { jslogContext: 'expand-recursively' });
             contextMenu.viewSection().appendItem(i18nString(UIStrings.collapseChildren), this.collapseChildren.bind(this), { jslogContext: 'collapse-children' });
         }
-        if (this.propertyValue) {
-            this.propertyValue.appendApplicableItems(event, contextMenu, {});
-        }
+        return contextMenu;
+    }
+    contextMenuFired(event) {
+        const contextMenu = this.getContextMenu(event);
         void contextMenu.show();
     }
     startEditing() {
@@ -1002,9 +1135,9 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
             return;
         }
         this.editableDiv = this.rowContainer.createChild('span', 'editable-div');
-        if (this.property.value) {
-            let text = this.property.value.description;
-            if (this.property.value.type === 'string' && typeof text === 'string') {
+        if (this.property.object) {
+            let text = this.property.object.description;
+            if (this.property.object.type === 'string' && typeof text === 'string') {
                 text = `"${text}"`;
             }
             this.editableDiv.setTextContentTruncatedIfNeeded(text, i18nString(UIStrings.stringIsTooLargeToEdit));
@@ -1061,12 +1194,12 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
     }
     async applyExpression(expression) {
-        const property = SDK.RemoteObject.RemoteObject.toCallArgument(this.property.symbol || this.property.name);
+        const property = SDK.RemoteObject.RemoteObject.toCallArgument(this.property.property.symbol || this.property.name);
         expression = JavaScriptREPL.wrapObjectLiteral(expression.trim());
-        if (this.property.synthetic) {
+        if (this.property.property.synthetic) {
             let invalidate = false;
             if (expression) {
-                invalidate = await this.property.setSyntheticValue(expression);
+                invalidate = await this.property.property.setSyntheticValue(expression);
             }
             if (invalidate) {
                 const parent = this.parent;
@@ -1080,7 +1213,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
             }
             return;
         }
-        const parentObject = parentMap.get(this.property);
+        const parentObject = this.property.parent?.object;
         const errorPromise = expression ? parentObject.setPropertyValue(property, expression) : parentObject.deleteProperty(property);
         const error = await errorPromise;
         if (error) {
@@ -1090,29 +1223,36 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (!expression) {
             // The property was deleted, so remove this tree element.
             this.parent?.removeChild(this);
+            this.property.parent?.removeChild(this.property);
         }
         else {
             // Call updateSiblings since their value might be based on the value that just changed.
             const parent = this.parent;
             if (parent) {
                 parent.invalidateChildren();
+                this.property.parent?.removeChildren();
                 void parent.onpopulate();
             }
         }
+    }
+    invalidateChildren() {
+        super.invalidateChildren();
+        this.property.removeChildren();
     }
     onInvokeGetterClick(result) {
         if (!result.object) {
             return;
         }
-        this.property.value = result.object;
-        this.property.wasThrown = result.wasThrown || false;
+        this.property.property.value = result.object;
+        this.property.property.wasThrown = result.wasThrown || false;
         this.update();
         this.invalidateChildren();
         this.updateExpandable();
     }
     updateExpandable() {
-        if (this.property.value) {
-            this.setExpandable(!this.property.value.customPreview() && this.property.value.hasChildren && !this.property.wasThrown);
+        if (this.property.object) {
+            this.setExpandable(!this.property.object.customPreview() && this.property.object.hasChildren &&
+                !this.property.property.wasThrown);
         }
         else {
             this.setExpandable(false);
@@ -1122,209 +1262,165 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         return this.nameElement.title;
     }
 }
-export class ArrayGroupingTreeElement extends UI.TreeOutline.TreeElement {
-    toggleOnClick;
-    fromIndex;
-    toIndex;
-    object;
-    propertyCount;
-    linkifier;
-    constructor(object, fromIndex, toIndex, propertyCount, linkifier) {
-        super(Platform.StringUtilities.sprintf('[%d … %d]', fromIndex, toIndex), true);
-        this.toggleOnClick = true;
-        this.fromIndex = fromIndex;
-        this.toIndex = toIndex;
-        this.object = object;
-        this.propertyCount = propertyCount;
-        this.linkifier = linkifier;
-    }
-    static async populateArray(treeNode, object, fromIndex, toIndex, linkifier) {
-        await ArrayGroupingTreeElement.populateRanges(treeNode, object, fromIndex, toIndex, true, linkifier);
-    }
-    static async populateRanges(treeNode, object, fromIndex, toIndex, topLevel, linkifier) {
-        const jsonValue = await object.callFunctionJSON(packRanges, [
-            { value: fromIndex },
-            { value: toIndex },
-            { value: ArrayGroupingTreeElement.bucketThreshold },
-            { value: ArrayGroupingTreeElement.sparseIterationThreshold },
-        ]);
-        await callback(jsonValue);
-        /**
-         * Note: must declare params as optional.
-         */
-        function packRanges(fromIndex, toIndex, bucketThreshold, sparseIterationThreshold) {
-            if (fromIndex === undefined || toIndex === undefined || sparseIterationThreshold === undefined ||
-                bucketThreshold === undefined) {
-                return;
-            }
-            let ownPropertyNames = null;
-            const consecutiveRange = (toIndex - fromIndex >= sparseIterationThreshold) && ArrayBuffer.isView(this);
-            function* arrayIndexes(object) {
-                if (fromIndex === undefined || toIndex === undefined || sparseIterationThreshold === undefined) {
-                    return;
-                }
-                if (toIndex - fromIndex < sparseIterationThreshold) {
-                    for (let i = fromIndex; i <= toIndex; ++i) {
-                        if (i in object) {
-                            yield i;
-                        }
-                    }
-                }
-                else {
-                    ownPropertyNames = ownPropertyNames || Object.getOwnPropertyNames(object);
-                    for (let i = 0; i < ownPropertyNames.length; ++i) {
-                        const name = ownPropertyNames[i];
-                        const index = Number(name) >>> 0;
-                        if ((String(index)) === name && fromIndex <= index && index <= toIndex) {
-                            yield index;
-                        }
-                    }
-                }
-            }
-            let count = 0;
-            if (consecutiveRange) {
-                count = toIndex - fromIndex + 1;
-            }
-            else {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                for (const ignored of arrayIndexes(this)) {
-                    ++count;
-                }
-            }
-            let bucketSize = count;
-            if (count <= bucketThreshold) {
-                bucketSize = count;
-            }
-            else {
-                bucketSize = Math.pow(bucketThreshold, Math.ceil(Math.log(count) / Math.log(bucketThreshold)) - 1);
-            }
-            const ranges = [];
-            if (consecutiveRange) {
-                for (let i = fromIndex; i <= toIndex; i += bucketSize) {
-                    const groupStart = i;
-                    let groupEnd = groupStart + bucketSize - 1;
-                    if (groupEnd > toIndex) {
-                        groupEnd = toIndex;
-                    }
-                    ranges.push([groupStart, groupEnd, groupEnd - groupStart + 1]);
-                }
-            }
-            else {
-                count = 0;
-                let groupStart = -1;
-                let groupEnd = 0;
-                for (const i of arrayIndexes(this)) {
-                    if (groupStart === -1) {
-                        groupStart = i;
-                    }
-                    groupEnd = i;
-                    if (++count === bucketSize) {
-                        ranges.push([groupStart, groupEnd, count]);
-                        count = 0;
-                        groupStart = -1;
-                    }
-                }
-                if (count > 0) {
-                    ranges.push([groupStart, groupEnd, count]);
-                }
-            }
-            return { ranges };
-        }
-        async function callback(result) {
-            if (!result) {
-                return;
-            }
-            const ranges = (result.ranges);
-            if (ranges.length === 1) {
-                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-                // @ts-expect-error
-                await ArrayGroupingTreeElement.populateAsFragment(treeNode, object, ranges[0][0], ranges[0][1], linkifier);
-            }
-            else {
-                for (let i = 0; i < ranges.length; ++i) {
-                    const fromIndex = ranges[i][0];
-                    const toIndex = ranges[i][1];
-                    const count = ranges[i][2];
-                    if (fromIndex === toIndex) {
-                        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-                        // @ts-expect-error
-                        await ArrayGroupingTreeElement.populateAsFragment(treeNode, object, fromIndex, toIndex, linkifier);
-                    }
-                    else {
-                        treeNode.appendChild(new ArrayGroupingTreeElement(object, fromIndex, toIndex, count, linkifier));
-                    }
-                }
-            }
-            if (topLevel) {
-                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-                // @ts-expect-error
-                await ArrayGroupingTreeElement.populateNonIndexProperties(treeNode, object, linkifier);
-            }
-        }
-    }
-    static async populateAsFragment(treeNode, object, fromIndex, toIndex, linkifier) {
-        const result = await object.callFunction(buildArrayFragment, [{ value: fromIndex }, { value: toIndex }, { value: ArrayGroupingTreeElement.sparseIterationThreshold }]);
-        if (!result.object || result.wasThrown) {
+async function arrayRangeGroups(object, fromIndex, toIndex) {
+    return await object.callFunctionJSON(packArrayRanges, [
+        { value: fromIndex },
+        { value: toIndex },
+        { value: ArrayGroupingTreeElement.bucketThreshold },
+        { value: ArrayGroupingTreeElement.sparseIterationThreshold },
+    ]);
+    /**
+     * This function is called on the RemoteObject.
+     * Note: must declare params as optional.
+     */
+    function packArrayRanges(fromIndex, toIndex, bucketThreshold, sparseIterationThreshold) {
+        if (fromIndex === undefined || toIndex === undefined || sparseIterationThreshold === undefined ||
+            bucketThreshold === undefined) {
             return;
         }
-        const arrayFragment = result.object;
-        const allProperties = await arrayFragment.getAllProperties(false /* accessorPropertiesOnly */, true /* generatePreview */);
-        arrayFragment.release();
-        const properties = allProperties.properties;
-        if (!properties) {
-            return;
-        }
-        properties.sort(ObjectPropertiesSection.compareProperties);
-        for (let i = 0; i < properties.length; ++i) {
-            parentMap.set(properties[i], this.object);
-            const childTreeElement = new ObjectPropertyTreeElement(properties[i], linkifier);
-            childTreeElement.readOnly = true;
-            treeNode.appendChild(childTreeElement);
-        }
-        function buildArrayFragment(fromIndex, toIndex, sparseIterationThreshold) {
-            const result = Object.create(null);
+        let ownPropertyNames = null;
+        const consecutiveRange = (toIndex - fromIndex >= sparseIterationThreshold) && ArrayBuffer.isView(this);
+        function* arrayIndexes(object) {
             if (fromIndex === undefined || toIndex === undefined || sparseIterationThreshold === undefined) {
                 return;
             }
             if (toIndex - fromIndex < sparseIterationThreshold) {
                 for (let i = fromIndex; i <= toIndex; ++i) {
-                    if (i in this) {
-                        result[i] = this[i];
+                    if (i in object) {
+                        yield i;
                     }
                 }
             }
             else {
-                const ownPropertyNames = Object.getOwnPropertyNames(this);
+                ownPropertyNames = ownPropertyNames || Object.getOwnPropertyNames(object);
                 for (let i = 0; i < ownPropertyNames.length; ++i) {
                     const name = ownPropertyNames[i];
                     const index = Number(name) >>> 0;
-                    if (String(index) === name && fromIndex <= index && index <= toIndex) {
-                        result[index] = this[index];
+                    if ((String(index)) === name && fromIndex <= index && index <= toIndex) {
+                        yield index;
                     }
                 }
             }
-            return result;
+        }
+        let count = 0;
+        if (consecutiveRange) {
+            count = toIndex - fromIndex + 1;
+        }
+        else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            for (const ignored of arrayIndexes(this)) {
+                ++count;
+            }
+        }
+        let bucketSize = count;
+        if (count <= bucketThreshold) {
+            bucketSize = count;
+        }
+        else {
+            bucketSize = Math.pow(bucketThreshold, Math.ceil(Math.log(count) / Math.log(bucketThreshold)) - 1);
+        }
+        const ranges = [];
+        if (consecutiveRange) {
+            for (let i = fromIndex; i <= toIndex; i += bucketSize) {
+                const groupStart = i;
+                let groupEnd = groupStart + bucketSize - 1;
+                if (groupEnd > toIndex) {
+                    groupEnd = toIndex;
+                }
+                ranges.push([groupStart, groupEnd, groupEnd - groupStart + 1]);
+            }
+        }
+        else {
+            count = 0;
+            let groupStart = -1;
+            let groupEnd = 0;
+            for (const i of arrayIndexes(this)) {
+                if (groupStart === -1) {
+                    groupStart = i;
+                }
+                groupEnd = i;
+                if (++count === bucketSize) {
+                    ranges.push([groupStart, groupEnd, count]);
+                    count = 0;
+                    groupStart = -1;
+                }
+            }
+            if (count > 0) {
+                ranges.push([groupStart, groupEnd, count]);
+            }
+        }
+        return { ranges };
+    }
+}
+/**
+ * This function is called on the RemoteObject.
+ */
+function buildArrayFragment(fromIndex, toIndex, sparseIterationThreshold) {
+    const result = Object.create(null);
+    if (fromIndex === undefined || toIndex === undefined || sparseIterationThreshold === undefined) {
+        return;
+    }
+    if (toIndex - fromIndex < sparseIterationThreshold) {
+        for (let i = fromIndex; i <= toIndex; ++i) {
+            if (i in this) {
+                result[i] = this[i];
+            }
         }
     }
-    static async populateNonIndexProperties(treeNode, object, linkifier) {
-        const { properties, internalProperties } = await SDK.RemoteObject.RemoteObject.loadFromObjectPerProto(object, true /* generatePreview */, true /* nonIndexedPropertiesOnly */);
-        if (!properties) {
+    else {
+        const ownPropertyNames = Object.getOwnPropertyNames(this);
+        for (let i = 0; i < ownPropertyNames.length; ++i) {
+            const name = ownPropertyNames[i];
+            const index = Number(name) >>> 0;
+            if (String(index) === name && fromIndex <= index && index <= toIndex) {
+                result[index] = this[index];
+            }
+        }
+    }
+    return result;
+}
+export class ArrayGroupingTreeElement extends UI.TreeOutline.TreeElement {
+    toggleOnClick;
+    linkifier;
+    #child;
+    constructor(child, linkifier) {
+        super(Platform.StringUtilities.sprintf('[%d … %d]', child.range.fromIndex, child.range.toIndex), true);
+        this.#child = child;
+        this.toggleOnClick = true;
+        this.linkifier = linkifier;
+    }
+    static async populate(treeNode, children, linkifier) {
+        if (!children.arrayRanges) {
             return;
         }
-        ObjectPropertyTreeElement.populateWithProperties(treeNode, properties, internalProperties, false, false, object, linkifier);
+        if (children.arrayRanges.length === 1) {
+            await ObjectPropertyTreeElement.populate(treeNode, children.arrayRanges[0], false, false, linkifier);
+        }
+        else {
+            for (const child of children.arrayRanges) {
+                if (child.singular) {
+                    await ObjectPropertyTreeElement.populate(treeNode, child, false, false, linkifier);
+                }
+                else {
+                    treeNode.appendChild(new ArrayGroupingTreeElement(child, linkifier));
+                }
+            }
+        }
+        ObjectPropertyTreeElement.populateWithProperties(treeNode, children, false, false, linkifier);
+    }
+    invalidateChildren() {
+        super.invalidateChildren();
+        this.#child.removeChildren();
     }
     async onpopulate() {
-        if (this.propertyCount >= ArrayGroupingTreeElement.bucketThreshold) {
-            await ArrayGroupingTreeElement.populateRanges(this, this.object, this.fromIndex, this.toIndex, false, this.linkifier);
-            return;
-        }
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // @ts-expect-error
-        await ArrayGroupingTreeElement.populateAsFragment(this, this.object, this.fromIndex, this.toIndex, this.linkifier);
+        this.removeChildren();
+        this.#child.removeChildren();
+        await ObjectPropertyTreeElement.populate(this, this.#child, false, false, this.linkifier);
     }
     onattach() {
         this.listItemElement.classList.add('object-properties-section-name');
     }
+    // These should be module constants but they are modified by layout tests.
     static bucketThreshold = 100;
     static sparseIterationThreshold = 250000;
 }
@@ -1384,11 +1480,7 @@ export class ObjectPropertiesSectionsTreeExpandController {
         let result;
         while (current !== rootElement) {
             let currentName = '';
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (current.property) {
-                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (current instanceof ObjectPropertyTreeElement) {
                 currentName = current.property.name;
             }
             else {
@@ -1434,65 +1526,76 @@ export class Renderer {
         };
     }
 }
-export class ObjectPropertyValue {
-    element;
-    constructor(element) {
-        this.element = element;
-    }
-    appendApplicableItems(_event, _contextMenu, _object) {
-    }
-}
-export class ExpandableTextPropertyValue extends ObjectPropertyValue {
+export class ExpandableTextPropertyValue {
     text;
     maxLength;
-    expandElement;
     maxDisplayableTextLength;
-    expandElementText;
-    copyButtonText;
+    #byteCount;
+    #expanded = false;
+    #element;
     constructor(element, text, maxLength) {
-        // abbreviated text and expandable text controls are added as children to element
-        super(element);
-        const container = element.createChild('span');
+        this.#element = element;
         this.text = text;
         this.maxLength = maxLength;
-        container.textContent = text.slice(0, maxLength);
-        UI.Tooltip.Tooltip.install(container, `${text.slice(0, maxLength)}…`);
-        this.expandElement = container.createChild('button');
         this.maxDisplayableTextLength = 10000000;
-        const byteCount = Platform.StringUtilities.countWtf8Bytes(text);
-        const totalBytesText = i18n.ByteUtilities.bytesToString(byteCount);
-        if (this.text.length < this.maxDisplayableTextLength) {
-            this.expandElementText = i18nString(UIStrings.showMoreS, { PH1: totalBytesText });
-            this.expandElement.setAttribute('data-text', this.expandElementText);
-            this.expandElement.setAttribute('jslog', `${VisualLogging.action('expand').track({ click: true })}`);
-            this.expandElement.classList.add('expandable-inline-button');
-            this.expandElement.addEventListener('click', this.expandText.bind(this));
-        }
-        else {
-            this.expandElement.setAttribute('data-text', i18nString(UIStrings.longTextWasTruncatedS, { PH1: totalBytesText }));
-            this.expandElement.classList.add('undisplayable-text');
-        }
-        this.copyButtonText = i18nString(UIStrings.copy);
-        const copyButton = container.createChild('button', 'expandable-inline-button');
-        copyButton.setAttribute('data-text', this.copyButtonText);
-        copyButton.setAttribute('jslog', `${VisualLogging.action('copy').track({ click: true })}`);
-        copyButton.addEventListener('click', this.copyText.bind(this));
+        this.#byteCount = Platform.StringUtilities.countWtf8Bytes(text);
+        this.#render();
     }
-    appendApplicableItems(_event, contextMenu, _object) {
-        if (this.text.length < this.maxDisplayableTextLength && this.expandElement) {
-            contextMenu.clipboardSection().appendItem(this.expandElementText || '', this.expandText.bind(this), { jslogContext: 'show-more' });
-        }
-        contextMenu.clipboardSection().appendItem(this.copyButtonText, this.copyText.bind(this), { jslogContext: 'copy' });
+    get element() {
+        return this.#element;
+    }
+    #render() {
+        const totalBytesText = i18n.ByteUtilities.bytesToString(this.#byteCount);
+        const onContextMenu = (e) => {
+            const { target } = e;
+            if (!(target instanceof Element)) {
+                return;
+            }
+            const listItem = target.closest('li');
+            const element = listItem && UI.TreeOutline.TreeElement.getTreeElementBylistItemNode(listItem);
+            if (!(element instanceof ObjectPropertyTreeElement)) {
+                return;
+            }
+            const contextMenu = element.getContextMenu(e);
+            if (this.text.length < this.maxDisplayableTextLength && !this.#expanded) {
+                contextMenu.clipboardSection().appendItem(i18nString(UIStrings.showMoreS, { PH1: totalBytesText }), this.expandText.bind(this), { jslogContext: 'show-more' });
+            }
+            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copy), this.copyText.bind(this), { jslogContext: 'copy' });
+            void contextMenu.show();
+            e.consume(true);
+        };
+        const croppedText = this.text.slice(0, this.maxLength);
+        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+        render(
+        // clang-format off
+        html `<span title=${croppedText + '…'} @contextmenu=${onContextMenu}>
+               ${this.#expanded ? this.text : croppedText}
+               <button
+                 ?hidden=${this.#expanded}
+                 @click=${this.#canExpand ? this.expandText.bind(this) : undefined}
+                 jslog=${ifDefined(this.#canExpand ? VisualLogging.action('expand').track({ click: true }) : undefined)}
+                 class=${this.#canExpand ? 'expandable-inline-button' : 'undisplayable-text'}
+                 data-text=${this.#canExpand ? i18nString(UIStrings.showMoreS, { PH1: totalBytesText }) :
+            i18nString(UIStrings.longTextWasTruncatedS, { PH1: totalBytesText })}
+                 ></button>
+               <button
+                 class=expandable-inline-button
+                 @click=${this.copyText.bind(this)}
+                 data-text=${i18nString(UIStrings.copy)}
+                 jslog=${VisualLogging.action('copy').track({ click: true })}
+                 ></button>
+             </span>`, 
+        // clang-format on
+        this.#element);
+    }
+    get #canExpand() {
+        return this.text.length < this.maxDisplayableTextLength;
     }
     expandText() {
-        if (!this.expandElement) {
-            return;
+        if (!this.#expanded) {
+            this.#expanded = true;
+            this.#render();
         }
-        if (this.expandElement.parentElement) {
-            this.expandElement.parentElement.insertBefore(document.createTextNode(this.text.slice(this.maxLength)), this.expandElement);
-        }
-        this.expandElement.remove();
-        this.expandElement = null;
     }
     copyText() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.text);

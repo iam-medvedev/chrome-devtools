@@ -6,8 +6,11 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import { assertScreenshot, dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import * as PanelUtils from '../utils/utils.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 for (const individualThrottlingEnabled of [false, true]) {
@@ -62,7 +65,7 @@ for (const individualThrottlingEnabled of [false, true]) {
                 await assertScreenshot('request_conditions/editor.png');
             }
         });
-        describe('update', () => {
+        describe('affected counts', () => {
             const updatesOnRequestFinishedEvent = (inScope) => async () => {
                 const target = createTarget();
                 SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
@@ -72,13 +75,16 @@ for (const individualThrottlingEnabled of [false, true]) {
                 renderElementIntoDOM(requestConditionsDrawer);
                 await requestConditionsDrawer.updateComplete;
                 assert.exists(networkManager);
-                const updateStub = sinon.spy(requestConditionsDrawer, 'requestUpdate');
+                const list = requestConditionsDrawer.contentElement.querySelector('.blocked-urls')?.shadowRoot;
+                const countWidget = list?.querySelector('.blocked-url-count')?.getWidget();
+                assert.exists(countWidget);
+                const updateStub = sinon.spy(countWidget, 'requestUpdate');
                 const request = new SDK.NetworkRequest.NetworkRequest('', undefined, urlString `http://example.com`, urlString `http://example.com`, null, null, null);
                 request.setBlockedReason("inspector" /* Protocol.Network.BlockedReason.Inspector */);
                 networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
                 assert.strictEqual(updateStub.calledOnce, inScope);
                 if (inScope) {
-                    await requestConditionsDrawer.updateComplete;
+                    await countWidget.updateComplete;
                     if (individualThrottlingEnabled) {
                         await assertScreenshot(`request_conditions/throttling_blocked-matched.png`);
                     }
@@ -93,12 +99,15 @@ for (const individualThrottlingEnabled of [false, true]) {
                     await assertScreenshot(`request_conditions/blocked-not-matched.png`);
                 }
             };
-            it('is called upon RequestFinished event (when target is in scope)', updatesOnRequestFinishedEvent(true));
-            it('is called upon RequestFinished event (when target is out of scope)', updatesOnRequestFinishedEvent(false));
-            it('is called upon Reset event', async () => {
-                const viewFunction = createViewFunctionStub(Network.RequestConditionsDrawer.RequestConditionsDrawer);
-                new Network.RequestConditionsDrawer.RequestConditionsDrawer(undefined, viewFunction);
+            it('are updated upon RequestFinished event (when target is in scope)', updatesOnRequestFinishedEvent(true));
+            it('are updated upon RequestFinished event (when target is out of scope)', updatesOnRequestFinishedEvent(false));
+            it('are updated upon Reset event', async () => {
+                const viewFunction = createViewFunctionStub(Network.RequestConditionsDrawer.AffectedCountWidget);
+                const widget = new Network.RequestConditionsDrawer.AffectedCountWidget(undefined, viewFunction);
+                widget.condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*', enabled: true });
+                widget.drawer = sinon.createStubInstance(Network.RequestConditionsDrawer.RequestConditionsDrawer);
                 await viewFunction.nextInput;
+                renderElementIntoDOM(widget);
                 Logs.NetworkLog.NetworkLog.instance().dispatchEventToListeners(Logs.NetworkLog.Events.Reset, { clearIfPreserved: true });
                 await viewFunction.nextInput;
             });
@@ -187,6 +196,25 @@ describeWithMockConnection('RequestConditionsDrawer', () => {
         decreaseButton.click();
         sinon.assert.calledOnceWithExactly(increasePriority, condition);
         sinon.assert.calledOnceWithExactly(decreasePriority, condition);
+    });
+    it('highlights conditions', async () => {
+        const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
+        UI.Context.Context.instance().setFlavor(Network.RequestConditionsDrawer.RequestConditionsDrawer, requestConditionsDrawer);
+        const index = 0;
+        const urlPattern = 'http://example.com/*bar';
+        const conditions = SDK.NetworkManager.RequestCondition.createFromSetting({
+            urlPattern,
+            enabled: true,
+            conditions: 'NO_THROTTLING',
+        });
+        conditions.ruleIds.add('abc');
+        SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(conditions);
+        const item = requestConditionsDrawer.renderItem(conditions, /* editable=*/ true, index);
+        const viewShown = expectCall(sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves());
+        const highlighted = expectCall(sinon.stub(PanelUtils.PanelUtils, 'highlightElement'));
+        void Network.RequestConditionsDrawer.RequestConditionsDrawer.reveal(new SDK.NetworkManager.AppliedNetworkConditions(SDK.NetworkManager.NoThrottlingConditions, 'abc', urlPattern));
+        assert.deepEqual(['network.blocked-urls'], await viewShown);
+        assert.deepEqual([item], await highlighted);
     });
 });
 //# sourceMappingURL=RequestConditionsDrawer.test.js.map

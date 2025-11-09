@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
@@ -129,10 +130,12 @@ describeWithLocale('ResourceTimingView', () => {
         assert.strictEqual(content[1], `Actual source: ${networkString}`, 'actual source does not match');
     });
     it('Timing table shows throttling indicator', async () => {
+        stubNoopSettings();
         const container = document.createElement('div');
         renderElementIntoDOM(container, { includeCommonStyles: true });
         const request = createNetworkRequest("cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */, "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */);
         const timeRanges = NetworkTimeCalculator.calculateRequestTimeRanges(request, 100);
+        const wasThrottled = new SDK.NetworkManager.AppliedNetworkConditions(SDK.NetworkManager.Slow3GConditions, '');
         const input = {
             requestUnfinished: false,
             requestStartTime: 0,
@@ -143,10 +146,15 @@ describeWithLocale('ResourceTimingView', () => {
             timeRanges,
             calculator: new NetworkTimeCalculator.NetworkTimeCalculator(true),
             serverTimings: [],
-            wasThrottled: SDK.NetworkManager.Slow3GConditions,
+            wasThrottled
         };
         Network.RequestTimingView.DEFAULT_VIEW(input, {}, container);
         await assertScreenshot('network/request-timing-view-throttling.png');
+        const icon = container.querySelector('devtools-icon[name=watch]');
+        assert.exists(icon);
+        const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal');
+        icon.click();
+        sinon.assert.calledOnceWithExactly(revealStub, wasThrottled, false);
     });
 });
 //# sourceMappingURL=RequestTimingView.test.js.map

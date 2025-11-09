@@ -1,7 +1,8 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { deinitializeGlobalVars, initializeGlobalVars, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
+import { updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
+import { setupSettings } from '../../testing/SettingsHelpers.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Common from './common.js';
 const settingName = 'mock-setting';
@@ -12,7 +13,7 @@ describe('SettingRegistration', () => {
     // const enum `SettingCategory` not available in top level scope, thats why
     // its initialized here.
     const settingCategory = "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */;
-    before(async () => {
+    beforeEach(() => {
         Common.Settings.registerSettingsForTest([{
                 category: settingCategory,
                 title: i18n.i18n.lockedLazyString(settingTitle),
@@ -30,10 +31,7 @@ describe('SettingRegistration', () => {
                     },
                 ],
             }], true);
-        await initializeGlobalVars({ reset: false });
-    });
-    after(async () => {
-        await deinitializeGlobalVars();
+        setupSettings(false);
     });
     it('retrieves a registered setting', () => {
         const preRegisteredSetting = Common.Settings.Settings.instance().moduleSetting(settingName);

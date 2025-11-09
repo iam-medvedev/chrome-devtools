@@ -79,10 +79,10 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format on
 };
 export class ExploreWidget extends UI.Widget.Widget {
-    view;
-    constructor(element, view) {
+    #view;
+    constructor(element, view = DEFAULT_VIEW) {
         super(element);
-        this.view = view ?? DEFAULT_VIEW;
+        this.#view = view;
     }
     wasShown() {
         super.wasShown();
@@ -140,7 +140,7 @@ export class ExploreWidget extends UI.Widget.Widget {
                 text: 'to ask about a trace item'
             });
         }
-        this.view({
+        this.#view({
             featureCards,
         }, {}, this.contentElement);
     }

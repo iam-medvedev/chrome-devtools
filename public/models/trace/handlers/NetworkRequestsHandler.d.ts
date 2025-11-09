@@ -19,6 +19,7 @@ export interface TraceEventsForNetworkRequest {
     resourceFinish?: Types.Events.ResourceFinish;
     receivedData?: Types.Events.ResourceReceivedData[];
     resourceMarkAsCached?: Types.Events.ResourceMarkAsCached;
+    preloadRenderBlockingStatusChange?: Types.Events.PreloadRenderBlockingStatusChangeEvent[];
 }
 export interface WebSocketTraceDataForFrame {
     frame: string;

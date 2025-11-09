@@ -95,7 +95,7 @@ export declare class TimelineDetailsContentHelper {
     appendElementRow(title: string, content: string | Node, isWarning?: boolean, isStacked?: boolean): void;
     appendLocationRow(title: string, url: string, startLine: number, startColumn?: number, text?: string, omitOrigin?: boolean): void;
     appendLocationRange(title: string, url: Platform.DevToolsPath.UrlString, startLine: number, endLine?: number): void;
-    createChildStackTraceElement(stackTrace: Protocol.Runtime.StackTrace): void;
+    createChildStackTraceElement(runtimeStackTrace: Protocol.Runtime.StackTrace): Promise<void>;
 }
 export declare const categoryBreakdownCacheSymbol: unique symbol;
 export interface TimelineMarkerStyle {

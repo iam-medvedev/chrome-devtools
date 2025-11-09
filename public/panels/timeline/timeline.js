@@ -2938,6 +2938,7 @@ import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as Platform12 from "./../../core/platform/platform.js";
 import * as Root5 from "./../../core/root/root.js";
 import * as SDK9 from "./../../core/sdk/sdk.js";
+import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Trace24 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver3 from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
@@ -9620,7 +9621,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.statusDialog?.updateProgressBar(i18nString20(UIStrings20.processed), 70);
     this.flameChart.setModel(parsedTrace, this.#eventToRelatedInsights);
     this.flameChart.resizeToPreferredHeights();
-    this.flameChart.setSelectionAndReveal(null);
+    void this.flameChart.setSelectionAndReveal(null);
     this.#sideBar.setParsedTrace(parsedTrace);
     this.#searchableView.showWidget();
     const exclusiveFilter = this.#exclusiveFilterPerTrace.get(traceIndex) ?? null;
@@ -10251,7 +10252,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   select(selection) {
     this.#announceSelectionToAria(this.selection, selection);
     this.selection = selection;
-    this.flameChart.setSelectionAndReveal(selection);
+    void this.flameChart.setSelectionAndReveal(selection);
   }
   selectEntryAtTime(events, time) {
     if (!events) {
@@ -10314,7 +10315,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     }
   }
   #openSummaryTab() {
-    this.flameChart.setSelectionAndReveal(null);
+    void this.flameChart.setSelectionAndReveal(null);
     this.flameChart.selectDetailsViewTab(Tab.Details, null);
   }
   /**
@@ -10353,14 +10354,14 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
           message: "The trace was loaded successfully but no Insights were detected."
         };
       }
-      const navigationId = Array.from(parsedTrace.insights.keys()).find((k) => k !== "NO_NAVIGATION");
-      if (!navigationId) {
+      const insightSetId = Array.from(parsedTrace.insights.keys()).find((k) => k !== "NO_NAVIGATION");
+      if (!insightSetId) {
         return {
           type: "error",
           message: "The trace was loaded successfully but no navigation was detected."
         };
       }
-      const insightsForNav = parsedTrace.insights.get(navigationId);
+      const insightsForNav = parsedTrace.insights.get(insightSetId);
       if (!insightsForNav) {
         return {
           type: "error",
@@ -11863,12 +11864,12 @@ var TimelineUIUtils = class _TimelineUIUtils {
     const stackTraceForEvent = Trace24.Extras.StackTraceForEvent.get(event, parsedTrace.data);
     if (stackTraceForEvent?.callFrames.length || stackTraceForEvent?.description || stackTraceForEvent?.parent) {
       contentHelper.addSection(i18nString21(UIStrings21.functionStack));
-      contentHelper.createChildStackTraceElement(stackTraceForEvent);
+      await contentHelper.createChildStackTraceElement(stackTraceForEvent);
     } else {
       const stackTrace = Trace24.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event);
       if (stackTrace?.length) {
         contentHelper.addSection(stackLabel);
-        contentHelper.createChildStackTraceElement(_TimelineUIUtils.stackTraceFromCallFrames(stackTrace));
+        await contentHelper.createChildStackTraceElement(_TimelineUIUtils.stackTraceFromCallFrames(stackTrace));
       }
     }
     switch (event.name) {
@@ -11897,12 +11898,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       const stackTrace = Trace24.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(initiator);
       if (stackTrace) {
         contentHelper.addSection(initiatorStackLabel);
-        contentHelper.createChildStackTraceElement(_TimelineUIUtils.stackTraceFromCallFrames(stackTrace.map((frame) => {
-          return {
-            ...frame,
-            scriptId: String(frame.scriptId)
-          };
-        })));
+        await contentHelper.createChildStackTraceElement(_TimelineUIUtils.stackTraceFromCallFrames(stackTrace));
       }
       const link = this.createEntryLink(initiator);
       contentHelper.appendElementRow(i18nString21(UIStrings21.initiatedBy), link);
@@ -12442,21 +12438,18 @@ var TimelineDetailsContentHelper = class {
     UI11.UIUtils.createTextChild(locationContent, Platform12.StringUtilities.sprintf(" [%s\u2026%s]", startLine + 1, (endLine || 0) + 1 || ""));
     this.appendElementRow(title, locationContent);
   }
-  createChildStackTraceElement(stackTrace) {
+  async createChildStackTraceElement(runtimeStackTrace) {
     if (!this.#linkifier) {
       return;
     }
-    const resolvedStackTrace = structuredClone(stackTrace);
-    let currentResolvedStackTrace = resolvedStackTrace;
-    while (currentResolvedStackTrace) {
-      currentResolvedStackTrace.callFrames = currentResolvedStackTrace.callFrames.map((callFrame) => ({
-        ...callFrame,
-        functionName: SourceMapsResolver3.SourceMapsResolver.resolvedCodeLocationForCallFrame(callFrame)?.name || callFrame.functionName
-      }));
-      currentResolvedStackTrace = currentResolvedStackTrace.parent;
+    let callFrameContents;
+    if (this.target) {
+      const stackTrace = await Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createStackTraceFromProtocolRuntime(runtimeStackTrace, this.target);
+      callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent(void 0, this.target ?? void 0, this.#linkifier, { stackTrace, tabStops: true, showColumnNumber: true });
+    } else {
+      callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent(void 0, this.target ?? void 0, this.#linkifier, { runtimeStackTrace, tabStops: true, showColumnNumber: true });
     }
     const stackTraceElement = this.tableElement.createChild("div", "timeline-details-view-row timeline-details-stack-values");
-    const callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent(void 0, this.target ?? void 0, this.#linkifier, { stackTrace: resolvedStackTrace, tabStops: true, showColumnNumber: true });
     callFrameContents.markAsRoot();
     callFrameContents.show(stackTraceElement);
   }
@@ -15723,10 +15716,10 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.#overlays.addEventListener(Overlays3.Overlays.EventReferenceClick.eventName, (event) => {
       const eventRef = event;
       const fromTraceEvent = selectionFromEvent(eventRef.event);
-      this.openSelectionDetailsView(fromTraceEvent);
+      void this.openSelectionDetailsView(fromTraceEvent);
     });
     this.element.addEventListener(TimelineInsights2.EventRef.EventReferenceClick.eventName, (event) => {
-      this.setSelectionAndReveal(selectionFromEvent(event.event));
+      void this.setSelectionAndReveal(selectionFromEvent(event.event));
     });
     this.element.addEventListener("keydown", this.#keydownHandler.bind(this));
     this.element.addEventListener("pointerdown", this.#pointerDownHandler.bind(this));
@@ -15851,9 +15844,9 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
       return;
     }
     const fieldMetricResultsByNavigationId = /* @__PURE__ */ new Map();
-    for (const [key, insightSet] of insights) {
-      if (insightSet.navigation) {
-        fieldMetricResultsByNavigationId.set(key, Trace32.Insights.Common.getFieldMetricsForInsightSet(insightSet, metadata, CrUXManager5.CrUXManager.instance().getSelectedScope()));
+    for (const insightSet of insights.values()) {
+      if (insightSet.navigation?.args.data?.navigationId) {
+        fieldMetricResultsByNavigationId.set(insightSet.navigation.args.data.navigationId, Trace32.Insights.Common.getFieldMetricsForInsightSet(insightSet, metadata, CrUXManager5.CrUXManager.instance().getSelectedScope()));
       }
     }
     for (const marker of this.#markers) {
@@ -16476,7 +16469,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
       this.networkFlameChart.revealEntryVertically(networkIndex);
     }
   }
-  setSelectionAndReveal(selection) {
+  async setSelectionAndReveal(selection) {
     if (selection && this.#currentSelection && selectionsEqual(selection, this.#currentSelection)) {
       return;
     }
@@ -16496,7 +16489,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.networkDataProvider.buildFlowForInitiator(networkIndex);
     this.networkFlameChart.setSelectedEntry(networkIndex);
     if (this.detailsView) {
-      void this.detailsView.setSelection(selection);
+      await this.detailsView.setSelection(selection);
     }
     if (selectionIsEvent(selection)) {
       this.addOverlay({
@@ -16526,9 +16519,9 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
   // Only opens the details view of a selection. This is used for Timing Markers. Timing markers replace
   // their entry with a new UI. Because of that, their entries can no longer be "selected" in the timings track,
   // so if clicked, we only open their details view.
-  openSelectionDetailsView(selection) {
+  async openSelectionDetailsView(selection) {
     if (this.detailsView) {
-      void this.detailsView.setSelection(selection);
+      await this.detailsView.setSelection(selection);
     }
   }
   /**
@@ -16574,10 +16567,10 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
   showAllMainChartTracks() {
     this.mainFlameChart.showAllGroups();
   }
-  onAddEntryLabelAnnotation(dataProvider, event) {
+  async onAddEntryLabelAnnotation(dataProvider, event) {
     const selection = dataProvider.createSelection(event.data.entryIndex);
     if (selectionIsEvent(selection)) {
-      this.setSelectionAndReveal(selection);
+      await this.setSelectionAndReveal(selection);
       ModificationsManager.activeManager()?.createAnnotation({
         type: "ENTRY_LABEL",
         entry: selection.event,

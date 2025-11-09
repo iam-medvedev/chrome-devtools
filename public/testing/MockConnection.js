@@ -51,9 +51,9 @@ async function enable({ reset = true } = {}) {
     // minimally there.
     await initializeGlobalVars({ reset });
     setMockResourceTree(true);
-    ProtocolClient.ConnectionTransport.ConnectionTransport.setFactory(() => new MockConnection());
+    ProtocolClient.ConnectionTransport.ConnectionTransport.setFactory(() => new MockTransport());
 }
-class MockConnection extends ProtocolClient.ConnectionTransport.ConnectionTransport {
+class MockTransport extends ProtocolClient.ConnectionTransport.ConnectionTransport {
     messageCallback;
     setOnMessage(callback) {
         this.messageCallback = callback;
@@ -73,7 +73,7 @@ class MockConnection extends ProtocolClient.ConnectionTransport.ConnectionTransp
                     sessionId: outgoingMessage.sessionId,
                     error: {
                         message: `Method ${outgoingMessage.method} is not stubbed in MockConnection`,
-                        code: ProtocolClient.InspectorBackend.DevToolsStubErrorCode,
+                        code: ProtocolClient.CDPConnection.CDPErrorStatus.DEVTOOLS_STUB_ERROR,
                     }
                 });
                 return;

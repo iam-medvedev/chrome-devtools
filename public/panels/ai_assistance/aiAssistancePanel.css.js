@@ -25,7 +25,7 @@ export default `/*
   align-items: center;
   overflow: hidden;
 
-  & .explore {
+  & .fill-panel {
     width: 100%;
     height: 100%;
     display: flex;

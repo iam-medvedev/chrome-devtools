@@ -268,6 +268,9 @@ let BidiPage = (() => {
         resize(_params) {
             throw new Error('Method not implemented for WebDriver BiDi yet.');
         }
+        openDevTools() {
+            throw new Error('Method not implemented for WebDriver BiDi yet.');
+        }
         async focusedFrame() {
             const env_1 = { stack: [], error: void 0, hasError: false };
             try {
@@ -395,17 +398,34 @@ let BidiPage = (() => {
         }
         async setViewport(viewport) {
             if (!this.browser().cdpSupported) {
-                await this.#frame.browsingContext.setViewport({
-                    viewport: viewport?.width && viewport?.height
+                const viewportSize = viewport?.width && viewport?.height
+                    ? {
+                        width: viewport.width,
+                        height: viewport.height,
+                    }
+                    : null;
+                const devicePixelRatio = viewport?.deviceScaleFactor
+                    ? viewport.deviceScaleFactor
+                    : null;
+                // If `viewport` is not set, remove screen orientation override.
+                const screenOrientation = viewport
+                    ? viewport.isLandscape
                         ? {
-                            width: viewport.width,
-                            height: viewport.height,
+                            natural: "landscape" /* Bidi.Emulation.ScreenOrientationNatural.Landscape */,
+                            type: 'landscape-primary',
                         }
-                        : null,
-                    devicePixelRatio: viewport?.deviceScaleFactor
-                        ? viewport.deviceScaleFactor
-                        : null,
-                });
+                        : {
+                            natural: "portrait" /* Bidi.Emulation.ScreenOrientationNatural.Portrait */,
+                            type: 'portrait-primary',
+                        }
+                    : null;
+                await Promise.all([
+                    this.#frame.browsingContext.setViewport({
+                        viewport: viewportSize,
+                        devicePixelRatio,
+                    }),
+                    this.#frame.browsingContext.setScreenOrientationOverride(screenOrientation),
+                ]);
                 this.#viewport = viewport;
                 return;
             }

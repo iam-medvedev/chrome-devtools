@@ -1797,7 +1797,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.flameChart.setModel(parsedTrace, this.#eventToRelatedInsights);
         this.flameChart.resizeToPreferredHeights();
         // Reset the visual selection as we've just swapped to a new trace.
-        this.flameChart.setSelectionAndReveal(null);
+        void this.flameChart.setSelectionAndReveal(null);
         this.#sideBar.setParsedTrace(parsedTrace);
         this.#searchableView.showWidget();
         const exclusiveFilter = this.#exclusiveFilterPerTrace.get(traceIndex) ?? null;
@@ -2506,7 +2506,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     select(selection) {
         this.#announceSelectionToAria(this.selection, selection);
         this.selection = selection;
-        this.flameChart.setSelectionAndReveal(selection);
+        void this.flameChart.setSelectionAndReveal(selection);
     }
     selectEntryAtTime(events, time) {
         if (!events) {
@@ -2573,7 +2573,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     }
     #openSummaryTab() {
         // If we have a selection, we should remove it.
-        this.flameChart.setSelectionAndReveal(null);
+        void this.flameChart.setSelectionAndReveal(null);
         this.flameChart.selectDetailsViewTab(Tab.Details, null);
     }
     /**
@@ -2614,14 +2614,14 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                     message: 'The trace was loaded successfully but no Insights were detected.',
                 };
             }
-            const navigationId = Array.from(parsedTrace.insights.keys()).find(k => k !== 'NO_NAVIGATION');
-            if (!navigationId) {
+            const insightSetId = Array.from(parsedTrace.insights.keys()).find(k => k !== 'NO_NAVIGATION');
+            if (!insightSetId) {
                 return {
                     type: "error" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ERROR */,
                     message: 'The trace was loaded successfully but no navigation was detected.',
                 };
             }
-            const insightsForNav = parsedTrace.insights.get(navigationId);
+            const insightsForNav = parsedTrace.insights.get(insightSetId);
             if (!insightsForNav) {
                 return {
                     type: "error" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ERROR */,

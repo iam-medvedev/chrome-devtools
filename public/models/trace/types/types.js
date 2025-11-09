@@ -244,6 +244,7 @@ __export(TraceEvents_exports, {
   isPhaseAsync: () => isPhaseAsync,
   isPipelineReporter: () => isPipelineReporter,
   isPrePaint: () => isPrePaint,
+  isPreloadRenderBlockingStatusChangeEvent: () => isPreloadRenderBlockingStatusChangeEvent,
   isProcessName: () => isProcessName,
   isProfile: () => isProfile,
   isProfileCall: () => isProfileCall,
@@ -853,6 +854,9 @@ function isRundownScriptSourceLarge(event) {
 }
 function isAnyScriptSourceEvent(event) {
   return event.cat === "disabled-by-default-devtools.v8-source-rundown-sources";
+}
+function isPreloadRenderBlockingStatusChangeEvent(event) {
+  return event.name === "PreloadRenderBlockingStatusChange";
 }
 export {
   Configuration_exports as Configuration,

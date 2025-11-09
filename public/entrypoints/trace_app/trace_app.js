@@ -1523,36 +1523,6 @@ var UIStrings3 = {
 var str_3 = i18n5.i18n.registerUIStrings("core/sdk/sdk-meta.ts", UIStrings3);
 var i18nLazyString3 = i18n5.i18n.getLazilyComputedLocalizedString.bind(void 0, str_3);
 Common3.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "skip-stack-frames-pattern",
-  settingType: "regex",
-  defaultValue: "/node_modules/|^node:"
-});
-Common3.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "skip-content-scripts",
-  settingType: "boolean",
-  defaultValue: true
-});
-Common3.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "automatically-ignore-list-known-third-party-scripts",
-  settingType: "boolean",
-  defaultValue: true
-});
-Common3.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "skip-anonymous-scripts",
-  settingType: "boolean",
-  defaultValue: false
-});
-Common3.Settings.registerSettingExtension({
-  storageType: "Synced",
-  settingName: "enable-ignore-listing",
-  settingType: "boolean",
-  defaultValue: true
-});
-Common3.Settings.registerSettingExtension({
   category: "CONSOLE",
   storageType: "Synced",
   title: i18nLazyString3(UIStrings3.preserveLogUponNavigation),
@@ -2282,11 +2252,44 @@ Common3.Settings.registerSettingExtension({
   }
 });
 
+// gen/front_end/models/workspace/workspace-meta.js
+import * as Common4 from "./../../core/common/common.js";
+Common4.Settings.registerSettingExtension({
+  storageType: "Synced",
+  settingName: "skip-stack-frames-pattern",
+  settingType: "regex",
+  defaultValue: "/node_modules/|^node:"
+});
+Common4.Settings.registerSettingExtension({
+  storageType: "Synced",
+  settingName: "skip-content-scripts",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common4.Settings.registerSettingExtension({
+  storageType: "Synced",
+  settingName: "automatically-ignore-list-known-third-party-scripts",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common4.Settings.registerSettingExtension({
+  storageType: "Synced",
+  settingName: "skip-anonymous-scripts",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common4.Settings.registerSettingExtension({
+  storageType: "Synced",
+  settingName: "enable-ignore-listing",
+  settingType: "boolean",
+  defaultValue: true
+});
+
 // gen/front_end/entrypoints/trace_app/trace_app.prebundle.js
 import "./../../Images/Images.js";
 
 // gen/front_end/models/logs/logs-meta.js
-import * as Common4 from "./../../core/common/common.js";
+import * as Common5 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 var UIStrings4 = {
   /**
@@ -2326,7 +2329,7 @@ var UIStrings4 = {
 };
 var str_4 = i18n7.i18n.registerUIStrings("models/logs/logs-meta.ts", UIStrings4);
 var i18nLazyString4 = i18n7.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
-Common4.Settings.registerSettingExtension({
+Common5.Settings.registerSettingExtension({
   category: "NETWORK",
   title: i18nLazyString4(UIStrings4.preserveLog),
   settingName: "network-log.preserve-log",
@@ -2348,7 +2351,7 @@ Common4.Settings.registerSettingExtension({
     }
   ]
 });
-Common4.Settings.registerSettingExtension({
+Common5.Settings.registerSettingExtension({
   category: "NETWORK",
   title: i18nLazyString4(UIStrings4.recordNetworkLog),
   settingName: "network-log.record-log",
@@ -2358,7 +2361,7 @@ Common4.Settings.registerSettingExtension({
 });
 
 // gen/front_end/models/persistence/persistence-meta.js
-import * as Common5 from "./../../core/common/common.js";
+import * as Common6 from "./../../core/common/common.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 var UIStrings5 = {
   /**
@@ -2397,7 +2400,7 @@ var UIStrings5 = {
 };
 var str_5 = i18n9.i18n.registerUIStrings("models/persistence/persistence-meta.ts", UIStrings5);
 var i18nLazyString5 = i18n9.i18n.getLazilyComputedLocalizedString.bind(void 0, str_5);
-Common5.Settings.registerSettingExtension({
+Common6.Settings.registerSettingExtension({
   category: "PERSISTENCE",
   title: i18nLazyString5(UIStrings5.enableLocalOverrides),
   settingName: "persistence-network-overrides-enabled",
@@ -2678,7 +2681,7 @@ UI3.Context.registerListener({
 });
 
 // gen/front_end/panels/developer_resources/developer_resources-meta.js
-import * as Common6 from "./../../core/common/common.js";
+import * as Common7 from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
@@ -2713,11 +2716,11 @@ UI4.ViewManager.registerViewExtension({
     return new DeveloperResources.DeveloperResourcesView.DeveloperResourcesView();
   }
 });
-Common6.Revealer.registerRevealer({
+Common7.Revealer.registerRevealer({
   contextTypes() {
     return [SDK3.PageResourceLoader.ResourceKey];
   },
-  destination: Common6.Revealer.RevealerDestination.DEVELOPER_RESOURCES_PANEL,
+  destination: Common7.Revealer.RevealerDestination.DEVELOPER_RESOURCES_PANEL,
   async loadRevealer() {
     const DeveloperResources = await loadDeveloperResourcesModule();
     return new DeveloperResources.DeveloperResourcesView.DeveloperResourcesRevealer();
@@ -2725,7 +2728,7 @@ Common6.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/mobile_throttling/mobile_throttling-meta.js
-import * as Common7 from "./../../core/common/common.js";
+import * as Common8 from "./../../core/common/common.js";
 import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 var UIStrings8 = {
@@ -2841,7 +2844,7 @@ UI5.ActionRegistration.registerActionExtension({
     i18nLazyString8(UIStrings8.throttlingTag)
   ]
 });
-Common7.Settings.registerSettingExtension({
+Common8.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "custom-network-conditions",
   settingType: "array",
@@ -2891,7 +2894,7 @@ UI6.ViewManager.registerViewExtension({
 // gen/front_end/panels/settings/settings-meta.js
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
-import * as Common8 from "./../../core/common/common.js";
+import * as Common9 from "./../../core/common/common.js";
 import * as i18n32 from "./../../core/i18n/i18n.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
@@ -3151,10 +3154,10 @@ UI22.ViewManager.registerLocationResolver({
     return Settings22.SettingsScreen.SettingsScreen.instance();
   }
 });
-Common8.Revealer.registerRevealer({
+Common9.Revealer.registerRevealer({
   contextTypes() {
     return [
-      Common8.Settings.Setting,
+      Common9.Settings.Setting,
       Root4.Runtime.Experiment
     ];
   },
@@ -3176,7 +3179,7 @@ UI22.ContextMenu.registerItem({
 });
 
 // gen/front_end/panels/sources/sources-meta.js
-import * as Common9 from "./../../core/common/common.js";
+import * as Common10 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n22 from "./../../core/i18n/i18n.js";
 import * as Root5 from "./../../core/root/root.js";
@@ -4626,17 +4629,17 @@ UI8.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   settingName: "navigator-group-by-folder",
   settingType: "boolean",
   defaultValue: true
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   settingName: "navigator-group-by-authored",
   settingType: "boolean",
   defaultValue: false
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.searchInAnonymousAndContent),
@@ -4654,7 +4657,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.automaticallyRevealFilesIn),
@@ -4672,7 +4675,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.javaScriptSourceMaps),
@@ -4690,7 +4693,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.tabMovesFocus),
@@ -4708,7 +4711,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.detectIndentation),
@@ -4726,7 +4729,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.autocompletion),
@@ -4744,7 +4747,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.bracketClosing),
@@ -4762,7 +4765,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   title: i18nLazyString11(UIStrings11.bracketMatching),
   settingName: "text-editor-bracket-matching",
@@ -4779,7 +4782,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.codeFolding),
@@ -4797,7 +4800,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.showWhitespaceCharacters),
@@ -4822,7 +4825,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.wordWrap),
@@ -4851,7 +4854,7 @@ UI8.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.displayVariableValuesInlineWhile),
@@ -4869,7 +4872,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.enableAutoFocusOnDebuggerPaused),
@@ -4887,7 +4890,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.automaticallyPrettyPrintMinifiedSources),
@@ -4905,7 +4908,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.cssSourceMaps),
@@ -4923,7 +4926,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.allowScrollingPastEndOfFile),
@@ -4941,7 +4944,7 @@ Common9.Settings.registerSettingExtension({
     }
   ]
 });
-Common9.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Local",
   title: i18nLazyString11(UIStrings11.wasmAutoStepping),
@@ -5023,79 +5026,79 @@ UI8.ContextMenu.registerProvider({
   },
   experiment: void 0
 });
-Common9.Revealer.registerRevealer({
+Common10.Revealer.registerRevealer({
   contextTypes() {
     return [
       Workspace2.UISourceCode.UILocation
     ];
   },
-  destination: Common9.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common10.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.UILocationRevealer();
   }
 });
-Common9.Revealer.registerRevealer({
+Common10.Revealer.registerRevealer({
   contextTypes() {
     return [
       Workspace2.UISourceCode.UILocationRange
     ];
   },
-  destination: Common9.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common10.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.UILocationRangeRevealer();
   }
 });
-Common9.Revealer.registerRevealer({
+Common10.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK4.DebuggerModel.Location
     ];
   },
-  destination: Common9.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common10.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.DebuggerLocationRevealer();
   }
 });
-Common9.Revealer.registerRevealer({
+Common10.Revealer.registerRevealer({
   contextTypes() {
     return [
       Workspace2.UISourceCode.UISourceCode
     ];
   },
-  destination: Common9.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common10.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.UISourceCodeRevealer();
   }
 });
-Common9.Revealer.registerRevealer({
+Common10.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK4.DebuggerModel.DebuggerPausedDetails
     ];
   },
-  destination: Common9.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common10.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SourcesPanel.DebuggerPausedDetailsRevealer();
   }
 });
-Common9.Revealer.registerRevealer({
+Common10.Revealer.registerRevealer({
   contextTypes() {
     return [
       Breakpoints.BreakpointManager.BreakpointLocation
     ];
   },
-  destination: Common9.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common10.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.DebuggerPlugin.BreakpointLocationRevealer();
   }
 });
-Common9.Revealer.registerRevealer({
+Common10.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes2((Sources) => [Sources.SearchSourcesView.SearchSources]);
   },
@@ -5199,7 +5202,7 @@ UI8.ContextMenu.registerProvider({
 });
 
 // gen/front_end/panels/sensors/sensors-meta.js
-import * as Common10 from "./../../core/common/common.js";
+import * as Common11 from "./../../core/common/common.js";
 import * as i18n24 from "./../../core/i18n/i18n.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
@@ -5356,7 +5359,7 @@ UI9.ViewManager.registerViewExtension({
   ],
   iconName: "location-on"
 });
-Common10.Settings.registerSettingExtension({
+Common11.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "emulation.locations",
   settingType: "array",
@@ -5437,7 +5440,7 @@ Common10.Settings.registerSettingExtension({
     }
   ]
 });
-Common10.Settings.registerSettingExtension({
+Common11.Settings.registerSettingExtension({
   title: i18nLazyString12(UIStrings12.cpuPressure),
   reloadRequired: true,
   settingName: "emulation.cpu-pressure",
@@ -5471,7 +5474,7 @@ Common10.Settings.registerSettingExtension({
     }
   ]
 });
-Common10.Settings.registerSettingExtension({
+Common11.Settings.registerSettingExtension({
   title: i18nLazyString12(UIStrings12.touch),
   reloadRequired: true,
   settingName: "emulation.touch",
@@ -5490,7 +5493,7 @@ Common10.Settings.registerSettingExtension({
     }
   ]
 });
-Common10.Settings.registerSettingExtension({
+Common11.Settings.registerSettingExtension({
   title: i18nLazyString12(UIStrings12.emulateIdleDetectorState),
   settingName: "emulation.idle-detection",
   settingType: "enum",
@@ -5525,7 +5528,7 @@ Common10.Settings.registerSettingExtension({
 });
 
 // gen/front_end/panels/timeline/timeline-meta.js
-import * as Common11 from "./../../core/common/common.js";
+import * as Common12 from "./../../core/common/common.js";
 import * as i18n26 from "./../../core/i18n/i18n.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
@@ -5811,7 +5814,7 @@ UI10.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString13(UIStrings13.hideChromeFrameInLayersView),
@@ -5819,14 +5822,14 @@ Common11.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   settingName: "annotations-hidden",
   settingType: "boolean",
   defaultValue: false
 });
-Common11.Linkifier.registerLinkifier({
+Common12.Linkifier.registerLinkifier({
   contextTypes() {
     return maybeRetrieveContextTypes3((Timeline) => [Timeline.CLSLinkifier.CLSRect]);
   },
@@ -5845,31 +5848,31 @@ UI10.ContextMenu.registerItem({
   actionId: "timeline.save-to-file",
   order: 15
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [SDK5.TraceObject.TraceObject];
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.TraceRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [SDK5.TraceObject.RevealableEvent];
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.EventRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes3((Timeline) => [Timeline.Utils.Helpers.RevealableInsight]);
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.InsightRevealer();
@@ -5877,7 +5880,7 @@ Common11.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/ai_assistance/ai_assistance-meta.js
-import * as Common12 from "./../../core/common/common.js";
+import * as Common13 from "./../../core/common/common.js";
 import * as i18n28 from "./../../core/i18n/i18n.js";
 import * as Root6 from "./../../core/root/root.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
@@ -5978,7 +5981,7 @@ UI11.ViewManager.registerViewExtension({
     return await AiAssistance.AiAssistancePanel.instance();
   }
 });
-Common12.Settings.registerSettingExtension({
+Common13.Settings.registerSettingExtension({
   category: "AI",
   settingName: setting,
   settingType: "boolean",
@@ -6110,7 +6113,7 @@ UI11.ActionRegistration.registerActionExtension({
 });
 
 // gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.js
-import * as Common13 from "./../../core/common/common.js";
+import * as Common14 from "./../../core/common/common.js";
 import * as i18n30 from "./../../core/i18n/i18n.js";
 import * as Root7 from "./../../core/root/root.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
@@ -6168,7 +6171,7 @@ UI12.ActionRegistration.registerActionExtension({
     return new PerfUI.GCActionDelegate.GCActionDelegate();
   }
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString15(UIStrings15.flamechartSelectedNavigation),
@@ -6188,7 +6191,7 @@ Common13.Settings.registerSettingExtension({
     }
   ]
 });
-Common13.Settings.registerSettingExtension({
+Common14.Settings.registerSettingExtension({
   category: "MEMORY",
   experiment: "live-heap-profile",
   title: i18nLazyString15(UIStrings15.liveMemoryAllocationAnnotations),
@@ -6318,7 +6321,7 @@ UI13.ContextMenu.registerItem({
 });
 
 // gen/front_end/ui/legacy/components/source_frame/source_frame-meta.js
-import * as Common14 from "./../../core/common/common.js";
+import * as Common15 from "./../../core/common/common.js";
 import * as i18n35 from "./../../core/i18n/i18n.js";
 var UIStrings17 = {
   /**
@@ -6360,7 +6363,7 @@ var UIStrings17 = {
 };
 var str_17 = i18n35.i18n.registerUIStrings("ui/legacy/components/source_frame/source_frame-meta.ts", UIStrings17);
 var i18nLazyString17 = i18n35.i18n.getLazilyComputedLocalizedString.bind(void 0, str_17);
-Common14.Settings.registerSettingExtension({
+Common15.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString17(UIStrings17.defaultIndentation),

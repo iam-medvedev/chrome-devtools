@@ -2256,7 +2256,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     }
     clickableElement.appendChild(messageElement);
     const stackTraceElement = contentElement.createChild("div");
-    const stackTracePreview = new Components.JSPresentationUtils.StackTracePreviewContent(void 0, target ?? void 0, this.linkifier, { stackTrace, widthConstrained: true });
+    const stackTracePreview = new Components.JSPresentationUtils.StackTracePreviewContent(void 0, target ?? void 0, this.linkifier, { runtimeStackTrace: stackTrace, widthConstrained: true });
     stackTracePreview.markAsRoot();
     stackTracePreview.show(stackTraceElement);
     for (const linkElement of stackTracePreview.linkElements) {

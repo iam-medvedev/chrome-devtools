@@ -758,6 +758,16 @@ Common3.Revealer.registerRevealer({
     return new Network.NetworkPanel.NetworkLogWithFilterRevealer();
   }
 });
+Common3.Revealer.registerRevealer({
+  contextTypes() {
+    return [SDK.NetworkManager.AppliedNetworkConditions];
+  },
+  destination: Common3.Revealer.RevealerDestination.NETWORK_PANEL,
+  async loadRevealer() {
+    const Network = await loadNetworkModule();
+    return new Network.RequestConditionsDrawer.AppliedConditionsRevealer();
+  }
+});
 
 // gen/front_end/entrypoints/js_app/js_app.prebundle.js
 import * as Common4 from "./../../core/common/common.js";

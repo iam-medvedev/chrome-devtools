@@ -177,6 +177,7 @@ describe('VersionController', () => {
             syncedStorage,
             globalStorage,
             localStorage,
+            runSettingsMigration: false,
         });
     });
     afterEach(() => {
@@ -187,7 +188,7 @@ describe('VersionController', () => {
             assert.isFalse(globalStorage.has(VersionController.GLOBAL_VERSION_SETTING_NAME));
             assert.isFalse(syncedStorage.has(VersionController.SYNCED_VERSION_SETTING_NAME));
             assert.isFalse(localStorage.has(VersionController.LOCAL_VERSION_SETTING_NAME));
-            new VersionController().updateVersion();
+            new VersionController(settings).updateVersion();
             const currentVersion = VersionController.CURRENT_VERSION.toString();
             assert.strictEqual(globalStorage.get(VersionController.GLOBAL_VERSION_SETTING_NAME), currentVersion);
             assert.strictEqual(syncedStorage.get(VersionController.SYNCED_VERSION_SETTING_NAME), currentVersion);
@@ -202,7 +203,7 @@ describe('VersionController', () => {
             return spies;
         }
         it('does not run any update* methods if no version setting exist yet', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const spies = spyAllUpdateMethods(versionController);
             versionController.updateVersion();
             for (const spy of spies) {
@@ -214,7 +215,7 @@ describe('VersionController', () => {
             globalStorage.set(VersionController.GLOBAL_VERSION_SETTING_NAME, currentVersion);
             syncedStorage.set(VersionController.SYNCED_VERSION_SETTING_NAME, currentVersion);
             localStorage.set(VersionController.LOCAL_VERSION_SETTING_NAME, currentVersion);
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const spies = spyAllUpdateMethods(versionController);
             versionController.updateVersion();
             for (const spy of spies) {
@@ -227,7 +228,7 @@ describe('VersionController', () => {
             globalStorage.set(VersionController.GLOBAL_VERSION_SETTING_NAME, currentVersion);
             syncedStorage.set(VersionController.SYNCED_VERSION_SETTING_NAME, currentVersion);
             localStorage.set(VersionController.LOCAL_VERSION_SETTING_NAME, localVersion);
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const spies = spyAllUpdateMethods(versionController);
             versionController.updateVersion();
             const expectedUncalledSpies = spies.slice(0, -3);
@@ -245,7 +246,7 @@ describe('VersionController', () => {
             globalStorage.set(VersionController.GLOBAL_VERSION_SETTING_NAME, oldVersion);
             syncedStorage.set(VersionController.SYNCED_VERSION_SETTING_NAME, currentVersion);
             localStorage.set(VersionController.LOCAL_VERSION_SETTING_NAME, oldVersion);
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const spies = spyAllUpdateMethods(versionController);
             versionController.updateVersion();
             const expectedUncalledSpies = spies.slice(0, -1);
@@ -260,7 +261,7 @@ describe('VersionController', () => {
     });
     describe('updateVersionFrom31To32', () => {
         it('correctly adds resourceTypeName to breakpoints', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const breakpointsSetting = settings.createLocalSetting('breakpoints', [
                 { url: 'webpack:///src/foo.ts', lineNumber: 4, condition: '', enabled: false },
                 { url: 'foo.js', lineNumber: 1, columnNumber: 42, condition: 'false', enabled: true },
@@ -284,7 +285,7 @@ describe('VersionController', () => {
     });
     describe('updateVersionFrom32To33', () => {
         it('correctly discards previously viewed files without url properties', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const previouslyViewedFilesSetting = settings.createLocalSetting('previouslyViewedFiles', [
                 { url: 'http://localhost:3000', scrollLineNumber: 1 },
                 { scrollLineNumber: 1 },
@@ -302,7 +303,7 @@ describe('VersionController', () => {
             assert.notProperty(previouslyViewedFiles[1], 'scrollLineNumber');
         });
         it('correctly adds resourceTypeName to previously viewed files', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const previouslyViewedFilesSetting = settings.createLocalSetting('previouslyViewedFiles', [
                 { url: 'http://localhost:3000', scrollLineNumber: 1 },
                 { url: 'webpack:///src/foo.ts' },
@@ -322,7 +323,7 @@ describe('VersionController', () => {
     });
     describe('updateVersionFrom33To34', () => {
         it('correctly adds isLogpoint to breakpoints', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const breakpointsSetting = settings.createLocalSetting('breakpoints', [
                 {
                     url: 'webpack:///src/foo.ts',
@@ -350,7 +351,7 @@ describe('VersionController', () => {
     });
     describe('updateVersionFrom34To35', () => {
         it('removes the logpoint prefix/suffix from logpoints', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const breakpointsSetting = settings.createLocalSetting('breakpoints', [{
                     url: 'webpack:///src/foo.ts',
                     lineNumber: 4,
@@ -365,7 +366,7 @@ describe('VersionController', () => {
             assert.propertyVal(breakpoints[0], 'condition', 'foo.property');
         });
         it('leaves conditional breakpoints alone', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const breakpointsSetting = settings.createLocalSetting('breakpoints', [{
                     url: 'webpack:///src/foo.ts',
                     lineNumber: 4,
@@ -382,7 +383,7 @@ describe('VersionController', () => {
     });
     describe('updateVersionFrom35To36', () => {
         it('update showThirdPartyIssues setting value to true', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             const showThirdPartyIssuesSetting = settings.createLocalSetting('showThirdPartyIssues', false);
             versionController.updateVersionFrom35To36();
             assert.isTrue(showThirdPartyIssuesSetting.get());
@@ -390,7 +391,7 @@ describe('VersionController', () => {
     });
     describe('updateVersionFrom36To37', () => {
         it('updates all keys to kebab case', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             settings.globalStorage.set('globalSetting1', '');
             settings.globalStorage.set('globalSetting2', '');
             settings.localStorage.set('localSetting', '');
@@ -401,7 +402,7 @@ describe('VersionController', () => {
             assert.deepEqual(settings.syncedStorage.keys(), ['synced-setting']);
         });
         it('keeps kebab case settings as is', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             settings.globalStorage.set('setting', '123');
             settings.localStorage.set('another-setting', '456');
             versionController.updateVersionFrom36To37();
@@ -410,7 +411,7 @@ describe('VersionController', () => {
             assert.strictEqual(settings.localStorage.get('another-setting'), '456');
         });
         it('update data grid column weights value', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             settings.globalStorage.set('dataGrid-foo-columnWeights', JSON.stringify({
                 columnOne: 1,
                 columnTwo: 2,
@@ -420,7 +421,7 @@ describe('VersionController', () => {
             assert.deepEqual(setting.get(), { 'column-one': 1, 'column-two': 2 });
         });
         it('update view manager settings values', () => {
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             settings.globalStorage.set('viewsLocationOverride', JSON.stringify({
                 somePanel: 'main',
                 other_panel: 'drawer',
@@ -459,6 +460,7 @@ describe('updateVersionFrom37To38', () => {
             syncedStorage,
             globalStorage,
             localStorage,
+            runSettingsMigration: false,
         });
     });
     afterEach(() => {
@@ -466,7 +468,7 @@ describe('updateVersionFrom37To38', () => {
         Common.Settings.resetSettings(); // Clear SettingsRegistrations.
     });
     it('disables console insights setting if onboarding not done', () => {
-        const versionController = new VersionController();
+        const versionController = new VersionController(settings);
         const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
         consoleInsightsEnabled.set(true);
         const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', false);
@@ -475,7 +477,7 @@ describe('updateVersionFrom37To38', () => {
         assert.isFalse(onboardingFinished.get());
     });
     it('preserves state if console insights disabled and not onboarded ', () => {
-        const versionController = new VersionController();
+        const versionController = new VersionController(settings);
         const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
         consoleInsightsEnabled.set(false);
         const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', false);
@@ -484,7 +486,7 @@ describe('updateVersionFrom37To38', () => {
         assert.isFalse(onboardingFinished.get());
     });
     it('preserves state if console insights enabled and onboarded', () => {
-        const versionController = new VersionController();
+        const versionController = new VersionController(settings);
         const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
         consoleInsightsEnabled.set(true);
         const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', true);
@@ -493,7 +495,7 @@ describe('updateVersionFrom37To38', () => {
         assert.isTrue(onboardingFinished.get());
     });
     it('resets onboarding if console insights setting is disabled', () => {
-        const versionController = new VersionController();
+        const versionController = new VersionController(settings);
         const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
         consoleInsightsEnabled.set(false);
         const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', true);
@@ -515,6 +517,7 @@ describe('updateVersionFrom38To39', () => {
             syncedStorage,
             globalStorage,
             localStorage,
+            runSettingsMigration: false,
         });
         setting = settings.createSetting('preferred-network-condition', { title: 'Offline', i18nTitleKey: 'Offline' });
     });
@@ -524,7 +527,7 @@ describe('updateVersionFrom38To39', () => {
     });
     it('renames the preferred-network-condition for "Slow 3G"', async () => {
         setting.set({ title: 'Slow 3G', i18nTitleKey: 'Slow 3G' });
-        const versionController = new VersionController();
+        const versionController = new VersionController(settings);
         versionController.updateVersionFrom38To39();
         const newSetting = await setting.forceGet();
         assert.strictEqual(newSetting.title, '3G');
@@ -532,7 +535,7 @@ describe('updateVersionFrom38To39', () => {
     });
     it('renames the preferred-network-condition for "Fast 3G"', async () => {
         setting.set({ title: 'Fast 3G', i18nTitleKey: 'Fast 3G' });
-        const versionController = new VersionController();
+        const versionController = new VersionController(settings);
         versionController.updateVersionFrom38To39();
         const newSetting = await setting.forceGet();
         assert.strictEqual(newSetting.title, 'Slow 4G');
@@ -540,7 +543,7 @@ describe('updateVersionFrom38To39', () => {
     });
     it('does not rename any other setting', async () => {
         setting.set({ title: 'Slow 4G', i18nTitleKey: 'Slow 4G' });
-        const versionController = new VersionController();
+        const versionController = new VersionController(settings);
         versionController.updateVersionFrom38To39();
         const newSetting = await setting.forceGet();
         assert.strictEqual(newSetting.title, 'Slow 4G');
@@ -551,7 +554,7 @@ describe('updateVersionFrom38To39', () => {
         sinon.stub(JSON, 'parse').callsFake(() => {
             throw new Error('Invalid JSON');
         });
-        const versionController = new VersionController();
+        const versionController = new VersionController(settings);
         versionController.updateVersionFrom38To39();
         assert.isFalse(settings.globalStorage.has('preferred-network-condition'));
     });
@@ -574,6 +577,7 @@ describe('updateVersionFrom38To39', () => {
                 syncedStorage,
                 globalStorage,
                 localStorage,
+                runSettingsMigration: false,
             });
             customNetworkCondSetting = settings.moduleSetting('custom-network-conditions');
             preferredNetworkCondSetting = settings.createSetting('preferred-network-condition', { i18nTitleKey: 'Offline' });
@@ -588,7 +592,7 @@ describe('updateVersionFrom38To39', () => {
             // addition of the key which does not care about the data in the
             // object.
             customNetworkCondSetting.set([{}, {}]);
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             versionController.updateVersionFrom39To40();
             assert.deepEqual(customNetworkCondSetting.get(), [
                 {
@@ -601,7 +605,7 @@ describe('updateVersionFrom38To39', () => {
         });
         it('does not update settings that have a key already', () => {
             customNetworkCondSetting.set([{ key: 'KEY' }]);
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             versionController.updateVersionFrom39To40();
             assert.deepEqual(customNetworkCondSetting.get(), [
                 {
@@ -611,7 +615,7 @@ describe('updateVersionFrom38To39', () => {
         });
         it('migrates users who have a preferred-network-condition set to "Fast 4G"', () => {
             preferredNetworkCondSetting.set({ i18nTitleKey: 'Fast 4G' });
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             versionController.updateVersionFrom39To40();
             const activeKeySetting = settings.globalStorage.get('active-network-condition-key');
             assert.strictEqual(activeKeySetting, JSON.stringify('SPEED_FAST_4G'));
@@ -619,15 +623,7 @@ describe('updateVersionFrom38To39', () => {
         });
         it('migrates users who have a preferred-network-condition set to "Slow 4G"', () => {
             preferredNetworkCondSetting.set({ i18nTitleKey: 'Slow 4G' });
-            const versionController = new VersionController();
-            versionController.updateVersionFrom39To40();
-            const activeKeySetting = settings.globalStorage.get('active-network-condition-key');
-            assert.strictEqual(activeKeySetting, JSON.stringify('SPEED_SLOW_4G'));
-            assert.isFalse(settings.globalStorage.has('preferred-network-condition'));
-        });
-        it('migrates users who have a preferred-network-condition set to "Slow 4G"', () => {
-            preferredNetworkCondSetting.set({ i18nTitleKey: 'Slow 4G' });
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             versionController.updateVersionFrom39To40();
             const activeKeySetting = settings.globalStorage.get('active-network-condition-key');
             assert.strictEqual(activeKeySetting, JSON.stringify('SPEED_SLOW_4G'));
@@ -635,7 +631,7 @@ describe('updateVersionFrom38To39', () => {
         });
         it('migrates users who have a preferred-network-condition set to "3G"', () => {
             preferredNetworkCondSetting.set({ i18nTitleKey: '3G' });
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             versionController.updateVersionFrom39To40();
             const activeKeySetting = settings.globalStorage.get('active-network-condition-key');
             assert.strictEqual(activeKeySetting, JSON.stringify('SPEED_3G'));
@@ -643,7 +639,7 @@ describe('updateVersionFrom38To39', () => {
         });
         it('migrates users who have a preferred-network-condition set to "Offline"', () => {
             preferredNetworkCondSetting.set({ i18nTitleKey: 'Offline' });
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             versionController.updateVersionFrom39To40();
             const activeKeySetting = settings.globalStorage.get('active-network-condition-key');
             assert.strictEqual(activeKeySetting, JSON.stringify('OFFLINE'));
@@ -651,7 +647,7 @@ describe('updateVersionFrom38To39', () => {
         });
         it('sets the default setting value correctly to No Throttling', () => {
             preferredNetworkCondSetting.set({ i18nTitleKey: 'Offline' });
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             versionController.updateVersionFrom39To40();
             const activeKeySetting = settings.globalStorage.get('active-network-condition-key');
             assert.strictEqual(activeKeySetting, JSON.stringify('OFFLINE'));
@@ -661,7 +657,7 @@ describe('updateVersionFrom38To39', () => {
         });
         it('migrates users who have a preferred-network-condition set to "No throttling"', () => {
             preferredNetworkCondSetting.set({ i18nTitleKey: 'No throttling' });
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             versionController.updateVersionFrom39To40();
             const activeKeySetting = settings.globalStorage.get('active-network-condition-key');
             assert.strictEqual(activeKeySetting, JSON.stringify('NO_THROTTLING'));
@@ -669,7 +665,7 @@ describe('updateVersionFrom38To39', () => {
         });
         it('ignores any unexpected values and just deletes the old setting', () => {
             preferredNetworkCondSetting.set({ i18nTitleKey: 'Not a valid key' });
-            const versionController = new VersionController();
+            const versionController = new VersionController(settings);
             versionController.updateVersionFrom39To40();
             // Ensure it does not create the new setting, ensuring that it will be
             // created when the user next navigates to the network / perf panel.
