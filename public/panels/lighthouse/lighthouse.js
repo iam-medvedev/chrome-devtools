@@ -1206,12 +1206,8 @@ var ProtocolService = class {
   sendProtocolMessage(message) {
     const { id, method, params, sessionId } = JSON.parse(message);
     void this.connection?.send(method, params, sessionId).then((response) => {
-      this.dispatchProtocolMessage({
-        id,
-        sessionId,
-        result: "result" in response ? response.result : void 0,
-        error: "error" in response ? response.error : void 0
-      });
+      const message2 = "result" in response ? { id, sessionId, result: response.result } : { id, sessionId, error: response.error };
+      this.dispatchProtocolMessage(message2);
     });
   }
   async send(action, args = {}) {
@@ -1254,6 +1250,7 @@ import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "./../common/common.js";
 var MaxLengthForLinks = 40;
 var LighthouseReportRenderer = class _LighthouseReportRenderer {
   static renderLighthouseReport(lhr, artifacts, opts) {
@@ -1359,7 +1356,7 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
       if (!node) {
         continue;
       }
-      const element = await Common2.Linkifier.Linkifier.linkify(node, { tooltip: detailsItem.snippet, preventKeyboardFocus: void 0 });
+      const element = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, { tooltip: detailsItem.snippet, preventKeyboardFocus: void 0 });
       UI.Tooltip.Tooltip.install(origHTMLElement, "");
       const screenshotElement = origHTMLElement.querySelector(".lh-element-screenshot");
       origHTMLElement.textContent = "";

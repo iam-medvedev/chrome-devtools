@@ -1,14 +1,12 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
-import * as Elements from '../elements/elements.js';
 import * as Animation from './animation.js';
 const TIME_ANIMATION_PAYLOAD = {
     id: 'animation-id',
@@ -108,14 +106,6 @@ describeWithMockConnection('AnimationTimeline', () => {
     let target;
     let view;
     beforeEach(() => {
-        Common.Linkifier.registerLinkifier({
-            contextTypes() {
-                return [SDK.DOMModel.DOMNode];
-            },
-            async loadLinkifier() {
-                return Elements.DOMLinkifier.Linkifier.instance();
-            },
-        });
         stubNoopSettings();
         target = createTarget();
         const runtimeAgent = target.model(SDK.RuntimeModel.RuntimeModel)?.agent;
@@ -364,7 +354,8 @@ describeWithMockConnection('AnimationTimeline', () => {
             await waitForPreviewsManualPromise.wait();
         });
         describe('animationGroupUpdated', () => {
-            it('should update duration on animationGroupUpdated', async () => {
+            // Flaky test.
+            it.skip('[crbug.com/446903183] should update duration on animationGroupUpdated', async () => {
                 const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 assert.isNotNull(preview);
                 preview.click();

@@ -689,16 +689,3 @@ UI.UIUtils.registerRenderer({
     return Elements.ElementsTreeOutlineRenderer.Renderer.instance();
   },
 });
-
-Common.Linkifier.registerLinkifier({
-  contextTypes() {
-    return [
-      SDK.DOMModel.DOMNode,
-      SDK.DOMModel.DeferredDOMNode,
-    ];
-  },
-  async loadLinkifier() {
-    const Elements = await loadElementsModule();
-    return Elements.DOMLinkifier.Linkifier.instance();
-  },
-});

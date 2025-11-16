@@ -40,6 +40,7 @@ describeWithMockConnection('DefaultScriptMapping', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         backend = new MockProtocolBackend();
         target = createTarget();

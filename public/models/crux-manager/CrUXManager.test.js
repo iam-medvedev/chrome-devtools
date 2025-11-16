@@ -76,6 +76,7 @@ describeWithMockConnection('CrUXManager', () => {
                 syncedStorage: dummyStorage,
                 globalStorage,
                 localStorage: dummyStorage,
+                settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
             });
             const manager = CrUXManager.CrUXManager.instance({ forceNew: true });
             manager.getConfigSetting().set({ enabled: true });
@@ -89,6 +90,7 @@ describeWithMockConnection('CrUXManager', () => {
                 syncedStorage: dummyStorage,
                 globalStorage: dummyStorage,
                 localStorage: dummyStorage,
+                settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
             });
             const manager = CrUXManager.CrUXManager.instance({ forceNew: true });
             manager.getConfigSetting().set({ enabled: true });

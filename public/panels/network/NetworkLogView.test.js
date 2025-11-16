@@ -39,6 +39,7 @@ describeWithMockConnection('NetworkLogView', () => {
             syncedStorage: dummyStorage,
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
         });
         registerNoopActions(['network.toggle-recording', 'inspector-main.reload']);
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
@@ -182,7 +183,7 @@ describeWithMockConnection('NetworkLogView', () => {
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '1234\r\n00\x02\x03\x04\x05\'"!');
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' \\\n  -H \'Content-Type: application/binary\' \\\n  --data-raw $\'1234\\r\\n00\\u0002\\u0003\\u0004\\u0005\\\'"\\u0021\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"1234^\n\n00^\u0002^\u0003^\u0004^\u0005\'^\\^"^!^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"1234^\n\n00^ ^ ^ ^ \'^\\^"^!^"');
     });
     it('generates a valid curl command for a POST request with binary data containing %', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {

@@ -3387,6 +3387,7 @@ var HeapSnapshotLoader = class {
     }
   }
   async buildSnapshot(secondWorker) {
+    await this.parsingComplete;
     this.#snapshot = this.#snapshot || {};
     this.#progress.updateStatus("Processing snapshot\u2026");
     const result = new JSHeapSnapshot(this.#snapshot, this.#progress);

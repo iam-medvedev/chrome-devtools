@@ -143,6 +143,7 @@ export function setupSettings(reset) {
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'console-trace-expand', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'flamechart-selected-navigation', false, "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-css-property-documentation-on-hover', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */, 'sync-preferences', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-annotations-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-history-entries', [], "array" /* Common.Settings.SettingType.ARRAY */),
@@ -162,7 +163,13 @@ export function setupSettings(reset) {
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.
     const storage = new Common.Settings.SettingsStorage({}, Common.Settings.NOOP_STORAGE, 'test');
-    Common.Settings.Settings.instance({ forceNew: reset, syncedStorage: storage, globalStorage: storage, localStorage: storage });
+    Common.Settings.Settings.instance({
+        forceNew: reset,
+        syncedStorage: storage,
+        globalStorage: storage,
+        localStorage: storage,
+        settingRegistrations: Common.SettingRegistration.getRegisteredSettings()
+    });
 }
 export function cleanupSettings() {
     Common.Settings.resetSettings();

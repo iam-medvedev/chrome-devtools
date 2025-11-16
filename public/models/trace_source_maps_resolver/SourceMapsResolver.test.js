@@ -30,6 +30,7 @@ export async function loadCodeLocationResolvingScenario() {
         resourceMapping,
         targetManager,
         ignoreListManager,
+        workspace,
     });
     const backend = new MockProtocolBackend();
     // The following mock data creates a source mapping from two authored

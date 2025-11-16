@@ -24,7 +24,7 @@ describeWithMockConnection('FocusDebuggeeActionDelegate', () => {
 describeWithMockConnection('InspectorMainImpl', () => {
     const DEBUGGER_ID = 'debuggerId';
     const runForTabTarget = async () => {
-        const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+        const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
         const runPromise = inspectorMain.run();
         const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
         SDK.TargetManager.TargetManager.instance().createTarget('someTargetID', 'someName', SDK.Target.Type.FRAME, rootTarget, 'session ID');
@@ -52,7 +52,13 @@ describeWithMockConnection('InspectorMainImpl', () => {
                 defaultValue: false,
             });
             const storage = Common.Settings.Settings.instance().localStorage;
-            Common.Settings.Settings.instance({ forceNew: true, syncedStorage: storage, globalStorage: storage, localStorage: storage });
+            Common.Settings.Settings.instance({
+                forceNew: true,
+                syncedStorage: storage,
+                globalStorage: storage,
+                localStorage: storage,
+                settingRegistrations: Common.SettingRegistration.getRegisteredSettings()
+            });
         });
         function setBrowserConfig(thirdPartyCookieRestrictionEnabled, thirdPartyCookieMetadataEnabled, thirdPartyCookieHeuristicsEnabled, managedBlockThirdPartyCookies) {
             updateHostConfig({
@@ -78,7 +84,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             setBrowserConfig(restrictThirdPartyCookies, gracePeriodEnabled, heuristicsEnabled, enterpriseBlocksThirdPartyCookies);
             setDevtoolsCookieControls(restrictThirdPartyCookies, gracePeriodEnabled, heuristicsEnabled);
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             await inspectorMain.run();
             sinon.assert.notCalled(reloadRequiredInfobarSpy);
         });
@@ -88,7 +94,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             const heuristicsEnabled = true;
             setBrowserConfig(restrictThirdPartyCookies, gracePeriodEnabled, heuristicsEnabled);
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             await inspectorMain.run();
             sinon.assert.notCalled(reloadRequiredInfobarSpy);
         });
@@ -99,7 +105,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             setBrowserConfig(restrictThirdPartyCookies, gracePeriodEnabled, heuristicsEnabled);
             setDevtoolsCookieControls(restrictThirdPartyCookies, gracePeriodEnabled, heuristicsEnabled);
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             await inspectorMain.run();
             sinon.assert.notCalled(reloadRequiredInfobarSpy);
         });
@@ -110,7 +116,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             setBrowserConfig(restrictThirdPartyCookies, gracePeriodEnabled, heuristicsEnabled);
             setDevtoolsCookieControls(!restrictThirdPartyCookies, gracePeriodEnabled, heuristicsEnabled);
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             await inspectorMain.run();
             sinon.assert.calledOnce(reloadRequiredInfobarSpy);
         });
@@ -121,7 +127,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             setBrowserConfig(restrictThirdPartyCookies, gracePeriodEnabled, heuristicsEnabled);
             setDevtoolsCookieControls(restrictThirdPartyCookies, !gracePeriodEnabled, heuristicsEnabled);
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             await inspectorMain.run();
             sinon.assert.calledOnce(reloadRequiredInfobarSpy);
         });
@@ -133,7 +139,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
         });
         it('continues only after primary page target is available', async () => {
             Root.Runtime.Runtime.setQueryParamForTesting('targetType', 'tab');
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             let finished = false;
             inspectorMain.run()
                 .then(() => {
@@ -150,7 +156,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             assert.isTrue(finished);
         });
         it('sets main target type to Node if v8only query param present', async () => {
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             Root.Runtime.Runtime.setQueryParamForTesting('v8only', 'true');
             assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
             await inspectorMain.run();
@@ -165,13 +171,13 @@ describeWithMockConnection('InspectorMainImpl', () => {
             Root.Runtime.Runtime.setQueryParamForTesting('targetType', '');
         });
         it('sets main target type to Frame by default', async () => {
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
             await inspectorMain.run();
             assert.strictEqual(SDK.TargetManager.TargetManager.instance().rootTarget()?.type(), SDK.Target.Type.FRAME);
         });
         it('creates main target waiting for debugger if the main target is frame and panel is sources', async () => {
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             Root.Runtime.Runtime.setQueryParamForTesting('panel', 'sources');
             assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
             const waitForDebugger = sinon.spy();
@@ -185,7 +191,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             Root.Runtime.Runtime.setQueryParamForTesting('panel', '');
         });
         it('wait for Debugger.enable before calling Debugger.pause', async () => {
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             Root.Runtime.Runtime.setQueryParamForTesting('panel', 'sources');
             assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
             const debuggerPause = sinon.stub();
@@ -204,7 +210,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             Root.Runtime.Runtime.setQueryParamForTesting('panel', '');
         });
         it('frontend correctly registers if Debugger.enable fails', async () => {
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
             setMockConnectionResponseHandler('Debugger.enable', () => ({ getError: () => 'Debugger.enable failed' }));
             await inspectorMain.run();
@@ -215,7 +221,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
         });
         it('calls Runtime.runIfWaitingForDebugger for Node target', async () => {
             Root.Runtime.Runtime.setQueryParamForTesting('v8only', 'true');
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             const runIfWaitingForDebugger = sinon.spy();
             setMockConnectionResponseHandler('Runtime.runIfWaitingForDebugger', runIfWaitingForDebugger);
             await inspectorMain.run();
@@ -223,7 +229,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             Root.Runtime.Runtime.setQueryParamForTesting('v8only', '');
         });
         it('calls Runtime.runIfWaitingForDebugger for frame target', async () => {
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             const runIfWaitingForDebugger = sinon.spy();
             setMockConnectionResponseHandler('Runtime.runIfWaitingForDebugger', runIfWaitingForDebugger);
             await inspectorMain.run();
@@ -238,7 +244,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             Root.Runtime.Runtime.setQueryParamForTesting('targetType', '');
         });
         it('sets frame target to "main"', async () => {
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             const runIfWaitingForDebugger = sinon.spy();
             setMockConnectionResponseHandler('Runtime.runIfWaitingForDebugger', runIfWaitingForDebugger);
             await inspectorMain.run();
@@ -254,7 +260,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
         });
         it('sets main frame target to "main"', async () => {
             Root.Runtime.Runtime.setQueryParamForTesting('targetType', 'tab');
-            const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+            const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
             const runIfWaitingForDebugger = sinon.spy();
             setMockConnectionResponseHandler('Runtime.runIfWaitingForDebugger', runIfWaitingForDebugger);
             const runPromise = inspectorMain.run();

@@ -23,6 +23,7 @@ import * as SDK from "./../../core/sdk/sdk.js";
 import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "./../common/common.js";
 
 // gen/front_end/panels/accessibility/accessibilityNode.css.js
 var accessibilityNode_css_default = `/*
@@ -1467,7 +1468,10 @@ var AXRelatedNodeElement = class {
       const valueElement = document.createElement("span");
       element.appendChild(valueElement);
       void this.deferredNode.resolvePromise().then((node) => {
-        void Common.Linkifier.Linkifier.linkify(node, { tooltip: void 0, preventKeyboardFocus: true }).then((linkfied) => valueElement.appendChild(linkfied));
+        if (!node) {
+          return;
+        }
+        valueElement.appendChild(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, { tooltip: void 0, preventKeyboardFocus: true }));
       });
     } else if (this.idref) {
       element.classList.add("invalid");

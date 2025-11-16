@@ -1,7 +1,6 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -43,6 +42,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
     });
     afterEach(() => {
@@ -674,14 +674,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders the details for a profile call properly', async function () {
-            Common.Linkifier.registerLinkifier({
-                contextTypes() {
-                    return [Timeline.CLSLinkifier.CLSRect];
-                },
-                async loadLinkifier() {
-                    return Timeline.CLSLinkifier.Linkifier.instance();
-                },
-            });
             const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
             const [process] = parsedTrace.data.Renderer.processes.values();
             const [thread] = process.threads.values();
@@ -695,14 +687,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.strictEqual(stackTraceData[0], '(anonymous) @ www.google.com:21:17');
         });
         it('renders the stack trace of a ScheduleStyleRecalculation properly', async function () {
-            Common.Linkifier.registerLinkifier({
-                contextTypes() {
-                    return [Timeline.CLSLinkifier.CLSRect];
-                },
-                async loadLinkifier() {
-                    return Timeline.CLSLinkifier.Linkifier.instance();
-                },
-            });
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             TraceLoader.initTraceBoundsManager(parsedTrace);
             const [process] = parsedTrace.data.Renderer.processes.values();
@@ -718,14 +702,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
             });
         });
         it('renders the stack trace of a RecalculateStyles properly', async function () {
-            Common.Linkifier.registerLinkifier({
-                contextTypes() {
-                    return [Timeline.CLSLinkifier.CLSRect];
-                },
-                async loadLinkifier() {
-                    return Timeline.CLSLinkifier.Linkifier.instance();
-                },
-            });
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             TraceLoader.initTraceBoundsManager(parsedTrace);
             const [process] = parsedTrace.data.Renderer.processes.values();
@@ -739,14 +715,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const pid = 0;
             const traceId = 0;
             const tid = 0;
-            Common.Linkifier.registerLinkifier({
-                contextTypes() {
-                    return [Timeline.CLSLinkifier.CLSRect];
-                },
-                async loadLinkifier() {
-                    return Timeline.CLSLinkifier.Linkifier.instance();
-                },
-            });
             // Build the following hierarchy
             //       |-----------------v8.run--------------------|
             //        |--V8.ParseFunction--||---------f1-------|

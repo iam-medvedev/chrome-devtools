@@ -1,11 +1,9 @@
 import * as Common from '../core/common/common.js';
+import * as Root from '../core/root/root.js';
 export interface CreationOptions {
-    syncedStorage: Common.Settings.SettingsStorage;
-    globalStorage: Common.Settings.SettingsStorage;
-    localStorage: Common.Settings.SettingsStorage;
-    logSettingAccess?: (name: string, value: number | string | boolean) => Promise<void>;
-    runSettingsMigration?: boolean;
+    settingsCreationOptions: Common.Settings.SettingsCreationOptions;
 }
 export declare class Universe {
+    readonly context: Root.DevToolsContext.DevToolsContext;
     constructor(options: CreationOptions);
 }

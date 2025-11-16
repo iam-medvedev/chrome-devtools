@@ -75,6 +75,7 @@ describe('DebuggerLanguagePluginManager', () => {
                 resourceMapping,
                 targetManager,
                 ignoreListManager,
+                workspace,
             });
             pluginManager = debuggerWorkspaceBinding.pluginManager;
         });

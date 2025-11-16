@@ -481,10 +481,10 @@ var generatedProperties = [
       "column-height",
       "column-rule-break",
       "column-rule-color",
-      "column-rule-edge-end-outset",
-      "column-rule-edge-start-outset",
-      "column-rule-interior-end-outset",
-      "column-rule-interior-start-outset",
+      "column-rule-edge-end-inset",
+      "column-rule-edge-start-inset",
+      "column-rule-interior-end-inset",
+      "column-rule-interior-start-inset",
       "column-rule-style",
       "column-rule-visibility-items",
       "column-rule-width",
@@ -704,10 +704,10 @@ var generatedProperties = [
       "row-gap",
       "row-rule-break",
       "row-rule-color",
-      "row-rule-edge-end-outset",
-      "row-rule-edge-start-outset",
-      "row-rule-interior-end-outset",
-      "row-rule-interior-start-outset",
+      "row-rule-edge-end-inset",
+      "row-rule-edge-start-inset",
+      "row-rule-interior-end-inset",
+      "row-rule-interior-start-inset",
       "row-rule-style",
       "row-rule-visibility-items",
       "row-rule-width",
@@ -1791,28 +1791,28 @@ var generatedProperties = [
   },
   {
     "inherited": false,
-    "name": "column-rule-edge-end-outset"
+    "name": "column-rule-edge-end-inset"
   },
   {
     "inherited": false,
-    "name": "column-rule-edge-start-outset"
-  },
-  {
-    "inherited": false,
-    "name": "column-rule-interior-end-outset"
-  },
-  {
-    "inherited": false,
-    "name": "column-rule-interior-start-outset"
+    "name": "column-rule-edge-start-inset"
   },
   {
     "longhands": [
-      "column-rule-edge-start-outset",
-      "column-rule-edge-end-outset",
-      "column-rule-interior-start-outset",
-      "column-rule-interior-end-outset"
+      "column-rule-edge-start-inset",
+      "column-rule-edge-end-inset",
+      "column-rule-interior-start-inset",
+      "column-rule-interior-end-inset"
     ],
-    "name": "column-rule-outset"
+    "name": "column-rule-inset"
+  },
+  {
+    "inherited": false,
+    "name": "column-rule-interior-end-inset"
+  },
+  {
+    "inherited": false,
+    "name": "column-rule-interior-start-inset"
   },
   {
     "keywords": [
@@ -3800,28 +3800,28 @@ var generatedProperties = [
   },
   {
     "inherited": false,
-    "name": "row-rule-edge-end-outset"
+    "name": "row-rule-edge-end-inset"
   },
   {
     "inherited": false,
-    "name": "row-rule-edge-start-outset"
-  },
-  {
-    "inherited": false,
-    "name": "row-rule-interior-end-outset"
-  },
-  {
-    "inherited": false,
-    "name": "row-rule-interior-start-outset"
+    "name": "row-rule-edge-start-inset"
   },
   {
     "longhands": [
-      "row-rule-edge-start-outset",
-      "row-rule-edge-end-outset",
-      "row-rule-interior-start-outset",
-      "row-rule-interior-end-outset"
+      "row-rule-edge-start-inset",
+      "row-rule-edge-end-inset",
+      "row-rule-interior-start-inset",
+      "row-rule-interior-end-inset"
     ],
-    "name": "row-rule-outset"
+    "name": "row-rule-inset"
+  },
+  {
+    "inherited": false,
+    "name": "row-rule-interior-end-inset"
+  },
+  {
+    "inherited": false,
+    "name": "row-rule-interior-start-inset"
   },
   {
     "keywords": [
@@ -3909,16 +3909,16 @@ var generatedProperties = [
   },
   {
     "longhands": [
-      "row-rule-edge-start-outset",
-      "row-rule-edge-end-outset",
-      "row-rule-interior-start-outset",
-      "row-rule-interior-end-outset",
-      "column-rule-edge-start-outset",
-      "column-rule-edge-end-outset",
-      "column-rule-interior-start-outset",
-      "column-rule-interior-end-outset"
+      "row-rule-edge-start-inset",
+      "row-rule-edge-end-inset",
+      "row-rule-interior-start-inset",
+      "row-rule-interior-end-inset",
+      "column-rule-edge-start-inset",
+      "column-rule-edge-end-inset",
+      "column-rule-interior-start-inset",
+      "column-rule-interior-end-inset"
     ],
-    "name": "rule-outset"
+    "name": "rule-inset"
   },
   {
     "longhands": [
@@ -8024,7 +8024,18 @@ var valuePresets = /* @__PURE__ */ new Map([
       ["perspective", "perspective(|10px|)"]
     ])
   ],
-  ["corner-shape", cornerShapeValuePresetMap]
+  ["corner-shape", cornerShapeValuePresetMap],
+  [
+    "font-variant-alternates",
+    /* @__PURE__ */ new Map([
+      ["stylistic", "stylistic(||)"],
+      ["styleset", "styleset(||)"],
+      ["character-variant", "character-variant(||)"],
+      ["swash", "swash(||)"],
+      ["ornaments", "ornaments(||)"],
+      ["annotation", "annotation(||)"]
+    ])
+  ]
 ]);
 var distanceProperties = /* @__PURE__ */ new Set([
   "background-position",
@@ -8305,6 +8316,10 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
       "proportional-width",
       "ruby"
     ])
+  ],
+  [
+    "font-variant-alternates",
+    /* @__PURE__ */ new Set(["historical-forms", "stylistic", "styleset", "character-variant", "swash", "ornaments", "annotation"])
   ],
   ["vertical-align", /* @__PURE__ */ new Set(["top", "bottom", "-webkit-baseline-middle"])],
   ["page-break-after", /* @__PURE__ */ new Set(["left", "right", "always", "avoid"])],
@@ -9784,7 +9799,6 @@ var Type;
 })(Type || (Type = {}));
 
 // gen/front_end/core/sdk/TargetManager.js
-var targetManagerInstance;
 var TargetManager = class _TargetManager extends Common4.ObjectWrapper.ObjectWrapper {
   #targets;
   #observers;
@@ -9812,13 +9826,13 @@ var TargetManager = class _TargetManager extends Common4.ObjectWrapper.ObjectWra
     this.#scopeChangeListeners = /* @__PURE__ */ new Set();
   }
   static instance({ forceNew } = { forceNew: false }) {
-    if (!targetManagerInstance || forceNew) {
-      targetManagerInstance = new _TargetManager();
+    if (!Root.DevToolsContext.globalInstance().has(_TargetManager) || forceNew) {
+      Root.DevToolsContext.globalInstance().set(_TargetManager, new _TargetManager());
     }
-    return targetManagerInstance;
+    return Root.DevToolsContext.globalInstance().get(_TargetManager);
   }
   static removeInstance() {
-    targetManagerInstance = void 0;
+    Root.DevToolsContext.globalInstance().delete(_TargetManager);
   }
   onInspectedURLChange(target) {
     if (target !== this.#scopeTarget) {
@@ -10472,13 +10486,6 @@ var NetworkManager = class _NetworkManager extends SDKModel {
     }
     return result.status;
   }
-  async getIpProtectionProxyStatus() {
-    const result = await this.#networkAgent.invoke_getIPProtectionProxyStatus();
-    if (result.getError()) {
-      return null;
-    }
-    return result.status;
-  }
   async enableReportingApi(enable = true) {
     return await this.#networkAgent.invoke_enableReportingApi({ enable });
   }
@@ -10688,11 +10695,6 @@ var NetworkDispatcher = class {
     networkRequest.setSecurityState(response.securityState);
     if (response.securityDetails) {
       networkRequest.setSecurityDetails(response.securityDetails);
-    }
-    if (Root2.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
-      if (response.isIpProtectionUsed) {
-        networkRequest.setIsIpProtectionUsed(response.isIpProtectionUsed);
-      }
     }
     const newResourceType = Common5.ResourceType.ResourceType.fromMimeTypeOverride(networkRequest.mimeType);
     if (newResourceType) {
@@ -10947,6 +10949,11 @@ var NetworkDispatcher = class {
       appliedNetworkConditionsId
     };
     this.getExtraInfoBuilder(requestId).addRequestExtraInfo(extraRequestInfo);
+    const networkRequest = this.#requestsById.get(requestId);
+    if (appliedNetworkConditionsId && networkRequest) {
+      networkRequest.setAppliedNetworkConditions(appliedNetworkConditionsId);
+      this.updateNetworkRequest(networkRequest);
+    }
   }
   responseReceivedEarlyHints({ requestId, headers }) {
     this.getExtraInfoBuilder(requestId).setEarlyHintsHeaders(this.headersMapToHeadersArray(headers));
@@ -14537,7 +14544,7 @@ var CSSProperty = class _CSSProperty extends Common7.ObjectWrapper.ObjectWrapper
 // gen/front_end/core/sdk/CSSRule.js
 var CSSRule_exports = {};
 __export(CSSRule_exports, {
-  CSSFontPaletteValuesRule: () => CSSFontPaletteValuesRule,
+  CSSAtRule: () => CSSAtRule,
   CSSFunctionRule: () => CSSFunctionRule,
   CSSKeyframeRule: () => CSSKeyframeRule,
   CSSKeyframesRule: () => CSSKeyframesRule,
@@ -15382,8 +15389,10 @@ var CSSPropertyRule = class extends CSSRule {
     return this.cssModelInternal.setPropertyRulePropertyName(styleSheetId, range, newPropertyName);
   }
 };
-var CSSFontPaletteValuesRule = class extends CSSRule {
-  #paletteName;
+var CSSAtRule = class extends CSSRule {
+  #name;
+  #type;
+  #subsection;
   constructor(cssModel, payload) {
     super(cssModel, {
       origin: payload.origin,
@@ -15391,10 +15400,18 @@ var CSSFontPaletteValuesRule = class extends CSSRule {
       header: styleSheetHeaderForRule(cssModel, payload),
       originTreeScopeNodeId: void 0
     });
-    this.#paletteName = new CSSValue(payload.fontPaletteName);
+    this.#name = payload.name ? new CSSValue(payload.name) : null;
+    this.#type = payload.type;
+    this.#subsection = payload.subsection ?? null;
   }
   name() {
-    return this.#paletteName;
+    return this.#name;
+  }
+  type() {
+    return this.#type;
+  }
+  subsection() {
+    return this.#subsection;
   }
 };
 var CSSKeyframesRule = class {
@@ -15716,15 +15733,15 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
   #pseudoDOMCascades;
   #customHighlightPseudoDOMCascades;
   #functionRules;
+  #atRules;
   #functionRuleMap = /* @__PURE__ */ new Map();
-  #fontPaletteValuesRule;
   #environmentVariables = {};
   static async create(payload) {
     const cssMatchedStyles = new _CSSMatchedStyles(payload);
     await cssMatchedStyles.init(payload);
     return cssMatchedStyles;
   }
-  constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionTryRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, activePositionFallbackIndex, functionRules }) {
+  constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionTryRules, propertyRules, cssPropertyRegistrations, activePositionFallbackIndex, functionRules, atRules }) {
     this.#cssModel = cssModel;
     this.#node = node;
     this.#registeredProperties = [
@@ -15736,9 +15753,9 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     }
     this.#positionTryRules = positionTryRules.map((rule) => new CSSPositionTryRule(cssModel, rule));
     this.#parentLayoutNodeId = parentLayoutNodeId;
-    this.#fontPaletteValuesRule = fontPaletteValuesRule ? new CSSFontPaletteValuesRule(cssModel, fontPaletteValuesRule) : void 0;
     this.#activePositionFallbackIndex = activePositionFallbackIndex;
     this.#functionRules = functionRules.map((rule) => new CSSFunctionRule(cssModel, rule));
+    this.#atRules = atRules.map((rule) => new CSSAtRule(cssModel, rule));
   }
   async init({ matchedPayload, inheritedPayload, inlinePayload, attributesPayload, pseudoPayload, inheritedPseudoPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload }) {
     matchedPayload = cleanUserAgentPayload(matchedPayload);
@@ -16107,8 +16124,8 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
   functionRules() {
     return this.#functionRules;
   }
-  fontPaletteValuesRule() {
-    return this.#fontPaletteValuesRule;
+  atRules() {
+    return this.#atRules;
   }
   keyframes() {
     return this.#keyframes;
@@ -18111,10 +18128,7 @@ var IOModel = class extends SDKModel {
     return result.data;
   }
   async close(handle) {
-    const result = await this.target().ioAgent().invoke_close({ handle });
-    if (result.getError()) {
-      console.error("Could not close stream.");
-    }
+    await this.target().ioAgent().invoke_close({ handle });
   }
   async resolveBlob(objectOrObjectId) {
     const objectId = objectOrObjectId instanceof RemoteObject ? objectOrObjectId.objectId : objectOrObjectId;
@@ -20232,7 +20246,7 @@ var CSSModel = class _CSSModel extends SDKModel {
       propertyRules: matchedStylesResponse.cssPropertyRules ?? [],
       functionRules: matchedStylesResponse.cssFunctionRules ?? [],
       cssPropertyRegistrations: matchedStylesResponse.cssPropertyRegistrations ?? [],
-      fontPaletteValuesRule: matchedStylesResponse.cssFontPaletteValuesRule,
+      atRules: matchedStylesResponse.cssAtRules ?? [],
       activePositionFallbackIndex: matchedStylesResponse.activePositionFallbackIndex ?? -1,
       animationStylesPayload: animatedStylesResponse?.animationStyles || [],
       inheritedAnimatedPayload: animatedStylesResponse?.inherited || [],
@@ -27501,6 +27515,9 @@ var ServerSentEventsParser = class {
   async addBase64Chunk(raw) {
     await this.#decoder.addBase64Chunk(raw);
   }
+  addTextChunk(chunk) {
+    this.#onTextChunk(chunk);
+  }
   #onTextChunk(chunk) {
     let start = 0;
     for (let i = 0; i < chunk.length; ++i) {
@@ -28118,7 +28135,6 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   responseReceivedPromiseResolve;
   directSocketInfo;
   #directSocketChunks = [];
-  #isIpProtectionUsed;
   #isAdRelated;
   #appliedNetworkConditionsId;
   constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
@@ -28131,7 +28147,6 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.#loaderId = loaderId;
     this.#initiator = initiator;
     this.#hasUserGesture = hasUserGesture;
-    this.#isIpProtectionUsed = false;
     this.#isAdRelated = false;
   }
   static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
@@ -29047,6 +29062,9 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
       /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */
     ));
   }
+  setAppliedNetworkConditions(appliedNetworkConditionsId) {
+    this.#appliedNetworkConditionsId = appliedNetworkConditionsId;
+  }
   hasExtraRequestInfo() {
     return this.#hasExtraRequestInfo;
   }
@@ -29191,12 +29209,6 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   }
   isSameSite() {
     return this.#isSameSite;
-  }
-  setIsIpProtectionUsed(isIpProtectionUsed) {
-    this.#isIpProtectionUsed = isIpProtectionUsed;
-  }
-  isIpProtectionUsed() {
-    return this.#isIpProtectionUsed;
   }
   setIsAdRelated(isAdRelated) {
     this.#isAdRelated = isAdRelated;
@@ -30796,7 +30808,7 @@ var ChildTargetManager = class _ChildTargetManager extends SDKModel {
     }
   }
   fireAvailableTargetsChanged() {
-    TargetManager.instance().dispatchEventToListeners("AvailableTargetsChanged", [...this.#targetInfos.values()]);
+    this.#targetManager.dispatchEventToListeners("AvailableTargetsChanged", [...this.#targetInfos.values()]);
   }
   async getParentTargetId() {
     if (!this.#parentTargetId) {
@@ -32684,8 +32696,7 @@ __export(CPUThrottlingManager_exports, {
   LowTierThrottlingOption: () => LowTierThrottlingOption,
   MidTierThrottlingOption: () => MidTierThrottlingOption,
   NoThrottlingOption: () => NoThrottlingOption,
-  calibrationErrorToString: () => calibrationErrorToString,
-  throttlingManager: () => throttlingManager
+  calibrationErrorToString: () => calibrationErrorToString
 });
 import * as Common37 from "./../common/common.js";
 import * as i18n35 from "./../i18n/i18n.js";
@@ -33325,9 +33336,6 @@ var CPUThrottlingManager = class _CPUThrottlingManager extends Common37.ObjectWr
   modelRemoved(_emulationModel) {
   }
 };
-function throttlingManager() {
-  return CPUThrottlingManager.instance();
-}
 var CPUThrottlingRates;
 (function(CPUThrottlingRates2) {
   CPUThrottlingRates2[CPUThrottlingRates2["NO_THROTTLING"] = 1] = "NO_THROTTLING";

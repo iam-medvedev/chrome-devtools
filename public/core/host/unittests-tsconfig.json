@@ -44,6 +44,7 @@
   },
   "files": [
     "../../../../../../front_end/core/host/AidaClient.test.ts",
+    "../../../../../../front_end/core/host/DispatchHttpRequestClient.test.ts",
     "../../../../../../front_end/core/host/GdpClient.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

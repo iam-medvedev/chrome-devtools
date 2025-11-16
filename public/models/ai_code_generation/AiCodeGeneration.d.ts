@@ -15,6 +15,8 @@ export declare class AiCodeGeneration {
     constructor(opts: Options);
     registerUserImpression(rpcGlobalId: Host.AidaClient.RpcGlobalId, latency: number, sampleId?: number): void;
     registerUserAcceptance(rpcGlobalId: Host.AidaClient.RpcGlobalId, sampleId?: number): void;
-    generateCode(prompt: string, preamble: string, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage): Promise<Host.AidaClient.GenerateCodeResponse | null>;
+    generateCode(prompt: string, preamble: string, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage, options?: {
+        signal?: AbortSignal;
+    }): Promise<Host.AidaClient.GenerateCodeResponse | null>;
 }
 export {};

@@ -21,6 +21,7 @@ describeWithMockConnection('ScopeChainModel', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         stubPluginManager = sinon.createStubInstance(Bindings.DebuggerLanguagePlugins.DebuggerLanguagePluginManager, { resolveScopeChain: Promise.resolve(null) });
         sinon.stub(debuggerWorkspaceBinding, 'pluginManager').value(stubPluginManager);

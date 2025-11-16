@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
-import * as UI from '../../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components.js';
 async function renderOriginTrialTreeView(data) {
     const component = new ApplicationComponents.OriginTrialTreeView.OriginTrialTreeView();
@@ -213,7 +212,6 @@ describeWithLocale('OriginTrialTreeView', () => {
         assert.lengthOf(tokenDetailNodes, 2);
         const tokenFieldsNode = tokenDetailNodes[0];
         const rowsComponent = tokenFieldsNode.nodeElement.querySelector('devtools-widget');
-        await UI.Widget.Widget.get(rowsComponent).updateComplete;
         const { innerHTML } = rowsComponent.shadowRoot;
         const parsedToken = trialWithSingleToken.tokensWithStatus[0].parsedToken;
         assert.exists(parsedToken);
@@ -352,7 +350,6 @@ describeWithLocale('OriginTrialTreeView', () => {
         assert.lengthOf(tokenDetailNodes, 2);
         const tokenFieldsNode = tokenDetailNodes[0];
         const rowsComponent = tokenFieldsNode.nodeElement.querySelector('devtools-widget');
-        await UI.Widget.Widget.get(rowsComponent).updateComplete;
         const { innerHTML } = rowsComponent.shadowRoot;
         assert.include(innerHTML, unknownTrialName);
     });

@@ -300,15 +300,6 @@ Common.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common.Linkifier.registerLinkifier({
-  contextTypes() {
-    return maybeRetrieveContextTypes((Timeline) => [Timeline.CLSLinkifier.CLSRect]);
-  },
-  async loadLinkifier() {
-    const Timeline = await loadTimelineModule();
-    return Timeline.CLSLinkifier.Linkifier.instance();
-  }
-});
 UI.ContextMenu.registerItem({
   location: "timelineMenu/open",
   actionId: "timeline.load-from-file",

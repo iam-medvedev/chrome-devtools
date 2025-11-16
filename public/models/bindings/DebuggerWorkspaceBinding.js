@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 // eslint-disable-next-line @devtools/es-modules-import
 import * as StackTraceImpl from '../stack_trace/stack_trace_impl.js';
@@ -13,19 +14,23 @@ import { DefaultScriptMapping } from './DefaultScriptMapping.js';
 import { LiveLocationWithPool } from './LiveLocation.js';
 import { NetworkProject } from './NetworkProject.js';
 import { ResourceScriptMapping } from './ResourceScriptMapping.js';
-let debuggerWorkspaceBindingInstance;
 export class DebuggerWorkspaceBinding {
     resourceMapping;
     #debuggerModelToData;
     #liveLocationPromises;
     pluginManager;
-    constructor(resourceMapping, targetManager, ignoreListManager) {
+    ignoreListManager;
+    workspace;
+    constructor(resourceMapping, targetManager, ignoreListManager, workspace) {
         this.resourceMapping = resourceMapping;
+        this.resourceMapping.debuggerWorkspaceBinding = this;
+        this.ignoreListManager = ignoreListManager;
+        this.workspace = workspace;
         this.#debuggerModelToData = new Map();
         targetManager.addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
         targetManager.addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
         targetManager.observeModels(SDK.DebuggerModel.DebuggerModel, this);
-        ignoreListManager.addEventListener("IGNORED_SCRIPT_RANGES_UPDATED" /* Workspace.IgnoreListManager.Events.IGNORED_SCRIPT_RANGES_UPDATED */, event => this.updateLocations(event.data));
+        this.ignoreListManager.addEventListener("IGNORED_SCRIPT_RANGES_UPDATED" /* Workspace.IgnoreListManager.Events.IGNORED_SCRIPT_RANGES_UPDATED */, event => this.updateLocations(event.data));
         this.#liveLocationPromises = new Set();
         this.pluginManager = new DebuggerLanguagePluginManager(targetManager, resourceMapping.workspace, this);
     }
@@ -34,19 +39,18 @@ export class DebuggerWorkspaceBinding {
             modelData.compilerMapping.setFunctionRanges(uiSourceCode, ranges);
         }
     }
-    static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null, ignoreListManager: null }) {
-        const { forceNew, resourceMapping, targetManager, ignoreListManager } = opts;
-        if (!debuggerWorkspaceBindingInstance || forceNew) {
-            if (!resourceMapping || !targetManager || !ignoreListManager) {
+    static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null, ignoreListManager: null, workspace: null }) {
+        const { forceNew, resourceMapping, targetManager, ignoreListManager, workspace } = opts;
+        if (forceNew) {
+            if (!resourceMapping || !targetManager || !ignoreListManager || !workspace) {
                 throw new Error(`Unable to create DebuggerWorkspaceBinding: resourceMapping, targetManager and IgnoreLIstManager must be provided: ${new Error().stack}`);
             }
-            debuggerWorkspaceBindingInstance =
-                new DebuggerWorkspaceBinding(resourceMapping, targetManager, ignoreListManager);
+            Root.DevToolsContext.globalInstance().set(DebuggerWorkspaceBinding, new DebuggerWorkspaceBinding(resourceMapping, targetManager, ignoreListManager, workspace));
         }
-        return debuggerWorkspaceBindingInstance;
+        return Root.DevToolsContext.globalInstance().get(DebuggerWorkspaceBinding);
     }
     static removeInstance() {
-        debuggerWorkspaceBindingInstance = undefined;
+        Root.DevToolsContext.globalInstance().delete(DebuggerWorkspaceBinding);
     }
     async computeAutoStepRanges(mode, callFrame) {
         function contained(location, range) {
@@ -199,11 +203,10 @@ export class DebuggerWorkspaceBinding {
     }
     waitForUISourceCodeAdded(url, target) {
         return new Promise(resolve => {
-            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-            const descriptor = workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, event => {
+            const descriptor = this.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, event => {
                 const uiSourceCode = event.data;
                 if (uiSourceCode.url() === url && NetworkProject.targetForUISourceCode(uiSourceCode) === target) {
-                    workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, descriptor.listener);
+                    this.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, descriptor.listener);
                     resolve(uiSourceCode);
                 }
             });

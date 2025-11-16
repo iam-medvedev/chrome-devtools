@@ -686,18 +686,6 @@ UI2.UIUtils.registerRenderer({
     return Elements.ElementsTreeOutlineRenderer.Renderer.instance();
   }
 });
-Common.Linkifier.registerLinkifier({
-  contextTypes() {
-    return [
-      SDK.DOMModel.DOMNode,
-      SDK.DOMModel.DeferredDOMNode
-    ];
-  },
-  async loadLinkifier() {
-    const Elements = await loadElementsModule();
-    return Elements.DOMLinkifier.Linkifier.instance();
-  }
-});
 
 // gen/front_end/panels/browser_debugger/browser_debugger-meta.js
 import * as i18n5 from "./../../core/i18n/i18n.js";
@@ -3263,15 +3251,6 @@ Common12.Settings.registerSettingExtension({
   settingName: "annotations-hidden",
   settingType: "boolean",
   defaultValue: false
-});
-Common12.Linkifier.registerLinkifier({
-  contextTypes() {
-    return maybeRetrieveContextTypes5((Timeline) => [Timeline.CLSLinkifier.CLSRect]);
-  },
-  async loadLinkifier() {
-    const Timeline = await loadTimelineModule();
-    return Timeline.CLSLinkifier.Linkifier.instance();
-  }
 });
 UI20.ContextMenu.registerItem({
   location: "timelineMenu/open",

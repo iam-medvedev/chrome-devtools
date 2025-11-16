@@ -991,7 +991,13 @@ let RecorderController = class RecorderController extends LitElement {
         <div class="empty-state-header">${i18nString(UIStrings.header)}</div>
         <div class="empty-state-description">
           <span>${i18nString(UIStrings.recordingDescription)}</span>
-          ${UI.XLink.XLink.create(RECORDER_EXPLANATION_URL, i18nString(UIStrings.learnMore), 'x-link', undefined, 'learn-more')}
+          <x-link
+            class="x-link devtools-link"
+            href=${RECORDER_EXPLANATION_URL}
+            jslog=${VisualLogging.link()
+            .track({ click: true, keydown: 'Enter|Space' })
+            .context('learn-more')}
+          >${i18nString(UIStrings.learnMore)}</x-link>
         </div>
         <devtools-button .variant=${"tonal" /* Buttons.Button.Variant.TONAL */} jslogContext=${"chrome-recorder.create-recording" /* Actions.RecorderActions.CREATE_RECORDING */} @click=${this.#onCreateNewRecording}>${i18nString(UIStrings.createRecording)}</devtools-button>
       </div>

@@ -7,6 +7,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as PanelsCommon from '../common/common.js';
 import * as Sources from '../sources/sources.js';
 import domBreakpointsSidebarPaneStyles from './domBreakpointsSidebarPane.css.js';
 const UIStrings = {
@@ -170,15 +171,13 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
         const linkifiedNode = document.createElement('monospace');
         linkifiedNode.style.display = 'block';
         labelElement.appendChild(linkifiedNode);
-        void Common.Linkifier.Linkifier.linkify(item.node, { preventKeyboardFocus: true, tooltip: undefined })
-            .then(linkified => {
-            linkifiedNode.appendChild(linkified);
-            // Give the checkbox an aria-label as it is required for all form element
-            UI.ARIAUtils.setLabel(checkbox, i18nString(UIStrings.sS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent() }));
-            // The parent list element is the one that actually gets focused.
-            // Assign it an aria-label with complete information for the screen reader to read out properly
-            UI.ARIAUtils.setLabel(element, i18nString(UIStrings.sSS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent(), PH3: checkedStateText }));
-        });
+        const linkified = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(item.node, { preventKeyboardFocus: true, tooltip: undefined });
+        linkifiedNode.appendChild(linkified);
+        // Give the checkbox an aria-label as it is required for all form element
+        UI.ARIAUtils.setLabel(checkbox, i18nString(UIStrings.sS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent() }));
+        // The parent list element is the one that actually gets focused.
+        // Assign it an aria-label with complete information for the screen reader to read out properly
+        UI.ARIAUtils.setLabel(element, i18nString(UIStrings.sSS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent(), PH3: checkedStateText }));
         labelElement.appendChild(description);
         if (item === this.#highlightedBreakpoint) {
             element.classList.add('breakpoint-hit');

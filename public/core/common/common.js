@@ -3894,45 +3894,6 @@ function lazy(producer) {
   };
 }
 
-// gen/front_end/core/common/Linkifier.js
-var Linkifier_exports = {};
-__export(Linkifier_exports, {
-  Linkifier: () => Linkifier,
-  getApplicableRegisteredlinkifiers: () => getApplicableRegisteredlinkifiers,
-  registerLinkifier: () => registerLinkifier
-});
-var Linkifier = class {
-  static async linkify(object, options) {
-    if (!object) {
-      throw new Error("Can't linkify " + object);
-    }
-    const linkifierRegistration = getApplicableRegisteredlinkifiers(object)[0];
-    if (!linkifierRegistration) {
-      throw new Error("No linkifiers registered for object " + object);
-    }
-    const linkifier = await linkifierRegistration.loadLinkifier();
-    return linkifier.linkify(object, options);
-  }
-};
-var registeredLinkifiers = [];
-function registerLinkifier(registration) {
-  registeredLinkifiers.push(registration);
-}
-function getApplicableRegisteredlinkifiers(object) {
-  return registeredLinkifiers.filter(isLinkifierApplicableToContextTypes);
-  function isLinkifierApplicableToContextTypes(linkifierRegistration) {
-    if (!linkifierRegistration.contextTypes) {
-      return true;
-    }
-    for (const contextType of linkifierRegistration.contextTypes()) {
-      if (object instanceof contextType) {
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
 // gen/front_end/core/common/MapWithDefault.js
 var MapWithDefault_exports = {};
 __export(MapWithDefault_exports, {
@@ -4564,9 +4525,6 @@ var ProgressProxy = class {
     return this.#delegate ? this.#delegate.worked : 0;
   }
 };
-
-// gen/front_end/core/common/QueryParamHandler.js
-var QueryParamHandler_exports = {};
 
 // gen/front_end/core/common/ResolverBase.js
 var ResolverBase_exports = {};
@@ -5412,6 +5370,7 @@ var Settings = class _Settings {
   syncedStorage;
   globalStorage;
   localStorage;
+  #settingRegistrations;
   #sessionStorage = new SettingsStorage({});
   settingNameSet = /* @__PURE__ */ new Set();
   orderValuesBySettingCategory = /* @__PURE__ */ new Map();
@@ -5419,12 +5378,13 @@ var Settings = class _Settings {
   #registry = /* @__PURE__ */ new Map();
   moduleSettings = /* @__PURE__ */ new Map();
   #logSettingAccess;
-  constructor(syncedStorage, globalStorage, localStorage, logSettingAccess, runSettingsMigration) {
+  constructor({ syncedStorage, globalStorage, localStorage, settingRegistrations, logSettingAccess, runSettingsMigration }) {
     this.syncedStorage = syncedStorage;
     this.globalStorage = globalStorage;
     this.localStorage = localStorage;
+    this.#settingRegistrations = settingRegistrations;
     this.#logSettingAccess = logSettingAccess;
-    for (const registration of this.getRegisteredSettings()) {
+    for (const registration of this.#settingRegistrations) {
       const { settingName, defaultValue, storageType } = registration;
       const isRegex = registration.settingType === "regex";
       const evaluatedDefaultValue = typeof defaultValue === "function" ? defaultValue(Root3.Runtime.hostConfig) : defaultValue;
@@ -5441,18 +5401,18 @@ var Settings = class _Settings {
     }
   }
   getRegisteredSettings() {
-    return getRegisteredSettings();
+    return this.#settingRegistrations;
   }
   static hasInstance() {
     return typeof settingsInstance !== "undefined";
   }
-  static instance(opts = { forceNew: null, syncedStorage: null, globalStorage: null, localStorage: null }) {
-    const { forceNew, syncedStorage, globalStorage, localStorage, logSettingAccess, runSettingsMigration } = opts;
+  static instance(opts = { forceNew: null, syncedStorage: null, globalStorage: null, localStorage: null, settingRegistrations: null }) {
+    const { forceNew, syncedStorage, globalStorage, localStorage, settingRegistrations, logSettingAccess, runSettingsMigration } = opts;
     if (!settingsInstance || forceNew) {
-      if (!syncedStorage || !globalStorage || !localStorage) {
+      if (!syncedStorage || !globalStorage || !localStorage || !settingRegistrations) {
         throw new Error(`Unable to create settings: global and local storage must be provided: ${new Error().stack}`);
       }
-      settingsInstance = new _Settings(syncedStorage, globalStorage, localStorage, logSettingAccess, runSettingsMigration);
+      settingsInstance = new _Settings({ syncedStorage, globalStorage, localStorage, settingRegistrations, logSettingAccess, runSettingsMigration });
     }
     return settingsInstance;
   }
@@ -7002,13 +6962,11 @@ export {
   Gzip_exports as Gzip,
   JavaScriptMetaData_exports as JavaScriptMetaData,
   Lazy_exports as Lazy,
-  Linkifier_exports as Linkifier,
   MapWithDefault_exports as MapWithDefault,
   Mutex_exports as Mutex,
   Object_exports as ObjectWrapper,
   ParsedURL_exports as ParsedURL,
   Progress_exports as Progress,
-  QueryParamHandler_exports as QueryParamHandler,
   ResolverBase_exports as ResolverBase,
   ResourceType_exports as ResourceType,
   ReturnToPanel_exports as ReturnToPanel,

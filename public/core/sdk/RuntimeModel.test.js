@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { createTarget, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('ExecutionContext', () => {
+describe('ExecutionContext', () => {
+    setupRuntimeHooks();
+    setupSettingsHooks();
     function createExecutionContext(target, name, isDefault) {
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
         assert.exists(runtimeModel);

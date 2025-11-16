@@ -304,7 +304,6 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     responseReceivedPromiseResolve;
     directSocketInfo;
     #directSocketChunks = [];
-    #isIpProtectionUsed;
     #isAdRelated;
     #appliedNetworkConditionsId;
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
@@ -317,7 +316,6 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#loaderId = loaderId;
         this.#initiator = initiator;
         this.#hasUserGesture = hasUserGesture;
-        this.#isIpProtectionUsed = false;
         this.#isAdRelated = false;
     }
     static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
@@ -1262,6 +1260,9 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#siteHasCookieInOtherPartition = extraRequestInfo.siteHasCookieInOtherPartition ?? false;
         this.#hasThirdPartyCookiePhaseoutIssue = this.#blockedRequestCookies.some(item => item.blockedReasons.includes("ThirdPartyPhaseout" /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */));
     }
+    setAppliedNetworkConditions(appliedNetworkConditionsId) {
+        this.#appliedNetworkConditionsId = appliedNetworkConditionsId;
+    }
     hasExtraRequestInfo() {
         return this.#hasExtraRequestInfo;
     }
@@ -1408,12 +1409,6 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     isSameSite() {
         return this.#isSameSite;
-    }
-    setIsIpProtectionUsed(isIpProtectionUsed) {
-        this.#isIpProtectionUsed = isIpProtectionUsed;
-    }
-    isIpProtectionUsed() {
-        return this.#isIpProtectionUsed;
     }
     setIsAdRelated(isAdRelated) {
         this.#isAdRelated = isAdRelated;

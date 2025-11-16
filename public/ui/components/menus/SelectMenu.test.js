@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Helpers from '../../../testing/DOMHelpers.js'; // eslint-disable-line @devtools/es-modules-import
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale, } from '../../../testing/LocaleHelpers.js';
 import { html } from '../../lit/lit.js';
 import * as Dialogs from '../dialogs/dialogs.js';
@@ -47,7 +47,7 @@ describeWithLocale('SelectMenu', () => {
         const firsItem = menu.querySelector('devtools-menu-item');
         assert.exists(firsItem);
         menu.buttonTitle = 'Override Title';
-        Helpers.renderElementIntoDOM(menu);
+        renderElementIntoDOM(menu);
         await RenderCoordinator.done();
         assert.isNotNull(menu.shadowRoot);
         const button = menu.shadowRoot.querySelector('devtools-select-menu-button');
@@ -61,7 +61,7 @@ describeWithLocale('SelectMenu', () => {
         assert.exists(firsItem);
         firsItem.selected = true;
         menu.buttonTitle = () => html `Override Title`;
-        Helpers.renderElementIntoDOM(menu);
+        renderElementIntoDOM(menu);
         await RenderCoordinator.done();
         assert.isNotNull(menu.shadowRoot);
         const button = menu.shadowRoot.querySelector('devtools-select-menu-button');
@@ -71,7 +71,7 @@ describeWithLocale('SelectMenu', () => {
     });
     it('can render multiple options as selected at once', async () => {
         const selectMenu = await createMenu();
-        Helpers.renderElementIntoDOM(selectMenu);
+        renderElementIntoDOM(selectMenu);
         [...selectMenu.querySelectorAll('devtools-menu-item')][0].selected = true;
         [...selectMenu.querySelectorAll('devtools-menu-item')][1].selected = true;
         assert.isNotNull(selectMenu.shadowRoot);

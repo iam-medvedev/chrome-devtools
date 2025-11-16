@@ -77,6 +77,7 @@ describeWithMockConnection('BreakpointManager', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         backend = new MockProtocolBackend();
         target = createTarget();

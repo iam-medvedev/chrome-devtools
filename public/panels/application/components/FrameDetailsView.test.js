@@ -4,7 +4,7 @@
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
-import { getCleanTextContentFromElements, getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { getCleanTextContentFromElements, getElementsWithinComponent, getElementWithinComponent, raf, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../../testing/MockConnection.js';
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
@@ -27,7 +27,7 @@ const makeFrame = (target) => {
         getSecureContextType: () => "SecureLocalhost" /* Protocol.Page.SecureContextType.SecureLocalhost */,
         getGatedAPIFeatures: () => ["SharedArrayBuffers" /* Protocol.Page.GatedAPIFeatures.SharedArrayBuffers */,
             "SharedArrayBuffersTransferAllowed" /* Protocol.Page.GatedAPIFeatures.SharedArrayBuffersTransferAllowed */],
-        getOwnerDOMNodeOrDocument: () => ({
+        getOwnerDOMNodeOrDocument: () => Promise.resolve({
             nodeName: () => 'iframe',
         }),
         resourceTreeModel: () => target.model(SDK.ResourceTreeModel.ResourceTreeModel),
@@ -87,6 +87,7 @@ describeWithMockConnection('FrameDetailsView', () => {
             resourceMapping: new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace),
             targetManager,
             ignoreListManager,
+            workspace,
         });
         const target = createTarget();
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
@@ -216,6 +217,7 @@ report-uri: https://www.example.com/csp`,
         const adScriptAncestryExpandableButton = adScriptAncestryList.shadowRoot.querySelector('button');
         assert.exists(adScriptAncestryExpandableButton);
         adScriptAncestryExpandableButton.click();
+        await raf();
         const adScriptAncestryItems = adScriptAncestryList.shadowRoot.querySelectorAll('.expandable-list-items .devtools-link');
         const adScriptsText = Array.from(adScriptAncestryItems).map(adScript => adScript.textContent?.trim());
         assert.deepEqual(adScriptsText, ['ad-script1.js:1', 'ad-script2.js:1']);

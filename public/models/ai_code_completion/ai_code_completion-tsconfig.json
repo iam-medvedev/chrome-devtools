@@ -31,6 +31,7 @@
     "target": "ES2023",
     "tsBuildInfoFile": "ai_code_completion-tsconfig.json.tsbuildinfo",
     "typeRoots": [],
+    "types": [],
     "useUnknownInCatchVariables": false
   },
   "files": [
@@ -49,9 +50,6 @@
     },
     {
       "path": "../../core/root/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/text_editor/bundle-tsconfig.json"
     }
   ]
 }

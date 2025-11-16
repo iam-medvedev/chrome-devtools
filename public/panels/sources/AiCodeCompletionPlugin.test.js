@@ -4,26 +4,13 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
-import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
+import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
+import * as PanelCommon from '../common/common.js';
 import { AiCodeCompletionPlugin } from './sources.js';
 const { urlString } = Platform.DevToolsPath;
-function createEditorWithPlugin(doc, uiSourceCode) {
-    const plugin = new AiCodeCompletionPlugin.AiCodeCompletionPlugin(uiSourceCode);
-    const editor = new TextEditor.TextEditor.TextEditor(CodeMirror.EditorState.create({
-        doc,
-        extensions: [
-            plugin.editorExtension(),
-        ],
-    }));
-    plugin.editorInitialized(editor);
-    renderElementIntoDOM(editor);
-    return { editor, plugin };
-}
 function createUiSourceCodeStub({ url = urlString `file://`, contentType = Common.ResourceType.resourceTypes.Script, } = {}) {
     return sinon.createStubInstance(Workspace.UISourceCode.UISourceCode, {
         url,
@@ -31,22 +18,6 @@ function createUiSourceCodeStub({ url = urlString `file://`, contentType = Commo
     });
 }
 describeWithEnvironment('AiCodeCompletionPlugin', () => {
-    let clock;
-    let checkAccessPreconditionsStub;
-    beforeEach(() => {
-        clock = sinon.useFakeTimers();
-        updateHostConfig({
-            devToolsAiCodeCompletion: {
-                enabled: true,
-            },
-        });
-        checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
-    });
-    afterEach(() => {
-        Common.Settings.Settings.instance().settingForTest('ai-code-completion-teaser-dismissed').set(false);
-        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(false);
-        clock.restore();
-    });
     describe('accepts', () => {
         it('holds true for scripts', () => {
             assert.isTrue(AiCodeCompletionPlugin.AiCodeCompletionPlugin.accepts(createUiSourceCodeStub({
@@ -60,126 +31,119 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
             assert.isTrue(AiCodeCompletionPlugin.AiCodeCompletionPlugin.accepts(createUiSourceCodeStub({ contentType: Common.ResourceType.resourceTypes.Document })));
         });
     });
-    describe('teaser decoration', () => {
-        it('shows teaser when cursor is at the end of the line', async () => {
-            const { editor, plugin } = createEditorWithPlugin('Hello', createUiSourceCodeStub());
-            editor.dispatch({ changes: { from: 5, insert: 'W' }, selection: { anchor: 6 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
-                AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
-            assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
-            plugin.dispose();
+    it('does not create a plugin when the feature is disabled', () => {
+        updateHostConfig({
+            devToolsAiCodeCompletion: {
+                enabled: false,
+            },
         });
-        it('hides teaser when cursor is not at the end of the line', async () => {
-            const { editor } = createEditorWithPlugin('Hello', createUiSourceCodeStub());
-            editor.dispatch({ changes: { from: 5, insert: 'W' }, selection: { anchor: 6 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
-                AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
-            assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
-            editor.dispatch({ changes: { from: 0, insert: '!' }, selection: { anchor: 1 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
-                AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
-            assert.isNull(editor.editor.dom.querySelector('.cm-placeholder'));
+        const uiSourceCode = createUiSourceCodeStub();
+        assert.throws(() => new AiCodeCompletionPlugin.AiCodeCompletionPlugin(uiSourceCode), 'AI code completion feature is not enabled.');
+    });
+    describe('provider callbacks', () => {
+        let clock;
+        beforeEach(() => {
+            clock = sinon.useFakeTimers();
+            updateHostConfig({
+                devToolsAiCodeCompletion: {
+                    enabled: true,
+                },
+                aidaAvailability: {
+                    enabled: true,
+                    blockedByAge: false,
+                    blockedByGeo: false,
+                }
+            });
+            sinon.stub(TextEditor.AiCodeCompletionProvider.AiCodeCompletionProvider, 'createInstance')
+                .returns(sinon.createStubInstance(TextEditor.AiCodeCompletionProvider.AiCodeCompletionProvider));
+            sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions')
+                .resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         });
-        it('hides teaser when text is selected', async () => {
-            const { editor, plugin } = createEditorWithPlugin('Hello', createUiSourceCodeStub());
-            editor.dispatch({ changes: { from: 5, insert: 'W' }, selection: { anchor: 6 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
-                AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
-            assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
-            editor.dispatch({ selection: { anchor: 2, head: 4 } });
-            assert.isNull(editor.editor.dom.querySelector('.cm-placeholder'));
-            plugin.dispose();
+        afterEach(() => {
+            clock.restore();
         });
-    });
-    it('triggers code completion on text change', async () => {
-        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
-        const { editor, plugin } = createEditorWithPlugin('', createUiSourceCodeStub());
-        const onTextChangedStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'onTextChanged');
-        editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
-        sinon.assert.called(onTextChangedStub);
-        assert.deepEqual(onTextChangedStub.firstCall.args, ['Hello', '', 5, undefined]);
-        plugin.dispose();
-    });
-    it('triggers code completion when AIDA becomes available', async () => {
-        checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-        const onTextChangedStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'onTextChanged');
-        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
-        const { editor, plugin } = createEditorWithPlugin('', createUiSourceCodeStub());
-        await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
-        editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
-        sinon.assert.notCalled(onTextChangedStub);
-        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        await Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
-        await clock.tickAsync(0);
-        editor.dispatch({ changes: { from: 5, insert: 'Bye' }, selection: { anchor: 8 } });
-        sinon.assert.calledOnce(onTextChangedStub);
-        assert.deepEqual(onTextChangedStub.firstCall.args, ['HelloBye', '', 8, undefined]);
-        plugin.dispose();
-    });
-    it('does not trigger code completion when AIDA becomes unavailable', async () => {
-        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        const onTextChangedStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'onTextChanged');
-        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
-        const { editor, plugin } = createEditorWithPlugin('', createUiSourceCodeStub());
-        await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
-        editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
-        sinon.assert.calledOnce(onTextChangedStub);
-        checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-        await Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
-        await clock.tickAsync(0);
-        editor.dispatch({ changes: { from: 5, insert: 'Bye' }, selection: { anchor: 8 } });
-        sinon.assert.calledOnce(onTextChangedStub);
-        assert.deepEqual(onTextChangedStub.firstCall.args, ['Hello', '', 5, undefined]);
-        plugin.dispose();
-    });
-    it('should use CONSOLE context flavor for snippets', async () => {
-        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        const aidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient);
-        const plugin = new AiCodeCompletionPlugin.AiCodeCompletionPlugin(createUiSourceCodeStub({
-            url: urlString `snippet://`,
-        }));
-        plugin.setAidaClientForTest(aidaClient);
-        const editor = new TextEditor.TextEditor.TextEditor(CodeMirror.EditorState.create({
-            doc: 'console.log("',
-            extensions: [
-                plugin.editorExtension(),
-            ],
-        }));
-        plugin.editorInitialized(editor);
-        renderElementIntoDOM(editor);
-        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
-        await clock.tickAsync(0);
-        editor.dispatch({ changes: { from: 13, insert: 'a' }, selection: { anchor: 14 } });
-        await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
-        sinon.assert.calledOnce(aidaClient.completeCode);
-        const args = aidaClient.completeCode.lastCall.args[0];
-        assert.lengthOf(args.additional_files, 1);
-        assert.strictEqual(args.additional_files[0].path, 'devtools-console-context.js');
-        plugin.dispose();
-    });
-    it('should use SOURCES context flavor for non-snippets', async () => {
-        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        const aidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient);
-        const plugin = new AiCodeCompletionPlugin.AiCodeCompletionPlugin(createUiSourceCodeStub({
-            url: urlString `file://script.js`,
-        }));
-        plugin.setAidaClientForTest(aidaClient);
-        const editor = new TextEditor.TextEditor.TextEditor(CodeMirror.EditorState.create({
-            doc: 'console.log("',
-            extensions: [
-                plugin.editorExtension(),
-            ],
-        }));
-        plugin.editorInitialized(editor);
-        renderElementIntoDOM(editor);
-        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
-        await clock.tickAsync(0);
-        editor.dispatch({ changes: { from: 13, insert: 'a' }, selection: { anchor: 14 } });
-        await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
-        sinon.assert.calledOnce(aidaClient.completeCode);
-        const args = aidaClient.completeCode.lastCall.args[0];
-        assert.isUndefined(args.additional_files);
-        plugin.dispose();
+        function setupPlugin() {
+            const uiSourceCode = createUiSourceCodeStub();
+            const plugin = new AiCodeCompletionPlugin.AiCodeCompletionPlugin(uiSourceCode);
+            return plugin;
+        }
+        it('initializes toolbar when the feature is enabled', async () => {
+            const plugin = setupPlugin();
+            await clock.tickAsync(0);
+            const providerConfig = plugin.aiCodeCompletionConfig;
+            providerConfig.onFeatureEnabled();
+            const toolbarItems = plugin.rightToolbarItems();
+            assert.lengthOf(toolbarItems, 1);
+            assert.isTrue(toolbarItems[0].element.classList.contains('ai-code-completion-disclaimer-container'));
+            assert.deepEqual(toolbarItems[0].element.childElementCount, 1);
+        });
+        it('cleans up toolbar when the feature is disabled', async () => {
+            const plugin = setupPlugin();
+            await clock.tickAsync(0);
+            const providerConfig = plugin.aiCodeCompletionConfig;
+            providerConfig.onFeatureEnabled();
+            let toolbarItems = plugin.rightToolbarItems();
+            assert.deepEqual(toolbarItems[0].element.childElementCount, 1);
+            providerConfig.onFeatureDisabled();
+            toolbarItems = plugin.rightToolbarItems();
+            assert.deepEqual(toolbarItems[0].element.childElementCount, 0);
+        });
+        it('shows a loading state when a request is triggered', async () => {
+            const fakeLoadingSetter = sinon.fake();
+            sinon.stub(PanelCommon.AiCodeCompletionDisclaimer.prototype, 'loading').set(fakeLoadingSetter);
+            const plugin = setupPlugin();
+            await clock.tickAsync(0);
+            const providerConfig = plugin.aiCodeCompletionConfig;
+            providerConfig.onFeatureEnabled();
+            providerConfig.onRequestTriggered();
+            sinon.assert.calledOnce(fakeLoadingSetter);
+            assert.isTrue(fakeLoadingSetter.firstCall.args[0]);
+        });
+        it('hides the loading indicator when a response is received', async () => {
+            const fakeLoadingSetter = sinon.fake();
+            sinon.stub(PanelCommon.AiCodeCompletionDisclaimer.prototype, 'loading').set(fakeLoadingSetter);
+            const plugin = setupPlugin();
+            await clock.tickAsync(0);
+            const providerConfig = plugin.aiCodeCompletionConfig;
+            providerConfig.onFeatureEnabled();
+            providerConfig.onRequestTriggered();
+            sinon.assert.calledOnce(fakeLoadingSetter);
+            assert.isTrue(fakeLoadingSetter.firstCall.args[0]);
+            providerConfig.onResponseReceived([]);
+            sinon.assert.calledTwice(fakeLoadingSetter);
+            assert.isFalse(fakeLoadingSetter.secondCall.args[0]);
+        });
+        it('attaches the citations toolbar when a suggestion with citations is accepted', async () => {
+            const updateCitationsSpy = sinon.spy(PanelCommon.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
+            const plugin = setupPlugin();
+            await clock.tickAsync(0);
+            const providerConfig = plugin.aiCodeCompletionConfig;
+            const editor = new TextEditor.TextEditor.TextEditor();
+            const editorDispatchSpy = sinon.spy(editor, 'dispatch');
+            plugin.editorInitialized(editor);
+            providerConfig.onFeatureEnabled();
+            providerConfig.onResponseReceived([{ uri: 'https://example.com/source' }]);
+            providerConfig.onSuggestionAccepted();
+            sinon.assert.calledOnce(updateCitationsSpy);
+            assert.deepEqual(updateCitationsSpy.firstCall.args, [['https://example.com/source']]);
+            sinon.assert.calledWith(editorDispatchSpy, {
+                effects: sinon.match(effect => effect.is(SourceFrame.SourceFrame.addSourceFrameInfobar)),
+            });
+        });
+        it('does not attach the citations toolbar if there are no citations', async () => {
+            const updateCitationsSpy = sinon.spy(PanelCommon.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
+            const plugin = setupPlugin();
+            await clock.tickAsync(0);
+            const providerConfig = plugin.aiCodeCompletionConfig;
+            const editor = new TextEditor.TextEditor.TextEditor();
+            const editorDispatchSpy = sinon.spy(editor, 'dispatch');
+            plugin.editorInitialized(editor);
+            providerConfig.onFeatureEnabled();
+            providerConfig.onResponseReceived([]);
+            providerConfig.onSuggestionAccepted();
+            sinon.assert.notCalled(updateCitationsSpy);
+            sinon.assert.notCalled(editorDispatchSpy);
+        });
     });
 });
 //# sourceMappingURL=AiCodeCompletionPlugin.test.js.map

@@ -12,6 +12,7 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as PanelsCommon from '../common/common.js';
 const MaxLengthForLinks = 40;
 export class LighthouseReportRenderer {
     static renderLighthouseReport(lhr, artifacts, opts) {
@@ -117,7 +118,7 @@ export class LighthouseReportRenderer {
             if (!node) {
                 continue;
             }
-            const element = await Common.Linkifier.Linkifier.linkify(node, { tooltip: detailsItem.snippet, preventKeyboardFocus: undefined });
+            const element = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, { tooltip: detailsItem.snippet, preventKeyboardFocus: undefined });
             UI.Tooltip.Tooltip.install(origHTMLElement, '');
             const screenshotElement = origHTMLElement.querySelector('.lh-element-screenshot');
             origHTMLElement.textContent = '';

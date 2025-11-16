@@ -1597,7 +1597,9 @@ var PatchAgent = class extends AiAgent {
       handler: async (args, options) => {
         return {
           result: {
-            matches: await this.#project.searchFiles(args.query, args.caseSensitive, args.isRegex, { signal: options?.signal })
+            matches: await this.#project.searchFiles(args.query, args.caseSensitive, args.isRegex, {
+              signal: options?.signal
+            })
           }
         };
       }
@@ -4176,9 +4178,6 @@ var PerformanceAgent = class extends AiAgent {
       modelId
     };
   }
-  getConversationType() {
-    return "drjones-performance-full";
-  }
   async *handleContextDetails(context) {
     if (!context) {
       return;
@@ -5760,11 +5759,7 @@ var StylingAgent = class _StylingAgent extends AiAgent {
   #changes;
   #createExtensionScope;
   constructor(opts) {
-    super({
-      aidaClient: opts.aidaClient,
-      serverSideLoggingEnabled: opts.serverSideLoggingEnabled,
-      confirmSideEffectForTest: opts.confirmSideEffectForTest
-    });
+    super(opts);
     this.#changes = opts.changeManager || new ChangeManager();
     this.#execJs = opts.execJs ?? executeJsCode;
     this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
@@ -6663,14 +6658,20 @@ var BuiltInAi = class _BuiltInAi {
     builtInAiInstance = void 0;
   }
   async *getConsoleInsight(prompt, abortController) {
-    const session = await this.#consoleInsightsSession.clone();
-    const stream = session.promptStreaming(prompt, {
-      signal: abortController.signal
-    });
-    for await (const chunk of stream) {
-      yield chunk;
+    let session = null;
+    try {
+      session = await this.#consoleInsightsSession.clone();
+      const stream = session.promptStreaming(prompt, {
+        signal: abortController.signal
+      });
+      for await (const chunk of stream) {
+        yield chunk;
+      }
+    } finally {
+      if (session) {
+        session.destroy();
+      }
     }
-    session.destroy();
   }
 };
 

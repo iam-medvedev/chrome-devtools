@@ -31,6 +31,7 @@
     "target": "esnext",
     "tsBuildInfoFile": "elements-tsconfig.json.tsbuildinfo",
     "typeRoots": [],
+    "types": [],
     "useUnknownInCatchVariables": false
   },
   "files": [
@@ -43,7 +44,6 @@
     "../../../../../../front_end/panels/elements/ColorSwatchPopoverIcon.ts",
     "../../../../../../front_end/panels/elements/ComputedStyleModel.ts",
     "../../../../../../front_end/panels/elements/ComputedStyleWidget.ts",
-    "../../../../../../front_end/panels/elements/DOMLinkifier.ts",
     "../../../../../../front_end/panels/elements/DOMPath.ts",
     "../../../../../../front_end/panels/elements/ElementIssueUtils.ts",
     "../../../../../../front_end/panels/elements/ElementStatePaneWidget.ts",
@@ -185,6 +185,9 @@
     },
     {
       "path": "../../ui/lit/bundle-tsconfig.json"
+    },
+    {
+      "path": "../common/bundle-tsconfig.json"
     },
     {
       "path": "components/bundle-tsconfig.json"

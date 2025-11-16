@@ -30,6 +30,7 @@ describeWithEnvironment('SourcesView', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({ forceNew: true, targetManager, workspace, debuggerWorkspaceBinding });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
@@ -145,6 +146,7 @@ describeWithMockConnection('SourcesView', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({ forceNew: true, targetManager, workspace, debuggerWorkspaceBinding });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });

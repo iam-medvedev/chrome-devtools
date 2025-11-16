@@ -92,6 +92,7 @@ describeWithMockConnection('PresentationConsoleMessageHelper', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
     });

@@ -4,8 +4,7 @@
 import { dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
 import * as Models from '../models/models.js';
-// eslint-disable-next-line @devtools/es-modules-import
-import * as RecorderHelpers from '../testing/RecorderHelpers.js';
+import { installMocksForRecordingPlayer } from '../testing/RecorderHelpers.js';
 function getStepEditedPromise(editor) {
     return getEventPromise(editor, 'stepedited')
         .then(({ data }) => data);
@@ -80,7 +79,7 @@ describeWithLocale('StepEditor', () => {
         };
     }
     beforeEach(() => {
-        RecorderHelpers.installMocksForRecordingPlayer();
+        installMocksForRecordingPlayer();
     });
     it('should edit step type', async () => {
         const editor = await renderEditor({

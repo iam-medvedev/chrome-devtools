@@ -856,12 +856,9 @@ UI.Toolbar.registerToolbarItem({
 UI.Toolbar.registerToolbarItem({
   condition(config) {
     const isFlagEnabled = config?.devToolsGlobalAiButton?.enabled;
-    const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
-    const isLocaleRestricted2 = !devtoolsLocale.locale.startsWith("en-");
     const isGeoRestricted2 = config?.aidaAvailability?.blockedByGeo === true;
     const isPolicyRestricted2 = config?.aidaAvailability?.blockedByEnterprisePolicy === true;
-    const isAgeRestricted = Boolean(config?.aidaAvailability?.blockedByAge);
-    return Boolean(isFlagEnabled && !isLocaleRestricted2 && !isGeoRestricted2 && !isPolicyRestricted2 && !isAgeRestricted);
+    return Boolean(isFlagEnabled && !isGeoRestricted2 && !isPolicyRestricted2);
   },
   async loadItem() {
     const Main2 = await loadMainModule();
@@ -5828,15 +5825,6 @@ Common12.Settings.registerSettingExtension({
   settingName: "annotations-hidden",
   settingType: "boolean",
   defaultValue: false
-});
-Common12.Linkifier.registerLinkifier({
-  contextTypes() {
-    return maybeRetrieveContextTypes3((Timeline) => [Timeline.CLSLinkifier.CLSRect]);
-  },
-  async loadLinkifier() {
-    const Timeline = await loadTimelineModule();
-    return Timeline.CLSLinkifier.Linkifier.instance();
-  }
 });
 UI10.ContextMenu.registerItem({
   location: "timelineMenu/open",

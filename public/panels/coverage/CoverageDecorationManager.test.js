@@ -43,6 +43,7 @@ describeWithMockConnection('CoverageDeocrationManager', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         cssBinding =
             Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });

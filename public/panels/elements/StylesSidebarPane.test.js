@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
@@ -11,6 +10,7 @@ import { describeWithMockConnection, setMockConnectionResponseHandler } from '..
 import { getMatchedStyles } from '../../testing/StyleHelpers.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as PanelsCommon from '../common/common.js';
 import * as Elements from './elements.js';
 describe('StylesSidebarPane', () => {
     let node;
@@ -62,25 +62,55 @@ describe('StylesSidebarPane', () => {
                 assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.PositionTryRuleSection);
             });
         });
-        it('should add @font-palette-values section to the end', async () => {
+        it('should add @font-* section to the end', async () => {
             const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
             const matchedStyles = await getMatchedStyles({
                 cssModel: stylesSidebarPane.cssModel(),
                 node: sinon.createStubInstance(SDK.DOMModel.DOMNode),
-                fontPaletteValuesRule: {
-                    fontPaletteName: { text: '--palette' },
-                    origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
-                    style: {
-                        cssProperties: [{ name: 'font-family', value: 'Bixa' }, { name: 'override-colors', value: '0 red' }],
-                        shorthandEntries: [],
+                atRules: [
+                    {
+                        name: { text: '--palette' },
+                        type: "font-palette-values" /* Protocol.CSS.CSSAtRuleType.FontPaletteValues */,
+                        origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                        style: {
+                            cssProperties: [{ name: 'font-family', value: 'Bixa' }, { name: 'override-colors', value: '0 red' }],
+                            shorthandEntries: [],
+                        },
                     },
-                },
+                    {
+                        type: "font-face" /* Protocol.CSS.CSSAtRuleType.FontFace */,
+                        origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                        style: {
+                            cssProperties: [{ name: 'font-family', value: 'Bixa' }, { name: 'src', value: 'local(Bixa)' }],
+                            shorthandEntries: [],
+                        },
+                    },
+                    {
+                        type: "font-feature-values" /* Protocol.CSS.CSSAtRuleType.FontFeatureValues */,
+                        name: { text: 'Bixa' },
+                        subsection: "swash" /* Protocol.CSS.CSSAtRuleSubsection.Swash */,
+                        origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                        style: {
+                            cssProperties: [{ name: 'fancy', value: '1' }],
+                            shorthandEntries: [],
+                        },
+                    },
+                ],
             });
             const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map());
             assert.lengthOf(sectionBlocks, 2);
-            assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@font-palette-values --palette');
-            assert.lengthOf(sectionBlocks[1].sections, 1);
-            assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.FontPaletteValuesRuleSection);
+            assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@font-*');
+            assert.lengthOf(sectionBlocks[1].sections, 3);
+            const contents = [
+                '@font-palette-values --palette {    font-family: Bixa;    override-colors: 0 red;}',
+                '@font-face {    font-family: Bixa;    src: local(Bixa);}',
+                '@font-feature-values Bixa {    @swash {        fancy: 1;    }}',
+            ];
+            for (let i = 0; i < 3; i++) {
+                const section = sectionBlocks[1].sections[i];
+                assert.instanceOf(section, Elements.StylePropertiesSection.AtRuleSection);
+                assert.strictEqual(section.element.deepTextContent(), contents[i]);
+            }
         });
         it('should add @function section to the end', async () => {
             const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
@@ -151,7 +181,7 @@ describe('StylesSidebarPane', () => {
                 setMockConnectionResponseHandler('CSS.getAnimatedStylesForNode', () => response);
             }
             beforeEach(() => {
-                sinon.stub(Common.Linkifier.Linkifier, 'linkify').returns(Promise.resolve(document.createTextNode('link')));
+                sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify').returns(document.createElement('div'));
                 updateHostConfig({
                     devToolsAnimationStylesInStylesTab: {
                         enabled: true,
