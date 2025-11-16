@@ -27,6 +27,7 @@ describeWithMockConnection('Inline variable view scope helpers', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         target = createTarget();
         backend = new MockProtocolBackend();

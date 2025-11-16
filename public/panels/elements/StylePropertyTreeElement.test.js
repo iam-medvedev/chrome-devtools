@@ -1693,7 +1693,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         });
         function suggestions() {
             assert.lengthOf(promptStub.args, 1);
-            return promptStub.args[0][0].call(null, '', '');
+            return promptStub.args[0][0].call(null, '', '', false);
         }
         function setParentComputedStyle(style) {
             const computedStyle = Object.keys(style).map(name => ({ name, value: style[name] }));

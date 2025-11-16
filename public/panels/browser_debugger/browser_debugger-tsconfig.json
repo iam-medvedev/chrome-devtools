@@ -31,6 +31,7 @@
     "target": "esnext",
     "tsBuildInfoFile": "browser_debugger-tsconfig.json.tsbuildinfo",
     "typeRoots": [],
+    "types": [],
     "useUnknownInCatchVariables": false
   },
   "files": [
@@ -65,6 +66,9 @@
     },
     {
       "path": "../../ui/visual_logging/bundle-tsconfig.json"
+    },
+    {
+      "path": "../common/bundle-tsconfig.json"
     }
   ]
 }

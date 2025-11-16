@@ -76,6 +76,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
                 resourceMapping,
                 targetManager,
                 ignoreListManager,
+                workspace: Workspace.Workspace.WorkspaceImpl.instance(),
             });
         });
         describe('setFunctionRangesForScript', () => {
@@ -727,6 +728,7 @@ describeWithDevtoolsExtension('Wasm extension API', {}, context => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace: Workspace.Workspace.WorkspaceImpl.instance(),
         });
         const callFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
         callFrame.debuggerModel = new SDK.DebuggerModel.DebuggerModel(target);
@@ -845,6 +847,7 @@ for (const allowFileAccess of [true, false]) {
                 resourceMapping,
                 targetManager,
                 ignoreListManager,
+                workspace: Workspace.Workspace.WorkspaceImpl.instance(),
             });
         });
         it('passes allowFileAccess to the LanguageExtensionEndpoint', async () => {
@@ -897,6 +900,7 @@ describeWithDevtoolsExtension('validate attachSourceMapURL ', {}, context => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         const backend = new MockProtocolBackend();
         // Before any script is registered, there shouldn't be any uiSourceCodes.

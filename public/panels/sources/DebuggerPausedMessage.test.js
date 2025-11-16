@@ -21,6 +21,7 @@ describeWithEnvironment('DebuggerPausedMessage', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({
             forceNew: true,

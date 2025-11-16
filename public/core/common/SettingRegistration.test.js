@@ -2,53 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
-import { setupSettings } from '../../testing/SettingsHelpers.js';
-import * as i18n from '../i18n/i18n.js';
 import * as Common from './common.js';
-const settingName = 'mock-setting';
-const settingTitle = 'Mock setting';
-const enableTitle = 'Enable mock setting';
-const disableTitle = 'Disable mock setting';
 describe('SettingRegistration', () => {
-    // const enum `SettingCategory` not available in top level scope, thats why
-    // its initialized here.
-    const settingCategory = "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */;
-    beforeEach(() => {
-        Common.Settings.registerSettingsForTest([{
-                category: settingCategory,
-                title: i18n.i18n.lockedLazyString(settingTitle),
-                settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-                settingName,
-                defaultValue: false,
-                options: [
-                    {
-                        value: true,
-                        title: i18n.i18n.lockedLazyString(enableTitle),
-                    },
-                    {
-                        value: false,
-                        title: i18n.i18n.lockedLazyString(disableTitle),
-                    },
-                ],
-            }], true);
-        setupSettings(false);
-    });
-    it('retrieves a registered setting', () => {
-        const preRegisteredSetting = Common.Settings.Settings.instance().moduleSetting(settingName);
-        assert.strictEqual(preRegisteredSetting.title(), settingTitle, 'Setting title is not returned correctly');
-        assert.strictEqual(preRegisteredSetting.category(), settingCategory, 'Setting category is not returned correctly');
-        assert.isNotTrue(preRegisteredSetting.get(), 'Setting value is not returned correctly');
-    });
-    it('triggers a setting\'s change listener when a setting is set', () => {
-        const preRegisteredSetting = Common.Settings.Settings.instance().moduleSetting(settingName);
-        let settingChanged = false;
-        preRegisteredSetting.addChangeListener(() => {
-            settingChanged = true;
-        });
-        preRegisteredSetting.set(true);
-        assert.isTrue(settingChanged, 'Setting\'s change listener was not triggered after the setting was set');
-    });
+    beforeEach(() => Common.Settings.resetSettings());
+    afterEach(() => Common.Settings.resetSettings());
+    const settingName = 'mock-setting'; // Moved into a variable to prevent KnownContextValue linter to pick it up.
     it('throws an error when trying to register a duplicated setting name', () => {
+        Common.Settings.registerSettingExtension({
+            settingName,
+            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            defaultValue: false,
+        });
         assert.throws(() => {
             Common.Settings.registerSettingExtension({
                 settingName,
@@ -58,6 +22,11 @@ describe('SettingRegistration', () => {
         });
     });
     it('deletes a registered setting using its name', () => {
+        Common.Settings.registerSettingExtension({
+            settingName,
+            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            defaultValue: false,
+        });
         const removalResult = Common.Settings.maybeRemoveSettingExtension(settingName);
         assert.isTrue(removalResult);
         assert.doesNotThrow(() => {
@@ -69,7 +38,6 @@ describe('SettingRegistration', () => {
         });
     });
     it('can handle settings with condition which depends on host config', () => {
-        const configSettingName = 'mock-setting-with-host-config';
         updateHostConfig({
             devToolsConsoleInsights: {
                 modelId: 'mockModel',
@@ -77,23 +45,22 @@ describe('SettingRegistration', () => {
                 enabled: true,
             },
         });
-        Common.Settings.registerSettingExtension({
-            settingName: configSettingName,
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            condition: config => {
-                return config?.devToolsConsoleInsights?.enabled === true;
-            },
-        });
-        assert.throws(() => Common.Settings.Settings.instance().moduleSetting(configSettingName));
+        const settingRegistrations = [{
+                settingName,
+                settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+                defaultValue: false,
+                condition: config => {
+                    return config?.devToolsConsoleInsights?.enabled === true;
+                },
+            }];
         const dummyStorage = new Common.Settings.SettingsStorage({});
-        Common.Settings.Settings.instance({
-            forceNew: true,
+        const settings = new Common.Settings.Settings({
             syncedStorage: dummyStorage,
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
+            settingRegistrations,
         });
-        const setting = Common.Settings.Settings.instance().moduleSetting(configSettingName);
+        const setting = settings.moduleSetting(settingName);
         assert.isNotNull(setting);
         assert.isFalse(setting.get());
     });

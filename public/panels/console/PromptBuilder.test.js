@@ -168,6 +168,7 @@ export const y = "";
                 resourceMapping,
                 targetManager,
                 ignoreListManager,
+                workspace,
             });
             backend = new MockProtocolBackend();
         });

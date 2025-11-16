@@ -4,6 +4,49 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/core/root/DevToolsContext.js
+var DevToolsContext_exports = {};
+__export(DevToolsContext_exports, {
+  DevToolsContext: () => DevToolsContext,
+  globalInstance: () => globalInstance,
+  setGlobalInstance: () => setGlobalInstance
+});
+var DevToolsContext = class {
+  #instances = /* @__PURE__ */ new Map();
+  get(ctor) {
+    const instance = this.#instances.get(ctor);
+    if (!instance) {
+      throw new Error(`No instance for ${ctor.name}. Ensure the bootstrapper creates it.`);
+    }
+    return instance;
+  }
+  /** @deprecated Should only be used by existing `instance` accessors. */
+  has(ctor) {
+    return this.#instances.has(ctor);
+  }
+  /**
+   * @deprecated Should only be used by existing `instance` accessors and the bootstrapper.
+   * Exists on the public interface only for migration purposes for now.
+   */
+  set(ctor, instance) {
+    this.#instances.set(ctor, instance);
+  }
+  /** @deprecated Should only be used by existing `removeInstance` static methods. */
+  delete(ctor) {
+    this.#instances.delete(ctor);
+  }
+};
+var gInstance = null;
+function globalInstance() {
+  if (!gInstance) {
+    gInstance = new DevToolsContext();
+  }
+  return gInstance;
+}
+function setGlobalInstance(context) {
+  gInstance = context;
+}
+
 // gen/front_end/core/root/Runtime.js
 var Runtime_exports = {};
 __export(Runtime_exports, {
@@ -66,18 +109,18 @@ var Runtime = class _Runtime {
   static removeInstance() {
     runtimeInstance = void 0;
   }
-  static queryParamsObject;
-  static getSearchParams() {
-    if (!_Runtime.queryParamsObject) {
-      _Runtime.queryParamsObject = new URLSearchParams(location.search);
+  static #queryParamsObject;
+  static #getSearchParams() {
+    if (!_Runtime.#queryParamsObject && "location" in globalThis) {
+      _Runtime.#queryParamsObject = new URLSearchParams(location.search);
     }
-    return _Runtime.queryParamsObject;
+    return _Runtime.#queryParamsObject;
   }
   static queryParam(name) {
-    return _Runtime.getSearchParams().get(name);
+    return _Runtime.#getSearchParams()?.get(name) ?? null;
   }
   static setQueryParamForTesting(name, value) {
-    _Runtime.getSearchParams().set(name, value);
+    _Runtime.#getSearchParams()?.set(name, value);
   }
   static isNode() {
     if (isNode === void 0) {
@@ -289,6 +332,7 @@ var conditions = {
   canDock: () => Boolean(Runtime.queryParam("can_dock"))
 };
 export {
+  DevToolsContext_exports as DevToolsContext,
   Runtime_exports as Runtime
 };
 //# sourceMappingURL=root.js.map

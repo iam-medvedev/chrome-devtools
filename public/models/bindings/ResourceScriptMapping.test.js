@@ -32,6 +32,7 @@ describeWithMockConnection('ResourceScriptMapping', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         backend = new MockProtocolBackend();
         target = createTarget();

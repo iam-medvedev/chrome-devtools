@@ -50,7 +50,6 @@
     "../../../../../../front_end/panels/elements/ColorSwatchPopoverIcon.test.ts",
     "../../../../../../front_end/panels/elements/ComputedStyleModel.test.ts",
     "../../../../../../front_end/panels/elements/ComputedStyleWidget.test.ts",
-    "../../../../../../front_end/panels/elements/DOMLinkifier.test.ts",
     "../../../../../../front_end/panels/elements/DOMTreeWidget.test.ts",
     "../../../../../../front_end/panels/elements/ElementStatePaneWidget.test.ts",
     "../../../../../../front_end/panels/elements/ElementsPanel.test.ts",

@@ -543,10 +543,12 @@ var CompilerScriptMapping = class {
   #sourceMapToProject = /* @__PURE__ */ new Map();
   #uiSourceCodeToSourceMaps = new Platform2.MapUtilities.Multimap();
   #debuggerModel;
+  #ignoreListManager;
   constructor(debuggerModel, workspace, debuggerWorkspaceBinding) {
     this.#sourceMapManager = debuggerModel.sourceMapManager();
     this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
     this.#debuggerModel = debuggerModel;
+    this.#ignoreListManager = debuggerWorkspaceBinding.ignoreListManager;
     this.#stubProject = new ContentProviderBasedProject(
       workspace,
       "jsSourceMaps:stub:" + debuggerModel.target().id(),
@@ -798,7 +800,7 @@ var CompilerScriptMapping = class {
     const { client: script } = event.data;
     this.addStubUISourceCode(script);
     void this.#debuggerWorkspaceBinding.updateLocations(script);
-    if (Workspace3.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(script.sourceURL, { isContentScript: script.isContentScript() })) {
+    if (this.#ignoreListManager.isUserIgnoreListedURL(script.sourceURL, { isContentScript: script.isContentScript() })) {
       this.#sourceMapManager.cancelAttachSourceMap(script);
     }
   }
@@ -944,6 +946,7 @@ __export(CSSWorkspaceBinding_exports, {
 });
 import * as Common7 from "./../../core/common/common.js";
 import * as Platform4 from "./../../core/platform/platform.js";
+import * as Root from "./../../core/root/root.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 
 // gen/front_end/models/bindings/LiveLocation.js
@@ -1549,29 +1552,29 @@ var StyleFile = class {
 };
 
 // gen/front_end/models/bindings/CSSWorkspaceBinding.js
-var cssWorkspaceBindingInstance;
 var CSSWorkspaceBinding = class _CSSWorkspaceBinding {
   #resourceMapping;
   #modelToInfo;
   #liveLocationPromises;
   constructor(resourceMapping, targetManager) {
     this.#resourceMapping = resourceMapping;
+    this.#resourceMapping.cssWorkspaceBinding = this;
     this.#modelToInfo = /* @__PURE__ */ new Map();
     targetManager.observeModels(SDK7.CSSModel.CSSModel, this);
     this.#liveLocationPromises = /* @__PURE__ */ new Set();
   }
   static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null }) {
     const { forceNew, resourceMapping, targetManager } = opts;
-    if (!cssWorkspaceBindingInstance || forceNew) {
+    if (forceNew) {
       if (!resourceMapping || !targetManager) {
         throw new Error(`Unable to create CSSWorkspaceBinding: resourceMapping and targetManager must be provided: ${new Error().stack}`);
       }
-      cssWorkspaceBindingInstance = new _CSSWorkspaceBinding(resourceMapping, targetManager);
+      Root.DevToolsContext.globalInstance().set(_CSSWorkspaceBinding, new _CSSWorkspaceBinding(resourceMapping, targetManager));
     }
-    return cssWorkspaceBindingInstance;
+    return Root.DevToolsContext.globalInstance().get(_CSSWorkspaceBinding);
   }
   static removeInstance() {
-    cssWorkspaceBindingInstance = void 0;
+    Root.DevToolsContext.globalInstance().delete(_CSSWorkspaceBinding);
   }
   get modelToInfo() {
     return this.#modelToInfo;
@@ -2765,6 +2768,7 @@ __export(DebuggerWorkspaceBinding_exports, {
 });
 import * as Common11 from "./../../core/common/common.js";
 import * as Platform6 from "./../../core/platform/platform.js";
+import * as Root3 from "./../../core/root/root.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as Workspace17 from "./../workspace/workspace.js";
 
@@ -2894,7 +2898,7 @@ __export(ResourceScriptMapping_exports, {
 import * as Common10 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
-import * as Root from "./../../core/root/root.js";
+import * as Root2 from "./../../core/root/root.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
 import * as TextUtils6 from "./../text_utils/text_utils.js";
 import * as Workspace15 from "./../workspace/workspace.js";
@@ -3149,7 +3153,7 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
     void this.update();
   }
   workingCopyCommitted() {
-    if (Root.Runtime.hostConfig.devToolsLiveEdit?.enabled === false) {
+    if (Root2.Runtime.hostConfig.devToolsLiveEdit?.enabled === false) {
       return;
     }
     if (this.uiSourceCode.project().canSetFileContent()) {
@@ -3281,19 +3285,23 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
 };
 
 // gen/front_end/models/bindings/DebuggerWorkspaceBinding.js
-var debuggerWorkspaceBindingInstance;
 var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
   resourceMapping;
   #debuggerModelToData;
   #liveLocationPromises;
   pluginManager;
-  constructor(resourceMapping, targetManager, ignoreListManager) {
+  ignoreListManager;
+  workspace;
+  constructor(resourceMapping, targetManager, ignoreListManager, workspace) {
     this.resourceMapping = resourceMapping;
+    this.resourceMapping.debuggerWorkspaceBinding = this;
+    this.ignoreListManager = ignoreListManager;
+    this.workspace = workspace;
     this.#debuggerModelToData = /* @__PURE__ */ new Map();
     targetManager.addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
     targetManager.addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
     targetManager.observeModels(SDK11.DebuggerModel.DebuggerModel, this);
-    ignoreListManager.addEventListener("IGNORED_SCRIPT_RANGES_UPDATED", (event) => this.updateLocations(event.data));
+    this.ignoreListManager.addEventListener("IGNORED_SCRIPT_RANGES_UPDATED", (event) => this.updateLocations(event.data));
     this.#liveLocationPromises = /* @__PURE__ */ new Set();
     this.pluginManager = new DebuggerLanguagePluginManager(targetManager, resourceMapping.workspace, this);
   }
@@ -3302,18 +3310,18 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
       modelData.compilerMapping.setFunctionRanges(uiSourceCode, ranges);
     }
   }
-  static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null, ignoreListManager: null }) {
-    const { forceNew, resourceMapping, targetManager, ignoreListManager } = opts;
-    if (!debuggerWorkspaceBindingInstance || forceNew) {
-      if (!resourceMapping || !targetManager || !ignoreListManager) {
+  static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null, ignoreListManager: null, workspace: null }) {
+    const { forceNew, resourceMapping, targetManager, ignoreListManager, workspace } = opts;
+    if (forceNew) {
+      if (!resourceMapping || !targetManager || !ignoreListManager || !workspace) {
         throw new Error(`Unable to create DebuggerWorkspaceBinding: resourceMapping, targetManager and IgnoreLIstManager must be provided: ${new Error().stack}`);
       }
-      debuggerWorkspaceBindingInstance = new _DebuggerWorkspaceBinding(resourceMapping, targetManager, ignoreListManager);
+      Root3.DevToolsContext.globalInstance().set(_DebuggerWorkspaceBinding, new _DebuggerWorkspaceBinding(resourceMapping, targetManager, ignoreListManager, workspace));
     }
-    return debuggerWorkspaceBindingInstance;
+    return Root3.DevToolsContext.globalInstance().get(_DebuggerWorkspaceBinding);
   }
   static removeInstance() {
-    debuggerWorkspaceBindingInstance = void 0;
+    Root3.DevToolsContext.globalInstance().delete(_DebuggerWorkspaceBinding);
   }
   async computeAutoStepRanges(mode, callFrame) {
     function contained(location, range) {
@@ -3460,11 +3468,10 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
   }
   waitForUISourceCodeAdded(url, target) {
     return new Promise((resolve) => {
-      const workspace = Workspace17.Workspace.WorkspaceImpl.instance();
-      const descriptor = workspace.addEventListener(Workspace17.Workspace.Events.UISourceCodeAdded, (event) => {
+      const descriptor = this.workspace.addEventListener(Workspace17.Workspace.Events.UISourceCodeAdded, (event) => {
         const uiSourceCode = event.data;
         if (uiSourceCode.url() === url && NetworkProject.targetForUISourceCode(uiSourceCode) === target) {
-          workspace.removeEventListener(Workspace17.Workspace.Events.UISourceCodeAdded, descriptor.listener);
+          this.workspace.removeEventListener(Workspace17.Workspace.Events.UISourceCodeAdded, descriptor.listener);
           resolve(uiSourceCode);
         }
       });
@@ -4270,12 +4277,34 @@ function computeStyleSheetRange(header) {
 var ResourceMapping = class {
   workspace;
   #modelToInfo = /* @__PURE__ */ new Map();
+  #debuggerWorkspaceBinding = null;
+  #cssWorkspaceBinding = null;
   constructor(targetManager, workspace) {
     this.workspace = workspace;
     targetManager.observeModels(SDK13.ResourceTreeModel.ResourceTreeModel, this);
   }
+  get debuggerWorkspaceBinding() {
+    return this.#debuggerWorkspaceBinding;
+  }
+  /* {@link DebuggerWorkspaceBinding} and ResourceMapping form a cycle so we can't wire it up at ctor time. */
+  set debuggerWorkspaceBinding(debuggerWorkspaceBinding) {
+    if (this.#debuggerWorkspaceBinding) {
+      throw new Error("DebuggerWorkspaceBinding already set");
+    }
+    this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+  }
+  get cssWorkspaceBinding() {
+    return this.#cssWorkspaceBinding;
+  }
+  /* {@link CSSWorkspaceBinding} and ResourceMapping form a cycle so we can't wire it up at ctor time. */
+  set cssWorkspaceBinding(cssWorkspaceBinding) {
+    if (this.#cssWorkspaceBinding) {
+      throw new Error("CSSWorkspaceBinding already set");
+    }
+    this.#cssWorkspaceBinding = cssWorkspaceBinding;
+  }
   modelAdded(resourceTreeModel) {
-    const info = new ModelInfo2(this.workspace, resourceTreeModel);
+    const info = new ModelInfo2(this, resourceTreeModel);
     this.#modelToInfo.set(resourceTreeModel, info);
   }
   modelRemoved(resourceTreeModel) {
@@ -4473,10 +4502,12 @@ var ModelInfo2 = class {
   #bindings = /* @__PURE__ */ new Map();
   #cssModel;
   #eventListeners;
-  constructor(workspace, resourceTreeModel) {
+  resourceMapping;
+  constructor(resourceMapping, resourceTreeModel) {
     const target = resourceTreeModel.target();
+    this.resourceMapping = resourceMapping;
     this.project = new ContentProviderBasedProject(
-      workspace,
+      resourceMapping.workspace,
       "resources:" + target.id(),
       Workspace22.Workspace.projectTypes.Network,
       "",
@@ -4537,7 +4568,7 @@ var ModelInfo2 = class {
     }
     let binding = this.#bindings.get(resource.url);
     if (!binding) {
-      binding = new Binding2(this.project, resource);
+      binding = new Binding2(this, resource);
       this.#bindings.set(resource.url, binding);
     } else {
       binding.addResource(resource);
@@ -4589,9 +4620,13 @@ var Binding2 = class {
   #project;
   #uiSourceCode;
   #edits = [];
-  constructor(project, resource) {
+  #debuggerWorkspaceBinding;
+  #cssWorkspaceBinding;
+  constructor(modelInfo, resource) {
     this.resources = /* @__PURE__ */ new Set([resource]);
-    this.#project = project;
+    this.#project = modelInfo.project;
+    this.#debuggerWorkspaceBinding = modelInfo.resourceMapping.debuggerWorkspaceBinding;
+    this.#cssWorkspaceBinding = modelInfo.resourceMapping.cssWorkspaceBinding;
     this.#uiSourceCode = this.#project.createUISourceCode(resource.url, resource.contentType());
     boundUISourceCodes.add(this.#uiSourceCode);
     if (resource.frameId) {
@@ -4599,8 +4634,8 @@ var Binding2 = class {
     }
     this.#project.addUISourceCodeWithProvider(this.#uiSourceCode, this, resourceMetadata(resource), resource.mimeType);
     void Promise.all([
-      ...this.inlineScripts().map((script) => DebuggerWorkspaceBinding.instance().updateLocations(script)),
-      ...this.inlineStyles().map((style) => CSSWorkspaceBinding.instance().updateLocations(style))
+      ...this.inlineScripts().map((script) => this.#debuggerWorkspaceBinding?.updateLocations(script)),
+      ...this.inlineStyles().map((style) => this.#cssWorkspaceBinding?.updateLocations(style))
     ]);
   }
   inlineStyles() {
@@ -4663,7 +4698,7 @@ var Binding2 = class {
           continue;
         }
         scriptRangeMap.set(script, range.rebaseAfterTextEdit(oldRange, newRange));
-        updatePromises.push(DebuggerWorkspaceBinding.instance().updateLocations(script));
+        updatePromises.push(this.#debuggerWorkspaceBinding?.updateLocations(script));
       }
       for (const style of styles) {
         const range = styleSheetRangeMap.get(style) ?? computeStyleSheetRange(style);
@@ -4671,7 +4706,7 @@ var Binding2 = class {
           continue;
         }
         styleSheetRangeMap.set(style, range.rebaseAfterTextEdit(oldRange, newRange));
-        updatePromises.push(CSSWorkspaceBinding.instance().updateLocations(style));
+        updatePromises.push(this.#cssWorkspaceBinding?.updateLocations(style));
       }
       await Promise.all(updatePromises);
     }
@@ -4692,8 +4727,8 @@ var Binding2 = class {
   dispose() {
     this.#project.removeUISourceCode(this.#uiSourceCode.url());
     void Promise.all([
-      ...this.inlineScripts().map((script) => DebuggerWorkspaceBinding.instance().updateLocations(script)),
-      ...this.inlineStyles().map((style) => CSSWorkspaceBinding.instance().updateLocations(style))
+      ...this.inlineScripts().map((script) => this.#debuggerWorkspaceBinding?.updateLocations(script)),
+      ...this.inlineStyles().map((style) => this.#cssWorkspaceBinding?.updateLocations(style))
     ]);
   }
   firstResource() {

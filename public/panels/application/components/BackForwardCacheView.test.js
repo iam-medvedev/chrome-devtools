@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../../core/sdk/sdk.js';
-import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, raf, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { getMainFrame, navigate, setMockResourceTree } from '../../../testing/ResourceTreeHelpers.js';
@@ -175,6 +175,7 @@ describeWithMockConnection('BackForwardCacheView', () => {
         assert.deepEqual(sectionsText, expected);
         const details = component.contentElement.querySelector('.details-list devtools-expandable-list');
         details.shadowRoot.querySelector('button').click();
+        await raf();
         const items = details.shadowRoot.querySelectorAll('.expandable-list-items .devtools-link');
         const detailsText = Array.from(items).map(detail => detail.textContent?.trim());
         assert.deepEqual(detailsText, ['www.example.com/index.html:11:6', 'www.example.com/script.js:16:21']);

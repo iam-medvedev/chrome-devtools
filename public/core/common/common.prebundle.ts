@@ -15,13 +15,11 @@ import * as EventTarget from './EventTarget.js';
 import * as Gzip from './Gzip.js';
 import * as JavaScriptMetaData from './JavaScriptMetaData.js';
 import * as Lazy from './Lazy.js';
-import * as Linkifier from './Linkifier.js';
 import * as MapWithDefault from './MapWithDefault.js';
 import * as Mutex from './Mutex.js';
 import * as ObjectWrapper from './Object.js';
 import * as ParsedURL from './ParsedURL.js';
 import * as Progress from './Progress.js';
-import * as QueryParamHandler from './QueryParamHandler.js';
 import * as ResolverBase from './ResolverBase.js';
 import * as ResourceType from './ResourceType.js';
 import * as ReturnToPanel from './ReturnToPanel.js';
@@ -57,13 +55,11 @@ export {
   Gzip,
   JavaScriptMetaData,
   Lazy,
-  Linkifier,
   MapWithDefault,
   Mutex,
   ObjectWrapper,
   ParsedURL,
   Progress,
-  QueryParamHandler,
   ResolverBase,
   ResourceType,
   ReturnToPanel,

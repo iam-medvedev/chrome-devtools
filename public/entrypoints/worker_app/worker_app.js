@@ -1589,15 +1589,6 @@ Common6.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common6.Linkifier.registerLinkifier({
-  contextTypes() {
-    return maybeRetrieveContextTypes4((Timeline) => [Timeline.CLSLinkifier.CLSRect]);
-  },
-  async loadLinkifier() {
-    const Timeline = await loadTimelineModule();
-    return Timeline.CLSLinkifier.Linkifier.instance();
-  }
-});
 UI8.ContextMenu.registerItem({
   location: "timelineMenu/open",
   actionId: "timeline.load-from-file",

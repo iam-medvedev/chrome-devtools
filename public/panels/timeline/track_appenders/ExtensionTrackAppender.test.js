@@ -1,11 +1,9 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { // eslint-disable-line @devtools/es-modules-import
-createTraceExtensionDataFromPerformanceAPITestInput, } from '../../../models/trace/handlers/ExtensionTraceDataHandler.test.js';
 import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getBaseTraceHandlerData } from '../../../testing/TraceHelpers.js';
+import { createTraceExtensionDataFromPerformanceAPITestInput, getBaseTraceHandlerData } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';

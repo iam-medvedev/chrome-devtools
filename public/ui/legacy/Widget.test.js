@@ -98,6 +98,38 @@ describe('Widget', () => {
             await widget.updateComplete;
             assert.strictEqual(performUpdate.callCount, 1, 'Expected exactly one call to `performUpdate`');
         });
+        it('runs nested updates in the same update cycle', async () => {
+            const parentWidget = new Widget();
+            const childWidget = new Widget();
+            childWidget.show(parentWidget.contentElement);
+            const parentPerformUpdate = sinon.stub(parentWidget, 'performUpdate');
+            parentPerformUpdate.callsFake(childWidget.requestUpdate.bind(childWidget));
+            const childPerformUpdate = sinon.stub(childWidget, 'performUpdate');
+            const animationFrame = sinon.spy();
+            requestAnimationFrame(animationFrame);
+            parentWidget.requestUpdate();
+            await parentWidget.updateComplete;
+            assert.strictEqual(parentPerformUpdate.callCount, 1, 'Expected exactly one call to `parentWidget.performUpdate`');
+            assert.strictEqual(childPerformUpdate.callCount, 1, 'Expected exactly one call to `childWidget.performUpdate`');
+            assert.strictEqual(animationFrame.callCount, 1, 'Expected exactly one call to `requestAnimationFrame`');
+        });
+        it('runs microtask updates in the same update cycle', async () => {
+            const parentWidget = new Widget();
+            const childWidget = new Widget();
+            childWidget.show(parentWidget.contentElement);
+            const parentPerformUpdate = sinon.stub(parentWidget, 'performUpdate');
+            parentPerformUpdate.callsFake(() => {
+                queueMicrotask(childWidget.requestUpdate.bind(childWidget));
+            });
+            const childPerformUpdate = sinon.stub(childWidget, 'performUpdate');
+            const animationFrame = sinon.spy();
+            requestAnimationFrame(animationFrame);
+            parentWidget.requestUpdate();
+            await parentWidget.updateComplete;
+            assert.strictEqual(parentPerformUpdate.callCount, 1, 'Expected exactly one call to `parentWidget.performUpdate`');
+            assert.strictEqual(childPerformUpdate.callCount, 1, 'Expected exactly one call to `childWidget.performUpdate`');
+            assert.strictEqual(animationFrame.callCount, 1, 'Expected exactly one call to `requestAnimationFrame`');
+        });
     });
     describe('updateComplete', () => {
         it('resolves to `true` when there\'s no pending update', async () => {
@@ -222,7 +254,6 @@ describe('Widget', () => {
             child1.contentElement.appendChild(child1Input);
             const child2 = new Widget();
             const child2Input = document.createElement('input');
-            child2.element.setAttribute('autofocus', ''); // This should be ignored by parent.
             child2.contentElement.appendChild(child2Input);
             parent.markAsRoot();
             parent.show(div);
@@ -233,6 +264,21 @@ describe('Widget', () => {
             // is not its own. Then it should focus the first child (child1).
             // child1 will then focus its default element.
             assert.strictEqual(document.activeElement, child1Input);
+        });
+        it('gives focus an autofocus element of a child widget', () => {
+            const parent = new Widget();
+            const child1 = new Widget();
+            const child1Input = document.createElement('input');
+            child1.setDefaultFocusedElement(child1Input);
+            child1.contentElement.appendChild(child1Input);
+            const child2 = new Widget();
+            child2.element.setAttribute('autofocus', '');
+            child2.element.tabIndex = 0;
+            renderElementIntoDOM(parent);
+            child1.show(parent.contentElement);
+            child2.show(parent.contentElement);
+            parent.focus();
+            assert.strictEqual(document.activeElement, child2.element);
         });
     });
     describe('WidgetElement', () => {

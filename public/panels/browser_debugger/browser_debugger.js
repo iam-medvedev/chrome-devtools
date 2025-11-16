@@ -487,6 +487,7 @@ import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "./../common/common.js";
 import * as Sources2 from "./../sources/sources.js";
 
 // gen/front_end/panels/browser_debugger/domBreakpointsSidebarPane.css.js
@@ -721,11 +722,10 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     const linkifiedNode = document.createElement("monospace");
     linkifiedNode.style.display = "block";
     labelElement.appendChild(linkifiedNode);
-    void Common.Linkifier.Linkifier.linkify(item2.node, { preventKeyboardFocus: true, tooltip: void 0 }).then((linkified) => {
-      linkifiedNode.appendChild(linkified);
-      UI2.ARIAUtils.setLabel(checkbox, i18nString2(UIStrings2.sS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent() }));
-      UI2.ARIAUtils.setLabel(element, i18nString2(UIStrings2.sSS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent(), PH3: checkedStateText }));
-    });
+    const linkified = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(item2.node, { preventKeyboardFocus: true, tooltip: void 0 });
+    linkifiedNode.appendChild(linkified);
+    UI2.ARIAUtils.setLabel(checkbox, i18nString2(UIStrings2.sS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent() }));
+    UI2.ARIAUtils.setLabel(element, i18nString2(UIStrings2.sSS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent(), PH3: checkedStateText }));
     labelElement.appendChild(description);
     if (item2 === this.#highlightedBreakpoint) {
       element.classList.add("breakpoint-hit");

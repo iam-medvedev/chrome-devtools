@@ -1,11 +1,11 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../../../core/common/common.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { raf, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../../testing/EnvironmentHelpers.js';
 import { clearAllMockConnectionResponseHandlers, describeWithMockConnection, setMockConnectionResponseHandler } from '../../../../testing/MockConnection.js';
+import * as PanelsCommon from '../../../common/common.js';
 import * as Insights from './insights.js';
 function nodeId(x) {
     return x;
@@ -15,10 +15,10 @@ describeWithMockConnection('NodeLink', () => {
         clearAllMockConnectionResponseHandlers();
     });
     it('renders a node link', async () => {
-        const linkifyStub = sinon.stub(Common.Linkifier.Linkifier, 'linkify').callsFake(() => {
+        const linkifyStub = sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify').callsFake(() => {
             const elem = document.createElement('div');
             elem.classList.add('fake-linkify-node');
-            return Promise.resolve(elem);
+            return elem;
         });
         // Create a mock target, dom model, document and node.
         const target = createTarget();

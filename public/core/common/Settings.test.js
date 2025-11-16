@@ -66,22 +66,28 @@ describe('SettingsStorage class', () => {
 });
 describe('Settings instance', () => {
     afterEach(() => {
-        Common.Settings.Settings.removeInstance();
         Common.Settings.resetSettings(); // Clear SettingsRegistrations.
     });
     it('can be instantiated in a test', () => {
         const dummyStorage = new SettingsStorage({});
-        const settings = Common.Settings.Settings.instance({
-            forceNew: true,
+        const settings = new Common.Settings.Settings({
             syncedStorage: dummyStorage,
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
         });
         assert.isOk(settings);
     });
     it('throws when constructed without storage', () => {
+        Common.Settings.Settings.removeInstance(); // Some tests don't clean up well.
         assert.throws(() => Common.Settings.Settings.instance());
-        assert.throws(() => Common.Settings.Settings.instance({ forceNew: true, syncedStorage: null, globalStorage: null, localStorage: null }));
+        assert.throws(() => Common.Settings.Settings.instance({
+            forceNew: true,
+            syncedStorage: null,
+            globalStorage: null,
+            localStorage: null,
+            settingRegistrations: null
+        }));
     });
     it('stores synced settings in the correct storage', () => {
         const syncedStorage = new SettingsStorage({});
@@ -92,7 +98,12 @@ describe('Settings instance', () => {
             defaultValue: false,
             storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
         });
-        const settings = Common.Settings.Settings.instance({ forceNew: true, syncedStorage, globalStorage: dummyStorage, localStorage: dummyStorage });
+        const settings = new Common.Settings.Settings({
+            syncedStorage,
+            globalStorage: dummyStorage,
+            localStorage: dummyStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings()
+        });
         const dynamicSetting = settings.createSetting('dynamic-synced-setting', 'default val', "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         dynamicSetting.set('foo value');
         const staticSetting = settings.moduleSetting('static-synced-setting');
@@ -115,7 +126,12 @@ describe('Settings instance', () => {
             defaultValue: false,
             storageType: "Global" /* Common.Settings.SettingStorageType.GLOBAL */,
         });
-        const settings = Common.Settings.Settings.instance({ forceNew: true, syncedStorage: storage, globalStorage: storage, localStorage: storage });
+        const settings = new Common.Settings.Settings({
+            syncedStorage: storage,
+            globalStorage: storage,
+            localStorage: storage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings()
+        });
         settings.createSetting('dynamic-local-setting', 42, "Local" /* Common.Settings.SettingStorageType.LOCAL */);
         settings.createSetting('dynamic-synced-setting', 'foo', "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         assert.isTrue(registeredSettings.has('__prefix__.static-global-setting'));
@@ -127,11 +143,11 @@ describe('Settings instance', () => {
             const mockStore = new MockStore();
             const settingsStorage = new SettingsStorage({}, mockStore);
             mockStore.set('test', '"old"');
-            const settings = Common.Settings.Settings.instance({
-                forceNew: true,
+            const settings = new Common.Settings.Settings({
                 syncedStorage: settingsStorage,
                 globalStorage: settingsStorage,
                 localStorage: settingsStorage,
+                settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
             });
             const testSetting = settings.createSetting('test', 'default val', "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
             const changes = [];
@@ -153,13 +169,52 @@ describe('Settings instance', () => {
             register: (name) => registeredSettings.add(name),
         };
         const storage = new SettingsStorage({}, mockBackingStore, '__prefix__.');
-        const settings = Common.Settings.Settings.instance({ forceNew: true, syncedStorage: storage, globalStorage: storage, localStorage: storage });
+        const settings = new Common.Settings.Settings({
+            syncedStorage: storage,
+            globalStorage: storage,
+            localStorage: storage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            runSettingsMigration: false,
+        });
         const testSetting = settings.createSetting('test-setting', 'some value');
         assert.strictEqual(testSetting.getIfNotDisabled(), 'some value');
         testSetting.setDisabled(true);
         assert.isUndefined(testSetting.getIfNotDisabled());
         testSetting.setDisabled(false);
         assert.strictEqual(testSetting.getIfNotDisabled(), 'some value');
+    });
+    it('notifies change listeners when updating a setting', () => {
+        const storage = new Common.Settings.SettingsStorage({});
+        const settings = new Common.Settings.Settings({
+            syncedStorage: storage,
+            globalStorage: storage,
+            localStorage: storage,
+            settingRegistrations: [],
+        });
+        const setting = settings.createSetting('test-setting', 'initial value');
+        const changeStub = sinon.stub();
+        setting.addChangeListener(changeStub);
+        setting.set('new value');
+        sinon.assert.calledOnceWithMatch(changeStub, sinon.match(event => {
+            return event.data === 'new value';
+        }));
+    });
+    it('retrieves registered settings', () => {
+        const storage = new Common.Settings.SettingsStorage({});
+        const settings = new Common.Settings.Settings({
+            syncedStorage: storage,
+            globalStorage: storage,
+            localStorage: storage,
+            settingRegistrations: [{
+                    category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
+                    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+                    settingName: 'test-setting',
+                    defaultValue: false,
+                }],
+        });
+        const setting = settings.moduleSetting('test-setting');
+        assert.isFalse(setting.get());
+        assert.strictEqual(setting.category(), "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */);
     });
 });
 describe('VersionController', () => {
@@ -172,16 +227,13 @@ describe('VersionController', () => {
         syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
         globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
         localStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        settings = Common.Settings.Settings.instance({
-            forceNew: true,
+        settings = new Common.Settings.Settings({
             syncedStorage,
             globalStorage,
             localStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
             runSettingsMigration: false,
         });
-    });
-    afterEach(() => {
-        Common.Settings.Settings.removeInstance();
     });
     describe('updateVersion', () => {
         it('initializes version settings with the current version if the setting doesn\'t exist yet', () => {
@@ -455,16 +507,15 @@ describe('updateVersionFrom37To38', () => {
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             defaultValue: true,
         });
-        settings = Common.Settings.Settings.instance({
-            forceNew: true,
+        settings = new Common.Settings.Settings({
             syncedStorage,
             globalStorage,
             localStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
             runSettingsMigration: false,
         });
     });
     afterEach(() => {
-        Common.Settings.Settings.removeInstance();
         Common.Settings.resetSettings(); // Clear SettingsRegistrations.
     });
     it('disables console insights setting if onboarding not done', () => {
@@ -512,17 +563,16 @@ describe('updateVersionFrom38To39', () => {
         const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        settings = Common.Settings.Settings.instance({
-            forceNew: true,
+        settings = new Common.Settings.Settings({
             syncedStorage,
             globalStorage,
             localStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
             runSettingsMigration: false,
         });
         setting = settings.createSetting('preferred-network-condition', { title: 'Offline', i18nTitleKey: 'Offline' });
     });
     afterEach(() => {
-        Common.Settings.Settings.removeInstance();
         Common.Settings.resetSettings(); // Clear SettingsRegistrations.
     });
     it('renames the preferred-network-condition for "Slow 3G"', async () => {
@@ -572,18 +622,17 @@ describe('updateVersionFrom38To39', () => {
                 settingType: "array" /* Common.Settings.SettingType.ARRAY */,
                 defaultValue: [],
             });
-            settings = Common.Settings.Settings.instance({
-                forceNew: true,
+            settings = new Common.Settings.Settings({
                 syncedStorage,
                 globalStorage,
                 localStorage,
+                settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
                 runSettingsMigration: false,
             });
             customNetworkCondSetting = settings.moduleSetting('custom-network-conditions');
             preferredNetworkCondSetting = settings.createSetting('preferred-network-condition', { i18nTitleKey: 'Offline' });
         });
         afterEach(() => {
-            Common.Settings.Settings.removeInstance();
             Common.Settings.resetSettings(); // Clear SettingsRegistrations.
         });
         it('updates all settings to have a key', () => {
@@ -651,7 +700,7 @@ describe('updateVersionFrom38To39', () => {
             versionController.updateVersionFrom39To40();
             const activeKeySetting = settings.globalStorage.get('active-network-condition-key');
             assert.strictEqual(activeKeySetting, JSON.stringify('OFFLINE'));
-            const newSetting = Common.Settings.Settings.instance().createSetting('active-network-condition-key', 'INVALID');
+            const newSetting = settings.createSetting('active-network-condition-key', 'INVALID');
             assert.strictEqual(newSetting.defaultValue, 'NO_THROTTLING');
             assert.isFalse(settings.globalStorage.has('preferred-network-condition'));
         });
@@ -684,11 +733,11 @@ describe('access logging', () => {
         const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
         logSettingAccess = sinon.spy();
-        settings = Common.Settings.Settings.instance({
-            forceNew: true,
+        settings = new Common.Settings.Settings({
             syncedStorage,
             globalStorage,
             localStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
             logSettingAccess,
         });
     });

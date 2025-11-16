@@ -550,11 +550,15 @@ var MainImpl = class {
     this.#initializeGlobalsForLayoutTests();
     Object.assign(Root2.Runtime.hostConfig, config);
     const creationOptions = {
-      ...this.createSettingsStorage(prefs),
-      logSettingAccess: VisualLogging2.logSettingAccess,
-      runSettingsMigration: !Host.InspectorFrontendHost.isUnderTest()
+      settingsCreationOptions: {
+        ...this.createSettingsStorage(prefs),
+        settingRegistrations: Common2.SettingRegistration.getRegisteredSettings(),
+        logSettingAccess: VisualLogging2.logSettingAccess,
+        runSettingsMigration: !Host.InspectorFrontendHost.isUnderTest()
+      }
     };
-    new Foundation.Universe.Universe(creationOptions);
+    const universe = new Foundation.Universe.Universe(creationOptions);
+    Root2.DevToolsContext.setGlobalInstance(universe.context);
     await this.requestAndRegisterLocaleData();
     Host.userMetrics.syncSetting(Common2.Settings.Settings.instance().moduleSetting("sync-preferences").get());
     const veLogging = config.devToolsVeLogging;
@@ -724,24 +728,8 @@ var MainImpl = class {
     const targetManager = SDK2.TargetManager.TargetManager.instance();
     targetManager.addEventListener("SuspendStateChanged", this.#onSuspendStateChanged.bind(this));
     Workspace.FileManager.FileManager.instance({ forceNew: true });
-    Workspace.Workspace.WorkspaceImpl.instance();
     Bindings.NetworkProject.NetworkProjectManager.instance();
-    const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, Workspace.Workspace.WorkspaceImpl.instance());
     new Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager();
-    Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({
-      forceNew: true,
-      resourceMapping,
-      targetManager
-    });
-    Workspace.IgnoreListManager.IgnoreListManager.instance({
-      forceNew: true
-    });
-    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-      forceNew: true,
-      resourceMapping,
-      targetManager,
-      ignoreListManager: Workspace.IgnoreListManager.IgnoreListManager.instance()
-    });
     targetManager.setScopeTarget(targetManager.primaryPageTarget());
     UI2.Context.Context.instance().addFlavorChangeListener(SDK2.Target.Target, ({ data }) => {
       const outermostTarget = data?.outermostTarget();

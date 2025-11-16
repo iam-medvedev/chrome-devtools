@@ -1,4 +1,5 @@
 // gen/front_end/legacy_test_runner/test_runner/test_runner.prebundle.js
+import * as Common2 from "./../../core/common/common.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Tracing from "./../../services/tracing/tracing.js";
@@ -1088,7 +1089,11 @@ var _TestObserver = class {
   targetRemoved(target) {
   }
 };
-SDK2.TargetManager.TargetManager.instance().observeTargets(new _TestObserver());
+Common2.Runnable.registerEarlyInitializationRunnable(() => ({
+  run() {
+    SDK2.TargetManager.TargetManager.instance().observeTargets(new _TestObserver());
+  }
+}));
 var globalTestRunner = self.TestRunner;
 export {
   globalTestRunner as TestRunner,

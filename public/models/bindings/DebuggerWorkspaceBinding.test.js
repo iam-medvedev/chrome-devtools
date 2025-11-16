@@ -24,6 +24,7 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
         setMockResourceTree(false);
     });

@@ -212,16 +212,17 @@ describeWithMockConnection('StylesPropertySection', () => {
                 cssProperties: [],
                 shorthandEntries: [],
             },
-            fontPaletteName: {
+            name: {
                 range,
                 text: '--palette-name',
             },
+            type: "font-palette-values" /* Protocol.CSS.CSSAtRuleType.FontPaletteValues */,
         };
-        const matchedStyles = await getMatchedStylesWithStylesheet({ cssModel, origin, styleSheetId, ...range, fontPaletteValuesRule });
-        const declaration = matchedStyles.fontPaletteValuesRule()?.style;
+        const matchedStyles = await getMatchedStylesWithStylesheet({ cssModel, origin, styleSheetId, ...range, atRules: [fontPaletteValuesRule] });
+        const declaration = matchedStyles.atRules()[0]?.style;
         assert.exists(declaration);
-        const section = new Elements.StylePropertiesSection.FontPaletteValuesRuleSection(stylesSidebarPane, matchedStyles, declaration, 0);
-        assert.strictEqual(section.element.textContent, '{}');
+        const section = new Elements.StylePropertiesSection.AtRuleSection(stylesSidebarPane, matchedStyles, declaration, 0, true);
+        assert.strictEqual(section.element.textContent, '@font-palette-values --palette-name {}');
     });
     it('renders active and inactive position-try rule sections correctly', async () => {
         const cssModel = createTarget().model(SDK.CSSModel.CSSModel);

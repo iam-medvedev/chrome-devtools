@@ -141,6 +141,7 @@ describeWithMockConnection('LiveMetricsView', () => {
             syncedStorage: dummyStorage,
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
         });
         LiveMetrics.LiveMetrics.instance({ forceNew: true });
         CrUXManager.CrUXManager.instance({ forceNew: true });

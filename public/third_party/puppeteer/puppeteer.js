@@ -2596,7 +2596,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.29.1";
+var packageVersion = "24.30.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -13383,7 +13383,10 @@ var CdpHTTPRequest = class extends HTTPRequest {
     this._redirectChain = redirectChain;
     this.#initiator = data.initiator;
     this.interception.enabled = allowInterception;
-    for (const [key, value] of Object.entries(data.request.headers)) {
+    this.updateHeaders(data.request.headers);
+  }
+  updateHeaders(headers) {
+    for (const [key, value] of Object.entries(headers)) {
       this.#headers[key.toLowerCase()] = value;
     }
   }
@@ -13757,6 +13760,7 @@ var NetworkEventManager = class {
   #requestWillBeSentMap = /* @__PURE__ */ new Map();
   #requestPausedMap = /* @__PURE__ */ new Map();
   #httpRequestsMap = /* @__PURE__ */ new Map();
+  #requestWillBeSentExtraInfoMap = /* @__PURE__ */ new Map();
   /*
    * The below maps are used to reconcile Network.responseReceivedExtraInfo
    * events with their corresponding request. Each response and redirect
@@ -13772,9 +13776,16 @@ var NetworkEventManager = class {
   forget(networkRequestId) {
     this.#requestWillBeSentMap.delete(networkRequestId);
     this.#requestPausedMap.delete(networkRequestId);
+    this.#requestWillBeSentExtraInfoMap.delete(networkRequestId);
     this.#queuedEventGroupMap.delete(networkRequestId);
     this.#queuedRedirectInfoMap.delete(networkRequestId);
     this.#responseReceivedExtraInfoMap.delete(networkRequestId);
+  }
+  requestExtraInfo(networkRequestId) {
+    if (!this.#requestWillBeSentExtraInfoMap.has(networkRequestId)) {
+      this.#requestWillBeSentExtraInfoMap.set(networkRequestId, []);
+    }
+    return this.#requestWillBeSentExtraInfoMap.get(networkRequestId);
   }
   responseExtraInfo(networkRequestId) {
     if (!this.#responseReceivedExtraInfoMap.has(networkRequestId)) {
@@ -13882,6 +13893,7 @@ var NetworkManager = class extends EventEmitter {
     ["Fetch.requestPaused", this.#onRequestPaused],
     ["Fetch.authRequired", this.#onAuthRequired],
     ["Network.requestWillBeSent", this.#onRequestWillBeSent],
+    ["Network.requestWillBeSentExtraInfo", this.#onRequestWillBeSentExtraInfo],
     ["Network.requestServedFromCache", this.#onRequestServedFromCache],
     ["Network.responseReceived", this.#onResponseReceived],
     ["Network.loadingFinished", this.#onLoadingFinished],
@@ -14196,14 +14208,30 @@ var NetworkManager = class extends EventEmitter {
       if (request2) {
         this.#handleRequestRedirect(client, request2, event.redirectResponse, redirectResponseExtraInfo);
         redirectChain = request2._redirectChain;
+        const extraInfo2 = this.#networkEventManager.requestExtraInfo(event.requestId).shift();
+        if (extraInfo2) {
+          request2.updateHeaders(extraInfo2.headers);
+        }
       }
     }
     const frame = event.frameId ? this.#frameManager.frame(event.frameId) : null;
     const request = new CdpHTTPRequest(client, frame, fetchRequestId, this.#userRequestInterceptionEnabled, event, redirectChain);
+    const extraInfo = this.#networkEventManager.requestExtraInfo(event.requestId).shift();
+    if (extraInfo) {
+      request.updateHeaders(extraInfo.headers);
+    }
     request._fromMemoryCache = fromMemoryCache;
     this.#networkEventManager.storeRequest(event.requestId, request);
     this.emit(NetworkManagerEvent.Request, request);
     void request.finalizeInterceptions();
+  }
+  #onRequestWillBeSentExtraInfo(_client, event) {
+    const request = this.#networkEventManager.getRequest(event.requestId);
+    if (request) {
+      request.updateHeaders(event.headers);
+    } else {
+      this.#networkEventManager.requestExtraInfo(event.requestId).push(event);
+    }
   }
   #onRequestServedFromCache(client, event) {
     const requestWillBeSentEvent = this.#networkEventManager.getRequestWillBeSent(event.requestId);

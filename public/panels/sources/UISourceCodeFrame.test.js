@@ -25,6 +25,7 @@ describeWithMockConnection('UISourceCodeFrame', () => {
                 targetManager: SDK.TargetManager.TargetManager.instance(),
                 resourceMapping: new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), workspace),
                 ignoreListManager,
+                workspace,
             });
             const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({
                 forceNew: true,

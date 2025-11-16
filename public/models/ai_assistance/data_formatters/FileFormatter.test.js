@@ -22,6 +22,7 @@ describeWithMockConnection('FileFormatter', () => {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
     });
     describe('formatSourceMapDetails', () => {

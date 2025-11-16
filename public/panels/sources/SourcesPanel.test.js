@@ -18,6 +18,7 @@ describeWithEnvironment('SourcesPanel', () => {
             targetManager: SDK.TargetManager.TargetManager.instance(),
             resourceMapping: new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), workspace),
             ignoreListManager: Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true }),
+            workspace,
         });
         const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({
             forceNew: true,

@@ -224,6 +224,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     charset(): string | null;
     setCharset(charset: string): void;
     addExtraRequestInfo(extraRequestInfo: ExtraRequestInfo): void;
+    setAppliedNetworkConditions(appliedNetworkConditionsId: string): void;
     hasExtraRequestInfo(): boolean;
     blockedRequestCookies(): BlockedCookieWithReason[];
     setIncludedRequestCookies(includedRequestCookies: IncludedCookieWithReason[]): void;
@@ -246,8 +247,6 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     trustTokenOperationDoneEvent(): Protocol.Network.TrustTokenOperationDoneEvent | undefined;
     setIsSameSite(isSameSite: boolean): void;
     isSameSite(): boolean | null;
-    setIsIpProtectionUsed(isIpProtectionUsed: boolean): void;
-    isIpProtectionUsed(): boolean | null;
     setIsAdRelated(isAdRelated: boolean): void;
     isAdRelated(): boolean;
     getAssociatedData(key: string): object | null;

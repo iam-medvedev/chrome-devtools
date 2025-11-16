@@ -1,28 +1,11 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { makeTimingEventWithConsoleExtensionData, makeTimingEventWithPerformanceExtensionData, } from '../../../testing/TraceHelpers.js';
+import { createTraceExtensionDataFromEvents, createTraceExtensionDataFromPerformanceAPITestInput, makeTimingEventWithConsoleExtensionData, } from '../../../testing/TraceHelpers.js';
 import * as Trace from '../trace.js';
-export async function createTraceExtensionDataFromPerformanceAPITestInput(extensionData) {
-    const events = extensionData.flatMap(makeTimingEventWithPerformanceExtensionData).sort((e1, e2) => e1.ts - e2.ts);
-    return await createTraceExtensionDataFromEvents(events);
-}
 async function createTraceExtensionDataFromConsoleAPITestInput(extensionData) {
     const events = extensionData.flatMap(makeTimingEventWithConsoleExtensionData).sort((e1, e2) => e1.ts - e2.ts);
     return await createTraceExtensionDataFromEvents(events);
-}
-async function createTraceExtensionDataFromEvents(events) {
-    Trace.Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(events);
-    Trace.Handlers.ModelHandlers.UserTimings.reset();
-    for (const event of events) {
-        Trace.Handlers.ModelHandlers.UserTimings.handleEvent(event);
-    }
-    await Trace.Handlers.ModelHandlers.UserTimings.finalize();
-    Trace.Handlers.ModelHandlers.ExtensionTraceData.reset();
-    // ExtensionTraceData handler doesn't need to handle events since
-    // it only consumes the output of the user timings handler.
-    await Trace.Handlers.ModelHandlers.ExtensionTraceData.finalize();
-    return Trace.Handlers.ModelHandlers.ExtensionTraceData.data();
 }
 describe('ExtensionTraceDataHandler', function () {
     describe('parsing extension data added via the performance.measure/mark API', function () {

@@ -25,6 +25,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
             resourceMapping,
             targetManager,
             ignoreListManager,
+            workspace,
         });
     });
     afterEach(() => {
