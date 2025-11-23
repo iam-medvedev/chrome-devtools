@@ -264,6 +264,31 @@ describe('UISourceCode', () => {
         sutObject.sut.disableEdit();
         assert.isTrue(sutObject.sut.editDisabled());
     });
+    describe('formatChanged', () => {
+        it('should remap performance decorations when the source is formatted', () => {
+            const { sut } = setupMockedUISourceCode();
+            const decorations = new Map();
+            const columnData = new Map();
+            columnData.set(10, 100); // column 10, value 100
+            decorations.set(1, columnData); // line 1
+            sut.setDecorationData("performance" /* Workspace.UISourceCode.DecoratorType.PERFORMANCE */, decorations);
+            const format = {
+                originalToFormatted: (lineNumber, columnNumber) => {
+                    if (lineNumber === 0 && columnNumber === 9) {
+                        return [4, 1]; // new line 5, new column 2 (0-based)
+                    }
+                    return [lineNumber, columnNumber || 0];
+                },
+            };
+            sut.formatChanged(format);
+            const newDecorations = sut.getDecorationData("performance" /* Workspace.UISourceCode.DecoratorType.PERFORMANCE */);
+            assert.isDefined(newDecorations);
+            const newLineData = newDecorations.get(5); // check line 5 (1-based)
+            assert.isDefined(newLineData);
+            const newData = newLineData.get(2); // check column 2 (1-based)
+            assert.strictEqual(newData, 100);
+        });
+    });
 });
 describe('UILocation', () => {
     it('formats column as base 16 for WebAssembly source files', () => {

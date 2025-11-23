@@ -709,7 +709,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     this.element.classList.toggle("no-selection", !hasSelected);
   }
   announceSelectedGridNode() {
-    if (this.element === Platform2.DOMUtilities.deepActiveElement(this.element.ownerDocument) && this.selectedNode?.existingElement()) {
+    if (this.element === UI.DOMUtilities.deepActiveElement(this.element.ownerDocument) && this.selectedNode?.existingElement()) {
       let expandText;
       if (this.selectedNode.hasChildren()) {
         expandText = this.selectedNode.expanded ? i18nString(UIStrings.expanded) : i18nString(UIStrings.collapsed);
@@ -780,7 +780,8 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
       icon.className = "sort-order-icon";
       cell.createChild("div", "sort-order-icon-container").appendChild(icon);
       if (column.title) {
-        UI.ARIAUtils.setLabel(cell, i18nString(UIStrings.sortableColumn));
+        const columnLabel = `${column.title} - ${i18nString(UIStrings.sortableColumn)}`;
+        UI.ARIAUtils.setLabel(cell, columnLabel);
       }
     }
   }
@@ -1437,7 +1438,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
       nextSelectedNode.reveal();
       nextSelectedNode.select();
     }
-    const activeElement = Platform2.DOMUtilities.deepActiveElement(this.element.ownerDocument);
+    const activeElement = UI.DOMUtilities.deepActiveElement(this.element.ownerDocument);
     if (handled && this.element !== activeElement && !this.element.contains(activeElement)) {
       this.element.focus();
     }
@@ -2305,7 +2306,7 @@ var DataGridNode = class {
     this.select();
   }
   deselect(supressDeselectedEvent) {
-    if (!this.dataGrid || this.dataGrid.selectedNode !== this || !this.selected) {
+    if (this.dataGrid?.selectedNode !== this || !this.selected) {
       return;
     }
     this.#selected = false;

@@ -290,6 +290,7 @@ import * as i18n from "./../../../../core/i18n/i18n.js";
 import * as Platform2 from "./../../../../core/platform/platform.js";
 import * as Root from "./../../../../core/root/root.js";
 import * as IconButton from "./../../../components/icon_button/icon_button.js";
+import * as UIHelpers from "./../../../helpers/helpers.js";
 import * as UI from "./../../legacy.js";
 var UIStrings = {
   /**
@@ -574,7 +575,7 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
     this.contrastValueBubble.classList.toggle("contrast-aaa", passesAAA);
   }
   static showHelp() {
-    UI.UIUtils.openInNewTab("https://web.dev/color-and-contrast-accessibility/");
+    UIHelpers.openInNewTab("https://web.dev/color-and-contrast-accessibility/");
   }
   setVisible(visible) {
     this.#visible = visible;
@@ -730,7 +731,7 @@ var ContrastInfo = class extends Common3.ObjectWrapper.ObjectWrapper {
     this.#isNull = false;
     this.contrastRatioThresholds = Common3.ColorUtils.getContrastThreshold(contrastInfo.computedFontSize, contrastInfo.computedFontWeight);
     this.#contrastRatioAPCAThreshold = Common3.ColorUtils.getAPCAThreshold(contrastInfo.computedFontSize, contrastInfo.computedFontWeight);
-    if (!contrastInfo.backgroundColors || contrastInfo.backgroundColors.length !== 1) {
+    if (contrastInfo.backgroundColors?.length !== 1) {
       return;
     }
     const bgColorText = contrastInfo.backgroundColors[0];

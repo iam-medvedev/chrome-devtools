@@ -29,7 +29,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2023",
+    "target": "es2023",
     "tsBuildInfoFile": "unittests-tsconfig.json.tsbuildinfo",
     "typeRoots": [
       "../../../../../../node_modules/@types"
@@ -44,7 +44,6 @@
   },
   "files": [
     "../../../../../../front_end/core/platform/ArrayUtilities.test.ts",
-    "../../../../../../front_end/core/platform/DOMUtilities.test.ts",
     "../../../../../../front_end/core/platform/DateUtilities.test.ts",
     "../../../../../../front_end/core/platform/DevToolsPath.test.ts",
     "../../../../../../front_end/core/platform/KeyboardUtilities.test.ts",

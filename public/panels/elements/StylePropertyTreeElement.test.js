@@ -7,7 +7,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { spyCall } from '../../testing/ExpectStubCall.js';
+import { expectCalled, spyCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import { getMatchedStyles, getMatchedStylesWithBlankRule, } from '../../testing/StyleHelpers.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
@@ -198,25 +198,25 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 const colorMixSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-mix-swatch');
                 assert.isNull(colorMixSwatch);
             });
-            it('shows a popover with it\'s computed color as RGB if possible', () => {
+            it('shows a popover with its computed color as RGB if possible', async () => {
                 const stylePropertyTreeElement = getTreeElement('color', 'color-mix(in srgb, red 50%, yellow)');
                 stylePropertyTreeElement.treeOutline = new LegacyUI.TreeOutline.TreeOutline();
                 stylePropertyTreeElement.updateTitle();
                 const colorMixSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-mix-swatch');
                 assert.exists(colorMixSwatch);
                 renderElementIntoDOM(stylePropertyTreeElement.valueElement);
-                const tooltip = stylePropertyTreeElement.valueElement?.querySelector('devtools-tooltip:not([jslogcontext="elements.css-value-trace"])');
+                const tooltip = stylePropertyTreeElement.valueElement?.querySelector(':scope > devtools-tooltip');
                 assert.exists(tooltip);
                 tooltip.showPopover();
                 assert.strictEqual(tooltip.textContent, '#ff8000');
             });
-            it('shows a popover with it\'s computed color as wide gamut if necessary', () => {
+            it('shows a popover with its computed color as wide gamut if necessary', () => {
                 const stylePropertyTreeElement = getTreeElement('color', 'color-mix(in srgb, oklch(.5 .5 .5) 50%, yellow)');
                 stylePropertyTreeElement.updateTitle();
                 const colorMixSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-mix-swatch');
                 assert.exists(colorMixSwatch);
                 renderElementIntoDOM(stylePropertyTreeElement.valueElement);
-                const tooltip = stylePropertyTreeElement.valueElement?.querySelector('devtools-tooltip:not([jslogcontext="elements.css-value-trace"])');
+                const tooltip = stylePropertyTreeElement.valueElement?.querySelector(':scope > devtools-tooltip');
                 tooltip?.showPopover();
                 assert.strictEqual(tooltip?.textContent, 'color(srgb 1 0.24 0.17)');
             });
@@ -1536,16 +1536,17 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             const node = new SDK.DOMModel.DOMNode(domModel);
             node.id = 0;
             LegacyUI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
-            const addPopoverPromise = Promise.withResolvers();
-            sinon.stub(Elements.StylePropertyTreeElement.LengthRenderer.prototype, 'popOverAttachedForTest')
-                .callsFake(() => addPopoverPromise.resolve());
             const stylePropertyTreeElement = getTreeElement('property', '5px 2em');
             setMockConnectionResponseHandler('CSS.getComputedStyleForNode', () => ({ computedStyle: {} }));
             await stylePropertyTreeElement.onpopulate();
             stylePropertyTreeElement.updateTitle();
-            await addPopoverPromise.promise;
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
             const popover = stylePropertyTreeElement.valueElement?.querySelector('devtools-tooltip');
-            assert.strictEqual(popover?.innerText, '15px');
+            assert.exists(popover);
+            const popoverOpenSpy = spyCall(Elements.StylePropertyTreeElement.LengthRenderer.prototype, 'getTooltipValue');
+            popover.showPopover();
+            await (await popoverOpenSpy).result;
+            assert.strictEqual(popover.deepInnerText(), '15px');
         });
         it('passes the property name to evaluations', async () => {
             const cssModel = stylesSidebarPane.cssModel();
@@ -1553,10 +1554,12 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             const resolveValuesStub = sinon.stub(cssModel, 'resolveValues').resolves([]);
             const stylePropertyTreeElement = getTreeElement('left', '2%');
             stylePropertyTreeElement.updateTitle();
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+            stylePropertyTreeElement.valueElement?.querySelector('devtools-tooltip')?.showPopover();
             sinon.assert.calledOnce(resolveValuesStub);
             assert.strictEqual(resolveValuesStub.args[0][0], 'left');
         });
-        it('uses the right longhand name in length shorthands', () => {
+        it('uses the right longhand name in length shorthands', async () => {
             const cssModel = stylesSidebarPane.cssModel();
             assert.exists(cssModel);
             const resolveValuesStub = sinon.stub(cssModel, 'resolveValues').resolves([]);
@@ -1565,8 +1568,21 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 assert.exists(longhands);
                 const stylePropertyTreeElement = getTreeElement(shorthand, longhands.map((_, i) => `${i * 2}%`).join(' '));
                 stylePropertyTreeElement.updateTitle();
-                const args = resolveValuesStub.args.map(args => args[0]);
-                assert.deepEqual(args, longhands);
+                renderElementIntoDOM(stylePropertyTreeElement.valueElement, { allowMultipleChildren: true });
+                const resolvedValues = [];
+                const expectedCalls = expectCalled(resolveValuesStub, {
+                    callCount: longhands.length,
+                    fakeFn: (name, nodeIds, ...values) => {
+                        resolvedValues.push(name);
+                        return Promise.resolve(values.slice(0));
+                    }
+                });
+                const tooltips = stylePropertyTreeElement.valueElement?.querySelectorAll('devtools-tooltip');
+                assert.exists(tooltips);
+                assert.lengthOf(tooltips, longhands.length);
+                tooltips.forEach(t => t.showPopover());
+                await expectedCalls;
+                assert.deepEqual(resolvedValues, longhands);
                 resolveValuesStub.resetHistory();
             }
         });

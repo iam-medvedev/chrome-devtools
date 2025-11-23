@@ -5,6 +5,10 @@
 // Re-generate with: npm run generate-protocol-resources
 export const UIStrings = {
     /**
+     * @description This warning occurs when the website uses Attribution Reporting.
+     */
+    AttributionReporting: "Attribution Reporting is deprecated and will be removed. See https://goo.gle/ps-status for details.",
+    /**
      * @description We show this warning when 1) an 'authorization' header is attached to the request by scripts, 2) there is no 'authorization' in the 'access-control-allow-headers' header in the response, and 3) there is a wildcard symbol ('*') in the 'access-control-allow-header' header in the response. This is allowed now, but we're planning to reject such responses and require responses to have an 'access-control-allow-headers' containing 'authorization'.
      */
     AuthorizationCoveredByWildcard: "Authorization will not be covered by the wildcard symbol (*) in CORS `Access-Control-Allow-Headers` handling.",
@@ -52,6 +56,10 @@ export const UIStrings = {
      * @description Warning displayed to developers when a data: URL is assigned to SVGUseElement to let them know that the support is deprecated.
      */
     DataUrlInSvgUse: "Support for data: URLs in SVGUseElement is deprecated and it will be removed in the future.",
+    /**
+     * @description A deprecation warning shown in the DevTools Issues tab. It's shown when one of the Protected Audience APIs like `navigator.joinAdInterestGroup`, `navigator.getInterestGroupAdAuctionData` or `navigator.runAdAuction` are called.
+     */
+    Fledge: "The Protected Audience API is deprecated and will be removed in a future release.",
     /**
      * @description Warning displayed to developers when the Geolocation API is used from an insecure origin (one that isn't localhost or doesn't use HTTPS) to notify them that this use is no longer supported.
      */
@@ -173,6 +181,10 @@ export const UIStrings = {
      */
     RangeExpand: "Range.expand() is deprecated. Please use Selection.modify() instead.",
     /**
+     * @description A deprecation warning shown in the DevTools Issues tab. It's shown when the Storage Access API is automatically granted by Related Website Sets. The placeholder will always be the string `Related Website Sets`.
+     */
+    RelatedWebsiteSets: "`Related Website Sets` is deprecated and will be removed. See https://privacysandbox.com/news/update-on-plans-for-privacy-sandbox-technologies/ for more details.",
+    /**
      * @description This warning occurs when a subresource loaded by a page has a URL with an authority portion. These are disallowed.
      */
     RequestedSubresourceWithEmbeddedCredentials: "Subresource requests whose URLs contain embedded credentials (e.g. `https://user:pass@host/`) are blocked.",
@@ -201,6 +213,10 @@ export const UIStrings = {
      */
     TextToSpeech_DisallowedByAutoplay: "`speechSynthesis.speak()` without user activation is deprecated and will be removed.",
     /**
+     * @description A deprecation warning shown in the DevTools Issues tab. It's shown when one of the Topics APIs like `document.browsingTopics()`, `<img browsingtopics>`, `<iframe browsingtopics>`, or `fetch(url, {browsingTopics: true})` are used.
+     */
+    Topics: "The Topics API is deprecated and will be removed in a future release.",
+    /**
      * @description A deprecation warning shown in the DevTools Issues tab. It's shown when a listener for the `unload` event is added.
      */
     UnloadHandler: "Unload event listeners are deprecated and will be removed.",
@@ -221,11 +237,18 @@ export const UIStrings = {
      */
     XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload: "Synchronous `XMLHttpRequest` on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.",
     /**
+     * @description Warning displayed to developers that they are using externally loaded entities in an XML document that constitutes a part of the web page. Externally loaded entities are a technical concept of XML document processing.
+     */
+    XMLNoExternalEntities: "Externally loaded entities in XML parsing have been deprecated and will be removed from this browser soon.",
+    /**
      * @description Warning displayed to developers that they are using either the XSLTProcessor API, or XSLT processing instructions, both of which have been deprecated and are scheduled to be removed.
      */
     XSLT: "XSLTProcessor and XSLT Processing Instructions have been deprecated by all browsers. These features will be removed from this browser soon.",
 };
 export const DEPRECATIONS_METADATA = {
+    "AttributionReporting": {
+        "chromeStatusFeature": 6320639375966208
+    },
     "AuthorizationCoveredByWildcard": {
         "milestone": 97
     },
@@ -307,6 +330,9 @@ export const DEPRECATIONS_METADATA = {
         "chromeStatusFeature": 4631626228695040,
         "milestone": 117
     },
+    "RelatedWebsiteSets": {
+        "chromeStatusFeature": 5194473869017088
+    },
     "RequestedSubresourceWithEmbeddedCredentials": {
         "chromeStatusFeature": 5669008342777856
     },
@@ -332,6 +358,10 @@ export const DEPRECATIONS_METADATA = {
     },
     "XHRJSONEncodingDetection": {
         "milestone": 93
+    },
+    "XMLNoExternalEntities": {
+        "chromeStatusFeature": 6734457763659776,
+        "milestone": 144
     },
     "XSLT": {
         "chromeStatusFeature": 4709671889534976,

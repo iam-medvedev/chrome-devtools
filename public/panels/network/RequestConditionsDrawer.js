@@ -11,6 +11,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
+import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -33,6 +34,10 @@ const UIStrings = {
      */
     addPattern: 'Add pattern',
     /**
+     * @description Tooltip text that appears when hovering over the plus button in the Blocked URLs Pane of the Network panel
+     */
+    addRule: 'Add rule',
+    /**
      * @description Accessible label for the button to add request blocking patterns in the network request blocking tool
      */
     addNetworkRequestBlockingPattern: 'Add network request blocking pattern',
@@ -47,7 +52,12 @@ const UIStrings = {
     /**
      * @description Text that shows in the network request blocking panel if no pattern has yet been added.
      */
-    noPattern: 'No request throttling or blocking patterns',
+    noPattern: 'Nothing throttled or blocked',
+    /**
+     * @description Text that shows in the network request blocking panel if no pattern has yet been added.
+     * @example {Learn more} PH1
+     */
+    noThrottlingOrBlockingPattern: `To throttle or block a network request, add a rule here manually or via the network panel's context menu. {PH1}`,
     /**
      * @description Text that shows  in the network request blocking panel if no pattern has yet been added.
      * @example {Add pattern} PH1
@@ -69,8 +79,9 @@ const UIStrings = {
     textPatternToBlockMatching: 'Text pattern to block matching requests; use * for wildcard',
     /**
      * @description Text in Blocked URLs Pane of the Network panel
+     * @example {Learn more} PH1
      */
-    textEditPattern: 'Text pattern to block or throttle matching requests; use URLPattern syntax.',
+    textEditPattern: 'Text pattern to block or throttle matching requests; use URL Pattern syntax. {PH1}',
     /**
      * @description Error text for empty list widget input in Request Blocking tool
      */
@@ -101,13 +112,46 @@ const UIStrings = {
      */
     learnMore: 'Learn more',
     /**
-     * @description Aria label on a button moving an entry up
+     * @description Accessibility label on a `Learn more` link
      */
-    increasePriority: 'Move up (higher patterns are checked first)',
+    learnMoreLabel: 'Learn more about URL pattern syntax',
     /**
-     * @description Aria label on a button moving an entry down
+     * @description Tooltip on a button moving an entry up
+     * @example {*://example.com} PH1
      */
-    decreasePriority: 'Move down (higher patterns are checked first)',
+    increasePriority: 'Move up {PH1}',
+    /**
+     * @description Tooltip on a button moving an entry down
+     * @example {*://example.com} PH1
+     */
+    decreasePriority: 'Move down {PH1}',
+    /**
+     * @description Tooltip on a checkbox togging the effects for a pattern
+     * @example {*://example.com} PH1
+     */
+    enableThrottlingToggleLabel: 'Throttle or block {PH1}',
+    /**
+     * @description Tooltip on a combobox selecting the request conditions
+     */
+    requestConditionsLabel: 'Request conditions',
+    /**
+     * @description Aria announcement when a pattern was moved up
+     */
+    patternMovedUp: 'URL pattern was moved up',
+    /**
+     * @description Aria announcemenet when a pattern was moved down
+     */
+    patternMovedDown: 'URL pattern was moved down',
+    /**
+     * @description Text on a button to start editing text
+     * @example {*://example.com} PH1
+     */
+    editPattern: 'Edit {PH1}',
+    /**
+     * @description Label for an item to remove something
+     * @example {*://example.com} PH1
+     */
+    removePattern: 'Remove {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/RequestConditionsDrawer.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -137,26 +181,23 @@ export const DEFAULT_VIEW = (input, output, target) => {
         ? i18nString(UIStrings.noPattern)
         : i18nString(UIStrings.noNetworkRequestsBlocked)}</span>
       <div class=empty-state-description>
-        <span>${i18nString(UIStrings.addPatternToBlock, { PH1: i18nString(UIStrings.addPattern) })}</span>
-        <x-link
-          href=${NETWORK_REQUEST_BLOCKING_EXPLANATION_URL}
-          tabindex=0
-          class=devtools-link
-          jslog=${VisualLogging.link().track({ click: true, keydown: 'Enter|Space' }).context('learn-more')}>
-            ${i18nString(UIStrings.learnMore)}
-        </x-link>
+        ${individualThrottlingEnabled
+        ? uiI18n.getFormatLocalizedStringTemplate(str_, UIStrings.noThrottlingOrBlockingPattern, { PH1: learnMore() })
+        : html `<span>${i18nString(UIStrings.addPatternToBlock, { PH1: i18nString(UIStrings.addPattern) })}</span>${learnMore()}`}
       </div>
       <devtools-button
         @click=${input.addPattern}
         class=add-button
         .jslogContext=${'network.add-network-request-blocking-pattern'}
-        aria-label=${individualThrottlingEnabled ? i18nString(UIStrings.addPatternLabel)
+        title=${individualThrottlingEnabled ? i18nString(UIStrings.addPatternLabel)
         : i18nString(UIStrings.addNetworkRequestBlockingPattern)}
         .variant=${"tonal" /* Buttons.Button.Variant.TONAL */}>
-          ${i18nString(UIStrings.addPattern)}
+          ${individualThrottlingEnabled ? i18nString(UIStrings.addRule) : i18nString(UIStrings.addPattern)}
       </devtools-button>
     </div>
-    <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(UI.Widget.VBox)}>${input.list.element}</devtools-widget>
+    <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(UI.Widget.VBox)}>
+      ${input.list.element}
+    </devtools-widget>
     `, 
     // clang-format on
     target);
@@ -298,6 +339,10 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
         const element = document.createElement('div');
         this.#listElements.set(condition, element);
         element.classList.add('blocked-url');
+        this.updateItem(element, condition, editable, index);
+        return element;
+    }
+    updateItem(element, condition, editable, index) {
         const toggle = (e) => {
             if (editable) {
                 e.consume(true);
@@ -313,12 +358,14 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
         if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
             const moveUp = (e) => {
                 if (this.manager.requestConditions.conditionsEnabled) {
+                    UI.ARIAUtils.LiveAnnouncer.status(i18nString(UIStrings.patternMovedUp));
                     e.consume(true);
                     this.manager.requestConditions.increasePriority(condition);
                 }
             };
             const moveDown = (e) => {
                 if (this.manager.requestConditions.conditionsEnabled) {
+                    UI.ARIAUtils.LiveAnnouncer.status(i18nString(UIStrings.patternMovedDown));
                     e.consume(true);
                     this.manager.requestConditions.decreasePriority(condition);
                 }
@@ -329,22 +376,25 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
     <input class=blocked-url-checkbox
       @click=${toggle}
       type=checkbox
-      ?checked=${enabled}
-      ?disabled=${!editable || !originalOrUpgradedURLPattern}
-      .jslog=${VisualLogging.toggle().track({ change: true })}>
-    <devtools-button
-      .iconName=${'arrow-down'}
-      .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-      .title=${i18nString(UIStrings.increasePriority)}
-      .jslogContext=${'increase-priority'}
-      @click=${moveDown}></devtools-button>
+      title=${i18nString(UIStrings.enableThrottlingToggleLabel, { PH1: constructorStringOrWildcardURL })}
+      .checked=${enabled}
+      .disabled=${!editable || !originalOrUpgradedURLPattern}
+      jslog=${VisualLogging.toggle().track({ change: true })}>
     <devtools-button
       .iconName=${'arrow-up'}
       .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-      .title=${i18nString(UIStrings.decreasePriority)}
+      .title=${i18nString(UIStrings.decreasePriority, { PH1: constructorStringOrWildcardURL })}
       .jslogContext=${'decrease-priority'}
+      ?disabled=${!editable || !originalOrUpgradedURLPattern}
       @click=${moveUp}>
     </devtools-button>
+    <devtools-button
+      .iconName=${'arrow-down'}
+      .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+      .title=${i18nString(UIStrings.increasePriority, { PH1: constructorStringOrWildcardURL })}
+      .jslogContext=${'increase-priority'}
+      ?disabled=${!editable || !originalOrUpgradedURLPattern}
+      @click=${moveDown}></devtools-button>
     ${originalOrUpgradedURLPattern ? html `
       <devtools-tooltip variant=rich jslogcontext=url-pattern id=url-pattern-${index}>
         <div>hash: ${originalOrUpgradedURLPattern.hash}</div>
@@ -377,20 +427,24 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
       </devtools-tooltip>` : nothing}
     <div
       @click=${toggle}
+      ?disabled=${!editable || !originalOrUpgradedURLPattern}
       class=blocked-url-label
       aria-details=url-pattern-${index}>
         ${constructorStringOrWildcardURL}
     </div>
     <devtools-widget
        class=conditions-selector
-       ?disabled=${!editable}
+       title=${i18nString(UIStrings.requestConditionsLabel)}
        .widgetConfig=${UI.Widget.widgetConfig(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelectorWidget, {
                 variant: "individual-request-conditions" /* MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect.Variant.INDIVIDUAL_REQUEST_CONDITIONS */,
                 jslogContext: 'request-conditions',
+                disabled: !editable,
                 onConditionsChanged,
                 currentConditions: condition.conditions,
             })}></devtools-widget>
-    <devtools-widget .widgetConfig=${widgetConfig(AffectedCountWidget, { condition, drawer: this })}></devtools-widget>`, 
+    <devtools-widget
+      ?disabled=${!editable || !originalOrUpgradedURLPattern}
+      .widgetConfig=${widgetConfig(AffectedCountWidget, { condition, drawer: this })}></devtools-widget>`, 
             // clang-format on
             element);
         }
@@ -401,15 +455,14 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
     <input class=blocked-url-checkbox
       @click=${toggle}
       type=checkbox
-      ?checked=${condition.enabled}
-      ?disabled=${!editable}
-      .jslog=${VisualLogging.toggle().track({ change: true })}>
+      .checked=${condition.enabled}
+      .disabled=${!editable}
+      jslog=${VisualLogging.toggle().track({ change: true })}>
     <div @click=${toggle} class=blocked-url-label>${wildcardURL}</div>
     <devtools-widget .widgetConfig=${widgetConfig(AffectedCountWidget, { condition, drawer: this })}></devtools-widget>`, 
             // clang-format on
             element);
         }
-        return element;
     }
     toggleEnabled() {
         this.manager.requestConditions.conditionsEnabled = !this.manager.requestConditions.conditionsEnabled;
@@ -446,10 +499,11 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
         const editor = new UI.ListWidget.Editor();
         const content = editor.contentElement();
         const titles = content.createChild('div', 'blocked-url-edit-row');
-        const label = titles.createChild('div');
+        const label = titles.createChild('label');
         if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
-            label.textContent = i18nString(UIStrings.textEditPattern);
-            label.append(UI.XLink.XLink.create(PATTERN_API_DOCS_URL, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more'));
+            const learnMore = UI.XLink.XLink.create(PATTERN_API_DOCS_URL, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
+            learnMore.title = i18nString(UIStrings.learnMoreLabel);
+            label.append(uiI18n.getFormatLocalizedString(str_, UIStrings.textEditPattern, { PH1: learnMore }));
         }
         else {
             label.textContent = i18nString(UIStrings.textPatternToBlockMatching);
@@ -474,16 +528,24 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
             return { valid: true, errorMessage: undefined };
         };
         const urlInput = editor.createInput('url', 'text', '', validator);
+        label.htmlFor = urlInput.id = 'editor-url-input';
         fields.createChild('div', 'blocked-url-edit-value').appendChild(urlInput);
         return editor;
     }
     update() {
         const enabled = this.manager.requestConditions.conditionsEnabled;
-        this.list.clear();
-        for (const pattern of this.manager.requestConditions.conditions) {
-            if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled || pattern.wildcardURL) {
-                this.list.appendItem(pattern, enabled);
-            }
+        const newItems = Array.from(this.manager.requestConditions.conditions.filter(pattern => Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled || pattern.wildcardURL));
+        let oldIndex = 0;
+        for (; oldIndex < newItems.length; ++oldIndex) {
+            const pattern = newItems[oldIndex];
+            this.list.updateItem(oldIndex, pattern, enabled, 
+            /* focusable=*/ false, {
+                edit: i18nString(UIStrings.editPattern, { PH1: pattern.constructorStringOrWildcardURL }),
+                delete: i18nString(UIStrings.removePattern, { PH1: pattern.constructorStringOrWildcardURL })
+            });
+        }
+        while (oldIndex < this.list.items.length) {
+            this.list.removeItem(oldIndex);
         }
         this.requestUpdate();
     }

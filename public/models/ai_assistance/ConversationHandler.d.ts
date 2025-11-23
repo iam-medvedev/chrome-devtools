@@ -1,9 +1,9 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import { type AiAgent, type ExternalRequestResponse, type ResponseData } from './agents/AiAgent.js';
-import { type PerformanceTraceContext } from './agents/PerformanceAgent.js';
-import { Conversation, ConversationType } from './AiHistoryStorage.js';
-import type { ChangeManager } from './ChangeManager.js';
+import { type ExternalRequestResponse, type ResponseData } from './agents/AiAgent.js';
+import type { PerformanceTraceContext } from './agents/PerformanceAgent.js';
+import { AiConversation } from './AiConversation.js';
+import { ConversationType } from './AiHistoryStorage.js';
 interface ExternalStylingRequestParameters {
     conversationType: ConversationType.STYLING;
     prompt: string;
@@ -16,8 +16,7 @@ interface ExternalNetworkRequestParameters {
 }
 export interface ExternalPerformanceAIConversationData {
     conversationHandler: ConversationHandler;
-    conversation: Conversation;
-    agent: AiAgent<unknown>;
+    conversation: AiConversation;
     selected: PerformanceTraceContext;
 }
 export interface ExternalPerformanceRequestParameters {
@@ -34,13 +33,13 @@ export declare class ConversationHandler extends Common.ObjectWrapper.ObjectWrap
         forceNew?: boolean;
     }): ConversationHandler;
     static removeInstance(): void;
+    get aidaClient(): Host.AidaClient.AidaClient;
     /**
      * Handles an external request using the given prompt and uses the
      * conversation type to use the correct agent.
      */
     handleExternalRequest(parameters: ExternalStylingRequestParameters | ExternalNetworkRequestParameters | ExternalPerformanceRequestParameters): Promise<AsyncGenerator<ExternalRequestResponse, ExternalRequestResponse>>;
-    handleConversationWithHistory(items: AsyncIterable<ResponseData, void, void>, conversation: Conversation | undefined): AsyncGenerator<ResponseData, void, void>;
-    createAgent(conversationType: ConversationType, changeManager?: ChangeManager): AiAgent<unknown>;
+    handleConversationWithHistory(items: AsyncIterable<ResponseData, void, void>, conversation: AiConversation | undefined): AsyncGenerator<ResponseData, void, void>;
 }
 export declare const enum ConversationHandlerEvents {
     EXTERNAL_REQUEST_RECEIVED = "ExternalRequestReceived",

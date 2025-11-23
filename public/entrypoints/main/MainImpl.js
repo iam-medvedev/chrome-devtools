@@ -169,7 +169,7 @@ export class MainImpl {
         await this.requestAndRegisterLocaleData();
         Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting('sync-preferences').get());
         const veLogging = config.devToolsVeLogging;
-        // Used by e2e_non_hosted to put VE Logs into "test mode".
+        // Used by e2e to put VE Logs into "test mode".
         const veLogsTestMode = Common.Settings.Settings.instance().createSetting('veLogsTestMode', false).get();
         if (veLogging?.enabled) {
             // Note: as of https://crrev.com/c/6734500 landing, veLogging.testing is hard-coded to false.
@@ -413,7 +413,7 @@ export class MainImpl {
         AutofillManager.AutofillManager.AutofillManager.instance();
         LiveMetrics.LiveMetrics.instance();
         CrUXManager.CrUXManager.instance();
-        void AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
+        AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
         new PauseListener();
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         // Required for legacy a11y layout tests
@@ -588,7 +588,7 @@ export class MainImpl {
         // @ts-expect-error Used in ElementsTreeOutline
         eventCopy['original'] = event;
         const document = event.target && event.target.ownerDocument;
-        const target = document ? Platform.DOMUtilities.deepActiveElement(document) : null;
+        const target = document ? UI.DOMUtilities.deepActiveElement(document) : null;
         if (target) {
             target.dispatchEvent(eventCopy);
         }
@@ -641,7 +641,7 @@ export class ZoomActionDelegate {
 }
 export class SearchActionDelegate {
     handleAction(_context, actionId) {
-        let searchableView = UI.SearchableView.SearchableView.fromElement(Platform.DOMUtilities.deepActiveElement(document));
+        let searchableView = UI.SearchableView.SearchableView.fromElement(UI.DOMUtilities.deepActiveElement(document));
         if (!searchableView) {
             const currentPanel = UI.InspectorView.InspectorView.instance().currentPanelDeprecated();
             if (currentPanel?.searchableView) {

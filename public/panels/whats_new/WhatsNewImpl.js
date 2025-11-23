@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as UIHelpers from '../../ui/helpers/helpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { getReleaseNote } from './ReleaseNoteText.js';
 export const releaseVersionSeen = 'releaseNoteVersionSeen';
@@ -55,7 +56,7 @@ let releaseNotesActionDelegateInstance;
 export class ReleaseNotesActionDelegate {
     handleAction(_context, _actionId) {
         const releaseNote = getReleaseNote();
-        UI.UIUtils.openInNewTab(releaseNote.link);
+        UIHelpers.openInNewTab(releaseNote.link);
         return true;
     }
     static instance(opts = { forceNew: null }) {
@@ -69,7 +70,7 @@ export class ReleaseNotesActionDelegate {
 let reportIssueActionDelegateInstance;
 export class ReportIssueActionDelegate {
     handleAction(_context, _actionId) {
-        UI.UIUtils.openInNewTab('https://goo.gle/devtools-bug');
+        UIHelpers.openInNewTab('https://goo.gle/devtools-bug');
         return true;
     }
     static instance(opts = { forceNew: null }) {

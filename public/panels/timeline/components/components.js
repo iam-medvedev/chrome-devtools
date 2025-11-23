@@ -642,6 +642,7 @@ import * as Dialogs from "./../../../ui/components/dialogs/dialogs.js";
 import * as ComponentHelpers2 from "./../../../ui/components/helpers/helpers.js";
 import * as UI4 from "./../../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../../ui/lit/lit.js";
+import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/components/exportTraceOptions.css.js
 var exportTraceOptions_css_default = `/*
@@ -665,15 +666,24 @@ var exportTraceOptions_css_default = `/*
     height: 24px;
   }
 
-  .export-trace-blank {
+  .export-trace-explanation {
     flex: 1;
-    min-width: var(--sys-size-25)
+    min-width: var(--sys-size-25);
   }
+}
+
+.export-trace-options-row-last {
+  align-items: center;
 }
 
 .info-tooltip-container {
   max-width: var(--sys-size-28);
   white-space: normal;
+}
+
+x-link {
+  color: var(--sys-color-primary);
+  text-decoration-line: underline;
 }
 
 /*# sourceURL=${import.meta.resolve("./exportTraceOptions.css")} */`;
@@ -705,6 +715,10 @@ var UIStrings4 = {
    * @description Text for the compression option.
    */
   shouldCompress: "Compress with gzip",
+  /**
+   * @description Text for the explanation link
+   */
+  explanation: "Explanation",
   /**
    * @description Text for the save trace button
    */
@@ -932,7 +946,16 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
           ${this.#state.displayResourceContentCheckbox ? this.#renderCheckbox("resource-content", this.#includeResourceContentCheckbox, i18nString4(UIStrings4.includeResourceContent), this.#state.includeResourceContent) : ""}
           ${this.#state.displayResourceContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderCheckbox("script-source-maps", this.#includeSourceMapsCheckbox, i18nString4(UIStrings4.includeSourcemap), this.#state.includeSourceMaps) : ""}
           ${this.#renderCheckbox("compress-with-gzip", this.#shouldCompressCheckbox, i18nString4(UIStrings4.shouldCompress), this.#state.shouldCompress)}
-          <div class='export-trace-options-row'><div class='export-trace-blank'></div><devtools-button
+          <div class='export-trace-options-row export-trace-options-row-last'>
+            <div class="export-trace-explanation">
+              <x-link
+                href="https://developer.chrome.com/docs/devtools/performance/save-trace"
+                class=devtools-link
+                jslog=${VisualLogging3.link().track({ click: true, keydown: "Enter|Space" }).context("save-trace-explanation")}>
+                  ${i18nString4(UIStrings4.explanation)}
+              </x-link>
+            </div>
+            <devtools-button
                   class="setup-button"
                   data-export-button
                   @click=${this.#onExportClick.bind(this)}
@@ -1285,7 +1308,7 @@ import * as Input from "./../../../ui/components/input/input.js";
 import * as uiI18n2 from "./../../../ui/i18n/i18n.js";
 import * as UI6 from "./../../../ui/legacy/legacy.js";
 import * as Lit5 from "./../../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/components/fieldSettingsDialog.css.js
 var fieldSettingsDialog_css_default = `/*
@@ -1582,7 +1605,7 @@ var FieldSettingsDialog = class extends HTMLElement {
         variant: "outlined",
         title: i18nString6(UIStrings6.configure)
       }}
-        jslog=${VisualLogging3.action("timeline.field-data.configure").track({ click: true })}
+        jslog=${VisualLogging4.action("timeline.field-data.configure").track({ click: true })}
         >${i18nString6(UIStrings6.configure)}</devtools-button>
       `;
     }
@@ -1594,7 +1617,7 @@ var FieldSettingsDialog = class extends HTMLElement {
       variant: "primary",
       title: i18nString6(UIStrings6.setUp)
     }}
-        jslog=${VisualLogging3.action("timeline.field-data.setup").track({ click: true })}
+        jslog=${VisualLogging4.action("timeline.field-data.setup").track({ click: true })}
         data-field-data-setup
       >${i18nString6(UIStrings6.setUp)}</devtools-button>
     `;
@@ -1610,7 +1633,7 @@ var FieldSettingsDialog = class extends HTMLElement {
       title: i18nString6(UIStrings6.ok)
     }}
         class="enable"
-        jslog=${VisualLogging3.action("timeline.field-data.enable").track({ click: true })}
+        jslog=${VisualLogging4.action("timeline.field-data.enable").track({ click: true })}
         data-field-data-enable
       >${i18nString6(UIStrings6.ok)}</devtools-button>
     `;
@@ -1626,7 +1649,7 @@ var FieldSettingsDialog = class extends HTMLElement {
       variant: "outlined",
       title: label
     }}
-        jslog=${VisualLogging3.action("timeline.field-data.disable").track({ click: true })}
+        jslog=${VisualLogging4.action("timeline.field-data.disable").track({ click: true })}
         data-field-data-disable
       >${label}</devtools-button>
     `;
@@ -1713,7 +1736,7 @@ var FieldSettingsDialog = class extends HTMLElement {
                   .checked=${this.#urlOverrideEnabled}
                   @change=${this.#onUrlOverrideEnabledChange}
                   aria-label=${i18nString6(UIStrings6.onlyFetchFieldData)}
-                  jslog=${VisualLogging3.toggle().track({ click: true }).context("field-url-override-enabled")}
+                  jslog=${VisualLogging4.toggle().track({ click: true }).context("field-url-override-enabled")}
                 />
                 ${i18nString6(UIStrings6.onlyFetchFieldData)}
               </label>
@@ -2631,7 +2654,7 @@ import * as Platform3 from "./../../../core/platform/platform.js";
 import * as SDK4 from "./../../../core/sdk/sdk.js";
 import * as ComponentHelpers6 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit9 from "./../../../ui/lit/lit.js";
-import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling2 from "./../../mobile_throttling/mobile_throttling.js";
 
 // gen/front_end/panels/timeline/components/networkThrottlingSelector.css.js
@@ -2817,7 +2840,7 @@ var NetworkThrottlingSelector = class extends HTMLElement {
                     .value=${key}
                     .selected=${selectedConditionsKey === key}
                     .title=${title}
-                    jslog=${VisualLogging4.item(jslogContext).track({ click: true })}
+                    jslog=${VisualLogging5.item(jslogContext).track({ click: true })}
                   >
                     ${title}
                   </devtools-menu-item>
@@ -2827,7 +2850,7 @@ var NetworkThrottlingSelector = class extends HTMLElement {
                 <devtools-menu-item
                   .value=${1}
                   .title=${i18nString10(UIStrings10.add)}
-                  jslog=${VisualLogging4.action("add").track({ click: true })}
+                  jslog=${VisualLogging5.action("add").track({ click: true })}
                   @click=${this.#onAddClick}
                 >
                   ${i18nString10(UIStrings10.add)}
@@ -2857,7 +2880,7 @@ import * as Platform5 from "./../../../core/platform/platform.js";
 import * as CrUXManager5 from "./../../../models/crux-manager/crux-manager.js";
 import * as Buttons5 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers7 from "./../../../ui/components/helpers/helpers.js";
-import * as UI9 from "./../../../ui/legacy/legacy.js";
+import * as UIHelpers from "./../../../ui/helpers/helpers.js";
 import * as Lit10 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/metricCard.css.js
@@ -3387,7 +3410,7 @@ __export(Utils_exports, {
 import * as i18n23 from "./../../../core/i18n/i18n.js";
 import * as Platform4 from "./../../../core/platform/platform.js";
 import * as ThemeSupport from "./../../../ui/legacy/theme_support/theme_support.js";
-import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 var UIStrings12 = {
   /**
    * @description ms is the short form of milli-seconds and the placeholder is a decimal number.
@@ -3498,7 +3521,7 @@ function renderMetricValue(jslogContext, value, thresholds, format, options) {
   metricValueEl.textContent = format(value);
   const rating = rateMetric(value, thresholds);
   metricValueEl.classList.add(rating);
-  metricValueEl.setAttribute("jslog", `${VisualLogging5.section(jslogContext)}`);
+  metricValueEl.setAttribute("jslog", `${VisualLogging6.section(jslogContext)}`);
   if (options?.dim) {
     metricValueEl.classList.add("dim");
   }
@@ -4080,7 +4103,7 @@ var MetricCard = class extends HTMLElement {
             title=${this.#getHelpTooltip()}
             .iconName=${"help"}
             .variant=${"icon"}
-            @click=${() => UI9.UIUtils.openInNewTab(helpLink)}
+            @click=${() => UIHelpers.openInNewTab(helpLink)}
           ></devtools-button>
         </h3>
         <div tabindex="0" class="metric-values-section"
@@ -4151,9 +4174,9 @@ import * as ComponentHelpers8 from "./../../../ui/components/helpers/helpers.js"
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator2 from "./../../../ui/components/render_coordinator/render_coordinator.js";
 import * as uiI18n4 from "./../../../ui/i18n/i18n.js";
-import * as UI10 from "./../../../ui/legacy/legacy.js";
+import * as UI9 from "./../../../ui/legacy/legacy.js";
 import * as Lit12 from "./../../../ui/lit/lit.js";
-import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon from "./../../common/common.js";
 
 // gen/front_end/panels/timeline/utils/Helpers.js
@@ -4590,6 +4613,7 @@ x-link {
 
 // gen/front_end/panels/timeline/components/LiveMetricsView.js
 var { html: html12, nothing: nothing11 } = Lit12;
+var { widgetConfig } = UI9.Widget;
 var DEVICE_OPTION_LIST = ["AUTO", ...CrUXManager9.DEVICE_SCOPE_LIST];
 var RTT_MINIMUM = 60;
 var UIStrings14 = {
@@ -4601,6 +4625,14 @@ var UIStrings14 = {
    * @description Title of a view that shows performance metrics from the local environment.
    */
   localMetrics: "Local metrics",
+  /**
+   *@description Text for the link to the historical field data for the specific URL or origin that is shown. This link text appears in parenthesis after the collection period information in the field data dialog. The link opens the CrUX Vis viewer (https://cruxvis.withgoogle.com).
+   */
+  fieldDataHistoryLink: "View history",
+  /**
+   *@description Tooltip for the CrUX Vis viewer link which shows the history of the field data for the specific URL or origin.
+   */
+  fieldDataHistoryTooltip: "View field data history in CrUX Vis",
   /**
    * @description Accessible label for a section that logs user interactions and layout shifts. A layout shift is an event that shifts content in the layout of the page causing a jarring experience for the user.
    */
@@ -4855,8 +4887,8 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
   #deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance();
   constructor() {
     super();
-    this.#toggleRecordAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("timeline.toggle-recording");
-    this.#recordReloadAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
+    this.#toggleRecordAction = UI9.ActionRegistry.ActionRegistry.instance().getAction("timeline.toggle-recording");
+    this.#recordReloadAction = UI9.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
   }
   #onMetricStatus(event) {
     this.#lcpValue = event.data.lcp;
@@ -4964,7 +4996,10 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
         ${nodeLink ? html12`
             <div class="related-info" slot="extra-info">
               <span class="related-info-label">${i18nString13(UIStrings14.lcpElement)}</span>
-              <span class="related-info-link">${nodeLink}</span>
+              <span class="related-info-link">
+               <devtools-widget .widgetConfig=${widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node: this.#lcpValue?.nodeRef })}>
+               </devtools-widget>
+              </span>
             </div>
           ` : nothing11}
       </devtools-metric-card>
@@ -4990,7 +5025,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
               class="link-to-log"
               title=${i18nString13(UIStrings14.showClsCluster)}
               @click=${() => this.#revealLayoutShiftCluster(clusterIds)}
-              jslog=${VisualLogging6.action("timeline.landing.show-cls-cluster").track({ click: true })}
+              jslog=${VisualLogging7.action("timeline.landing.show-cls-cluster").track({ click: true })}
             >${i18nString13(UIStrings14.numShifts, { shiftCount: clusterIds.size })}</button>
           </div>
         ` : nothing11}
@@ -5022,7 +5057,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
               class="link-to-log"
               title=${i18nString13(UIStrings14.showInpInteraction)}
               @click=${() => this.#revealInteraction(interaction)}
-              jslog=${VisualLogging6.action("timeline.landing.show-inp-interaction").track({ click: true })}
+              jslog=${VisualLogging7.action("timeline.landing.show-inp-interaction").track({ click: true })}
             >${interaction.interactionType}</button>
           </div>
         ` : nothing11}
@@ -5044,7 +5079,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     }}>
           ${action6.title()}
         </devtools-button>
-        <span class="shortcut-label">${UI10.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(action6.id())}</span>
+        <span class="shortcut-label">${UI9.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(action6.id())}</span>
       </div>
     `;
   }
@@ -5096,7 +5131,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
         </ul>
       ` : nothing11}
       <div class="environment-option">
-        <devtools-widget .widgetConfig=${UI10.Widget.widgetConfig(CPUThrottlingSelector, { recommendedOption: recs.cpuOption })}></devtools-widget>
+        <devtools-widget .widgetConfig=${widgetConfig(CPUThrottlingSelector, { recommendedOption: recs.cpuOption })}></devtools-widget>
       </div>
       <div class="environment-option">
         <devtools-network-throttling-selector .recommendedConditions=${recs.networkConditions}></devtools-network-throttling-selector>
@@ -5259,6 +5294,29 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
       PH2: formattedLastDate.toLocaleDateString(void 0, options)
     });
   }
+  #renderFieldDataHistoryLink() {
+    if (!this.#cruxManager.getConfigSetting().get().enabled) {
+      return Lit12.nothing;
+    }
+    const normalizedUrl = this.#cruxManager.pageResult?.normalizedUrl;
+    if (!normalizedUrl) {
+      return Lit12.nothing;
+    }
+    const tmp = new URL("https://cruxvis.withgoogle.com/");
+    tmp.searchParams.set("view", "cwvsummary");
+    tmp.searchParams.set("url", normalizedUrl);
+    const identifier = this.#cruxManager.fieldPageScope;
+    tmp.searchParams.set("identifier", identifier);
+    const device = this.#cruxManager.getSelectedDeviceScope();
+    tmp.searchParams.set("device", device);
+    const cruxVis = `${tmp.origin}/#/${tmp.search}`;
+    return html12`
+        (<x-link href=${cruxVis}
+                 class="local-field-link"
+                 title=${i18nString13(UIStrings14.fieldDataHistoryTooltip)}
+        >${i18nString13(UIStrings14.fieldDataHistoryLink)}</x-link>)
+      `;
+  }
   #renderCollectionPeriod() {
     const range = this.#getCollectionPeriodRange();
     const dateEl = document.createElement("span");
@@ -5267,10 +5325,11 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     const message = uiI18n4.getFormatLocalizedString(str_14, UIStrings14.collectionPeriod, {
       PH1: dateEl
     });
+    const fieldDataHistoryLink = range ? this.#renderFieldDataHistoryLink() : Lit12.nothing;
     const warnings = this.#cruxManager.pageResult?.warnings || [];
     return html12`
       <div class="field-data-message">
-        <div>${message}</div>
+        <div>${message} ${fieldDataHistoryLink}</div>
         ${warnings.map((warning) => html12`
           <div class="field-data-warning">${warning}</div>
         `)}
@@ -5281,7 +5340,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     if (this.#cruxManager.getConfigSetting().get().enabled) {
       return this.#renderCollectionPeriod();
     }
-    const linkEl = UI10.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n27.i18n.lockedString("Chrome UX Report"));
+    const linkEl = UI9.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n27.i18n.lockedString("Chrome UX Report"));
     const messageEl = uiI18n4.getFormatLocalizedString(str_14, UIStrings14.seeHowYourLocalMetricsCompare, { PH1: linkEl });
     return html12`
       <div class="field-data-message">${messageEl}</div>
@@ -5320,7 +5379,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
         block: "center"
       });
       interactionEl.focus();
-      UI10.UIUtils.runCSSAnimationOnce(interactionEl, "highlight");
+      UI9.UIUtils.runCSSAnimationOnce(interactionEl, "highlight");
     });
   }
   async #logExtraInteractionDetails(interaction) {
@@ -5346,7 +5405,6 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
       const metricValue = renderMetricValue("timeline.landing.interaction-event-timing", interaction.duration, INP_THRESHOLDS, (v) => i18n27.TimeUtilities.preciseMillisToString(v), { dim: true });
       const isP98Excluded = this.#inpValue && this.#inpValue.value < interaction.duration;
       const isInp = this.#inpValue?.interactionId === interaction.interactionId;
-      const nodeLink = interaction.nodeRef ? PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(interaction.nodeRef) : Lit12.nothing;
       return html12`
             <li id=${interaction.interactionId} class="log-item interaction" tabindex="-1">
               <details>
@@ -5354,7 +5412,10 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
                   <span class="interaction-type">
                     ${interaction.interactionType} ${isInp ? html12`<span class="interaction-inp-chip" title=${i18nString13(UIStrings14.inpInteraction)}>INP</span>` : nothing11}
                   </span>
-                  <span class="interaction-node">${nodeLink}</span>
+                  <span class="interaction-node">
+                    <devtools-widget .widgetConfig=${widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node: interaction.nodeRef })}>
+                    </devtools-widget>
+                  </span>
                   ${isP98Excluded ? html12`<devtools-icon
                     class="interaction-info"
                     name="info"
@@ -5419,7 +5480,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
       });
       layoutShiftEls[0].focus();
       for (const layoutShiftEl of layoutShiftEls) {
-        UI10.UIUtils.runCSSAnimationOnce(layoutShiftEl, "highlight");
+        UI9.UIUtils.runCSSAnimationOnce(layoutShiftEl, "highlight");
       }
     });
   }
@@ -5451,7 +5512,10 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
               <div class="layout-shift-score">Layout shift score: ${metricValue}</div>
               <div class="layout-shift-nodes">
                 ${layoutShift.affectedNodeRefs.map((node) => html12`
-                  <div class="layout-shift-node">${PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node)}</div>
+                  <div class="layout-shift-node">
+                    <devtools-widget .widgetConfig=${widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node })}>
+                    </devtools-widget>
+                  </div>
                 `)}
               </div>
             </li>
@@ -5539,7 +5603,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     Lit12.render(output, this.#shadow, { host: this });
   };
 };
-var LiveMetricsLogs = class extends UI10.Widget.WidgetElement {
+var LiveMetricsLogs = class extends UI9.Widget.WidgetElement {
   #tabbedPane;
   constructor() {
     super();
@@ -5566,18 +5630,18 @@ var LiveMetricsLogs = class extends UI10.Widget.WidgetElement {
     }
   }
   createWidget() {
-    const containerWidget = new UI10.Widget.Widget(this, { useShadowDom: true });
+    const containerWidget = new UI9.Widget.Widget(this, { useShadowDom: true });
     containerWidget.contentElement.style.display = "contents";
-    this.#tabbedPane = new UI10.TabbedPane.TabbedPane();
+    this.#tabbedPane = new UI9.TabbedPane.TabbedPane();
     const interactionsSlot = document.createElement("slot");
     interactionsSlot.name = "interactions-log-content";
-    const interactionsTab = UI10.Widget.Widget.getOrCreateWidget(interactionsSlot);
+    const interactionsTab = UI9.Widget.Widget.getOrCreateWidget(interactionsSlot);
     this.#tabbedPane.appendTab("interactions", i18nString13(UIStrings14.interactions), interactionsTab, void 0, void 0, void 0, void 0, void 0, "timeline.landing.interactions-log");
     const layoutShiftsSlot = document.createElement("slot");
     layoutShiftsSlot.name = "layout-shifts-log-content";
-    const layoutShiftsTab = UI10.Widget.Widget.getOrCreateWidget(layoutShiftsSlot);
+    const layoutShiftsTab = UI9.Widget.Widget.getOrCreateWidget(layoutShiftsSlot);
     this.#tabbedPane.appendTab("layout-shifts", i18nString13(UIStrings14.layoutShifts), layoutShiftsTab, void 0, void 0, void 0, void 0, void 0, "timeline.landing.layout-shifts-log");
-    const clearButton = new UI10.Toolbar.ToolbarButton(i18nString13(UIStrings14.clearCurrentLog), "clear", void 0, "timeline.landing.clear-log");
+    const clearButton = new UI9.Toolbar.ToolbarButton(i18nString13(UIStrings14.clearCurrentLog), "clear", void 0, "timeline.landing.clear-log");
     clearButton.addEventListener("Click", this.#clearCurrentLog, this);
     this.#tabbedPane.rightToolbar().appendToolbarItem(clearButton);
     this.#tabbedPane.show(containerWidget.contentElement);
@@ -5599,7 +5663,7 @@ import * as SDK8 from "./../../../core/sdk/sdk.js";
 import * as Helpers6 from "./../../../models/trace/helpers/helpers.js";
 import * as Trace7 from "./../../../models/trace/trace.js";
 import * as LegacyComponents2 from "./../../../ui/legacy/components/utils/utils.js";
-import * as UI11 from "./../../../ui/legacy/legacy.js";
+import * as UI10 from "./../../../ui/legacy/legacy.js";
 import * as Lit14 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/networkRequestDetails.css.js
@@ -6180,7 +6244,7 @@ var UIStrings16 = {
 };
 var str_16 = i18n31.i18n.registerUIStrings("panels/timeline/components/NetworkRequestDetails.ts", UIStrings16);
 var i18nString15 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
-var NetworkRequestDetails = class extends UI11.Widget.Widget {
+var NetworkRequestDetails = class extends UI10.Widget.Widget {
   #view;
   #request = null;
   #requestPreviewElements = /* @__PURE__ */ new WeakMap();
@@ -6303,7 +6367,7 @@ function renderURL(request) {
   const networkRequest = SDK8.TraceObject.RevealableNetworkRequest.create(request);
   if (networkRequest) {
     linkifiedURL.addEventListener("contextmenu", (event) => {
-      const contextMenu = new UI11.ContextMenu.ContextMenu(event);
+      const contextMenu = new UI10.ContextMenu.ContextMenu(event);
       contextMenu.appendApplicableItems(networkRequest);
       void contextMenu.show();
     });
@@ -6424,7 +6488,7 @@ function renderInitiatedBy(request, parsedTrace, target, linkifier) {
     return Lit14.nothing;
   }
   const hasStackTrace = Trace7.Helpers.Trace.stackTraceInEvent(request) !== null;
-  let link = null;
+  let link2 = null;
   const options = {
     tabStop: true,
     showColumnNumber: true,
@@ -6433,12 +6497,12 @@ function renderInitiatedBy(request, parsedTrace, target, linkifier) {
   if (hasStackTrace) {
     const topFrame = Trace7.Helpers.Trace.getStackTraceTopCallFrameInEventPayload(request) ?? null;
     if (topFrame) {
-      link = linkifier.maybeLinkifyConsoleCallFrame(target, topFrame, options);
+      link2 = linkifier.maybeLinkifyConsoleCallFrame(target, topFrame, options);
     }
   }
   const initiator = parsedTrace?.data.NetworkRequests.eventToInitiator.get(request);
   if (initiator) {
-    link = linkifier.maybeLinkifyScriptLocation(
+    link2 = linkifier.maybeLinkifyScriptLocation(
       target,
       null,
       // this would be the scriptId, but we don't have one. The linkifier will fallback to using the URL.
@@ -6448,13 +6512,13 @@ function renderInitiatedBy(request, parsedTrace, target, linkifier) {
       options
     );
   }
-  if (!link) {
+  if (!link2) {
     return Lit14.nothing;
   }
   return html14`
       <div class="network-request-details-item">
         <div class="title">${i18nString15(UIStrings16.initiatedBy)}</div>
-        <div class="value focusable-outline">${link}</div>
+        <div class="value focusable-outline">${link2}</div>
       </div>`;
 }
 
@@ -6465,7 +6529,7 @@ __export(RelatedInsightChips_exports, {
   RelatedInsightChips: () => RelatedInsightChips
 });
 import * as i18n33 from "./../../../core/i18n/i18n.js";
-import * as UI12 from "./../../../ui/legacy/legacy.js";
+import * as UI11 from "./../../../ui/legacy/legacy.js";
 import * as Lit15 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/relatedInsightChips.css.js
@@ -6565,7 +6629,7 @@ var UIStrings17 = {
 };
 var str_17 = i18n33.i18n.registerUIStrings("panels/timeline/components/RelatedInsightChips.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
-var RelatedInsightChips = class extends UI12.Widget.Widget {
+var RelatedInsightChips = class extends UI11.Widget.Widget {
   #view;
   #activeEvent = null;
   #eventToInsightsMap = /* @__PURE__ */ new Map();
@@ -6647,7 +6711,7 @@ __export(Sidebar_exports, {
   SidebarWidget: () => SidebarWidget
 });
 import * as RenderCoordinator3 from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI14 from "./../../../ui/legacy/legacy.js";
+import * as UI13 from "./../../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/timeline/components/insights/SidebarInsight.js
 var InsightActivated = class _InsightActivated extends Event {
@@ -6679,10 +6743,10 @@ import * as i18n35 from "./../../../core/i18n/i18n.js";
 import * as Platform8 from "./../../../core/platform/platform.js";
 import * as Trace8 from "./../../../models/trace/trace.js";
 import * as TraceBounds3 from "./../../../services/trace_bounds/trace_bounds.js";
-import * as UI13 from "./../../../ui/legacy/legacy.js";
+import * as UI12 from "./../../../ui/legacy/legacy.js";
 import * as ThemeSupport3 from "./../../../ui/legacy/theme_support/theme_support.js";
 import * as Lit16 from "./../../../ui/lit/lit.js";
-import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/components/sidebarAnnotationsTab.css.js
 var sidebarAnnotationsTab_css_default = `/*
@@ -6864,7 +6928,7 @@ var UIStrings18 = {
 };
 var str_18 = i18n35.i18n.registerUIStrings("panels/timeline/components/SidebarAnnotationsTab.ts", UIStrings18);
 var i18nString17 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
-var SidebarAnnotationsTab = class extends UI13.Widget.Widget {
+var SidebarAnnotationsTab = class extends UI12.Widget.Widget {
   #annotations = [];
   // A map with annotated entries and the colours that are used to display them in the FlameChart.
   // We need this map to display the entries in the sidebar with the same colours.
@@ -7110,7 +7174,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
                   @mouseout=${() => annotation.type === "ENTRY_LABEL" ? input.onAnnotationHoverOut() : null}
                   aria-label=${label}
                   tabindex="0"
-                  jslog=${VisualLogging7.item(`timeline.annotation-sidebar.annotation-${jslogForAnnotation(annotation)}`).track({ click: true })}
+                  jslog=${VisualLogging8.item(`timeline.annotation-sidebar.annotation-${jslogForAnnotation(annotation)}`).track({ click: true })}
                 >
                   <div class="annotation">
                     ${renderAnnotationIdentifier(annotation, input.annotationEntryToColorMap)}
@@ -7121,7 +7185,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
                   <button class="delete-button" aria-label=${i18nString17(UIStrings18.deleteButton, { PH1: label })} @click=${(event) => {
       event.stopPropagation();
       input.onAnnotationDelete(annotation);
-    }} jslog=${VisualLogging7.action("timeline.annotation-sidebar.delete").track({ click: true })}>
+    }} jslog=${VisualLogging8.action("timeline.annotation-sidebar.delete").track({ click: true })}>
                     <devtools-icon class="bin-icon extra-large" name="bin"></devtools-icon>
                   </button>
                 </div>`;
@@ -7154,7 +7218,7 @@ import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers9 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit17 from "./../../../ui/lit/lit.js";
 import { nothing as nothing18 } from "./../../../ui/lit/lit.js";
-import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging9 from "./../../../ui/visual_logging/visual_logging.js";
 import * as Insights4 from "./insights/insights.js";
 
 // gen/front_end/panels/timeline/components/sidebarSingleInsightSet.css.js
@@ -7526,7 +7590,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
     let fieldIsDifferentEl;
     if (!this.#dismissedFieldMismatchNotice && fieldValues && this.#isFieldWorseThanLocal(localValues, fieldValues)) {
       fieldIsDifferentEl = html17`
-        <div class="field-mismatch-notice" jslog=${VisualLogging8.section("timeline.insights.field-mismatch")}>
+        <div class="field-mismatch-notice" jslog=${VisualLogging9.section("timeline.insights.field-mismatch")}>
           <h3>${i18nString18(UIStrings19.fieldMismatchTitle)}</h3>
           <devtools-button
             title=${i18nString18(UIStrings19.dismissTitle)}
@@ -7911,8 +7975,8 @@ var AnnotationHoverOut = class _AnnotationHoverOut extends Event {
 var DEFAULT_SIDEBAR_TAB = "insights";
 var DEFAULT_SIDEBAR_WIDTH_PX = 240;
 var MIN_SIDEBAR_WIDTH_PX = 170;
-var SidebarWidget = class extends UI14.Widget.VBox {
-  #tabbedPane = new UI14.TabbedPane.TabbedPane();
+var SidebarWidget = class extends UI13.Widget.VBox {
+  #tabbedPane = new UI13.TabbedPane.TabbedPane();
   #insightsView = new InsightsView();
   #annotationsView = new AnnotationsView();
   /**
@@ -7980,7 +8044,7 @@ var SidebarWidget = class extends UI14.Widget.VBox {
     }
   }
 };
-var InsightsView = class extends UI14.Widget.VBox {
+var InsightsView = class extends UI13.Widget.VBox {
   #component = new SidebarInsightsTab();
   constructor() {
     super();
@@ -8002,7 +8066,7 @@ var InsightsView = class extends UI14.Widget.VBox {
     }
   }
 };
-var AnnotationsView = class extends UI14.Widget.VBox {
+var AnnotationsView = class extends UI13.Widget.VBox {
   #component = new SidebarAnnotationsTab();
   constructor() {
     super();
@@ -8029,7 +8093,7 @@ __export(TimelineSummary_exports, {
   CategorySummary: () => CategorySummary
 });
 import * as i18n39 from "./../../../core/i18n/i18n.js";
-import * as UI15 from "./../../../ui/legacy/legacy.js";
+import * as UI14 from "./../../../ui/legacy/legacy.js";
 import * as Lit19 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/timelineSummary.css.js
@@ -8124,7 +8188,7 @@ var UIStrings20 = {
 var str_20 = i18n39.i18n.registerUIStrings("panels/timeline/components/TimelineSummary.ts", UIStrings20);
 var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var CategorySummary = class extends HTMLElement {
-  #shadow = UI15.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
+  #shadow = UI14.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
   #rangeStart = 0;
   #rangeEnd = 0;
   #total = 0;

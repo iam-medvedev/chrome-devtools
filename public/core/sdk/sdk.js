@@ -739,10 +739,6 @@ var generatedProperties = [
       "scroll-snap-align",
       "scroll-snap-stop",
       "scroll-snap-type",
-      "scroll-start-block",
-      "scroll-start-inline",
-      "scroll-start-x",
-      "scroll-start-y",
       "scroll-target-group",
       "scroll-timeline-axis",
       "scroll-timeline-name",
@@ -2208,8 +2204,8 @@ var generatedProperties = [
       "math",
       "ruby",
       "ruby-text",
-      "masonry",
-      "inline-masonry"
+      "grid-lanes",
+      "inline-grid-lanes"
     ],
     "name": "display"
   },
@@ -2711,6 +2707,15 @@ var generatedProperties = [
   },
   {
     "longhands": [
+      "grid-template-areas",
+      "grid-template-columns",
+      "masonry-direction",
+      "masonry-fill"
+    ],
+    "name": "grid-lanes"
+  },
+  {
+    "longhands": [
       "grid-row-start",
       "grid-row-end"
     ],
@@ -3152,15 +3157,6 @@ var generatedProperties = [
       "alpha"
     ],
     "name": "mask-type"
-  },
-  {
-    "longhands": [
-      "grid-template-areas",
-      "grid-template-columns",
-      "masonry-direction",
-      "masonry-fill"
-    ],
-    "name": "masonry"
   },
   {
     "keywords": [
@@ -3648,7 +3644,8 @@ var generatedProperties = [
   },
   {
     "keywords": [
-      "auto"
+      "auto",
+      "none"
     ],
     "name": "position-anchor"
   },
@@ -4112,25 +4109,6 @@ var generatedProperties = [
       "proximity"
     ],
     "name": "scroll-snap-type"
-  },
-  {
-    "longhands": [
-      "scroll-start-block",
-      "scroll-start-inline"
-    ],
-    "name": "scroll-start"
-  },
-  {
-    "name": "scroll-start-block"
-  },
-  {
-    "name": "scroll-start-inline"
-  },
-  {
-    "name": "scroll-start-x"
-  },
-  {
-    "name": "scroll-start-y"
   },
   {
     "keywords": [
@@ -5739,8 +5717,8 @@ var generatedPropertyValues = {
       "math",
       "ruby",
       "ruby-text",
-      "masonry",
-      "inline-masonry"
+      "grid-lanes",
+      "inline-grid-lanes"
     ]
   },
   "dominant-baseline": {
@@ -6523,7 +6501,8 @@ var generatedPropertyValues = {
   },
   "position-anchor": {
     "values": [
-      "auto"
+      "auto",
+      "none"
     ]
   },
   "position-area": {
@@ -9231,7 +9210,7 @@ __export(NetworkRequest_exports, {
 import * as TextUtils23 from "./../../models/text_utils/text_utils.js";
 import * as Common27 from "./../common/common.js";
 import * as i18n21 from "./../i18n/i18n.js";
-import * as Platform16 from "./../platform/platform.js";
+import * as Platform17 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/CookieModel.js
 var CookieModel_exports = {};
@@ -9239,7 +9218,7 @@ __export(CookieModel_exports, {
   CookieModel: () => CookieModel
 });
 import * as Common25 from "./../common/common.js";
-import * as Platform15 from "./../platform/platform.js";
+import * as Platform16 from "./../platform/platform.js";
 import * as Root9 from "./../root/root.js";
 
 // gen/front_end/core/sdk/Cookie.js
@@ -9494,7 +9473,7 @@ var Cookie = class _Cookie {
     if (hostname === domain) {
       return true;
     }
-    if (!domain || domain[0] !== ".") {
+    if (domain?.[0] !== ".") {
       return false;
     }
     if (domain.substr(1) === hostname) {
@@ -9646,18 +9625,11 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
     this.#isSuspended = suspended;
     this.#targetInfo = targetInfo;
   }
-  createModels(required) {
+  /** Creates the models in the order in which they are provided */
+  createModels(models) {
     this.#creatingModels = true;
-    const registeredModels2 = Array.from(SDKModel.registeredModels.entries());
-    for (const [modelClass, info] of registeredModels2) {
-      if (info.early) {
-        this.model(modelClass);
-      }
-    }
-    for (const [modelClass, info] of registeredModels2) {
-      if (info.autostart || required.has(modelClass)) {
-        this.model(modelClass);
-      }
+    for (const model of models) {
+      this.model(model);
     }
     this.#creatingModels = false;
   }
@@ -9812,7 +9784,11 @@ var TargetManager = class _TargetManager extends Common4.ObjectWrapper.ObjectWra
   #scopeTarget;
   #defaultScopeSet;
   #scopeChangeListeners;
-  constructor() {
+  #overrideAutoStartModels;
+  /**
+   * @param overrideAutoStartModels If provided, then the `autostart` flag on {@link RegistrationInfo} will be ignored.
+   */
+  constructor(overrideAutoStartModels) {
     super();
     this.#targets = /* @__PURE__ */ new Set();
     this.#observers = /* @__PURE__ */ new Set();
@@ -9824,6 +9800,7 @@ var TargetManager = class _TargetManager extends Common4.ObjectWrapper.ObjectWra
     this.#scopedObservers = /* @__PURE__ */ new WeakSet();
     this.#defaultScopeSet = false;
     this.#scopeChangeListeners = /* @__PURE__ */ new Set();
+    this.#overrideAutoStartModels = overrideAutoStartModels;
   }
   static instance({ forceNew } = { forceNew: false }) {
     if (!Root.DevToolsContext.globalInstance().has(_TargetManager) || forceNew) {
@@ -9963,12 +9940,26 @@ var TargetManager = class _TargetManager extends Common4.ObjectWrapper.ObjectWra
     this.#observers.delete(targetObserver);
     this.#scopedObservers.delete(targetObserver);
   }
+  /** @returns The set of models we create unconditionally for new targets in the order in which they should be created */
+  #autoStartModels() {
+    const earlyModels = /* @__PURE__ */ new Set();
+    const models = /* @__PURE__ */ new Set();
+    const shouldAutostart = (model, info) => this.#overrideAutoStartModels ? this.#overrideAutoStartModels.has(model) : info.autostart;
+    for (const [model, info] of SDKModel.registeredModels) {
+      if (info.early) {
+        earlyModels.add(model);
+      } else if (shouldAutostart(model, info) || this.#modelObservers.has(model)) {
+        models.add(model);
+      }
+    }
+    return [...earlyModels, ...models];
+  }
   createTarget(id, name, type, parentTarget, sessionId, waitForDebuggerInPage, connection, targetInfo) {
     const target = new Target(this, id, name, type, parentTarget, sessionId || "", this.#isSuspended, connection || null, targetInfo);
     if (waitForDebuggerInPage) {
       void target.pageAgent().invoke_waitForDebugger();
     }
-    target.createModels(new Set(this.#modelObservers.keysArray()));
+    target.createModels(this.#autoStartModels());
     this.#targets.add(target);
     const inScope = this.isInScope(target);
     for (const observer of [...this.#observers]) {
@@ -10062,7 +10053,7 @@ var TargetManager = class _TargetManager extends Common4.ObjectWrapper.ObjectWra
         /* targetInfo*/
         void 0
       );
-      this.#browserTarget.createModels(new Set(this.#modelObservers.keysArray()));
+      this.#browserTarget.createModels(this.#autoStartModels());
     }
     const targetId = await Host.InspectorFrontendHost.InspectorFrontendHostInstance.initialTargetId();
     void this.#browserTarget.targetAgent().invoke_autoAttachRelated({
@@ -11323,6 +11314,10 @@ var NetworkDispatcher = class {
     networkRequest.responseReceivedTime = event.timestamp;
     this.updateNetworkRequest(networkRequest);
   }
+  directUDPSocketJoinedMulticastGroup(_event) {
+  }
+  directUDPSocketLeftMulticastGroup(_event) {
+  }
   trustTokenOperationDone(event) {
     const request = this.#requestsById.get(event.requestId);
     if (!request) {
@@ -12275,7 +12270,7 @@ __export(ResourceTreeModel_exports, {
 });
 import * as Common24 from "./../common/common.js";
 import * as i18n15 from "./../i18n/i18n.js";
-import * as Platform14 from "./../platform/platform.js";
+import * as Platform15 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/DOMModel.js
 var DOMModel_exports = {};
@@ -12290,7 +12285,7 @@ __export(DOMModel_exports, {
   Events: () => Events8
 });
 import * as Common21 from "./../common/common.js";
-import * as Platform12 from "./../platform/platform.js";
+import * as Platform13 from "./../platform/platform.js";
 import * as Root8 from "./../root/root.js";
 
 // gen/front_end/core/sdk/CSSModel.js
@@ -13568,7 +13563,7 @@ var AnchorFunctionMatcher = class extends matcherBase(AnchorFunctionMatch) {
   matches(node, matching) {
     if (node.name === "VariableName") {
       let parent = node.parent;
-      if (!parent || parent.name !== "ArgList") {
+      if (parent?.name !== "ArgList") {
         return null;
       }
       parent = parent.parent;
@@ -14467,7 +14462,7 @@ var CSSProperty = class _CSSProperty extends Common7.ObjectWrapper.ObjectWrapper
       }
       if (cssMetadata().isGridAreaDefiningProperty(propertyName)) {
         const rowResult = GridAreaRowRegex.exec(token);
-        if (rowResult && rowResult.index === 0 && !propertyText.trimEnd().endsWith("]")) {
+        if (rowResult?.index === 0 && !propertyText.trimEnd().endsWith("]")) {
           propertyText = propertyText.trimEnd() + "\n" + doubleIndent;
         }
       }
@@ -17973,7 +17968,7 @@ var RemoteArray = class _RemoteArray {
     this.#object = object;
   }
   static objectAsArray(object) {
-    if (!object || object.type !== "object" || object.subtype !== "array" && object.subtype !== "typedarray") {
+    if (object?.type !== "object" || object.subtype !== "array" && object.subtype !== "typedarray") {
       throw new Error("Object is empty or not an array");
     }
     return new _RemoteArray(object);
@@ -18821,41 +18816,98 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
     this.#generatedRanges = scopeInfo.ranges;
   }
   /**
-   * If the source map does not contain any scopes information, this factory function attempts to create bare bones scope information
+   * If the source map does not contain any scopes information, this factory function attempts to create scope information
    * via the script's AST combined with the mappings.
    *
    * We create the generated ranges from the scope tree and for each range we create an original scope that matches the bounds 1:1.
-   * We don't map the bounds via mappings as mappings are often iffy and it's not strictly required to translate stack traces where we
-   * map call-sites separately.
    */
   static createFromAst(sourceMap, scopeTree, text) {
-    const { scope, range } = convertScope(scopeTree, void 0, void 0);
-    return new _SourceMapScopesInfo(sourceMap, { scopes: [scope], ranges: [range] });
-    function convertScope(node, parentScope, parentRange) {
-      const start = positionFromOffset(node.start);
-      const end = positionFromOffset(node.end);
-      const isStackFrame = node.kind === 2;
-      const scope2 = {
-        start,
-        end,
-        name: sourceMap.findEntry(start.line, start.column, 0)?.name,
-        isStackFrame,
+    const numSourceUrls = sourceMap.sourceURLs().length;
+    const scopeBySourceUrl = [];
+    for (let i = 0; i < numSourceUrls; i++) {
+      const scope = {
+        start: { line: 0, column: 0 },
+        end: { line: Number.POSITIVE_INFINITY, column: Number.POSITIVE_INFINITY },
+        isStackFrame: false,
         variables: [],
         children: []
       };
+      scopeBySourceUrl.push(scope);
+    }
+    const { range } = convertScope(scopeTree, void 0);
+    return new _SourceMapScopesInfo(sourceMap, { scopes: scopeBySourceUrl, ranges: [range] });
+    function insertInScope(parent, newScope) {
+      for (const child of parent.children) {
+        if (contains2(child, newScope)) {
+          insertInScope(child, newScope);
+          return;
+        }
+      }
+      const childrenToKeep = [];
+      for (const child of parent.children) {
+        if (contains2(newScope, child)) {
+          newScope.children.push(child);
+          child.parent = newScope;
+        } else {
+          childrenToKeep.push(child);
+        }
+      }
+      const insertIndex = childrenToKeep.findIndex((child) => compareScopes(newScope, child) < 0);
+      if (insertIndex === -1) {
+        childrenToKeep.push(newScope);
+      } else {
+        childrenToKeep.splice(insertIndex, 0, newScope);
+      }
+      parent.children = childrenToKeep;
+      newScope.parent = parent;
+    }
+    function contains2(outer, inner) {
+      return comparePositions2(outer.start, inner.start) <= 0 && comparePositions2(outer.end, inner.end) >= 0;
+    }
+    function compareScopes(a, b) {
+      return comparePositions2(a.start, b.start);
+    }
+    function comparePositions2(a, b) {
+      if (a.line !== b.line) {
+        return a.line - b.line;
+      }
+      return a.column - b.column;
+    }
+    function convertScope(node, parentRange) {
+      const start = positionFromOffset(node.start);
+      const end = positionFromOffset(node.end);
+      const startEntry = sourceMap.findEntry(start.line, start.column);
+      const endEntry = sourceMap.findEntry(end.line, end.column);
+      const sourceIndex = startEntry?.sourceIndex;
+      const canMapOriginalPosition = startEntry && endEntry && sourceIndex !== void 0 && startEntry.sourceIndex === endEntry.sourceIndex && startEntry.sourceIndex !== void 0 && sourceIndex >= 0 && sourceIndex < numSourceUrls;
+      const isStackFrame = node.kind === 2;
+      let scope;
+      if (canMapOriginalPosition) {
+        scope = {
+          start: { line: startEntry.sourceLineNumber, column: startEntry.sourceColumnNumber },
+          end: { line: endEntry.sourceLineNumber, column: endEntry.sourceColumnNumber },
+          name: startEntry.name,
+          isStackFrame,
+          variables: [],
+          children: []
+        };
+      }
       const range2 = {
         start,
         end,
-        originalScope: scope2,
+        originalScope: scope,
         isStackFrame,
         isHidden: false,
         values: [],
         children: []
       };
       parentRange?.children.push(range2);
-      parentScope?.children.push(scope2);
-      node.children.forEach((child) => convertScope(child, scope2, range2));
-      return { scope: scope2, range: range2 };
+      if (canMapOriginalPosition && scope) {
+        const rootScope = scopeBySourceUrl[sourceIndex];
+        insertInScope(rootScope, scope);
+      }
+      node.children.forEach((child) => convertScope(child, range2));
+      return { range: range2 };
     }
     function positionFromOffset(offset) {
       const location = text.positionFromOffset(offset);
@@ -19077,7 +19129,14 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
   /**
    * Returns the authored function name of the function containing the provided generated position.
    */
-  findOriginalFunctionName({ line, column }) {
+  findOriginalFunctionName(position) {
+    const originalInnerMostScope = this.findOriginalFunctionScope(position)?.scope ?? void 0;
+    return this.#findFunctionNameInOriginalScopeChain(originalInnerMostScope);
+  }
+  /**
+   * Returns the authored function scope of the function containing the provided generated position.
+   */
+  findOriginalFunctionScope({ line, column }) {
     let originalInnerMostScope;
     if (this.#generatedRanges.length > 0) {
       const rangeChain = this.#findGeneratedRangeChain(line, column);
@@ -19089,7 +19148,20 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
       }
       originalInnerMostScope = this.#findOriginalScopeChain({ sourceIndex: entry.sourceIndex, line: entry.sourceLineNumber, column: entry.sourceColumnNumber }).at(-1);
     }
-    return this.#findFunctionNameInOriginalScopeChain(originalInnerMostScope) ?? null;
+    if (!originalInnerMostScope) {
+      return null;
+    }
+    const functionScope = this.#findFunctionScopeInOriginalScopeChain(originalInnerMostScope);
+    if (!functionScope) {
+      return null;
+    }
+    let rootScope = functionScope;
+    while (rootScope.parent) {
+      rootScope = rootScope.parent;
+    }
+    const sourceIndex = this.#originalScopes.indexOf(rootScope);
+    const url = sourceIndex !== -1 ? this.#sourceMap.sourceURLForSourceIndex(sourceIndex) : void 0;
+    return functionScope ? { scope: functionScope, url } : null;
   }
   /**
    * Given an original position, this returns all the surrounding original scopes from outer
@@ -19112,13 +19184,20 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
     })([scope]);
     return result;
   }
-  #findFunctionNameInOriginalScopeChain(innerOriginalScope) {
+  #findFunctionScopeInOriginalScopeChain(innerOriginalScope) {
     for (let originalScope = innerOriginalScope; originalScope; originalScope = originalScope.parent) {
       if (originalScope.isStackFrame) {
-        return originalScope.name ?? "";
+        return originalScope;
       }
     }
     return null;
+  }
+  #findFunctionNameInOriginalScopeChain(innerOriginalScope) {
+    const functionScope = this.#findFunctionScopeInOriginalScopeChain(innerOriginalScope);
+    if (!functionScope) {
+      return null;
+    }
+    return functionScope.name ?? "";
   }
   /**
    * Returns one or more original stack frames for this single "raw frame" or call-site.
@@ -20110,7 +20189,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     try {
       await this.ensureOriginalStyleSheetText(styleSheetId);
       const { styles } = await this.agent.invoke_setStyleTexts({ edits: [{ styleSheetId, range: range.serializeToObject(), text }] });
-      if (!styles || styles.length !== 1) {
+      if (styles?.length !== 1) {
         return false;
       }
       this.#domModel.markUndoableState(!majorChange);
@@ -21540,6 +21619,7 @@ __export(Script_exports, {
   disassembleWasm: () => disassembleWasm,
   sourceURLRegex: () => sourceURLRegex
 });
+import * as Platform11 from "./../platform/platform.js";
 import * as TextUtils18 from "./../../models/text_utils/text_utils.js";
 import * as Common16 from "./../common/common.js";
 import * as i18n9 from "./../i18n/i18n.js";
@@ -21897,7 +21977,7 @@ function frameIdForScript(script) {
 }
 var sourceURLRegex = /^[\x20\t]*\/\/[@#] sourceURL=\s*(\S*?)\s*$/;
 async function disassembleWasm(content) {
-  const worker = Common16.Worker.WorkerWrapper.fromURL(new URL("../../entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js", import.meta.url));
+  const worker = Platform11.HostRuntime.HOST_RUNTIME.createWorker(new URL("../../entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js", import.meta.url).toString());
   const promise = new Promise((resolve, reject) => {
     worker.onmessage = ({ data }) => {
       if ("method" in data) {
@@ -22608,7 +22688,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       let functionName = null;
       if (response.properties) {
         for (const prop of response.properties) {
-          if (prop.name === "name" && prop.value && prop.value.type === "string") {
+          if (prop.name === "name" && prop.value?.type === "string") {
             functionName = prop.value;
           }
         }
@@ -23101,7 +23181,7 @@ __export(OverlayPersistentHighlighter_exports, {
   OverlayPersistentHighlighter: () => OverlayPersistentHighlighter
 });
 import * as Common19 from "./../common/common.js";
-import * as Platform11 from "./../platform/platform.js";
+import * as Platform12 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/OverlayColorGenerator.js
 var OverlayColorGenerator_exports = {};
@@ -23470,7 +23550,7 @@ var OverlayPersistentHighlighter = class {
     this.#containerQueryHighlights = /* @__PURE__ */ new Map();
     this.#isolatedElementHighlights = /* @__PURE__ */ new Map();
     const document2 = await this.#model.getDOMModel().requestDocument();
-    const currentURL = document2 ? document2.documentURL : Platform11.DevToolsPath.EmptyUrlString;
+    const currentURL = document2 ? document2.documentURL : Platform12.DevToolsPath.EmptyUrlString;
     await Promise.all(this.#persistentHighlightSetting.get().map(async (persistentHighlight) => {
       if (persistentHighlight.url === currentURL) {
         return await this.#model.getDOMModel().pushNodeByPathToFrontend(persistentHighlight.path).then((nodeId) => {
@@ -23506,7 +23586,7 @@ var OverlayPersistentHighlighter = class {
   }
   currentUrl() {
     const domDocument = this.#model.getDOMModel().existingDocument();
-    return domDocument ? domDocument.documentURL : Platform11.DevToolsPath.EmptyUrlString;
+    return domDocument ? domDocument.documentURL : Platform12.DevToolsPath.EmptyUrlString;
   }
   getPersistentHighlightSettingForOneType(highlights, type) {
     const persistentHighlights = [];
@@ -24936,7 +25016,7 @@ var DOMNode = class _DOMNode {
         continue;
       }
       const oldAttribute = oldAttributesMap.get(name);
-      if (!oldAttribute || oldAttribute.value !== value) {
+      if (oldAttribute?.value !== value) {
         attributesChanged = true;
       }
     }
@@ -25714,7 +25794,7 @@ var DOMModel = class _DOMModel extends SDKModel {
       return null;
     }
     const { nodeIds } = await this.agent.invoke_getSearchResults({ searchId: this.#searchId, fromIndex: index, toIndex: index + 1 });
-    return nodeIds && nodeIds.length === 1 ? this.nodeForId(nodeIds[0]) : null;
+    return nodeIds?.length === 1 ? this.nodeForId(nodeIds[0]) : null;
   }
   cancelSearch() {
     if (!this.#searchId) {
@@ -25912,7 +25992,7 @@ var DOMModelUndoStack = class _DOMModelUndoStack {
         ++shift;
       }
     }
-    Platform12.ArrayUtilities.removeElement(this.#stack, model);
+    Platform13.ArrayUtilities.removeElement(this.#stack, model);
     this.#index -= shift;
     if (this.#lastModelWithMinorChange === model) {
       this.#lastModelWithMinorChange = null;
@@ -25928,7 +26008,7 @@ __export(Resource_exports, {
 });
 import * as TextUtils20 from "./../../models/text_utils/text_utils.js";
 import * as Common22 from "./../common/common.js";
-import * as Platform13 from "./../platform/platform.js";
+import * as Platform14 from "./../platform/platform.js";
 var Resource = class {
   #resourceTreeModel;
   #request;
@@ -25958,7 +26038,7 @@ var Resource = class {
     this.#type = type || Common22.ResourceType.resourceTypes.Other;
     this.#mimeType = mimeType;
     this.#isGenerated = false;
-    this.#lastModified = lastModified && Platform13.DateUtilities.isValid(lastModified) ? lastModified : null;
+    this.#lastModified = lastModified && Platform14.DateUtilities.isValid(lastModified) ? lastModified : null;
     this.#contentSize = contentSize;
   }
   lastModified() {
@@ -25967,7 +26047,7 @@ var Resource = class {
     }
     const lastModifiedHeader = this.#request.responseLastModified();
     const date = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
-    this.#lastModified = date && Platform13.DateUtilities.isValid(date) ? date : null;
+    this.#lastModified = date && Platform14.DateUtilities.isValid(date) ? date : null;
     return this.#lastModified;
   }
   contentSize() {
@@ -26695,11 +26775,11 @@ var ResourceTreeFrame = class {
     this.#id = frameId;
     this.#loaderId = payload?.loaderId ?? "";
     this.#name = payload?.name;
-    this.#url = payload && payload.url || Platform14.DevToolsPath.EmptyUrlString;
+    this.#url = payload && payload.url || Platform15.DevToolsPath.EmptyUrlString;
     this.#domainAndRegistry = payload?.domainAndRegistry || "";
     this.#securityOrigin = payload?.securityOrigin ?? null;
     this.#securityOriginDetails = payload?.securityOriginDetails;
-    this.#unreachableUrl = payload && payload.unreachableUrl || Platform14.DevToolsPath.EmptyUrlString;
+    this.#unreachableUrl = payload && payload.unreachableUrl || Platform15.DevToolsPath.EmptyUrlString;
     this.#adFrameStatus = payload?.adFrameStatus;
     this.#secureContextType = payload?.secureContextType ?? null;
     this.#crossOriginIsolatedContextType = payload?.crossOriginIsolatedContextType ?? null;
@@ -26741,7 +26821,7 @@ var ResourceTreeFrame = class {
       /* forceFetch */
       true
     );
-    this.#unreachableUrl = framePayload.unreachableUrl || Platform14.DevToolsPath.EmptyUrlString;
+    this.#unreachableUrl = framePayload.unreachableUrl || Platform15.DevToolsPath.EmptyUrlString;
     this.#adFrameStatus = framePayload?.adFrameStatus;
     this.#secureContextType = framePayload.secureContextType;
     this.#crossOriginIsolatedContextType = framePayload.crossOriginIsolatedContextType;
@@ -26883,7 +26963,7 @@ var ResourceTreeFrame = class {
   }
   addRequest(request) {
     let resource = this.resourcesMap.get(request.url());
-    if (resource && resource.request === request) {
+    if (resource?.request === request) {
       return;
     }
     resource = new Resource(this.#model, request, request.url(), request.documentURL, request.frameId, request.loaderId, request.resourceType(), request.mimeType, null, null);
@@ -27236,7 +27316,7 @@ var CookieModel = class extends SDKModel {
     return this.#refreshThrottler.schedule(() => this.#refresh());
   }
   #refresh() {
-    const resourceURLs = new Platform15.MapUtilities.Multimap();
+    const resourceURLs = new Platform16.MapUtilities.Multimap();
     function populateResourceURLs(resource) {
       const documentURL = Common25.ParsedURL.ParsedURL.fromString(resource.documentURL);
       if (documentURL) {
@@ -28153,7 +28233,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return new _NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
   }
   static createForSocket(backendRequestId, requestURL, initiator) {
-    return new _NetworkRequest(backendRequestId, backendRequestId, requestURL, Platform16.DevToolsPath.EmptyUrlString, null, null, initiator || null);
+    return new _NetworkRequest(backendRequestId, backendRequestId, requestURL, Platform17.DevToolsPath.EmptyUrlString, null, null, initiator || null);
   }
   static createWithoutBackendRequest(requestId, url, documentURL, initiator) {
     return new _NetworkRequest(requestId, void 0, url, documentURL, null, null, initiator);
@@ -28494,7 +28574,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
       this.#path = this.#parsedURL.host + this.#parsedURL.folderPathComponents;
       const networkManager = NetworkManager.forRequest(this);
       const inspectedURL = networkManager ? Common27.ParsedURL.ParsedURL.fromString(networkManager.target().inspectedURL()) : null;
-      this.#path = Platform16.StringUtilities.trimURL(this.#path, inspectedURL ? inspectedURL.host : "");
+      this.#path = Platform17.StringUtilities.trimURL(this.#path, inspectedURL ? inspectedURL.host : "");
       if (this.#parsedURL.lastPathComponent || this.#parsedURL.queryParams) {
         this.#name = this.#parsedURL.lastPathComponent + (this.#parsedURL.queryParams ? "?" + this.#parsedURL.queryParams : "");
       } else if (this.#parsedURL.folderPathComponents) {
@@ -28654,7 +28734,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     }
     this.#sortedResponseHeaders = this.responseHeaders.slice();
     return this.#sortedResponseHeaders.sort(function(a, b) {
-      return Platform16.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
+      return Platform17.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
     });
   }
   get sortedOriginalResponseHeaders() {
@@ -28663,7 +28743,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     }
     this.#sortedOriginalResponseHeaders = this.originalResponseHeaders.slice();
     return this.#sortedOriginalResponseHeaders.sort(function(a, b) {
-      return Platform16.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
+      return Platform17.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
     });
   }
   get overrideTypes() {
@@ -28865,7 +28945,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
    * --boundaryString--
    */
   parseMultipartFormDataParameters(data, boundary) {
-    const sanitizedBoundary = Platform16.StringUtilities.escapeForRegExp(boundary);
+    const sanitizedBoundary = Platform17.StringUtilities.escapeForRegExp(boundary);
     const keyValuePattern = new RegExp(
       // Header with an optional file #name.
       '^\\r\\ncontent-disposition\\s*:\\s*form-data\\s*;\\s*name="([^"]*)"(?:\\s*;\\s*filename="([^"]*)")?(?:\\r\\ncontent-type\\s*:\\s*([^\\r\\n]*))?\\r\\n\\r\\n(.*)\\r\\n$',
@@ -30003,7 +30083,7 @@ var AnimationModel = class extends SDKModel {
     }
     const animation = await AnimationImpl.parsePayload(this, payload);
     const keyframesRule = animation.source().keyframesRule();
-    if (animation.type() === "WebAnimation" && keyframesRule && keyframesRule.keyframes().length === 0) {
+    if (animation.type() === "WebAnimation" && keyframesRule?.keyframes().length === 0) {
       this.#pendingAnimations.delete(animation.id());
     } else {
       this.#animationsById.set(animation.id(), animation);
@@ -31954,7 +32034,7 @@ __export(ConsoleModel_exports, {
 import * as Common35 from "./../common/common.js";
 import * as Host10 from "./../host/host.js";
 import * as i18n33 from "./../i18n/i18n.js";
-import * as Platform17 from "./../platform/platform.js";
+import * as Platform18 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/ConsoleModelTypes.js
 var FrontendMessageType;
@@ -32133,7 +32213,7 @@ var str_15 = i18n33.i18n.registerUIStrings("core/sdk/ConsoleModel.ts", UIStrings
 var i18nString15 = i18n33.i18n.getLocalizedString.bind(void 0, str_15);
 var ConsoleModel = class _ConsoleModel extends SDKModel {
   #messages = [];
-  #messagesByTimestamp = new Platform17.MapUtilities.Multimap();
+  #messagesByTimestamp = new Platform18.MapUtilities.Multimap();
   #messageByExceptionId = /* @__PURE__ */ new Map();
   #warnings = 0;
   #errors = 0;
@@ -32423,7 +32503,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
     const globalObject = result.object;
     const callFunctionResult = await globalObject.callFunction(saveVariable, [RemoteObject.toCallArgument(remoteObject)]);
     globalObject.release();
-    if (callFunctionResult.wasThrown || !callFunctionResult.object || callFunctionResult.object.type !== "string") {
+    if (callFunctionResult.wasThrown || callFunctionResult.object?.type !== "string") {
       failedToSave(callFunctionResult.object || null);
     } else {
       const text = callFunctionResult.object.value;
@@ -33417,7 +33497,7 @@ __export(DOMDebuggerModel_exports, {
   EventListener: () => EventListener
 });
 import * as Common38 from "./../common/common.js";
-import * as Platform18 from "./../platform/platform.js";
+import * as Platform19 from "./../platform/platform.js";
 var DOMDebuggerModel = class extends SDKModel {
   agent;
   #runtimeModel;
@@ -33541,7 +33621,7 @@ var DOMDebuggerModel = class extends SDKModel {
   }
   currentURL() {
     const domDocument = this.#domModel.existingDocument();
-    return domDocument ? domDocument.documentURL : Platform18.DevToolsPath.EmptyUrlString;
+    return domDocument ? domDocument.documentURL : Platform19.DevToolsPath.EmptyUrlString;
   }
   async documentUpdated() {
     if (this.suspended) {
@@ -33551,7 +33631,7 @@ var DOMDebuggerModel = class extends SDKModel {
     this.#domBreakpoints = [];
     this.dispatchEventToListeners("DOMBreakpointsRemoved", removed);
     const document2 = await this.#domModel.requestDocument();
-    const currentURL = document2 ? document2.documentURL : Platform18.DevToolsPath.EmptyUrlString;
+    const currentURL = document2 ? document2.documentURL : Platform19.DevToolsPath.EmptyUrlString;
     for (const breakpoint of this.#domBreakpointsSetting.get()) {
       if (breakpoint.url === currentURL) {
         void this.#domModel.pushNodeByPathToFrontend(breakpoint.path).then(appendBreakpoint.bind(this, breakpoint));
@@ -33650,7 +33730,7 @@ var EventListener = class {
     this.#originalHandler = originalHandler || handler;
     this.#location = location;
     const script = location.script();
-    this.#sourceURL = script ? script.contentURL() : Platform18.DevToolsPath.EmptyUrlString;
+    this.#sourceURL = script ? script.contentURL() : Platform19.DevToolsPath.EmptyUrlString;
     this.#customRemoveFunction = customRemoveFunction;
     this.#origin = origin || "Raw";
   }
@@ -34581,7 +34661,7 @@ var PerformanceMetricsModel_exports = {};
 __export(PerformanceMetricsModel_exports, {
   PerformanceMetricsModel: () => PerformanceMetricsModel
 });
-import * as Platform19 from "./../platform/platform.js";
+import * as Platform20 from "./../platform/platform.js";
 var PerformanceMetricsModel = class extends SDKModel {
   #agent;
   #metricModes = /* @__PURE__ */ new Map([
@@ -34640,7 +34720,7 @@ var PerformanceMetricsModel = class extends SDKModel {
       let value;
       switch (this.#metricModes.get(metric.name)) {
         case "CumulativeTime":
-          value = data.lastTimestamp && data.lastValue ? Platform19.NumberUtilities.clamp((metric.value - data.lastValue) * 1e3 / (timestamp - data.lastTimestamp), 0, 1) : 0;
+          value = data.lastTimestamp && data.lastValue ? Platform20.NumberUtilities.clamp((metric.value - data.lastValue) * 1e3 / (timestamp - data.lastTimestamp), 0, 1) : 0;
           data.lastValue = metric.value;
           data.lastTimestamp = timestamp;
           break;
@@ -34697,7 +34777,7 @@ var PreloadingModel = class _PreloadingModel extends SDKModel {
     this.agent = target.preloadAgent();
     void this.agent.invoke_enable();
     const targetInfo = target.targetInfo();
-    if (targetInfo !== void 0 && targetInfo.subtype === "prerender") {
+    if (targetInfo?.subtype === "prerender") {
       this.lastPrimaryPageModel = TargetManager.instance().primaryPageTarget()?.model(_PreloadingModel) || null;
     }
     TargetManager.instance().addModelListener(ResourceTreeModel, Events3.PrimaryPageChanged, this.onPrimaryPageChanged, this);

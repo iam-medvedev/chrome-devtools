@@ -34,7 +34,6 @@
  */
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as StackTrace from '../../../../models/stack_trace/stack_trace.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
@@ -176,26 +175,40 @@ export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, sho
     }
     return stackTraceRows;
 }
-function renderStackTraceTable(container, parent, stackTraceRows) {
+function renderStackTraceTable(container, parent, expandable, stackTraceRows) {
     container.removeChildren();
     const links = [];
     // The tableSection groups one or more synchronous call frames together.
     // Wherever there is an asynchronous call, a new section is created.
     let tableSection = null;
+    let firstRow = true;
     for (const item of stackTraceRows) {
         if (!tableSection || 'asyncDescription' in item) {
             tableSection = container.createChild('tbody');
         }
         const row = tableSection.createChild('tr');
-        if ('asyncDescription' in item) {
+        if (firstRow && expandable) {
+            const button = row.createChild('td').createChild('button', 'arrow-icon-button');
+            button.createChild('span', 'arrow-icon');
+            parent.classList.add('expandable');
+            container.classList.add('expandable');
+            button.addEventListener('click', () => {
+                button.setAttribute('jslog', `${VisualLogging.expand().track({ click: true })}`);
+                parent.classList.toggle('expanded');
+                container.classList.toggle('expanded');
+            });
+            firstRow = false;
+        }
+        else {
             row.createChild('td').textContent = '\n';
+        }
+        if ('asyncDescription' in item) {
             row.createChild('td', 'stack-preview-async-description').textContent = item.asyncDescription;
             row.createChild('td');
             row.createChild('td');
             row.classList.add('stack-preview-async-row');
         }
         else {
-            row.createChild('td').textContent = '\n';
             row.createChild('td', 'function-name').textContent = item.functionName;
             row.createChild('td').textContent = ' @ ';
             if (item.link) {
@@ -236,8 +249,10 @@ function renderStackTraceTable(container, parent, stackTraceRows) {
     return links;
 }
 export class StackTracePreviewContent extends UI.Widget.Widget {
+    #stackTrace;
     #target;
     #linkifier;
+    #ownedLinkifier;
     #options;
     #links = [];
     #table;
@@ -245,6 +260,10 @@ export class StackTracePreviewContent extends UI.Widget.Widget {
         super(element, { useShadowDom: true });
         this.#target = target;
         this.#linkifier = linkifier;
+        if (!this.#linkifier) {
+            this.#ownedLinkifier = new Linkifier();
+            this.#linkifier = this.#ownedLinkifier;
+        }
         this.#options = options || {
             widthConstrained: false,
         };
@@ -252,26 +271,26 @@ export class StackTracePreviewContent extends UI.Widget.Widget {
         this.element.classList.add('stack-preview-container');
         this.element.classList.toggle('width-constrained', this.#options.widthConstrained ?? false);
         this.element.style.display = 'inline-block';
-        Platform.DOMUtilities.appendStyle(this.element.shadowRoot, jsUtilsStyles);
+        UI.DOMUtilities.appendStyle(this.element.shadowRoot, jsUtilsStyles);
         this.#table = this.contentElement.createChild('table', 'stack-preview-container');
         this.#table.classList.toggle('width-constrained', this.#options.widthConstrained ?? false);
-        this.#options.stackTrace?.addEventListener("UPDATED" /* StackTrace.StackTrace.Events.UPDATED */, this.performUpdate.bind(this));
+        this.#stackTrace?.addEventListener("UPDATED" /* StackTrace.StackTrace.Events.UPDATED */, this.performUpdate.bind(this));
         this.performUpdate();
     }
     performUpdate() {
         if (!this.#linkifier) {
             return;
         }
-        const { runtimeStackTrace, stackTrace, tabStops } = this.#options;
-        if (stackTrace) {
-            const stackTraceRows = buildStackTraceRows(stackTrace, this.#target ?? null, this.#linkifier, tabStops, this.#options.showColumnNumber);
-            this.#links = renderStackTraceTable(this.#table, this.element, stackTraceRows);
+        const { runtimeStackTrace, tabStops } = this.#options;
+        if (this.#stackTrace) {
+            const stackTraceRows = buildStackTraceRows(this.#stackTrace, this.#target ?? null, this.#linkifier, tabStops, this.#options.showColumnNumber);
+            this.#links = renderStackTraceTable(this.#table, this.element, this.#options.expandable ?? false, stackTraceRows);
             return;
         }
         // TODO(crbug.com/456517732): remove when all usages of runtimeStackTrace are migrated.
-        const updateCallback = renderStackTraceTable.bind(null, this.#table, this.element);
+        const updateCallback = renderStackTraceTable.bind(null, this.#table, this.element, this.#options.expandable ?? false);
         const stackTraceRows = buildStackTraceRowsForLegacyRuntimeStackTrace(runtimeStackTrace ?? { callFrames: [] }, this.#target ?? null, this.#linkifier, tabStops, updateCallback, this.#options.showColumnNumber);
-        this.#links = renderStackTraceTable(this.#table, this.element, stackTraceRows);
+        this.#links = renderStackTraceTable(this.#table, this.element, this.#options.expandable ?? false, stackTraceRows);
     }
     get linkElements() {
         return this.#links;
@@ -287,6 +306,13 @@ export class StackTracePreviewContent extends UI.Widget.Widget {
     set options(options) {
         this.#options = options;
         this.requestUpdate();
+    }
+    set stackTrace(stackTrace) {
+        this.#stackTrace = stackTrace;
+        this.requestUpdate();
+    }
+    onDetach() {
+        this.#ownedLinkifier?.dispose();
     }
 }
 //# sourceMappingURL=JSPresentationUtils.js.map

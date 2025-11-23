@@ -5,6 +5,9 @@ import * as Common from '../../core/common/common.js';
 import * as Formatter from '../formatter/formatter.js';
 describe('ScriptFormatter', () => {
     const indentString = '  ';
+    after(() => {
+        Formatter.FormatterWorkerPool.formatterWorkerPool().dispose();
+    });
     it('can format a HTML document', async () => {
         const { formattedContent } = await Formatter.ScriptFormatter.format(Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', '<html><head></head><body></body></html>', indentString);
         assert.strictEqual(formattedContent, `<html>

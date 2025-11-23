@@ -97,6 +97,7 @@ describeWithEnvironment('ObjectPropertyTreeElement', () => {
         sinon.assert.calledOnceWithExactly(copyStub, `"${longString}"`);
         assert.notStrictEqual(value.textContent, `"${longString}"`);
         expandButton.click();
+        await assertScreenshot('object_ui/expanded_strings.png');
         assert.strictEqual(value.textContent, `"${longString}"`);
     });
 });

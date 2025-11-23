@@ -2,7 +2,7 @@ export interface LanguageModel {
     promptStreaming: (arg0: string, opts?: {
         signal?: AbortSignal;
     }) => AsyncGenerator<string>;
-    clone: () => LanguageModel;
+    clone: () => Promise<LanguageModel>;
     destroy: () => void;
 }
 export declare const enum LanguageModelAvailability {
@@ -14,11 +14,12 @@ export declare const enum LanguageModelAvailability {
 }
 export declare class BuiltInAi {
     #private;
-    static getLanguageModelAvailability(): Promise<LanguageModelAvailability>;
-    static cachedIsAvailable(): boolean;
-    static isGpuAvailable(): boolean;
-    private constructor();
-    static instance(): Promise<BuiltInAi | undefined>;
+    initDoneForTesting: Promise<void>;
+    static instance(): BuiltInAi;
+    constructor();
+    getLanguageModelAvailability(): Promise<LanguageModelAvailability>;
+    hasSession(): boolean;
+    initialize(): Promise<void>;
     static removeInstance(): void;
     getConsoleInsight(prompt: string, abortController: AbortController): AsyncGenerator<string>;
 }

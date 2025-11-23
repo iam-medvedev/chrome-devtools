@@ -676,10 +676,6 @@ export const generatedProperties = [
             "scroll-snap-align",
             "scroll-snap-stop",
             "scroll-snap-type",
-            "scroll-start-block",
-            "scroll-start-inline",
-            "scroll-start-x",
-            "scroll-start-y",
             "scroll-target-group",
             "scroll-timeline-axis",
             "scroll-timeline-name",
@@ -2145,8 +2141,8 @@ export const generatedProperties = [
             "math",
             "ruby",
             "ruby-text",
-            "masonry",
-            "inline-masonry"
+            "grid-lanes",
+            "inline-grid-lanes"
         ],
         "name": "display"
     },
@@ -2648,6 +2644,15 @@ export const generatedProperties = [
     },
     {
         "longhands": [
+            "grid-template-areas",
+            "grid-template-columns",
+            "masonry-direction",
+            "masonry-fill"
+        ],
+        "name": "grid-lanes"
+    },
+    {
+        "longhands": [
             "grid-row-start",
             "grid-row-end"
         ],
@@ -3089,15 +3094,6 @@ export const generatedProperties = [
             "alpha"
         ],
         "name": "mask-type"
-    },
-    {
-        "longhands": [
-            "grid-template-areas",
-            "grid-template-columns",
-            "masonry-direction",
-            "masonry-fill"
-        ],
-        "name": "masonry"
     },
     {
         "keywords": [
@@ -3585,7 +3581,8 @@ export const generatedProperties = [
     },
     {
         "keywords": [
-            "auto"
+            "auto",
+            "none"
         ],
         "name": "position-anchor"
     },
@@ -4049,25 +4046,6 @@ export const generatedProperties = [
             "proximity"
         ],
         "name": "scroll-snap-type"
-    },
-    {
-        "longhands": [
-            "scroll-start-block",
-            "scroll-start-inline"
-        ],
-        "name": "scroll-start"
-    },
-    {
-        "name": "scroll-start-block"
-    },
-    {
-        "name": "scroll-start-inline"
-    },
-    {
-        "name": "scroll-start-x"
-    },
-    {
-        "name": "scroll-start-y"
     },
     {
         "keywords": [
@@ -5676,8 +5654,8 @@ export const generatedPropertyValues = {
             "math",
             "ruby",
             "ruby-text",
-            "masonry",
-            "inline-masonry"
+            "grid-lanes",
+            "inline-grid-lanes"
         ]
     },
     "dominant-baseline": {
@@ -6460,7 +6438,8 @@ export const generatedPropertyValues = {
     },
     "position-anchor": {
         "values": [
-            "auto"
+            "auto",
+            "none"
         ]
     },
     "position-area": {

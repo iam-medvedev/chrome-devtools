@@ -8565,16 +8565,14 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       if (!focus) {
         throw new Error("could not create performance agent focus");
       }
-      const agent = conversationHandler.createAgent(
-        "drjones-performance-full"
-        /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */
-      );
-      const conversation = new AiAssistanceModel.AiHistoryStorage.Conversation(
+      const conversation = new AiAssistanceModel.AiConversation.AiConversation(
         "drjones-performance-full",
         [],
-        agent.id,
+        void 0,
         /* isReadOnly */
         true,
+        conversationHandler.aidaClient,
+        void 0,
         /* isExternal */
         true
       );
@@ -8583,7 +8581,6 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       this.#externalAIConversationData = {
         conversationHandler,
         conversation,
-        agent,
         selected
       };
     }
@@ -9099,7 +9096,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   navigateHistory(direction) {
     const recordingData = this.#historyManager.navigate(direction);
-    if (recordingData && recordingData.type === "TRACE_INDEX") {
+    if (recordingData?.type === "TRACE_INDEX") {
       this.#changeView({
         mode: "VIEWING_TRACE",
         traceIndex: recordingData.parsedTraceIndex,
@@ -9145,7 +9142,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     pathToLaunch = url.toString();
     const hostWindow = window;
     function onMessageHandler(ev) {
-      if (url && ev.data && ev.data.type === "REHYDRATING_WINDOW_READY") {
+      if (url && ev.data?.type === "REHYDRATING_WINDOW_READY") {
         rehydratingWindow?.postMessage({ type: "REHYDRATING_TRACE_FILE", traceJson }, url.origin);
       }
       hostWindow.removeEventListener("message", onMessageHandler);
@@ -10137,7 +10134,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     }
   }
   async loadEventFired(event) {
-    if (this.state !== "Recording" || !this.recordingPageReload || !this.controller || this.controller.primaryPageTarget !== event.data.resourceTreeModel.target()) {
+    if (this.state !== "Recording" || !this.recordingPageReload || this.controller?.primaryPageTarget !== event.data.resourceTreeModel.target()) {
       return;
     }
     const controller = this.controller;
@@ -11765,6 +11762,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
   }
   static renderEventJson(event, contentHelper) {
     contentHelper.addSection(i18nString21(UIStrings21.traceEvent));
+    contentHelper.appendElementRow("eventKey", new Trace24.EventsSerializer.EventsSerializer().keyForEvent(event) ?? "?");
     const eventWithArgsFirst = {
       ...{ args: event.args },
       ...event
@@ -12386,7 +12384,9 @@ var TimelineDetailsContentHelper = class {
     let callFrameContents;
     if (this.target) {
       const stackTrace = await Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createStackTraceFromProtocolRuntime(runtimeStackTrace, this.target);
-      callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent(void 0, this.target ?? void 0, this.#linkifier, { stackTrace, tabStops: true, showColumnNumber: true });
+      callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent(void 0, this.target ?? void 0, this.#linkifier, { tabStops: true, showColumnNumber: true });
+      callFrameContents.stackTrace = stackTrace;
+      await callFrameContents.updateComplete;
     } else {
       callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent(void 0, this.target ?? void 0, this.#linkifier, { runtimeStackTrace, tabStops: true, showColumnNumber: true });
     }
@@ -15893,7 +15893,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
   }
   hoverAnnotationInSidebar(annotation) {
     const overlay = ModificationsManager.activeManager()?.getOverlaybyAnnotation(annotation);
-    if (overlay && overlay.type === "ENTRY_LABEL") {
+    if (overlay?.type === "ENTRY_LABEL") {
       this.#overlays.highlightOverlay(overlay);
     }
   }

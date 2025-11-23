@@ -129,6 +129,7 @@ describeWithMockConnection('CrUXManager', () => {
                 'url-PHONE': mockResponse(),
                 'url-TABLET': null,
                 warnings: [],
+                normalizedUrl: 'https://example.com/',
             });
             assert.deepEqual(fetchBodies, [
                 {
@@ -242,6 +243,7 @@ describeWithMockConnection('CrUXManager', () => {
                 'url-PHONE': null,
                 'url-TABLET': null,
                 warnings: [],
+                normalizedUrl: 'https://example.com/',
             });
         });
         it('should cache responses', async () => {
@@ -308,6 +310,7 @@ describeWithMockConnection('CrUXManager', () => {
                 'url-PHONE': mockResponse({ pageScope: 'url', deviceScope: 'PHONE' }),
                 'url-TABLET': null,
                 warnings: [],
+                normalizedUrl: '',
             });
         });
         afterEach(() => {
@@ -446,6 +449,7 @@ describeWithMockConnection('CrUXManager', () => {
                 'url-PHONE': null,
                 'url-TABLET': null,
                 warnings: [],
+                normalizedUrl: '',
             });
         });
         afterEach(() => {

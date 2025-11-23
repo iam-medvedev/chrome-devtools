@@ -2596,7 +2596,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.30.0";
+var packageVersion = "24.31.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -5749,15 +5749,17 @@ var ConsoleMessage = class {
   #args;
   #stackTraceLocations;
   #frame;
+  #rawStackTrace;
   /**
    * @internal
    */
-  constructor(type, text, args, stackTraceLocations, frame) {
+  constructor(type, text, args, stackTraceLocations, frame, rawStackTrace) {
     this.#type = type;
     this.#text = text;
     this.#args = args;
     this.#stackTraceLocations = stackTraceLocations;
     this.#frame = frame;
+    this.#rawStackTrace = rawStackTrace;
   }
   /**
    * The type of the console message.
@@ -5788,6 +5790,14 @@ var ConsoleMessage = class {
    */
   stackTrace() {
     return this.#stackTraceLocations;
+  }
+  /**
+   * The underlying protocol stack trace if available.
+   *
+   * @internal
+   */
+  _rawStackTrace() {
+    return this.#rawStackTrace;
   }
 };
 
@@ -9252,7 +9262,7 @@ var CdpPreloadScript = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/DeviceRequestPrompt.js
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/DeviceRequestPrompt.js
 var DeviceRequestPromptDevice = class {
   /**
    * Device id during a prompt.
@@ -9271,20 +9281,19 @@ var DeviceRequestPromptDevice = class {
   }
 };
 var DeviceRequestPrompt = class {
+};
+
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/DeviceRequestPrompt.js
+var CdpDeviceRequestPrompt = class extends DeviceRequestPrompt {
   #client;
   #timeoutSettings;
   #id;
   #handled = false;
   #updateDevicesHandle = this.#updateDevices.bind(this);
   #waitForDevicePromises = /* @__PURE__ */ new Set();
-  /**
-   * Current list of selectable devices.
-   */
   devices = [];
-  /**
-   * @internal
-   */
   constructor(client, timeoutSettings, firstEvent) {
+    super();
     this.#client = client;
     this.#timeoutSettings = timeoutSettings;
     this.#id = firstEvent.id;
@@ -9313,9 +9322,6 @@ var DeviceRequestPrompt = class {
       }
     }
   }
-  /**
-   * Resolve to the first device in the prompt matching a filter.
-   */
   async waitForDevice(filter2, options = {}) {
     for (const device of this.devices) {
       if (filter2(device)) {
@@ -9340,9 +9346,6 @@ var DeviceRequestPrompt = class {
       this.#waitForDevicePromises.delete(handle);
     }
   }
-  /**
-   * Select a device in the prompt's list.
-   */
   async select(device) {
     assert(this.#client !== null, "Cannot select device through detached session!");
     assert(this.devices.includes(device), "Cannot select unknown device!");
@@ -9354,9 +9357,6 @@ var DeviceRequestPrompt = class {
       deviceId: device.id
     });
   }
-  /**
-   * Cancel the prompt.
-   */
   async cancel() {
     assert(this.#client !== null, "Cannot cancel prompt through detached session!");
     assert(!this.#handled, "Cannot cancel DeviceRequestPrompt which is already handled!");
@@ -9369,9 +9369,6 @@ var DeviceRequestPromptManager = class {
   #client;
   #timeoutSettings;
   #deviceRequestPromptDeferreds = /* @__PURE__ */ new Set();
-  /**
-   * @internal
-   */
   constructor(client, timeoutSettings) {
     this.#client = client;
     this.#timeoutSettings = timeoutSettings;
@@ -9382,10 +9379,6 @@ var DeviceRequestPromptManager = class {
       this.#client = null;
     });
   }
-  /**
-   * Wait for device prompt created by an action like calling WebBluetooth's
-   * requestDevice.
-   */
   async waitForDevicePrompt(options = {}) {
     assert(this.#client !== null, "Cannot wait for device prompt through detached session!");
     const needsEnable = this.#deviceRequestPromptDeferreds.size === 0;
@@ -9414,15 +9407,12 @@ var DeviceRequestPromptManager = class {
       this.#deviceRequestPromptDeferreds.delete(deferred);
     }
   }
-  /**
-   * @internal
-   */
   #onDeviceRequestPrompted(event) {
     if (!this.#deviceRequestPromptDeferreds.size) {
       return;
     }
     assert(this.#client !== null);
-    const devicePrompt = new DeviceRequestPrompt(this.#client, this.#timeoutSettings, event);
+    const devicePrompt = new CdpDeviceRequestPrompt(this.#client, this.#timeoutSettings, event);
     for (const promise of this.#deviceRequestPromptDeferreds) {
       promise.resolve(devicePrompt);
     }
@@ -16303,14 +16293,14 @@ var CdpPage = class _CdpPage extends Page {
     this.emit("error", new Error("Page crashed!"));
   }
   #onLogEntryAdded(event) {
-    const { level, text, args, source: source2, url, lineNumber } = event.entry;
+    const { level, text, args, source: source2, url, lineNumber, stackTrace } = event.entry;
     if (args) {
       args.map((arg) => {
         void releaseObject(this.#primaryTargetClient, arg);
       });
     }
     if (source2 !== "worker") {
-      this.emit("console", new ConsoleMessage(convertConsoleMessageLevel(level), text, [], [{ url, lineNumber }]));
+      this.emit("console", new ConsoleMessage(convertConsoleMessageLevel(level), text, [], [{ url, lineNumber }], void 0, stackTrace));
     }
   }
   mainFrame() {
@@ -16563,7 +16553,7 @@ var CdpPage = class _CdpPage extends Page {
         });
       }
     }
-    const message = new ConsoleMessage(convertConsoleMessageLevel(eventType), textTokens.join(" "), args, stackTraceLocations);
+    const message = new ConsoleMessage(convertConsoleMessageLevel(eventType), textTokens.join(" "), args, stackTraceLocations, void 0, stackTrace);
     this.emit("console", message);
   }
   #onDialog(event) {

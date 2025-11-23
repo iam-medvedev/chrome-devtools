@@ -481,6 +481,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const rowData = getRowDataForDetailsElement(details);
             assert.deepEqual(rowData, [
                 { title: 'Duration', value: '0.22\xA0ms (self 0.20\xA0ms)' },
+                { title: 'eventKey', value: 'r-83' },
                 {
                     title: '',
                     // Generic traces get their events rendered as JSON

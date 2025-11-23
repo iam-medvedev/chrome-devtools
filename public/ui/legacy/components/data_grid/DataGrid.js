@@ -321,7 +321,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     }
     announceSelectedGridNode() {
         // Only alert if the datagrid has focus
-        if (this.element === Platform.DOMUtilities.deepActiveElement(this.element.ownerDocument) &&
+        if (this.element === UI.DOMUtilities.deepActiveElement(this.element.ownerDocument) &&
             this.selectedNode?.existingElement()) {
             // Update the expand/collapse state for the current selected node
             let expandText;
@@ -406,7 +406,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             icon.className = 'sort-order-icon';
             cell.createChild('div', 'sort-order-icon-container').appendChild(icon);
             if (column.title) {
-                UI.ARIAUtils.setLabel(cell, i18nString(UIStrings.sortableColumn));
+                const columnLabel = `${column.title} - ${i18nString(UIStrings.sortableColumn)}`;
+                UI.ARIAUtils.setLabel(cell, columnLabel);
             }
         }
     }
@@ -1102,7 +1103,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             nextSelectedNode.reveal();
             nextSelectedNode.select();
         }
-        const activeElement = Platform.DOMUtilities.deepActiveElement(this.element.ownerDocument);
+        const activeElement = UI.DOMUtilities.deepActiveElement(this.element.ownerDocument);
         if (handled && this.element !== activeElement && !this.element.contains(activeElement)) {
             // crbug.com/1005449, crbug.com/1329956
             // navigational or delete keys pressed but current DataGrid panel has lost focus;
@@ -2020,7 +2021,7 @@ export class DataGridNode {
         this.select();
     }
     deselect(supressDeselectedEvent) {
-        if (!this.dataGrid || this.dataGrid.selectedNode !== this || !this.selected) {
+        if (this.dataGrid?.selectedNode !== this || !this.selected) {
             return;
         }
         this.#selected = false;
