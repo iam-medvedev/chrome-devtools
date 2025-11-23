@@ -68,6 +68,7 @@ import "./../../ui/components/markdown_view/markdown_view.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Marked from "./../../third_party/marked/marked.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
+import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import { html, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
@@ -293,7 +294,7 @@ var ReleaseNoteView = class extends UI.Panel.Panel {
     const markdownContent = await getMarkdownContent();
     this.#view({
       getReleaseNote,
-      openNewTab: UI.UIUtils.openInNewTab,
+      openNewTab: UIHelpers.openInNewTab,
       markdownContent,
       getThumbnailPath: this.#getThumbnailPath
     }, this, this.contentElement);
@@ -328,6 +329,7 @@ __export(WhatsNewImpl_exports, {
 });
 import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
+import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 var releaseVersionSeen = "releaseNoteVersionSeen";
 var releaseNoteViewId = "release-note";
@@ -379,7 +381,7 @@ var releaseNotesActionDelegateInstance;
 var ReleaseNotesActionDelegate = class _ReleaseNotesActionDelegate {
   handleAction(_context, _actionId) {
     const releaseNote2 = getReleaseNote();
-    UI2.UIUtils.openInNewTab(releaseNote2.link);
+    UIHelpers2.openInNewTab(releaseNote2.link);
     return true;
   }
   static instance(opts = { forceNew: null }) {
@@ -393,7 +395,7 @@ var ReleaseNotesActionDelegate = class _ReleaseNotesActionDelegate {
 var reportIssueActionDelegateInstance;
 var ReportIssueActionDelegate = class _ReportIssueActionDelegate {
   handleAction(_context, _actionId) {
-    UI2.UIUtils.openInNewTab("https://goo.gle/devtools-bug");
+    UIHelpers2.openInNewTab("https://goo.gle/devtools-bug");
     return true;
   }
   static instance(opts = { forceNew: null }) {

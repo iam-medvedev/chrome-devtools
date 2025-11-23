@@ -20,6 +20,7 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
+import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI from "./../../ui/legacy/legacy.js";
@@ -633,7 +634,7 @@ var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.VBo
         jslogContext: `${experiment.name}-documentation`,
         title: i18nString(UIStrings.learnMore)
       };
-      linkButton.addEventListener("click", () => UI.UIUtils.openInNewTab(experimentLink));
+      linkButton.addEventListener("click", () => UIHelpers.openInNewTab(experimentLink));
       linkButton.classList.add("link-icon");
       p.appendChild(linkButton);
     }
@@ -669,7 +670,7 @@ var ActionDelegate = class {
         void SettingsScreen.showSettingsScreen({ focusTabHeader: true });
         return true;
       case "settings.documentation":
-        UI.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/");
+        UIHelpers.openInNewTab("https://developer.chrome.com/docs/devtools/");
         return true;
       case "settings.shortcuts":
         void SettingsScreen.showSettingsScreen({ name: "keybinds", focusTabHeader: true });
@@ -1699,6 +1700,7 @@ import "./../../ui/components/cards/cards.js";
 import * as Common3 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
+import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
 import * as SettingsUI3 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
@@ -1913,7 +1915,7 @@ var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
       jslogContext: "learn-more",
       title: i18nString4(UIStrings4.learnMore)
     };
-    automaticallyIgnoreLinkButton.addEventListener("click", () => UI4.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party"));
+    automaticallyIgnoreLinkButton.addEventListener("click", () => UIHelpers2.openInNewTab("https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party"));
     automaticallyIgnoreListContainer.appendChild(automaticallyIgnoreLinkButton);
     const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListAnonymousScripts), Common3.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts")));
     const generalExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
@@ -2456,7 +2458,7 @@ var KeybindsSettingsTab = class extends UI5.Widget.VBox {
     this.focus();
   }
   createListItems() {
-    const actions = UI5.ActionRegistry.ActionRegistry.instance().actions().sort((actionA, actionB) => {
+    const actions = UI5.ActionRegistry.ActionRegistry.instance().actions().filter((action2) => action2.configurableBindings()).sort((actionA, actionB) => {
       if (actionA.category() < actionB.category()) {
         return -1;
       }
@@ -2474,9 +2476,6 @@ var KeybindsSettingsTab = class extends UI5.Widget.VBox {
     const items = [];
     let currentCategory;
     actions.forEach((action2) => {
-      if (action2.id() === "elements.toggle-element-search") {
-        return;
-      }
       if (currentCategory !== action2.category()) {
         items.push(action2.category());
       }
@@ -2486,8 +2485,8 @@ var KeybindsSettingsTab = class extends UI5.Widget.VBox {
     return items;
   }
   onEscapeKeyPressed(event) {
-    const deepActiveElement = Platform3.DOMUtilities.deepActiveElement(document);
-    if (this.editingRow && deepActiveElement && deepActiveElement.nodeName === "INPUT") {
+    const deepActiveElement = UI5.DOMUtilities.deepActiveElement(document);
+    if (this.editingRow && deepActiveElement?.nodeName === "INPUT") {
       this.editingRow.onEscapeKeyPressed(event);
     }
   }
@@ -2745,7 +2744,7 @@ var ShortcutListItem = class {
     UI5.ARIAUtils.LiveAnnouncer.alert(i18nString5(UIStrings5.shortcutChangesRestored, { PH1: this.item.title() }));
   }
   onEscapeKeyPressed(event) {
-    const activeElement = Platform3.DOMUtilities.deepActiveElement(document);
+    const activeElement = UI5.DOMUtilities.deepActiveElement(document);
     for (const [shortcut, shortcutInput] of this.shortcutInputs.entries()) {
       if (activeElement === shortcutInput) {
         this.onShortcutInputKeyDown(shortcut, shortcutInput, event);

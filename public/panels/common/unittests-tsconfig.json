@@ -46,6 +46,7 @@
     "../../../../../../front_end/panels/common/AiCodeCompletionDisclaimer.test.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionSummaryToolbar.test.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionTeaser.test.ts",
+    "../../../../../../front_end/panels/common/AiCodeGenerationTeaser.test.ts",
     "../../../../../../front_end/panels/common/BadgeNotification.test.ts",
     "../../../../../../front_end/panels/common/DOMLinkifier.test.ts",
     "../../../../../../front_end/panels/common/ExtensionServer.test.ts",

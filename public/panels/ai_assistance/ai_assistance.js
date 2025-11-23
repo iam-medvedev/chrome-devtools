@@ -18,6 +18,7 @@ import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Workspace6 from "./../../models/workspace/workspace.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
+import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 import * as Lit4 from "./../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
@@ -2081,6 +2082,7 @@ import * as Host3 from "./../../core/host/host.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as Input from "./../../ui/components/input/input.js";
+import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
@@ -2450,7 +2452,7 @@ var UserActionRow = class extends UI3.Widget.Widget {
     this.#view({
       onSuggestionClick: this.onSuggestionClick,
       onRatingClick: this.#handleRateClick.bind(this),
-      onReportClick: () => UI3.UIUtils.openInNewTab(REPORT_URL),
+      onReportClick: () => UIHelpers.openInNewTab(REPORT_URL),
       onCopyResponseClick: this.onCopyResponseClick,
       scrollSuggestionsScrollContainer: this.#scrollSuggestionsScrollContainer.bind(this),
       onSuggestionsScrollOrResize: this.#handleSuggestionsScrollOrResize.bind(this),
@@ -2720,13 +2722,6 @@ var ChatView = class extends HTMLElement {
   }
   disconnectedCallback() {
     this.#messagesContainerResizeObserver.disconnect();
-  }
-  clearTextInput() {
-    const textArea = this.#shadow.querySelector(".chat-input");
-    if (!textArea) {
-      return;
-    }
-    textArea.value = "";
   }
   focusTextInput() {
     const textArea = this.#shadow.querySelector(".chat-input");
@@ -3009,7 +3004,7 @@ function renderStepBadge({ step, isLoading, isLast }) {
 function renderStep({ step, isLoading, markdownRenderer, isLast }) {
   const stepClasses = Lit2.Directives.classMap({
     step: true,
-    empty: !step.thought && !step.code && !step.contextDetails,
+    empty: !step.thought && !step.code && !step.contextDetails && !step.sideEffect,
     paused: Boolean(step.sideEffect),
     canceled: Boolean(step.canceled)
   });
@@ -3135,7 +3130,7 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
   `;
 }
 function renderImageChatMessage(inlineData) {
-  if (inlineData.data === AiAssistanceModel2.AiHistoryStorage.NOT_FOUND_IMAGE_DATA) {
+  if (inlineData.data === AiAssistanceModel2.AiConversation.NOT_FOUND_IMAGE_DATA) {
     return html4`<div class="unavailable-image" title=${UIStringsNotTranslate4.imageUnavailable}>
       <devtools-icon name='file-image'></devtools-icon>
     </div>`;
@@ -3179,6 +3174,9 @@ function renderContextTitle(context, disabled) {
   return context.getTitle();
 }
 function renderSelection({ selectedContext, inspectElementToggled, conversationType, isTextInputDisabled, onContextClick, onInspectElementClick }) {
+  if (!selectedContext) {
+    return Lit2.nothing;
+  }
   const hasPickerBehavior = conversationType === "freestyler";
   const resourceClass = Lit2.Directives.classMap({
     "not-selected": !selectedContext,
@@ -3186,9 +3184,6 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
     "has-picker-behavior": hasPickerBehavior,
     disabled: isTextInputDisabled
   });
-  if (!selectedContext && !hasPickerBehavior) {
-    return Lit2.nothing;
-  }
   const handleKeyDown = (ev) => {
     if (ev.key === "Enter" || ev.key === " ") {
       void onContextClick();
@@ -3403,7 +3398,10 @@ function renderImageInput({ multimodalInputEnabled, imageInput, isTextInputDisab
     </div>`;
 }
 function renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin, tooltipId, disclaimerText }) {
-  const classes = Lit2.Directives.classMap({ "chat-input-disclaimer": true, "hide-divider": !isLoading && blockedByCrossOrigin });
+  const classes = Lit2.Directives.classMap({
+    "chat-input-disclaimer": true,
+    "hide-divider": !isLoading && blockedByCrossOrigin
+  });
   return html4`
     <p class=${classes}>
       <button
@@ -3417,45 +3415,62 @@ function renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin, tooltip
     void UI4.ViewManager.ViewManager.instance().showView("chrome-ai");
   }}
       >${lockedString4("Relevant data")}</button>&nbsp;${lockedString4("is sent to Google")}
-      ${renderDisclamerTooltip(tooltipId, disclaimerText)}
+      ${renderDisclaimerTooltip(tooltipId, disclaimerText)}
     </p>
   `;
 }
 function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, disclaimerText, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload }) {
-  const shouldShowMultiLine = selectedContext;
   const chatInputContainerCls = Lit2.Directives.classMap({
     "chat-input-container": true,
-    "single-line-layout": !shouldShowMultiLine,
+    "single-line-layout": !selectedContext,
     disabled: isTextInputDisabled
   });
-  return html4`
-  <form class="input-form" @submit=${onSubmit}>
+  return html4` <form class="input-form" @submit=${onSubmit}>
     <div class=${chatInputContainerCls}>
-      ${renderImageInput({ multimodalInputEnabled, imageInput, isTextInputDisabled, onRemoveImageInput })}
-      <textarea class="chat-input"
+      ${renderImageInput({
+    multimodalInputEnabled,
+    imageInput,
+    isTextInputDisabled,
+    onRemoveImageInput
+  })}
+      <textarea
+        class="chat-input"
         .disabled=${isTextInputDisabled}
         wrap="hard"
         maxlength="10000"
         @keydown=${onTextAreaKeyDown}
         @input=${(event) => onTextInputChange(event.target.value)}
         placeholder=${inputPlaceholder}
-        jslog=${VisualLogging4.textField("query").track({ change: true, keydown: "Enter" })}
+        jslog=${VisualLogging4.textField("query").track({
+    change: true,
+    keydown: "Enter"
+  })}
         aria-description=${i18nString(UIStrings.inputTextAriaDescription)}
+        ${ref2((el) => {
+    if (el && isTextInputDisabled) {
+      el.value = "";
+    }
+  })}
       ></textarea>
       <div class="chat-input-actions">
         <div class="chat-input-actions-left">
-          ${shouldShowMultiLine ? renderSelection({
+          ${renderSelection({
     selectedContext,
     inspectElementToggled,
     conversationType,
     isTextInputDisabled,
     onContextClick,
     onInspectElementClick
-  }) : Lit2.nothing}
+  })}
         </div>
         <div class="chat-input-actions-right">
           <div class="chat-input-disclaimer-container">
-            ${renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin, tooltipId: RELEVANT_DATA_LINK_CHAT_ID, disclaimerText })}
+            ${renderRelevantDataDisclaimer({
+    isLoading,
+    blockedByCrossOrigin,
+    tooltipId: RELEVANT_DATA_LINK_CHAT_ID,
+    disclaimerText
+  })}
           </div>
           ${renderMultimodalInputButtons({
     multimodalInputEnabled,
@@ -3499,7 +3514,7 @@ function renderMainContents({ messages, isLoading, isReadOnly, canShowFeedbackFo
   }
   return renderEmptyState({ isTextInputDisabled, suggestions, onSuggestionClick });
 }
-function renderDisclamerTooltip(id, disclaimerText) {
+function renderDisclaimerTooltip(id, disclaimerText) {
   return html4`
     <devtools-tooltip
       id=${id}
@@ -4321,10 +4336,10 @@ function toolbarView(input) {
       <devtools-toolbar class="freestyler-right-toolbar" role="presentation">
         <x-link
           class="toolbar-feedback-link devtools-link"
-          title=${UIStrings3.sendFeedback}
+          title=${i18nString3(UIStrings3.sendFeedback)}
           href=${AI_ASSISTANCE_SEND_FEEDBACK}
           jslog=${VisualLogging7.link().track({ click: true, keydown: "Enter|Space" }).context("freestyler.send-feedback")}
-        >${UIStrings3.sendFeedback}</x-link>
+        >${i18nString3(UIStrings3.sendFeedback)}</x-link>
         <div class="toolbar-divider"></div>
         <devtools-button
           title=${i18nString3(UIStrings3.help)}
@@ -4399,21 +4414,6 @@ function createPerformanceTraceContext(focus) {
   }
   return new AiAssistanceModel3.PerformanceAgent.PerformanceTraceContext(focus);
 }
-function agentToConversationType(agent) {
-  if (agent instanceof AiAssistanceModel3.StylingAgent.StylingAgent) {
-    return "freestyler";
-  }
-  if (agent instanceof AiAssistanceModel3.NetworkAgent.NetworkAgent) {
-    return "drjones-network-request";
-  }
-  if (agent instanceof AiAssistanceModel3.FileAgent.FileAgent) {
-    return "drjones-file";
-  }
-  if (agent instanceof AiAssistanceModel3.PerformanceAgent.PerformanceAgent) {
-    return "drjones-performance-full";
-  }
-  throw new Error("Provided agent does not have a corresponding conversation type");
-}
 var panelInstance;
 var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
   view;
@@ -4426,7 +4426,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
   #aiAssistanceEnabledSetting;
   #changeManager = new AiAssistanceModel3.ChangeManager.ChangeManager();
   #mutex = new Common5.Mutex.Mutex();
-  #conversationAgent;
   #conversation;
   #selectedFile = null;
   #selectedElement = null;
@@ -4434,10 +4433,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
   #selectedRequest = null;
   // Messages displayed in the `ChatView` component.
   #messages = [];
-  // Indicates whether the new conversation context is blocked due to cross-origin restrictions.
-  // This happens when the conversation's context has a different
-  // origin than the selected context.
-  #blockedByCrossOrigin = false;
   // Whether the UI should show loading or not.
   #isLoading = false;
   // Selected conversation context. The reason we keep this as a
@@ -4454,7 +4449,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
   // Used to disable send button when there is not text input.
   #isTextInputEmpty = true;
   #timelinePanelInstance = null;
-  #conversationHandler;
   #runAbortController = new AbortController();
   constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
     super(_AiAssistancePanel.panelName);
@@ -4467,7 +4461,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
       accountImage: syncInfo.accountImage,
       accountFullName: syncInfo.accountFullName
     };
-    this.#conversationHandler = AiAssistanceModel3.ConversationHandler.ConversationHandler.instance({ aidaClient: this.#aidaClient, aidaAvailability });
     if (UI7.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
       this.#toggleSearchElementAction = UI7.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
     }
@@ -4483,7 +4476,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
         }
       };
     }
-    if (this.#conversation?.type) {
+    if (this.#conversation) {
       const emptyStateSuggestions = await getEmptyStateSuggestions(this.#selectedContext, this.#conversation);
       const markdownRenderer = getMarkdownRenderer(this.#selectedContext, this.#conversation);
       return {
@@ -4574,7 +4567,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
     const isNetworkPanelVisible = viewManager.isViewVisible("network");
     const isSourcesPanelVisible = viewManager.isViewVisible("sources");
     const isPerformancePanelVisible = viewManager.isViewVisible("timeline");
-    let targetConversationType = void 0;
+    let targetConversationType;
     if (isElementsPanelVisible && hostConfig.devToolsFreestyler?.enabled) {
       targetConversationType = "freestyler";
     } else if (isNetworkPanelVisible && hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
@@ -4589,43 +4582,30 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
   // We select the default agent based on the open panels if
   // there isn't any active conversation.
   #selectDefaultAgentIfNeeded() {
-    if (this.#conversationAgent && this.#conversation && !this.#conversation.isEmpty || this.#isLoading) {
+    if (this.#conversation && !this.#conversation.isEmpty || this.#isLoading) {
       return;
     }
     const targetConversationType = this.#getDefaultConversationType();
     if (this.#conversation?.type === targetConversationType) {
       return;
     }
-    const agent = targetConversationType ? this.#conversationHandler.createAgent(targetConversationType, this.#changeManager) : void 0;
-    this.#updateConversationState({ agent });
+    const conversation = targetConversationType ? new AiAssistanceModel3.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager) : void 0;
+    this.#updateConversationState(conversation);
   }
-  #updateConversationState(opts) {
-    if (this.#conversationAgent !== opts?.agent) {
+  #updateConversationState(conversation) {
+    if (this.#conversation !== conversation) {
       this.#cancel();
       this.#messages = [];
       this.#isLoading = false;
       this.#conversation?.archiveConversation();
-      this.#conversationAgent = opts?.agent;
-      if (opts?.agent) {
-        this.#conversation = new AiAssistanceModel3.AiHistoryStorage.Conversation(agentToConversationType(opts.agent), [], opts.agent.id, false);
+      if (!conversation) {
+        const conversationType = this.#getDefaultConversationType();
+        if (conversationType) {
+          conversation = new AiAssistanceModel3.AiConversation.AiConversation(conversationType, [], void 0, false, this.#aidaClient, this.#changeManager);
+        }
       }
+      this.#conversation = conversation;
     }
-    if (!opts?.agent) {
-      this.#conversation = void 0;
-      this.#messages = [];
-      if (opts?.conversation) {
-        this.#conversation = opts.conversation;
-      }
-    }
-    if (!this.#conversationAgent && !this.#conversation) {
-      const conversationType = this.#getDefaultConversationType();
-      if (conversationType) {
-        const agent = this.#conversationHandler.createAgent(conversationType, this.#changeManager);
-        this.#updateConversationState({ agent });
-        return;
-      }
-    }
-    this.#onContextSelectionChanged();
     this.requestUpdate();
   }
   wasShown() {
@@ -4637,7 +4617,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
     this.#selectedRequest = createRequestContext(UI7.Context.Context.instance().flavor(SDK3.NetworkRequest.NetworkRequest));
     this.#selectedPerformanceTrace = createPerformanceTraceContext(UI7.Context.Context.instance().flavor(AiAssistanceModel3.AIContext.AgentFocus));
     this.#selectedFile = createFileContext(UI7.Context.Context.instance().flavor(Workspace6.UISourceCode.UISourceCode));
-    this.#updateConversationState({ agent: this.#conversationAgent });
+    this.#updateConversationState(this.#conversation);
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
     Host6.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.addEventListener("Toggled", this.requestUpdate, this);
@@ -4690,7 +4670,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
       return;
     }
     this.#selectedElement = createNodeContext(selectedElementFilter(ev.data));
-    this.#updateConversationState({ agent: this.#conversationAgent });
+    this.#updateConversationState(this.#conversation);
   };
   #handleDOMNodeAttrChange = (ev) => {
     if (this.#selectedElement?.getItem() === ev.data.node) {
@@ -4709,25 +4689,22 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
     } else {
       this.#selectedRequest = null;
     }
-    this.#updateConversationState({ agent: this.#conversationAgent });
+    this.#updateConversationState(this.#conversation);
   };
   #handlePerformanceTraceFlavorChange = (ev) => {
     if (this.#selectedPerformanceTrace?.getItem() === ev.data) {
       return;
     }
     this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel3.PerformanceAgent.PerformanceTraceContext(ev.data) : null;
-    this.#updateConversationState({ agent: this.#conversationAgent });
+    this.#updateConversationState(this.#conversation);
   };
   #handleUISourceCodeFlavorChange = (ev) => {
     const newFile = ev.data;
-    if (!newFile) {
-      return;
-    }
-    if (this.#selectedFile?.getItem() === newFile) {
+    if (!newFile || this.#selectedFile?.getItem() === newFile) {
       return;
     }
     this.#selectedFile = new AiAssistanceModel3.FileAgent.FileContext(ev.data);
-    this.#updateConversationState({ agent: this.#conversationAgent });
+    this.#updateConversationState(this.#conversation);
   };
   #onPrimaryPageChanged() {
     if (!this.#imageInput) {
@@ -4737,11 +4714,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
     this.requestUpdate();
   }
   #getChangeSummary() {
-    if (!isAiAssistancePatchingEnabled() || !this.#conversationAgent || this.#conversation?.isReadOnly) {
+    if (!isAiAssistancePatchingEnabled() || !this.#conversation || this.#conversation?.isReadOnly) {
       return;
     }
     return this.#changeManager.formatChangesForPatching(
-      this.#conversationAgent.id,
+      this.#conversation.id,
       /* includeSourceLocation= */
       true
     );
@@ -4756,7 +4733,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
       onDeleteClick: this.#onDeleteClicked.bind(this),
       onExportConversationClick: this.#onExportConversationClick.bind(this),
       onHelpClick: () => {
-        UI7.UIUtils.openInNewTab(AI_ASSISTANCE_HELP);
+        UIHelpers2.openInNewTab(AI_ASSISTANCE_HELP);
       },
       onSettingsClick: () => {
         void UI7.ViewManager.ViewManager.instance().showView("chrome-ai");
@@ -4950,11 +4927,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
     if (!targetConversationType) {
       return;
     }
-    let agent = this.#conversationAgent;
-    if (!this.#conversation || !this.#conversationAgent || this.#conversation.type !== targetConversationType || this.#conversation?.isEmpty) {
-      agent = this.#conversationHandler.createAgent(targetConversationType, this.#changeManager);
+    let conversation = this.#conversation;
+    if (!this.#conversation || this.#conversation.type !== targetConversationType || this.#conversation.isEmpty) {
+      conversation = new AiAssistanceModel3.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager);
     }
-    this.#updateConversationState({ agent });
+    this.#updateConversationState(conversation);
     const predefinedPrompt = opts?.["prompt"];
     if (predefinedPrompt && typeof predefinedPrompt === "string") {
       if (!this.#canExecuteQuery()) {
@@ -4972,18 +4949,14 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
     }
   }
   #populateHistoryMenu(contextMenu) {
-    const historicalConversations = AiAssistanceModel3.AiHistoryStorage.AiHistoryStorage.instance().getHistory().map((serializedConversation) => AiAssistanceModel3.AiHistoryStorage.Conversation.fromSerializedConversation(serializedConversation));
+    const historicalConversations = AiAssistanceModel3.AiHistoryStorage.AiHistoryStorage.instance().getHistory().map((serializedConversation) => AiAssistanceModel3.AiConversation.AiConversation.fromSerializedConversation(serializedConversation));
     for (const conversation of historicalConversations.reverse()) {
-      if (conversation.isEmpty) {
+      if (conversation.isEmpty || !conversation.title) {
         continue;
       }
-      const title = conversation.title;
-      if (!title) {
-        continue;
-      }
-      contextMenu.defaultSection().appendCheckboxItem(title, () => {
+      contextMenu.defaultSection().appendCheckboxItem(conversation.title, () => {
         void this.#openHistoricConversation(conversation);
-      }, { checked: this.#conversation === conversation, jslogContext: "freestyler.history-item" });
+      }, { checked: this.#conversation?.id === conversation.id, jslogContext: "freestyler.history-item" });
     }
     const historyEmpty = contextMenu.defaultSection().items.length === 0;
     if (historyEmpty) {
@@ -5028,10 +5001,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
     Workspace6.FileManager.FileManager.instance().close(filename);
   }
   async #openHistoricConversation(conversation) {
-    if (this.#conversation === conversation) {
+    if (this.#conversation?.id === conversation.id) {
       return;
     }
-    this.#updateConversationState({ conversation });
+    this.#updateConversationState(conversation);
     await this.#doConversation(conversation.history);
   }
   #handleNewChatRequest() {
@@ -5097,10 +5070,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
       this.#imageInput = { isLoading: true };
       this.requestUpdate();
     }, SHOW_LOADING_STATE_TIMEOUT);
-    const reader = new FileReader();
-    let dataUrl;
     try {
-      dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      const dataUrl = await new Promise((resolve, reject) => {
         reader.onload = () => {
           if (typeof reader.result === "string") {
             resolve(reader.result);
@@ -5110,31 +5082,22 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
         };
         reader.readAsDataURL(file);
       });
+      const commaIndex = dataUrl.indexOf(",");
+      const bytes = dataUrl.substring(commaIndex + 1);
+      this.#imageInput = {
+        isLoading: false,
+        data: bytes,
+        mimeType: file.type,
+        inputType: "uploaded-image"
+        /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
+      };
     } catch {
-      clearTimeout(showLoadingTimeout);
       this.#imageInput = void 0;
-      this.requestUpdate();
-      void this.updateComplete.then(() => {
-        this.#viewOutput.chatView?.focusTextInput();
-      });
       Snackbars.Snackbar.Snackbar.show({
         message: lockedString6(UIStringsNotTranslate6.uploadImageFailureMessage)
       });
-      return;
     }
     clearTimeout(showLoadingTimeout);
-    if (!dataUrl) {
-      return;
-    }
-    const commaIndex = dataUrl.indexOf(",");
-    const bytes = dataUrl.substring(commaIndex + 1);
-    this.#imageInput = {
-      isLoading: false,
-      data: bytes,
-      mimeType: file.type,
-      inputType: "uploaded-image"
-      /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
-    };
     this.requestUpdate();
     void this.updateComplete.then(() => {
       this.#viewOutput.chatView?.focusTextInput();
@@ -5144,18 +5107,18 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
     this.#runAbortController.abort();
     this.#runAbortController = new AbortController();
   }
-  #onContextSelectionChanged() {
-    if (!this.#conversationAgent) {
-      this.#blockedByCrossOrigin = false;
-      return;
+  // Indicates whether the new conversation context is blocked due to cross-origin restrictions.
+  // This happens when the conversation's context has a different
+  // origin than the selected context.
+  get #blockedByCrossOrigin() {
+    if (!this.#conversation) {
+      return false;
     }
     this.#selectedContext = this.#getConversationContext(this.#conversation);
     if (!this.#selectedContext) {
-      this.#blockedByCrossOrigin = false;
-      this.#viewOutput.chatView?.clearTextInput();
-      return;
+      return false;
     }
-    this.#blockedByCrossOrigin = !this.#selectedContext.isOriginAllowed(this.#conversationAgent.origin);
+    return !this.#selectedContext.isOriginAllowed(this.#conversation.origin);
   }
   #getConversationContext(conversation) {
     if (!conversation) {
@@ -5179,34 +5142,28 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI7.Panel.Panel {
     return context;
   }
   async #startConversation(text, imageInput, multimodalInputType) {
-    if (!this.#conversationAgent) {
+    if (!this.#conversation) {
       return;
     }
     this.#cancel();
     const signal = this.#runAbortController.signal;
     const context = this.#getConversationContext(this.#conversation);
-    if (context && !context.isOriginAllowed(this.#conversationAgent.origin)) {
+    if (context && !context.isOriginAllowed(this.#conversation.origin)) {
       throw new Error("cross-origin context data should not be included");
     }
-    if (this.#conversation?.isEmpty) {
+    if (this.#conversation.isEmpty) {
       Badges.UserBadges.instance().recordAction(Badges.BadgeAction.STARTED_AI_CONVERSATION);
     }
-    const image = isAiAssistanceMultimodalInputEnabled() ? imageInput : void 0;
-    const imageId = image ? crypto.randomUUID() : void 0;
-    const multimodalInput = image && imageId && multimodalInputType ? {
-      input: image,
-      id: imageId,
+    const multimodalInput = isAiAssistanceMultimodalInputEnabled() && imageInput && multimodalInputType ? {
+      input: imageInput,
+      id: crypto.randomUUID(),
       type: multimodalInputType
     } : void 0;
-    if (this.#conversation) {
-      void VisualLogging7.logFunctionCall(`start-conversation-${this.#conversation.type}`, "ui");
-    }
-    const generator = this.#conversationAgent.run(text, {
+    void VisualLogging7.logFunctionCall(`start-conversation-${this.#conversation.type}`, "ui");
+    await this.#doConversation(this.#conversation.run(text, {
       signal,
       selected: context
-    }, multimodalInput);
-    const generatorWithHistory = this.#conversationHandler.handleConversationWithHistory(generator, this.#conversation);
-    await this.#doConversation(generatorWithHistory);
+    }, multimodalInput));
   }
   async #doConversation(items) {
     const release = await this.#mutex.acquire();
@@ -5351,7 +5308,7 @@ function getResponseMarkdown(message) {
       contentParts.push(`### ${step.title}`);
     }
     if (step.contextDetails) {
-      contentParts.push(AiAssistanceModel3.AiHistoryStorage.Conversation.generateContextDetailsMarkdown(step.contextDetails));
+      contentParts.push(AiAssistanceModel3.AiConversation.generateContextDetailsMarkdown(step.contextDetails));
     }
     if (step.thought) {
       contentParts.push(step.thought);

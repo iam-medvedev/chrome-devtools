@@ -28,7 +28,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2023",
+    "target": "es2023",
     "tsBuildInfoFile": "formatter-tsconfig.json.tsbuildinfo",
     "typeRoots": [],
     "types": [],
@@ -44,6 +44,12 @@
   "references": [
     {
       "path": "../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/platform/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/platform/api/bundle-tsconfig.json"
     },
     {
       "path": "../../entrypoints/formatter_worker/formatter_actions-tsconfig.json"

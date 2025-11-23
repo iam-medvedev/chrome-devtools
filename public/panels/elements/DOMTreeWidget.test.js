@@ -19,6 +19,7 @@ describeWithMockConnection('DOMTreeWidget', () => {
                 elementsTreeOutline,
                 alreadyExpandedParentTreeElement: null,
                 highlightedTreeElement: null,
+                isUpdatingHighlights: false,
             });
             const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget(undefined, view);
             domTree.performUpdate();

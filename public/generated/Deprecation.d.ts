@@ -1,5 +1,9 @@
 export declare const UIStrings: {
     /**
+     * @description This warning occurs when the website uses Attribution Reporting.
+     */
+    readonly AttributionReporting: "Attribution Reporting is deprecated and will be removed. See https://goo.gle/ps-status for details.";
+    /**
      * @description We show this warning when 1) an 'authorization' header is attached to the request by scripts, 2) there is no 'authorization' in the 'access-control-allow-headers' header in the response, and 3) there is a wildcard symbol ('*') in the 'access-control-allow-header' header in the response. This is allowed now, but we're planning to reject such responses and require responses to have an 'access-control-allow-headers' containing 'authorization'.
      */
     readonly AuthorizationCoveredByWildcard: "Authorization will not be covered by the wildcard symbol (*) in CORS `Access-Control-Allow-Headers` handling.";
@@ -47,6 +51,10 @@ export declare const UIStrings: {
      * @description Warning displayed to developers when a data: URL is assigned to SVGUseElement to let them know that the support is deprecated.
      */
     readonly DataUrlInSvgUse: "Support for data: URLs in SVGUseElement is deprecated and it will be removed in the future.";
+    /**
+     * @description A deprecation warning shown in the DevTools Issues tab. It's shown when one of the Protected Audience APIs like `navigator.joinAdInterestGroup`, `navigator.getInterestGroupAdAuctionData` or `navigator.runAdAuction` are called.
+     */
+    readonly Fledge: "The Protected Audience API is deprecated and will be removed in a future release.";
     /**
      * @description Warning displayed to developers when the Geolocation API is used from an insecure origin (one that isn't localhost or doesn't use HTTPS) to notify them that this use is no longer supported.
      */
@@ -168,6 +176,10 @@ export declare const UIStrings: {
      */
     readonly RangeExpand: "Range.expand() is deprecated. Please use Selection.modify() instead.";
     /**
+     * @description A deprecation warning shown in the DevTools Issues tab. It's shown when the Storage Access API is automatically granted by Related Website Sets. The placeholder will always be the string `Related Website Sets`.
+     */
+    readonly RelatedWebsiteSets: "`Related Website Sets` is deprecated and will be removed. See https://privacysandbox.com/news/update-on-plans-for-privacy-sandbox-technologies/ for more details.";
+    /**
      * @description This warning occurs when a subresource loaded by a page has a URL with an authority portion. These are disallowed.
      */
     readonly RequestedSubresourceWithEmbeddedCredentials: "Subresource requests whose URLs contain embedded credentials (e.g. `https://user:pass@host/`) are blocked.";
@@ -196,6 +208,10 @@ export declare const UIStrings: {
      */
     readonly TextToSpeech_DisallowedByAutoplay: "`speechSynthesis.speak()` without user activation is deprecated and will be removed.";
     /**
+     * @description A deprecation warning shown in the DevTools Issues tab. It's shown when one of the Topics APIs like `document.browsingTopics()`, `<img browsingtopics>`, `<iframe browsingtopics>`, or `fetch(url, {browsingTopics: true})` are used.
+     */
+    readonly Topics: "The Topics API is deprecated and will be removed in a future release.";
+    /**
      * @description A deprecation warning shown in the DevTools Issues tab. It's shown when a listener for the `unload` event is added.
      */
     readonly UnloadHandler: "Unload event listeners are deprecated and will be removed.";
@@ -215,6 +231,10 @@ export declare const UIStrings: {
      * @description Warning displayed to developers. It is shown when the `XMLHttpRequest` API is used in a way that it slows down the page load of the next page. The `main thread` refers to an operating systems thread used to run most of the processing of HTML documents, so please use a consistent wording.
      */
     readonly XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload: "Synchronous `XMLHttpRequest` on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.";
+    /**
+     * @description Warning displayed to developers that they are using externally loaded entities in an XML document that constitutes a part of the web page. Externally loaded entities are a technical concept of XML document processing.
+     */
+    readonly XMLNoExternalEntities: "Externally loaded entities in XML parsing have been deprecated and will be removed from this browser soon.";
     /**
      * @description Warning displayed to developers that they are using either the XSLTProcessor API, or XSLT processing instructions, both of which have been deprecated and are scheduled to be removed.
      */

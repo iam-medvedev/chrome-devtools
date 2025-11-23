@@ -47,6 +47,7 @@
     "../../../../../../front_end/ui/legacy/ActionRegistration.test.ts",
     "../../../../../../front_end/ui/legacy/Context.test.ts",
     "../../../../../../front_end/ui/legacy/ContextMenu.test.ts",
+    "../../../../../../front_end/ui/legacy/DOMUtilities.test.ts",
     "../../../../../../front_end/ui/legacy/Dialog.test.ts",
     "../../../../../../front_end/ui/legacy/DockController.test.ts",
     "../../../../../../front_end/ui/legacy/FilterBar.test.ts",

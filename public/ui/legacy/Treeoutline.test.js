@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Platform from '../../core/platform/platform.js';
 import { dispatchKeyDownEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as UI from './legacy.js';
@@ -79,7 +78,7 @@ describe('TreeOutline', () => {
         sendKey('ArrowRight');
         assert.isTrue(innerTreeOutline.firstChild().expanded, 'child is not expanded');
         function sendKey(key) {
-            const deepActiveElement = Platform.DOMUtilities.deepActiveElement(document);
+            const deepActiveElement = UI.DOMUtilities.deepActiveElement(document);
             deepActiveElement.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key }));
         }
     });

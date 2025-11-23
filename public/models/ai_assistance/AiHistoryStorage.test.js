@@ -347,18 +347,18 @@ describe('AiHistoryStorage', () => {
     describe('Conversation', () => {
         describe('title', () => {
             it('should return undefined if there is not USER_QUERY entry in history', () => {
-                const conversation = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, []);
+                const conversation = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, []);
                 assert.isUndefined(conversation.title);
             });
             it('should return full title if the first USER_QUERY is less than 80 characters', () => {
-                const conversation = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [{
+                const conversation = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [{
                         type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'this is less than 80',
                     }]);
                 assert.strictEqual(conversation.title, 'this is less than 80');
             });
             it('should return first 80 characters of the title with ellipis if the first USER_QUERY is more than 80 characters', () => {
-                const conversation = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [{
+                const conversation = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [{
                         type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'this is more than 80 characters because I\'m just going to keep typing words and words and words until it\'s really, really long, see?',
                     }]);
@@ -391,9 +391,9 @@ describe('AiHistoryStorage', () => {
             it('should store images and text conversation separately', async () => {
                 const storage = getStorage();
                 sinon.stub(AiAssistance.AiHistoryStorage.AiHistoryStorage, 'instance').returns(storage);
-                const conversation1 = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id1', false);
+                const conversation1 = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id1', false);
                 await conversation1.addHistoryItem(historyItem1);
-                const conversation2 = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id2', false);
+                const conversation2 = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id2', false);
                 await conversation2.addHistoryItem(historyItem2);
                 const imageHistory = storage.getImageHistory();
                 assert.lengthOf(imageHistory, 2);
@@ -435,22 +435,22 @@ describe('AiHistoryStorage', () => {
                 const MAX_STORAGE_SIZE = 1;
                 const storage = getStorage(MAX_STORAGE_SIZE);
                 sinon.stub(AiAssistance.AiHistoryStorage.AiHistoryStorage, 'instance').returns(storage);
-                const conversation1 = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id1', false);
+                const conversation1 = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id1', false);
                 await conversation1.addHistoryItem(historyItem1);
-                const conversation2 = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id2', false);
+                const conversation2 = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id2', false);
                 await conversation2.addHistoryItem(historyItem2);
                 const imageHistory = storage.getImageHistory();
                 assert.lengthOf(imageHistory, 1);
                 const historyWithoutImages = storage.getHistory();
                 assert.lengthOf(historyWithoutImages, 2);
-                const conversationFromHistory = historyWithoutImages.map(item => AiAssistance.AiHistoryStorage.Conversation.fromSerializedConversation(item));
+                const conversationFromHistory = historyWithoutImages.map(item => AiAssistance.AiConversation.AiConversation.fromSerializedConversation(item));
                 assert.lengthOf(conversationFromHistory, 2);
                 assert.deepEqual(conversationFromHistory[0].history, [{
                         type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'text',
                         imageInput: {
                             inlineData: {
-                                data: AiAssistance.AiHistoryStorage.NOT_FOUND_IMAGE_DATA,
+                                data: AiAssistance.AiConversation.NOT_FOUND_IMAGE_DATA,
                                 mimeType: 'image/jpeg',
                             }
                         },
@@ -529,7 +529,7 @@ describe('AiHistoryStorage', () => {
                     complete: true,
                 },
             ];
-            const conversation = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, history);
+            const conversation = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, history);
             const markdown = conversation.getConversationMarkdown();
             snapshotTester.assert(this, markdown);
             clock.restore();

@@ -1450,6 +1450,7 @@ export class TimelineUIUtils {
     }
     static renderEventJson(event, contentHelper) {
         contentHelper.addSection(i18nString(UIStrings.traceEvent));
+        contentHelper.appendElementRow('eventKey', new Trace.EventsSerializer.EventsSerializer().keyForEvent(event) ?? '?');
         const eventWithArgsFirst = {
             ...{ args: event.args },
             ...event,
@@ -2126,7 +2127,9 @@ export class TimelineDetailsContentHelper {
         if (this.target) {
             const stackTrace = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
                 .createStackTraceFromProtocolRuntime(runtimeStackTrace, this.target);
-            callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent(undefined, this.target ?? undefined, this.#linkifier, { stackTrace, tabStops: true, showColumnNumber: true });
+            callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent(undefined, this.target ?? undefined, this.#linkifier, { tabStops: true, showColumnNumber: true });
+            callFrameContents.stackTrace = stackTrace;
+            await callFrameContents.updateComplete;
         }
         else {
             // I _think_ this only happens during tests.

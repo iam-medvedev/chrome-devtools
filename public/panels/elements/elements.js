@@ -2372,7 +2372,7 @@ var cssValueTraceView_css_default = `/*
   }
 }
 
-::highlight(css-value-tracing) {
+:host::highlight(css-value-tracing) {
   background-color: var(--sys-color-tonal-container);
 }
 
@@ -4166,16 +4166,17 @@ var LengthRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.L
     const valueElement = document.createElement("span");
     valueElement.tabIndex = -1;
     valueElement.textContent = match.text;
-    if (!context.tracing) {
-      void this.#attachPopover(valueElement, match, context);
-    }
+    const tooltip = this.#getTooltip(valueElement, match, context);
     const evaluation = context.tracing?.applyEvaluation([], () => {
       return {
         placeholder: [valueElement],
         asyncEvalCallback: () => this.#applyEvaluation(valueElement, match, context)
       };
     });
-    return evaluation ?? [valueElement];
+    if (evaluation) {
+      return evaluation;
+    }
+    return tooltip ? [valueElement, tooltip] : [valueElement];
   }
   async #applyEvaluation(valueElement, match, context) {
     const pixelValue = await resolveValues(this.#stylesPane, this.#propertyName, match, context, match.text);
@@ -4185,21 +4186,22 @@ var LengthRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.L
     }
     return false;
   }
-  async #attachPopover(valueElement, match, context) {
+  #getTooltip(valueElement, match, context) {
+    const tooltipId = this.#treeElement?.getTooltipId("length");
+    if (!tooltipId) {
+      return void 0;
+    }
+    valueElement.setAttribute("aria-details", tooltipId);
+    const tooltip = new Tooltips.Tooltip.Tooltip({ anchor: valueElement, variant: "rich", id: tooltipId, jslogContext: "length-popover" });
+    tooltip.addEventListener("beforetoggle", () => this.getTooltipValue(tooltip, match, context), { once: true });
+    return tooltip;
+  }
+  async getTooltipValue(tooltip, match, context) {
     const pixelValue = await resolveValues(this.#stylesPane, this.#propertyName, match, context, match.text);
     if (!pixelValue) {
       return;
     }
-    const tooltipId = this.#treeElement?.getTooltipId("length");
-    if (tooltipId) {
-      valueElement.setAttribute("aria-details", tooltipId);
-      const tooltip = new Tooltips.Tooltip.Tooltip({ anchor: valueElement, variant: "rich", id: tooltipId, jslogContext: "length-popover" });
-      tooltip.appendChild(document.createTextNode(pixelValue[0]));
-      valueElement.insertAdjacentElement("afterend", tooltip);
-    }
-    this.popOverAttachedForTest();
-  }
-  popOverAttachedForTest() {
+    tooltip.appendChild(document.createTextNode(pixelValue[0]));
   }
 };
 var BaseFunctionRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.BaseFunctionMatch) {
@@ -4808,7 +4810,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
       this.listItemElement.appendChild(tooltip);
     }
     if (this.valueElement) {
-      const lineBreakValue = this.valueElement.firstElementChild && this.valueElement.firstElementChild.tagName === "BR";
+      const lineBreakValue = this.valueElement.firstElementChild?.tagName === "BR";
       const separator = lineBreakValue ? ":" : ": ";
       this.listItemElement.createChild("span", "styles-name-value-separator").textContent = separator;
       if (this.expandElement) {
@@ -8012,7 +8014,7 @@ ${allDeclarationText}
     this.update();
   }
   sectionsContainerKeyDown(event) {
-    const activeElement = Platform5.DOMUtilities.deepActiveElement(this.sectionsContainer.contentElement.ownerDocument);
+    const activeElement = UI11.DOMUtilities.deepActiveElement(this.sectionsContainer.contentElement.ownerDocument);
     if (!activeElement) {
       return;
     }
@@ -10696,11 +10698,11 @@ function getTooltipFromGenericIssue(errorType) {
       return i18nString10(UIStrings10.formAutocompleteAttributeEmptyError);
     case "FormEmptyIdAndNameAttributesForInputError":
       return i18nString10(UIStrings10.formEmptyIdAndNameAttributesForInputError);
-    case "FormAriaLabelledByToNonExistingId":
+    case "FormAriaLabelledByToNonExistingIdError":
       return i18nString10(UIStrings10.formAriaLabelledByToNonExistingId);
     case "FormInputAssignedAutocompleteValueToIdOrNameAttributeError":
       return i18nString10(UIStrings10.formInputAssignedAutocompleteValueToIdOrNameAttributeError);
-    case "FormLabelHasNeitherForNorNestedInput":
+    case "FormLabelHasNeitherForNorNestedInputError":
       return i18nString10(UIStrings10.formLabelHasNeitherForNorNestedInput);
     case "FormLabelForMatchesNonExistingIdError":
       return i18nString10(UIStrings10.formLabelForMatchesNonExistingIdError);
@@ -14158,6 +14160,7 @@ var DEFAULT_VIEW4 = (input, output, target) => {
   }
   const previousHighlightedNode = output.highlightedTreeElement?.node() ?? null;
   if (previousHighlightedNode !== input.currentHighlightedNode) {
+    output.isUpdatingHighlights = true;
     let treeElement = null;
     if (output.highlightedTreeElement) {
       let currentTreeElement = output.highlightedTreeElement;
@@ -14187,6 +14190,7 @@ var DEFAULT_VIEW4 = (input, output, target) => {
     output.highlightedTreeElement = treeElement;
     output.elementsTreeOutline.setHoverEffect(treeElement);
     treeElement?.reveal(true);
+    output.isUpdatingHighlights = false;
   }
 };
 var DOMTreeWidget = class extends UI18.Widget.Widget {
@@ -14226,7 +14230,8 @@ var DOMTreeWidget = class extends UI18.Widget.Widget {
   #view;
   #viewOutput = {
     highlightedTreeElement: null,
-    alreadyExpandedParentTreeElement: null
+    alreadyExpandedParentTreeElement: null,
+    isUpdatingHighlights: false
   };
   #highlightThrottler = new Common12.Throttler.Throttler(100);
   constructor(element, view) {
@@ -14237,7 +14242,7 @@ var DOMTreeWidget = class extends UI18.Widget.Widget {
     this.#view = view ?? DEFAULT_VIEW4;
     if (Common12.Settings.Settings.instance().moduleSetting("highlight-node-on-hover-in-overlay").get()) {
       SDK15.TargetManager.TargetManager.instance().addModelListener(SDK15.OverlayModel.OverlayModel, "HighlightNodeRequested", this.#highlightNode, this, { scoped: true });
-      SDK15.TargetManager.TargetManager.instance().addModelListener(SDK15.OverlayModel.OverlayModel, "InspectModeWillBeToggled", this.#clearState, this, { scoped: true });
+      SDK15.TargetManager.TargetManager.instance().addModelListener(SDK15.OverlayModel.OverlayModel, "InspectModeWillBeToggled", this.#clearHighlightedNode, this, { scoped: true });
     }
   }
   #highlightNode(event) {
@@ -14246,7 +14251,10 @@ var DOMTreeWidget = class extends UI18.Widget.Widget {
       this.requestUpdate();
     });
   }
-  #clearState() {
+  #clearHighlightedNode() {
+    if (this.#viewOutput.isUpdatingHighlights) {
+      return;
+    }
     this.#currentHighlightedNode = null;
     this.requestUpdate();
   }
@@ -14291,11 +14299,11 @@ var DOMTreeWidget = class extends UI18.Widget.Widget {
       currentHighlightedNode: this.#currentHighlightedNode,
       onElementsTreeUpdated: this.onElementsTreeUpdated.bind(this),
       onSelectedNodeChanged: (event) => {
-        this.#clearState();
+        this.#clearHighlightedNode();
         this.onSelectedNodeChanged(event);
       },
-      onElementCollapsed: this.#clearState.bind(this),
-      onElementExpanded: this.#clearState.bind(this)
+      onElementCollapsed: this.#clearHighlightedNode.bind(this),
+      onElementExpanded: this.#clearHighlightedNode.bind(this)
     }, this.#viewOutput, this.contentElement);
   }
   modelAdded(domModel) {
@@ -14615,7 +14623,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common12.ObjectWrap
     }
   }
   resetClipboardIfNeeded(removedNode) {
-    if (this.clipboardNodeData && this.clipboardNodeData.node === removedNode) {
+    if (this.clipboardNodeData?.node === removedNode) {
       this.setClipboardData(null);
     }
   }
@@ -17305,7 +17313,7 @@ ${node.simpleSelector()} {}`, false);
     if (!whitespaceTrimmedQuery.length) {
       return;
     }
-    if (!this.searchConfig || this.searchConfig.query !== query) {
+    if (this.searchConfig?.query !== query) {
       this.onSearchCanceled();
     } else {
       this.hideSearchHighlights();
@@ -18509,12 +18517,12 @@ var UIStrings20 = {
 var str_20 = i18n39.i18n.registerUIStrings("panels/elements/NodeStackTraceWidget.ts", UIStrings20);
 var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var DEFAULT_VIEW8 = (input, _output, target) => {
-  const { target: sdkTarget, linkifier, options } = input;
+  const { target: sdkTarget, linkifier, stackTrace } = input;
   render10(html13`
     <style>${nodeStackTraceWidget_css_default}</style>
-    ${target && options.stackTrace ? html13`<devtools-widget
+    ${target && stackTrace ? html13`<devtools-widget
                 class="stack-trace"
-                .widgetConfig=${UI25.Widget.widgetConfig(Components6.JSPresentationUtils.StackTracePreviewContent, { target: sdkTarget, linkifier, options })}>
+                .widgetConfig=${UI25.Widget.widgetConfig(Components6.JSPresentationUtils.StackTracePreviewContent, { target: sdkTarget, linkifier, stackTrace })}>
               </devtools-widget>` : html13`<div class="gray-info-message">${i18nString19(UIStrings20.noStackTraceAvailable)}</div>`}`, target);
 };
 var NodeStackTraceWidget = class extends UI25.Widget.VBox {
@@ -18541,7 +18549,7 @@ var NodeStackTraceWidget = class extends UI25.Widget.VBox {
     const input = {
       target,
       linkifier: this.#linkifier,
-      options: { stackTrace }
+      stackTrace
     };
     this.#view(input, {}, this.contentElement);
   }
@@ -18928,6 +18936,7 @@ __export(ElementStatePaneWidget_exports, {
 import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as SDK24 from "./../../core/sdk/sdk.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
+import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as UI27 from "./../../ui/legacy/legacy.js";
 import { html as html14, render as render11 } from "./../../ui/lit/lit.js";
 import * as VisualLogging16 from "./../../ui/visual_logging/visual_logging.js";
@@ -19064,7 +19073,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
         <devtools-checkbox class="small" title=${i18nString21(UIStrings22.emulatesAFocusedPage)}
             jslog=${VisualLogging16.toggle("emulate-page-focus").track({ change: true })} ${bindToSetting3("emulate-page-focus")}>${i18nString21(UIStrings22.emulateFocusedPage)}</devtools-checkbox>
         <devtools-button
-            @click=${() => UI27.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/rendering/apply-effects#emulate_a_focused_page")}
+            @click=${() => UIHelpers.openInNewTab("https://developer.chrome.com/docs/devtools/rendering/apply-effects#emulate_a_focused_page")}
            .data=${{
     variant: "icon",
     iconName: "help",

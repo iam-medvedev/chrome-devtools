@@ -33,6 +33,7 @@ import liveMetricsViewStyles from './liveMetricsView.css.js';
 import metricValueStyles from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, INP_THRESHOLDS, renderMetricValue } from './Utils.js';
 const { html, nothing } = Lit;
+const { widgetConfig } = UI.Widget;
 const DEVICE_OPTION_LIST = ['AUTO', ...CrUXManager.DEVICE_SCOPE_LIST];
 const RTT_MINIMUM = 60;
 const UIStrings = {
@@ -44,6 +45,14 @@ const UIStrings = {
      * @description Title of a view that shows performance metrics from the local environment.
      */
     localMetrics: 'Local metrics',
+    /**
+     *@description Text for the link to the historical field data for the specific URL or origin that is shown. This link text appears in parenthesis after the collection period information in the field data dialog. The link opens the CrUX Vis viewer (https://cruxvis.withgoogle.com).
+     */
+    fieldDataHistoryLink: 'View history',
+    /**
+     *@description Tooltip for the CrUX Vis viewer link which shows the history of the field data for the specific URL or origin.
+     */
+    fieldDataHistoryTooltip: 'View field data history in CrUX Vis',
     /**
      * @description Accessible label for a section that logs user interactions and layout shifts. A layout shift is an event that shifts content in the layout of the page causing a jarring experience for the user.
      */
@@ -417,7 +426,10 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         ${nodeLink ? html `
             <div class="related-info" slot="extra-info">
               <span class="related-info-label">${i18nString(UIStrings.lcpElement)}</span>
-              <span class="related-info-link">${nodeLink}</span>
+              <span class="related-info-link">
+               <devtools-widget .widgetConfig=${widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node: this.#lcpValue?.nodeRef })}>
+               </devtools-widget>
+              </span>
             </div>
           `
             : nothing}
@@ -560,7 +572,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         </ul>
       ` : nothing}
       <div class="environment-option">
-        <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(CPUThrottlingSelector, { recommendedOption: recs.cpuOption })}></devtools-widget>
+        <devtools-widget .widgetConfig=${widgetConfig(CPUThrottlingSelector, { recommendedOption: recs.cpuOption })}></devtools-widget>
       </div>
       <div class="environment-option">
         <devtools-network-throttling-selector .recommendedConditions=${recs.networkConditions}></devtools-network-throttling-selector>
@@ -730,6 +742,31 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             PH2: formattedLastDate.toLocaleDateString(undefined, options),
         });
     }
+    #renderFieldDataHistoryLink() {
+        if (!this.#cruxManager.getConfigSetting().get().enabled) {
+            return Lit.nothing;
+        }
+        const normalizedUrl = this.#cruxManager.pageResult?.normalizedUrl;
+        if (!normalizedUrl) {
+            return Lit.nothing;
+        }
+        const tmp = new URL('https://cruxvis.withgoogle.com/');
+        tmp.searchParams.set('view', 'cwvsummary');
+        tmp.searchParams.set('url', normalizedUrl);
+        // identifier must be 'origin' or 'url'.
+        const identifier = this.#cruxManager.fieldPageScope;
+        tmp.searchParams.set('identifier', identifier);
+        // device must be one 'PHONE', 'DESKTOP', 'TABLET', or 'ALL'.
+        const device = this.#cruxManager.getSelectedDeviceScope();
+        tmp.searchParams.set('device', device);
+        const cruxVis = `${tmp.origin}/#/${tmp.search}`;
+        return html `
+        (<x-link href=${cruxVis}
+                 class="local-field-link"
+                 title=${i18nString(UIStrings.fieldDataHistoryTooltip)}
+        >${i18nString(UIStrings.fieldDataHistoryLink)}</x-link>)
+      `;
+    }
     #renderCollectionPeriod() {
         const range = this.#getCollectionPeriodRange();
         const dateEl = document.createElement('span');
@@ -738,10 +775,11 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         const message = uiI18n.getFormatLocalizedString(str_, UIStrings.collectionPeriod, {
             PH1: dateEl,
         });
+        const fieldDataHistoryLink = range ? this.#renderFieldDataHistoryLink() : Lit.nothing;
         const warnings = this.#cruxManager.pageResult?.warnings || [];
         return html `
       <div class="field-data-message">
-        <div>${message}</div>
+        <div>${message} ${fieldDataHistoryLink}</div>
         ${warnings.map(warning => html `
           <div class="field-data-warning">${warning}</div>
         `)}
@@ -820,7 +858,6 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             const metricValue = renderMetricValue('timeline.landing.interaction-event-timing', interaction.duration, INP_THRESHOLDS, v => i18n.TimeUtilities.preciseMillisToString(v), { dim: true });
             const isP98Excluded = this.#inpValue && this.#inpValue.value < interaction.duration;
             const isInp = this.#inpValue?.interactionId === interaction.interactionId;
-            const nodeLink = interaction.nodeRef ? PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(interaction.nodeRef) : Lit.nothing;
             return html `
             <li id=${interaction.interactionId} class="log-item interaction" tabindex="-1">
               <details>
@@ -830,7 +867,10 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
                 html `<span class="interaction-inp-chip" title=${i18nString(UIStrings.inpInteraction)}>INP</span>`
                 : nothing}
                   </span>
-                  <span class="interaction-node">${nodeLink}</span>
+                  <span class="interaction-node">
+                    <devtools-widget .widgetConfig=${widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node: interaction.nodeRef })}>
+                    </devtools-widget>
+                  </span>
                   ${isP98Excluded ? html `<devtools-icon
                     class="interaction-info"
                     name="info"
@@ -924,7 +964,10 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
               <div class="layout-shift-score">Layout shift score: ${metricValue}</div>
               <div class="layout-shift-nodes">
                 ${layoutShift.affectedNodeRefs.map(node => html `
-                  <div class="layout-shift-node">${PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node)}</div>
+                  <div class="layout-shift-node">
+                    <devtools-widget .widgetConfig=${widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node })}>
+                    </devtools-widget>
+                  </div>
                 `)}
               </div>
             </li>

@@ -619,9 +619,7 @@ var AiAgent = class {
       }, { once: true });
       yield {
         type: "side-effect",
-        confirm: (result2) => {
-          sideEffectConfirmationPromiseWithResolvers.resolve(result2);
-        }
+        confirm: sideEffectConfirmationPromiseWithResolvers.resolve
       };
       const approvedRun = await sideEffectConfirmationPromiseWithResolvers.promise;
       if (!approvedRun) {
@@ -1966,10 +1964,12 @@ ${nodesStr}`;
   *   5. `urlIndex`: An index referencing a URL in the `allUrls` array. If no URL is present, this is an empty string.
   *   6. `childRange`: A string indicating the range of IDs for the node's children. Children should always have consecutive IDs.
   *                    If there is only one child, it's a single ID.
-  *   7. `[S]`: An optional marker indicating that this node is the selected node.
+  *   7. `[line]`: An optional field for a call frame's line number.
+  *   8. `[column]`: An optional field for a call frame's column number.
+  *   9. `[S]`: An optional marker indicating that this node is the selected node.
   *
   * Example:
-  *   `1;Parse HTML;2.5;0.3;0;2-5;S`
+  *   `1;Parse HTML;2.5;0.3;0;2-5;10;11;S`
   *   This represents:
   *     - Node ID 1
   *     - Name "Parse HTML"
@@ -1977,6 +1977,7 @@ ${nodesStr}`;
   *     - Self time of 0.3ms
   *     - URL index 0 (meaning the URL is the first one in the `allUrls` array)
   *     - Child range of IDs 2 to 5
+  *     - Line, column is 10:11
   *     - This node is the selected node (S marker)
   */
   stringifyNode(node, nodeId, parsedTrace, selectedNode, allUrls, childStartingNodeIndex) {
@@ -1995,7 +1996,8 @@ ${nodesStr}`;
     };
     const durationStr = roundToTenths(node.totalTime);
     const selfTimeStr = roundToTenths(node.selfTime);
-    const url = SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
+    const location = SourceMapsResolver.SourceMapsResolver.codeLocationForEntry(parsedTrace, event);
+    const url = location?.url;
     let urlIndexStr = "";
     if (url) {
       const existingIndex = allUrls.indexOf(url);
@@ -2018,6 +2020,8 @@ ${nodesStr}`;
     line += ";" + selfTimeStr;
     line += ";" + urlIndexStr;
     line += ";" + childRangeStr;
+    line += ";" + (location?.line ?? "");
+    line += ";" + (location?.column ?? "");
     if (selectedMarker) {
       line += ";" + selectedMarker;
     }
@@ -2704,7 +2708,7 @@ Network requests data:
   }
   static callFrameDataFormatDescription = `Each call frame is presented in the following format:
 
-'id;eventKey;name;duration;selfTime;urlIndex;childRange;[S]'
+'id;eventKey;name;duration;selfTime;urlIndex;childRange;[line];[column];[S]'
 
 Key definitions:
 
@@ -2715,15 +2719,17 @@ Key definitions:
 * selfTime: The time spent directly within the call frame, excluding its children's execution.
 * urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
 * childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
+* line: An optional field for a call frame's line number. This is where the function is defined.
+* column: An optional field for a call frame's column number. This is where the function is defined.
 * S: _Optional_. The letter 'S' terminates the line if that call frame was selected by the user.
 
 Example Call Tree:
 
-1;r-123;main;500;100;;
-2;r-124;update;200;50;;3
-3;p-49575-15428179-2834-374;animate;150;20;0;4-5;S
-4;p-49575-15428179-3505-1162;calculatePosition;80;80;;
-5;p-49575-15428179-5391-2767;applyStyles;50;50;;
+1;r-123;main;500;100;0;1;;
+2;r-124;update;200;50;;3;0;1;
+3;p-49575-15428179-2834-374;animate;150;20;0;4-5;0;1;S
+4;p-49575-15428179-3505-1162;calculatePosition;80;80;0;1;;
+5;p-49575-15428179-5391-2767;applyStyles;50;50;0;1;;
 `;
   /**
    * Network requests format description that is sent to the model as a fact.
@@ -4306,7 +4312,7 @@ ${query}`);
     if (options.selected && focus) {
       this.#addFacts(options.selected);
     }
-    return yield* super.run(initialQuery, options);
+    yield* super.run(initialQuery, options);
   }
   #createFactForTraceSummary() {
     if (!this.#formatter) {
@@ -4617,7 +4623,10 @@ ${result}`,
           return { error: "Invalid eventKey" };
         }
         const tree = AICallTree.fromEvent(event, parsedTrace);
-        const callTree = tree ? this.#formatter.formatCallTree(tree) : "No call tree found";
+        if (!tree) {
+          return { error: "No call tree found" };
+        }
+        const callTree = this.#formatter.formatCallTree(tree);
         const key = `getDetailedCallTree(${args.eventKey})`;
         this.#cacheFunctionResult(focus, key, callTree);
         return { result: { callTree } };
@@ -4886,6 +4895,9 @@ var ChangeManager = class {
   #cssModelToStylesheetId = /* @__PURE__ */ new Map();
   #stylesheetChanges = /* @__PURE__ */ new Map();
   #backupStylesheetChanges = /* @__PURE__ */ new Map();
+  constructor() {
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.clear, this);
+  }
   async stashChanges() {
     for (const [cssModel, stylesheetMap] of this.#cssModelToStylesheetId.entries()) {
       const stylesheetIds = Array.from(stylesheetMap.values());
@@ -5765,7 +5777,6 @@ var StylingAgent = class _StylingAgent extends AiAgent {
     this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
       return new ExtensionScope(changes, this.id, this.context?.getItem() ?? null);
     });
-    SDK5.TargetManager.TargetManager.instance().addModelListener(SDK5.ResourceTreeModel.ResourceTreeModel, SDK5.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
     this.declareFunction("getStyles", {
       description: `Get computed and source styles for one or multiple elements on the inspected page for multiple elements at once by uid.
 
@@ -5805,8 +5816,8 @@ var StylingAgent = class _StylingAgent extends AiAgent {
           action: `getStyles(${JSON.stringify(params.elements)}, ${JSON.stringify(params.styleProperties)})`
         };
       },
-      handler: async (params, options) => {
-        return await this.getStyles(params.elements, params.styleProperties, options);
+      handler: async (params) => {
+        return await this.getStyles(params.elements, params.styleProperties);
       }
     });
     this.declareFunction("executeJavaScript", {
@@ -5884,9 +5895,6 @@ const data = {
         return await this.executeAction(params.code, options);
       }
     });
-  }
-  onPrimaryPageChanged() {
-    void this.#changes.clear();
   }
   async generateObservation(action, { throwOnSideEffect }) {
     const functionDeclaration = `async function ($0) {
@@ -6020,7 +6028,7 @@ const data = {
   #getSelectedNode() {
     return this.context?.getItem() ?? null;
   }
-  async getStyles(elements, properties, _options) {
+  async getStyles(elements, properties) {
     const result = {};
     for (const uid of elements) {
       result[uid] = { computed: {}, authored: {} };
@@ -6145,178 +6153,22 @@ ${await _StylingAgent.describeElement(selectedElement.getItem())}
   }
 };
 
+// gen/front_end/models/ai_assistance/AiConversation.js
+var AiConversation_exports = {};
+__export(AiConversation_exports, {
+  AiConversation: () => AiConversation,
+  NOT_FOUND_IMAGE_DATA: () => NOT_FOUND_IMAGE_DATA,
+  generateContextDetailsMarkdown: () => generateContextDetailsMarkdown
+});
+import * as Host8 from "./../../core/host/host.js";
+import * as Root8 from "./../../core/root/root.js";
+
 // gen/front_end/models/ai_assistance/AiHistoryStorage.js
 var AiHistoryStorage_exports = {};
 __export(AiHistoryStorage_exports, {
-  AiHistoryStorage: () => AiHistoryStorage,
-  Conversation: () => Conversation,
-  NOT_FOUND_IMAGE_DATA: () => NOT_FOUND_IMAGE_DATA
+  AiHistoryStorage: () => AiHistoryStorage
 });
 import * as Common5 from "./../../core/common/common.js";
-var MAX_TITLE_LENGTH = 80;
-var NOT_FOUND_IMAGE_DATA = "";
-var Conversation = class _Conversation {
-  id;
-  type;
-  #isReadOnly;
-  history;
-  #isExternal;
-  static generateContextDetailsMarkdown(details) {
-    const detailsMarkdown = [];
-    for (const detail of details) {
-      const text = `\`\`\`\`${detail.codeLang || ""}
-${detail.text.trim()}
-\`\`\`\``;
-      detailsMarkdown.push(`**${detail.title}:**
-${text}`);
-    }
-    return detailsMarkdown.join("\n\n");
-  }
-  constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, isExternal = false) {
-    this.type = type;
-    this.id = id;
-    this.#isReadOnly = isReadOnly;
-    this.#isExternal = isExternal;
-    this.history = this.#reconstructHistory(data);
-  }
-  get isReadOnly() {
-    return this.#isReadOnly;
-  }
-  get title() {
-    const query = this.history.find(
-      (response) => response.type === "user-query"
-      /* ResponseType.USER_QUERY */
-    )?.query;
-    if (!query) {
-      return;
-    }
-    if (this.#isExternal) {
-      return `[External] ${query.substring(0, MAX_TITLE_LENGTH - 11)}${query.length > MAX_TITLE_LENGTH - 11 ? "\u2026" : ""}`;
-    }
-    return `${query.substring(0, MAX_TITLE_LENGTH)}${query.length > MAX_TITLE_LENGTH ? "\u2026" : ""}`;
-  }
-  get isEmpty() {
-    return this.history.length === 0;
-  }
-  #reconstructHistory(historyWithoutImages) {
-    const imageHistory = AiHistoryStorage.instance().getImageHistory();
-    if (imageHistory && imageHistory.length > 0) {
-      const history = [];
-      for (const data of historyWithoutImages) {
-        if (data.type === "user-query" && data.imageId) {
-          const image = imageHistory.find((item) => item.id === data.imageId);
-          const inlineData = image ? { data: image.data, mimeType: image.mimeType } : { data: NOT_FOUND_IMAGE_DATA, mimeType: "image/jpeg" };
-          history.push({ ...data, imageInput: { inlineData } });
-        } else {
-          history.push(data);
-        }
-      }
-      return history;
-    }
-    return historyWithoutImages;
-  }
-  getConversationMarkdown() {
-    const contentParts = [];
-    contentParts.push(`# Exported Chat from Chrome DevTools AI Assistance
-
-**Export Timestamp (UTC):** ${(/* @__PURE__ */ new Date()).toISOString()}
-
----`);
-    for (const item of this.history) {
-      switch (item.type) {
-        case "user-query": {
-          contentParts.push(`## User
-
-${item.query}`);
-          if (item.imageInput) {
-            contentParts.push("User attached an image");
-          }
-          contentParts.push("## AI");
-          break;
-        }
-        case "context": {
-          contentParts.push(`### ${item.title}`);
-          if (item.details && item.details.length > 0) {
-            contentParts.push(_Conversation.generateContextDetailsMarkdown(item.details));
-          }
-          break;
-        }
-        case "title": {
-          contentParts.push(`### ${item.title}`);
-          break;
-        }
-        case "thought": {
-          contentParts.push(`${item.thought}`);
-          break;
-        }
-        case "action": {
-          if (!item.output) {
-            break;
-          }
-          if (item.code) {
-            contentParts.push(`**Code executed:**
-\`\`\`
-${item.code.trim()}
-\`\`\``);
-          }
-          contentParts.push(`**Data returned:**
-\`\`\`
-${item.output}
-\`\`\``);
-          break;
-        }
-        case "answer": {
-          if (item.complete) {
-            contentParts.push(`### Answer
-
-${item.text.trim()}`);
-          }
-          break;
-        }
-      }
-    }
-    return contentParts.join("\n\n");
-  }
-  archiveConversation() {
-    this.#isReadOnly = true;
-  }
-  async addHistoryItem(item) {
-    this.history.push(item);
-    await AiHistoryStorage.instance().upsertHistoryEntry(this.serialize());
-    if (item.type === "user-query") {
-      if (item.imageId && item.imageInput && "inlineData" in item.imageInput) {
-        const inlineData = item.imageInput.inlineData;
-        await AiHistoryStorage.instance().upsertImage({ id: item.imageId, data: inlineData.data, mimeType: inlineData.mimeType });
-      }
-    }
-  }
-  serialize() {
-    return {
-      id: this.id,
-      history: this.history.map((item) => {
-        if (item.type === "user-query") {
-          return { ...item, imageInput: void 0 };
-        }
-        if (item.type === "side-effect") {
-          return { ...item, confirm: void 0 };
-        }
-        return item;
-      }),
-      type: this.type,
-      isExternal: this.#isExternal
-    };
-  }
-  static fromSerializedConversation(serializedConversation) {
-    const history = serializedConversation.history.map((entry) => {
-      if (entry.type === "side-effect") {
-        return { ...entry, confirm: () => {
-        } };
-      }
-      return entry;
-    });
-    return new _Conversation(serializedConversation.type, history, serializedConversation.id, true, serializedConversation.isExternal);
-  }
-};
 var instance = null;
 var DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
 var AiHistoryStorage = class _AiHistoryStorage extends Common5.ObjectWrapper.ObjectWrapper {
@@ -6421,15 +6273,232 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common5.ObjectWrapper.Obj
   }
 };
 
+// gen/front_end/models/ai_assistance/AiConversation.js
+var NOT_FOUND_IMAGE_DATA = "";
+var MAX_TITLE_LENGTH = 80;
+function generateContextDetailsMarkdown(details) {
+  const detailsMarkdown = [];
+  for (const detail of details) {
+    const text = `\`\`\`\`${detail.codeLang || ""}
+${detail.text.trim()}
+\`\`\`\``;
+    detailsMarkdown.push(`**${detail.title}:**
+${text}`);
+  }
+  return detailsMarkdown.join("\n\n");
+}
+var AiConversation = class _AiConversation {
+  static fromSerializedConversation(serializedConversation) {
+    const history = serializedConversation.history.map((entry) => {
+      if (entry.type === "side-effect") {
+        return { ...entry, confirm: () => {
+        } };
+      }
+      return entry;
+    });
+    return new _AiConversation(serializedConversation.type, history, serializedConversation.id, true, void 0, void 0, serializedConversation.isExternal);
+  }
+  id;
+  type;
+  #isReadOnly;
+  history;
+  #isExternal;
+  #aidaClient;
+  #changeManager;
+  #agent;
+  constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, aidaClient = new Host8.AidaClient.AidaClient(), changeManager, isExternal = false) {
+    this.#changeManager = changeManager;
+    this.#aidaClient = aidaClient;
+    this.#agent = this.#createAgent(type);
+    this.type = type;
+    this.id = id;
+    this.#isReadOnly = isReadOnly;
+    this.#isExternal = isExternal;
+    this.history = this.#reconstructHistory(data);
+  }
+  get isReadOnly() {
+    return this.#isReadOnly;
+  }
+  get title() {
+    const query = this.history.find(
+      (response) => response.type === "user-query"
+      /* ResponseType.USER_QUERY */
+    )?.query;
+    if (!query) {
+      return;
+    }
+    if (this.#isExternal) {
+      return `[External] ${query.substring(0, MAX_TITLE_LENGTH - 11)}${query.length > MAX_TITLE_LENGTH - 11 ? "\u2026" : ""}`;
+    }
+    return `${query.substring(0, MAX_TITLE_LENGTH)}${query.length > MAX_TITLE_LENGTH ? "\u2026" : ""}`;
+  }
+  get isEmpty() {
+    return this.history.length === 0;
+  }
+  #reconstructHistory(historyWithoutImages) {
+    const imageHistory = AiHistoryStorage.instance().getImageHistory();
+    if (imageHistory && imageHistory.length > 0) {
+      const history = [];
+      for (const data of historyWithoutImages) {
+        if (data.type === "user-query" && data.imageId) {
+          const image = imageHistory.find((item) => item.id === data.imageId);
+          const inlineData = image ? { data: image.data, mimeType: image.mimeType } : { data: NOT_FOUND_IMAGE_DATA, mimeType: "image/jpeg" };
+          history.push({ ...data, imageInput: { inlineData } });
+        } else {
+          history.push(data);
+        }
+      }
+      return history;
+    }
+    return historyWithoutImages;
+  }
+  getConversationMarkdown() {
+    const contentParts = [];
+    contentParts.push(`# Exported Chat from Chrome DevTools AI Assistance
+
+**Export Timestamp (UTC):** ${(/* @__PURE__ */ new Date()).toISOString()}
+
+---`);
+    for (const item of this.history) {
+      switch (item.type) {
+        case "user-query": {
+          contentParts.push(`## User
+
+${item.query}`);
+          if (item.imageInput) {
+            contentParts.push("User attached an image");
+          }
+          contentParts.push("## AI");
+          break;
+        }
+        case "context": {
+          contentParts.push(`### ${item.title}`);
+          if (item.details && item.details.length > 0) {
+            contentParts.push(generateContextDetailsMarkdown(item.details));
+          }
+          break;
+        }
+        case "title": {
+          contentParts.push(`### ${item.title}`);
+          break;
+        }
+        case "thought": {
+          contentParts.push(`${item.thought}`);
+          break;
+        }
+        case "action": {
+          if (!item.output) {
+            break;
+          }
+          if (item.code) {
+            contentParts.push(`**Code executed:**
+\`\`\`
+${item.code.trim()}
+\`\`\``);
+          }
+          contentParts.push(`**Data returned:**
+\`\`\`
+${item.output}
+\`\`\``);
+          break;
+        }
+        case "answer": {
+          if (item.complete) {
+            contentParts.push(`### Answer
+
+${item.text.trim()}`);
+          }
+          break;
+        }
+      }
+    }
+    return contentParts.join("\n\n");
+  }
+  archiveConversation() {
+    this.#isReadOnly = true;
+  }
+  async addHistoryItem(item) {
+    this.history.push(item);
+    await AiHistoryStorage.instance().upsertHistoryEntry(this.serialize());
+    if (item.type === "user-query") {
+      if (item.imageId && item.imageInput && "inlineData" in item.imageInput) {
+        const inlineData = item.imageInput.inlineData;
+        await AiHistoryStorage.instance().upsertImage({
+          id: item.imageId,
+          data: inlineData.data,
+          mimeType: inlineData.mimeType
+        });
+      }
+    }
+  }
+  serialize() {
+    return {
+      id: this.id,
+      history: this.history.map((item) => {
+        if (item.type === "user-query") {
+          return { ...item, imageInput: void 0 };
+        }
+        if (item.type === "side-effect") {
+          return { ...item, confirm: void 0 };
+        }
+        return item;
+      }),
+      type: this.type,
+      isExternal: this.#isExternal
+    };
+  }
+  #createAgent(conversationType) {
+    const options = {
+      aidaClient: this.#aidaClient,
+      serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled(),
+      changeManager: this.#changeManager
+    };
+    let agent;
+    switch (conversationType) {
+      case "freestyler": {
+        agent = new StylingAgent(options);
+        break;
+      }
+      case "drjones-network-request": {
+        agent = new NetworkAgent(options);
+        break;
+      }
+      case "drjones-file": {
+        agent = new FileAgent(options);
+        break;
+      }
+      case "drjones-performance-full": {
+        agent = new PerformanceAgent(options);
+        break;
+      }
+    }
+    return agent;
+  }
+  async *run(initialQuery, options, multimodalInput) {
+    for await (const data of this.#agent.run(initialQuery, options, multimodalInput)) {
+      if (data.type !== "answer" || data.complete) {
+        void this.addHistoryItem(data);
+      }
+      yield data;
+    }
+  }
+  get origin() {
+    return this.#agent.origin;
+  }
+};
+function isAiAssistanceServerSideLoggingEnabled() {
+  return !Root8.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+}
+
 // gen/front_end/models/ai_assistance/AiUtils.js
 var AiUtils_exports = {};
 __export(AiUtils_exports, {
   getDisabledReasons: () => getDisabledReasons
 });
 import * as Common6 from "./../../core/common/common.js";
-import * as Host8 from "./../../core/host/host.js";
+import * as Host9 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Root8 from "./../../core/root/root.js";
+import * as Root9 from "./../../core/root/root.js";
 var UIStrings = {
   /**
    * @description Message shown to the user if the age check is not successful.
@@ -6452,7 +6521,7 @@ var str_ = i18n11.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UISt
 var i18nString = i18n11.i18n.getLocalizedString.bind(void 0, str_);
 function getDisabledReasons(aidaAvailability) {
   const reasons = [];
-  if (Root8.Runtime.hostConfig.isOffTheRecord) {
+  if (Root9.Runtime.hostConfig.isOffTheRecord) {
     reasons.push(i18nString(UIStrings.notAvailableInIncognitoMode));
   }
   switch (aidaAvailability) {
@@ -6464,7 +6533,7 @@ function getDisabledReasons(aidaAvailability) {
     case "no-internet":
       reasons.push(i18nString(UIStrings.offline));
     case "available": {
-      if (Root8.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
+      if (Root9.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
         reasons.push(i18nString(UIStrings.ageRestricted));
       }
     }
@@ -6478,186 +6547,113 @@ var BuiltInAi_exports = {};
 __export(BuiltInAi_exports, {
   BuiltInAi: () => BuiltInAi
 });
-import * as Host9 from "./../../core/host/host.js";
-import * as Root9 from "./../../core/root/root.js";
+import * as Host10 from "./../../core/host/host.js";
+import * as Root10 from "./../../core/root/root.js";
 var builtInAiInstance;
-var availability;
-var hasGpu;
-var isFirstRun = true;
 var BuiltInAi = class _BuiltInAi {
+  #availability = null;
+  #hasGpu;
   #consoleInsightsSession;
-  static async getLanguageModelAvailability() {
-    if (!Root9.Runtime.hostConfig.devToolsAiPromptApi?.enabled) {
-      return "disabled";
-    }
-    try {
-      availability = await window.LanguageModel.availability({ expectedOutputs: [{ type: "text", languages: ["en"] }] });
-      return availability;
-    } catch {
-      return "unavailable";
-    }
-  }
-  static cachedIsAvailable() {
-    return availability === "available" && (hasGpu || Boolean(Root9.Runtime.hostConfig.devToolsAiPromptApi?.allowWithoutGpu));
-  }
-  static isGpuAvailable() {
-    const hasGpuHelper = () => {
-      const canvas = document.createElement("canvas");
-      try {
-        const webgl = canvas.getContext("webgl");
-        if (!webgl) {
-          return false;
-        }
-        const debugInfo = webgl.getExtension("WEBGL_debug_renderer_info");
-        if (!debugInfo) {
-          return false;
-        }
-        const renderer = webgl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-        if (renderer.includes("SwiftShader")) {
-          return false;
-        }
-      } catch {
-        return false;
-      }
-      return true;
-    };
-    if (hasGpu !== void 0) {
-      return hasGpu;
-    }
-    hasGpu = hasGpuHelper();
-    return hasGpu;
-  }
-  constructor(consoleInsightsSession) {
-    this.#consoleInsightsSession = consoleInsightsSession;
-  }
-  static async instance() {
+  initDoneForTesting;
+  static instance() {
     if (builtInAiInstance === void 0) {
-      if (isFirstRun) {
-        const languageModelAvailability = await _BuiltInAi.getLanguageModelAvailability();
-        const hasGpu2 = _BuiltInAi.isGpuAvailable();
-        if (hasGpu2) {
-          switch (languageModelAvailability) {
-            case "unavailable":
-              Host9.userMetrics.builtInAiAvailability(
-                0
-                /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_HAS_GPU */
-              );
-              break;
-            case "downloadable":
-              Host9.userMetrics.builtInAiAvailability(
-                1
-                /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_HAS_GPU */
-              );
-              break;
-            case "downloading":
-              Host9.userMetrics.builtInAiAvailability(
-                2
-                /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_HAS_GPU */
-              );
-              break;
-            case "available":
-              Host9.userMetrics.builtInAiAvailability(
-                3
-                /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_HAS_GPU */
-              );
-              break;
-            case "disabled":
-              Host9.userMetrics.builtInAiAvailability(
-                4
-                /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_HAS_GPU */
-              );
-              break;
-          }
-        } else {
-          switch (languageModelAvailability) {
-            case "unavailable":
-              Host9.userMetrics.builtInAiAvailability(
-                5
-                /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_NO_GPU */
-              );
-              break;
-            case "downloadable":
-              Host9.userMetrics.builtInAiAvailability(
-                6
-                /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_NO_GPU */
-              );
-              break;
-            case "downloading":
-              Host9.userMetrics.builtInAiAvailability(
-                7
-                /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_NO_GPU */
-              );
-              break;
-            case "available":
-              Host9.userMetrics.builtInAiAvailability(
-                8
-                /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_NO_GPU */
-              );
-              break;
-            case "disabled":
-              Host9.userMetrics.builtInAiAvailability(
-                9
-                /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_NO_GPU */
-              );
-              break;
-          }
-        }
-        isFirstRun = false;
-        if (!Root9.Runtime.hostConfig.devToolsAiPromptApi?.allowWithoutGpu && !hasGpu2) {
-          return void 0;
-        }
-        if (languageModelAvailability !== "available") {
-          return void 0;
-        }
-      } else {
-        if (!Root9.Runtime.hostConfig.devToolsAiPromptApi?.allowWithoutGpu && !_BuiltInAi.isGpuAvailable()) {
-          return void 0;
-        }
-        if (await _BuiltInAi.getLanguageModelAvailability() !== "available") {
-          return void 0;
-        }
-      }
-      try {
-        const consoleInsightsSession = await window.LanguageModel.create({
-          initialPrompts: [{
-            role: "system",
-            content: `
-  You are an expert web developer. Your goal is to help a human web developer who
-  is using Chrome DevTools to debug a web site or web app. The Chrome DevTools
-  console is showing a message which is either an error or a warning. Please help
-  the user understand the problematic console message.
-
-  Your instructions are as follows:
-    - Explain the reason why the error or warning is showing up.
-    - The explanation has a maximum length of 200 characters. Anything beyond this
-      length will be cut off. Make sure that your explanation is at most 200 characters long.
-    - Your explanation should not end in the middle of a sentence.
-    - Your explanation should consist of a single paragraph only. Do not include any
-      headings or code blocks. Only write a single paragraph of text.
-    - Your response should be concise and to the point. Avoid lengthy explanations
-      or unnecessary details.
-            `
-          }],
-          expectedInputs: [{
-            type: "text",
-            languages: ["en"]
-          }],
-          expectedOutputs: [{
-            type: "text",
-            languages: ["en"]
-          }]
-        });
-        builtInAiInstance = new _BuiltInAi(consoleInsightsSession);
-      } catch {
-        return void 0;
-      }
+      builtInAiInstance = new _BuiltInAi();
     }
     return builtInAiInstance;
+  }
+  constructor() {
+    this.#hasGpu = this.#isGpuAvailable();
+    this.initDoneForTesting = this.getLanguageModelAvailability().then(() => this.initialize()).then(() => this.#sendAvailabilityMetrics());
+  }
+  async getLanguageModelAvailability() {
+    if (!Root10.Runtime.hostConfig.devToolsAiPromptApi?.enabled) {
+      this.#availability = "disabled";
+      return this.#availability;
+    }
+    try {
+      this.#availability = await window.LanguageModel.availability({ expectedOutputs: [{ type: "text", languages: ["en"] }] });
+    } catch {
+      this.#availability = "unavailable";
+    }
+    return this.#availability;
+  }
+  #isGpuAvailable() {
+    const canvas = document.createElement("canvas");
+    try {
+      const webgl = canvas.getContext("webgl");
+      if (!webgl) {
+        return false;
+      }
+      const debugInfo = webgl.getExtension("WEBGL_debug_renderer_info");
+      if (!debugInfo) {
+        return false;
+      }
+      const renderer = webgl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      if (renderer.includes("SwiftShader")) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+    return true;
+  }
+  hasSession() {
+    return Boolean(this.#consoleInsightsSession);
+  }
+  async initialize() {
+    if (!Root10.Runtime.hostConfig.devToolsAiPromptApi?.allowWithoutGpu && !this.#hasGpu) {
+      return;
+    }
+    if (this.#availability !== "available") {
+      return;
+    }
+    await this.#createSession();
+  }
+  async #createSession() {
+    try {
+      this.#consoleInsightsSession = await window.LanguageModel.create({
+        initialPrompts: [{
+          role: "system",
+          content: `
+You are an expert web developer. Your goal is to help a human web developer who
+is using Chrome DevTools to debug a web site or web app. The Chrome DevTools
+console is showing a message which is either an error or a warning. Please help
+the user understand the problematic console message.
+
+Your instructions are as follows:
+  - Explain the reason why the error or warning is showing up.
+  - The explanation has a maximum length of 200 characters. Anything beyond this
+    length will be cut off. Make sure that your explanation is at most 200 characters long.
+  - Your explanation should not end in the middle of a sentence.
+  - Your explanation should consist of a single paragraph only. Do not include any
+    headings or code blocks. Only write a single paragraph of text.
+  - Your response should be concise and to the point. Avoid lengthy explanations
+    or unnecessary details.
+          `
+        }],
+        expectedInputs: [{
+          type: "text",
+          languages: ["en"]
+        }],
+        expectedOutputs: [{
+          type: "text",
+          languages: ["en"]
+        }]
+      });
+      if (this.#availability !== "available") {
+        void this.getLanguageModelAvailability();
+      }
+    } catch (e) {
+      console.error("Error when creating LanguageModel session", e.message);
+    }
   }
   static removeInstance() {
     builtInAiInstance = void 0;
   }
   async *getConsoleInsight(prompt, abortController) {
+    if (!this.#consoleInsightsSession) {
+      return;
+    }
     let session = null;
     try {
       session = await this.#consoleInsightsSession.clone();
@@ -6673,6 +6669,75 @@ var BuiltInAi = class _BuiltInAi {
       }
     }
   }
+  #sendAvailabilityMetrics() {
+    if (this.#hasGpu) {
+      switch (this.#availability) {
+        case "unavailable":
+          Host10.userMetrics.builtInAiAvailability(
+            0
+            /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_HAS_GPU */
+          );
+          break;
+        case "downloadable":
+          Host10.userMetrics.builtInAiAvailability(
+            1
+            /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_HAS_GPU */
+          );
+          break;
+        case "downloading":
+          Host10.userMetrics.builtInAiAvailability(
+            2
+            /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_HAS_GPU */
+          );
+          break;
+        case "available":
+          Host10.userMetrics.builtInAiAvailability(
+            3
+            /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_HAS_GPU */
+          );
+          break;
+        case "disabled":
+          Host10.userMetrics.builtInAiAvailability(
+            4
+            /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_HAS_GPU */
+          );
+          break;
+      }
+    } else {
+      switch (this.#availability) {
+        case "unavailable":
+          Host10.userMetrics.builtInAiAvailability(
+            5
+            /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_NO_GPU */
+          );
+          break;
+        case "downloadable":
+          Host10.userMetrics.builtInAiAvailability(
+            6
+            /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_NO_GPU */
+          );
+          break;
+        case "downloading":
+          Host10.userMetrics.builtInAiAvailability(
+            7
+            /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_NO_GPU */
+          );
+          break;
+        case "available":
+          Host10.userMetrics.builtInAiAvailability(
+            8
+            /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_NO_GPU */
+          );
+          break;
+        case "disabled":
+          Host10.userMetrics.builtInAiAvailability(
+            9
+            /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_NO_GPU */
+          );
+          break;
+      }
+    }
+  }
 };
 
 // gen/front_end/models/ai_assistance/ConversationHandler.js
@@ -6681,10 +6746,10 @@ __export(ConversationHandler_exports, {
   ConversationHandler: () => ConversationHandler
 });
 import * as Common7 from "./../../core/common/common.js";
-import * as Host10 from "./../../core/host/host.js";
+import * as Host11 from "./../../core/host/host.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
-import * as Root10 from "./../../core/root/root.js";
+import * as Root11 from "./../../core/root/root.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as NetworkTimeCalculator3 from "./../network_time_calculator/network_time_calculator.js";
 var UIStringsNotTranslate4 = {
@@ -6694,8 +6759,8 @@ var UIStringsNotTranslate4 = {
   enableInSettings: "For AI features to be available, you need to enable AI assistance in DevTools settings."
 };
 var lockedString6 = i18n13.i18n.lockedString;
-function isAiAssistanceServerSideLoggingEnabled() {
-  return !Root10.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+function isAiAssistanceServerSideLoggingEnabled2() {
+  return !Root11.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
 async function inspectElementBySelector(selector) {
   const whitespaceTrimmedQuery = selector.trim();
@@ -6734,20 +6799,21 @@ var ConversationHandler = class _ConversationHandler extends Common7.ObjectWrapp
   constructor(aidaClient, aidaAvailability) {
     super();
     this.#aidaClient = aidaClient;
-    if (aidaAvailability) {
-      this.#aidaAvailability = aidaAvailability;
-    }
+    this.#aidaAvailability = aidaAvailability;
     this.#aiAssistanceEnabledSetting = this.#getAiAssistanceEnabledSetting();
   }
   static instance(opts) {
     if (opts?.forceNew || conversationHandlerInstance === void 0) {
-      const aidaClient = opts?.aidaClient ?? new Host10.AidaClient.AidaClient();
+      const aidaClient = opts?.aidaClient ?? new Host11.AidaClient.AidaClient();
       conversationHandlerInstance = new _ConversationHandler(aidaClient, opts?.aidaAvailability ?? void 0);
     }
     return conversationHandlerInstance;
   }
   static removeInstance() {
     conversationHandlerInstance = void 0;
+  }
+  get aidaClient() {
+    return this.#aidaClient;
   }
   #getAiAssistanceEnabledSetting() {
     try {
@@ -6758,7 +6824,7 @@ var ConversationHandler = class _ConversationHandler extends Common7.ObjectWrapp
   }
   async #getDisabledReasons() {
     if (this.#aidaAvailability === void 0) {
-      this.#aidaAvailability = await Host10.AidaClient.AidaClient.checkAccessPreconditions();
+      this.#aidaAvailability = await Host11.AidaClient.AidaClient.checkAccessPreconditions();
     }
     return getDisabledReasons(this.#aidaAvailability);
   }
@@ -6814,23 +6880,24 @@ var ConversationHandler = class _ConversationHandler extends Common7.ObjectWrapp
   }
   async *#createAndDoExternalConversation(opts) {
     const { conversationType, aiAgent, prompt, selected } = opts;
-    const conversation = new Conversation(
+    const conversation = new AiConversation(
       conversationType,
       [],
       aiAgent.id,
       /* isReadOnly */
       true,
+      this.#aidaClient,
+      void 0,
       /* isExternal */
       true
     );
-    return yield* this.#doExternalConversation({ conversation, aiAgent, prompt, selected });
+    return yield* this.#doExternalConversation({ conversation, prompt, selected });
   }
   async *#doExternalConversation(opts) {
-    const { conversation, aiAgent, prompt, selected } = opts;
-    const generator = aiAgent.run(prompt, { selected });
-    const generatorWithHistory = this.handleConversationWithHistory(generator, conversation);
+    const { conversation, prompt, selected } = opts;
+    const generator = conversation.run(prompt, { selected });
     const devToolsLogs = [];
-    for await (const data of generatorWithHistory) {
+    for await (const data of generator) {
       if (data.type !== "answer" || data.complete) {
         devToolsLogs.push(data);
       }
@@ -6857,10 +6924,10 @@ var ConversationHandler = class _ConversationHandler extends Common7.ObjectWrapp
     };
   }
   async #handleExternalStylingConversation(prompt, selector = "body") {
-    const stylingAgent = this.createAgent(
-      "freestyler"
-      /* ConversationType.STYLING */
-    );
+    const stylingAgent = new StylingAgent({
+      aidaClient: this.#aidaClient,
+      serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled2()
+    });
     const node = await inspectElementBySelector(selector);
     if (node) {
       await node.setAsInspectedNode();
@@ -6876,16 +6943,15 @@ var ConversationHandler = class _ConversationHandler extends Common7.ObjectWrapp
   async #handleExternalPerformanceConversation(prompt, data) {
     return this.#doExternalConversation({
       conversation: data.conversation,
-      aiAgent: data.agent,
       prompt,
       selected: data.selected
     });
   }
   async #handleExternalNetworkConversation(prompt, requestUrl) {
-    const networkAgent = this.createAgent(
-      "drjones-network-request"
-      /* ConversationType.NETWORK */
-    );
+    const networkAgent = new NetworkAgent({
+      aidaClient: this.#aidaClient,
+      serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled2()
+    });
     const request = await inspectNetworkRequestByUrl(requestUrl);
     if (!request) {
       return this.#generateErrorResponse(`Can't find request with the given selector ${requestUrl}`);
@@ -6899,35 +6965,6 @@ var ConversationHandler = class _ConversationHandler extends Common7.ObjectWrapp
       selected: new RequestContext(request, calculator)
     });
   }
-  createAgent(conversationType, changeManager) {
-    const options = {
-      aidaClient: this.#aidaClient,
-      serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled()
-    };
-    let agent;
-    switch (conversationType) {
-      case "freestyler": {
-        agent = new StylingAgent({
-          ...options,
-          changeManager
-        });
-        break;
-      }
-      case "drjones-network-request": {
-        agent = new NetworkAgent(options);
-        break;
-      }
-      case "drjones-file": {
-        agent = new FileAgent(options);
-        break;
-      }
-      case "drjones-performance-full": {
-        agent = new PerformanceAgent(options);
-        break;
-      }
-    }
-    return agent;
-  }
 };
 export {
   AICallTree_exports as AICallTree,
@@ -6935,6 +6972,7 @@ export {
   AIQueries_exports as AIQueries,
   AgentProject_exports as AgentProject,
   AiAgent_exports as AiAgent,
+  AiConversation_exports as AiConversation,
   AiHistoryStorage_exports as AiHistoryStorage,
   AiUtils_exports as AiUtils,
   BuiltInAi_exports as BuiltInAi,

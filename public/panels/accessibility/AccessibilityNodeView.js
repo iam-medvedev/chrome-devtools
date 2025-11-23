@@ -290,7 +290,7 @@ export class AXNodePropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.listItemElement.appendChild(linkedNode.render());
     }
     appendRelatedNodeListValueElement(value) {
-        if (value.relatedNodes && value.relatedNodes.length === 1 && !value.value) {
+        if (value.relatedNodes?.length === 1 && !value.value) {
             this.appendRelatedNodeInline(value.relatedNodes[0]);
             return;
         }

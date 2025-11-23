@@ -231,18 +231,6 @@ var UIStrings = {
    */
   doNotAutomaticallyRevealFilesIn: "Do not automatically reveal files in sidebar",
   /**
-   * @description Setting under the Sources category to toggle usage of JavaScript source maps.
-   */
-  javaScriptSourceMaps: "JavaScript source maps",
-  /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
-   */
-  enableJavaScriptSourceMaps: "Enable JavaScript source maps",
-  /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
-   */
-  disableJavaScriptSourceMaps: "Disable JavaScript source maps",
-  /**
    * @description Title of a setting under the Sources category.
    *'tab moves focus' is the name of the setting, which means that when the user
    *hits the tab key, the focus in the UI will be moved to the next part of the
@@ -371,18 +359,6 @@ var UIStrings = {
    * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   doNotDisplayVariableValuesInline: "Do not display variable values inline while debugging",
-  /**
-   * @description Title of a setting under the Sources category
-   */
-  cssSourceMaps: "CSS source maps",
-  /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
-   */
-  enableCssSourceMaps: "Enable CSS source maps",
-  /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
-   */
-  disableCssSourceMaps: "Disable CSS source maps",
   /**
    * @description Title of a setting under the Sources category in Settings
    */
@@ -1502,24 +1478,6 @@ Common.Settings.registerSettingExtension({
 Common.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
-  title: i18nLazyString(UIStrings.javaScriptSourceMaps),
-  settingName: "js-source-maps-enabled",
-  settingType: "boolean",
-  defaultValue: true,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.enableJavaScriptSourceMaps)
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.disableJavaScriptSourceMaps)
-    }
-  ]
-});
-Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
   title: i18nLazyString(UIStrings.tabMovesFocus),
   settingName: "text-editor-tab-moves-focus",
   settingType: "boolean",
@@ -1729,24 +1687,6 @@ Common.Settings.registerSettingExtension({
     {
       value: false,
       title: i18nLazyString(UIStrings.doNotAutomaticallyPrettyPrintMinifiedSources)
-    }
-  ]
-});
-Common.Settings.registerSettingExtension({
-  category: "SOURCES",
-  storageType: "Synced",
-  title: i18nLazyString(UIStrings.cssSourceMaps),
-  settingName: "css-source-maps-enabled",
-  settingType: "boolean",
-  defaultValue: true,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.enableCssSourceMaps)
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.disableCssSourceMaps)
     }
   ]
 });
@@ -4858,7 +4798,31 @@ var UIStrings14 = {
   /**
    * @description Tooltip text for a setting that controls the network cache. Disabling the network cache can simulate the network connections of users that are visiting a page for the first time.
    */
-  networkCacheExplanation: "Disabling the network cache will simulate a network experience similar to a first time visitor."
+  networkCacheExplanation: "Disabling the network cache will simulate a network experience similar to a first time visitor.",
+  /**
+   * @description Setting under the Sources category to toggle usage of JavaScript source maps.
+   */
+  javaScriptSourceMaps: "JavaScript source maps",
+  /**
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   */
+  enableJavaScriptSourceMaps: "Enable JavaScript source maps",
+  /**
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   */
+  disableJavaScriptSourceMaps: "Disable JavaScript source maps",
+  /**
+   * @description Title of a setting under the Sources category
+   */
+  cssSourceMaps: "CSS source maps",
+  /**
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   */
+  enableCssSourceMaps: "Enable CSS source maps",
+  /**
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   */
+  disableCssSourceMaps: "Disable CSS source maps"
 };
 var str_14 = i18n28.i18n.registerUIStrings("core/sdk/sdk-meta.ts", UIStrings14);
 var i18nLazyString14 = i18n28.i18n.getLazilyComputedLocalizedString.bind(void 0, str_14);
@@ -5591,6 +5555,42 @@ Common9.Settings.registerSettingExtension({
     tooltip: i18nLazyString14(UIStrings14.remoteFileLoadingInfo)
   }
 });
+Common9.Settings.registerSettingExtension({
+  category: "SOURCES",
+  storageType: "Synced",
+  title: i18nLazyString14(UIStrings14.javaScriptSourceMaps),
+  settingName: "js-source-maps-enabled",
+  settingType: "boolean",
+  defaultValue: true,
+  options: [
+    {
+      value: true,
+      title: i18nLazyString14(UIStrings14.enableJavaScriptSourceMaps)
+    },
+    {
+      value: false,
+      title: i18nLazyString14(UIStrings14.disableJavaScriptSourceMaps)
+    }
+  ]
+});
+Common9.Settings.registerSettingExtension({
+  category: "SOURCES",
+  storageType: "Synced",
+  title: i18nLazyString14(UIStrings14.cssSourceMaps),
+  settingName: "css-source-maps-enabled",
+  settingType: "boolean",
+  defaultValue: true,
+  options: [
+    {
+      value: true,
+      title: i18nLazyString14(UIStrings14.enableCssSourceMaps)
+    },
+    {
+      value: false,
+      title: i18nLazyString14(UIStrings14.disableCssSourceMaps)
+    }
+  ]
+});
 
 // gen/front_end/models/workspace/workspace-meta.js
 import * as Common10 from "./../../core/common/common.js";
@@ -6003,6 +6003,7 @@ UI15.ActionRegistration.registerActionExtension({
   },
   category: "GLOBAL",
   title: titleForAiAssistanceActions,
+  configurableBindings: false,
   featurePromotionId: "ai-assistance",
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6017,6 +6018,7 @@ UI15.ActionRegistration.registerActionExtension({
   },
   category: "GLOBAL",
   title: titleForAiAssistanceActions,
+  configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6030,6 +6032,7 @@ UI15.ActionRegistration.registerActionExtension({
   },
   category: "GLOBAL",
   title: titleForAiAssistanceActions,
+  configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6043,6 +6046,7 @@ UI15.ActionRegistration.registerActionExtension({
   },
   category: "GLOBAL",
   title: titleForAiAssistanceActions,
+  configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6056,6 +6060,7 @@ UI15.ActionRegistration.registerActionExtension({
   },
   category: "GLOBAL",
   title: titleForAiAssistanceActions,
+  configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6069,6 +6074,7 @@ UI15.ActionRegistration.registerActionExtension({
   },
   category: "GLOBAL",
   title: titleForAiAssistanceActions,
+  configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6082,6 +6088,7 @@ UI15.ActionRegistration.registerActionExtension({
   },
   category: "GLOBAL",
   title: titleForAiAssistanceActions,
+  configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6095,6 +6102,7 @@ UI15.ActionRegistration.registerActionExtension({
   },
   category: "GLOBAL",
   title: titleForAiAssistanceActions,
+  configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();

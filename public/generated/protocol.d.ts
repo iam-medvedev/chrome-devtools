@@ -1103,12 +1103,13 @@ export declare namespace Audits {
         FormInputWithNoLabelError = "FormInputWithNoLabelError",
         FormAutocompleteAttributeEmptyError = "FormAutocompleteAttributeEmptyError",
         FormEmptyIdAndNameAttributesForInputError = "FormEmptyIdAndNameAttributesForInputError",
-        FormAriaLabelledByToNonExistingId = "FormAriaLabelledByToNonExistingId",
+        FormAriaLabelledByToNonExistingIdError = "FormAriaLabelledByToNonExistingIdError",
         FormInputAssignedAutocompleteValueToIdOrNameAttributeError = "FormInputAssignedAutocompleteValueToIdOrNameAttributeError",
-        FormLabelHasNeitherForNorNestedInput = "FormLabelHasNeitherForNorNestedInput",
+        FormLabelHasNeitherForNorNestedInputError = "FormLabelHasNeitherForNorNestedInputError",
         FormLabelForMatchesNonExistingIdError = "FormLabelForMatchesNonExistingIdError",
         FormInputHasWrongButWellIntendedAutocompleteValueError = "FormInputHasWrongButWellIntendedAutocompleteValueError",
-        ResponseWasBlockedByORB = "ResponseWasBlockedByORB"
+        ResponseWasBlockedByORB = "ResponseWasBlockedByORB",
+        NavigationEntryMarkedSkippable = "NavigationEntryMarkedSkippable"
     }
     /**
      * Depending on the concrete errorType, different properties are set.
@@ -3186,28 +3187,6 @@ export declare namespace CSS {
         inherits: boolean;
         syntax: string;
     }
-    /**
-     * CSS font-palette-values rule representation.
-     */
-    interface CSSFontPaletteValuesRule {
-        /**
-         * The css style sheet identifier (absent for user agent stylesheet and user-specified
-         * stylesheet rules) this rule came from.
-         */
-        styleSheetId?: StyleSheetId;
-        /**
-         * Parent stylesheet's origin.
-         */
-        origin: StyleSheetOrigin;
-        /**
-         * Associated font palette name.
-         */
-        fontPaletteName: Value;
-        /**
-         * Associated style declaration.
-         */
-        style: CSSStyle;
-    }
     const enum CSSAtRuleType {
         FontFace = "font-face",
         FontFeatureValues = "font-feature-values",
@@ -3616,10 +3595,6 @@ export declare namespace CSS {
          * A list of CSS property registrations matching this node.
          */
         cssPropertyRegistrations?: CSSPropertyRegistration[];
-        /**
-         * A font-palette-values rule matching this node.
-         */
-        cssFontPaletteValuesRule?: CSSFontPaletteValuesRule;
         /**
          * A list of simple @rules matching this node or its pseudo-elements.
          */
@@ -10322,6 +10297,12 @@ export declare namespace Network {
          * Expected to be unsigned integer.
          */
         receiveBufferSize?: number;
+        multicastLoopback?: boolean;
+        /**
+         * Unsigned int 8.
+         */
+        multicastTimeToLive?: integer;
+        multicastAllowAddressSharing?: boolean;
     }
     interface DirectUDPMessage {
         data: binary;
@@ -11484,6 +11465,14 @@ export declare namespace Network {
         identifier: RequestId;
         data: binary;
         timestamp: MonotonicTime;
+    }
+    interface DirectUDPSocketJoinedMulticastGroupEvent {
+        identifier: RequestId;
+        IPAddress: string;
+    }
+    interface DirectUDPSocketLeftMulticastGroupEvent {
+        identifier: RequestId;
+        IPAddress: string;
     }
     /**
      * Fired upon direct_socket.UDPSocket creation.

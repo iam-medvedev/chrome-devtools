@@ -278,6 +278,9 @@ var Action = class extends Common2.ObjectWrapper.ObjectWrapper {
   bindings() {
     return this.actionRegistration.bindings;
   }
+  configurableBindings() {
+    return this.actionRegistration.configurableBindings ?? true;
+  }
   experiment() {
     return this.actionRegistration.experiment;
   }
@@ -688,7 +691,6 @@ __export(UIUtils_exports, {
   measureTextWidth: () => measureTextWidth,
   measuredScrollbarWidth: () => measuredScrollbarWidth,
   modifiedFloatNumber: () => modifiedFloatNumber,
-  openInNewTab: () => openInNewTab,
   openLinkExternallyLabel: () => openLinkExternallyLabel,
   registerRenderer: () => registerRenderer,
   resetMeasuredScrollbarWidthForTest: () => resetMeasuredScrollbarWidthForTest,
@@ -2317,6 +2319,121 @@ import "./../../core/dom_extension/dom_extension.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Lit from "./../lit/lit.js";
+
+// gen/front_end/ui/legacy/DOMUtilities.js
+var DOMUtilities_exports = {};
+__export(DOMUtilities_exports, {
+  appendStyle: () => appendStyle,
+  deepActiveElement: () => deepActiveElement,
+  getEnclosingShadowRootForNode: () => getEnclosingShadowRootForNode,
+  rangeOfWord: () => rangeOfWord
+});
+function deepActiveElement(doc) {
+  let activeElement = doc.activeElement;
+  while (activeElement?.shadowRoot?.activeElement) {
+    activeElement = activeElement.shadowRoot.activeElement;
+  }
+  return activeElement;
+}
+function getEnclosingShadowRootForNode(node) {
+  let parentNode = node.parentNodeOrShadowHost();
+  while (parentNode) {
+    if (parentNode instanceof ShadowRoot) {
+      return parentNode;
+    }
+    parentNode = parentNode.parentNodeOrShadowHost();
+  }
+  return null;
+}
+function rangeOfWord(rootNode, offset, stopCharacters, stayWithinNode, direction) {
+  let startNode;
+  let startOffset = 0;
+  let endNode;
+  let endOffset = 0;
+  if (!stayWithinNode) {
+    stayWithinNode = rootNode;
+  }
+  if (!direction || direction === "backward" || direction === "both") {
+    let node = rootNode;
+    while (node) {
+      if (node === stayWithinNode) {
+        if (!startNode) {
+          startNode = stayWithinNode;
+        }
+        break;
+      }
+      if (node.nodeType === Node.TEXT_NODE && node.nodeValue !== null) {
+        const start = node === rootNode ? offset - 1 : node.nodeValue.length - 1;
+        for (let i = start; i >= 0; --i) {
+          if (stopCharacters.indexOf(node.nodeValue[i]) !== -1) {
+            startNode = node;
+            startOffset = i + 1;
+            break;
+          }
+        }
+      }
+      if (startNode) {
+        break;
+      }
+      node = node.traversePreviousNode(stayWithinNode);
+    }
+    if (!startNode) {
+      startNode = stayWithinNode;
+      startOffset = 0;
+    }
+  } else {
+    startNode = rootNode;
+    startOffset = offset;
+  }
+  if (!direction || direction === "forward" || direction === "both") {
+    let node = rootNode;
+    while (node) {
+      if (node === stayWithinNode) {
+        if (!endNode) {
+          endNode = stayWithinNode;
+        }
+        break;
+      }
+      if (node.nodeType === Node.TEXT_NODE && node.nodeValue !== null) {
+        const start = node === rootNode ? offset : 0;
+        for (let i = start; i < node.nodeValue.length; ++i) {
+          if (stopCharacters.indexOf(node.nodeValue[i]) !== -1) {
+            endNode = node;
+            endOffset = i;
+            break;
+          }
+        }
+      }
+      if (endNode) {
+        break;
+      }
+      node = node.traverseNextNode(stayWithinNode);
+    }
+    if (!endNode) {
+      endNode = stayWithinNode;
+      endOffset = stayWithinNode.nodeType === Node.TEXT_NODE ? stayWithinNode.nodeValue?.length || 0 : stayWithinNode.childNodes.length;
+    }
+  } else {
+    endNode = rootNode;
+    endOffset = offset;
+  }
+  if (!rootNode.ownerDocument) {
+    throw new Error("No `ownerDocument` found for rootNode");
+  }
+  const result = rootNode.ownerDocument.createRange();
+  result.setStart(startNode, startOffset);
+  result.setEnd(endNode, endOffset);
+  return result;
+}
+function appendStyle(node, ...styles) {
+  for (const cssText of styles) {
+    const style = (node.ownerDocument ?? document).createElement("style");
+    style.textContent = cssText;
+    node.appendChild(style);
+  }
+}
+
+// gen/front_end/ui/legacy/Widget.js
 var originalAppendChild = Element.prototype.appendChild;
 var originalInsertBefore = Element.prototype.insertBefore;
 var originalRemoveChild = Element.prototype.removeChild;
@@ -2885,7 +3002,7 @@ var Widget = class _Widget {
   }
   registerRequiredCSS(...cssFiles) {
     for (const cssFile of cssFiles) {
-      Platform5.DOMUtilities.appendStyle(this.#shadowRoot ?? this.element, cssFile);
+      appendStyle(this.#shadowRoot ?? this.element, cssFile);
     }
   }
   // Unused, but useful for debugging.
@@ -3141,7 +3258,7 @@ var WidgetFocusRestorer = class {
   previous;
   constructor(widget) {
     this.widget = widget;
-    this.previous = Platform5.DOMUtilities.deepActiveElement(widget.element.ownerDocument);
+    this.previous = deepActiveElement(widget.element.ownerDocument);
     widget.focus();
   }
   restore() {
@@ -4759,7 +4876,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     if (userGesture && !tab.closeable) {
       return;
     }
-    if (this.currentTab && this.currentTab.id === id2) {
+    if (this.currentTab?.id === id2) {
       this.hideCurrentTab();
     }
     this.tabsById.delete(id2);
@@ -4823,7 +4940,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       isUserGesture: userGesture
     };
     this.dispatchEventToListeners(Events.TabInvoked, eventData);
-    if (this.currentTab && this.currentTab.id === id2) {
+    if (this.currentTab?.id === id2) {
       return true;
     }
     this.suspendInvalidations();
@@ -4939,7 +5056,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       return;
     }
     this.suspendInvalidations();
-    const isSelected = this.currentTab && this.currentTab.id === id2;
+    const isSelected = this.currentTab?.id === id2;
     const shouldFocus = tab.view.hasFocus();
     if (isSelected) {
       this.hideTab(tab);
@@ -10318,7 +10435,7 @@ var TextPrompt = class extends Common12.ObjectWrapper.ObjectWrapper {
     this.boundClearAutocomplete = this.clearAutocomplete.bind(this);
     this.boundOnBlur = this.onBlur.bind(this);
     this.proxyElement = element.ownerDocument.createElement("span");
-    Platform12.DOMUtilities.appendStyle(this.proxyElement, textPrompt_css_default);
+    appendStyle(this.proxyElement, textPrompt_css_default);
     this.contentElement = this.proxyElement.createChild("div", "text-prompt-root");
     this.proxyElement.style.display = this.proxyElementDisplay;
     if (element.parentElement) {
@@ -10670,7 +10787,7 @@ var TextPrompt = class extends Common12.ObjectWrapper.ObjectWrapper {
       this.clearAutocomplete();
       return;
     }
-    const wordQueryRange = Platform12.DOMUtilities.rangeOfWord(selectionRange.startContainer, selectionRange.startOffset, this.completionStopCharacters, this.element(), "backward");
+    const wordQueryRange = rangeOfWord(selectionRange.startContainer, selectionRange.startOffset, this.completionStopCharacters, this.element(), "backward");
     const expressionRange = wordQueryRange.cloneRange();
     expressionRange.collapse(true);
     expressionRange.setStartBefore(this.element());
@@ -12040,7 +12157,6 @@ import * as Common14 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Platform15 from "./../../core/platform/platform.js";
-import * as Root7 from "./../../core/root/root.js";
 import * as Geometry5 from "./../../models/geometry/geometry.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Buttons6 from "./../components/buttons/buttons.js";
@@ -12340,7 +12456,7 @@ iframe.widget {
   display: none !important; /* stylelint-disable-line declaration-no-important */
 }
 
-.highlighted-search-result,::highlight(highlighted-search-result) {
+.highlighted-search-result,:host::highlight(highlighted-search-result) {
   border-radius: 1px;
   background-color: var(--sys-color-yellow-container);
   outline: 1px solid var(--sys-color-yellow-container);
@@ -12525,7 +12641,7 @@ input[type='range']:disabled::-webkit-slider-thumb {
   }
 }
 
-.highlighted-search-result.current-search-result,::highlight(current-search-result) {
+.highlighted-search-result.current-search-result,:host::highlight(current-search-result) {
   /* Note: this value is used in light & dark mode */
   --override-current-search-result-background-color: rgb(255 127 0 / 80%);
 
@@ -13804,7 +13920,7 @@ function isEditing() {
   if (elementsBeingEdited.size) {
     return true;
   }
-  const focused = Platform15.DOMUtilities.deepActiveElement(document);
+  const focused = deepActiveElement(document);
   if (!focused) {
     return false;
   }
@@ -13975,7 +14091,7 @@ function handleElementValueModifications(event, element, finishHandler, suggesti
     return false;
   }
   const originalValue = element.textContent;
-  const wordRange = Platform15.DOMUtilities.rangeOfWord(selectionRange.startContainer, selectionRange.startOffset, StyleValueDelimiters, element);
+  const wordRange = rangeOfWord(selectionRange.startContainer, selectionRange.startOffset, StyleValueDelimiters, element);
   const wordString = wordRange.toString();
   if (suggestionHandler?.(wordString)) {
     return false;
@@ -14032,8 +14148,8 @@ function addPlatformClass(element) {
   element.classList.add("platform-" + Host7.Platform.platform());
 }
 function installComponentRootStyles(element) {
-  Platform15.DOMUtilities.appendStyle(element, inspectorCommon_css_default);
-  Platform15.DOMUtilities.appendStyle(element, Buttons6.textButtonStyles);
+  appendStyle(element, inspectorCommon_css_default);
+  appendStyle(element, Buttons6.textButtonStyles);
   if (!Host7.Platform.isMac() && measuredScrollbarWidth(element.ownerDocument) === 0) {
     element.classList.add("overlay-scrollbar-enabled");
   }
@@ -14053,7 +14169,7 @@ var ElementFocusRestorer = class {
   previous;
   constructor(element) {
     this.element = element;
-    this.previous = Platform15.DOMUtilities.deepActiveElement(element.ownerDocument);
+    this.previous = deepActiveElement(element.ownerDocument);
     element.focus();
   }
   restore() {
@@ -15034,7 +15150,7 @@ function updateWidgetfocusWidgetForNode(node) {
 function focusChanged(event) {
   const target = event.target;
   const document2 = target ? target.ownerDocument : null;
-  const element = document2 ? Platform15.DOMUtilities.deepActiveElement(document2) : null;
+  const element = document2 ? deepActiveElement(document2) : null;
   updateWidgetfocusWidgetForNode(element);
 }
 function createShadowRootWithCoreStyles(element, options = {
@@ -15043,11 +15159,11 @@ function createShadowRootWithCoreStyles(element, options = {
 }) {
   const { cssFile, delegatesFocus } = options;
   const shadowRoot = element.attachShadow({ mode: "open", delegatesFocus });
-  Platform15.DOMUtilities.appendStyle(shadowRoot, inspectorCommon_css_default, Buttons6.textButtonStyles);
+  appendStyle(shadowRoot, inspectorCommon_css_default, Buttons6.textButtonStyles);
   if (Array.isArray(cssFile)) {
-    Platform15.DOMUtilities.appendStyle(shadowRoot, ...cssFile);
+    appendStyle(shadowRoot, ...cssFile);
   } else if (cssFile) {
-    Platform15.DOMUtilities.appendStyle(shadowRoot, cssFile);
+    appendStyle(shadowRoot, cssFile);
   }
   shadowRoot.addEventListener("focus", focusChanged, true);
   return shadowRoot;
@@ -15072,19 +15188,6 @@ function measuredScrollbarWidth(document2) {
   cachedMeasuredScrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
   document2.body.removeChild(scrollDiv);
   return cachedMeasuredScrollbarWidth;
-}
-function openInNewTab(url) {
-  url = new URL(`${url}`);
-  if (["developer.chrome.com", "developers.google.com", "web.dev"].includes(url.hostname)) {
-    if (!url.searchParams.has("utm_source")) {
-      url.searchParams.append("utm_source", "devtools");
-    }
-    const { channel } = Root7.Runtime.hostConfig;
-    if (!url.searchParams.has("utm_campaign") && typeof channel === "string") {
-      url.searchParams.append("utm_campaign", channel);
-    }
-  }
-  Host7.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(Platform15.DevToolsPath.urlString`${url}`);
 }
 var MAX_DISPLAY_COUNT = 10;
 var MAX_DURATION = 60 * 24 * 60 * 60 * 1e3;
@@ -16132,7 +16235,7 @@ function setActiveDescendant(element, activedescendant) {
     return;
   }
   if (activedescendant.isConnected && element.isConnected) {
-    console.assert(Platform16.DOMUtilities.getEnclosingShadowRootForNode(activedescendant) === Platform16.DOMUtilities.getEnclosingShadowRootForNode(element), "elements are not in the same shadow dom");
+    console.assert(getEnclosingShadowRootForNode(activedescendant) === getEnclosingShadowRootForNode(element), "elements are not in the same shadow dom");
   }
   ensureId(activedescendant);
   element.setAttribute("aria-activedescendant", activedescendant.id);
@@ -16394,6 +16497,7 @@ __export(XLink_exports, {
 });
 import * as Host8 from "./../../core/host/host.js";
 import * as Platform17 from "./../../core/platform/platform.js";
+import * as UIHelpers from "./../helpers/helpers.js";
 import * as VisualLogging16 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/Fragment.js
@@ -16676,14 +16780,14 @@ var XLink = class extends XElement {
     this.onClick = (event) => {
       event.consume(true);
       if (this.#href) {
-        openInNewTab(this.#href);
+        UIHelpers.openInNewTab(this.#href);
       }
     };
     this.onKeyDown = (event) => {
       if (Platform17.KeyboardUtilities.isEnterOrSpaceKey(event)) {
         event.consume(true);
         if (this.#href) {
-          openInNewTab(this.#href);
+          UIHelpers.openInNewTab(this.#href);
         }
       }
     };
@@ -16751,7 +16855,7 @@ var ContextMenuProvider = class {
     const node = targetNode;
     contextMenu.revealSection().appendItem(openLinkExternallyLabel(), () => {
       if (node.href) {
-        openInNewTab(node.href);
+        UIHelpers.openInNewTab(node.href);
       }
     }, { jslogContext: "open-in-new-tab" });
     contextMenu.revealSection().appendItem(copyLinkAddressLabel(), () => {
@@ -17926,7 +18030,7 @@ var ListWidget = class extends VBox {
   list;
   lastSeparator;
   focusRestorer;
-  items;
+  #items;
   editable;
   elements;
   editor;
@@ -17941,7 +18045,7 @@ var ListWidget = class extends VBox {
     this.list = this.contentElement.createChild("div", "list");
     this.lastSeparator = false;
     this.focusRestorer = null;
-    this.items = [];
+    this.#items = [];
     this.editable = [];
     this.elements = [];
     this.editor = null;
@@ -17954,8 +18058,11 @@ var ListWidget = class extends VBox {
     }
     this.updatePlaceholder();
   }
+  get items() {
+    return this.#items;
+  }
   clear() {
-    this.items = [];
+    this.#items = [];
     this.editable = [];
     this.elements = [];
     this.lastSeparator = false;
@@ -17963,8 +18070,29 @@ var ListWidget = class extends VBox {
     this.updatePlaceholder();
     this.stopEditing();
   }
-  appendItem(item8, editable) {
-    if (this.lastSeparator && this.items.length) {
+  updateItem(index, newItem, editable, focusable = true, controlLabels = {}) {
+    if (index < 0 || index >= this.#items.length) {
+      this.appendItem(newItem, editable, focusable, controlLabels);
+      return;
+    }
+    this.#items[index] = newItem;
+    this.editable[index] = editable;
+    const element = this.elements[index];
+    const [content, controls] = element.children;
+    if (controls) {
+      element.removeChild(controls);
+    }
+    this.delegate.updateItem?.(content, newItem, editable, index);
+    element.classList.toggle("editable", editable);
+    if (editable) {
+      if (focusable) {
+        element.tabIndex = 0;
+      }
+      element.appendChild(this.createControls(newItem, element, controlLabels));
+    }
+  }
+  appendItem(item8, editable, focusable = true, controlLabels = {}) {
+    if (this.lastSeparator && this.#items.length) {
       const element2 = document.createElement("div");
       element2.classList.add("list-separator");
       if (this.isTable) {
@@ -17973,21 +18101,23 @@ var ListWidget = class extends VBox {
       this.list.appendChild(element2);
     }
     this.lastSeparator = false;
-    this.items.push(item8);
+    this.#items.push(item8);
     this.editable.push(editable);
     const element = this.list.createChild("div", "list-item");
     if (this.isTable) {
       element.role = "rowgroup";
     }
-    const content = this.delegate.renderItem(item8, editable, this.items.length - 1);
+    const content = this.delegate.renderItem(item8, editable, this.#items.length - 1);
     if (!content.hasAttribute("jslog")) {
       element.setAttribute("jslog", `${VisualLogging19.item()}`);
     }
     element.appendChild(content);
     if (editable) {
       element.classList.add("editable");
-      element.tabIndex = 0;
-      element.appendChild(this.createControls(item8, element));
+      if (focusable) {
+        element.tabIndex = 0;
+      }
+      element.appendChild(this.createControls(item8, element, controlLabels));
     }
     this.elements.push(element);
     this.updatePlaceholder();
@@ -17996,7 +18126,7 @@ var ListWidget = class extends VBox {
     this.lastSeparator = true;
   }
   removeItem(index) {
-    if (this.editItem === this.items[index]) {
+    if (this.editItem === this.#items[index]) {
       this.stopEditing();
     }
     const element = this.elements[index];
@@ -18012,7 +18142,7 @@ var ListWidget = class extends VBox {
     }
     element.remove();
     this.elements.splice(index, 1);
-    this.items.splice(index, 1);
+    this.#items.splice(index, 1);
     this.editable.splice(index, 1);
     this.updatePlaceholder();
   }
@@ -18023,7 +18153,7 @@ var ListWidget = class extends VBox {
     this.emptyPlaceholder = element;
     this.updatePlaceholder();
   }
-  createControls(item8, element) {
+  createControls(item8, element, controlLabels) {
     const controls = document.createElement("div");
     controls.classList.add("controls-container");
     controls.classList.add("fill");
@@ -18034,13 +18164,13 @@ var ListWidget = class extends VBox {
           <devtools-button class=toolbar-button
                            .iconName=${"edit"}
                            .jslogContext=${"edit-item"}
-                           .title=${i18nString14(UIStrings14.editString)}
+                           .title=${controlLabels?.edit ?? i18nString14(UIStrings14.editString)}
                            .variant=${"icon"}
                            @click=${onEditClicked}></devtools-button>
           <devtools-button class=toolbar-button
                            .iconName=${"bin"}
                            .jslogContext=${"remove-item"}
-                           .title=${i18nString14(UIStrings14.removeString)}
+                           .title=${controlLabels?.delete ?? i18nString14(UIStrings14.removeString)}
                            .variant=${"icon"}
                            @click=${onRemoveClicked}></devtools-button>
         </devtools-toolbar>
@@ -18054,7 +18184,7 @@ var ListWidget = class extends VBox {
     function onRemoveClicked() {
       const index = this.elements.indexOf(element);
       this.element.focus();
-      this.delegate.removeItemRequested(this.items[index], index);
+      this.delegate.removeItemRequested(this.#items[index], index);
       LiveAnnouncer.alert(i18nString14(UIStrings14.removedItem));
       if (this.elements.length >= 1) {
         this.elements[Math.min(index, this.elements.length - 1)].focus();
@@ -19026,7 +19156,7 @@ var ReportView = class extends VBox {
     this.headerElement.classList.toggle("hidden", Boolean(title));
   }
   setSubtitle(subtitle) {
-    if (this.subtitleElement && this.subtitleElement.textContent === subtitle) {
+    if (this.subtitleElement?.textContent === subtitle) {
       return;
     }
     if (!this.subtitleElement) {
@@ -20008,7 +20138,6 @@ __export(SoftDropDown_exports, {
   SoftDropDown: () => SoftDropDown
 });
 import * as i18n33 from "./../../core/i18n/i18n.js";
-import * as Platform24 from "./../../core/platform/platform.js";
 import * as Geometry6 from "./../../models/geometry/geometry.js";
 import * as IconButton9 from "./../components/icon_button/icon_button.js";
 import * as VisualLogging24 from "./../visual_logging/visual_logging.js";
@@ -20137,7 +20266,7 @@ var SoftDropDown = class {
       this.element.setAttribute("jslog", `${VisualLogging24.dropDown().track({ click: true, keydown: "ArrowUp|ArrowDown|Enter" }).context(jslogContext)}`);
     }
     this.element.classList.add("soft-dropdown");
-    Platform24.DOMUtilities.appendStyle(this.element, softDropDownButton_css_default);
+    appendStyle(this.element, softDropDownButton_css_default);
     this.titleElement = this.element.createChild("span", "title");
     const dropdownArrowIcon = IconButton9.Icon.create("triangle-down");
     this.element.appendChild(dropdownArrowIcon);
@@ -20449,7 +20578,7 @@ __export(Treeoutline_exports, {
   treeElementBylistItemNode: () => treeElementBylistItemNode
 });
 import * as Common18 from "./../../core/common/common.js";
-import * as Platform25 from "./../../core/platform/platform.js";
+import * as Platform24 from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Highlighting from "./../components/highlighting/highlighting.js";
 import * as Lit3 from "./../lit/lit.js";
@@ -21016,7 +21145,7 @@ var TreeOutline = class extends Common18.ObjectWrapper.ObjectWrapper {
       let scrollParentElement = this.element;
       while (getComputedStyle(scrollParentElement).overflow === "visible" && scrollParentElement.parentElementOrShadowHost()) {
         const parent = scrollParentElement.parentElementOrShadowHost();
-        Platform25.assertNotNullOrUndefined(parent);
+        Platform24.assertNotNullOrUndefined(parent);
         scrollParentElement = parent;
       }
       const viewRect = scrollParentElement.getBoundingClientRect();
@@ -21072,7 +21201,7 @@ var TreeOutlineInShadow = class extends TreeOutline {
   }
   registerRequiredCSS(...cssFiles) {
     for (const cssFile of cssFiles) {
-      Platform25.DOMUtilities.appendStyle(this.shadowRoot, cssFile);
+      appendStyle(this.shadowRoot, cssFile);
     }
   }
   setHideOverflow(hideOverflow) {
@@ -21215,9 +21344,9 @@ var TreeElement = class {
     }
     let insertionIndex;
     if (comparator) {
-      insertionIndex = Platform25.ArrayUtilities.lowerBound(this.childrenInternal, child, comparator);
+      insertionIndex = Platform24.ArrayUtilities.lowerBound(this.childrenInternal, child, comparator);
     } else if (this.treeOutline?.comparator) {
-      insertionIndex = Platform25.ArrayUtilities.lowerBound(this.childrenInternal, child, this.treeOutline.comparator);
+      insertionIndex = Platform24.ArrayUtilities.lowerBound(this.childrenInternal, child, this.treeOutline.comparator);
     } else {
       insertionIndex = this.childrenInternal.length;
     }
@@ -21768,7 +21897,7 @@ var TreeElement = class {
     this.listItemNode.classList.remove("selected");
     clearSelected(this.listItemNode);
     this.setFocusable(false);
-    if (this.treeOutline && this.treeOutline.selectedTreeElement === this) {
+    if (this.treeOutline?.selectedTreeElement === this) {
       this.treeOutline.selectedTreeElement = null;
       this.treeOutline.updateFocusable();
       if (hadFocus) {
@@ -21933,11 +22062,11 @@ var TreeSearch = class {
     view.updateCurrentMatchIndex(this.#currentMatchIndex);
   }
   next() {
-    this.#currentMatchIndex = Platform25.NumberUtilities.mod(this.#currentMatchIndex + 1, this.#matches.length);
+    this.#currentMatchIndex = Platform24.NumberUtilities.mod(this.#currentMatchIndex + 1, this.#matches.length);
     return this.currentMatch();
   }
   prev() {
-    this.#currentMatchIndex = Platform25.NumberUtilities.mod(this.#currentMatchIndex - 1, this.#matches.length);
+    this.#currentMatchIndex = Platform24.NumberUtilities.mod(this.#currentMatchIndex - 1, this.#matches.length);
     return this.currentMatch();
   }
   // This is a generator to sidestep stack overflow risks
@@ -21982,7 +22111,7 @@ var TreeSearch = class {
     this.reset();
     for (const _ of this.#innerSearch(node, currentMatch, jumpBackwards, match)) {
     }
-    this.#currentMatchIndex = Platform25.NumberUtilities.mod(this.#currentMatchIndex, this.#matches.length);
+    this.#currentMatchIndex = Platform24.NumberUtilities.mod(this.#currentMatchIndex, this.#matches.length);
     return this.#matches.length;
   }
 };
@@ -22210,7 +22339,7 @@ var View_exports = {};
 __export(View_exports, {
   SimpleView: () => SimpleView
 });
-import * as Platform26 from "./../../core/platform/platform.js";
+import * as Platform25 from "./../../core/platform/platform.js";
 var SimpleView = class extends VBox {
   #title;
   #viewId;
@@ -22224,7 +22353,7 @@ var SimpleView = class extends VBox {
     super(options);
     this.#title = options.title;
     this.#viewId = options.viewId;
-    if (!Platform26.StringUtilities.isExtendedKebabCase(this.#viewId)) {
+    if (!Platform25.StringUtilities.isExtendedKebabCase(this.#viewId)) {
       throw new TypeError(`Invalid view ID '${this.#viewId}'`);
     }
   }
@@ -22265,6 +22394,7 @@ export {
   Context_exports as Context,
   ContextFlavorListener_exports as ContextFlavorListener,
   ContextMenu_exports as ContextMenu,
+  DOMUtilities_exports as DOMUtilities,
   Dialog_exports as Dialog,
   DockController_exports as DockController,
   DropTarget_exports as DropTarget,

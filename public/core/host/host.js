@@ -1191,7 +1191,7 @@ function convertToUserTierEnum(userTier) {
         return UserTier.PUBLIC;
     }
   }
-  return UserTier.BETA;
+  return UserTier.PUBLIC;
 }
 var hostConfigTrackerInstance;
 var HostConfigTracker = class _HostConfigTracker extends Common3.ObjectWrapper.ObjectWrapper {
@@ -1778,14 +1778,6 @@ var UserMetrics = class {
       swatch,
       13
       /* SwatchType.MAX_VALUE */
-    );
-  }
-  animationPlaybackRateChanged(playbackRate) {
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(
-      "DevTools.AnimationPlaybackRateChanged",
-      playbackRate,
-      4
-      /* AnimationsPlaybackRate.MAX_VALUE */
     );
   }
   workspacesPopulated(wallClockTimeInMilliseconds) {
