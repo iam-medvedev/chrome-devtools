@@ -4,8 +4,8 @@
 import * as Common from '../../../core/common/common.js';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
-import * as IconButton from '../icon_button/icon_button.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { Icon } from '../../kit/kit.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as IssueCounter from './issue_counter.js';
 const renderIssueLinkIcon = async (data) => {
@@ -18,7 +18,7 @@ const renderIssueLinkIcon = async (data) => {
 };
 export const extractElements = (shadowRoot) => {
     const icon = shadowRoot.querySelector('devtools-icon');
-    assert.instanceOf(icon, IconButton.Icon.Icon);
+    assert.instanceOf(icon, Icon);
     const button = shadowRoot.querySelector('button');
     assert.instanceOf(button, HTMLButtonElement);
     return { icon, button };
@@ -54,7 +54,8 @@ class MockIssueResolver {
         this.#promiseMap.delete(issueId);
     }
 }
-describeWithLocale('IssueLinkIcon', () => {
+describe('IssueLinkIcon', () => {
+    setupLocaleHooks();
     const issueId = 'issue1';
     const mockIssue = {
         getKind() {

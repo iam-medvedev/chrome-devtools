@@ -1,5 +1,5 @@
 import '../../../ui/legacy/legacy.js';
-import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/kit/kit.js';
 import type * as PublicExtensions from '../../../models/extensions/extensions.js';
 declare global {
     interface HTMLElementTagNameMap {

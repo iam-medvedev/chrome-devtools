@@ -69,7 +69,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           </devtools-toolbar-input>
           <devtools-checkbox
               title=${i18nString(UIStrings.loadHttpsDeveloperResources)}
-              ${bindToSetting(SDK.PageResourceLoader.getLoadThroughTargetSetting())}>
+              ${bindToSetting(input.loadThroughTargetSetting)}>
             ${i18nString(UIStrings.enableLoadingThroughTarget)}
           </devtools-checkbox>
         </devtools-toolbar>
@@ -120,6 +120,7 @@ export class DeveloperResourcesView extends UI.Widget.VBox {
             filters: this.#filters,
             numResources: resources,
             numLoading: loading,
+            loadThroughTargetSetting: this.#loader.getLoadThroughTargetSetting(),
         };
         const output = {};
         this.#view(input, output, this.contentElement);

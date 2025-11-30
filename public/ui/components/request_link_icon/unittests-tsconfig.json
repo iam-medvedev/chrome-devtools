@@ -32,7 +32,8 @@
     "target": "esnext",
     "tsBuildInfoFile": "unittests-tsconfig.json.tsbuildinfo",
     "typeRoots": [
-      "../../../../../../../node_modules/@types"
+      "../../../../../../../node_modules/@types",
+      "../../../../../../../node_modules"
     ],
     "types": [
       "mocha",
@@ -68,10 +69,10 @@
       "path": "../../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../legacy/bundle-tsconfig.json"
+      "path": "../../kit/bundle-tsconfig.json"
     },
     {
-      "path": "../icon_button/bundle-tsconfig.json"
+      "path": "../../legacy/bundle-tsconfig.json"
     }
   ]
 }

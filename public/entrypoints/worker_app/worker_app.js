@@ -1367,9 +1367,10 @@ UI8.ViewManager.registerViewExtension({
   title: i18nLazyString8(UIStrings8.performance),
   commandPrompt: i18nLazyString8(UIStrings8.showPerformance),
   order: 50,
-  async loadView() {
+  async loadView(universe) {
     const Timeline = await loadTimelineModule();
-    return Timeline.TimelinePanel.TimelinePanel.instance();
+    const resourceLoader = universe.context.get(SDK5.PageResourceLoader.PageResourceLoader);
+    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader });
   }
 });
 UI8.ActionRegistration.registerActionExtension({

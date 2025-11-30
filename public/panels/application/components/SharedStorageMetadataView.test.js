@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { dispatchClickEvent, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as ApplicationComponents from './components.js';
@@ -12,7 +12,8 @@ function makeView(origin, metadata, resetBudget) {
         resetBudget: resetBudget || (async () => { }),
     }, origin);
 }
-describeWithLocale('SharedStorageMetadataView', () => {
+describe('SharedStorageMetadataView', () => {
+    setupLocaleHooks();
     it('renders with a title', async () => {
         const component = makeView('https://a.test', {
             creationTime: 10,

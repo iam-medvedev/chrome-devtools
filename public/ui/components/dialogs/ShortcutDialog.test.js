@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale, } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks, } from '../../../testing/LocaleHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as Dialogs from './dialogs.js';
-describeWithLocale('ShortcutDialog', () => {
+describe('ShortcutDialog', () => {
+    setupLocaleHooks();
     async function getShortcutDialog(open, prependedElement) {
         const container = document.createElement('div');
         container.style.width = '600px';

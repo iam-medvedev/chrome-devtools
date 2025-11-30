@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getElementsWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 const SETTINGS_LABEL_SELECTOR = 'devtools-checkbox';
-describeWithLocale('ValueInterpreterSettings', () => {
+describe('ValueInterpreterSettings', () => {
+    setupLocaleHooks();
     function setUpComponent() {
         const component = new LinearMemoryInspectorComponents.ValueInterpreterSettings.ValueInterpreterSettings();
         const data = {

@@ -1,12 +1,17 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
+/* eslint-disable @devtools/no-lit-render-outside-of-view, @devtools/enforce-custom-element-definitions-location */
 import { html, render } from '../../../ui/lit/lit.js';
 import * as UI from '../../legacy/legacy.js';
 import * as VisualElements from '../../visual_logging/visual_logging.js';
 import adornerStyles from './adorner.css.js';
+/**
+ * @deprecated Do not add new usages. The custom component will be removed an
+ * embedded into the corresponding views.
+ */
 export class Adorner extends HTMLElement {
+    static observedAttributes = ['active', 'toggleable'];
     name = '';
     #shadow = this.attachShadow({ mode: 'open' });
     #isToggle = false;
@@ -37,6 +42,19 @@ export class Adorner extends HTMLElement {
             this.setAttribute('jslog', `${VisualElements.adorner(this.#jslogContext)}`);
         }
         this.#render();
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) {
+            return;
+        }
+        switch (name) {
+            case 'active':
+                this.toggle(newValue === 'true');
+                break;
+            case 'toggleable':
+                this.#isToggle = newValue === 'true';
+                break;
+        }
     }
     isActive() {
         return this.getAttribute('aria-pressed') === 'true';

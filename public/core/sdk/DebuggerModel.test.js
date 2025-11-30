@@ -4,7 +4,7 @@
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
@@ -186,7 +186,8 @@ describe('DebuggerModel', () => {
             assert.strictEqual(scripts[1].scriptId, SCRIPT_ID_ONE);
         });
     });
-    describeWithLocale('Scope', () => {
+    describe('Scope', () => {
+        setupLocaleHooks();
         it('Scope.typeName covers every enum value', async () => {
             const target = createTarget();
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);

@@ -64,9 +64,13 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         @pagenavigation=${input.onNavigatePage}
         @historynavigation=${input.onNavigateHistory}></devtools-linear-memory-inspector-navigator>
         <devtools-linear-memory-highlight-chip-list
-        .data=${{ highlightInfos: highlightedMemoryAreas, focusedMemoryHighlight }}
-        @jumptohighlightedmemory=${input.onJumpToAddress}
-        @deletememoryhighlight=${input.onDeleteMemoryHighlight}>
+        .data=${{
+        highlightInfos: highlightedMemoryAreas,
+        focusedMemoryHighlight,
+        jumpToAddress: (address) => input.onJumpToAddress({ data: address }),
+        deleteHighlight: input.onDeleteMemoryHighlight,
+    }}
+        >
         </devtools-linear-memory-highlight-chip-list>
       <devtools-linear-memory-inspector-viewer
         .data=${{
@@ -241,14 +245,15 @@ export class LinearMemoryInspector extends Common.ObjectWrapper.eventMixin(UI.Wi
     }
     #onJumpToAddress(e) {
         // Stop event from bubbling up, since no element further up needs the event.
-        e.stopPropagation();
+        if (e instanceof Event) {
+            e.stopPropagation();
+        }
         this.#currentNavigatorMode = "Submitted" /* Mode.SUBMITTED */;
         const addressInRange = Math.max(0, Math.min(e.data, this.#outerMemoryLength - 1));
         this.#jumpToAddress(addressInRange);
     }
-    #onDeleteMemoryHighlight(e) {
-        e.stopPropagation();
-        this.dispatchEventToListeners("DeleteMemoryHighlight" /* Events.DELETE_MEMORY_HIGHLIGHT */, e.data);
+    #onDeleteMemoryHighlight(highlight) {
+        this.dispatchEventToListeners("DeleteMemoryHighlight" /* Events.DELETE_MEMORY_HIGHLIGHT */, highlight);
     }
     #onRefreshRequest() {
         const { start, end } = getPageRangeForAddress(this.#address, this.#numBytesPerPage, this.#outerMemoryLength);

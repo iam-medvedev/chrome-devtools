@@ -1,8 +1,8 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
-import '../../components/icon_button/icon_button.js';
+/* eslint-disable @devtools/no-lit-render-outside-of-view, @devtools/enforce-custom-element-definitions-location */
+import '../../kit/kit.js';
 import * as Lit from '../../lit/lit.js';
 import markdownImageStyles from './markdownImage.css.js';
 import { getMarkdownImage } from './MarkdownImagesMap.js';

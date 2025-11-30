@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as UI from '../../legacy/legacy.js';
 import * as Snackbars from './snackbars.js';
-describeWithLocale('Snackbar', () => {
+describe('Snackbar', () => {
+    setupLocaleHooks();
     let inspectorViewRootElementStub;
     beforeEach(() => {
         inspectorViewRootElementStub = document.createElement('div');

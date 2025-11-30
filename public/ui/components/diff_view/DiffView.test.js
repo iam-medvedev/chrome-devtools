@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as Diff from '../../../third_party/diff/diff.js';
 import * as DiffView from './diff_view.js';
 function buildDiff(original, updated) {
@@ -27,7 +27,8 @@ function text(elt) {
     }
     return '';
 }
-describeWithLocale('DiffView', () => {
+describe('DiffView', () => {
+    setupLocaleHooks();
     it('renders the proper content', async () => {
         const output = await simpleDiff();
         const lines = Array.from(output.querySelectorAll('.diff-line-content'));

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-imperative-dom-api */
-import '../../ui/components/cards/cards.js';
+import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import { createIcon } from '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { CalibrationController } from './CalibrationController.js';
@@ -309,7 +309,7 @@ export class CPUThrottlingCard {
     createTextWithIcon(text, icon) {
         const el = document.createElement('div');
         el.classList.add('text-with-icon');
-        el.append(IconButton.Icon.create(icon));
+        el.append(createIcon(icon));
         el.append(text);
         return el;
     }

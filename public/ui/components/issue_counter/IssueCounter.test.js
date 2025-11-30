@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 import { assertElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { MockIssuesManager } from '../../../testing/MockIssuesManager.js';
+import { Icon } from '../../kit/kit.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import * as IssueCounter from './issue_counter.js';
 const renderIssueCounter = (data) => {
@@ -20,7 +21,7 @@ export const extractIconGroups = (shadowRoot) => {
     const iconButtonShadowRoot = iconButton.shadowRoot;
     assert.exists(iconButtonShadowRoot);
     const icons = iconButtonShadowRoot.querySelectorAll('.status-icon');
-    assertElements(icons, IconButton.Icon.Icon);
+    assertElements(icons, Icon);
     const labels = iconButtonShadowRoot.querySelectorAll('.icon-button-title');
     assertElements(labels, HTMLSpanElement);
     assert.strictEqual(icons.length, labels.length, 'Expected icons and labels to appear in pairs');
@@ -41,7 +42,8 @@ export const extractButton = (shadowRoot) => {
     assert.instanceOf(button, HTMLButtonElement);
     return button;
 };
-describeWithLocale('IssueCounter', () => {
+describe('IssueCounter', () => {
+    setupLocaleHooks();
     describe('with omitting zero-count issue kinds', () => {
         it('renders correctly', () => {
             const issuesManager = new MockIssuesManager([]);
@@ -184,7 +186,8 @@ describeWithLocale('IssueCounter', () => {
         });
     });
 });
-describeWithLocale('getIssueCountsEnumeration', () => {
+describe('getIssueCountsEnumeration', () => {
+    setupLocaleHooks();
     it('formats issue counts correctly', () => {
         const issuesManager = new MockIssuesManager([]);
         const string = IssueCounter.IssueCounter.getIssueCountsEnumeration(issuesManager);

@@ -4,7 +4,6 @@
 var _a;
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
-import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
@@ -1140,7 +1139,11 @@ export class NetworkDispatcher {
                 sendBufferSize: event.options.sendBufferSize,
                 receiveBufferSize: event.options.receiveBufferSize,
                 dnsQueryType: event.options.dnsQueryType,
-            }
+                multicastLoopback: event.options.multicastLoopback,
+                multicastTimeToLive: event.options.multicastTimeToLive,
+                multicastAllowAddressSharing: event.options.multicastAllowAddressSharing,
+            },
+            joinedMulticastGroups: new Set(),
         };
         networkRequest.setResourceType(Common.ResourceType.resourceTypes.DirectSocket);
         networkRequest.setIssueTime(event.timestamp, event.timestamp);
@@ -1226,9 +1229,27 @@ export class NetworkDispatcher {
         networkRequest.responseReceivedTime = event.timestamp;
         this.updateNetworkRequest(networkRequest);
     }
-    directUDPSocketJoinedMulticastGroup(_event) {
+    directUDPSocketJoinedMulticastGroup(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest?.directSocketInfo) {
+            return;
+        }
+        if (!networkRequest.directSocketInfo.joinedMulticastGroups) {
+            networkRequest.directSocketInfo.joinedMulticastGroups = new Set();
+        }
+        if (!networkRequest.directSocketInfo.joinedMulticastGroups.has(event.IPAddress)) {
+            networkRequest.directSocketInfo.joinedMulticastGroups.add(event.IPAddress);
+            this.updateNetworkRequest(networkRequest);
+        }
     }
-    directUDPSocketLeftMulticastGroup(_event) {
+    directUDPSocketLeftMulticastGroup(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest?.directSocketInfo?.joinedMulticastGroups) {
+            return;
+        }
+        if (networkRequest.directSocketInfo.joinedMulticastGroups.delete(event.IPAddress)) {
+            this.updateNetworkRequest(networkRequest);
+        }
     }
     trustTokenOperationDone(event) {
         const request = this.#requestsById.get(event.requestId);
@@ -1551,8 +1572,10 @@ export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
                 promises.push(agent.invoke_overrideNetworkState({
                     offline,
                     latency: globalConditions?.latency ?? 0,
-                    downloadThroughput: !globalConditions || globalConditions.download < 0 ? 0 : globalConditions.download,
-                    uploadThroughput: !globalConditions || globalConditions.upload < 0 ? 0 : globalConditions.upload,
+                    downloadThroughput: globalConditions?.download ?? -1,
+                    uploadThroughput: globalConditions?.upload ?? -1,
+                    connectionType: globalConditions ? NetworkManager.connectionType(globalConditions) :
+                        "none" /* Protocol.Network.ConnectionType.None */,
                 }));
             }
             this.#conditionsAppliedForTestPromise = this.#conditionsAppliedForTestPromise.then(() => Promise.all(promises));
@@ -1580,7 +1603,6 @@ export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
     }
 }
 _a = RequestConditions;
-let multiTargetNetworkManagerInstance;
 export class AppliedNetworkConditions {
     conditions;
     appliedNetworkConditionsId;
@@ -1592,6 +1614,7 @@ export class AppliedNetworkConditions {
     }
 }
 export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrapper {
+    #targetManager;
     #userAgentOverride = '';
     #userAgentMetadataOverride = null;
     #customAcceptedEncodings = null;
@@ -1605,8 +1628,9 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     #extraHeaders;
     #customUserAgent;
     #isBlocking = false;
-    constructor() {
+    constructor(targetManager) {
         super();
+        this.#targetManager = targetManager;
         // TODO(allada) Remove these and merge it with request interception.
         const blockedPatternChanged = () => {
             this.updateBlockedPatterns();
@@ -1614,17 +1638,17 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         };
         this.#requestConditions.addEventListener("request-conditions-changed" /* RequestConditions.Events.REQUEST_CONDITIONS_CHANGED */, blockedPatternChanged);
         this.updateBlockedPatterns();
-        TargetManager.instance().observeModels(NetworkManager, this);
+        this.#targetManager.observeModels(NetworkManager, this);
     }
     static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!multiTargetNetworkManagerInstance || forceNew) {
-            multiTargetNetworkManagerInstance = new MultitargetNetworkManager();
+        const { forceNew, targetManager } = opts;
+        if (!Root.DevToolsContext.globalInstance().has(MultitargetNetworkManager) || forceNew) {
+            Root.DevToolsContext.globalInstance().set(MultitargetNetworkManager, new MultitargetNetworkManager(targetManager ?? TargetManager.instance()));
         }
-        return multiTargetNetworkManagerInstance;
+        return Root.DevToolsContext.globalInstance().get(MultitargetNetworkManager);
     }
     static dispose() {
-        multiTargetNetworkManagerInstance = null;
+        Root.DevToolsContext.globalInstance().delete(MultitargetNetworkManager);
     }
     static patchUserAgentWithChromeVersion(uaString) {
         // Patches Chrome/ChrOS version from user #agent ("1.2.3.4" when user #agent is: "Chrome/1.2.3.4").
@@ -1875,7 +1899,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         }
     }
     async getCertificate(origin) {
-        const target = TargetManager.instance().primaryPageTarget();
+        const target = this.#targetManager.primaryPageTarget();
         if (!target) {
             return [];
         }
@@ -1884,20 +1908,6 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
             return [];
         }
         return certificate.tableNames;
-    }
-    async loadResource(url) {
-        const headers = {};
-        const currentUserAgent = this.currentUserAgent();
-        if (currentUserAgent) {
-            headers['User-Agent'] = currentUserAgent;
-        }
-        if (Common.Settings.Settings.instance().moduleSetting('cache-disabled').get()) {
-            headers['Cache-Control'] = 'no-cache';
-        }
-        const allowRemoteFilePaths = Common.Settings.Settings.instance().moduleSetting('network.enable-remote-file-loading').get();
-        return await new Promise(resolve => Host.ResourceLoader.load(url, headers, (success, _responseHeaders, content, errorDescription) => {
-            resolve({ success, content, errorDescription });
-        }, allowRemoteFilePaths));
     }
     appliedRequestConditions(requestInternal) {
         if (!requestInternal.appliedNetworkConditionsId) {

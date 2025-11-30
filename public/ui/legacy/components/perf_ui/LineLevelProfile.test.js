@@ -25,7 +25,6 @@ describeWithMockConnection('LineLevelProfile', () => {
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             if (!debuggerModel) {
                 assert.fail('DebuggerModel not found');
-                return;
             }
             const debuggerWorkspaceBinding = sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
             sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
@@ -35,8 +34,7 @@ describeWithMockConnection('LineLevelProfile', () => {
             const uiLocation = new Workspace.UISourceCode.UILocation(uiSourceCode, 4, 9);
             debuggerWorkspaceBinding.rawLocationToUILocation.resolves(uiLocation);
             helper.addLocationData(target, urlString `file:///script.js`, { line: 5, column: 10 }, 100);
-            // scheduleUpdate uses a setTimeout which we need to wait for.
-            await new Promise(resolve => setTimeout(resolve, 0));
+            await helper.update();
             const decorations = uiSourceCode.getDecorationData("performance" /* Workspace.UISourceCode.DecoratorType.PERFORMANCE */);
             assert.isDefined(decorations, 'Decorations should be defined');
             const lineData = decorations.get(5);

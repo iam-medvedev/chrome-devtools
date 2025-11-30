@@ -32,7 +32,8 @@
     "target": "ES2023",
     "tsBuildInfoFile": "unittests-tsconfig.json.tsbuildinfo",
     "typeRoots": [
-      "../../../../../../node_modules/@types"
+      "../../../../../../node_modules/@types",
+      "../../../../../../node_modules"
     ],
     "types": [
       "mocha",
@@ -69,7 +70,6 @@
     "../../../../../../front_end/core/sdk/OverlayColorGenerator.test.ts",
     "../../../../../../front_end/core/sdk/OverlayModel.test.ts",
     "../../../../../../front_end/core/sdk/OverlayPersistentHighlighter.test.ts",
-    "../../../../../../front_end/core/sdk/PageResourceLoader.test.ts",
     "../../../../../../front_end/core/sdk/PreloadingModel.test.ts",
     "../../../../../../front_end/core/sdk/RehydratingConnection.test.ts",
     "../../../../../../front_end/core/sdk/RemoteObject.test.ts",

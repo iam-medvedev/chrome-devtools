@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getFirstOrError, getInsightOrError } from '../../../testing/InsightHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import { AIContext, PerformanceInsightFormatter } from '../ai_assistance.js';
-describeWithLocale('PerformanceInsightFormatter', function () {
+describe('PerformanceInsightFormatter', function () {
+    setupLocaleHooks();
     const snapshotTester = new SnapshotTester(this, import.meta);
     setupRuntimeHooks();
     setupSettingsHooks();

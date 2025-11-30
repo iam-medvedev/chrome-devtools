@@ -32,7 +32,8 @@
     "target": "es2023",
     "tsBuildInfoFile": "foundation_unittests-tsconfig.json.tsbuildinfo",
     "typeRoots": [
-      "../../../../../../node_modules/@types"
+      "../../../../../../node_modules/@types",
+      "../../../../../../node_modules"
     ],
     "types": [
       "mocha",

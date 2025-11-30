@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as ElementsComponents from './components.js';
-describeWithLocale('StylePropertyEditor', () => {
+describe('StylePropertyEditor', () => {
+    setupLocaleHooks();
     function assertValues(component, values) {
         const propertyElements = component.shadowRoot.querySelectorAll('.property');
         const properties = [];
@@ -167,9 +168,9 @@ describeWithLocale('StylePropertyEditor', () => {
             assert.deepEqual(event.data, { name: 'justify-items', value: 'center' });
         });
     });
-    describe('MasonryEditor', () => {
+    describe('GridLanesEditor', () => {
         it('renders the editor', async () => {
-            const component = new ElementsComponents.StylePropertyEditor.MasonryEditor();
+            const component = new ElementsComponents.StylePropertyEditor.GridLanesEditor();
             renderElementIntoDOM(component);
             component.data = {
                 authoredProperties: new Map([
@@ -208,7 +209,7 @@ describeWithLocale('StylePropertyEditor', () => {
             assertValues(component, ['align-content:', 'justify-content:', 'align-items:', 'justify-items:']);
         });
         it('allows selecting a property value', async () => {
-            const component = new ElementsComponents.StylePropertyEditor.MasonryEditor();
+            const component = new ElementsComponents.StylePropertyEditor.GridLanesEditor();
             renderElementIntoDOM(component);
             component.data = {
                 authoredProperties: new Map(),
@@ -225,7 +226,7 @@ describeWithLocale('StylePropertyEditor', () => {
             assert.deepEqual(event.data, { name: 'justify-items', value: 'end' });
         });
         it('allows deselecting a property value', async () => {
-            const component = new ElementsComponents.StylePropertyEditor.MasonryEditor();
+            const component = new ElementsComponents.StylePropertyEditor.GridLanesEditor();
             renderElementIntoDOM(component);
             component.data = {
                 authoredProperties: new Map([

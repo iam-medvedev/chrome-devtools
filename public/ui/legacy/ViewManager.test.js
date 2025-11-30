@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Root from '../../core/root/root.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from './legacy.js';
 describeWithEnvironment('ViewManager', () => {
@@ -73,7 +74,7 @@ describeWithEnvironment('ViewManager', () => {
                 },
             });
         }
-        viewManager = UI.ViewManager.ViewManager.instance({ forceNew: true });
+        viewManager = UI.ViewManager.ViewManager.instance({ forceNew: true, universe: { context: new Root.DevToolsContext.DevToolsContext() } });
         locationResolver.createLocation("panel" /* UI.ViewManager.ViewLocationValues.PANEL */, true, 'view-1');
         locationResolver.createLocation("drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */, false, undefined);
     });

@@ -176,7 +176,7 @@
   "core/common/SettingRegistration.ts | sources": {
     "message": "Sources"
   },
-  "core/host/InspectorFrontendHost.ts | devtoolsS": {
+  "core/host/InspectorFrontendHostStub.ts | devtoolsS": {
     "message": "DevTools - {PH1}"
   },
   "core/host/ResourceLoader.ts | cacheError": {
@@ -682,6 +682,9 @@
   },
   "core/sdk/sdk-meta.ts | javaScriptSourceMaps": {
     "message": "JavaScript source maps"
+  },
+  "core/sdk/sdk-meta.ts | logXmlhttprequests": {
+    "message": "Log XMLHttpRequests"
   },
   "core/sdk/sdk-meta.ts | networkCacheExplanation": {
     "message": "Disabling the network cache will simulate a network experience similar to a first time visitor."
@@ -1307,6 +1310,9 @@
   "generated/Deprecation.ts | DataUrlInSvgUse": {
     "message": "Support for data: URLs in SVGUseElement is deprecated and it will be removed in the future."
   },
+  "generated/Deprecation.ts | ExampleBrowserProcessDeprecation": {
+    "message": "This is an example for showing the code required for a browser process reported deprecation."
+  },
   "generated/Deprecation.ts | Fledge": {
     "message": "The Protected Audience API is deprecated and will be removed in a future release."
   },
@@ -1394,9 +1400,6 @@
   "generated/Deprecation.ts | PrefixedVideoSupportsFullscreen": {
     "message": "HTMLVideoElement.webkitSupportsFullscreen is deprecated. Please use Document.fullscreenEnabled instead."
   },
-  "generated/Deprecation.ts | PrivacySandboxExtensionsAPI": {
-    "message": "We're deprecating the API chrome.privacy.websites.privacySandboxEnabled, though it will remain active for backward compatibility until release M113. Instead, please use chrome.privacy.websites.topicsEnabled, chrome.privacy.websites.fledgeEnabled and chrome.privacy.websites.adMeasurementEnabled. See https://developer.chrome.com/docs/extensions/reference/privacy/#property-websites-privacySandboxEnabled."
-  },
   "generated/Deprecation.ts | RangeExpand": {
     "message": "Range.expand() is deprecated. Please use Selection.modify() instead."
   },
@@ -1420,6 +1423,12 @@
   },
   "generated/Deprecation.ts | SharedArrayBufferConstructedWithoutIsolation": {
     "message": "SharedArrayBuffer will require cross-origin isolation. See https://developer.chrome.com/blog/enabling-shared-array-buffer/ for more details."
+  },
+  "generated/Deprecation.ts | SharedStorage": {
+    "message": "The Shared Storage API is deprecated and will be removed in a future release."
+  },
+  "generated/Deprecation.ts | StorageAccessAPI_requestStorageAccessFor_Method": {
+    "message": "document.requestStorageAccessFor is deprecated and will be removed. See https://privacysandbox.com/news/update-on-plans-for-privacy-sandbox-technologies/ for more details."
   },
   "generated/Deprecation.ts | TextToSpeech_DisallowedByAutoplay": {
     "message": "speechSynthesis.speak() without user activation is deprecated and will be removed."
@@ -1618,6 +1627,9 @@
   },
   "models/issues_manager/GenericIssue.ts | corbExplainerPageTitle": {
     "message": "CORB explainer"
+  },
+  "models/issues_manager/GenericIssue.ts | historyManipulationInterventionPageTitle": {
+    "message": "History manipulation intervention explainer"
   },
   "models/issues_manager/GenericIssue.ts | howDoesAutofillWorkPageTitle": {
     "message": "How does autofill work?"
@@ -6140,9 +6152,6 @@
   "panels/console/console-meta.ts | hideTimestamps": {
     "message": "Hide timestamps"
   },
-  "panels/console/console-meta.ts | logXmlhttprequests": {
-    "message": "Log XMLHttpRequests"
-  },
   "panels/console/console-meta.ts | onlyShowMessagesFromTheCurrent": {
     "message": "Only show messages from the current context (top, iframe, worker, extension)"
   },
@@ -7244,14 +7253,17 @@
   "panels/elements/ElementsTreeElement.ts | deleteElement": {
     "message": "Delete element"
   },
+  "panels/elements/ElementsTreeElement.ts | disableContainer": {
+    "message": "Disable container overlay"
+  },
   "panels/elements/ElementsTreeElement.ts | disableFlexMode": {
     "message": "Disable flex mode"
   },
+  "panels/elements/ElementsTreeElement.ts | disableGridLanesMode": {
+    "message": "Disable grid-lanes mode"
+  },
   "panels/elements/ElementsTreeElement.ts | disableGridMode": {
     "message": "Disable grid mode"
-  },
-  "panels/elements/ElementsTreeElement.ts | disableMasonryMode": {
-    "message": "Disable masonry mode"
   },
   "panels/elements/ElementsTreeElement.ts | disableScrollSnap": {
     "message": "Disable scroll-snap overlay"
@@ -7277,14 +7289,17 @@
   "panels/elements/ElementsTreeElement.ts | elementHasScrollableOverflow": {
     "message": "This element has a scrollable overflow"
   },
+  "panels/elements/ElementsTreeElement.ts | enableContainer": {
+    "message": "Enable container overlay"
+  },
   "panels/elements/ElementsTreeElement.ts | enableFlexMode": {
     "message": "Enable flex mode"
   },
+  "panels/elements/ElementsTreeElement.ts | enableGridLanesMode": {
+    "message": "Enable grid-lanes mode"
+  },
   "panels/elements/ElementsTreeElement.ts | enableGridMode": {
     "message": "Enable grid mode"
-  },
-  "panels/elements/ElementsTreeElement.ts | enableMasonryMode": {
-    "message": "Enable masonry mode"
   },
   "panels/elements/ElementsTreeElement.ts | enableScrollSnap": {
     "message": "Enable scroll-snap overlay"
@@ -7430,17 +7445,17 @@
   "panels/elements/LayoutPane.ts | flexboxOverlays": {
     "message": "Flexbox overlays"
   },
-  "panels/elements/LayoutPane.ts | gridOrMasonry": {
-    "message": "Grid / Masonry"
+  "panels/elements/LayoutPane.ts | gridOrGridLanes": {
+    "message": "Grid / Grid Lanes"
   },
-  "panels/elements/LayoutPane.ts | gridOrMasonryOverlays": {
-    "message": "Grid / Masonry overlays"
+  "panels/elements/LayoutPane.ts | gridOrGridLanesOverlays": {
+    "message": "Grid / Grid Lanes overlays"
   },
   "panels/elements/LayoutPane.ts | noFlexboxLayoutsFoundOnThisPage": {
     "message": "No flexbox layouts found on this page"
   },
-  "panels/elements/LayoutPane.ts | noGridOrMasonryLayoutsFoundOnThisPage": {
-    "message": "No grid or masonry layouts found on this page"
+  "panels/elements/LayoutPane.ts | noGridOrGridLanesLayoutsFoundOnThisPage": {
+    "message": "No grid or grid lanes layouts found on this page"
   },
   "panels/elements/LayoutPane.ts | overlayDisplaySettings": {
     "message": "Overlay display settings"
@@ -7562,6 +7577,9 @@
   "panels/elements/StylePropertyTreeElement.ts | gridEditorButton": {
     "message": "Open grid editor"
   },
+  "panels/elements/StylePropertyTreeElement.ts | gridLanesEditorButton": {
+    "message": "Open grid-lanes editor"
+  },
   "panels/elements/StylePropertyTreeElement.ts | invalidPropertyValue": {
     "message": "Invalid property value"
   },
@@ -7573,9 +7591,6 @@
   },
   "panels/elements/StylePropertyTreeElement.ts | jumpToAnimationsPanel": {
     "message": "Jump to Animations panel"
-  },
-  "panels/elements/StylePropertyTreeElement.ts | masonryEditorButton": {
-    "message": "Open masonry editor"
   },
   "panels/elements/StylePropertyTreeElement.ts | openColorPickerS": {
     "message": "Open color picker. {PH1}"
@@ -9368,6 +9383,9 @@
   "panels/network/components/DirectSocketConnectionView.ts | general": {
     "message": "General"
   },
+  "panels/network/components/DirectSocketConnectionView.ts | joinedMulticastGroups": {
+    "message": "joinedMulticastGroups"
+  },
   "panels/network/components/DirectSocketConnectionView.ts | openInfo": {
     "message": "Open Info"
   },
@@ -10488,7 +10506,7 @@
     "message": "Request conditions"
   },
   "panels/network/RequestConditionsDrawer.ts | textEditPattern": {
-    "message": "Text pattern to block or throttle matching requests; use URL Pattern syntax. {PH1}"
+    "message": "Text pattern to block or throttle matching requests; use URL Pattern syntax."
   },
   "panels/network/RequestConditionsDrawer.ts | textPatternToBlockMatching": {
     "message": "Text pattern to block matching requests; use * for wildcard"
@@ -16322,11 +16340,17 @@
   "panels/timeline/utils/IgnoreList.ts | unknown": {
     "message": "Unknown"
   },
+  "panels/utils/utils.ts | prefetchFailed": {
+    "message": "{PH1} prefetch request failed"
+  },
   "panels/utils/utils.ts | requestContentHeadersOverridden": {
     "message": "Both request content and headers are overridden"
   },
   "panels/utils/utils.ts | requestContentOverridden": {
     "message": "Request content is overridden"
+  },
+  "panels/utils/utils.ts | requestFailed": {
+    "message": "{PH1} request failed"
   },
   "panels/utils/utils.ts | requestHeadersOverridden": {
     "message": "Request headers are overridden"
@@ -16540,6 +16564,12 @@
   },
   "ui/components/issue_counter/IssueLinkIcon.ts | issueUnavailable": {
     "message": "Issue unavailable at this time"
+  },
+  "ui/components/list/List.ts | edit": {
+    "message": "Edit"
+  },
+  "ui/components/list/List.ts | remove": {
+    "message": "Remove"
   },
   "ui/components/markdown_view/CodeBlock.ts | code": {
     "message": "Code"
@@ -17545,6 +17575,9 @@
   },
   "ui/legacy/TabbedPane.ts | moveTabRight": {
     "message": "Move right"
+  },
+  "ui/legacy/TabbedPane.ts | panelContainsAnnotation": {
+    "message": "This panel has one or more annotations"
   },
   "ui/legacy/TabbedPane.ts | previewFeature": {
     "message": "Preview feature"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import { assertScreenshot, dispatchClickEvent, dispatchKeyDownEvent, raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as Dialogs from './dialogs.js';
 describe('Dialog', () => {
@@ -393,7 +393,8 @@ describe('Dialog', () => {
             assert.exists(dialog, 'Dialog was closed');
         });
     });
-    describeWithLocale('rendering', () => {
+    describe('rendering', () => {
+        setupLocaleHooks();
         it('do not render dialog header line if title is empty and there is no close button', async () => {
             const dialog = new Dialogs.Dialog.Dialog();
             dialog.closeButton = false;
@@ -467,7 +468,8 @@ describe('clo lick', () => {
         assert.notExists(dialog, 'Dialog did not close');
     });
 });
-describeWithLocale('visual appearance', () => {
+describe('visual appearance', () => {
+    setupLocaleHooks();
     /** FIXME: clean up and modularize these test  **/
     async function renderDialogs() {
         const verticalPositions = ["top" /* Dialogs.Dialog.DialogVerticalPosition.TOP */, "bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */];

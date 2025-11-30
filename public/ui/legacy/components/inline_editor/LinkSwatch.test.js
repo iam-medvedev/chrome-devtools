@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
 import * as InlineEditor from './inline_editor.js';
 function assertLinkSwatch(swatch, expected) {
     const link = swatch.querySelector('button');
@@ -10,7 +10,8 @@ function assertLinkSwatch(swatch, expected) {
     assert.strictEqual(link.getAttribute('title'), expected.title, 'The link has the right tooltip');
     assert.strictEqual(link.textContent, expected.text, 'The link has the right text content');
 }
-describeWithLocale('LinkSwatch', () => {
+describe('LinkSwatch', () => {
+    setupLocaleHooks();
     it('can be instantiated successfully', () => {
         const component = new InlineEditor.LinkSwatch.LinkSwatch();
         renderElementIntoDOM(component);

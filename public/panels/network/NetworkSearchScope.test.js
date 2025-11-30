@@ -7,10 +7,11 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithLocale('NetworkSearchScope', () => {
+describe('NetworkSearchScope', () => {
+    setupLocaleHooks();
     let scope;
     beforeEach(() => {
         const fakeRequest1 = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('fakeId1', urlString `http://example.com/main.js`, urlString `http://example.com/index.html`, null);

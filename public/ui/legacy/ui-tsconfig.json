@@ -48,6 +48,7 @@
     "../../../../../../front_end/ui/legacy/EmptyWidget.ts",
     "../../../../../../front_end/ui/legacy/FilterBar.ts",
     "../../../../../../front_end/ui/legacy/FilterSuggestionBuilder.ts",
+    "../../../../../../front_end/ui/legacy/Floaty.ts",
     "../../../../../../front_end/ui/legacy/ForwardedInputEventHandler.ts",
     "../../../../../../front_end/ui/legacy/Fragment.ts",
     "../../../../../../front_end/ui/legacy/GlassPane.ts",
@@ -112,13 +113,25 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../foundation/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/geometry/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/logs/bundle-tsconfig.json"
     },
     {
       "path": "../../models/text_utils/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/trace/bundle-tsconfig.json"
+    },
+    {
       "path": "theme_support/bundle-tsconfig.json"
+    },
+    {
+      "path": "../components/annotations/bundle-tsconfig.json"
     },
     {
       "path": "../components/buttons/bundle-tsconfig.json"
@@ -130,10 +143,10 @@
       "path": "../components/highlighting/bundle-tsconfig.json"
     },
     {
-      "path": "../components/icon_button/bundle-tsconfig.json"
+      "path": "../helpers/bundle-tsconfig.json"
     },
     {
-      "path": "../helpers/bundle-tsconfig.json"
+      "path": "../kit/bundle-tsconfig.json"
     },
     {
       "path": "../lit/bundle-tsconfig.json"

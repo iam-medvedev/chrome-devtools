@@ -11,6 +11,7 @@ import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
 declare const TimelinePanel_base: (new (...args: any[]) => {
+    "__#private@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
     once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
     removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
@@ -56,7 +57,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     private fileSelectorElement?;
     private selection;
     private traceLoadStart;
-    constructor(traceModel?: Trace.TraceModel.Model);
+    constructor(resourceLoader: SDK.PageResourceLoader.ResourceLoader, traceModel?: Trace.TraceModel.Model);
     zoomEvent(event: Trace.Types.Events.Event): void;
     /**
      * This disables the 3P checkbox in the toolbar.
@@ -64,7 +65,8 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      */
     set3PCheckboxDisabled(disabled: boolean): void;
     static instance(opts?: {
-        forceNew: boolean | null;
+        forceNew: true;
+        resourceLoader: SDK.PageResourceLoader.ResourceLoader;
         traceModel?: Trace.TraceModel.Model;
     } | undefined): TimelinePanel;
     static removeInstance(): void;

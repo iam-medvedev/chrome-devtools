@@ -2,12 +2,11 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
-import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import { NetworkRequest } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
-import { type SDKModelObserver } from './TargetManager.js';
+import { type SDKModelObserver, TargetManager } from './TargetManager.js';
 /**
  * We store two settings to disk to persist network throttling.
  * 1. The custom conditions that the user has defined.
@@ -157,8 +156,8 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     directUDPSocketClosed(event: Protocol.Network.DirectUDPSocketClosedEvent): void;
     directUDPSocketChunkSent(event: Protocol.Network.DirectUDPSocketChunkSentEvent): void;
     directUDPSocketChunkReceived(event: Protocol.Network.DirectUDPSocketChunkReceivedEvent): void;
-    directUDPSocketJoinedMulticastGroup(_event: Protocol.Network.DirectUDPSocketJoinedMulticastGroupEvent): void;
-    directUDPSocketLeftMulticastGroup(_event: Protocol.Network.DirectUDPSocketLeftMulticastGroupEvent): void;
+    directUDPSocketJoinedMulticastGroup(event: Protocol.Network.DirectUDPSocketJoinedMulticastGroupEvent): void;
+    directUDPSocketLeftMulticastGroup(event: Protocol.Network.DirectUDPSocketLeftMulticastGroupEvent): void;
     trustTokenOperationDone(event: Protocol.Network.TrustTokenOperationDoneEvent): void;
     reportingApiReportAdded(data: Protocol.Network.ReportingApiReportAddedEvent): void;
     reportingApiReportUpdated(data: Protocol.Network.ReportingApiReportUpdatedEvent): void;
@@ -254,9 +253,10 @@ export declare class AppliedNetworkConditions {
 export declare class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrapper<MultitargetNetworkManager.EventTypes> implements SDKModelObserver<NetworkManager> {
     #private;
     readonly inflightMainResourceRequests: Map<string, NetworkRequest>;
-    constructor();
+    constructor(targetManager: TargetManager);
     static instance(opts?: {
         forceNew: boolean | null;
+        targetManager?: TargetManager;
     }): MultitargetNetworkManager;
     static dispose(): void;
     static patchUserAgentWithChromeVersion(uaString: string): string;
@@ -298,11 +298,6 @@ export declare class MultitargetNetworkManager extends Common.ObjectWrapper.Obje
     clearBrowserCache(): void;
     clearBrowserCookies(): void;
     getCertificate(origin: string): Promise<string[]>;
-    loadResource(url: Platform.DevToolsPath.UrlString): Promise<{
-        success: boolean;
-        content: string;
-        errorDescription: Host.ResourceLoader.LoadErrorDescription;
-    }>;
     appliedRequestConditions(requestInternal: NetworkRequest): AppliedNetworkConditions | undefined;
 }
 export declare namespace MultitargetNetworkManager {

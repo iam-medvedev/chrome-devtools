@@ -32,10 +32,10 @@ import * as i18n55 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as SDK23 from "./../../core/sdk/sdk.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
-import * as IconButton13 from "./../../ui/components/icon_button/icon_button.js";
-import * as LegacyWrapper9 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import * as LegacyWrapper7 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import { createIcon as createIcon12 } from "./../../ui/kit/kit.js";
 import * as SourceFrame5 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI23 from "./../../ui/legacy/legacy.js";
+import * as UI22 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/application/ApplicationPanelTreeElement.js
 import * as Common from "./../../core/common/common.js";
@@ -141,8 +141,8 @@ import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
 import * as uiI18n from "./../../ui/i18n/i18n.js";
+import { createIcon } from "./../../ui/kit/kit.js";
 import * as InlineEditor from "./../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
@@ -642,7 +642,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
     this.presentationSection = this.reportView.appendSection(i18nString(UIStrings.presentation), "undefined,presentation");
     this.protocolHandlersSection = this.reportView.appendSection(i18nString(UIStrings.protocolHandlers), "undefined,protocol-handlers");
     this.protocolHandlersView = new ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView();
-    this.protocolHandlersSection.appendFieldWithCustomView(this.protocolHandlersView);
+    this.protocolHandlersView.show(this.protocolHandlersSection.getFieldElement());
     this.iconsSection = this.reportView.appendSection(i18nString(UIStrings.icons), "report-section-icons", "icons");
     this.windowControlsSection = this.reportView.appendSection(UIStrings.windowControlsOverlay, void 0, "window-controls-overlay");
     this.shortcutSections = [];
@@ -770,7 +770,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
       const appIdField = this.identitySection.appendField(i18nString(UIStrings.computedAppId));
       UI2.ARIAUtils.setLabel(appIdField, "App Id");
       appIdField.textContent = appId;
-      const helpIcon = IconButton.Icon.create("help", "inline-icon");
+      const helpIcon = createIcon("help", "inline-icon");
       helpIcon.title = i18nString(UIStrings.appIdExplainer);
       helpIcon.setAttribute("jslog", `${VisualLogging.action("help").track({ hover: true })}`);
       appIdField.appendChild(helpIcon);
@@ -833,7 +833,8 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
       this.newNoteUrlField.appendChild(link6);
     }
     const protocolHandlers = parsedManifest["protocol_handlers"] || [];
-    this.protocolHandlersView.data = { protocolHandlers, manifestLink: url };
+    this.protocolHandlersView.protocolHandlers = protocolHandlers;
+    this.protocolHandlersView.manifestLink = url;
     const icons = parsedManifest["icons"] || [];
     this.iconsSection.clearContent();
     const shortcuts = parsedManifest["shortcuts"] || [];
@@ -999,7 +1000,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
     displayOverrideText.appendChild(displayOverrideLink);
     const wcoStatusMessage = this.windowControlsSection.appendRow();
     if (hasWco) {
-      const checkmarkIcon = IconButton.Icon.create("check-circle", "inline-icon");
+      const checkmarkIcon = createIcon("check-circle", "inline-icon");
       wcoStatusMessage.appendChild(checkmarkIcon);
       const wco = document.createElement("code");
       wco.classList.add("wco");
@@ -1009,7 +1010,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
         await this.appendWindowControlsToSection(this.overlayModel, url, stringProperty("theme_color"));
       }
     } else {
-      const infoIcon = IconButton.Icon.create("info", "inline-icon");
+      const infoIcon = createIcon("info", "inline-icon");
       wcoStatusMessage.appendChild(infoIcon);
       wcoStatusMessage.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.wcoNotFound, { PH1: displayOverrideText }));
     }
@@ -1291,7 +1292,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
 // gen/front_end/panels/application/BackForwardCacheTreeElement.js
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
+import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
 import * as ApplicationComponents2 from "./components/components.js";
 var UIStrings2 = {
   /**
@@ -1305,7 +1306,7 @@ var BackForwardCacheTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(resourcesPanel) {
     super(resourcesPanel, i18nString2(UIStrings2.backForwardCache), false, "bfcache");
-    const icon = IconButton2.Icon.create("database");
+    const icon = createIcon2("database");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -1972,8 +1973,8 @@ __export(BounceTrackingMitigationsTreeElement_exports, {
 });
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
 import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import { createIcon as createIcon3 } from "./../../ui/kit/kit.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as ApplicationComponents3 from "./components/components.js";
 var UIStrings4 = {
@@ -1988,7 +1989,7 @@ var BounceTrackingMitigationsTreeElement = class extends ApplicationPanelTreeEle
   view;
   constructor(resourcesPanel) {
     super(resourcesPanel, i18nString4(UIStrings4.bounceTrackingMitigations), false, "bounce-tracking-mitigations");
-    const icon = IconButton3.Icon.create("database");
+    const icon = createIcon3("database");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -2518,7 +2519,7 @@ __export(OriginTrialTreeView_exports, {
   OriginTrialTokenRows: () => OriginTrialTokenRows,
   OriginTrialTreeView: () => OriginTrialTreeView
 });
-import "./../../ui/components/icon_button/icon_button.js";
+import "./../../ui/kit/kit.js";
 import "./../../ui/legacy/legacy.js";
 import "./../../ui/components/adorners/adorners.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
@@ -3085,10 +3086,11 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
       ${renderApiAvailabilitySection(input.frame)}
       ${renderOriginTrial(input.trials)}
       ${input.permissionsPolicies ? html2`
-          <devtools-resources-permissions-policy-section
-             .data=${{ policies: input.permissionsPolicies, showDetails: false }}>
-          </devtools-resources-permissions-policy-section>
-        ` : nothing2}
+          <devtools-widget .widgetConfig=${widgetConfig2(ApplicationComponents4.PermissionsPolicySection.PermissionsPolicySection, {
+    policies: input.permissionsPolicies,
+    showDetails: false
+  })}>
+          </devtools-widget>` : nothing2}
       ${input.protocolMonitorExperimentEnabled ? renderAdditionalInfoSection(input.frame) : nothing2}
     </devtools-report>
   `, target);
@@ -4881,7 +4883,7 @@ __export(InterestGroupTreeElement_exports, {
 import * as Host4 from "./../../core/host/host.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
-import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
+import { createIcon as createIcon4 } from "./../../ui/kit/kit.js";
 
 // gen/front_end/panels/application/InterestGroupStorageView.js
 var InterestGroupStorageView_exports = {};
@@ -5041,7 +5043,7 @@ var InterestGroupTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString9(UIStrings9.interestGroups), false, "interest-groups");
-    const interestGroupIcon = IconButton4.Icon.create("database");
+    const interestGroupIcon = createIcon4("database");
     this.setLeadingIcons([interestGroupIcon]);
     this.view = new InterestGroupStorageView(this);
   }
@@ -5079,7 +5081,7 @@ __export(OpenedWindowDetailsView_exports, {
 import * as Common7 from "./../../core/common/common.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
-import * as IconButton5 from "./../../ui/components/icon_button/icon_button.js";
+import { createIcon as createIcon5 } from "./../../ui/kit/kit.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/application/openedWindowDetailsView.css.js
@@ -5237,7 +5239,7 @@ var str_10 = i18n19.i18n.registerUIStrings("panels/application/OpenedWindowDetai
 var i18nString10 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
 var booleanToYesNo = (b) => b ? i18nString10(UIStrings10.yes) : i18nString10(UIStrings10.no);
 function linkifyIcon(iconType, title, eventHandler) {
-  const icon = IconButton5.Icon.create(iconType, "icon-link devtools-link");
+  const icon = createIcon5(iconType, "icon-link devtools-link");
   const button = document.createElement("button");
   UI9.Tooltip.Tooltip.install(button, title);
   button.classList.add("devtools-link", "link-style", "text-button");
@@ -5415,7 +5417,7 @@ __export(PreloadingTreeElement_exports, {
   PreloadingSummaryTreeElement: () => PreloadingSummaryTreeElement
 });
 import * as i18n25 from "./../../core/i18n/i18n.js";
-import * as IconButton6 from "./../../ui/components/icon_button/icon_button.js";
+import { createIcon as createIcon6 } from "./../../ui/kit/kit.js";
 import * as PreloadingHelper from "./preloading/helper/helper.js";
 
 // gen/front_end/panels/application/preloading/PreloadingView.js
@@ -6455,7 +6457,7 @@ var PreloadingTreeElementBase = class extends ApplicationPanelTreeElement {
     super(panel, title, false, "speculative-loads");
     this.#viewConstructor = viewConstructor;
     this.#path = path;
-    const icon = IconButton6.Icon.create("speculative-loads");
+    const icon = createIcon6("speculative-loads");
     this.setLeadingIcons([icon]);
     this.#selected = false;
   }
@@ -6489,7 +6491,7 @@ var PreloadingSummaryTreeElement = class extends ExpandableApplicationPanelTreeE
   #attempt = null;
   constructor(panel) {
     super(panel, i18nString13(UIStrings13.speculativeLoads), "", "", "preloading");
-    const icon = IconButton6.Icon.create("speculative-loads");
+    const icon = createIcon6("speculative-loads");
     this.setLeadingIcons([icon]);
     this.#selected = false;
   }
@@ -6575,7 +6577,7 @@ var PreloadingAttemptTreeElement = class extends PreloadingTreeElementBase {
 // gen/front_end/panels/application/ReportingApiTreeElement.js
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n29 from "./../../core/i18n/i18n.js";
-import * as IconButton7 from "./../../ui/components/icon_button/icon_button.js";
+import { createIcon as createIcon7 } from "./../../ui/kit/kit.js";
 
 // gen/front_end/panels/application/ReportingApiView.js
 var ReportingApiView_exports = {};
@@ -6751,7 +6753,7 @@ var ReportingApiTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString15(UIStrings15.reportingApi), false, "reporting-api");
-    const icon = IconButton7.Icon.create("document");
+    const icon = createIcon7("document");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -6834,7 +6836,7 @@ devtools-icon.navigator-font-tree-item {
 import * as Host6 from "./../../core/host/host.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as SDK16 from "./../../core/sdk/sdk.js";
-import * as IconButton8 from "./../../ui/components/icon_button/icon_button.js";
+import { createIcon as createIcon8 } from "./../../ui/kit/kit.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/application/ServiceWorkerCacheViews.js
@@ -7444,7 +7446,7 @@ var ServiceWorkerCacheTreeElement = class extends ExpandableApplicationPanelTree
   storageBucket;
   constructor(resourcesPanel, storageBucket) {
     super(resourcesPanel, i18nString17(UIStrings17.cacheStorage), i18nString17(UIStrings17.noCacheStorage), i18nString17(UIStrings17.cacheStorageDescription), "cache-storage");
-    const icon = IconButton8.Icon.create("database");
+    const icon = createIcon8("database");
     this.setLink("https://developer.chrome.com/docs/devtools/storage/cache/");
     this.setLeadingIcons([icon]);
     this.swCacheModels = /* @__PURE__ */ new Set();
@@ -7546,7 +7548,7 @@ var SWCacheTreeElement = class extends ApplicationPanelTreeElement {
     this.model = model;
     this.cache = cache;
     this.view = null;
-    const icon = IconButton8.Icon.create("table");
+    const icon = createIcon8("table");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -8784,9 +8786,9 @@ var Section = class {
         this.routerField = this.wrapWidget(this.section.appendField(title));
       }
       if (!this.routerField.lastElementChild) {
-        this.routerField.appendChild(this.routerView);
+        this.routerView.show(this.routerField);
       }
-      this.routerView.update(active.routerRules);
+      this.routerView.rules = active.routerRules;
     } else {
       this.section.removeField(title);
       this.routerField = void 0;
@@ -8879,7 +8881,7 @@ __export(SharedStorageListTreeElement_exports, {
 });
 import * as Common11 from "./../../core/common/common.js";
 import * as i18n41 from "./../../core/i18n/i18n.js";
-import * as IconButton9 from "./../../ui/components/icon_button/icon_button.js";
+import { createIcon as createIcon9 } from "./../../ui/kit/kit.js";
 
 // gen/front_end/panels/application/SharedStorageEventsView.js
 var SharedStorageEventsView_exports = {};
@@ -9016,7 +9018,7 @@ var SharedStorageListTreeElement = class extends ApplicationPanelTreeElement {
   constructor(resourcesPanel, expandedSettingsDefault = false) {
     super(resourcesPanel, i18nString21(UIStrings21.sharedStorage), false, "shared-storage");
     this.#expandedSetting = Common11.Settings.Settings.instance().createSetting("resources-shared-storage-expanded", expandedSettingsDefault);
-    const sharedStorageIcon = IconButton9.Icon.create("database");
+    const sharedStorageIcon = createIcon9("database");
     this.setLeadingIcons([sharedStorageIcon]);
     this.view = new SharedStorageEventsView();
   }
@@ -9872,8 +9874,8 @@ __export(StorageBucketsTreeElement_exports, {
 });
 import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as SDK21 from "./../../core/sdk/sdk.js";
-import * as IconButton10 from "./../../ui/components/icon_button/icon_button.js";
 import * as LegacyWrapper5 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import { createIcon as createIcon10 } from "./../../ui/kit/kit.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
 import { StorageMetadataView as StorageMetadataView5 } from "./components/components.js";
 var UIStrings25 = {
@@ -9903,7 +9905,7 @@ var StorageBucketsTreeParentElement = class extends ExpandableApplicationPanelTr
   bucketTreeElements = /* @__PURE__ */ new Set();
   constructor(storagePanel) {
     super(storagePanel, i18nString25(UIStrings25.storageBuckets), i18nString25(UIStrings25.noStorageBuckets), i18nString25(UIStrings25.storageBucketsDescription), "storage-buckets");
-    const icon = IconButton10.Icon.create("bucket");
+    const icon = createIcon10("bucket");
     this.setLeadingIcons([icon]);
     this.setLink("https://github.com/WICG/storage-buckets/blob/gh-pages/explainer.md");
   }
@@ -9978,7 +9980,7 @@ var StorageBucketsTreeElement = class extends ExpandableApplicationPanelTreeElem
     super(resourcesPanel, `${bucket.name} - ${origin}`, "", "", "storage-bucket");
     this.bucketModel = model;
     this.storageBucketInfo = bucketInfo;
-    const icon = IconButton10.Icon.create("database");
+    const icon = createIcon10("database");
     this.setLeadingIcons([icon]);
   }
   initialize() {
@@ -10028,8 +10030,8 @@ import * as Common15 from "./../../core/common/common.js";
 import * as i18n51 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
 import * as SDK22 from "./../../core/sdk/sdk.js";
-import * as IconButton11 from "./../../ui/components/icon_button/icon_button.js";
 import * as uiI18n2 from "./../../ui/i18n/i18n.js";
+import { Icon } from "./../../ui/kit/kit.js";
 import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
@@ -10592,7 +10594,7 @@ var StorageView = class _StorageView extends UI21.Widget.VBox {
     this.quotaRow.appendChild(element);
     UI21.Tooltip.Tooltip.install(this.quotaRow, i18nString26(UIStrings26.storageQuotaUsedWithBytes, { PH1: response.usage.toLocaleString(), PH2: response.quota.toLocaleString() }));
     if (!response.overrideActive && response.quota < 125829120) {
-      const icon = new IconButton11.Icon.Icon();
+      const icon = new Icon();
       icon.name = "info";
       icon.style.color = "var(--icon-info)";
       icon.classList.add("small");
@@ -10683,9 +10685,7 @@ __export(TrustTokensTreeElement_exports, {
 });
 import * as Host8 from "./../../core/host/host.js";
 import * as i18n53 from "./../../core/i18n/i18n.js";
-import * as IconButton12 from "./../../ui/components/icon_button/icon_button.js";
-import * as LegacyWrapper7 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
-import * as UI22 from "./../../ui/legacy/legacy.js";
+import { createIcon as createIcon11 } from "./../../ui/kit/kit.js";
 import * as ApplicationComponents14 from "./components/components.js";
 var UIStrings27 = {
   /**
@@ -10700,7 +10700,7 @@ var TrustTokensTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString27(UIStrings27.trustTokens), false, "private-state-tokens");
-    const icon = IconButton12.Icon.create("database");
+    const icon = createIcon11("database");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -10709,7 +10709,7 @@ var TrustTokensTreeElement = class extends ApplicationPanelTreeElement {
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
     if (!this.view) {
-      this.view = LegacyWrapper7.LegacyWrapper.legacyWrapper(UI22.Widget.Widget, new ApplicationComponents14.TrustTokensView.TrustTokensView(), "trust-tokens");
+      this.view = new ApplicationComponents14.TrustTokensView.TrustTokensView();
     }
     this.showView(this.view);
     Host8.userMetrics.panelShown("trust-tokens");
@@ -10941,7 +10941,7 @@ function nameForExtensionStorageArea(storageArea) {
       throw new Error(`Unrecognized storage type: ${storageArea}`);
   }
 }
-var ApplicationPanelSidebar = class extends UI23.Widget.VBox {
+var ApplicationPanelSidebar = class extends UI22.Widget.VBox {
   panel;
   sidebarTree;
   applicationTreeElement;
@@ -10980,7 +10980,7 @@ var ApplicationPanelSidebar = class extends UI23.Widget.VBox {
   constructor(panel) {
     super();
     this.panel = panel;
-    this.sidebarTree = new UI23.TreeOutline.TreeOutlineInShadow(
+    this.sidebarTree = new UI22.TreeOutline.TreeOutlineInShadow(
       "NavigationTree"
       /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */
     );
@@ -10988,7 +10988,7 @@ var ApplicationPanelSidebar = class extends UI23.Widget.VBox {
     this.sidebarTree.element.classList.add("resources-sidebar");
     this.sidebarTree.setHideOverflow(true);
     this.sidebarTree.element.classList.add("filter-all");
-    this.sidebarTree.addEventListener(UI23.TreeOutline.Events.ElementAttached, this.treeElementAdded, this);
+    this.sidebarTree.addEventListener(UI22.TreeOutline.Events.ElementAttached, this.treeElementAdded, this);
     this.contentElement.appendChild(this.sidebarTree.element);
     const applicationSectionTitle = i18nString28(UIStrings28.application);
     this.applicationTreeElement = this.addSidebarSection(applicationSectionTitle, "application");
@@ -11007,17 +11007,17 @@ var ApplicationPanelSidebar = class extends UI23.Widget.VBox {
     const storageTreeElement = this.addSidebarSection(storageSectionTitle, "storage");
     this.localStorageListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString28(UIStrings28.localStorage), i18nString28(UIStrings28.noLocalStorage), i18nString28(UIStrings28.localStorageDescription), "local-storage");
     this.localStorageListTreeElement.setLink("https://developer.chrome.com/docs/devtools/storage/localstorage/");
-    const localStorageIcon = IconButton13.Icon.create("table");
+    const localStorageIcon = createIcon12("table");
     this.localStorageListTreeElement.setLeadingIcons([localStorageIcon]);
     storageTreeElement.appendChild(this.localStorageListTreeElement);
     this.sessionStorageListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString28(UIStrings28.sessionStorage), i18nString28(UIStrings28.noSessionStorage), i18nString28(UIStrings28.sessionStorageDescription), "session-storage");
     this.sessionStorageListTreeElement.setLink("https://developer.chrome.com/docs/devtools/storage/sessionstorage/");
-    const sessionStorageIcon = IconButton13.Icon.create("table");
+    const sessionStorageIcon = createIcon12("table");
     this.sessionStorageListTreeElement.setLeadingIcons([sessionStorageIcon]);
     storageTreeElement.appendChild(this.sessionStorageListTreeElement);
     this.extensionStorageListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString28(UIStrings28.extensionStorage), i18nString28(UIStrings28.noExtensionStorage), i18nString28(UIStrings28.extensionStorageDescription), "extension-storage");
     this.extensionStorageListTreeElement.setLink("https://developer.chrome.com/docs/extensions/reference/api/storage/");
-    const extensionStorageIcon = IconButton13.Icon.create("table");
+    const extensionStorageIcon = createIcon12("table");
     this.extensionStorageListTreeElement.setLeadingIcons([extensionStorageIcon]);
     storageTreeElement.appendChild(this.extensionStorageListTreeElement);
     this.indexedDBListTreeElement = new IndexedDBTreeElement(panel);
@@ -11025,7 +11025,7 @@ var ApplicationPanelSidebar = class extends UI23.Widget.VBox {
     storageTreeElement.appendChild(this.indexedDBListTreeElement);
     this.cookieListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString28(UIStrings28.cookies), i18nString28(UIStrings28.noCookies), i18nString28(UIStrings28.cookiesDescription), "cookies");
     this.cookieListTreeElement.setLink("https://developer.chrome.com/docs/devtools/storage/cookies/");
-    const cookieIcon = IconButton13.Icon.create("cookie");
+    const cookieIcon = createIcon12("cookie");
     this.cookieListTreeElement.setLeadingIcons([cookieIcon]);
     storageTreeElement.appendChild(this.cookieListTreeElement);
     this.trustTokensTreeElement = new TrustTokensTreeElement(panel);
@@ -11132,13 +11132,13 @@ var ApplicationPanelSidebar = class extends UI23.Widget.VBox {
     this.contentElement.style.contain = "layout style";
   }
   addSidebarSection(title, jslogContext) {
-    const treeElement = new UI23.TreeOutline.TreeElement(title, true, jslogContext);
+    const treeElement = new UI22.TreeOutline.TreeElement(title, true, jslogContext);
     treeElement.listItemElement.classList.add("storage-group-list-item");
     treeElement.setCollapsible(false);
     treeElement.selectable = false;
     this.sidebarTree.appendChild(treeElement);
-    UI23.ARIAUtils.markAsHeading(treeElement.listItemElement, 3);
-    UI23.ARIAUtils.setLabel(treeElement.childrenListElement, title);
+    UI22.ARIAUtils.markAsHeading(treeElement.listItemElement, 3);
+    UI22.ARIAUtils.setLabel(treeElement.childrenListElement, title);
     return treeElement;
   }
   targetAdded(target) {
@@ -11481,11 +11481,11 @@ var ApplicationPanelSidebar = class extends UI23.Widget.VBox {
     if (!nodeUnderMouse) {
       return;
     }
-    const listNode = UI23.UIUtils.enclosingNodeOrSelfWithNodeName(nodeUnderMouse, "li");
+    const listNode = UI22.UIUtils.enclosingNodeOrSelfWithNodeName(nodeUnderMouse, "li");
     if (!listNode) {
       return;
     }
-    const element = UI23.TreeOutline.TreeElement.getTreeElementBylistItemNode(listNode);
+    const element = UI22.TreeOutline.TreeElement.getTreeElementBylistItemNode(listNode);
     if (this.previousHoveredElement === element) {
       return;
     }
@@ -11516,7 +11516,7 @@ var BackgroundServiceTreeElement = class extends ApplicationPanelTreeElement {
     this.#selected = false;
     this.view = null;
     this.model = null;
-    const backgroundServiceIcon = IconButton13.Icon.create(this.getIconType());
+    const backgroundServiceIcon = createIcon12(this.getIconType());
     this.setLeadingIcons([backgroundServiceIcon]);
   }
   getIconType() {
@@ -11563,7 +11563,7 @@ var BackgroundServiceTreeElement = class extends ApplicationPanelTreeElement {
       this.view = new BackgroundServiceView(this.serviceName, this.model);
     }
     this.showView(this.view);
-    UI23.Context.Context.instance().setFlavor(BackgroundServiceView, this.view);
+    UI22.Context.Context.instance().setFlavor(BackgroundServiceView, this.view);
     Host9.userMetrics.panelShown("background_service_" + this.serviceName);
     return false;
   }
@@ -11572,7 +11572,7 @@ var ServiceWorkersTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18n55.i18n.lockedString("Service workers"), false, "service-workers");
-    const icon = IconButton13.Icon.create("gears");
+    const icon = createIcon12("gears");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -11592,13 +11592,13 @@ var AppManifestTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString28(UIStrings28.manifest), true, "manifest");
-    const icon = IconButton13.Icon.create("document");
+    const icon = createIcon12("document");
     this.setLeadingIcons([icon]);
     self.onInvokeElement(this.listItemElement, this.onInvoke.bind(this));
-    const emptyView = new UI23.EmptyWidget.EmptyWidget(i18nString28(UIStrings28.noManifestDetected), i18nString28(UIStrings28.manifestDescription));
-    const reportView = new UI23.ReportView.ReportView(i18nString28(UIStrings28.appManifest));
+    const emptyView = new UI22.EmptyWidget.EmptyWidget(i18nString28(UIStrings28.noManifestDetected), i18nString28(UIStrings28.manifestDescription));
+    const reportView = new UI22.ReportView.ReportView(i18nString28(UIStrings28.appManifest));
     this.view = new AppManifestView(emptyView, reportView, new Common16.Throttler.Throttler(1e3));
-    UI23.ARIAUtils.setLabel(this.listItemElement, i18nString28(UIStrings28.onInvokeManifestAlert));
+    UI22.ARIAUtils.setLabel(this.listItemElement, i18nString28(UIStrings28.onInvokeManifestAlert));
     const handleExpansion = (hasManifest) => {
       this.setExpandable(hasManifest);
     };
@@ -11625,7 +11625,7 @@ var AppManifestTreeElement = class extends ApplicationPanelTreeElement {
   }
   onInvoke() {
     this.view.getManifestElement().scrollIntoView();
-    UI23.ARIAUtils.LiveAnnouncer.alert(i18nString28(UIStrings28.onInvokeAlert, { PH1: this.listItemElement.title }));
+    UI22.ARIAUtils.LiveAnnouncer.alert(i18nString28(UIStrings28.onInvokeAlert, { PH1: this.listItemElement.title }));
   }
   showManifestView() {
     this.showView(this.view);
@@ -11636,13 +11636,13 @@ var ManifestChildTreeElement = class extends ApplicationPanelTreeElement {
   #sectionFieldElement;
   constructor(storagePanel, element, childTitle, fieldElement, jslogContext) {
     super(storagePanel, childTitle, false, jslogContext);
-    const icon = IconButton13.Icon.create("document");
+    const icon = createIcon12("document");
     this.setLeadingIcons([icon]);
     this.#sectionElement = element;
     this.#sectionFieldElement = fieldElement;
     self.onInvokeElement(this.listItemElement, this.onInvoke.bind(this));
     this.listItemElement.addEventListener("keydown", this.onInvokeElementKeydown.bind(this));
-    UI23.ARIAUtils.setLabel(this.listItemElement, i18nString28(UIStrings28.beforeInvokeAlert, { PH1: this.listItemElement.title }));
+    UI22.ARIAUtils.setLabel(this.listItemElement, i18nString28(UIStrings28.beforeInvokeAlert, { PH1: this.listItemElement.title }));
   }
   get itemURL() {
     return "manifest://" + this.title;
@@ -11650,7 +11650,7 @@ var ManifestChildTreeElement = class extends ApplicationPanelTreeElement {
   onInvoke() {
     this.parent?.showManifestView();
     this.#sectionElement.scrollIntoView();
-    UI23.ARIAUtils.LiveAnnouncer.alert(i18nString28(UIStrings28.onInvokeAlert, { PH1: this.listItemElement.title }));
+    UI22.ARIAUtils.LiveAnnouncer.alert(i18nString28(UIStrings28.onInvokeAlert, { PH1: this.listItemElement.title }));
   }
   // direct focus to the corresponding element
   onInvokeElementKeydown(event) {
@@ -11674,7 +11674,7 @@ var ClearStorageTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString28(UIStrings28.storage), false, "storage");
-    const icon = IconButton13.Icon.create("database");
+    const icon = createIcon12("database");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -11695,7 +11695,7 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
   storageBucket;
   constructor(storagePanel, storageBucket) {
     super(storagePanel, i18nString28(UIStrings28.indexeddb), i18nString28(UIStrings28.noIndexeddb), i18nString28(UIStrings28.indexeddbDescription), "indexed-db");
-    const icon = IconButton13.Icon.create("database");
+    const icon = createIcon12("database");
     this.setLeadingIcons([icon]);
     this.idbDatabaseTreeElements = [];
     this.storageBucket = storageBucket;
@@ -11730,7 +11730,7 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI23.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.refreshIndexeddb), this.refreshIndexedDB.bind(this), { jslogContext: "refresh-indexeddb" });
     void contextMenu.show();
   }
@@ -11802,7 +11802,7 @@ var IDBDatabaseTreeElement = class extends ApplicationPanelTreeElement {
     this.model = model;
     this.databaseId = databaseId;
     this.idbObjectStoreTreeElements = /* @__PURE__ */ new Map();
-    const icon = IconButton13.Icon.create("database");
+    const icon = createIcon12("database");
     this.setLeadingIcons([icon]);
     this.model.addEventListener(Events2.DatabaseNamesRefreshed, this.refreshIndexedDB, this);
   }
@@ -11814,7 +11814,7 @@ var IDBDatabaseTreeElement = class extends ApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI23.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.refreshIndexeddb), this.refreshIndexedDB.bind(this), { jslogContext: "refresh-indexeddb" });
     void contextMenu.show();
   }
@@ -11874,7 +11874,7 @@ var IDBDatabaseTreeElement = class extends ApplicationPanelTreeElement {
       return false;
     }
     if (!this.view) {
-      this.view = LegacyWrapper9.LegacyWrapper.legacyWrapper(UI23.Widget.VBox, new IDBDatabaseView(this.model, this.database), "indexeddb-data");
+      this.view = LegacyWrapper7.LegacyWrapper.legacyWrapper(UI22.Widget.VBox, new IDBDatabaseView(this.model, this.database), "indexeddb-data");
     }
     this.showView(this.view);
     Host9.userMetrics.panelShown("indexed-db");
@@ -11908,7 +11908,7 @@ var IDBObjectStoreTreeElement = class extends ApplicationPanelTreeElement {
     this.idbIndexTreeElements = /* @__PURE__ */ new Map();
     this.objectStore = objectStore;
     this.view = null;
-    const icon = IconButton13.Icon.create("table");
+    const icon = createIcon12("table");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -11927,7 +11927,7 @@ var IDBObjectStoreTreeElement = class extends ApplicationPanelTreeElement {
     }
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI23.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.clear), this.clearObjectStore.bind(this), { jslogContext: "clear" });
     void contextMenu.show();
   }
@@ -12077,7 +12077,7 @@ var DOMStorageTreeElement = class extends ApplicationPanelTreeElement {
   constructor(storagePanel, domStorage) {
     super(storagePanel, domStorage.storageKey ? SDK23.StorageKeyManager.parseStorageKey(domStorage.storageKey).origin : i18nString28(UIStrings28.localFiles), false, domStorage.isLocalStorage ? "local-storage-for-domain" : "session-storage-for-domain");
     this.domStorage = domStorage;
-    const icon = IconButton13.Icon.create("table");
+    const icon = createIcon12("table");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -12094,7 +12094,7 @@ var DOMStorageTreeElement = class extends ApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI23.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.clear), () => this.domStorage.clear(), { jslogContext: "clear" });
     void contextMenu.show();
   }
@@ -12104,7 +12104,7 @@ var ExtensionStorageTreeElement = class extends ApplicationPanelTreeElement {
   constructor(storagePanel, extensionStorage) {
     super(storagePanel, nameForExtensionStorageArea(extensionStorage.storageArea), false, "extension-storage-for-domain");
     this.extensionStorage = extensionStorage;
-    const icon = IconButton13.Icon.create("table");
+    const icon = createIcon12("table");
     this.setLeadingIcons([icon]);
   }
   get storageArea() {
@@ -12124,7 +12124,7 @@ var ExtensionStorageTreeElement = class extends ApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI23.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.clear), () => this.extensionStorage.clear(), { jslogContext: "clear" });
     void contextMenu.show();
   }
@@ -12134,7 +12134,7 @@ var ExtensionStorageTreeParentElement = class extends ApplicationPanelTreeElemen
   constructor(storagePanel, extensionId, extensionName) {
     super(storagePanel, extensionName || extensionId, true, "extension-storage-for-domain");
     this.extensionId = extensionId;
-    const icon = IconButton13.Icon.create("table");
+    const icon = createIcon12("table");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -12149,7 +12149,7 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
     this.target = frame.resourceTreeModel().target();
     this.#cookieDomain = cookieUrl.securityOrigin();
     this.tooltip = i18nString28(UIStrings28.cookiesUsedByFramesFromS, { PH1: this.#cookieDomain });
-    const icon = IconButton13.Icon.create("cookie");
+    const icon = createIcon12("cookie");
     if (IssuesManager.RelatedIssue.hasThirdPartyPhaseoutCookieIssueForDomain(cookieUrl.domain())) {
       icon.name = "warning-filled";
       this.tooltip = i18nString28(UIStrings28.thirdPartyPhaseout, { PH1: this.#cookieDomain });
@@ -12167,7 +12167,7 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI23.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.clear), () => this.resourcesPanel.clearCookies(this.target, this.#cookieDomain), { jslogContext: "clear" });
     void contextMenu.show();
   }
@@ -12178,12 +12178,12 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
     return false;
   }
 };
-var StorageCategoryView = class extends UI23.Widget.VBox {
+var StorageCategoryView = class extends UI22.Widget.VBox {
   emptyWidget;
   constructor() {
     super();
     this.element.classList.add("storage-view");
-    this.emptyWidget = new UI23.EmptyWidget.EmptyWidget("", "");
+    this.emptyWidget = new UI22.EmptyWidget.EmptyWidget("", "");
     this.emptyWidget.show(this.element);
   }
   setText(text) {
@@ -12204,7 +12204,7 @@ var ResourcesSection = class {
   constructor(storagePanel, treeElement) {
     this.panel = storagePanel;
     this.treeElement = treeElement;
-    UI23.ARIAUtils.setLabel(this.treeElement.listItemNode, "Resources Section");
+    UI22.ARIAUtils.setLabel(this.treeElement.listItemNode, "Resources Section");
     this.treeElementForFrameId = /* @__PURE__ */ new Map();
     this.treeElementForTargetId = /* @__PURE__ */ new Map();
     const frameManager = SDK23.FrameManager.FrameManager.instance();
@@ -12410,7 +12410,7 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
     return frame.unreachableUrl() ? "iframe-crossed" : "iframe";
   }
   async frameNavigated(frame) {
-    const icon = IconButton13.Icon.create(this.getIconTypeForFrame(frame));
+    const icon = createIcon12(this.getIconTypeForFrame(frame));
     if (frame.unreachableUrl()) {
       icon.classList.add("red-icon");
     }
@@ -12418,7 +12418,7 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
     this.invalidateChildren();
     if (this.title !== frame.displayName()) {
       this.title = frame.displayName();
-      UI23.ARIAUtils.setLabel(this.listItemElement, this.title);
+      UI22.ARIAUtils.setLabel(this.listItemElement, this.title);
       if (this.parent) {
         const parent = this.parent;
         parent.removeChild(this);
@@ -12571,7 +12571,7 @@ var FrameResourceTreeElement = class extends ApplicationPanelTreeElement {
     this.previewPromise = null;
     this.tooltip = resource.url;
     resourceToFrameResourceTreeElement.set(this.resource, this);
-    const icon = IconButton13.Icon.create("document", "navigator-file-tree-item");
+    const icon = createIcon12("document", "navigator-file-tree-item");
     icon.classList.add("navigator-" + resource.resourceType().name() + "-tree-item");
     this.setLeadingIcons([icon]);
   }
@@ -12590,7 +12590,7 @@ var FrameResourceTreeElement = class extends ApplicationPanelTreeElement {
       if (view) {
         return view;
       }
-      return new UI23.EmptyWidget.EmptyWidget("", this.resource.url);
+      return new UI22.EmptyWidget.EmptyWidget("", this.resource.url);
     });
     return this.previewPromise;
   }
@@ -12623,7 +12623,7 @@ var FrameResourceTreeElement = class extends ApplicationPanelTreeElement {
     return true;
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI23.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(this.resource);
     void contextMenu.show();
   }
@@ -12649,7 +12649,7 @@ var FrameWindowTreeElement = class extends ApplicationPanelTreeElement {
   }
   updateIcon(canAccessOpener) {
     const iconType = canAccessOpener ? "popup" : "frame";
-    const icon = IconButton13.Icon.create(iconType);
+    const icon = createIcon12(iconType);
     this.setLeadingIcons([icon]);
   }
   update(targetInfo) {
@@ -12692,7 +12692,7 @@ var WorkerTreeElement = class extends ApplicationPanelTreeElement {
     super(storagePanel, targetInfo.title || targetInfo.url || i18nString28(UIStrings28.worker), false, "worker");
     this.targetInfo = targetInfo;
     this.view = null;
-    const icon = IconButton13.Icon.create("gears", "navigator-file-tree-item");
+    const icon = createIcon12("gears", "navigator-file-tree-item");
     this.setLeadingIcons([icon]);
   }
   onselect(selectedByUser) {
@@ -12721,7 +12721,7 @@ import * as i18n57 from "./../../core/i18n/i18n.js";
 import * as SDK24 from "./../../core/sdk/sdk.js";
 import * as IssuesManager2 from "./../../models/issues_manager/issues_manager.js";
 import * as CookieTable from "./../../ui/legacy/components/cookie_table/cookie_table.js";
-import * as UI24 from "./../../ui/legacy/legacy.js";
+import * as UI23 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging16 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/cookieItemsView.css.js
@@ -12803,7 +12803,7 @@ var UIStrings29 = {
 };
 var str_29 = i18n57.i18n.registerUIStrings("panels/application/CookieItemsView.ts", UIStrings29);
 var i18nString29 = i18n57.i18n.getLocalizedString.bind(void 0, str_29);
-var CookiePreviewWidget = class extends UI24.Widget.VBox {
+var CookiePreviewWidget = class extends UI23.Widget.VBox {
   cookie;
   showDecodedSetting;
   toggle;
@@ -12820,7 +12820,7 @@ var CookiePreviewWidget = class extends UI24.Widget.VBox {
     span.textContent = "Cookie Value";
     header.appendChild(span);
     this.contentElement.appendChild(header);
-    const toggle3 = UI24.UIUtils.CheckboxLabel.create(i18nString29(UIStrings29.showUrlDecoded), this.showDecodedSetting.get(), void 0, "show-url-decoded");
+    const toggle3 = UI23.UIUtils.CheckboxLabel.create(i18nString29(UIStrings29.showUrlDecoded), this.showDecodedSetting.get(), void 0, "show-url-decoded");
     toggle3.title = i18nString29(UIStrings29.showUrlDecoded);
     toggle3.classList.add("cookie-preview-widget-toggle");
     toggle3.addEventListener("click", () => this.showDecoded(!this.showDecodedSetting.get()));
@@ -12868,7 +12868,7 @@ var CookiePreviewWidget = class extends UI24.Widget.VBox {
     selection.addRange(range);
   }
 };
-var CookieItemsView = class extends UI24.Widget.VBox {
+var CookieItemsView = class extends UI23.Widget.VBox {
   model;
   cookieDomain;
   cookiesTable;
@@ -12899,7 +12899,7 @@ var CookieItemsView = class extends UI24.Widget.VBox {
       this.deleteCookie.bind(this)
     );
     this.cookiesTable.setMinimumSize(0, 50);
-    this.splitWidget = new UI24.SplitWidget.SplitWidget(
+    this.splitWidget = new UI23.SplitWidget.SplitWidget(
       /* isVertical: */
       false,
       /* secondIsSidebar: */
@@ -12907,16 +12907,16 @@ var CookieItemsView = class extends UI24.Widget.VBox {
       "cookie-items-split-view-state"
     );
     this.splitWidget.show(this.element);
-    this.previewPanel = new UI24.Widget.VBox();
+    this.previewPanel = new UI23.Widget.VBox();
     this.previewPanel.element.setAttribute("jslog", `${VisualLogging16.pane("preview").track({ resize: true })}`);
     const resizer = this.previewPanel.element.createChild("div", "preview-panel-resizer");
     this.splitWidget.setMainWidget(this.cookiesTable);
     this.splitWidget.setSidebarWidget(this.previewPanel);
     this.splitWidget.installResizer(resizer);
     this.previewWidget = new CookiePreviewWidget();
-    this.emptyWidget = new UI24.EmptyWidget.EmptyWidget(i18nString29(UIStrings29.noCookieSelected), i18nString29(UIStrings29.selectACookieToPreviewItsValue));
+    this.emptyWidget = new UI23.EmptyWidget.EmptyWidget(i18nString29(UIStrings29.noCookieSelected), i18nString29(UIStrings29.selectACookieToPreviewItsValue));
     this.emptyWidget.show(this.previewPanel.contentElement);
-    this.onlyIssuesFilterUI = new UI24.Toolbar.ToolbarCheckbox(i18nString29(UIStrings29.onlyShowCookiesWithAnIssue), i18nString29(UIStrings29.onlyShowCookiesWhichHaveAn), () => {
+    this.onlyIssuesFilterUI = new UI23.Toolbar.ToolbarCheckbox(i18nString29(UIStrings29.onlyShowCookiesWithAnIssue), i18nString29(UIStrings29.onlyShowCookiesWhichHaveAn), () => {
       this.updateWithCookies(this.allCookies);
     }, "only-show-cookies-with-issues");
     this.#toolbar.appendToolbarItem(this.onlyIssuesFilterUI);
@@ -12981,7 +12981,7 @@ var CookieItemsView = class extends UI24.Widget.VBox {
       this.#toolbar.setDeleteAllGlyph("clear-list");
     }
     this.cookiesTable.setCookies(this.shownCookies, this.model.getCookieToBlockedReasonsMap());
-    UI24.ARIAUtils.LiveAnnouncer.alert(i18nString29(UIStrings29.numberOfCookiesShownInTableS, { PH1: this.shownCookies.length }));
+    UI23.ARIAUtils.LiveAnnouncer.alert(i18nString29(UIStrings29.numberOfCookiesShownInTableS, { PH1: this.shownCookies.length }));
     this.#toolbar.setCanFilter(true);
     this.#toolbar.setCanDeleteAll(this.shownCookies.length > 0);
     this.#toolbar.setCanDeleteSelected(Boolean(this.cookiesTable.selectedCookie()));
@@ -13032,7 +13032,7 @@ import * as Common18 from "./../../core/common/common.js";
 import * as i18n59 from "./../../core/i18n/i18n.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI25 from "./../../ui/legacy/legacy.js";
+import * as UI24 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings30 = {
   /**
@@ -13095,7 +13095,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
   }
   itemsCleared() {
     super.itemsCleared();
-    UI25.ARIAUtils.LiveAnnouncer.alert(i18nString30(UIStrings30.domStorageItemsCleared));
+    UI24.ARIAUtils.LiveAnnouncer.alert(i18nString30(UIStrings30.domStorageItemsCleared));
   }
   domStorageItemRemoved(event) {
     if (!this.isShowing()) {
@@ -13105,7 +13105,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
   }
   itemRemoved(key) {
     super.itemRemoved(key);
-    UI25.ARIAUtils.LiveAnnouncer.alert(i18nString30(UIStrings30.domStorageItemDeleted));
+    UI24.ARIAUtils.LiveAnnouncer.alert(i18nString30(UIStrings30.domStorageItemDeleted));
   }
   domStorageItemAdded(event) {
     if (!this.isShowing()) {
@@ -13153,7 +13153,7 @@ import * as i18n61 from "./../../core/i18n/i18n.js";
 import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as JSON5 from "./../../third_party/json5/json5.js";
 import * as SourceFrame7 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI26 from "./../../ui/legacy/legacy.js";
+import * as UI25 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging18 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings31 = {
   /**
@@ -13221,7 +13221,7 @@ var ExtensionStorageItemsView = class extends KeyValueStorageItemsView {
       return;
     }
     this.itemsCleared();
-    UI26.ARIAUtils.LiveAnnouncer.alert(i18nString31(UIStrings31.extensionStorageItemsCleared));
+    UI25.ARIAUtils.LiveAnnouncer.alert(i18nString31(UIStrings31.extensionStorageItemsCleared));
   }
   deleteSelectedItem() {
     if (!this.#isEditable) {
@@ -13270,7 +13270,7 @@ import * as Common20 from "./../../core/common/common.js";
 import * as Platform8 from "./../../core/platform/platform.js";
 import * as SDK25 from "./../../core/sdk/sdk.js";
 import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI27 from "./../../ui/legacy/legacy.js";
+import * as UI26 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging19 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/resourcesPanel.css.js
@@ -13426,7 +13426,7 @@ var resourcesPanel_css_default = `/*
 
 // gen/front_end/panels/application/ResourcesPanel.js
 var resourcesPanelInstance;
-var ResourcesPanel = class _ResourcesPanel extends UI27.Panel.PanelWithSidebar {
+var ResourcesPanel = class _ResourcesPanel extends UI26.Panel.PanelWithSidebar {
   resourcesLastSelectedItemSetting;
   visibleView;
   pendingViewPromise;
@@ -13444,7 +13444,7 @@ var ResourcesPanel = class _ResourcesPanel extends UI27.Panel.PanelWithSidebar {
     this.visibleView = null;
     this.pendingViewPromise = null;
     this.categoryView = null;
-    const mainContainer = new UI27.Widget.VBox();
+    const mainContainer = new UI26.Widget.VBox();
     mainContainer.setMinimumSize(100, 0);
     this.storageViews = mainContainer.element.createChild("div", "vbox flex-auto");
     this.storageViewToolbar = mainContainer.element.createChild("devtools-toolbar", "resources-toolbar");
@@ -13472,7 +13472,7 @@ var ResourcesPanel = class _ResourcesPanel extends UI27.Panel.PanelWithSidebar {
     return viewClassesToClose.some((type) => view instanceof type);
   }
   static async showAndGetSidebar() {
-    await UI27.ViewManager.ViewManager.instance().showView("resources");
+    await UI26.ViewManager.ViewManager.instance().showView("resources");
     return _ResourcesPanel.instance().sidebar;
   }
   focus() {
@@ -13503,7 +13503,7 @@ var ResourcesPanel = class _ResourcesPanel extends UI27.Panel.PanelWithSidebar {
     this.visibleView = view;
     this.storageViewToolbar.removeToolbarItems();
     this.storageViewToolbar.classList.toggle("hidden", true);
-    if (view instanceof UI27.View.SimpleView) {
+    if (view instanceof UI26.View.SimpleView) {
       void view.toolbarItems().then((items) => {
         items.map((item) => this.storageViewToolbar.appendToolbarItem(item));
         this.storageViewToolbar.classList.toggle("hidden", !items.length);

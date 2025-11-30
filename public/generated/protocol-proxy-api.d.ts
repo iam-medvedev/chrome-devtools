@@ -1340,6 +1340,11 @@ declare namespace ProtocolProxyApi {
     attributeModified(params: Protocol.DOM.AttributeModifiedEvent): void;
 
     /**
+     * Fired when `Element`'s adoptedStyleSheets are modified.
+     */
+    adoptedStyleSheetsModified(params: Protocol.DOM.AdoptedStyleSheetsModifiedEvent): void;
+
+    /**
      * Fired when `Element`'s attribute is removed.
      */
     attributeRemoved(params: Protocol.DOM.AttributeRemovedEvent): void;
@@ -3472,6 +3477,12 @@ declare namespace ProtocolProxyApi {
      */
     invoke_setPrerenderingAllowed(params: Protocol.Page.SetPrerenderingAllowedRequest): Promise<Protocol.ProtocolResponseWithError>;
 
+    /**
+     * Get the annotated page content for the main frame.
+     * This is an experimental command that is subject to change.
+     */
+    invoke_getAnnotatedPageContent(params: Protocol.Page.GetAnnotatedPageContentRequest): Promise<Protocol.Page.GetAnnotatedPageContentResponse>;
+
   }
   export interface PageDispatcher {
     domContentEventFired(params: Protocol.Page.DomContentEventFiredEvent): void;
@@ -4197,6 +4208,12 @@ declare namespace ProtocolProxyApi {
      * `true`.
      */
     invoke_setRemoteLocations(params: Protocol.Target.SetRemoteLocationsRequest): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Gets the targetId of the DevTools page target opened for the given target
+     * (if any).
+     */
+    invoke_getDevToolsTarget(params: Protocol.Target.GetDevToolsTargetRequest): Promise<Protocol.Target.GetDevToolsTargetResponse>;
 
     /**
      * Opens a DevTools window for the target.

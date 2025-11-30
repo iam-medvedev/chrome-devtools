@@ -1,16 +1,17 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
-function createProtocolIssue(sharedDictionaryIssueDetails) {
-    return {
-        code: "SharedDictionaryIssue" /* Protocol.Audits.InspectorIssueCode.SharedDictionaryIssue */,
-        details: { sharedDictionaryIssueDetails },
-    };
-}
-describeWithLocale('SharedDictionaryIssue', () => {
+describe('SharedDictionaryIssue', () => {
+    setupLocaleHooks();
+    function createProtocolIssue(sharedDictionaryIssueDetails) {
+        return {
+            code: "SharedDictionaryIssue" /* Protocol.Audits.InspectorIssueCode.SharedDictionaryIssue */,
+            details: { sharedDictionaryIssueDetails },
+        };
+    }
     const mockModel = new MockIssuesModel([]);
     it('can be created for various error reasons', () => {
         const errorReasons = [

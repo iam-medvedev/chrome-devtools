@@ -1,5 +1,5 @@
-import * as IconButton from '../icon_button/icon_button.js';
+import { Icon } from '../../kit/kit.js';
 export declare const extractElements: (shadowRoot: ShadowRoot) => {
-    icon: IconButton.Icon.Icon;
+    icon: Icon;
     button: HTMLButtonElement;
 };

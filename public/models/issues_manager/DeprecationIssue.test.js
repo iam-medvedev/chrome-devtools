@@ -1,11 +1,12 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockIssuesManager } from '../../testing/MockIssuesManager.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
-describeWithLocale('DeprecationIssue', () => {
+describe('DeprecationIssue', () => {
+    setupLocaleHooks();
     const mockModel = new MockIssuesModel([]);
     const mockManager = new MockIssuesManager([]);
     function createDeprecationIssue(type) {

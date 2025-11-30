@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assertElements, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 export const NAVIGATOR_ADDRESS_SELECTOR = '[data-input]';
 export const NAVIGATOR_PAGE_BUTTON_SELECTOR = '[data-button=pagenavigation]';
 export const NAVIGATOR_HISTORY_BUTTON_SELECTOR = '[data-button=historynavigation]';
 export const NAVIGATOR_REFRESH_BUTTON_SELECTOR = '[data-button=refreshrequested]';
-describeWithLocale('LinearMemoryNavigator', () => {
+describe('LinearMemoryNavigator', () => {
+    setupLocaleHooks();
     let component;
     beforeEach(renderNavigator);
     function renderNavigator() {

@@ -2,11 +2,12 @@ import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Geometry from '../../models/geometry/geometry.js';
-import * as IconButton from '../components/icon_button/icon_button.js';
+import { Icon } from '../kit/kit.js';
 import { ContextMenu } from './ContextMenu.js';
 import type { Toolbar } from './Toolbar.js';
 import { VBox, type Widget } from './Widget.js';
 declare const TabbedPane_base: (new (...args: any[]) => {
+    "__#private@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
     once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
     removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
@@ -71,8 +72,8 @@ export declare class TabbedPane extends TabbedPane_base {
     moveTabBackward(id: string, index: number): void;
     moveTabForward(id: string, index: number): void;
     lastOpenedTabIds(tabsCount: number): string[];
-    setTabIcon(id: string, icon: IconButton.Icon.Icon | null): void;
-    setTrailingTabIcon(id: string, icon: IconButton.Icon.Icon | null): void;
+    setTabIcon(id: string, icon: Icon | null): void;
+    setTrailingTabIcon(id: string, icon: Icon | null): void;
     setSuffixElement(id: string, suffixElement: HTMLElement | null): void;
     setBadge(id: string, content: string | null): void;
     setTabEnabled(id: string, enabled: boolean): void;
@@ -91,6 +92,7 @@ export declare class TabbedPane extends TabbedPane_base {
     calculateConstraints(): Geometry.Constraints;
     setPlaceholderElement(element: Element, focusedElement?: Element): void;
     waitForTabElementUpdate(): Promise<void>;
+    updateTabAnnotationIcons(): void;
     performUpdate(): void;
     private adjustToolbarWidth;
     private showTabElement;
@@ -117,6 +119,7 @@ export declare class TabbedPane extends TabbedPane_base {
     leftToolbar(): Toolbar;
     rightToolbar(): Toolbar;
     setAllowTabReorder(allow: boolean, automatic?: boolean): void;
+    setTabAnnotationIcon(id: string, iconVisible: boolean): void;
     private keyDown;
 }
 export interface EventData {
@@ -158,8 +161,10 @@ export declare class TabbedPaneTab {
     get title(): string;
     set title(title: string);
     get jslogContext(): string;
+    get tabAnnotationIcon(): boolean;
+    set tabAnnotationIcon(iconVisible: boolean);
     isCloseable(): boolean;
-    setIcon(icon: IconButton.Icon.Icon | null): void;
+    setIcon(icon: Icon | null): void;
     setSuffixElement(suffixElement: HTMLElement | null): void;
     toggleClass(className: string, force?: boolean): boolean;
     get view(): Widget;
@@ -174,6 +179,7 @@ export declare class TabbedPaneTab {
     private createSuffixElement;
     private createMeasureClone;
     createTabElement(measuring: boolean): HTMLElement;
+    private createTabAnnotationIcon;
     private createCloseIconButton;
     private createPreviewIcon;
     private isCloseIconClicked;

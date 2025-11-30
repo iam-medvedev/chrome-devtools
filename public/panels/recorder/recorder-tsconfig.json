@@ -74,10 +74,10 @@
       "path": "../../ui/components/dialogs/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/icon_button/bundle-tsconfig.json"
+      "path": "../../ui/components/menus/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/menus/bundle-tsconfig.json"
+      "path": "../../ui/kit/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/visual_logging/bundle-tsconfig.json"

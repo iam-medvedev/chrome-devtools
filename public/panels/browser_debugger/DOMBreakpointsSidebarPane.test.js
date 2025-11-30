@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as BrowserDebugger from './browser_debugger.js';
-describeWithLocale('DOMBreakpointsSidebarPane placeholder', () => {
+describe('DOMBreakpointsSidebarPane placeholder', () => {
+    setupLocaleHooks();
     function assertElementDisplayStyle(selector, style) {
         const element = BrowserDebugger.DOMBreakpointsSidebarPane.DOMBreakpointsSidebarPane.instance().contentElement.querySelector(selector);
         assert.exists(element);

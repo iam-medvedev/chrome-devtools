@@ -71,6 +71,7 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
      * Used by layout tests.
      */
     getTreeOutlineForTesting(): ElementsTreeOutline | undefined;
+    treeElementForNode(node: SDK.DOMModel.DOMNode): ElementsTreeElement | null;
     performUpdate(): void;
     modelAdded(domModel: SDK.DOMModel.DOMModel): void;
     modelRemoved(domModel: SDK.DOMModel.DOMModel): void;
@@ -103,6 +104,7 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     show(parentElement: Element, insertBefore?: Node | null, suppressOrphanWidgetError?: boolean): void;
 }
 declare const ElementsTreeOutline_base: (new (...args: any[]) => {
+    "__#private@#events": Common.ObjectWrapper.ObjectWrapper<ElementsTreeOutline.EventTypes>;
     addEventListener<T extends keyof ElementsTreeOutline.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<ElementsTreeOutline.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<ElementsTreeOutline.EventTypes, T>;
     once<T extends keyof ElementsTreeOutline.EventTypes>(eventType: T): Promise<ElementsTreeOutline.EventTypes[T]>;
     removeEventListener<T extends keyof ElementsTreeOutline.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<ElementsTreeOutline.EventTypes[T], any>) => void, thisObject?: Object): void;
@@ -163,7 +165,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     update(): void;
     selectedNodeChanged(focus: boolean): void;
     private fireElementsTreeUpdated;
-    findTreeElement(node: SDK.DOMModel.DOMNode): ElementsTreeElement | null;
+    findTreeElement(node: SDK.DOMModel.DOMNode | SDK.DOMModel.AdoptedStyleSheet): ElementsTreeElement | null;
     private lookUpTreeElement;
     createTreeElementFor(node: SDK.DOMModel.DOMNode): ElementsTreeElement | null;
     private revealAndSelectNode;
@@ -211,6 +213,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private nodeRemoved;
     private childNodeCountUpdated;
     private distributedNodesChanged;
+    private adoptedStyleSheetsModified;
     private updateModifiedNodesSoon;
     /**
      * TODO: this is made public for unit tests until the ElementsTreeOutline is
@@ -228,7 +231,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private createExpandAllButtonTreeElement;
     setExpandedChildrenLimit(treeElement: ElementsTreeElement, expandedChildrenLimit: number): void;
     private updateChildren;
-    insertChildElement(treeElement: ElementsTreeElement | TopLayerContainer, child: SDK.DOMModel.DOMNode, index: number, isClosingTag?: boolean): ElementsTreeElement;
+    insertChildElement(treeElement: ElementsTreeElement | TopLayerContainer, child: SDK.DOMModel.DOMNode | SDK.DOMModel.AdoptedStyleSheet, index: number, isClosingTag?: boolean): UI.TreeOutline.TreeElement;
     private moveChild;
     private markersChanged;
     private topLayerElementsChanged;

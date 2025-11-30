@@ -6,7 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import { createIcon, Icon } from '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { InputModel } from './InputModel.js';
 import screencastViewStyles from './screencastView.css.js';
@@ -558,15 +558,15 @@ export class ScreencastView extends UI.Widget.VBox {
     createNavigationBar() {
         this.navigationBar = this.element.createChild('div', 'screencast-navigation');
         this.navigationBack = this.navigationBar.createChild('button', 'navigation');
-        this.navigationBack.appendChild(IconButton.Icon.create('arrow-back'));
+        this.navigationBack.appendChild(createIcon('arrow-back'));
         this.navigationBack.disabled = true;
         UI.ARIAUtils.setLabel(this.navigationBack, i18nString(UIStrings.back));
         this.navigationForward = this.navigationBar.createChild('button', 'navigation');
-        this.navigationForward.appendChild(IconButton.Icon.create('arrow-forward'));
+        this.navigationForward.appendChild(createIcon('arrow-forward'));
         this.navigationForward.disabled = true;
         UI.ARIAUtils.setLabel(this.navigationForward, i18nString(UIStrings.forward));
         this.navigationReload = this.navigationBar.createChild('button', 'navigation');
-        this.navigationReload.appendChild(IconButton.Icon.create('refresh'));
+        this.navigationReload.appendChild(createIcon('refresh'));
         UI.ARIAUtils.setLabel(this.navigationReload, i18nString(UIStrings.reload));
         this.navigationUrl = this.navigationBar.appendChild(UI.UIUtils.createInput());
         this.navigationUrl.type = 'text';
@@ -574,13 +574,13 @@ export class ScreencastView extends UI.Widget.VBox {
         this.mouseInputToggle = this.navigationBar.createChild('button');
         this.mouseInputToggle.disabled = true;
         {
-            this.mouseInputToggleIcon = this.mouseInputToggle.appendChild(new IconButton.Icon.Icon());
+            this.mouseInputToggleIcon = this.mouseInputToggle.appendChild(new Icon());
             this.mouseInputToggleIcon.name = 'mouse';
             this.mouseInputToggleIcon.classList.toggle('toggled', true);
         }
         UI.ARIAUtils.setLabel(this.mouseInputToggle, i18nString(UIStrings.mouseInput));
         this.touchInputToggle = this.navigationBar.createChild('button');
-        this.touchInputToggleIcon = this.touchInputToggle.appendChild(IconButton.Icon.create('touch-app'));
+        this.touchInputToggleIcon = this.touchInputToggle.appendChild(createIcon('touch-app'));
         UI.ARIAUtils.setLabel(this.touchInputToggle, i18nString(UIStrings.touchInput));
         this.navigationProgressBar = new ProgressTracker(this.resourceTreeModel, this.networkManager, this.navigationBar.createChild('div', 'progress'));
         if (this.resourceTreeModel) {

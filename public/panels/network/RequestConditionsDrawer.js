@@ -79,9 +79,8 @@ const UIStrings = {
     textPatternToBlockMatching: 'Text pattern to block matching requests; use * for wildcard',
     /**
      * @description Text in Blocked URLs Pane of the Network panel
-     * @example {Learn more} PH1
      */
-    textEditPattern: 'Text pattern to block or throttle matching requests; use URL Pattern syntax. {PH1}',
+    textEditPattern: 'Text pattern to block or throttle matching requests; use URL Pattern syntax.',
     /**
      * @description Error text for empty list widget input in Request Blocking tool
      */
@@ -383,7 +382,7 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
     <devtools-button
       .iconName=${'arrow-up'}
       .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-      .title=${i18nString(UIStrings.decreasePriority, { PH1: constructorStringOrWildcardURL })}
+      .title=${i18nString(UIStrings.increasePriority, { PH1: constructorStringOrWildcardURL })}
       .jslogContext=${'decrease-priority'}
       ?disabled=${!editable || !originalOrUpgradedURLPattern}
       @click=${moveUp}>
@@ -391,7 +390,7 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
     <devtools-button
       .iconName=${'arrow-down'}
       .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-      .title=${i18nString(UIStrings.increasePriority, { PH1: constructorStringOrWildcardURL })}
+      .title=${i18nString(UIStrings.decreasePriority, { PH1: constructorStringOrWildcardURL })}
       .jslogContext=${'increase-priority'}
       ?disabled=${!editable || !originalOrUpgradedURLPattern}
       @click=${moveDown}></devtools-button>
@@ -503,7 +502,8 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
         if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
             const learnMore = UI.XLink.XLink.create(PATTERN_API_DOCS_URL, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
             learnMore.title = i18nString(UIStrings.learnMoreLabel);
-            label.append(uiI18n.getFormatLocalizedString(str_, UIStrings.textEditPattern, { PH1: learnMore }));
+            titles.append('\xA0', learnMore);
+            label.textContent = i18nString(UIStrings.textEditPattern);
         }
         else {
             label.textContent = i18nString(UIStrings.textPatternToBlockMatching);
