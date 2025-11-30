@@ -379,8 +379,10 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     #classicNavRadioButton = UI.UIUtils.createRadioButton('flamechart-selected-navigation', 'Classic - scroll to zoom', 'timeline.select-classic-navigation');
     #onMainEntryHovered;
     #hiddenTracksInfoBarByParsedTrace = new WeakMap();
-    constructor(traceModel) {
+    #resourceLoader;
+    constructor(resourceLoader, traceModel) {
         super('timeline');
+        this.#resourceLoader = resourceLoader;
         this.registerRequiredCSS(timelinePanelStyles);
         const adornerContent = document.createElement('span');
         adornerContent.innerHTML = `<div style="
@@ -588,10 +590,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.#thirdPartyCheckbox?.setIndeterminate(disabled);
         }
     }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!timelinePanelInstance || forceNew) {
-            timelinePanelInstance = new TimelinePanel(opts.traceModel);
+    static instance(opts = undefined) {
+        if (opts) {
+            timelinePanelInstance = new TimelinePanel(opts.resourceLoader, opts.traceModel);
+        }
+        if (!timelinePanelInstance) {
+            throw new Error('No TimelinePanel instance');
         }
         return timelinePanelInstance;
     }
@@ -1777,8 +1781,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             return;
         }
         Trace.Helpers.SyntheticEvents.SyntheticEventsManager.activate(syntheticEventsManager);
-        // Clear the line level profile that could exist from the previous trace.
-        PerfUI.LineLevelProfile.Performance.instance().reset();
         this.#minimapComponent.reset();
         // Order is important: the bounds must be set before we initiate any UI
         // rendering.
@@ -1820,19 +1822,14 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
             this.flameChart.bulkAddOverlays(currModificationManager.getOverlays());
         }
-        // Set up line level profiling with CPU profiles, if we found any.
-        PerfUI.LineLevelProfile.Performance.instance().reset();
-        if (parsedTrace.data.Samples.profilesInProcess.size) {
-            const primaryPageTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-            // Gather up all CPU Profiles we found when parsing this trace.
-            const cpuProfiles = Array.from(parsedTrace.data.Samples.profilesInProcess).flatMap(([_processId, threadsInProcess]) => {
-                const profiles = Array.from(threadsInProcess.values()).map(profileData => profileData.parsedProfile);
-                return profiles;
-            });
-            for (const profile of cpuProfiles) {
-                PerfUI.LineLevelProfile.Performance.instance().appendCPUProfile(profile, primaryPageTarget);
-            }
-        }
+        // Set up line level profiling with CPU profiles.
+        const primaryPageTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        // Gather up all CPU Profiles we found when parsing this trace.
+        const cpuProfiles = Array.from(parsedTrace.data.Samples.profilesInProcess).flatMap(([_processId, threadsInProcess]) => {
+            const profiles = Array.from(threadsInProcess.values()).map(profileData => profileData.parsedProfile);
+            return profiles;
+        });
+        PerfUI.LineLevelProfile.Performance.instance().initialize(cpuProfiles, primaryPageTarget);
         // Initialize EntityMapper
         this.#entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
         // Set up SourceMapsResolver to ensure we resolve any function names in
@@ -2250,7 +2247,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                     frameId: script.frame,
                     initiatorUrl: script.url
                 };
-                rawSourceMap = await SDK.SourceMapManager.tryLoadSourceMap(script.sourceMapUrl, initiator);
+                rawSourceMap = await SDK.SourceMapManager.tryLoadSourceMap(this.#resourceLoader, script.sourceMapUrl, initiator);
             }
             if (script.url && rawSourceMap) {
                 metadata.sourceMaps?.push({ url: script.url, sourceMapUrl: script.sourceMapUrl, sourceMap: rawSourceMap });
@@ -2327,8 +2324,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             // For example, since the debugger model is disable during recording, any
             // non-final navigations during the trace will never have their source maps
             // fetched by the debugger model. That's only ever done here.
-            const initiator = { target: null, frameId: frame, initiatorUrl: sourceUrl };
-            const payload = await SDK.SourceMapManager.tryLoadSourceMap(sourceMapUrl, initiator);
+            const initiator = {
+                target: debuggerModelForFrameId.get(frame)?.target() ?? null,
+                frameId: frame,
+                initiatorUrl: sourceUrl
+            };
+            const payload = await SDK.SourceMapManager.tryLoadSourceMap(TimelinePanel.instance().#resourceLoader, sourceMapUrl, initiator);
             return payload ? new SDK.SourceMap.SourceMap(sourceUrl, sourceMapUrl, payload) : null;
         };
     }

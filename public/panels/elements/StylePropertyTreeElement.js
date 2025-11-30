@@ -12,8 +12,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
+import { createIcon, Icon } from '../../ui/kit/kit.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -32,7 +32,7 @@ const { html, nothing, render, Directives: { classMap } } = Lit;
 const ASTUtils = SDK.CSSPropertyParser.ASTUtils;
 const FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 const GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
-const MasonryEditor = ElementsComponents.StylePropertyEditor.MasonryEditor;
+const GridLanesEditor = ElementsComponents.StylePropertyEditor.GridLanesEditor;
 const UIStrings = {
     /**
      * @description Text in Color Swatch Popover Icon of the Elements panel
@@ -84,9 +84,9 @@ const UIStrings = {
      */
     gridEditorButton: 'Open `grid` editor',
     /**
-     * @description Title of the button that opens the CSS Masonry editor in the Styles panel.
+     * @description Title of the button that opens the CSS Grid Lanes editor in the Styles panel.
      */
-    masonryEditorButton: 'Open `masonry` editor',
+    gridLanesEditorButton: 'Open `grid-lanes` editor',
     /**
      * @description A context menu item in Styles panel to copy CSS declaration as JavaScript property.
      */
@@ -163,7 +163,7 @@ export class EnvFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatch
     }
 }
 // clang-format off
-export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.FlexGridMasonryMatch) {
+export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.FlexGridGridLanesMatch) {
     // clang-format on
     #treeElement;
     #stylesPane;
@@ -184,8 +184,8 @@ export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
                     return FlexboxEditor;
                 case "grid" /* SDK.CSSPropertyParserMatchers.LayoutType.GRID */:
                     return GridEditor;
-                case "masonry" /* SDK.CSSPropertyParserMatchers.LayoutType.MASONRY */:
-                    return MasonryEditor;
+                case "grid-lanes" /* SDK.CSSPropertyParserMatchers.LayoutType.GRID_LANES */:
+                    return GridLanesEditor;
             }
         }
         function getButtonTitle(layoutType) {
@@ -194,8 +194,8 @@ export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
                     return i18nString(UIStrings.flexboxEditorButton);
                 case "grid" /* SDK.CSSPropertyParserMatchers.LayoutType.GRID */:
                     return i18nString(UIStrings.gridEditorButton);
-                case "masonry" /* SDK.CSSPropertyParserMatchers.LayoutType.MASONRY */:
-                    return i18nString(UIStrings.masonryEditorButton);
+                case "grid-lanes" /* SDK.CSSPropertyParserMatchers.LayoutType.GRID_LANES */:
+                    return i18nString(UIStrings.gridLanesEditorButton);
             }
         }
         function getSwatchType(layoutType) {
@@ -204,8 +204,8 @@ export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
                     return 6 /* Host.UserMetrics.SwatchType.FLEX */;
                 case "grid" /* SDK.CSSPropertyParserMatchers.LayoutType.GRID */:
                     return 5 /* Host.UserMetrics.SwatchType.GRID */;
-                case "masonry" /* SDK.CSSPropertyParserMatchers.LayoutType.MASONRY */:
-                    return 12 /* Host.UserMetrics.SwatchType.MASONRY */;
+                case "grid-lanes" /* SDK.CSSPropertyParserMatchers.LayoutType.GRID_LANES */:
+                    return 12 /* Host.UserMetrics.SwatchType.GRID_LANES */;
             }
         }
         const button = StyleEditorWidget.createTriggerButton(this.#stylesPane, this.#treeElement.section(), getEditorClass(match.layoutType), getButtonTitle(match.layoutType), key);
@@ -938,7 +938,7 @@ export class LinkableNameRenderer extends rendererBase(SDK.CSSPropertyParserMatc
                     if (!maybeAnimationGroup) {
                         return;
                     }
-                    const icon = IconButton.Icon.create('animation', 'open-in-animations-panel');
+                    const icon = createIcon('animation', 'open-in-animations-panel');
                     icon.setAttribute('jslog', `${VisualLogging.link('open-in-animations-panel').track({ click: true })}`);
                     icon.setAttribute('role', 'button');
                     icon.setAttribute('title', i18nString(UIStrings.jumpToAnimationsPanel));
@@ -970,7 +970,7 @@ export class BezierRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.B
             return nodes;
         }
         const swatchPopoverHelper = this.#treeElement.parentPane().swatchPopoverHelper();
-        const icon = IconButton.Icon.create('bezier-curve-filled', 'bezier-swatch-icon');
+        const icon = createIcon('bezier-curve-filled', 'bezier-swatch-icon');
         icon.setAttribute('jslog', `${VisualLogging.showStyleEditor('bezier')}`);
         icon.tabIndex = -1;
         icon.addEventListener('click', () => {
@@ -1952,7 +1952,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.#tooltipKeyCounts.clear();
         this.updateState();
         if (this.isExpandable()) {
-            this.expandElement = IconButton.Icon.create('triangle-right', 'expand-icon');
+            this.expandElement = createIcon('triangle-right', 'expand-icon');
             this.expandElement.setAttribute('jslog', `${VisualLogging.expand().track({ click: true })}`);
         }
         const renderers = this.property.parsedOk ?
@@ -2213,7 +2213,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             if (hint) {
                 const wrapper = document.createElement('span');
                 wrapper.classList.add('hint-wrapper');
-                const hintIcon = new IconButton.Icon.Icon();
+                const hintIcon = new Icon();
                 hintIcon.name = 'info';
                 hintIcon.classList.add('hint', 'small');
                 hintIcon.tabIndex = -1;

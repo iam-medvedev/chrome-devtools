@@ -151,7 +151,7 @@ __export(CreateRecordingView_exports, {
   CreateRecordingView: () => CreateRecordingView,
   DEFAULT_VIEW: () => DEFAULT_VIEW
 });
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as Badges from "./../../../models/badges/badges.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
@@ -581,7 +581,7 @@ __export(RecordingListView_exports, {
   PlayRecordingEvent: () => PlayRecordingEvent,
   RecordingListView: () => RecordingListView
 });
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 import * as i18n3 from "./../../../core/i18n/i18n.js";
 import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
 import * as UI2 from "./../../../ui/legacy/legacy.js";
@@ -872,11 +872,11 @@ __export(RecordingView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW3,
   RecordingView: () => RecordingView
 });
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 
 // gen/front_end/panels/recorder/components/ExtensionView.js
 import "./../../../ui/legacy/legacy.js";
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 import * as i18n5 from "./../../../core/i18n/i18n.js";
 import * as Buttons3 from "./../../../ui/components/buttons/buttons.js";
 import * as Lit4 from "./../../../ui/lit/lit.js";
@@ -3945,7 +3945,7 @@ __export(StepView_exports, {
   StepView: () => StepView,
   StopSelectorsCaptureEvent: () => StopSelectorsCaptureEvent
 });
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 
 // gen/front_end/panels/recorder/components/TimelineSection.js
 var TimelineSection_exports = {};

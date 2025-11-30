@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components.js';
-describeWithLocale('EndpointsGrid', () => {
+describe('EndpointsGrid', () => {
+    setupLocaleHooks();
     describe('view', () => {
         let target;
         beforeEach(async () => {

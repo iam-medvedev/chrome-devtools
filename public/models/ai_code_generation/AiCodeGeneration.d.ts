@@ -18,5 +18,6 @@ export declare class AiCodeGeneration {
     generateCode(prompt: string, preamble: string, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage, options?: {
         signal?: AbortSignal;
     }): Promise<Host.AidaClient.GenerateCodeResponse | null>;
+    static isAiCodeGenerationEnabled(locale: string): boolean;
 }
 export {};

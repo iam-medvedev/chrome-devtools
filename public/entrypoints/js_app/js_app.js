@@ -4,6 +4,7 @@ import "./../shell/shell.js";
 // gen/front_end/panels/js_timeline/js_timeline-meta.js
 import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
+import * as SDK from "./../../core/sdk/sdk.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
@@ -54,9 +55,10 @@ UI.ViewManager.registerViewExtension({
   order: 66,
   hasToolbar: false,
   isPreviewFeature: true,
-  async loadView() {
+  async loadView(universe) {
     const Timeline = await loadTimelineModule();
-    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: null });
+    const resourceLoader = universe.context.get(SDK.PageResourceLoader.PageResourceLoader);
+    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader });
   }
 });
 UI.ActionRegistration.registerActionExtension({
@@ -275,7 +277,7 @@ Common2.Settings.registerSettingExtension({
 import * as Common3 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as PanelCommon from "./../../panels/common/common.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
@@ -704,10 +706,10 @@ UI3.ViewManager.registerLocationResolver({
 UI3.ContextMenu.registerProvider({
   contextTypes() {
     return [
-      SDK.NetworkRequest.NetworkRequest,
-      SDK.Resource.Resource,
+      SDK2.NetworkRequest.NetworkRequest,
+      SDK2.Resource.Resource,
       Workspace.UISourceCode.UISourceCode,
-      SDK.TraceObject.RevealableNetworkRequest
+      SDK2.TraceObject.RevealableNetworkRequest
     ];
   },
   async loadProvider() {
@@ -719,7 +721,7 @@ UI3.ContextMenu.registerProvider({
 Common3.Revealer.registerRevealer({
   contextTypes() {
     return [
-      SDK.NetworkRequest.NetworkRequest
+      SDK2.NetworkRequest.NetworkRequest
     ];
   },
   destination: Common3.Revealer.RevealerDestination.NETWORK_PANEL,
@@ -760,7 +762,7 @@ Common3.Revealer.registerRevealer({
 });
 Common3.Revealer.registerRevealer({
   contextTypes() {
-    return [SDK.NetworkManager.AppliedNetworkConditions];
+    return [SDK2.NetworkManager.AppliedNetworkConditions];
   },
   destination: Common3.Revealer.RevealerDestination.NETWORK_PANEL,
   async loadRevealer() {
@@ -773,7 +775,7 @@ Common3.Revealer.registerRevealer({
 import * as Common4 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as Main from "./../main/main.js";
@@ -812,8 +814,8 @@ var JsMainImpl = class _JsMainImpl {
   }
   async run() {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConnectToNodeJSDirectly);
-    void SDK2.Connections.initMainConnection(async () => {
-      const target = SDK2.TargetManager.TargetManager.instance().createTarget("main", i18nString2(UIStrings4.main), SDK2.Target.Type.NODE, null);
+    void SDK3.Connections.initMainConnection(async () => {
+      const target = SDK3.TargetManager.TargetManager.instance().createTarget("main", i18nString2(UIStrings4.main), SDK3.Target.Type.NODE, null);
       void target.runtimeAgent().invoke_runIfWaitingForDebugger();
     }, Components.TargetDetachedDialog.TargetDetachedDialog.connectionLost);
   }

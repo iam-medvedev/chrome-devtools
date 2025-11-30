@@ -1,4 +1,4 @@
-import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/kit/kit.js';
 import './ControlButton.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Models from '../models/models.js';

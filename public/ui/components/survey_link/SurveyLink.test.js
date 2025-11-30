@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as SurveyLink from './survey_link.js';
 function canShowSuccessfulCallback(_trigger, callback) {
     callback({ canShowSurvey: true });
@@ -18,7 +18,8 @@ function showFailureCallback(_trigger, callback) {
     callback({ surveyShown: false });
 }
 const empty = Common.UIString.LocalizedEmptyString;
-describeWithLocale('SurveyLink', () => {
+describe('SurveyLink', () => {
+    setupLocaleHooks();
     it('shows no link when canShowSurvey is still pending', () => {
         const link = new SurveyLink.SurveyLink.SurveyLink();
         link.data = { trigger: 'test trigger', promptText: empty, canShowSurvey: () => { }, showSurvey: () => { } };

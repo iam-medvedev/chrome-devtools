@@ -14,6 +14,7 @@ interface ViewInput {
     filters: TextUtils.TextUtils.ParsedFilter[];
     numResources: number;
     numLoading: number;
+    loadThroughTargetSetting: Common.Settings.Setting<boolean>;
 }
 type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;

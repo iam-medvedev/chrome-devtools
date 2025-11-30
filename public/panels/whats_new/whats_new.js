@@ -25,34 +25,24 @@ function getReleaseNote() {
   return releaseNote;
 }
 var releaseNote = {
-  version: 83,
-  header: "What's new in DevTools 142",
+  version: 143,
+  header: "What's new in DevTools 143",
   markdownLinks: [
     {
-      key: "perf-ai-agent",
-      link: "https://developer.chrome.com/blog/new-in-devtools-142/#perf-ai-agent"
+      key: "mcp-server",
+      link: "https://developer.chrome.com/blog/new-in-devtools-143/#mcp-server"
     },
     {
-      key: "ai-code-completion",
-      link: "https://developer.chrome.com/blog/new-in-devtools-142/#ai-code-completion"
+      key: "trace-sharing",
+      link: "https://developer.chrome.com/blog/new-in-devtools-143/#trace-sharing"
     },
     {
-      key: "gdp",
-      link: "https://developer.chrome.com/blog/new-in-devtools-142/#gdp"
-    },
-    {
-      key: "ai-main-button",
-      link: "https://developer.chrome.com/blog/new-in-devtools-142/#ai-main-button"
+      key: "starting-style",
+      link: "https://developer.chrome.com/blog/new-in-devtools-143/#starting-style"
     }
   ],
-  videoLinks: [
-    {
-      description: "See past highlights from Chrome 141",
-      link: "https://developer.chrome.com/blog/new-in-devtools-141",
-      type: "WhatsNew"
-    }
-  ],
-  link: "https://developer.chrome.com/blog/new-in-devtools-142/"
+  videoLinks: [],
+  link: "https://developer.chrome.com/blog/new-in-devtools-143/"
 };
 
 // gen/front_end/panels/whats_new/ReleaseNoteView.js

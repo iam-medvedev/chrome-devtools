@@ -1,9 +1,10 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as i18n from './i18n.js';
-describeWithLocale('NumberFormatter', () => {
+describe('NumberFormatter', () => {
+    setupLocaleHooks();
     const identity = (locale) => locale;
     after(() => {
         // Reset the singleton after the test suite for other tests.

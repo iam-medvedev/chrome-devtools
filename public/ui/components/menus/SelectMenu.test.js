@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale, } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks, } from '../../../testing/LocaleHelpers.js';
 import { html } from '../../lit/lit.js';
 import * as Dialogs from '../dialogs/dialogs.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
@@ -41,7 +41,8 @@ async function createMenu() {
     await RenderCoordinator.done();
     return menu;
 }
-describeWithLocale('SelectMenu', () => {
+describe('SelectMenu', () => {
+    setupLocaleHooks();
     it('will use the buttonTitle property if that is provided', async () => {
         const menu = await createMenu();
         const firsItem = menu.querySelector('devtools-menu-item');

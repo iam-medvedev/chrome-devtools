@@ -1,16 +1,17 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
-function createProtocolIssue(sriMessageSignatureIssueDetails) {
-    return {
-        code: "SRIMessageSignatureIssue" /* Protocol.Audits.InspectorIssueCode.SRIMessageSignatureIssue */,
-        details: { sriMessageSignatureIssueDetails },
-    };
-}
-describeWithLocale('SRIMessageSignatureIssue', () => {
+describe('SRIMessageSignatureIssue', () => {
+    setupLocaleHooks();
+    function createProtocolIssue(sriMessageSignatureIssueDetails) {
+        return {
+            code: "SRIMessageSignatureIssue" /* Protocol.Audits.InspectorIssueCode.SRIMessageSignatureIssue */,
+            details: { sriMessageSignatureIssueDetails },
+        };
+    }
     const mockModel = new MockIssuesModel([]);
     it('can be created for various error reasons', () => {
         const errorReasons = [

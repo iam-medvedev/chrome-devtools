@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
-import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as UI from '../../ui/legacy/legacy.js';
+import { createIcon } from '../../ui/kit/kit.js';
 import { ApplicationPanelTreeElement } from './ApplicationPanelTreeElement.js';
 import * as ApplicationComponents from './components/components.js';
 const UIStrings = {
@@ -21,7 +19,7 @@ export class TrustTokensTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(storagePanel) {
         super(storagePanel, i18nString(UIStrings.trustTokens), false, 'private-state-tokens');
-        const icon = IconButton.Icon.create('database');
+        const icon = createIcon('database');
         this.setLeadingIcons([icon]);
     }
     get itemURL() {
@@ -30,7 +28,7 @@ export class TrustTokensTreeElement extends ApplicationPanelTreeElement {
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
         if (!this.view) {
-            this.view = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, new ApplicationComponents.TrustTokensView.TrustTokensView(), 'trust-tokens');
+            this.view = new ApplicationComponents.TrustTokensView.TrustTokensView();
         }
         this.showView(this.view);
         Host.userMetrics.panelShown('trust-tokens');

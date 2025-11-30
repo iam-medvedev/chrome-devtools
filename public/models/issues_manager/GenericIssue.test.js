@@ -1,10 +1,11 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
-describeWithLocale('GenericIssue', () => {
+describe('GenericIssue', () => {
+    setupLocaleHooks();
     const mockModel = new MockIssuesModel([]);
     function createProtocolIssueWithoutDetails() {
         return {
@@ -52,6 +53,22 @@ describeWithLocale('GenericIssue', () => {
         assert.strictEqual(genericIssue.primaryKey(), 'GenericIssue::ResponseWasBlockedByORB-(undefined)-(undefined)-(undefined)-(blabla)');
         assert.strictEqual(genericIssue.getKind(), "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */);
         assert.isNotNull(genericIssue.getDescription());
+    });
+    it('adds a skippable navigation entry issue with valid details', () => {
+        const issueDetails = {
+            errorType: "NavigationEntryMarkedSkippable" /* Protocol.Audits.GenericIssueErrorType.NavigationEntryMarkedSkippable */,
+            request: { requestId: 'blabla', url: 'https://skippablePage.com' },
+        };
+        const issue = createProtocolIssueWithDetails(issueDetails);
+        const genericIssues = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, issue);
+        assert.lengthOf(genericIssues, 1);
+        const genericIssue = genericIssues[0];
+        assert.strictEqual(genericIssue.getCategory(), "Generic" /* IssuesManager.Issue.IssueCategory.GENERIC */);
+        assert.strictEqual(genericIssue.primaryKey(), 'GenericIssue::NavigationEntryMarkedSkippable-(undefined)-(undefined)-(undefined)-(blabla)');
+        assert.strictEqual(genericIssue.getKind(), "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */);
+        assert.isNotNull(genericIssue.getDescription());
+        const requests = Array.from(genericIssue.requests());
+        assert.strictEqual(requests[0].url, 'https://skippablePage.com');
     });
 });
 //# sourceMappingURL=GenericIssue.test.js.map

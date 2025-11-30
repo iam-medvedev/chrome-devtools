@@ -4,7 +4,8 @@
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import { createFakeSetting, deinitializeGlobalVars, initializeGlobalVars } from '../../../../testing/EnvironmentHelpers.js';
-import { describeWithLocale } from '../../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
+import { render } from '../../../../ui/lit/lit.js';
 import * as QuickOpen from './quick_open.js';
 function createCommandMenuProvider(deprecationNotice) {
     const setting = createFakeSetting('test-setting', false);
@@ -27,7 +28,8 @@ function setupElements() {
     const subtitle = container.createChild('div');
     return { toplevel, container, title, subtitle };
 }
-describeWithLocale('CommandMenu', () => {
+describe('CommandMenu', () => {
+    setupLocaleHooks();
     let elements;
     beforeEach(() => {
         elements = setupElements();
@@ -42,7 +44,7 @@ describeWithLocale('CommandMenu', () => {
     it('shows a deprecation warning for deprecated settings', () => {
         const deprecation = { disabled: true, warning };
         const { provider } = createCommandMenuProvider(deprecation);
-        provider.renderItem(0, 'Test', elements.title, elements.subtitle);
+        render(provider.renderItem(0, 'Test'), elements.toplevel);
         const tags = Array.from(elements.toplevel.querySelectorAll('.deprecated-tag'));
         assert.deepEqual(tags.map(e => e.textContent), ['— deprecated']);
         assert.deepEqual(tags[0].title, 'Deprecation Warning');

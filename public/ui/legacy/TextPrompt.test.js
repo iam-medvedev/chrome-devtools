@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Lit from '../lit/lit.js';
 import * as UI from './legacy.js';
 const { html } = Lit;
-describeWithLocale('TextPromptElement', () => {
+describe('TextPromptElement', () => {
+    setupLocaleHooks();
     let container;
     beforeEach(() => {
         container = document.createElement('div');

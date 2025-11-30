@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../../ui/kit/kit.js';
 import '../../ui/components/icon_button/icon_button.js';
 
 import * as Common from '../../core/common/common.js';
@@ -42,6 +43,16 @@ const UIStrings = {
    * @example {3G} PH2
    */
   resourceTypeWithThrottling: '{PH1} (throttled to {PH2})',
+  /**
+   * @description Tooltip for a failed request
+   * @example {Document} PH1
+   */
+  requestFailed: '{PH1} request failed',
+  /**
+   * @description Tooltip for a failed request
+   * @example {Document} PH1
+   */
+  prefetchFailed: '{PH1} prefetch request failed',
 } as const;
 
 const str_ = i18n.i18n.registerUIStrings('panels/utils/utils.ts', UIStrings);
@@ -74,16 +85,19 @@ export class PanelUtils {
 
     if (PanelUtils.isFailedNetworkRequest(request)) {
       let iconName: string;
+      let title: string;
       // Failed prefetch network requests are displayed as warnings instead of errors.
       if (request.resourceType() === Common.ResourceType.resourceTypes.Prefetch) {
+        title = i18nString(UIStrings.prefetchFailed, {PH1: type.title()});
         iconName = 'warning-filled';
       } else {
+        title = i18nString(UIStrings.requestFailed, {PH1: type.title()});
         iconName = 'cross-circle-filled';
       }
 
       // clang-format off
       return html`<devtools-icon
-          class="icon" name=${iconName} title=${type.title()}>
+          class="icon" name=${iconName} title=${title}> role=img
         </devtools-icon>`;
       // clang-format on
     }
@@ -93,6 +107,7 @@ export class PanelUtils {
       return html`<devtools-icon
         class="icon"
         name="warning-filled"
+        role=img
         title=${i18nString(UIStrings.thirdPartyPhaseout)}
       ></devtools-icon>`;
       // clang-format on
@@ -112,7 +127,7 @@ export class PanelUtils {
 
       // clang-format off
       return html`<div class="network-override-marker">
-          <devtools-icon class="icon" name="document" title=${title}></devtools-icon>
+          <devtools-icon class="icon" name="document" role=img title=${title}></devtools-icon>
         </div>`;
       // clang-format on
     }
@@ -149,7 +164,7 @@ export class PanelUtils {
         Common.ResourceType.ResourceType.simplifyContentType(request.mimeType) === 'application/json') {
       // clang-format off
       return html`<devtools-icon
-          class="icon" name="file-json" title=${iconTitleForRequest(request)}
+          class="icon" name="file-json" title=${iconTitleForRequest(request)} role=img
           style="color:var(--icon-file-script)">
         </devtools-icon>`;
       // clang-format on

@@ -5,7 +5,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import { getMatchedStyles } from '../../testing/StyleHelpers.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
@@ -529,7 +529,8 @@ describe('StylesSidebarPane', () => {
             assert.deepEqual(elements, [0, 1, 2, 3, 4, 5, 6, 7]);
         });
     });
-    describeWithLocale('CSSPropertyPrompt', () => {
+    describe('CSSPropertyPrompt', () => {
+        setupLocaleHooks();
         const CSSPropertyPrompt = Elements.StylesSidebarPane.CSSPropertyPrompt;
         const CSS_VARIABLES_FOR_TEST = {
             '--rgb-color': 'rgb(0 0 0)',

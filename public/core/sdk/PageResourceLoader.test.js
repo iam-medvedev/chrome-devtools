@@ -1,12 +1,14 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
-import * as Common from '../common/common.js';
+import { createTarget, } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { createSettingsForTest, setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 const initiator = {
@@ -14,7 +16,14 @@ const initiator = {
     frameId: '123',
     initiatorUrl: Platform.DevToolsPath.EmptyUrlString,
 };
-describeWithLocale('PageResourceLoader', () => {
+/** Creates a PageResourceLoader, TargetManager and Settings instance without installing them as globals */
+function setup({ loadOverride, maxConcurrentLoads } = {}) {
+    const targetManager = new SDK.TargetManager.TargetManager(new Root.DevToolsContext.DevToolsContext());
+    const settings = createSettingsForTest();
+    const loader = new SDK.PageResourceLoader.PageResourceLoader(targetManager, settings, { currentUserAgent: () => '' }, loadOverride ?? null, maxConcurrentLoads);
+    return { loader, settings, targetManager };
+}
+describe('PageResourceLoader', () => {
     const foo1Url = urlString `foo1`;
     const foo2Url = urlString `foo2`;
     const foo3Url = urlString `foo3`;
@@ -30,8 +39,9 @@ describeWithLocale('PageResourceLoader', () => {
     beforeEach(() => {
         loads.length = 0;
     });
+    setupLocaleHooks();
     it('registers extension loads', async () => {
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: load, maxConcurrentLoads: 500 });
+        const { loader } = setup({ loadOverride: load });
         const initiator = {
             extensionId: '123',
             initiatorUrl: urlString `www.test.com/main.wasm.dwp`,
@@ -54,7 +64,7 @@ describeWithLocale('PageResourceLoader', () => {
         assert.deepEqual(resources[0].initiator, initiator);
     });
     it('loads resources correctly', async () => {
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: load, maxConcurrentLoads: 500 });
+        const { loader } = setup({ loadOverride: load });
         const loading = [
             loader.loadResource(foo1Url, initiator),
             loader.loadResource(foo2Url, initiator),
@@ -69,7 +79,7 @@ describeWithLocale('PageResourceLoader', () => {
         assert.isTrue(resources.every(x => x.success));
     });
     it('deals with page reloads correctly', async () => {
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: load, maxConcurrentLoads: 1 });
+        const { loader } = setup({ loadOverride: load, maxConcurrentLoads: 1 });
         const loading = [
             loader.loadResource(foo1Url, initiator).catch(e => e.message),
             loader.loadResource(foo2Url, initiator).catch(e => e.message),
@@ -101,7 +111,7 @@ describeWithLocale('PageResourceLoader', () => {
         assert.deepEqual(results[2], 'Load canceled due to reload of inspected page');
     });
     it('respects the max concurrent loads', async () => {
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: load, maxConcurrentLoads: 2 });
+        const { loader } = setup({ loadOverride: load, maxConcurrentLoads: 2 });
         const loading = [
             loader.loadResource(foo1Url, initiator),
             loader.loadResource(foo2Url, initiator),
@@ -117,18 +127,19 @@ describeWithLocale('PageResourceLoader', () => {
     });
 });
 // Loading via host bindings requires the settings infra to be booted.
-describeWithEnvironment('PageResourceLoader', () => {
+describe('PageResourceLoader', () => {
+    setupSettingsHooks();
     it('blocks UNC file paths with the default setting', async () => {
         if (!Host.Platform.isWin()) {
             return;
         }
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
+        const { loader } = setup({ maxConcurrentLoads: 1 });
         const message = await loader.loadResource(urlString `file:////127.0.0.1/share/source-map.js.map`, initiator)
             .catch(e => e.message);
         assert.include(message, 'remote file');
     });
     it('blocks remote file paths with the default setting', async () => {
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
+        const { loader } = setup({ maxConcurrentLoads: 1 });
         const message = await loader.loadResource(urlString `file://host/source-map.js.map`, initiator).catch(e => e.message);
         assert.include(message, 'remote file');
     });
@@ -136,19 +147,19 @@ describeWithEnvironment('PageResourceLoader', () => {
         if (!Host.Platform.isWin()) {
             return;
         }
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
+        const { loader } = setup({ maxConcurrentLoads: 1 });
         const message = await loader.loadResource(urlString `file:///\\127.0.0.1/share/source-map.js.map`, initiator)
             .catch(e => e.message);
         assert.include(message, 'remote file');
     });
     it('allows remote file paths with the setting enabled', async () => {
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
+        const { loader, settings } = setup({ maxConcurrentLoads: 1 });
         sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'loadNetworkResource')
             .callsFake((_url, _headers, streamId, callback) => {
             Host.ResourceLoader.streamWrite(streamId, 'content of the source map');
             callback({ statusCode: 200 });
         });
-        Common.Settings.Settings.instance().moduleSetting('network.enable-remote-file-loading').set(true);
+        settings.moduleSetting('network.enable-remote-file-loading').set(true);
         const response = await loader.loadResource(urlString `file://host/source-map.js.map`, initiator);
         assert.strictEqual(response.content, 'content of the source map');
     });
@@ -156,45 +167,47 @@ describeWithEnvironment('PageResourceLoader', () => {
         if (!Host.Platform.isWin()) {
             return;
         }
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
+        const { loader, settings } = setup({ maxConcurrentLoads: 1 });
         sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'loadNetworkResource')
             .callsFake((_url, _headers, streamId, callback) => {
             Host.ResourceLoader.streamWrite(streamId, 'content of the source map');
             callback({ statusCode: 200 });
         });
-        Common.Settings.Settings.instance().moduleSetting('network.enable-remote-file-loading').set(true);
+        settings.moduleSetting('network.enable-remote-file-loading').set(true);
         const response = await loader.loadResource(urlString `file:////127.0.0.1/share/source-map.js.map`, initiator);
         assert.strictEqual(response.content, 'content of the source map');
     });
 });
-describeWithMockConnection('PageResourceLoader', () => {
+describe('PageResourceLoader', () => {
+    setupRuntimeHooks();
     describe('loadResource', () => {
         const stream = 'STREAM_ID';
         const initiatorUrl = urlString `htp://example.com`;
         const url = urlString `${`${initiatorUrl}/test.txt`}`;
-        function setupLoadingSourceMapsAsNetworkResource() {
+        function setupLoadingSourceMapsAsNetworkResource(connection) {
             return new Promise(resolve => {
                 let contentToRead = 'foo';
-                setMockConnectionResponseHandler('IO.read', () => {
+                connection.setHandler('IO.read', () => {
                     const data = contentToRead;
                     contentToRead = null;
-                    return { data };
+                    return { result: { data } };
                 });
-                setMockConnectionResponseHandler('IO.close', () => ({}));
-                setMockConnectionResponseHandler('Network.loadNetworkResource', request => {
+                connection.setHandler('IO.close', () => ({ result: {} }));
+                connection.setHandler('Network.loadNetworkResource', request => {
                     resolve(request);
-                    return { resource: { success: true, stream, statusCode: 200 } };
+                    return { result: { resource: { success: true, stream, statusCode: 200 } } };
                 });
             });
         }
         for (const disableCache of [true, false]) {
             it(`loads with ${disableCache ? 'disabled' : 'enabled'} cache based on the setting`, async () => {
-                Common.Settings.Settings.instance().moduleSetting('cache-disabled').set(disableCache);
-                const target = createTarget();
+                const { loader, settings, targetManager } = setup();
+                settings.moduleSetting('cache-disabled').set(disableCache);
+                const connection = new MockCDPConnection();
+                const target = createTarget({ connection, targetManager });
                 const initiator = { target, frameId: null, initiatorUrl };
-                const loader = SDK.PageResourceLoader.PageResourceLoader.instance();
                 const [{ options }, { content }] = await Promise.all([
-                    setupLoadingSourceMapsAsNetworkResource(),
+                    setupLoadingSourceMapsAsNetworkResource(connection),
                     loader.loadResource(url, initiator),
                 ]);
                 // Check that we loaded the resources with appropriately enabled caching.
@@ -205,16 +218,15 @@ describeWithMockConnection('PageResourceLoader', () => {
         }
     });
 });
-describeWithMockConnection('PageResourceLoader', () => {
+describe('PageResourceLoader', () => {
     const initiatorUrl = urlString `htp://example.com`;
     const foo1Url = urlString `foo1`;
     const foo2Url = urlString `foo2`;
     const foo3Url = urlString `foo3`;
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     it('handles scoped resources', async () => {
-        const target = createTarget({ id: 'main' });
-        const prerenderTarget = createTarget({ id: 'prerender' });
-        const initiator = { target, frameId: null, initiatorUrl };
-        const prerenderInitiator = { target: prerenderTarget, frameId: null, initiatorUrl };
         const load = async () => {
             await new Promise(() => { });
             return {
@@ -223,7 +235,12 @@ describeWithMockConnection('PageResourceLoader', () => {
                 errorDescription: { message: '', statusCode: 0, netError: 0, netErrorName: '', urlValid: true },
             };
         };
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: load, maxConcurrentLoads: 500 });
+        const { targetManager, loader } = setup({ loadOverride: load });
+        const connection = new MockCDPConnection();
+        const target = createTarget({ id: 'main', connection, targetManager });
+        const prerenderTarget = createTarget({ id: 'prerender', connection, targetManager });
+        const initiator = { target, frameId: null, initiatorUrl };
+        const prerenderInitiator = { target: prerenderTarget, frameId: null, initiatorUrl };
         void loader.loadResource(foo1Url, initiator);
         void loader.loadResource(foo2Url, initiator);
         void loader.loadResource(foo3Url, prerenderInitiator);
@@ -232,17 +249,13 @@ describeWithMockConnection('PageResourceLoader', () => {
         let resources = loader.getScopedResourcesLoaded();
         let resourceUrls = [...resources.values()].map(x => x.url);
         assert.deepEqual(resourceUrls, [foo1Url, foo2Url]);
-        SDK.TargetManager.TargetManager.instance().setScopeTarget(prerenderTarget);
+        targetManager.setScopeTarget(prerenderTarget);
         assert.deepEqual(loader.getScopedNumberOfResources(), { loading: 1, resources: 1 });
         resources = loader.getScopedResourcesLoaded();
         resourceUrls = [...resources.values()].map(x => x.url);
         assert.deepEqual(resourceUrls, [foo3Url]);
     });
     it('handles prerender activation', async () => {
-        const target = createTarget({ id: 'main' });
-        const prerenderTarget = createTarget({ id: 'prerender' });
-        const initiator = { target, frameId: null, initiatorUrl };
-        const prerenderInitiator = { target: prerenderTarget, frameId: null, initiatorUrl };
         const load = async (url) => {
             return {
                 success: true,
@@ -250,7 +263,12 @@ describeWithMockConnection('PageResourceLoader', () => {
                 errorDescription: { message: '', statusCode: 0, netError: 0, netErrorName: '', urlValid: true },
             };
         };
-        const loader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: load, maxConcurrentLoads: 500 });
+        const { targetManager, loader } = setup({ loadOverride: load });
+        const connection = new MockCDPConnection();
+        const target = createTarget({ id: 'main', connection, targetManager });
+        const prerenderTarget = createTarget({ id: 'prerender', connection, targetManager });
+        const initiator = { target, frameId: null, initiatorUrl };
+        const prerenderInitiator = { target: prerenderTarget, frameId: null, initiatorUrl };
         await Promise.all([
             loader.loadResource(foo1Url, initiator),
             loader.loadResource(foo2Url, initiator),
@@ -279,7 +297,7 @@ describeWithMockConnection('PageResourceLoader', () => {
             },
         });
         assert.deepEqual(loader.getNumberOfResources(), { loading: 0, queued: 0, resources: 1 });
-        SDK.TargetManager.TargetManager.instance().setScopeTarget(prerenderTarget);
+        targetManager.setScopeTarget(prerenderTarget);
         assert.deepEqual(loader.getScopedNumberOfResources(), { loading: 0, resources: 1 });
         resources = loader.getScopedResourcesLoaded();
         resourceUrls = [...resources.values()].map(x => x.url);

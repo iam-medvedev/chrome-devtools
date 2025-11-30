@@ -12,7 +12,7 @@ __export(CustomPreviewComponent_exports, {
 });
 import * as Common2 from "./../../../../core/common/common.js";
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
-import * as IconButton from "./../../../components/icon_button/icon_button.js";
+import { createIcon } from "./../../../kit/kit.js";
 import * as UI3 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/object_ui/customPreviewComponent.css.js
@@ -68,6 +68,7 @@ import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as SDK3 from "./../../../../core/sdk/sdk.js";
 import * as TextUtils from "./../../../../models/text_utils/text_utils.js";
 import * as uiI18n from "./../../../i18n/i18n.js";
+import * as Highlighting from "./../../../components/highlighting/highlighting.js";
 import * as TextEditor from "./../../../components/text_editor/text_editor.js";
 import { Directives as Directives2, html as html2, nothing as nothing2, render as render2 } from "./../../../lit/lit.js";
 import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
@@ -1434,7 +1435,7 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
     return this.#nameElement;
   }
   setSearchRegex(regex, additionalCssClassName) {
-    let cssClasses = UI2.UIUtils.highlightedSearchResultClassName;
+    let cssClasses = Highlighting.highlightedSearchResultClassName;
     if (additionalCssClassName) {
       cssClasses += " " + additionalCssClassName;
     }
@@ -1460,7 +1461,7 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
       match = regex.exec(content);
     }
     if (ranges.length) {
-      UI2.UIUtils.highlightRangesWithStyleClass(element, ranges, cssClassName, this.highlightChanges);
+      Highlighting.highlightRangesWithStyleClass(element, ranges, cssClassName, this.highlightChanges);
     }
   }
   showAllPropertiesElementSelected(element) {
@@ -1484,7 +1485,7 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
     this.appendChild(showAllPropertiesButton);
   }
   revertHighlightChanges() {
-    UI2.UIUtils.revertDomChanges(this.highlightChanges);
+    Highlighting.revertDomChanges(this.highlightChanges);
     this.highlightChanges = [];
   }
   async onpopulate() {
@@ -2044,7 +2045,7 @@ var CustomPreviewSection = class _CustomPreviewSection {
         this.header.classList.add("custom-expandable-section-header");
       }
       this.header.addEventListener("click", this.onClick.bind(this), false);
-      this.expandIcon = IconButton.Icon.create("triangle-right", "custom-expand-icon");
+      this.expandIcon = createIcon("triangle-right", "custom-expand-icon");
       this.header.insertBefore(this.expandIcon, this.header.firstChild);
     }
     this.sectionElement.appendChild(this.header);

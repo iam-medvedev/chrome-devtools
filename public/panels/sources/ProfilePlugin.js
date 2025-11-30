@@ -87,13 +87,9 @@ function markersFromProfileData(map, state, type) {
     const aggregatedByLine = new Map();
     for (const [line, value] of map) {
         if (line <= state.doc.lines) {
-            if (value instanceof Map) {
-                for (const [, data] of value) {
-                    aggregatedByLine.set(line, (aggregatedByLine.get(line) || 0) + data);
-                }
-                continue;
+            for (const [, data] of value) {
+                aggregatedByLine.set(line, (aggregatedByLine.get(line) || 0) + data);
             }
-            aggregatedByLine.set(line, value);
         }
     }
     for (const [line, value] of aggregatedByLine) {
@@ -102,12 +98,13 @@ function markersFromProfileData(map, state, type) {
     }
     return CodeMirror.RangeSet.of(markers, true);
 }
-const makeLineLevelProfilePlugin = (type) => class extends Plugin {
+const makeLineLevelProfilePlugin = (type) => class ProfilePlugin extends Plugin {
     updateEffect = CodeMirror.StateEffect.define();
     field;
     gutter;
     compartment = new CodeMirror.Compartment();
-    constructor(uiSourceCode) {
+    #transformer;
+    constructor(uiSourceCode, transformer) {
         super(uiSourceCode);
         this.field = CodeMirror.StateField.define({
             create() {
@@ -123,12 +120,20 @@ const makeLineLevelProfilePlugin = (type) => class extends Plugin {
             markers: view => view.state.field(this.field),
             class: `cm-${type}Gutter`,
         });
+        this.#transformer = transformer;
     }
     static accepts(uiSourceCode) {
         return uiSourceCode.contentType().hasScripts();
     }
     getLineMap() {
-        return this.uiSourceCode.getDecorationData(type);
+        const uiSourceCodeProfileMap = this.uiSourceCode.getDecorationData(type);
+        if (!uiSourceCodeProfileMap) {
+            return undefined;
+        }
+        return Workspace.UISourceCode.createMappedProfileData(uiSourceCodeProfileMap, (line, column) => {
+            const editorLocation = this.#transformer.uiLocationToEditorLocation(line, column);
+            return [editorLocation.lineNumber, editorLocation.columnNumber];
+        });
     }
     editorExtension() {
         const map = this.getLineMap();

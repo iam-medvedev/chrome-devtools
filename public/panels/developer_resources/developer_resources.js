@@ -393,7 +393,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
           </devtools-toolbar-input>
           <devtools-checkbox
               title=${i18nString2(UIStrings2.loadHttpsDeveloperResources)}
-              ${bindToSetting(SDK2.PageResourceLoader.getLoadThroughTargetSetting())}>
+              ${bindToSetting(input.loadThroughTargetSetting)}>
             ${i18nString2(UIStrings2.enableLoadingThroughTarget)}
           </devtools-checkbox>
         </devtools-toolbar>
@@ -440,7 +440,8 @@ var DeveloperResourcesView = class extends UI2.Widget.VBox {
       },
       filters: this.#filters,
       numResources: resources,
-      numLoading: loading
+      numLoading: loading,
+      loadThroughTargetSetting: this.#loader.getLoadThroughTargetSetting()
     };
     const output = {};
     this.#view(input, output, this.contentElement);

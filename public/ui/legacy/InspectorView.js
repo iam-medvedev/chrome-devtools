@@ -8,12 +8,13 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as IconButton from '../components/icon_button/icon_button.js';
+import { createIcon } from '../kit/kit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import { ActionRegistry } from './ActionRegistry.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { Dialog } from './Dialog.js';
 import { DockController } from './DockController.js';
+import { Floaty } from './Floaty.js';
 import { GlassPane } from './GlassPane.js';
 import { Infobar } from './Infobar.js';
 import { KeyboardShortcut } from './KeyboardShortcut.js';
@@ -300,6 +301,9 @@ export class InspectorView extends VBox {
         this.element.style.setProperty('--devtools-window-top', `${rect.top}px`);
         this.element.style.setProperty('--devtools-window-bottom', `${window.innerHeight - rect.bottom}px`);
         this.element.style.setProperty('--devtools-window-height', `${rect.height}px`);
+        if (Floaty.exists()) {
+            Floaty.instance().setDevToolsRect(rect);
+        }
     }
     wasShown() {
         super.wasShown();
@@ -308,6 +312,12 @@ export class InspectorView extends VBox {
         this.element.ownerDocument.addEventListener('keydown', this.keyDownBound, false);
         DockController.instance().addEventListener("DockSideChanged" /* DockControllerEvents.DOCK_SIDE_CHANGED */, this.#applyDrawerOrientationForDockSide, this);
         this.#applyDrawerOrientationForDockSide();
+        if (Root.Runtime.hostConfig.devToolsGreenDevUi?.enabled) {
+            Floaty.instance({
+                forceNew: true,
+                document: this.element.ownerDocument,
+            });
+        }
     }
     willHide() {
         super.willHide();
@@ -360,7 +370,7 @@ export class InspectorView extends VBox {
             let icon = null;
             if (warnings.length !== 0) {
                 const warning = warnings.length === 1 ? warnings[0] : '· ' + warnings.join('\n· ');
-                icon = IconButton.Icon.create('warning-filled', 'small');
+                icon = createIcon('warning-filled', 'small');
                 icon.classList.add('warning');
                 Tooltip.install(icon, warning);
             }

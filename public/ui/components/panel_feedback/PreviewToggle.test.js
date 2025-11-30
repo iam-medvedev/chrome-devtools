@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 import * as Root from '../../../core/root/root.js';
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as PanelFeedback from './panel_feedback.js';
-describeWithLocale('Preview toggle', () => {
+describe('Preview toggle', () => {
+    setupLocaleHooks();
     it('calls out correctly to enable experiment', async () => {
         const isEnabledStub = sinon.stub(Root.Runtime.experiments, 'isEnabled');
         isEnabledStub.callsFake(() => false);

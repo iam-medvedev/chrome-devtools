@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-lit-render-outside-of-view */
-import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/kit/kit.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -135,14 +135,14 @@ export class GridEditor extends StylePropertyEditor {
     }
 }
 customElements.define('devtools-grid-editor', GridEditor);
-export class MasonryEditor extends StylePropertyEditor {
-    jslogContext = 'cssMasonryEditor';
-    editableProperties = MasonryEditableProperties;
+export class GridLanesEditor extends StylePropertyEditor {
+    jslogContext = 'cssGridLanesEditor';
+    editableProperties = GridLanesEditableProperties;
     findIcon(query, computedProperties) {
         return findGridContainerIcon(query, computedProperties);
     }
 }
-customElements.define('devtools-masonry-editor', MasonryEditor);
+customElements.define('devtools-grid-lanes-editor', GridLanesEditor);
 export const FlexboxEditableProperties = [
     {
         propertyName: 'flex-direction',
@@ -238,7 +238,7 @@ export const GridEditableProperties = [
         ],
     },
 ];
-export const MasonryEditableProperties = [
+export const GridLanesEditableProperties = [
     {
         propertyName: 'align-content',
         propertyValues: [

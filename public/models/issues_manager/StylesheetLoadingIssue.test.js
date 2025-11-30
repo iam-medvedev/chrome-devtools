@@ -1,17 +1,18 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockIssuesManager } from '../../testing/MockIssuesManager.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
-function createProtocolIssue(stylesheetLoadingIssueDetails) {
-    return {
-        code: "StylesheetLoadingIssue" /* Protocol.Audits.InspectorIssueCode.StylesheetLoadingIssue */,
-        details: { stylesheetLoadingIssueDetails },
-    };
-}
-describeWithLocale('StylesheetLoadingIssue', () => {
+describe('StylesheetLoadingIssue', () => {
+    setupLocaleHooks();
+    function createProtocolIssue(stylesheetLoadingIssueDetails) {
+        return {
+            code: "StylesheetLoadingIssue" /* Protocol.Audits.InspectorIssueCode.StylesheetLoadingIssue */,
+            details: { stylesheetLoadingIssueDetails },
+        };
+    }
     const mockModel = new MockIssuesModel([]);
     const mockManager = new MockIssuesManager([]);
     it('can be created for failed stylesheet requests', () => {

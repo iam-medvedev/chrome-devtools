@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as NetworkComponents from './components.js';
-describeWithLocale('RequestTrustTokensView', () => {
+describe('RequestTrustTokensView', () => {
+    setupLocaleHooks();
     const mockId = 'mockId';
     const makeRequest = (params, result) => {
         return { trustTokenParams: () => params, trustTokenOperationDoneEvent: () => result };

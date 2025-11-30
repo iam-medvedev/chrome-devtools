@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import * as IconButton from '../icon_button/icon_button.js';
+import { Icon } from '../../kit/kit.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as MarkdownView from './markdown_view.js';
 describe('MarkdownImage', () => {
@@ -27,7 +27,7 @@ describe('MarkdownImage', () => {
         renderElementIntoDOM(component);
         await RenderCoordinator.done();
         assert.isNotNull(component.shadowRoot);
-        const iconComponent = getElementWithinComponent(component, 'devtools-icon', IconButton.Icon.Icon);
+        const iconComponent = getElementWithinComponent(component, 'devtools-icon', Icon);
         assert.isNotNull(iconComponent);
         const boundingClient = iconComponent.getBoundingClientRect();
         assert.strictEqual(boundingClient.width, 20);

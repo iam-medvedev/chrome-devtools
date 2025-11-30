@@ -42,7 +42,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import { createIcon } from '../../ui/kit/kit.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -817,13 +817,13 @@ export class NetworkRequestNode extends NetworkNode {
     isError() {
         return this.isFailed() && !this.isPrefetch();
     }
-    createCells(element) {
+    createCells(trElement) {
         this.initiatorCell = null;
-        element.classList.toggle('network-throttled-row', Boolean(this.throttlingConditions()?.urlPattern));
-        element.classList.toggle('network-warning-row', this.isWarning());
-        element.classList.toggle('network-error-row', this.isError());
-        element.classList.toggle('network-navigation-row', this.isNavigationRequestInternal);
-        super.createCells(element);
+        trElement.classList.toggle('network-throttled-row', Boolean(this.throttlingConditions()?.urlPattern));
+        trElement.classList.toggle('network-warning-row', this.isWarning());
+        trElement.classList.toggle('network-error-row', this.isError());
+        trElement.classList.toggle('network-navigation-row', this.isNavigationRequestInternal);
+        super.createCells(trElement);
         this.updateBackgroundColor();
     }
     setTextAndTitle(element, text, title) {
@@ -975,6 +975,13 @@ export class NetworkRequestNode extends NetworkNode {
         return array ? String(array.length) : '';
     }
     select(suppressSelectedEvent) {
+        const id = this.request()?.requestId();
+        if (id) {
+            const floatyHandled = UI.Floaty.onFloatyClick({ type: "NETWORK_REQUEST" /* UI.Floaty.FloatyContextTypes.NETWORK_REQUEST */, data: { requestId: id } });
+            if (floatyHandled) {
+                return;
+            }
+        }
         super.select(suppressSelectedEvent);
         this.parentView().dispatchEventToListeners("RequestSelected" /* Events.RequestSelected */, this.requestInternal);
     }
@@ -1239,7 +1246,7 @@ export class NetworkRequestNode extends NetworkNode {
             case "preflight" /* SDK.NetworkRequest.InitiatorType.PREFLIGHT */: {
                 cell.appendChild(document.createTextNode(i18nString(UIStrings.preflight)));
                 if (initiator.initiatorRequest) {
-                    const icon = IconButton.Icon.create('arrow-up-down-circle');
+                    const icon = createIcon('arrow-up-down-circle');
                     const link = Components.Linkifier.Linkifier.linkifyRevealable(initiator.initiatorRequest, icon, undefined, i18nString(UIStrings.selectTheRequestThatTriggered), 'trailing-link-icon', 'initator-request');
                     UI.ARIAUtils.setLabel(link, i18nString(UIStrings.selectTheRequestThatTriggered));
                     cell.appendChild(link);
@@ -1320,7 +1327,7 @@ export class NetworkRequestNode extends NetworkNode {
             const throttlingConditionsTitle = typeof throttlingConditions.conditions.title === 'string' ?
                 throttlingConditions.conditions.title :
                 throttlingConditions.conditions.title();
-            const icon = IconButton.Icon.create('watch');
+            const icon = createIcon('watch');
             icon.title = i18nString(UIStrings.wasThrottled, { PH1: throttlingConditionsTitle });
             icon.addEventListener('click', () => void Common.Revealer.reveal(throttlingConditions));
             cell.append(icon);

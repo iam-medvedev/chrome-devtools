@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
 import * as InlineEditor from './inline_editor.js';
 function createSwatch(text, firstColor, secondColor) {
     const swatch = new InlineEditor.ColorMixSwatch.ColorMixSwatch();
@@ -12,7 +12,8 @@ function createSwatch(text, firstColor, secondColor) {
     swatch.setSecondColor(secondColor);
     return swatch;
 }
-describeWithLocale('ColorMixSwatch', () => {
+describe('ColorMixSwatch', () => {
+    setupLocaleHooks();
     it('should render color-mix swatch icon when the syntax is correct', () => {
         const swatch = createSwatch('color-mix(in srgb, red, blue)', 'red', 'blue');
         const swatchIcon = swatch.shadowRoot?.querySelector('.swatch-icon');

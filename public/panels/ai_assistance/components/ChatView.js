@@ -5,8 +5,11 @@
 import '../../../ui/components/spinners/spinners.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
+import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
+import * as Trace from '../../../models/trace/trace.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import * as PanelsCommon from '../../../panels/common/common.js';
 import * as PanelUtils from '../../../panels/utils/utils.js';
@@ -374,7 +377,8 @@ export class ChatView extends HTMLElement {
                 onTakeScreenshot: this.#props.onTakeScreenshot,
                 onRemoveImageInput: this.#props.onRemoveImageInput,
                 onTextInputChange: this.#props.onTextInputChange,
-                onImageUpload: this.#handleImageUpload
+                onImageUpload: this.#handleImageUpload,
+                additionalFloatyContext: this.#props.additionalFloatyContext,
             });
         };
         // clang-format off
@@ -630,17 +634,18 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
           <h2>${lockedString(UIStringsNotTranslate.ai)}</h2>
         </div>
       </div>
-      ${Lit.Directives.repeat(message.steps, (_, index) => index, step => {
+      ${Lit.Directives.repeat(message.parts, (_, index) => index, (part, index) => {
+        const isLastPart = index === message.parts.length - 1;
+        if (part.type === 'answer') {
+            return html `<p>${renderTextAsMarkdown(part.text, markdownRenderer, { animate: !isReadOnly && isLoading && isLast && isLastPart })}</p>`;
+        }
         return renderStep({
-            step,
+            step: part.step,
             isLoading,
             markdownRenderer,
-            isLast: [...message.steps.values()].at(-1) === step && isLast,
+            isLast: isLastPart && isLast,
         });
     })}
-      ${message.answer
-        ? html `<p>${renderTextAsMarkdown(message.answer, markdownRenderer, { animate: !isReadOnly && isLoading && isLast })}</p>`
-        : Lit.nothing}
       ${renderError(message)}
       ${isLast && isLoading
         ? Lit.nothing
@@ -652,7 +657,7 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
                 }
                 onFeedbackSubmit(message.rpcId, rating, feedback);
             },
-            suggestions: (isLast && !isReadOnly) ? message.suggestions : undefined,
+            suggestions: (isLast && !isReadOnly && message.parts.at(-1)?.type === 'answer') ? message.parts.at(-1).suggestions : undefined,
             onSuggestionClick,
             onCopyResponseClick: () => onCopyResponseClick(message),
             canShowFeedbackForm,
@@ -984,7 +989,7 @@ function renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin, tooltip
   `;
     // clang-format on
 }
-function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, disclaimerText, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload, }) {
+function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, disclaimerText, additionalFloatyContext, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload, }) {
     const chatInputContainerCls = Lit.Directives.classMap({
         'chat-input-container': true,
         'single-line-layout': !selectedContext,
@@ -992,6 +997,7 @@ function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled,
     });
     // clang-format off
     return html ` <form class="input-form" @submit=${onSubmit}>
+  ${renderFloatyExtraContext(additionalFloatyContext)}
     <div class=${chatInputContainerCls}>
       ${renderImageInput({
         multimodalInputEnabled,
@@ -1063,6 +1069,66 @@ function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled,
     </div>
   </form>`;
     // clang-format on
+}
+function renderFloatyExtraContext(contexts) {
+    if (!Root.Runtime.hostConfig.devToolsGreenDevUi?.enabled) {
+        return Lit.nothing;
+    }
+    // clang-format off
+    return html `
+  <ul class="floaty">
+    ${contexts.map(c => {
+        function onDelete(e) {
+            e.preventDefault();
+            UI.Floaty.onFloatyContextDelete(c);
+        }
+        return html `<li>
+        <span class="context-item">
+          ${renderFloatyContext(c)}
+        </span>
+        <devtools-button
+          class="floaty-delete-button"
+          @click=${onDelete}
+          .data=${{
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
+            iconName: 'cross',
+            title: 'Delete',
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+        }}
+        ></devtools-button>
+      </li>`;
+    })}
+    <li class="open-floaty">
+      <devtools-button
+        class="floaty-add-button"
+        @click=${UI.Floaty.onFloatyOpen}
+        .data=${{
+        variant: "icon" /* Buttons.Button.Variant.ICON */,
+        iconName: 'select-element',
+        title: 'Open context picker',
+        size: "SMALL" /* Buttons.Button.Size.SMALL */,
+    }}
+      ></devtools-button>
+    </li>
+  </ul>
+  `;
+    // clang-format on
+}
+function renderFloatyContext(context) {
+    if (context instanceof SDK.NetworkRequest.NetworkRequest) {
+        return html `${context.url()}`;
+    }
+    if (context instanceof SDK.DOMModel.DOMNode) {
+        return html `<devtools-widget .widgetConfig=${UI.Widget.widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node: context })}>`;
+    }
+    if ('insight' in context) {
+        return html `${context.insight.title}`;
+    }
+    if ('event' in context && 'traceStartTime' in context) {
+        const time = Trace.Types.Timing.Micro(context.event.ts - context.traceStartTime);
+        return html `${context.event.name} @ ${i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(time)}`;
+    }
+    Platform.assertNever(context, 'Unsupported context');
 }
 function renderMainContents({ messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef, }) {
     if (messages.length > 0) {

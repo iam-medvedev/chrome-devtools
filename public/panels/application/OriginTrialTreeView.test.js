@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Application from './application.js';
 async function renderOriginTrialTreeView(data) {
     const component = new Application.OriginTrialTreeView.OriginTrialTreeView();
@@ -142,7 +142,8 @@ async function waitForRenderedTreeNodeCount(shadowRoot, expectedNodeCount) {
         });
     });
 }
-describeWithLocale('OriginTrialTreeView', () => {
+describe('OriginTrialTreeView', () => {
+    setupLocaleHooks();
     it('renders trial names as root tree nodes', async () => {
         const { shadowRoot } = await renderOriginTrialTreeViewTreeOutline({
             trials: [

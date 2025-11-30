@@ -1539,7 +1539,11 @@ var UIStrings3 = {
   /**
    * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
-  disableCssSourceMaps: "Disable CSS source maps"
+  disableCssSourceMaps: "Disable CSS source maps",
+  /**
+   * @description Title of a setting under the Console category in Settings
+   */
+  logXmlhttprequests: "Log XMLHttpRequests"
 };
 var str_3 = i18n5.i18n.registerUIStrings("core/sdk/sdk-meta.ts", UIStrings3);
 var i18nLazyString3 = i18n5.i18n.getLazilyComputedLocalizedString.bind(void 0, str_3);
@@ -2307,6 +2311,14 @@ Common3.Settings.registerSettingExtension({
       title: i18nLazyString3(UIStrings3.disableCssSourceMaps)
     }
   ]
+});
+Common3.Settings.registerSettingExtension({
+  category: "CONSOLE",
+  storageType: "Synced",
+  title: i18nLazyString3(UIStrings3.logXmlhttprequests),
+  settingName: "monitoring-xhr-enabled",
+  settingType: "boolean",
+  defaultValue: false
 });
 
 // gen/front_end/models/workspace/workspace-meta.js
@@ -5604,9 +5616,10 @@ UI10.ViewManager.registerViewExtension({
   title: i18nLazyString13(UIStrings13.performance),
   commandPrompt: i18nLazyString13(UIStrings13.showPerformance),
   order: 50,
-  async loadView() {
+  async loadView(universe) {
     const Timeline = await loadTimelineModule();
-    return Timeline.TimelinePanel.TimelinePanel.instance();
+    const resourceLoader = universe.context.get(SDK5.PageResourceLoader.PageResourceLoader);
+    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader });
   }
 });
 UI10.ActionRegistration.registerActionExtension({

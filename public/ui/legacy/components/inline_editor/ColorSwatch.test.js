@@ -4,7 +4,7 @@
 import * as Common from '../../../../core/common/common.js';
 import { findMenuItemWithLabel, getMenuForShiftClick, getMenuItemLabels, } from '../../../../testing/ContextMenuHelpers.js';
 import { dispatchClickEvent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
 import * as InlineEditor from './inline_editor.js';
 function assertSwatch(swatch, expected) {
     const swatchEl = swatch.shadowRoot.querySelector('.color-swatch');
@@ -29,7 +29,8 @@ function createSwatch(color, tooltip) {
 function getClickTarget(swatch) {
     return swatch.shadowRoot.querySelector('.color-swatch-inner');
 }
-describeWithLocale('ColorSwatch', () => {
+describe('ColorSwatch', () => {
+    setupLocaleHooks();
     it('accepts colors as color objects', () => {
         const swatch = createSwatch(Common.Color.parse('red'));
         assertSwatch(swatch, {

@@ -5,7 +5,7 @@
    bind all of them upfront. We disable the lit_html_host_this since we
    do not define any host for Lit.render and the rule is not happy
    about it. */
-import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/kit/kit.js';
 import './StepEditor.js';
 import './TimelineSection.js';
 import * as i18n from '../../../core/i18n/i18n.js';

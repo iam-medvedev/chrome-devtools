@@ -1,8 +1,9 @@
 import '../../../ui/components/spinners/spinners.js';
 import * as Host from '../../../core/host/host.js';
-import type * as Platform from '../../../core/platform/platform.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import type { MarkdownLitRenderer } from '../../../ui/components/markdown_view/MarkdownView.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 export interface Step {
     isLoading: boolean;
     thought?: string;
@@ -28,6 +29,16 @@ export type ImageInputData = {
     mimeType: string;
     inputType: AiAssistanceModel.AiAgent.MultimodalInputType;
 };
+export interface AnswerPart {
+    type: 'answer';
+    text: string;
+    suggestions?: [string, ...string[]];
+}
+export interface StepPart {
+    type: 'step';
+    step: Step;
+}
+export type ModelMessagePart = AnswerPart | StepPart;
 export interface UserChatMessage {
     entity: ChatMessageEntity.USER;
     text: string;
@@ -35,9 +46,7 @@ export interface UserChatMessage {
 }
 export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
-    steps: Step[];
-    suggestions?: [string, ...string[]];
-    answer?: string;
+    parts: ModelMessagePart[];
     error?: AiAssistanceModel.AiAgent.ErrorType;
     rpcId?: Host.AidaClient.RpcGlobalId;
 }
@@ -74,6 +83,7 @@ export interface Props {
     isTextInputEmpty: boolean;
     uploadImageInputEnabled?: boolean;
     markdownRenderer: MarkdownLitRenderer;
+    additionalFloatyContext: UI.Floaty.FloatyContextSelection[];
 }
 export declare class ChatView extends HTMLElement {
     #private;

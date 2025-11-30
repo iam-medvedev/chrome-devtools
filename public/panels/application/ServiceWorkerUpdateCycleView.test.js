@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Resources from './application.js';
 var View = Resources.ServiceWorkerUpdateCycleView;
-describeWithLocale('ServiceWorkerUpdateCycleView', () => {
+describe('ServiceWorkerUpdateCycleView', () => {
+    setupLocaleHooks();
     let versionId = 0;
     const registrationId = 'fake-sw-id';
     it('calculates update cycle ranges', () => {

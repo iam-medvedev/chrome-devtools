@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as UI from './legacy.js';
 class MockSuggestBoxDelegate {
     element;
@@ -26,7 +26,8 @@ class MockSuggestBoxDelegate {
     }
 }
 const createKeyEvent = (key) => new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key });
-describeWithLocale('SuggestBox', () => {
+describe('SuggestBox', () => {
+    setupLocaleHooks();
     let delegate;
     let div;
     let suggestBox;

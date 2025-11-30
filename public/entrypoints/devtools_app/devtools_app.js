@@ -3031,9 +3031,10 @@ UI20.ViewManager.registerViewExtension({
   title: i18nLazyString20(UIStrings20.performance),
   commandPrompt: i18nLazyString20(UIStrings20.showPerformance),
   order: 50,
-  async loadView() {
+  async loadView(universe) {
     const Timeline = await loadTimelineModule();
-    return Timeline.TimelinePanel.TimelinePanel.instance();
+    const resourceLoader = universe.context.get(SDK7.PageResourceLoader.PageResourceLoader);
+    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader });
   }
 });
 UI20.ActionRegistration.registerActionExtension({

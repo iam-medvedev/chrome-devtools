@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as EventListeners from './event_listeners.js';
-describeWithLocale('EventListenersView placeholder', () => {
+describe('EventListenersView placeholder', () => {
+    setupLocaleHooks();
     function assertElementDisplayStyle(view, selector, style) {
         const element = view.element.querySelector(selector);
         assert.exists(element);

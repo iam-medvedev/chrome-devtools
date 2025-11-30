@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assertScreenshot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 const LinearMemoryInspector = LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector;
-describeWithLocale('LinearMemoryInspector', () => {
+describe('LinearMemoryInspector', () => {
+    setupLocaleHooks();
     it('renders the inspector', async () => {
         const target = document.createElement('div');
         target.style.width = 'var(--sys-size-40)';
@@ -58,7 +59,8 @@ describeWithLocale('LinearMemoryInspector', () => {
         await assertScreenshot('linear_memory_inspector/lmi.png');
     });
 });
-describeWithLocale('LinearMemoryInspector', () => {
+describe('LinearMemoryInspector', () => {
+    setupLocaleHooks();
     let component;
     let view;
     beforeEach(async () => {

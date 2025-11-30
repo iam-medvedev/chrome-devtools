@@ -32,7 +32,8 @@
     "target": "esnext",
     "tsBuildInfoFile": "unittests-tsconfig.json.tsbuildinfo",
     "typeRoots": [
-      "../../../../../../../node_modules/@types"
+      "../../../../../../../node_modules/@types",
+      "../../../../../../../node_modules"
     ],
     "types": [
       "mocha",
@@ -45,6 +46,7 @@
   "files": [
     "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionProvider.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionTeaserPlaceholder.test.ts",
+    "../../../../../../../front_end/ui/components/text_editor/AiCodeGenerationProvider.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AutocompleteHistory.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/ExecutionPositionHighlighter.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/TextEditor.test.ts",

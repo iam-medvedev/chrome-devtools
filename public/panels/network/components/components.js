@@ -259,7 +259,11 @@ var UIStrings = {
   /**
    * @description Text in Connection info View of the Network panel
    */
-  directSocketStatusAborted: "Aborted"
+  directSocketStatusAborted: "Aborted",
+  /**
+   * @description Text in Connection info View of the Network panel
+   */
+  joinedMulticastGroups: "joinedMulticastGroups"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/network/components/DirectSocketConnectionView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -336,6 +340,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
         ${renderRow(i18nString(UIStrings.type), getDirectSocketTypeString(socketInfo.type))}
         ${renderRow(i18nString(UIStrings.status), getDirectSocketStatusString(socketInfo.status))}
         ${renderRow(i18nString(UIStrings.errorMessage), socketInfo.errorMessage)}
+        ${renderRow(i18nString(UIStrings.joinedMulticastGroups), socketInfo.joinedMulticastGroups ? Array.from(socketInfo.joinedMulticastGroups).join(", ") : "")}
       </div>`;
   const optionsContent = html`
       <div jslog=${VisualLogging.section(CATEGORY_NAME_OPTIONS)}>
@@ -348,6 +353,9 @@ var DEFAULT_VIEW = (input, _output, target) => {
         ${renderRow(i18n.i18n.lockedString("sendBufferSize"), socketInfo.createOptions.sendBufferSize?.toString(10))}
         ${renderRow(i18n.i18n.lockedString("receiveBufferSize"), socketInfo.createOptions.receiveBufferSize?.toString(10))}
         ${renderRow(i18n.i18n.lockedString("dnsQueryType"), socketInfo.createOptions.dnsQueryType)}
+        ${renderRow(i18n.i18n.lockedString("multicastTimeToLive"), socketInfo.createOptions.multicastTimeToLive?.toString(10))}
+        ${renderRow(i18n.i18n.lockedString("multicastLoopback"), socketInfo.createOptions.multicastLoopback?.toString())}
+        ${renderRow(i18n.i18n.lockedString("multicastAllowAddressSharing"), socketInfo.createOptions.multicastAllowAddressSharing?.toString())}
       </div>`;
   let openInfoContent = Lit.nothing;
   if (socketInfo.openInfo) {
@@ -2380,7 +2388,7 @@ __export(RequestTrustTokensView_exports, {
   statusConsideredSuccess: () => statusConsideredSuccess
 });
 import "./../../../ui/components/report_view/report_view.js";
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 import * as i18n11 from "./../../../core/i18n/i18n.js";
 import * as SDK4 from "./../../../core/sdk/sdk.js";
 import * as LegacyWrapper3 from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";

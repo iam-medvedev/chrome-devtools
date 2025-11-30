@@ -403,6 +403,7 @@
       <include file="js_app.html" name="JS_APP_HTML" resource_path="js_app.html" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/ai_assistance.js" name="MODELS_AI_ASSISTANCE_AI_ASSISTANCE_JS" resource_path="models/ai_assistance/ai_assistance.js" type="BINDATA" compress="false"/>
       <include file="models/ai_code_completion/ai_code_completion.js" name="MODELS_AI_CODE_COMPLETION_AI_CODE_COMPLETION_JS" resource_path="models/ai_code_completion/ai_code_completion.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_code_generation/ai_code_generation.js" name="MODELS_AI_CODE_GENERATION_AI_CODE_GENERATION_JS" resource_path="models/ai_code_generation/ai_code_generation.js" type="BINDATA" compress="false"/>
       <include file="models/autofill_manager/autofill_manager.js" name="MODELS_AUTOFILL_MANAGER_AUTOFILL_MANAGER_JS" resource_path="models/autofill_manager/autofill_manager.js" type="BINDATA" compress="false"/>
       <include file="models/badges/badges.js" name="MODELS_BADGES_BADGES_JS" resource_path="models/badges/badges.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
@@ -533,6 +534,7 @@
       <include file="models/issues_manager/descriptions/genericFormLabelForMatchesNonExistingIdError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMLABELFORMATCHESNONEXISTINGIDERROR_MD" resource_path="models/issues_manager/descriptions/genericFormLabelForMatchesNonExistingIdError.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormLabelForNameError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMLABELFORNAMEERROR_MD" resource_path="models/issues_manager/descriptions/genericFormLabelForNameError.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormLabelHasNeitherForNorNestedInputError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMLABELHASNEITHERFORNORNESTEDINPUTERROR_MD" resource_path="models/issues_manager/descriptions/genericFormLabelHasNeitherForNorNestedInputError.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/genericNavigationEntryMarkedSkippable.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICNAVIGATIONENTRYMARKEDSKIPPABLE_MD" resource_path="models/issues_manager/descriptions/genericNavigationEntryMarkedSkippable.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericResponseWasBlockedByORB.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICRESPONSEWASBLOCKEDBYORB_MD" resource_path="models/issues_manager/descriptions/genericResponseWasBlockedByORB.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/heavyAd.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_HEAVYAD_MD" resource_path="models/issues_manager/descriptions/heavyAd.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/mixedContent.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_MIXEDCONTENT_MD" resource_path="models/issues_manager/descriptions/mixedContent.md" type="BINDATA" compress="false"/>
@@ -781,8 +783,8 @@
       <include file="third_party/web-vitals/web-vitals.js" name="THIRD_PARTY_WEB_VITALS_WEB_VITALS_JS" resource_path="third_party/web-vitals/web-vitals.js" type="BINDATA" compress="false"/>
       <include file="trace_app.html" name="TRACE_APP_HTML" resource_path="trace_app.html" type="BINDATA" compress="false"/>
       <include file="ui/components/adorners/adorners.js" name="UI_COMPONENTS_ADORNERS_ADORNERS_JS" resource_path="ui/components/adorners/adorners.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/annotations/annotations.js" name="UI_COMPONENTS_ANNOTATIONS_ANNOTATIONS_JS" resource_path="ui/components/annotations/annotations.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/buttons.js" name="UI_COMPONENTS_BUTTONS_BUTTONS_JS" resource_path="ui/components/buttons/buttons.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/cards/cards.js" name="UI_COMPONENTS_CARDS_CARDS_JS" resource_path="ui/components/cards/cards.js" type="BINDATA" compress="false"/>
       <include file="ui/components/chrome_link/chrome_link.js" name="UI_COMPONENTS_CHROME_LINK_CHROME_LINK_JS" resource_path="ui/components/chrome_link/chrome_link.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/code_highlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODE_HIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/code_highlighter.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/dialogs.js" name="UI_COMPONENTS_DIALOGS_DIALOGS_JS" resource_path="ui/components/dialogs/dialogs.js" type="BINDATA" compress="false"/>
@@ -816,6 +818,7 @@
       <include file="ui/components/tree_outline/tree_outline.js" name="UI_COMPONENTS_TREE_OUTLINE_TREE_OUTLINE_JS" resource_path="ui/components/tree_outline/tree_outline.js" type="BINDATA" compress="false"/>
       <include file="ui/helpers/helpers.js" name="UI_HELPERS_HELPERS_JS" resource_path="ui/helpers/helpers.js" type="BINDATA" compress="false"/>
       <include file="ui/i18n/i18n.js" name="UI_I18N_I18N_JS" resource_path="ui/i18n/i18n.js" type="BINDATA" compress="false"/>
+      <include file="ui/kit/kit.js" name="UI_KIT_KIT_JS" resource_path="ui/kit/kit.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/color_picker/color_picker.js" name="UI_LEGACY_COMPONENTS_COLOR_PICKER_COLOR_PICKER_JS" resource_path="ui/legacy/components/color_picker/color_picker.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/cookie_table/cookie_table.js" name="UI_LEGACY_COMPONENTS_COOKIE_TABLE_COOKIE_TABLE_JS" resource_path="ui/legacy/components/cookie_table/cookie_table.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/data_grid.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_DATA_GRID_JS" resource_path="ui/legacy/components/data_grid/data_grid.js" type="BINDATA" compress="false"/>

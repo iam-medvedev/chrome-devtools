@@ -45,10 +45,10 @@ describeWithEnvironment('CSSRuleValidator', () => {
             hintExpected: false,
         },
         {
-            description: 'Test `align-content`, validation passes when the element is a masonry container',
+            description: 'Test `align-content`, validation passes when the element is a grid-lanes container',
             computedStyles: new Map([
                 ['align-content', 'center'],
-                ['display', 'masonry'],
+                ['display', 'grid-lanes'],
             ]),
             validator: () => new Elements.CSSRuleValidator.AlignContentValidator(),
             hintExpected: false,
@@ -81,9 +81,9 @@ describeWithEnvironment('CSSRuleValidator', () => {
             hintExpected: false,
         },
         {
-            description: 'Test `justify-content`, validation passes when the element is masonry containers',
+            description: 'Test `justify-content`, validation passes when the element is grid-lanes containers',
             computedStyles: new Map([
-                ['display', 'masonry'],
+                ['display', 'grid-lanes'],
                 ['justify-content', 'center'],
             ]),
             validator: () => new Elements.CSSRuleValidator.FlexGridValidator(),
@@ -169,9 +169,9 @@ describeWithEnvironment('CSSRuleValidator', () => {
             hintExpected: false,
         },
         {
-            description: 'Passes the validation when grid container properties are set to masonry container',
+            description: 'Passes the validation when grid container properties are set to grid-lanes container',
             computedStyles: new Map([
-                ['display', 'masonry'],
+                ['display', 'grid-lanes'],
                 ['grid-template-columns', 'repeat(3, 10px 15%)'],
             ]),
             parentsComputedStyles: new Map(),
@@ -200,12 +200,12 @@ describeWithEnvironment('CSSRuleValidator', () => {
             hintExpected: false,
         },
         {
-            description: 'Passes the validation when grid item properties are set to masonry items',
+            description: 'Passes the validation when grid item properties are set to grid-lanes items',
             computedStyles: new Map([
                 ['grid-row', 'span 2'],
             ]),
             parentsComputedStyles: new Map([
-                ['display', 'masonry'],
+                ['display', 'grid-lanes'],
             ]),
             validator: () => new Elements.CSSRuleValidator.GridItemValidator(),
             hintExpected: false,

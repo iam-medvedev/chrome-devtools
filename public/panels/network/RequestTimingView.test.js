@@ -7,7 +7,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import { assertScreenshot, getCleanTextContentFromElements, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 function createNetworkRequest(matchedSource, actualSource) {
@@ -47,7 +47,8 @@ function createNetworkRequest(matchedSource, actualSource) {
     };
     return request;
 }
-describeWithLocale('ResourceTimingView', () => {
+describe('ResourceTimingView', () => {
+    setupLocaleHooks();
     it('RequestTimeRanges has router evaluation field with SW router source as network', async () => {
         const request = createNetworkRequest("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */, "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
         const timingInfo = request.timing;

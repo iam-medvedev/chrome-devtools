@@ -715,11 +715,6 @@ var NativeFunctions = [
   },
   {
     name: "parse",
-    signatures: [["serializedOrigin"]],
-    receivers: ["Origin"]
-  },
-  {
-    name: "parse",
     signatures: [["url", "?base"]],
     receivers: ["URL"]
   },
@@ -6995,6 +6990,10 @@ var NativeFunctions = [
     signatures: [["...initRanges"]]
   },
   {
+    name: "getElementTransform",
+    signatures: [["element", "draw_transform"]]
+  },
+  {
     name: "configureHighDynamicRange",
     signatures: [["options"]]
   },
@@ -7385,14 +7384,6 @@ var NativeFunctions = [
   {
     name: "compareComponent",
     signatures: [["component", "left", "right"]]
-  },
-  {
-    name: "Origin",
-    signatures: [["?serializedOrigin"]]
-  },
-  {
-    name: "fromURL",
-    signatures: [["serializedURL"]]
   },
   {
     name: "isSameOrigin",
@@ -8909,11 +8900,11 @@ var NativeFunctions = [
   },
   {
     name: "texElementImage2D",
-    signatures: [["target", "level", "internalformat", "format", "type", "element"]]
+    signatures: [["target", "level", "internalformat", "format", "type", "element"], ["target", "level", "internalformat", "width", "height", "format", "type", "element"]]
   },
   {
     name: "texElement2D",
-    signatures: [["target", "level", "internalformat", "format", "type", "element"]]
+    signatures: [["target", "level", "internalformat", "format", "type", "element"], ["target", "level", "internalformat", "width", "height", "format", "type", "element"]]
   },
   {
     name: "drawingBufferStorage",
@@ -9101,7 +9092,7 @@ var NativeFunctions = [
   },
   {
     name: "copyElementImageToTexture",
-    signatures: [["source", "destination"]]
+    signatures: [["source", "destination"], ["source", "width", "height", "destination"]]
   },
   {
     name: "setIndexBuffer",

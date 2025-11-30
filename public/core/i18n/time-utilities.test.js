@@ -1,9 +1,10 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as i18n from './i18n.js';
-describeWithLocale('preciseMillisToString', () => {
+describe('preciseMillisToString', () => {
+    setupLocaleHooks();
     it('formats without a given precision', () => {
         const inputNumber = 7.84;
         const outputString = i18n.TimeUtilities.preciseMillisToString(inputNumber);
@@ -32,7 +33,8 @@ describeWithLocale('preciseMillisToString', () => {
         assert.strictEqual(i18n.TimeUtilities.preciseMillisToString(1.001, 0), '1\xA0ms');
     });
 });
-describeWithLocale('formatMicroSecondsTime', () => {
+describe('formatMicroSecondsTime', () => {
+    setupLocaleHooks();
     const { formatMicroSecondsTime } = i18n.TimeUtilities;
     it('formats small microsecond values', async () => {
         const time = 8;
@@ -56,7 +58,8 @@ describeWithLocale('formatMicroSecondsTime', () => {
         assert.strictEqual(formatMicroSecondsTime(time), '3.4\xA0min');
     });
 });
-describeWithLocale('formatMicroSecondsAsSeconds', () => {
+describe('formatMicroSecondsAsSeconds', () => {
+    setupLocaleHooks();
     const { formatMicroSecondsAsSeconds } = i18n.TimeUtilities;
     it('formats smaller second values', async () => {
         const time = 0.03 * 1_000 * 1_000;
@@ -67,7 +70,8 @@ describeWithLocale('formatMicroSecondsAsSeconds', () => {
         assert.strictEqual(formatMicroSecondsAsSeconds(time), '8.91\xA0s');
     });
 });
-describeWithLocale('millisToString', () => {
+describe('millisToString', () => {
+    setupLocaleHooks();
     it('formats when number is infinite', () => {
         const inputNumber = Infinity;
         const outputString = i18n.TimeUtilities.millisToString(inputNumber);
@@ -123,7 +127,8 @@ describeWithLocale('millisToString', () => {
         assert.strictEqual(outputString, '1.2\xA0days');
     });
 });
-describeWithLocale('secondsToString', () => {
+describe('secondsToString', () => {
+    setupLocaleHooks();
     it('formats infinte numbers correctly', () => {
         const inputNumber = Infinity;
         const outputString = i18n.TimeUtilities.secondsToString(inputNumber);

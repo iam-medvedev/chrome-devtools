@@ -31,19 +31,22 @@
     "target": "es2023",
     "tsBuildInfoFile": "foundation_unittests_node_typecheck-tsconfig.json.tsbuildinfo",
     "typeRoots": [
-      "../../../../../../node_modules/@types"
+      "../../../../../../node_modules/@types",
+      "../../../../../../node_modules"
     ],
     "types": [
       "mocha",
       "chai",
       "sinon",
       "karma-chai-sinon",
-      "node"
+      "node",
+      "undici-types"
     ],
     "useUnknownInCatchVariables": false
   },
   "files": [
     "../../../../../../front_end/core/sdk/DebuggerModel.test.ts",
+    "../../../../../../front_end/core/sdk/PageResourceLoader.test.ts",
     "../../../../../../front_end/core/sdk/RuntimeModel.test.ts",
     "../../../../../../front_end/core/sdk/Target.test.ts",
     "../../../../../../front_end/core/sdk/TargetManager.test.ts",

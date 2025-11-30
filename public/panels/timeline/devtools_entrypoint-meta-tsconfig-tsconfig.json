@@ -54,6 +54,9 @@
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
       "path": "../profiler/bundle-tsconfig.json"
     },
     {

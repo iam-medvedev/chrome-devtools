@@ -29,9 +29,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     #contentType;
     #requestContentPromise = null;
     #decorations = new Map();
-    #formattedDecorations = new Map();
     #hasCommits = false;
-    #prettied = false;
     #messages = null;
     #content = null;
     #forceLoadOnCheckContent = false;
@@ -409,9 +407,6 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     getDecorationData(type) {
-        if (this.#prettied && this.#formattedDecorations.get(type)) {
-            return this.#formattedDecorations.get(type);
-        }
         return this.#decorations.get(type);
     }
     disableEdit() {
@@ -419,42 +414,6 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     }
     editDisabled() {
         return this.#disableEdit;
-    }
-    formatChanged(format) {
-        if (this.#prettied === Boolean(format)) {
-            return;
-        }
-        this.#prettied = Boolean(format);
-        if (!format) {
-            this.dispatchEventToListeners(Events.DecorationChanged, "performance" /* DecoratorType.PERFORMANCE */);
-            return;
-        }
-        const performanceDecorations = this.#decorations.get("performance" /* DecoratorType.PERFORMANCE */);
-        if (!performanceDecorations) {
-            return;
-        }
-        let formattedPerformanceDecorations = this.#formattedDecorations.get("performance" /* DecoratorType.PERFORMANCE */);
-        if (!formattedPerformanceDecorations) {
-            formattedPerformanceDecorations = new Map();
-            this.#formattedDecorations.set("performance" /* DecoratorType.PERFORMANCE */, formattedPerformanceDecorations);
-        }
-        else {
-            formattedPerformanceDecorations.clear();
-        }
-        for (const [lineNumber, columnData] of performanceDecorations) {
-            for (const [columnNumber, data] of columnData) {
-                const [formattedLineNumber, formattedColumnNumber] = format.originalToFormatted(lineNumber - 1, columnNumber - 1);
-                const oneBasedFormattedLineNumber = formattedLineNumber + 1;
-                const oneBasedFormattedColumnNumber = formattedColumnNumber + 1;
-                let lineData = formattedPerformanceDecorations.get(oneBasedFormattedLineNumber);
-                if (!lineData) {
-                    lineData = new Map();
-                    formattedPerformanceDecorations.set(oneBasedFormattedLineNumber, lineData);
-                }
-                lineData.set(oneBasedFormattedColumnNumber, (lineData.get(oneBasedFormattedColumnNumber) || 0) + data);
-            }
-        }
-        this.dispatchEventToListeners(Events.DecorationChanged, 'performance');
     }
     isIgnoreListed() {
         return IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this);
@@ -557,6 +516,19 @@ export class UILocationRange {
     }
 }
 /**
+ * A text range inside a specific {@link UISourceCode}, representing a function.
+ */
+export class UIFunctionBounds {
+    uiSourceCode;
+    range;
+    name;
+    constructor(uiSourceCode, range, name) {
+        this.uiSourceCode = uiSourceCode;
+        this.range = range;
+        this.name = name;
+    }
+}
+/**
  * A message associated with a range in a `UISourceCode`. The range will be
  * underlined starting at the range's start and ending at the line end (the
  * end of the range is currently disregarded).
@@ -601,5 +573,30 @@ export class UISourceCodeMetadata {
         this.modificationTime = modificationTime;
         this.contentSize = contentSize;
     }
+}
+/**
+ * Converts an existing LineColumnProfileMap to a new one using the provided mapping.
+ *
+ * The input and output line/column of originalToMappedLocation is 0-indexed.
+ */
+export function createMappedProfileData(profileData, originalToMappedLocation) {
+    const mappedProfileData = new Map();
+    for (const [lineNumber, columnData] of profileData) {
+        for (const [columnNumber, data] of columnData) {
+            const mappedLocation = originalToMappedLocation(lineNumber - 1, columnNumber - 1);
+            if (!mappedLocation) {
+                continue;
+            }
+            const oneBasedFormattedLineNumber = mappedLocation[0] + 1;
+            const oneBasedFormattedColumnNumber = mappedLocation[1] + 1;
+            let mappedColumnData = mappedProfileData.get(oneBasedFormattedLineNumber);
+            if (!mappedColumnData) {
+                mappedColumnData = new Map();
+                mappedProfileData.set(oneBasedFormattedLineNumber, mappedColumnData);
+            }
+            mappedColumnData.set(oneBasedFormattedColumnNumber, (mappedColumnData.get(oneBasedFormattedColumnNumber) || 0) + data);
+        }
+    }
+    return mappedProfileData;
 }
 //# sourceMappingURL=UISourceCode.js.map

@@ -38,6 +38,7 @@ describeWithEnvironment('ChatView', () => {
             disclaimerText: i18n.i18n.lockedString('disclaimer text'),
             isTextInputEmpty: true,
             markdownRenderer: new AiAssistancePanel.MarkdownRendererWithCodeBlock(),
+            additionalFloatyContext: [],
             ...options,
         };
     }
@@ -49,14 +50,17 @@ describeWithEnvironment('ChatView', () => {
                 messages: [
                     {
                         entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
-                        steps: [
+                        parts: [
                             {
-                                isLoading: false,
-                                title: 'Updating element styles',
-                                thought: 'Updating element styles',
-                                code: '$0.style.background = "blue";',
-                                sideEffect: {
-                                    onAnswer: () => { },
+                                type: 'step',
+                                step: {
+                                    isLoading: false,
+                                    title: 'Updating element styles',
+                                    thought: 'Updating element styles',
+                                    code: '$0.style.background = "blue";',
+                                    sideEffect: {
+                                        onAnswer: () => { },
+                                    },
                                 },
                             },
                         ],

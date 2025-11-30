@@ -31,14 +31,16 @@
     "target": "es2023",
     "tsBuildInfoFile": "unittests_node_typecheck-tsconfig.json.tsbuildinfo",
     "typeRoots": [
-      "../../../../../../node_modules/@types"
+      "../../../../../../node_modules/@types",
+      "../../../../../../node_modules"
     ],
     "types": [
       "mocha",
       "chai",
       "sinon",
       "karma-chai-sinon",
-      "node"
+      "node",
+      "undici-types"
     ],
     "useUnknownInCatchVariables": false
   },
@@ -58,6 +60,9 @@
   "references": [
     {
       "path": "./bundle-tsconfig.json"
+    },
+    {
+      "path": "./formatter_actions-tsconfig.json"
     }
   ]
 }

@@ -140,6 +140,16 @@ var AiCodeGeneration = class {
     debugLog({ request, response });
     return response;
   }
+  static isAiCodeGenerationEnabled(locale) {
+    if (!locale.startsWith("en-")) {
+      return false;
+    }
+    const aidaAvailability = Root.Runtime.hostConfig.aidaAvailability;
+    if (!aidaAvailability || aidaAvailability.blockedByGeo || aidaAvailability.blockedByAge || aidaAvailability.blockedByEnterprisePolicy) {
+      return false;
+    }
+    return Boolean(aidaAvailability.enabled && Root.Runtime.hostConfig.devToolsAiCodeGeneration?.enabled);
+  }
 };
 export {
   AiCodeGeneration_exports as AiCodeGeneration,

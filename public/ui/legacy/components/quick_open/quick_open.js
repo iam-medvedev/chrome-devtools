@@ -12,12 +12,14 @@ __export(CommandMenu_exports, {
   CommandMenuProvider: () => CommandMenuProvider,
   ShowActionDelegate: () => ShowActionDelegate2
 });
+import "./../../../kit/kit.js";
+import "./../../../components/highlighting/highlighting.js";
 import * as Common2 from "./../../../../core/common/common.js";
 import * as Host from "./../../../../core/host/host.js";
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
 import * as Platform2 from "./../../../../core/platform/platform.js";
 import * as Diff3 from "./../../../../third_party/diff/diff.js";
-import * as IconButton from "./../../../components/icon_button/icon_button.js";
+import { html, nothing as nothing2 } from "./../../../lit/lit.js";
 import * as UI2 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/quick_open/FilteredListWidget.js
@@ -35,6 +37,7 @@ import * as Geometry from "./../../../../models/geometry/geometry.js";
 import * as TextUtils from "./../../../../models/text_utils/text_utils.js";
 import * as Diff from "./../../../../third_party/diff/diff.js";
 import * as TextPrompt from "./../../../components/text_prompt/text_prompt.js";
+import { nothing, render } from "./../../../lit/lit.js";
 import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
 import * as UI from "./../../legacy.js";
 
@@ -99,16 +102,20 @@ devtools-text-prompt {
   overflow: hidden auto;
 }
 
-.filtered-list-widget-item-wrapper {
+.filtered-list-widget-item {
   color: var(--sys-color-on-surface);
   display: flex;
   font-family: ".SFNSDisplay-Regular", "Helvetica Neue", "Lucida Grande", sans-serif;
   padding: 0 var(--sys-size-7);
   gap: var(--sys-size-7);
   height: var(--sys-size-14);
+  white-space: break-spaces;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--sys-typescale-body4-size);
 }
 
-.filtered-list-widget-item-wrapper devtools-icon {
+.filtered-list-widget-item devtools-icon {
   align-self: center;
   flex: none;
   width: 18px;
@@ -119,63 +126,15 @@ devtools-text-prompt {
   }
 }
 
-.filtered-list-widget-item-wrapper.selected {
+.filtered-list-widget-item.selected {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 
-.filtered-list-widget-item {
-  white-space: break-spaces;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  align-self: center;
-  font-size: var(--sys-typescale-body4-size);
+.filtered-list-widget-item > div {
   flex: auto;
-}
-
-.filtered-list-widget-item.is-ignore-listed * {
-  color: var(--sys-color-state-disabled);
-}
-
-.filtered-list-widget-item span.highlight {
-  font-weight: var(--ref-typeface-weight-bold);
-}
-
-.filtered-list-widget-item .filtered-list-widget-title {
   white-space: nowrap;
-  flex: initial;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.filtered-list-widget-item .filtered-list-widget-subtitle {
-  flex: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--sys-color-on-surface-subtle);
-  padding-left: var(--sys-size-3);
-  display: flex;
-  white-space: pre;
-}
-
-.filtered-list-widget-item .filtered-list-widget-subtitle .first-part {
-  flex-shrink: 1000;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.filtered-list-widget-item-wrapper .tag {
-  font-size: var(--sys-typescale-body5-size);
-  line-height: var(--sys-typescale-headline5-line-height);
-  align-self: center;
-  flex-shrink: 0;
-}
-
-.filtered-list-widget-item-wrapper .deprecated-tag {
-  font-size: 11px;
-  color: var(--sys-color-token-subtle);
-}
-
-.filtered-list-widget-item.one-row {
   line-height: var(--sys-typescale-body3-line-height);
   align-items: center;
   align-content: center;
@@ -183,18 +142,20 @@ devtools-text-prompt {
   gap: var(--sys-size-4);
 }
 
-.filtered-list-widget-item.one-row .filtered-list-widget-title {
-  display: inline;
-}
-
-.filtered-list-widget-item.two-rows {
-  display: grid;
-  align-content: center;
-  gap: var(--sys-size-2);
-}
-
-.filtered-list-widget-item-wrapper:not(.search-mode) .filtered-list-widget-item.two-rows .filtered-list-widget-title {
+.filtered-list-widget-item span.highlight {
   font-weight: var(--ref-typeface-weight-bold);
+}
+
+.filtered-list-widget-item .tag {
+  font-size: var(--sys-typescale-body5-size);
+  line-height: var(--sys-typescale-headline5-line-height);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.filtered-list-widget-item .deprecated-tag {
+  font-size: 11px;
+  color: var(--sys-color-token-subtle);
 }
 
 .not-found-text {
@@ -220,18 +181,13 @@ devtools-text-prompt {
     border-color: ButtonText;
   }
 
-  .filtered-list-widget-item-wrapper .filtered-list-widget-title,
-  .filtered-list-widget-item-wrapper .filtered-list-widget-subtitle,
+  .filtered-list-widget-item,
   .quickpick-description {
     color: ButtonText;
   }
 
-  .filtered-list-widget-item-wrapper.selected {
+  .filtered-list-widget-item.selected {
     background-color: Highlight;
-  }
-
-  .filtered-list-widget-item-wrapper.selected .filtered-list-widget-item .filtered-list-widget-title,
-  .filtered-list-widget-item-wrapper.selected .filtered-list-widget-item .filtered-list-widget-subtitle {
     color: HighlightText;
   }
 
@@ -334,9 +290,9 @@ var FilteredListWidget = class extends Common.ObjectWrapper.eventMixin(UI.Widget
     this.provider = provider;
     this.queryChangedCallback = queryChangedCallback;
   }
-  static highlightRanges(element, query, caseInsensitive) {
+  static getHighlightRanges(text, query, caseInsensitive) {
     if (!query) {
-      return false;
+      return "";
     }
     function rangesForMatch(text2, query2) {
       const opcodes = Diff.Diff.DiffWrapper.charDiff(query2, text2);
@@ -353,19 +309,11 @@ var FilteredListWidget = class extends Common.ObjectWrapper.eventMixin(UI.Widget
       }
       return ranges2;
     }
-    if (element.textContent === null) {
-      return false;
-    }
-    const text = element.textContent;
     let ranges = rangesForMatch(text, query);
     if (!ranges || caseInsensitive) {
       ranges = rangesForMatch(text.toUpperCase(), query.toUpperCase());
     }
-    if (ranges) {
-      UI.UIUtils.highlightRangesWithStyleClass(element, ranges, "highlight");
-      return true;
-    }
-    return false;
+    return ranges?.map((range) => `${range.offset},${range.length}`).join(" ") || "";
   }
   setCommandPrefix(commandPrefix) {
     this.inputBoxElement.setPrefix(commandPrefix);
@@ -486,18 +434,12 @@ var FilteredListWidget = class extends Common.ObjectWrapper.eventMixin(UI.Widget
   }
   createElementForItem(item2) {
     const wrapperElement = document.createElement("div");
-    wrapperElement.className = "filtered-list-widget-item-wrapper";
-    const itemElement = wrapperElement.createChild("div");
-    const renderAsTwoRows = this.provider?.renderAsTwoRows();
-    itemElement.className = "filtered-list-widget-item " + (renderAsTwoRows ? "two-rows" : "one-row");
-    const titleElement = itemElement.createChild("div", "filtered-list-widget-title");
-    const subtitleElement = itemElement.createChild("div", "filtered-list-widget-subtitle");
-    subtitleElement.textContent = "\u200B";
+    wrapperElement.className = "filtered-list-widget-item";
     if (this.provider) {
-      this.provider.renderItem(item2, this.cleanValue(), titleElement, subtitleElement);
+      render(this.provider.renderItem(item2, this.cleanValue()), wrapperElement);
       wrapperElement.setAttribute("jslog", `${VisualLogging.item(this.provider.jslogContextAt(item2)).track({ click: true })}`);
     }
-    UI.ARIAUtils.markAsOption(itemElement);
+    UI.ARIAUtils.markAsOption(wrapperElement);
     return wrapperElement;
   }
   heightForItem(_item) {
@@ -765,13 +707,11 @@ var Provider = class {
   itemScoreAt(_itemIndex, _query) {
     return 1;
   }
-  renderItem(_itemIndex, _query, _titleElement, _subtitleElement) {
+  renderItem(_itemIndex, _query) {
+    return nothing;
   }
   jslogContextAt(_itemIndex) {
     return this.jslogContext;
-  }
-  renderAsTwoRows() {
-    return false;
   }
   selectItem(_itemIndex, _promptValue) {
   }
@@ -1046,7 +986,7 @@ var CommandMenu = class _CommandMenu {
         locations.set(name, category);
       }
     }
-    const views = UI2.ViewManager.getRegisteredViewExtensions();
+    const views = UI2.ViewManager.ViewManager.instance().getRegisteredViewExtensions();
     for (const view of views) {
       const viewLocation = view.location();
       const category = viewLocation && locations.get(viewLocation);
@@ -1133,33 +1073,24 @@ var CommandMenuProvider = class extends Provider {
     }
     return score;
   }
-  renderItem(itemIndex, query, titleElement, subtitleElement) {
+  renderItem(itemIndex, query) {
     const command = this.commands[itemIndex];
-    titleElement.removeChildren();
-    const icon = IconButton.Icon.create(categoryIcons[command.category]);
-    titleElement.parentElement?.parentElement?.insertBefore(icon, titleElement.parentElement);
-    UI2.UIUtils.createTextChild(titleElement, command.title);
-    FilteredListWidget.highlightRanges(titleElement, query, true);
-    if (command.featurePromotionId) {
-      const badge = UI2.UIUtils.maybeCreateNewBadge(command.featurePromotionId);
-      if (badge) {
-        titleElement.parentElement?.insertBefore(badge, subtitleElement);
-      }
-    }
-    subtitleElement.textContent = command.shortcut;
+    const badge = command.featurePromotionId ? UI2.UIUtils.maybeCreateNewBadge(command.featurePromotionId) : void 0;
     const deprecationWarning = command.deprecationWarning;
-    if (deprecationWarning) {
-      const deprecatedTagElement = titleElement.parentElement?.createChild("span", "deprecated-tag");
-      if (deprecatedTagElement) {
-        deprecatedTagElement.textContent = i18nString3(UIStrings3.deprecated);
-        deprecatedTagElement.title = deprecationWarning;
-      }
-    }
-    const tagElement = titleElement.parentElement?.parentElement?.createChild("span", "tag");
-    if (!tagElement) {
-      return;
-    }
-    tagElement.textContent = command.category;
+    return html`
+      <devtools-icon name=${categoryIcons[command.category]}></devtools-icon>
+      <div>
+        <devtools-highlight type="markup" ranges=${FilteredListWidget.getHighlightRanges(command.title, query, true)}>
+          ${command.title}
+        </devtools-highlight>
+        ${badge ?? nothing2}
+        <div>${command.shortcut}</div>
+        ${deprecationWarning ? html`
+          <span class="deprecated-tag" title=${deprecationWarning}>
+            ${i18nString3(UIStrings3.deprecated)}
+          </span>` : nothing2}
+      </div>
+      <span class="tag">${command.category}</span>`;
   }
   jslogContextAt(itemIndex) {
     return this.commands[itemIndex].jslogContext;
@@ -1248,8 +1179,8 @@ var HelpQuickOpen_exports = {};
 __export(HelpQuickOpen_exports, {
   HelpQuickOpen: () => HelpQuickOpen
 });
-import * as IconButton2 from "./../../../components/icon_button/icon_button.js";
-import * as UI3 from "./../../legacy.js";
+import "./../../../kit/kit.js";
+import { html as html2 } from "./../../../lit/lit.js";
 var HelpQuickOpen = class extends Provider {
   providers;
   constructor(jslogContext) {
@@ -1274,13 +1205,13 @@ var HelpQuickOpen = class extends Provider {
   itemScoreAt(itemIndex, _query) {
     return -this.providers[itemIndex].prefix.length;
   }
-  renderItem(itemIndex, _query, titleElement, _subtitleElement) {
+  renderItem(itemIndex, _query) {
     const provider = this.providers[itemIndex];
-    const iconElement = new IconButton2.Icon.Icon();
-    iconElement.name = provider.iconName;
-    iconElement.classList.add("large");
-    titleElement.parentElement?.parentElement?.insertBefore(iconElement, titleElement.parentElement);
-    UI3.UIUtils.createTextChild(titleElement, provider.title);
+    return html2`
+      <devtools-icon class="large" name=${provider.iconName}></devtools-icon>
+      <div>
+        <div>${provider.title}</div>
+      </div>`;
   }
   jslogContextAt(itemIndex) {
     return this.providers[itemIndex].jslogContext;
@@ -1289,9 +1220,6 @@ var HelpQuickOpen = class extends Provider {
     if (itemIndex !== null) {
       QuickOpenImpl.show(this.providers[itemIndex].prefix);
     }
-  }
-  renderAsTwoRows() {
-    return false;
   }
 };
 registerProvider({

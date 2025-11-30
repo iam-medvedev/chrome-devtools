@@ -622,9 +622,9 @@ export declare enum IssueCreated {
     'GenericIssue::FormInputWithNoLabelError' = 67,
     'GenericIssue::FormAutocompleteAttributeEmptyError' = 68,
     'GenericIssue::FormEmptyIdAndNameAttributesForInputError' = 69,
-    'GenericIssue::FormAriaLabelledByToNonExistingId' = 70,
+    'GenericIssue::FormAriaLabelledByToNonExistingIdError' = 70,
     'GenericIssue::FormInputAssignedAutocompleteValueToIdOrNameAttributeError' = 71,
-    'GenericIssue::FormLabelHasNeitherForNorNestedInput' = 72,
+    'GenericIssue::FormLabelHasNeitherForNorNestedInputError' = 72,
     'GenericIssue::FormLabelForMatchesNonExistingIdError' = 73,
     'GenericIssue::FormHasPasswordFieldWithoutUsernameFieldError' = 74,
     'GenericIssue::FormInputHasWrongButWellIntendedAutocompleteValueError' = 75,
@@ -670,7 +670,6 @@ export declare enum IssueCreated {
 }
 export declare const enum DeveloperResourceLoaded {
     LOAD_THROUGH_PAGE_VIA_TARGET = 0,
-    LOAD_THROUGH_PAGE_VIA_FRAME = 1,
     LOAD_THROUGH_PAGE_FAILURE = 2,
     LOAD_THROUGH_PAGE_FALLBACK = 3,
     FALLBACK_AFTER_FAILURE = 4,
@@ -888,7 +887,7 @@ export declare const enum SwatchType {
     LENGTH = 8,
     POSITION_TRY_LINK = 10,
     ATTR_LINK = 11,
-    MASONRY = 12,
+    GRID_LANES = 12,
     MAX_VALUE = 13
 }
 export declare const enum BadgeType {

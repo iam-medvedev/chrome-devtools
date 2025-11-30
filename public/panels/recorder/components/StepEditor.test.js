@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as Models from '../models/models.js';
 import { installMocksForRecordingPlayer } from '../testing/RecorderHelpers.js';
 function getStepEditedPromise(editor) {
@@ -15,7 +15,8 @@ const triggerMicroTaskQueue = async (n = 1) => {
         await new Promise(resolve => setTimeout(resolve, 0));
     }
 };
-describeWithLocale('StepEditor', () => {
+describe('StepEditor', () => {
+    setupLocaleHooks();
     async function renderEditor(step) {
         const editor = document.createElement('devtools-recorder-step-editor');
         editor.step = structuredClone(step);

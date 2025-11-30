@@ -1,7 +1,7 @@
 // Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as SDK from './sdk.js';
 describe('ServerTiming', () => {
     it('can be instantiated correctly', () => {
@@ -11,7 +11,8 @@ describe('ServerTiming', () => {
         assert.strictEqual(serverTiming.description, 'example description', 'description was not set correctly');
     });
 });
-describeWithLocale('SDK.ServerTiming.ServerTiming.createFromHeaderValue', () => {
+describe('SDK.ServerTiming.ServerTiming.createFromHeaderValue', () => {
+    setupLocaleHooks();
     it('parses headers correctly', () => {
         // A real-world-like example with some edge cases.
         const actual = SDK.ServerTiming.ServerTiming.createFromHeaderValue('lb; desc = "Load bala\\ncer" ; dur= 42,sql-1 ;desc="MySQL lookup server";dur=100,sql-2;dur ="900.1";desc="MySQL shard server #1",fs;\tdur=600;desc="FileSystem",\tcache;dur=300;desc="",other;dur=200;desc="Database write",other;dur=110;desc="Database read",cpu;dur=1230;desc="Total CPU"');

@@ -1,8 +1,8 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
-import './IconButton.js';
+/* eslint-disable @devtools/no-lit-render-outside-of-view, @devtools/enforce-custom-element-definitions-location */
+import '../../kit/kit.js';
 import { Directives, html, render } from '../../lit/lit.js';
 import fileSourceIconStyles from './fileSourceIcon.css.js';
 const { classMap } = Directives;

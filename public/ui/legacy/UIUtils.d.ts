@@ -3,9 +3,8 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Geometry from '../../models/geometry/geometry.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
-import * as IconButton from '../components/icon_button/icon_button.js';
+import { type IconData } from '../kit/kit.js';
 import * as Lit from '../lit/lit.js';
 declare global {
     interface HTMLElementTagNameMap {
@@ -16,8 +15,6 @@ declare global {
     }
 }
 declare const Directives: typeof Lit.Directives;
-export declare const highlightedSearchResultClassName = "highlighted-search-result";
-export declare const highlightedCurrentSearchResultClassName = "current-search-result";
 export declare function installDragHandle(element: Element, elementDragStart: ((arg0: MouseEvent) => boolean) | null, elementDrag: (arg0: MouseEvent) => void, elementDragEnd: ((arg0: MouseEvent) => void) | null, cursor: string | null, hoverCursor?: string | null, startDelay?: number, mouseDownPreventDefault?: boolean): void;
 export declare function elementDragStart(targetElement: Element, elementDragStart: ((arg0: MouseEvent) => boolean) | null, elementDrag: (arg0: MouseEvent) => void, elementDragEnd: ((arg0: MouseEvent) => void) | null, cursor: string | null, event: Event): void;
 export declare function isBeingEdited(node?: Node | null): boolean;
@@ -53,13 +50,7 @@ export declare class ElementFocusRestorer {
     constructor(element: Element);
     restore(): void;
 }
-export declare function highlightSearchResult(element: Element, offset: number, length: number, domChanges?: HighlightChange[]): Element | null;
-export declare function highlightSearchResults(element: Element, resultRanges: TextUtils.TextRange.SourceRange[], changes?: HighlightChange[]): Element[];
 export declare function runCSSAnimationOnce(element: Element, className: string): void;
-export declare function highlightRangesWithStyleClass(element: Element, resultRanges: TextUtils.TextRange.SourceRange[], styleClass: string, changes?: HighlightChange[]): Element[];
-/** Used in chromium/src/third_party/blink/web_tests/http/tests/devtools/components/utilities-highlight-results.js **/
-export declare function applyDomChanges(domChanges: HighlightChange[]): void;
-export declare function revertDomChanges(domChanges: HighlightChange[]): void;
 export declare function measurePreferredSize(element: Element, containerElement?: Element | null): Geometry.Size;
 export declare function startBatchUpdate(): void;
 export declare function endBatchUpdate(): void;
@@ -176,7 +167,7 @@ export declare class CheckboxLabel extends HTMLElement {
 export declare class DevToolsIconLabel extends HTMLElement {
     #private;
     constructor();
-    set data(data: IconButton.Icon.IconData);
+    set data(data: IconData);
 }
 export declare class DevToolsSmallBubble extends HTMLElement {
     private textElement;
@@ -226,14 +217,6 @@ export interface Options {
      * Should the resulting object be expanded.
      */
     expand?: boolean;
-}
-export interface HighlightChange {
-    node: Element | Text;
-    type: string;
-    oldText?: string;
-    newText?: string;
-    nextSibling?: Node;
-    parent?: Node;
 }
 export declare const isScrolledToBottom: (element: Element) => boolean;
 export declare function createSVGChild<K extends keyof SVGElementTagNameMap>(element: Element, childType: K, className?: string): SVGElementTagNameMap[K];

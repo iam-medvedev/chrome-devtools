@@ -159,6 +159,9 @@ export interface HostConfigAiCodeGeneration {
 export interface HostConfigDeepLinksViaExtensibilityApi {
     enabled: boolean;
 }
+export interface HostConfigGreenDevUi {
+    enabled: boolean;
+}
 export interface HostConfigVeLogging {
     enabled: boolean;
     testing: boolean;
@@ -236,6 +239,9 @@ interface DevToolsIndividualRequestThrottling {
 export interface DevToolsEnableDurableMessages {
     enabled: boolean;
 }
+interface HostConfigAiAssistanceContextSelectionAgent {
+    enabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -255,6 +261,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsConsoleInsights: HostConfigConsoleInsights;
     devToolsDeepLinksViaExtensibilityApi: HostConfigDeepLinksViaExtensibilityApi;
     devToolsFreestyler: HostConfigFreestyler;
+    devToolsGreenDevUi: HostConfigGreenDevUi;
     devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
     devToolsAiDebugWithAi: AiDebugWithAi;
     devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;
@@ -284,6 +291,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsStartingStyleDebugging: DevToolsStartingStyleDebugging;
     devToolsAiPromptApi: AiPromptApi;
     devToolsEnableDurableMessages: DevToolsEnableDurableMessages;
+    devToolsAiAssistanceContextSelectionAgent: HostConfigAiAssistanceContextSelectionAgent;
 }>;
 /**
  * The host configuration for this DevTools instance.

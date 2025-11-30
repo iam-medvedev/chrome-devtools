@@ -502,6 +502,8 @@ export const generatedProperties = [
             "grid-auto-rows",
             "grid-column-end",
             "grid-column-start",
+            "grid-lanes-direction",
+            "grid-lanes-fill",
             "grid-row-end",
             "grid-row-start",
             "grid-template-areas",
@@ -558,8 +560,6 @@ export const generatedProperties = [
             "mask-repeat",
             "mask-size",
             "mask-type",
-            "masonry-direction",
-            "masonry-fill",
             "math-depth",
             "math-shift",
             "math-style",
@@ -2646,10 +2646,33 @@ export const generatedProperties = [
         "longhands": [
             "grid-template-areas",
             "grid-template-columns",
-            "masonry-direction",
-            "masonry-fill"
+            "grid-lanes-direction",
+            "grid-lanes-fill"
         ],
         "name": "grid-lanes"
+    },
+    {
+        "keywords": [
+            "row",
+            "row-reverse",
+            "column",
+            "column-reverse"
+        ],
+        "name": "grid-lanes-direction"
+    },
+    {
+        "keywords": [
+            "normal",
+            "reverse"
+        ],
+        "name": "grid-lanes-fill"
+    },
+    {
+        "longhands": [
+            "grid-lanes-direction",
+            "grid-lanes-fill"
+        ],
+        "name": "grid-lanes-flow"
     },
     {
         "longhands": [
@@ -3094,29 +3117,6 @@ export const generatedProperties = [
             "alpha"
         ],
         "name": "mask-type"
-    },
-    {
-        "keywords": [
-            "row",
-            "row-reverse",
-            "column",
-            "column-reverse"
-        ],
-        "name": "masonry-direction"
-    },
-    {
-        "keywords": [
-            "normal",
-            "reverse"
-        ],
-        "name": "masonry-fill"
-    },
-    {
-        "longhands": [
-            "masonry-direction",
-            "masonry-fill"
-        ],
-        "name": "masonry-flow"
     },
     {
         "inherited": true,
@@ -5965,6 +5965,20 @@ export const generatedPropertyValues = {
             "auto"
         ]
     },
+    "grid-lanes-direction": {
+        "values": [
+            "row",
+            "row-reverse",
+            "column",
+            "column-reverse"
+        ]
+    },
+    "grid-lanes-fill": {
+        "values": [
+            "normal",
+            "reverse"
+        ]
+    },
     "grid-row-end": {
         "values": [
             "auto"
@@ -6181,20 +6195,6 @@ export const generatedPropertyValues = {
         "values": [
             "luminance",
             "alpha"
-        ]
-    },
-    "masonry-direction": {
-        "values": [
-            "row",
-            "row-reverse",
-            "column",
-            "column-reverse"
-        ]
-    },
-    "masonry-fill": {
-        "values": [
-            "normal",
-            "reverse"
         ]
     },
     "math-shift": {

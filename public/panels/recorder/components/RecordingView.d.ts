@@ -1,4 +1,4 @@
-import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/kit/kit.js';
 import './ExtensionView.js';
 import './ControlButton.js';
 import './ReplaySection.js';

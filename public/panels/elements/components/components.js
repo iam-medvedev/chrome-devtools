@@ -121,7 +121,7 @@ var RegisteredAdorners;
   RegisteredAdorners2["CONTAINER"] = "container";
   RegisteredAdorners2["FLEX"] = "flex";
   RegisteredAdorners2["GRID"] = "grid";
-  RegisteredAdorners2["MASONRY"] = "masonry";
+  RegisteredAdorners2["GRID_LANES"] = "grid-lanes";
   RegisteredAdorners2["MEDIA"] = "media";
   RegisteredAdorners2["POPOVER"] = "popover";
   RegisteredAdorners2["REVEAL"] = "reveal";
@@ -146,9 +146,9 @@ function getRegisteredAdorner(which) {
         category: "Layout",
         enabledByDefault: true
       };
-    case RegisteredAdorners.MASONRY:
+    case RegisteredAdorners.GRID_LANES:
       return {
-        name: "masonry",
+        name: "grid-lanes",
         category: "Layout",
         enabledByDefault: true
       };
@@ -1594,7 +1594,7 @@ __export(ElementsBreadcrumbs_exports, {
   ElementsBreadcrumbs: () => ElementsBreadcrumbs,
   NodeSelectedEvent: () => NodeSelectedEvent
 });
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 import "./../../../ui/components/node_text/node_text.js";
 import * as i18n11 from "./../../../core/i18n/i18n.js";
 import * as ComponentHelpers from "./../../../ui/components/helpers/helpers.js";
@@ -2027,7 +2027,7 @@ var ElementsTreeExpandButton_exports = {};
 __export(ElementsTreeExpandButton_exports, {
   ElementsTreeExpandButton: () => ElementsTreeExpandButton
 });
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 import * as i18n13 from "./../../../core/i18n/i18n.js";
 import { html as html9, render as render9 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
@@ -2151,7 +2151,7 @@ __export(QueryContainer_exports, {
   QueriedSizeRequestedEvent: () => QueriedSizeRequestedEvent,
   QueryContainer: () => QueryContainer
 });
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 import "./../../../ui/components/node_text/node_text.js";
 import * as SDK2 from "./../../../core/sdk/sdk.js";
 import * as Lit4 from "./../../../ui/lit/lit.js";
@@ -2292,13 +2292,13 @@ __export(StylePropertyEditor_exports, {
   FlexboxEditor: () => FlexboxEditor,
   GridEditableProperties: () => GridEditableProperties,
   GridEditor: () => GridEditor,
-  MasonryEditableProperties: () => MasonryEditableProperties,
-  MasonryEditor: () => MasonryEditor,
+  GridLanesEditableProperties: () => GridLanesEditableProperties,
+  GridLanesEditor: () => GridLanesEditor,
   PropertyDeselectedEvent: () => PropertyDeselectedEvent,
   PropertySelectedEvent: () => PropertySelectedEvent,
   StylePropertyEditor: () => StylePropertyEditor
 });
-import "./../../../ui/components/icon_button/icon_button.js";
+import "./../../../ui/kit/kit.js";
 import * as i18n15 from "./../../../core/i18n/i18n.js";
 import * as Lit5 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
@@ -2511,14 +2511,14 @@ var GridEditor = class extends StylePropertyEditor {
   }
 };
 customElements.define("devtools-grid-editor", GridEditor);
-var MasonryEditor = class extends StylePropertyEditor {
-  jslogContext = "cssMasonryEditor";
-  editableProperties = MasonryEditableProperties;
+var GridLanesEditor = class extends StylePropertyEditor {
+  jslogContext = "cssGridLanesEditor";
+  editableProperties = GridLanesEditableProperties;
   findIcon(query, computedProperties) {
     return findGridContainerIcon(query, computedProperties);
   }
 };
-customElements.define("devtools-masonry-editor", MasonryEditor);
+customElements.define("devtools-grid-lanes-editor", GridLanesEditor);
 var FlexboxEditableProperties = [
   {
     propertyName: "flex-direction",
@@ -2614,7 +2614,7 @@ var GridEditableProperties = [
     ]
   }
 ];
-var MasonryEditableProperties = [
+var GridLanesEditableProperties = [
   {
     propertyName: "align-content",
     propertyValues: [

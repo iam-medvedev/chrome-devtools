@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import { getValuesOfAllBodyRows } from '../../../testing/DataGridHelpers.js';
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithLocale } from '../../../testing/LocaleHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ApplicationComponents from './components.js';
 async function renderInterestGroupAccessGrid(events) {
@@ -20,7 +20,8 @@ function getInternalDataGridShadowRoot(component) {
     assert.isNotNull(dataGrid.shadowRoot);
     return dataGrid.shadowRoot;
 }
-describeWithLocale('InterestGroupAccessGrid', () => {
+describe('InterestGroupAccessGrid', () => {
+    setupLocaleHooks();
     it('renders interest group access events', async () => {
         const component = await renderInterestGroupAccessGrid([
             {

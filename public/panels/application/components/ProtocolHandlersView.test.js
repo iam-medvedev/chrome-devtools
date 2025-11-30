@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
-import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as ApplicationComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
 async function renderProtocolHandlersComponent(manifestLink, protocolHandlers) {
     const component = new ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView();
     renderElementIntoDOM(component);
-    component.data = { manifestLink, protocolHandlers };
+    component.protocolHandlers = protocolHandlers;
+    component.manifestLink = manifestLink;
+    await component.updateComplete;
     return component;
 }
 describeWithEnvironment('ProtocolHandlersView', () => {
@@ -29,14 +31,14 @@ describeWithEnvironment('ProtocolHandlersView', () => {
         ];
         const manifestURL = urlString `https://www.example.com/index.html/manifest-protocol.json`;
         const component = await renderProtocolHandlersComponent(manifestURL, protocols);
-        const statusElement = component.shadowRoot.querySelector('.protocol-handlers-row.status');
+        const statusElement = component.contentElement.querySelector('.protocol-handlers-row.status');
         assert.instanceOf(statusElement, HTMLElement);
         // Tests if status message for when protocols are detected in the manifest is rendering
         const protocolsDetectedMessage = getCleanTextContentFromElements(statusElement, 'span');
         const expectedStatusMessage = 'Found valid protocol handler registration in the manifest. With the app installed, test the registered protocols.';
         assert.deepEqual(protocolsDetectedMessage[0], expectedStatusMessage);
         // Tests if protocols are rendering properly in dropdown
-        const selectElement = getElementWithinComponent(component, '.protocol-select', HTMLSelectElement);
+        const selectElement = component.contentElement.querySelector('.protocol-select');
         const values = getCleanTextContentFromElements(selectElement, 'option');
         assert.deepEqual(values, ['web+coffee://', 'web+pwinter://']);
     });
@@ -44,7 +46,7 @@ describeWithEnvironment('ProtocolHandlersView', () => {
         const protocols = [];
         const manifestURL = urlString `https://www.example.com/index.html/manifest-protocol.json`;
         const component = await renderProtocolHandlersComponent(manifestURL, protocols);
-        const noStatusElement = component.shadowRoot.querySelector('.protocol-handlers-row.status');
+        const noStatusElement = component.contentElement.querySelector('.protocol-handlers-row.status');
         assert.instanceOf(noStatusElement, HTMLElement);
         const protocolsNotDetectedMessage = getCleanTextContentFromElements(noStatusElement, 'span');
         const expectedStatusMessage = 'Define protocol handlers in the manifest to register your app as a handler for custom protocols when your app is installed.';

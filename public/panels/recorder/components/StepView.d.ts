@@ -1,4 +1,4 @@
-import '../../../ui/components/icon_button/icon_button.js';
+import '../../../ui/kit/kit.js';
 import './StepEditor.js';
 import './TimelineSection.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
