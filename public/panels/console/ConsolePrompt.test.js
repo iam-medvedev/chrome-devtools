@@ -4,7 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, registerNoopActions, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockConnection.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -18,18 +18,11 @@ describeWithMockConnection('ConsoleContextSelector', () => {
     let consolePrompt;
     let evaluateOnTarget;
     let compileScript;
-    let checkAccessPreconditionsStub;
     let editor;
     beforeEach(() => {
         sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'pollAidaAvailability').callsFake(async () => { });
-        checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
-        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-        updateHostConfig({
-            devToolsAiCodeCompletion: {
-                enabled: true,
-            },
-            aidaAvailability: { enabled: true },
-        });
+        sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions')
+            .resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         registerNoopActions(['console.clear', 'console.clear.history', 'console.create-pin']);
         consolePrompt = new Console.ConsolePrompt.ConsolePrompt();
         editor = consolePrompt.element.querySelector('devtools-text-editor');
@@ -114,55 +107,6 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         sinon.assert.notCalled(evaluateOnAnotherTarget);
         sinon.assert.notCalled(evaluateOnTarget);
-    });
-    it('updates aiCodeCompletion when FRE setting is updated', () => {
-        assert.isUndefined(consolePrompt['aiCodeCompletion']);
-        const setting = Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled');
-        setting.set(true);
-        assert.exists(consolePrompt['aiCodeCompletion']);
-        setting.set(false);
-        assert.isUndefined(consolePrompt['aiCodeCompletion']);
-    });
-    describe('onAidaAvailabilityChange', () => {
-        it('sets up AI completion when AIDA becomes available', async () => {
-            Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
-            checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
-            await new Promise(resolve => setTimeout(resolve, 0));
-            assert.isUndefined(consolePrompt['aiCodeCompletion']);
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
-            await new Promise(resolve => setTimeout(resolve, 0));
-            assert.exists(consolePrompt['aiCodeCompletion']);
-        });
-        it('cleans up AI completion when AIDA becomes unavailable', async () => {
-            Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
-            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
-            await new Promise(resolve => setTimeout(resolve, 0));
-            assert.exists(consolePrompt['aiCodeCompletion']);
-            checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
-            await new Promise(resolve => setTimeout(resolve, 0));
-            assert.isUndefined(consolePrompt['aiCodeCompletion']);
-        });
-    });
-    it('sends console history in the request to AIDA', () => {
-        const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
-            completeCode: Promise.resolve(null),
-        });
-        consolePrompt.setAidaClientForTest(mockAidaClient);
-        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
-        const onTextChangedSpy = sinon.spy(consolePrompt['aiCodeCompletion'], 'onTextChanged');
-        const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
-        assert.exists(consoleModel);
-        const message = new SDK.ConsoleModel.ConsoleMessage(target.model(SDK.RuntimeModel.RuntimeModel), "javascript" /* Protocol.Log.LogEntrySource.Javascript */, null, 'let x = 1;', { type: SDK.ConsoleModel.FrontendMessageType.Command });
-        consoleModel.addMessage(message);
-        setCodeMirrorContent('console.log();', { selectionHead: 12 });
-        onTextChangedSpy.resetHistory();
-        consolePrompt.triggerAiCodeCompletion();
-        sinon.assert.calledOnce(onTextChangedSpy);
-        assert.deepEqual(onTextChangedSpy.firstCall.args, ['let x = 1;\n\nconsole.log(', ');', 12]);
     });
     it('handles event sequence correctly', async () => {
         const stub = sinon.stub(TextEditor.TextEditorHistory.TextEditorHistory.prototype, 'moveHistory');

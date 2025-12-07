@@ -1774,6 +1774,7 @@ var generatedProperties = [
     "inherited": false,
     "keywords": [
       "none",
+      "auto",
       "spanning-item",
       "intersection"
     ],
@@ -3784,6 +3785,7 @@ var generatedProperties = [
     "inherited": false,
     "keywords": [
       "none",
+      "auto",
       "spanning-item",
       "intersection"
     ],
@@ -4582,6 +4584,13 @@ var generatedProperties = [
     "name": "timeline-trigger"
   },
   {
+    "longhands": [
+      "timeline-trigger-exit-range-start",
+      "timeline-trigger-exit-range-end"
+    ],
+    "name": "timeline-trigger-exit-range"
+  },
+  {
     "name": "timeline-trigger-exit-range-end"
   },
   {
@@ -4589,6 +4598,13 @@ var generatedProperties = [
   },
   {
     "name": "timeline-trigger-name"
+  },
+  {
+    "longhands": [
+      "timeline-trigger-range-start",
+      "timeline-trigger-range-end"
+    ],
+    "name": "timeline-trigger-range"
   },
   {
     "name": "timeline-trigger-range-end"
@@ -5469,6 +5485,7 @@ var generatedPropertyValues = {
   "column-rule-break": {
     "values": [
       "none",
+      "auto",
       "spanning-item",
       "intersection"
     ]
@@ -6594,6 +6611,7 @@ var generatedPropertyValues = {
   "row-rule-break": {
     "values": [
       "none",
+      "auto",
       "spanning-item",
       "intersection"
     ]
@@ -22793,7 +22811,8 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
    * Important: This iterator will not yield the "synchronous" part of the stack trace, only the async parent chain.
    */
   async *iterateAsyncParents(stackTraceOrPausedDetails) {
-    let stackTrace = stackTraceOrPausedDetails instanceof DebuggerPausedDetails ? {
+    const isPausedDetails = (details) => !("parent" in details) && !("parentId" in details);
+    let stackTrace = isPausedDetails(stackTraceOrPausedDetails) ? {
       callFrames: [],
       parent: stackTraceOrPausedDetails.asyncStackTrace,
       parentId: stackTraceOrPausedDetails.asyncStackTraceId
@@ -31142,7 +31161,7 @@ __export(Connections_exports, {
 import * as i18n29 from "./../i18n/i18n.js";
 import * as Common34 from "./../common/common.js";
 import * as Host7 from "./../host/host.js";
-import * as ProtocolClient2 from "./../protocol_client/protocol_client.js";
+import * as ProtocolClient3 from "./../protocol_client/protocol_client.js";
 import * as Root12 from "./../root/root.js";
 
 // gen/front_end/core/sdk/RehydratingConnection.js
@@ -31153,6 +31172,7 @@ __export(RehydratingConnection_exports, {
 });
 import * as Common33 from "./../common/common.js";
 import * as i18n27 from "./../i18n/i18n.js";
+import * as ProtocolClient2 from "./../protocol_client/protocol_client.js";
 import * as Root11 from "./../root/root.js";
 
 // gen/front_end/core/sdk/EnhancedTracesParser.js
@@ -31757,7 +31777,10 @@ var RehydratingSession = class extends RehydratingSessionBase {
       default:
         this.sendMessageToFrontend({
           id: data.id,
-          result: {}
+          error: {
+            message: `Command ${data.method} not implemented in RehydratingSession.`,
+            code: ProtocolClient2.CDPConnection.CDPErrorStatus.DEVTOOLS_STUB_ERROR
+          }
         });
         break;
     }
@@ -32064,7 +32087,7 @@ var StubTransport = class {
     const messageObject = JSON.parse(message);
     const error = {
       message: "This is a stub connection, can't dispatch message.",
-      code: ProtocolClient2.CDPConnection.CDPErrorStatus.DEVTOOLS_STUB_ERROR,
+      code: ProtocolClient3.CDPConnection.CDPErrorStatus.DEVTOOLS_STUB_ERROR,
       data: messageObject
     };
     if (this.onMessage) {
@@ -32080,7 +32103,7 @@ var StubTransport = class {
   }
 };
 async function initMainConnection(createRootTarget, onConnectionLost) {
-  ProtocolClient2.ConnectionTransport.ConnectionTransport.setFactory(createMainTransport.bind(null, onConnectionLost));
+  ProtocolClient3.ConnectionTransport.ConnectionTransport.setFactory(createMainTransport.bind(null, onConnectionLost));
   await createRootTarget();
   Host7.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
 }
@@ -34332,6 +34355,12 @@ var IsolateManager = class _IsolateManager extends Common39.ObjectWrapper.Object
     this.#observers.add(observer);
     for (const isolate of this.#isolates.values()) {
       observer.isolateAdded(isolate);
+    }
+  }
+  unobserveIsolates(observer) {
+    this.#observers.delete(observer);
+    if (!this.#observers.size) {
+      this.#pollId++;
     }
   }
   modelAdded(model) {

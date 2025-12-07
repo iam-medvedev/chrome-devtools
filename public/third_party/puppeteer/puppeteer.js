@@ -2596,7 +2596,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.31.0";
+var packageVersion = "24.32.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -6224,6 +6224,27 @@ var Binding = class {
   }
 };
 
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/BluetoothEmulation.js
+var CdpBluetoothEmulation = class {
+  #connection;
+  constructor(connection) {
+    this.#connection = connection;
+  }
+  async emulateAdapter(state, leSupported = true) {
+    await this.#connection.send("BluetoothEmulation.disable");
+    await this.#connection.send("BluetoothEmulation.enable", {
+      state,
+      leSupported
+    });
+  }
+  async disableEmulation() {
+    await this.#connection.send("BluetoothEmulation.disable");
+  }
+  async simulatePreconnectedPeripheral(preconnectedPeripheral) {
+    await this.#connection.send("BluetoothEmulation.simulatePreconnectedPeripheral", preconnectedPeripheral);
+  }
+};
+
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/CallbackRegistry.js
 var CallbackRegistry = class {
   #callbacks = /* @__PURE__ */ new Map();
@@ -9263,24 +9284,11 @@ var CdpPreloadScript = class {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/DeviceRequestPrompt.js
-var DeviceRequestPromptDevice = class {
-  /**
-   * Device id during a prompt.
-   */
-  id;
-  /**
-   * Device name as it appears in a prompt.
-   */
-  name;
-  /**
-   * @internal
-   */
-  constructor(id, name) {
-    this.id = id;
-    this.name = name;
-  }
-};
 var DeviceRequestPrompt = class {
+  /**
+   * Current list of selectable devices.
+   */
+  devices = [];
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/DeviceRequestPrompt.js
@@ -9291,7 +9299,6 @@ var CdpDeviceRequestPrompt = class extends DeviceRequestPrompt {
   #handled = false;
   #updateDevicesHandle = this.#updateDevices.bind(this);
   #waitForDevicePromises = /* @__PURE__ */ new Set();
-  devices = [];
   constructor(client, timeoutSettings, firstEvent) {
     super();
     this.#client = client;
@@ -9313,7 +9320,7 @@ var CdpDeviceRequestPrompt = class extends DeviceRequestPrompt {
       })) {
         continue;
       }
-      const newDevice = new DeviceRequestPromptDevice(rawDevice.id, rawDevice.name);
+      const newDevice = { id: rawDevice.id, name: rawDevice.name };
       this.devices.push(newDevice);
       for (const waitForDevicePromise of this.#waitForDevicePromises) {
         if (waitForDevicePromise.filter(newDevice)) {
@@ -9365,7 +9372,7 @@ var CdpDeviceRequestPrompt = class extends DeviceRequestPrompt {
     return await this.#client.send("DeviceAccess.cancelPrompt", { id: this.#id });
   }
 };
-var DeviceRequestPromptManager = class {
+var CdpDeviceRequestPromptManager = class {
   #client;
   #timeoutSettings;
   #deviceRequestPromptDeferreds = /* @__PURE__ */ new Set();
@@ -11991,7 +11998,7 @@ var AXNode = class _AXNode {
         continue;
       }
       const value = getBooleanPropertyValue(booleanProperty);
-      if (!value) {
+      if (value === void 0) {
         continue;
       }
       node[booleanProperty] = getBooleanPropertyValue(booleanProperty);
@@ -14588,7 +14595,7 @@ var FrameManager = class extends EventEmitter {
   _deviceRequestPromptManager(client) {
     let manager = this.#deviceRequestPromptManagerMap.get(client);
     if (manager === void 0) {
-      manager = new DeviceRequestPromptManager(client, this.#timeoutSettings);
+      manager = new CdpDeviceRequestPromptManager(client, this.#timeoutSettings);
       this.#deviceRequestPromptManagerMap.set(client, manager);
     }
     return manager;
@@ -15920,13 +15927,18 @@ var CdpWebWorker = class extends WebWorker {
   }
   async close() {
     switch (this.#targetType) {
-      case TargetType.SERVICE_WORKER:
-      case TargetType.SHARED_WORKER: {
+      case TargetType.SERVICE_WORKER: {
         await this.client.connection()?.send("Target.closeTarget", {
           targetId: this.#id
         });
         await this.client.connection()?.send("Target.detachFromTarget", {
           sessionId: this.client.id()
+        });
+        break;
+      }
+      case TargetType.SHARED_WORKER: {
+        await this.client.connection()?.send("Target.closeTarget", {
+          targetId: this.#id
         });
         break;
       }
@@ -16024,6 +16036,7 @@ var CdpPage = class _CdpPage extends Page {
   }
   #closed = false;
   #targetManager;
+  #cdpBluetoothEmulation;
   #primaryTargetClient;
   #primaryTarget;
   #tabTargetClient;
@@ -16060,6 +16073,7 @@ var CdpPage = class _CdpPage extends Page {
     this.#tracing = new Tracing(client);
     this.#coverage = new Coverage(client);
     this.#viewport = null;
+    this.#cdpBluetoothEmulation = new CdpBluetoothEmulation(this.#primaryTargetClient.connection());
     const frameManagerEmitter = new EventEmitter(this.#frameManager);
     frameManagerEmitter.on(FrameManagerEvent.FrameAttached, (frame) => {
       this.emit("frameattached", frame);
@@ -16777,6 +16791,9 @@ var CdpPage = class _CdpPage extends Page {
    */
   async waitForDevicePrompt(options = {}) {
     return await this.mainFrame().waitForDevicePrompt(options);
+  }
+  get bluetooth() {
+    return this.#cdpBluetoothEmulation;
   }
 };
 var supportedMetrics = /* @__PURE__ */ new Set([
@@ -17541,7 +17558,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   }
   #setIsPageTargetCallback(isPageTargetCallback) {
     this.#isPageTargetCallback = isPageTargetCallback || ((target) => {
-      return target.type() === "page" || target.type() === "background_page" || target.type() === "webview" || this.#handleDevToolsAsPage && target.type() === "other" && target.url().startsWith("devtools://");
+      return target.type() === "page" || target.type() === "background_page" || target.type() === "webview" || this.#handleDevToolsAsPage && target.type() === "other" && target.url().startsWith("devtools://devtools/bundled/devtools_app.html");
     });
   }
   _getIsPageTargetCallback() {
@@ -17620,16 +17637,22 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   wsEndpoint() {
     return this.#connection.url();
   }
-  async newPage() {
-    return await this.#defaultContext.newPage();
+  async newPage(options) {
+    return await this.#defaultContext.newPage(options);
   }
   async _createPageInContext(contextId, options) {
     const hasTargets = this.targets().filter((t) => {
       return t.browserContext().id === contextId;
     }).length > 0;
+    const windowBounds = options?.type === "window" ? options.windowBounds : void 0;
     const { targetId } = await this.#connection.send("Target.createTarget", {
       url: "about:blank",
       browserContextId: contextId || void 0,
+      left: windowBounds?.left,
+      top: windowBounds?.top,
+      width: windowBounds?.width,
+      height: windowBounds?.height,
+      windowState: windowBounds?.windowState,
       // Works around crbug.com/454825274.
       newWindow: hasTargets && options?.type === "window" ? true : void 0
     });
@@ -17675,6 +17698,17 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   }
   uninstallExtension(id) {
     return this.#connection.send("Extensions.uninstall", { id });
+  }
+  async screens() {
+    const { screenInfos } = await this.#connection.send("Emulation.getScreenInfos");
+    return screenInfos;
+  }
+  async addScreen(params) {
+    const { screenInfo } = await this.#connection.send("Emulation.addScreen", params);
+    return screenInfo;
+  }
+  async removeScreen(screenId) {
+    return await this.#connection.send("Emulation.removeScreen", { screenId });
   }
   targets() {
     return Array.from(this.#targetManager.getAvailableTargets().values()).filter((target) => {

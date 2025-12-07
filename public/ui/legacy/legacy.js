@@ -740,7 +740,7 @@ __export(ContextMenu_exports, {
 import * as Host6 from "./../../core/host/host.js";
 import * as Root6 from "./../../core/root/root.js";
 import * as Buttons5 from "./../components/buttons/buttons.js";
-import { html as html2, render as render2 } from "./../lit/lit.js";
+import { html as html2, render as render3 } from "./../lit/lit.js";
 import * as VisualLogging9 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/ShortcutRegistry.js
@@ -2696,9 +2696,7 @@ var Widget = class _Widget {
    * assert.isTrue(widget.someDataLoaded);
    * ```
    *
-   * @returns a promise that resolves to a `boolean` when the widget has finished
-   *          updating, the value is `true` if there are no more pending updates,
-   *          and `false` if the update cycle triggered another update.
+   * @returns a promise that resolves when the widget has finished updating.
    */
   get updateComplete() {
     return this.#updateComplete;
@@ -2828,6 +2826,10 @@ var Floaty = class _Floaty {
     this.#insertIntoDOM();
   }
   #onKeyShortcut(e) {
+    const origin = e.composedPath().at(0);
+    if (origin && (origin instanceof HTMLTextAreaElement || origin instanceof HTMLInputElement)) {
+      return;
+    }
     if (e.key === "f") {
       this.open();
     }
@@ -4530,6 +4532,7 @@ import * as Platform8 from "./../../core/platform/platform.js";
 import * as Geometry3 from "./../../models/geometry/geometry.js";
 import * as Annotations from "./../components/annotations/annotations.js";
 import * as Buttons3 from "./../components/buttons/buttons.js";
+import { render as render2 } from "./../lit/lit.js";
 import * as VisualLogging5 from "./../visual_logging/visual_logging.js";
 import { createIcon as createIcon2, Icon } from "./../kit/kit.js";
 
@@ -5057,14 +5060,11 @@ var tabbedPane_css_default = `/*
   }
 }
 
-.tabbed-pane-header-tab.ai .ai-icon {
-  background-color: var(--sys-color-primary);
-  border-radius: 50%;
-  margin-left: 4px;
-}
+.spark {
+  position: absolute;
+  top: 2px;
 
-.tabbed-pane-header-tab.ai .ai-icon devtools-icon {
-  color: var(--sys-color-on-primary);
+  --icon-default: var(--sys-color-primary);
 }
 
 /*# sourceURL=${import.meta.resolve("./tabbedPane.css")} */`;
@@ -5140,7 +5140,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
   tabSlider;
   tabsElement;
   #contentElement;
-  tabs;
+  #tabs;
   tabsHistory;
   tabsById;
   currentTabLocked;
@@ -5179,7 +5179,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     this.tabsElement.addEventListener("keydown", this.keyDown.bind(this), false);
     this.#contentElement = this.contentElement.createChild("div", "tabbed-pane-content");
     this.#contentElement.createChild("slot");
-    this.tabs = [];
+    this.#tabs = [];
     this.tabsHistory = [];
     this.tabsById = /* @__PURE__ */ new Map();
     this.currentTabLocked = false;
@@ -5190,7 +5190,9 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     ZoomManager.instance().addEventListener("ZoomChanged", this.zoomChanged, this);
     this.makeTabSlider();
     if (Annotations.AnnotationRepository.annotationsEnabled()) {
-      Annotations.AnnotationRepository.instance().addEventListener("AnnotationAdded", this.#onAnnotationAdded, this);
+      Annotations.AnnotationRepository.instance().addEventListener("AnnotationAdded", this.#onUpdateAnnotations, this);
+      Annotations.AnnotationRepository.instance().addEventListener("AnnotationDeleted", this.#onUpdateAnnotations, this);
+      Annotations.AnnotationRepository.instance().addEventListener("AllAnnotationsDeleted", this.#onUpdateAnnotations, this);
     }
   }
   setAccessibleName(name) {
@@ -5207,13 +5209,13 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     return this.currentTab ? this.currentTab.view : null;
   }
   tabIds() {
-    return this.tabs.map((tab) => tab.id);
+    return this.#tabs.map((tab) => tab.id);
   }
   tabIndex(tabId) {
-    return this.tabs.findIndex((tab) => tab.id === tabId);
+    return this.#tabs.findIndex((tab) => tab.id === tabId);
   }
   tabViews() {
-    return this.tabs.map((tab) => tab.view);
+    return this.#tabs.map((tab) => tab.view);
   }
   tabView(tabId) {
     const tab = this.tabsById.get(tabId);
@@ -5254,7 +5256,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     return this.#contentElement;
   }
   setTabDelegate(delegate) {
-    const tabs = this.tabs.slice();
+    const tabs = this.#tabs.slice();
     for (let i = 0; i < tabs.length; ++i) {
       tabs[i].setDelegate(delegate);
     }
@@ -5269,9 +5271,9 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     tab.tabElement.tabIndex = -1;
     tab.tabElement.setAttribute("jslog", `${VisualLogging5.panelTabHeader().track({ click: true, drag: true }).context(tab.jslogContext)}`);
     if (index !== void 0) {
-      this.tabs.splice(index, 0, tab);
+      this.#tabs.splice(index, 0, tab);
     } else {
-      this.tabs.push(tab);
+      this.#tabs.push(tab);
     }
     this.tabsHistory.push(tab);
     if (this.tabsHistory[0] === tab && this.isShowing()) {
@@ -5311,7 +5313,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     }
     this.tabsById.delete(id2);
     this.tabsHistory.splice(this.tabsHistory.indexOf(tab), 1);
-    this.tabs.splice(this.tabs.indexOf(tab), 1);
+    this.#tabs.splice(this.#tabs.indexOf(tab), 1);
     if (tab.shown) {
       this.hideTabElement(tab);
     }
@@ -5324,16 +5326,16 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
   }
   otherTabs(id2) {
     const result = [];
-    for (let i = 0; i < this.tabs.length; ++i) {
-      if (this.tabs[i].id !== id2) {
-        result.push(this.tabs[i].id);
+    for (let i = 0; i < this.#tabs.length; ++i) {
+      if (this.#tabs[i].id !== id2) {
+        result.push(this.#tabs[i].id);
       }
     }
     return result;
   }
   tabsToTheRight(id2) {
     let index = -1;
-    for (let i = 0; i < this.tabs.length; ++i) {
+    for (let i = 0; i < this.#tabs.length; ++i) {
       if (this.tabs[i].id === id2) {
         index = i;
         break;
@@ -5342,7 +5344,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     if (index === -1) {
       return [];
     }
-    return this.tabs.slice(index + 1).map(function(tab) {
+    return this.#tabs.slice(index + 1).map(function(tab) {
       return tab.id;
     });
   }
@@ -5388,17 +5390,17 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     return true;
   }
   selectNextTab() {
-    const index = this.tabs.indexOf(this.currentTab);
-    const nextIndex = Platform8.NumberUtilities.mod(index + 1, this.tabs.length);
-    this.selectTab(this.tabs[nextIndex].id, true);
+    const index = this.#tabs.indexOf(this.currentTab);
+    const nextIndex = Platform8.NumberUtilities.mod(index + 1, this.#tabs.length);
+    this.selectTab(this.#tabs[nextIndex].id, true);
   }
   selectPrevTab() {
-    const index = this.tabs.indexOf(this.currentTab);
-    const nextIndex = Platform8.NumberUtilities.mod(index - 1, this.tabs.length);
-    this.selectTab(this.tabs[nextIndex].id, true);
+    const index = this.#tabs.indexOf(this.currentTab);
+    const nextIndex = Platform8.NumberUtilities.mod(index - 1, this.#tabs.length);
+    this.selectTab(this.#tabs[nextIndex].id, true);
   }
   getTabIndex(id2) {
-    const index = this.tabs.indexOf(this.tabsById.get(id2));
+    const index = this.#tabs.indexOf(this.tabsById.get(id2));
     return index;
   }
   moveTabBackward(id2, index) {
@@ -5465,8 +5467,8 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     }
   }
   clearMeasuredWidths() {
-    for (let i = 0; i < this.tabs.length; ++i) {
-      delete this.tabs[i].measuredWidth;
+    for (let i = 0; i < this.#tabs.length; ++i) {
+      delete this.#tabs[i].measuredWidth;
     }
   }
   changeTabTitle(id2, tabTitle, tabTooltip) {
@@ -5499,6 +5501,66 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       tab.view.focus();
     }
     this.resumeInvalidations();
+  }
+  get tabs() {
+    return this.#tabs.map((tab) => ({
+      id: tab.id,
+      title: tab.title,
+      view: tab.view,
+      tabTooltip: tab.tooltip,
+      isCloseable: tab.closeable,
+      previewFeature: tab.previewFeature,
+      index: this.#tabs.indexOf(tab),
+      jslogContext: tab.jslogContext,
+      enabled: this.tabIsEnabled(tab.id),
+      selected: this.currentTab?.id === tab.id
+    }));
+  }
+  set tabs(tabs) {
+    const newIds = new Set(tabs.map((tab) => tab.id));
+    for (const id2 of this.tabsById.keys()) {
+      if (!newIds.has(id2)) {
+        this.#closeTab(id2);
+      }
+    }
+    let index = 0;
+    for (const tab of tabs) {
+      const existingTab = this.tabsById.get(tab.id);
+      if (existingTab) {
+        this.changeTabView(tab.id, tab.view);
+        this.changeTabTitle(tab.id, tab.title, tab.tabTooltip);
+        if (tab.isCloseable !== void 0) {
+          existingTab.closeable = tab.isCloseable;
+        }
+        if (tab.previewFeature !== void 0) {
+          existingTab.previewFeature = tab.previewFeature;
+        }
+        const currentIndex = this.#tabs.indexOf(existingTab);
+        if (currentIndex !== index) {
+          this.insertBefore(existingTab, index);
+        }
+      } else {
+        this.appendTab(
+          tab.id,
+          tab.title,
+          tab.view,
+          tab.tabTooltip,
+          /* userGesture=*/
+          false,
+          tab.isCloseable,
+          tab.previewFeature,
+          index,
+          tab.jslogContext
+        );
+      }
+      if (tab.enabled !== void 0) {
+        this.setTabEnabled(tab.id, tab.enabled);
+      }
+      if (tab.selected) {
+        this.selectTab(tab.id);
+      }
+      ++index;
+    }
   }
   onResize() {
     if (this.currentDevicePixelRatio !== window.devicePixelRatio) {
@@ -5585,7 +5647,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     if (!this.isShowing()) {
       return;
     }
-    if (!this.tabs.length) {
+    if (!this.#tabs.length) {
       this.#contentElement.classList.add("has-no-tabs");
       if (this.placeholderElement && !this.placeholderContainerElement) {
         this.placeholderContainerElement = this.#contentElement.createChild("div", "tabbed-pane-placeholder fill");
@@ -5673,7 +5735,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
         setExpanded(this.dropDownButton, false);
       }
     });
-    for (const tab of this.tabs) {
+    for (const tab of this.#tabs) {
       if (tab.shown) {
         continue;
       }
@@ -5699,7 +5761,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
   }
   numberOfTabsShown() {
     let numTabsShown = 0;
-    for (const tab of this.tabs) {
+    for (const tab of this.#tabs) {
       if (tab.shown) {
         numTabsShown++;
       }
@@ -5707,24 +5769,24 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     return numTabsShown;
   }
   updateTabsDropDown() {
-    const tabsToShowIndexes = this.tabsToShowIndexes(this.tabs, this.tabsHistory, this.totalWidth(), this.measuredDropDownButtonWidth || 0);
+    const tabsToShowIndexes = this.tabsToShowIndexes(this.#tabs, this.tabsHistory, this.totalWidth(), this.measuredDropDownButtonWidth || 0);
     if (this.lastSelectedOverflowTab && this.numberOfTabsShown() !== tabsToShowIndexes.length) {
       delete this.lastSelectedOverflowTab;
       this.updateTabsDropDown();
       return;
     }
-    for (let i = 0; i < this.tabs.length; ++i) {
-      if (this.tabs[i].shown && tabsToShowIndexes.indexOf(i) === -1) {
-        this.hideTabElement(this.tabs[i]);
+    for (let i = 0; i < this.#tabs.length; ++i) {
+      if (this.#tabs[i].shown && tabsToShowIndexes.indexOf(i) === -1) {
+        this.hideTabElement(this.#tabs[i]);
       }
     }
     for (let i = 0; i < tabsToShowIndexes.length; ++i) {
-      const tab = this.tabs[tabsToShowIndexes[i]];
+      const tab = this.#tabs[tabsToShowIndexes[i]];
       if (!tab.shown) {
         this.showTabElement(i, tab);
       }
     }
-    this.maybeShowDropDown(tabsToShowIndexes.length !== this.tabs.length);
+    this.maybeShowDropDown(tabsToShowIndexes.length !== this.#tabs.length);
   }
   maybeShowDropDown(hasMoreTabs) {
     if (hasMoreTabs && !this.dropDownButton.parentElement) {
@@ -5747,14 +5809,14 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     const measuredWidths = this.measureWidths();
     const maxWidth = this.shrinkableTabs ? this.calculateMaxWidth(measuredWidths.slice(), this.totalWidth()) : Number.MAX_VALUE;
     let i = 0;
-    for (const tab of this.tabs) {
+    for (const tab of this.#tabs) {
       tab.setWidth(this.verticalTabLayout ? -1 : Math.min(maxWidth, measuredWidths[i++]));
     }
   }
   measureWidths() {
     this.tabsElement.style.setProperty("width", "2000px");
     const measuringTabElements = /* @__PURE__ */ new Map();
-    for (const tab of this.tabs) {
+    for (const tab of this.#tabs) {
       if (typeof tab.measuredWidth === "number") {
         continue;
       }
@@ -5773,7 +5835,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       measuringTabElement.remove();
     }
     const measuredWidths = [];
-    for (const tab of this.tabs) {
+    for (const tab of this.#tabs) {
       measuredWidths.push(tab.measuredWidth || 0);
     }
     this.tabsElement.style.removeProperty("width");
@@ -5854,9 +5916,9 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       return;
     }
     let left = 0;
-    for (let i = 0; i < this.tabs.length && this.currentTab !== this.tabs[i]; i++) {
-      if (this.tabs[i].shown) {
-        left += this.tabs[i].measuredWidth || 0;
+    for (let i = 0; i < this.#tabs.length && this.currentTab !== this.#tabs[i]; i++) {
+      if (this.#tabs[i].shown) {
+        left += this.#tabs[i].measuredWidth || 0;
       }
     }
     const sliderWidth = this.currentTab.shown ? this.currentTab.measuredWidth : this.dropDownButton.offsetWidth;
@@ -5879,12 +5941,12 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
   }
   insertBefore(tab, index) {
     this.tabsElement.insertBefore(tab.tabElement, this.tabsElement.childNodes[index]);
-    const oldIndex = this.tabs.indexOf(tab);
-    this.tabs.splice(oldIndex, 1);
+    const oldIndex = this.#tabs.indexOf(tab);
+    this.#tabs.splice(oldIndex, 1);
     if (oldIndex < index) {
       --index;
     }
-    this.tabs.splice(index, 0, tab);
+    this.#tabs.splice(index, 0, tab);
     const eventData = { prevTabId: void 0, tabId: tab.id, view: tab.view, isUserGesture: void 0 };
     this.dispatchEventToListeners(Events.TabOrderChanged, eventData);
   }
@@ -5914,7 +5976,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       tab.tabAnnotationIcon = iconVisible;
     }
   }
-  #onAnnotationAdded() {
+  #onUpdateAnnotations() {
     this.updateTabAnnotationIcons();
   }
   keyDown(event) {
@@ -5948,7 +6010,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       this.dropDownButton.click();
       return;
     }
-    const tab = this.tabs.find((tab2) => tab2.tabElement === nextTabElement);
+    const tab = this.#tabs.find((tab2) => tab2.tabElement === nextTabElement);
     if (tab) {
       this.selectTab(tab.id, true);
     }
@@ -6026,11 +6088,19 @@ var TabbedPaneTab = class {
     if (!this.#tabElement) {
       return;
     }
-    const iconElement = this.#tabElement.querySelector(".ai-icon");
+    const iconElement = this.#tabElement.querySelector(".spark");
     if (iconVisible) {
       if (!iconElement) {
-        const closeButton = this.#tabElement.querySelector(".close-button");
-        this.#tabElement.insertBefore(this.createTabAnnotationIcon(), closeButton);
+        const spark = this.createTabAnnotationIcon();
+        this.#tabElement.appendChild(spark);
+        const parentRect = this.#tabElement.parentElement?.getBoundingClientRect();
+        if (!parentRect) {
+          return;
+        }
+        const containerRect = this.tabElement.getBoundingClientRect();
+        const iconWidth = spark.getBoundingClientRect().width;
+        const x = containerRect.x - parentRect.x + containerRect.width - iconWidth;
+        spark.style.left = `${x}px`;
       }
     } else {
       iconElement?.remove();
@@ -6124,8 +6194,12 @@ var TabbedPaneTab = class {
     }
     const suffixElementContainer = document.createElement("span");
     suffixElementContainer.classList.add("tabbed-pane-header-tab-suffix-element");
-    const suffixElement = measuring ? this.suffixElement.cloneNode() : this.suffixElement;
-    suffixElementContainer.appendChild(suffixElement);
+    if (this.suffixElement instanceof HTMLElement) {
+      const suffixElement = measuring ? this.suffixElement.cloneNode() : this.suffixElement;
+      suffixElementContainer.appendChild(suffixElement);
+    } else {
+      render2(this.suffixElement, suffixElementContainer);
+    }
     titleElement.insertAdjacentElement("afterend", suffixElementContainer);
     tabSuffixElements.set(tabElement, suffixElementContainer);
   }
@@ -6181,15 +6255,13 @@ var TabbedPaneTab = class {
     return tabElement;
   }
   createTabAnnotationIcon() {
-    const iconContainer = document.createElement("div");
-    iconContainer.classList.add("ai-icon");
     const tabAnnotationIcon = new Icon();
-    tabAnnotationIcon.name = "smart-assistant";
+    tabAnnotationIcon.name = "spark";
     tabAnnotationIcon.classList.add("small");
-    iconContainer.appendChild(tabAnnotationIcon);
-    iconContainer.setAttribute("title", i18nString4(UIStrings4.panelContainsAnnotation));
-    iconContainer.setAttribute("aria-label", i18nString4(UIStrings4.panelContainsAnnotation));
-    return iconContainer;
+    tabAnnotationIcon.classList.add("spark");
+    tabAnnotationIcon.setAttribute("title", i18nString4(UIStrings4.panelContainsAnnotation));
+    tabAnnotationIcon.setAttribute("aria-label", i18nString4(UIStrings4.panelContainsAnnotation));
+    return tabAnnotationIcon;
   }
   createCloseIconButton() {
     const closeButton = new Buttons3.Button.Button();
@@ -9587,7 +9659,7 @@ var MenuButton = class extends HTMLElement {
     if (!this.iconName) {
       throw new Error("<devtools-menu-button> expects an icon.");
     }
-    render2(html2`
+    render3(html2`
         <devtools-button .disabled=${this.disabled}
                          .iconName=${this.iconName}
                          .variant=${"icon"}
@@ -14189,7 +14261,7 @@ div.error {
 /*# sourceURL=${import.meta.resolve("./smallBubble.css")} */`;
 
 // gen/front_end/ui/legacy/UIUtils.js
-var { Directives: Directives2, render: render3 } = Lit2;
+var { Directives: Directives2, render: render4 } = Lit2;
 var UIStrings11 = {
   /**
    * @description label to open link externally
@@ -15790,7 +15862,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
       this.#mutationObserver.observe(this.#contentTemplate.content, { childList: true, attributes: true, subtree: true, characterData: true });
     }
     _HTMLElementWithLightDOMTemplate.patchLitTemplate(template);
-    render3(template, this.#contentTemplate.content);
+    render4(template, this.#contentTemplate.content);
   }
   #onChange(mutationList) {
     this.onChange(mutationList);
@@ -16843,7 +16915,7 @@ __export(EmptyWidget_exports, {
   EmptyWidget: () => EmptyWidget
 });
 import * as i18n24 from "./../../core/i18n/i18n.js";
-import { Directives as Directives3, html as html4, render as render4 } from "./../lit/lit.js";
+import { Directives as Directives3, html as html4, render as render5 } from "./../lit/lit.js";
 import * as VisualLogging17 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/emptyWidget.css.js
@@ -17248,7 +17320,7 @@ var str_12 = i18n24.i18n.registerUIStrings("ui/legacy/EmptyWidget.ts", UIStrings
 var i18nString12 = i18n24.i18n.getLocalizedString.bind(void 0, str_12);
 var { ref } = Directives3;
 var DEFAULT_VIEW = (input, output, target) => {
-  render4(html4`
+  render5(html4`
     <style>${inspectorCommon_css_default}</style>
     <style>${emptyWidget_css_default}</style>
     <div class="empty-state" jslog=${VisualLogging17.section("empty-view")}
@@ -17293,6 +17365,11 @@ var EmptyWidget = class extends VBox {
   set header(header) {
     this.#header = header;
     this.performUpdate();
+  }
+  set extraElements(elements) {
+    this.#extraElements = elements;
+    this.#firstUpdate = false;
+    this.requestUpdate();
   }
   performUpdate() {
     if (this.#firstUpdate) {
@@ -18191,7 +18268,7 @@ __export(ListWidget_exports, {
 import * as i18n28 from "./../../core/i18n/i18n.js";
 import * as Platform23 from "./../../core/platform/platform.js";
 import * as Buttons8 from "./../components/buttons/buttons.js";
-import { html as html5, render as render5 } from "./../lit/lit.js";
+import { html as html5, render as render6 } from "./../lit/lit.js";
 import * as VisualLogging19 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/listWidget.css.js
@@ -18527,7 +18604,7 @@ var ListWidget = class extends VBox {
     const controls = document.createElement("div");
     controls.classList.add("controls-container");
     controls.classList.add("fill");
-    render5(html5`
+    render6(html5`
       <div class="controls-gradient"></div>
       <div class="controls-buttons">
         <devtools-toolbar>
@@ -19220,7 +19297,7 @@ __export(RemoteDebuggingTerminatedScreen_exports, {
 });
 import * as i18n30 from "./../../core/i18n/i18n.js";
 import * as Buttons9 from "./../components/buttons/buttons.js";
-import { html as html6, render as render6 } from "./../lit/lit.js";
+import { html as html6, render as render7 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/remoteDebuggingTerminatedScreen.css.js
 var remoteDebuggingTerminatedScreen_css_default = `/*
@@ -19285,7 +19362,7 @@ var UIStrings15 = {
 var str_15 = i18n30.i18n.registerUIStrings("ui/legacy/RemoteDebuggingTerminatedScreen.ts", UIStrings15);
 var i18nString15 = i18n30.i18n.getLocalizedString.bind(void 0, str_15);
 var DEFAULT_VIEW2 = (input, _output, target) => {
-  render6(html6`
+  render7(html6`
     <style>${remoteDebuggingTerminatedScreen_css_default}</style>
     <div class="header">${i18nString15(UIStrings15.debuggingConnectionWasClosed)}</div>
     <div class="content">
@@ -20882,7 +20959,7 @@ __export(TargetCrashedScreen_exports, {
   TargetCrashedScreen: () => TargetCrashedScreen
 });
 import * as i18n36 from "./../../core/i18n/i18n.js";
-import { html as html7, render as render7 } from "./../lit/lit.js";
+import { html as html7, render as render8 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/targetCrashedScreen.css.js
 var targetCrashedScreen_css_default = `/*
@@ -20918,7 +20995,7 @@ var UIStrings18 = {
 var str_18 = i18n36.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", UIStrings18);
 var i18nString18 = i18n36.i18n.getLocalizedString.bind(void 0, str_18);
 var DEFAULT_VIEW3 = (input, _output, target) => {
-  render7(html7`
+  render8(html7`
     <style>${targetCrashedScreen_css_default}</style>
     <div class="message">${i18nString18(UIStrings18.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString18(UIStrings18.oncePageIsReloadedDevtoolsWill)}</div>`, target);
@@ -21269,7 +21346,7 @@ ol.tree-outline.tree-variant-navigation:not(.hide-selection-when-blurred) li.sel
 
 // gen/front_end/ui/legacy/Treeoutline.js
 var nodeToParentTreeElementMap = /* @__PURE__ */ new WeakMap();
-var { render: render8 } = Lit3;
+var { render: render9 } = Lit3;
 var Events2;
 (function(Events3) {
   Events3["ElementAttached"] = "ElementAttached";
@@ -21904,7 +21981,7 @@ var TreeElement = class {
       this.listItemNode.insertBefore(this.leadingIconsElement, this.titleElement);
       this.ensureSelection();
     }
-    render8(icons, this.leadingIconsElement);
+    render9(icons, this.leadingIconsElement);
   }
   get tooltip() {
     return this.tooltipInternal;

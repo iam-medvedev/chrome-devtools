@@ -62,6 +62,7 @@
     "../../../../../../front_end/panels/sources/SourcesPanel.test.ts",
     "../../../../../../front_end/panels/sources/SourcesView.test.ts",
     "../../../../../../front_end/panels/sources/TabbedEditorContainer.test.ts",
+    "../../../../../../front_end/panels/sources/ThreadsSidebarPane.test.ts",
     "../../../../../../front_end/panels/sources/UISourceCodeFrame.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

@@ -8,6 +8,7 @@ import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
+import * as TextUtils from '../../text_utils/text_utils.js';
 import { AICallTree, AIContext, PerformanceTraceFormatter } from '../ai_assistance.js';
 async function createFormatter(context, name) {
     const parsedTrace = await TraceLoader.traceEngine(context, name, undefined, {
@@ -16,13 +17,45 @@ async function createFormatter(context, name) {
     assert.isOk(parsedTrace.insights);
     const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
     const formatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(focus);
+    // Don't need an implementation, gonna mock it anyway.
+    formatter.resolveFunctionCode = async () => {
+        return null;
+    };
+    stubResolveFunctionCode(formatter);
     return { formatter, parsedTrace };
+}
+// We don't have real UISourceCodes, so stub resolveFunctionCode.
+function stubResolveFunctionCode(formatter) {
+    sinon.stub(formatter, 'resolveFunctionCode')
+        .callsFake(async (url, line, column) => {
+        if (line === -1 || column === -1) {
+            return null;
+        }
+        const range = new TextUtils.TextRange.TextRange(line, column, line + 3, 10);
+        const code = `() => { /* some code from ${url}... */ }`;
+        return {
+            functionBounds: {
+                uiSourceCode: {
+                    url() {
+                        return url;
+                    }
+                },
+                range,
+                name: '',
+            },
+            range,
+            rangeWithContext: new TextUtils.TextRange.TextRange(Math.max(line - 3, 0), 0, line + 6, 0),
+            code,
+            codeWithContext: `// context ...\n\n${code}\n\n// context ...`,
+            text: new TextUtils.Text.Text(''),
+        };
+    });
 }
 describe('PerformanceTraceFormatter', function () {
     setupLocaleHooks();
-    const snapshotTester = new SnapshotTester(this, import.meta);
     setupRuntimeHooks();
     setupSettingsHooks();
+    const snapshotTester = new SnapshotTester(this, import.meta);
     describe('formatTraceSummary', () => {
         it('web-dev.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'web-dev.json.gz');
@@ -64,48 +97,48 @@ describe('PerformanceTraceFormatter', function () {
     describe('formatCriticalRequests', () => {
         it('render-blocking-requests.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'render-blocking-requests.json.gz');
-            const output = formatter.formatCriticalRequests();
+            const output = await formatter.formatCriticalRequests();
             snapshotTester.assert(this, output);
         });
         it('multiple-navigations-render-blocking.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'multiple-navigations-render-blocking.json.gz');
-            const output = formatter.formatCriticalRequests();
+            const output = await formatter.formatCriticalRequests();
             snapshotTester.assert(this, output);
         });
     });
     describe('formatLongestTasks', () => {
         it('long-task-from-worker-thread.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'long-task-from-worker-thread.json.gz');
-            const output = formatter.formatLongestTasks();
+            const output = await formatter.formatLongestTasks();
             snapshotTester.assert(this, output);
         });
         it('multiple-navigations-render-blocking.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'multiple-navigations-render-blocking.json.gz');
-            const output = formatter.formatLongestTasks();
+            const output = await formatter.formatLongestTasks();
             snapshotTester.assert(this, output);
         });
     });
     describe('formatMainThreadBottomUpSummary', () => {
         it('yahoo-news.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'yahoo-news.json.gz');
-            const output = formatter.formatMainThreadBottomUpSummary();
+            const output = await formatter.formatMainThreadBottomUpSummary();
             snapshotTester.assert(this, output);
         });
         it('multiple-navigations-render-blocking.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'multiple-navigations-render-blocking.json.gz');
-            const output = formatter.formatMainThreadBottomUpSummary();
+            const output = await formatter.formatMainThreadBottomUpSummary();
             snapshotTester.assert(this, output);
         });
     });
     describe('formatThirdPartySummary', () => {
         it('yahoo-news.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'yahoo-news.json.gz');
-            const output = formatter.formatThirdPartySummary();
+            const output = await formatter.formatThirdPartySummary();
             snapshotTester.assert(this, output);
         });
         it('multiple-navigations-render-blocking.json.gz', async function () {
             const { formatter } = await createFormatter(this, 'multiple-navigations-render-blocking.json.gz');
-            const output = formatter.formatThirdPartySummary();
+            const output = await formatter.formatThirdPartySummary();
             snapshotTester.assert(this, output);
         });
     });
@@ -114,7 +147,7 @@ describe('PerformanceTraceFormatter', function () {
         const min = parsedTrace.data.Meta.traceBounds.min;
         const max = parsedTrace.data.Meta.traceBounds.min + parsedTrace.data.Meta.traceBounds.range / 2;
         const bounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
-        const output = formatter.formatMainThreadTrackSummary(bounds);
+        const output = await formatter.formatMainThreadTrackSummary(bounds);
         snapshotTester.assert(this, output);
     });
     it('formatNetworkTrackSummary', async function () {
@@ -127,13 +160,23 @@ describe('PerformanceTraceFormatter', function () {
         const output = formatter.formatNetworkTrackSummary(bounds);
         snapshotTester.assert(this, output);
     });
-    it('formatCallTree', async function () {
-        const { formatter, parsedTrace } = await createFormatter(this, 'long-task-from-worker-thread.json.gz');
-        const event = new Trace.EventsSerializer.EventsSerializer().eventForKey('r-62', parsedTrace);
-        const tree = AICallTree.AICallTree.fromEvent(event, parsedTrace);
-        assert.exists(tree);
-        const output = formatter.formatCallTree(tree);
-        snapshotTester.assert(this, output);
+    describe('formatCallTree', () => {
+        it('long-task-from-worker-thread.json.gz', async function () {
+            const { formatter, parsedTrace } = await createFormatter(this, 'long-task-from-worker-thread.json.gz');
+            const event = new Trace.EventsSerializer.EventsSerializer().eventForKey('r-62', parsedTrace);
+            const tree = AICallTree.AICallTree.fromEvent(event, parsedTrace);
+            assert.exists(tree);
+            const output = await formatter.formatCallTree(tree);
+            snapshotTester.assert(this, output);
+        });
+        it('web-dev.json.gz', async function () {
+            const { formatter, parsedTrace } = await createFormatter(this, 'web-dev.json.gz');
+            const event = new Trace.EventsSerializer.EventsSerializer().eventForKey('p-73704-775-2074-418', parsedTrace);
+            const tree = AICallTree.AICallTree.fromEvent(event, parsedTrace);
+            assert.exists(tree);
+            const output = await formatter.formatCallTree(tree);
+            snapshotTester.assert(this, output);
+        });
     });
     describe('formatNetworkRequests', () => {
         it('formats network requests that have redirects', async function () {

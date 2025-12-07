@@ -11,6 +11,7 @@ __export(ExtensionManager_exports, {
 });
 import * as Common from "./../../../core/common/common.js";
 import * as Extensions from "./../../../models/extensions/extensions.js";
+import * as PanelCommon from "./../../common/common.js";
 var instance = null;
 var ExtensionManager = class _ExtensionManager extends Common.ObjectWrapper.ObjectWrapper {
   static instance() {
@@ -56,47 +57,9 @@ var ExtensionManager = class _ExtensionManager extends Common.ObjectWrapper.Obje
   #handleView = (event) => {
     const descriptor = event.data;
     if (!this.#views.has(descriptor.id)) {
-      this.#views.set(descriptor.id, new ExtensionIframe(descriptor));
+      this.#views.set(descriptor.id, new PanelCommon.ExtensionIframe.ExtensionIframe(descriptor));
     }
   };
-};
-var ExtensionIframe = class {
-  #descriptor;
-  #iframe;
-  #isShowing = false;
-  #isLoaded = false;
-  constructor(descriptor) {
-    this.#descriptor = descriptor;
-    this.#iframe = document.createElement("iframe");
-    this.#iframe.src = descriptor.pagePath;
-    this.#iframe.onload = this.#onIframeLoad;
-  }
-  #onIframeLoad = () => {
-    this.#isLoaded = true;
-    if (this.#isShowing) {
-      this.#descriptor.onShown();
-    }
-  };
-  show() {
-    if (this.#isShowing) {
-      return;
-    }
-    this.#isShowing = true;
-    if (this.#isLoaded) {
-      this.#descriptor.onShown();
-    }
-  }
-  hide() {
-    if (!this.#isShowing) {
-      return;
-    }
-    this.#isShowing = false;
-    this.#isLoaded = false;
-    this.#descriptor.onHidden();
-  }
-  frame() {
-    return this.#iframe;
-  }
 };
 export {
   ExtensionManager_exports as ExtensionManager

@@ -704,9 +704,7 @@ var InteractionsTrackAppender = class {
   }
   setPopoverInfo(event, info) {
     if (Trace6.Types.Events.isSyntheticInteraction(event)) {
-      const breakdown = new Components.InteractionBreakdown.InteractionBreakdown();
-      breakdown.entry = event;
-      info.additionalElements.push(breakdown);
+      info.additionalElements.push(Components.InteractionBreakdown.InteractionBreakdown.createWidgetElement(event));
     }
   }
 };
@@ -8729,8 +8727,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       this.panelToolbar.appendToolbarItem(UI10.Toolbar.Toolbar.createActionButton("components.collect-garbage"));
     }
     this.panelToolbar.appendSeparator();
-    const showIgnoreListSetting = new TimelineComponents3.IgnoreListSetting.IgnoreListSetting();
-    this.panelToolbar.appendToolbarItem(new UI10.Toolbar.ToolbarItem(showIgnoreListSetting));
+    this.panelToolbar.appendToolbarItem(new UI10.Toolbar.ToolbarItem(TimelineComponents3.IgnoreListSetting.IgnoreListSetting.createWidgetElement()));
     if (this.#dimThirdPartiesSetting) {
       const dimThirdPartiesCheckbox = this.createSettingCheckbox(this.#dimThirdPartiesSetting, i18nString20(UIStrings20.thirdPartiesByThirdPartyWeb));
       this.#thirdPartyCheckbox = dimThirdPartiesCheckbox;
@@ -10325,9 +10322,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       }
       let responseTextForNonPassedInsights = "";
       let responseTextForPassedInsights = "";
-      for (const modelName in insightsForNav.model) {
-        const model = modelName;
-        const insight = insightsForNav.model[model];
+      for (const insight of Object.values(insightsForNav.model)) {
         const focus = AiAssistanceModel.AIContext.AgentFocus.fromParsedTrace(parsedTrace);
         const formatter = new AiAssistanceModel.PerformanceInsightFormatter.PerformanceInsightFormatter(focus, insight);
         if (!formatter.insightIsSupported()) {
@@ -14972,8 +14967,7 @@ var TimelineFlameChartNetworkDataProvider = class {
       const element = document.createElement("div");
       const root = UI17.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopover_css_default });
       const contents = root.createChild("div", "timeline-flamechart-popover");
-      const infoElement = new TimelineComponents6.NetworkRequestTooltip.NetworkRequestTooltip();
-      infoElement.data = { networkRequest: event, entityMapper: this.#entityMapper };
+      const infoElement = TimelineComponents6.NetworkRequestTooltip.NetworkRequestTooltip.createWidgetElement(event, this.#entityMapper || void 0);
       contents.appendChild(infoElement);
       return element;
     }
@@ -16989,26 +16983,20 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (perfAIEntryPointEnabled && this.parsedTrace) {
       const callTree = AIAssistance2.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
       if (callTree) {
+        let appendSubmenuPromptAction = function(submenu2, action3, label, prompt, jslogContext) {
+          submenu2.defaultSection().appendItem(label, () => action3.execute({ prompt }), { disabled: !action3.enabled(), jslogContext });
+        };
         const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
-        if (Root6.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
-          let appendSubmenuPromptAction = function(submenu2, action3, label, prompt, jslogContext) {
-            submenu2.defaultSection().appendItem(label, () => action3.execute({ prompt }), { disabled: !action3.enabled(), jslogContext });
-          };
-          const submenu = contextMenu.footerSection().appendSubMenuItem(action2.title(), false, PERF_AI_ACTION_ID, Root6.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.featureName);
-          submenu.defaultSection().appendAction(PERF_AI_ACTION_ID, i18nString27(UIStrings27.startAChat));
-          submenu.defaultSection().appendItem(i18nString27(UIStrings27.labelEntry), () => {
-            this.dispatchEventToListeners("EntryLabelAnnotationAdded", { entryIndex, withLinkCreationButton: false });
-          }, {
-            jslogContext: "timeline.annotations.create-entry-label"
-          });
-          appendSubmenuPromptAction(submenu, action2, i18nString27(UIStrings27.assessThePurpose), "What's the purpose of this entry?", PERF_AI_ACTION_ID + ".purpose");
-          appendSubmenuPromptAction(submenu, action2, i18nString27(UIStrings27.identifyTimeSpent), "Where is most time being spent in this call tree?", PERF_AI_ACTION_ID + ".time-spent");
-          appendSubmenuPromptAction(submenu, action2, i18nString27(UIStrings27.findImprovements), "How can I reduce the time of this call tree?", PERF_AI_ACTION_ID + ".improvements");
-        } else if (Root6.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
-          contextMenu.footerSection().appendAction(PERF_AI_ACTION_ID, void 0, false, void 0, Root6.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.featureName);
-        } else {
-          contextMenu.footerSection().appendAction(PERF_AI_ACTION_ID);
-        }
+        const submenu = contextMenu.footerSection().appendSubMenuItem(action2.title(), false, PERF_AI_ACTION_ID);
+        submenu.defaultSection().appendAction(PERF_AI_ACTION_ID, i18nString27(UIStrings27.startAChat));
+        submenu.defaultSection().appendItem(i18nString27(UIStrings27.labelEntry), () => {
+          this.dispatchEventToListeners("EntryLabelAnnotationAdded", { entryIndex, withLinkCreationButton: false });
+        }, {
+          jslogContext: "timeline.annotations.create-entry-label"
+        });
+        appendSubmenuPromptAction(submenu, action2, i18nString27(UIStrings27.assessThePurpose), "What's the purpose of this entry?", PERF_AI_ACTION_ID + ".purpose");
+        appendSubmenuPromptAction(submenu, action2, i18nString27(UIStrings27.identifyTimeSpent), "Where is most time being spent in this call tree?", PERF_AI_ACTION_ID + ".time-spent");
+        appendSubmenuPromptAction(submenu, action2, i18nString27(UIStrings27.findImprovements), "How can I reduce the time of this call tree?", PERF_AI_ACTION_ID + ".improvements");
       }
     }
     if (!possibleActions) {

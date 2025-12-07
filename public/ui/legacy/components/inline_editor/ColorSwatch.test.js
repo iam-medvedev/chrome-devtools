@@ -23,7 +23,7 @@ function createSwatch(color, tooltip) {
     assert.isOk(parsedColor);
     const swatch = new InlineEditor.ColorSwatch.ColorSwatch(tooltip);
     renderElementIntoDOM(swatch);
-    swatch.renderColor(parsedColor);
+    swatch.color = parsedColor;
     return swatch;
 }
 function getClickTarget(swatch) {
@@ -36,7 +36,7 @@ describe('ColorSwatch', () => {
         assertSwatch(swatch, {
             backgroundColor: 'red',
         });
-        swatch.renderColor(new Common.Color.Legacy([1, .5, .2, .5], "rgba" /* Common.Color.Format.RGBA */));
+        swatch.color = new Common.Color.Legacy([1, .5, .2, .5], "rgba" /* Common.Color.Format.RGBA */);
         assertSwatch(swatch, {
             backgroundColor: 'rgba(255, 128, 51, 0.5)',
         });
@@ -67,7 +67,7 @@ describe('ColorSwatch', () => {
     });
     it('does not dispatch an event on click when it is readonly', () => {
         const swatch = createSwatch('red');
-        swatch.setReadonly(true);
+        swatch.readonly = true;
         const target = getClickTarget(swatch);
         const swatchClickEventsReceived = [];
         const onClick = (e) => {
@@ -139,7 +139,7 @@ describe('ColorSwatch', () => {
             'color(xyz-d65 0.41 0.21 0.02)',
         ]);
         // With alpha:
-        swatch.renderColor(Common.Color.parse('#ff000080'));
+        swatch.color = Common.Color.parse('#ff000080');
         menu = getMenuForShiftClick(target);
         assert.deepEqual(getMenuItemLabels(menu.section('legacy')), [
             // HEXA is skipped because it's the input
@@ -168,7 +168,7 @@ describe('ColorSwatch', () => {
             'color(xyz-d65 0.41 0.21 0.02 / 0.5)',
         ]);
         // With alpha:
-        swatch.renderColor(Common.Color.parse('lab(54.29 80.82 69.9 / 0.5)'));
+        swatch.color = Common.Color.parse('lab(54.29 80.82 69.9 / 0.5)');
         menu = getMenuForShiftClick(target);
         assert.deepEqual(getMenuItemLabels(menu.section('legacy')), [
             '#ff000080',
@@ -199,7 +199,7 @@ describe('ColorSwatch', () => {
     });
     it('does not produce a color conversion menu when it is readonly', () => {
         const swatch = createSwatch('#ff0000');
-        swatch.setReadonly(true);
+        swatch.readonly = true;
         const target = getClickTarget(swatch);
         const menu = getMenuForShiftClick(target);
         assert.notExists(menu);

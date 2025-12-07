@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/kit/kit.js';
-import './ControlButton.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Badges from '../../../models/badges/badges.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
@@ -11,6 +10,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
+import { ControlButton } from './ControlButton.js';
 import createRecordingViewStyles from './createRecordingView.css.js';
 const { html, Directives: { ref, createRef, repeat } } = Lit;
 const UIStrings = {
@@ -209,13 +209,16 @@ export const DEFAULT_VIEW = (input, output, target) => {
       </div>
       <div class="footer">
         <div class="controls">
-          <devtools-control-button
-            @click=${onRecordingStarted}
-            .label=${i18nString(UIStrings.startRecording)}
-            .shape=${'circle'}
+          <devtools-widget
+            class="control-button"
+            .widgetConfig=${UI.Widget.widgetConfig(ControlButton, {
+        label: i18nString(UIStrings.startRecording),
+        shape: 'circle',
+        onClick: onRecordingStarted,
+    })}
             jslog=${VisualLogging.action("chrome-recorder.start-recording" /* Actions.RecorderActions.START_RECORDING */).track({ click: true })}
             title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.startRecording), "chrome-recorder.start-recording" /* Actions.RecorderActions.START_RECORDING */)}
-          ></devtools-control-button>
+          ></devtools-widget>
         </div>
       </div>
     `, target);

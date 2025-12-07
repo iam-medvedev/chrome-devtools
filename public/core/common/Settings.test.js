@@ -1,8 +1,8 @@
 // Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { MockStore } from '../../testing/MockSettingStorage.js';
 import * as Common from './common.js';
+const InMemoryStorage = Common.Settings.InMemoryStorage;
 const SettingsStorage = Common.Settings.SettingsStorage;
 const VersionController = Common.Settings.VersionController;
 describe('SettingsStorage class', () => {
@@ -36,7 +36,7 @@ describe('SettingsStorage class', () => {
     });
     describe('forceGet', () => {
         it('returns the value of the backing store, not the cached one', async () => {
-            const mockStore = new MockStore();
+            const mockStore = new InMemoryStorage();
             const settingsStorage = new SettingsStorage({}, mockStore);
             settingsStorage.set('test', 'value');
             mockStore.set('test', 'changed');
@@ -44,7 +44,7 @@ describe('SettingsStorage class', () => {
             assert.strictEqual(await settingsStorage.forceGet('test'), 'changed');
         });
         it('updates the cached value of a SettingsStorage', async () => {
-            const mockStore = new MockStore();
+            const mockStore = new InMemoryStorage();
             const settingsStorage = new SettingsStorage({}, mockStore);
             settingsStorage.set('test', 'value');
             mockStore.set('test', 'changed');
@@ -53,13 +53,13 @@ describe('SettingsStorage class', () => {
             assert.strictEqual(settingsStorage.get('test'), 'changed');
         });
         it('leaves the cached value alone if the backing store has the same value', async () => {
-            const mockStore = new MockStore();
+            const mockStore = new InMemoryStorage();
             const settingsStorage = new SettingsStorage({}, mockStore);
             mockStore.set('test', 'value');
             settingsStorage.set('test', 'value');
-            assert.strictEqual(mockStore.get('test'), 'value');
+            assert.strictEqual(await mockStore.get('test'), 'value');
             assert.strictEqual(await settingsStorage.forceGet('test'), 'value');
-            assert.strictEqual(mockStore.get('test'), 'value');
+            assert.strictEqual(await mockStore.get('test'), 'value');
             assert.strictEqual(await settingsStorage.forceGet('test'), 'value');
         });
     });
@@ -113,13 +113,10 @@ describe('Settings instance', () => {
         assert.strictEqual(syncedStorage.get('dynamic-synced-setting'), '"foo value"');
         assert.strictEqual(syncedStorage.get('static-synced-setting'), 'true');
     });
-    it('registers settings with the backing store when creating them', () => {
-        const registeredSettings = new Set();
-        const mockBackingStore = {
-            ...Common.Settings.NOOP_STORAGE,
-            register: (name) => registeredSettings.add(name),
-        };
-        const storage = new SettingsStorage({}, mockBackingStore, '__prefix__.');
+    it('registers settings with the backing store when creating them', async () => {
+        const inMemoryStorage = new Common.Settings.InMemoryStorage();
+        const spy = sinon.spy(inMemoryStorage, 'register');
+        const storage = new SettingsStorage({}, inMemoryStorage, '__prefix__.');
         Common.Settings.registerSettingExtension({
             settingName: 'static-global-setting',
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -134,13 +131,13 @@ describe('Settings instance', () => {
         });
         settings.createSetting('dynamic-local-setting', 42, "Local" /* Common.Settings.SettingStorageType.LOCAL */);
         settings.createSetting('dynamic-synced-setting', 'foo', "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
-        assert.isTrue(registeredSettings.has('__prefix__.static-global-setting'));
-        assert.isTrue(registeredSettings.has('__prefix__.dynamic-local-setting'));
-        assert.isTrue(registeredSettings.has('__prefix__.dynamic-synced-setting'));
+        sinon.assert.calledWith(spy.firstCall, '__prefix__.static-global-setting');
+        sinon.assert.calledWith(spy.secondCall, '__prefix__.dynamic-local-setting');
+        sinon.assert.calledWith(spy.thirdCall, '__prefix__.dynamic-synced-setting');
     });
     describe('forceGet', () => {
         it('triggers a setting changed event in case the value in the backing store got updated and we update the cached value', async () => {
-            const mockStore = new MockStore();
+            const mockStore = new InMemoryStorage();
             const settingsStorage = new SettingsStorage({}, mockStore);
             mockStore.set('test', '"old"');
             const settings = new Common.Settings.Settings({
@@ -157,18 +154,13 @@ describe('Settings instance', () => {
             mockStore.set('test', '"new"');
             assert.strictEqual(await testSetting.forceGet(), 'new');
             assert.deepEqual(changes, ['new']);
-            assert.strictEqual(mockStore.get('test'), '"new"');
+            assert.strictEqual(await mockStore.get('test'), '"new"');
             assert.strictEqual(await settingsStorage.forceGet('test'), '"new"');
             assert.strictEqual(await testSetting.forceGet(), 'new');
         });
     });
     it('getIfNotDisabled returns the setting\'s value only if the setting is not disabled', async () => {
-        const registeredSettings = new Set();
-        const mockBackingStore = {
-            ...Common.Settings.NOOP_STORAGE,
-            register: (name) => registeredSettings.add(name),
-        };
-        const storage = new SettingsStorage({}, mockBackingStore, '__prefix__.');
+        const storage = new SettingsStorage({}, undefined, '__prefix__.');
         const settings = new Common.Settings.Settings({
             syncedStorage: storage,
             globalStorage: storage,
@@ -223,7 +215,7 @@ describe('VersionController', () => {
     let globalStorage;
     let localStorage;
     beforeEach(() => {
-        const mockStore = new MockStore();
+        const mockStore = new InMemoryStorage();
         syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
         globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
         localStorage = new Common.Settings.SettingsStorage({}, mockStore);
@@ -498,7 +490,7 @@ describe('VersionController', () => {
 describe('updateVersionFrom37To38', () => {
     let settings;
     beforeEach(() => {
-        const mockStore = new MockStore();
+        const mockStore = new InMemoryStorage();
         const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
@@ -559,7 +551,7 @@ describe('updateVersionFrom38To39', () => {
     let settings;
     let setting;
     beforeEach(() => {
-        const mockStore = new MockStore();
+        const mockStore = new InMemoryStorage();
         const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
@@ -613,7 +605,7 @@ describe('updateVersionFrom38To39', () => {
         let customNetworkCondSetting;
         let preferredNetworkCondSetting;
         beforeEach(() => {
-            const mockStore = new MockStore();
+            const mockStore = new InMemoryStorage();
             const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
             const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
             const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
@@ -728,7 +720,7 @@ describe('access logging', () => {
     let settings;
     let logSettingAccess;
     beforeEach(() => {
-        const mockStore = new MockStore();
+        const mockStore = new InMemoryStorage();
         const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const localStorage = new Common.Settings.SettingsStorage({}, mockStore);

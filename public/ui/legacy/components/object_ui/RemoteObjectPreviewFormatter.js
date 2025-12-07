@@ -4,7 +4,7 @@
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
-import { Directives, html, nothing } from '../../../lit/lit.js';
+import { Directives, html, nothing, render } from '../../../lit/lit.js';
 const { ifDefined, repeat } = Directives;
 const UIStrings = {
     /**
@@ -201,6 +201,30 @@ export class RemoteObjectPreviewFormatter {
                             type === 'object' && !subtype ? abbreviateFullQualifiedClassName(description ?? '') :
                                 description;
         return html `<span class='object-value-${(subtype || type)}' title=${ifDefined(title)}>${preview()}</span>`;
+    }
+    renderEvaluationResultPreview(result, allowErrors) {
+        if ('error' in result) {
+            return nothing;
+        }
+        if (result.exceptionDetails?.exception?.description) {
+            const exception = result.exceptionDetails.exception.description;
+            if (exception.startsWith('TypeError: ') || allowErrors) {
+                return html `<span>${result.exceptionDetails.text} ${exception}</span>`;
+            }
+            return nothing;
+        }
+        const { preview, type, subtype, className, description } = result.object;
+        if (preview && type === 'object' && subtype !== 'node' && subtype !== 'trustedtype') {
+            return this.renderObjectPreview(preview);
+        }
+        return this.renderPropertyPreview(type, subtype, className, Platform.StringUtilities.trimEndWithMaxLength(description || '', 400));
+    }
+    /** @deprecated (crbug.com/457388389) Use lit version instead */
+    renderEvaluationResultPreviewFragment(result, allowErrors) {
+        const fragment = document.createDocumentFragment();
+        /* eslint-disable-next-line  @devtools/no-lit-render-outside-of-view */
+        render(this.renderEvaluationResultPreview(result, allowErrors), fragment);
+        return fragment;
     }
 }
 export function renderNodeTitle(nodeTitle) {

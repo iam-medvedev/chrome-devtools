@@ -5883,7 +5883,6 @@ Common12.Revealer.registerRevealer({
 // gen/front_end/panels/ai_assistance/ai_assistance-meta.js
 import * as Common13 from "./../../core/common/common.js";
 import * as i18n28 from "./../../core/i18n/i18n.js";
-import * as Root6 from "./../../core/root/root.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 var UIStrings14 = {
   /**
@@ -5899,11 +5898,6 @@ var UIStrings14 = {
    * the settings tab.
    */
   enableAiAssistance: "Enable AI assistance",
-  /**
-   * @description Text of a tooltip to redirect to the AI assistance panel with
-   * the current element as context
-   */
-  askAi: "Ask AI",
   /**
    * @description Text of a context menu item to redirect to the AI assistance panel with
    * the current context
@@ -5961,19 +5955,12 @@ function isFileAgentFeatureAvailable(config) {
 function isAnyFeatureAvailable(config) {
   return isStylingAgentFeatureAvailable(config) || isNetworkAgentFeatureAvailable(config) || isPerformanceAgentFeatureAvailable(config) || isFileAgentFeatureAvailable(config);
 }
-function titleForAiAssistanceActions() {
-  if (Root6.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled || Root6.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
-    return i18nLazyString14(UIStrings14.debugWithAi)();
-  }
-  return i18nLazyString14(UIStrings14.askAi)();
-}
 UI11.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "freestyler",
   commandPrompt: i18nLazyString14(UIStrings14.showAiAssistance),
   title: i18nLazyString14(UIStrings14.aiAssistance),
   order: 10,
-  featurePromotionId: "ai-assistance",
   persistence: "closeable",
   hasToolbar: false,
   condition: (config) => isAnyFeatureAvailable(config) && !isPolicyRestricted(config),
@@ -6013,7 +6000,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: titleForAiAssistanceActions,
+  title: i18nLazyString14(UIStrings14.debugWithAi),
   configurableBindings: false,
   featurePromotionId: "ai-assistance",
   async loadActionDelegate() {
@@ -6028,7 +6015,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: titleForAiAssistanceActions,
+  title: i18nLazyString14(UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6042,7 +6029,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: titleForAiAssistanceActions,
+  title: i18nLazyString14(UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6056,7 +6043,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: titleForAiAssistanceActions,
+  title: i18nLazyString14(UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6070,7 +6057,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: titleForAiAssistanceActions,
+  title: i18nLazyString14(UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6084,7 +6071,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: titleForAiAssistanceActions,
+  title: i18nLazyString14(UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6098,7 +6085,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: titleForAiAssistanceActions,
+  title: i18nLazyString14(UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6112,7 +6099,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: titleForAiAssistanceActions,
+  title: i18nLazyString14(UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6124,7 +6111,7 @@ UI11.ActionRegistration.registerActionExtension({
 // gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.js
 import * as Common14 from "./../../core/common/common.js";
 import * as i18n30 from "./../../core/i18n/i18n.js";
-import * as Root7 from "./../../core/root/root.js";
+import * as Root6 from "./../../core/root/root.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 var UIStrings15 = {
   /**

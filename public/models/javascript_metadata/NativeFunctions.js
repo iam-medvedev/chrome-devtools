@@ -3152,7 +3152,7 @@ export const NativeFunctions = [
     },
     {
         name: "initKeyboardEvent",
-        signatures: [["typeArg", "?bubblesArg", "?cancelableArg", "?viewArg", "?keyArg", "?locationArg", "?ctrlKey", "?altKey", "?shiftKey", "?metaKey"], ["type", "?bubbles", "?cancelable", "?view", "?keyIdentifier", "?location", "?ctrlKey", "?altKey", "?shiftKey", "?metaKey"]]
+        signatures: [["typeArg", "?bubblesArg", "?cancelableArg", "?viewArg", "?keyArg", "?locationArg", "?ctrlKey", "?altKey", "?shiftKey", "?metaKey"]]
     },
     {
         name: "setKeyframes",
@@ -6202,6 +6202,10 @@ export const NativeFunctions = [
         signatures: [["...args"]]
     },
     {
+        name: "CSSMathRandom",
+        signatures: [["baseValue", "min", "max", "?step"]]
+    },
+    {
         name: "CSSMathSum",
         signatures: [["...args"]]
     },
@@ -6606,6 +6610,10 @@ export const NativeFunctions = [
         signatures: [["type", "?options"]]
     },
     {
+        name: "Event",
+        signatures: [["type", "?eventInitDict"]]
+    },
+    {
         name: "setFormControlRange",
         signatures: [["element", "start", "end"]]
     },
@@ -6732,10 +6740,6 @@ export const NativeFunctions = [
         signatures: [["type", "?options"]]
     },
     {
-        name: "AnimationEvent",
-        signatures: [["type", "?eventInitDict"]]
-    },
-    {
         name: "AnimationPlaybackEvent",
         signatures: [["type", "?eventInitDict"]]
     },
@@ -6764,10 +6768,6 @@ export const NativeFunctions = [
         signatures: [["type", "?eventInitDict"]]
     },
     {
-        name: "FocusEvent",
-        signatures: [["type", "?eventInitDict"]]
-    },
-    {
         name: "HashChangeEvent",
         signatures: [["type", "?eventInitDict"]]
     },
@@ -6777,10 +6777,6 @@ export const NativeFunctions = [
     },
     {
         name: "InterestEvent",
-        signatures: [["type", "?eventInitDict"]]
-    },
-    {
-        name: "KeyboardEvent",
         signatures: [["type", "?eventInitDict"]]
     },
     {
@@ -6821,14 +6817,6 @@ export const NativeFunctions = [
     },
     {
         name: "ToggleEvent",
-        signatures: [["type", "?eventInitDict"]]
-    },
-    {
-        name: "TouchEvent",
-        signatures: [["type", "?eventInitDict"]]
-    },
-    {
-        name: "TransitionEvent",
         signatures: [["type", "?eventInitDict"]]
     },
     {
@@ -7600,11 +7588,11 @@ export const NativeFunctions = [
     },
     {
         name: "drawElement",
-        signatures: [["element", "x", "y", "?dwidth", "?dheight"]]
+        signatures: [["element", "dx", "dy", "?dwidth", "?dheight"]]
     },
     {
         name: "drawElementImage",
-        signatures: [["element", "x", "y", "?dwidth", "?dheight"]]
+        signatures: [["element", "dx", "dy", "?dwidth", "?dheight"], ["element", "sx", "sy", "swidth", "sheight", "dx", "dy", "?dwidth", "?dheight"]]
     },
     {
         name: "Path2D",
@@ -7798,6 +7786,10 @@ export const NativeFunctions = [
     },
     {
         name: "GamepadEvent",
+        signatures: [["type", "?eventInitDict"]]
+    },
+    {
+        name: "GamepadRawInputChangeEvent",
         signatures: [["type", "?eventInitDict"]]
     },
     {
@@ -8421,6 +8413,10 @@ export const NativeFunctions = [
     {
         name: "RTCSessionDescription",
         signatures: [["?descriptionInitDict"]]
+    },
+    {
+        name: "copyPayloadTo",
+        signatures: [["destination"]]
     },
     {
         name: "RtcTransport",

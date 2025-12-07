@@ -1,5 +1,4 @@
 import '../../../ui/kit/kit.js';
-import './ControlButton.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Models from '../models/models.js';
 export interface ViewInput {

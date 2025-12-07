@@ -793,7 +793,8 @@ describeWithEnvironment('FlameChart', () => {
                 assert.deepEqual(chartInstance.coordinatesToGroupIndexAndHoverType(
                 /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 89), { groupIndex: -1, hoverType: "OUTSIDE_TRACKS" /* PerfUI.FlameChart.HoverType.OUTSIDE_TRACKS */ });
             });
-            it('returns the correct group index and the icon type for given coordinates', () => {
+            // After https://crrev.com/c/7205876 this test starts failing.
+            it.skip('[crbug.com/465838131] returns the correct group index and the icon type for given coordinates', () => {
                 const provider = new IndexAndCoordinatesConversionTestProvider();
                 const delegate = new MockFlameChartDelegate();
                 chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);

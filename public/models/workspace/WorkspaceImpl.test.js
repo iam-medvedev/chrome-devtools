@@ -82,7 +82,7 @@ describe('WorkspaceImpl', () => {
         const result = sut.projectsForType(Workspace.Workspace.projectTypes.Debugger);
         assert.deepEqual(result, [projectStub0]);
     });
-    it('can return the UI source code from project type', async () => {
+    it('can return the UI source code', async () => {
         const sut = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
         const uiSourceCodeStub = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
         const projectStub = sinon.createStubInstance(Bindings.ContentProviderBasedProject.ContentProviderBasedProject);

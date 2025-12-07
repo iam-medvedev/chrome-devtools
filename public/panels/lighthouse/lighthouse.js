@@ -2015,6 +2015,7 @@ var StartView = class extends UI4.Widget.Widget {
 // gen/front_end/panels/lighthouse/LighthouseStatusView.js
 var LighthouseStatusView_exports = {};
 __export(LighthouseStatusView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   StatusPhases: () => StatusPhases,
   StatusView: () => StatusView,
   fastFactRotationInterval: () => fastFactRotationInterval,
@@ -2023,7 +2024,9 @@ __export(LighthouseStatusView_exports, {
 import * as Common4 from "./../../core/common/common.js";
 import * as i18n8 from "./../../core/i18n/i18n.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
+import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
+import * as Lit from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/lighthouse/lighthouseDialog.css.js
 var lighthouseDialog_css_default = `/*
@@ -2153,6 +2156,7 @@ var lighthouseDialog_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./lighthouseDialog.css")} */`;
 
 // gen/front_end/panels/lighthouse/LighthouseStatusView.js
+var { html } = Lit;
 var UIStrings4 = {
   /**
    * @description Text to cancel something
@@ -2276,24 +2280,76 @@ var UIStrings4 = {
 var str_4 = i18n8.i18n.registerUIStrings("panels/lighthouse/LighthouseStatusView.ts", UIStrings4);
 var i18nString4 = i18n8.i18n.getLocalizedString.bind(void 0, str_4);
 var i18nLazyString2 = i18n8.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
+var DEFAULT_VIEW = (input, _output, target) => {
+  const { statusHeader, statusText, progressBarClass, progressBarValue, progressBarTotal, cancelButtonVisible, onCancel, bugReport } = input;
+  const renderBugReportBody = (err, auditURL) => {
+    const chromeVersion = navigator.userAgent.match(/Chrome\/(\S+)/) || ["", "Unknown"];
+    const errorMessage = err.friendlyMessage || err.message;
+    const issueBody = `
+${errorMessage}
+\`\`\`
+Channel: DevTools
+Initial URL: ${auditURL}
+Chrome Version: ${chromeVersion[1]}
+Stack Trace: ${err.stack}
+\`\`\`
+`;
+    return html`
+      <p>${i18nString4(UIStrings4.ifThisIssueIsReproduciblePlease)}</p>
+      <code class="monospace">${issueBody.trim()}</code>
+    `;
+  };
+  Lit.render(html`
+    <div class="lighthouse-view vbox">
+      <span class="header">${statusHeader}</span>
+      <div class="lighthouse-status vbox">
+        <div class="lighthouse-progress-wrapper">
+          <div
+            class="lighthouse-progress-bar ${progressBarClass}"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax=${progressBarTotal}
+            aria-valuenow=${progressBarValue}
+            aria-valuetext=${statusText}
+          ></div>
+        </div>
+        <div class="lighthouse-status-text" role="status">
+          ${bugReport ? html`
+            <p>${i18nString4(UIStrings4.ahSorryWeRanIntoAnError)}</p>
+            ${bugReport.knownBugPattern ? html`
+              <p>${i18nString4(UIStrings4.tryToNavigateToTheUrlInAFresh)}</p>
+            ` : renderBugReportBody(bugReport.error, bugReport.auditURL)}
+          ` : statusText}
+        </div>
+      </div>
+      <div class="lighthouse-action-buttons">
+        <devtools-button
+          .variant=${"tonal"}
+          .jslogContext=${"lighthouse.cancel"}
+          @click=${onCancel}
+          style=${Lit.Directives.styleMap({ visibility: cancelButtonVisible ? "visible" : "hidden" })}
+        >${i18nString4(UIStrings4.cancel)}</devtools-button>
+      </div>
+    </div>
+  `, target);
+};
 var StatusView = class {
   panel;
-  statusHeader;
-  progressBar;
-  statusText;
-  cancelButton;
   inspectedURL;
   textChangedAt;
   fastFactsQueued;
   currentPhase;
   scheduledFastFactTimeout;
+  dialogRoot = null;
   dialog;
+  statusHeader;
+  statusText;
+  progressBarClass;
+  progressBarValue;
+  cancelButtonVisible;
+  bugReport;
   constructor(panel) {
     this.panel = panel;
-    this.statusHeader = null;
-    this.progressBar = null;
-    this.statusText = null;
-    this.cancelButton = null;
     this.inspectedURL = "";
     this.textChangedAt = 0;
     this.fastFactsQueued = FastFacts.map((lazyString) => lazyString());
@@ -2303,39 +2359,33 @@ var StatusView = class {
     this.dialog.setDimmed(true);
     this.dialog.setCloseOnEscape(false);
     this.dialog.setOutsideClickCallback((event) => event.consume(true));
+    this.statusHeader = "";
+    this.statusText = "";
+    this.progressBarClass = "";
+    this.progressBarValue = 0;
+    this.cancelButtonVisible = true;
+    this.bugReport = null;
     this.render();
   }
   render() {
-    const dialogRoot = UI5.UIUtils.createShadowRootWithCoreStyles(this.dialog.contentElement, { cssFile: lighthouseDialog_css_default });
-    const lighthouseViewElement = dialogRoot.createChild("div", "lighthouse-view vbox");
-    const cancelButton = UI5.UIUtils.createTextButton(i18nString4(UIStrings4.cancel), this.cancel.bind(this), {
-      jslogContext: "lighthouse.cancel"
-    });
-    const fragment = UI5.Fragment.Fragment.build`
-  <span $="status-header" class="header">Auditing your web page…</span>
-  <div class="lighthouse-status vbox" $="status-view">
-  <div class="lighthouse-progress-wrapper" $="progress-wrapper">
-  <div class="lighthouse-progress-bar" $="progress-bar"></div>
-  </div>
-  <div class="lighthouse-status-text" $="status-text"></div>
-  </div>
-  <div class="lighthouse-action-buttons">
-  ${cancelButton}
-  </div>
-  `;
-    lighthouseViewElement.appendChild(fragment.element());
-    this.statusHeader = fragment.$("status-header");
-    this.progressBar = fragment.$("progress-bar");
-    this.statusText = fragment.$("status-text");
-    UI5.ARIAUtils.markAsProgressBar(this.progressBar, 0, StatusPhases.length - 1);
-    this.cancelButton = cancelButton;
-    UI5.ARIAUtils.markAsStatus(this.statusText);
-    this.dialog.setDefaultFocusedElement(cancelButton);
-    this.dialog.setSizeBehavior(
-      "SetExactWidthMaxHeight"
-      /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
-    );
-    this.dialog.setMaxContentSize(new Geometry.Size(500, 400));
+    if (!this.dialogRoot) {
+      this.dialogRoot = UI5.UIUtils.createShadowRootWithCoreStyles(this.dialog.contentElement, { cssFile: lighthouseDialog_css_default });
+      this.dialog.setSizeBehavior(
+        "SetExactWidthMaxHeight"
+        /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
+      );
+      this.dialog.setMaxContentSize(new Geometry.Size(500, 400));
+    }
+    DEFAULT_VIEW({
+      statusHeader: this.statusHeader,
+      statusText: this.statusText,
+      progressBarClass: this.progressBarClass,
+      progressBarValue: this.progressBarValue,
+      progressBarTotal: StatusPhases.length - 1,
+      cancelButtonVisible: this.cancelButtonVisible,
+      onCancel: this.cancel.bind(this),
+      bugReport: this.bugReport || void 0
+    }, {}, this.dialogRoot);
   }
   reset() {
     this.resetProgressBarClasses();
@@ -2344,6 +2394,10 @@ var StatusView = class {
     this.fastFactsQueued = FastFacts.map((lazyString) => lazyString());
     this.currentPhase = null;
     this.scheduledFastFactTimeout = null;
+    this.bugReport = null;
+    this.statusText = "";
+    this.progressBarValue = 0;
+    this.cancelButtonVisible = true;
   }
   show(dialogRenderElement) {
     this.reset();
@@ -2353,11 +2407,11 @@ var StatusView = class {
     const statusHeader = pageHost ? i18nString4(UIStrings4.auditingS, { PH1: pageHost }) : i18nString4(UIStrings4.auditingYourWebPage);
     this.renderStatusHeader(statusHeader);
     this.dialog.show(dialogRenderElement);
+    this.render();
   }
   renderStatusHeader(statusHeader) {
-    if (this.statusHeader) {
-      this.statusHeader.textContent = `${statusHeader}\u2026`;
-    }
+    this.statusHeader = `${statusHeader}\u2026`;
+    this.render();
   }
   hide() {
     if (this.dialog.isShowing()) {
@@ -2368,7 +2422,7 @@ var StatusView = class {
     this.inspectedURL = url;
   }
   updateStatus(message) {
-    if (!message || !this.statusText) {
+    if (!message) {
       return;
     }
     if (message.startsWith("Cancel")) {
@@ -2386,11 +2440,9 @@ var StatusView = class {
       this.commitTextChange(text);
       this.scheduleFastFactCheck();
       this.resetProgressBarClasses();
-      if (this.progressBar) {
-        this.progressBar.classList.add(nextPhase.progressBarClass);
-        const nextPhaseIndex = StatusPhases.indexOf(nextPhase);
-        UI5.ARIAUtils.setProgressBarValue(this.progressBar, nextPhaseIndex, text);
-      }
+      this.progressBarClass = nextPhase.progressBarClass;
+      this.progressBarValue = StatusPhases.indexOf(nextPhase);
+      this.render();
     }
   }
   cancel() {
@@ -2413,9 +2465,8 @@ var StatusView = class {
     return StatusPhases.find((phase) => phase.statusMessageRegex.test(message)) || null;
   }
   resetProgressBarClasses() {
-    if (this.progressBar) {
-      this.progressBar.className = "lighthouse-progress-bar";
-    }
+    this.progressBarClass = "";
+    this.render();
   }
   scheduleFastFactCheck() {
     if (!this.currentPhase || this.scheduledFastFactTimeout) {
@@ -2440,11 +2491,9 @@ var StatusView = class {
     this.fastFactsQueued.splice(fastFactIndex, 1);
   }
   commitTextChange(text) {
-    if (!this.statusText) {
-      return;
-    }
     this.textChangedAt = performance.now();
-    this.statusText.textContent = text;
+    this.statusText = text;
+    this.render();
   }
   renderBugReport(err) {
     console.error(err);
@@ -2452,45 +2501,22 @@ var StatusView = class {
       window.clearTimeout(this.scheduledFastFactTimeout);
     }
     this.resetProgressBarClasses();
-    if (this.progressBar) {
-      this.progressBar.classList.add("errored");
-    }
-    if (this.statusText) {
-      this.commitTextChange("");
-      UI5.UIUtils.createTextChild(this.statusText.createChild("p"), i18nString4(UIStrings4.ahSorryWeRanIntoAnError));
-      if (KnownBugPatterns.some((pattern) => pattern.test(err.message))) {
-        const message = i18nString4(UIStrings4.tryToNavigateToTheUrlInAFresh);
-        UI5.UIUtils.createTextChild(this.statusText.createChild("p"), message);
-      } else {
-        this.renderBugReportBody(err, this.inspectedURL);
-      }
-    }
+    this.progressBarClass = "errored";
+    this.statusText = "";
+    this.bugReport = {
+      error: err,
+      auditURL: this.inspectedURL,
+      knownBugPattern: KnownBugPatterns.some((pattern) => pattern.test(err.message))
+    };
+    this.render();
   }
   renderText(statusHeader, text) {
-    this.renderStatusHeader(statusHeader);
+    this.statusHeader = `${statusHeader}\u2026`;
     this.commitTextChange(text);
   }
   toggleCancelButton(show) {
-    if (this.cancelButton) {
-      this.cancelButton.style.visibility = show ? "visible" : "hidden";
-    }
-  }
-  renderBugReportBody(err, auditURL) {
-    const chromeVersion = navigator.userAgent.match(/Chrome\/(\S+)/) || ["", "Unknown"];
-    const errorMessage = err.friendlyMessage || err.message;
-    const issueBody = `
-${errorMessage}
-\`\`\`
-Channel: DevTools
-Initial URL: ${auditURL}
-Chrome Version: ${chromeVersion[1]}
-Stack Trace: ${err.stack}
-\`\`\`
-`;
-    if (this.statusText) {
-      UI5.UIUtils.createTextChild(this.statusText.createChild("p"), i18nString4(UIStrings4.ifThisIssueIsReproduciblePlease));
-      UI5.UIUtils.createTextChild(this.statusText.createChild("code", "monospace"), issueBody.trim());
-    }
+    this.cancelButtonVisible = show;
+    this.render();
   }
 };
 var fastFactRotationInterval = 6e3;
@@ -2564,7 +2590,7 @@ var FastFacts = [
 // gen/front_end/panels/lighthouse/LighthouseTimespanView.js
 import * as i18n10 from "./../../core/i18n/i18n.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
+import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 var UIStrings5 = {
   /**

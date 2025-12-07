@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 import '../../../ui/kit/kit.js';
 import './ExtensionView.js';
-import './ControlButton.js';
-import './ReplaySection.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -19,7 +17,10 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
+import { ControlButton } from './ControlButton.js';
 import recordingViewStyles from './recordingView.css.js';
+import { ReplaySection } from './ReplaySection.js';
+import { StepView, } from './StepView.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -427,15 +428,15 @@ function renderReplayOrAbortButton(input) {
         return Lit.nothing;
     }
     // clang-format off
-    return html `<devtools-replay-section
-        .data=${{
+    return html `<devtools-widget
+        .widgetConfig=${UI.Widget.widgetConfig(ReplaySection, {
         settings: input.recorderSettings,
         replayExtensions: input.replayExtensions,
-    }}
-        .disabled=${input.replayState.isPlaying}
-        @startreplay=${input.onTogglePlaying}
+        onStartReplay: input.onTogglePlaying,
+        disabled: input.replayState.isPlaying,
+    })}
         >
-      </devtools-replay-section>`;
+      </devtools-widget>`;
     // clang-format on
 }
 function renderSections(input) {
@@ -464,10 +465,8 @@ function renderSections(input) {
               </div>
               <div class="content">
                 <div class="steps">
-                  <devtools-step-view
-                    @click=${input.onStepClick}
-                    @mouseover=${input.onStepHover}
-                    .data=${{
+                  <devtools-widget
+                    .widgetConfig=${UI.Widget.widgetConfig(StepView, {
         section,
         state: input.getSectionState(section),
         isStartOfGroup: true,
@@ -480,24 +479,24 @@ function renderSections(input) {
         isRecording: input.isRecording,
         isPlaying: input.replayState.isPlaying,
         error: input.getSectionState(section) === "error" /* State.ERROR */
-            ? input.currentError
+            ? (input.currentError ?? undefined)
             : undefined,
         hasBreakpoint: false,
-        removable: input.recording.steps.length > 1 && section.causingStep,
-    }}
+        removable: input.recording.steps.length > 1 && Boolean(section.causingStep),
+        onStepClick: input.onStepClick,
+        onStepHover: input.onStepHover,
+    })}
                   >
-                  </devtools-step-view>
+                  </devtools-widget>
                   ${section.steps.map(step => {
         const stepIndex = input.recording.steps.indexOf(step);
         return html `
-                      <devtools-step-view
-                      @click=${input.onStepClick}
-                      @mouseover=${input.onStepHover}
+                      <devtools-widget
                       @copystep=${input.onCopyStep}
-                      .data=${{
+                      .widgetConfig=${UI.Widget.widgetConfig(StepView, {
             step,
             state: input.getStepState(step),
-            error: input.currentStep === step ? input.currentError : undefined,
+            error: input.currentStep === step ? (input.currentError ?? undefined) : undefined,
             isFirstSection: false,
             isLastSection: i === input.sections.length - 1 && input.recording.steps[input.recording.steps.length - 1] === step,
             isStartOfGroup: false,
@@ -511,10 +510,12 @@ function renderSections(input) {
             builtInConverters: input.builtInConverters,
             extensionConverters: input.extensionConverters,
             isSelected: input.selectedStep === step,
-            recorderSettings: input.recorderSettings,
-        }}
+            recorderSettings: input.recorderSettings ?? undefined,
+            onStepClick: input.onStepClick,
+            onStepHover: input.onStepHover,
+        })}
                       jslog=${VisualLogging.section('step').track({ click: true })}
-                      ></devtools-step-view>
+                      ></devtools-widget>
                     `;
     })}
                   ${!input.recordingTogglingInProgress && input.isRecording && i === input.sections.length - 1 ? html `<devtools-button
@@ -625,15 +626,18 @@ export const DEFAULT_VIEW = (input, output, target) => {
         `}
         ${input.isRecording ? html `<div class="footer">
           <div class="controls">
-            <devtools-control-button
+            <devtools-widget
+              class="control-button"
+              .widgetConfig=${UI.Widget.widgetConfig(ControlButton, {
+        label: footerButtonTitle,
+        shape: 'square',
+        disabled: input.recordingTogglingInProgress,
+        onClick: input.onRecordingFinished,
+    })}
               jslog=${VisualLogging.toggle('toggle-recording').track({ click: true })}
-              @click=${input.onRecordingFinished}
-              .disabled=${input.recordingTogglingInProgress}
-              .shape=${'square'}
-              .label=${footerButtonTitle}
               title=${Models.Tooltip.getTooltipForActions(footerButtonTitle, "chrome-recorder.start-recording" /* Actions.RecorderActions.START_RECORDING */)}
             >
-            </devtools-control-button>
+            </devtools-widget>
           </div>
         </div>` : Lit.nothing}
       </div>
@@ -741,11 +745,11 @@ export class RecordingView extends UI.Widget.Widget {
                 this.abortReplay?.();
             },
             onMeasurePerformanceClick: this.#handleMeasurePerformanceClickEvent.bind(this),
-            onTogglePlaying: (event) => {
+            onTogglePlaying: (speed, extension) => {
                 this.playRecording?.({
                     targetPanel: "chrome-recorder" /* TargetPanel.DEFAULT */,
-                    speed: event.speed,
-                    extension: event.extension,
+                    speed,
+                    extension,
                 });
             },
             onCodeFormatChange: this.#onCodeFormatChange.bind(this),
@@ -821,18 +825,15 @@ export class RecordingView extends UI.Widget.Widget {
         const ownIndex = this.sections.indexOf(section);
         return index >= ownIndex ? "success" /* State.SUCCESS */ : "outstanding" /* State.OUTSTANDING */;
     }
-    #onStepHover = (event) => {
-        const stepView = event.target;
-        const step = stepView.step || stepView.section?.causingStep;
+    #onStepHover = (stepOrSection) => {
+        const step = 'type' in stepOrSection ? stepOrSection : stepOrSection.causingStep;
         if (!step || this.#selectedStep) {
             return;
         }
         this.#highlightCodeForStep(step);
     };
-    #onStepClick(event) {
-        event.stopPropagation();
-        const stepView = event.target;
-        const selectedStep = stepView.step || stepView.section?.causingStep || null;
+    #onStepClick(stepOrSection) {
+        const selectedStep = 'type' in stepOrSection ? stepOrSection : stepOrSection.causingStep || null;
         if (this.#selectedStep === selectedStep) {
             return;
         }

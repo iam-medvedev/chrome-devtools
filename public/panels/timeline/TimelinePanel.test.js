@@ -10,7 +10,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
 import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -231,6 +231,7 @@ describeWithEnvironment('TimelinePanel', function () {
         beforeEach(async () => {
             AIAssistance.ConversationHandler.ConversationHandler.removeInstance();
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+            createTarget();
         });
         it('handles performance requests', async function () {
             const explanation = 'I need more information';

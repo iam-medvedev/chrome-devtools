@@ -4,7 +4,6 @@
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TimelineComponents from './components.js';
 describeWithEnvironment('InteractionBreakdown', () => {
     const { InteractionBreakdown } = TimelineComponents.InteractionBreakdown;
@@ -17,13 +16,13 @@ describeWithEnvironment('InteractionBreakdown', () => {
         const breakdown = new InteractionBreakdown();
         breakdown.entry = longInteraction;
         renderElementIntoDOM(breakdown);
-        await RenderCoordinator.done();
-        assert.isNotNull(breakdown.shadowRoot);
-        const inputDelay = breakdown.shadowRoot.querySelector('[data-entry="input-delay"] .value')?.textContent;
+        await breakdown.updateComplete;
+        assert.isNotNull(breakdown.element.shadowRoot);
+        const inputDelay = breakdown.element.shadowRoot.querySelector('[data-entry="input-delay"] .value')?.textContent;
         assert.strictEqual(inputDelay, '1\xA0ms');
-        const processingDuration = breakdown.shadowRoot.querySelector('[data-entry="processing-duration"] .value')?.textContent;
+        const processingDuration = breakdown.element.shadowRoot.querySelector('[data-entry="processing-duration"] .value')?.textContent;
         assert.strictEqual(processingDuration, '977\xA0ms');
-        const presentationDelay = breakdown.shadowRoot.querySelector('[data-entry="presentation-delay"] .value')?.textContent;
+        const presentationDelay = breakdown.element.shadowRoot.querySelector('[data-entry="presentation-delay"] .value')?.textContent;
         assert.strictEqual(presentationDelay, '2\xA0ms');
     });
 });

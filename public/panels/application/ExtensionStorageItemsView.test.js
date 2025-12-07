@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -98,6 +99,31 @@ describeWithMockConnection('ExtensionStorageItemsView', function () {
             setStorageItems.reset();
         }
         await RenderCoordinator.done();
+        view.detach();
+    });
+    it('screenshot test', async () => {
+        assert.exists(extensionStorageModel);
+        sinon.stub(extensionStorageModel.agent, 'invoke_getStorageItems')
+            .withArgs({ id: TEST_EXTENSION_ID, storageArea: "local" /* Protocol.Extensions.StorageArea.Local */ })
+            .resolves({
+            data: EXAMPLE_DATA,
+            getError: () => undefined,
+        });
+        const parent = document.createElement('div');
+        parent.style.width = '780px';
+        parent.style.height = '400px';
+        renderElementIntoDOM(parent);
+        const view = new View.ExtensionStorageItemsView(extensionStorage);
+        view.markAsRoot();
+        view.show(parent);
+        const target = view.element;
+        target.style.display = 'flex';
+        target.style.width = '780px';
+        target.style.height = '400px';
+        const itemsListener = new ExtensionStorageItemsListener(view.extensionStorageItemsDispatcher);
+        await itemsListener.waitForItemsRefreshed();
+        await view.updateComplete;
+        await assertScreenshot('application/extension-storage-item-view.png');
         view.detach();
     });
 });

@@ -1187,6 +1187,9 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "Zoom out"
   },
+  "entrypoints/main/MainImpl.ts | aiModelDownloaded": {
+    "message": "AI model downloaded"
+  },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
     "message": "Customize and control DevTools"
   },
@@ -3041,9 +3044,6 @@
   "panels/ai_assistance/ai_assistance-meta.ts | aiAssistance": {
     "message": "AI assistance"
   },
-  "panels/ai_assistance/ai_assistance-meta.ts | askAi": {
-    "message": "Ask AI"
-  },
   "panels/ai_assistance/ai_assistance-meta.ts | debugWithAi": {
     "message": "Debug with AI"
   },
@@ -3227,9 +3227,6 @@
   "panels/application/ApplicationPanelSidebar.ts | applicationSidebarPanel": {
     "message": "Application panel sidebar"
   },
-  "panels/application/ApplicationPanelSidebar.ts | appManifest": {
-    "message": "Manifest"
-  },
   "panels/application/ApplicationPanelSidebar.ts | backgroundServices": {
     "message": "Background services"
   },
@@ -3293,9 +3290,6 @@
   "panels/application/ApplicationPanelSidebar.ts | manifest": {
     "message": "Manifest"
   },
-  "panels/application/ApplicationPanelSidebar.ts | manifestDescription": {
-    "message": "A manifest defines how your app appears on phone’s home screens and what the app looks like on launch."
-  },
   "panels/application/ApplicationPanelSidebar.ts | noCookies": {
     "message": "No cookies set"
   },
@@ -3307,9 +3301,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | noLocalStorage": {
     "message": "No local storage detected"
-  },
-  "panels/application/ApplicationPanelSidebar.ts | noManifestDetected": {
-    "message": "No manifest detected"
   },
   "panels/application/ApplicationPanelSidebar.ts | noSessionStorage": {
     "message": "No session storage detected"
@@ -3379,6 +3370,9 @@
   },
   "panels/application/AppManifestView.ts | appIdNote": {
     "message": "Note: id is not specified in the manifest, start_url is used instead. To specify an App ID that matches the current identity, set the id field to {PH1} {PH2}."
+  },
+  "panels/application/AppManifestView.ts | appManifest": {
+    "message": "Manifest"
   },
   "panels/application/AppManifestView.ts | aUrlInTheManifestContainsA": {
     "message": "A URL in the manifest contains a username, password, or port"
@@ -3455,6 +3449,9 @@
   "panels/application/AppManifestView.ts | manifestCouldNotBeFetchedIsEmpty": {
     "message": "Manifest could not be fetched, is empty, or could not be parsed"
   },
+  "panels/application/AppManifestView.ts | manifestDescription": {
+    "message": "A manifest defines how your app appears on phone’s home screens and what the app looks like on launch."
+  },
   "panels/application/AppManifestView.ts | manifestDisplayPropertyMustBeOne": {
     "message": "Manifest 'display' property must be one of 'standalone', 'fullscreen', or 'minimal-ui'"
   },
@@ -3478,6 +3475,9 @@
   },
   "panels/application/AppManifestView.ts | newNoteUrl": {
     "message": "New note URL"
+  },
+  "panels/application/AppManifestView.ts | noManifestDetected": {
+    "message": "No manifest detected"
   },
   "panels/application/AppManifestView.ts | noPlayStoreIdProvided": {
     "message": "No Play store ID provided"
@@ -4943,18 +4943,6 @@
   "panels/application/preloading/components/PreloadingGrid.ts | status": {
     "message": "Status"
   },
-  "panels/application/preloading/components/PreloadingMismatchedHeadersGrid.ts | activationNavigationValue": {
-    "message": "Value in activation navigation"
-  },
-  "panels/application/preloading/components/PreloadingMismatchedHeadersGrid.ts | headerName": {
-    "message": "Header name"
-  },
-  "panels/application/preloading/components/PreloadingMismatchedHeadersGrid.ts | initialNavigationValue": {
-    "message": "Value in initial navigation"
-  },
-  "panels/application/preloading/components/PreloadingMismatchedHeadersGrid.ts | missing": {
-    "message": "(missing)"
-  },
   "panels/application/preloading/components/PreloadingString.ts | PrefetchEvictedAfterBrowsingDataRemoved": {
     "message": "The prefetch was discarded because browsing data was removed."
   },
@@ -5231,6 +5219,9 @@
   "panels/application/preloading/components/RuleSetGrid.ts | status": {
     "message": "Status"
   },
+  "panels/application/preloading/components/UsedPreloadingView.ts | activationNavigationValue": {
+    "message": "Value in activation navigation"
+  },
   "panels/application/preloading/components/UsedPreloadingView.ts | badgeFailure": {
     "message": "Failure"
   },
@@ -5261,11 +5252,20 @@
   "panels/application/preloading/components/UsedPreloadingView.ts | downgradedPrefetchUsed": {
     "message": "The initiating page attempted to prerender this page's URL. The prerender failed, but the resulting response body was still used as a prefetch."
   },
+  "panels/application/preloading/components/UsedPreloadingView.ts | headerName": {
+    "message": "Header name"
+  },
+  "panels/application/preloading/components/UsedPreloadingView.ts | initialNavigationValue": {
+    "message": "Value in initial navigation"
+  },
   "panels/application/preloading/components/UsedPreloadingView.ts | learnMore": {
     "message": "Learn more: Speculative loading on developer.chrome.com"
   },
   "panels/application/preloading/components/UsedPreloadingView.ts | mismatchedHeadersDetail": {
     "message": "Mismatched HTTP request headers"
+  },
+  "panels/application/preloading/components/UsedPreloadingView.ts | missing": {
+    "message": "(missing)"
   },
   "panels/application/preloading/components/UsedPreloadingView.ts | noPreloads": {
     "message": "The initiating page did not attempt to speculatively load this page's URL."
@@ -6935,6 +6935,9 @@
   "panels/elements/components/StylePropertyEditor.ts | selectButton": {
     "message": "Add {propertyName}: {propertyValue}"
   },
+  "panels/elements/ComputedStyleWidget.ts | filterUpdateAriaText": {
+    "message": "Filter applied: {PH1}. Total Results: {PH2}"
+  },
   "panels/elements/ComputedStyleWidget.ts | group": {
     "message": "Group"
   },
@@ -6942,7 +6945,7 @@
     "message": "Navigate to selector source"
   },
   "panels/elements/ComputedStyleWidget.ts | navigateToStyle": {
-    "message": "Navigate to style"
+    "message": "Navigate to styles"
   },
   "panels/elements/ComputedStyleWidget.ts | noMatchingProperty": {
     "message": "No matching property"
@@ -8063,6 +8066,9 @@
   "panels/issues/AffectedPartitioningBlobURLView.ts | noBlobURLAvailable": {
     "message": "No Blob URL available for this issue."
   },
+  "panels/issues/AffectedPermissionElementsView.ts | nElements": {
+    "message": "{n, plural, =1 {# element} other {# elements}}"
+  },
   "panels/issues/AffectedResourcesView.ts | clickToRevealTheFramesDomNodeIn": {
     "message": "Click to reveal the frame's DOM node in the Elements panel"
   },
@@ -8290,6 +8296,9 @@
   },
   "panels/issues/IssuesPane.ts | other": {
     "message": "Other"
+  },
+  "panels/issues/IssuesPane.ts | permissionElement": {
+    "message": "PEPC Element"
   },
   "panels/issues/IssuesPane.ts | quirksMode": {
     "message": "Quirks Mode"
@@ -11846,6 +11855,9 @@
   "panels/recorder/components/ReplaySection.ts | speedGroup": {
     "message": "Speed"
   },
+  "panels/recorder/components/SelectorPicker.ts | selectorPicker": {
+    "message": "Select an element in the page to update selectors"
+  },
   "panels/recorder/components/StepEditor.ts | addAttribute": {
     "message": "Add {attributeName}"
   },
@@ -11872,9 +11884,6 @@
   },
   "panels/recorder/components/StepEditor.ts | removeSelectorPart": {
     "message": "Remove a selector part"
-  },
-  "panels/recorder/components/StepEditor.ts | selectorPicker": {
-    "message": "Select an element in the page to update selectors"
   },
   "panels/recorder/components/StepEditor.ts | unknownActionType": {
     "message": "Unknown action type."
@@ -12190,12 +12199,6 @@
   },
   "panels/security/CookieControlsView.ts | siteReloadMessage": {
     "message": "To apply your updated controls, reload the page"
-  },
-  "panels/security/CookieControlsView.ts | tpcdHeuristicsGrants": {
-    "message": "#tpcd-heuristics-grants"
-  },
-  "panels/security/CookieControlsView.ts | tpcdMetadataGrants": {
-    "message": "#tpcd-metadata-grants"
   },
   "panels/security/CookieControlsView.ts | viewDetails": {
     "message": "View details"

@@ -1711,6 +1711,7 @@ export const generatedProperties = [
         "inherited": false,
         "keywords": [
             "none",
+            "auto",
             "spanning-item",
             "intersection"
         ],
@@ -3721,6 +3722,7 @@ export const generatedProperties = [
         "inherited": false,
         "keywords": [
             "none",
+            "auto",
             "spanning-item",
             "intersection"
         ],
@@ -4519,6 +4521,13 @@ export const generatedProperties = [
         "name": "timeline-trigger"
     },
     {
+        "longhands": [
+            "timeline-trigger-exit-range-start",
+            "timeline-trigger-exit-range-end"
+        ],
+        "name": "timeline-trigger-exit-range"
+    },
+    {
         "name": "timeline-trigger-exit-range-end"
     },
     {
@@ -4526,6 +4535,13 @@ export const generatedProperties = [
     },
     {
         "name": "timeline-trigger-name"
+    },
+    {
+        "longhands": [
+            "timeline-trigger-range-start",
+            "timeline-trigger-range-end"
+        ],
+        "name": "timeline-trigger-range"
     },
     {
         "name": "timeline-trigger-range-end"
@@ -5406,6 +5422,7 @@ export const generatedPropertyValues = {
     "column-rule-break": {
         "values": [
             "none",
+            "auto",
             "spanning-item",
             "intersection"
         ]
@@ -6531,6 +6548,7 @@ export const generatedPropertyValues = {
     "row-rule-break": {
         "values": [
             "none",
+            "auto",
             "spanning-item",
             "intersection"
         ]

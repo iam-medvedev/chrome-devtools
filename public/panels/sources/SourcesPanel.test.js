@@ -7,7 +7,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { describeWithEnvironment, registerActions, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, registerActions, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 describeWithEnvironment('SourcesPanel', () => {
@@ -42,11 +42,6 @@ describeWithEnvironment('SourcesPanel', () => {
         return uiSourceCode;
     }
     it('Shows Debug with Ai menu and submenu items', () => {
-        updateHostConfig({
-            devToolsAiSubmenuPrompts: {
-                enabled: true,
-            },
-        });
         registerNoopActions([
             'debugger.toggle-pause', 'debugger.step-over', 'debugger.step-into', 'debugger.step-out', 'debugger.step',
             'debugger.toggle-breakpoints-active'

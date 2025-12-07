@@ -10,10 +10,12 @@ import * as RenderCoordinator from '../../../ui/components/render_coordinator/re
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Resources from '../application.js';
+import * as PreloadingComponents from './components/components.js';
 const zip2 = (xs, ys) => {
     assert.strictEqual(xs.length, ys.length);
     return Array.from(xs.map((_, i) => [xs[i], ys[i]]));
 };
+const doubleRaf = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 /** Holds targets and ids, and emits events. **/
 class NavigationEmulator {
     seq = 0;
@@ -293,9 +295,10 @@ describeWithMockConnection('PreloadingRuleSetView', () => {
             ],
         });
         await RenderCoordinator.done();
-        const ruleSetGridComponent = view.getRuleSetGridForTest();
-        assert.isNotNull(ruleSetGridComponent.shadowRoot);
-        assertGridContents(ruleSetGridComponent, ['Rule set', 'Status'], [
+        await doubleRaf();
+        const ruleSetGrid = view.getRuleSetGridForTest();
+        assert.isNotNull(ruleSetGrid.element.shadowRoot);
+        assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], [
             ['example.com/', '1 running'],
         ]);
         const placeholder = view.contentElement.querySelector('.empty-state');
@@ -314,17 +317,21 @@ describeWithMockConnection('PreloadingRuleSetView', () => {
       "source": "list",
 `);
         await RenderCoordinator.done();
-        const ruleSetGridComponent = view.getRuleSetGridForTest();
-        assert.isNotNull(ruleSetGridComponent.shadowRoot);
-        const ruleSetDetailsComponent = view.getRuleSetDetailsForTest();
-        assert.isNotNull(ruleSetDetailsComponent.shadowRoot);
-        assertGridContents(ruleSetGridComponent, ['Rule set', 'Status'], [
+        await doubleRaf();
+        const ruleSetGrid = view.getRuleSetGridForTest();
+        assert.isNotNull(ruleSetGrid.element.shadowRoot);
+        assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], [
             ['example.com/', '1 error'],
         ]);
-        ruleSetGridComponent.dispatchEvent(new CustomEvent('select', { detail: 'ruleSetId:0.2' }));
+        ruleSetGrid.dispatchEventToListeners("select" /* PreloadingComponents.RuleSetGrid.Events.SELECT */, 'ruleSetId:0.2');
         await RenderCoordinator.done();
-        assert.deepEqual(ruleSetDetailsComponent.shadowRoot?.getElementById('ruleset-url')?.textContent, 'https://example.com/');
-        assert.deepEqual(ruleSetDetailsComponent.shadowRoot?.getElementById('error-message-text')?.textContent, 'fake error message');
+        const ruleSetDetailsElement = view.contentElement
+            .querySelector('devtools-widget');
+        const ruleSetDetailsComponent = ruleSetDetailsElement?.getWidget();
+        assert.exists(ruleSetDetailsComponent);
+        await ruleSetDetailsComponent.updateComplete;
+        assert.deepEqual(ruleSetDetailsComponent.contentElement.querySelector('#ruleset-url')?.textContent, 'https://example.com/');
+        assert.deepEqual(ruleSetDetailsComponent.contentElement.querySelector('#error-message-text')?.textContent, 'fake error message');
     });
     // TODO(https://crbug.com/1384419): Check that preloading attempts for
     // the previous page vanish once loaderId is added to events
@@ -346,9 +353,10 @@ describeWithMockConnection('PreloadingRuleSetView', () => {
 `);
         await emulator.navigateAndDispatchEvents('notprerendered.html');
         await RenderCoordinator.done();
-        const ruleSetGridComponent = view.getRuleSetGridForTest();
-        assert.isNotNull(ruleSetGridComponent.shadowRoot);
-        assertGridContents(ruleSetGridComponent, ['Rule set', 'Status'], []);
+        await doubleRaf();
+        const ruleSetGrid = view.getRuleSetGridForTest();
+        assert.isNotNull(ruleSetGrid.element.shadowRoot);
+        assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], []);
     });
     it('clears SpeculationRules for previous pages when prerendered page activated', async () => {
         const emulator = new NavigationEmulator();
@@ -367,9 +375,10 @@ describeWithMockConnection('PreloadingRuleSetView', () => {
 `);
         await emulator.activateAndDispatchEvents('prerendered.html');
         await RenderCoordinator.done();
-        const ruleSetGridComponent = view.getRuleSetGridForTest();
-        assert.isNotNull(ruleSetGridComponent.shadowRoot);
-        assertGridContents(ruleSetGridComponent, ['Rule set', 'Status'], []);
+        await doubleRaf();
+        const ruleSetGrid = view.getRuleSetGridForTest();
+        assert.isNotNull(ruleSetGrid.element.shadowRoot);
+        assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], []);
     });
     // See https://crbug.com/1432880
     it('preserves information even if iframe loaded', async () => {
@@ -404,9 +413,10 @@ describeWithMockConnection('PreloadingRuleSetView', () => {
             waitingForDebugger: false,
         });
         await RenderCoordinator.done();
-        const ruleSetGridComponent = view.getRuleSetGridForTest();
-        assert.isNotNull(ruleSetGridComponent.shadowRoot);
-        assertGridContents(ruleSetGridComponent, ['Rule set', 'Status'], [
+        await doubleRaf();
+        const ruleSetGrid = view.getRuleSetGridForTest();
+        assert.isNotNull(ruleSetGrid.element.shadowRoot);
+        assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], [
             ['example.com/', ''],
         ]);
     });
@@ -790,133 +800,6 @@ describeWithMockConnection('PreloadingSummaryView', () => {
         const usedPreloadingComponent = view.getUsedPreloadingForTest();
         assert.isNotNull(usedPreloadingComponent.shadowRoot);
         assert.include(usedPreloadingComponent.shadowRoot.textContent, 'This page was successfully prerendered.');
-    });
-});
-async function testWarnings(event, headerExpected, sectionsExpected) {
-    const target = createTarget();
-    const warningsUpdatedPromise = new Promise(resolve => {
-        const model = target.model(SDK.PreloadingModel.PreloadingModel);
-        assert.exists(model);
-        model.addEventListener("WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, _ => resolve());
-    });
-    const view = createRuleSetView(target);
-    view.wasShown();
-    dispatchEvent(target, 'Preload.preloadEnabledStateUpdated', event);
-    await warningsUpdatedPromise;
-    await RenderCoordinator.done();
-    const infobarContainer = view.getInfobarContainerForTest();
-    const infobar = infobarContainer.querySelector('devtools-resources-preloading-disabled-infobar');
-    assert.exists(infobar);
-    assert.isNotNull(infobar.shadowRoot);
-    const headerGot = infobar.shadowRoot.querySelector('#header');
-    assert.strictEqual(headerGot?.textContent?.trim() || null, headerExpected);
-    if (headerExpected === null) {
-        return;
-    }
-    const headers = [...infobar.shadowRoot.querySelectorAll('#contents div.key')].map(header => header.textContent?.trim());
-    const sections = [...infobar.shadowRoot.querySelectorAll('#contents div.value')].map(section => section.textContent?.trim());
-    assert.deepEqual(zip2(headers, sections), sectionsExpected);
-}
-describeWithMockConnection('PreloadingWarningsView', () => {
-    beforeEach(() => {
-        SDK.ChildTargetManager.ChildTargetManager.install();
-    });
-    it('shows no warnings if holdback flags are disabled', async () => {
-        await testWarnings({
-            disabledByPreference: false,
-            disabledByDataSaver: false,
-            disabledByBatterySaver: false,
-            disabledByHoldbackPrefetchSpeculationRules: false,
-            disabledByHoldbackPrerenderSpeculationRules: false,
-        }, null, []);
-    });
-    it('shows an warning if disabled by user settings', async () => {
-        await testWarnings({
-            disabledByPreference: true,
-            disabledByDataSaver: false,
-            disabledByBatterySaver: false,
-            disabledByHoldbackPrefetchSpeculationRules: false,
-            disabledByHoldbackPrerenderSpeculationRules: false,
-        }, 'Speculative loading is disabled', [
-            [
-                'User settings or extensions',
-                'Speculative loading is disabled because of user settings or an extension. Go to Preload pages settings to update your preference. Go to Extensions settings to disable any extension that blocks speculative loading.',
-            ],
-        ]);
-    });
-    it('shows an warning if disabled disabled by Data Saver', async () => {
-        await testWarnings({
-            disabledByPreference: false,
-            disabledByDataSaver: true,
-            disabledByBatterySaver: false,
-            disabledByHoldbackPrefetchSpeculationRules: false,
-            disabledByHoldbackPrerenderSpeculationRules: false,
-        }, 'Speculative loading is disabled', [
-            ['Data Saver', 'Speculative loading is disabled because of the operating system\'s Data Saver mode.'],
-        ]);
-    });
-    it('shows an warning if disabled by Battery Saver', async () => {
-        await testWarnings({
-            disabledByPreference: false,
-            disabledByDataSaver: false,
-            disabledByBatterySaver: true,
-            disabledByHoldbackPrefetchSpeculationRules: false,
-            disabledByHoldbackPrerenderSpeculationRules: false,
-        }, 'Speculative loading is disabled', [
-            ['Battery Saver', 'Speculative loading is disabled because of the operating system\'s Battery Saver mode.'],
-        ]);
-    });
-    it('shows an warning if disabled by prefetch holdback', async () => {
-        await testWarnings({
-            disabledByPreference: false,
-            disabledByDataSaver: false,
-            disabledByBatterySaver: false,
-            disabledByHoldbackPrefetchSpeculationRules: true,
-            disabledByHoldbackPrerenderSpeculationRules: false,
-        }, 'Speculative loading is force-enabled', [
-            [
-                'Prefetch was disabled, but is force-enabled now',
-                'Prefetch is forced-enabled because DevTools is open. When DevTools is closed, prefetch will be disabled because this browser session is part of a holdback group used for performance comparisons.',
-            ],
-        ]);
-    });
-    it('shows an warning if disabled by prerender holdback', async () => {
-        await testWarnings({
-            disabledByPreference: false,
-            disabledByDataSaver: false,
-            disabledByBatterySaver: false,
-            disabledByHoldbackPrefetchSpeculationRules: false,
-            disabledByHoldbackPrerenderSpeculationRules: true,
-        }, 'Speculative loading is force-enabled', [
-            [
-                'Prerendering was disabled, but is force-enabled now',
-                'Prerendering is forced-enabled because DevTools is open. When DevTools is closed, prerendering will be disabled because this browser session is part of a holdback group used for performance comparisons.',
-            ],
-        ]);
-    });
-    it('shows multiple warnings per reason', async () => {
-        await testWarnings({
-            disabledByPreference: true,
-            disabledByDataSaver: true,
-            disabledByBatterySaver: true,
-            disabledByHoldbackPrefetchSpeculationRules: true,
-            disabledByHoldbackPrerenderSpeculationRules: true,
-        }, 'Speculative loading is disabled', [
-            [
-                'User settings or extensions',
-                'Speculative loading is disabled because of user settings or an extension. Go to Preload pages settings to update your preference. Go to Extensions settings to disable any extension that blocks speculative loading.',
-            ],
-            ['Data Saver', 'Speculative loading is disabled because of the operating system\'s Data Saver mode.'],
-            ['Battery Saver', 'Speculative loading is disabled because of the operating system\'s Battery Saver mode.'],
-            [
-                'Prefetch was disabled, but is force-enabled now',
-                'Prefetch is forced-enabled because DevTools is open. When DevTools is closed, prefetch will be disabled because this browser session is part of a holdback group used for performance comparisons.',
-            ],
-            [
-                'Prerendering was disabled, but is force-enabled now',
-                'Prerendering is forced-enabled because DevTools is open. When DevTools is closed, prerendering will be disabled because this browser session is part of a holdback group used for performance comparisons.',
-            ],
-        ]);
     });
 });
 //# sourceMappingURL=PreloadingView.test.js.map

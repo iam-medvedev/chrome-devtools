@@ -139,10 +139,9 @@ describe('LinearMemoryInspector', () => {
     it('can change endianness settings on event', async () => {
         assert.deepEqual(view.input.endianness, "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */);
         const endianSetting = "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.BIG */;
-        const event = new LinearMemoryInspectorComponents.LinearMemoryValueInterpreter.EndiannessChangedEvent(endianSetting);
-        view.input.onEndiannessChanged(event);
+        view.input.onEndiannessChanged(endianSetting);
         const newViewInput = await view.nextInput;
-        assert.deepEqual(newViewInput.endianness, event.data);
+        assert.deepEqual(newViewInput.endianness, endianSetting);
     });
     it('updates current address if user triggers a jumptopointeraddress event', async () => {
         const memory = new Uint8Array([2, 0, 0, 0]);
@@ -152,8 +151,7 @@ describe('LinearMemoryInspector', () => {
         component.address = 0;
         component.endianness = "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */;
         await view.nextInput;
-        const event = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.JumpToPointerAddressEvent(2);
-        view.input.onJumpToAddress(event);
+        view.input.onJumpToAddress(2);
         const newViewInput = await view.nextInput;
         const expectedSelectedByte = new DataView(memory.buffer).getUint32(0, true);
         assert.strictEqual(newViewInput.address, expectedSelectedByte);
@@ -205,7 +203,7 @@ describe('LinearMemoryInspector', () => {
     it('triggers event on settings changed when value type is changed', async () => {
         const settingsPromise = component.once("SettingsChanged" /* LinearMemoryInspectorComponents.LinearMemoryInspector.Events.SETTINGS_CHANGED */);
         const valueType = "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */;
-        view.input.onValueTypeToggled(new LinearMemoryInspectorComponents.LinearMemoryValueInterpreter.ValueTypeToggledEvent(valueType, false));
+        view.input.onValueTypeToggled(valueType, false);
         const { valueTypes } = await settingsPromise;
         assert.isTrue(valueTypes.size > 1);
         assert.isFalse(valueTypes.has(valueType));
@@ -214,7 +212,7 @@ describe('LinearMemoryInspector', () => {
         const settingsPromise = component.once("SettingsChanged" /* LinearMemoryInspectorComponents.LinearMemoryInspector.Events.SETTINGS_CHANGED */);
         const valueType = "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */;
         const valueTypeMode = "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */;
-        view.input.onValueTypeModeChanged(new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueTypeModeChangedEvent(valueType, valueTypeMode));
+        view.input.onValueTypeModeChanged(valueType, valueTypeMode);
         const { valueTypes, modes } = await settingsPromise;
         assert.isTrue(valueTypes.has(valueType));
         assert.strictEqual(modes.get(valueType), valueTypeMode);
@@ -222,9 +220,9 @@ describe('LinearMemoryInspector', () => {
     it('triggers event on settings changed when endianness is changed', async () => {
         const settingsPromise = component.once("SettingsChanged" /* LinearMemoryInspectorComponents.LinearMemoryInspector.Events.SETTINGS_CHANGED */);
         const endianness = "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.BIG */;
-        view.input.onEndiannessChanged(new LinearMemoryInspectorComponents.LinearMemoryValueInterpreter.EndiannessChangedEvent(endianness));
-        const event = await settingsPromise;
-        assert.strictEqual(event.endianness, endianness);
+        view.input.onEndiannessChanged(endianness);
+        const { endianness: newEndianness } = await settingsPromise;
+        assert.strictEqual(newEndianness, endianness);
     });
     it('formats a hexadecimal number', () => {
         const number = 23;

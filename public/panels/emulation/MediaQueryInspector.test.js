@@ -24,6 +24,7 @@ describeWithMockConnection('MediaQueryInspector', () => {
     it('redners media queries', async () => {
         inspector = new Emulation.MediaQueryInspector.MediaQueryInspector(() => 42, (_) => { }, throttler);
         renderElementIntoDOM(inspector);
+        await inspector.updateComplete;
         assert.lengthOf(inspector.contentElement.querySelectorAll('.media-inspector-marker'), 0);
         const cssModel = target.model(SDK.CSSModel.CSSModel);
         assert.exists(cssModel);
@@ -37,6 +38,7 @@ describeWithMockConnection('MediaQueryInspector', () => {
         cssModel.dispatchEventToListeners(SDK.CSSModel.Events.StyleSheetAdded, {});
         const [work] = await workScheduled;
         await work();
+        await inspector.updateComplete;
         assert.lengthOf(inspector.contentElement.querySelectorAll('.media-inspector-marker'), 1);
     });
 });

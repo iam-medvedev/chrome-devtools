@@ -111,7 +111,7 @@ div.raw-headers-row {
 .green-circle::before,
 .red-circle::before,
 .yellow-circle::before {
-  content: "";
+  content: '';
   display: inline-block;
   width: 12px;
   height: 12px;
@@ -1149,11 +1149,12 @@ customElements.define("devtools-header-section-row", HeaderSectionRow);
 // gen/front_end/panels/network/components/RequestHeaderSection.js
 var RequestHeaderSection_exports = {};
 __export(RequestHeaderSection_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   RequestHeaderSection: () => RequestHeaderSection
 });
-import "./../../../ui/legacy/legacy.js";
 import * as i18n5 from "./../../../core/i18n/i18n.js";
 import * as Platform2 from "./../../../core/platform/platform.js";
+import * as UI2 from "./../../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
 import * as NetworkForward from "./../forward/forward.js";
@@ -1164,67 +1165,68 @@ var RequestHeaderSection_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  :scope {
+    display: block;
+  }
 
-:host {
-  display: block;
-}
+  devtools-header-section-row:last-of-type {
+    margin-bottom: 10px;
+  }
 
-devtools-header-section-row:last-of-type {
-  margin-bottom: 10px;
-}
+  devtools-header-section-row:first-of-type {
+    margin-top: 2px;
+  }
 
-devtools-header-section-row:first-of-type {
-  margin-top: 2px;
-}
+  .call-to-action {
+    background-color: var(--sys-color-neutral-container);
+    padding: 8px;
+    border-radius: 5px;
+    margin: 4px;
+  }
 
-.call-to-action {
-  background-color: var(--sys-color-neutral-container);
-  padding: 8px;
-  border-radius: 5px;
-  margin: 4px;
-}
+  .call-to-action-body {
+    padding: 6px 0;
+    margin-left: 9.5px;
+    border-left: 2px solid var(--issue-color-yellow);
+    padding-left: 18px;
+    line-height: 20px;
+  }
 
-.call-to-action-body {
-  padding: 6px 0;
-  margin-left: 9.5px;
-  border-left: 2px solid var(--issue-color-yellow);
-  padding-left: 18px;
-  line-height: 20px;
-}
+  .call-to-action .explanation {
+    font-weight: bold;
+  }
 
-.call-to-action .explanation {
-  font-weight: bold;
-}
+  .call-to-action code {
+    font-size: 90%;
+  }
 
-.call-to-action code {
-  font-size: 90%;
-}
+  .call-to-action .example .comment::before {
+    content: " \u2014 ";
+  }
 
-.call-to-action .example .comment::before {
-  content: " \u2014 ";
-}
-
-.link,
-.devtools-link {
-  color: var(--sys-color-primary);
-  text-decoration: underline;
-  cursor: pointer;
-  outline-offset: 2px;
-}
-
-.explanation .link {
-  font-weight: normal;
-}
-
-.inline-icon {
-  vertical-align: middle;
-}
-
-@media (forced-colors: active) {
   .link,
   .devtools-link {
-    color: linktext;
-    text-decoration-color: linktext;
+    color: var(--sys-color-primary);
+    text-decoration: underline;
+    cursor: pointer;
+    outline-offset: 2px;
+  }
+
+  .explanation .link {
+    font-weight: normal;
+  }
+
+  .inline-icon {
+    vertical-align: middle;
+  }
+
+  @media (forced-colors: active) {
+    .link,
+    .devtools-link {
+      color: linktext;
+      text-decoration-color: linktext;
+    }
   }
 }
 
@@ -1252,66 +1254,80 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/network/components/RequestHeaderSection.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
-var RequestHeaderSection = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #request;
+var DEFAULT_VIEW2 = (input, output, target) => {
+  const headers = input.headers;
+  render4(html4`
+    <style>${RequestHeaderSection_css_default}</style>
+    ${input.isProvisionalHeaders ? renderProvisionalHeadersWarning(input.isRequestCached) : Lit3.nothing}
+    ${headers.map((header) => html4`
+      <devtools-header-section-row
+        .data=${{ header }}
+        jslog=${VisualLogging4.item("request-header")}
+      ></devtools-header-section-row>
+    `)}
+  `, target);
+};
+function renderProvisionalHeadersWarning(isRequestCached) {
+  let cautionText;
+  let cautionTitle = "";
+  if (isRequestCached) {
+    cautionText = i18nString3(UIStrings3.provisionalHeadersAreShownDisableCache);
+    cautionTitle = i18nString3(UIStrings3.onlyProvisionalHeadersAre);
+  } else {
+    cautionText = i18nString3(UIStrings3.provisionalHeadersAreShown);
+  }
+  return html4`
+    <div class="call-to-action">
+      <div class="call-to-action-body">
+        <div class="explanation" title=${cautionTitle}>
+          <devtools-icon class="inline-icon medium" name='warning-filled'>
+          </devtools-icon>
+          ${cautionText} <x-link href="https://developer.chrome.com/docs/devtools/network/reference/#provisional-headers" class="link">${i18nString3(UIStrings3.learnMore)}</x-link>
+        </div>
+      </div>
+    </div>
+  `;
+}
+var RequestHeaderSection = class extends UI2.Widget.Widget {
+  #request = null;
   #headers = [];
-  set data(data) {
-    this.#request = data.request;
+  #view;
+  constructor(element, view = DEFAULT_VIEW2) {
+    super(element, { useShadowDom: true });
+    this.#view = view;
+  }
+  set toReveal(toReveal) {
+    if (!toReveal) {
+      return;
+    }
+    if (toReveal.section === "Request") {
+      this.#headers.filter((header) => header.name === toReveal.header?.toLowerCase()).forEach((header) => {
+        header.highlight = true;
+      });
+    }
+    this.requestUpdate();
+  }
+  set request(request) {
+    this.#request = request;
     this.#headers = this.#request.requestHeaders().map((header) => ({
       name: Platform2.StringUtilities.toLowerCaseString(header.name),
       value: header.value,
       valueEditable: 2
     }));
     this.#headers.sort((a, b) => Platform2.StringUtilities.compare(a.name, b.name));
-    if (data.toReveal?.section === "Request") {
-      this.#headers.filter((header) => header.name === data.toReveal?.header?.toLowerCase()).forEach((header) => {
-        header.highlight = true;
-      });
-    }
-    this.#render();
+    this.requestUpdate();
   }
-  #render() {
+  performUpdate() {
     if (!this.#request) {
       return;
     }
-    render4(html4`
-      <style>${RequestHeaderSection_css_default}</style>
-      ${this.#maybeRenderProvisionalHeadersWarning()}
-      ${this.#headers.map((header) => html4`
-        <devtools-header-section-row
-          .data=${{ header }}
-          jslog=${VisualLogging4.item("request-header")}
-        ></devtools-header-section-row>
-      `)}
-    `, this.#shadow, { host: this });
-  }
-  #maybeRenderProvisionalHeadersWarning() {
-    if (!this.#request || this.#request.requestHeadersText() !== void 0) {
-      return Lit3.nothing;
-    }
-    let cautionText;
-    let cautionTitle = "";
-    if (this.#request.cachedInMemory() || this.#request.cached()) {
-      cautionText = i18nString3(UIStrings3.provisionalHeadersAreShownDisableCache);
-      cautionTitle = i18nString3(UIStrings3.onlyProvisionalHeadersAre);
-    } else {
-      cautionText = i18nString3(UIStrings3.provisionalHeadersAreShown);
-    }
-    return html4`
-      <div class="call-to-action">
-        <div class="call-to-action-body">
-          <div class="explanation" title=${cautionTitle}>
-            <devtools-icon class="inline-icon medium" name='warning-filled'>
-            </devtools-icon>
-            ${cautionText} <x-link href="https://developer.chrome.com/docs/devtools/network/reference/#provisional-headers" class="link">${i18nString3(UIStrings3.learnMore)}</x-link>
-          </div>
-        </div>
-      </div>
-    `;
+    this.#view({
+      headers: this.#headers,
+      isProvisionalHeaders: this.#request.requestHeadersText() === void 0,
+      isRequestCached: this.#request.cached() || this.#request.cachedInMemory()
+    }, void 0, this.contentElement);
   }
 };
-customElements.define("devtools-request-header-section", RequestHeaderSection);
 
 // gen/front_end/panels/network/components/RequestHeadersView.js
 var RequestHeadersView_exports = {};
@@ -1332,7 +1348,7 @@ import * as Buttons3 from "./../../../ui/components/buttons/buttons.js";
 import * as Input from "./../../../ui/components/input/input.js";
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI3 from "./../../../ui/legacy/legacy.js";
+import * as UI4 from "./../../../ui/legacy/legacy.js";
 import * as Lit4 from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 import * as Sources2 from "./../../sources/sources.js";
@@ -1354,7 +1370,7 @@ import * as TextUtils from "./../../../models/text_utils/text_utils.js";
 import * as NetworkForward2 from "./../forward/forward.js";
 import * as Sources from "./../../sources/sources.js";
 import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
-import * as UI2 from "./../../../ui/legacy/legacy.js";
+import * as UI3 from "./../../../ui/legacy/legacy.js";
 import { html as html5, nothing as nothing4, render as render5 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
 
@@ -1804,7 +1820,7 @@ var ResponseHeaderSection = class extends ResponseHeaderSectionBase {
       Common2.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(true);
       await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(requestUrl);
     } else {
-      UI2.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async () => {
+      UI3.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async () => {
         await Sources.SourcesNavigator.OverridesNavigatorView.instance().setupNewWorkspace();
         await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(requestUrl);
       });
@@ -2181,10 +2197,10 @@ var RequestHeadersView = class extends LegacyWrapper.LegacyWrapper.WrappableComp
         aria-label=${i18nString5(UIStrings5.requestHeaders)}
       >
         ${this.#showRequestHeadersText && requestHeadersText ? this.#renderRawHeaders(requestHeadersText, false) : html6`
-          <devtools-request-header-section .data=${{
+          <devtools-widget .widgetConfig=${UI4.Widget.widgetConfig(RequestHeaderSection, {
       request: this.#request,
       toReveal: this.#toReveal
-    }} jslog=${VisualLogging6.section("request-headers")}></devtools-request-header-section>
+    })} jslog=${VisualLogging6.section("request-headers")}></devtools-widget>
         `}
       </devtools-request-headers-category>
     `;
@@ -2204,7 +2220,7 @@ var RequestHeadersView = class extends LegacyWrapper.LegacyWrapper.WrappableComp
     const onContextMenuOpen = (event) => {
       const showFull2 = forResponseHeaders ? this.#showResponseHeadersTextFull : this.#showRequestHeadersTextFull;
       if (!showFull2) {
-        const contextMenu = new UI3.ContextMenu.ContextMenu(event);
+        const contextMenu = new UI4.ContextMenu.ContextMenu(event);
         const section3 = contextMenu.newSection();
         section3.appendItem(i18nString5(UIStrings5.showMore), showMore, { jslogContext: "show-more" });
         void contextMenu.show();
@@ -2277,26 +2293,37 @@ var RequestHeadersView = class extends LegacyWrapper.LegacyWrapper.WrappableComp
         aria-label=${i18nString5(UIStrings5.general)}
       >
       <div jslog=${VisualLogging6.section("general")}>
-        ${this.#renderGeneralRow(i18nString5(UIStrings5.requestUrl), this.#request.url())}
-        ${this.#request.statusCode ? this.#renderGeneralRow(i18nString5(UIStrings5.requestMethod), this.#request.requestMethod) : Lit4.nothing}
-        ${this.#request.statusCode ? this.#renderGeneralRow(i18nString5(UIStrings5.statusCode), statusText, statusClasses) : Lit4.nothing}
-        ${this.#request.remoteAddress() ? this.#renderGeneralRow(i18nString5(UIStrings5.remoteAddress), this.#request.remoteAddress()) : Lit4.nothing}
-        ${this.#request.referrerPolicy() ? this.#renderGeneralRow(i18nString5(UIStrings5.referrerPolicy), String(this.#request.referrerPolicy())) : Lit4.nothing}
+        ${this.#renderGeneralRow(i18nString5(UIStrings5.requestUrl), this.#request.url(), "request-url")}
+        ${this.#request.statusCode ? this.#renderGeneralRow(i18nString5(UIStrings5.requestMethod), this.#request.requestMethod, "request-method") : Lit4.nothing}
+        ${this.#request.statusCode ? this.#renderGeneralRow(i18nString5(UIStrings5.statusCode), statusText, "status-code", statusClasses) : Lit4.nothing}
+        ${this.#request.remoteAddress() ? this.#renderGeneralRow(i18nString5(UIStrings5.remoteAddress), this.#request.remoteAddress(), "remote-address") : Lit4.nothing}
+        ${this.#request.referrerPolicy() ? this.#renderGeneralRow(i18nString5(UIStrings5.referrerPolicy), String(this.#request.referrerPolicy()), "referrer-policy") : Lit4.nothing}
       </div>
       </devtools-request-headers-category>
     `;
   }
-  #renderGeneralRow(name, value2, classNames) {
+  #renderGeneralRow(name, value2, id, classNames) {
     const isHighlighted = this.#toReveal?.section === "General" && name.toLowerCase() === this.#toReveal?.header?.toLowerCase();
     return html6`
       <div class="row ${isHighlighted ? "header-highlight" : ""}">
         <div class="header-name">${name}</div>
         <div
+          id=${id}
           class="header-value ${classNames?.join(" ")}"
           @copy=${() => Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.NetworkPanelCopyValue)}
         >${value2}</div>
       </div>
     `;
+  }
+  getHeaderElementById(id) {
+    const categories = this.#shadow.querySelectorAll("devtools-request-headers-category");
+    for (const category of categories) {
+      const element = category.querySelector(`#${id}`);
+      if (element) {
+        return element;
+      }
+    }
+    return null;
   }
 };
 var ToggleRawHeadersEvent = class _ToggleRawHeadersEvent extends Event {
@@ -2384,6 +2411,7 @@ customElements.define("devtools-request-headers-category", Category);
 // gen/front_end/panels/network/components/RequestTrustTokensView.js
 var RequestTrustTokensView_exports = {};
 __export(RequestTrustTokensView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   RequestTrustTokensView: () => RequestTrustTokensView,
   statusConsideredSuccess: () => statusConsideredSuccess
 });
@@ -2391,7 +2419,7 @@ import "./../../../ui/components/report_view/report_view.js";
 import "./../../../ui/kit/kit.js";
 import * as i18n11 from "./../../../core/i18n/i18n.js";
 import * as SDK4 from "./../../../core/sdk/sdk.js";
-import * as LegacyWrapper3 from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import * as UI5 from "./../../../ui/legacy/legacy.js";
 import * as Lit5 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
 
@@ -2401,28 +2429,38 @@ var RequestTrustTokensView_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-.code {
-  font-family: var(--monospace-font-family);
-  font-size: var(--monospace-font-size);
-}
+@scope to (devtools-widget > *) {
+  .code {
+    font-family: var(--monospace-font-family);
+    font-size: var(--monospace-font-size);
+  }
 
-.issuers-list {
-  display: flex;
-  flex-direction: column;
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
+  .issuers-list {
+    display: flex;
+    flex-direction: column;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
 
-.status-icon {
-  margin: 0 0.3em 2px 0;
-  vertical-align: middle;
+  .status-icon {
+    margin: 0 0.3em 2px 0;
+    vertical-align: middle;
+
+    &.failure {
+      color: var(--icon-error);
+    }
+
+    &.success {
+      color: var(--icon-checkmark-green);
+    }
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./RequestTrustTokensView.css")} */`;
 
 // gen/front_end/panels/network/components/RequestTrustTokensView.js
-var { html: html7 } = Lit5;
+var { html: html7, render: render7 } = Lit5;
 var UIStrings6 = {
   /**
    * @description Section heading in the Trust Token tab
@@ -2504,125 +2542,137 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/network/components/RequestTrustTokensView.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var RequestTrustTokensView = class extends LegacyWrapper3.LegacyWrapper.WrappableComponent {
-  #shadow = this.attachShadow({ mode: "open" });
-  #request;
-  constructor(request) {
-    super();
+function renderRowIfValuePresent(key, value2, isCode) {
+  if (!value2 || Array.isArray(value2) && value2.length === 0) {
+    return Lit5.nothing;
+  }
+  return html7`
+    <devtools-report-key>${key}</devtools-report-key>
+    <devtools-report-value class=${isCode ? "code" : ""}>
+      ${Array.isArray(value2) ? html7`
+        <ul class="issuers-list">
+            ${value2.map((item3) => html7`<li>${item3}</li>`)}
+        </ul>` : value2}
+    </devtools-report-value>
+  `;
+}
+var renderResultSection = (status, description, issuedTokenCount) => {
+  if (!status) {
+    return Lit5.nothing;
+  }
+  return html7`
+    <devtools-report-section-header>${i18nString6(UIStrings6.result)}</devtools-report-section-header>
+    <devtools-report-key>${i18nString6(UIStrings6.status)}</devtools-report-key>
+    <devtools-report-value>
+      <span>
+        <devtools-icon class="status-icon medium ${status === "Success" ? "success" : "failure"}"
+        name=${status === "Success" ? "check-circle" : "cross-circle-filled"}>
+        </devtools-icon>
+        <strong>${status === "Success" ? i18nString6(UIStrings6.success) : i18nString6(UIStrings6.failure)}</strong>
+        ${description ? html7` ${description}` : Lit5.nothing}
+      </span>
+    </devtools-report-value>
+    ${renderRowIfValuePresent(i18nString6(UIStrings6.numberOfIssuedTokens), issuedTokenCount)}
+    <devtools-report-divider></devtools-report-divider>
+    `;
+};
+var renderParameterSection = (params) => {
+  if (!params || params.length === 0) {
+    return Lit5.nothing;
+  }
+  return html7`
+    <devtools-report-section-header jslog=${VisualLogging7.pane("trust-tokens").track({ resize: true })}>
+      ${i18nString6(UIStrings6.parameters)}
+    </devtools-report-section-header>
+    ${params.map((param) => renderRowIfValuePresent(param.name, param.value, param.isCode))}
+    <devtools-report-divider></devtools-report-divider>
+  `;
+};
+var DEFAULT_VIEW3 = (input, output, target) => {
+  render7(html7`
+    <style>${RequestTrustTokensView_css_default}</style>
+    <devtools-report>
+      ${renderParameterSection(input.params)}
+      ${renderResultSection(input.status, input.description, input.issuedTokenCount)}
+    </devtools-report>
+  `, target);
+};
+var RequestTrustTokensView = class extends UI5.Widget.Widget {
+  #request = null;
+  #view;
+  constructor(element, view = DEFAULT_VIEW3) {
+    super(element);
+    this.#view = view;
+  }
+  get request() {
+    return this.#request;
+  }
+  set request(request) {
+    if (this.#request === request) {
+      return;
+    }
+    this.#unsubscribe();
     this.#request = request;
+    this.#subscribe();
+    this.requestUpdate();
+  }
+  #subscribe() {
+    if (this.#request && this.isShowing()) {
+      this.#request.addEventListener(SDK4.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.requestUpdate, this);
+    }
+  }
+  #unsubscribe() {
+    if (this.#request) {
+      this.#request.removeEventListener(SDK4.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.requestUpdate, this);
+    }
   }
   wasShown() {
     super.wasShown();
-    this.#request.addEventListener(SDK4.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.render, this);
-    void this.render();
+    this.#subscribe();
+    this.requestUpdate();
   }
   willHide() {
     super.willHide();
-    this.#request.removeEventListener(SDK4.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.render, this);
+    this.#unsubscribe();
   }
-  async render() {
-    if (!this.#request) {
-      throw new Error("Trying to render a Trust Token report without providing data");
+  performUpdate() {
+    if (!this.request) {
+      return;
     }
-    Lit5.render(html7`
-      <style>${RequestTrustTokensView_css_default}</style>
-      <devtools-report>
-        ${this.#renderParameterSection()}
-        ${this.#renderResultSection()}
-      </devtools-report>
-    `, this.#shadow, { host: this });
-  }
-  #renderParameterSection() {
-    const trustTokenParams = this.#request.trustTokenParams();
-    if (!trustTokenParams) {
-      return Lit5.nothing;
+    const trustTokenParams = this.request.trustTokenParams();
+    const trustTokenResult = this.request.trustTokenOperationDoneEvent();
+    const viewInput = {};
+    if (trustTokenParams) {
+      viewInput.params = [
+        { name: i18nString6(UIStrings6.type), value: trustTokenParams.operation.toString(), isCode: true }
+      ];
+      if (trustTokenParams.operation === "Redemption") {
+        viewInput.params.push({
+          name: i18nString6(UIStrings6.refreshPolicy),
+          value: trustTokenParams.refreshPolicy.toString(),
+          isCode: true
+        });
+      }
+      if (trustTokenParams.issuers && trustTokenParams.issuers.length > 0) {
+        viewInput.params.push({ name: i18nString6(UIStrings6.issuers), value: trustTokenParams.issuers });
+      }
+      if (trustTokenResult?.topLevelOrigin) {
+        viewInput.params.push({ name: i18nString6(UIStrings6.topLevelOrigin), value: trustTokenResult.topLevelOrigin });
+      }
+      if (trustTokenResult?.issuerOrigin) {
+        viewInput.params.push({ name: i18nString6(UIStrings6.issuer), value: trustTokenResult.issuerOrigin });
+      }
     }
-    return html7`
-      <devtools-report-section-header jslog=${VisualLogging7.pane("trust-tokens").track({
-      resize: true
-    })}>${i18nString6(UIStrings6.parameters)}</devtools-report-section-header>
-      ${renderRowWithCodeValue(i18nString6(UIStrings6.type), trustTokenParams.operation.toString())}
-      ${this.#renderRefreshPolicy(trustTokenParams)}
-      ${this.#renderIssuers(trustTokenParams)}
-      ${this.#renderIssuerAndTopLevelOriginFromResult()}
-      <devtools-report-divider></devtools-report-divider>
-    `;
-  }
-  #renderRefreshPolicy(params) {
-    if (params.operation !== "Redemption") {
-      return Lit5.nothing;
+    if (trustTokenResult) {
+      viewInput.status = statusConsideredSuccess(trustTokenResult.status) ? "Success" : "Failure";
+      viewInput.description = getDetailedTextForStatusCode(trustTokenResult.status) ?? void 0;
+      viewInput.issuedTokenCount = trustTokenResult.type === "Issuance" ? trustTokenResult.issuedTokenCount : void 0;
     }
-    return renderRowWithCodeValue(i18nString6(UIStrings6.refreshPolicy), params.refreshPolicy.toString());
+    this.#view(viewInput, void 0, this.contentElement);
   }
-  #renderIssuers(params) {
-    if (!params.issuers || params.issuers.length === 0) {
-      return Lit5.nothing;
-    }
-    return html7`
-      <devtools-report-key>${i18nString6(UIStrings6.issuers)}</devtools-report-key>
-      <devtools-report-value>
-        <ul class="issuers-list">
-          ${params.issuers.map((issuer) => html7`<li>${issuer}</li>`)}
-        </ul>
-      </devtools-report-value>
-    `;
-  }
-  // The issuer and top level origin are technically parameters but reported in the
-  // result structure due to the timing when they are calculated in the backend.
-  // Nonetheless, we show them as part of the parameter section.
-  #renderIssuerAndTopLevelOriginFromResult() {
-    const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
-    if (!trustTokenResult) {
-      return Lit5.nothing;
-    }
-    return html7`
-      ${renderSimpleRowIfValuePresent(i18nString6(UIStrings6.topLevelOrigin), trustTokenResult.topLevelOrigin)}
-      ${renderSimpleRowIfValuePresent(i18nString6(UIStrings6.issuer), trustTokenResult.issuerOrigin)}`;
-  }
-  #renderResultSection() {
-    const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
-    if (!trustTokenResult) {
-      return Lit5.nothing;
-    }
-    return html7`
-      <devtools-report-section-header>${i18nString6(UIStrings6.result)}</devtools-report-section-header>
-      <devtools-report-key>${i18nString6(UIStrings6.status)}</devtools-report-key>
-      <devtools-report-value>
-        <span>
-          <devtools-icon class="status-icon medium"
-            .data=${getIconForStatusCode(trustTokenResult.status)}>
-          </devtools-icon>
-          <strong>${getSimplifiedStatusTextForStatusCode(trustTokenResult.status)}</strong>
-          ${getDetailedTextForStatusCode(trustTokenResult.status)}
-        </span>
-      </devtools-report-value>
-      ${this.#renderIssuedTokenCount(trustTokenResult)}
-      <devtools-report-divider></devtools-report-divider>
-      `;
-  }
-  #renderIssuedTokenCount(result) {
-    if (result.type !== "Issuance") {
-      return Lit5.nothing;
-    }
-    return renderSimpleRowIfValuePresent(i18nString6(UIStrings6.numberOfIssuedTokens), result.issuedTokenCount);
-  }
-};
-var SUCCESS_ICON_DATA = {
-  color: "var(--icon-checkmark-green)",
-  iconName: "check-circle"
-};
-var FAILURE_ICON_DATA = {
-  color: "var(--icon-error)",
-  iconName: "cross-circle-filled"
 };
 function statusConsideredSuccess(status) {
   return status === "Ok" || status === "AlreadyExists" || status === "FulfilledLocally";
-}
-function getIconForStatusCode(status) {
-  return statusConsideredSuccess(status) ? SUCCESS_ICON_DATA : FAILURE_ICON_DATA;
-}
-function getSimplifiedStatusTextForStatusCode(status) {
-  return statusConsideredSuccess(status) ? i18nString6(UIStrings6.success) : i18nString6(UIStrings6.failure);
 }
 function getDetailedTextForStatusCode(status) {
   switch (status) {
@@ -2650,22 +2700,6 @@ function getDetailedTextForStatusCode(status) {
       return i18nString6(UIStrings6.perSiteLimit);
   }
 }
-function renderSimpleRowIfValuePresent(key, value2) {
-  if (value2 === void 0) {
-    return Lit5.nothing;
-  }
-  return html7`
-    <devtools-report-key>${key}</devtools-report-key>
-    <devtools-report-value>${value2}</devtools-report-value>
-  `;
-}
-function renderRowWithCodeValue(key, value2) {
-  return html7`
-    <devtools-report-key>${key}</devtools-report-key>
-    <devtools-report-value class="code">${value2}</devtools-report-value>
-  `;
-}
-customElements.define("devtools-trust-token-report", RequestTrustTokensView);
 export {
   DirectSocketConnectionView_exports as DirectSocketConnectionView,
   EditableSpan_exports as EditableSpan,

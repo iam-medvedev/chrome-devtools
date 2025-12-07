@@ -24,11 +24,14 @@ export interface ViewInput {
     containerAdornerActive: boolean;
     flexAdornerActive: boolean;
     gridAdornerActive: boolean;
+    popoverAdornerActive: boolean;
     showAdAdorner: boolean;
     showContainerAdorner: boolean;
     showFlexAdorner: boolean;
     showGridAdorner: boolean;
     showGridLanesAdorner: boolean;
+    showMediaAdorner: boolean;
+    showPopoverAdorner: boolean;
     isSubgrid: boolean;
     adorners?: Set<Adorners.Adorner.Adorner>;
     nodeInfo?: DocumentFragment;
@@ -38,6 +41,8 @@ export interface ViewInput {
     onContainerAdornerClick: (e: Event) => void;
     onFlexAdornerClick: (e: Event) => void;
     onGridAdornerClick: (e: Event) => void;
+    onMediaAdornerClick: (e: Event) => void;
+    onPopoverAdornerClick: (e: Event) => void;
 }
 export interface ViewOutput {
     gutterContainer?: HTMLElement;
@@ -144,9 +149,6 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     adornSlot({ name }: {
         name: string;
     }): Adorners.Adorner.Adorner;
-    adornMedia({ name }: {
-        name: string;
-    }): Adorners.Adorner.Adorner;
     removeAdorner(adornerToRemove: Adorners.Adorner.Adorner): void;
     /**
      * @param adornerType optional type of adorner to remove. If not provided, remove all adorners.
@@ -154,10 +156,8 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     removeAdornersByType(adornerType?: ElementsComponents.AdornerManager.RegisteredAdorners): void;
     updateAdorners(): void;
     updateStyleAdorners(): Promise<void>;
-    pushPopoverAdorner(): void;
     pushScrollSnapAdorner(): void;
     pushStartingStyleAdorner(): void;
-    pushMediaAdorner(): void;
     updateScrollAdorner(): void;
     pushScrollAdorner(): void;
 }

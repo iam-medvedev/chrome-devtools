@@ -69,9 +69,6 @@
       "path": "../../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../../ui/components/chrome_link/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/components/helpers/bundle-tsconfig.json"
     },
     {

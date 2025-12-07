@@ -12,11 +12,12 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as SuggestionInput from '../../../ui/components/suggestion_input/suggestion_input.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import * as Controllers from '../controllers/controllers.js';
 import * as Models from '../models/models.js';
 import * as Util from '../util/util.js';
+import { RequestSelectorAttributeEvent, SelectorPicker } from './SelectorPicker.js';
 import stepEditorStyles from './stepEditor.css.js';
 import { ArrayAssignments, assert, deepFreeze, immutableDeepAssign, InsertAssignment, } from './util.js';
 const { html, Decorators, Directives, LitElement } = Lit;
@@ -216,10 +217,6 @@ const UIStrings = {
      */
     deleteRow: 'Delete row',
     /**
-     * @description The title of a button that allows you to select an element on the page and update CSS/ARIA selectors.
-     */
-    selectorPicker: 'Select an element in the page to update selectors',
-    /**
      * @description The title of a button that adds a new input field for the entry of the frame index. Frame index is the number of the frame within the page's frame tree.
      */
     addFrameIndex: 'Add frame index within the frame tree',
@@ -374,51 +371,6 @@ export class EditorState {
 }
 /**
  * @fires RequestSelectorAttributeEvent#requestselectorattribute
- * @fires SelectorPickedEvent#selectorpicked
- */
-let RecorderSelectorPickerButton = class RecorderSelectorPickerButton extends LitElement {
-    #picker = new Controllers.SelectorPicker.SelectorPicker(this);
-    constructor() {
-        super();
-        this.disabled = false;
-    }
-    #handleClickEvent = (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        void this.#picker.toggle();
-    };
-    disconnectedCallback() {
-        super.disconnectedCallback();
-        void this.#picker.stop();
-    }
-    render() {
-        if (this.disabled) {
-            return;
-        }
-        // clang-format off
-        return html `<style>${stepEditorStyles}</style><devtools-button
-      @click=${this.#handleClickEvent}
-      .title=${i18nString(UIStrings.selectorPicker)}
-      class="selector-picker"
-      .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
-      .iconName=${'select-element'}
-      .active=${this.#picker.active}
-      .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-      jslog=${VisualLogging.toggle('selector-picker').track({
-            click: true,
-        })}
-    ></devtools-button>`;
-        // clang-format on
-    }
-};
-__decorate([
-    property({ type: Boolean })
-], RecorderSelectorPickerButton.prototype, "disabled", void 0);
-RecorderSelectorPickerButton = __decorate([
-    customElement('devtools-recorder-selector-picker-button')
-], RecorderSelectorPickerButton);
-/**
- * @fires RequestSelectorAttributeEvent#requestselectorattribute
  * @fires StepEditedEvent#stepedited
  */
 let StepEditor = class StepEditor extends LitElement {
@@ -452,16 +404,17 @@ let StepEditor = class StepEditor extends LitElement {
             this.error = error.message;
         }
     }
-    #handleSelectorPickedEvent = (event) => {
-        event.preventDefault();
-        event.stopPropagation();
+    #handleSelectorPicked = (data) => {
         this.#commit(immutableDeepAssign(this.state, {
-            target: event.data.target,
-            frame: event.data.frame,
-            selectors: event.data.selectors.map(selector => typeof selector === 'string' ? [selector] : selector),
-            offsetX: event.data.offsetX,
-            offsetY: event.data.offsetY,
+            target: data.target,
+            frame: data.frame,
+            selectors: data.selectors.map(selector => typeof selector === 'string' ? [selector] : selector),
+            offsetX: data.offsetX,
+            offsetY: data.offsetY,
         }));
+    };
+    #handleAttributeRequested = (send) => {
+        this.dispatchEvent(new RequestSelectorAttributeEvent(send));
     };
     #handleAddOrRemoveClick = (assignments, query, metric) => event => {
         event.preventDefault();
@@ -697,10 +650,13 @@ let StepEditor = class StepEditor extends LitElement {
         return html `<div class="attribute" data-attribute="selectors" jslog=${VisualLogging.treeItem('selectors')}>
       <div class="row">
         <div>selectors<span class="separator">:</span></div>
-        <devtools-recorder-selector-picker-button
-          @selectorpicked=${this.#handleSelectorPickedEvent}
-          .disabled=${this.disabled}
-        ></devtools-recorder-selector-picker-button>
+        <devtools-widget
+          .widgetConfig=${UI.Widget.widgetConfig(SelectorPicker, {
+            disabled: this.disabled,
+            onSelectorPicked: this.#handleSelectorPicked,
+            onAttributeRequested: this.#handleAttributeRequested,
+        })}
+        ></devtools-widget>
         ${this.#renderDeleteButton('selectors')}
       </div>
       ${this.state.selectors.map((selector, index, selectors) => {

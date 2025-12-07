@@ -13,12 +13,13 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 // eslint-disable-next-line @devtools/es-modules-import
 import emptyWidgetStyles from '../../../ui/legacy/emptyWidget.css.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import { html, render } from '../../../ui/lit/lit.js';
+import { Directives, html, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as PreloadingComponents from './components/components.js';
 import { ruleSetTagOrLocationShort } from './components/PreloadingString.js';
 import preloadingViewStyles from './preloadingView.css.js';
 import preloadingViewDropDownStyles from './preloadingViewDropDown.css.js';
+const { createRef, ref } = Directives;
 const UIStrings = {
     /**
      * @description DropDown title for filtering preloading attempts by rule set
@@ -174,10 +175,11 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
     model;
     focusedRuleSetId = null;
     warningsContainer;
-    warningsView = new PreloadingWarningsView();
+    warningsView = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
     hsplit;
     ruleSetGrid = new PreloadingComponents.RuleSetGrid.RuleSetGrid();
-    ruleSetDetails = new PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView();
+    ruleSetGridContainerRef = createRef();
+    ruleSetDetailsRef;
     shouldPrettyPrint = Common.Settings.Settings.instance().moduleSetting('auto-pretty-print-minified').get();
     constructor(model) {
         super({ useShadowDom: true });
@@ -185,7 +187,9 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.MODEL_UPDATED */, this.render, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, e => {
+            Object.assign(this.warningsView, e.data);
+        }, this, { scoped: true });
         // this (VBox)
         //   +- warningsContainer
         //        +- PreloadingWarningsView
@@ -201,7 +205,9 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
         this.warningsContainer.classList.add('flex-none');
         this.contentElement.insertBefore(this.warningsContainer, this.contentElement.firstChild);
         this.warningsView.show(this.warningsContainer);
-        this.ruleSetGrid.addEventListener('select', this.onRuleSetsGridCellFocused.bind(this));
+        this.ruleSetGrid.addEventListener("select" /* PreloadingComponents.RuleSetGrid.Events.SELECT */, this.onRuleSetsGridCellFocused, this);
+        this.ruleSetDetailsRef =
+            createRef();
         const onPrettyPrintToggle = () => {
             this.shouldPrettyPrint = !this.shouldPrettyPrint;
             this.updateRuleSetDetails();
@@ -220,11 +226,13 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
           </div>
         </div>
         <devtools-split-view sidebar-position="second">
-          <div slot="main">
-            ${this.ruleSetGrid}
+          <div slot="main" ${ref(this.ruleSetGridContainerRef)}>
           </div>
           <div slot="sidebar" jslog=${VisualLogging.section('rule-set-details')}>
-            ${this.ruleSetDetails}
+            <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView, {
+            ruleSet: this.getRuleSet(),
+            shouldPrettyPrint: this.shouldPrettyPrint,
+        })} ${ref(this.ruleSetDetailsRef)}></devtools-widget>
           </div>
         </devtools-split-view>
         <div class="pretty-print-button" style="border-top: 1px solid var(--sys-color-divider)">
@@ -258,16 +266,22 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
         this.render();
     }
     updateRuleSetDetails() {
-        const id = this.focusedRuleSetId;
-        const ruleSet = id === null ? null : this.model.getRuleSetById(id);
-        this.ruleSetDetails.shouldPrettyPrint = this.shouldPrettyPrint;
-        this.ruleSetDetails.data = ruleSet;
+        const ruleSet = this.getRuleSet();
+        const widget = this.ruleSetDetailsRef.value?.getWidget();
+        if (widget) {
+            widget.shouldPrettyPrint = this.shouldPrettyPrint;
+            widget.ruleSet = ruleSet;
+        }
         if (ruleSet === null) {
             this.hsplit.setAttribute('sidebar-visibility', 'hidden');
         }
         else {
             this.hsplit.removeAttribute('sidebar-visibility');
         }
+    }
+    getRuleSet() {
+        const id = this.focusedRuleSetId;
+        return id === null ? null : this.model.getRuleSetById(id);
     }
     render() {
         // Update rule sets grid
@@ -279,13 +293,16 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
                 preloadsStatusSummary: PreloadingUIUtils.preloadsStatusSummary(countsByStatus),
             };
         });
-        this.ruleSetGrid.update({ rows: ruleSetRows, pageURL: pageURL() });
+        this.ruleSetGrid.data = { rows: ruleSetRows, pageURL: pageURL() };
         this.contentElement.classList.toggle('empty', ruleSetRows.length === 0);
         this.updateRuleSetDetails();
+        const container = this.ruleSetGridContainerRef.value;
+        if (container && this.ruleSetGrid.element.parentElement !== container) {
+            this.ruleSetGrid.show(container);
+        }
     }
     onRuleSetsGridCellFocused(event) {
-        const focusedEvent = event;
-        this.focusedRuleSetId = focusedEvent.detail;
+        this.focusedRuleSetId = event.data;
         this.render();
     }
     getInfobarContainerForTest() {
@@ -294,9 +311,6 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
     getRuleSetGridForTest() {
         return this.ruleSetGrid;
     }
-    getRuleSetDetailsForTest() {
-        return this.ruleSetDetails;
-    }
 }
 export class PreloadingAttemptView extends UI.Widget.VBox {
     model;
@@ -304,7 +318,7 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
     // This is because `NOT_TRIGGERED` preloading attempts don't have pipeline id and we can use it.
     focusedPreloadingAttemptId = null;
     warningsContainer;
-    warningsView = new PreloadingWarningsView();
+    warningsView = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
     preloadingGrid = new PreloadingComponents.PreloadingGrid.PreloadingGrid();
     preloadingDetails = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
     ruleSetSelector;
@@ -317,7 +331,9 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.MODEL_UPDATED */, this.render, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, e => {
+            Object.assign(this.warningsView, e.data);
+        }, this, { scoped: true });
         // this (VBox)
         //   +- warningsContainer
         //        +- PreloadingWarningsView
@@ -438,7 +454,7 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
 export class PreloadingSummaryView extends UI.Widget.VBox {
     model;
     warningsContainer;
-    warningsView = new PreloadingWarningsView();
+    warningsView = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
     usedPreloading = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
     constructor(model) {
         super({
@@ -449,7 +465,9 @@ export class PreloadingSummaryView extends UI.Widget.VBox {
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.MODEL_UPDATED */, this.render, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, e => {
+            Object.assign(this.warningsView, e.data);
+        }, this, { scoped: true });
         this.warningsContainer = document.createElement('div');
         this.warningsContainer.classList.add('flex-none');
         this.contentElement.insertBefore(this.warningsContainer, this.contentElement.firstChild);
@@ -591,20 +609,6 @@ class PreloadingRuleSetSelector {
     }
     // Method for UI.SoftDropDown.Delegate<Protocol.Preload.RuleSetId|typeof AllRuleSetRootId>
     highlightedItemChanged(_from, _to, _fromElement, _toElement) {
-    }
-}
-export class PreloadingWarningsView extends UI.Widget.VBox {
-    infobar = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
-    constructor() {
-        super();
-        this.registerRequiredCSS(emptyWidgetStyles);
-    }
-    wasShown() {
-        super.wasShown();
-        this.contentElement.append(this.infobar);
-    }
-    onWarningsUpdated(args) {
-        this.infobar.data = args.data;
     }
 }
 //# sourceMappingURL=PreloadingView.js.map

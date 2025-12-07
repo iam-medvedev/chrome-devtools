@@ -39,7 +39,6 @@
     "../../../../../../../../front_end/panels/application/preloading/components/PreloadingDetailsReportView.ts",
     "../../../../../../../../front_end/panels/application/preloading/components/PreloadingDisabledInfobar.ts",
     "../../../../../../../../front_end/panels/application/preloading/components/PreloadingGrid.ts",
-    "../../../../../../../../front_end/panels/application/preloading/components/PreloadingMismatchedHeadersGrid.ts",
     "../../../../../../../../front_end/panels/application/preloading/components/PreloadingString.ts",
     "../../../../../../../../front_end/panels/application/preloading/components/RuleSetDetailsView.ts",
     "../../../../../../../../front_end/panels/application/preloading/components/RuleSetGrid.ts",
@@ -78,9 +77,6 @@
     },
     {
       "path": "../../../../ui/components/buttons/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../../../ui/components/chrome_link/bundle-tsconfig.json"
     },
     {
       "path": "../../../../ui/components/dialogs/bundle-tsconfig.json"

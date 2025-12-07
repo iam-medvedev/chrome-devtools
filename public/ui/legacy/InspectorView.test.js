@@ -6,6 +6,7 @@ import * as Host from '../../core/host/host.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as LegacyUI from './legacy.js';
 const InspectorView = LegacyUI.InspectorView.InspectorView;
 const Settings = Common.Settings.Settings;
@@ -18,6 +19,7 @@ function getDrawerOrientationSettingByDock(dockMode) {
     return setting.get()[dockMode];
 }
 describeWithEnvironment('InspectorView', () => {
+    setupSettingsHooks();
     function createInspectorViewWithDockState(dockState) {
         const dockController = LegacyUI.DockController.DockController.instance({ forceNew: true, canDock: true });
         dockController.setDockSide(dockState);
@@ -27,14 +29,6 @@ describeWithEnvironment('InspectorView', () => {
         return { inspectorView, dockController };
     }
     beforeEach(() => {
-        const storage = new Common.Settings.SettingsStorage({}, Common.Settings.NOOP_STORAGE, 'test');
-        Common.Settings.Settings.instance({
-            forceNew: true,
-            syncedStorage: storage,
-            globalStorage: storage,
-            localStorage: storage,
-            settingRegistrations: Common.SettingRegistration.getRegisteredSettings()
-        });
         // `setIsDocked` resolves async and leaves elements in the body after the test is finished.
         sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'setIsDocked');
     });

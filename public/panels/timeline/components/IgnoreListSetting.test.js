@@ -8,14 +8,14 @@ import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { dispatchBlurEvent, dispatchFocusEvent, dispatchInputEvent, dispatchKeyDownEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TimelineComponents from './components.js';
 describeWithEnvironment('Ignore List Setting', () => {
     async function renderIgnoreListSetting() {
         const component = new TimelineComponents.IgnoreListSetting.IgnoreListSetting();
         renderElementIntoDOM(component);
-        await RenderCoordinator.done();
-        return component;
+        component.requestUpdate();
+        await component.updateComplete;
+        return component.element;
     }
     function getAllRules(component) {
         assert.isNotNull(component.shadowRoot);
@@ -24,15 +24,14 @@ describeWithEnvironment('Ignore List Setting', () => {
             const checkboxShadow = row.querySelector('devtools-checkbox')?.shadowRoot;
             assert.exists(checkboxShadow);
             return {
-                regex: checkboxShadow.querySelector('label')?.textContent?.trim() ?? '',
+                regex: checkboxShadow.querySelector('label')?.deepTextContent().trim() ?? '',
                 disabled: !checkboxShadow.querySelector('input')?.checked,
             };
         });
     }
     function getNewRegexInput(component) {
         assert.isNotNull(component.shadowRoot);
-        const newRegexRow = component.shadowRoot.querySelector('.new-regex-row');
-        const newRegexInput = newRegexRow?.querySelector('.new-regex-text-input');
+        const newRegexInput = component.shadowRoot.querySelector('.new-regex-text-input');
         assert.exists(newRegexInput);
         return newRegexInput;
     }
@@ -194,10 +193,9 @@ describeWithEnvironment('Ignore List Setting', () => {
             assert.lengthOf(regexPatterns, 1);
         });
         it('Clear the input when `Escape` is pressed', async () => {
+            ignoreRegex('rule 1');
             const component = await renderIgnoreListSetting();
             const newRegexInput = getNewRegexInput(component);
-            // This is a duplicate rule, so it is invalid.
-            newRegexInput.value = 'rule 1';
             dispatchKeyDownEvent(newRegexInput, { key: Platform.KeyboardUtilities.ESCAPE_KEY });
             // When add an invalid rule, the temp regex will be removed.
             assert.strictEqual('', newRegexInput.value);

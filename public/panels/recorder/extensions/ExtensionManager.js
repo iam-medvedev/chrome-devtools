@@ -1,9 +1,9 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import * as Common from '../../../core/common/common.js';
 import * as Extensions from '../../../models/extensions/extensions.js';
+import * as PanelCommon from '../../common/common.js';
 let instance = null;
 export class ExtensionManager extends Common.ObjectWrapper.ObjectWrapper {
     static instance() {
@@ -49,46 +49,8 @@ export class ExtensionManager extends Common.ObjectWrapper.ObjectWrapper {
     #handleView = (event) => {
         const descriptor = event.data;
         if (!this.#views.has(descriptor.id)) {
-            this.#views.set(descriptor.id, new ExtensionIframe(descriptor));
+            this.#views.set(descriptor.id, new PanelCommon.ExtensionIframe.ExtensionIframe(descriptor));
         }
     };
-}
-class ExtensionIframe {
-    #descriptor;
-    #iframe;
-    #isShowing = false;
-    #isLoaded = false;
-    constructor(descriptor) {
-        this.#descriptor = descriptor;
-        this.#iframe = document.createElement('iframe');
-        this.#iframe.src = descriptor.pagePath;
-        this.#iframe.onload = this.#onIframeLoad;
-    }
-    #onIframeLoad = () => {
-        this.#isLoaded = true;
-        if (this.#isShowing) {
-            this.#descriptor.onShown();
-        }
-    };
-    show() {
-        if (this.#isShowing) {
-            return;
-        }
-        this.#isShowing = true;
-        if (this.#isLoaded) {
-            this.#descriptor.onShown();
-        }
-    }
-    hide() {
-        if (!this.#isShowing) {
-            return;
-        }
-        this.#isShowing = false;
-        this.#isLoaded = false;
-        this.#descriptor.onHidden();
-    }
-    frame() {
-        return this.#iframe;
-    }
 }
 //# sourceMappingURL=ExtensionManager.js.map

@@ -13,6 +13,7 @@ describeWithEnvironment('NetworkDependencyTree', function () {
         const { data, insights } = await processTrace(this, 'lcp-multiple-frames.json.gz');
         const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         insight = getInsightOrError('NetworkDependencyTree', insights, firstNav);
+        assert.isOk(insight);
     });
     it('calculates network dependency tree', () => {
         // The network dependency tree in this trace is, |app.js| took longer than |app.css|, so |app.js| will be first.
@@ -20,6 +21,7 @@ describeWithEnvironment('NetworkDependencyTree', function () {
         // |
         // | | .../app.js (ts:566782574106, dur:11790)
         // | | .../app.css (ts:566782573909, dur:7205)
+        assert.isOk(insight);
         assert.lengthOf(insight.rootNodes, 1);
         const root = insight.rootNodes[0];
         assert.strictEqual(root.request.args.data.url, 'http://localhost:8787/lcp-iframes/index.html');
@@ -35,11 +37,13 @@ describeWithEnvironment('NetworkDependencyTree', function () {
     });
     it('Calculate the max critical path latency', () => {
         // The chain |index.html(root) -> app.js(child0)| is the longest
+        assert.isOk(insight);
         const root = insight.rootNodes[0];
         const child0 = root.children[0];
         assert.strictEqual(insight.maxTime, Trace.Types.Timing.Micro(child0.request.ts + child0.request.dur - root.request.ts));
     });
     it('Marks the longest network dependency chain', () => {
+        assert.isOk(insight);
         const root = insight.rootNodes[0];
         const [child0, child1] = root.children;
         // The chain |index.html(root) -> app.js(child0)| is the longest
@@ -49,6 +53,7 @@ describeWithEnvironment('NetworkDependencyTree', function () {
         assert.isNotTrue(child1.isLongest);
     });
     it('Store the all parents and children events for all requests', () => {
+        assert.isOk(insight);
         const root = insight.rootNodes[0];
         const [child0, child1] = root.children;
         // There are three chains from Lantern:
@@ -63,6 +68,7 @@ describeWithEnvironment('NetworkDependencyTree', function () {
         assert.sameDeepMembers([...child1.relatedRequests], [root.request, child1.request]);
     });
     it('Fail the audit when there at least one chain with at least two requests', () => {
+        assert.isOk(insight);
         assert.isTrue(insight.fail);
     });
     it('Does not fail the audit when there is only main doc request', async function () {
@@ -213,11 +219,13 @@ describe('generatePreconnectedOrigins', () => {
             const { data, insights } = await processTrace(this, 'preconnect-advice.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             insight = getInsightOrError('NetworkDependencyTree', insights, firstNav);
+            assert.isOk(insight);
             documentRequest =
                 data.NetworkRequests.byTime.find(req => req.args.data.requestId === firstNav.args.data?.navigationId);
         });
         it('correctly generate the preconnected origins', () => {
             // There are 4 preconnected origins, 3 from DOM, and 1 from response header.
+            assert.isOk(insight);
             assert.lengthOf(insight.preconnectedOrigins, 4);
             // A sanity check to avoid TS error.
             assert.isDefined(documentRequest);
@@ -255,7 +263,7 @@ describe('generatePreconnectedOrigins', () => {
                     source: 'ResponseHeader',
                 },
             ];
-            assert.deepEqual(insight.preconnectedOrigins, expected);
+            assert.deepEqual(insight?.preconnectedOrigins, expected);
         });
     });
     describe('handleLinkResponseHeader', () => {

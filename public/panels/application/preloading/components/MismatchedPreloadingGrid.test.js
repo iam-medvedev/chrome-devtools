@@ -4,9 +4,8 @@
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents, getCellByIndexes, } from '../../../../testing/DataGridHelpers.js';
-import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
 const zip2 = (xs, ys) => {
@@ -16,10 +15,14 @@ const zip2 = (xs, ys) => {
 async function renderMismatchedPreloadingGrid(data) {
     const component = new PreloadingComponents.MismatchedPreloadingGrid.MismatchedPreloadingGrid();
     component.data = data;
+    component.markAsRoot();
     renderElementIntoDOM(component);
-    assert.isNotNull(component.shadowRoot);
-    await RenderCoordinator.done();
-    return component;
+    assert.isNotNull(component.element.shadowRoot);
+    // wait for Widget render
+    await component.updateComplete;
+    // and for its data grid component to render
+    await raf();
+    return component.element;
 }
 function assertDiff(gridComponent, cellIndex, spansExpected) {
     const grid = gridComponent.shadowRoot.querySelector('devtools-data-grid');
