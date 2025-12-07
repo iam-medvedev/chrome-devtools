@@ -10,6 +10,13 @@ import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as PanelCommon from '../common/common.js';
 import * as Console from './console.js';
+const consoleViewMessage = {
+    consoleMessage: () => {
+        return {
+            level: "error" /* Protocol.Log.LogEntryLevel.Error */,
+        };
+    },
+};
 describeWithEnvironment('ConsoleInsightTeaser', () => {
     let originalLanguageModel;
     beforeEach(() => {
@@ -23,7 +30,7 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
     });
     it('renders the loading state', async () => {
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
-        new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', {}, undefined, view);
+        new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
         const input = await view.nextInput;
         assert.isFalse(input.isInactive);
         assert.isEmpty(input.mainText);
@@ -62,13 +69,50 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
             yield 'This is the';
             yield ' explanation';
         });
+        const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
+        assert.isDefined(builtInAi);
+        await builtInAi.initDoneForTesting;
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
         const teaser = new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
-        await teaser.maybeGenerateTeaser();
+        teaser.maybeGenerateTeaser();
         const input = await view.nextInput;
         assert.isFalse(input.isInactive);
         assert.strictEqual(input.headerText, 'message text string');
         assert.strictEqual(input.mainText, 'This is the explanation');
+    });
+    it('can download the AI model', async () => {
+        updateHostConfig({
+            devToolsAiPromptApi: {
+                enabled: true,
+                allowWithoutGpu: true,
+            },
+        });
+        let resolveCreate;
+        // @ts-expect-error
+        window.LanguageModel = {
+            availability: () => 'downloadable',
+            create: () => {
+                return new Promise(resolve => {
+                    resolveCreate = resolve;
+                });
+            },
+        };
+        const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
+        const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
+        const teaser = new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
+        teaser.maybeGenerateTeaser();
+        let input = await view.nextInput;
+        assert.strictEqual(input.state, 'no-model');
+        input.onDownloadModelClick(new Event('click'));
+        input = await view.nextInput;
+        assert.strictEqual(input.state, 'downloading');
+        builtInAi.dispatchEventToListeners("downloadProgressChanged" /* AiAssistanceModel.BuiltInAi.Events.DOWNLOAD_PROGRESS_CHANGED */, 0.35);
+        input = await view.nextInput;
+        assert.strictEqual(input.state, 'downloading');
+        assert.strictEqual(input.downloadProgress, 0.35);
+        resolveCreate({});
+        input = await view.nextInput;
+        assert.strictEqual(input.state, 'ready');
     });
     it('executes action on "Tell me more" click if onboarding is completed', async () => {
         const action = sinon.spy();
@@ -76,7 +120,7 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
             execute: action,
         });
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
-        new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', {}, undefined, view);
+        new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
         const input = await view.nextInput;
         input.onTellMeMoreClick(new Event('click'));
         sinon.assert.calledOnce(action);
@@ -85,7 +129,7 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         Common.Settings.settingForTest('console-insights-enabled').set(false);
         const show = sinon.stub(PanelCommon.FreDialog, 'show');
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
-        new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', {}, undefined, view);
+        new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
         const input = await view.nextInput;
         await input.onTellMeMoreClick(new Event('click'));
         sinon.assert.calledOnce(show);
@@ -94,7 +138,7 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
     });
     it('disables teasers on "Dont show" change', async () => {
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
-        new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', {}, undefined, view);
+        new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
         const input = await view.nextInput;
         const event = {
             target: {
@@ -141,7 +185,7 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         assert.isFalse(input.isInactive);
         assert.isEmpty(input.mainText);
         assert.isEmpty(input.headerText);
-        assert.strictEqual(input.state, 'ready');
+        assert.strictEqual(input.state, 'no-model');
         await teaser.maybeGenerateTeaser();
         input = await view.nextInput;
         assert.isFalse(input.isInactive);

@@ -54,6 +54,7 @@
     "../../../../../../front_end/panels/network/RequestConditionsDrawer.test.ts",
     "../../../../../../front_end/panels/network/RequestCookiesView.test.ts",
     "../../../../../../front_end/panels/network/RequestHTMLView.test.ts",
+    "../../../../../../front_end/panels/network/RequestInitiatorView.test.ts",
     "../../../../../../front_end/panels/network/RequestPayloadView.test.ts",
     "../../../../../../front_end/panels/network/RequestPreviewView.test.ts",
     "../../../../../../front_end/panels/network/RequestResponseView.test.ts",

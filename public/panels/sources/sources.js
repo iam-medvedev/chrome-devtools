@@ -2127,6 +2127,7 @@ import * as SourceMapScopes from "./../../models/source_map_scopes/source_map_sc
 import * as Workspace4 from "./../../models/workspace/workspace.js";
 import { Icon } from "./../../ui/kit/kit.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
+import { Directives, html as html3, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/callStackSidebarPane.css.js
@@ -2312,6 +2313,7 @@ var UIStrings5 = {
 };
 var str_5 = i18n10.i18n.registerUIStrings("panels/sources/CallStackSidebarPane.ts", UIStrings5);
 var i18nString5 = i18n10.i18n.getLocalizedString.bind(void 0, str_5);
+var { createRef, ref } = Directives;
 var callstackSidebarPaneInstance;
 var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleView {
   ignoreListMessageElement;
@@ -2321,12 +2323,11 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleVi
   items;
   list;
   showMoreMessageElement;
-  showIgnoreListed;
-  locationPool;
-  updateThrottler;
-  maxAsyncStackChainDepth;
-  updateItemThrottler;
-  scheduledForUpdateItems;
+  showIgnoreListed = false;
+  locationPool = new Bindings2.LiveLocation.LiveLocationPool();
+  maxAsyncStackChainDepth = defaultMaxAsyncStackChainDepth;
+  updateItemThrottler = new Common4.Throttler.Throttler(100);
+  scheduledForUpdateItems = /* @__PURE__ */ new Set();
   muteActivateItem;
   lastDebuggerModel = null;
   constructor() {
@@ -2336,22 +2337,21 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleVi
       viewId: "sources.callstack",
       useShadowDom: true
     });
-    this.registerRequiredCSS(callStackSidebarPane_css_default);
-    ({ element: this.ignoreListMessageElement, checkbox: this.ignoreListCheckboxElement } = this.createIgnoreListMessageElementAndCheckbox());
-    this.contentElement.appendChild(this.ignoreListMessageElement);
-    this.notPausedMessageElement = this.contentElement.createChild("div", "gray-info-message");
-    this.notPausedMessageElement.textContent = i18nString5(UIStrings5.notPaused);
-    this.notPausedMessageElement.tabIndex = -1;
-    this.callFrameWarningsElement = this.contentElement.createChild("div", "call-frame-warnings-message");
-    const icon = new Icon();
-    icon.name = "warning-filled";
-    icon.classList.add("call-frame-warning-icon", "small");
-    this.callFrameWarningsElement.appendChild(icon);
-    this.callFrameWarningsElement.appendChild(document.createTextNode(i18nString5(UIStrings5.callFrameWarnings)));
-    this.callFrameWarningsElement.tabIndex = -1;
+    const [ignoreListMessageRef, ignoreListCheckboxRef, notPausedRef, warningRef, showMoreRef] = [
+      createRef(),
+      createRef(),
+      createRef(),
+      createRef(),
+      createRef()
+    ];
+    const ignoreListCheckboxChanged = () => {
+      this.showIgnoreListed = Boolean(ignoreListCheckboxRef.value?.checked);
+      for (const item of this.items) {
+        this.refreshItem(item);
+      }
+    };
     this.items = new UI6.ListModel.ListModel();
     this.list = new UI6.ListControl.ListControl(this.items, this, UI6.ListControl.ListMode.NonViewport);
-    this.contentElement.appendChild(this.list.element);
     this.list.element.addEventListener("contextmenu", this.onContextMenu.bind(this), false);
     self.onInvokeElement(this.list.element, (event) => {
       const item = this.list.itemForNode(event.target);
@@ -2360,16 +2360,37 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleVi
         event.consume(true);
       }
     });
-    this.showMoreMessageElement = this.createShowMoreMessageElement();
-    this.showMoreMessageElement.classList.add("hidden");
-    this.contentElement.appendChild(this.showMoreMessageElement);
-    this.showIgnoreListed = false;
-    this.locationPool = new Bindings2.LiveLocation.LiveLocationPool();
-    this.updateThrottler = new Common4.Throttler.Throttler(100);
-    this.maxAsyncStackChainDepth = defaultMaxAsyncStackChainDepth;
-    this.update();
-    this.updateItemThrottler = new Common4.Throttler.Throttler(100);
-    this.scheduledForUpdateItems = /* @__PURE__ */ new Set();
+    const onShowMoreClicked = () => {
+      this.maxAsyncStackChainDepth += defaultMaxAsyncStackChainDepth;
+      this.requestUpdate();
+    };
+    render3(html3`
+      <style>${callStackSidebarPane_css_default}</style>
+      <div class='ignore-listed-message' ${ref(ignoreListMessageRef)}>
+        <label class='ignore-listed-message-label'>
+          <input type='checkbox' tabindex=0 class='ignore-listed-checkbox'
+              @change=${ignoreListCheckboxChanged} ${ref(ignoreListCheckboxRef)}></input>
+          ${i18nString5(UIStrings5.showIgnorelistedFrames)}
+        </label>
+      </div>
+      <div class='gray-info-message' tabindex=-1 ${ref(notPausedRef)}>
+        ${i18nString5(UIStrings5.notPaused)}
+      </div>
+      <div class='call-frame-warnings-message' tabindex=-1 ${ref(warningRef)}>
+        <devtools-icon .name=${"warning-filled"} class='call-frame-warning-icon small'></devtools-icon>
+        ${i18nString5(UIStrings5.callFrameWarnings)}
+      </div>
+      ${this.list.element}
+      <div class='show-more-message hidden' ${ref(showMoreRef)}>
+        <span class='link' @click=${onShowMoreClicked}>${i18nString5(UIStrings5.showMore)}</span>
+      </div>
+    `, this.contentElement);
+    this.ignoreListMessageElement = ignoreListMessageRef.value;
+    this.ignoreListCheckboxElement = ignoreListCheckboxRef.value;
+    this.notPausedMessageElement = notPausedRef.value;
+    this.callFrameWarningsElement = warningRef.value;
+    this.showMoreMessageElement = showMoreRef.value;
+    this.requestUpdate();
     SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DebuggerModel.DebuggerModel, SDK3.DebuggerModel.Events.DebugInfoAttached, this.debugInfoAttached, this);
   }
   static instance(opts = { forceNew: null }) {
@@ -2383,10 +2404,10 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleVi
     this.showIgnoreListed = false;
     this.ignoreListCheckboxElement.checked = false;
     this.maxAsyncStackChainDepth = defaultMaxAsyncStackChainDepth;
-    this.update();
+    this.requestUpdate();
   }
   debugInfoAttached() {
-    this.update();
+    this.requestUpdate();
   }
   setSourceMapSubscription(debuggerModel) {
     if (this.lastDebuggerModel === debuggerModel) {
@@ -2400,10 +2421,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleVi
       this.lastDebuggerModel.sourceMapManager().addEventListener(SDK3.SourceMapManager.Events.SourceMapAttached, this.debugInfoAttached, this);
     }
   }
-  update() {
-    void this.updateThrottler.schedule(() => this.doUpdate());
-  }
-  async doUpdate() {
+  async performUpdate() {
     this.locationPool.disposeAll();
     this.callFrameWarningsElement.classList.add("hidden");
     const details = UI6.Context.Context.instance().flavor(SDK3.DebuggerModel.DebuggerPausedDetails);
@@ -2553,37 +2571,6 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleVi
   }
   updateSelectedItemARIA(_fromElement, _toElement) {
     return true;
-  }
-  createIgnoreListMessageElementAndCheckbox() {
-    const element = document.createElement("div");
-    element.classList.add("ignore-listed-message");
-    const label = element.createChild("label");
-    label.classList.add("ignore-listed-message-label");
-    const checkbox = label.createChild("input");
-    checkbox.tabIndex = 0;
-    checkbox.type = "checkbox";
-    checkbox.classList.add("ignore-listed-checkbox");
-    label.append(i18nString5(UIStrings5.showIgnorelistedFrames));
-    const showAll = () => {
-      this.showIgnoreListed = checkbox.checked;
-      for (const item of this.items) {
-        this.refreshItem(item);
-      }
-    };
-    checkbox.addEventListener("click", showAll);
-    return { element, checkbox };
-  }
-  createShowMoreMessageElement() {
-    const element = document.createElement("div");
-    element.classList.add("show-more-message");
-    element.createChild("span");
-    const showAllLink = element.createChild("span", "link");
-    showAllLink.textContent = i18nString5(UIStrings5.showMore);
-    showAllLink.addEventListener("click", () => {
-      this.maxAsyncStackChainDepth += defaultMaxAsyncStackChainDepth;
-      this.update();
-    }, false);
-    return element;
   }
   onContextMenu(event) {
     const item = this.list.itemForNode(event.target);
@@ -3355,7 +3342,7 @@ var ColorSwatchWidget = class extends CodeMirror3.WidgetType {
   }
   toDOM(view) {
     const swatch = new InlineEditor.ColorSwatch.ColorSwatch(i18nString7(UIStrings8.openColorPicker));
-    swatch.renderColor(this.#color);
+    swatch.color = this.#color;
     const value2 = swatch.createChild("span");
     value2.textContent = this.#text;
     value2.setAttribute("hidden", "true");
@@ -3363,13 +3350,13 @@ var ColorSwatchWidget = class extends CodeMirror3.WidgetType {
       const insert = event.data.color.getAuthoredText() ?? event.data.color.asString();
       view.dispatch({ changes: { from: this.#from, to: this.#from + this.#text.length, insert } });
       this.#text = insert;
-      this.#color = swatch.getColor();
+      this.#color = swatch.color;
     });
     swatch.addEventListener(InlineEditor.ColorSwatch.ColorFormatChangedEvent.eventName, (event) => {
       const insert = event.data.color.getAuthoredText() ?? event.data.color.asString();
       view.dispatch({ changes: { from: this.#from, to: this.#from + this.#text.length, insert } });
       this.#text = insert;
-      this.#color = swatch.getColor();
+      this.#color = swatch.color;
     });
     swatch.addEventListener(InlineEditor.ColorSwatch.ClickEvent.eventName, (event) => {
       event.consume(true);
@@ -3979,7 +3966,7 @@ import * as Tooltips2 from "./../../ui/components/tooltips/tooltips.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as SourceFrame11 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
-import { render as render3 } from "./../../ui/lit/lit.js";
+import { render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/SourcesPanel.js
@@ -6499,6 +6486,7 @@ import * as uiI18n3 from "./../../ui/i18n/i18n.js";
 import { Icon as Icon4 } from "./../../ui/kit/kit.js";
 import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
+import { html as html4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 import * as PanelCommon2 from "./../common/common.js";
 import * as Snippets3 from "./../snippets/snippets.js";
@@ -7922,10 +7910,9 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.ObjectWrapper {
     return tabId2;
   }
   addLoadErrorIcon(tabId2) {
-    const icon = new Icon4();
-    icon.name = "cross-circle-filled";
-    icon.classList.add("small");
-    UI15.Tooltip.Tooltip.install(icon, i18nString13(UIStrings14.unableToLoadThisContent));
+    const icon = html4`<devtools-icon class="small" name="cross-circle-filled"
+                                     title=${i18nString13(UIStrings14.unableToLoadThisContent)}>
+                      </devtools-icon>`;
     if (this.tabbedPane.tabView(tabId2)) {
       this.tabbedPane.setTrailingTabIcon(tabId2, icon);
     }
@@ -7986,10 +7973,9 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.ObjectWrapper {
       const tooltip = this.tooltipForFile(uiSourceCode);
       this.tabbedPane.changeTabTitle(tabId2, title, tooltip);
       if (uiSourceCode.loadError()) {
-        const icon = new Icon4();
-        icon.name = "cross-circle-filled";
-        icon.classList.add("small");
-        UI15.Tooltip.Tooltip.install(icon, i18nString13(UIStrings14.unableToLoadThisContent));
+        const icon = html4`<devtools-icon class="small" name="cross-circle-filled"
+                                         title=${i18nString13(UIStrings14.unableToLoadThisContent)}>
+                          </devtools-icon>`;
         this.tabbedPane.setTrailingTabIcon(tabId2, icon);
       } else if (Persistence9.Persistence.PersistenceImpl.instance().hasUnsavedCommittedChanges(uiSourceCode)) {
         const suffixElement = document.createElement("div");
@@ -8787,8 +8773,8 @@ __export(ThreadsSidebarPane_exports, {
 });
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
-import { Icon as Icon5 } from "./../../ui/kit/kit.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
+import * as Lit2 from "./../../ui/lit/lit.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/threadsSidebarPane.css.js
@@ -8805,6 +8791,10 @@ var threadsSidebarPane_css_default = `/*
   line-height: 15px;
   display: flex;
   flex-wrap: wrap;
+  appearance: none;
+  border-width: 0;
+  background-color: var(--sys-color-cdt-base-container);
+  width: 100%;
 }
 
 .thread-item + .thread-item {
@@ -8833,14 +8823,11 @@ var threadsSidebarPane_css_default = `/*
 }
 
 .selected-thread-icon {
-  display: none;
   position: absolute;
   top: 3px;
   left: 4px;
-}
-
-.thread-item.selected .selected-thread-icon {
-  display: block;
+  width: 16px;
+  height: 16px;
 }
 
 @media (forced-colors: active) {
@@ -8859,6 +8846,7 @@ var threadsSidebarPane_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./threadsSidebarPane.css")} */`;
 
 // gen/front_end/panels/sources/ThreadsSidebarPane.js
+var { html: html5, render: render4, nothing: nothing2 } = Lit2;
 var UIStrings16 = {
   /**
    * @description Text in Threads Sidebar Pane of the Sources panel
@@ -8867,113 +8855,92 @@ var UIStrings16 = {
 };
 var str_16 = i18n33.i18n.registerUIStrings("panels/sources/ThreadsSidebarPane.ts", UIStrings16);
 var i18nString15 = i18n33.i18n.getLocalizedString.bind(void 0, str_16);
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  render4(html5`
+    <style>${threadsSidebarPane_css_default}</style>
+    <div role="listbox">
+    ${input.threads.map((thread) => html5`
+      <button
+        class="thread-item"
+        @click=${thread.onSelect}
+        tabindex="0"
+        aria-selected=${thread.selected}
+        role="option"
+      >
+        <div class="thread-item-title">${thread.name}</div>
+        <div class="thread-item-paused-state">${thread.paused ? i18nString15(UIStrings16.paused) : ""}</div>
+        ${thread.selected ? html5`<devtools-icon name="large-arrow-right-filled" class="selected-thread-icon"></devtools-icon>` : nothing2}
+      </button>
+    `)}
+    </div>
+  `, target);
+};
 var ThreadsSidebarPane = class extends UI17.Widget.VBox {
-  items;
-  list;
-  selectedModel;
-  constructor() {
-    super({
-      jslog: `${VisualLogging10.section("sources.threads")}`,
-      useShadowDom: true
+  #debuggerModels = /* @__PURE__ */ new Set();
+  #selectedModel;
+  #view;
+  constructor(element, view = DEFAULT_VIEW3) {
+    super(element, {
+      jslog: `${VisualLogging10.section("sources.threads")}`
     });
-    this.registerRequiredCSS(threadsSidebarPane_css_default);
-    this.items = new UI17.ListModel.ListModel();
-    this.list = new UI17.ListControl.ListControl(this.items, this, UI17.ListControl.ListMode.NonViewport);
+    this.#view = view;
     const currentTarget = UI17.Context.Context.instance().flavor(SDK10.Target.Target);
-    this.selectedModel = currentTarget !== null ? currentTarget.model(SDK10.DebuggerModel.DebuggerModel) : null;
-    this.contentElement.appendChild(this.list.element);
+    this.#selectedModel = currentTarget?.model(SDK10.DebuggerModel.DebuggerModel) ?? null;
     UI17.Context.Context.instance().addFlavorChangeListener(SDK10.Target.Target, this.targetFlavorChanged, this);
     SDK10.TargetManager.TargetManager.instance().observeModels(SDK10.DebuggerModel.DebuggerModel, this);
   }
   static shouldBeShown() {
     return SDK10.TargetManager.TargetManager.instance().models(SDK10.DebuggerModel.DebuggerModel).length >= 2;
   }
-  createElementForItem(debuggerModel) {
-    const element = document.createElement("div");
-    element.classList.add("thread-item");
-    const title = element.createChild("div", "thread-item-title");
-    const pausedState = element.createChild("div", "thread-item-paused-state");
-    const icon = new Icon5();
-    icon.name = "large-arrow-right-filled";
-    icon.classList.add("selected-thread-icon", "small");
-    element.appendChild(icon);
-    element.tabIndex = -1;
-    self.onInvokeElement(element, (event) => {
-      UI17.Context.Context.instance().setFlavor(SDK10.Target.Target, debuggerModel.target());
-      event.consume(true);
-    });
-    const isSelected = UI17.Context.Context.instance().flavor(SDK10.Target.Target) === debuggerModel.target();
-    element.classList.toggle("selected", isSelected);
-    UI17.ARIAUtils.setSelected(element, isSelected);
-    function updateTitle() {
-      const executionContext = debuggerModel.runtimeModel().defaultExecutionContext();
-      title.textContent = executionContext?.label() ? executionContext.label() : debuggerModel.target().name();
-    }
-    function updatePausedState() {
-      pausedState.textContent = debuggerModel.isPaused() ? i18nString15(UIStrings16.paused) : "";
-    }
-    function targetNameChanged(event) {
-      const target = event.data;
-      if (target === debuggerModel.target()) {
-        updateTitle();
-      }
-    }
-    debuggerModel.addEventListener(SDK10.DebuggerModel.Events.DebuggerPaused, updatePausedState);
-    debuggerModel.addEventListener(SDK10.DebuggerModel.Events.DebuggerResumed, updatePausedState);
-    debuggerModel.runtimeModel().addEventListener(SDK10.RuntimeModel.Events.ExecutionContextChanged, updateTitle);
-    SDK10.TargetManager.TargetManager.instance().addEventListener("NameChanged", targetNameChanged);
-    updatePausedState();
-    updateTitle();
-    return element;
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
   }
-  heightForItem(_debuggerModel) {
-    console.assert(false);
-    return 0;
+  #getThreadName(debuggerModel) {
+    const executionContext = debuggerModel.runtimeModel().defaultExecutionContext();
+    return executionContext?.label() || debuggerModel.target().name();
   }
-  isItemSelectable(_debuggerModel) {
-    return true;
+  #handleThreadSelect(debuggerModel) {
+    UI17.Context.Context.instance().setFlavor(SDK10.Target.Target, debuggerModel.target());
   }
-  selectedItemChanged(_from, _to, fromElement, toElement) {
-    const fromEle = fromElement;
-    if (fromEle) {
-      fromEle.tabIndex = -1;
+  #updatePausedState = () => {
+    this.requestUpdate();
+  };
+  #targetNameChanged = (event) => {
+    const target = event.data;
+    const debuggerModel = target.model(SDK10.DebuggerModel.DebuggerModel);
+    if (debuggerModel && this.#debuggerModels.has(debuggerModel)) {
+      this.requestUpdate();
     }
-    const toEle = toElement;
-    if (toEle) {
-      this.setDefaultFocusedElement(toEle);
-      toEle.tabIndex = 0;
-      if (this.hasFocus()) {
-        toEle.focus();
-      }
-    }
-  }
-  updateSelectedItemARIA(_fromElement, _toElement) {
-    return false;
+  };
+  performUpdate() {
+    const threads = Array.from(this.#debuggerModels).map((debuggerModel) => ({
+      name: this.#getThreadName(debuggerModel),
+      paused: debuggerModel.isPaused(),
+      selected: this.#selectedModel === debuggerModel,
+      onSelect: () => this.#handleThreadSelect(debuggerModel)
+    }));
+    this.#view({ threads }, void 0, this.contentElement);
   }
   modelAdded(debuggerModel) {
-    this.items.insert(this.items.length, debuggerModel);
-    const currentTarget = UI17.Context.Context.instance().flavor(SDK10.Target.Target);
-    if (currentTarget === debuggerModel.target()) {
-      this.list.selectItem(debuggerModel);
-    }
+    this.#debuggerModels.add(debuggerModel);
+    debuggerModel.addEventListener(SDK10.DebuggerModel.Events.DebuggerPaused, this.#updatePausedState);
+    debuggerModel.addEventListener(SDK10.DebuggerModel.Events.DebuggerResumed, this.#updatePausedState);
+    debuggerModel.runtimeModel().addEventListener(SDK10.RuntimeModel.Events.ExecutionContextChanged, this.requestUpdate, this);
+    SDK10.TargetManager.TargetManager.instance().addEventListener("NameChanged", this.#targetNameChanged);
+    this.requestUpdate();
   }
   modelRemoved(debuggerModel) {
-    this.items.remove(this.items.indexOf(debuggerModel));
+    this.#debuggerModels.delete(debuggerModel);
+    debuggerModel.removeEventListener(SDK10.DebuggerModel.Events.DebuggerPaused, this.#updatePausedState);
+    debuggerModel.removeEventListener(SDK10.DebuggerModel.Events.DebuggerResumed, this.#updatePausedState);
+    debuggerModel.runtimeModel().removeEventListener(SDK10.RuntimeModel.Events.ExecutionContextChanged, this.requestUpdate, this);
+    SDK10.TargetManager.TargetManager.instance().removeEventListener("NameChanged", this.#targetNameChanged);
+    this.requestUpdate();
   }
   targetFlavorChanged({ data: target }) {
-    const hadFocus = this.hasFocus();
-    const debuggerModel = target.model(SDK10.DebuggerModel.DebuggerModel);
-    this.list.selectItem(debuggerModel);
-    if (debuggerModel) {
-      this.list.refreshItem(debuggerModel);
-    }
-    if (this.selectedModel !== null) {
-      this.list.refreshItem(this.selectedModel);
-    }
-    this.selectedModel = debuggerModel;
-    if (hadFocus) {
-      this.focus();
-    }
+    this.#selectedModel = target.model(SDK10.DebuggerModel.DebuggerModel);
+    this.requestUpdate();
   }
 };
 
@@ -9712,18 +9679,12 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
       const editorElement = this.element.querySelector("devtools-text-editor");
       if (!eventTarget.isSelfOrDescendant(editorElement) && uiSourceCode.contentType().isTextType()) {
         UI18.Context.Context.instance().setFlavor(Workspace21.UISourceCode.UISourceCode, uiSourceCode);
-        if (Root3.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
-          const action3 = UI18.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-          const submenu = contextMenu.footerSection().appendSubMenuItem(action3.title(), false, openAiAssistanceId, Root3.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.featureName);
-          submenu.defaultSection().appendAction("drjones.sources-panel-context", i18nString16(UIStrings17.startAChat));
-          appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.assessPerformance), "Is this script optimized for performance?", openAiAssistanceId + ".performance");
-          appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.explainThisScript), "What does this script do?", openAiAssistanceId + ".script");
-          appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.explainInputHandling), "Does the script handle user input safely", openAiAssistanceId + ".input");
-        } else if (Root3.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
-          contextMenu.footerSection().appendAction(openAiAssistanceId, void 0, false, void 0, Root3.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.featureName);
-        } else {
-          contextMenu.footerSection().appendAction(openAiAssistanceId);
-        }
+        const action3 = UI18.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+        const submenu = contextMenu.footerSection().appendSubMenuItem(action3.title(), false, openAiAssistanceId);
+        submenu.defaultSection().appendAction("drjones.sources-panel-context", i18nString16(UIStrings17.startAChat));
+        appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.assessPerformance), "Is this script optimized for performance?", openAiAssistanceId + ".performance");
+        appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.explainThisScript), "What does this script do?", openAiAssistanceId + ".script");
+        appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.explainInputHandling), "Does the script handle user input safely", openAiAssistanceId + ".input");
       }
     }
     if (uiSourceCode.contentType().hasScripts() && Bindings8.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(uiSourceCode).every((script) => script.isJavaScript())) {
@@ -11781,7 +11742,7 @@ var ValueDecoration = class extends CodeMirror6.WidgetType {
       const propertyCount = value2.preview ? value2.preview.properties.length : 0;
       const entryCount = value2.preview?.entries ? value2.preview.entries.length : 0;
       if (value2.preview && propertyCount + entryCount < 10) {
-        render3(formatter.renderObjectPreview(value2.preview), nameValuePair.createChild("span"));
+        render5(formatter.renderObjectPreview(value2.preview), nameValuePair.createChild("span"));
       } else {
         const propertyValue = ObjectUI2.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(
           value2,
@@ -12346,7 +12307,7 @@ import * as Root4 from "./../../core/root/root.js";
 import * as Persistence12 from "./../../models/persistence/persistence.js";
 import * as Workspace25 from "./../../models/workspace/workspace.js";
 import * as QuickOpen3 from "./../../ui/legacy/components/quick_open/quick_open.js";
-import { Directives, html as html3 } from "./../../ui/lit/lit.js";
+import { Directives as Directives2, html as html6 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/sources/filteredUISourceCodeListProvider.css.js
 var filteredUISourceCodeListProvider_css_default = `/*
@@ -12407,7 +12368,7 @@ var UIStrings19 = {
 };
 var str_19 = i18n39.i18n.registerUIStrings("panels/sources/FilteredUISourceCodeListProvider.ts", UIStrings19);
 var i18nString18 = i18n39.i18n.getLocalizedString.bind(void 0, str_19);
-var { classMap: classMap2 } = Directives;
+var { classMap: classMap2 } = Directives2;
 var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidget.Provider {
   queryLineNumberAndColumnNumber;
   defaultScores;
@@ -12524,7 +12485,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
         subtitleRanges.push({ offset: indexes[i], length: 1 });
       }
     }
-    return html3`
+    return html6`
       <style>${filteredUISourceCodeListProvider_css_default}</style>
       <div class="filtered-ui-source-code-list-item
                   ${classMap2({ "is-ignore-listed": isIgnoreListed })}">
@@ -12548,7 +12509,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
     if (text.length > maxTextLength) {
       splitPosition = text.length - maxTextLength;
     }
-    return html3`
+    return html6`
       <div class="first-part">${text.substring(0, splitPosition)}</div>
       <div class="second-part">${text.substring(splitPosition)}</div>`;
   }
@@ -12611,7 +12572,7 @@ import "./../../ui/kit/kit.js";
 import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as QuickOpen4 from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
-import { html as html4 } from "./../../ui/lit/lit.js";
+import { html as html7 } from "./../../ui/lit/lit.js";
 var UIStrings20 = {
   /**
    * @description Text in Go To Line Quick Open of the Sources panel
@@ -12675,7 +12636,7 @@ var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
     return this.#goToLineStrings.length;
   }
   renderItem(itemIndex, _query) {
-    return html4`
+    return html7`
       <devtools-icon name="colon"></devtools-icon>
       <div>
         <div>${this.#goToLineStrings[itemIndex]}</div>
@@ -12878,8 +12839,8 @@ import "./../../ui/kit/kit.js";
 import * as Common15 from "./../../core/common/common.js";
 import * as Host10 from "./../../core/host/host.js";
 import { PanelUtils as PanelUtils2 } from "./../utils/utils.js";
-import { Directives as Directives2, html as html5 } from "./../../ui/lit/lit.js";
-var { styleMap } = Directives2;
+import { Directives as Directives3, html as html8 } from "./../../ui/lit/lit.js";
+var { styleMap } = Directives3;
 var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
   constructor() {
     super("source-file");
@@ -12904,7 +12865,7 @@ var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
   }
   renderItem(itemIndex, query) {
     const { iconName, color } = PanelUtils2.iconDataForResourceType(this.itemContentTypeAt(itemIndex));
-    return html5`
+    return html8`
       <devtools-icon class="large" name=${iconName} style=${styleMap({ color })}></devtools-icon>
       ${super.renderItem(itemIndex, query)}`;
   }
@@ -12922,7 +12883,7 @@ import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as CodeMirror7 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as QuickOpen5 from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
-import { html as html6, nothing as nothing2 } from "./../../ui/lit/lit.js";
+import { html as html9, nothing as nothing3 } from "./../../ui/lit/lit.js";
 var UIStrings22 = {
   /**
    * @description Text in Go To Line Quick Open of the Sources panel
@@ -13223,10 +13184,10 @@ var OutlineQuickOpen = class extends QuickOpen5.FilteredListWidget.Provider {
     }
     const title = item.title + (item.subtitle ? item.subtitle : "");
     const highlightRanges = QuickOpen5.FilteredListWidget.FilteredListWidget.getHighlightRanges(title, query, true);
-    return html6`
+    return html9`
       <devtools-icon name="deployed"></devtools-icon>
       <div><devtools-highlight type="markup" ranges=${highlightRanges}>${title}</devtools-highlight></div>
-      ${location ? html6`<span class="tag">${location}</span>` : nothing2}`;
+      ${location ? html9`<span class="tag">${location}</span>` : nothing3}`;
   }
   selectItem(itemIndex, _promptValue) {
     if (itemIndex === null) {

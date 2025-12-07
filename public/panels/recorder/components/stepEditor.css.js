@@ -49,11 +49,6 @@ export default `/*
   margin-left: 4em;
 }
 
-.selector-picker {
-  width: 18px;
-  height: 18px;
-}
-
 .inline-button {
   width: 18px;
   height: 18px;

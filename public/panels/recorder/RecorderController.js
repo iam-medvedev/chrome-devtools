@@ -817,7 +817,7 @@ let RecorderController = class RecorderController extends LitElement {
         await this.updateComplete;
         // FIXME: call a method on the recording view widget.
         await this.#recordingView?.updateComplete;
-        this.#recordingView?.contentElement?.querySelector('.section:last-child devtools-step-view:last-of-type')
+        this.#recordingView?.contentElement?.querySelector('.section:last-child .step-view-widget:last-of-type')
             ?.shadowRoot?.querySelector('.action')
             ?.click();
     }

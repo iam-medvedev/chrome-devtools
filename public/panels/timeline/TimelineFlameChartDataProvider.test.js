@@ -7,7 +7,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { describeWithEnvironment, registerActions, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, registerActions, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { allThreadEntriesInTrace, setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as PerfUi from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -240,11 +240,6 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         });
     });
     it('shows Debug with AI submenu items', async function () {
-        updateHostConfig({
-            devToolsAiSubmenuPrompts: {
-                enabled: true,
-            },
-        });
         stubNoopSettings();
         registerActions([{
                 actionId: 'drjones.performance-panel-context',

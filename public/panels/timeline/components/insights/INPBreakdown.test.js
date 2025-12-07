@@ -5,7 +5,6 @@ import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
-import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Insights from './insights.js';
 describeWithEnvironment('INP breakdown component', () => {
     beforeEach(() => {
@@ -35,9 +34,9 @@ describeWithEnvironment('INP breakdown component', () => {
         component.bounds = parsedTrace.data.Meta.traceBounds;
         component.selected = true;
         renderElementIntoDOM(component);
-        await RenderCoordinator.done();
-        assert.isOk(component.shadowRoot);
-        const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
+        await component.updateComplete;
+        assert.isOk(component.element.shadowRoot);
+        const button = component.element.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
         assert.instanceOf(button, HTMLElement);
     });
     it('disables "Ask AI" if the page has no interaction', async function () {
@@ -54,9 +53,9 @@ describeWithEnvironment('INP breakdown component', () => {
         component.bounds = parsedTrace.data.Meta.traceBounds;
         component.selected = true;
         renderElementIntoDOM(component);
-        await RenderCoordinator.done();
-        assert.isOk(component.shadowRoot);
-        const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
+        await component.updateComplete;
+        assert.isOk(component.element.shadowRoot);
+        const button = component.element.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
         assert.isNull(button);
     });
 });

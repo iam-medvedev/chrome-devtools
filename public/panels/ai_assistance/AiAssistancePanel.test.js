@@ -15,8 +15,8 @@ import { createTarget, describeWithEnvironment, registerNoopActions, updateHostC
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { MockStore } from '../../testing/MockSettingStorage.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../testing/SnapshotTester.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -25,6 +25,7 @@ import * as Timeline from '../timeline/timeline.js';
 import * as AiAssistancePanel from './ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('AI Assistance Panel', () => {
+    setupSettingsHooks();
     let viewManagerIsViewVisibleStub;
     function enableAllFeatureAndSetting() {
         viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
@@ -57,15 +58,6 @@ describeWithMockConnection('AI Assistance Panel', () => {
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
         UI.Context.Context.instance().setFlavor(AiAssistanceModel.AIContext.AgentFocus, null);
         UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, null);
-        const mockStore = new MockStore();
-        const settingsStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        Common.Settings.Settings.instance({
-            forceNew: true,
-            syncedStorage: settingsStorage,
-            globalStorage: settingsStorage,
-            localStorage: settingsStorage,
-            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
-        });
     });
     afterEach(() => {
         cleanup();

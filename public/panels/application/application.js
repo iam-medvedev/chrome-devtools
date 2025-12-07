@@ -29,13 +29,13 @@ __export(ApplicationPanelSidebar_exports, {
 import * as Common16 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
 import * as i18n55 from "./../../core/i18n/i18n.js";
-import * as Platform7 from "./../../core/platform/platform.js";
+import * as Platform8 from "./../../core/platform/platform.js";
 import * as SDK23 from "./../../core/sdk/sdk.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
-import * as LegacyWrapper7 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
-import { createIcon as createIcon12 } from "./../../ui/kit/kit.js";
+import * as LegacyWrapper5 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import { createIcon as createIcon11 } from "./../../ui/kit/kit.js";
 import * as SourceFrame5 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI22 from "./../../ui/legacy/legacy.js";
+import * as UI21 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/application/ApplicationPanelTreeElement.js
 import * as Common from "./../../core/common/common.js";
@@ -93,8 +93,8 @@ var ExpandableApplicationPanelTreeElement = class extends ApplicationPanelTreeEl
   get itemURL() {
     return "category://" + this.categoryName;
   }
-  setLink(link5) {
-    this.categoryLink = link5;
+  setLink(link4) {
+    this.categoryLink = link4;
   }
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
@@ -134,18 +134,20 @@ var ExpandableApplicationPanelTreeElement = class extends ApplicationPanelTreeEl
 // gen/front_end/panels/application/AppManifestView.js
 var AppManifestView_exports = {};
 __export(AppManifestView_exports, {
-  AppManifestView: () => AppManifestView
+  AppManifestView: () => AppManifestView,
+  DEFAULT_VIEW: () => DEFAULT_VIEW
 });
+import "./../../ui/kit/kit.js";
+import "./../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
+import * as Platform from "./../../core/platform/platform.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as uiI18n from "./../../ui/i18n/i18n.js";
-import { createIcon } from "./../../ui/kit/kit.js";
-import * as InlineEditor from "./../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
+import { html, i18nTemplate, nothing, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/appManifestView.css.js
@@ -196,6 +198,18 @@ select {
 // gen/front_end/panels/application/AppManifestView.js
 import * as ApplicationComponents from "./components/components.js";
 var UIStrings = {
+  /**
+   * @description Text in App Manifest View of the Application panel
+   */
+  noManifestDetected: "No manifest detected",
+  /**
+   * @description Description text on manifests in App Manifest View of the Application panel which describes the app manifest view tab
+   */
+  manifestDescription: "A manifest defines how your app appears on phone\u2019s home screens and what the app looks like on launch.",
+  /**
+   * @description Text in App Manifest View of the Application panel
+   */
+  appManifest: "Manifest",
   /**
    * @description Text in App Manifest View of the Application panel
    */
@@ -592,6 +606,405 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/application/AppManifestView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+function renderErrors(errorsSection, warnings, manifestErrors, imageErrors) {
+  errorsSection.clearContent();
+  errorsSection.element.classList.toggle("hidden", !manifestErrors?.length && !warnings?.length && !imageErrors?.length);
+  for (const error of manifestErrors ?? []) {
+    const icon = UI2.UIUtils.createIconLabel({
+      title: error.message,
+      iconName: error.critical ? "cross-circle-filled" : "warning-filled",
+      color: error.critical ? "var(--icon-error)" : "var(--icon-warning)"
+    });
+    errorsSection.appendRow().appendChild(icon);
+  }
+  for (const warning of warnings ?? []) {
+    const msgElement = document.createTextNode(warning);
+    errorsSection.appendRow().appendChild(msgElement);
+  }
+  for (const error of imageErrors ?? []) {
+    const msgElement = document.createTextNode(error);
+    errorsSection.appendRow().appendChild(msgElement);
+  }
+}
+function renderIdentity(identitySection, identityData) {
+  const { name, shortName, description, appId, recommendedId, hasId } = identityData;
+  const fields = [];
+  fields.push({ title: i18nString(UIStrings.name), content: name });
+  fields.push({ title: i18nString(UIStrings.shortName), content: shortName });
+  fields.push({ title: i18nString(UIStrings.description), content: description });
+  if (appId && recommendedId) {
+    const onCopy = () => {
+      UI2.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
+    };
+    fields.push({ title: i18nString(UIStrings.computedAppId), label: "App Id", content: html`
+      ${appId}
+      <devtools-icon class="inline-icon" name="help" title=${i18nString(UIStrings.appIdExplainer)}
+          jslog=${VisualLogging.action("help").track({ hover: true })}>
+      </devtools-icon>
+      <devtools-link href="https://developer.chrome.com/blog/pwa-manifest-id/"
+                    .jslogContext=${"learn-more"}>
+        ${i18nString(UIStrings.learnMore)}
+      </devtools-link>
+      ${!hasId ? html`
+        <div class="multiline-value">
+          ${i18nTemplate(str_, UIStrings.appIdNote, {
+      PH1: html`<code>${recommendedId}</code>`,
+      PH2: html`<devtools-button class="inline-button" @click=${onCopy}
+                        .iconName=${"copy"}
+                        .variant=${"icon"}
+                        .size=${"SMALL"}
+                        .jslogContext=${"manifest.copy-id"}
+                        .title=${i18nString(UIStrings.copyToClipboard)}>
+                      </devtools-button>`
+    })}
+      </div>` : nothing}` });
+  } else {
+    identitySection.removeField(i18nString(UIStrings.computedAppId));
+  }
+  setSectionContents(fields, identitySection);
+}
+function renderPresentation(presentationSection, presentationData) {
+  const { startUrl, completeStartUrl, themeColor, backgroundColor, orientation, display, newNoteUrl, hasNewNoteUrl, completeNewNoteUrl } = presentationData;
+  const fields = [
+    {
+      title: i18nString(UIStrings.startUrl),
+      label: i18nString(UIStrings.startUrl),
+      content: completeStartUrl ? Components.Linkifier.Linkifier.linkifyURL(completeStartUrl, { text: startUrl, tabStop: true, jslogContext: "start-url" }) : nothing
+    },
+    {
+      title: i18nString(UIStrings.themeColor),
+      content: themeColor ? html`<devtools-color-swatch .color=${themeColor}></devtools-color-swatch>` : nothing
+    },
+    {
+      title: i18nString(UIStrings.backgroundColor),
+      content: backgroundColor ? html`<devtools-color-swatch .color=${backgroundColor}></devtools-color-swatch>` : nothing
+    },
+    { title: i18nString(UIStrings.orientation), content: orientation },
+    { title: i18nString(UIStrings.display), content: display }
+  ];
+  if (completeNewNoteUrl) {
+    fields.push({
+      title: i18nString(UIStrings.newNoteUrl),
+      content: hasNewNoteUrl ? Components.Linkifier.Linkifier.linkifyURL(completeNewNoteUrl, { text: newNoteUrl, tabStop: true }) : nothing
+    });
+  }
+  setSectionContents(fields, presentationSection);
+}
+function renderProtocolHandlers(protocolHandlersView, data) {
+  protocolHandlersView.protocolHandlers = data.protocolHandlers;
+  protocolHandlersView.manifestLink = data.manifestLink;
+}
+function renderImage(imageSrc, imageUrl, naturalWidth) {
+  return html`
+    <div class="image-wrapper">
+      <img src=${imageSrc} alt=${i18nString(UIStrings.imageFromS, { PH1: imageUrl })}
+          width=${naturalWidth}>
+    </div>`;
+}
+function renderIcons(iconsSection, data) {
+  iconsSection.clearContent();
+  const contents = [
+    // clang-format off
+    {
+      content: html`<devtools-checkbox class="mask-checkbox"
+        jslog=${VisualLogging.toggle("show-minimal-safe-area-for-maskable-icons").track({ change: true })}
+        @click=${(event) => {
+        iconsSection.setIconMasked(event.target.checked);
+      }}>
+      ${i18nString(UIStrings.showOnlyTheMinimumSafeAreaFor)}
+    </devtools-checkbox>`
+    },
+    // clang-format on
+    {
+      content: i18nTemplate(str_, UIStrings.needHelpReadOurS, {
+        PH1: html`
+          <devtools-link href="https://web.dev/maskable-icon/" .jslogContext=${"learn-more"}>
+            ${i18nString(UIStrings.documentationOnMaskableIcons)}
+          </devtools-link>`
+      })
+    }
+  ];
+  for (const [title, images] of data.icons) {
+    const content = images.filter((icon) => "imageSrc" in icon).map((icon) => renderImage(icon.imageSrc, icon.imageUrl, icon.naturalWidth));
+    contents.push({ title, content, flexed: true });
+  }
+  setSectionContents(contents, iconsSection);
+}
+function renderShortcuts(reportView, shortcutSections, data) {
+  for (const shortcutsSection of shortcutSections) {
+    shortcutsSection.detach(
+      /** overrideHideOnDetach= */
+      true
+    );
+  }
+  shortcutSections.length = 0;
+  let shortcutIndex = 1;
+  for (const shortcut of data.shortcuts) {
+    const shortcutSection = reportView.appendSection(i18nString(UIStrings.shortcutS, { PH1: shortcutIndex }));
+    shortcutSection.element.setAttribute("jslog", `${VisualLogging.section("shortcuts")}`);
+    shortcutSections.push(shortcutSection);
+    const fields = [
+      { title: i18nString(UIStrings.name), flexed: true, content: shortcut.name }
+    ];
+    if (shortcut.shortName) {
+      fields.push({ title: i18nString(UIStrings.shortName), flexed: true, content: shortcut.shortName });
+    }
+    if (shortcut.description) {
+      fields.push({ title: i18nString(UIStrings.description), flexed: true, content: shortcut.description });
+    }
+    fields.push({
+      title: i18nString(UIStrings.url),
+      flexed: true,
+      content: Components.Linkifier.Linkifier.linkifyURL(shortcut.shortcutUrl, { text: shortcut.url, tabStop: true, jslogContext: "shortcut" })
+    });
+    for (const [title, images] of shortcut.icons) {
+      const content = images.filter((icon) => "imageSrc" in icon).map((icon) => renderImage(icon.imageSrc, icon.imageUrl, icon.naturalWidth));
+      fields.push({ title, content, flexed: true });
+    }
+    setSectionContents(fields, shortcutSection);
+    shortcutIndex++;
+  }
+}
+function renderScreenshots(reportView, screenshotsSections, data) {
+  for (const screenshotSection of screenshotsSections) {
+    screenshotSection.detach(
+      /** overrideHideOnDetach= */
+      true
+    );
+  }
+  screenshotsSections.length = 0;
+  let screenshotIndex = 1;
+  for (const processedScreenshot of data.screenshots) {
+    const { screenshot, processedImage } = processedScreenshot;
+    const screenshotSection = reportView.appendSection(i18nString(UIStrings.screenshotS, { PH1: screenshotIndex }));
+    screenshotsSections.push(screenshotSection);
+    const fields = [];
+    if (screenshot.form_factor) {
+      fields.push({ title: i18nString(UIStrings.formFactor), flexed: true, content: screenshot.form_factor });
+    }
+    if (screenshot.label) {
+      fields.push({ title: i18nString(UIStrings.label), flexed: true, content: screenshot.label });
+    }
+    if (screenshot.platform) {
+      fields.push({ title: i18nString(UIStrings.platform), flexed: true, content: screenshot.platform });
+    }
+    if ("imageSrc" in processedImage) {
+      const content = renderImage(processedImage.imageSrc, processedImage.imageUrl, processedImage.naturalWidth);
+      fields.push({ title: processedImage.title, content, flexed: true });
+    }
+    setSectionContents(fields, screenshotSection);
+    screenshotIndex++;
+  }
+}
+function renderInstallability(installabilitySection, installabilityErrors) {
+  installabilitySection.clearContent();
+  installabilitySection.element.classList.toggle("hidden", !installabilityErrors.length);
+  const errorMessages = getInstallabilityErrorMessages(installabilityErrors);
+  setSectionContents(errorMessages.map((content) => ({ content })), installabilitySection);
+}
+function renderWindowControlsSection(windowControlsSection, data, selectedPlatform, onSelectOs, onToggleWcoToolbar) {
+  const { hasWco, url } = data;
+  const contents = [];
+  if (hasWco) {
+    contents.push({ content: html`
+      <devtools-icon class="inline-icon" name="check-circle"></devtools-icon>
+      ${i18nTemplate(str_, UIStrings.wcoFound, {
+      PH1: html`<code class="wco">window-controls-overlay</code>`,
+      PH2: html`<code>
+          <devtools-link href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
+                        .jslogContext=${"display-override"}>
+            display-override
+          </devtools-link>
+        </code>`,
+      PH3: html`${Components.Linkifier.Linkifier.linkifyURL(url)}`
+    })}` });
+    if (selectedPlatform && onSelectOs && onToggleWcoToolbar) {
+      const controls = renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar);
+      contents.push(controls);
+    }
+  } else {
+    contents.push({ content: html`
+      <devtools-icon class="inline-icon" name="info"></devtools-icon>
+      ${i18nTemplate(str_, UIStrings.wcoNotFound, {
+      PH1: html`<code>
+            <devtools-link href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
+                          .jslogContext=${"display-override"}>
+              display-override
+          </devtools-link>
+        </code>`
+    })}` });
+  }
+  contents.push({ content: i18nTemplate(str_, UIStrings.wcoNeedHelpReadMore, { PH1: html`<devtools-link
+      href="https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay"
+      .jslogContext=${"customize-pwa-tittle-bar"}>
+    ${i18nString(UIStrings.customizePwaTitleBar)}
+  </devtools-link>` }) });
+  windowControlsSection.clearContent();
+  setSectionContents(contents, windowControlsSection);
+}
+function getInstallabilityErrorMessages(installabilityErrors) {
+  const errorMessages = [];
+  for (const installabilityError of installabilityErrors) {
+    let errorMessage;
+    switch (installabilityError.errorId) {
+      case "not-in-main-frame":
+        errorMessage = i18nString(UIStrings.pageIsNotLoadedInTheMainFrame);
+        break;
+      case "not-from-secure-origin":
+        errorMessage = i18nString(UIStrings.pageIsNotServedFromASecureOrigin);
+        break;
+      case "no-manifest":
+        errorMessage = i18nString(UIStrings.pageHasNoManifestLinkUrl);
+        break;
+      case "manifest-empty":
+        errorMessage = i18nString(UIStrings.manifestCouldNotBeFetchedIsEmpty);
+        break;
+      case "start-url-not-valid":
+        errorMessage = i18nString(UIStrings.manifestStartUrlIsNotValid);
+        break;
+      case "manifest-missing-name-or-short-name":
+        errorMessage = i18nString(UIStrings.manifestDoesNotContainANameOr);
+        break;
+      case "manifest-display-not-supported":
+        errorMessage = i18nString(UIStrings.manifestDisplayPropertyMustBeOne);
+        break;
+      case "manifest-missing-suitable-icon":
+        if (installabilityError.errorArguments.length !== 1 || installabilityError.errorArguments[0].name !== "minimum-icon-size-in-pixels") {
+          console.error("Installability error does not have the correct errorArguments");
+          break;
+        }
+        errorMessage = i18nString(UIStrings.manifestDoesNotContainASuitable, { PH1: installabilityError.errorArguments[0].value });
+        break;
+      case "no-acceptable-icon":
+        if (installabilityError.errorArguments.length !== 1 || installabilityError.errorArguments[0].name !== "minimum-icon-size-in-pixels") {
+          console.error("Installability error does not have the correct errorArguments");
+          break;
+        }
+        errorMessage = i18nString(UIStrings.noSuppliedIconIsAtLeastSpxSquare, { PH1: installabilityError.errorArguments[0].value });
+        break;
+      case "cannot-download-icon":
+        errorMessage = i18nString(UIStrings.couldNotDownloadARequiredIcon);
+        break;
+      case "no-icon-available":
+        errorMessage = i18nString(UIStrings.downloadedIconWasEmptyOr);
+        break;
+      case "platform-not-supported-on-android":
+        errorMessage = i18nString(UIStrings.theSpecifiedApplicationPlatform);
+        break;
+      case "no-id-specified":
+        errorMessage = i18nString(UIStrings.noPlayStoreIdProvided);
+        break;
+      case "ids-do-not-match":
+        errorMessage = i18nString(UIStrings.thePlayStoreAppUrlAndPlayStoreId);
+        break;
+      case "already-installed":
+        errorMessage = i18nString(UIStrings.theAppIsAlreadyInstalled);
+        break;
+      case "url-not-supported-for-webapk":
+        errorMessage = i18nString(UIStrings.aUrlInTheManifestContainsA);
+        break;
+      case "in-incognito":
+        errorMessage = i18nString(UIStrings.pageIsLoadedInAnIncognitoWindow);
+        break;
+      case "not-offline-capable":
+        errorMessage = i18nString(UIStrings.pageDoesNotWorkOffline);
+        break;
+      case "no-url-for-service-worker":
+        errorMessage = i18nString(UIStrings.couldNotCheckServiceWorker);
+        break;
+      case "prefer-related-applications":
+        errorMessage = i18nString(UIStrings.manifestSpecifies);
+        break;
+      case "prefer-related-applications-only-beta-stable":
+        errorMessage = i18nString(UIStrings.preferrelatedapplicationsIsOnly);
+        break;
+      case "manifest-display-override-not-supported":
+        errorMessage = i18nString(UIStrings.manifestContainsDisplayoverride);
+        break;
+      case "warn-not-offline-capable":
+        errorMessage = i18nString(UIStrings.pageDoesNotWorkOfflineThePage, { PH1: "https://developer.chrome.com/blog/improved-pwa-offline-detection/" });
+        break;
+      default:
+        console.error(`Installability error id '${installabilityError.errorId}' is not recognized`);
+        break;
+    }
+    if (errorMessage) {
+      errorMessages.push(errorMessage);
+    }
+  }
+  return errorMessages;
+}
+function renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar) {
+  return { content: html`
+      <devtools-checkbox @click=${(event) => onToggleWcoToolbar(event.target.checked)}
+          title=${i18nString(UIStrings.selectWindowControlsOverlayEmulationOs)}>
+        ${i18nString(UIStrings.selectWindowControlsOverlayEmulationOs)}
+      </devtools-checkbox>
+      <select value=${selectedPlatform}
+              @change=${(event) => {
+    const target = event.target;
+    const selectedOS = target.options[target.selectedIndex].value;
+    void onSelectOs(selectedOS);
+  }}
+             .selectedIndex=${0}>
+        <option value=${"Windows"}
+                jslog=${VisualLogging.item("windows").track({ click: true })}>
+          Windows
+        </option>
+        <option value=${"Mac"}
+                jslog=${VisualLogging.item("macos").track({ click: true })}>
+          macOS
+        </option>
+        <option value=${"Linux"}
+                jslog=${VisualLogging.item("linux").track({ click: true })}>
+          Linux
+        </option>
+      </select>` };
+}
+function setSectionContents(items, section9) {
+  for (const item2 of items) {
+    if (!item2.title) {
+      render(item2.content, section9.appendRow());
+      continue;
+    }
+    const element = item2.flexed ? section9.appendFlexedField(item2.title) : section9.appendField(item2.title);
+    if (item2.label) {
+      UI2.ARIAUtils.setLabel(element, item2.label);
+    }
+    render(item2.content, element);
+  }
+}
+var DEFAULT_VIEW = (input, _output, _target) => {
+  const { reportView, errorsSection, installabilitySection, identitySection, presentationSection, protocolHandlersView, iconsSection, windowControlsSection, shortcutSections, screenshotsSections, identityData, presentationData, protocolHandlersData, iconsData, shortcutsData, screenshotsData, installabilityErrors, warnings, errors, imageErrors, windowControlsData, selectedPlatform, onSelectOs, onToggleWcoToolbar } = input;
+  if (identitySection && identityData) {
+    renderIdentity(identitySection, identityData);
+  }
+  if (presentationSection && presentationData) {
+    renderPresentation(presentationSection, presentationData);
+  }
+  if (protocolHandlersView && protocolHandlersData) {
+    renderProtocolHandlers(protocolHandlersView, protocolHandlersData);
+  }
+  if (iconsSection && iconsData) {
+    renderIcons(iconsSection, iconsData);
+  }
+  if (shortcutSections && shortcutsData) {
+    renderShortcuts(reportView, shortcutSections, shortcutsData);
+  }
+  if (screenshotsSections && screenshotsData) {
+    renderScreenshots(reportView, screenshotsSections, screenshotsData);
+  }
+  if (installabilitySection && installabilityErrors) {
+    renderInstallability(installabilitySection, installabilityErrors);
+  }
+  if (windowControlsSection && windowControlsData) {
+    renderWindowControlsSection(windowControlsSection, windowControlsData, selectedPlatform, onSelectOs, onToggleWcoToolbar);
+  }
+  if (errorsSection) {
+    renderErrors(errorsSection, warnings, errors, imageErrors);
+  }
+};
 var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.VBox) {
   emptyView;
   reportView;
@@ -604,34 +1017,32 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
   protocolHandlersSection;
   shortcutSections;
   screenshotsSections;
-  nameField;
-  shortNameField;
-  descriptionField;
-  startURLField;
-  themeColorSwatch;
-  backgroundColorSwatch;
-  orientationField;
-  displayField;
-  newNoteUrlField;
-  throttler;
   registeredListeners;
   target;
   resourceTreeModel;
   serviceWorkerManager;
   overlayModel;
   protocolHandlersView;
-  constructor(emptyView, reportView, throttler) {
+  manifestUrl;
+  manifestData;
+  manifestErrors;
+  installabilityErrors;
+  appIdResponse;
+  wcoToolbarEnabled = false;
+  view;
+  constructor(view = DEFAULT_VIEW) {
     super({
       jslog: `${VisualLogging.pane("manifest")}`,
       useShadowDom: true
     });
+    this.view = view;
     this.registerRequiredCSS(appManifestView_css_default);
     this.contentElement.classList.add("manifest-container");
-    this.emptyView = emptyView;
+    this.emptyView = new UI2.EmptyWidget.EmptyWidget(i18nString(UIStrings.noManifestDetected), i18nString(UIStrings.manifestDescription));
     this.emptyView.link = "https://web.dev/add-manifest/";
     this.emptyView.show(this.contentElement);
     this.emptyView.hideWidget();
-    this.reportView = reportView;
+    this.reportView = new UI2.ReportView.ReportView(i18nString(UIStrings.appManifest));
     this.reportView.registerRequiredCSS(appManifestView_css_default);
     this.reportView.element.classList.add("manifest-view-header");
     this.reportView.show(this.contentElement);
@@ -647,23 +1058,13 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
     this.windowControlsSection = this.reportView.appendSection(UIStrings.windowControlsOverlay, void 0, "window-controls-overlay");
     this.shortcutSections = [];
     this.screenshotsSections = [];
-    this.nameField = this.identitySection.appendField(i18nString(UIStrings.name));
-    this.shortNameField = this.identitySection.appendField(i18nString(UIStrings.shortName));
-    this.descriptionField = this.identitySection.appendFlexedField(i18nString(UIStrings.description));
-    this.startURLField = this.presentationSection.appendField(i18nString(UIStrings.startUrl));
-    UI2.ARIAUtils.setLabel(this.startURLField, i18nString(UIStrings.startUrl));
-    const themeColorField = this.presentationSection.appendField(i18nString(UIStrings.themeColor));
-    this.themeColorSwatch = new InlineEditor.ColorSwatch.ColorSwatch();
-    themeColorField.appendChild(this.themeColorSwatch);
-    const backgroundColorField = this.presentationSection.appendField(i18nString(UIStrings.backgroundColor));
-    this.backgroundColorSwatch = new InlineEditor.ColorSwatch.ColorSwatch();
-    backgroundColorField.appendChild(this.backgroundColorSwatch);
-    this.orientationField = this.presentationSection.appendField(i18nString(UIStrings.orientation));
-    this.displayField = this.presentationSection.appendField(i18nString(UIStrings.display));
-    this.newNoteUrlField = this.presentationSection.appendField(i18nString(UIStrings.newNoteUrl));
-    this.throttler = throttler;
     SDK.TargetManager.TargetManager.instance().observeTargets(this);
     this.registeredListeners = [];
+    this.manifestUrl = Platform.DevToolsPath.EmptyUrlString;
+    this.manifestData = null;
+    this.manifestErrors = [];
+    this.installabilityErrors = [];
+    this.appIdResponse = null;
   }
   getStaticSections() {
     return [
@@ -719,399 +1120,101 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
       this.resourceTreeModel.getInstallabilityErrors(),
       this.resourceTreeModel.getAppId()
     ]);
-    void this.throttler.schedule(
-      () => this.renderManifest(url, data, errors, installabilityErrors, appId),
-      immediately ? "AsSoonAsPossible" : "Default"
-      /* Common.Throttler.Scheduling.DEFAULT */
-    );
+    this.manifestUrl = url;
+    this.manifestData = data;
+    this.manifestErrors = errors;
+    this.installabilityErrors = installabilityErrors;
+    this.appIdResponse = appId;
+    if (immediately) {
+      await this.performUpdate();
+    } else {
+      await this.requestUpdate();
+    }
   }
-  async renderManifest(url, data, errors, installabilityErrors, appIdResponse) {
+  async performUpdate() {
+    const url = this.manifestUrl;
+    let data = this.manifestData;
+    const errors = this.manifestErrors;
+    const installabilityErrors = this.installabilityErrors;
+    const appIdResponse = this.appIdResponse;
     const appId = appIdResponse?.appId || null;
     const recommendedId = appIdResponse?.recommendedId || null;
     if ((!data || data === "{}") && !errors.length) {
       this.emptyView.showWidget();
       this.reportView.hideWidget();
+      this.view({ emptyView: this.emptyView, reportView: this.reportView }, void 0, this.contentElement);
       this.dispatchEventToListeners("ManifestDetected", false);
       return;
     }
     this.emptyView.hideWidget();
     this.reportView.showWidget();
     this.dispatchEventToListeners("ManifestDetected", true);
-    const link5 = Components.Linkifier.Linkifier.linkifyURL(url);
-    link5.tabIndex = 0;
-    this.reportView.setURL(link5);
-    this.errorsSection.clearContent();
-    this.errorsSection.element.classList.toggle("hidden", !errors.length);
-    for (const error of errors) {
-      const icon = UI2.UIUtils.createIconLabel({
-        title: error.message,
-        iconName: error.critical ? "cross-circle-filled" : "warning-filled",
-        color: error.critical ? "var(--icon-error)" : "var(--icon-warning)"
-      });
-      this.errorsSection.appendRow().appendChild(icon);
-    }
+    const link4 = Components.Linkifier.Linkifier.linkifyURL(url, { tabStop: true });
+    this.reportView.setURL(link4);
     if (!data) {
+      this.view({ emptyView: this.emptyView, reportView: this.reportView, errorsSection: this.errorsSection, errors }, void 0, this.contentElement);
       return;
     }
     if (data.charCodeAt(0) === 65279) {
       data = data.slice(1);
     }
     const parsedManifest = JSON.parse(data);
-    this.nameField.textContent = stringProperty("name");
-    this.shortNameField.textContent = stringProperty("short_name");
-    const warnings = [];
-    const description = stringProperty("description");
-    this.descriptionField.textContent = description;
-    if (description.length > 300) {
-      warnings.push(i18nString(UIStrings.descriptionMayBeTruncated));
-    }
-    const startURL = stringProperty("start_url");
-    if (appId && recommendedId) {
-      const appIdField = this.identitySection.appendField(i18nString(UIStrings.computedAppId));
-      UI2.ARIAUtils.setLabel(appIdField, "App Id");
-      appIdField.textContent = appId;
-      const helpIcon = createIcon("help", "inline-icon");
-      helpIcon.title = i18nString(UIStrings.appIdExplainer);
-      helpIcon.setAttribute("jslog", `${VisualLogging.action("help").track({ hover: true })}`);
-      appIdField.appendChild(helpIcon);
-      const learnMoreLink = UI2.XLink.XLink.create("https://developer.chrome.com/blog/pwa-manifest-id/", i18nString(UIStrings.learnMore), void 0, void 0, "learn-more");
-      appIdField.appendChild(learnMoreLink);
-      if (!stringProperty("id")) {
-        const suggestedIdNote = appIdField.createChild("div", "multiline-value");
-        const suggestedIdSpan = document.createElement("code");
-        suggestedIdSpan.textContent = recommendedId;
-        const copyButton = new Buttons.Button.Button();
-        copyButton.data = {
-          variant: "icon",
-          iconName: "copy",
-          size: "SMALL",
-          jslogContext: "manifest.copy-id",
-          title: i18nString(UIStrings.copyToClipboard)
-        };
-        copyButton.className = "inline-button";
-        copyButton.addEventListener("click", () => {
-          UI2.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
-          Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
-        });
-        suggestedIdNote.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.appIdNote, { PH1: suggestedIdSpan, PH2: copyButton }));
-      }
-    } else {
-      this.identitySection.removeField(i18nString(UIStrings.computedAppId));
-    }
-    this.startURLField.removeChildren();
-    if (startURL) {
-      const completeURL = Common2.ParsedURL.ParsedURL.completeURL(url, startURL);
-      if (completeURL) {
-        const link6 = Components.Linkifier.Linkifier.linkifyURL(completeURL, { text: startURL });
-        link6.tabIndex = 0;
-        link6.setAttribute("jslog", `${VisualLogging.link("start-url").track({ click: true })}`);
-        this.startURLField.appendChild(link6);
-      }
-    }
-    this.themeColorSwatch.classList.toggle("hidden", !stringProperty("theme_color"));
-    const themeColor = Common2.Color.parse(stringProperty("theme_color") || "white") || Common2.Color.parse("white");
-    if (themeColor) {
-      this.themeColorSwatch.renderColor(themeColor);
-    }
-    this.backgroundColorSwatch.classList.toggle("hidden", !stringProperty("background_color"));
-    const backgroundColor = Common2.Color.parse(stringProperty("background_color") || "white") || Common2.Color.parse("white");
-    if (backgroundColor) {
-      this.backgroundColorSwatch.renderColor(backgroundColor);
-    }
-    this.orientationField.textContent = stringProperty("orientation");
-    const displayType = stringProperty("display");
-    this.displayField.textContent = displayType;
-    const noteTaking = parsedManifest["note_taking"] || {};
-    const newNoteUrl = noteTaking["new_note_url"];
-    const hasNewNoteUrl = typeof newNoteUrl === "string";
-    this.newNoteUrlField.parentElement?.classList.toggle("hidden", !hasNewNoteUrl);
-    this.newNoteUrlField.removeChildren();
-    if (hasNewNoteUrl) {
-      const completeURL = Common2.ParsedURL.ParsedURL.completeURL(url, newNoteUrl);
-      const link6 = Components.Linkifier.Linkifier.linkifyURL(completeURL, { text: newNoteUrl });
-      link6.tabIndex = 0;
-      this.newNoteUrlField.appendChild(link6);
-    }
-    const protocolHandlers = parsedManifest["protocol_handlers"] || [];
-    this.protocolHandlersView.protocolHandlers = protocolHandlers;
-    this.protocolHandlersView.manifestLink = url;
-    const icons = parsedManifest["icons"] || [];
-    this.iconsSection.clearContent();
-    const shortcuts = parsedManifest["shortcuts"] || [];
-    for (const shortcutsSection of this.shortcutSections) {
-      shortcutsSection.detach(
-        /** overrideHideOnDetach= */
-        true
-      );
-    }
-    const screenshots = parsedManifest["screenshots"] || [];
-    for (const screenshotSection of this.screenshotsSections) {
-      screenshotSection.detach(
-        /** overrideHideOnDetach= */
-        true
-      );
-    }
-    const imageErrors = [];
-    const setIconMaskedCheckbox = UI2.UIUtils.CheckboxLabel.create(i18nString(UIStrings.showOnlyTheMinimumSafeAreaFor));
-    setIconMaskedCheckbox.classList.add("mask-checkbox");
-    setIconMaskedCheckbox.setAttribute("jslog", `${VisualLogging.toggle("show-minimal-safe-area-for-maskable-icons").track({ change: true })}`);
-    setIconMaskedCheckbox.addEventListener("click", () => {
-      this.iconsSection.setIconMasked(setIconMaskedCheckbox.checked);
-    });
-    this.iconsSection.appendRow().appendChild(setIconMaskedCheckbox);
-    const documentationLink = UI2.XLink.XLink.create("https://web.dev/maskable-icon/", i18nString(UIStrings.documentationOnMaskableIcons), void 0, void 0, "learn-more");
-    this.iconsSection.appendRow().appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.needHelpReadOurS, { PH1: documentationLink }));
-    let squareSizedIconAvailable = false;
-    for (const icon of icons) {
-      const result = await this.appendImageResourceToSection(
-        url,
-        icon,
-        this.iconsSection,
-        /** isScreenshot= */
-        false
-      );
-      imageErrors.push(...result.imageResourceErrors);
-      squareSizedIconAvailable = result.squareSizedIconAvailable || squareSizedIconAvailable;
-    }
-    if (!squareSizedIconAvailable) {
-      imageErrors.push(i18nString(UIStrings.sSShouldHaveSquareIcon));
-    }
-    if (shortcuts.length > 4) {
-      warnings.push(i18nString(UIStrings.shortcutsMayBeNotAvailable));
-    }
-    let shortcutIndex = 1;
-    for (const shortcut of shortcuts) {
-      const shortcutSection = this.reportView.appendSection(i18nString(UIStrings.shortcutS, { PH1: shortcutIndex }));
-      shortcutSection.element.setAttribute("jslog", `${VisualLogging.section("shortcuts")}`);
-      this.shortcutSections.push(shortcutSection);
-      shortcutSection.appendFlexedField(i18nString(UIStrings.name), shortcut.name);
-      if (shortcut.short_name) {
-        shortcutSection.appendFlexedField(i18nString(UIStrings.shortName), shortcut.short_name);
-      }
-      if (shortcut.description) {
-        shortcutSection.appendFlexedField(i18nString(UIStrings.description), shortcut.description);
-      }
-      const urlField = shortcutSection.appendFlexedField(i18nString(UIStrings.url));
-      const shortcutUrl = Common2.ParsedURL.ParsedURL.completeURL(url, shortcut.url);
-      const link6 = Components.Linkifier.Linkifier.linkifyURL(shortcutUrl, { text: shortcut.url });
-      link6.setAttribute("jslog", `${VisualLogging.link("shortcut").track({ click: true })}`);
-      link6.tabIndex = 0;
-      urlField.appendChild(link6);
-      const shortcutIcons = shortcut.icons || [];
-      let hasShortcutIconLargeEnough = false;
-      for (const shortcutIcon of shortcutIcons) {
-        const { imageResourceErrors: shortcutIconErrors } = await this.appendImageResourceToSection(
-          url,
-          shortcutIcon,
-          shortcutSection,
-          /** isScreenshot= */
-          false
-        );
-        imageErrors.push(...shortcutIconErrors);
-        if (!hasShortcutIconLargeEnough && shortcutIcon.sizes) {
-          const shortcutIconSize = shortcutIcon.sizes.match(/^(\d+)x(\d+)$/);
-          if (shortcutIconSize && shortcutIconSize[1] >= 96 && shortcutIconSize[2] >= 96) {
-            hasShortcutIconLargeEnough = true;
-          }
-        }
-      }
-      if (!hasShortcutIconLargeEnough) {
-        imageErrors.push(i18nString(UIStrings.shortcutSShouldIncludeAXPixel, { PH1: shortcutIndex }));
-      }
-      shortcutIndex++;
-    }
-    let screenshotIndex = 1;
-    const formFactorScreenshotDimensions = /* @__PURE__ */ new Map();
-    let haveScreenshotsDifferentAspectRatio = false;
-    for (const screenshot of screenshots) {
-      const screenshotSection = this.reportView.appendSection(i18nString(UIStrings.screenshotS, { PH1: screenshotIndex }));
-      this.screenshotsSections.push(screenshotSection);
-      if (screenshot.form_factor) {
-        screenshotSection.appendFlexedField(i18nString(UIStrings.formFactor), screenshot.form_factor);
-      }
-      if (screenshot.label) {
-        screenshotSection.appendFlexedField(i18nString(UIStrings.label), screenshot.label);
-      }
-      if (screenshot.platform) {
-        screenshotSection.appendFlexedField(i18nString(UIStrings.platform), screenshot.platform);
-      }
-      const { imageResourceErrors: screenshotErrors, naturalWidth: width, naturalHeight: height } = await this.appendImageResourceToSection(
-        url,
-        screenshot,
-        screenshotSection,
-        /** isScreenshot= */
-        true
-      );
-      imageErrors.push(...screenshotErrors);
-      if (screenshot.form_factor && width && height) {
-        formFactorScreenshotDimensions.has(screenshot.form_factor) || formFactorScreenshotDimensions.set(screenshot.form_factor, { width, height });
-        const formFactorFirstScreenshotDimensions = formFactorScreenshotDimensions.get(screenshot.form_factor);
-        if (formFactorFirstScreenshotDimensions) {
-          haveScreenshotsDifferentAspectRatio = haveScreenshotsDifferentAspectRatio || width * formFactorFirstScreenshotDimensions.height !== height * formFactorFirstScreenshotDimensions.width;
-        }
-      }
-      screenshotIndex++;
-    }
-    if (haveScreenshotsDifferentAspectRatio) {
-      warnings.push(i18nString(UIStrings.screenshotsMustHaveSameAspectRatio));
-    }
-    const screenshotsForDesktop = screenshots.filter((screenshot) => screenshot.form_factor === "wide");
-    const screenshotsForMobile = screenshots.filter((screenshot) => screenshot.form_factor !== "wide");
-    if (screenshotsForDesktop.length < 1) {
-      warnings.push(i18nString(UIStrings.noScreenshotsForRicherPWAInstallOnDesktop));
-    }
-    if (screenshotsForMobile.length < 1) {
-      warnings.push(i18nString(UIStrings.noScreenshotsForRicherPWAInstallOnMobile));
-    }
-    if (screenshotsForDesktop.length > 8) {
-      warnings.push(i18nString(UIStrings.tooManyScreenshotsForDesktop));
-    }
-    if (screenshotsForMobile.length > 5) {
-      warnings.push(i18nString(UIStrings.tooManyScreenshotsForMobile));
-    }
-    this.installabilitySection.clearContent();
-    this.installabilitySection.element.classList.toggle("hidden", !installabilityErrors.length);
-    const errorMessages = this.getInstallabilityErrorMessages(installabilityErrors);
-    for (const error of errorMessages) {
-      const msgElement = document.createTextNode(error);
-      this.installabilitySection.appendRow().appendChild(msgElement);
-    }
-    this.errorsSection.element.classList.toggle("hidden", !errors.length && !imageErrors.length && !warnings.length);
-    for (const warning of warnings) {
-      const msgElement = document.createTextNode(warning);
-      this.errorsSection.appendRow().appendChild(msgElement);
-    }
-    for (const error of imageErrors) {
-      const msgElement = document.createTextNode(error);
-      this.errorsSection.appendRow().appendChild(msgElement);
-    }
-    function stringProperty(name) {
-      const value = parsedManifest[name];
-      if (typeof value !== "string") {
-        return "";
-      }
-      return value;
-    }
-    this.windowControlsSection.clearContent();
-    const displayOverride = parsedManifest["display_override"] || [];
-    const hasWco = displayOverride.includes("window-controls-overlay");
-    const displayOverrideLink = UI2.XLink.XLink.create("https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override", "display-override", void 0, void 0, "display-override");
-    const displayOverrideText = document.createElement("code");
-    displayOverrideText.appendChild(displayOverrideLink);
-    const wcoStatusMessage = this.windowControlsSection.appendRow();
-    if (hasWco) {
-      const checkmarkIcon = createIcon("check-circle", "inline-icon");
-      wcoStatusMessage.appendChild(checkmarkIcon);
-      const wco = document.createElement("code");
-      wco.classList.add("wco");
-      wco.textContent = "window-controls-overlay";
-      wcoStatusMessage.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.wcoFound, { PH1: wco, PH2: displayOverrideText, PH3: link5 }));
-      if (this.overlayModel) {
-        await this.appendWindowControlsToSection(this.overlayModel, url, stringProperty("theme_color"));
-      }
-    } else {
-      const infoIcon = createIcon("info", "inline-icon");
-      wcoStatusMessage.appendChild(infoIcon);
-      wcoStatusMessage.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.wcoNotFound, { PH1: displayOverrideText }));
-    }
-    const wcoDocumentationLink = UI2.XLink.XLink.create("https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay", i18nString(UIStrings.customizePwaTitleBar), void 0, void 0, "customize-pwa-tittle-bar");
-    this.windowControlsSection.appendRow().appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.wcoNeedHelpReadMore, { PH1: wcoDocumentationLink }));
-    this.dispatchEventToListeners(
-      "ManifestRendered"
-      /* Events.MANIFEST_RENDERED */
-    );
+    const identityData = this.processIdentity(parsedManifest, appId, recommendedId);
+    const presentationData = this.processPresentation(parsedManifest, url);
+    const protocolHandlersData = this.processProtocolHandlers(parsedManifest, url);
+    const iconsData = await this.processIcons(parsedManifest, url);
+    const shortcutsData = await this.processShortcuts(parsedManifest, url);
+    const screenshotsData = await this.processScreenshots(parsedManifest, url);
+    const warnings = [
+      ...identityData.warnings,
+      ...shortcutsData.warnings,
+      ...screenshotsData.warnings
+    ];
+    const imageErrors = [
+      ...iconsData.imageResourceErrors,
+      ...shortcutsData.imageResourceErrors,
+      ...screenshotsData.imageResourceErrors
+    ];
+    const windowControlsData = await this.processWindowControls(parsedManifest, url);
+    const selectedPlatform = this.overlayModel?.getWindowControlsConfig().selectedPlatform;
+    const onSelectOs = this.overlayModel ? (selectedOS) => this.onSelectOs(selectedOS, windowControlsData.themeColor) : void 0;
+    const onToggleWcoToolbar = this.overlayModel ? (enabled) => this.onToggleWcoToolbar(enabled) : void 0;
+    this.view({
+      emptyView: this.emptyView,
+      reportView: this.reportView,
+      errorsSection: this.errorsSection,
+      installabilitySection: this.installabilitySection,
+      identitySection: this.identitySection,
+      presentationSection: this.presentationSection,
+      protocolHandlersView: this.protocolHandlersView,
+      iconsSection: this.iconsSection,
+      windowControlsSection: this.windowControlsSection,
+      shortcutSections: this.shortcutSections,
+      screenshotsSections: this.screenshotsSections,
+      parsedManifest,
+      url,
+      identityData,
+      presentationData,
+      protocolHandlersData,
+      iconsData,
+      shortcutsData,
+      screenshotsData,
+      installabilityErrors,
+      warnings,
+      errors,
+      imageErrors,
+      windowControlsData,
+      selectedPlatform,
+      onSelectOs,
+      onToggleWcoToolbar
+    }, void 0, this.contentElement);
   }
-  getInstallabilityErrorMessages(installabilityErrors) {
-    const errorMessages = [];
-    for (const installabilityError of installabilityErrors) {
-      let errorMessage;
-      switch (installabilityError.errorId) {
-        case "not-in-main-frame":
-          errorMessage = i18nString(UIStrings.pageIsNotLoadedInTheMainFrame);
-          break;
-        case "not-from-secure-origin":
-          errorMessage = i18nString(UIStrings.pageIsNotServedFromASecureOrigin);
-          break;
-        case "no-manifest":
-          errorMessage = i18nString(UIStrings.pageHasNoManifestLinkUrl);
-          break;
-        case "manifest-empty":
-          errorMessage = i18nString(UIStrings.manifestCouldNotBeFetchedIsEmpty);
-          break;
-        case "start-url-not-valid":
-          errorMessage = i18nString(UIStrings.manifestStartUrlIsNotValid);
-          break;
-        case "manifest-missing-name-or-short-name":
-          errorMessage = i18nString(UIStrings.manifestDoesNotContainANameOr);
-          break;
-        case "manifest-display-not-supported":
-          errorMessage = i18nString(UIStrings.manifestDisplayPropertyMustBeOne);
-          break;
-        case "manifest-missing-suitable-icon":
-          if (installabilityError.errorArguments.length !== 1 || installabilityError.errorArguments[0].name !== "minimum-icon-size-in-pixels") {
-            console.error("Installability error does not have the correct errorArguments");
-            break;
-          }
-          errorMessage = i18nString(UIStrings.manifestDoesNotContainASuitable, { PH1: installabilityError.errorArguments[0].value });
-          break;
-        case "no-acceptable-icon":
-          if (installabilityError.errorArguments.length !== 1 || installabilityError.errorArguments[0].name !== "minimum-icon-size-in-pixels") {
-            console.error("Installability error does not have the correct errorArguments");
-            break;
-          }
-          errorMessage = i18nString(UIStrings.noSuppliedIconIsAtLeastSpxSquare, { PH1: installabilityError.errorArguments[0].value });
-          break;
-        case "cannot-download-icon":
-          errorMessage = i18nString(UIStrings.couldNotDownloadARequiredIcon);
-          break;
-        case "no-icon-available":
-          errorMessage = i18nString(UIStrings.downloadedIconWasEmptyOr);
-          break;
-        case "platform-not-supported-on-android":
-          errorMessage = i18nString(UIStrings.theSpecifiedApplicationPlatform);
-          break;
-        case "no-id-specified":
-          errorMessage = i18nString(UIStrings.noPlayStoreIdProvided);
-          break;
-        case "ids-do-not-match":
-          errorMessage = i18nString(UIStrings.thePlayStoreAppUrlAndPlayStoreId);
-          break;
-        case "already-installed":
-          errorMessage = i18nString(UIStrings.theAppIsAlreadyInstalled);
-          break;
-        case "url-not-supported-for-webapk":
-          errorMessage = i18nString(UIStrings.aUrlInTheManifestContainsA);
-          break;
-        case "in-incognito":
-          errorMessage = i18nString(UIStrings.pageIsLoadedInAnIncognitoWindow);
-          break;
-        case "not-offline-capable":
-          errorMessage = i18nString(UIStrings.pageDoesNotWorkOffline);
-          break;
-        case "no-url-for-service-worker":
-          errorMessage = i18nString(UIStrings.couldNotCheckServiceWorker);
-          break;
-        case "prefer-related-applications":
-          errorMessage = i18nString(UIStrings.manifestSpecifies);
-          break;
-        case "prefer-related-applications-only-beta-stable":
-          errorMessage = i18nString(UIStrings.preferrelatedapplicationsIsOnly);
-          break;
-        case "manifest-display-override-not-supported":
-          errorMessage = i18nString(UIStrings.manifestContainsDisplayoverride);
-          break;
-        case "warn-not-offline-capable":
-          errorMessage = i18nString(UIStrings.pageDoesNotWorkOfflineThePage, { PH1: "https://developer.chrome.com/blog/improved-pwa-offline-detection/" });
-          break;
-        default:
-          console.error(`Installability error id '${installabilityError.errorId}' is not recognized`);
-          break;
-      }
-      if (errorMessage) {
-        errorMessages.push(errorMessage);
-      }
+  stringProperty(parsedManifest, name) {
+    const value = parsedManifest[name];
+    if (typeof value !== "string") {
+      return "";
     }
-    return errorMessages;
+    return value;
   }
   async loadImage(url) {
     const frameId = this.resourceTreeModel?.mainFrame?.id;
@@ -1131,19 +1234,15 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
       /* isBinary=*/
       true
     );
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("image-wrapper");
     const image = document.createElement("img");
     const result = new Promise((resolve, reject) => {
       image.onload = resolve;
       image.onerror = reject;
     });
     image.src = "data:application/octet-stream;base64," + await Common2.Base64.encode(content);
-    image.alt = i18nString(UIStrings.imageFromS, { PH1: url });
-    wrapper.appendChild(image);
     try {
       await result;
-      return { wrapper, image };
+      return { naturalWidth: image.naturalWidth, naturalHeight: image.naturalHeight, src: image.src };
     } catch {
     }
     return null;
@@ -1170,16 +1269,16 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
     }
     return parsedSizes;
   }
-  checkSizeProblem(size, image, resourceName, imageUrl) {
+  checkSizeProblem(size, naturalWidth, naturalHeight, resourceName, imageUrl) {
     if ("any" in size) {
-      return { hasSquareSize: image.naturalWidth === image.naturalHeight };
+      return { hasSquareSize: naturalWidth === naturalHeight };
     }
     const hasSquareSize = size.width === size.height;
-    if (image.naturalWidth !== size.width && image.naturalHeight !== size.height) {
+    if (naturalWidth !== size.width && naturalHeight !== size.height) {
       return {
         error: i18nString(UIStrings.actualSizeSspxOfSSDoesNotMatch, {
-          PH1: image.naturalWidth,
-          PH2: image.naturalHeight,
+          PH1: naturalWidth,
+          PH2: naturalHeight,
           PH3: resourceName,
           PH4: imageUrl,
           PH5: size.width,
@@ -1188,21 +1287,21 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
         hasSquareSize
       };
     }
-    if (image.naturalWidth !== size.width) {
+    if (naturalWidth !== size.width) {
       return {
-        error: i18nString(UIStrings.actualWidthSpxOfSSDoesNotMatch, { PH1: image.naturalWidth, PH2: resourceName, PH3: imageUrl, PH4: size.width }),
+        error: i18nString(UIStrings.actualWidthSpxOfSSDoesNotMatch, { PH1: naturalWidth, PH2: resourceName, PH3: imageUrl, PH4: size.width }),
         hasSquareSize
       };
     }
-    if (image.naturalHeight !== size.height) {
+    if (naturalHeight !== size.height) {
       return {
-        error: i18nString(UIStrings.actualHeightSpxOfSSDoesNotMatch, { PH1: image.naturalHeight, PH2: resourceName, PH3: imageUrl, PH4: size.height }),
+        error: i18nString(UIStrings.actualHeightSpxOfSSDoesNotMatch, { PH1: naturalHeight, PH2: resourceName, PH3: imageUrl, PH4: size.height }),
         hasSquareSize
       };
     }
     return { hasSquareSize };
   }
-  async appendImageResourceToSection(baseUrl, imageResource, section9, isScreenshot) {
+  async processImageResource(baseUrl, imageResource, isScreenshot) {
     const imageResourceErrors = [];
     const resourceName = isScreenshot ? i18nString(UIStrings.screenshot) : i18nString(UIStrings.icon);
     if (!imageResource.src) {
@@ -1212,18 +1311,16 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
     const imageUrl = Common2.ParsedURL.ParsedURL.completeURL(baseUrl, imageResource["src"]);
     if (!imageUrl) {
       imageResourceErrors.push(i18nString(UIStrings.sUrlSFailedToParse, { PH1: resourceName, PH2: imageResource["src"] }));
-      return { imageResourceErrors };
+      return { imageResourceErrors, imageUrl: imageResource["src"] };
     }
     const result = await this.loadImage(imageUrl);
     if (!result) {
       imageResourceErrors.push(i18nString(UIStrings.sSFailedToLoad, { PH1: resourceName, PH2: imageUrl }));
-      return { imageResourceErrors };
+      return { imageResourceErrors, imageUrl };
     }
-    const { wrapper, image } = result;
-    const { naturalWidth, naturalHeight } = image;
+    const { src, naturalWidth, naturalHeight } = result;
     const sizes = this.parseSizes(imageResource["sizes"], resourceName, imageUrl, imageResourceErrors);
     const title = sizes.map((x) => x.formatted).join(" ") + "\n" + (imageResource["type"] || "");
-    const field = section9.appendFlexedField(title);
     let squareSizedIconAvailable = false;
     if (!imageResource.sizes) {
       imageResourceErrors.push(i18nString(UIStrings.sSDoesNotSpecifyItsSizeInThe, { PH1: resourceName, PH2: imageUrl }));
@@ -1232,13 +1329,13 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
         imageResourceErrors.push(i18nString(UIStrings.screenshotPixelSize, { url: imageUrl }));
       }
       for (const size of sizes) {
-        const { error, hasSquareSize } = this.checkSizeProblem(size, image, resourceName, imageUrl);
+        const { error, hasSquareSize } = this.checkSizeProblem(size, naturalWidth, naturalHeight, resourceName, imageUrl);
         squareSizedIconAvailable = squareSizedIconAvailable || hasSquareSize;
         if (error) {
           imageResourceErrors.push(error);
         } else if (isScreenshot) {
-          const width = "any" in size ? image.naturalWidth : size.width;
-          const height = "any" in size ? image.naturalHeight : size.height;
+          const width = "any" in size ? naturalWidth : size.width;
+          const height = "any" in size ? naturalHeight : size.height;
           if (width < 320 || height < 320) {
             imageResourceErrors.push(i18nString(UIStrings.sSSizeShouldBeAtLeast320, { PH1: resourceName, PH2: imageUrl }));
           } else if (width > 3840 || height > 3840) {
@@ -1251,48 +1348,214 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
         }
       }
     }
-    image.width = image.naturalWidth;
     const purpose = typeof imageResource["purpose"] === "string" ? imageResource["purpose"].toLowerCase() : "";
     if (purpose.includes("any") && purpose.includes("maskable")) {
       imageResourceErrors.push(i18nString(UIStrings.avoidPurposeAnyAndMaskable));
     }
-    field.appendChild(wrapper);
-    return { imageResourceErrors, squareSizedIconAvailable, naturalWidth, naturalHeight };
+    return {
+      imageResourceErrors,
+      squareSizedIconAvailable,
+      naturalWidth,
+      naturalHeight,
+      title,
+      imageSrc: src,
+      imageUrl
+    };
   }
-  async appendWindowControlsToSection(overlayModel, url, themeColor) {
-    const wcoStyleSheetText = await overlayModel.hasStyleSheetText(url);
-    if (!wcoStyleSheetText) {
-      return;
-    }
-    await overlayModel.toggleWindowControlsToolbar(false);
-    const wcoOsCheckbox = UI2.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectWindowControlsOverlayEmulationOs), false);
-    wcoOsCheckbox.addEventListener("click", async () => {
-      await this.overlayModel?.toggleWindowControlsToolbar(wcoOsCheckbox.checked);
-    });
-    const osSelectElement = wcoOsCheckbox.createChild("select");
-    osSelectElement.appendChild(UI2.UIUtils.createOption("Windows", "Windows", "windows"));
-    osSelectElement.appendChild(UI2.UIUtils.createOption("macOS", "Mac", "macos"));
-    osSelectElement.appendChild(UI2.UIUtils.createOption("Linux", "Linux", "linux"));
-    osSelectElement.selectedIndex = 0;
+  async onToggleWcoToolbar(enabled) {
+    this.wcoToolbarEnabled = enabled;
     if (this.overlayModel) {
-      osSelectElement.value = this.overlayModel?.getWindowControlsConfig().selectedPlatform;
+      await this.overlayModel.toggleWindowControlsToolbar(this.wcoToolbarEnabled);
     }
-    osSelectElement.addEventListener("change", async () => {
-      const selectedOS = osSelectElement.options[osSelectElement.selectedIndex].value;
-      if (this.overlayModel) {
-        this.overlayModel.setWindowControlsPlatform(selectedOS);
-        await this.overlayModel.toggleWindowControlsToolbar(wcoOsCheckbox.checked);
+  }
+  async onSelectOs(selectedOS, themeColor) {
+    if (this.overlayModel) {
+      this.overlayModel.setWindowControlsPlatform(selectedOS);
+      this.overlayModel.setWindowControlsThemeColor(themeColor);
+      await this.overlayModel.toggleWindowControlsToolbar(this.wcoToolbarEnabled);
+    }
+  }
+  processIdentity(parsedManifest, appId, recommendedId) {
+    const description = this.stringProperty(parsedManifest, "description");
+    const warnings = [];
+    if (description.length > 300) {
+      warnings.push(i18nString(UIStrings.descriptionMayBeTruncated));
+    }
+    return {
+      name: this.stringProperty(parsedManifest, "name"),
+      shortName: this.stringProperty(parsedManifest, "short_name"),
+      description: this.stringProperty(parsedManifest, "description"),
+      appId,
+      recommendedId,
+      hasId: Boolean(this.stringProperty(parsedManifest, "id")),
+      warnings
+    };
+  }
+  async processIcons(parsedManifest, url) {
+    const icons = parsedManifest["icons"] || [];
+    const imageErrors = [];
+    const processedIcons = [];
+    let squareSizedIconAvailable = false;
+    for (const icon of icons) {
+      const result = await this.processImageResource(
+        url,
+        icon,
+        /** isScreenshot= */
+        false
+      );
+      processedIcons.push(result);
+      imageErrors.push(...result.imageResourceErrors);
+      if (result.squareSizedIconAvailable) {
+        squareSizedIconAvailable = true;
       }
-    });
-    this.windowControlsSection.appendRow().appendChild(wcoOsCheckbox);
-    overlayModel.setWindowControlsThemeColor(themeColor);
+    }
+    const processedIconsByTitle = Map.groupBy(processedIcons.filter((icon) => "title" in icon), (img) => img.title);
+    if (!squareSizedIconAvailable) {
+      imageErrors.push(i18nString(UIStrings.sSShouldHaveSquareIcon));
+    }
+    return { icons: processedIconsByTitle, imageResourceErrors: imageErrors };
+  }
+  async processShortcuts(parsedManifest, url) {
+    const shortcuts = parsedManifest["shortcuts"] || [];
+    const processedShortcuts = [];
+    const warnings = [];
+    const imageErrors = [];
+    if (shortcuts.length > 4) {
+      warnings.push(i18nString(UIStrings.shortcutsMayBeNotAvailable));
+    }
+    let shortcutIndex = 1;
+    for (const shortcut of shortcuts) {
+      const shortcutUrl = Common2.ParsedURL.ParsedURL.completeURL(url, shortcut.url);
+      const shortcutIcons = shortcut.icons || [];
+      const processedIcons = [];
+      let hasShortcutIconLargeEnough = false;
+      for (const shortcutIcon of shortcutIcons) {
+        const result = await this.processImageResource(
+          url,
+          shortcutIcon,
+          /** isScreenshot= */
+          false
+        );
+        processedIcons.push(result);
+        imageErrors.push(...result.imageResourceErrors);
+        if (!hasShortcutIconLargeEnough && shortcutIcon.sizes) {
+          const shortcutIconSize = shortcutIcon.sizes.match(/^(\d+)x(\d+)$/);
+          if (shortcutIconSize && Number(shortcutIconSize[1]) >= 96 && Number(shortcutIconSize[2]) >= 96) {
+            hasShortcutIconLargeEnough = true;
+          }
+        }
+      }
+      const iconsByTitle = Map.groupBy(processedIcons.filter((icon) => "title" in icon), (img) => img.title);
+      processedShortcuts.push({
+        name: shortcut.name,
+        shortName: shortcut.short_name,
+        description: shortcut.description,
+        url: shortcut.url,
+        shortcutUrl,
+        icons: iconsByTitle
+      });
+      if (!hasShortcutIconLargeEnough) {
+        imageErrors.push(i18nString(UIStrings.shortcutSShouldIncludeAXPixel, { PH1: shortcutIndex }));
+      }
+      shortcutIndex++;
+    }
+    return { shortcuts: processedShortcuts, warnings, imageResourceErrors: imageErrors };
+  }
+  async processScreenshots(parsedManifest, url) {
+    const screenshots = parsedManifest["screenshots"] || [];
+    const processedScreenshots = [];
+    const warnings = [];
+    const imageErrors = [];
+    let haveScreenshotsDifferentAspectRatio = false;
+    const formFactorScreenshotDimensions = /* @__PURE__ */ new Map();
+    for (const screenshot of screenshots) {
+      const result = await this.processImageResource(
+        url,
+        screenshot,
+        /** isScreenshot= */
+        true
+      );
+      processedScreenshots.push({ screenshot, processedImage: result });
+      imageErrors.push(...result.imageResourceErrors);
+      if (screenshot.form_factor && "naturalWidth" in result) {
+        const width = result.naturalWidth;
+        const height = result.naturalHeight;
+        formFactorScreenshotDimensions.has(screenshot.form_factor) || formFactorScreenshotDimensions.set(screenshot.form_factor, { width, height });
+        const formFactorFirstScreenshotDimensions = formFactorScreenshotDimensions.get(screenshot.form_factor);
+        if (formFactorFirstScreenshotDimensions) {
+          haveScreenshotsDifferentAspectRatio = haveScreenshotsDifferentAspectRatio || width * formFactorFirstScreenshotDimensions.height !== height * formFactorFirstScreenshotDimensions.width;
+        }
+      }
+    }
+    if (haveScreenshotsDifferentAspectRatio) {
+      warnings.push(i18nString(UIStrings.screenshotsMustHaveSameAspectRatio));
+    }
+    const screenshotsForDesktop = screenshots.filter((screenshot) => screenshot.form_factor === "wide");
+    const screenshotsForMobile = screenshots.filter((screenshot) => screenshot.form_factor !== "wide");
+    if (screenshotsForDesktop.length < 1) {
+      warnings.push(i18nString(UIStrings.noScreenshotsForRicherPWAInstallOnDesktop));
+    }
+    if (screenshotsForMobile.length < 1) {
+      warnings.push(i18nString(UIStrings.noScreenshotsForRicherPWAInstallOnMobile));
+    }
+    if (screenshotsForDesktop.length > 8) {
+      warnings.push(i18nString(UIStrings.tooManyScreenshotsForDesktop));
+    }
+    if (screenshotsForMobile.length > 5) {
+      warnings.push(i18nString(UIStrings.tooManyScreenshotsForMobile));
+    }
+    return { screenshots: processedScreenshots, warnings, imageResourceErrors: imageErrors };
+  }
+  async processWindowControls(parsedManifest, url) {
+    const displayOverride = parsedManifest["display_override"] || [];
+    const hasWco = displayOverride.includes("window-controls-overlay");
+    const themeColor = this.stringProperty(parsedManifest, "theme_color");
+    let wcoStyleSheetText = false;
+    if (this.overlayModel) {
+      wcoStyleSheetText = await this.overlayModel.hasStyleSheetText(url);
+    }
+    return {
+      hasWco,
+      themeColor,
+      wcoStyleSheetText,
+      url
+    };
+  }
+  processPresentation(parsedManifest, url) {
+    const startURL = this.stringProperty(parsedManifest, "start_url");
+    const completeURL = startURL ? Common2.ParsedURL.ParsedURL.completeURL(url, startURL) : null;
+    const themeColorString = this.stringProperty(parsedManifest, "theme_color");
+    const themeColor = themeColorString ? Common2.Color.parse(themeColorString) ?? Common2.Color.parse("white") : null;
+    const backgroundColorString = this.stringProperty(parsedManifest, "background_color");
+    const backgroundColor = backgroundColorString ? Common2.Color.parse(backgroundColorString) ?? Common2.Color.parse("white") : null;
+    const noteTaking = parsedManifest["note_taking"] || {};
+    const newNoteUrl = noteTaking["new_note_url"];
+    const hasNewNoteUrl = typeof newNoteUrl === "string";
+    const completeNewNoteUrl = hasNewNoteUrl ? Common2.ParsedURL.ParsedURL.completeURL(url, newNoteUrl) : null;
+    return {
+      startUrl: startURL,
+      completeStartUrl: completeURL,
+      themeColor,
+      backgroundColor,
+      orientation: this.stringProperty(parsedManifest, "orientation"),
+      display: this.stringProperty(parsedManifest, "display"),
+      newNoteUrl,
+      hasNewNoteUrl,
+      completeNewNoteUrl
+    };
+  }
+  processProtocolHandlers(parsedManifest, url) {
+    return {
+      protocolHandlers: parsedManifest["protocol_handlers"] || [],
+      manifestLink: url
+    };
   }
 };
 
 // gen/front_end/panels/application/BackForwardCacheTreeElement.js
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
-import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
+import { createIcon } from "./../../ui/kit/kit.js";
 import * as ApplicationComponents2 from "./components/components.js";
 var UIStrings2 = {
   /**
@@ -1306,7 +1569,7 @@ var BackForwardCacheTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(resourcesPanel) {
     super(resourcesPanel, i18nString2(UIStrings2.backForwardCache), false, "bfcache");
-    const icon = createIcon2("database");
+    const icon = createIcon("database");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -1377,7 +1640,7 @@ __export(BackgroundServiceView_exports, {
 });
 import "./../../ui/legacy/legacy.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
+import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
@@ -1638,7 +1901,7 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI3.Widget.VBox
   }
   constructor(serviceName, model) {
     super({
-      jslog: `${VisualLogging2.pane().context(Platform.StringUtilities.toKebabCase(serviceName))}`,
+      jslog: `${VisualLogging2.pane().context(Platform2.StringUtilities.toKebabCase(serviceName))}`,
       useShadowDom: true
     });
     this.registerRequiredCSS(emptyWidget_css_default, backgroundServiceView_css_default);
@@ -1908,7 +2171,7 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI3.Widget.VBox
    * Saves all currently displayed events in a file (JSON format).
    */
   async saveToFile() {
-    const fileName = `${this.serviceName}-${Platform.DateUtilities.toISO8601Compact(/* @__PURE__ */ new Date())}.json`;
+    const fileName = `${this.serviceName}-${Platform2.DateUtilities.toISO8601Compact(/* @__PURE__ */ new Date())}.json`;
     const stream = new Bindings.FileUtils.FileOutputStream();
     const accepted = await stream.open(fileName);
     if (!accepted) {
@@ -1923,7 +2186,7 @@ var EventDataNode = class extends DataGrid.DataGrid.DataGridNode {
   eventMetadata;
   constructor(data, eventMetadata) {
     super(data);
-    this.eventMetadata = eventMetadata.sort((m1, m2) => Platform.StringUtilities.compare(m1.key, m2.key));
+    this.eventMetadata = eventMetadata.sort((m1, m2) => Platform2.StringUtilities.compare(m1.key, m2.key));
   }
   createPreview() {
     const preview = new UI3.Widget.VBox();
@@ -1973,9 +2236,7 @@ __export(BounceTrackingMitigationsTreeElement_exports, {
 });
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
-import { createIcon as createIcon3 } from "./../../ui/kit/kit.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
+import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
 import * as ApplicationComponents3 from "./components/components.js";
 var UIStrings4 = {
   /**
@@ -1989,7 +2250,7 @@ var BounceTrackingMitigationsTreeElement = class extends ApplicationPanelTreeEle
   view;
   constructor(resourcesPanel) {
     super(resourcesPanel, i18nString4(UIStrings4.bounceTrackingMitigations), false, "bounce-tracking-mitigations");
-    const icon = createIcon3("database");
+    const icon = createIcon2("database");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -1998,7 +2259,7 @@ var BounceTrackingMitigationsTreeElement = class extends ApplicationPanelTreeEle
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
     if (!this.view) {
-      this.view = LegacyWrapper.LegacyWrapper.legacyWrapper(UI4.Widget.Widget, new ApplicationComponents3.BounceTrackingMitigationsView.BounceTrackingMitigationsView());
+      this.view = new ApplicationComponents3.BounceTrackingMitigationsView.BounceTrackingMitigationsView();
     }
     this.showView(this.view);
     Host3.userMetrics.panelShown("bounce-tracking-mitigations");
@@ -2387,8 +2648,8 @@ import * as NetworkForward from "./../network/forward/forward.js";
 import * as CspEvaluator from "./../../third_party/csp_evaluator/csp_evaluator.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
-import { html as html2, nothing as nothing2, render as render2 } from "./../../ui/lit/lit.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
+import { html as html3, nothing as nothing3, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents4 from "./components/components.js";
 
@@ -2523,8 +2784,8 @@ import "./../../ui/kit/kit.js";
 import "./../../ui/legacy/legacy.js";
 import "./../../ui/components/adorners/adorners.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import { Directives, html, nothing, render } from "./../../ui/lit/lit.js";
+import * as UI4 from "./../../ui/legacy/legacy.js";
+import { Directives, html as html2, nothing as nothing2, render as render2 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/originTrialTokenRows.css.js
 var originTrialTokenRows_css_default = `/*
@@ -2608,7 +2869,7 @@ var originTrialTreeView_css_default = `/*
 
 // gen/front_end/panels/application/OriginTrialTreeView.js
 var { classMap } = Directives;
-var { widgetConfig } = UI5.Widget;
+var { widgetConfig } = UI4.Widget;
 var UIStrings5 = {
   /**
    * @description Label for the 'origin' field in a parsed Origin Trial Token.
@@ -2665,16 +2926,16 @@ var str_5 = i18n9.i18n.registerUIStrings("panels/application/OriginTrialTreeView
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 function renderOriginTrialTree(originTrial) {
   const success = originTrial.status === "Enabled";
-  return html`
+  return html2`
     <li role="treeitem">
       ${originTrial.trialName}
       <devtools-adorner class="badge-${success ? "success" : "error"}">
         ${originTrial.status}
       </devtools-adorner>
-      ${originTrial.tokensWithStatus.length > 1 ? html`
+      ${originTrial.tokensWithStatus.length > 1 ? html2`
         <devtools-adorner class="badge-secondary">
           ${i18nString5(UIStrings5.tokens, { PH1: originTrial.tokensWithStatus.length })}
-        </devtools-adorner>` : nothing}
+        </devtools-adorner>` : nothing2}
       <ul role="group" hidden>
         ${originTrial.tokensWithStatus.length > 1 ? originTrial.tokensWithStatus.map(renderTokenNode) : renderTokenDetailsNodes(originTrial.tokensWithStatus[0])}
       </ul>
@@ -2682,7 +2943,7 @@ function renderOriginTrialTree(originTrial) {
 }
 function renderTokenNode(token) {
   const success = token.status === "Success";
-  return html`
+  return html2`
     <li role="treeitem">
       ${i18nString5(UIStrings5.token)}
       <devtools-adorner class="token-status-badge badge-${success ? "success" : "error"}">
@@ -2694,20 +2955,20 @@ function renderTokenNode(token) {
     </li>`;
 }
 function renderTokenDetails(token) {
-  return html`
+  return html2`
     <li role="treeitem">
       <devtools-widget .widgetConfig=${widgetConfig(OriginTrialTokenRows, { data: token })}>
       </devtools-widget>
     </li>`;
 }
 function renderTokenDetailsNodes(token) {
-  return html`
+  return html2`
     ${renderTokenDetails(token)}
     ${renderRawTokenTextNode(token.rawTokenText)}
   `;
 }
 function renderRawTokenTextNode(tokenText) {
-  return html`
+  return html2`
     <li role="treeitem">
       ${i18nString5(UIStrings5.rawTokenText)}
       <ul role="group" hidden>
@@ -2721,7 +2982,7 @@ function renderRawTokenTextNode(tokenText) {
 }
 var ROWS_DEFAULT_VIEW = (input, _output, target) => {
   const success = input.tokenWithStatus.status === "Success";
-  render(html`
+  render2(html2`
     <style>
       ${originTrialTokenRows_css_default}
       ${originTrialTreeView_css_default}
@@ -2733,7 +2994,7 @@ var ROWS_DEFAULT_VIEW = (input, _output, target) => {
           ${input.tokenWithStatus.status}
         </devtools-adorner>
       </div>
-      ${input.parsedTokenDetails.map((field) => html`
+      ${input.parsedTokenDetails.map((field) => html2`
         <div class="key">${field.name}</div>
         <div class="value">
           <div class=${classMap({ "error-text": Boolean(field.value.hasError) })}>
@@ -2743,7 +3004,7 @@ var ROWS_DEFAULT_VIEW = (input, _output, target) => {
       `)}
     </div>`, target);
 };
-var OriginTrialTokenRows = class extends UI5.Widget.Widget {
+var OriginTrialTokenRows = class extends UI4.Widget.Widget {
   #view;
   #tokenWithStatus = null;
   #parsedTokenDetails = [];
@@ -2814,18 +3075,18 @@ var OriginTrialTokenRows = class extends UI5.Widget.Widget {
     this.#view(viewInput, void 0, this.contentElement);
   }
 };
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW2 = (input, _output, target) => {
   if (!input.trials.length) {
-    render(html`
+    render2(html2`
       <span class="status-badge">
         <devtools-icon class="medium" name="clear"></devtools-icon>
         <span>${i18nString5(UIStrings5.noTrialTokens)}</span>
       </span>`, target);
     return;
   }
-  render(html`
+  render2(html2`
     <style>${originTrialTreeView_css_default}</style>
-    <devtools-tree .template=${html`
+    <devtools-tree .template=${html2`
       <style>${originTrialTreeView_css_default}</style>
       <ul role="tree">
         ${input.trials.map(renderOriginTrialTree)}
@@ -2834,10 +3095,10 @@ var DEFAULT_VIEW = (input, _output, target) => {
     </devtools-tree>
   `, target);
 };
-var OriginTrialTreeView = class extends UI5.Widget.Widget {
+var OriginTrialTreeView = class extends UI4.Widget.Widget {
   #data = { trials: [] };
   #view;
-  constructor(element, view = DEFAULT_VIEW) {
+  constructor(element, view = DEFAULT_VIEW2) {
     super(element, { useShadowDom: true });
     this.#view = view;
   }
@@ -2851,7 +3112,7 @@ var OriginTrialTreeView = class extends UI5.Widget.Widget {
 };
 
 // gen/front_end/panels/application/FrameDetailsView.js
-var { widgetConfig: widgetConfig2 } = UI6.Widget;
+var { widgetConfig: widgetConfig2 } = UI5.Widget;
 var UIStrings6 = {
   /**
    * @description Section header in the Frame Details view
@@ -3073,11 +3334,11 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/application/FrameDetailsView.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var DEFAULT_VIEW2 = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   if (!input.frame) {
     return;
   }
-  render2(html2`
+  render3(html3`
     <style>${frameDetailsReportView_css_default}</style>
     <devtools-report .data=${{ reportTitle: input.frame.displayName() }}
     jslog=${VisualLogging3.pane("frames")}>
@@ -3085,22 +3346,22 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
       ${renderIsolationSection(input)}
       ${renderApiAvailabilitySection(input.frame)}
       ${renderOriginTrial(input.trials)}
-      ${input.permissionsPolicies ? html2`
+      ${input.permissionsPolicies ? html3`
           <devtools-widget .widgetConfig=${widgetConfig2(ApplicationComponents4.PermissionsPolicySection.PermissionsPolicySection, {
     policies: input.permissionsPolicies,
     showDetails: false
   })}>
-          </devtools-widget>` : nothing2}
-      ${input.protocolMonitorExperimentEnabled ? renderAdditionalInfoSection(input.frame) : nothing2}
+          </devtools-widget>` : nothing3}
+      ${input.protocolMonitorExperimentEnabled ? renderAdditionalInfoSection(input.frame) : nothing3}
     </devtools-report>
   `, target);
 };
 function renderOriginTrial(trials) {
   if (!trials) {
-    return nothing2;
+    return nothing3;
   }
   const data = { trials };
-  return html2`
+  return html3`
     <devtools-report-section-header>
       ${i18n11.i18n.lockedString("Origin trials")}
     </devtools-report-section-header>
@@ -3119,15 +3380,15 @@ function renderOriginTrial(trials) {
 }
 function renderDocumentSection(input) {
   if (!input.frame) {
-    return nothing2;
+    return nothing3;
   }
-  return html2`
+  return html3`
       <devtools-report-section-header>${i18nString6(UIStrings6.document)}</devtools-report-section-header>
       <devtools-report-key>${i18nString6(UIStrings6.url)}</devtools-report-key>
       <devtools-report-value>
         <div class="inline-items">
-          ${!input.frame?.unreachableUrl() ? renderSourcesLinkForURL(input.onRevealInSources) : nothing2}
-          ${input.onRevealInNetwork ? renderNetworkLinkForURL(input.onRevealInNetwork) : nothing2}
+          ${!input.frame?.unreachableUrl() ? renderSourcesLinkForURL(input.onRevealInSources) : nothing3}
+          ${input.onRevealInNetwork ? renderNetworkLinkForURL(input.onRevealInNetwork) : nothing3}
           <div class="text-ellipsis" title=${input.frame.url}>${input.frame.url}</div>
         </div>
       </devtools-report-value>
@@ -3147,9 +3408,9 @@ function renderNetworkLinkForURL(onRevealInNetwork) {
 }
 function maybeRenderUnreachableURL(unreachableUrl) {
   if (!unreachableUrl) {
-    return nothing2;
+    return nothing3;
   }
-  return html2`
+  return html3`
       <devtools-report-key>${i18nString6(UIStrings6.unreachableUrl)}</devtools-report-key>
       <devtools-report-value>
         <div class="inline-items">
@@ -3175,22 +3436,22 @@ function renderNetworkLinkForUnreachableURL(unreachableUrlString) {
       ]));
     }, "unreachable-url.reveal-in-network");
   }
-  return nothing2;
+  return nothing3;
 }
 function maybeRenderOrigin(securityOrigin) {
   if (securityOrigin && securityOrigin !== "://") {
-    return html2`
+    return html3`
         <devtools-report-key>${i18nString6(UIStrings6.origin)}</devtools-report-key>
         <devtools-report-value>
           <div class="text-ellipsis" title=${securityOrigin}>${securityOrigin}</div>
         </devtools-report-value>
       `;
   }
-  return nothing2;
+  return nothing3;
 }
 function renderOwnerElement(linkTargetDOMNode) {
   if (linkTargetDOMNode) {
-    return html2`
+    return html3`
         <devtools-report-key>${i18nString6(UIStrings6.ownerElement)}</devtools-report-key>
         <devtools-report-value class="without-min-width">
           <div class="inline-items">
@@ -3202,19 +3463,19 @@ function renderOwnerElement(linkTargetDOMNode) {
         </devtools-report-value>
       `;
   }
-  return nothing2;
+  return nothing3;
 }
 function maybeRenderCreationStacktrace(stackTrace, target) {
   if (stackTrace && target) {
-    return html2`
+    return html3`
         <devtools-report-key title=${i18nString6(UIStrings6.creationStackTraceExplanation)}>${i18nString6(UIStrings6.creationStackTrace)}</devtools-report-key>
         <devtools-report-value jslog=${VisualLogging3.section("frame-creation-stack-trace")}>
-          <devtools-widget .widgetConfig=${UI6.Widget.widgetConfig(Components2.JSPresentationUtils.StackTracePreviewContent, { target, stackTrace, options: { expandable: true } })}>
+          <devtools-widget .widgetConfig=${UI5.Widget.widgetConfig(Components2.JSPresentationUtils.StackTracePreviewContent, { target, stackTrace, options: { expandable: true } })}>
           </devtools-widget>
         </devtools-report-value>
       `;
   }
-  return nothing2;
+  return nothing3;
 }
 function getAdFrameTypeStrings(type) {
   switch (type) {
@@ -3236,14 +3497,14 @@ function getAdFrameExplanationString(explanation) {
 }
 function maybeRenderAdStatus(adFrameType, adFrameStatus) {
   if (adFrameType === void 0 || adFrameType === "none") {
-    return nothing2;
+    return nothing3;
   }
   const typeStrings = getAdFrameTypeStrings(adFrameType);
-  const rows = [html2`<div title=${typeStrings.description}>${typeStrings.value}</div>`];
+  const rows = [html3`<div title=${typeStrings.description}>${typeStrings.value}</div>`];
   for (const explanation of adFrameStatus?.explanations || []) {
-    rows.push(html2`<div>${getAdFrameExplanationString(explanation)}</div>`);
+    rows.push(html3`<div>${getAdFrameExplanationString(explanation)}</div>`);
   }
-  return html2`
+  return html3`
       <devtools-report-key>${i18nString6(UIStrings6.adStatus)}</devtools-report-key>
       <devtools-report-value class="ad-status-list" jslog=${VisualLogging3.section("ad-status")}>
         <devtools-expandable-list .data=${{ rows, title: i18nString6(UIStrings6.adStatus) }}>
@@ -3252,13 +3513,13 @@ function maybeRenderAdStatus(adFrameType, adFrameStatus) {
 }
 function maybeRenderCreatorAdScriptAncestry(adFrameType, target, adScriptAncestry) {
   if (adFrameType === "none") {
-    return nothing2;
+    return nothing3;
   }
   if (!target || !adScriptAncestry || adScriptAncestry.ancestryChain.length === 0) {
-    return nothing2;
+    return nothing3;
   }
   const rows = adScriptAncestry.ancestryChain.map((adScriptId) => {
-    return html2`<div>
+    return html3`<div>
       <devtools-widget .widgetConfig=${widgetConfig2(Components2.Linkifier.ScriptLocationLink, {
       target,
       scriptId: adScriptId.scriptId,
@@ -3268,23 +3529,23 @@ function maybeRenderCreatorAdScriptAncestry(adFrameType, target, adScriptAncestr
     </div>`;
   });
   const shouldRenderFilterlistRule = adScriptAncestry.rootScriptFilterlistRule !== void 0;
-  return html2`
+  return html3`
       <devtools-report-key>${i18nString6(UIStrings6.creatorAdScriptAncestry)}</devtools-report-key>
       <devtools-report-value class="creator-ad-script-ancestry-list" jslog=${VisualLogging3.section("creator-ad-script-ancestry")}>
         <devtools-expandable-list .data=${{ rows, title: i18nString6(UIStrings6.creatorAdScriptAncestry) }}>
         </devtools-expandable-list>
       </devtools-report-value>
-      ${shouldRenderFilterlistRule ? html2`
+      ${shouldRenderFilterlistRule ? html3`
         <devtools-report-key>${i18nString6(UIStrings6.rootScriptFilterlistRule)}</devtools-report-key>
         <devtools-report-value jslog=${VisualLogging3.section("root-script-filterlist-rule")}>${adScriptAncestry.rootScriptFilterlistRule}</devtools-report-value>
-      ` : nothing2}
+      ` : nothing3}
     `;
 }
 function renderIsolationSection(input) {
   if (!input.frame) {
-    return nothing2;
+    return nothing3;
   }
-  return html2`
+  return html3`
       <devtools-report-section-header>${i18nString6(UIStrings6.securityIsolation)}</devtools-report-section-header>
       <devtools-report-key>${i18nString6(UIStrings6.secureContext)}</devtools-report-key>
       <devtools-report-value>
@@ -3301,9 +3562,9 @@ function renderIsolationSection(input) {
 function maybeRenderSecureContextExplanation(frame) {
   const explanation = getSecureContextExplanation(frame);
   if (explanation) {
-    return html2`<span class="inline-comment">${explanation}</span>`;
+    return html3`<span class="inline-comment">${explanation}</span>`;
   }
-  return nothing2;
+  return nothing3;
 }
 function getSecureContextExplanation(frame) {
   switch (frame?.getSecureContextType()) {
@@ -3320,7 +3581,7 @@ function getSecureContextExplanation(frame) {
 }
 function maybeRenderCoopCoepCSPStatus(info) {
   if (info) {
-    return html2`
+    return html3`
           ${maybeRenderCrossOriginStatus(
       info.coep,
       i18n11.i18n.lockedString("Cross-Origin Embedder Policy (COEP)"),
@@ -3336,11 +3597,11 @@ function maybeRenderCoopCoepCSPStatus(info) {
           ${renderCSPSection(info.csp)}
         `;
   }
-  return nothing2;
+  return nothing3;
 }
 function maybeRenderCrossOriginStatus(info, policyName, noneValue) {
   if (!info) {
-    return nothing2;
+    return nothing3;
   }
   function crossOriginValueToString(value) {
     switch (value) {
@@ -3369,12 +3630,12 @@ function maybeRenderCrossOriginStatus(info, policyName, noneValue) {
   const isEnabled = info.value !== noneValue;
   const isReportOnly = !isEnabled && info.reportOnlyValue !== noneValue;
   const endpoint = isEnabled ? info.reportingEndpoint : info.reportOnlyReportingEndpoint;
-  return html2`
+  return html3`
       <devtools-report-key>${policyName}</devtools-report-key>
       <devtools-report-value>
         ${crossOriginValueToString(isEnabled ? info.value : info.reportOnlyValue)}
-        ${isReportOnly ? html2`<span class="inline-comment">report-only</span>` : nothing2}
-        ${endpoint ? html2`<span class="inline-name">${i18nString6(UIStrings6.reportingTo)}</span>${endpoint}` : nothing2}
+        ${isReportOnly ? html3`<span class="inline-comment">report-only</span>` : nothing3}
+        ${endpoint ? html3`<span class="inline-name">${i18nString6(UIStrings6.reportingTo)}</span>${endpoint}` : nothing3}
       </devtools-report-value>
     `;
 }
@@ -3382,7 +3643,7 @@ function renderEffectiveDirectives(directives) {
   const parsedDirectives = new CspEvaluator.CspParser.CspParser(directives).csp.directives;
   const result = [];
   for (const directive in parsedDirectives) {
-    result.push(html2`
+    result.push(html3`
           <div>
             <span class="bold">${directive}</span>
             ${": " + parsedDirectives[directive]?.join(", ")}
@@ -3391,9 +3652,9 @@ function renderEffectiveDirectives(directives) {
   return result;
 }
 function renderSingleCSP(cspInfo, divider) {
-  return html2`
+  return html3`
       <devtools-report-key>
-        ${cspInfo.isEnforced ? i18n11.i18n.lockedString("Content-Security-Policy") : html2`
+        ${cspInfo.isEnforced ? i18n11.i18n.lockedString("Content-Security-Policy") : html3`
           ${i18n11.i18n.lockedString("Content-Security-Policy-Report-Only")}
           <devtools-button
             .iconName=${"help"}
@@ -3410,16 +3671,16 @@ function renderSingleCSP(cspInfo, divider) {
         ${cspInfo.source === "HTTP" ? i18n11.i18n.lockedString("HTTP header") : i18n11.i18n.lockedString("Meta tag")}
         ${renderEffectiveDirectives(cspInfo.effectiveDirectives)}
       </devtools-report-value>
-      ${divider ? html2`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing2}
+      ${divider ? html3`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
     `;
 }
 function renderCSPSection(cspInfos) {
-  return html2`
+  return html3`
       <devtools-report-divider></devtools-report-divider>
       <devtools-report-section-header>
         ${i18nString6(UIStrings6.contentSecurityPolicy)}
       </devtools-report-section-header>
-      ${cspInfos?.length ? cspInfos.map((cspInfo, index) => renderSingleCSP(cspInfo, index < cspInfos?.length - 1)) : html2`
+      ${cspInfos?.length ? cspInfos.map((cspInfo, index) => renderSingleCSP(cspInfo, index < cspInfos?.length - 1)) : html3`
         <devtools-report-key>
           ${i18n11.i18n.lockedString("Content-Security-Policy")}
         </devtools-report-key>
@@ -3431,9 +3692,9 @@ function renderCSPSection(cspInfos) {
 }
 function renderApiAvailabilitySection(frame) {
   if (!frame) {
-    return nothing2;
+    return nothing3;
   }
-  return html2`
+  return html3`
       <devtools-report-section-header>
         ${i18nString6(UIStrings6.apiAvailability)}
       </devtools-report-section-header>
@@ -3458,18 +3719,18 @@ function renderSharedArrayBufferAvailability(frame) {
       let renderHint = function(frame2) {
         switch (frame2.getCrossOriginIsolatedContextType()) {
           case "Isolated":
-            return nothing2;
+            return nothing3;
           case "NotIsolated":
             if (sabAvailable) {
-              return html2`
+              return html3`
                   <span class="inline-comment">
                     ${i18nString6(UIStrings6.willRequireCrossoriginIsolated)}
                   </span>`;
             }
-            return html2`<span class="inline-comment">${i18nString6(UIStrings6.requiresCrossoriginIsolated)}</span>`;
+            return html3`<span class="inline-comment">${i18nString6(UIStrings6.requiresCrossoriginIsolated)}</span>`;
           case "NotIsolatedFeatureDisabled":
             if (!sabTransferAvailable) {
-              return html2`
+              return html3`
                   <span class="inline-comment">
                     ${i18nString6(UIStrings6.transferRequiresCrossoriginIsolatedPermission)}
                     <code> cross-origin-isolated</code>
@@ -3477,7 +3738,7 @@ function renderSharedArrayBufferAvailability(frame) {
             }
             break;
         }
-        return nothing2;
+        return nothing3;
       };
       const sabAvailable = features.includes(
         "SharedArrayBuffers"
@@ -3489,7 +3750,7 @@ function renderSharedArrayBufferAvailability(frame) {
       );
       const availabilityText = sabTransferAvailable ? i18nString6(UIStrings6.availableTransferable) : sabAvailable ? i18nString6(UIStrings6.availableNotTransferable) : i18nString6(UIStrings6.unavailable);
       const tooltipText = sabTransferAvailable ? i18nString6(UIStrings6.sharedarraybufferConstructorIs) : sabAvailable ? i18nString6(UIStrings6.sharedarraybufferConstructorIsAvailable) : "";
-      return html2`
+      return html3`
           <devtools-report-key>SharedArrayBuffers</devtools-report-key>
           <devtools-report-value title=${tooltipText}>
             ${availabilityText}\xA0${renderHint(frame)}
@@ -3497,27 +3758,27 @@ function renderSharedArrayBufferAvailability(frame) {
         `;
     }
   }
-  return nothing2;
+  return nothing3;
 }
 function renderMeasureMemoryAvailability(frame) {
   if (frame) {
     const measureMemoryAvailable = frame.isCrossOriginIsolated();
     const availabilityText = measureMemoryAvailable ? i18nString6(UIStrings6.available) : i18nString6(UIStrings6.unavailable);
     const tooltipText = measureMemoryAvailable ? i18nString6(UIStrings6.thePerformanceAPI) : i18nString6(UIStrings6.thePerformancemeasureuseragentspecificmemory);
-    return html2`
+    return html3`
         <devtools-report-key>${i18nString6(UIStrings6.measureMemory)}</devtools-report-key>
         <devtools-report-value>
           <span title=${tooltipText}>${availabilityText}</span>\xA0<x-link class="link" href="https://web.dev/monitor-total-page-memory-usage/" jslog=${VisualLogging3.link("learn-more.monitor-memory-usage").track({ click: true })}>${i18nString6(UIStrings6.learnMore)}</x-link>
         </devtools-report-value>
       `;
   }
-  return nothing2;
+  return nothing3;
 }
 function renderAdditionalInfoSection(frame) {
   if (!frame) {
-    return nothing2;
+    return nothing3;
   }
-  return html2`
+  return html3`
       <devtools-report-section-header
         title=${i18nString6(UIStrings6.thisAdditionalDebugging)}
       >${i18nString6(UIStrings6.additionalInformation)}</devtools-report-section-header>
@@ -3528,7 +3789,7 @@ function renderAdditionalInfoSection(frame) {
       <devtools-report-divider></devtools-report-divider>
     `;
 }
-var FrameDetailsReportView = class extends UI6.Widget.Widget {
+var FrameDetailsReportView = class extends UI5.Widget.Widget {
   #frame;
   #target = null;
   #creationStackTrace = null;
@@ -3541,7 +3802,7 @@ var FrameDetailsReportView = class extends UI6.Widget.Widget {
   #linkifier = new Components2.Linkifier.Linkifier();
   #adScriptAncestry = null;
   #view;
-  constructor(element, view = DEFAULT_VIEW2) {
+  constructor(element, view = DEFAULT_VIEW3) {
     super(element, { useShadowDom: true });
     this.#protocolMonitorExperimentEnabled = Root.Runtime.experiments.isEnabled("protocol-monitor");
     this.#view = view;
@@ -4132,7 +4393,7 @@ import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents5 from "./components/components.js";
@@ -4223,7 +4484,7 @@ var indexedDBViews_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./indexedDBViews.css")} */`;
 
 // gen/front_end/panels/application/IndexedDBViews.js
-var { html: html3 } = Lit;
+var { html: html4 } = Lit;
 var UIStrings7 = {
   /**
    * @description Text in Indexed DBViews of the Application panel
@@ -4356,7 +4617,7 @@ var IDBDatabaseView = class extends ApplicationComponents5.StorageMetadataView.S
     if (!this.database) {
       return Lit.nothing;
     }
-    return html3`
+    return html4`
       ${await super.renderReportContent()}
       ${this.key(i18nString7(UIStrings7.version))}
       ${this.value(this.database.version.toString())}
@@ -4401,7 +4662,7 @@ var IDBDatabaseView = class extends ApplicationComponents5.StorageMetadataView.S
   updatedForTests() {
   }
   async deleteDatabase() {
-    const ok = await UI7.UIUtils.ConfirmDialog.show(i18nString7(UIStrings7.databaseWillBeRemoved), i18nString7(UIStrings7.confirmDeleteDatabase, { PH1: this.database.databaseId.name }), this, { jslogContext: "delete-database-confirmation" });
+    const ok = await UI6.UIUtils.ConfirmDialog.show(i18nString7(UIStrings7.databaseWillBeRemoved), i18nString7(UIStrings7.confirmDeleteDatabase, { PH1: this.database.databaseId.name }), this, { jslogContext: "delete-database-confirmation" });
     if (ok) {
       void this.model.deleteDatabase(this.database.databaseId);
     }
@@ -4411,7 +4672,7 @@ var IDBDatabaseView = class extends ApplicationComponents5.StorageMetadataView.S
   }
 };
 customElements.define("devtools-idb-database-view", IDBDatabaseView);
-var IDBDataView = class extends UI7.View.SimpleView {
+var IDBDataView = class extends UI6.View.SimpleView {
   model;
   databaseId;
   isIndex;
@@ -4449,27 +4710,27 @@ var IDBDataView = class extends UI7.View.SimpleView {
     this.isIndex = Boolean(index);
     this.refreshObjectStoreCallback = refreshObjectStoreCallback;
     this.element.classList.add("indexed-db-data-view", "storage-view");
-    this.refreshButton = new UI7.Toolbar.ToolbarButton(i18nString7(UIStrings7.refresh), "refresh");
+    this.refreshButton = new UI6.Toolbar.ToolbarButton(i18nString7(UIStrings7.refresh), "refresh");
     this.refreshButton.addEventListener("Click", this.refreshButtonClicked, this);
     this.refreshButton.element.setAttribute("jslog", `${VisualLogging4.action("refresh").track({ click: true })}`);
-    this.deleteSelectedButton = new UI7.Toolbar.ToolbarButton(i18nString7(UIStrings7.deleteSelected), "bin");
+    this.deleteSelectedButton = new UI6.Toolbar.ToolbarButton(i18nString7(UIStrings7.deleteSelected), "bin");
     this.deleteSelectedButton.addEventListener("Click", (_event) => {
       void this.deleteButtonClicked(null);
     });
     this.deleteSelectedButton.element.setAttribute("jslog", `${VisualLogging4.action("delete-selected").track({ click: true })}`);
-    this.clearButton = new UI7.Toolbar.ToolbarButton(i18nString7(UIStrings7.clearObjectStore), "clear");
+    this.clearButton = new UI6.Toolbar.ToolbarButton(i18nString7(UIStrings7.clearObjectStore), "clear");
     this.clearButton.addEventListener("Click", () => {
       void this.clearButtonClicked();
     }, this);
     this.clearButton.element.setAttribute("jslog", `${VisualLogging4.action("clear-all").track({ click: true })}`);
-    const refreshIcon = UI7.UIUtils.createIconLabel({
+    const refreshIcon = UI6.UIUtils.createIconLabel({
       title: i18nString7(UIStrings7.dataMayBeStale),
       iconName: "warning",
       color: "var(--icon-warning)",
       width: "20px",
       height: "20px"
     });
-    this.needsRefresh = new UI7.Toolbar.ToolbarItem(refreshIcon);
+    this.needsRefresh = new UI6.Toolbar.ToolbarItem(refreshIcon);
     this.needsRefresh.setVisible(false);
     this.needsRefresh.setTitle(i18nString7(UIStrings7.someEntriesMayHaveBeenModified));
     this.clearingObjectStore = false;
@@ -4532,33 +4793,33 @@ var IDBDataView = class extends UI7.View.SimpleView {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyColumnHeaderFragment(prefix, keyPath) {
     const keyColumnHeaderFragment = document.createDocumentFragment();
-    UI7.UIUtils.createTextChild(keyColumnHeaderFragment, prefix);
+    UI6.UIUtils.createTextChild(keyColumnHeaderFragment, prefix);
     if (keyPath === null) {
       return keyColumnHeaderFragment;
     }
-    UI7.UIUtils.createTextChild(keyColumnHeaderFragment, " (" + i18nString7(UIStrings7.keyPath));
+    UI6.UIUtils.createTextChild(keyColumnHeaderFragment, " (" + i18nString7(UIStrings7.keyPath));
     if (Array.isArray(keyPath)) {
-      UI7.UIUtils.createTextChild(keyColumnHeaderFragment, "[");
+      UI6.UIUtils.createTextChild(keyColumnHeaderFragment, "[");
       for (let i = 0; i < keyPath.length; ++i) {
         if (i !== 0) {
-          UI7.UIUtils.createTextChild(keyColumnHeaderFragment, ", ");
+          UI6.UIUtils.createTextChild(keyColumnHeaderFragment, ", ");
         }
         keyColumnHeaderFragment.appendChild(this.keyPathStringFragment(keyPath[i]));
       }
-      UI7.UIUtils.createTextChild(keyColumnHeaderFragment, "]");
+      UI6.UIUtils.createTextChild(keyColumnHeaderFragment, "]");
     } else {
       const keyPathString = keyPath;
       keyColumnHeaderFragment.appendChild(this.keyPathStringFragment(keyPathString));
     }
-    UI7.UIUtils.createTextChild(keyColumnHeaderFragment, ")");
+    UI6.UIUtils.createTextChild(keyColumnHeaderFragment, ")");
     return keyColumnHeaderFragment;
   }
   keyPathStringFragment(keyPathString) {
     const keyPathStringFragment = document.createDocumentFragment();
-    UI7.UIUtils.createTextChild(keyPathStringFragment, '"');
+    UI6.UIUtils.createTextChild(keyPathStringFragment, '"');
     const keyPathSpan = keyPathStringFragment.createChild("span", "source-code indexed-db-key-path");
     keyPathSpan.textContent = keyPathString;
-    UI7.UIUtils.createTextChild(keyPathStringFragment, '"');
+    UI6.UIUtils.createTextChild(keyPathStringFragment, '"');
     return keyPathStringFragment;
   }
   createEditorToolbar() {
@@ -4567,18 +4828,18 @@ var IDBDataView = class extends UI7.View.SimpleView {
     editorToolbar.appendToolbarItem(this.refreshButton);
     editorToolbar.appendToolbarItem(this.clearButton);
     editorToolbar.appendToolbarItem(this.deleteSelectedButton);
-    editorToolbar.appendToolbarItem(new UI7.Toolbar.ToolbarSeparator());
-    this.pageBackButton = new UI7.Toolbar.ToolbarButton(i18nString7(UIStrings7.showPreviousPage), "triangle-left", void 0, "prev-page");
+    editorToolbar.appendToolbarItem(new UI6.Toolbar.ToolbarSeparator());
+    this.pageBackButton = new UI6.Toolbar.ToolbarButton(i18nString7(UIStrings7.showPreviousPage), "triangle-left", void 0, "prev-page");
     this.pageBackButton.addEventListener("Click", this.pageBackButtonClicked, this);
     editorToolbar.appendToolbarItem(this.pageBackButton);
-    this.pageForwardButton = new UI7.Toolbar.ToolbarButton(i18nString7(UIStrings7.showNextPage), "triangle-right", void 0, "next-page");
+    this.pageForwardButton = new UI6.Toolbar.ToolbarButton(i18nString7(UIStrings7.showNextPage), "triangle-right", void 0, "next-page");
     this.pageForwardButton.setEnabled(false);
     this.pageForwardButton.addEventListener("Click", this.pageForwardButtonClicked, this);
     editorToolbar.appendToolbarItem(this.pageForwardButton);
-    this.keyInput = new UI7.Toolbar.ToolbarFilter(i18nString7(UIStrings7.filterByKey), 0.5);
+    this.keyInput = new UI6.Toolbar.ToolbarFilter(i18nString7(UIStrings7.filterByKey), 0.5);
     this.keyInput.addEventListener("TextChanged", this.updateData.bind(this, false));
     editorToolbar.appendToolbarItem(this.keyInput);
-    editorToolbar.appendToolbarItem(new UI7.Toolbar.ToolbarSeparator());
+    editorToolbar.appendToolbarItem(new UI6.Toolbar.ToolbarSeparator());
     editorToolbar.appendToolbarItem(this.needsRefresh);
   }
   pageBackButtonClicked() {
@@ -4707,7 +4968,7 @@ var IDBDataView = class extends UI7.View.SimpleView {
     this.updateData(true);
   }
   async clearButtonClicked() {
-    const ok = await UI7.UIUtils.ConfirmDialog.show(i18nString7(UIStrings7.objectStoreWillBeCleared), i18nString7(UIStrings7.confirmClearObjectStore, { PH1: this.objectStore.name }), this.element, { jslogContext: "clear-object-store-confirmation" });
+    const ok = await UI6.UIUtils.ConfirmDialog.show(i18nString7(UIStrings7.objectStoreWillBeCleared), i18nString7(UIStrings7.confirmClearObjectStore, { PH1: this.objectStore.name }), this.element, { jslogContext: "clear-object-store-confirmation" });
     if (ok) {
       this.clearButton.setEnabled(false);
       this.clearingObjectStore = true;
@@ -4883,7 +5144,7 @@ __export(InterestGroupTreeElement_exports, {
 import * as Host4 from "./../../core/host/host.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
-import { createIcon as createIcon4 } from "./../../ui/kit/kit.js";
+import { createIcon as createIcon3 } from "./../../ui/kit/kit.js";
 
 // gen/front_end/panels/application/InterestGroupStorageView.js
 var InterestGroupStorageView_exports = {};
@@ -4892,7 +5153,7 @@ __export(InterestGroupStorageView_exports, {
 });
 import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as SourceFrame from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI8 from "./../../ui/legacy/legacy.js";
+import * as UI7 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents6 from "./components/components.js";
 
@@ -4946,7 +5207,7 @@ var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
 function eventEquals(a, b) {
   return a.accessTime === b.accessTime && a.type === b.type && a.ownerOrigin === b.ownerOrigin && a.name === b.name;
 }
-var InterestGroupStorageView = class extends UI8.SplitWidget.SplitWidget {
+var InterestGroupStorageView = class extends UI7.SplitWidget.SplitWidget {
   interestGroupGrid = new ApplicationComponents6.InterestGroupAccessGrid.InterestGroupAccessGrid();
   events = [];
   detailsGetter;
@@ -4961,9 +5222,9 @@ var InterestGroupStorageView = class extends UI8.SplitWidget.SplitWidget {
     );
     this.element.setAttribute("jslog", `${VisualLogging5.pane("interest-groups")}`);
     this.detailsGetter = detailsGetter;
-    const topPanel = new UI8.Widget.VBox();
-    this.noDisplayView = new UI8.EmptyWidget.EmptyWidget(i18nString8(UIStrings8.noValueSelected), i18nString8(UIStrings8.clickToDisplayBody));
-    this.noDataView = new UI8.EmptyWidget.EmptyWidget(i18nString8(UIStrings8.noDataAvailable), i18nString8(UIStrings8.noDataDescription));
+    const topPanel = new UI7.Widget.VBox();
+    this.noDisplayView = new UI7.EmptyWidget.EmptyWidget(i18nString8(UIStrings8.noValueSelected), i18nString8(UIStrings8.clickToDisplayBody));
+    this.noDataView = new UI7.EmptyWidget.EmptyWidget(i18nString8(UIStrings8.noDataAvailable), i18nString8(UIStrings8.noDataDescription));
     topPanel.setMinimumSize(0, 120);
     this.setMainWidget(topPanel);
     this.noDisplayView.setMinimumSize(0, 80);
@@ -5043,7 +5304,7 @@ var InterestGroupTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString9(UIStrings9.interestGroups), false, "interest-groups");
-    const interestGroupIcon = createIcon4("database");
+    const interestGroupIcon = createIcon3("database");
     this.setLeadingIcons([interestGroupIcon]);
     this.view = new InterestGroupStorageView(this);
   }
@@ -5081,8 +5342,8 @@ __export(OpenedWindowDetailsView_exports, {
 import * as Common7 from "./../../core/common/common.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
-import { createIcon as createIcon5 } from "./../../ui/kit/kit.js";
-import * as UI9 from "./../../ui/legacy/legacy.js";
+import { createIcon as createIcon4 } from "./../../ui/kit/kit.js";
+import * as UI8 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/application/openedWindowDetailsView.css.js
 var openedWindowDetailsView_css_default = `/*
@@ -5239,9 +5500,9 @@ var str_10 = i18n19.i18n.registerUIStrings("panels/application/OpenedWindowDetai
 var i18nString10 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
 var booleanToYesNo = (b) => b ? i18nString10(UIStrings10.yes) : i18nString10(UIStrings10.no);
 function linkifyIcon(iconType, title, eventHandler) {
-  const icon = createIcon5(iconType, "icon-link devtools-link");
+  const icon = createIcon4(iconType, "icon-link devtools-link");
   const button = document.createElement("button");
-  UI9.Tooltip.Tooltip.install(button, title);
+  UI8.Tooltip.Tooltip.install(button, title);
   button.classList.add("devtools-link", "link-style", "text-button");
   button.appendChild(icon);
   button.addEventListener("click", (event) => {
@@ -5278,7 +5539,7 @@ async function maybeCreateLinkToElementsPanel(opener) {
   });
   return linkElement;
 }
-var OpenedWindowDetailsView = class extends UI9.Widget.VBox {
+var OpenedWindowDetailsView = class extends UI8.Widget.VBox {
   targetInfo;
   isWindowClosed;
   reportView;
@@ -5293,7 +5554,7 @@ var OpenedWindowDetailsView = class extends UI9.Widget.VBox {
     this.targetInfo = targetInfo;
     this.isWindowClosed = isWindowClosed;
     this.contentElement.classList.add("frame-details-container");
-    this.reportView = new UI9.ReportView.ReportView(this.buildTitle());
+    this.reportView = new UI8.ReportView.ReportView(this.buildTitle());
     this.reportView.show(this.contentElement);
     this.reportView.registerRequiredCSS(openedWindowDetailsView_css_default);
     this.reportView.element.classList.add("frame-details-report-container");
@@ -5303,7 +5564,7 @@ var OpenedWindowDetailsView = class extends UI9.Widget.VBox {
     this.openerElementField = this.securitySection.appendField(i18nString10(UIStrings10.openerFrame));
     this.securitySection.setFieldVisible(i18nString10(UIStrings10.openerFrame), false);
     this.hasDOMAccessValue = this.securitySection.appendField(i18nString10(UIStrings10.accessToOpener));
-    UI9.Tooltip.Tooltip.install(this.hasDOMAccessValue, i18nString10(UIStrings10.showsWhetherTheOpenedWindowIs));
+    UI8.Tooltip.Tooltip.install(this.hasDOMAccessValue, i18nString10(UIStrings10.showsWhetherTheOpenedWindowIs));
     this.requestUpdate();
   }
   async performUpdate() {
@@ -5337,7 +5598,7 @@ var OpenedWindowDetailsView = class extends UI9.Widget.VBox {
     this.targetInfo = targetInfo;
   }
 };
-var WorkerDetailsView = class extends UI9.Widget.VBox {
+var WorkerDetailsView = class extends UI8.Widget.VBox {
   targetInfo;
   reportView;
   documentSection;
@@ -5348,7 +5609,7 @@ var WorkerDetailsView = class extends UI9.Widget.VBox {
     this.registerRequiredCSS(openedWindowDetailsView_css_default);
     this.targetInfo = targetInfo;
     this.contentElement.classList.add("frame-details-container");
-    this.reportView = new UI9.ReportView.ReportView(this.targetInfo.title || this.targetInfo.url || i18nString10(UIStrings10.worker));
+    this.reportView = new UI8.ReportView.ReportView(this.targetInfo.title || this.targetInfo.url || i18nString10(UIStrings10.worker));
     this.reportView.show(this.contentElement);
     this.reportView.registerRequiredCSS(openedWindowDetailsView_css_default);
     this.reportView.element.classList.add("frame-details-report-container");
@@ -5417,7 +5678,7 @@ __export(PreloadingTreeElement_exports, {
   PreloadingSummaryTreeElement: () => PreloadingSummaryTreeElement
 });
 import * as i18n25 from "./../../core/i18n/i18n.js";
-import { createIcon as createIcon6 } from "./../../ui/kit/kit.js";
+import { createIcon as createIcon5 } from "./../../ui/kit/kit.js";
 import * as PreloadingHelper from "./preloading/helper/helper.js";
 
 // gen/front_end/panels/application/preloading/PreloadingView.js
@@ -5425,24 +5686,23 @@ var PreloadingView_exports = {};
 __export(PreloadingView_exports, {
   PreloadingAttemptView: () => PreloadingAttemptView,
   PreloadingRuleSetView: () => PreloadingRuleSetView,
-  PreloadingSummaryView: () => PreloadingSummaryView,
-  PreloadingWarningsView: () => PreloadingWarningsView
+  PreloadingSummaryView: () => PreloadingSummaryView
 });
 import "./../../ui/legacy/legacy.js";
 import * as Common8 from "./../../core/common/common.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
-import * as Platform3 from "./../../core/platform/platform.js";
+import * as Platform4 from "./../../core/platform/platform.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "./../../core/platform/platform.js";
 import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
-import * as UI10 from "./../../ui/legacy/legacy.js";
-import { html as html4, render as render3 } from "./../../ui/lit/lit.js";
+import * as UI9 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html5, render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 import * as PreloadingComponents from "./preloading/components/components.js";
 
 // gen/front_end/panels/application/preloading/components/PreloadingString.js
 import * as i18n21 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
+import * as Platform3 from "./../../core/platform/platform.js";
 import { assertNotNullOrUndefined } from "./../../core/platform/platform.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
@@ -5883,6 +6143,7 @@ var preloadingViewDropDown_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./preloading/preloadingViewDropDown.css")} */`;
 
 // gen/front_end/panels/application/preloading/PreloadingView.js
+var { createRef, ref } = Directives2;
 var UIStrings12 = {
   /**
    * @description DropDown title for filtering preloading attempts by rule set
@@ -6027,14 +6288,15 @@ var PreloadingUIUtils = class {
 function pageURL() {
   return SDK13.TargetManager.TargetManager.instance().scopeTarget()?.inspectedURL() || "";
 }
-var PreloadingRuleSetView = class extends UI10.Widget.VBox {
+var PreloadingRuleSetView = class extends UI9.Widget.VBox {
   model;
   focusedRuleSetId = null;
   warningsContainer;
-  warningsView = new PreloadingWarningsView();
+  warningsView = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
   hsplit;
   ruleSetGrid = new PreloadingComponents.RuleSetGrid.RuleSetGrid();
-  ruleSetDetails = new PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView();
+  ruleSetGridContainerRef = createRef();
+  ruleSetDetailsRef;
   shouldPrettyPrint = Common8.Settings.Settings.instance().moduleSetting("auto-pretty-print-minified").get();
   constructor(model) {
     super({ useShadowDom: true });
@@ -6042,17 +6304,20 @@ var PreloadingRuleSetView = class extends UI10.Widget.VBox {
     this.model = model;
     SDK13.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
     SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "ModelUpdated", this.render, this, { scoped: true });
-    SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "WarningsUpdated", this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
+    SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "WarningsUpdated", (e) => {
+      Object.assign(this.warningsView, e.data);
+    }, this, { scoped: true });
     this.warningsContainer = document.createElement("div");
     this.warningsContainer.classList.add("flex-none");
     this.contentElement.insertBefore(this.warningsContainer, this.contentElement.firstChild);
     this.warningsView.show(this.warningsContainer);
-    this.ruleSetGrid.addEventListener("select", this.onRuleSetsGridCellFocused.bind(this));
+    this.ruleSetGrid.addEventListener("select", this.onRuleSetsGridCellFocused, this);
+    this.ruleSetDetailsRef = createRef();
     const onPrettyPrintToggle = () => {
       this.shouldPrettyPrint = !this.shouldPrettyPrint;
       this.updateRuleSetDetails();
     };
-    render3(html4`
+    render4(html5`
         <div class="empty-state">
           <span class="empty-state-header">${i18nString12(UIStrings12.noRulesDetected)}</span>
           <div class="empty-state-description">
@@ -6065,11 +6330,13 @@ var PreloadingRuleSetView = class extends UI10.Widget.VBox {
           </div>
         </div>
         <devtools-split-view sidebar-position="second">
-          <div slot="main">
-            ${this.ruleSetGrid}
+          <div slot="main" ${ref(this.ruleSetGridContainerRef)}>
           </div>
           <div slot="sidebar" jslog=${VisualLogging6.section("rule-set-details")}>
-            ${this.ruleSetDetails}
+            <devtools-widget .widgetConfig=${UI9.Widget.widgetConfig(PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView, {
+      ruleSet: this.getRuleSet(),
+      shouldPrettyPrint: this.shouldPrettyPrint
+    })} ${ref(this.ruleSetDetailsRef)}></devtools-widget>
           </div>
         </devtools-split-view>
         <div class="pretty-print-button" style="border-top: 1px solid var(--sys-color-divider)">
@@ -6102,15 +6369,21 @@ var PreloadingRuleSetView = class extends UI10.Widget.VBox {
     this.render();
   }
   updateRuleSetDetails() {
-    const id = this.focusedRuleSetId;
-    const ruleSet = id === null ? null : this.model.getRuleSetById(id);
-    this.ruleSetDetails.shouldPrettyPrint = this.shouldPrettyPrint;
-    this.ruleSetDetails.data = ruleSet;
+    const ruleSet = this.getRuleSet();
+    const widget = this.ruleSetDetailsRef.value?.getWidget();
+    if (widget) {
+      widget.shouldPrettyPrint = this.shouldPrettyPrint;
+      widget.ruleSet = ruleSet;
+    }
     if (ruleSet === null) {
       this.hsplit.setAttribute("sidebar-visibility", "hidden");
     } else {
       this.hsplit.removeAttribute("sidebar-visibility");
     }
+  }
+  getRuleSet() {
+    const id = this.focusedRuleSetId;
+    return id === null ? null : this.model.getRuleSetById(id);
   }
   render() {
     const countsByRuleSetId = this.model.getPreloadCountsByRuleSetId();
@@ -6121,13 +6394,16 @@ var PreloadingRuleSetView = class extends UI10.Widget.VBox {
         preloadsStatusSummary: PreloadingUIUtils.preloadsStatusSummary(countsByStatus)
       };
     });
-    this.ruleSetGrid.update({ rows: ruleSetRows, pageURL: pageURL() });
+    this.ruleSetGrid.data = { rows: ruleSetRows, pageURL: pageURL() };
     this.contentElement.classList.toggle("empty", ruleSetRows.length === 0);
     this.updateRuleSetDetails();
+    const container = this.ruleSetGridContainerRef.value;
+    if (container && this.ruleSetGrid.element.parentElement !== container) {
+      this.ruleSetGrid.show(container);
+    }
   }
   onRuleSetsGridCellFocused(event) {
-    const focusedEvent = event;
-    this.focusedRuleSetId = focusedEvent.detail;
+    this.focusedRuleSetId = event.data;
     this.render();
   }
   getInfobarContainerForTest() {
@@ -6136,17 +6412,14 @@ var PreloadingRuleSetView = class extends UI10.Widget.VBox {
   getRuleSetGridForTest() {
     return this.ruleSetGrid;
   }
-  getRuleSetDetailsForTest() {
-    return this.ruleSetDetails;
-  }
 };
-var PreloadingAttemptView = class extends UI10.Widget.VBox {
+var PreloadingAttemptView = class extends UI9.Widget.VBox {
   model;
   // Note that we use id of (representative) preloading attempt while we show pipelines in grid.
   // This is because `NOT_TRIGGERED` preloading attempts don't have pipeline id and we can use it.
   focusedPreloadingAttemptId = null;
   warningsContainer;
-  warningsView = new PreloadingWarningsView();
+  warningsView = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
   preloadingGrid = new PreloadingComponents.PreloadingGrid.PreloadingGrid();
   preloadingDetails = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
   ruleSetSelector;
@@ -6159,18 +6432,20 @@ var PreloadingAttemptView = class extends UI10.Widget.VBox {
     this.model = model;
     SDK13.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
     SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "ModelUpdated", this.render, this, { scoped: true });
-    SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "WarningsUpdated", this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
+    SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "WarningsUpdated", (e) => {
+      Object.assign(this.warningsView, e.data);
+    }, this, { scoped: true });
     this.warningsContainer = document.createElement("div");
     this.warningsContainer.classList.add("flex-none");
     this.contentElement.insertBefore(this.warningsContainer, this.contentElement.firstChild);
     this.warningsView.show(this.warningsContainer);
-    const vbox = new UI10.Widget.VBox();
+    const vbox = new UI9.Widget.VBox();
     const toolbar6 = vbox.contentElement.createChild("devtools-toolbar", "preloading-toolbar");
     toolbar6.setAttribute("jslog", `${VisualLogging6.toolbar()}`);
     this.ruleSetSelector = new PreloadingRuleSetSelector(() => this.render());
     toolbar6.appendToolbarItem(this.ruleSetSelector.item());
     this.preloadingGrid.addEventListener("select", this.onPreloadingGridCellFocused.bind(this));
-    render3(html4`
+    render4(html5`
         <div class="empty-state">
           <span class="empty-state-header">${i18nString12(UIStrings12.noPrefetchAttempts)}</span>
           <div class="empty-state-description">
@@ -6262,10 +6537,10 @@ var PreloadingAttemptView = class extends UI10.Widget.VBox {
     this.ruleSetSelector.select(id);
   }
 };
-var PreloadingSummaryView = class extends UI10.Widget.VBox {
+var PreloadingSummaryView = class extends UI9.Widget.VBox {
   model;
   warningsContainer;
-  warningsView = new PreloadingWarningsView();
+  warningsView = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
   usedPreloading = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
   constructor(model) {
     super({
@@ -6276,12 +6551,14 @@ var PreloadingSummaryView = class extends UI10.Widget.VBox {
     this.model = model;
     SDK13.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
     SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "ModelUpdated", this.render, this, { scoped: true });
-    SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "WarningsUpdated", this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
+    SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "WarningsUpdated", (e) => {
+      Object.assign(this.warningsView, e.data);
+    }, this, { scoped: true });
     this.warningsContainer = document.createElement("div");
     this.warningsContainer.classList.add("flex-none");
     this.contentElement.insertBefore(this.warningsContainer, this.contentElement.firstChild);
     this.warningsView.show(this.warningsContainer);
-    const usedPreloadingContainer = new UI10.Widget.VBox();
+    const usedPreloadingContainer = new UI9.Widget.VBox();
     usedPreloadingContainer.contentElement.appendChild(this.usedPreloading);
     usedPreloadingContainer.show(this.contentElement);
   }
@@ -6320,11 +6597,11 @@ var PreloadingRuleSetSelector = class {
     this.model = model;
     SDK13.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
     SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.PreloadingModel.PreloadingModel, "ModelUpdated", this.onModelUpdated, this, { scoped: true });
-    this.listModel = new UI10.ListModel.ListModel();
-    this.dropDown = new UI10.SoftDropDown.SoftDropDown(this.listModel, this);
+    this.listModel = new UI9.ListModel.ListModel();
+    this.dropDown = new UI9.SoftDropDown.SoftDropDown(this.listModel, this);
     this.dropDown.setRowHeight(36);
     this.dropDown.setPlaceholderText(i18nString12(UIStrings12.filterAllPreloads));
-    this.toolbarItem = new UI10.Toolbar.ToolbarItem(this.dropDown.element);
+    this.toolbarItem = new UI9.Toolbar.ToolbarItem(this.dropDown.element);
     this.toolbarItem.setTitle(i18nString12(UIStrings12.filterFilterByRuleSet));
     this.toolbarItem.element.classList.add("toolbar-has-dropdown");
     this.toolbarItem.element.setAttribute("jslog", `${VisualLogging6.action("filter-by-rule-set").track({ click: true })}`);
@@ -6396,11 +6673,11 @@ var PreloadingRuleSetSelector = class {
   // Method for UI.SoftDropDown.Delegate<Protocol.Preload.RuleSetId|typeof AllRuleSetRootId>
   createElementForItem(id) {
     const element = document.createElement("div");
-    const shadowRoot = UI10.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: preloadingViewDropDown_css_default });
+    const shadowRoot = UI9.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: preloadingViewDropDown_css_default });
     const title = shadowRoot.createChild("div", "title");
-    UI10.UIUtils.createTextChild(title, Platform3.StringUtilities.trimEndWithMaxLength(this.titleFor(id), 100));
+    UI9.UIUtils.createTextChild(title, Platform4.StringUtilities.trimEndWithMaxLength(this.titleFor(id), 100));
     const subTitle = shadowRoot.createChild("div", "subtitle");
-    UI10.UIUtils.createTextChild(subTitle, this.subtitleFor(id));
+    UI9.UIUtils.createTextChild(subTitle, this.subtitleFor(id));
     return element;
   }
   // Method for UI.SoftDropDown.Delegate<Protocol.Preload.RuleSetId|typeof AllRuleSetRootId>
@@ -6413,20 +6690,6 @@ var PreloadingRuleSetSelector = class {
   }
   // Method for UI.SoftDropDown.Delegate<Protocol.Preload.RuleSetId|typeof AllRuleSetRootId>
   highlightedItemChanged(_from, _to, _fromElement, _toElement) {
-  }
-};
-var PreloadingWarningsView = class extends UI10.Widget.VBox {
-  infobar = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
-  constructor() {
-    super();
-    this.registerRequiredCSS(emptyWidget_css_default);
-  }
-  wasShown() {
-    super.wasShown();
-    this.contentElement.append(this.infobar);
-  }
-  onWarningsUpdated(args) {
-    this.infobar.data = args.data;
   }
 };
 
@@ -6457,7 +6720,7 @@ var PreloadingTreeElementBase = class extends ApplicationPanelTreeElement {
     super(panel, title, false, "speculative-loads");
     this.#viewConstructor = viewConstructor;
     this.#path = path;
-    const icon = createIcon6("speculative-loads");
+    const icon = createIcon5("speculative-loads");
     this.setLeadingIcons([icon]);
     this.#selected = false;
   }
@@ -6491,7 +6754,7 @@ var PreloadingSummaryTreeElement = class extends ExpandableApplicationPanelTreeE
   #attempt = null;
   constructor(panel) {
     super(panel, i18nString13(UIStrings13.speculativeLoads), "", "", "preloading");
-    const icon = createIcon6("speculative-loads");
+    const icon = createIcon5("speculative-loads");
     this.setLeadingIcons([icon]);
     this.#selected = false;
   }
@@ -6577,23 +6840,23 @@ var PreloadingAttemptTreeElement = class extends PreloadingTreeElementBase {
 // gen/front_end/panels/application/ReportingApiTreeElement.js
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n29 from "./../../core/i18n/i18n.js";
-import { createIcon as createIcon7 } from "./../../ui/kit/kit.js";
+import { createIcon as createIcon6 } from "./../../ui/kit/kit.js";
 
 // gen/front_end/panels/application/ReportingApiView.js
 var ReportingApiView_exports = {};
 __export(ReportingApiView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   ReportingApiView: () => ReportingApiView,
   i18nString: () => i18nString14
 });
 import * as i18n27 from "./../../core/i18n/i18n.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as SourceFrame2 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI11 from "./../../ui/legacy/legacy.js";
-import { html as html5, render as render4 } from "./../../ui/lit/lit.js";
+import * as UI10 from "./../../ui/legacy/legacy.js";
+import { html as html6, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents7 from "./components/components.js";
-var { widgetConfig: widgetConfig3 } = UI11.Widget;
+var { widgetConfig: widgetConfig3 } = UI10.Widget;
 var UIStrings14 = {
   /**
    * @description Placeholder text that shows if no report or endpoint was detected.
@@ -6623,12 +6886,12 @@ var UIStrings14 = {
 var str_14 = i18n27.i18n.registerUIStrings("panels/application/ReportingApiView.ts", UIStrings14);
 var i18nString14 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilities/web-apis/reporting-api";
-var DEFAULT_VIEW3 = (input, output, target) => {
+var DEFAULT_VIEW4 = (input, output, target) => {
   if (input.hasReports || input.hasEndpoints) {
-    render4(html5`
-      <style>${UI11.inspectorCommonStyles}</style>
+    render5(html6`
+      <style>${UI10.inspectorCommonStyles}</style>
       <devtools-split-view sidebar-position="second" sidebar-initial-size="150" jslog=${VisualLogging7.pane("reporting-api")}>
-        ${input.hasReports ? html5`
+        ${input.hasReports ? html6`
           <devtools-split-view slot="main" sidebar-position="second" sidebar-initial-size="150">
             <div slot="main">
               <devtools-widget .widgetConfig=${widgetConfig3(ApplicationComponents7.ReportsGrid.ReportsGrid, {
@@ -6637,19 +6900,19 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     })}></devtools-widget>
             </div>
             <div slot="sidebar" class="vbox" jslog=${VisualLogging7.pane("preview").track({ resize: true })}>
-              ${input.focusedReport ? html5`
+              ${input.focusedReport ? html6`
                 <devtools-widget .widgetConfig=${widgetConfig3(SourceFrame2.JSONView.SearchableJsonView, {
       jsonObject: input.focusedReport.body
     })}></devtools-widget>
-              ` : html5`
-                <devtools-widget .widgetConfig=${widgetConfig3(UI11.EmptyWidget.EmptyWidget, {
+              ` : html6`
+                <devtools-widget .widgetConfig=${widgetConfig3(UI10.EmptyWidget.EmptyWidget, {
       header: i18nString14(UIStrings14.noReportSelected),
       text: i18nString14(UIStrings14.clickToDisplayBody)
     })}></devtools-widget>
               `}
             </div>
           </devtools-split-view>
-        ` : html5`
+        ` : html6`
           <div slot="main">
             <devtools-widget .widgetConfig=${widgetConfig3(ApplicationComponents7.ReportsGrid.ReportsGrid, {
       reports: input.reports,
@@ -6665,8 +6928,8 @@ var DEFAULT_VIEW3 = (input, output, target) => {
       </devtools-split-view>
     `, target);
   } else {
-    render4(html5`
-      <devtools-widget .widgetConfig=${widgetConfig3(UI11.EmptyWidget.EmptyWidget, {
+    render5(html6`
+      <devtools-widget .widgetConfig=${widgetConfig3(UI10.EmptyWidget.EmptyWidget, {
       header: i18nString14(UIStrings14.noReportOrEndpoint),
       text: i18nString14(UIStrings14.reportingApiDescription),
       link: REPORTING_API_EXPLANATION_URL
@@ -6674,13 +6937,13 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     `, target);
   }
 };
-var ReportingApiView = class extends UI11.Widget.VBox {
+var ReportingApiView = class extends UI10.Widget.VBox {
   #endpoints;
   #view;
   #networkManager;
   #reports = [];
   #focusedReport;
-  constructor(view = DEFAULT_VIEW3) {
+  constructor(view = DEFAULT_VIEW4) {
     super();
     this.#view = view;
     this.#endpoints = /* @__PURE__ */ new Map();
@@ -6753,7 +7016,7 @@ var ReportingApiTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString15(UIStrings15.reportingApi), false, "reporting-api");
-    const icon = createIcon7("document");
+    const icon = createIcon6("document");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -6836,8 +7099,8 @@ devtools-icon.navigator-font-tree-item {
 import * as Host6 from "./../../core/host/host.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as SDK16 from "./../../core/sdk/sdk.js";
-import { createIcon as createIcon8 } from "./../../ui/kit/kit.js";
-import * as UI13 from "./../../ui/legacy/legacy.js";
+import { createIcon as createIcon7 } from "./../../ui/kit/kit.js";
+import * as UI12 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/application/ServiceWorkerCacheViews.js
 var ServiceWorkerCacheViews_exports = {};
@@ -6849,12 +7112,12 @@ __export(ServiceWorkerCacheViews_exports, {
 import "./../../ui/legacy/legacy.js";
 import * as Common9 from "./../../core/common/common.js";
 import * as i18n31 from "./../../core/i18n/i18n.js";
-import * as Platform4 from "./../../core/platform/platform.js";
+import * as Platform5 from "./../../core/platform/platform.js";
 import * as SDK15 from "./../../core/sdk/sdk.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
-import * as LegacyWrapper3 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as UI12 from "./../../ui/legacy/legacy.js";
+import * as UI11 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 import * as NetworkComponents from "./../network/components/components.js";
 import * as Network from "./../network/network.js";
@@ -6992,7 +7255,7 @@ var UIStrings16 = {
 };
 var str_16 = i18n31.i18n.registerUIStrings("panels/application/ServiceWorkerCacheViews.ts", UIStrings16);
 var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
-var ServiceWorkerCacheView = class extends UI12.View.SimpleView {
+var ServiceWorkerCacheView = class extends UI11.View.SimpleView {
   model;
   entriesForTest;
   splitWidget;
@@ -7022,9 +7285,9 @@ var ServiceWorkerCacheView = class extends UI12.View.SimpleView {
     const editorToolbar = this.element.createChild("devtools-toolbar", "data-view-toolbar");
     editorToolbar.setAttribute("jslog", `${VisualLogging8.toolbar()}`);
     this.element.appendChild(this.metadataView);
-    this.splitWidget = new UI12.SplitWidget.SplitWidget(false, false);
+    this.splitWidget = new UI11.SplitWidget.SplitWidget(false, false);
     this.splitWidget.show(this.element);
-    this.previewPanel = new UI12.Widget.VBox();
+    this.previewPanel = new UI11.Widget.VBox();
     const resizer = this.previewPanel.element.createChild("div", "cache-preview-panel-resizer");
     this.splitWidget.setMainWidget(this.previewPanel);
     this.splitWidget.installResizer(resizer);
@@ -7039,15 +7302,15 @@ var ServiceWorkerCacheView = class extends UI12.View.SimpleView {
     }
     this.dataGrid = null;
     this.refreshThrottler = new Common9.Throttler.Throttler(300);
-    this.refreshButton = new UI12.Toolbar.ToolbarButton(i18nString16(UIStrings16.refresh), "refresh", void 0, "cache-storage.refresh");
+    this.refreshButton = new UI11.Toolbar.ToolbarButton(i18nString16(UIStrings16.refresh), "refresh", void 0, "cache-storage.refresh");
     this.refreshButton.addEventListener("Click", this.refreshButtonClicked, this);
     editorToolbar.appendToolbarItem(this.refreshButton);
-    this.deleteSelectedButton = new UI12.Toolbar.ToolbarButton(i18nString16(UIStrings16.deleteSelected), "cross", void 0, "cache-storage.delete-selected");
+    this.deleteSelectedButton = new UI11.Toolbar.ToolbarButton(i18nString16(UIStrings16.deleteSelected), "cross", void 0, "cache-storage.delete-selected");
     this.deleteSelectedButton.addEventListener("Click", (_event) => {
       void this.deleteButtonClicked(null);
     });
     editorToolbar.appendToolbarItem(this.deleteSelectedButton);
-    const entryPathFilterBox = new UI12.Toolbar.ToolbarFilter(i18nString16(UIStrings16.filterByPath), 1);
+    const entryPathFilterBox = new UI11.Toolbar.ToolbarFilter(i18nString16(UIStrings16.filterByPath), 1);
     editorToolbar.appendToolbarItem(entryPathFilterBox);
     const entryPathFilterThrottler = new Common9.Throttler.Throttler(300);
     this.entryPathFilter = "";
@@ -7088,7 +7351,7 @@ var ServiceWorkerCacheView = class extends UI12.View.SimpleView {
       this.preview.detach();
     }
     if (!preview) {
-      preview = new UI12.EmptyWidget.EmptyWidget(i18nString16(UIStrings16.noCacheEntrySelected), i18nString16(UIStrings16.selectACacheEntryAboveToPreview));
+      preview = new UI11.EmptyWidget.EmptyWidget(i18nString16(UIStrings16.noCacheEntrySelected), i18nString16(UIStrings16.selectACacheEntryAboveToPreview));
     }
     this.preview = preview;
     this.preview.show(this.previewPanel.element);
@@ -7274,7 +7537,7 @@ var ServiceWorkerCacheView = class extends UI12.View.SimpleView {
     }
   }
   createRequest(entry) {
-    const request = SDK15.NetworkRequest.NetworkRequest.createWithoutBackendRequest("cache-storage-" + entry.requestURL, entry.requestURL, Platform4.DevToolsPath.EmptyUrlString, null);
+    const request = SDK15.NetworkRequest.NetworkRequest.createWithoutBackendRequest("cache-storage-" + entry.requestURL, entry.requestURL, Platform5.DevToolsPath.EmptyUrlString, null);
     request.requestMethod = entry.requestMethod;
     request.setRequestHeaders(entry.requestHeaders);
     request.statusCode = entry.responseStatus;
@@ -7286,7 +7549,7 @@ var ServiceWorkerCacheView = class extends UI12.View.SimpleView {
     let header = entry.responseHeaders.find((header2) => header2.name.toLowerCase() === "content-type");
     let mimeType = "text/plain";
     if (header) {
-      const result = Platform4.MimeType.parseContentType(header.value);
+      const result = Platform5.MimeType.parseContentType(header.value);
       if (result.mimeType) {
         mimeType = result.mimeType;
       }
@@ -7330,7 +7593,7 @@ var DataGridNode = class extends DataGrid5.DataGrid.DataGridNode {
     this.number = number;
     const parsed = new Common9.ParsedURL.ParsedURL(request.url());
     if (parsed.isValid) {
-      this.name = Platform4.StringUtilities.trimURL(request.url(), parsed.domain());
+      this.name = Platform5.StringUtilities.trimURL(request.url(), parsed.domain());
     } else {
       this.name = request.url();
     }
@@ -7378,20 +7641,20 @@ var DataGridNode = class extends DataGrid5.DataGrid.DataGridNode {
       true,
       gridNode
     );
-    UI12.Tooltip.Tooltip.install(cell, tooltip);
+    UI11.Tooltip.Tooltip.install(cell, tooltip);
     return cell;
   }
 };
-var RequestView = class extends UI12.Widget.VBox {
+var RequestView = class extends UI11.Widget.VBox {
   tabbedPane;
   resourceViewTabSetting;
   constructor(request) {
     super();
-    this.tabbedPane = new UI12.TabbedPane.TabbedPane();
+    this.tabbedPane = new UI11.TabbedPane.TabbedPane();
     this.tabbedPane.element.setAttribute("jslog", `${VisualLogging8.section("network-item-preview")}`);
-    this.tabbedPane.addEventListener(UI12.TabbedPane.Events.TabSelected, this.tabSelected, this);
+    this.tabbedPane.addEventListener(UI11.TabbedPane.Events.TabSelected, this.tabSelected, this);
     this.resourceViewTabSetting = Common9.Settings.Settings.instance().createSetting("cache-storage-view-tab", "preview");
-    this.tabbedPane.appendTab("headers", i18nString16(UIStrings16.headers), LegacyWrapper3.LegacyWrapper.legacyWrapper(UI12.Widget.VBox, new NetworkComponents.RequestHeadersView.RequestHeadersView(request)));
+    this.tabbedPane.appendTab("headers", i18nString16(UIStrings16.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI11.Widget.VBox, new NetworkComponents.RequestHeadersView.RequestHeadersView(request)));
     this.tabbedPane.appendTab("preview", i18nString16(UIStrings16.preview), new Network.RequestPreviewView.RequestPreviewView(request));
     this.tabbedPane.show(this.element);
   }
@@ -7446,7 +7709,7 @@ var ServiceWorkerCacheTreeElement = class extends ExpandableApplicationPanelTree
   storageBucket;
   constructor(resourcesPanel, storageBucket) {
     super(resourcesPanel, i18nString17(UIStrings17.cacheStorage), i18nString17(UIStrings17.noCacheStorage), i18nString17(UIStrings17.cacheStorageDescription), "cache-storage");
-    const icon = createIcon8("database");
+    const icon = createIcon7("database");
     this.setLink("https://developer.chrome.com/docs/devtools/storage/cache/");
     this.setLeadingIcons([icon]);
     this.swCacheModels = /* @__PURE__ */ new Set();
@@ -7466,7 +7729,7 @@ var ServiceWorkerCacheTreeElement = class extends ExpandableApplicationPanelTree
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI13.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI12.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString17(UIStrings17.refreshCaches), this.refreshCaches.bind(this), { jslogContext: "refresh-caches" });
     void contextMenu.show();
   }
@@ -7548,7 +7811,7 @@ var SWCacheTreeElement = class extends ApplicationPanelTreeElement {
     this.model = model;
     this.cache = cache;
     this.view = null;
-    const icon = createIcon8("table");
+    const icon = createIcon7("table");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -7559,7 +7822,7 @@ var SWCacheTreeElement = class extends ApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI13.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI12.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString17(UIStrings17.delete), this.clearCache.bind(this), { jslogContext: "delete" });
     void contextMenu.show();
   }
@@ -7600,7 +7863,7 @@ import * as SDK18 from "./../../core/sdk/sdk.js";
 import * as NetworkForward2 from "./../network/forward/forward.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI15 from "./../../ui/legacy/legacy.js";
+import * as UI14 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
 import * as ApplicationComponents9 from "./components/components.js";
@@ -7885,7 +8148,7 @@ __export(ServiceWorkerUpdateCycleView_exports, {
 });
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as SDK17 from "./../../core/sdk/sdk.js";
-import * as UI14 from "./../../ui/legacy/legacy.js";
+import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings18 = {
   /**
@@ -7999,9 +8262,9 @@ var ServiceWorkerUpdateCycleView = class {
   }
   createTimingTableHead() {
     const serverHeader = this.tableElement.createChild("tr", "service-worker-update-timing-table-header");
-    UI14.UIUtils.createTextChild(serverHeader.createChild("td"), i18nString18(UIStrings18.version));
-    UI14.UIUtils.createTextChild(serverHeader.createChild("td"), i18nString18(UIStrings18.updateActivity));
-    UI14.UIUtils.createTextChild(serverHeader.createChild("td"), i18nString18(UIStrings18.timeline));
+    UI13.UIUtils.createTextChild(serverHeader.createChild("td"), i18nString18(UIStrings18.version));
+    UI13.UIUtils.createTextChild(serverHeader.createChild("td"), i18nString18(UIStrings18.updateActivity));
+    UI13.UIUtils.createTextChild(serverHeader.createChild("td"), i18nString18(UIStrings18.timeline));
   }
   removeRows() {
     const rows = this.tableElement.getElementsByTagName("tr");
@@ -8036,7 +8299,7 @@ var ServiceWorkerUpdateCycleView = class {
       })}`);
       this.rows.push(tr);
       const timingBarVersionElement = tr.createChild("td");
-      UI14.UIUtils.createTextChild(timingBarVersionElement, "#" + range.id);
+      UI13.UIUtils.createTextChild(timingBarVersionElement, "#" + range.id);
       timingBarVersionElement.classList.add("service-worker-update-timing-bar-clickable");
       timingBarVersionElement.setAttribute("tabindex", "0");
       timingBarVersionElement.setAttribute("role", "switch");
@@ -8044,9 +8307,9 @@ var ServiceWorkerUpdateCycleView = class {
         this.onFocus(event);
       });
       timingBarVersionElement.setAttribute("jslog", `${VisualLogging9.expand("timing-info").track({ click: true })}`);
-      UI14.ARIAUtils.setChecked(timingBarVersionElement, false);
+      UI13.ARIAUtils.setChecked(timingBarVersionElement, false);
       const timingBarTitleElement = tr.createChild("td");
-      UI14.UIUtils.createTextChild(timingBarTitleElement, phaseName);
+      UI13.UIUtils.createTextChild(timingBarTitleElement, phaseName);
       const barContainer = tr.createChild("td").createChild("div", "service-worker-update-timing-row");
       const bar = barContainer.createChild("span", "service-worker-update-timing-bar " + phaseName.toLowerCase());
       bar.style.left = left + "%";
@@ -8064,14 +8327,14 @@ var ServiceWorkerUpdateCycleView = class {
     const startTimeItem = startRow.createChild("td");
     startTimeItem.colSpan = 3;
     const startTime = new Date(range.start).toISOString();
-    UI14.UIUtils.createTextChild(startTimeItem.createChild("span"), i18nString18(UIStrings18.startTimeS, { PH1: startTime }));
+    UI13.UIUtils.createTextChild(startTimeItem.createChild("span"), i18nString18(UIStrings18.startTimeS, { PH1: startTime }));
     startRow.tabIndex = 0;
     const endRow = this.tableElement.createChild("tr", "service-worker-update-timing-bar-details");
     endRow.classList.add("service-worker-update-timing-bar-details-collapsed");
     const endTimeItem = endRow.createChild("td");
     endTimeItem.colSpan = 3;
     const endTime = new Date(range.end).toISOString();
-    UI14.UIUtils.createTextChild(endTimeItem.createChild("span"), i18nString18(UIStrings18.endTimeS, { PH1: endTime }));
+    UI13.UIUtils.createTextChild(endTimeItem.createChild("span"), i18nString18(UIStrings18.endTimeS, { PH1: endTime }));
     endRow.tabIndex = 0;
     tr.addEventListener("keydown", (event) => {
       this.onKeydown(event, startRow, endRow);
@@ -8086,7 +8349,7 @@ var ServiceWorkerUpdateCycleView = class {
       startRow.classList.toggle("service-worker-update-timing-bar-details-expanded");
       endRow.classList.toggle("service-worker-update-timing-bar-details-collapsed");
       endRow.classList.toggle("service-worker-update-timing-bar-details-expanded");
-      UI14.ARIAUtils.setChecked(target, !expanded);
+      UI13.ARIAUtils.setChecked(target, !expanded);
     }
   }
   onFocus(event) {
@@ -8356,7 +8619,7 @@ var throttleDisabledForDebugging = false;
 var setThrottleDisabledForDebugging = (enable) => {
   throttleDisabledForDebugging = enable;
 };
-var ServiceWorkersView = class extends UI15.Widget.VBox {
+var ServiceWorkersView = class extends UI14.Widget.VBox {
   currentWorkersView;
   toolbar;
   sections;
@@ -8370,7 +8633,7 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
       useShadowDom: true
     });
     this.registerRequiredCSS(serviceWorkersView_css_default);
-    this.currentWorkersView = new UI15.ReportView.ReportView(i18n37.i18n.lockedString("Service workers"));
+    this.currentWorkersView = new UI14.ReportView.ReportView(i18n37.i18n.lockedString("Service workers"));
     this.currentWorkersView.setBodyScrollable(false);
     this.contentElement.classList.add("service-worker-list");
     this.currentWorkersView.show(this.contentElement);
@@ -8383,12 +8646,12 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
     this.sectionToRegistration = /* @__PURE__ */ new WeakMap();
     const othersDiv = this.contentElement.createChild("div", "service-workers-other-origin");
     othersDiv.setAttribute("jslog", `${VisualLogging10.section("other-origin")}`);
-    const othersView = new UI15.ReportView.ReportView();
+    const othersView = new UI14.ReportView.ReportView();
     othersView.setHeaderVisible(false);
     othersView.show(othersDiv);
     const othersSection = othersView.appendSection(i18nString19(UIStrings19.serviceWorkersFromOtherOrigins));
     const othersSectionRow = othersSection.appendRow();
-    const seeOthers = UI15.Fragment.html`<a class="devtools-link" role="link" tabindex="0" href="chrome://serviceworker-internals" target="_blank" style="display: inline; cursor: pointer;">${i18nString19(UIStrings19.seeAllRegistrations)}</a>`;
+    const seeOthers = UI14.Fragment.html`<a class="devtools-link" role="link" tabindex="0" href="chrome://serviceworker-internals" target="_blank" style="display: inline; cursor: pointer;">${i18nString19(UIStrings19.seeAllRegistrations)}</a>`;
     seeOthers.setAttribute("jslog", `${VisualLogging10.link("view-all").track({ click: true })}`);
     self.onInvokeElement(seeOthers, (event) => {
       const rootTarget = SDK18.TargetManager.TargetManager.instance().rootTarget();
@@ -8399,11 +8662,11 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
     this.toolbar.appendToolbarItem(MobileThrottling.ThrottlingManager.throttlingManager().createOfflineToolbarCheckbox());
     const updateOnReloadSetting = Common10.Settings.Settings.instance().createSetting("service-worker-update-on-reload", false);
     updateOnReloadSetting.setTitle(i18nString19(UIStrings19.updateOnReload));
-    const forceUpdate = new UI15.Toolbar.ToolbarSettingCheckbox(updateOnReloadSetting, i18nString19(UIStrings19.onPageReloadForceTheService));
+    const forceUpdate = new UI14.Toolbar.ToolbarSettingCheckbox(updateOnReloadSetting, i18nString19(UIStrings19.onPageReloadForceTheService));
     this.toolbar.appendToolbarItem(forceUpdate);
     const bypassServiceWorkerSetting = Common10.Settings.Settings.instance().createSetting("bypass-service-worker", false);
     bypassServiceWorkerSetting.setTitle(i18nString19(UIStrings19.bypassForNetwork));
-    const fallbackToNetwork = new UI15.Toolbar.ToolbarSettingCheckbox(bypassServiceWorkerSetting, i18nString19(UIStrings19.bypassTheServiceWorkerAndLoad));
+    const fallbackToNetwork = new UI14.Toolbar.ToolbarSettingCheckbox(bypassServiceWorkerSetting, i18nString19(UIStrings19.bypassTheServiceWorkerAndLoad));
     this.toolbar.appendToolbarItem(fallbackToNetwork);
     this.eventListeners = /* @__PURE__ */ new Map();
     SDK18.TargetManager.TargetManager.instance().observeModels(SDK18.ServiceWorkerManager.ServiceWorkerManager, this);
@@ -8611,9 +8874,9 @@ var Section = class {
     this.networkRequests.textContent = i18nString19(UIStrings19.networkRequests);
     this.networkRequests.addEventListener("click", this.networkRequestsClicked.bind(this));
     this.section.appendButtonToHeader(this.networkRequests);
-    this.updateButton = UI15.UIUtils.createTextButton(i18nString19(UIStrings19.update), this.updateButtonClicked.bind(this), { variant: "text", title: i18nString19(UIStrings19.update), jslogContext: "update" });
+    this.updateButton = UI14.UIUtils.createTextButton(i18nString19(UIStrings19.update), this.updateButtonClicked.bind(this), { variant: "text", title: i18nString19(UIStrings19.update), jslogContext: "update" });
     this.section.appendButtonToHeader(this.updateButton);
-    this.deleteButton = UI15.UIUtils.createTextButton(i18nString19(UIStrings19.unregister), this.unregisterButtonClicked.bind(this), {
+    this.deleteButton = UI14.UIUtils.createTextButton(i18nString19(UIStrings19.unregister), this.unregisterButtonClicked.bind(this), {
       variant: "text",
       title: i18nString19(UIStrings19.unregisterServiceWorker),
       jslogContext: "unregister"
@@ -8632,15 +8895,15 @@ var Section = class {
   }
   createSyncNotificationField(label, initialValue, placeholder, callback, jslogContext) {
     const form = this.wrapWidget(this.section.appendField(label)).createChild("form", "service-worker-editor-with-button");
-    const editor = UI15.UIUtils.createInput("source-code service-worker-notification-editor");
+    const editor = UI14.UIUtils.createInput("source-code service-worker-notification-editor");
     editor.setAttribute("jslog", `${VisualLogging10.textField().track({ change: true }).context(jslogContext)}`);
     form.appendChild(editor);
-    const button = UI15.UIUtils.createTextButton(label, void 0, { jslogContext });
+    const button = UI14.UIUtils.createTextButton(label, void 0, { jslogContext });
     button.type = "submit";
     form.appendChild(button);
     editor.value = initialValue;
     editor.placeholder = placeholder;
-    UI15.ARIAUtils.setLabel(editor, label);
+    UI14.ARIAUtils.setLabel(editor, label);
     form.addEventListener("submit", (e) => {
       callback(editor.value || "");
       e.consume(true);
@@ -8658,7 +8921,7 @@ var Section = class {
     installingEntry.createChild("div", icon);
     const statusString = installingEntry.createChild("span", "service-worker-version-string");
     statusString.textContent = label;
-    UI15.ARIAUtils.markAsAlert(statusString);
+    UI14.ARIAUtils.markAsAlert(statusString);
     return installingEntry;
   }
   updateClientsField(version) {
@@ -8677,19 +8940,19 @@ var Section = class {
     this.sourceField.removeChildren();
     const fileName = Common10.ParsedURL.ParsedURL.extractName(version.scriptURL);
     const name = this.sourceField.createChild("div", "report-field-value-filename");
-    const link5 = Components3.Linkifier.Linkifier.linkifyURL(version.scriptURL, { text: fileName });
-    link5.tabIndex = 0;
-    link5.setAttribute("jslog", `${VisualLogging10.link("source-location").track({ click: true })}`);
-    name.appendChild(link5);
+    const link4 = Components3.Linkifier.Linkifier.linkifyURL(version.scriptURL, { text: fileName });
+    link4.tabIndex = 0;
+    link4.setAttribute("jslog", `${VisualLogging10.link("source-location").track({ click: true })}`);
+    name.appendChild(link4);
     if (this.registration.errors.length) {
-      const errorsLabel = UI15.UIUtils.createIconLabel({
+      const errorsLabel = UI14.UIUtils.createIconLabel({
         title: String(this.registration.errors.length),
         iconName: "cross-circle-filled",
         color: "var(--icon-error)"
       });
       errorsLabel.classList.add("devtools-link", "link");
       errorsLabel.tabIndex = 0;
-      UI15.ARIAUtils.setLabel(errorsLabel, i18nString19(UIStrings19.sRegistrationErrors, { PH1: this.registration.errors.length }));
+      UI14.ARIAUtils.setLabel(errorsLabel, i18nString19(UIStrings19.sRegistrationErrors, { PH1: this.registration.errors.length }));
       self.onInvokeElement(errorsLabel, () => Common10.Console.Console.instance().show());
       name.appendChild(errorsLabel);
     }
@@ -8732,10 +8995,10 @@ var Section = class {
       const localizedRunningStatus = SDK18.ServiceWorkerManager.ServiceWorkerVersion.RunningStatus[active.currentState.runningStatus]();
       const activeEntry = this.addVersion(versionsStack, "service-worker-active-circle", i18nString19(UIStrings19.sActivatedAndIsS, { PH1: active.id, PH2: localizedRunningStatus }));
       if (active.isRunning() || active.isStarting()) {
-        const stopButton = UI15.UIUtils.createTextButton(i18nString19(UIStrings19.stopString), this.stopButtonClicked.bind(this, active.id), { jslogContext: "stop" });
+        const stopButton = UI14.UIUtils.createTextButton(i18nString19(UIStrings19.stopString), this.stopButtonClicked.bind(this, active.id), { jslogContext: "stop" });
         activeEntry.appendChild(stopButton);
       } else if (active.isStartable()) {
-        const startButton = UI15.UIUtils.createTextButton(i18nString19(UIStrings19.startString), this.startButtonClicked.bind(this), { jslogContext: "start" });
+        const startButton = UI14.UIUtils.createTextButton(i18nString19(UIStrings19.startString), this.startButtonClicked.bind(this), { jslogContext: "start" });
         activeEntry.appendChild(startButton);
       }
       this.updateClientsField(active);
@@ -8747,7 +9010,7 @@ var Section = class {
     }
     if (waiting) {
       const waitingEntry = this.addVersion(versionsStack, "service-worker-waiting-circle", i18nString19(UIStrings19.sWaitingToActivate, { PH1: waiting.id }));
-      const skipWaitingButton = UI15.UIUtils.createTextButton(i18n37.i18n.lockedString("skipWaiting"), this.skipButtonClicked.bind(this), {
+      const skipWaitingButton = UI14.UIUtils.createTextButton(i18n37.i18n.lockedString("skipWaiting"), this.skipButtonClicked.bind(this), {
         title: i18n37.i18n.lockedString("skipWaiting"),
         jslogContext: "skip-waiting"
       });
@@ -8829,12 +9092,12 @@ var Section = class {
   updateClientInfo(element, targetInfo) {
     if (targetInfo.type !== "page" && targetInfo.type === "iframe") {
       const clientString2 = element.createChild("span", "service-worker-client-string");
-      UI15.UIUtils.createTextChild(clientString2, i18nString19(UIStrings19.workerS, { PH1: targetInfo.url }));
+      UI14.UIUtils.createTextChild(clientString2, i18nString19(UIStrings19.workerS, { PH1: targetInfo.url }));
       return;
     }
     element.removeChildren();
     const clientString = element.createChild("span", "service-worker-client-string");
-    UI15.UIUtils.createTextChild(clientString, targetInfo.url);
+    UI14.UIUtils.createTextChild(clientString, targetInfo.url);
     const focusButton = new Buttons6.Button.Button();
     focusButton.data = {
       iconName: "select-element",
@@ -8860,7 +9123,7 @@ var Section = class {
     void this.manager.stopWorker(versionId);
   }
   wrapWidget(container) {
-    const shadowRoot = UI15.UIUtils.createShadowRootWithCoreStyles(container, {
+    const shadowRoot = UI14.UIUtils.createShadowRootWithCoreStyles(container, {
       cssFile: [
         serviceWorkersView_css_default,
         /* These styles are for the timing table in serviceWorkerUpdateCycleView but this is the widget that it is rendered
@@ -8881,7 +9144,7 @@ __export(SharedStorageListTreeElement_exports, {
 });
 import * as Common11 from "./../../core/common/common.js";
 import * as i18n41 from "./../../core/i18n/i18n.js";
-import { createIcon as createIcon9 } from "./../../ui/kit/kit.js";
+import { createIcon as createIcon8 } from "./../../ui/kit/kit.js";
 
 // gen/front_end/panels/application/SharedStorageEventsView.js
 var SharedStorageEventsView_exports = {};
@@ -8891,7 +9154,7 @@ __export(SharedStorageEventsView_exports, {
 import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as SDK19 from "./../../core/sdk/sdk.js";
 import * as SourceFrame3 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI16 from "./../../ui/legacy/legacy.js";
+import * as UI15 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents10 from "./components/components.js";
 
@@ -8929,7 +9192,7 @@ var i18nString20 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 function eventEquals2(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
-var SharedStorageEventsView = class extends UI16.SplitWidget.SplitWidget {
+var SharedStorageEventsView = class extends UI15.SplitWidget.SplitWidget {
   #sharedStorageEventGrid = new ApplicationComponents10.SharedStorageAccessGrid.SharedStorageAccessGrid();
   #events = [];
   #noDisplayView;
@@ -8942,7 +9205,7 @@ var SharedStorageEventsView = class extends UI16.SplitWidget.SplitWidget {
       true
     );
     this.element.setAttribute("jslog", `${VisualLogging11.pane("shared-storage-events")}`);
-    this.#noDisplayView = new UI16.EmptyWidget.EmptyWidget(i18nString20(UIStrings20.noEventSelected), i18nString20(UIStrings20.clickToDisplayBody));
+    this.#noDisplayView = new UI15.EmptyWidget.EmptyWidget(i18nString20(UIStrings20.noEventSelected), i18nString20(UIStrings20.clickToDisplayBody));
     this.#noDisplayView.setMinimumSize(0, 40);
     this.#sharedStorageEventGrid.setMinimumSize(0, 80);
     this.#sharedStorageEventGrid.onSelect = this.#onFocus.bind(this);
@@ -9018,7 +9281,7 @@ var SharedStorageListTreeElement = class extends ApplicationPanelTreeElement {
   constructor(resourcesPanel, expandedSettingsDefault = false) {
     super(resourcesPanel, i18nString21(UIStrings21.sharedStorage), false, "shared-storage");
     this.#expandedSetting = Common11.Settings.Settings.instance().createSetting("resources-shared-storage-expanded", expandedSettingsDefault);
-    const sharedStorageIcon = createIcon9("database");
+    const sharedStorageIcon = createIcon8("database");
     this.setLeadingIcons([sharedStorageIcon]);
     this.view = new SharedStorageEventsView();
   }
@@ -9239,7 +9502,7 @@ __export(SharedStorageItemsView_exports, {
 import * as Common14 from "./../../core/common/common.js";
 import * as i18n47 from "./../../core/i18n/i18n.js";
 import * as SourceFrame4 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI19 from "./../../ui/legacy/legacy.js";
+import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as ApplicationComponents13 from "./components/components.js";
 
 // gen/front_end/panels/application/KeyValueStorageItemsView.js
@@ -9249,23 +9512,23 @@ __export(KeyValueStorageItemsView_exports, {
 });
 import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
-import * as UI18 from "./../../ui/legacy/legacy.js";
-import { Directives as LitDirectives, html as html7, nothing as nothing4, render as render6 } from "./../../ui/lit/lit.js";
+import * as UI17 from "./../../ui/legacy/legacy.js";
+import { Directives as LitDirectives, html as html8, nothing as nothing5, render as render7 } from "./../../ui/lit/lit.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents12 from "./components/components.js";
 
 // gen/front_end/panels/application/StorageItemsToolbar.js
 var StorageItemsToolbar_exports = {};
 __export(StorageItemsToolbar_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   StorageItemsToolbar: () => StorageItemsToolbar
 });
 import "./../../ui/legacy/legacy.js";
 import * as Common13 from "./../../core/common/common.js";
 import * as i18n43 from "./../../core/i18n/i18n.js";
-import * as Platform5 from "./../../core/platform/platform.js";
+import * as Platform6 from "./../../core/platform/platform.js";
 import * as Buttons7 from "./../../ui/components/buttons/buttons.js";
-import * as UI17 from "./../../ui/legacy/legacy.js";
+import * as UI16 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
 import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents11 from "./components/components.js";
@@ -9289,11 +9552,11 @@ var UIStrings22 = {
 };
 var str_22 = i18n43.i18n.registerUIStrings("panels/application/StorageItemsToolbar.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
-var { html: html6, render: render5 } = Lit2;
-var DEFAULT_VIEW4 = (input, _output, target) => {
-  render5(
+var { html: html7, render: render6 } = Lit2;
+var DEFAULT_VIEW5 = (input, _output, target) => {
+  render6(
     // clang-format off
-    html6`
+    html7`
       <devtools-toolbar class="top-resources-toolbar"
                         jslog=${VisualLogging12.toolbar()}>
         <devtools-button title=${i18nString22(UIStrings22.refresh)}
@@ -9307,7 +9570,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
                                 ?disabled=${!input.filterItemEnabled}
                                 @change=${input.onFilterChanged}
                                 style="flex-grow:0.4"></devtools-toolbar-input>
-        ${new UI17.Toolbar.ToolbarSeparator().element}
+        ${new UI16.Toolbar.ToolbarSeparator().element}
         <devtools-button title=${input.deleteAllButtonTitle}
                          @click=${input.onDeleteAll}
                          id=storage-items-delete-all
@@ -9325,14 +9588,14 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
     })}
                          .iconName=${"cross"}
                          .variant=${"toolbar"}></devtools-button>
-        ${input.mainToolbarItems.map((item) => item.element)}
+        ${input.mainToolbarItems.map((item2) => item2.element)}
       </devtools-toolbar>
       ${input.metadataView}`,
     // clang-format on
     target
   );
 };
-var StorageItemsToolbar = class extends Common13.ObjectWrapper.eventMixin(UI17.Widget.VBox) {
+var StorageItemsToolbar = class extends Common13.ObjectWrapper.eventMixin(UI16.Widget.VBox) {
   filterRegex;
   #metadataView;
   #view;
@@ -9342,7 +9605,7 @@ var StorageItemsToolbar = class extends Common13.ObjectWrapper.eventMixin(UI17.W
   #deleteAllButtonIconName = "clear";
   #deleteAllButtonTitle = i18nString22(UIStrings22.clearAll);
   #mainToolbarItems = [];
-  constructor(element, view = DEFAULT_VIEW4) {
+  constructor(element, view = DEFAULT_VIEW5) {
     super(element);
     this.#view = view;
     this.filterRegex = null;
@@ -9371,7 +9634,7 @@ var StorageItemsToolbar = class extends Common13.ObjectWrapper.eventMixin(UI17.W
           "Refresh"
           /* StorageItemsToolbar.Events.REFRESH */
         );
-        UI17.ARIAUtils.LiveAnnouncer.alert(i18nString22(UIStrings22.refreshedStatus));
+        UI16.ARIAUtils.LiveAnnouncer.alert(i18nString22(UIStrings22.refreshedStatus));
       },
       onDeleteAll: () => this.dispatchEventToListeners(
         "DeleteAll"
@@ -9392,15 +9655,15 @@ var StorageItemsToolbar = class extends Common13.ObjectWrapper.eventMixin(UI17.W
     this.#deleteAllButtonIconName = glyph;
     this.requestUpdate();
   }
-  appendToolbarItem(item) {
-    this.#mainToolbarItems.push(item);
+  appendToolbarItem(item2) {
+    this.#mainToolbarItems.push(item2);
     this.requestUpdate();
   }
   setStorageKey(storageKey) {
     this.metadataView.setStorageKey(storageKey);
   }
   filterChanged({ detail: text }) {
-    this.filterRegex = text ? new RegExp(Platform5.StringUtilities.escapeForRegExp(text), "i") : null;
+    this.filterRegex = text ? new RegExp(Platform6.StringUtilities.escapeForRegExp(text), "i") : null;
     this.dispatchEventToListeners(
       "Refresh"
       /* StorageItemsToolbar.Events.REFRESH */
@@ -9424,9 +9687,9 @@ var StorageItemsToolbar = class extends Common13.ObjectWrapper.eventMixin(UI17.W
 };
 
 // gen/front_end/panels/application/KeyValueStorageItemsView.js
-var { ARIAUtils: ARIAUtils7 } = UI18;
-var { EmptyWidget: EmptyWidget7 } = UI18.EmptyWidget;
-var { VBox, widgetConfig: widgetConfig4 } = UI18.Widget;
+var { ARIAUtils: ARIAUtils7 } = UI17;
+var { EmptyWidget: EmptyWidget8 } = UI17.EmptyWidget;
+var { VBox, widgetConfig: widgetConfig4 } = UI17.Widget;
 var { Size } = Geometry;
 var { repeat } = LitDirectives;
 var UIStrings23 = {
@@ -9455,7 +9718,7 @@ var UIStrings23 = {
 var str_23 = i18n45.i18n.registerUIStrings("panels/application/KeyValueStorageItemsView.ts", UIStrings23);
 var i18nString23 = i18n45.i18n.getLocalizedString.bind(void 0, str_23);
 var MAX_VALUE_LENGTH = 4096;
-var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
+var KeyValueStorageItemsView = class extends UI17.Widget.VBox {
   #preview;
   #previewValue;
   #items = [];
@@ -9465,16 +9728,16 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
   #editable;
   #toolbar;
   metadataView;
-  constructor(title, id, editable, view, metadataView) {
+  constructor(title, id, editable, view, metadataView, opts) {
     metadataView ??= new ApplicationComponents12.StorageMetadataView.StorageMetadataView();
     if (!view) {
       view = (input, output, target) => {
-        render6(
-          html7`
+        render7(
+          html8`
             <devtools-widget
               .widgetConfig=${widgetConfig4(StorageItemsToolbar, { metadataView })}
               class=flex-none
-              ${UI18.Widget.widgetRef(StorageItemsToolbar, (view2) => {
+              ${UI17.Widget.widgetRef(StorageItemsToolbar, (view2) => {
             output.toolbar = view2;
           })}
             ></devtools-widget>
@@ -9500,14 +9763,14 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
                         ${i18nString23(UIStrings23.value)}
                       </th>
                     </tr>
-                    ${repeat(input.items, (item) => item.key, (item) => html7`
-                      <tr data-key=${item.key} data-value=${item.value}
-                          @select=${() => input.onSelect(item)}
-                          @edit=${(e) => input.onEdit(item.key, item.value, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
-                          @delete=${() => input.onDelete(item.key)}
-                          selected=${input.selectedKey === item.key || nothing4}>
-                        <td>${item.key}</td>
-                        <td>${item.value.substr(0, MAX_VALUE_LENGTH)}</td>
+                    ${repeat(input.items, (item2) => item2.key, (item2) => html8`
+                      <tr data-key=${item2.key} data-value=${item2.value}
+                          @select=${() => input.onSelect(item2)}
+                          @edit=${(e) => input.onEdit(item2.key, item2.value, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
+                          @delete=${() => input.onDelete(item2.key)}
+                          selected=${input.selectedKey === item2.key || nothing5}>
+                        <td>${item2.key}</td>
+                        <td>${item2.value.substr(0, MAX_VALUE_LENGTH)}</td>
                       </tr>`)}
                       <tr placeholder></tr>
                   </table>
@@ -9525,12 +9788,12 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
         );
       };
     }
-    super();
+    super(opts);
     this.metadataView = metadataView;
     this.#editable = editable;
     this.#view = view;
     this.performUpdate();
-    this.#preview = new EmptyWidget7(i18nString23(UIStrings23.noPreviewSelected), i18nString23(UIStrings23.selectAValueToPreview));
+    this.#preview = new EmptyWidget8(i18nString23(UIStrings23.noPreviewSelected), i18nString23(UIStrings23.selectAValueToPreview));
     this.#previewValue = null;
     this.showPreview(null, null);
   }
@@ -9556,12 +9819,12 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
       selectedKey: this.#selectedKey,
       editable: this.#editable,
       preview: this.#preview,
-      onSelect: (item) => {
-        this.#toolbar?.setCanDeleteSelected(Boolean(item));
-        if (!item) {
+      onSelect: (item2) => {
+        this.#toolbar?.setCanDeleteSelected(Boolean(item2));
+        if (!item2) {
           void this.#previewEntry(null);
         } else {
-          void this.#previewEntry(item);
+          void this.#previewEntry(item2);
         }
       },
       onSort: (ascending) => {
@@ -9595,7 +9858,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
     this.#toolbar?.setCanDeleteSelected(false);
   }
   itemRemoved(key) {
-    const index = this.#items.findIndex((item) => item.key === key);
+    const index = this.#items.findIndex((item2) => item2.key === key);
     if (index === -1) {
       return;
     }
@@ -9604,21 +9867,21 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
     this.#toolbar?.setCanDeleteSelected(this.#items.length > 1);
   }
   itemAdded(key, value) {
-    if (this.#items.some((item) => item.key === key)) {
+    if (this.#items.some((item2) => item2.key === key)) {
       return;
     }
     this.#items.push({ key, value });
     this.performUpdate();
   }
   itemUpdated(key, value) {
-    const item = this.#items.find((item2) => item2.key === key);
-    if (!item) {
+    const item2 = this.#items.find((item3) => item3.key === key);
+    if (!item2) {
       return;
     }
-    if (item.value === value) {
+    if (item2.value === value) {
       return;
     }
-    item.value = value;
+    item2.value = value;
     this.performUpdate();
     if (this.#selectedKey !== key) {
       return;
@@ -9631,7 +9894,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
   showItems(items) {
     const sortDirection = this.#isSortOrderAscending ? 1 : -1;
     this.#items = [...items].sort((item1, item2) => sortDirection * (item1.key > item2.key ? 1 : -1));
-    const selectedItem = this.#items.find((item) => item.key === this.#selectedKey);
+    const selectedItem = this.#items.find((item2) => item2.key === this.#selectedKey);
     if (!selectedItem) {
       this.#selectedKey = null;
     } else {
@@ -9690,7 +9953,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
       this.#preview.detach();
     }
     if (!preview) {
-      preview = new EmptyWidget7(i18nString23(UIStrings23.noPreviewSelected), i18nString23(UIStrings23.selectAValueToPreview));
+      preview = new EmptyWidget8(i18nString23(UIStrings23.noPreviewSelected), i18nString23(UIStrings23.selectAValueToPreview));
     }
     this.#previewValue = value;
     this.#preview = preview;
@@ -9713,7 +9976,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
     this.performUpdate();
   }
   keys() {
-    return this.#items.map((item) => item.key);
+    return this.#items.map((item2) => item2.key);
   }
 };
 
@@ -9796,7 +10059,7 @@ var SharedStorageItemsView = class _SharedStorageItemsView extends KeyValueStora
         "ItemsCleared"
         /* SharedStorageItemsDispatcher.Events.ITEMS_CLEARED */
       );
-      UI19.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageItemsCleared));
+      UI18.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageItemsCleared));
       return;
     }
     await Promise.all(this.keys().map((key) => this.#sharedStorage.deleteEntry(key)));
@@ -9805,12 +10068,12 @@ var SharedStorageItemsView = class _SharedStorageItemsView extends KeyValueStora
       "FilteredItemsCleared"
       /* SharedStorageItemsDispatcher.Events.FILTERED_ITEMS_CLEARED */
     );
-    UI19.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageFilteredItemsCleared));
+    UI18.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageFilteredItemsCleared));
   }
   isEditAllowed(columnIdentifier, _oldText, newText) {
     if (columnIdentifier === "key" && newText === "") {
       void this.refreshItems().then(() => {
-        UI19.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageItemEditCanceled));
+        UI18.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageItemEditCanceled));
       });
       return false;
     }
@@ -9823,11 +10086,11 @@ var SharedStorageItemsView = class _SharedStorageItemsView extends KeyValueStora
       "ItemEdited"
       /* SharedStorageItemsDispatcher.Events.ITEM_EDITED */
     );
-    UI19.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageItemEdited));
+    UI18.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageItemEdited));
   }
   #showSharedStorageItems(items) {
     if (this.toolbar) {
-      const filteredList = items.filter((item) => this.toolbar?.filterRegex?.test(`${item.key} ${item.value}`) ?? true);
+      const filteredList = items.filter((item2) => this.toolbar?.filterRegex?.test(`${item2.key} ${item2.value}`) ?? true);
       this.showItems(filteredList);
     }
   }
@@ -9835,7 +10098,7 @@ var SharedStorageItemsView = class _SharedStorageItemsView extends KeyValueStora
     await this.#sharedStorage.deleteEntry(key);
     await this.refreshItems();
     this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemDeleted", { key });
-    UI19.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageItemDeleted));
+    UI18.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.sharedStorageItemDeleted));
   }
   async createPreview(key, value) {
     const wrappedEntry = key && { key, value: value || "" };
@@ -9874,9 +10137,9 @@ __export(StorageBucketsTreeElement_exports, {
 });
 import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as SDK21 from "./../../core/sdk/sdk.js";
-import * as LegacyWrapper5 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
-import { createIcon as createIcon10 } from "./../../ui/kit/kit.js";
-import * as UI20 from "./../../ui/legacy/legacy.js";
+import * as LegacyWrapper3 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import { createIcon as createIcon9 } from "./../../ui/kit/kit.js";
+import * as UI19 from "./../../ui/legacy/legacy.js";
 import { StorageMetadataView as StorageMetadataView5 } from "./components/components.js";
 var UIStrings25 = {
   /**
@@ -9905,7 +10168,7 @@ var StorageBucketsTreeParentElement = class extends ExpandableApplicationPanelTr
   bucketTreeElements = /* @__PURE__ */ new Set();
   constructor(storagePanel) {
     super(storagePanel, i18nString25(UIStrings25.storageBuckets), i18nString25(UIStrings25.noStorageBuckets), i18nString25(UIStrings25.storageBucketsDescription), "storage-buckets");
-    const icon = createIcon10("bucket");
+    const icon = createIcon9("bucket");
     this.setLeadingIcons([icon]);
     this.setLink("https://github.com/WICG/storage-buckets/blob/gh-pages/explainer.md");
   }
@@ -9980,7 +10243,7 @@ var StorageBucketsTreeElement = class extends ExpandableApplicationPanelTreeElem
     super(resourcesPanel, `${bucket.name} - ${origin}`, "", "", "storage-bucket");
     this.bucketModel = model;
     this.storageBucketInfo = bucketInfo;
-    const icon = createIcon10("database");
+    const icon = createIcon9("database");
     this.setLeadingIcons([icon]);
   }
   initialize() {
@@ -10010,7 +10273,7 @@ var StorageBucketsTreeElement = class extends ExpandableApplicationPanelTreeElem
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
     if (!this.view) {
-      this.view = LegacyWrapper5.LegacyWrapper.legacyWrapper(UI20.Widget.Widget, new StorageMetadataView5.StorageMetadataView());
+      this.view = LegacyWrapper3.LegacyWrapper.legacyWrapper(UI19.Widget.Widget, new StorageMetadataView5.StorageMetadataView());
       this.view.getComponent().enableStorageBucketControls(this.model);
       this.view.getComponent().setStorageBucket(this.storageBucketInfo);
     }
@@ -10028,13 +10291,13 @@ __export(StorageView_exports, {
 });
 import * as Common15 from "./../../core/common/common.js";
 import * as i18n51 from "./../../core/i18n/i18n.js";
-import * as Platform6 from "./../../core/platform/platform.js";
+import * as Platform7 from "./../../core/platform/platform.js";
 import * as SDK22 from "./../../core/sdk/sdk.js";
-import * as uiI18n2 from "./../../ui/i18n/i18n.js";
+import * as uiI18n from "./../../ui/i18n/i18n.js";
 import { Icon } from "./../../ui/kit/kit.js";
 import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
-import * as UI21 from "./../../ui/legacy/legacy.js";
+import * as UI20 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging15 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/storageView.css.js
@@ -10249,7 +10512,7 @@ var UIStrings26 = {
 };
 var str_26 = i18n51.i18n.registerUIStrings("panels/application/StorageView.ts", UIStrings26);
 var i18nString26 = i18n51.i18n.getLocalizedString.bind(void 0, str_26);
-var StorageView = class _StorageView extends UI21.Widget.VBox {
+var StorageView = class _StorageView extends UI20.Widget.VBox {
   pieColors;
   reportView;
   target;
@@ -10284,7 +10547,7 @@ var StorageView = class _StorageView extends UI21.Widget.VBox {
       ["service_workers", "rgb(255, 167, 36)"]
       // orange
     ]);
-    this.reportView = new UI21.ReportView.ReportView(i18nString26(UIStrings26.storageTitle));
+    this.reportView = new UI20.ReportView.ReportView(i18nString26(UIStrings26.storageTitle));
     this.reportView.registerRequiredCSS(storageView_css_default);
     this.reportView.element.classList.add("clear-storage-header");
     this.reportView.show(this.contentElement);
@@ -10293,11 +10556,11 @@ var StorageView = class _StorageView extends UI21.Widget.VBox {
     this.storageKey = null;
     this.settings = /* @__PURE__ */ new Map();
     for (const type of AllStorageTypes) {
-      this.settings.set(type, Common15.Settings.Settings.instance().createSetting("clear-storage-" + Platform6.StringUtilities.toKebabCase(type), true));
+      this.settings.set(type, Common15.Settings.Settings.instance().createSetting("clear-storage-" + Platform7.StringUtilities.toKebabCase(type), true));
     }
     this.includeThirdPartyCookiesSetting = Common15.Settings.Settings.instance().createSetting("clear-storage-include-third-party-cookies", false);
     const clearButtonSection = this.reportView.appendSection("", "clear-storage-button").appendRow();
-    this.clearButton = UI21.UIUtils.createTextButton(i18nString26(UIStrings26.clearSiteData), this.clear.bind(this), { jslogContext: "storage.clear-site-data" });
+    this.clearButton = UI20.UIUtils.createTextButton(i18nString26(UIStrings26.clearSiteData), this.clear.bind(this), { jslogContext: "storage.clear-site-data" });
     this.clearButton.id = "storage-view-clear-button";
     clearButtonSection.appendChild(this.clearButton);
     const includeThirdPartyCookiesCheckbox = SettingsUI.SettingsUI.createSettingCheckbox(i18nString26(UIStrings26.includingThirdPartyCookies), this.includeThirdPartyCookiesSetting);
@@ -10308,7 +10571,7 @@ var StorageView = class _StorageView extends UI21.Widget.VBox {
     this.quotaRow = quota.appendSelectableRow();
     this.quotaRow.classList.add("quota-usage-row");
     const learnMoreRow = quota.appendRow();
-    const learnMore = UI21.XLink.XLink.create("https://developer.chrome.com/docs/devtools/progressive-web-apps#opaque-responses", i18nString26(UIStrings26.learnMore), void 0, void 0, "learn-more");
+    const learnMore = UI20.XLink.XLink.create("https://developer.chrome.com/docs/devtools/progressive-web-apps#opaque-responses", i18nString26(UIStrings26.learnMore), void 0, void 0, "learn-more");
     learnMoreRow.appendChild(learnMore);
     this.quotaUsage = null;
     this.pieChart = new PerfUI.PieChart.PieChart();
@@ -10319,7 +10582,7 @@ var StorageView = class _StorageView extends UI21.Widget.VBox {
     this.previousOverrideFieldValue = "";
     const quotaOverrideCheckboxRow = quota.appendRow();
     quotaOverrideCheckboxRow.classList.add("quota-override-row");
-    this.quotaOverrideCheckbox = UI21.UIUtils.CheckboxLabel.create(i18nString26(UIStrings26.simulateCustomStorage), false);
+    this.quotaOverrideCheckbox = UI20.UIUtils.CheckboxLabel.create(i18nString26(UIStrings26.simulateCustomStorage), false);
     this.quotaOverrideCheckbox.setAttribute("jslog", `${VisualLogging15.toggle("simulate-custom-quota").track({ change: true })}`);
     quotaOverrideCheckboxRow.appendChild(this.quotaOverrideCheckbox);
     this.quotaOverrideCheckbox.addEventListener("click", this.onClickCheckbox.bind(this), false);
@@ -10327,7 +10590,7 @@ var StorageView = class _StorageView extends UI21.Widget.VBox {
     this.quotaOverrideEditor = this.quotaOverrideControlRow.createChild("input", "quota-override-notification-editor");
     this.quotaOverrideEditor.setAttribute("placeholder", i18nString26(UIStrings26.pleaseEnterANumber));
     this.quotaOverrideEditor.setAttribute("jslog", `${VisualLogging15.textField("quota-override").track({ change: true })}`);
-    this.quotaOverrideControlRow.appendChild(UI21.UIUtils.createLabel(i18nString26(UIStrings26.mb)));
+    this.quotaOverrideControlRow.appendChild(UI20.UIUtils.createLabel(i18nString26(UIStrings26.mb)));
     this.quotaOverrideControlRow.classList.add("hidden");
     this.quotaOverrideEditor.addEventListener("keyup", (event) => {
       if (event.key === "Enter") {
@@ -10514,7 +10777,7 @@ var StorageView = class _StorageView extends UI21.Widget.VBox {
       this.clearButton.textContent = label;
       this.clearButton.focus();
     }, 500);
-    UI21.ARIAUtils.LiveAnnouncer.alert(i18nString26(UIStrings26.SiteDataCleared));
+    UI20.ARIAUtils.LiveAnnouncer.alert(i18nString26(UIStrings26.SiteDataCleared));
   }
   static clear(target, storageKey, originForCookies, selectedStorageTypes, includeThirdPartyCookies) {
     console.assert(Boolean(storageKey));
@@ -10589,16 +10852,16 @@ var StorageView = class _StorageView extends UI21.Widget.VBox {
     const quotaAsString = i18n51.ByteUtilities.bytesToString(response.quota);
     const usageAsString = i18n51.ByteUtilities.bytesToString(response.usage);
     const formattedQuotaAsString = i18nString26(UIStrings26.storageWithCustomMarker, { PH1: quotaAsString });
-    const quota = quotaOverridden ? UI21.Fragment.Fragment.build`<b>${formattedQuotaAsString}</b>`.element() : quotaAsString;
-    const element = uiI18n2.getFormatLocalizedString(str_26, UIStrings26.storageQuotaUsed, { PH1: usageAsString, PH2: quota });
+    const quota = quotaOverridden ? UI20.Fragment.Fragment.build`<b>${formattedQuotaAsString}</b>`.element() : quotaAsString;
+    const element = uiI18n.getFormatLocalizedString(str_26, UIStrings26.storageQuotaUsed, { PH1: usageAsString, PH2: quota });
     this.quotaRow.appendChild(element);
-    UI21.Tooltip.Tooltip.install(this.quotaRow, i18nString26(UIStrings26.storageQuotaUsedWithBytes, { PH1: response.usage.toLocaleString(), PH2: response.quota.toLocaleString() }));
+    UI20.Tooltip.Tooltip.install(this.quotaRow, i18nString26(UIStrings26.storageQuotaUsedWithBytes, { PH1: response.usage.toLocaleString(), PH2: response.quota.toLocaleString() }));
     if (!response.overrideActive && response.quota < 125829120) {
       const icon = new Icon();
       icon.name = "info";
       icon.style.color = "var(--icon-info)";
       icon.classList.add("small");
-      UI21.Tooltip.Tooltip.install(this.quotaRow, i18nString26(UIStrings26.storageQuotaIsLimitedIn));
+      UI20.Tooltip.Tooltip.install(this.quotaRow, i18nString26(UIStrings26.storageQuotaIsLimitedIn));
       this.quotaRow.appendChild(icon);
     }
     if (this.quotaUsage === null || this.quotaUsage !== response.usage) {
@@ -10685,7 +10948,7 @@ __export(TrustTokensTreeElement_exports, {
 });
 import * as Host8 from "./../../core/host/host.js";
 import * as i18n53 from "./../../core/i18n/i18n.js";
-import { createIcon as createIcon11 } from "./../../ui/kit/kit.js";
+import { createIcon as createIcon10 } from "./../../ui/kit/kit.js";
 import * as ApplicationComponents14 from "./components/components.js";
 var UIStrings27 = {
   /**
@@ -10700,7 +10963,7 @@ var TrustTokensTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString27(UIStrings27.trustTokens), false, "private-state-tokens");
-    const icon = createIcon11("database");
+    const icon = createIcon10("database");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -10804,18 +11067,6 @@ var UIStrings28 = {
    * @description Text that appears on a button for the manifest resource type filter.
    */
   manifest: "Manifest",
-  /**
-   * @description Text in App Manifest View of the Application panel
-   */
-  noManifestDetected: "No manifest detected",
-  /**
-   * @description Description text on manifests in App Manifest View of the Application panel which describes the app manifest view tab
-   */
-  manifestDescription: "A manifest defines how your app appears on phone\u2019s home screens and what the app looks like on launch.",
-  /**
-   * @description Text in App Manifest View of the Application panel
-   */
-  appManifest: "Manifest",
   /**
    * @description Text in Application Panel Sidebar of the Application panel
    */
@@ -10941,7 +11192,7 @@ function nameForExtensionStorageArea(storageArea) {
       throw new Error(`Unrecognized storage type: ${storageArea}`);
   }
 }
-var ApplicationPanelSidebar = class extends UI22.Widget.VBox {
+var ApplicationPanelSidebar = class extends UI21.Widget.VBox {
   panel;
   sidebarTree;
   applicationTreeElement;
@@ -10980,7 +11231,7 @@ var ApplicationPanelSidebar = class extends UI22.Widget.VBox {
   constructor(panel) {
     super();
     this.panel = panel;
-    this.sidebarTree = new UI22.TreeOutline.TreeOutlineInShadow(
+    this.sidebarTree = new UI21.TreeOutline.TreeOutlineInShadow(
       "NavigationTree"
       /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */
     );
@@ -10988,7 +11239,7 @@ var ApplicationPanelSidebar = class extends UI22.Widget.VBox {
     this.sidebarTree.element.classList.add("resources-sidebar");
     this.sidebarTree.setHideOverflow(true);
     this.sidebarTree.element.classList.add("filter-all");
-    this.sidebarTree.addEventListener(UI22.TreeOutline.Events.ElementAttached, this.treeElementAdded, this);
+    this.sidebarTree.addEventListener(UI21.TreeOutline.Events.ElementAttached, this.treeElementAdded, this);
     this.contentElement.appendChild(this.sidebarTree.element);
     const applicationSectionTitle = i18nString28(UIStrings28.application);
     this.applicationTreeElement = this.addSidebarSection(applicationSectionTitle, "application");
@@ -11007,17 +11258,17 @@ var ApplicationPanelSidebar = class extends UI22.Widget.VBox {
     const storageTreeElement = this.addSidebarSection(storageSectionTitle, "storage");
     this.localStorageListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString28(UIStrings28.localStorage), i18nString28(UIStrings28.noLocalStorage), i18nString28(UIStrings28.localStorageDescription), "local-storage");
     this.localStorageListTreeElement.setLink("https://developer.chrome.com/docs/devtools/storage/localstorage/");
-    const localStorageIcon = createIcon12("table");
+    const localStorageIcon = createIcon11("table");
     this.localStorageListTreeElement.setLeadingIcons([localStorageIcon]);
     storageTreeElement.appendChild(this.localStorageListTreeElement);
     this.sessionStorageListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString28(UIStrings28.sessionStorage), i18nString28(UIStrings28.noSessionStorage), i18nString28(UIStrings28.sessionStorageDescription), "session-storage");
     this.sessionStorageListTreeElement.setLink("https://developer.chrome.com/docs/devtools/storage/sessionstorage/");
-    const sessionStorageIcon = createIcon12("table");
+    const sessionStorageIcon = createIcon11("table");
     this.sessionStorageListTreeElement.setLeadingIcons([sessionStorageIcon]);
     storageTreeElement.appendChild(this.sessionStorageListTreeElement);
     this.extensionStorageListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString28(UIStrings28.extensionStorage), i18nString28(UIStrings28.noExtensionStorage), i18nString28(UIStrings28.extensionStorageDescription), "extension-storage");
     this.extensionStorageListTreeElement.setLink("https://developer.chrome.com/docs/extensions/reference/api/storage/");
-    const extensionStorageIcon = createIcon12("table");
+    const extensionStorageIcon = createIcon11("table");
     this.extensionStorageListTreeElement.setLeadingIcons([extensionStorageIcon]);
     storageTreeElement.appendChild(this.extensionStorageListTreeElement);
     this.indexedDBListTreeElement = new IndexedDBTreeElement(panel);
@@ -11025,7 +11276,7 @@ var ApplicationPanelSidebar = class extends UI22.Widget.VBox {
     storageTreeElement.appendChild(this.indexedDBListTreeElement);
     this.cookieListTreeElement = new ExpandableApplicationPanelTreeElement(panel, i18nString28(UIStrings28.cookies), i18nString28(UIStrings28.noCookies), i18nString28(UIStrings28.cookiesDescription), "cookies");
     this.cookieListTreeElement.setLink("https://developer.chrome.com/docs/devtools/storage/cookies/");
-    const cookieIcon = createIcon12("cookie");
+    const cookieIcon = createIcon11("cookie");
     this.cookieListTreeElement.setLeadingIcons([cookieIcon]);
     storageTreeElement.appendChild(this.cookieListTreeElement);
     this.trustTokensTreeElement = new TrustTokensTreeElement(panel);
@@ -11132,13 +11383,13 @@ var ApplicationPanelSidebar = class extends UI22.Widget.VBox {
     this.contentElement.style.contain = "layout style";
   }
   addSidebarSection(title, jslogContext) {
-    const treeElement = new UI22.TreeOutline.TreeElement(title, true, jslogContext);
+    const treeElement = new UI21.TreeOutline.TreeElement(title, true, jslogContext);
     treeElement.listItemElement.classList.add("storage-group-list-item");
     treeElement.setCollapsible(false);
     treeElement.selectable = false;
     this.sidebarTree.appendChild(treeElement);
-    UI22.ARIAUtils.markAsHeading(treeElement.listItemElement, 3);
-    UI22.ARIAUtils.setLabel(treeElement.childrenListElement, title);
+    UI21.ARIAUtils.markAsHeading(treeElement.listItemElement, 3);
+    UI21.ARIAUtils.setLabel(treeElement.childrenListElement, title);
     return treeElement;
   }
   targetAdded(target) {
@@ -11481,11 +11732,11 @@ var ApplicationPanelSidebar = class extends UI22.Widget.VBox {
     if (!nodeUnderMouse) {
       return;
     }
-    const listNode = UI22.UIUtils.enclosingNodeOrSelfWithNodeName(nodeUnderMouse, "li");
+    const listNode = UI21.UIUtils.enclosingNodeOrSelfWithNodeName(nodeUnderMouse, "li");
     if (!listNode) {
       return;
     }
-    const element = UI22.TreeOutline.TreeElement.getTreeElementBylistItemNode(listNode);
+    const element = UI21.TreeOutline.TreeElement.getTreeElementBylistItemNode(listNode);
     if (this.previousHoveredElement === element) {
       return;
     }
@@ -11511,12 +11762,12 @@ var BackgroundServiceTreeElement = class extends ApplicationPanelTreeElement {
   model;
   #selected;
   constructor(storagePanel, serviceName) {
-    super(storagePanel, BackgroundServiceView.getUIString(serviceName), false, Platform7.StringUtilities.toKebabCase(serviceName));
+    super(storagePanel, BackgroundServiceView.getUIString(serviceName), false, Platform8.StringUtilities.toKebabCase(serviceName));
     this.serviceName = serviceName;
     this.#selected = false;
     this.view = null;
     this.model = null;
-    const backgroundServiceIcon = createIcon12(this.getIconType());
+    const backgroundServiceIcon = createIcon11(this.getIconType());
     this.setLeadingIcons([backgroundServiceIcon]);
   }
   getIconType() {
@@ -11563,7 +11814,7 @@ var BackgroundServiceTreeElement = class extends ApplicationPanelTreeElement {
       this.view = new BackgroundServiceView(this.serviceName, this.model);
     }
     this.showView(this.view);
-    UI22.Context.Context.instance().setFlavor(BackgroundServiceView, this.view);
+    UI21.Context.Context.instance().setFlavor(BackgroundServiceView, this.view);
     Host9.userMetrics.panelShown("background_service_" + this.serviceName);
     return false;
   }
@@ -11572,7 +11823,7 @@ var ServiceWorkersTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18n55.i18n.lockedString("Service workers"), false, "service-workers");
-    const icon = createIcon12("gears");
+    const icon = createIcon11("gears");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -11592,13 +11843,11 @@ var AppManifestTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString28(UIStrings28.manifest), true, "manifest");
-    const icon = createIcon12("document");
+    const icon = createIcon11("document");
     this.setLeadingIcons([icon]);
     self.onInvokeElement(this.listItemElement, this.onInvoke.bind(this));
-    const emptyView = new UI22.EmptyWidget.EmptyWidget(i18nString28(UIStrings28.noManifestDetected), i18nString28(UIStrings28.manifestDescription));
-    const reportView = new UI22.ReportView.ReportView(i18nString28(UIStrings28.appManifest));
-    this.view = new AppManifestView(emptyView, reportView, new Common16.Throttler.Throttler(1e3));
-    UI22.ARIAUtils.setLabel(this.listItemElement, i18nString28(UIStrings28.onInvokeManifestAlert));
+    this.view = new AppManifestView();
+    UI21.ARIAUtils.setLabel(this.listItemElement, i18nString28(UIStrings28.onInvokeManifestAlert));
     const handleExpansion = (hasManifest) => {
       this.setExpandable(hasManifest);
     };
@@ -11625,7 +11874,7 @@ var AppManifestTreeElement = class extends ApplicationPanelTreeElement {
   }
   onInvoke() {
     this.view.getManifestElement().scrollIntoView();
-    UI22.ARIAUtils.LiveAnnouncer.alert(i18nString28(UIStrings28.onInvokeAlert, { PH1: this.listItemElement.title }));
+    UI21.ARIAUtils.LiveAnnouncer.alert(i18nString28(UIStrings28.onInvokeAlert, { PH1: this.listItemElement.title }));
   }
   showManifestView() {
     this.showView(this.view);
@@ -11636,13 +11885,13 @@ var ManifestChildTreeElement = class extends ApplicationPanelTreeElement {
   #sectionFieldElement;
   constructor(storagePanel, element, childTitle, fieldElement, jslogContext) {
     super(storagePanel, childTitle, false, jslogContext);
-    const icon = createIcon12("document");
+    const icon = createIcon11("document");
     this.setLeadingIcons([icon]);
     this.#sectionElement = element;
     this.#sectionFieldElement = fieldElement;
     self.onInvokeElement(this.listItemElement, this.onInvoke.bind(this));
     this.listItemElement.addEventListener("keydown", this.onInvokeElementKeydown.bind(this));
-    UI22.ARIAUtils.setLabel(this.listItemElement, i18nString28(UIStrings28.beforeInvokeAlert, { PH1: this.listItemElement.title }));
+    UI21.ARIAUtils.setLabel(this.listItemElement, i18nString28(UIStrings28.beforeInvokeAlert, { PH1: this.listItemElement.title }));
   }
   get itemURL() {
     return "manifest://" + this.title;
@@ -11650,7 +11899,7 @@ var ManifestChildTreeElement = class extends ApplicationPanelTreeElement {
   onInvoke() {
     this.parent?.showManifestView();
     this.#sectionElement.scrollIntoView();
-    UI22.ARIAUtils.LiveAnnouncer.alert(i18nString28(UIStrings28.onInvokeAlert, { PH1: this.listItemElement.title }));
+    UI21.ARIAUtils.LiveAnnouncer.alert(i18nString28(UIStrings28.onInvokeAlert, { PH1: this.listItemElement.title }));
   }
   // direct focus to the corresponding element
   onInvokeElementKeydown(event) {
@@ -11674,7 +11923,7 @@ var ClearStorageTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
     super(storagePanel, i18nString28(UIStrings28.storage), false, "storage");
-    const icon = createIcon12("database");
+    const icon = createIcon11("database");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -11695,7 +11944,7 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
   storageBucket;
   constructor(storagePanel, storageBucket) {
     super(storagePanel, i18nString28(UIStrings28.indexeddb), i18nString28(UIStrings28.noIndexeddb), i18nString28(UIStrings28.indexeddbDescription), "indexed-db");
-    const icon = createIcon12("database");
+    const icon = createIcon11("database");
     this.setLeadingIcons([icon]);
     this.idbDatabaseTreeElements = [];
     this.storageBucket = storageBucket;
@@ -11730,7 +11979,7 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI21.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.refreshIndexeddb), this.refreshIndexedDB.bind(this), { jslogContext: "refresh-indexeddb" });
     void contextMenu.show();
   }
@@ -11767,7 +12016,7 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
   removeIDBDatabaseTreeElement(idbDatabaseTreeElement) {
     idbDatabaseTreeElement.clear();
     this.removeChild(idbDatabaseTreeElement);
-    Platform7.ArrayUtilities.removeElement(this.idbDatabaseTreeElements, idbDatabaseTreeElement);
+    Platform8.ArrayUtilities.removeElement(this.idbDatabaseTreeElements, idbDatabaseTreeElement);
     this.setExpandable(this.childCount() > 0);
   }
   indexedDBLoaded({ data: { database, model, entriesUpdated } }) {
@@ -11802,7 +12051,7 @@ var IDBDatabaseTreeElement = class extends ApplicationPanelTreeElement {
     this.model = model;
     this.databaseId = databaseId;
     this.idbObjectStoreTreeElements = /* @__PURE__ */ new Map();
-    const icon = createIcon12("database");
+    const icon = createIcon11("database");
     this.setLeadingIcons([icon]);
     this.model.addEventListener(Events2.DatabaseNamesRefreshed, this.refreshIndexedDB, this);
   }
@@ -11814,7 +12063,7 @@ var IDBDatabaseTreeElement = class extends ApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI21.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.refreshIndexeddb), this.refreshIndexedDB.bind(this), { jslogContext: "refresh-indexeddb" });
     void contextMenu.show();
   }
@@ -11874,7 +12123,7 @@ var IDBDatabaseTreeElement = class extends ApplicationPanelTreeElement {
       return false;
     }
     if (!this.view) {
-      this.view = LegacyWrapper7.LegacyWrapper.legacyWrapper(UI22.Widget.VBox, new IDBDatabaseView(this.model, this.database), "indexeddb-data");
+      this.view = LegacyWrapper5.LegacyWrapper.legacyWrapper(UI21.Widget.VBox, new IDBDatabaseView(this.model, this.database), "indexeddb-data");
     }
     this.showView(this.view);
     Host9.userMetrics.panelShown("indexed-db");
@@ -11908,7 +12157,7 @@ var IDBObjectStoreTreeElement = class extends ApplicationPanelTreeElement {
     this.idbIndexTreeElements = /* @__PURE__ */ new Map();
     this.objectStore = objectStore;
     this.view = null;
-    const icon = createIcon12("table");
+    const icon = createIcon11("table");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -11927,7 +12176,7 @@ var IDBObjectStoreTreeElement = class extends ApplicationPanelTreeElement {
     }
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI21.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.clear), this.clearObjectStore.bind(this), { jslogContext: "clear" });
     void contextMenu.show();
   }
@@ -12077,7 +12326,7 @@ var DOMStorageTreeElement = class extends ApplicationPanelTreeElement {
   constructor(storagePanel, domStorage) {
     super(storagePanel, domStorage.storageKey ? SDK23.StorageKeyManager.parseStorageKey(domStorage.storageKey).origin : i18nString28(UIStrings28.localFiles), false, domStorage.isLocalStorage ? "local-storage-for-domain" : "session-storage-for-domain");
     this.domStorage = domStorage;
-    const icon = createIcon12("table");
+    const icon = createIcon11("table");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -12094,7 +12343,7 @@ var DOMStorageTreeElement = class extends ApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI21.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.clear), () => this.domStorage.clear(), { jslogContext: "clear" });
     void contextMenu.show();
   }
@@ -12104,7 +12353,7 @@ var ExtensionStorageTreeElement = class extends ApplicationPanelTreeElement {
   constructor(storagePanel, extensionStorage) {
     super(storagePanel, nameForExtensionStorageArea(extensionStorage.storageArea), false, "extension-storage-for-domain");
     this.extensionStorage = extensionStorage;
-    const icon = createIcon12("table");
+    const icon = createIcon11("table");
     this.setLeadingIcons([icon]);
   }
   get storageArea() {
@@ -12124,7 +12373,7 @@ var ExtensionStorageTreeElement = class extends ApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI21.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.clear), () => this.extensionStorage.clear(), { jslogContext: "clear" });
     void contextMenu.show();
   }
@@ -12134,7 +12383,7 @@ var ExtensionStorageTreeParentElement = class extends ApplicationPanelTreeElemen
   constructor(storagePanel, extensionId, extensionName) {
     super(storagePanel, extensionName || extensionId, true, "extension-storage-for-domain");
     this.extensionId = extensionId;
-    const icon = createIcon12("table");
+    const icon = createIcon11("table");
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
@@ -12149,7 +12398,7 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
     this.target = frame.resourceTreeModel().target();
     this.#cookieDomain = cookieUrl.securityOrigin();
     this.tooltip = i18nString28(UIStrings28.cookiesUsedByFramesFromS, { PH1: this.#cookieDomain });
-    const icon = createIcon12("cookie");
+    const icon = createIcon11("cookie");
     if (IssuesManager.RelatedIssue.hasThirdPartyPhaseoutCookieIssueForDomain(cookieUrl.domain())) {
       icon.name = "warning-filled";
       this.tooltip = i18nString28(UIStrings28.thirdPartyPhaseout, { PH1: this.#cookieDomain });
@@ -12167,7 +12416,7 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI21.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString28(UIStrings28.clear), () => this.resourcesPanel.clearCookies(this.target, this.#cookieDomain), { jslogContext: "clear" });
     void contextMenu.show();
   }
@@ -12178,12 +12427,12 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
     return false;
   }
 };
-var StorageCategoryView = class extends UI22.Widget.VBox {
+var StorageCategoryView = class extends UI21.Widget.VBox {
   emptyWidget;
   constructor() {
     super();
     this.element.classList.add("storage-view");
-    this.emptyWidget = new UI22.EmptyWidget.EmptyWidget("", "");
+    this.emptyWidget = new UI21.EmptyWidget.EmptyWidget("", "");
     this.emptyWidget.show(this.element);
   }
   setText(text) {
@@ -12192,8 +12441,8 @@ var StorageCategoryView = class extends UI22.Widget.VBox {
   setHeadline(header) {
     this.emptyWidget.header = header;
   }
-  setLink(link5) {
-    this.emptyWidget.link = link5;
+  setLink(link4) {
+    this.emptyWidget.link = link4;
   }
 };
 var ResourcesSection = class {
@@ -12204,7 +12453,7 @@ var ResourcesSection = class {
   constructor(storagePanel, treeElement) {
     this.panel = storagePanel;
     this.treeElement = treeElement;
-    UI22.ARIAUtils.setLabel(this.treeElement.listItemNode, "Resources Section");
+    UI21.ARIAUtils.setLabel(this.treeElement.listItemNode, "Resources Section");
     this.treeElementForFrameId = /* @__PURE__ */ new Map();
     this.treeElementForTargetId = /* @__PURE__ */ new Map();
     const frameManager = SDK23.FrameManager.FrameManager.instance();
@@ -12410,7 +12659,7 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
     return frame.unreachableUrl() ? "iframe-crossed" : "iframe";
   }
   async frameNavigated(frame) {
-    const icon = createIcon12(this.getIconTypeForFrame(frame));
+    const icon = createIcon11(this.getIconTypeForFrame(frame));
     if (frame.unreachableUrl()) {
       icon.classList.add("red-icon");
     }
@@ -12418,7 +12667,7 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
     this.invalidateChildren();
     if (this.title !== frame.displayName()) {
       this.title = frame.displayName();
-      UI22.ARIAUtils.setLabel(this.listItemElement, this.title);
+      UI21.ARIAUtils.setLabel(this.listItemElement, this.title);
       if (this.parent) {
         const parent = this.parent;
         parent.removeChild(this);
@@ -12571,7 +12820,7 @@ var FrameResourceTreeElement = class extends ApplicationPanelTreeElement {
     this.previewPromise = null;
     this.tooltip = resource.url;
     resourceToFrameResourceTreeElement.set(this.resource, this);
-    const icon = createIcon12("document", "navigator-file-tree-item");
+    const icon = createIcon11("document", "navigator-file-tree-item");
     icon.classList.add("navigator-" + resource.resourceType().name() + "-tree-item");
     this.setLeadingIcons([icon]);
   }
@@ -12590,7 +12839,7 @@ var FrameResourceTreeElement = class extends ApplicationPanelTreeElement {
       if (view) {
         return view;
       }
-      return new UI22.EmptyWidget.EmptyWidget("", this.resource.url);
+      return new UI21.EmptyWidget.EmptyWidget("", this.resource.url);
     });
     return this.previewPromise;
   }
@@ -12623,7 +12872,7 @@ var FrameResourceTreeElement = class extends ApplicationPanelTreeElement {
     return true;
   }
   handleContextMenuEvent(event) {
-    const contextMenu = new UI22.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI21.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(this.resource);
     void contextMenu.show();
   }
@@ -12649,7 +12898,7 @@ var FrameWindowTreeElement = class extends ApplicationPanelTreeElement {
   }
   updateIcon(canAccessOpener) {
     const iconType = canAccessOpener ? "popup" : "frame";
-    const icon = createIcon12(iconType);
+    const icon = createIcon11(iconType);
     this.setLeadingIcons([icon]);
   }
   update(targetInfo) {
@@ -12692,7 +12941,7 @@ var WorkerTreeElement = class extends ApplicationPanelTreeElement {
     super(storagePanel, targetInfo.title || targetInfo.url || i18nString28(UIStrings28.worker), false, "worker");
     this.targetInfo = targetInfo;
     this.view = null;
-    const icon = createIcon12("gears", "navigator-file-tree-item");
+    const icon = createIcon11("gears", "navigator-file-tree-item");
     this.setLeadingIcons([icon]);
   }
   onselect(selectedByUser) {
@@ -12721,7 +12970,7 @@ import * as i18n57 from "./../../core/i18n/i18n.js";
 import * as SDK24 from "./../../core/sdk/sdk.js";
 import * as IssuesManager2 from "./../../models/issues_manager/issues_manager.js";
 import * as CookieTable from "./../../ui/legacy/components/cookie_table/cookie_table.js";
-import * as UI23 from "./../../ui/legacy/legacy.js";
+import * as UI22 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging16 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/cookieItemsView.css.js
@@ -12803,7 +13052,7 @@ var UIStrings29 = {
 };
 var str_29 = i18n57.i18n.registerUIStrings("panels/application/CookieItemsView.ts", UIStrings29);
 var i18nString29 = i18n57.i18n.getLocalizedString.bind(void 0, str_29);
-var CookiePreviewWidget = class extends UI23.Widget.VBox {
+var CookiePreviewWidget = class extends UI22.Widget.VBox {
   cookie;
   showDecodedSetting;
   toggle;
@@ -12820,7 +13069,7 @@ var CookiePreviewWidget = class extends UI23.Widget.VBox {
     span.textContent = "Cookie Value";
     header.appendChild(span);
     this.contentElement.appendChild(header);
-    const toggle3 = UI23.UIUtils.CheckboxLabel.create(i18nString29(UIStrings29.showUrlDecoded), this.showDecodedSetting.get(), void 0, "show-url-decoded");
+    const toggle3 = UI22.UIUtils.CheckboxLabel.create(i18nString29(UIStrings29.showUrlDecoded), this.showDecodedSetting.get(), void 0, "show-url-decoded");
     toggle3.title = i18nString29(UIStrings29.showUrlDecoded);
     toggle3.classList.add("cookie-preview-widget-toggle");
     toggle3.addEventListener("click", () => this.showDecoded(!this.showDecodedSetting.get()));
@@ -12868,7 +13117,7 @@ var CookiePreviewWidget = class extends UI23.Widget.VBox {
     selection.addRange(range);
   }
 };
-var CookieItemsView = class extends UI23.Widget.VBox {
+var CookieItemsView = class extends UI22.Widget.VBox {
   model;
   cookieDomain;
   cookiesTable;
@@ -12899,7 +13148,7 @@ var CookieItemsView = class extends UI23.Widget.VBox {
       this.deleteCookie.bind(this)
     );
     this.cookiesTable.setMinimumSize(0, 50);
-    this.splitWidget = new UI23.SplitWidget.SplitWidget(
+    this.splitWidget = new UI22.SplitWidget.SplitWidget(
       /* isVertical: */
       false,
       /* secondIsSidebar: */
@@ -12907,16 +13156,16 @@ var CookieItemsView = class extends UI23.Widget.VBox {
       "cookie-items-split-view-state"
     );
     this.splitWidget.show(this.element);
-    this.previewPanel = new UI23.Widget.VBox();
+    this.previewPanel = new UI22.Widget.VBox();
     this.previewPanel.element.setAttribute("jslog", `${VisualLogging16.pane("preview").track({ resize: true })}`);
     const resizer = this.previewPanel.element.createChild("div", "preview-panel-resizer");
     this.splitWidget.setMainWidget(this.cookiesTable);
     this.splitWidget.setSidebarWidget(this.previewPanel);
     this.splitWidget.installResizer(resizer);
     this.previewWidget = new CookiePreviewWidget();
-    this.emptyWidget = new UI23.EmptyWidget.EmptyWidget(i18nString29(UIStrings29.noCookieSelected), i18nString29(UIStrings29.selectACookieToPreviewItsValue));
+    this.emptyWidget = new UI22.EmptyWidget.EmptyWidget(i18nString29(UIStrings29.noCookieSelected), i18nString29(UIStrings29.selectACookieToPreviewItsValue));
     this.emptyWidget.show(this.previewPanel.contentElement);
-    this.onlyIssuesFilterUI = new UI23.Toolbar.ToolbarCheckbox(i18nString29(UIStrings29.onlyShowCookiesWithAnIssue), i18nString29(UIStrings29.onlyShowCookiesWhichHaveAn), () => {
+    this.onlyIssuesFilterUI = new UI22.Toolbar.ToolbarCheckbox(i18nString29(UIStrings29.onlyShowCookiesWithAnIssue), i18nString29(UIStrings29.onlyShowCookiesWhichHaveAn), () => {
       this.updateWithCookies(this.allCookies);
     }, "only-show-cookies-with-issues");
     this.#toolbar.appendToolbarItem(this.onlyIssuesFilterUI);
@@ -12981,7 +13230,7 @@ var CookieItemsView = class extends UI23.Widget.VBox {
       this.#toolbar.setDeleteAllGlyph("clear-list");
     }
     this.cookiesTable.setCookies(this.shownCookies, this.model.getCookieToBlockedReasonsMap());
-    UI23.ARIAUtils.LiveAnnouncer.alert(i18nString29(UIStrings29.numberOfCookiesShownInTableS, { PH1: this.shownCookies.length }));
+    UI22.ARIAUtils.LiveAnnouncer.alert(i18nString29(UIStrings29.numberOfCookiesShownInTableS, { PH1: this.shownCookies.length }));
     this.#toolbar.setCanFilter(true);
     this.#toolbar.setCanDeleteAll(this.shownCookies.length > 0);
     this.#toolbar.setCanDeleteSelected(Boolean(this.cookiesTable.selectedCookie()));
@@ -12999,7 +13248,7 @@ var CookieItemsView = class extends UI23.Widget.VBox {
       }
       return false;
     };
-    return items.filter((item) => this.#toolbar.filterRegex?.test(keyFunction(item)) ?? true).filter(predicate);
+    return items.filter((item2) => this.#toolbar.filterRegex?.test(keyFunction(item2)) ?? true).filter(predicate);
   }
   /**
    * This will only delete the currently visible cookies.
@@ -13032,7 +13281,7 @@ import * as Common18 from "./../../core/common/common.js";
 import * as i18n59 from "./../../core/i18n/i18n.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI24 from "./../../ui/legacy/legacy.js";
+import * as UI23 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings30 = {
   /**
@@ -13095,7 +13344,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
   }
   itemsCleared() {
     super.itemsCleared();
-    UI24.ARIAUtils.LiveAnnouncer.alert(i18nString30(UIStrings30.domStorageItemsCleared));
+    UI23.ARIAUtils.LiveAnnouncer.alert(i18nString30(UIStrings30.domStorageItemsCleared));
   }
   domStorageItemRemoved(event) {
     if (!this.isShowing()) {
@@ -13105,7 +13354,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
   }
   itemRemoved(key) {
     super.itemRemoved(key);
-    UI24.ARIAUtils.LiveAnnouncer.alert(i18nString30(UIStrings30.domStorageItemDeleted));
+    UI23.ARIAUtils.LiveAnnouncer.alert(i18nString30(UIStrings30.domStorageItemDeleted));
   }
   domStorageItemAdded(event) {
     if (!this.isShowing()) {
@@ -13128,7 +13377,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
       return;
     }
     const { filterRegex } = this.toolbar;
-    const filteredItems = items.map((item) => ({ key: item[0], value: item[1] })).filter((item) => filterRegex?.test(`${item.key} ${item.value}`) ?? true);
+    const filteredItems = items.map((item2) => ({ key: item2[0], value: item2[1] })).filter((item2) => filterRegex?.test(`${item2.key} ${item2.value}`) ?? true);
     this.showItems(filteredItems);
   }
   deleteAllItems() {
@@ -13153,7 +13402,7 @@ import * as i18n61 from "./../../core/i18n/i18n.js";
 import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as JSON5 from "./../../third_party/json5/json5.js";
 import * as SourceFrame7 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI25 from "./../../ui/legacy/legacy.js";
+import * as UI24 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging18 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings31 = {
   /**
@@ -13172,9 +13421,7 @@ var ExtensionStorageItemsView = class extends KeyValueStorageItemsView {
   #extensionStorage;
   extensionStorageItemsDispatcher;
   constructor(extensionStorage, view) {
-    super(i18nString31(UIStrings31.extensionStorageItems), "extension-storage", true, view);
-    this.element.setAttribute("jslog", `${VisualLogging18.pane().context("extension-storage-data")}`);
-    this.element.classList.add("storage-view", "table");
+    super(i18nString31(UIStrings31.extensionStorageItems), "extension-storage", true, view, void 0, { jslog: `${VisualLogging18.pane().context("extension-storage-data")}`, classes: ["storage-view", "table"] });
     this.extensionStorageItemsDispatcher = new Common19.ObjectWrapper.ObjectWrapper();
     this.setStorage(extensionStorage);
   }
@@ -13221,7 +13468,7 @@ var ExtensionStorageItemsView = class extends KeyValueStorageItemsView {
       return;
     }
     this.itemsCleared();
-    UI25.ARIAUtils.LiveAnnouncer.alert(i18nString31(UIStrings31.extensionStorageItemsCleared));
+    UI24.ARIAUtils.LiveAnnouncer.alert(i18nString31(UIStrings31.extensionStorageItemsCleared));
   }
   deleteSelectedItem() {
     if (!this.#isEditable) {
@@ -13237,7 +13484,7 @@ var ExtensionStorageItemsView = class extends KeyValueStorageItemsView {
     if (!items || !this.toolbar) {
       return;
     }
-    const filteredItems = Object.entries(items).map(([key, value]) => ({ key, value: typeof value === "string" ? value : JSON.stringify(value) })).filter((item) => this.toolbar?.filterRegex?.test(`${item.key} ${item.value}`) ?? true);
+    const filteredItems = Object.entries(items).map(([key, value]) => ({ key, value: typeof value === "string" ? value : JSON.stringify(value) })).filter((item2) => this.toolbar?.filterRegex?.test(`${item2.key} ${item2.value}`) ?? true);
     this.showItems(filteredItems);
     this.extensionStorageItemsDispatcher.dispatchEventToListeners(
       "ItemsRefreshed"
@@ -13267,10 +13514,10 @@ __export(ResourcesPanel_exports, {
 });
 import "./../../ui/legacy/legacy.js";
 import * as Common20 from "./../../core/common/common.js";
-import * as Platform8 from "./../../core/platform/platform.js";
+import * as Platform9 from "./../../core/platform/platform.js";
 import * as SDK25 from "./../../core/sdk/sdk.js";
 import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
-import * as UI26 from "./../../ui/legacy/legacy.js";
+import * as UI25 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging19 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/resourcesPanel.css.js
@@ -13426,7 +13673,7 @@ var resourcesPanel_css_default = `/*
 
 // gen/front_end/panels/application/ResourcesPanel.js
 var resourcesPanelInstance;
-var ResourcesPanel = class _ResourcesPanel extends UI26.Panel.PanelWithSidebar {
+var ResourcesPanel = class _ResourcesPanel extends UI25.Panel.PanelWithSidebar {
   resourcesLastSelectedItemSetting;
   visibleView;
   pendingViewPromise;
@@ -13444,7 +13691,7 @@ var ResourcesPanel = class _ResourcesPanel extends UI26.Panel.PanelWithSidebar {
     this.visibleView = null;
     this.pendingViewPromise = null;
     this.categoryView = null;
-    const mainContainer = new UI26.Widget.VBox();
+    const mainContainer = new UI25.Widget.VBox();
     mainContainer.setMinimumSize(100, 0);
     this.storageViews = mainContainer.element.createChild("div", "vbox flex-auto");
     this.storageViewToolbar = mainContainer.element.createChild("devtools-toolbar", "resources-toolbar");
@@ -13472,7 +13719,7 @@ var ResourcesPanel = class _ResourcesPanel extends UI26.Panel.PanelWithSidebar {
     return viewClassesToClose.some((type) => view instanceof type);
   }
   static async showAndGetSidebar() {
-    await UI26.ViewManager.ViewManager.instance().showView("resources");
+    await UI25.ViewManager.ViewManager.instance().showView("resources");
     return _ResourcesPanel.instance().sidebar;
   }
   focus() {
@@ -13503,9 +13750,9 @@ var ResourcesPanel = class _ResourcesPanel extends UI26.Panel.PanelWithSidebar {
     this.visibleView = view;
     this.storageViewToolbar.removeToolbarItems();
     this.storageViewToolbar.classList.toggle("hidden", true);
-    if (view instanceof UI26.View.SimpleView) {
+    if (view instanceof UI25.View.SimpleView) {
       void view.toolbarItems().then((items) => {
-        items.map((item) => this.storageViewToolbar.appendToolbarItem(item));
+        items.map((item2) => this.storageViewToolbar.appendToolbarItem(item2));
         this.storageViewToolbar.classList.toggle("hidden", !items.length);
       });
     }
@@ -13523,7 +13770,7 @@ var ResourcesPanel = class _ResourcesPanel extends UI26.Panel.PanelWithSidebar {
     if (!this.categoryView) {
       this.categoryView = new StorageCategoryView();
     }
-    this.categoryView.element.setAttribute("jslog", `${VisualLogging19.pane().context(Platform8.StringUtilities.toKebabCase(categoryName))}`);
+    this.categoryView.element.setAttribute("jslog", `${VisualLogging19.pane().context(Platform9.StringUtilities.toKebabCase(categoryName))}`);
     this.categoryView.setHeadline(categoryHeadline);
     this.categoryView.setText(categoryDescription);
     this.categoryView.setLink(categoryLink);

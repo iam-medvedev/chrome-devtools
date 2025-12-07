@@ -1,12 +1,12 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { getCleanTextContentFromElements, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 const { urlString } = Platform.DevToolsPath;
@@ -15,18 +15,14 @@ describeWithMockConnection('AppManifestView', () => {
     const FIXTURES_320X320_URL = `${new URL('./fixtures/320x320.png', import.meta.url)}`;
     const FIXTURES_640X320_URL = `${new URL('./fixtures/640x320.png', import.meta.url)}`;
     let target;
-    let emptyView;
-    let reportView;
-    let throttler;
     let view;
+    let viewFunction;
     beforeEach(() => {
         stubNoopSettings();
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
-        emptyView = new UI.EmptyWidget.EmptyWidget('', '');
-        reportView = new UI.ReportView.ReportView('');
-        throttler = new Common.Throttler.Throttler(0);
+        viewFunction = createViewFunctionStub(Application.AppManifestView.AppManifestView);
     });
     afterEach(() => {
         view.detach();
@@ -41,25 +37,19 @@ describeWithMockConnection('AppManifestView', () => {
         fetchAppManifest.onCall(2).resolves({ url: URL, data: '{"short_name": "example.com"}', errors: [] });
         sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);
         sinon.stub(resourceTreeModel, 'getAppId').resolves({});
-        view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
+        view = new Application.AppManifestView.AppManifestView(viewFunction);
         renderElementIntoDOM(view);
-        await new Promise(resolve => {
-            view.addEventListener("ManifestDetected" /* Application.AppManifestView.Events.MANIFEST_DETECTED */, resolve, { once: true });
-        });
-        assert.isTrue(emptyView.isShowing());
-        assert.isFalse(reportView.isShowing());
+        await viewFunction.nextInput;
+        assert.isTrue(viewFunction.input.emptyView.isShowing());
+        assert.isFalse(viewFunction.input.reportView.isShowing());
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.DOMContentLoaded, 42);
-        await new Promise(resolve => {
-            view.addEventListener("ManifestDetected" /* Application.AppManifestView.Events.MANIFEST_DETECTED */, resolve, { once: true });
-        });
-        assert.isTrue(emptyView.isShowing());
-        assert.isFalse(reportView.isShowing());
+        await viewFunction.nextInput;
+        assert.isTrue(viewFunction.input.emptyView.isShowing());
+        assert.isFalse(viewFunction.input.reportView.isShowing());
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.DOMContentLoaded, 42);
-        await new Promise(resolve => {
-            view.addEventListener("ManifestDetected" /* Application.AppManifestView.Events.MANIFEST_DETECTED */, resolve, { once: true });
-        });
-        assert.isFalse(emptyView.isShowing());
-        assert.isTrue(reportView.isShowing());
+        await viewFunction.nextInput;
+        assert.isFalse(viewFunction.input.emptyView.isShowing());
+        assert.isTrue(viewFunction.input.reportView.isShowing());
     });
     it('shows pwa wco if available', async () => {
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -69,18 +59,14 @@ describeWithMockConnection('AppManifestView', () => {
         fetchAppManifest.resolves({ url: URL, data: '{"display_override": ["window-controls-overlay"]}', errors: [] });
         sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);
         sinon.stub(resourceTreeModel, 'getAppId').resolves({});
-        view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
+        view = new Application.AppManifestView.AppManifestView(viewFunction);
         renderElementIntoDOM(view);
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.DOMContentLoaded, 42);
-        await new Promise(resolve => {
-            view.addEventListener("ManifestDetected" /* Application.AppManifestView.Events.MANIFEST_DETECTED */, resolve, { once: true });
-        });
-        const manifestSections = view.getStaticSections();
-        const values = getCleanTextContentFromElements(manifestSections[4].getFieldElement(), '.wco');
-        assert.deepEqual(values, ['window-controls-overlay']);
+        const { windowControlsData } = await viewFunction.nextInput;
+        assert.isTrue(windowControlsData?.hasWco);
     });
     it('can parse ‘sizes’-field', async () => {
-        view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
+        view = new Application.AppManifestView.AppManifestView(viewFunction);
         const parsed = view.parseSizes('512x512', 'Icon', 'https://web.dev/image.html', []);
         const expected = [{
                 width: 512,
@@ -90,7 +76,7 @@ describeWithMockConnection('AppManifestView', () => {
         assert.deepEqual(parsed, expected);
     });
     it('can handle missing ‘sizes’-field', async () => {
-        view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
+        view = new Application.AppManifestView.AppManifestView(viewFunction);
         const parsed = view.parseSizes(undefined, 'Icon', 'https://web.dev/image.html', []);
         assert.deepEqual(parsed, []);
     });
@@ -102,22 +88,21 @@ describeWithMockConnection('AppManifestView', () => {
         fetchAppManifest.resolves({ url: URL, data: manifest, errors: [] });
         sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);
         sinon.stub(resourceTreeModel, 'getAppId').resolves({});
-        async function loadResource(url, initiator, isBinary = false) {
-            assert(isBinary);
-            const res = await fetch(url);
-            return { content: await res.bytes() };
-        }
-        sinon.stub(SDK.PageResourceLoader.PageResourceLoader.instance(), 'loadResource').callsFake(loadResource);
-        view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
-        renderElementIntoDOM(view);
-        await new Promise(resolve => {
-            view.addEventListener("ManifestRendered" /* Application.AppManifestView.Events.MANIFEST_RENDERED */, resolve, { once: true });
+        SDK.PageResourceLoader.PageResourceLoader.instance({
+            forceNew: true,
+            loadOverride: async (url) => {
+                const res = await fetch(url);
+                return {
+                    content: await res.bytes(),
+                    success: true,
+                    errorDescription: { message: '', statusCode: 0, netError: 0, netErrorName: '', urlValid: true },
+                };
+            }
         });
-        const warningSection = reportView.element.shadowRoot?.querySelector('.report-section');
-        assert.exists(warningSection);
-        const warnings = warningSection.querySelectorAll('.report-row');
-        assert.exists(warnings);
-        return Array.from(warnings).map(warning => warning.textContent || '');
+        view = new Application.AppManifestView.AppManifestView(viewFunction);
+        renderElementIntoDOM(view);
+        const { warnings, errors, imageErrors } = await viewFunction.nextInput;
+        return [...warnings ?? [], ...errors?.map(error => error.message) ?? [], ...imageErrors ?? []];
     }
     it('displays warnings for too many shortcuts and not enough screenshots', async () => {
         const actual = await renderWithWarnings(`{
@@ -268,19 +253,38 @@ describeWithMockConnection('AppManifestView', () => {
         assert.deepEqual(actual, expected);
     });
     it('displays "form-factor", "platform" and "label" properties for screenshots', async () => {
-        await renderWithWarnings(`{
-        "screenshots": [
-          {
-            "src": "${FIXTURES_320X320_URL}",
-            "type": "image/png",
-            "sizes": "320x320",
-            "form_factor": "wide",
-            "label": "Dummy Screenshot",
-            "platform": "windows"
-          }
-        ]
-      }`);
-        const screenshotSection = reportView.element.shadowRoot?.querySelectorAll('.report-section')[7] || null;
+        const emptyView = new UI.EmptyWidget.EmptyWidget('', '');
+        const reportView = new UI.ReportView.ReportView('');
+        const viewInput = {
+            reportView,
+            emptyView,
+            screenshotsSections: [],
+            screenshotsData: {
+                screenshots: [{
+                        screenshot: {
+                            src: FIXTURES_320X320_URL,
+                            type: 'image/png',
+                            sizes: '320x320',
+                            form_factor: 'wide',
+                            label: 'Dummy Screenshot',
+                            platform: 'windows'
+                        },
+                        processedImage: {
+                            imageResourceErrors: [],
+                            squareSizedIconAvailable: true,
+                            naturalWidth: 320,
+                            naturalHeight: 320,
+                            title: '320×320px\nimage/png',
+                            imageSrc: '',
+                            imageUrl: FIXTURES_320X320_URL,
+                        }
+                    }],
+                imageResourceErrors: [],
+                warnings: [],
+            }
+        };
+        Application.AppManifestView.DEFAULT_VIEW(viewInput, undefined, viewInput.reportView.element);
+        const screenshotSection = reportView.element.shadowRoot?.querySelector('.report-section') || null;
         assert.instanceOf(screenshotSection, HTMLDivElement);
         assert.deepEqual(getCleanTextContentFromElements(screenshotSection, '.report-field-name').slice(0, 3), ['Form factor', 'Label', 'Platform']);
         assert.deepEqual(getCleanTextContentFromElements(screenshotSection, '.report-field-value').slice(0, 3), ['wide', 'Dummy Screenshot', 'windows']);

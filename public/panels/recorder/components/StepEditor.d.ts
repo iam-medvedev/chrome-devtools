@@ -47,7 +47,6 @@ declare const defaultValuesByAttribute: DeepImmutable<{
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-recorder-step-editor': StepEditor;
-        'devtools-recorder-selector-picker-button': RecorderSelectorPickerButton;
     }
 }
 export declare class StepEditedEvent extends Event {
@@ -99,17 +98,6 @@ export declare class EditorState {
     static defaultByAttribute<Attribute extends keyof typeof defaultValuesByAttribute>(state: DeepImmutable<EditorState>, attribute: Attribute): Promise<DeepImmutable<typeof defaultValuesByAttribute[Attribute]>>;
     static fromStep(step: DeepImmutable<Models.Schema.Step>): DeepImmutable<EditorState>;
     static toStep(state: DeepImmutable<EditorState>): Models.Schema.Step;
-}
-/**
- * @fires RequestSelectorAttributeEvent#requestselectorattribute
- * @fires SelectorPickedEvent#selectorpicked
- */
-declare class RecorderSelectorPickerButton extends LitElement {
-    #private;
-    disabled: boolean;
-    constructor();
-    disconnectedCallback(): void;
-    protected render(): Lit.TemplateResult | undefined;
 }
 /**
  * @fires RequestSelectorAttributeEvent#requestselectorattribute

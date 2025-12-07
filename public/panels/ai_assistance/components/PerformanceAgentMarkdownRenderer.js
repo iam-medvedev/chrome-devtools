@@ -1,23 +1,127 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './CollapsibleAssistanceContentWidget.js';
+import '../../../models/trace/insights/insights.js';
+import '../../../panels/timeline/components/components.js';
+import './PerformanceAgentFlameChart.js';
 import * as Common from '../../../core/common/common.js';
+import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as Logs from '../../../models/logs/logs.js';
+import * as NetworkTimeCalculator from '../../../models/network_time_calculator/network_time_calculator.js';
+import * as Helpers from '../../../models/trace/helpers/helpers.js';
 import * as Trace from '../../../models/trace/trace.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as PanelsCommon from '../../common/common.js';
+import * as Network from '../../network/network.js';
+import * as TimelineComponents from '../../timeline/components/components.js';
+import * as Insights from '../../timeline/components/insights/insights.js';
 import { MarkdownRendererWithCodeBlock } from './MarkdownRendererWithCodeBlock.js';
-const { html } = Lit;
+const { html } = Lit.StaticHtml;
 const { ref, createRef } = Lit.Directives;
+const { widgetConfig } = UI.Widget;
 export class PerformanceAgentMarkdownRenderer extends MarkdownRendererWithCodeBlock {
     mainFrameId;
     lookupEvent;
-    constructor(mainFrameId = '', lookupEvent = () => null) {
+    parsedTrace;
+    #insightRenderer = new Insights.InsightRenderer.InsightRenderer();
+    constructor(mainFrameId = '', lookupEvent = () => null, parsedTrace = null) {
         super();
         this.mainFrameId = mainFrameId;
         this.lookupEvent = lookupEvent;
+        this.parsedTrace = parsedTrace;
     }
     templateForToken(token) {
+        if (!this.parsedTrace) {
+            return null;
+        }
+        // NOTE: The custom tag handling below (e.g., <ai-insight>, <network-request-widget>)
+        // is part of a prototype for the GreenDev project and is only rendered when the GreenDev
+        // feature is enabled.
+        if (token.type === 'html' && Boolean(Root.Runtime.hostConfig.devToolsGreenDevUi?.enabled)) {
+            if (token.text.includes('<flame-chart-widget')) {
+                const startMatch = token.text.match(/start="?(\d+)"?/);
+                const endMatch = token.text.match(/end="?(\d+)"?/);
+                const start = startMatch ? Number(startMatch[1]) : this.parsedTrace.data.Meta.traceBounds.min;
+                const end = endMatch ? Number(endMatch[1]) : this.parsedTrace.data.Meta.traceBounds.max;
+                return html `<devtools-performance-agent-flame-chart .data=${{
+                    parsedTrace: this.parsedTrace,
+                    start,
+                    end,
+                }}
+          }></devtools-performance-agent-flame-chart>`;
+            }
+            // Flexible regex to match the tag name and a value a.
+            // match[1]: tagName (e.g., 'ai-insight', 'network-request-widget')
+            // match[2]: value (value needed to display the widget)
+            const regex = /<([a-z-]+)\s+value="([^"]+)">/;
+            const match = token.text.match(regex);
+            if (!match) {
+                return null;
+            }
+            const tagName = match[1];
+            const value = match[2];
+            if (tagName === 'ai-insight' && value) {
+                const componentName = value;
+                const insightSet = this.parsedTrace.insights?.values().next().value;
+                const insightM = insightSet?.model[componentName];
+                if (!insightM) {
+                    return null;
+                }
+                return html `<devtools-collapsible-assistance-content-widget  .data=${{
+                    headerText: `Insight - ${componentName}`
+                }}>
+        ${this.#insightRenderer.renderInsightToWidgetElement(this.parsedTrace, insightSet, insightM, componentName, {
+                    selected: true,
+                    isAIAssistanceContext: true
+                })}
+        </devtools-collapsible-assistance-content-widget>`;
+            }
+            if (tagName === 'network-request-widget' && value) {
+                const rawTraceEvent = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents().at(Number(value));
+                // Rendering RequestTimingView widget only works for fresh traces where the network log is in sync.
+                // If the trace is uploaded, we need to use the synthetic events and
+                // render the network request tooltip that uses the synthetic events.
+                if (rawTraceEvent && Trace.Types.Events.isSyntheticNetworkRequest(rawTraceEvent)) {
+                    const rawTraceEventId = rawTraceEvent?.args?.data?.requestId;
+                    const rawTraceEventUrl = rawTraceEvent?.args?.data?.url;
+                    const networkRequest = rawTraceEvent ? Logs.NetworkLog.NetworkLog.instance()
+                        .requestsForId(rawTraceEventId)
+                        .find(r => r.url() === rawTraceEventUrl) :
+                        null;
+                    if (networkRequest) {
+                        const calculator = new NetworkTimeCalculator.NetworkTimeCalculator(true);
+                        return html `<devtools-collapsible-assistance-content-widget
+            .data=${{
+                            headerText: `Network Request: ${networkRequest.url().length > 80 ? networkRequest.url().slice(0, 80) + '...' : networkRequest.url()}`
+                        }}>
+            <devtools-widget class="actions" .widgetConfig=${UI.Widget.widgetConfig(Network.RequestTimingView.RequestTimingView, {
+                            request: networkRequest,
+                            calculator,
+                        })}></devtools-widget>
+            </devtools-collapsible-assistance-content-widget>`;
+                    }
+                }
+                const syntheticRequest = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().syntheticEventForRawEventIndex(Number(value));
+                let networkTooltip = null;
+                if (syntheticRequest && Trace.Types.Events.isSyntheticNetworkRequest(syntheticRequest)) {
+                    // clang-format off
+                    networkTooltip = html `<devtools-widget .widgetConfig=${widgetConfig(TimelineComponents.NetworkRequestTooltip.NetworkRequestTooltip, {
+                        networkRequest: syntheticRequest,
+                    })}></devtools-widget>`;
+                    // clang-format on
+                }
+                return html `<devtools-collapsible-assistance-content-widget
+        .data=${{
+                    headerText: 'Network Request'
+                }}>
+          ${networkTooltip}
+          </devtools-collapsible-assistance-content-widget>`;
+            }
+            return null;
+        }
         if (token.type === 'link' && token.href.startsWith('#')) {
             if (token.href.startsWith('#node-')) {
                 const nodeId = Number(token.href.replace('#node-', ''));

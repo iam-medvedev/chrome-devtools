@@ -1093,7 +1093,7 @@ var RecorderController = class RecorderController2 extends LitElement {
     );
     await this.updateComplete;
     await this.#recordingView?.updateComplete;
-    this.#recordingView?.contentElement?.querySelector(".section:last-child devtools-step-view:last-of-type")?.shadowRoot?.querySelector(".action")?.click();
+    this.#recordingView?.contentElement?.querySelector(".section:last-child .step-view-widget:last-of-type")?.shadowRoot?.querySelector(".action")?.click();
   }
   async #acknowledgeImportNotice() {
     if (this.#disableRecorderImportWarningSetting.get()) {

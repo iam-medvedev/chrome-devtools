@@ -65,6 +65,7 @@ models/issues_manager/IssueAggregator.test.js
 models/issues_manager/IssueResolver.test.js
 models/issues_manager/LowTextContrastIssue.test.js
 models/issues_manager/MarkdownIssueDescription.test.js
+models/issues_manager/PermissionElementIssue.test.js
 models/issues_manager/PropertyRuleIssue.test.js
 models/issues_manager/RelatedIssue.test.js
 models/issues_manager/SRIMessageSignatureIssue.test.js
@@ -345,8 +346,8 @@ panels/application/components/StorageMetadataView.test.js
 panels/application/components/TrustTokensView.test.js
 panels/application/preloading/components/MismatchedPreloadingGrid.test.js
 panels/application/preloading/components/PreloadingDetailsReportView.test.js
+panels/application/preloading/components/PreloadingDisabledInfobar.test.js
 panels/application/preloading/components/PreloadingGrid.test.js
-panels/application/preloading/components/PreloadingMismatchedHeadersGrid.test.js
 panels/application/preloading/components/RuleSetDetailsView.test.js
 panels/application/preloading/components/RuleSetGrid.test.js
 panels/application/preloading/components/UsedPreloadingView.test.js
@@ -438,7 +439,6 @@ panels/linear_memory_inspector/LinearMemoryInspectorPane.test.js
 panels/linear_memory_inspector/components/LinearMemoryHighlightChipList.test.js
 panels/linear_memory_inspector/components/LinearMemoryInspector.test.js
 panels/linear_memory_inspector/components/LinearMemoryNavigator.test.js
-panels/linear_memory_inspector/components/LinearMemoryValueInterpreter.test.js
 panels/linear_memory_inspector/components/LinearMemoryViewer.test.js
 panels/linear_memory_inspector/components/ValueInterpreterDisplay.test.js
 panels/linear_memory_inspector/components/ValueInterpreterSettings.test.js
@@ -458,6 +458,7 @@ panels/network/NetworkSearchScope.test.js
 panels/network/RequestConditionsDrawer.test.js
 panels/network/RequestCookiesView.test.js
 panels/network/RequestHTMLView.test.js
+panels/network/RequestInitiatorView.test.js
 panels/network/RequestPayloadView.test.js
 panels/network/RequestPreviewView.test.js
 panels/network/RequestResponseView.test.js
@@ -481,7 +482,6 @@ panels/recorder/components/CreateRecordingView.test.js
 panels/recorder/components/RecordingListView.test.js
 panels/recorder/components/RecordingView.test.js
 panels/recorder/components/ReplaySection.test.js
-panels/recorder/components/SelectButton.test.js
 panels/recorder/components/StepEditor.test.js
 panels/recorder/components/StepView.test.js
 panels/recorder/converters/LighthouseConverter.test.js
@@ -530,6 +530,7 @@ panels/sources/SourcesNavigator.test.js
 panels/sources/SourcesPanel.test.js
 panels/sources/SourcesView.test.js
 panels/sources/TabbedEditorContainer.test.js
+panels/sources/ThreadsSidebarPane.test.js
 panels/sources/UISourceCodeFrame.test.js
 panels/sources/components/HeadersView.test.js
 panels/timeline/AnnotationHelpers.test.js
@@ -617,7 +618,6 @@ third_party/chromium/client-variations/ClientVariations.test.js
 third_party/i18n/i18n.test.js
 ui/components/adorners/Adorner.test.js
 ui/components/buttons/Button.test.js
-ui/components/chrome_link/ChromeLink.test.js
 ui/components/code_highlighter/CodeHighlighter.test.js
 ui/components/dialogs/ButtonDialog.test.js
 ui/components/dialogs/Dialog.test.js
@@ -666,6 +666,7 @@ ui/helpers/OpenInNewTab.test.js
 ui/i18n/i18n.test.js
 ui/kit/cards/Card.test.js
 ui/kit/icons/Icon.test.js
+ui/kit/link/Link.test.js
 ui/legacy/ARIAUtils.test.js
 ui/legacy/ActionRegistration.test.js
 ui/legacy/Context.test.js

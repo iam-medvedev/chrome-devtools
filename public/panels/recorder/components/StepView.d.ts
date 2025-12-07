@@ -1,16 +1,10 @@
 import '../../../ui/kit/kit.js';
 import './StepEditor.js';
-import './TimelineSection.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import type * as Converters from '../converters/converters.js';
 import * as Models from '../models/models.js';
 import type { StepEditedEvent } from './StepEditor.js';
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-step-view': StepView;
-    }
-}
 export declare const enum State {
     DEFAULT = "default",
     SUCCESS = "success",
@@ -19,34 +13,10 @@ export declare const enum State {
     ERROR = "error",
     STOPPED = "stopped"
 }
-export interface StepViewData {
-    state: State;
-    step?: Models.Schema.Step;
-    section?: Models.Section.Section;
-    error?: Error;
-    hasBreakpoint: boolean;
-    isEndOfGroup: boolean;
-    isStartOfGroup: boolean;
-    isFirstSection: boolean;
-    isLastSection: boolean;
-    stepIndex: number;
-    sectionIndex: number;
-    isRecording: boolean;
-    isPlaying: boolean;
-    removable: boolean;
-    builtInConverters: Converters.Converter.Converter[];
-    extensionConverters: Converters.Converter.Converter[];
-    isSelected: boolean;
-    recorderSettings?: Models.RecorderSettings.RecorderSettings;
-}
 export declare class CaptureSelectorsEvent extends Event {
     static readonly eventName = "captureselectors";
     data: Models.Schema.StepWithSelectors & Partial<Models.Schema.ClickAttributes>;
     constructor(step: Models.Schema.StepWithSelectors & Partial<Models.Schema.ClickAttributes>);
-}
-export declare class StopSelectorsCaptureEvent extends Event {
-    static readonly eventName = "stopselectorscapture";
-    constructor();
 }
 export declare class CopyStepEvent extends Event {
     static readonly eventName = "copystep";
@@ -91,7 +61,7 @@ interface Action {
     groupTitle: string;
     jslogContext?: string;
 }
-export interface ViewInput extends StepViewData {
+export interface ViewInput {
     step?: Models.Schema.Step;
     section?: Models.Section.Section;
     state: State;
@@ -119,16 +89,38 @@ export interface ViewInput extends StepViewData {
     toggleShowDetails: () => void;
     onToggleShowDetailsKeydown: (event: Event) => void;
     populateStepContextMenu: (contextMenu: UI.ContextMenu.ContextMenu) => void;
+    onStepClick: (step: Models.Schema.Step | Models.Section.Section) => void;
+    onStepHover: (step: Models.Schema.Step | Models.Section.Section) => void;
 }
 export type ViewOutput = unknown;
-declare function viewFunction(input: ViewInput, _output: ViewOutput, target: HTMLElement | ShadowRoot): void;
-export declare class StepView extends HTMLElement {
+export declare const DEFAULT_VIEW: (input: ViewInput, _output: ViewOutput, target: HTMLElement | ShadowRoot) => void;
+export declare class StepView extends UI.Widget.Widget {
     #private;
-    constructor(view?: typeof viewFunction);
-    set data(data: StepViewData);
+    constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
+    set step(step: Models.Schema.Step | undefined);
+    set section(section: Models.Section.Section | undefined);
+    set state(state: State);
+    set error(error: Error | undefined);
+    set isEndOfGroup(isEndOfGroup: boolean);
+    set isStartOfGroup(isStartOfGroup: boolean);
+    set stepIndex(stepIndex: number);
+    set sectionIndex(sectionIndex: number);
+    set isFirstSection(isFirstSection: boolean);
+    set isLastSection(isLastSection: boolean);
+    set isRecording(isRecording: boolean);
+    set isPlaying(isPlaying: boolean);
+    set hasBreakpoint(hasBreakpoint: boolean);
+    set removable(removable: boolean);
+    set builtInConverters(builtInConverters: Converters.Converter.Converter[]);
+    set extensionConverters(extensionConverters: Converters.Converter.Converter[]);
+    set isSelected(isSelected: boolean);
+    set recorderSettings(recorderSettings: Models.RecorderSettings.RecorderSettings | undefined);
+    set onStepClick(onStepClick: (step: Models.Schema.Step | Models.Section.Section) => void);
+    set onStepHover(onStepHover: (step: Models.Schema.Step | Models.Section.Section) => void);
     get step(): Models.Schema.Step | undefined;
     get section(): Models.Section.Section | undefined;
-    connectedCallback(): void;
-    disconnectedCallback(): void;
+    wasShown(): void;
+    willHide(): void;
+    performUpdate(): void;
 }
 export {};

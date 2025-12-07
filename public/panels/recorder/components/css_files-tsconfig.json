@@ -9,7 +9,8 @@
         "extensionView.css.js",
         "recordingListView.css.js",
         "recordingView.css.js",
-        "selectButton.css.js",
+        "replaySection.css.js",
+        "selectorPicker.css.js",
         "stepEditor.css.js",
         "stepView.css.js",
         "timelineSection.css.js"

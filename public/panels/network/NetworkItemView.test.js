@@ -22,8 +22,8 @@ function renderNetworkItemView(request) {
     networkItemView.show(div);
     return networkItemView;
 }
-function getOverrideIndicator(tabs, tabId) {
-    const tab = tabs.find(tab => tab.id === tabId)?.tabElement;
+function getOverrideIndicator(view, tabId) {
+    const tab = view.tabsById.get(tabId)?.tabElement;
     const statusDot = tab?.querySelector('.status-dot');
     return statusDot ? statusDot : null;
 }
@@ -57,8 +57,8 @@ describeWithEnvironment('NetworkItemView', () => {
         request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
         request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
         const networkItemView = renderNetworkItemView(request);
-        const headersIndicator = getOverrideIndicator(networkItemView['tabs'], 'headers-component');
-        const responseIndicator = getOverrideIndicator(networkItemView['tabs'], 'response');
+        const headersIndicator = getOverrideIndicator(networkItemView, 'headers-component');
+        const responseIndicator = getOverrideIndicator(networkItemView, 'response');
         networkItemView.detach();
         assert.isNotNull(headersIndicator);
         assert.isNotNull(responseIndicator);
@@ -68,8 +68,8 @@ describeWithEnvironment('NetworkItemView', () => {
         request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
         request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
         const networkItemView = renderNetworkItemView(request);
-        const headersIndicator = getOverrideIndicator(networkItemView['tabs'], 'headers-component');
-        const responseIndicator = getOverrideIndicator(networkItemView['tabs'], 'response');
+        const headersIndicator = getOverrideIndicator(networkItemView, 'headers-component');
+        const responseIndicator = getOverrideIndicator(networkItemView, 'response');
         networkItemView.detach();
         assert.isNotNull(headersIndicator);
         assert.isNull(responseIndicator);
@@ -78,16 +78,16 @@ describeWithEnvironment('NetworkItemView', () => {
         request.setWasIntercepted(true);
         request.hasOverriddenContent = true;
         const networkItemView = renderNetworkItemView(request);
-        const headersIndicator = getOverrideIndicator(networkItemView['tabs'], 'headers-component');
-        const responseIndicator = getOverrideIndicator(networkItemView['tabs'], 'response');
+        const headersIndicator = getOverrideIndicator(networkItemView, 'headers-component');
+        const responseIndicator = getOverrideIndicator(networkItemView, 'response');
         networkItemView.detach();
         assert.isNull(headersIndicator);
         assert.isNotNull(responseIndicator);
     });
     it('does not show indicator for unoverriden request', () => {
         const networkItemView = renderNetworkItemView(request);
-        const headersIndicator = getOverrideIndicator(networkItemView['tabs'], 'headers-component');
-        const responseIndicator = getOverrideIndicator(networkItemView['tabs'], 'response');
+        const headersIndicator = getOverrideIndicator(networkItemView, 'headers-component');
+        const responseIndicator = getOverrideIndicator(networkItemView, 'response');
         networkItemView.detach();
         assert.isNull(headersIndicator);
         assert.isNull(responseIndicator);

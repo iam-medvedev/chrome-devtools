@@ -64,11 +64,7 @@ describeWithEnvironment('RecordingView', () => {
             main: 0,
         });
         const highlightCalled = expectCall(output.highlightLinesInEditor);
-        view.input.onStepHover({
-            target: {
-                step,
-            },
-        });
+        view.input.onStepHover(step);
         const [line, length, scroll] = await highlightCalled;
         assert.strictEqual(line, 3);
         assert.strictEqual(length, 3);
@@ -98,12 +94,7 @@ describeWithEnvironment('RecordingView', () => {
     });
     it('should copy a step to clipboard via copy event', async () => {
         const [view] = await createView();
-        view.input.onStepClick({
-            target: {
-                step,
-            },
-            stopPropagation: sinon.stub(),
-        });
+        view.input.onStepClick(step);
         const clipboardData = new DataTransfer();
         const isCalled = sinon.promise();
         const copyText = sinon

@@ -12,29 +12,27 @@ describeWithEnvironment('StepView', () => {
     const step = { type: Models.Schema.StepType.Scroll };
     const section = { title: 'test', steps: [step], url: 'https://example.com' };
     async function createStepView(viewFunction, opts = {}) {
-        const component = new Components.StepView.StepView(viewFunction);
-        component.data = {
-            step: opts.step !== undefined ? step : undefined,
-            section: opts.section !== undefined ? section : undefined,
-            state: "default" /* Components.StepView.State.DEFAULT */,
-            isEndOfGroup: opts.isEndOfGroup ?? false,
-            isStartOfGroup: opts.isStartOfGroup ?? false,
-            isFirstSection: opts.isFirstSection ?? false,
-            isLastSection: opts.isLastSection ?? false,
-            stepIndex: opts.stepIndex ?? 0,
-            sectionIndex: opts.sectionIndex ?? 0,
-            isRecording: opts.isRecording ?? false,
-            isPlaying: opts.isPlaying ?? false,
-            hasBreakpoint: opts.hasBreakpoint ?? false,
-            removable: opts.removable ?? false,
-            builtInConverters: opts.builtInConverters ||
-                [
-                    new Converters.JSONConverter.JSONConverter('  '),
-                ],
-            extensionConverters: opts.extensionConverters || [],
-            isSelected: opts.isSelected ?? false,
-            recorderSettings: new Models.RecorderSettings.RecorderSettings(),
-        };
+        const component = new Components.StepView.StepView(undefined, viewFunction);
+        component.step = opts.step !== undefined ? step : undefined;
+        component.section = opts.section !== undefined ? section : undefined;
+        component.state = "default" /* Components.StepView.State.DEFAULT */;
+        component.isEndOfGroup = opts.isEndOfGroup ?? false;
+        component.isStartOfGroup = opts.isStartOfGroup ?? false;
+        component.isFirstSection = opts.isFirstSection ?? false;
+        component.isLastSection = opts.isLastSection ?? false;
+        component.stepIndex = opts.stepIndex ?? 0;
+        component.sectionIndex = opts.sectionIndex ?? 0;
+        component.isRecording = opts.isRecording ?? false;
+        component.isPlaying = opts.isPlaying ?? false;
+        component.hasBreakpoint = opts.hasBreakpoint ?? false;
+        component.removable = opts.removable ?? false;
+        component.builtInConverters = opts.builtInConverters || [
+            new Converters.JSONConverter.JSONConverter('  '),
+        ];
+        component.extensionConverters = opts.extensionConverters || [];
+        component.isSelected = opts.isSelected ?? false;
+        component.recorderSettings = new Models.RecorderSettings.RecorderSettings();
+        component.performUpdate();
         return component;
     }
     describe('Step and section actions menu', () => {
@@ -63,7 +61,7 @@ describeWithEnvironment('StepView', () => {
         it('should dispatch "AddStep before" events on steps', async () => {
             const viewFunction = createViewFunctionStub(Components.StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component, 'addstep');
+            const eventPromise = getEventPromise(component.contentElement, 'addstep');
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('add-step-before'));
             const event = await eventPromise;
             assert.strictEqual(event.position, 'before');
@@ -72,7 +70,7 @@ describeWithEnvironment('StepView', () => {
         it('should dispatch "AddStep before" events on sections', async () => {
             const viewFunction = createViewFunctionStub(Components.StepView.StepView);
             const component = await createStepView(viewFunction, { section });
-            const eventPromise = getEventPromise(component, 'addstep');
+            const eventPromise = getEventPromise(component.contentElement, 'addstep');
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('add-step-before'));
             const event = await eventPromise;
             assert.strictEqual(event.position, 'before');
@@ -81,7 +79,7 @@ describeWithEnvironment('StepView', () => {
         it('should dispatch "AddStep after" events on steps', async () => {
             const viewFunction = createViewFunctionStub(Components.StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component, 'addstep');
+            const eventPromise = getEventPromise(component.contentElement, 'addstep');
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('add-step-after'));
             const event = await eventPromise;
             assert.strictEqual(event.position, 'after');
@@ -90,7 +88,7 @@ describeWithEnvironment('StepView', () => {
         it('should dispatch "Remove steps" events on steps', async () => {
             const viewFunction = createViewFunctionStub(Components.StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component, 'removestep');
+            const eventPromise = getEventPromise(component.contentElement, 'removestep');
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('remove-step'));
             const event = await eventPromise;
             assert.deepEqual(event.step, step);
@@ -98,7 +96,7 @@ describeWithEnvironment('StepView', () => {
         it('should dispatch "Add breakpoint" event on steps', async () => {
             const viewFunction = createViewFunctionStub(Components.StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component, 'addbreakpoint');
+            const eventPromise = getEventPromise(component.contentElement, 'addbreakpoint');
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('add-breakpoint'));
             const event = await eventPromise;
             assert.deepEqual(event.index, 0);
@@ -106,7 +104,7 @@ describeWithEnvironment('StepView', () => {
         it('should dispatch "Remove breakpoint" event on steps', async () => {
             const viewFunction = createViewFunctionStub(Components.StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component, 'removebreakpoint');
+            const eventPromise = getEventPromise(component.contentElement, 'removebreakpoint');
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('remove-breakpoint'));
             const event = await eventPromise;
             assert.deepEqual(event.index, 0);
@@ -114,7 +112,7 @@ describeWithEnvironment('StepView', () => {
         it('should dispatch copy step as JSON events', async () => {
             const viewFunction = createViewFunctionStub(Components.StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component, 'copystep');
+            const eventPromise = getEventPromise(component.contentElement, 'copystep');
             viewFunction.input.handleStepAction(new Menus.Menu.MenuItemSelectedEvent('copy-step-as-json'));
             await eventPromise;
         });
@@ -123,7 +121,7 @@ describeWithEnvironment('StepView', () => {
         it('should dispatch "Add breakpoint" event on breakpoint icon click if there is not a breakpoint on the step', async () => {
             const viewFunction = createViewFunctionStub(Components.StepView.StepView);
             const component = await createStepView(viewFunction, { step });
-            const eventPromise = getEventPromise(component, 'addbreakpoint');
+            const eventPromise = getEventPromise(component.contentElement, 'addbreakpoint');
             viewFunction.input.onBreakpointClick();
             const event = await eventPromise;
             assert.deepEqual(event.index, 0);
@@ -131,7 +129,7 @@ describeWithEnvironment('StepView', () => {
         it('should dispatch "Remove breakpoint" event on breakpoint icon click if there already is a breakpoint on the step', async () => {
             const viewFunction = createViewFunctionStub(Components.StepView.StepView);
             const component = await createStepView(viewFunction, { hasBreakpoint: true, step });
-            const eventPromise = getEventPromise(component, 'removebreakpoint');
+            const eventPromise = getEventPromise(component.contentElement, 'removebreakpoint');
             viewFunction.input.onBreakpointClick();
             const event = await eventPromise;
             assert.deepEqual(event.index, 0);

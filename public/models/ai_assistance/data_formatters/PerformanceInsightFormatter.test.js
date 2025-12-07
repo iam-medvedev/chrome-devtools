@@ -13,18 +13,6 @@ describe('PerformanceInsightFormatter', function () {
     const snapshotTester = new SnapshotTester(this, import.meta);
     setupRuntimeHooks();
     setupSettingsHooks();
-    it('gracefully handles the insight being an error', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {
-            withTimelinePanel: false,
-        });
-        // Although our types don't show it, Insights can end up as Errors if there
-        // is an issue in the processing stage.
-        const errorInsight = new Error();
-        const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
-        const formatter = new PerformanceInsightFormatter.PerformanceInsightFormatter(focus, errorInsight);
-        assert.isFalse(formatter.insightIsSupported());
-        assert.doesNotThrow(() => formatter.formatInsight());
-    });
     describe('LCP breakdown', () => {
         it('serializes the correct details', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', undefined, {

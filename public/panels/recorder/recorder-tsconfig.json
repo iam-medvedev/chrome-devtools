@@ -86,9 +86,6 @@
       "path": "components/bundle-tsconfig.json"
     },
     {
-      "path": "controllers/bundle-tsconfig.json"
-    },
-    {
       "path": "converters/bundle-tsconfig.json"
     },
     {

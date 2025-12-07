@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { dispatchClickEvent, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 export const DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR = '[data-jump]';
@@ -161,206 +161,50 @@ describe('ValueInterpreterDisplay', () => {
         const actualValue = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.formatInteger(expectedInteger, "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.OCTAL */);
         assert.strictEqual(actualValue, 'N/A');
     });
-    it('renders pointer values in LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypes', () => {
-        const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
-        const array = [1, 132, 172, 71, 43, 12, 12, 66];
-        component.data = {
-            buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            valueTypes: new Set([
-                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
-                "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER64 */,
-            ]),
-            memoryLength: array.length,
-        };
-        renderElementIntoDOM(component);
-        const dataValues = getElementsWithinComponent(component, '[data-value]', HTMLDivElement);
-        assert.lengthOf(dataValues, 2);
-        const actualValues = Array.from(dataValues).map(x => x.innerText);
-        const expectedValues = ['0x47AC8401', '0x420C0C2B47AC8401'];
-        assert.deepEqual(actualValues, expectedValues);
-    });
-    it('renders value in selected LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypes', () => {
-        const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
-        const array = [1, 132, 172, 71];
-        component.data = {
-            buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            valueTypes: new Set([
-                "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
-                "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
-            ]),
-            memoryLength: array.length,
-        };
-        renderElementIntoDOM(component);
-        const dataValues = getElementsWithinComponent(component, '[data-value]', HTMLSpanElement);
-        assert.lengthOf(dataValues, 3);
-        const actualValues = Array.from(dataValues).map(x => x.innerText);
-        const expectedValues = ['33793', '-31743', '88328.01'];
-        assert.deepEqual(actualValues, expectedValues);
-    });
-    it('renders only unsigned values for Octal and Hexadecimal representation', () => {
-        const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
+    it('renders the value interpreter', async () => {
+        const target = document.createElement('div');
+        target.style.width = 'var(--sys-size-30)';
+        target.style.height = 'var(--sys-size-30)';
+        renderElementIntoDOM(target);
+        // Include in incorrect pointer value at index 0.
         const array = [0xC8, 0xC9, 0xCA, 0XCB];
-        component.data = {
-            buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            valueTypes: new Set([
+        const buffer = new Uint8Array(array).buffer;
+        const endianness = "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */;
+        // Render a non-exhaustive list of value types.
+        const valueTypes = new Set([
+            "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
+            "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
+            "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
+            "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
+            "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
+            "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
+        ]);
+        // Render different value type modes.
+        const valueTypeModes = new Map([
+            [
                 "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
+                "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.OCTAL */,
+            ],
+            [
                 "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
+                "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */,
+            ],
+            [
                 "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
-            ]),
-            valueTypeModes: new Map([
-                [
-                    "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
-                    "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.OCTAL */,
-                ],
-                [
-                    "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
-                    "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */,
-                ],
-                [
-                    "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
-                    "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
-                ],
-            ]),
-            memoryLength: array.length,
-        };
-        renderElementIntoDOM(component);
-        const dataValues = getElementsWithinComponent(component, '[data-value]', HTMLSpanElement);
-        assert.lengthOf(dataValues, 4);
-        const actualValues = Array.from(dataValues).map(x => x.innerText);
-        const expectedValues = ['310', '0xC9C8', '3419064776', '-875902520'];
-        assert.deepEqual(actualValues, expectedValues);
-    });
-    it('triggers a value changed event on selecting a new mode', async () => {
-        const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
-        const array = [1, 132, 172, 71];
-        const oldMode = "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */;
-        const newMode = "sci" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.SCIENTIFIC */;
-        const mapping = LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.getDefaultValueTypeMapping();
-        mapping.set("Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */, oldMode);
-        component.data = {
-            buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            valueTypes: new Set([
-                "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
-            ]),
-            valueTypeModes: mapping,
-            memoryLength: array.length,
-        };
-        const input = getElementWithinComponent(component, '[data-mode-settings]', HTMLSelectElement);
-        assert.strictEqual(input.value, oldMode);
-        input.value = newMode;
-        const eventPromise = getEventPromise(component, 'valuetypemodechanged');
-        const changeEvent = new Event('change');
-        input.dispatchEvent(changeEvent);
-        const event = await eventPromise;
-        assert.deepEqual(event.data, { type: "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */, mode: newMode });
-    });
-    it('triggers an event on jumping to an address from a 32-bit pointer', async () => {
-        const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
-        const array = [1, 0, 0, 0];
-        component.data = {
-            buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            valueTypes: new Set([
-                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
-            ]),
-            memoryLength: array.length,
-        };
-        renderElementIntoDOM(component);
-        const button = getElementWithinComponent(component, DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR, HTMLButtonElement);
-        const eventPromise = getEventPromise(component, 'jumptopointeraddress');
-        dispatchClickEvent(button);
-        const event = await eventPromise;
-        assert.deepEqual(event.data, 1);
-    });
-    it('triggers an event on jumping to an address from a 64-bit pointer', async () => {
-        const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
-        const array = [1, 0, 0, 0, 0, 0, 0, 0];
-        component.data = {
-            buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            valueTypes: new Set([
-                "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER64 */,
-            ]),
-            memoryLength: array.length,
-        };
-        renderElementIntoDOM(component);
-        const button = getElementWithinComponent(component, DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR, HTMLButtonElement);
-        const eventPromise = getEventPromise(component, 'jumptopointeraddress');
-        dispatchClickEvent(button);
-        const event = await eventPromise;
-        assert.deepEqual(event.data, 1);
-    });
-    it('renders a disabled jump-to-address button if address is invalid', () => {
-        const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
-        const array = [8, 0, 0, 0, 0, 0, 0, 0];
-        component.data = {
-            buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            valueTypes: new Set([
-                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
-                "Pointer 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER64 */,
-            ]),
-            memoryLength: array.length,
-        };
-        renderElementIntoDOM(component);
-        const buttons = getElementsWithinComponent(component, DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR, HTMLButtonElement);
-        assert.lengthOf(buttons, 2);
-        assert.isTrue(buttons[0].disabled);
-        assert.isTrue(buttons[1].disabled);
-    });
-    it('selects text in data-value elements if user selects it', () => {
-        // To test the failing case, set .value-type user-select to `none`.
-        // This is necessary as we render the component in isolation, so it doesn't
-        // inherit this property from its parent.
-        const component = new LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay();
-        const array = [1, 132, 172, 71];
-        component.data = {
-            buffer: new Uint8Array(array).buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            valueTypes: new Set([
-                "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
-                "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
-                "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
-                "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
-            ]),
-            memoryLength: array.length,
-        };
-        renderElementIntoDOM(component);
-        const dataValues = getElementsWithinComponent(component, '.selectable-text', HTMLSpanElement);
-        assert.lengthOf(dataValues, 9);
-        const expectedValues = [
-            'Integer 8-bit',
-            '1',
-            'Integer 16-bit',
-            '33793',
-            '-31743',
-            'Float 32-bit',
-            '88328.01',
-            'Pointer 32-bit',
-            '0x47AC8401',
-        ];
-        // Workaround for selecting text (instead of double-clicking it).
-        // We can use a range to specify an element. Range can be converted into
-        // a selection. We then check if the selected text meets our expectations.
-        // Continuous part of a document, independent of any visual representation.
-        const range = document.createRange();
-        // Represents user's highlighted text.
-        const selection = document.getSelection();
-        for (let i = 0; i < dataValues.length; ++i) {
-            assert.exists(selection);
-            // Set range around the element.
-            range.selectNodeContents(dataValues[i]);
-            // Remove ranges associated with selection.
-            selection?.removeAllRanges();
-            // Select element using range.
-            selection?.addRange(range);
-            const text = window.getSelection()?.toString();
-            assert.strictEqual(text, expectedValues[i]);
-        }
+                "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
+            ],
+        ]);
+        const memoryLength = array.length;
+        LinearMemoryInspectorComponents.ValueInterpreterDisplay.DEFAULT_VIEW({
+            buffer,
+            endianness,
+            valueTypes: Array.from(valueTypes),
+            memoryLength,
+            valueTypeModes,
+            onValueTypeModeChange: () => { },
+            onJumpToAddressClicked: () => { },
+        }, undefined, target);
+        await assertScreenshot('linear_memory_inspector/value-interpreter.png');
     });
 });
 //# sourceMappingURL=ValueInterpreterDisplay.test.js.map

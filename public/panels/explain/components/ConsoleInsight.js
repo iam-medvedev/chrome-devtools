@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../../ui/components/spinners/spinners.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
@@ -211,7 +210,7 @@ function renderLearnMoreAboutInsights() {
   </x-link>`;
     // clang-format on
 }
-function maybeRenderSources(directCitationUrls, highlightedCitationIndex, output) {
+function maybeRenderSources(directCitationUrls, highlightedCitationIndex, onCitationAnimationEnd, output) {
     if (!directCitationUrls.length) {
         return Lit.nothing;
     }
@@ -225,6 +224,7 @@ function maybeRenderSources(directCitationUrls, highlightedCitationIndex, output
             class=${Directives.classMap({ link: true, highlighted: index === highlightedCitationIndex })}
             jslog=${VisualLogging.link('references.console-insights').track({ click: true })}
             ${Directives.ref(e => { output.citationLinks[index] = e; })}
+            @animationend=${onCitationAnimationEnd}
           >
             ${url}
           </x-link>
@@ -305,7 +305,7 @@ function renderInsight(insight, { renderer, disableAnimations, areReferenceDetai
             @transitionend=${callbacks.onReferencesOpen}
           >
             <summary>${i18nString(UIStrings.references)}</summary>
-            ${maybeRenderSources(insight.directCitationUrls, highlightedCitationIndex, output)}
+            ${maybeRenderSources(insight.directCitationUrls, highlightedCitationIndex, callbacks.onCitationAnimationEnd, output)}
             ${maybeRenderRelatedContent(insight.relatedUrls, insight.directCitationUrls)}
           </details>
         ` : Lit.nothing}
@@ -535,13 +535,88 @@ function renderHeader({ headerText, showIcon = false, showSpinner = false, onClo
   `;
     // clang-format on
 }
-export class ConsoleInsight extends HTMLElement {
+export const DEFAULT_VIEW = (input, output, target) => {
+    const { state, noLogging, callbacks } = input;
+    const { onClose, onDisclaimerSettingsLink } = callbacks;
+    const jslog = `${VisualLogging.section(state.type).track({ resize: true })}`;
+    let header = Lit.nothing;
+    let main = Lit.nothing;
+    const mainClasses = {};
+    let footer;
+    switch (state.type) {
+        case "loading" /* State.LOADING */:
+            header = renderHeader({ headerText: i18nString(UIStrings.generating), onClose }, output.headerRef);
+            main = renderLoading();
+            break;
+        case "insight" /* State.INSIGHT */:
+            header = renderHeader({ headerText: i18nString(UIStrings.insight), onClose, showSpinner: !state.completed }, output.headerRef);
+            main = renderInsight(state, input, output);
+            footer = renderInsightFooter(noLogging, input.selectedRating, callbacks);
+            break;
+        case "error" /* State.ERROR */:
+            header = renderHeader({ headerText: i18nString(UIStrings.error), onClose }, output.headerRef);
+            main = renderError(i18nString(UIStrings.errorBody));
+            footer = renderDisclaimerFooter(noLogging, onDisclaimerSettingsLink);
+            break;
+        case "consent-reminder" /* State.CONSENT_REMINDER */:
+            header =
+                renderHeader({ headerText: 'Understand console messages with AI', onClose, showIcon: true }, output.headerRef);
+            mainClasses['reminder-container'] = true;
+            main = renderConsentReminder(noLogging);
+            footer = renderConsentReminderFooter(callbacks.onReminderSettingsLink, callbacks.onConsentReminderConfirmed);
+            break;
+        case "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */:
+            mainClasses['opt-in-teaser'] = true;
+            main = renderSettingIsNotTrue(callbacks.onEnableInsightsInSettingsLink);
+            break;
+        case "not-logged-in" /* State.NOT_LOGGED_IN */:
+        case "sync-is-paused" /* State.SYNC_IS_PAUSED */:
+            header = renderHeader({ headerText: i18nString(UIStrings.signInToUse), onClose }, output.headerRef);
+            main = renderNotLoggedIn();
+            footer = renderSignInFooter(callbacks.onGoToSignIn);
+            break;
+        case "offline" /* State.OFFLINE */:
+            header = renderHeader({ headerText: i18nString(UIStrings.offlineHeader), onClose }, output.headerRef);
+            main = renderError(i18nString(UIStrings.offline));
+            footer = renderDisclaimerFooter(noLogging, onDisclaimerSettingsLink);
+            break;
+    }
+    // clang-format off
+    render(html `
+    <style>${styles}</style>
+    <style>${Input.checkboxStyles}</style>
+    <div
+      class=${Directives.classMap({ wrapper: true, closing: input.closing })}
+      jslog=${VisualLogging.pane('console-insights').track({ resize: true })}
+      @animationend=${callbacks.onAnimationEnd}
+      @keydown=${blockPropagation}
+      @keyup=${blockPropagation}
+      @keypress=${blockPropagation}
+      @click=${blockPropagation}
+    >
+      <div class="animation-wrapper">
+        ${header}
+        <main jslog=${jslog} class=${Directives.classMap(mainClasses)}>
+          ${main}
+        </main>
+        ${footer ? html `<footer jslog=${VisualLogging.section('footer')}>
+          ${footer}
+        </footer>` : Lit.nothing}
+      </div>
+    </div>
+  `, target);
+    // clang-format on
+};
+export class ConsoleInsight extends UI.Widget.Widget {
     static async create(promptBuilder, aidaClient) {
         const aidaPreconditions = await Host.AidaClient.AidaClient.checkAccessPreconditions();
-        return new ConsoleInsight(promptBuilder, aidaClient, aidaPreconditions);
+        const widget = document.createElement('devtools-widget');
+        widget.classList.add('devtools-console-insight');
+        widget.widgetConfig = UI.Widget.widgetConfig(element => new ConsoleInsight(promptBuilder, aidaClient, aidaPreconditions, element));
+        return widget;
     }
-    #shadow = this.attachShadow({ mode: 'open' });
     disableAnimations = false;
+    #view;
     #promptBuilder;
     #aidaClient;
     #renderer;
@@ -559,8 +634,9 @@ export class ConsoleInsight extends HTMLElement {
     #aidaPreconditions;
     #boundOnAidaAvailabilityChange;
     #marked;
-    constructor(promptBuilder, aidaClient, aidaPreconditions) {
-        super();
+    constructor(promptBuilder, aidaClient, aidaPreconditions, element, view = DEFAULT_VIEW) {
+        super(element);
+        this.#view = view;
         this.#promptBuilder = promptBuilder;
         this.#aidaClient = aidaClient;
         this.#aidaPreconditions = aidaPreconditions;
@@ -569,8 +645,7 @@ export class ConsoleInsight extends HTMLElement {
         this.#marked = new Marked.Marked.Marked({ extensions: [markedExtension] });
         this.#state = this.#getStateFromAidaAvailability();
         this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
-        this.#render();
-        this.focus();
+        this.requestUpdate();
     }
     #citationClickHandler(index) {
         if (this.#state.type !== "insight" /* State.INSIGHT */) {
@@ -580,7 +655,7 @@ export class ConsoleInsight extends HTMLElement {
         this.#areReferenceDetailsOpen = true;
         // index is 1-based, #currentHighlightedCitationIndex is 0-based
         this.#highlightedCitationIndex = index - 1;
-        this.#render();
+        this.requestUpdate();
         // If details are open, focus and scroll to citation immediately. Otherwise wait for opening transition.
         if (areDetailsAlreadyExpanded) {
             this.#scrollToHighlightedCitation();
@@ -634,7 +709,9 @@ export class ConsoleInsight extends HTMLElement {
     #getOnboardingCompletedSetting() {
         return Common.Settings.Settings.instance().createLocalSetting('console-insights-onboarding-finished', false);
     }
-    connectedCallback() {
+    wasShown() {
+        super.wasShown();
+        this.focus();
         this.#consoleInsightsEnabledSetting?.addChangeListener(this.#onConsoleInsightsSettingChanged, this);
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
         if (this.#state.type === "loading" /* State.LOADING */ && this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true &&
@@ -651,7 +728,8 @@ export class ConsoleInsight extends HTMLElement {
         }
         void this.#generateInsightIfNeeded();
     }
-    disconnectedCallback() {
+    willHide() {
+        super.willHide();
         this.#consoleInsightsEnabledSetting?.removeChangeListener(this.#onConsoleInsightsSettingChanged, this);
         Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
     }
@@ -689,7 +767,7 @@ export class ConsoleInsight extends HTMLElement {
     #transitionTo(newState) {
         this.#stateChanging = this.#state.type !== newState.type;
         this.#state = newState;
-        this.#render();
+        this.requestUpdate();
     }
     async #generateInsightIfNeeded() {
         if (this.#state.type !== "loading" /* State.LOADING */) {
@@ -720,19 +798,21 @@ export class ConsoleInsight extends HTMLElement {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsReminderTeaserCanceled);
         }
         this.#closing = true;
-        this.#render();
+        this.requestUpdate();
     }
     #onAnimationEnd() {
         if (this.#closing) {
-            this.dispatchEvent(new CloseEvent());
+            this.contentElement.dispatchEvent(new CloseEvent());
             return;
         }
         if (this.#stateChanging) {
             this.#headerRef.value?.focus();
         }
+    }
+    #onCitationAnimationEnd() {
         if (this.#highlightedCitationIndex !== -1) {
             this.#highlightedCitationIndex = -1;
-            this.#render();
+            this.requestUpdate();
         }
     }
     #onRating(isPositive) {
@@ -747,7 +827,7 @@ export class ConsoleInsight extends HTMLElement {
             return;
         }
         this.#selectedRating = isPositive;
-        this.#render();
+        this.requestUpdate();
         if (this.#selectedRating) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRatedPositive);
         }
@@ -940,7 +1020,7 @@ export class ConsoleInsight extends HTMLElement {
             if (!detailsElement.open) {
                 this.#highlightedCitationIndex = -1;
             }
-            this.#render();
+            this.requestUpdate();
         }
     }
     #onDisclaimerSettingsLink() {
@@ -954,12 +1034,13 @@ export class ConsoleInsight extends HTMLElement {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOptInTeaserSettingsLinkClicked);
         void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
     }
-    #render() {
+    performUpdate() {
         const input = {
             state: this.#state,
             closing: this.#closing,
             disableAnimations: this.disableAnimations,
             renderer: this.#renderer,
+            citationClickHandler: this.#citationClickHandler.bind(this),
             selectedRating: this.#selectedRating,
             noLogging: Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
                 Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING,
@@ -968,6 +1049,7 @@ export class ConsoleInsight extends HTMLElement {
             callbacks: {
                 onClose: this.#onClose.bind(this),
                 onAnimationEnd: this.#onAnimationEnd.bind(this),
+                onCitationAnimationEnd: this.#onCitationAnimationEnd.bind(this),
                 onSearch: this.#onSearch.bind(this),
                 onRating: this.#onRating.bind(this),
                 onReport: this.#onReport.bind(this),
@@ -984,80 +1066,8 @@ export class ConsoleInsight extends HTMLElement {
             headerRef: this.#headerRef,
             citationLinks: [],
         };
-        // Future Widget view function starts here.
-        const { state, noLogging, callbacks } = input;
-        const { onClose, onDisclaimerSettingsLink } = callbacks;
-        const jslog = `${VisualLogging.section(state.type).track({ resize: true })}`;
-        let header = Lit.nothing;
-        let main = Lit.nothing;
-        const mainClasses = {};
-        let footer;
-        switch (state.type) {
-            case "loading" /* State.LOADING */:
-                header = renderHeader({ headerText: i18nString(UIStrings.generating), onClose }, output.headerRef);
-                main = renderLoading();
-                break;
-            case "insight" /* State.INSIGHT */:
-                header = renderHeader({ headerText: i18nString(UIStrings.insight), onClose, showSpinner: !state.completed }, output.headerRef);
-                main = renderInsight(state, input, output);
-                footer = renderInsightFooter(noLogging, input.selectedRating, callbacks);
-                break;
-            case "error" /* State.ERROR */:
-                header = renderHeader({ headerText: i18nString(UIStrings.error), onClose }, output.headerRef);
-                main = renderError(i18nString(UIStrings.errorBody));
-                footer = renderDisclaimerFooter(noLogging, onDisclaimerSettingsLink);
-                break;
-            case "consent-reminder" /* State.CONSENT_REMINDER */:
-                header = renderHeader({ headerText: 'Understand console messages with AI', onClose, showIcon: true }, output.headerRef);
-                mainClasses['reminder-container'] = true;
-                main = renderConsentReminder(noLogging);
-                footer = renderConsentReminderFooter(callbacks.onReminderSettingsLink, callbacks.onConsentReminderConfirmed);
-                break;
-            case "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */:
-                mainClasses['opt-in-teaser'] = true;
-                main = renderSettingIsNotTrue(callbacks.onEnableInsightsInSettingsLink);
-                break;
-            case "not-logged-in" /* State.NOT_LOGGED_IN */:
-            case "sync-is-paused" /* State.SYNC_IS_PAUSED */:
-                header = renderHeader({ headerText: i18nString(UIStrings.signInToUse), onClose }, output.headerRef);
-                main = renderNotLoggedIn();
-                footer = renderSignInFooter(callbacks.onGoToSignIn);
-                break;
-            case "offline" /* State.OFFLINE */:
-                header = renderHeader({ headerText: i18nString(UIStrings.offlineHeader), onClose }, output.headerRef);
-                main = renderError(i18nString(UIStrings.offline));
-                footer = renderDisclaimerFooter(noLogging, onDisclaimerSettingsLink);
-                break;
-        }
-        // clang-format off
-        render(html `
-      <style>${styles}</style>
-      <style>${Input.checkboxStyles}</style>
-      <div
-        class=${Directives.classMap({ wrapper: true, closing: input.closing })}
-        jslog=${VisualLogging.pane('console-insights').track({ resize: true })}
-        @animationend=${callbacks.onAnimationEnd}
-        @keydown=${blockPropagation}
-        @keyup=${blockPropagation}
-        @keypress=${blockPropagation}
-        @click=${blockPropagation}
-      >
-        <div class="animation-wrapper">
-          ${header}
-          <main jslog=${jslog} class=${Directives.classMap(mainClasses)}>
-            ${main}
-          </main>
-          ${footer ? html `<footer jslog=${VisualLogging.section('footer')}>
-            ${footer}
-          </footer>` : Lit.nothing}
-        </div>
-      </div>
-    `, this.#shadow, {
-            host: this,
-        });
-        // clang-format on
+        this.#view(input, output, this.contentElement);
         this.#citationLinks = output.citationLinks;
     }
 }
-customElements.define('devtools-console-insight', ConsoleInsight);
 //# sourceMappingURL=ConsoleInsight.js.map

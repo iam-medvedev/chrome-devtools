@@ -1,16 +1,17 @@
-import * as Lit from '../../../ui/lit/lit.js';
-declare const LitElement: typeof Lit.LitElement;
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-control-button': ControlButton;
-    }
-}
-export declare class ControlButton extends LitElement {
-    #private;
+import * as UI from '../../../ui/legacy/legacy.js';
+export interface ViewInput {
     label: string;
     shape: string;
     disabled: boolean;
-    constructor();
-    protected render(): unknown;
+    onClick: (event: Event) => void;
 }
-export {};
+export declare const DEFAULT_VIEW: (input: ViewInput, _output: unknown, target: HTMLElement) => void;
+export declare class ControlButton extends UI.Widget.Widget {
+    #private;
+    constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
+    set label(label: string);
+    set shape(shape: string);
+    set disabled(disabled: boolean);
+    set onClick(onClick: (event: Event) => void);
+    performUpdate(): void;
+}

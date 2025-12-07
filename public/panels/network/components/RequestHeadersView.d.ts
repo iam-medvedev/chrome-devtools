@@ -1,4 +1,3 @@
-import './RequestHeaderSection.js';
 import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
@@ -13,6 +12,7 @@ export declare class RequestHeadersView extends LegacyWrapper.LegacyWrapper.Wrap
     connectedCallback(): void;
     disconnectedCallback(): void;
     render(): Promise<void>;
+    getHeaderElementById(id: string): Element | null;
 }
 export declare class ToggleRawHeadersEvent extends Event {
     static readonly eventName = "togglerawevent";

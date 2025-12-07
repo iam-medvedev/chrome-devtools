@@ -47,6 +47,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Sources from '../../panels/sources/sources.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
+import * as Annotations from '../../ui/components/annotations/annotations.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
@@ -865,6 +866,12 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     summaryToolbar() {
         return this.summaryToolbarInternal;
     }
+    getDataGrid() {
+        if (Annotations.AnnotationRepository.annotationsEnabled()) {
+            return this.dataGrid;
+        }
+        return null;
+    }
     modelAdded(networkManager) {
         // TODO(allada) Remove dependency on networkManager and instead use NetworkLog and PageLoad for needed data.
         const target = networkManager.target();
@@ -1470,21 +1477,13 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                     submenu.defaultSection().appendItem(label, () => action.execute({ prompt }), { disabled: !action.enabled(), jslogContext });
                 }
                 UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, request);
-                if (Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
-                    const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-                    const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId, Root.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.featureName);
-                    submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
-                    appendSubmenuPromptAction(submenu, action, i18nString(UIStrings.explainPurpose), 'What is the purpose of this request?', openAiAssistanceId + '.purpose');
-                    appendSubmenuPromptAction(submenu, action, i18nString(UIStrings.explainSlowness), 'Why is this request taking so long?', openAiAssistanceId + '.slowness');
-                    appendSubmenuPromptAction(submenu, action, i18nString(UIStrings.explainFailures), 'Why is the request failing?', openAiAssistanceId + '.failures');
-                    appendSubmenuPromptAction(submenu, action, i18nString(UIStrings.assessSecurityHeaders), 'Are there any security headers present?', openAiAssistanceId + '.security');
-                }
-                else if (Root.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
-                    contextMenu.footerSection().appendAction(openAiAssistanceId, undefined, false, undefined, Root.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.featureName);
-                }
-                else {
-                    contextMenu.footerSection().appendAction(openAiAssistanceId);
-                }
+                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+                const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId);
+                submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
+                appendSubmenuPromptAction(submenu, action, i18nString(UIStrings.explainPurpose), 'What is the purpose of this request?', openAiAssistanceId + '.purpose');
+                appendSubmenuPromptAction(submenu, action, i18nString(UIStrings.explainSlowness), 'Why is this request taking so long?', openAiAssistanceId + '.slowness');
+                appendSubmenuPromptAction(submenu, action, i18nString(UIStrings.explainFailures), 'Why is the request failing?', openAiAssistanceId + '.failures');
+                appendSubmenuPromptAction(submenu, action, i18nString(UIStrings.assessSecurityHeaders), 'Are there any security headers present?', openAiAssistanceId + '.security');
             }
             copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyURL), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, request.contentURL()), { jslogContext: 'copy-url' });
             copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedURLs) : i18nString(UIStrings.copyAllURLs), this.copyAllURLs.bind(this), { jslogContext: 'copy-all-urls' });

@@ -118,6 +118,30 @@ describe('IssueAggregator', () => {
     });
 });
 describe('IssueAggregator', () => {
+    function getTestPermissionElementIssue(issueType) {
+        const model = createModel();
+        return IssuesManager.PermissionElementIssue.PermissionElementIssue.fromInspectorIssue(model, {
+            code: "PermissionElementIssue" /* Protocol.Audits.InspectorIssueCode.PermissionElementIssue */,
+            details: {
+                permissionElementIssueDetails: {
+                    issueType,
+                },
+            },
+        })[0];
+    }
+    it('aggregates permission element issues correctly', () => {
+        const model = createModel();
+        const issue1 = getTestPermissionElementIssue("InvalidType" /* Protocol.Audits.PermissionElementIssueType.InvalidType */);
+        const issue2 = getTestPermissionElementIssue("InvalidType" /* Protocol.Audits.PermissionElementIssueType.InvalidType */);
+        const issue3 = getTestPermissionElementIssue("FencedFrameDisallowed" /* Protocol.Audits.PermissionElementIssueType.FencedFrameDisallowed */);
+        const mockManager = new MockIssuesManager([]);
+        const aggregator = new IssuesManager.IssueAggregator.IssueAggregator(mockManager);
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue1 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue2 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue3 });
+        const issues = Array.from(aggregator.aggregatedIssues());
+        assert.lengthOf(issues, 2);
+    });
     it('aggregates heavy ad issues correctly', () => {
         const model = createModel();
         const details1 = {

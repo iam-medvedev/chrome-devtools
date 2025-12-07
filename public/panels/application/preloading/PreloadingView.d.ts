@@ -1,5 +1,4 @@
 import '../../../ui/legacy/legacy.js';
-import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Protocol from '../../../generated/protocol.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -12,18 +11,19 @@ export declare class PreloadingRuleSetView extends UI.Widget.VBox {
     private readonly warningsView;
     private readonly hsplit;
     private readonly ruleSetGrid;
-    private readonly ruleSetDetails;
+    private readonly ruleSetGridContainerRef;
+    private readonly ruleSetDetailsRef;
     private shouldPrettyPrint;
     constructor(model: SDK.PreloadingModel.PreloadingModel);
     wasShown(): void;
     onScopeChange(): void;
     revealRuleSet(revealInfo: PreloadingHelper.PreloadingForward.RuleSetView): void;
     private updateRuleSetDetails;
+    private getRuleSet;
     render(): void;
     private onRuleSetsGridCellFocused;
     getInfobarContainerForTest(): HTMLElement;
     getRuleSetGridForTest(): PreloadingComponents.RuleSetGrid.RuleSetGrid;
-    getRuleSetDetailsForTest(): PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView;
 }
 export declare class PreloadingAttemptView extends UI.Widget.VBox {
     private model;
@@ -55,10 +55,4 @@ export declare class PreloadingSummaryView extends UI.Widget.VBox {
     onScopeChange(): void;
     render(): void;
     getUsedPreloadingForTest(): PreloadingComponents.UsedPreloadingView.UsedPreloadingView;
-}
-export declare class PreloadingWarningsView extends UI.Widget.VBox {
-    private readonly infobar;
-    constructor();
-    wasShown(): void;
-    onWarningsUpdated(args: Common.EventTarget.EventTargetEvent<Protocol.Preload.PreloadEnabledStateUpdatedEvent>): void;
 }

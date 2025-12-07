@@ -1,31 +1,41 @@
+import * as Platform from '../../../core/platform/platform.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import type * as Extensions from '../extensions/extensions.js';
-import type * as Models from '../models/models.js';
+import * as Models from '../models/models.js';
 import { PlayRecordingSpeed } from '../models/RecordingPlayer.js';
-export declare class StartReplayEvent extends Event {
-    speed: PlayRecordingSpeed;
-    extension?: Extensions.ExtensionManager.Extension | undefined;
-    static readonly eventName = "startreplay";
-    constructor(speed: PlayRecordingSpeed, extension?: Extensions.ExtensionManager.Extension | undefined);
+interface Item {
+    value: string;
+    buttonIconName: string;
+    buttonLabel?: () => Platform.UIString.LocalizedString;
+    label: () => Platform.UIString.LocalizedString;
 }
-export interface ReplaySectionProps {
+interface Group {
+    name: string;
+    items: Item[];
+}
+interface ViewInput {
     disabled: boolean;
+    groups: Group[];
+    selectedItem: Item;
+    actionTitle: string;
+    onButtonClick: () => void;
+    onItemSelected: (item: string) => void;
 }
-export interface ReplaySectionData {
-    settings: Models.RecorderSettings.RecorderSettings;
-    replayExtensions: Extensions.ExtensionManager.Extension[];
-}
-export declare class ReplaySection extends HTMLElement {
+export type ViewOutput = undefined;
+export declare const DEFAULT_VIEW: (input: ViewInput, _output: ViewOutput, target: HTMLElement) => void;
+/**
+ * This presenter combines built-in replay speeds and extensions into a single
+ * select menu + a button.
+ */
+export declare class ReplaySection extends UI.Widget.Widget {
     #private;
-    set data(data: ReplaySectionData);
+    onStartReplay?: (speed: PlayRecordingSpeed, extension?: Extensions.ExtensionManager.Extension) => void;
+    constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
+    set settings(settings: Models.RecorderSettings.RecorderSettings | undefined);
+    set replayExtensions(replayExtensions: Extensions.ExtensionManager.Extension[]);
     get disabled(): boolean;
     set disabled(disabled: boolean);
-    connectedCallback(): void;
+    wasShown(): void;
+    performUpdate(): void;
 }
-declare global {
-    interface HTMLElementEventMap {
-        startreplay: StartReplayEvent;
-    }
-    interface HTMLElementTagNameMap {
-        'devtools-replay-section': ReplaySection;
-    }
-}
+export {};

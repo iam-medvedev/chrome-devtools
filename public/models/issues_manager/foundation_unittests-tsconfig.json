@@ -53,6 +53,7 @@
     "../../../../../../front_end/models/issues_manager/IssueResolver.test.ts",
     "../../../../../../front_end/models/issues_manager/LowTextContrastIssue.test.ts",
     "../../../../../../front_end/models/issues_manager/MarkdownIssueDescription.test.ts",
+    "../../../../../../front_end/models/issues_manager/PermissionElementIssue.test.ts",
     "../../../../../../front_end/models/issues_manager/PropertyRuleIssue.test.ts",
     "../../../../../../front_end/models/issues_manager/RelatedIssue.test.ts",
     "../../../../../../front_end/models/issues_manager/SRIMessageSignatureIssue.test.ts",

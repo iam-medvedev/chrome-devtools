@@ -6,7 +6,9 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as PanelCommon from '../../panels/common/common.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
+import * as Annotations from '../../ui/components/annotations/annotations.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import { Icon } from '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -196,7 +198,9 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         this.appendTab("initiator" /* NetworkForward.UIRequestLocation.UIRequestTabs.INITIATOR */, i18nString(UIStrings.initiator), new RequestInitiatorView(request), i18nString(UIStrings.requestInitiatorCallStack));
         this.appendTab("timing" /* NetworkForward.UIRequestLocation.UIRequestTabs.TIMING */, i18nString(UIStrings.timing), RequestTimingView.create(request, calculator), i18nString(UIStrings.requestAndResponseTimeline));
         if (request.trustTokenParams()) {
-            this.appendTab("trust-tokens" /* NetworkForward.UIRequestLocation.UIRequestTabs.TRUST_TOKENS */, i18nString(UIStrings.trustTokens), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView(request)), i18nString(UIStrings.trustTokenOperationDetails));
+            const trustTokensView = new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView();
+            trustTokensView.request = request;
+            this.appendTab("trust-tokens" /* NetworkForward.UIRequestLocation.UIRequestTabs.TRUST_TOKENS */, i18nString(UIStrings.trustTokens), trustTokensView, i18nString(UIStrings.trustTokenOperationDetails));
         }
         this.#initialTab = initialTab || this.#resourceViewTabSetting.get();
         // Selecting tabs should not be handled by the super class.
@@ -216,6 +220,10 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         if (this.#initialTab) {
             this.#selectTab(this.#initialTab);
             this.#initialTab = undefined;
+        }
+        if (Annotations.AnnotationRepository.annotationsEnabled()) {
+            PanelCommon.AnnotationManager.instance().initializePlacementForAnnotationType(Annotations.AnnotationType.NETWORK_REQUEST_SUBPANEL_HEADERS, this.resolveInitialState.bind(this), this.element);
+            void PanelCommon.AnnotationManager.instance().resolveAnnotationsOfType(Annotations.AnnotationType.NETWORK_REQUEST_SUBPANEL_HEADERS);
         }
     }
     willHide() {
@@ -273,6 +281,28 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
                 }
             }, 0);
         }
+    }
+    async resolveInitialState(parentElement, reveal, lookupId, anchor) {
+        const request = anchor;
+        if ((request && request !== this.request()) || (lookupId !== this.request().requestId())) {
+            return null;
+        }
+        if (!this.#headersViewComponent) {
+            return null;
+        }
+        await this.#headersViewComponent.render();
+        const element = this.#headersViewComponent.getHeaderElementById('request-url');
+        if (!element) {
+            return null;
+        }
+        const targetRect = element.getBoundingClientRect();
+        const parentRect = parentElement.getBoundingClientRect();
+        // Adjust the anchor position slightly.
+        const adjustX = 15;
+        const adjustY = -19;
+        const relativeX = targetRect.x - parentRect.x + adjustX;
+        const relativeY = targetRect.y - parentRect.y + adjustY;
+        return { x: relativeX, y: relativeY };
     }
     tabSelected(event) {
         if (!event.data.isUserGesture) {

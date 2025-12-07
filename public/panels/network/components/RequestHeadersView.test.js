@@ -32,6 +32,7 @@ const defaultRequest = {
         { name: 'content-length', value: '661' },
     ],
     requestHeadersText: () => '',
+    cached: () => true,
     requestHeaders: () => [{ name: ':method', value: 'GET' }, { name: 'accept-encoding', value: 'gzip, deflate, br' },
         { name: 'cache-control', value: 'no-cache' }],
     responseHeadersText: `HTTP/1.1 200 OK
@@ -55,7 +56,7 @@ async function renderHeadersComponent(request) {
     const component = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
     renderElementIntoDOM(component);
     component.wasShown();
-    await RenderCoordinator.done({ waitForWork: true });
+    await RenderCoordinator.done();
     return component;
 }
 const getTextFromRow = (row) => {

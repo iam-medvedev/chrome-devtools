@@ -347,6 +347,12 @@ function adornerRef(input) {
         }
         adorner = el;
         if (adorner) {
+            if (ElementsPanel.instance().isAdornerEnabled(adorner.name)) {
+                adorner.show();
+            }
+            else {
+                adorner.hide();
+            }
             input.onAdornerAdded(adorner);
         }
     });
@@ -358,8 +364,11 @@ export const DEFAULT_VIEW = (input, output, target) => {
     const gridAdornerConfig = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.GRID);
     const subgridAdornerConfig = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.SUBGRID);
     const gridLanesAdornerConfig = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.GRID_LANES);
+    const mediaAdornerConfig = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.MEDIA);
+    const popoverAdornerConfig = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.POPOVER);
     const hasAdorners = input.adorners?.size || input.showAdAdorner || input.showContainerAdorner ||
-        input.showFlexAdorner || input.showGridAdorner || input.showGridLanesAdorner;
+        input.showFlexAdorner || input.showGridAdorner || input.showGridLanesAdorner || input.showMediaAdorner ||
+        input.showPopoverAdorner;
     // clang-format off
     render(html `
     <div ${ref(el => { output.contentElement = el; })}>
@@ -454,6 +463,44 @@ export const DEFAULT_VIEW = (input, output, target) => {
           ${adornerRef(input)}>
           <span>${gridLanesAdornerConfig.name}</span>
         </devtools-adorner>` : nothing}
+        ${input.showMediaAdorner ? html `<devtools-adorner
+          class=clickable
+          role=button
+          tabindex=0
+          .data=${{ name: mediaAdornerConfig.name, jslogContext: mediaAdornerConfig.name }}
+          jslog=${VisualLogging.adorner(mediaAdornerConfig.name).track({ click: true })}
+          aria-label=${i18nString(UIStrings.openMediaPanel)}
+          @click=${input.onMediaAdornerClick}
+          @keydown=${(event) => {
+        if (event.code === 'Enter' || event.code === 'Space') {
+            input.onMediaAdornerClick(event);
+            event.stopPropagation();
+        }
+    }}
+          ${adornerRef(input)}>
+          <span class="adorner-with-icon">
+            ${mediaAdornerConfig.name}<devtools-icon name="select-element"></devtools-icon>
+          </span>
+        </devtools-adorner>` : nothing}
+        ${input.showPopoverAdorner ? html `<devtools-adorner
+          class=clickable
+          role=button
+          toggleable=true
+          tabindex=0
+          .data=${{ name: popoverAdornerConfig.name, jslogContext: popoverAdornerConfig.name }}
+          jslog=${VisualLogging.adorner(popoverAdornerConfig.name).track({ click: true })}
+          active=${input.popoverAdornerActive}
+          aria-label=${input.popoverAdornerActive ? i18nString(UIStrings.stopForceOpenPopover) : i18nString(UIStrings.forceOpenPopover)}
+          @click=${input.onPopoverAdornerClick}
+          @keydown=${(event) => {
+        if (event.code === 'Enter' || event.code === 'Space') {
+            input.onPopoverAdornerClick(event);
+            event.stopPropagation();
+        }
+    }}
+          ${adornerRef(input)}>
+          <span>${popoverAdornerConfig.name}</span>
+        </devtools-adorner>` : nothing}
         ${repeat(Array.from((input.adorners ?? new Set()).values()).sort(adornerComparator), adorner => {
         return adorner;
     })}
@@ -490,6 +537,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     #containerAdornerActive = false;
     #flexAdornerActive = false;
     #gridAdornerActive = false;
+    #popoverAdornerActive = false;
     #layout = null;
     constructor(node, isClosingTag) {
         // The title will be updated in onattach.
@@ -611,18 +659,17 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         DEFAULT_VIEW({
             containerAdornerActive: this.#containerAdornerActive,
             adorners: !this.isClosingTag() ? this.#adorners : undefined,
-            showAdAdorner: ElementsPanel.instance().isAdornerEnabled(ElementsComponents.AdornerManager.RegisteredAdorners.AD) &&
-                this.nodeInternal.isAdFrameNode(),
-            showContainerAdorner: ElementsPanel.instance().isAdornerEnabled(ElementsComponents.AdornerManager.RegisteredAdorners.CONTAINER) &&
-                Boolean(this.#layout?.isContainer) && !this.isClosingTag(),
-            showFlexAdorner: ElementsPanel.instance().isAdornerEnabled(ElementsComponents.AdornerManager.RegisteredAdorners.FLEX) &&
-                Boolean(this.#layout?.isFlex) && !this.isClosingTag(),
+            showAdAdorner: this.nodeInternal.isAdFrameNode(),
+            showContainerAdorner: Boolean(this.#layout?.isContainer) && !this.isClosingTag(),
+            showFlexAdorner: Boolean(this.#layout?.isFlex) && !this.isClosingTag(),
             flexAdornerActive: this.#flexAdornerActive,
-            showGridAdorner: ElementsPanel.instance().isAdornerEnabled(ElementsComponents.AdornerManager.RegisteredAdorners.GRID) &&
-                Boolean(this.#layout?.isGrid) && !this.isClosingTag(),
-            showGridLanesAdorner: ElementsPanel.instance().isAdornerEnabled(ElementsComponents.AdornerManager.RegisteredAdorners.GRID_LANES) &&
-                Boolean(this.#layout?.isGridLanes) && !this.isClosingTag(),
+            showGridAdorner: Boolean(this.#layout?.isGrid) && !this.isClosingTag(),
+            showGridLanesAdorner: Boolean(this.#layout?.isGridLanes) && !this.isClosingTag(),
+            showMediaAdorner: this.node().isMediaNode() && !this.isClosingTag(),
+            showPopoverAdorner: Boolean(Root.Runtime.hostConfig.devToolsAllowPopoverForcing?.enabled) &&
+                Boolean(this.node().attributes().find(attr => attr.name === 'popover')) && !this.isClosingTag(),
             gridAdornerActive: this.#gridAdornerActive,
+            popoverAdornerActive: this.#popoverAdornerActive,
             isSubgrid: Boolean(this.#layout?.isSubgrid),
             nodeInfo: this.#nodeInfo,
             onGutterClick: this.showContextMenu.bind(this),
@@ -635,6 +682,8 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             onContainerAdornerClick: (event) => this.#onContainerAdornerClick(event),
             onFlexAdornerClick: (event) => this.#onFlexAdornerClick(event),
             onGridAdornerClick: (event) => this.#onGridAdornerClick(event),
+            onMediaAdornerClick: (event) => this.#onMediaAdornerClick(event),
+            onPopoverAdornerClick: (event) => this.#onPopoverAdornerClick(event),
         }, this, this.listItemElement);
     }
     #onContainerAdornerClick(event) {
@@ -695,6 +744,18 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             }
         }
         void this.updateAdorners();
+    }
+    async #onMediaAdornerClick(event) {
+        event.stopPropagation();
+        await UI.ViewManager.ViewManager.instance().showView('medias');
+        const view = UI.ViewManager.ViewManager.instance().view('medias');
+        if (view) {
+            const widget = await view.widget();
+            if (widget instanceof Media.MainView.MainView) {
+                await widget.waitForInitialPlayers();
+                widget.selectPlayerByDOMNodeId(this.node().backendNodeId());
+            }
+        }
     }
     highlightAttribute(attributeName) {
         // If the attribute is not found, we highlight the tag name instead.
@@ -1094,159 +1155,133 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 }, { disabled: !action.enabled(), jslogContext });
             }
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, this.nodeInternal);
-            if (Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
-                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-                // Register new badge under the `devToolsAiSubmenuPrompts` feature, as the freestyler one is already used in ViewManager.
-                // Additionally register with the PromotionManager. Since we use two features for freeestyler here (submenu or debug with ai),
-                // the back-end will not be able to identify them as one as soon as we launch, and show the new badge
-                // on the 'Debug with Ai' item even if the user was already seeing it during the study if they were in the other study group.
-                const featureName = UI.UIUtils.PromotionManager.instance().maybeShowPromotion(openAiAssistanceId) ?
-                    Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.featureName :
-                    undefined;
-                const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId, featureName);
-                submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
-                const submenuConfigs = [
-                    {
-                        condition: (props) => Boolean(props?.isFlex),
-                        items: [
-                            {
-                                label: i18nString(UIStrings.wrapTheseItems),
-                                prompt: 'How can I make flex items wrap?',
-                                jslogContextSuffix: '.flex-wrap',
-                            },
-                            {
-                                label: i18nString(UIStrings.distributeItemsEvenly),
-                                prompt: 'How do I distribute flex items evenly?',
-                                jslogContextSuffix: '.flex-distribute',
-                            },
-                            {
-                                label: i18nString(UIStrings.explainFlexbox),
-                                prompt: 'What is flexbox?',
-                                jslogContextSuffix: '.flex-what',
-                            },
-                        ],
-                    },
-                    {
-                        condition: (props) => Boolean(props?.isGrid && !props?.isSubgrid),
-                        items: [
-                            {
-                                label: i18nString(UIStrings.alignItems),
-                                prompt: 'How do I align items in a grid?',
-                                jslogContextSuffix: '.grid-align',
-                            },
-                            {
-                                label: i18nString(UIStrings.addPadding),
-                                prompt: 'How to add spacing between grid items?',
-                                jslogContextSuffix: '.grid-gap',
-                            },
-                            {
-                                label: i18nString(UIStrings.explainGridLayout),
-                                prompt: 'How does grid layout work?',
-                                jslogContextSuffix: '.grid-how',
-                            },
-                        ],
-                    },
-                    {
-                        condition: (props) => Boolean(props?.isSubgrid),
-                        items: [
-                            {
-                                label: i18nString(UIStrings.findGridDefinition),
-                                prompt: 'Where is this grid defined?',
-                                jslogContextSuffix: '.subgrid-where',
-                            },
-                            {
-                                label: i18nString(UIStrings.changeParentProperties),
-                                prompt: 'How to overwrite parent grid properties?',
-                                jslogContextSuffix: '.subgrid-override',
-                            },
-                            {
-                                label: i18nString(UIStrings.explainSubgrids),
-                                prompt: 'How do subgrids work?',
-                                jslogContextSuffix: '.subgrid-how',
-                            },
-                        ],
-                    },
-                    {
-                        condition: (props) => Boolean(props?.hasScroll),
-                        items: [
-                            {
-                                label: i18nString(UIStrings.removeScrollbars),
-                                prompt: 'How do I remove scrollbars for this element?',
-                                jslogContextSuffix: '.scroll-remove',
-                            },
-                            {
-                                label: i18nString(UIStrings.styleScrollbars),
-                                prompt: 'How can I style a scrollbar?',
-                                jslogContextSuffix: '.scroll-style',
-                            },
-                            {
-                                label: i18nString(UIStrings.explainScrollbars),
-                                prompt: 'Why does this element scroll?',
-                                jslogContextSuffix: '.scroll-why',
-                            },
-                        ],
-                    },
-                    {
-                        condition: (props) => Boolean(props?.isContainer),
-                        items: [
-                            {
-                                label: i18nString(UIStrings.explainContainerQueries),
-                                prompt: 'What are container queries?',
-                                jslogContextSuffix: '.container-what',
-                            },
-                            {
-                                label: i18nString(UIStrings.explainContainerTypes),
-                                prompt: 'How do I use container-type?',
-                                jslogContextSuffix: '.container-how',
-                            },
-                            {
-                                label: i18nString(UIStrings.explainContainerContext),
-                                prompt: 'What\'s the container context for this element?',
-                                jslogContextSuffix: '.container-context',
-                            },
-                        ],
-                    },
-                    {
-                        // Default items
-                        condition: () => true,
-                        items: [
-                            {
-                                label: i18nString(UIStrings.assessVisibility),
-                                prompt: 'Why isn’t this element visible?',
-                                jslogContextSuffix: '.visibility',
-                            },
-                            {
-                                label: i18nString(UIStrings.centerElement),
-                                prompt: 'How do I center this element?',
-                                jslogContextSuffix: '.center',
-                            },
-                        ],
-                    },
-                ];
-                const layoutProps = await this.nodeInternal.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.nodeInternal.id);
-                const config = submenuConfigs.find(c => c.condition(layoutProps));
-                if (config) {
-                    for (const item of config.items) {
-                        appendSubmenuPromptAction(submenu, action, item.label, item.prompt, openAiAssistanceId + item.jslogContextSuffix);
-                    }
+            const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+            const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId);
+            submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
+            const submenuConfigs = [
+                {
+                    condition: (props) => Boolean(props?.isFlex),
+                    items: [
+                        {
+                            label: i18nString(UIStrings.wrapTheseItems),
+                            prompt: 'How can I make flex items wrap?',
+                            jslogContextSuffix: '.flex-wrap',
+                        },
+                        {
+                            label: i18nString(UIStrings.distributeItemsEvenly),
+                            prompt: 'How do I distribute flex items evenly?',
+                            jslogContextSuffix: '.flex-distribute',
+                        },
+                        {
+                            label: i18nString(UIStrings.explainFlexbox),
+                            prompt: 'What is flexbox?',
+                            jslogContextSuffix: '.flex-what',
+                        },
+                    ],
+                },
+                {
+                    condition: (props) => Boolean(props?.isGrid && !props?.isSubgrid),
+                    items: [
+                        {
+                            label: i18nString(UIStrings.alignItems),
+                            prompt: 'How do I align items in a grid?',
+                            jslogContextSuffix: '.grid-align',
+                        },
+                        {
+                            label: i18nString(UIStrings.addPadding),
+                            prompt: 'How to add spacing between grid items?',
+                            jslogContextSuffix: '.grid-gap',
+                        },
+                        {
+                            label: i18nString(UIStrings.explainGridLayout),
+                            prompt: 'How does grid layout work?',
+                            jslogContextSuffix: '.grid-how',
+                        },
+                    ],
+                },
+                {
+                    condition: (props) => Boolean(props?.isSubgrid),
+                    items: [
+                        {
+                            label: i18nString(UIStrings.findGridDefinition),
+                            prompt: 'Where is this grid defined?',
+                            jslogContextSuffix: '.subgrid-where',
+                        },
+                        {
+                            label: i18nString(UIStrings.changeParentProperties),
+                            prompt: 'How to overwrite parent grid properties?',
+                            jslogContextSuffix: '.subgrid-override',
+                        },
+                        {
+                            label: i18nString(UIStrings.explainSubgrids),
+                            prompt: 'How do subgrids work?',
+                            jslogContextSuffix: '.subgrid-how',
+                        },
+                    ],
+                },
+                {
+                    condition: (props) => Boolean(props?.hasScroll),
+                    items: [
+                        {
+                            label: i18nString(UIStrings.removeScrollbars),
+                            prompt: 'How do I remove scrollbars for this element?',
+                            jslogContextSuffix: '.scroll-remove',
+                        },
+                        {
+                            label: i18nString(UIStrings.styleScrollbars),
+                            prompt: 'How can I style a scrollbar?',
+                            jslogContextSuffix: '.scroll-style',
+                        },
+                        {
+                            label: i18nString(UIStrings.explainScrollbars),
+                            prompt: 'Why does this element scroll?',
+                            jslogContextSuffix: '.scroll-why',
+                        },
+                    ],
+                },
+                {
+                    condition: (props) => Boolean(props?.isContainer),
+                    items: [
+                        {
+                            label: i18nString(UIStrings.explainContainerQueries),
+                            prompt: 'What are container queries?',
+                            jslogContextSuffix: '.container-what',
+                        },
+                        {
+                            label: i18nString(UIStrings.explainContainerTypes),
+                            prompt: 'How do I use container-type?',
+                            jslogContextSuffix: '.container-how',
+                        },
+                        {
+                            label: i18nString(UIStrings.explainContainerContext),
+                            prompt: 'What\'s the container context for this element?',
+                            jslogContextSuffix: '.container-context',
+                        },
+                    ],
+                },
+                {
+                    // Default items
+                    condition: () => true,
+                    items: [
+                        {
+                            label: i18nString(UIStrings.assessVisibility),
+                            prompt: 'Why isn’t this element visible?',
+                            jslogContextSuffix: '.visibility',
+                        },
+                        {
+                            label: i18nString(UIStrings.centerElement),
+                            prompt: 'How do I center this element?',
+                            jslogContextSuffix: '.center',
+                        },
+                    ],
+                },
+            ];
+            const layoutProps = await this.nodeInternal.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.nodeInternal.id);
+            const config = submenuConfigs.find(c => c.condition(layoutProps));
+            if (config) {
+                for (const item of config.items) {
+                    appendSubmenuPromptAction(submenu, action, item.label, item.prompt, openAiAssistanceId + item.jslogContextSuffix);
                 }
-            }
-            else if (Root.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
-                // Register new badge under the `devToolsAiDebugWithAi` feature, as the freestyler one is already used in ViewManager.
-                // Additionally register with the PromotionManager. Since we use two different features for freeestyler here (submenu or debug with ai),
-                // the back-end will not be able to identify them as one as soon as we launch, and show the new badge
-                // on the 'Debug with Ai' item even if the user was already seeing it during the study if they were in the other study group.
-                const featureName = UI.UIUtils.PromotionManager.instance().maybeShowPromotion(openAiAssistanceId) ?
-                    Root.Runtime.hostConfig.devToolsAiDebugWithAi?.featureName :
-                    undefined;
-                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-                contextMenu.footerSection().appendItem(action.title(), () => {
-                    void action.execute();
-                    UI.UIUtils.PromotionManager.instance().recordFeatureInteraction(openAiAssistanceId);
-                }, { jslogContext: openAiAssistanceId, disabled: !action.enabled(), featureName });
-            }
-            else {
-                contextMenu.footerSection().appendAction(openAiAssistanceId);
             }
         }
         menuItem = contextMenu.clipboardSection().appendItem(i18nString(UIStrings.cut), treeOutline.performCopyOrCut.bind(treeOutline, true, this.nodeInternal), { disabled: !this.hasEditableNode(), jslogContext: 'cut' });
@@ -2369,25 +2404,6 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.updateAdorners();
         return adorner;
     }
-    adornMedia({ name }) {
-        const adornerContent = document.createElement('span');
-        adornerContent.textContent = name;
-        adornerContent.classList.add('adorner-with-icon');
-        const linkIcon = createIcon('select-element');
-        adornerContent.append(linkIcon);
-        const adorner = new Adorners.Adorner.Adorner();
-        adorner.data = {
-            name,
-            content: adornerContent,
-            jslogContext: 'media',
-        };
-        if (isOpeningTag(this.tagTypeContext)) {
-            this.#adorners.add(adorner);
-            ElementsPanel.instance().registerAdorner(adorner);
-            this.updateAdorners();
-        }
-        return adorner;
-    }
     removeAdorner(adornerToRemove) {
         ElementsPanel.instance().deregisterAdorner(adornerToRemove);
         adornerToRemove.remove();
@@ -2447,14 +2463,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.removeAdornersByType(ElementsComponents.AdornerManager.RegisteredAdorners.SCROLL_SNAP);
         this.removeAdornersByType(ElementsComponents.AdornerManager.RegisteredAdorners.MEDIA);
         this.removeAdornersByType(ElementsComponents.AdornerManager.RegisteredAdorners.STARTING_STYLE);
-        this.removeAdornersByType(ElementsComponents.AdornerManager.RegisteredAdorners.POPOVER);
         if (layout) {
             if (layout.hasScroll) {
                 this.pushScrollSnapAdorner();
             }
-        }
-        if (node.isMediaNode()) {
-            this.pushMediaAdorner();
         }
         if (Root.Runtime.hostConfig.devToolsStartingStyleDebugging?.enabled) {
             const affectedByStartingStyles = node.affectedByStartingStyles();
@@ -2462,40 +2474,20 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 this.pushStartingStyleAdorner();
             }
         }
-        if (node.attributes().find(attr => attr.name === 'popover')) {
-            this.pushPopoverAdorner();
-        }
     }
-    pushPopoverAdorner() {
-        if (!Root.Runtime.hostConfig.devToolsAllowPopoverForcing?.enabled) {
-            return;
-        }
+    async #onPopoverAdornerClick(event) {
+        event.stopPropagation();
         const node = this.node();
         const nodeId = node.id;
-        const config = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.POPOVER);
-        const adorner = this.adorn(config);
-        const onClick = async () => {
-            const { nodeIds } = await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable: adorner.isActive() });
-            if (adorner.isActive()) {
-                Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
-            }
-            for (const closedPopoverNodeId of nodeIds) {
-                const node = this.node().domModel().nodeForId(closedPopoverNodeId);
-                const treeElement = node && this.treeOutline?.treeElementByNode.get(node);
-                if (!treeElement || !isOpeningTag(treeElement.tagTypeContext)) {
-                    return;
-                }
-                const adorner = this.#adorners.values().find(adorner => adorner.name === config.name);
-                adorner?.toggle(false);
-            }
-        };
-        adorner.addInteraction(onClick, {
-            isToggle: true,
-            shouldPropagateOnKeydown: false,
-            ariaLabelDefault: i18nString(UIStrings.forceOpenPopover),
-            ariaLabelActive: i18nString(UIStrings.stopForceOpenPopover),
-        });
-        this.#adorners.add(adorner);
+        if (!nodeId) {
+            return;
+        }
+        await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable: !this.#popoverAdornerActive });
+        this.#popoverAdornerActive = !this.#popoverAdornerActive;
+        if (this.#popoverAdornerActive) {
+            Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
+        }
+        this.performUpdate();
     }
     pushScrollSnapAdorner() {
         const node = this.node();
@@ -2556,34 +2548,6 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             shouldPropagateOnKeydown: false,
             ariaLabelDefault: i18nString(UIStrings.enableStartingStyle),
             ariaLabelActive: i18nString(UIStrings.disableStartingStyle),
-        });
-        this.#adorners.add(adorner);
-    }
-    pushMediaAdorner() {
-        const node = this.node();
-        const nodeId = node.id;
-        if (!nodeId) {
-            return;
-        }
-        const config = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.MEDIA);
-        const adorner = this.adornMedia(config);
-        adorner.classList.add('media');
-        const onClick = (async () => {
-            await UI.ViewManager.ViewManager.instance().showView('medias');
-            const view = UI.ViewManager.ViewManager.instance().view('medias');
-            if (view) {
-                const widget = await view.widget();
-                if (widget instanceof Media.MainView.MainView) {
-                    await widget.waitForInitialPlayers();
-                    widget.selectPlayerByDOMNodeId(node.backendNodeId());
-                }
-            }
-        });
-        adorner.addInteraction(onClick, {
-            isToggle: false,
-            shouldPropagateOnKeydown: false,
-            ariaLabelDefault: i18nString(UIStrings.openMediaPanel),
-            ariaLabelActive: i18nString(UIStrings.openMediaPanel),
         });
         this.#adorners.add(adorner);
     }

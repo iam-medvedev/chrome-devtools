@@ -1,7 +1,5 @@
 import '../../../ui/kit/kit.js';
 import './ExtensionView.js';
-import './ControlButton.js';
-import './ReplaySection.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import type * as PublicExtensions from '../../../models/extensions/extensions.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
@@ -11,7 +9,6 @@ import type * as Converters from '../converters/converters.js';
 import type * as Extensions from '../extensions/extensions.js';
 import * as Models from '../models/models.js';
 import { PlayRecordingSpeed } from '../models/RecordingPlayer.js';
-import type { StartReplayEvent } from './ReplaySection.js';
 import { type CopyStepEvent, State } from './StepView.js';
 declare global {
     interface HTMLElementTagNameMap {
@@ -61,15 +58,15 @@ interface ViewInput {
     getStepState: (step: Models.Schema.Step) => State;
     onAbortReplay: () => void;
     onMeasurePerformanceClick: (event: Event) => void;
-    onTogglePlaying: (event: StartReplayEvent) => void;
+    onTogglePlaying: (speed: PlayRecordingSpeed, extension?: Extensions.ExtensionManager.Extension) => void;
     onCodeFormatChange: (event: Menus.SelectMenu.SelectMenuItemSelectedEvent) => void;
     onCopyStep: (event: CopyStepEvent) => void;
     onEditTitleButtonClick: (event: Event) => void;
     onNetworkConditionsChange: (event: Event) => void;
     onReplaySettingsKeydown: (event: Event) => void;
     onSelectMenuLabelClick: (event: Event) => void;
-    onStepClick: (event: Event) => void;
-    onStepHover: (event: MouseEvent) => void;
+    onStepClick: (step: Models.Schema.Step | Models.Section.Section) => void;
+    onStepHover: (step: Models.Schema.Step | Models.Section.Section) => void;
     onTimeoutInput: (event: Event) => void;
     onTitleBlur: (event: Event) => void;
     onTitleInputKeyDown: (event: KeyboardEvent) => void;
