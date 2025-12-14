@@ -147,18 +147,12 @@ describeWithMockConnection('FunctionCodeResolver', function () {
         for (const testCase of testCases) {
             it(testCase.name, async function () {
                 const script = await backend.addScript(target, { url: URL, content: source }, testCase.sourceMap);
-                // TODO(crbug.com/368222773): this should probably be done inside backend.addScript, but currently
-                // some tests fail (BreakpointManager.test.ts, NamesResolver.test.ts)
-                const sourceMap = script.sourceMap();
-                if (sourceMap) {
-                    sourceMap.hasScopeInfo(); // Trigger source map processing.
-                    await sourceMap.scopesFallbackPromiseForTest;
-                }
                 // Add raw performance data to script's UISourceCode.
                 const uiSourceCode = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiSourceCodeForScript(script);
                 assert.isOk(uiSourceCode);
                 uiSourceCode.setDecorationData("performance" /* Workspace.UISourceCode.DecoratorType.PERFORMANCE */, exampleRawPerformanceData);
                 // Add mapped performance data to source map url's UISourceCode.
+                const sourceMap = script.sourceMap();
                 if (sourceMap) {
                     const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
                     assert.isOk(debuggerModel);

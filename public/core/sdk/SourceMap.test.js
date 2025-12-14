@@ -1201,9 +1201,7 @@ describeWithEnvironment('SourceMap', () => {
             names: [],
         }, script);
         sinon.assert.notCalled(scopeTreeStub);
-        // Trigger processing.
-        assert.isNotNull(sourceMap.findEntry(0, 0));
-        await sourceMap.scopesFallbackPromiseForTest;
+        await sourceMap.waitForScopeInfo();
         assert.isTrue(sourceMap.hasScopeInfo());
         sinon.assert.calledOnceWithExactly(scopeTreeStub, 'function f() { console.log("hello"); }', 'script');
     });

@@ -1,11 +1,10 @@
-import '../../ui/kit/kit.js';
 import '../../ui/legacy/components/inline_editor/inline_editor.js';
+import '../../ui/components/report_view/report_view.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as ApplicationComponents from './components/components.js';
 export type ParsedSize = {
     any: 'any';
     formatted: string;
@@ -127,14 +126,13 @@ type ProcessedImageResource = {
     imageSrc: string;
 };
 interface ViewInput {
-    emptyView: UI.EmptyWidget.EmptyWidget;
-    reportView: UI.ReportView.ReportView;
+    isEmpty?: boolean;
     errorsSection?: UI.ReportView.Section;
     installabilitySection?: UI.ReportView.Section;
     identitySection?: UI.ReportView.Section;
     presentationSection?: UI.ReportView.Section;
-    protocolHandlersView?: ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView;
     iconsSection?: UI.ReportView.Section;
+    maskedIcons?: boolean;
     windowControlsSection?: UI.ReportView.Section;
     shortcutSections?: UI.ReportView.Section[];
     screenshotsSections?: UI.ReportView.Section[];
@@ -154,8 +152,14 @@ interface ViewInput {
     selectedPlatform?: string;
     onSelectOs?: (selectedOS: SDK.OverlayModel.EmulatedOSType) => Promise<void>;
     onToggleWcoToolbar?: (enabled: boolean) => Promise<void>;
+    onCopyId?: () => void;
+    onToggleIconMasked?: (masked: boolean) => void;
 }
-type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
+interface ViewOutput {
+    scrollToSection: Map<string, () => void>;
+    focusOnSection: Map<string, () => void>;
+}
+type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 declare const AppManifestView_base: (new (...args: any[]) => {
     "__#private@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
@@ -166,32 +170,27 @@ declare const AppManifestView_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends Events.MANIFEST_DETECTED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class AppManifestView extends AppManifestView_base implements SDK.TargetManager.Observer {
-    private readonly emptyView;
-    private readonly reportView;
-    private readonly errorsSection;
-    private readonly installabilitySection;
-    private readonly identitySection;
-    private readonly presentationSection;
-    private readonly iconsSection;
-    private readonly windowControlsSection;
-    private readonly protocolHandlersSection;
-    private readonly shortcutSections;
-    private readonly screenshotsSections;
     private registeredListeners;
     private target?;
     private resourceTreeModel?;
     private serviceWorkerManager?;
     private overlayModel?;
-    private protocolHandlersView;
     private manifestUrl;
     private manifestData;
     private manifestErrors;
     private installabilityErrors;
     private appIdResponse;
     private wcoToolbarEnabled;
+    private maskedIcons;
     private readonly view;
+    private readonly output;
     constructor(view?: View);
-    getStaticSections(): UI.ReportView.Section[];
+    scrollToSection(sectionTitle: string): void;
+    focusOnSection(sectionTitle: string): boolean;
+    getStaticSections(): Array<{
+        title: string;
+        jslogContext: string | undefined;
+    }>;
     getManifestElement(): Element;
     targetAdded(target: SDK.Target.Target): void;
     targetRemoved(target: SDK.Target.Target): void;

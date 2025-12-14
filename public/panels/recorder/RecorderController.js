@@ -28,7 +28,6 @@ import * as Extensions from './extensions/extensions.js';
 import * as Models from './models/models.js';
 import recorderControllerStyles from './recorderController.css.js';
 import * as Events from './RecorderEvents.js';
-// TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
 const { html, Decorators, Directives: { ref }, LitElement } = Lit;
 const { customElement, state } = Decorators;
 const UIStrings = {

@@ -38,7 +38,7 @@ export class ConversationContext {
  * more than MAX_STEPS iterations.
  */
 export class AiAgent {
-    #sessionId = crypto.randomUUID();
+    #sessionId;
     #aidaClient;
     #serverSideLoggingEnabled;
     confirmSideEffect;
@@ -48,22 +48,17 @@ export class AiAgent {
      */
     #structuredLog = [];
     /**
-     * Might need to be part of history in case we allow chatting in
-     * historical conversations.
-     */
-    #origin;
-    /**
      * `context` does not change during `AiAgent.run()`, ensuring that calls to JS
      * have the correct `context`. We don't want element selection by the user to
      * change the `context` during an `AiAgent.run()`.
      */
     context;
-    #id = crypto.randomUUID();
     #history = [];
     #facts = new Set();
     constructor(opts) {
         this.#aidaClient = opts.aidaClient;
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
+        this.#sessionId = opts.sessionId ?? crypto.randomUUID();
         this.confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
     }
     async enhanceQuery(query) {
@@ -135,11 +130,8 @@ export class AiAgent {
         };
         return request;
     }
-    get id() {
-        return this.#id;
-    }
-    get origin() {
-        return this.#origin;
+    get sessionId() {
+        return this.#sessionId;
     }
     /**
      * The AI has instructions to emit structured suggestions in their response. This
@@ -221,13 +213,7 @@ export class AiAgent {
     async *run(initialQuery, options, multimodalInput) {
         await options.selected?.refresh();
         if (options.selected) {
-            // First context set on the agent determines its origin from now on.
-            if (this.#origin === undefined) {
-                this.#origin = options.selected.getOrigin();
-            }
-            if (options.selected.isOriginAllowed(this.#origin)) {
-                this.context = options.selected;
-            }
+            this.context = options.selected;
         }
         const enhancedQuery = await this.enhanceQuery(initialQuery, options.selected, multimodalInput?.type);
         Host.userMetrics.freestylerQueryLength(enhancedQuery.length);
@@ -415,7 +401,7 @@ export class AiAgent {
             }
             result = await call.handler(args, {
                 ...options,
-                approved: approvedRun,
+                approved: true,
             });
         }
         if ('result' in result) {

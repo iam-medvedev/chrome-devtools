@@ -1109,7 +1109,10 @@ export declare namespace Audits {
         FormLabelForMatchesNonExistingIdError = "FormLabelForMatchesNonExistingIdError",
         FormInputHasWrongButWellIntendedAutocompleteValueError = "FormInputHasWrongButWellIntendedAutocompleteValueError",
         ResponseWasBlockedByORB = "ResponseWasBlockedByORB",
-        NavigationEntryMarkedSkippable = "NavigationEntryMarkedSkippable"
+        NavigationEntryMarkedSkippable = "NavigationEntryMarkedSkippable",
+        AutofillAndManualTextPolicyControlledFeaturesInfo = "AutofillAndManualTextPolicyControlledFeaturesInfo",
+        AutofillPolicyControlledFeatureInfo = "AutofillPolicyControlledFeatureInfo",
+        ManualTextPolicyControlledFeatureInfo = "ManualTextPolicyControlledFeatureInfo"
     }
     /**
      * Depending on the concrete errorType, different properties are set.
@@ -4185,8 +4188,7 @@ export declare namespace DOM {
         DetailsContent = "details-content",
         Picker = "picker",
         PermissionIcon = "permission-icon",
-        OverscrollAreaParent = "overscroll-area-parent",
-        OverscrollClientArea = "overscroll-client-area"
+        OverscrollAreaParent = "overscroll-area-parent"
     }
     /**
      * Shadow root type.

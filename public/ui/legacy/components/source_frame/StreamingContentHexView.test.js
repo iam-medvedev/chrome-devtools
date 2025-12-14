@@ -41,8 +41,8 @@ describeWithEnvironment('StreamingContentHexView', () => {
         await raf();
         streamingContentData.addChunk(window.btoa('def'));
         await raf();
-        assert.strictEqual(getAllByteCells(view), '616263646566');
-        assert.strictEqual(getAllTextCells(view), 'abcdef');
+        assert.strictEqual(getAllByteCells(view), '61626364');
+        assert.strictEqual(getAllTextCells(view), 'abcd');
         view.detach();
     });
 });

@@ -455,10 +455,10 @@ describeWithMockConnection('CompilerScriptMapping', () => {
         assert.strictEqual(metadata?.contentSize, sourceUTF8.length);
     });
     describe('translateRawFramesStep', () => {
-        it('returns false for builtin frames', () => {
+        it('returns false for builtin frames', async () => {
             const target = createTarget();
             const compilerScriptMapping = new Bindings.CompilerScriptMapping.CompilerScriptMapping(target.model(SDK.DebuggerModel.DebuggerModel), workspace, debuggerWorkspaceBinding);
-            assert.isFalse(compilerScriptMapping.translateRawFramesStep([{ lineNumber: -1, columnNumber: -1, functionName: 'Array.map' }], []));
+            assert.isFalse(await compilerScriptMapping.translateRawFramesStep([{ lineNumber: -1, columnNumber: -1, functionName: 'Array.map' }], []));
         });
         it('translates a single frame using "proposal scopes" information', async () => {
             Root.Runtime.experiments.enableForTest("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */);
@@ -480,7 +480,7 @@ describeWithMockConnection('CompilerScriptMapping', () => {
                 content: sourceMap,
             });
             const translatedFrames = [];
-            assert.isTrue(compilerScriptMapping.translateRawFramesStep([{
+            assert.isTrue(await compilerScriptMapping.translateRawFramesStep([{
                     scriptId: script.scriptId,
                     url: script.sourceURL,
                     lineNumber: 0,
@@ -509,10 +509,8 @@ describeWithMockConnection('CompilerScriptMapping', () => {
                 url: 'http://example.com/index.js.map',
                 content: sourceMap,
             });
-            script.sourceMap()?.hasScopeInfo(); // Trigger source map processing.
-            await script.sourceMap()?.scopesFallbackPromiseForTest;
             const translatedFrames = [];
-            assert.isTrue(compilerScriptMapping.translateRawFramesStep([{
+            assert.isTrue(await compilerScriptMapping.translateRawFramesStep([{
                     scriptId: script.scriptId,
                     url: script.sourceURL,
                     lineNumber: 0,
@@ -570,7 +568,7 @@ describeWithMockConnection('CompilerScriptMapping', () => {
                 content: sourceMap,
             });
             const translatedFrames = [];
-            assert.isTrue(compilerScriptMapping.translateRawFramesStep([protocolCallFrame(`${script.sourceURL}:${script.scriptId}::0:5`)], translatedFrames));
+            assert.isTrue(await compilerScriptMapping.translateRawFramesStep([protocolCallFrame(`${script.sourceURL}:${script.scriptId}::0:5`)], translatedFrames));
             assert.deepEqual(translatedFrames[0].map(stringifyFrame), [
                 'at inner (index.ts:1:7)',
                 'at outer (index.ts:6:9)',

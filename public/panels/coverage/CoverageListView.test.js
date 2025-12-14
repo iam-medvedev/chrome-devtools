@@ -22,8 +22,7 @@ function makeItem(url, type, size, unusedSize) {
     };
 }
 describeWithEnvironment('CoverageListView', () => {
-    // Consistently failing, skip while we're fixing it
-    it.skip('[crbug.com/450209400] basic rendering', async () => {
+    it('basic rendering', async () => {
         const view = new Coverage.CoverageListView.CoverageListView();
         renderWidgetInVbox(view);
         view.coverageInfo = [
@@ -33,6 +32,7 @@ describeWithEnvironment('CoverageListView', () => {
             makeItem(urlString `https://example.com/index.html?query=bar`, 2 /* Coverage.CoverageModel.CoverageType.JAVA_SCRIPT */, 100, 50),
         ];
         await view.updateComplete;
+        view.focus();
         await assertScreenshot('coverage/basic.png');
     });
 });

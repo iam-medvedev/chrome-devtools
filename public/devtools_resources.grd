@@ -405,6 +405,7 @@
       <include file="models/ai_assistance/ai_assistance.js" name="MODELS_AI_ASSISTANCE_AI_ASSISTANCE_JS" resource_path="models/ai_assistance/ai_assistance.js" type="BINDATA" compress="false"/>
       <include file="models/ai_code_completion/ai_code_completion.js" name="MODELS_AI_CODE_COMPLETION_AI_CODE_COMPLETION_JS" resource_path="models/ai_code_completion/ai_code_completion.js" type="BINDATA" compress="false"/>
       <include file="models/ai_code_generation/ai_code_generation.js" name="MODELS_AI_CODE_GENERATION_AI_CODE_GENERATION_JS" resource_path="models/ai_code_generation/ai_code_generation.js" type="BINDATA" compress="false"/>
+      <include file="models/annotations/annotations.js" name="MODELS_ANNOTATIONS_ANNOTATIONS_JS" resource_path="models/annotations/annotations.js" type="BINDATA" compress="false"/>
       <include file="models/autofill_manager/autofill_manager.js" name="MODELS_AUTOFILL_MANAGER_AUTOFILL_MANAGER_JS" resource_path="models/autofill_manager/autofill_manager.js" type="BINDATA" compress="false"/>
       <include file="models/badges/badges.js" name="MODELS_BADGES_BADGES_JS" resource_path="models/badges/badges.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
@@ -416,6 +417,7 @@
       <include file="models/extensions/extensions.js" name="MODELS_EXTENSIONS_EXTENSIONS_JS" resource_path="models/extensions/extensions.js" type="BINDATA" compress="false"/>
       <include file="models/formatter/formatter.js" name="MODELS_FORMATTER_FORMATTER_JS" resource_path="models/formatter/formatter.js" type="BINDATA" compress="false"/>
       <include file="models/geometry/geometry.js" name="MODELS_GEOMETRY_GEOMETRY_JS" resource_path="models/geometry/geometry.js" type="BINDATA" compress="false"/>
+      <include file="models/greendev/greendev.js" name="MODELS_GREENDEV_GREENDEV_JS" resource_path="models/greendev/greendev.js" type="BINDATA" compress="false"/>
       <include file="models/har/har.js" name="MODELS_HAR_HAR_JS" resource_path="models/har/har.js" type="BINDATA" compress="false"/>
       <include file="models/heap_snapshot_model/heap_snapshot_model.js" name="MODELS_HEAP_SNAPSHOT_MODEL_HEAP_SNAPSHOT_MODEL_JS" resource_path="models/heap_snapshot_model/heap_snapshot_model.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COEPCOOPSANDBOXEDIFRAMECANNOTNAVIGATETOCOOPPAGE_MD" resource_path="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" type="BINDATA" compress="false"/>
@@ -806,7 +808,6 @@
       <include file="third_party/web-vitals/web-vitals.js" name="THIRD_PARTY_WEB_VITALS_WEB_VITALS_JS" resource_path="third_party/web-vitals/web-vitals.js" type="BINDATA" compress="false"/>
       <include file="trace_app.html" name="TRACE_APP_HTML" resource_path="trace_app.html" type="BINDATA" compress="false"/>
       <include file="ui/components/adorners/adorners.js" name="UI_COMPONENTS_ADORNERS_ADORNERS_JS" resource_path="ui/components/adorners/adorners.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/annotations/annotations.js" name="UI_COMPONENTS_ANNOTATIONS_ANNOTATIONS_JS" resource_path="ui/components/annotations/annotations.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/buttons.js" name="UI_COMPONENTS_BUTTONS_BUTTONS_JS" resource_path="ui/components/buttons/buttons.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/code_highlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODE_HIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/code_highlighter.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/dialogs.js" name="UI_COMPONENTS_DIALOGS_DIALOGS_JS" resource_path="ui/components/dialogs/dialogs.js" type="BINDATA" compress="false"/>

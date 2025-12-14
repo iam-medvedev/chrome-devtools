@@ -27,6 +27,7 @@ describeWithEnvironment('ChatView', () => {
             conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
             messages,
             selectedContext,
+            isArtifactsSidebarOpen: false,
             isLoading: false,
             canShowFeedbackForm: false,
             userInfo: {},

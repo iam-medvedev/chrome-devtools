@@ -1,12 +1,12 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import '../../../../ui/components/markdown_view/markdown_view.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Root from '../../../../core/root/root.js';
 import * as AIAssistance from '../../../../models/ai_assistance/ai_assistance.js';
 import * as Badges from '../../../../models/badges/badges.js';
+import * as GreenDev from '../../../../models/greendev/greendev.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as Lit from '../../../../ui/lit/lit.js';
@@ -55,7 +55,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/BaseInsightComponent.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const DEFAULT_VIEW = (input, output, target) => {
-    const { internalName, model, selected, estimatedSavingsString, estimatedSavingsAriaLabel, isAIAssistanceContext, canShowAskAI, dispatchInsightToggle, renderContent, onHeaderKeyDown, onAskAIButtonClick, } = input;
+    const { internalName, model, selected, estimatedSavingsString, estimatedSavingsAriaLabel, isAIAssistanceContext, showAskAI, dispatchInsightToggle, renderContent, onHeaderKeyDown, onAskAIButtonClick, } = input;
     const containerClasses = Lit.Directives.classMap({
         insight: true,
         closed: !selected || isAIAssistanceContext,
@@ -78,7 +78,7 @@ const DEFAULT_VIEW = (input, output, target) => {
       <div class="insight-body">
         <div class="insight-description">${md(model.description)}</div>
         <div class="insight-content">${content}</div>
-        ${canShowAskAI ? html `
+        ${showAskAI ? html `
           <div class="ask-ai-btn-wrap">
             <devtools-button class="ask-ai"
               .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
@@ -147,9 +147,6 @@ const DEFAULT_VIEW = (input, output, target) => {
 };
 export class BaseInsightComponent extends UI.Widget.Widget {
     #view;
-    // This flag tracks if the Insights AI feature is enabled within Chrome for
-    // the active user.
-    #askAiEnabled = false;
     // Tracks if this component is rendered withing the AI assistance panel.
     // Currently only relevant to GreenDev.
     #isAIAssistanceContext = false;
@@ -180,13 +177,6 @@ export class BaseInsightComponent extends UI.Widget.Widget {
     // requirements to use AI.
     hasAskAiSupport() {
         return false;
-    }
-    wasShown() {
-        super.wasShown();
-        // Used for unit test purposes when querying the DOM.
-        this.element.dataset.insightName = this.internalName;
-        const { devToolsAiAssistancePerformanceAgent } = Root.Runtime.hostConfig;
-        this.#askAiEnabled = Boolean(devToolsAiAssistancePerformanceAgent?.enabled);
     }
     set isAIAssistanceContext(isAIAssistanceContext) {
         this.#isAIAssistanceContext = isAIAssistanceContext;
@@ -240,7 +230,7 @@ export class BaseInsightComponent extends UI.Widget.Widget {
             // Shouldn't happen, but needed to satisfy TS.
             return;
         }
-        if (this.#parsedTrace && UI.Floaty.enabled()) {
+        if (this.#parsedTrace && GreenDev.Prototypes.instance().isEnabled('inDevToolsFloaty')) {
             const floatyHandled = UI.Floaty.onFloatyClick({
                 type: "PERFORMANCE_INSIGHT" /* UI.Floaty.FloatyContextTypes.PERFORMANCE_INSIGHT */,
                 data: {
@@ -321,7 +311,7 @@ export class BaseInsightComponent extends UI.Widget.Widget {
             estimatedSavingsString: this.getEstimatedSavingsString(),
             estimatedSavingsAriaLabel: this.#getEstimatedSavingsAriaLabel(),
             isAIAssistanceContext: this.#isAIAssistanceContext,
-            canShowAskAI: this.#canShowAskAI(),
+            showAskAI: this.#canShowAskAI(),
             dispatchInsightToggle: () => this.#dispatchInsightToggle(),
             renderContent: () => this.renderContent(),
             onHeaderKeyDown: () => this.#onHeaderKeyDown,
@@ -412,13 +402,18 @@ export class BaseInsightComponent extends UI.Widget.Widget {
         void action.execute();
     }
     #canShowAskAI() {
-        if (this.#isAIAssistanceContext) {
+        if (this.#isAIAssistanceContext || !this.hasAskAiSupport()) {
             return false;
         }
-        const aiAvailable = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !==
-            Root.Runtime.GenAiEnterprisePolicyValue.DISABLE &&
-            this.#askAiEnabled && Root.Runtime.hostConfig.aidaAvailability?.enabled === true;
-        return aiAvailable && this.hasAskAiSupport();
+        // Check if the Insights AI feature enabled within Chrome for the active user.
+        const { devToolsAiAssistancePerformanceAgent } = Root.Runtime.hostConfig;
+        const askAiEnabled = Boolean(devToolsAiAssistancePerformanceAgent?.enabled);
+        if (!askAiEnabled) {
+            return false;
+        }
+        const { aidaAvailability } = Root.Runtime.hostConfig;
+        return aidaAvailability?.enterprisePolicyValue !== Root.Runtime.GenAiEnterprisePolicyValue.DISABLE &&
+            aidaAvailability?.enabled === true;
     }
 }
 //# sourceMappingURL=BaseInsightComponent.js.map
