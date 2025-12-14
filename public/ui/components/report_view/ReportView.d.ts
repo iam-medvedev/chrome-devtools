@@ -1,3 +1,4 @@
+import * as Platform from '../../../core/platform/platform.js';
 /**
  * The `Report` component can be used to display static information. A report
  * usually consists of multiple sections where each section has rows of name/value
@@ -15,16 +16,15 @@
  *     <devtools-report-divider></devtools-report-divider>
  *   </devtools-report>
  * ```
+ * The component is intended to replace UI.ReportView in an idiomatic way.
  */
 export interface ReportData {
     reportTitle: string;
+    reportUrl?: Platform.DevToolsPath.UrlString;
 }
-/**
- * @deprecated Use UI.ReportView.ReportView instead.
- */
 export declare class Report extends HTMLElement {
     #private;
-    set data({ reportTitle }: ReportData);
+    set data({ reportTitle, reportUrl }: ReportData);
     connectedCallback(): void;
 }
 export interface ReportSectionData {

@@ -139,14 +139,15 @@ export class ConversationHandler extends Common.ObjectWrapper.ObjectWrapper {
     }
     async *#createAndDoExternalConversation(opts) {
         const { conversationType, aiAgent, prompt, selected } = opts;
-        const conversation = new AiConversation(conversationType, [], aiAgent.id, 
+        const conversation = new AiConversation(conversationType, [], aiAgent.sessionId, 
         /* isReadOnly */ true, this.#aidaClient, undefined, 
         /* isExternal */ true);
         return yield* this.#doExternalConversation({ conversation, prompt, selected });
     }
     async *#doExternalConversation(opts) {
         const { conversation, prompt, selected } = opts;
-        const generator = conversation.run(prompt, { selected });
+        conversation.setContext(selected);
+        const generator = conversation.run(prompt);
         const devToolsLogs = [];
         for await (const data of generator) {
             if (data.type !== "answer" /* ResponseType.ANSWER */ || data.complete) {

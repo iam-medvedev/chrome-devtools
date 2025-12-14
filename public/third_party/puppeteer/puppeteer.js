@@ -2596,7 +2596,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.32.0";
+var packageVersion = "24.33.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -7162,6 +7162,8 @@ var EmulationManager = (() => {
   let _private_setDefaultBackgroundColor_descriptor;
   let _private_setJavaScriptEnabled_decorators;
   let _private_setJavaScriptEnabled_descriptor;
+  let _private_emulateFocus_decorators;
+  let _private_emulateFocus_descriptor;
   return class EmulationManager {
     static {
       const _metadata = typeof Symbol === "function" && Symbol.metadata ? /* @__PURE__ */ Object.create(null) : void 0;
@@ -7175,6 +7177,7 @@ var EmulationManager = (() => {
       _private_setGeolocation_decorators = [invokeAtMostOnceForArguments];
       _private_setDefaultBackgroundColor_decorators = [invokeAtMostOnceForArguments];
       _private_setJavaScriptEnabled_decorators = [invokeAtMostOnceForArguments];
+      _private_emulateFocus_decorators = [invokeAtMostOnceForArguments];
       __esDecorate3(this, _private_applyViewport_descriptor = { value: __setFunctionName(async function(client, viewportState) {
         if (!viewportState.viewport) {
           await Promise.all([
@@ -7297,6 +7300,14 @@ var EmulationManager = (() => {
           value: !state.javaScriptEnabled
         });
       }, "#setJavaScriptEnabled") }, _private_setJavaScriptEnabled_decorators, { kind: "method", name: "#setJavaScriptEnabled", static: false, private: true, access: { has: (obj) => #setJavaScriptEnabled in obj, get: (obj) => obj.#setJavaScriptEnabled }, metadata: _metadata }, null, _instanceExtraInitializers);
+      __esDecorate3(this, _private_emulateFocus_descriptor = { value: __setFunctionName(async function(client, state) {
+        if (!state.active) {
+          return;
+        }
+        await client.send("Emulation.setFocusEmulationEnabled", {
+          enabled: state.enabled
+        });
+      }, "#emulateFocus") }, _private_emulateFocus_decorators, { kind: "method", name: "#emulateFocus", static: false, private: true, access: { has: (obj) => #emulateFocus in obj, get: (obj) => obj.#emulateFocus }, metadata: _metadata }, null, _instanceExtraInitializers);
       if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
     }
     #client = __runInitializers3(this, _instanceExtraInitializers);
@@ -7334,6 +7345,10 @@ var EmulationManager = (() => {
       javaScriptEnabled: true,
       active: false
     }, this, this.#setJavaScriptEnabled);
+    #focusState = new EmulatedState({
+      enabled: true,
+      active: false
+    }, this, this.#emulateFocus);
     #secondaryClients = /* @__PURE__ */ new Set();
     constructor(client) {
       this.#client = client;
@@ -7504,6 +7519,15 @@ var EmulationManager = (() => {
       await this.#javascriptEnabledState.setState({
         active: true,
         javaScriptEnabled: enabled
+      });
+    }
+    get #emulateFocus() {
+      return _private_emulateFocus_descriptor.value;
+    }
+    async emulateFocus(enabled) {
+      await this.#focusState.setState({
+        active: true,
+        enabled
       });
     }
   };
@@ -16215,12 +16239,16 @@ var CdpPage = class _CdpPage extends Page {
     }
   }
   async resize(params) {
-    const { windowId } = await this.#primaryTargetClient.send("Browser.getWindowForTarget");
+    const windowId = await this.windowId();
     await this.#primaryTargetClient.send("Browser.setContentsSize", {
-      windowId,
+      windowId: Number(windowId),
       width: params.contentWidth,
       height: params.contentHeight
     });
+  }
+  async windowId() {
+    const { windowId } = await this.#primaryTargetClient.send("Browser.getWindowForTarget");
+    return windowId.toString();
   }
   async #onFileChooser(event) {
     const env_1 = { stack: [], error: void 0, hasError: false };
@@ -16356,6 +16384,9 @@ var CdpPage = class _CdpPage extends Page {
   }
   async emulateNetworkConditions(networkConditions) {
     return await this.#frameManager.networkManager.emulateNetworkConditions(networkConditions);
+  }
+  async emulateFocusedPage(enabled) {
+    return await this.#emulationManager.emulateFocus(enabled);
   }
   setDefaultNavigationTimeout(timeout2) {
     this._timeoutSettings.setDefaultNavigationTimeout(timeout2);
@@ -17709,6 +17740,18 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   }
   async removeScreen(screenId) {
     return await this.#connection.send("Emulation.removeScreen", { screenId });
+  }
+  async getWindowBounds(windowId) {
+    const { bounds } = await this.#connection.send("Browser.getWindowBounds", {
+      windowId: Number(windowId)
+    });
+    return bounds;
+  }
+  async setWindowBounds(windowId, windowBounds) {
+    await this.#connection.send("Browser.setWindowBounds", {
+      windowId: Number(windowId),
+      bounds: windowBounds
+    });
   }
   targets() {
     return Array.from(this.#targetManager.getAvailableTargets().values()).filter((target) => {

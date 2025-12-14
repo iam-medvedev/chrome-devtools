@@ -1,9 +1,8 @@
 // Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api, @devtools/no-lit-render-outside-of-view */
-import '../../ui/kit/kit.js';
 import '../../ui/legacy/components/inline_editor/inline_editor.js';
+import '../../ui/components/report_view/report_view.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -12,10 +11,13 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html, i18nTemplate, nothing, render } from '../../ui/lit/lit.js';
+import { Directives, html, i18nTemplate, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import appManifestViewStyles from './appManifestView.css.js';
 import * as ApplicationComponents from './components/components.js';
+const { styleMap, classMap, ref } = Directives;
+const { linkifyURL } = Components.Linkifier.Linkifier;
+const { widgetConfig } = UI.Widget;
 const UIStrings = {
     /**
      * @description Text in App Manifest View of the Application panel
@@ -422,104 +424,132 @@ const UIStrings = {
      * @description Text for emulation OS selection dropdown
      */
     selectWindowControlsOverlayEmulationOs: 'Emulate the Window Controls Overlay on',
+    /**
+     * @description Alert message for screen reader to announce which subsection is being scrolled to
+     * @example {"Identity"} PH1
+     */
+    onInvokeAlert: 'Scrolled to {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/AppManifestView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-function renderErrors(errorsSection, warnings, manifestErrors, imageErrors) {
-    errorsSection.clearContent();
-    errorsSection.element.classList.toggle('hidden', !manifestErrors?.length && !warnings?.length && !imageErrors?.length);
-    for (const error of manifestErrors ?? []) {
-        const icon = UI.UIUtils.createIconLabel({
-            title: error.message,
-            iconName: error.critical ? 'cross-circle-filled' : 'warning-filled',
-            color: error.critical ? 'var(--icon-error)' : 'var(--icon-warning)',
-        });
-        errorsSection.appendRow().appendChild(icon);
-    }
-    for (const warning of warnings ?? []) {
-        const msgElement = document.createTextNode(warning);
-        errorsSection.appendRow().appendChild(msgElement);
-    }
-    for (const error of imageErrors ?? []) {
-        const msgElement = document.createTextNode(error);
-        errorsSection.appendRow().appendChild(msgElement);
-    }
+function renderSectionHeader(text, output) {
+    // clang-format off
+    return html `
+    <devtools-report-section-header
+        ${ref(e => {
+        if (output && e instanceof HTMLElement) {
+            output.scrollToSection.set(text, () => { e.scrollIntoView(); });
+        }
+    })}>
+      ${text}
+    </devtools-report-section-header>`;
+    // clang-format on
 }
-function renderIdentity(identitySection, identityData) {
+function renderErrors(warnings, manifestErrors, imageErrors, output) {
+    // clang-format off
+    return html `
+    ${renderSectionHeader(i18nString(UIStrings.errorsAndWarnings), output)}
+    <div class="report-section" jslog=${VisualLogging.section('errors-and-warnings')}>
+      ${manifestErrors?.map(error => html `<div class="report-row">
+          <devtools-icon
+          name=${error.critical ? 'cross-circle-filled' : 'warning-filled'}
+          style=${styleMap({ color: error.critical ? 'var(--icon-error)' : 'var(--icon-warning)' })}>
+        </devtools-icon>
+        ${error.message}</div>
+      `)}
+      ${warnings?.map(warning => html `<div class="report-row">${warning}</div>`)}
+      ${imageErrors?.map(error => html `<div class="report-row">${error}</div>`)}
+    </div>`;
+    // clang-format on
+}
+function renderIdentity(identityData, onCopy, output) {
     const { name, shortName, description, appId, recommendedId, hasId } = identityData;
-    const fields = [];
-    fields.push({ title: i18nString(UIStrings.name), content: name });
-    fields.push({ title: i18nString(UIStrings.shortName), content: shortName });
-    fields.push({ title: i18nString(UIStrings.description), content: description });
-    if (appId && recommendedId) {
-        const onCopy = () => {
-            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
-        };
-        // clang-format off
-        fields.push({ title: i18nString(UIStrings.computedAppId), label: 'App Id', content: html `
-      ${appId}
-      <devtools-icon class="inline-icon" name="help" title=${i18nString(UIStrings.appIdExplainer)}
-          jslog=${VisualLogging.action('help').track({ hover: true })}>
-      </devtools-icon>
-      <devtools-link href="https://developer.chrome.com/blog/pwa-manifest-id/"
-                    .jslogContext=${'learn-more'}>
-        ${i18nString(UIStrings.learnMore)}
-      </devtools-link>
-      ${!hasId ? html `
-        <div class="multiline-value">
-          ${i18nTemplate(str_, UIStrings.appIdNote, {
-                PH1: html `<code>${recommendedId}</code>`,
-                PH2: html `<devtools-button class="inline-button" @click=${onCopy}
-                        .iconName=${'copy'}
-                        .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-                        .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
-                        .jslogContext=${'manifest.copy-id'}
-                        .title=${i18nString(UIStrings.copyToClipboard)}>
-                      </devtools-button>`,
-            })}
-      </div>` : nothing}` });
-        // clang-format on
-    }
-    else {
-        identitySection.removeField(i18nString(UIStrings.computedAppId));
-    }
-    setSectionContents(fields, identitySection);
+    // clang-format off
+    return html `${renderSectionHeader(i18nString(UIStrings.identity), output)}
+  <div class="report-section" jslog=${VisualLogging.section('identity')}>
+    <devtools-report-key>${i18nString(UIStrings.name)}</devtools-report-key>
+    <devtools-report-value>${name}</devtools-report-value>
+    <devtools-report-key>${i18nString(UIStrings.shortName)}</devtools-report-key>
+    <devtools-report-value>${shortName}</devtools-report-value>
+    <devtools-report-key>${i18nString(UIStrings.description)}</devtools-report-key>
+    <devtools-report-value>${description}</devtools-report-value>
+    ${appId && recommendedId ? html `
+      <devtools-report-key aria-label="App Id">${i18nString(UIStrings.computedAppId)}</devtools-report-key>
+      <devtools-report-value jslog=${VisualLogging.section('identity')}>
+        ${appId}
+        <devtools-icon class="inline-icon" name="help" title=${i18nString(UIStrings.appIdExplainer)}
+            jslog=${VisualLogging.action('help').track({ hover: true })}>
+        </devtools-icon>
+        <devtools-link href="https://developer.chrome.com/blog/pwa-manifest-id/"
+                      .jslogContext=${'learn-more'}
+                      ${ref(setFocusOnSection(i18nString(UIStrings.identity), output))}>
+          ${i18nString(UIStrings.learnMore)}
+        </devtools-link>
+        ${!hasId ? html `
+          <div class="multiline-value">
+            ${i18nTemplate(str_, UIStrings.appIdNote, {
+        PH1: html `<code>${recommendedId}</code>`,
+        PH2: html `<devtools-button class="inline-button" @click=${onCopy}
+                          .iconName=${'copy'}
+                          .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                          .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+                          .jslogContext=${'manifest.copy-id'}
+                          .title=${i18nString(UIStrings.copyToClipboard)}>
+                        </devtools-button>`,
+    })}
+        </div>` : nothing}
+      </devtools-report-value>` : nothing}
+    </div>`;
+    // clang-format on
 }
-function renderPresentation(presentationSection, presentationData) {
+function renderPresentation(presentationData, output) {
     const { startUrl, completeStartUrl, themeColor, backgroundColor, orientation, display, newNoteUrl, hasNewNoteUrl, completeNewNoteUrl, } = presentationData;
-    const fields = [
-        {
-            title: i18nString(UIStrings.startUrl),
-            label: i18nString(UIStrings.startUrl),
-            content: completeStartUrl ? Components.Linkifier.Linkifier.linkifyURL(completeStartUrl, ({ text: startUrl, tabStop: true, jslogContext: 'start-url' })) :
-                nothing,
-        },
-        {
-            title: i18nString(UIStrings.themeColor),
-            content: themeColor ? html `<devtools-color-swatch .color=${themeColor}></devtools-color-swatch>` : nothing,
-        },
-        {
-            title: i18nString(UIStrings.backgroundColor),
-            content: backgroundColor ? html `<devtools-color-swatch .color=${backgroundColor}></devtools-color-swatch>` :
-                nothing,
-        },
-        { title: i18nString(UIStrings.orientation), content: orientation },
-        { title: i18nString(UIStrings.display), content: display },
-    ];
-    if (completeNewNoteUrl) {
-        fields.push({
-            title: i18nString(UIStrings.newNoteUrl),
-            content: hasNewNoteUrl ?
-                Components.Linkifier.Linkifier.linkifyURL(completeNewNoteUrl, ({ text: newNoteUrl, tabStop: true })) :
-                nothing,
-        });
-    }
-    setSectionContents(fields, presentationSection);
+    // clang-format off
+    return html `${renderSectionHeader(i18nString(UIStrings.presentation), output)}
+    <div class="report-section" jslog=${VisualLogging.section('presentation')}>
+      <devtools-report-key>${i18nString(UIStrings.startUrl)}</devtools-report-key>
+      <devtools-report-value>
+      ${completeStartUrl ? (() => {
+        const link = linkifyURL(completeStartUrl, { text: startUrl, tabStop: true, jslogContext: 'start-url' });
+        output.focusOnSection.set(i18nString(UIStrings.presentation), () => link.focus());
+        return link;
+    })() : nothing}
+      </devtools-report-value>
+      <devtools-report-key>${i18nString(UIStrings.themeColor)}</devtools-report-key>
+      <devtools-report-value>${themeColor
+        ? html `<devtools-color-swatch .color=${themeColor}></devtools-color-swatch>`
+        : nothing}
+      </devtools-report-value>
+      <devtools-report-key>${i18nString(UIStrings.backgroundColor)}</devtools-report-key>
+      <devtools-report-value>${backgroundColor
+        ? html `<devtools-color-swatch .color=${backgroundColor}></devtools-color-swatch>`
+        : nothing}
+      </devtools-report-value>
+      <devtools-report-key>${i18nString(UIStrings.orientation)}</devtools-report-key>
+      <devtools-report-value>${orientation}</devtools-report-value>
+      <devtools-report-key>${i18nString(UIStrings.display)}</devtools-report-key>
+      <devtools-report-value>${display}</devtools-report-value>
+      ${completeNewNoteUrl ? html `
+        <devtools-report-key>${i18nString(UIStrings.newNoteUrl)}</devtools-report-key>
+        <devtools-report-value>${hasNewNoteUrl
+        ? linkifyURL(completeNewNoteUrl, { text: newNoteUrl, tabStop: true })
+        : nothing}
+        </devtools-report-value>
+      ` : nothing}
+    </div>
+  `;
+    // clang-format on
 }
-function renderProtocolHandlers(protocolHandlersView, data) {
-    protocolHandlersView.protocolHandlers = data.protocolHandlers;
-    protocolHandlersView.manifestLink = data.manifestLink;
+function renderProtocolHandlers(data, output) {
+    // clang-format off
+    return html `${renderSectionHeader(i18nString(UIStrings.protocolHandlers), output)}
+    <div class="report-row">
+      <devtools-widget .widgetConfig=${widgetConfig(ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView, { protocolHandlers: data.protocolHandlers, manifestLink: data.manifestLink })}
+        ${ref(setFocusOnSection(i18nString(UIStrings.protocolHandlers), output))}>
+      </devtools-widget>
+    </div>
+    <devtools-report-divider></devtools-report-divider>`;
+    // clang-format on
 }
 function renderImage(imageSrc, imageUrl, naturalWidth) {
     // clang-format off
@@ -530,150 +560,154 @@ function renderImage(imageSrc, imageUrl, naturalWidth) {
     </div>`;
     // clang-format on
 }
-function renderIcons(iconsSection, data) {
-    iconsSection.clearContent();
-    const contents = [
-        // clang-format off
-        {
-            content: html `<devtools-checkbox class="mask-checkbox"
-        jslog=${VisualLogging.toggle('show-minimal-safe-area-for-maskable-icons')
-                .track({ change: true })}
-        @click=${(event) => {
-                iconsSection.setIconMasked(event.target.checked);
-            }}>
-      ${i18nString(UIStrings.showOnlyTheMinimumSafeAreaFor)}
-    </devtools-checkbox>`
-        },
-        // clang-format on
-        {
-            content: i18nTemplate(str_, UIStrings.needHelpReadOurS, {
-                PH1: html `
-          <devtools-link href="https://web.dev/maskable-icon/" .jslogContext=${'learn-more'}>
-            ${i18nString(UIStrings.documentationOnMaskableIcons)}
-          </devtools-link>`,
-            }),
-        },
-    ];
-    for (const [title, images] of data.icons) {
-        const content = images.filter(icon => 'imageSrc' in icon)
-            .map(icon => renderImage(icon.imageSrc, icon.imageUrl, icon.naturalWidth));
-        contents.push({ title, content, flexed: true });
-    }
-    setSectionContents(contents, iconsSection);
+function setFocusOnSection(section, output) {
+    return (e) => {
+        if (e instanceof HTMLElement) {
+            output.focusOnSection.set(section, () => e.focus());
+        }
+    };
 }
-function renderShortcuts(reportView, shortcutSections, data) {
-    for (const shortcutsSection of shortcutSections) {
-        shortcutsSection.detach(/** overrideHideOnDetach= */ true);
-    }
-    shortcutSections.length = 0;
-    let shortcutIndex = 1;
-    for (const shortcut of data.shortcuts) {
-        const shortcutSection = reportView.appendSection(i18nString(UIStrings.shortcutS, { PH1: shortcutIndex }));
-        shortcutSection.element.setAttribute('jslog', `${VisualLogging.section('shortcuts')}`);
-        shortcutSections.push(shortcutSection);
-        const fields = [
-            { title: i18nString(UIStrings.name), flexed: true, content: shortcut.name },
-        ];
-        if (shortcut.shortName) {
-            fields.push({ title: i18nString(UIStrings.shortName), flexed: true, content: shortcut.shortName });
-        }
-        if (shortcut.description) {
-            fields.push({ title: i18nString(UIStrings.description), flexed: true, content: shortcut.description });
-        }
-        fields.push({
-            title: i18nString(UIStrings.url),
-            flexed: true,
-            content: Components.Linkifier.Linkifier.linkifyURL(shortcut.shortcutUrl, ({ text: shortcut.url, tabStop: true, jslogContext: 'shortcut' })),
-        });
-        for (const [title, images] of shortcut.icons) {
-            const content = images.filter(icon => 'imageSrc' in icon)
-                .map(icon => renderImage(icon.imageSrc, icon.imageUrl, icon.naturalWidth));
-            fields.push({ title, content, flexed: true });
-        }
-        setSectionContents(fields, shortcutSection);
-        shortcutIndex++;
-    }
-}
-function renderScreenshots(reportView, screenshotsSections, data) {
-    for (const screenshotSection of screenshotsSections) {
-        screenshotSection.detach(/** overrideHideOnDetach= */ true);
-    }
-    screenshotsSections.length = 0;
-    let screenshotIndex = 1;
-    for (const processedScreenshot of data.screenshots) {
-        const { screenshot, processedImage } = processedScreenshot;
-        const screenshotSection = reportView.appendSection(i18nString(UIStrings.screenshotS, { PH1: screenshotIndex }));
-        screenshotsSections.push(screenshotSection);
-        const fields = [];
-        if (screenshot.form_factor) {
-            fields.push({ title: i18nString(UIStrings.formFactor), flexed: true, content: screenshot.form_factor });
-        }
-        if (screenshot.label) {
-            fields.push({ title: i18nString(UIStrings.label), flexed: true, content: screenshot.label });
-        }
-        if (screenshot.platform) {
-            fields.push({ title: i18nString(UIStrings.platform), flexed: true, content: screenshot.platform });
-        }
-        if ('imageSrc' in processedImage) {
-            const content = renderImage(processedImage.imageSrc, processedImage.imageUrl, processedImage.naturalWidth);
-            fields.push({ title: processedImage.title, content, flexed: true });
-        }
-        setSectionContents(fields, screenshotSection);
-        screenshotIndex++;
-    }
-}
-function renderInstallability(installabilitySection, installabilityErrors) {
-    installabilitySection.clearContent();
-    installabilitySection.element.classList.toggle('hidden', !installabilityErrors.length);
-    const errorMessages = getInstallabilityErrorMessages(installabilityErrors);
-    setSectionContents(errorMessages.map(content => ({ content })), installabilitySection);
-}
-function renderWindowControlsSection(windowControlsSection, data, selectedPlatform, onSelectOs, onToggleWcoToolbar) {
-    const { hasWco, url } = data;
-    const contents = [];
-    if (hasWco) {
-        // clang-format off
-        contents.push({ content: html `
-      <devtools-icon class="inline-icon" name="check-circle"></devtools-icon>
-      ${i18nTemplate(str_, UIStrings.wcoFound, {
-                PH1: html `<code class="wco">window-controls-overlay</code>`,
-                PH2: html `<code>
-          <devtools-link href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
-                        .jslogContext=${'display-override'}>
-            display-override
-          </devtools-link>
-        </code>`,
-                PH3: html `${Components.Linkifier.Linkifier.linkifyURL(url)}`,
-            })}` });
-        // clang-format on
-        if (selectedPlatform && onSelectOs && onToggleWcoToolbar) {
-            const controls = renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar);
-            contents.push(controls);
-        }
-    }
-    else {
-        // clang-format off
-        contents.push({ content: html `
-      <devtools-icon class="inline-icon" name="info"></devtools-icon>
-      ${i18nTemplate(str_, UIStrings.wcoNotFound, {
-                PH1: html `<code>
-            <devtools-link href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
-                          .jslogContext=${'display-override'}>
-              display-override
-          </devtools-link>
-        </code>`
-            })}` });
-        // clang-format on
-    }
+function renderIcons(data, maskedIcons, onToggleIconMasked, output) {
     // clang-format off
-    contents.push({ content: i18nTemplate(str_, UIStrings.wcoNeedHelpReadMore, { PH1: html `<devtools-link
-      href="https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay"
-      .jslogContext=${'customize-pwa-tittle-bar'}>
-    ${i18nString(UIStrings.customizePwaTitleBar)}
-  </devtools-link>` }) });
+    return html `${renderSectionHeader(i18nString(UIStrings.icons), output)}
+    <div class="report-section" jslog=${VisualLogging.section('icons')}>
+      <div class="report-row">
+        <devtools-checkbox class="mask-checkbox"
+            jslog=${VisualLogging.toggle('show-minimal-safe-area-for-maskable-icons')
+        .track({ change: true })}
+            @click=${(event) => onToggleIconMasked(event.target.checked)}
+            ${ref(setFocusOnSection(i18nString(UIStrings.icons), output))}>
+          ${i18nString(UIStrings.showOnlyTheMinimumSafeAreaFor)}
+        </devtools-checkbox>
+      </div>
+      <div class="report-row">
+        ${i18nTemplate(str_, UIStrings.needHelpReadOurS, {
+        PH1: html `
+            <devtools-link href="https://web.dev/maskable-icon/" .jslogContext=${'learn-more'}>
+              ${i18nString(UIStrings.documentationOnMaskableIcons)}
+            </devtools-link>`,
+    })}
+      </div>
+      ${Array.from(data.icons).map(([title, images]) => {
+        return html `
+        <devtools-report-key>${title}</devtools-report-key>
+        <devtools-report-value class=${classMap({ 'show-mask': Boolean(maskedIcons) })}>
+          ${images.filter(icon => 'imageSrc' in icon)
+            .map(icon => renderImage(icon.imageSrc, icon.imageUrl, icon.naturalWidth))}
+        </devtools-report-value>
+      `;
+    })}
+    </div>`;
     // clang-format on
-    windowControlsSection.clearContent();
-    setSectionContents(contents, windowControlsSection);
+}
+function renderShortcuts(data) {
+    // clang-format off
+    return html `${data.shortcuts.map((shortcut, index) => html `
+    ${renderSectionHeader(i18nString(UIStrings.shortcutS, { PH1: index + 1 }))}
+    <div class="report-section" jslog=${VisualLogging.section('shortcuts')}>
+      <devtools-report-key>${i18nString(UIStrings.name)}</devtools-report-key>
+      <devtools-report-value>${shortcut.name}</devtools-report-value>
+      ${shortcut.shortName ? html `
+        <devtools-report-key>${i18nString(UIStrings.shortName)}</devtools-report-key>
+        <devtools-report-value>${shortcut.shortName}</devtools-report-value>
+      ` : nothing}
+      ${shortcut.description ? html `
+        <devtools-report-key>${i18nString(UIStrings.description)}</devtools-report-key>
+        <devtools-report-value>${shortcut.description}</devtools-report-value>
+      ` : nothing}
+      <devtools-report-key>${i18nString(UIStrings.url)}</devtools-report-key>
+      <devtools-report-value>
+        ${linkifyURL(shortcut.shortcutUrl, { text: shortcut.url, tabStop: true, jslogContext: 'shortcut' })}
+      </devtools-report-value>
+      ${Array.from(shortcut.icons).map(([title, images]) => html `
+        <devtools-report-key>${title}</devtools-report-key>
+        <devtools-report-value>
+          ${images.filter(icon => 'imageSrc' in icon)
+        .map(icon => renderImage(icon.imageSrc, icon.imageUrl, icon.naturalWidth))}
+        </devtools-report-value>
+      `)}
+    </div>`)}`;
+    // clang-format on
+}
+function renderScreenshots(data) {
+    // clang-format off
+    return html `${data.screenshots.map(({ screenshot, processedImage }, index) => html `
+    ${renderSectionHeader(i18nString(UIStrings.screenshotS, { PH1: index + 1 }))}
+    <div class="report-section" jslog=${VisualLogging.section('screenshots')}>
+      ${screenshot.form_factor
+        ? html `<devtools-report-key>${i18nString(UIStrings.formFactor)}</devtools-report-key>
+          <devtools-report-value>${screenshot.form_factor}</devtools-report-value>`
+        : nothing}
+      ${screenshot.label
+        ? html `<devtools-report-key>${i18nString(UIStrings.label)}</devtools-report-key>
+          <devtools-report-value>${screenshot.label}</devtools-report-value>`
+        : nothing}
+      ${screenshot.platform
+        ? html `<devtools-report-key>${i18nString(UIStrings.platform)}</devtools-report-key>
+          <devtools-report-value>${screenshot.platform}</devtools-report-value>`
+        : nothing}
+      ${'imageSrc' in processedImage ? html `
+        <devtools-report-key>${processedImage.title}</devtools-report-key>
+        <devtools-report-value>
+          ${renderImage(processedImage.imageSrc, processedImage.imageUrl, processedImage.naturalWidth)}
+        </devtools-report-value>`
+        : nothing}
+    </div>
+  `)}`;
+    // clang-format on
+}
+function renderInstallability(installabilityErrors) {
+    return html `${renderSectionHeader(i18nString(UIStrings.installability))}
+    ${getInstallabilityErrorMessages(installabilityErrors).map(content => html `
+      <div class="report-row">
+        ${content}
+      </div>
+    `)}`;
+}
+function renderWindowControlsSection(data, selectedPlatform, onSelectOs, onToggleWcoToolbar, output) {
+    // clang-format off
+    return html `
+    ${renderSectionHeader(i18nString(UIStrings.windowControlsOverlay), output)}
+    <div class="report-section" jslog=${VisualLogging.section('window-controls-overlay')}>
+      ${data?.hasWco && output ? html `
+        <div class="report-row">
+          <devtools-icon class="inline-icon" name="check-circle"></devtools-icon>
+          ${i18nTemplate(str_, UIStrings.wcoFound, {
+        PH1: html `<code class="wco">window-controls-overlay</code>`,
+        PH2: html `<code>
+              <devtools-link
+                href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
+                .jslogContext=${'display-override'}
+                ${ref(setFocusOnSection(i18nString(UIStrings.windowControlsOverlay), output))}>
+                display-override
+              </devtools-link>
+            </code>`,
+        PH3: html `${Components.Linkifier.Linkifier.linkifyURL(data.url)}`,
+    })}
+        </div>
+        ${selectedPlatform && onSelectOs && onToggleWcoToolbar ?
+        renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar) :
+        nothing}` : html `
+          <div class="report-row">
+            <devtools-icon class="inline-icon" name="info"></devtools-icon>
+            ${i18nTemplate(str_, UIStrings.wcoNotFound, { PH1: html `<code>
+                <devtools-link
+                    href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
+                    .jslogContext=${'display-override'}
+                    ${ref(setFocusOnSection(i18nString(UIStrings.windowControlsOverlay), output))}>
+                  display-override
+                </devtools-link>
+              </code>` })}
+          </div>`}
+        <div class="report-row">
+          ${i18nTemplate(str_, UIStrings.wcoNeedHelpReadMore, { PH1: html `<devtools-link
+              href="https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay"
+              .jslogContext=${'customize-pwa-tittle-bar'}>
+            ${i18nString(UIStrings.customizePwaTitleBar)}
+          </devtools-link>` })}
+        </div>
+    </div>`;
+    // clang-format on
 }
 function getInstallabilityErrorMessages(installabilityErrors) {
     const errorMessages = [];
@@ -773,17 +807,17 @@ function getInstallabilityErrorMessages(installabilityErrors) {
 }
 function renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar) {
     // clang-format off
-    return { content: html `
+    return html `<div class="report-row">
       <devtools-checkbox @click=${(event) => onToggleWcoToolbar(event.target.checked)}
           title=${i18nString(UIStrings.selectWindowControlsOverlayEmulationOs)}>
         ${i18nString(UIStrings.selectWindowControlsOverlayEmulationOs)}
       </devtools-checkbox>
       <select value=${selectedPlatform}
               @change=${(event) => {
-            const target = event.target;
-            const selectedOS = target.options[target.selectedIndex].value;
-            void onSelectOs(selectedOS);
-        }}
+        const target = event.target;
+        const selectedOS = target.options[target.selectedIndex].value;
+        void onSelectOs(selectedOS);
+    }}
              .selectedIndex=${0}>
         <option value=${"Windows" /* SDK.OverlayModel.EmulatedOSType.WINDOWS */}
                 jslog=${VisualLogging.item('windows').track({ click: true })}>
@@ -797,110 +831,57 @@ function renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar) 
                 jslog=${VisualLogging.item('linux').track({ click: true })}>
           Linux
         </option>
-      </select>` };
+      </select>
+    </div>`;
     // clang-format on
 }
-function setSectionContents(items, section) {
-    for (const item of items) {
-        if (!item.title) {
-            render(item.content, section.appendRow());
-            continue;
-        }
-        const element = item.flexed ? section.appendFlexedField(item.title) : section.appendField(item.title);
-        if (item.label) {
-            UI.ARIAUtils.setLabel(element, item.label);
-        }
-        render(item.content, element);
-    }
-}
-export const DEFAULT_VIEW = (input, _output, _target) => {
-    const { reportView, errorsSection, installabilitySection, identitySection, presentationSection, protocolHandlersView, iconsSection, windowControlsSection, shortcutSections, screenshotsSections, identityData, presentationData, protocolHandlersData, iconsData, shortcutsData, screenshotsData, installabilityErrors, warnings, errors, imageErrors, windowControlsData, selectedPlatform, onSelectOs, onToggleWcoToolbar, } = input;
-    if (identitySection && identityData) {
-        renderIdentity(identitySection, identityData);
-    }
-    if (presentationSection && presentationData) {
-        renderPresentation(presentationSection, presentationData);
-    }
-    if (protocolHandlersView && protocolHandlersData) {
-        renderProtocolHandlers(protocolHandlersView, protocolHandlersData);
-    }
-    if (iconsSection && iconsData) {
-        renderIcons(iconsSection, iconsData);
-    }
-    if (shortcutSections && shortcutsData) {
-        renderShortcuts(reportView, shortcutSections, shortcutsData);
-    }
-    if (screenshotsSections && screenshotsData) {
-        renderScreenshots(reportView, screenshotsSections, screenshotsData);
-    }
-    if (installabilitySection && installabilityErrors) {
-        renderInstallability(installabilitySection, installabilityErrors);
-    }
-    if (windowControlsSection && windowControlsData) {
-        renderWindowControlsSection(windowControlsSection, windowControlsData, selectedPlatform, onSelectOs, onToggleWcoToolbar);
-    }
-    if (errorsSection) {
-        renderErrors(errorsSection, warnings, errors, imageErrors);
-    }
+export const DEFAULT_VIEW = (input, output, target) => {
+    const { isEmpty, identityData, presentationData, protocolHandlersData, iconsData, shortcutsData, screenshotsData, installabilityErrors, warnings, errors, imageErrors, maskedIcons, windowControlsData, selectedPlatform, onSelectOs, onToggleWcoToolbar, onToggleIconMasked, onCopyId, url, } = input;
+    // clang-format off
+    render(html `
+    <style>${appManifestViewStyles}</style>
+    <style>${UI.inspectorCommonStyles}</style>
+    ${isEmpty ? html `
+    <devtools-widget .widgetConfig=${widgetConfig(UI.EmptyWidget.EmptyWidget, {
+        header: i18nString(UIStrings.noManifestDetected),
+        text: i18nString(UIStrings.manifestDescription),
+        link: 'https://web.dev/add-manifest/'
+    })}></devtools-widget>` : html `
+    <devtools-report .data=${{ reportTitle: i18nString(UIStrings.appManifest), reportUrl: url }}>
+      ${renderErrors(warnings, errors, imageErrors, output)}
+      ${installabilityErrors?.length ? renderInstallability(installabilityErrors) : nothing}
+      ${identityData && onCopyId ? renderIdentity(identityData, onCopyId, output) : nothing}
+      ${presentationData ? renderPresentation(presentationData, output) : nothing}
+      ${protocolHandlersData ? renderProtocolHandlers(protocolHandlersData, output) : nothing}
+      ${iconsData && onToggleIconMasked && maskedIcons ?
+        renderIcons(iconsData, maskedIcons, onToggleIconMasked, output) : nothing}
+      ${windowControlsData && output ? renderWindowControlsSection(windowControlsData, selectedPlatform, onSelectOs, onToggleWcoToolbar, output) : nothing}
+      ${shortcutsData ? renderShortcuts(shortcutsData) : nothing}
+      ${screenshotsData ? renderScreenshots(screenshotsData) : nothing}
+    </devtools-report>`}`, target);
+    // clang-format on
 };
 export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-    emptyView;
-    reportView;
-    errorsSection;
-    installabilitySection;
-    identitySection;
-    presentationSection;
-    iconsSection;
-    windowControlsSection;
-    protocolHandlersSection;
-    shortcutSections;
-    screenshotsSections;
     registeredListeners;
     target;
     resourceTreeModel;
     serviceWorkerManager;
     overlayModel;
-    protocolHandlersView;
     manifestUrl;
     manifestData;
     manifestErrors;
     installabilityErrors;
     appIdResponse;
     wcoToolbarEnabled = false;
+    maskedIcons = false;
     view;
+    output = { scrollToSection: new Map(), focusOnSection: new Map() };
     constructor(view = DEFAULT_VIEW) {
         super({
             jslog: `${VisualLogging.pane('manifest')}`,
             useShadowDom: true,
         });
         this.view = view;
-        this.registerRequiredCSS(appManifestViewStyles);
-        this.contentElement.classList.add('manifest-container');
-        this.emptyView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noManifestDetected), i18nString(UIStrings.manifestDescription));
-        this.emptyView.link = 'https://web.dev/add-manifest/';
-        this.emptyView.show(this.contentElement);
-        this.emptyView.hideWidget();
-        this.reportView = new UI.ReportView.ReportView(i18nString(UIStrings.appManifest));
-        this.reportView.registerRequiredCSS(appManifestViewStyles);
-        this.reportView.element.classList.add('manifest-view-header');
-        this.reportView.show(this.contentElement);
-        this.reportView.hideWidget();
-        this.errorsSection =
-            this.reportView.appendSection(i18nString(UIStrings.errorsAndWarnings), undefined, 'errors-and-warnings');
-        this.installabilitySection =
-            this.reportView.appendSection(i18nString(UIStrings.installability), undefined, 'installability');
-        this.identitySection = this.reportView.appendSection(i18nString(UIStrings.identity), 'undefined,identity');
-        this.presentationSection =
-            this.reportView.appendSection(i18nString(UIStrings.presentation), 'undefined,presentation');
-        this.protocolHandlersSection =
-            this.reportView.appendSection(i18nString(UIStrings.protocolHandlers), 'undefined,protocol-handlers');
-        this.protocolHandlersView = new ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView();
-        this.protocolHandlersView.show(this.protocolHandlersSection.getFieldElement());
-        this.iconsSection = this.reportView.appendSection(i18nString(UIStrings.icons), 'report-section-icons', 'icons');
-        this.windowControlsSection =
-            this.reportView.appendSection(UIStrings.windowControlsOverlay, undefined, 'window-controls-overlay');
-        this.shortcutSections = [];
-        this.screenshotsSections = [];
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
         this.registeredListeners = [];
         this.manifestUrl = Platform.DevToolsPath.EmptyUrlString;
@@ -909,17 +890,33 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.installabilityErrors = [];
         this.appIdResponse = null;
     }
+    scrollToSection(sectionTitle) {
+        const handler = this.output.scrollToSection.get(sectionTitle);
+        if (!handler) {
+            return;
+        }
+        handler();
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.onInvokeAlert, { PH1: sectionTitle }));
+    }
+    focusOnSection(sectionTitle) {
+        const handler = this.output.focusOnSection.get(sectionTitle);
+        if (!handler) {
+            return false;
+        }
+        handler();
+        return true;
+    }
     getStaticSections() {
         return [
-            this.identitySection,
-            this.presentationSection,
-            this.protocolHandlersSection,
-            this.iconsSection,
-            this.windowControlsSection,
+            { title: i18nString(UIStrings.identity), jslogContext: 'identity' },
+            { title: i18nString(UIStrings.presentation), jslogContext: 'presentation' },
+            { title: i18nString(UIStrings.protocolHandlers), jslogContext: 'protocol-handlers' },
+            { title: i18nString(UIStrings.icons), jslogContext: 'icons' },
+            { title: i18nString(UIStrings.windowControlsOverlay), jslogContext: 'window-controls' },
         ];
     }
     getManifestElement() {
-        return this.reportView.getHeaderElement();
+        return this.contentElement;
     }
     targetAdded(target) {
         if (target !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
@@ -984,19 +981,13 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         const appId = appIdResponse?.appId || null;
         const recommendedId = appIdResponse?.recommendedId || null;
         if ((!data || data === '{}') && !errors.length) {
-            this.emptyView.showWidget();
-            this.reportView.hideWidget();
-            this.view({ emptyView: this.emptyView, reportView: this.reportView }, undefined, this.contentElement);
+            this.view({ isEmpty: true }, this.output, this.contentElement);
             this.dispatchEventToListeners("ManifestDetected" /* Events.MANIFEST_DETECTED */, false);
             return;
         }
-        this.emptyView.hideWidget();
-        this.reportView.showWidget();
         this.dispatchEventToListeners("ManifestDetected" /* Events.MANIFEST_DETECTED */, true);
-        const link = Components.Linkifier.Linkifier.linkifyURL(url, { tabStop: true });
-        this.reportView.setURL(link);
         if (!data) {
-            this.view({ emptyView: this.emptyView, reportView: this.reportView, errorsSection: this.errorsSection, errors }, undefined, this.contentElement);
+            this.view({ url, errors }, this.output, this.contentElement);
             return;
         }
         if (data.charCodeAt(0) === 0xFEFF) {
@@ -1025,18 +1016,16 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             (selectedOS) => this.onSelectOs(selectedOS, windowControlsData.themeColor) :
             undefined;
         const onToggleWcoToolbar = this.overlayModel ? (enabled) => this.onToggleWcoToolbar(enabled) : undefined;
+        const onCopyId = recommendedId ? () => {
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
+        } : undefined;
+        const onToggleIconMasked = (masked) => {
+            this.maskedIcons = masked;
+            this.requestUpdate();
+        };
         this.view({
-            emptyView: this.emptyView,
-            reportView: this.reportView,
-            errorsSection: this.errorsSection,
-            installabilitySection: this.installabilitySection,
-            identitySection: this.identitySection,
-            presentationSection: this.presentationSection,
-            protocolHandlersView: this.protocolHandlersView,
-            iconsSection: this.iconsSection,
-            windowControlsSection: this.windowControlsSection,
-            shortcutSections: this.shortcutSections,
-            screenshotsSections: this.screenshotsSections,
+            maskedIcons: this.maskedIcons,
             parsedManifest,
             url,
             identityData,
@@ -1053,7 +1042,9 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             selectedPlatform,
             onSelectOs,
             onToggleWcoToolbar,
-        }, undefined, this.contentElement);
+            onCopyId,
+            onToggleIconMasked,
+        }, this.output, this.contentElement);
     }
     stringProperty(parsedManifest, name) {
         const value = parsedManifest[name];
@@ -1076,6 +1067,8 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             initiatorUrl: this.target.inspectedURL(),
         }, 
         /* isBinary=*/ true);
+        // Just loading the image, not building UI.
+        /* eslint-disable @devtools/no-imperative-dom-api */
         const image = document.createElement('img');
         const result = new Promise((resolve, reject) => {
             image.onload = resolve;
@@ -1085,6 +1078,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         // does not work, we can parse mimeType out of the response headers
         // using front_end/core/platform/MimeType.ts.
         image.src = 'data:application/octet-stream;base64,' + await Common.Base64.encode(content);
+        /* eslint-enable @devtools/no-imperative-dom-api */
         try {
             await result;
             return { naturalWidth: image.naturalWidth, naturalHeight: image.naturalHeight, src: image.src };

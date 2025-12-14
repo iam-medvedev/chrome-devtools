@@ -9,10 +9,11 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import * as Annotations from '../../models/annotations/annotations.js';
 import * as Badges from '../../models/badges/badges.js';
+import * as GreenDev from '../../models/greendev/greendev.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as Annotations from '../../ui/components/annotations/annotations.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as UIHelpers from '../../ui/helpers/helpers.js';
@@ -23,6 +24,7 @@ import * as NetworkForward from '../network/forward/forward.js';
 import * as NetworkPanel from '../network/network.js';
 import * as TimelinePanel from '../timeline/timeline.js';
 import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
+import { ArtifactsViewer } from './components/ArtifactsViewer.js';
 import { ChatView } from './components/ChatView.js';
 import { DisabledWidget } from './components/DisabledWidget.js';
 import { ExploreWidget } from './components/ExploreWidget.js';
@@ -195,7 +197,8 @@ function selectedElementFilter(maybeNode) {
     }
     return null;
 }
-async function getEmptyStateSuggestions(context, conversation) {
+async function getEmptyStateSuggestions(conversation) {
+    const context = conversation?.selectedContext;
     if (context) {
         const specialSuggestions = await context.getSuggestions();
         if (specialSuggestions) {
@@ -233,7 +236,8 @@ async function getEmptyStateSuggestions(context, conversation) {
             Platform.assertNever(conversation.type, 'Unknown conversation type');
     }
 }
-function getMarkdownRenderer(context, conversation) {
+function getMarkdownRenderer(conversation) {
+    const context = conversation?.selectedContext;
     if (context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
         if (!context.external) {
             const focus = context.getItem();
@@ -310,6 +314,13 @@ function toolbarView(input) {
           .jslogContext=${'freestyler.settings'}
           .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
           @click=${input.onSettingsClick}></devtools-button>
+        <!-- If the green experiment is enabled, render the artifacts sidebar toggle button -->
+        ${GreenDev.Prototypes.instance().isEnabled('artifactViewer') ? html `<devtools-button
+          title=${i18nString(UIStrings.settings)}
+          aria-label=${i18nString(UIStrings.settings)}
+          .iconName=${input.artifactsSidebarVisible ? 'left-panel-open' : 'left-panel-close'}
+          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+          @click=${input.onArtifactsSidebarToggle}></devtools-button>` : Lit.nothing}
       </devtools-toolbar>
     </div>
   `;
@@ -319,8 +330,9 @@ function defaultView(input, output, target) {
     // clang-format off
     function renderState() {
         switch (input.state) {
-            case "chat-view" /* ViewState.CHAT_VIEW */:
-                return html `<devtools-ai-chat-view
+            case "chat-view" /* ViewState.CHAT_VIEW */: {
+                return html `
+        <devtools-ai-chat-view
           .props=${input.props}
           ${Lit.Directives.ref((el) => {
                     if (!el || !(el instanceof ChatView)) {
@@ -329,6 +341,7 @@ function defaultView(input, output, target) {
                     output.chatView = el;
                 })}
         ></devtools-ai-chat-view>`;
+            }
             case "explore-view" /* ViewState.EXPLORE_VIEW */:
                 return html `<devtools-widget
           class="fill-panel"
@@ -341,10 +354,37 @@ function defaultView(input, output, target) {
         ></devtools-widget>`;
         }
     }
-    Lit.render(html `
-      ${toolbarView(input)}
-      <div class="ai-assistance-view-container">${renderState()}</div>
-    `, target);
+    const panelWithToolbar = html `
+    ${toolbarView(input)}
+    <div class="ai-assistance-view-container">${renderState()}</div>`;
+    // If the green experiment is enabled, render the chat view inside
+    // a split view to also have an artifacts viewer sidebar.
+    if (GreenDev.Prototypes.instance().isEnabled('artifactViewer')) {
+        Lit.render(html `
+        <devtools-split-view
+          direction="column"
+          sidebar-visibility=${input.artifactsSidebarVisible ? 'visible' : 'hidden'}
+          sidebar-position="second"
+          sidebar-initial-size="520"
+          style="width: 100%;">
+          <div slot="main" class="assistance-view-wrapper-with-sidebar">
+            ${panelWithToolbar}
+          </div>
+          <div slot="sidebar">
+            <div class="artifacts-toolbar-container" role="toolbar">
+              <div>Artifacts Viewer</div>
+            </div>
+            <devtools-widget
+              class="fill-panel"
+              .widgetConfig=${UI.Widget.widgetConfig(ArtifactsViewer)}
+            ></devtools-widget>
+          </div>
+        </devtools-split-view>
+      `, target);
+    }
+    else {
+        Lit.render(panelWithToolbar, target);
+    }
     // clang-format on
 }
 function createNodeContext(node) {
@@ -389,16 +429,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #selectedElement = null;
     #selectedPerformanceTrace = null;
     #selectedRequest = null;
+    #isArtifactsSidebarOpen = false;
     // Messages displayed in the `ChatView` component.
     #messages = [];
     // Whether the UI should show loading or not.
     #isLoading = false;
-    // Selected conversation context. The reason we keep this as a
-    // state field rather than using `#getConversationContext` is that,
-    // there is a case where the context differs from the selectedElement (or other selected context type).
-    // Specifically, it allows restoring the previous context when a new selection is cross-origin.
-    // See `#onContextSelectionChanged` for details.
-    #selectedContext = null;
     // Stores the availability status of the `AidaClient` and the reason for unavailability, if any.
     #aidaAvailability;
     // Info of the currently logged in user.
@@ -425,6 +460,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         }
         AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted" /* AiAssistanceModel.AiHistoryStorage.Events.HISTORY_DELETED */, this.#onHistoryDeleted, this);
+        if (GreenDev.Prototypes.instance().isEnabled('artifactViewer')) {
+            AiAssistanceModel.ArtifactsManager.ArtifactsManager.instance().addEventListener(AiAssistanceModel.ArtifactsManager.ArtifactAddedEvent.eventName, this.#onArtifactAdded.bind(this));
+        }
     }
     async #getPanelViewInput() {
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
@@ -438,16 +476,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             };
         }
         if (this.#conversation) {
-            const emptyStateSuggestions = await getEmptyStateSuggestions(this.#selectedContext, this.#conversation);
-            const markdownRenderer = getMarkdownRenderer(this.#selectedContext, this.#conversation);
+            const emptyStateSuggestions = await getEmptyStateSuggestions(this.#conversation);
+            const markdownRenderer = getMarkdownRenderer(this.#conversation);
             return {
                 state: "chat-view" /* ViewState.CHAT_VIEW */,
                 props: {
                     additionalFloatyContext: this.#additionalContextItemsFromFloaty,
-                    blockedByCrossOrigin: this.#blockedByCrossOrigin,
+                    blockedByCrossOrigin: this.#conversation.isBlockedByOrigin,
                     isLoading: this.#isLoading,
                     messages: this.#messages,
-                    selectedContext: this.#selectedContext,
+                    selectedContext: this.#conversation.selectedContext ?? null,
                     conversationType: this.#conversation.type,
                     isReadOnly: this.#conversation.isReadOnly ?? false,
                     changeSummary: this.#getChangeSummary(),
@@ -466,6 +504,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     uploadImageInputEnabled: isAiAssistanceMultimodalUploadInputEnabled() &&
                         this.#conversation.type === "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
                     markdownRenderer,
+                    isArtifactsSidebarOpen: this.#isArtifactsSidebarOpen,
                     onTextSubmit: async (text, imageInput, multimodalInputType) => {
                         this.#imageInput = undefined;
                         this.#isTextInputEmpty = true;
@@ -593,6 +632,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             }
             this.#conversation = conversation;
         }
+        this.#conversation?.setContext(this.#getConversationContext(this.#conversation));
         this.requestUpdate();
     }
     wasShown() {
@@ -626,9 +666,15 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#bindTimelineTraceListener();
         this.#selectDefaultAgentIfNeeded();
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistancePanelOpened);
-        if (Root.Runtime.hostConfig.devToolsGreenDevUi?.enabled) {
+        if (GreenDev.Prototypes.instance().isEnabled('inDevToolsFloaty')) {
             UI.Context.Context.instance().addFlavorChangeListener(UI.Floaty.FloatyFlavor, this.#bindFloatyListener, this);
             this.#bindFloatyListener();
+        }
+    }
+    #onArtifactAdded() {
+        if (AiAssistanceModel.ArtifactsManager.ArtifactsManager.instance().artifacts.length > 0) {
+            this.#isArtifactsSidebarOpen = true;
+            this.requestUpdate();
         }
     }
     willHide() {
@@ -733,6 +779,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             onSettingsClick: () => {
                 void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
             },
+            onArtifactsSidebarToggle: () => {
+                this.#isArtifactsSidebarOpen = !this.#isArtifactsSidebarOpen;
+                this.requestUpdate();
+            },
+            artifactsSidebarVisible: this.#isArtifactsSidebarOpen,
         };
     }
     async performUpdate() {
@@ -757,12 +808,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #isTextInputDisabled() {
         // If sending a new message is blocked by cross origin context
         // the text input is disabled.
-        if (this.#blockedByCrossOrigin) {
+        if (this.#conversation && this.#conversation.isBlockedByOrigin) {
             return true;
         }
-        // If there is no current agent if there is no selected context
-        // the text input is disabled.
-        if (!this.#conversation || !this.#selectedContext) {
+        if (!this.#conversation) {
+            return true;
+        }
+        if (!this.#conversation.selectedContext) {
             return true;
         }
         return false;
@@ -783,23 +835,26 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (!this.#conversation) {
             return i18nString(UIStrings.followTheSteps);
         }
-        if (this.#blockedByCrossOrigin) {
+        if (this.#conversation && this.#conversation.isBlockedByOrigin) {
             return lockedString(UIStringsNotTranslate.crossOriginError);
         }
         switch (this.#conversation.type) {
             case "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */:
-                return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForStyling) :
+                return this.#conversation.selectedContext ?
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForStyling) :
                     lockedString(UIStringsNotTranslate.inputPlaceholderForStylingNoContext);
             case "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */:
-                return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForFile) :
+                return this.#conversation.selectedContext ?
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForFile) :
                     lockedString(UIStringsNotTranslate.inputPlaceholderForFileNoContext);
             case "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */:
-                return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForNetwork) :
+                return this.#conversation.selectedContext ?
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForNetwork) :
                     lockedString(UIStringsNotTranslate.inputPlaceholderForNetworkNoContext);
             case "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */: {
                 const perfPanel = UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
                 if (perfPanel?.hasActiveTrace()) {
-                    return this.#selectedContext ?
+                    return this.#conversation.selectedContext ?
                         lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceTrace) :
                         lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceTraceNoContext);
                 }
@@ -853,7 +908,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         });
     }
     #handleContextClick() {
-        const context = this.#selectedContext;
+        if (!this.#conversation) {
+            return;
+        }
+        const context = this.#conversation.selectedContext;
         if (context instanceof AiAssistanceModel.NetworkAgent.RequestContext) {
             const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(context.getItem(), "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */);
             return Common.Revealer.reveal(requestLocation);
@@ -942,7 +1000,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#imageInput = undefined;
             this.#isTextInputEmpty = true;
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceQuerySubmitted);
-            if (this.#blockedByCrossOrigin) {
+            if (this.#conversation && this.#conversation.isBlockedByOrigin) {
                 this.#handleNewChatRequest();
             }
             await this.#startConversation(predefinedPrompt);
@@ -1108,39 +1166,20 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#runAbortController.abort();
         this.#runAbortController = new AbortController();
     }
-    // Indicates whether the new conversation context is blocked due to cross-origin restrictions.
-    // This happens when the conversation's context has a different
-    // origin than the selected context.
-    get #blockedByCrossOrigin() {
-        if (!this.#conversation) {
-            return false;
-        }
-        this.#selectedContext = this.#getConversationContext(this.#conversation);
-        if (!this.#selectedContext) {
-            return false;
-        }
-        return !this.#selectedContext.isOriginAllowed(this.#conversation.origin);
-    }
     #getConversationContext(conversation) {
         if (!conversation) {
             return null;
         }
-        let context;
         switch (conversation.type) {
             case "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */:
-                context = this.#selectedElement;
-                break;
+                return this.#selectedElement;
             case "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */:
-                context = this.#selectedFile;
-                break;
+                return this.#selectedFile;
             case "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */:
-                context = this.#selectedRequest;
-                break;
+                return this.#selectedRequest;
             case "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */:
-                context = this.#selectedPerformanceTrace;
-                break;
+                return this.#selectedPerformanceTrace;
         }
-        return context;
     }
     async #startConversation(text, imageInput, multimodalInputType) {
         if (!this.#conversation) {
@@ -1150,8 +1189,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#cancel();
         const signal = this.#runAbortController.signal;
         const context = this.#getConversationContext(this.#conversation);
+        this.#conversation.setContext(context);
         // If a different context is provided, it must be from the same origin.
-        if (context && !context.isOriginAllowed(this.#conversation.origin)) {
+        if (this.#conversation.isBlockedByOrigin) {
             // This error should not be reached. If it happens, some
             // invariants do not hold anymore.
             throw new Error('cross-origin context data should not be included');
@@ -1168,9 +1208,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         void VisualLogging.logFunctionCall(`start-conversation-${this.#conversation.type}`, 'ui');
         await this.#doConversation(this.#conversation.run(text, {
             signal,
-            selected: context,
             extraContext: this.#additionalContextItemsFromFloaty,
-        }, multimodalInput));
+            multimodalInput,
+        }));
     }
     async #doConversation(items) {
         const release = await this.#mutex.acquire();

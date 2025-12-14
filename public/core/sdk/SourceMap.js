@@ -63,7 +63,7 @@ export class SourceMap {
     #script;
     #scopesInfo = null;
     #debugId;
-    scopesFallbackPromiseForTest;
+    #scopesFallbackPromise;
     /**
      * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
      * for format description.
@@ -135,6 +135,10 @@ export class SourceMap {
         this.#ensureSourceMapProcessed();
         return this.#scopesInfo !== null && !this.#scopesInfo.isEmpty();
     }
+    waitForScopeInfo() {
+        this.#ensureSourceMapProcessed();
+        return this.#scopesFallbackPromise ?? Promise.resolve();
+    }
     findEntry(lineNumber, columnNumber, inlineFrameIndex) {
         this.#ensureSourceMapProcessed();
         if (inlineFrameIndex && this.#scopesInfo !== null) {
@@ -159,6 +163,14 @@ export class SourceMap {
         const mappings = this.mappings();
         const index = Platform.ArrayUtilities.upperBound(mappings, undefined, (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
         return index ? mappings[index - 1] : null;
+    }
+    /** Returns the entry at the given position but only if an entry exists for that exact position */
+    findEntryExact(lineNumber, columnNumber) {
+        const entry = this.findEntry(lineNumber, columnNumber);
+        if (entry?.lineNumber === lineNumber && entry.columnNumber === columnNumber) {
+            return entry;
+        }
+        return null;
     }
     findEntryRanges(lineNumber, columnNumber) {
         const mappings = this.mappings();
@@ -285,7 +297,7 @@ export class SourceMap {
             try {
                 this.eachSection(this.parseMap.bind(this));
                 if (!this.hasScopeInfo()) {
-                    this.scopesFallbackPromiseForTest = this.#buildScopesFallback().then(info => {
+                    this.#scopesFallbackPromise = this.#buildScopesFallback().then(info => {
                         this.#scopesInfo = info;
                     });
                 }

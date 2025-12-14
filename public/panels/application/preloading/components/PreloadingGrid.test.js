@@ -3,21 +3,23 @@
 // found in the LICENSE file.
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
-import { assertGridContents, getCellByIndexes } from '../../../../testing/DataGridHelpers.js';
-import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
+import { createViewFunctionStub } from '../../../../testing/ViewFunctionHelpers.js';
 import * as PreloadingComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
-async function assertRenderResult(rowsInput, headerExpected, rowsExpected) {
-    const component = new PreloadingComponents.PreloadingGrid.PreloadingGrid();
-    component.style.display = 'block';
-    component.style.width = '640px';
-    component.style.height = '480px';
-    component.update(rowsInput);
-    renderElementIntoDOM(component);
-    await RenderCoordinator.done();
-    return assertGridContents(component, headerExpected, rowsExpected);
+async function setupWidget() {
+    const view = createViewFunctionStub(PreloadingComponents.PreloadingGrid.PreloadingGrid);
+    const widget = new PreloadingComponents.PreloadingGrid.PreloadingGrid(view);
+    await view.nextInput;
+    return { widget, view };
+}
+async function assertRenderResult(rowsInput) {
+    const { widget, view } = await setupWidget();
+    widget.rows = rowsInput.rows;
+    widget.pageURL = rowsInput.pageURL;
+    await view.nextInput;
+    assert.strictEqual(rowsInput.rows, view.input.rows);
+    assert.strictEqual(rowsInput.pageURL, view.input.pageURL);
 }
 describeWithEnvironment('PreloadingGrid', () => {
     it('renders grid', async () => {
@@ -56,9 +58,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                     ],
                 }],
             pageURL: urlString `https://example.com/`,
-        }, ['URL', 'Action', 'Rule set', 'Status'], [
-            ['/prefetched.html', 'Prefetch', 'example.com/', 'Running'],
-        ]);
+        });
     });
     it('renders tag instead of url correctly', async () => {
         await assertRenderResult({
@@ -96,9 +96,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                         }],
                 }],
             pageURL: urlString `https://example.com/`,
-        }, ['URL', 'Action', 'Rule set', 'Status'], [
-            ['/prefetched.html', 'Prefetch', '\"tag1"', 'Running'],
-        ]);
+        });
     });
     it('shows full URL for cross-origin preloading', async () => {
         await assertRenderResult({
@@ -136,9 +134,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                     ],
                 }],
             pageURL: urlString `https://example.com/`,
-        }, ['URL', 'Action', 'Rule set', 'Status'], [
-            ['https://cross-origin.example.com/prefetched.html', 'Prefetch', 'example.com/', 'Running'],
-        ]);
+        });
     });
     it('shows filename for out-of-document speculation rules', async () => {
         await assertRenderResult({
@@ -177,9 +173,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                     ],
                 }],
             pageURL: urlString `https://example.com/`,
-        }, ['URL', 'Action', 'Rule set', 'Status'], [
-            ['/prefetched.html', 'Prefetch', 'example.com/assets/speculation-rules.json', 'Running'],
-        ]);
+        });
     });
     it('shows the only first speculation rules', async () => {
         await assertRenderResult({
@@ -252,13 +246,10 @@ describeWithEnvironment('PreloadingGrid', () => {
                 },
             ],
             pageURL: urlString `https://example.com/`,
-        }, ['URL', 'Action', 'Rule set', 'Status'], [
-            ['/rule-set-missing.html', 'Prefetch', '', 'Running'],
-            ['/multiple-rule-sets.html', 'Prefetch', 'example.com/', 'Running'],
-        ]);
+        });
     });
     it('shows composed status for failure', async () => {
-        const grid = await assertRenderResult({
+        await assertRenderResult({
             rows: [{
                     id: 'id',
                     pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
@@ -294,23 +285,10 @@ describeWithEnvironment('PreloadingGrid', () => {
                     ],
                 }],
             pageURL: urlString `https://example.com/`,
-        }, ['URL', 'Action', 'Rule set', 'Status'], [
-            [
-                '/prerendered.html',
-                'Prerender',
-                'example.com/',
-                'Failure - The prerendered page used a forbidden JavaScript API that is currently not supported. (Internal Mojo interface: device.mojom.GamepadMonitor)',
-            ],
-        ]);
-        assert.isNotNull(grid.shadowRoot);
-        const cell = getCellByIndexes(grid.shadowRoot, { row: 1, column: 3 });
-        const div = cell.querySelector('div');
-        assert.strictEqual(div.getAttribute('style'), 'color:var(--sys-color-error);');
-        const icon = div.children[0];
-        assert.include(icon.shadowRoot.innerHTML, 'cross-circle-filled');
+        });
     });
     it('shows a warning if a prerender fallbacks to prefetch', async () => {
-        const grid = await assertRenderResult({
+        await assertRenderResult({
             rows: [{
                     id: 'id',
                     pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
@@ -362,23 +340,10 @@ describeWithEnvironment('PreloadingGrid', () => {
                     ],
                 }],
             pageURL: urlString `https://example.com/`,
-        }, ['URL', 'Action', 'Rule set', 'Status'], [
-            [
-                '/prerendered.html',
-                'Prerender',
-                'example.com/',
-                'Prefetch fallback ready',
-            ],
-        ]);
-        assert.isNotNull(grid.shadowRoot);
-        const cell = getCellByIndexes(grid.shadowRoot, { row: 1, column: 3 });
-        const div = cell.querySelector('div');
-        assert.strictEqual(div.getAttribute('style'), 'color:var(--sys-color-orange-bright);');
-        const icon = div.children[0];
-        assert.include(icon.shadowRoot.innerHTML, 'warning-filled');
+        });
     });
     it('shows failure if both prefetch and prerender failed', async () => {
-        const grid = await assertRenderResult({
+        await assertRenderResult({
             rows: [{
                     id: 'id',
                     pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
@@ -430,21 +395,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                     ],
                 }],
             pageURL: urlString `https://example.com/`,
-        }, ['URL', 'Action', 'Rule set', 'Status'], [
-            [
-                '/prerendered.html',
-                'Prerender',
-                'example.com/',
-                // TODO(kenoss): Add string for Protocol.Preload.PrerenderFinalStatus.PrerenderFailedDuringPrefetch.
-                'Failure -',
-            ],
-        ]);
-        assert.isNotNull(grid.shadowRoot);
-        const cell = getCellByIndexes(grid.shadowRoot, { row: 1, column: 3 });
-        const div = cell.querySelector('div');
-        assert.strictEqual(div.getAttribute('style'), 'color:var(--sys-color-error);');
-        const icon = div.children[0];
-        assert.include(icon.shadowRoot.innerHTML, 'cross-circle-filled');
+        });
     });
 });
 //# sourceMappingURL=PreloadingGrid.test.js.map

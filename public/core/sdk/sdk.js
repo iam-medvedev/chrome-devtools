@@ -819,6 +819,7 @@ var generatedProperties = [
       "transition-property",
       "transition-timing-function",
       "translate",
+      "trigger-scope",
       "types",
       "unicode-range",
       "user-select",
@@ -4715,6 +4716,13 @@ var generatedProperties = [
     "name": "translate"
   },
   {
+    "keywords": [
+      "none",
+      "all"
+    ],
+    "name": "trigger-scope"
+  },
+  {
     "name": "types"
   },
   {
@@ -7091,6 +7099,12 @@ var generatedPropertyValues = {
       "jump-start",
       "step-start",
       "step-end"
+    ]
+  },
+  "trigger-scope": {
+    "values": [
+      "none",
+      "all"
     ]
   },
   "unicode-bidi": {
@@ -12319,6 +12333,7 @@ __export(DOMModel_exports, {
   DOMModel: () => DOMModel,
   DOMModelUndoStack: () => DOMModelUndoStack,
   DOMNode: () => DOMNode,
+  DOMNodeEvents: () => DOMNodeEvents,
   DOMNodeShortcut: () => DOMNodeShortcut,
   DeferredDOMNode: () => DeferredDOMNode,
   Events: () => Events8
@@ -18748,13 +18763,21 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
       const sourceIndex = startEntry?.sourceIndex;
       const canMapOriginalPosition = startEntry && endEntry && sourceIndex !== void 0 && startEntry.sourceIndex === endEntry.sourceIndex && startEntry.sourceIndex !== void 0 && sourceIndex >= 0 && sourceIndex < numSourceUrls;
       const isStackFrame = node.kind === 2 || node.kind === 4;
-      const name = node.kind === 2 ? startEntry?.name : void 0;
+      let name = void 0;
+      for (const offset of node.nameMappingLocations ?? []) {
+        const position = positionFromOffset(offset);
+        const entry = sourceMap.findEntryExact(position.line, position.column);
+        if (entry?.name !== void 0) {
+          name = entry.name;
+          break;
+        }
+      }
       let scope;
       if (canMapOriginalPosition) {
         scope = {
           start: { line: startEntry.sourceLineNumber, column: startEntry.sourceColumnNumber },
           end: { line: endEntry.sourceLineNumber, column: endEntry.sourceColumnNumber },
-          name,
+          name: name ?? node.name,
           isStackFrame,
           variables: [],
           children: []
@@ -19163,7 +19186,7 @@ var SourceMap = class {
   #script;
   #scopesInfo = null;
   #debugId;
-  scopesFallbackPromiseForTest;
+  #scopesFallbackPromise;
   /**
    * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
    * for format description.
@@ -19232,6 +19255,10 @@ var SourceMap = class {
     this.#ensureSourceMapProcessed();
     return this.#scopesInfo !== null && !this.#scopesInfo.isEmpty();
   }
+  waitForScopeInfo() {
+    this.#ensureSourceMapProcessed();
+    return this.#scopesFallbackPromise ?? Promise.resolve();
+  }
   findEntry(lineNumber, columnNumber, inlineFrameIndex) {
     this.#ensureSourceMapProcessed();
     if (inlineFrameIndex && this.#scopesInfo !== null) {
@@ -19254,6 +19281,14 @@ var SourceMap = class {
     const mappings = this.mappings();
     const index = Platform8.ArrayUtilities.upperBound(mappings, void 0, (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
     return index ? mappings[index - 1] : null;
+  }
+  /** Returns the entry at the given position but only if an entry exists for that exact position */
+  findEntryExact(lineNumber, columnNumber) {
+    const entry = this.findEntry(lineNumber, columnNumber);
+    if (entry?.lineNumber === lineNumber && entry.columnNumber === columnNumber) {
+      return entry;
+    }
+    return null;
   }
   findEntryRanges(lineNumber, columnNumber) {
     const mappings = this.mappings();
@@ -19359,7 +19394,7 @@ var SourceMap = class {
       try {
         this.eachSection(this.parseMap.bind(this));
         if (!this.hasScopeInfo()) {
-          this.scopesFallbackPromiseForTest = this.#buildScopesFallback().then((info) => {
+          this.#scopesFallbackPromise = this.#buildScopesFallback().then((info) => {
             this.#scopesInfo = info;
           });
         }
@@ -19919,7 +19954,7 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
     }
   }
   waitForSourceMapsProcessedForTest() {
-    return Promise.all(this.#sourceMaps.keys().map((sourceMap) => sourceMap.scopesFallbackPromiseForTest));
+    return Promise.all(this.#sourceMaps.keys().map((sourceMap) => sourceMap.waitForScopeInfo()));
   }
 };
 async function loadSourceMap(resourceLoader, url, debugId, initiator) {
@@ -24506,7 +24541,11 @@ var ARIA_ATTRIBUTES = /* @__PURE__ */ new Set([
   "aria-valuenow",
   "aria-valuetext"
 ]);
-var DOMNode = class _DOMNode {
+var DOMNodeEvents;
+(function(DOMNodeEvents2) {
+  DOMNodeEvents2["TOP_LAYER_INDEX_CHANGED"] = "TopLayerIndexChanged";
+})(DOMNodeEvents || (DOMNodeEvents = {}));
+var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
   #domModel;
   #agent;
   ownerDocument;
@@ -24560,7 +24599,13 @@ var DOMNode = class _DOMNode {
   detached = false;
   #retainedNodes;
   #adoptedStyleSheets = [];
+  /**
+   * 1-based index of the node in the top layer. Only set
+   * for non-backdrop nodes.
+   */
+  #topLayerIndex = -1;
   constructor(domModel) {
+    super();
     this.#domModel = domModel;
     this.#agent = this.#domModel.getAgent();
   }
@@ -24656,6 +24701,16 @@ var DOMNode = class _DOMNode {
     const frame = await FrameManager.instance().getOrWaitForFrame(frameId, notInTarget);
     const childModel = frame.resourceTreeModel()?.target().model(DOMModel);
     return await (childModel?.requestDocument() || null);
+  }
+  setTopLayerIndex(idx) {
+    const oldIndex = this.#topLayerIndex;
+    this.#topLayerIndex = idx;
+    if (oldIndex !== idx) {
+      this.dispatchEventToListeners(DOMNodeEvents.TOP_LAYER_INDEX_CHANGED);
+    }
+  }
+  topLayerIndex() {
+    return this.#topLayerIndex;
   }
   isAdFrameNode() {
     if (this.isIframe() && this.#frameOwnerFrameId) {
@@ -25461,10 +25516,14 @@ var DOMNodeShortcut = class {
   nodeType;
   nodeName;
   deferredNode;
-  constructor(target, backendNodeId, nodeType, nodeName) {
+  // Shortctus to elements that children of the element this shortcut is for.
+  // Currently, use for backdrop elements in the top layer.«
+  childShortcuts = [];
+  constructor(target, backendNodeId, nodeType, nodeName, childShortcuts = []) {
     this.nodeType = nodeType;
     this.nodeName = nodeName;
     this.deferredNode = new DeferredDOMNode(target, backendNodeId);
+    this.childShortcuts = childShortcuts;
   }
 };
 var DOMDocument = class extends DOMNode {
@@ -25500,6 +25559,8 @@ var DOMModel = class _DOMModel extends SDKModel {
   #frameOwnerNode;
   #loadNodeAttributesTimeout;
   #searchId;
+  #topLayerThrottler = new Common21.Throttler.Throttler(100);
+  #topLayerNodes = [];
   constructor(target) {
     super(target);
     this.agent = target.domAgent();
@@ -25819,9 +25880,6 @@ var DOMModel = class _DOMModel extends SDKModel {
     node.setAffectedByStartingStyles(affectedByStartingStyles);
     this.dispatchEventToListeners(Events8.AffectedByStartingStylesFlagUpdated, { node });
   }
-  topLayerElementsUpdated() {
-    this.dispatchEventToListeners(Events8.TopLayerElementsChanged);
-  }
   pseudoElementRemoved(parentId, pseudoElementId) {
     const parent = this.idToDOMNode.get(parentId);
     if (!parent) {
@@ -25908,6 +25966,63 @@ var DOMModel = class _DOMModel extends SDKModel {
   }
   getTopLayerElements() {
     return this.agent.invoke_getTopLayerElements().then(({ nodeIds }) => nodeIds);
+  }
+  topLayerElementsUpdated() {
+    void this.#topLayerThrottler.schedule(async () => {
+      const result = await this.agent.invoke_getTopLayerElements();
+      if (result.getError()) {
+        return;
+      }
+      const previousDocs = /* @__PURE__ */ new Set();
+      for (const node of this.#topLayerNodes) {
+        node.setTopLayerIndex(-1);
+        if (node.ownerDocument) {
+          previousDocs.add(node.ownerDocument);
+        }
+      }
+      this.#topLayerNodes.splice(0);
+      const nodes = result.nodeIds.map((id) => this.idToDOMNode.get(id)).filter((node) => Boolean(node));
+      const nodesByDocument = /* @__PURE__ */ new Map();
+      for (const node of nodes) {
+        const document2 = node.ownerDocument;
+        if (!document2) {
+          continue;
+        }
+        if (!nodesByDocument.has(document2)) {
+          nodesByDocument.set(document2, []);
+        }
+        nodesByDocument.get(document2)?.push(node);
+      }
+      for (const [document2, nodes2] of nodesByDocument) {
+        let topLayerIdx = 1;
+        const documentShortcuts = [];
+        for (const [idx, node] of nodes2.entries()) {
+          if (node.nodeName() === "::backdrop") {
+            continue;
+          }
+          const childShortcuts = [];
+          const previousNode = result.nodeIds[idx - 1] ? this.idToDOMNode.get(result.nodeIds[idx - 1]) : null;
+          if (previousNode && previousNode.nodeName() === "::backdrop") {
+            childShortcuts.push(new DOMNodeShortcut(this.target(), previousNode.backendNodeId(), 0, previousNode.nodeName()));
+          }
+          const shortcut = new DOMNodeShortcut(this.target(), node.backendNodeId(), 0, node.nodeName(), childShortcuts);
+          node.setTopLayerIndex(topLayerIdx++);
+          this.#topLayerNodes.push(node);
+          documentShortcuts.push(shortcut);
+          previousDocs.delete(document2);
+        }
+        this.dispatchEventToListeners(Events8.TopLayerElementsChanged, {
+          document: document2,
+          documentShortcuts
+        });
+      }
+      for (const document2 of previousDocs) {
+        this.dispatchEventToListeners(Events8.TopLayerElementsChanged, {
+          document: document2,
+          documentShortcuts: []
+        });
+      }
+    });
   }
   getDetachedDOMNodes() {
     return this.agent.invoke_getDetachedDomNodes().then(({ detachedNodes }) => detachedNodes);

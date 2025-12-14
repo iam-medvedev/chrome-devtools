@@ -100,15 +100,22 @@ export class SourceMapScopesInfo {
                 sourceIndex < numSourceUrls;
             const isStackFrame = node.kind === 2 /* Formatter.FormatterWorkerPool.ScopeKind.FUNCTION */ ||
                 node.kind === 4 /* Formatter.FormatterWorkerPool.ScopeKind.ARROW_FUNCTION */;
-            // TODO(crbug.com/368222773): Instead of mapping `start`, we should report a number of candidates. e.g. for arrow functions we should
-            //     follow the spec and map the `=>` as the spec says that is where the original name (if any) for arrow functions can be found.
-            const name = node.kind === 2 /* Formatter.FormatterWorkerPool.ScopeKind.FUNCTION */ ? startEntry?.name : undefined;
+            let name = undefined;
+            for (const offset of node.nameMappingLocations ?? []) {
+                const position = positionFromOffset(offset);
+                const entry = sourceMap.findEntryExact(position.line, position.column);
+                if (entry?.name !== undefined) {
+                    // Only consider named mappings.
+                    name = entry.name;
+                    break;
+                }
+            }
             let scope;
             if (canMapOriginalPosition) {
                 scope = {
                     start: { line: startEntry.sourceLineNumber, column: startEntry.sourceColumnNumber },
                     end: { line: endEntry.sourceLineNumber, column: endEntry.sourceColumnNumber },
-                    name,
+                    name: name ?? node.name,
                     isStackFrame,
                     variables: [],
                     children: [],

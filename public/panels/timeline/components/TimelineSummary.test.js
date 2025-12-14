@@ -2,8 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as TimelineComponents from './components.js';
 describeWithMockConnection('TimelineSummary', () => {
+    async function setupWidget() {
+        const view = createViewFunctionStub(TimelineComponents.TimelineSummary.CategorySummary);
+        const widget = new TimelineComponents.TimelineSummary.CategorySummary(view);
+        await view.nextInput;
+        return { widget, view };
+    }
     it('correctly renders categories', async function () {
         const categories = [
             { title: 'System', value: 100, color: 'blue' },
@@ -12,53 +19,29 @@ describeWithMockConnection('TimelineSummary', () => {
             { title: 'Loading', value: 1, color: 'white' },
             { title: 'Rendering', value: 0, color: 'black' },
         ];
-        const summary = new TimelineComponents.TimelineSummary.CategorySummary();
-        summary.data = {
-            rangeStart: 0,
-            rangeEnd: 110,
-            total: 110,
-            categories,
-            selectedEvents: [],
-        };
-        categories.push({ title: 'Total', value: 110, color: 'yellow' });
-        assert.isNotNull(summary.shadowRoot);
-        const range = summary.shadowRoot.querySelector('.summary-range');
-        assert.include(range?.textContent, 'Range: ');
-        const categorySummaries = summary.shadowRoot.querySelector('.category-summary');
-        const rows = categorySummaries?.querySelectorAll('.category-row') || [];
-        for (let i = 0; i < rows.length; i++) {
-            const swatch = rows[i].querySelector('.category-swatch');
-            assert.isNotNull(swatch);
-            const name = rows[i].querySelector('.category-name');
-            assert.include(name?.textContent, categories[i]?.title);
-            const value = rows[i].querySelector('.category-value');
-            assert.include(value?.textContent, categories[i]?.value.toString());
-        }
+        const { widget, view } = await setupWidget();
+        widget.rangeStart = 0;
+        widget.rangeEnd = 110;
+        widget.total = 110;
+        widget.categories = categories;
+        await view.nextInput;
+        assert.deepEqual(view.input.categories, categories);
+        assert.deepEqual(view.input.total, 110);
+        assert.deepEqual(view.input.rangeStart, 0);
+        assert.deepEqual(view.input.rangeEnd, 110);
     });
     it('no categories should just render Total', async function () {
         const categories = [];
-        const summary = new TimelineComponents.TimelineSummary.CategorySummary();
-        summary.data = {
-            rangeStart: 0,
-            rangeEnd: 110,
-            total: 110,
-            categories,
-            selectedEvents: [],
-        };
-        categories.push({ title: 'Total', value: 110, color: 'grey' });
-        assert.isNotNull(summary.shadowRoot);
-        const range = summary.shadowRoot.querySelector('.summary-range');
-        assert.include(range?.textContent, 'Range: ');
-        const categorySummaries = summary.shadowRoot.querySelector('.category-summary');
-        // Should just have the "Total" row.
-        const rows = categorySummaries?.querySelectorAll('.category-row') || [];
-        assert.lengthOf(rows, 1);
-        const swatch = rows[0].querySelector('.category-swatch');
-        assert.isNotNull(swatch);
-        const name = rows[0].querySelector('.category-name');
-        assert.include(name?.textContent, 'Total');
-        const value = rows[0].querySelector('.category-value');
-        assert.include(value?.textContent, (110).toString());
+        const { widget, view } = await setupWidget();
+        widget.rangeStart = 0;
+        widget.rangeEnd = 110;
+        widget.total = 110;
+        widget.categories = categories;
+        await view.nextInput;
+        assert.deepEqual(view.input.categories, []);
+        assert.deepEqual(view.input.total, 110);
+        assert.deepEqual(view.input.rangeStart, 0);
+        assert.deepEqual(view.input.rangeEnd, 110);
     });
 });
 //# sourceMappingURL=TimelineSummary.test.js.map

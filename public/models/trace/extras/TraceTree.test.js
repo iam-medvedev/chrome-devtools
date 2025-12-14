@@ -402,9 +402,7 @@ describeWithEnvironment('TraceTree', () => {
             assert.strictEqual(second.id, 'thirdParty2');
             assert.lengthOf(second.events, 3);
         });
-        // TODO: Gemini noticed that "setHasChildren" may not be called correctly ... I think
-        // it's right, but fixing it has proven difficult. So here's a test case for a later day.
-        it.skip('[crbug.com/454088373] correctly identifies which nodes have children in a nested structure', () => {
+        it('correctly identifies which nodes have children in a nested structure', () => {
             // This builds the following simple tree:
             // |----Parent Task----|
             //   |--Child Task--|
@@ -425,8 +423,10 @@ describeWithEnvironment('TraceTree', () => {
             // Ensure we found the nodes before testing them.
             assert.exists(parentNode, 'Parent node was not found');
             assert.exists(childNode, 'Child node was not found');
-            assert.isTrue(parentNode.hasChildren(), 'Parent node should have children');
-            assert.isFalse(childNode.hasChildren(), 'Child node should not have children');
+            // Since this is bottom-up, a node with callers should have children.
+            // A node with no callers (a top-level node) has no children.
+            assert.isFalse(parentNode.hasChildren(), 'Parent node (the root) should NOT have children in bottom-up');
+            assert.isTrue(childNode.hasChildren(), 'Child node (the nested event) SHOULD have children in bottom-up');
         });
     });
     describe('eventStackFrame', () => {

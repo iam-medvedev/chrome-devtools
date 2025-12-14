@@ -17,8 +17,10 @@ export declare class Scope {
     readonly start: number;
     readonly end: number;
     readonly kind: ScopeKind;
+    readonly name?: string;
+    readonly nameMappingLocations?: number[];
     readonly children: Scope[];
-    constructor(start: number, end: number, parent: Scope | null, kind: ScopeKind);
+    constructor(start: number, end: number, parent: Scope | null, kind: ScopeKind, name?: string, nameMappingLocations?: number[]);
     export(): ScopeTreeNode;
     addVariable(name: string, offset: number, definitionKind: DefinitionKind, isShorthandAssignmentProperty: boolean): void;
     findBinders(name: string): VariableUses[];
@@ -26,7 +28,7 @@ export declare class Scope {
 }
 export declare class ScopeVariableAnalysis {
     #private;
-    constructor(node: Acorn.ESTree.Node);
+    constructor(node: Acorn.ESTree.Node, sourceText: string);
     run(): Scope;
     getFreeVariables(): Map<string, Use[]>;
     getAllNames(): Set<string>;
