@@ -39,9 +39,7 @@ jobs:
         run: |
           git config --global user.name "GitHub"
           git config --global user.email "noreply@github.com"
-
-          current_date=$(date +"%Y%d%m")
-
+          current_date=$(date +"%Y%m%d")
           for package_dir in ./packages/*; do
             if [ -d "$package_dir" ] && [ -f "$package_dir/package.json" ]; then
               package_name=$(basename "$package_dir")
@@ -83,5 +81,3 @@ jobs:
               echo "Successfully published $scoped_name v$new_version"
             fi
           done
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
