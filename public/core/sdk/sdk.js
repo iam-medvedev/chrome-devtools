@@ -411,6 +411,7 @@ var generatedProperties = [
       "background-repeat",
       "background-size",
       "base-palette",
+      "base-url",
       "baseline-shift",
       "baseline-source",
       "block-ellipsis",
@@ -481,10 +482,10 @@ var generatedProperties = [
       "column-height",
       "column-rule-break",
       "column-rule-color",
-      "column-rule-edge-end-inset",
-      "column-rule-edge-start-inset",
-      "column-rule-interior-end-inset",
-      "column-rule-interior-start-inset",
+      "column-rule-edge-inset-end",
+      "column-rule-edge-inset-start",
+      "column-rule-interior-inset-end",
+      "column-rule-interior-inset-start",
       "column-rule-style",
       "column-rule-visibility-items",
       "column-rule-width",
@@ -572,7 +573,9 @@ var generatedProperties = [
       "grid-template-areas",
       "grid-template-columns",
       "grid-template-rows",
+      "hash",
       "height",
+      "hostname",
       "hyphenate-character",
       "hyphenate-limit-chars",
       "hyphens",
@@ -681,9 +684,12 @@ var generatedProperties = [
       "page",
       "page-orientation",
       "paint-order",
+      "pathname",
+      "pattern",
       "perspective",
       "perspective-origin",
       "pointer-events",
+      "port",
       "position",
       "position-anchor",
       "position-area",
@@ -692,6 +698,7 @@ var generatedProperties = [
       "position-visibility",
       "prefix",
       "print-color-adjust",
+      "protocol",
       "quotes",
       "r",
       "range",
@@ -704,10 +711,10 @@ var generatedProperties = [
       "row-gap",
       "row-rule-break",
       "row-rule-color",
-      "row-rule-edge-end-inset",
-      "row-rule-edge-start-inset",
-      "row-rule-interior-end-inset",
-      "row-rule-interior-start-inset",
+      "row-rule-edge-inset-end",
+      "row-rule-edge-inset-start",
+      "row-rule-interior-inset-end",
+      "row-rule-interior-inset-start",
       "row-rule-style",
       "row-rule-visibility-items",
       "row-rule-width",
@@ -745,6 +752,7 @@ var generatedProperties = [
       "scrollbar-color",
       "scrollbar-gutter",
       "scrollbar-width",
+      "search",
       "shape-image-threshold",
       "shape-margin",
       "shape-outside",
@@ -1100,6 +1108,9 @@ var generatedProperties = [
   },
   {
     "name": "base-palette"
+  },
+  {
+    "name": "base-url"
   },
   {
     "keywords": [
@@ -1789,28 +1800,28 @@ var generatedProperties = [
   },
   {
     "inherited": false,
-    "name": "column-rule-edge-end-inset"
+    "name": "column-rule-edge-inset-end"
   },
   {
     "inherited": false,
-    "name": "column-rule-edge-start-inset"
+    "name": "column-rule-edge-inset-start"
   },
   {
     "longhands": [
-      "column-rule-edge-start-inset",
-      "column-rule-edge-end-inset",
-      "column-rule-interior-start-inset",
-      "column-rule-interior-end-inset"
+      "column-rule-edge-inset-start",
+      "column-rule-edge-inset-end",
+      "column-rule-interior-inset-start",
+      "column-rule-interior-inset-end"
     ],
     "name": "column-rule-inset"
   },
   {
     "inherited": false,
-    "name": "column-rule-interior-end-inset"
+    "name": "column-rule-interior-inset-end"
   },
   {
     "inherited": false,
-    "name": "column-rule-interior-start-inset"
+    "name": "column-rule-interior-inset-start"
   },
   {
     "keywords": [
@@ -2785,6 +2796,9 @@ var generatedProperties = [
     "name": "grid-template-rows"
   },
   {
+    "name": "hash"
+  },
+  {
     "keywords": [
       "auto",
       "fit-content",
@@ -2792,6 +2806,9 @@ var generatedProperties = [
       "max-content"
     ],
     "name": "height"
+  },
+  {
+    "name": "hostname"
   },
   {
     "inherited": true,
@@ -3588,6 +3605,12 @@ var generatedProperties = [
     "name": "paint-order"
   },
   {
+    "name": "pathname"
+  },
+  {
+    "name": "pattern"
+  },
+  {
     "keywords": [
       "none"
     ],
@@ -3633,6 +3656,9 @@ var generatedProperties = [
       "all"
     ],
     "name": "pointer-events"
+  },
+  {
+    "name": "port"
   },
   {
     "keywords": [
@@ -3715,6 +3741,9 @@ var generatedProperties = [
       "exact"
     ],
     "name": "print-color-adjust"
+  },
+  {
+    "name": "protocol"
   },
   {
     "inherited": true,
@@ -3800,28 +3829,28 @@ var generatedProperties = [
   },
   {
     "inherited": false,
-    "name": "row-rule-edge-end-inset"
+    "name": "row-rule-edge-inset-end"
   },
   {
     "inherited": false,
-    "name": "row-rule-edge-start-inset"
+    "name": "row-rule-edge-inset-start"
   },
   {
     "longhands": [
-      "row-rule-edge-start-inset",
-      "row-rule-edge-end-inset",
-      "row-rule-interior-start-inset",
-      "row-rule-interior-end-inset"
+      "row-rule-edge-inset-start",
+      "row-rule-edge-inset-end",
+      "row-rule-interior-inset-start",
+      "row-rule-interior-inset-end"
     ],
     "name": "row-rule-inset"
   },
   {
     "inherited": false,
-    "name": "row-rule-interior-end-inset"
+    "name": "row-rule-interior-inset-end"
   },
   {
     "inherited": false,
-    "name": "row-rule-interior-start-inset"
+    "name": "row-rule-interior-inset-start"
   },
   {
     "keywords": [
@@ -3909,14 +3938,14 @@ var generatedProperties = [
   },
   {
     "longhands": [
-      "row-rule-edge-start-inset",
-      "row-rule-edge-end-inset",
-      "row-rule-interior-start-inset",
-      "row-rule-interior-end-inset",
-      "column-rule-edge-start-inset",
-      "column-rule-edge-end-inset",
-      "column-rule-interior-start-inset",
-      "column-rule-interior-end-inset"
+      "row-rule-edge-inset-start",
+      "row-rule-edge-inset-end",
+      "row-rule-interior-inset-start",
+      "row-rule-interior-inset-end",
+      "column-rule-edge-inset-start",
+      "column-rule-edge-inset-end",
+      "column-rule-interior-inset-start",
+      "column-rule-interior-inset-end"
     ],
     "name": "rule-inset"
   },
@@ -4157,6 +4186,9 @@ var generatedProperties = [
       "none"
     ],
     "name": "scrollbar-width"
+  },
+  {
+    "name": "search"
   },
   {
     "name": "shape-image-threshold"
@@ -8198,7 +8230,7 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
   ["background-repeat", /* @__PURE__ */ new Set(["repeat", "repeat-x", "repeat-y", "no-repeat", "space", "round"])],
   ["content", /* @__PURE__ */ new Set(["normal", "close-quote", "no-close-quote", "no-open-quote", "open-quote"])],
   ["baseline-shift", /* @__PURE__ */ new Set(["baseline"])],
-  ["max-height", /* @__PURE__ */ new Set(["min-content", "max-content", "-webkit-fill-available", "fit-content"])],
+  ["max-height", /* @__PURE__ */ new Set(["min-content", "max-content", "-webkit-fill-available", "fit-content", "stretch"])],
   ["color", /* @__PURE__ */ new Set(["black"])],
   ["background-color", /* @__PURE__ */ new Set(["white"])],
   ["box-shadow", /* @__PURE__ */ new Set(["inset"])],
@@ -8272,7 +8304,7 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
     ])
   ],
   ["zoom", /* @__PURE__ */ new Set(["normal"])],
-  ["max-width", /* @__PURE__ */ new Set(["min-content", "max-content", "-webkit-fill-available", "fit-content"])],
+  ["max-width", /* @__PURE__ */ new Set(["min-content", "max-content", "-webkit-fill-available", "fit-content", "stretch"])],
   ["-webkit-font-smoothing", /* @__PURE__ */ new Set(["antialiased", "subpixel-antialiased"])],
   [
     "border",
@@ -8680,7 +8712,7 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
     ])
   ],
   ["flex-flow", /* @__PURE__ */ new Set(["nowrap", "row", "row-reverse", "column", "column-reverse", "wrap", "wrap-reverse"])],
-  ["height", /* @__PURE__ */ new Set(["-webkit-fill-available"])],
+  ["height", /* @__PURE__ */ new Set(["-webkit-fill-available", "stretch"])],
   ["inline-size", /* @__PURE__ */ new Set(["-webkit-fill-available", "min-content", "max-content", "fit-content"])],
   [
     "list-style",
@@ -8747,9 +8779,9 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
   ["max-block-size", /* @__PURE__ */ new Set(["-webkit-fill-available", "min-content", "max-content", "fit-content"])],
   ["max-inline-size", /* @__PURE__ */ new Set(["-webkit-fill-available", "min-content", "max-content", "fit-content"])],
   ["min-block-size", /* @__PURE__ */ new Set(["-webkit-fill-available", "min-content", "max-content", "fit-content"])],
-  ["min-height", /* @__PURE__ */ new Set(["-webkit-fill-available", "min-content", "max-content", "fit-content"])],
+  ["min-height", /* @__PURE__ */ new Set(["-webkit-fill-available", "min-content", "max-content", "fit-content", "stretch"])],
   ["min-inline-size", /* @__PURE__ */ new Set(["-webkit-fill-available", "min-content", "max-content", "fit-content"])],
-  ["min-width", /* @__PURE__ */ new Set(["-webkit-fill-available", "min-content", "max-content", "fit-content"])],
+  ["min-width", /* @__PURE__ */ new Set(["-webkit-fill-available", "min-content", "max-content", "fit-content", "stretch"])],
   ["object-position", /* @__PURE__ */ new Set(["top", "bottom", "left", "right", "center"])],
   ["shape-outside", /* @__PURE__ */ new Set(["border-box", "content-box", "padding-box", "margin-box"])],
   [
@@ -8911,7 +8943,7 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
   ["-webkit-text-stroke-width", /* @__PURE__ */ new Set(["medium", "thick", "thin"])],
   ["-webkit-transform-origin-x", /* @__PURE__ */ new Set(["left", "right", "center"])],
   ["-webkit-transform-origin-y", /* @__PURE__ */ new Set(["top", "bottom", "center"])],
-  ["width", /* @__PURE__ */ new Set(["-webkit-fill-available"])],
+  ["width", /* @__PURE__ */ new Set(["-webkit-fill-available", "stretch"])],
   ["contain-intrinsic-width", /* @__PURE__ */ new Set(["auto none", "auto 100px"])],
   ["contain-intrinsic-height", /* @__PURE__ */ new Set(["auto none", "auto 100px"])],
   ["contain-intrinsic-size", /* @__PURE__ */ new Set(["auto none", "auto 100px"])],
@@ -10771,7 +10803,7 @@ var NetworkDispatcher = class {
     this.getExtraInfoBuilder(requestId).addHasExtraInfo(info.hasExtraInfo);
     this.#manager.dispatchEventToListeners(Events2.ResponseReceived, { request: networkRequest, response: info.outerResponse });
   }
-  requestWillBeSent({ requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, redirectHasExtraInfo, redirectResponse, type, frameId, hasUserGesture }) {
+  requestWillBeSent({ requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, redirectHasExtraInfo, redirectResponse, type, frameId, hasUserGesture, renderBlockingBehavior }) {
     let networkRequest = this.#requestsById.get(requestId);
     if (networkRequest) {
       if (!redirectResponse) {
@@ -10792,6 +10824,9 @@ var NetworkDispatcher = class {
       this.#manager.dispatchEventToListeners(Events2.RequestRedirected, networkRequest);
     } else {
       networkRequest = NetworkRequest.create(requestId, request.url, documentURL, frameId ?? null, loaderId, initiator, hasUserGesture);
+      if (renderBlockingBehavior) {
+        networkRequest.setRenderBlockingBehavior(renderBlockingBehavior);
+      }
       requestToManagerMap.set(networkRequest, this.#manager);
     }
     networkRequest.hasNetworkData = true;
@@ -20283,7 +20318,7 @@ var CSSModel = class _CSSModel extends SDKModel {
       isGrid,
       isSubgrid,
       isGridLanes,
-      isContainer,
+      containerType: isContainer ? containerType : void 0,
       hasScroll
     };
   }
@@ -23792,10 +23827,22 @@ var OverlayModel = class _OverlayModel extends SDKModel {
       void this.wireAgentToSettings();
     }
     this.#persistentHighlighter = new OverlayPersistentHighlighter(this, {
-      onGridOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentGridOverlayStateChanged", { nodeId, enabled }),
-      onFlexOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentFlexContainerOverlayStateChanged", { nodeId, enabled }),
-      onContainerQueryOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentContainerQueryOverlayStateChanged", { nodeId, enabled }),
-      onScrollSnapOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentScrollSnapOverlayStateChanged", { nodeId, enabled })
+      onGridOverlayStateChanged: ({ nodeId, enabled }) => {
+        this.#domModel.nodeForId(nodeId)?.dispatchEventToListeners(DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, { enabled });
+        this.dispatchEventToListeners("PersistentGridOverlayStateChanged", { nodeId, enabled });
+      },
+      onFlexOverlayStateChanged: ({ nodeId, enabled }) => {
+        this.#domModel.nodeForId(nodeId)?.dispatchEventToListeners(DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED, { enabled });
+        this.dispatchEventToListeners("PersistentFlexContainerOverlayStateChanged", { nodeId, enabled });
+      },
+      onContainerQueryOverlayStateChanged: ({ nodeId, enabled }) => {
+        this.#domModel.nodeForId(nodeId)?.dispatchEventToListeners(DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED, { enabled });
+        this.dispatchEventToListeners("PersistentContainerQueryOverlayStateChanged", { nodeId, enabled });
+      },
+      onScrollSnapOverlayStateChanged: ({ nodeId, enabled }) => {
+        this.#domModel.nodeForId(nodeId)?.dispatchEventToListeners(DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, { enabled });
+        this.dispatchEventToListeners("PersistentScrollSnapOverlayStateChanged", { nodeId, enabled });
+      }
     });
     this.#domModel.addEventListener(Events8.NodeRemoved, () => {
       if (!this.#persistentHighlighter) {
@@ -24544,6 +24591,11 @@ var ARIA_ATTRIBUTES = /* @__PURE__ */ new Set([
 var DOMNodeEvents;
 (function(DOMNodeEvents2) {
   DOMNodeEvents2["TOP_LAYER_INDEX_CHANGED"] = "TopLayerIndexChanged";
+  DOMNodeEvents2["SCROLLABLE_FLAG_UPDATED"] = "ScrollableFlagUpdated";
+  DOMNodeEvents2["GRID_OVERLAY_STATE_CHANGED"] = "GridOverlayStateChanged";
+  DOMNodeEvents2["FLEX_CONTAINER_OVERLAY_STATE_CHANGED"] = "FlexContainerOverlayStateChanged";
+  DOMNodeEvents2["SCROLL_SNAP_OVERLAY_STATE_CHANGED"] = "ScrollSnapOverlayStateChanged";
+  DOMNodeEvents2["CONTAINER_QUERY_OVERLAY_STATE_CHANGED"] = "ContainerQueryOverlayStateChanged";
 })(DOMNodeEvents || (DOMNodeEvents = {}));
 var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
   #domModel;
@@ -24722,6 +24774,12 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
     }
     return false;
   }
+  isRootNode() {
+    if (this.nodeType() === Node.ELEMENT_NODE && this.nodeName() === "HTML") {
+      return true;
+    }
+    return false;
+  }
   isSVGNode() {
     return this.#isSVGNode;
   }
@@ -24772,6 +24830,10 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
   }
   setIsScrollable(isScrollable) {
     this.#isScrollable = isScrollable;
+    this.dispatchEventToListeners(DOMNodeEvents.SCROLLABLE_FLAG_UPDATED);
+    if (this.nodeName() === "#document") {
+      this.ownerDocument?.documentElement?.setIsScrollable(isScrollable);
+    }
   }
   setAffectedByStartingStyles(affectedByStartingStyles) {
     this.#affectedByStartingStyles = affectedByStartingStyles;
@@ -25870,7 +25932,6 @@ var DOMModel = class _DOMModel extends SDKModel {
       return;
     }
     node.setIsScrollable(isScrollable);
-    this.dispatchEventToListeners(Events8.ScrollableFlagUpdated, { node });
   }
   affectedByStartingStylesFlagUpdated(nodeId, affectedByStartingStyles) {
     const node = this.nodeForId(nodeId);
@@ -26083,7 +26144,6 @@ var Events8;
   Events12["DistributedNodesChanged"] = "DistributedNodesChanged";
   Events12["MarkersChanged"] = "MarkersChanged";
   Events12["TopLayerElementsChanged"] = "TopLayerElementsChanged";
-  Events12["ScrollableFlagUpdated"] = "ScrollableFlagUpdated";
   Events12["AffectedByStartingStylesFlagUpdated"] = "AffectedByStartingStylesFlagUpdated";
   Events12["AdoptedStyleSheetsModified"] = "AdoptedStyleSheetsModified";
 })(Events8 || (Events8 = {}));
@@ -28338,6 +28398,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   #startTime = -1;
   #endTime = -1;
   #blockedReason = void 0;
+  #renderBlockingBehavior;
   #corsErrorStatus = void 0;
   statusCode = 0;
   statusText = "";
@@ -28653,6 +28714,12 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   }
   setBlockedReason(reason) {
     this.#blockedReason = reason;
+  }
+  setRenderBlockingBehavior(renderBlocking) {
+    this.#renderBlockingBehavior = renderBlocking;
+  }
+  renderBlockingBehavior() {
+    return this.#renderBlockingBehavior;
   }
   corsErrorStatus() {
     return this.#corsErrorStatus;

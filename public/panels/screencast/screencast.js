@@ -1024,6 +1024,7 @@ var ScreencastApp = class _ScreencastApp {
   }
   presentUI(document2) {
     this.rootView = new UI2.RootView.RootView();
+    this.rootView.registerRequiredCSS(UI2.inspectorCommonStyles);
     this.rootSplitWidget = new UI2.SplitWidget.SplitWidget(false, true, "inspector-view.screencast-split-view-state", 300, 300);
     this.rootSplitWidget.setVertical(true);
     this.rootSplitWidget.setSecondIsSidebar(true);

@@ -290,7 +290,7 @@ async function fetchToString(url) {
 }
 function canBeRemoteFilePath(url) {
   try {
-    const urlObject = new URL(url);
+    const urlObject = new URL(new URL(url).toString());
     return urlObject.protocol === "file:" && urlObject.host !== "";
   } catch {
     return false;
@@ -611,9 +611,6 @@ var InspectorFrontendHostStub = class {
       },
       devToolsFlexibleLayout: {
         verticalDrawerEnabled: true
-      },
-      devToolsStartingStyleDebugging: {
-        enabled: false
       }
     };
     if ("hostConfigForTesting" in globalThis) {

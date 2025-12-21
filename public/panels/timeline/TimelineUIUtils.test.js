@@ -1279,7 +1279,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('is true for a LCP candiadate event', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const markLCPCandidate = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isLargestContentfulPaintCandidate);
+            const markLCPCandidate = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isAnyLargestContentfulPaintCandidate);
             assert.isOk(markLCPCandidate);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, markLCPCandidate));
         });
@@ -1339,7 +1339,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
     describe('buildDetailsNodeForMarkerEvents', () => {
         it('builds the right link for an LCP Event', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-            const markLCPEvent = getEventOfType(parsedTrace.data.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isLargestContentfulPaintCandidate);
+            const markLCPEvent = getEventOfType(parsedTrace.data.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isAnyLargestContentfulPaintCandidate);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markLCPEvent);
             const url = html.querySelector('x-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/lcp/');

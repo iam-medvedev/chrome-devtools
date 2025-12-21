@@ -3924,7 +3924,8 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
   }}
         data-step-index=${input.stepIndex}
         data-section-index=${input.sectionIndex}
-        @click=${() => {
+        @click=${(event) => {
+    event.stopPropagation();
     const stepOrSection = input.step || input.section;
     if (stepOrSection) {
       input.onStepClick(stepOrSection);
@@ -4935,7 +4936,7 @@ var RecordingView = class extends UI9.Widget.Widget {
     void this.#convertToCode();
   }
   #isTitleInvalid = false;
-  #selectedStep;
+  #selectedStep = null;
   #replaySettingsExpanded = false;
   #showCodeView = false;
   #code = "";
@@ -5093,10 +5094,10 @@ var RecordingView = class extends UI9.Widget.Widget {
     }
   }
   #onWrapperClick() {
-    if (this.#selectedStep === void 0) {
+    if (!this.#selectedStep) {
       return;
     }
-    this.#selectedStep = void 0;
+    this.#selectedStep = null;
     this.performUpdate();
   }
   #onReplaySettingsKeydown(event) {

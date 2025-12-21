@@ -11,10 +11,28 @@ import { type Target } from './Target.js';
 /** Keep this list in sync with https://w3c.github.io/aria/#state_prop_def **/
 export declare const ARIA_ATTRIBUTES: Set<string>;
 export declare enum DOMNodeEvents {
-    TOP_LAYER_INDEX_CHANGED = "TopLayerIndexChanged"
+    TOP_LAYER_INDEX_CHANGED = "TopLayerIndexChanged",
+    SCROLLABLE_FLAG_UPDATED = "ScrollableFlagUpdated",
+    GRID_OVERLAY_STATE_CHANGED = "GridOverlayStateChanged",
+    FLEX_CONTAINER_OVERLAY_STATE_CHANGED = "FlexContainerOverlayStateChanged",
+    SCROLL_SNAP_OVERLAY_STATE_CHANGED = "ScrollSnapOverlayStateChanged",
+    CONTAINER_QUERY_OVERLAY_STATE_CHANGED = "ContainerQueryOverlayStateChanged"
 }
 export interface DOMNodeEventTypes {
     [DOMNodeEvents.TOP_LAYER_INDEX_CHANGED]: void;
+    [DOMNodeEvents.SCROLLABLE_FLAG_UPDATED]: void;
+    [DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED]: {
+        enabled: boolean;
+    };
+    [DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED]: {
+        enabled: boolean;
+    };
+    [DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED]: {
+        enabled: boolean;
+    };
+    [DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED]: {
+        enabled: boolean;
+    };
 }
 export declare class DOMNode extends Common.ObjectWrapper.ObjectWrapper<DOMNodeEventTypes> {
     #private;
@@ -54,6 +72,7 @@ export declare class DOMNode extends Common.ObjectWrapper.ObjectWrapper<DOMNodeE
     setTopLayerIndex(idx: number): void;
     topLayerIndex(): number;
     isAdFrameNode(): boolean;
+    isRootNode(): boolean;
     isSVGNode(): boolean;
     isScrollable(): boolean;
     affectedByStartingStyles(): boolean;
@@ -273,7 +292,6 @@ export declare enum Events {
     DistributedNodesChanged = "DistributedNodesChanged",
     MarkersChanged = "MarkersChanged",
     TopLayerElementsChanged = "TopLayerElementsChanged",
-    ScrollableFlagUpdated = "ScrollableFlagUpdated",
     AffectedByStartingStylesFlagUpdated = "AffectedByStartingStylesFlagUpdated",
     AdoptedStyleSheetsModified = "AdoptedStyleSheetsModified"
 }
@@ -300,9 +318,6 @@ export interface EventTypes {
     [Events.TopLayerElementsChanged]: {
         document: DOMDocument;
         documentShortcuts: DOMNodeShortcut[];
-    };
-    [Events.ScrollableFlagUpdated]: {
-        node: DOMNode;
     };
     [Events.AffectedByStartingStylesFlagUpdated]: {
         node: DOMNode;

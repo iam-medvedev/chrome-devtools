@@ -38,6 +38,7 @@ describeWithEnvironment('TimelineLoader', () => {
         recordingProgress: function (usage) {
             recordingProgressSpy(usage);
         },
+        recordingStatus: function () { },
         loadingCompleteForTest: function () {
             loadingCompleteForTestSpy();
         },

@@ -73,6 +73,7 @@ describeWithMockConnection('LayoutPane', () => {
             scrollIntoView: () => { },
             highlight: () => { },
             domModel: () => domModel,
+            dispatchEventToListeners: () => { },
         };
     }
     const ID_1 = 1;

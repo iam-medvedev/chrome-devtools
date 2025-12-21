@@ -26,11 +26,11 @@ const UIStrings = {
     /**
      * @description A context menu item in the Network Log View Columns of the Network panel
      */
-    responseHeaders: 'Response Headers',
+    responseHeaders: 'Response headers',
     /**
      * @description A context menu item in the Network Log View Columns of the Network panel
      */
-    requestHeaders: 'Request Headers',
+    requestHeaders: 'Request headers',
     /**
      * @description Text in Network Log View Columns of the Network panel
      */
@@ -38,19 +38,19 @@ const UIStrings = {
     /**
      * @description Text for the start time of an activity
      */
-    startTime: 'Start Time',
+    startTime: 'Start time',
     /**
      * @description Text in Network Log View Columns of the Network panel
      */
-    responseTime: 'Response Time',
+    responseTime: 'Response time',
     /**
      * @description Text in Network Log View Columns of the Network panel
      */
-    endTime: 'End Time',
+    endTime: 'End time',
     /**
      * @description Text in Network Log View Columns of the Network panel
      */
-    totalDuration: 'Total Duration',
+    totalDuration: 'Total duration',
     /**
      * @description Text for the latency of a task
      */
@@ -94,7 +94,7 @@ const UIStrings = {
     /**
      * @description Text in Network Log View Columns of the Network panel
      */
-    remoteAddress: 'Remote Address',
+    remoteAddress: 'Remote address',
     /**
      * @description Text that refers to some types
      */
@@ -110,7 +110,7 @@ const UIStrings = {
     /**
      * @description Column header in the Network log view of the Network panel
      */
-    initiatorAddressSpace: 'Initiator Address Space',
+    initiatorAddressSpace: 'Initiator address space',
     /**
      * @description Text for web cookies
      */
@@ -142,11 +142,15 @@ const UIStrings = {
     /**
      * @description Text in Network Log View Columns of the Network panel
      */
-    remoteAddressSpace: 'Remote Address Space',
+    remoteAddressSpace: 'Remote address space',
     /**
      * @description Text to show whether a request is ad-related
      */
     isAdRelated: 'Is Ad-Related',
+    /**
+     * @description Text in Network Log View Columns of the Network panel
+     */
+    renderBlocking: 'Render Blocking',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkLogViewColumns.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -1027,6 +1031,11 @@ const DEFAULT_COLUMNS = [
         id: 'is-ad-related',
         title: i18nLazyString(UIStrings.isAdRelated),
         sortingFunction: NetworkRequestNode.IsAdRelatedComparator,
+    },
+    {
+        id: 'render-blocking',
+        title: i18nLazyString(UIStrings.renderBlocking),
+        sortingFunction: NetworkRequestNode.RenderBlockingComparator,
     },
     // This header is a placeholder to let datagrid know that it can be sorted by this column, but never shown.
     {

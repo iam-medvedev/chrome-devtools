@@ -689,7 +689,7 @@ export class RecordingView extends UI.Widget.Widget {
         void this.#convertToCode();
     }
     #isTitleInvalid = false;
-    #selectedStep;
+    #selectedStep = null;
     #replaySettingsExpanded = false;
     #showCodeView = false;
     #code = '';
@@ -844,10 +844,10 @@ export class RecordingView extends UI.Widget.Widget {
         }
     }
     #onWrapperClick() {
-        if (this.#selectedStep === undefined) {
+        if (!this.#selectedStep) {
             return;
         }
-        this.#selectedStep = undefined;
+        this.#selectedStep = null;
         this.performUpdate();
     }
     #onReplaySettingsKeydown(event) {

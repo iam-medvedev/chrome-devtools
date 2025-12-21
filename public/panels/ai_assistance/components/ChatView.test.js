@@ -21,7 +21,6 @@ describeWithEnvironment('ChatView', () => {
             onContextClick: noop,
             onCopyResponseClick: noop,
             onNewConversation: noop,
-            onTextInputChange: noop,
             changeManager: new AiAssistanceModel.ChangeManager.ChangeManager(),
             inspectElementToggled: false,
             conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
@@ -37,7 +36,6 @@ describeWithEnvironment('ChatView', () => {
             emptyStateSuggestions: [],
             inputPlaceholder: i18n.i18n.lockedString('input placeholder'),
             disclaimerText: i18n.i18n.lockedString('disclaimer text'),
-            isTextInputEmpty: true,
             markdownRenderer: new AiAssistancePanel.MarkdownRendererWithCodeBlock(),
             additionalFloatyContext: [],
             ...options,
@@ -50,7 +48,7 @@ describeWithEnvironment('ChatView', () => {
             const props = getProp({
                 messages: [
                     {
-                        entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                        entity: "model" /* AiAssistancePanel.UserActionRow.ChatMessageEntity.MODEL */,
                         parts: [
                             {
                                 type: 'step',

@@ -3352,6 +3352,15 @@ export namespace ProtocolMapping {
       returnType: void;
     };
     /**
+     * Configures storing response bodies outside of renderer, so that these survive
+     * a cross-process navigation.
+     * If maxTotalBufferSize is not set, durable messages are disabled.
+     */
+    'Network.configureDurableMessages': {
+      paramsType: [Protocol.Network.ConfigureDurableMessagesRequest?];
+      returnType: void;
+    };
+    /**
      * Returns all browser cookies. Depending on the backend support, will return detailed cookie
      * information in the `cookies` field.
      * Deprecated. Use Storage.getCookies instead.
@@ -4879,6 +4888,13 @@ export namespace ProtocolMapping {
     'Tracing.getCategories': {
       paramsType: [];
       returnType: Protocol.Tracing.GetCategoriesResponse;
+    };
+    /**
+     * Return a descriptor for all available tracing categories.
+     */
+    'Tracing.getTrackEventDescriptor': {
+      paramsType: [];
+      returnType: Protocol.Tracing.GetTrackEventDescriptorResponse;
     };
     /**
      * Record a clock sync marker in the trace.

@@ -302,6 +302,7 @@ panels/accessibility/AccessibilitySidebarView.test.js
 panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/PatchWidget.test.js
 panels/ai_assistance/SelectWorkspaceDialog.test.js
+panels/ai_assistance/components/ChatInput.test.js
 panels/ai_assistance/components/ChatView.test.js
 panels/ai_assistance/components/DisabledWidget.test.js
 panels/ai_assistance/components/ExploreWidget.test.js
@@ -682,6 +683,7 @@ ui/legacy/ListModel.test.js
 ui/legacy/ListWidget.test.js
 ui/legacy/SearchableView.test.js
 ui/legacy/ShortcutRegistry.test.js
+ui/legacy/SoftContextMenu.test.js
 ui/legacy/SoftDropDown.test.js
 ui/legacy/SplitWidget.test.js
 ui/legacy/SuggestBox.test.js

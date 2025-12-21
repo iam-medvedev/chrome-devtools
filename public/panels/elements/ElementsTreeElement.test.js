@@ -45,7 +45,7 @@ describeWithMockConnection('ElementsTreeElement', () => {
         isGrid: false,
         isSubgrid: false,
         isGridLanes: false,
-        isContainer: false,
+        containerType: undefined,
         hasScroll: false,
     };
     beforeEach(() => {
@@ -102,10 +102,101 @@ describeWithMockConnection('ElementsTreeElement', () => {
         assert.deepEqual(debugWithAiItem?.subItems?.map(item => item.label), ['Start a chat', 'Remove scrollbars', 'Style scrollbars', 'Explain scrollbars']);
     });
     it('shows container submenu items', async () => {
-        const contextMenu = await getContextMenuForElementWithLayoutProperties({ ...DEFAULT_LAYOUT_PROPERTIES, isContainer: true });
+        const contextMenu = await getContextMenuForElementWithLayoutProperties({ ...DEFAULT_LAYOUT_PROPERTIES, containerType: 'inline-size' });
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem);
         assert.deepEqual(debugWithAiItem?.subItems?.map(item => item.label), ['Start a chat', 'Explain container queries', 'Explain container types', 'Explain container context']);
+    });
+    it('updates when persistent overlay state changes', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const node = new SDK.DOMModel.DOMNode(domModel);
+        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+        treeElement.treeOutline = treeOutline;
+        // Simulate binding to the tree
+        treeElement.onbind();
+        const performUpdateSpy = sinon.spy(treeElement, 'performUpdate');
+        // Trigger event
+        node.dispatchEventToListeners(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, { enabled: true });
+        sinon.assert.calledOnce(performUpdateSpy);
+        // Simulate unbinding
+        treeElement.onunbind();
+        performUpdateSpy.resetHistory();
+        // Trigger event again
+        node.dispatchEventToListeners(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, { enabled: false });
+        sinon.assert.notCalled(performUpdateSpy);
+    });
+    it('updates when persistent scroll snap overlay state changes', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const node = new SDK.DOMModel.DOMNode(domModel);
+        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+        treeElement.treeOutline = treeOutline;
+        // Simulate binding to the tree
+        treeElement.onbind();
+        const performUpdateSpy = sinon.spy(treeElement, 'performUpdate');
+        // Trigger event
+        node.dispatchEventToListeners(SDK.DOMModel.DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, { enabled: true });
+        sinon.assert.calledOnce(performUpdateSpy);
+        // Simulate unbinding
+        treeElement.onunbind();
+        performUpdateSpy.resetHistory();
+        // Trigger event again
+        node.dispatchEventToListeners(SDK.DOMModel.DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, { enabled: false });
+        sinon.assert.notCalled(performUpdateSpy);
+    });
+    it('initializes the slot adorner if the node has an assigned slot', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const node = new SDK.DOMModel.DOMNode(domModel);
+        const shortcut = {
+            deferredNode: {
+                resolve: (callback) => {
+                    callback(node);
+                },
+                resolvePromise: () => Promise.resolve(node),
+                backendNodeId: () => 1,
+                highlight: () => { },
+            },
+        };
+        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        sinon.stub(node, 'hasAssignedSlot').returns(true);
+        sinon.stub(node, 'assignedSlot').value(shortcut);
+        const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+        treeElement.treeOutline = treeOutline;
+        // Simulate binding to the tree
+        treeElement.onbind();
+        treeElement.performUpdate();
+        const adorner = treeElement.listItemElement.querySelector('devtools-adorner');
+        assert.exists(adorner);
+        assert.strictEqual(adorner.name, 'slot');
+    });
+    it('renders STARTING_STYLE adorner when enabled', async () => {
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const cssModel = target.model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        const node = new SDK.DOMModel.DOMNode(domModel);
+        node.id = 1;
+        const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline();
+        sinon.stub(node, 'affectedByStartingStyles').returns(true);
+        const treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+        treeElement.treeOutline = treeOutline;
+        treeElement.onbind();
+        treeElement.performUpdate();
+        const adorner = treeElement.listItemElement.querySelector('.starting-style');
+        assert.exists(adorner);
+        const forceSpy = sinon.spy(cssModel, 'forceStartingStyle');
+        adorner.click();
+        sinon.assert.calledWith(forceSpy, node, true);
+        adorner.click();
+        sinon.assert.calledWith(forceSpy, node, false);
     });
 });
 describeWithMockConnection('ElementsTreeElement highlighting', () => {

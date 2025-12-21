@@ -268,7 +268,11 @@ var UIStrings = {
   /**
    * @description Button's string in promotion state.
    */
-  aiAssistance: "AI assistance"
+  aiAssistance: "AI assistance",
+  /**
+   * @description Button's tooltip text.
+   */
+  openAiAssistance: "Open AI assistance panel"
 };
 var str_ = i18n.i18n.registerUIStrings("entrypoints/main/GlobalAiButton.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -300,7 +304,7 @@ var DEFAULT_VIEW = (input, output, target) => {
   render(html`
     <style>${globalAiButton_css_default}</style>
     <div class="global-ai-button-container">
-      <button class=${classes} @click=${input.onClick} jslog=${VisualLogging.action().track({ click: true }).context("global-ai-button")}>
+      <button class=${classes} @click=${input.onClick} title=${i18nString(UIStrings.openAiAssistance)} jslog=${VisualLogging.action().track({ click: true }).context("global-ai-button")}>
         <devtools-icon name="smart-assistant"></devtools-icon>
         <span class="button-text">${` ${i18nString(UIStrings.aiAssistance)}`}</span>
       </button>
@@ -808,7 +812,8 @@ var MainImpl = class {
       Badges.UserBadges.instance().addEventListener("BadgeTriggered", async (ev) => {
         loadedPanelCommonModule ??= await import("./../../panels/common/common.js");
         const badgeNotification = new loadedPanelCommonModule.BadgeNotification();
-        void badgeNotification.present(ev.data);
+        const { badge, reason } = ev.data;
+        void badgeNotification.present(badge, reason);
       });
     }
     const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance();

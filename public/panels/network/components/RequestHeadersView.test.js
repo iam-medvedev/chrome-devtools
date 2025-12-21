@@ -6,7 +6,7 @@ import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Persistence from '../../../models/persistence/persistence.js';
-import { dispatchClickEvent, dispatchCopyEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, dispatchClickEvent, dispatchCopyEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { createWorkspaceProject, setUpEnvironment, } from '../../../testing/OverridesHelpers.js';
@@ -116,6 +116,7 @@ describeWithMockConnection('RequestHeadersView', () => {
             '199.36.158.100:443',
             'strict-origin-when-cross-origin',
         ]);
+        await assertScreenshot('network/request-headers-view-general.png');
     });
     it('status text of a request from cache memory corresponds to the status code', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
@@ -129,19 +130,21 @@ describeWithMockConnection('RequestHeadersView', () => {
     it('renders request and response headers', async () => {
         component = await renderHeadersComponent(defaultRequest);
         assert.isNotNull(component.shadowRoot);
-        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response Headers"]');
+        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['age', '0'], ['cache-control', 'max-age=600'], ['content-encoding', 'gzip'], ['content-length', '661']]);
         const requestHeadersCategory = component.shadowRoot.querySelector('[aria-label="Request Headers"]');
         assert.instanceOf(requestHeadersCategory, HTMLElement);
         assert.deepEqual(getRowsTextFromCategory(requestHeadersCategory), [[':method', 'GET'], ['accept-encoding', 'gzip, deflate, br'], ['cache-control', 'no-cache']]);
+        await assertScreenshot('network/request-headers-view-response.png');
     });
     it('renders early hints headers', async () => {
         component = await renderHeadersComponent(defaultRequest);
         assert.isNotNull(component.shadowRoot);
-        const earlyHintsCategory = component.shadowRoot.querySelector('[aria-label="Early Hints Headers"]');
+        const earlyHintsCategory = component.shadowRoot.querySelector('[aria-label="Early hints headers"]');
         assert.instanceOf(earlyHintsCategory, HTMLElement);
         assert.deepEqual(getRowsTextFromCategory(earlyHintsCategory), [['link', '<src="/script.js" as="script">']]);
+        await assertScreenshot('network/request-headers-view-early-hints.png');
     });
     it('emits UMA event when a header value is being copied', async () => {
         component = await renderHeadersComponent(defaultRequest);
@@ -158,7 +161,7 @@ describeWithMockConnection('RequestHeadersView', () => {
     it('can switch between source and parsed view', async () => {
         component = await renderHeadersComponent(defaultRequest);
         assert.isNotNull(component.shadowRoot);
-        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response Headers"]');
+        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         // Switch to viewing source view
         responseHeadersCategory.dispatchEvent(new NetworkComponents.RequestHeadersView.ToggleRawHeadersEvent());
@@ -183,7 +186,7 @@ describeWithMockConnection('RequestHeadersView', () => {
             responseHeadersText: loremIpsum.repeat(10),
         });
         assert.isNotNull(component.shadowRoot);
-        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response Headers"]');
+        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         // Switch to viewing source view
         responseHeadersCategory.dispatchEvent(new NetworkComponents.RequestHeadersView.ToggleRawHeadersEvent());
@@ -207,7 +210,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         request.responseHeaders = [{ name: 'originalName', value: 'originalValue' }];
         component = await renderHeadersComponent(request);
         assert.isNotNull(component.shadowRoot);
-        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response Headers"]');
+        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         const spy = sinon.spy(component, 'render');
         sinon.assert.notCalled(spy);
@@ -226,13 +229,14 @@ describeWithMockConnection('RequestHeadersView', () => {
         ];
         component = await renderHeadersComponent(request);
         assert.isNotNull(component.shadowRoot);
-        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response Headers"]');
+        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['devtools', 'rock'], ['foo', 'bar'], ['highlightme', 'some value']]);
         assert.deepEqual(getRowHighlightStatus(responseHeadersCategory), [false, false, false]);
         component.revealHeader("Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */, 'HiGhLiGhTmE');
         await RenderCoordinator.done();
         assert.deepEqual(getRowHighlightStatus(responseHeadersCategory), [false, false, true]);
+        await assertScreenshot('network/request-headers-view-early-highlight.png');
     });
     it('can highlight individual request headers', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/foo.html`, urlString ``, null, null, null);
@@ -260,7 +264,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         await Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().setProject(project);
         component = await renderHeadersComponent(defaultRequest);
         assert.isNotNull(component.shadowRoot);
-        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response Headers"]');
+        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         assert.isNotNull(responseHeadersCategory.shadowRoot);
         const linkElements = responseHeadersCategory.shadowRoot.querySelectorAll('x-link');
@@ -279,7 +283,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         await Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().setProject(project);
         component = await renderHeadersComponent(defaultRequest);
         assert.isNotNull(component.shadowRoot);
-        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response Headers"]');
+        const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         assert.isNotNull(responseHeadersCategory.shadowRoot);
         const linkElement = responseHeadersCategory.shadowRoot.querySelector('x-link');

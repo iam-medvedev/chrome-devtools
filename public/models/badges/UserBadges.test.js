@@ -149,8 +149,9 @@ describeWithEnvironment('UserBadges', () => {
                 const badgeTriggeredPromise = Badges.UserBadges.instance().once("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */);
                 Badges.UserBadges.instance().recordAction(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
                 await clock.tickAsync(DELAY_BEFORE_TRIGGER);
-                const badge = await badgeTriggeredPromise;
+                const { badge, reason } = await badgeTriggeredPromise;
                 assert.strictEqual(badge.name, 'badges/test-badge');
+                assert.strictEqual(reason, "Award" /* Badges.BadgeTriggerReason.AWARD */);
                 sinon.assert.calledWith(createAwardStub, { name: 'badges/test-badge' });
             });
             it('should not dispatch event for a non-starter badge when `createAward` fails', async () => {
@@ -173,8 +174,9 @@ describeWithEnvironment('UserBadges', () => {
                 const badgeTriggeredPromise = Badges.UserBadges.instance().once("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */);
                 Badges.UserBadges.instance().recordAction(Badges.BadgeAction.CSS_RULE_MODIFIED);
                 await clock.tickAsync(DELAY_BEFORE_TRIGGER);
-                const badge = await badgeTriggeredPromise;
+                const { badge, reason } = await badgeTriggeredPromise;
                 assert.strictEqual(badge.name, 'badges/starter-test-badge');
+                assert.strictEqual(reason, "Award" /* Badges.BadgeTriggerReason.AWARD */);
                 sinon.assert.calledWith(createAwardStub, { name: 'badges/starter-test-badge' });
             });
             it('should not award a starter badge if the user does not have a GDP profile but trigger the badge', async () => {
@@ -185,13 +187,13 @@ describeWithEnvironment('UserBadges', () => {
                     isEligible: true,
                 });
                 const createAwardStub = stubGdpClientCreateAward(null);
-                const badgeTriggeredSpy = sinon.spy();
+                const badgeTriggeredPromise = Badges.UserBadges.instance().once("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */);
                 await Badges.UserBadges.instance().initialize();
-                Badges.UserBadges.instance().addEventListener("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */, badgeTriggeredSpy);
                 Badges.UserBadges.instance().recordAction(Badges.BadgeAction.CSS_RULE_MODIFIED);
                 await clock.tickAsync(DELAY_BEFORE_TRIGGER);
+                const { reason } = await badgeTriggeredPromise;
                 sinon.assert.notCalled(createAwardStub);
-                sinon.assert.calledOnce(badgeTriggeredSpy);
+                assert.strictEqual(reason, "StarterBadgeProfileNudge" /* Badges.BadgeTriggerReason.STARTER_BADGE_PROFILE_NUDGE */);
             });
             it('should not award a starter badge if the "receive badges" setting is disabled but trigger the badge', async () => {
                 setReceiveBadgesSetting(false);
@@ -202,13 +204,30 @@ describeWithEnvironment('UserBadges', () => {
                 });
                 mockGetAwardedBadgeNames([]);
                 const createAwardStub = stubGdpClientCreateAward(null);
+                const badgeTriggeredPromise = Badges.UserBadges.instance().once("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */);
+                await Badges.UserBadges.instance().initialize();
+                Badges.UserBadges.instance().recordAction(Badges.BadgeAction.CSS_RULE_MODIFIED);
+                await clock.tickAsync(DELAY_BEFORE_TRIGGER);
+                const { reason } = await badgeTriggeredPromise;
+                sinon.assert.notCalled(createAwardStub);
+                assert.strictEqual(reason, "StarterBadgeSettingsNudge" /* Badges.BadgeTriggerReason.STARTER_BADGE_SETTINGS_NUDGE */);
+            });
+            it('does not trigger event if getProfile returns null (failed response)', async () => {
+                setStarterBadgeSnoozeCount(0);
+                setStarterBadgeLastSnoozedTimestamp(NOW - TWO_DAYS);
+                setStarterBadgeDismissed(false);
+                setReceiveBadgesSetting(true);
+                mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
+                mockGdpClientGetProfile(null);
+                mockGetAwardedBadgeNames([]);
                 const badgeTriggeredSpy = sinon.spy();
+                const createAwardStub = stubGdpClientCreateAward(null);
                 await Badges.UserBadges.instance().initialize();
                 Badges.UserBadges.instance().addEventListener("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */, badgeTriggeredSpy);
                 Badges.UserBadges.instance().recordAction(Badges.BadgeAction.CSS_RULE_MODIFIED);
                 await clock.tickAsync(DELAY_BEFORE_TRIGGER);
                 sinon.assert.notCalled(createAwardStub);
-                sinon.assert.calledOnce(badgeTriggeredSpy);
+                sinon.assert.notCalled(badgeTriggeredSpy);
             });
         });
     });

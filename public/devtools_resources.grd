@@ -100,6 +100,7 @@
       <include file="Images/compress.svg" name="IMAGES_COMPRESS_SVG" resource_path="Images/compress.svg" type="BINDATA" compress="false"/>
       <include file="Images/console-conditional-breakpoint.svg" name="IMAGES_CONSOLE_CONDITIONAL_BREAKPOINT_SVG" resource_path="Images/console-conditional-breakpoint.svg" type="BINDATA" compress="false"/>
       <include file="Images/console-logpoint.svg" name="IMAGES_CONSOLE_LOGPOINT_SVG" resource_path="Images/console-logpoint.svg" type="BINDATA" compress="false"/>
+      <include file="Images/container.svg" name="IMAGES_CONTAINER_SVG" resource_path="Images/container.svg" type="BINDATA" compress="false"/>
       <include file="Images/cookie.svg" name="IMAGES_COOKIE_SVG" resource_path="Images/cookie.svg" type="BINDATA" compress="false"/>
       <include file="Images/cookie_off.svg" name="IMAGES_COOKIE_OFF_SVG" resource_path="Images/cookie_off.svg" type="BINDATA" compress="false"/>
       <include file="Images/copy.svg" name="IMAGES_COPY_SVG" resource_path="Images/copy.svg" type="BINDATA" compress="false"/>

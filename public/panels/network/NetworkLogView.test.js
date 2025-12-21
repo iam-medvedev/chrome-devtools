@@ -800,16 +800,16 @@ Invoke-WebRequest -UseBasicParsing -Uri "url-header-und-content-overridden"`]);
         dataGrid.element.dispatchEvent(event);
         sinon.assert.calledOnce(contextMenuShow);
         const contextMenu = contextMenuShow.thisValues[0];
-        const requestHeadersSubMenu = contextMenu.footerSection().items.find((item) => item.buildDescriptor().label === 'Request Headers');
-        assert.exists(requestHeadersSubMenu, '"Request Headers" submenu should exist');
+        const requestHeadersSubMenu = contextMenu.footerSection().items.find((item) => item.buildDescriptor().label === 'Request headers');
+        assert.exists(requestHeadersSubMenu, '"Request headers" submenu should exist');
         assert.instanceOf(requestHeadersSubMenu, UI.ContextMenu.SubMenu);
         const customRequestHeaderItem = requestHeadersSubMenu.defaultSection().items.find((item) => item.buildDescriptor().label === customRequestTitle);
-        assert.exists(customRequestHeaderItem, 'Custom request header item should be in the "Request Headers" submenu');
-        const responseHeadersSubMenu = contextMenu.footerSection().items.find((item) => item.buildDescriptor().label === 'Response Headers');
-        assert.exists(responseHeadersSubMenu, '"Response Headers" submenu should exist');
+        assert.exists(customRequestHeaderItem, 'Custom request header item should be in the "Request headers" submenu');
+        const responseHeadersSubMenu = contextMenu.footerSection().items.find((item) => item.buildDescriptor().label === 'Response headers');
+        assert.exists(responseHeadersSubMenu, '"Response headers" submenu should exist');
         assert.instanceOf(responseHeadersSubMenu, UI.ContextMenu.SubMenu);
         const customResponseHeaderItem = responseHeadersSubMenu.defaultSection().items.find((item) => item.buildDescriptor().label === customResponseTitle);
-        assert.exists(customResponseHeaderItem, 'Custom response header item should be in the "Response Headers" submenu');
+        assert.exists(customResponseHeaderItem, 'Custom response header item should be in the "Response headers" submenu');
     });
     describe('Request blocking and throttling', () => {
         beforeEach(() => {
