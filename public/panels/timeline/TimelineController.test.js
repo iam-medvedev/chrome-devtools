@@ -24,6 +24,7 @@ describeWithMockConnection('TimelineController', () => {
             recordingProgress(usage) {
                 stubs.recordingProgress(usage);
             },
+            recordingStatus() { },
             loadingStarted() {
                 stubs.loadingStarted();
             },

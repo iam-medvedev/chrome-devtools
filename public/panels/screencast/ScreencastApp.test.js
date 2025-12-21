@@ -7,8 +7,12 @@ import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Screencast from './screencast.js';
 describeWithMockConnection('ScreencastApp', () => {
+    let screencastApp;
+    afterEach(() => {
+        screencastApp?.rootView?.detach();
+    });
     it('can start casting', async () => {
-        const screencastApp = new Screencast.ScreencastApp.ScreencastApp();
+        screencastApp = new Screencast.ScreencastApp.ScreencastApp();
         screencastApp.presentUI(document);
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
@@ -16,7 +20,6 @@ describeWithMockConnection('ScreencastApp', () => {
         const screenCaptureModel = target.model(SDK.ScreenCaptureModel.ScreenCaptureModel);
         assert.exists(screenCaptureModel);
         await expectCall(sinon.stub(screenCaptureModel, 'startScreencast'));
-        screencastApp.rootView?.detach();
     });
 });
 //# sourceMappingURL=ScreencastApp.test.js.map

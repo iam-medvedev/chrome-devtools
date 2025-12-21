@@ -134,7 +134,12 @@ var EventsSerializer = class _EventsSerializer {
       return `${"l"}-${event.index}`;
     }
     const rawEvents = Helpers3.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
-    const key = Types.Events.isSyntheticBased(event) ? `${"s"}-${rawEvents.indexOf(event.rawSourceEvent)}` : `${"r"}-${rawEvents.indexOf(event)}`;
+    const isSynthetic = Types.Events.isSyntheticBased(event);
+    const index = rawEvents.indexOf(isSynthetic ? event.rawSourceEvent : event);
+    if (index === -1) {
+      throw new Error(`Unknown trace event: ${event.name}`);
+    }
+    const key = Types.Events.isSyntheticBased(event) ? `${"s"}-${index}` : `${"r"}-${index}`;
     if (key.length < 3) {
       return null;
     }
@@ -214,12 +219,12 @@ __export(LanternComputationData_exports, {
 });
 import * as Handlers2 from "./handlers/handlers.js";
 import * as Lantern from "./lantern/lantern.js";
-function createProcessedNavigation(data, frameId, navigationId) {
+function createProcessedNavigation(data, frameId, navigation) {
   const scoresByNav = data.PageLoadMetrics.metricScoresByFrameId.get(frameId);
   if (!scoresByNav) {
     throw new Lantern.Core.LanternError("missing metric scores for frame");
   }
-  const scores = scoresByNav.get(navigationId);
+  const scores = scoresByNav.get(navigation);
   if (!scores) {
     throw new Lantern.Core.LanternError("missing metric scores for specified navigation");
   }
@@ -754,7 +759,7 @@ var TraceProcessor = class extends EventTarget {
     }
     return this.#insights;
   }
-  #createLanternContext(data, traceEvents, frameId, navigationId, options) {
+  #createLanternContext(data, traceEvents, frameId, navigation, options) {
     if (!data.NetworkRequests || !data.Workers || !data.PageLoadMetrics) {
       return;
     }
@@ -762,7 +767,7 @@ var TraceProcessor = class extends EventTarget {
       throw new Lantern2.Core.LanternError("No network requests found in trace");
     }
     const navStarts = data.Meta.navigationsByFrameId.get(frameId);
-    const navStartIndex = navStarts?.findIndex((n) => n.args.data?.navigationId === navigationId);
+    const navStartIndex = navStarts?.findIndex((n) => n === navigation);
     if (!navStarts || navStartIndex === void 0 || navStartIndex === -1) {
       throw new Lantern2.Core.LanternError("Could not find navigation start");
     }
@@ -774,7 +779,7 @@ var TraceProcessor = class extends EventTarget {
     };
     const requests = createNetworkRequests(trace, data, startTime, endTime);
     const graph = createGraph(requests, trace, data);
-    const processedNavigation = createProcessedNavigation(data, frameId, navigationId);
+    const processedNavigation = createProcessedNavigation(data, frameId, navigation);
     const networkAnalysis = Lantern2.Core.NetworkAnalyzer.analyze(requests);
     if (!networkAnalysis) {
       return;
@@ -901,7 +906,7 @@ var TraceProcessor = class extends EventTarget {
         model.frameId = context.frameId;
         const navId = context.navigation?.args.data?.navigationId;
         if (navId) {
-          model.navigationId = navId;
+          model.navigation = context.navigation;
         }
         model.createOverlays = () => {
           return insight.createOverlays(model);
@@ -977,7 +982,7 @@ var TraceProcessor = class extends EventTarget {
     let lantern;
     try {
       options.logger?.start("insights:createLanternContext");
-      lantern = this.#createLanternContext(data, traceEvents, frameId, navigationId, options);
+      lantern = this.#createLanternContext(data, traceEvents, frameId, navigation, options);
     } catch (e) {
       const expectedErrors = [
         "mainDocumentRequest not found",
@@ -2054,6 +2059,10 @@ function maybeInitSylesMap() {
       /* Types.Events.Name.MARK_LCP_CANDIDATE */
     ]: new TimelineRecordStyle(i18nString(UIStrings.largestContentfulPaint), defaultCategoryStyles.rendering, true),
     [
+      "largestContentfulPaint::CandidateForSoftNavigation"
+      /* Types.Events.Name.MARK_LCP_CANDIDATE_FOR_SOFT_NAVIGATION */
+    ]: new TimelineRecordStyle(i18nString(UIStrings.largestContentfulPaint), defaultCategoryStyles.rendering, true),
+    [
       "TimeStamp"
       /* Types.Events.Name.TIME_STAMP */
     ]: new TimelineRecordStyle(i18nString(UIStrings.timestamp), defaultCategoryStyles.scripting),
@@ -2318,12 +2327,16 @@ function markerDetailsForEvent(event) {
     color = "var(--sys-color-green-bright)";
     title = "FCP";
   }
-  if (Types5.Events.isLargestContentfulPaintCandidate(event)) {
+  if (Types5.Events.isAnyLargestContentfulPaintCandidate(event)) {
     color = "var(--sys-color-green)";
     title = "LCP";
   }
   if (Types5.Events.isNavigationStart(event)) {
     color = "var(--color-text-primary)";
+    title = "Nav";
+  }
+  if (Types5.Events.isSoftNavigationStart(event)) {
+    color = "var(--sys-color-blue)";
     title = "Nav";
   }
   if (Types5.Events.isMarkDOMContent(event)) {

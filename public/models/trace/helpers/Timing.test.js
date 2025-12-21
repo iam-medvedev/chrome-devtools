@@ -67,7 +67,7 @@ describeWithEnvironment('Timing helpers', () => {
             }
             // Ensure we are testing the navigationID path!
             assert.exists(lcpEvent.args.data?.navigationId);
-            const adjustedTime = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(lcpEvent, data.Meta.traceBounds, data.Meta.navigationsByNavigationId, data.Meta.navigationsByFrameId);
+            const adjustedTime = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(lcpEvent, data.Meta.traceBounds, data.Meta.navigationsByNavigationId, data.Meta.softNavigationsById, data.Meta.navigationsByFrameId);
             const unadjustedTime = Trace.Helpers.Timing.microToMilli(Trace.Types.Timing.Micro(lcpEvent.ts - data.Meta.traceBounds.min));
             assert.strictEqual(unadjustedTime.toFixed(2), String(130.31));
             // To make the assertion easier to read.
@@ -86,7 +86,7 @@ describeWithEnvironment('Timing helpers', () => {
             assert.isUndefined(dclEvent.args.data?.navigationId);
             const unadjustedTime = Trace.Helpers.Timing.microToMilli(Trace.Types.Timing.Micro(dclEvent.ts - data.Meta.traceBounds.min));
             assert.strictEqual(unadjustedTime.toFixed(2), String(190.79));
-            const adjustedTime = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(dclEvent, data.Meta.traceBounds, data.Meta.navigationsByNavigationId, data.Meta.navigationsByFrameId);
+            const adjustedTime = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(dclEvent, data.Meta.traceBounds, data.Meta.navigationsByNavigationId, data.Meta.softNavigationsById, data.Meta.navigationsByFrameId);
             // To make the assertion easier to read.
             const timeAsMS = Trace.Helpers.Timing.microToMilli(adjustedTime);
             assert.strictEqual(timeAsMS.toFixed(2), String(178.92));

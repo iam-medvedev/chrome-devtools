@@ -1031,6 +1031,9 @@
   "entrypoints/main/GlobalAiButton.ts | aiAssistance": {
     "message": "AI assistance"
   },
+  "entrypoints/main/GlobalAiButton.ts | openAiAssistance": {
+    "message": "Open AI assistance panel"
+  },
   "entrypoints/main/main-meta.ts | auto": {
     "message": "auto"
   },
@@ -1291,9 +1294,6 @@
   },
   "generated/Deprecation.ts | ChromeLoadTimesWasAlternateProtocolAvailable": {
     "message": "chrome.loadTimes() is deprecated, instead use standardized API: nextHopProtocol in Navigation Timing 2."
-  },
-  "generated/Deprecation.ts | CookieWithTruncatingChar": {
-    "message": "Cookies containing a \\(0|r|n) character will be rejected instead of truncated."
   },
   "generated/Deprecation.ts | CrossOriginAccessBasedOnDocumentDomain": {
     "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. This deprecation warning is for a cross-origin access that was enabled by setting document.domain."
@@ -3104,13 +3104,13 @@
   "panels/ai_assistance/AiAssistancePanel.ts | settings": {
     "message": "Settings"
   },
-  "panels/ai_assistance/components/ChatView.ts | inputTextAriaDescription": {
+  "panels/ai_assistance/components/ChatInput.ts | inputTextAriaDescription": {
     "message": "You can also use one of the suggested prompts above to start your conversation"
   },
-  "panels/ai_assistance/components/ChatView.ts | learnAbout": {
+  "panels/ai_assistance/components/ChatInput.ts | learnAbout": {
     "message": "Learn about AI in DevTools"
   },
-  "panels/ai_assistance/components/ChatView.ts | revealContextDescription": {
+  "panels/ai_assistance/components/ChatInput.ts | revealContextDescription": {
     "message": "Reveal the selected context item in DevTools"
   },
   "panels/ai_assistance/components/DisabledWidget.ts | notAvailableInIncognitoMode": {
@@ -5993,11 +5993,11 @@
   "panels/common/BadgeNotification.ts | manageSettings": {
     "message": "Manage settings"
   },
+  "panels/common/BadgeNotification.ts | noThanks": {
+    "message": "No thanks"
+  },
   "panels/common/BadgeNotification.ts | receiveBadges": {
     "message": "Turn on badges"
-  },
-  "panels/common/BadgeNotification.ts | remindMeLater": {
-    "message": "Remind me later"
   },
   "panels/common/BadgeNotification.ts | starterBadgeAwardMessageNoGdpProfile": {
     "message": "You earned the {PH1} badge for the {PH2}! Create a profile to claim your badge."
@@ -6013,6 +6013,9 @@
   },
   "panels/common/common.ts | cancel": {
     "message": "Cancel"
+  },
+  "panels/common/CopyChangesToPrompt.ts | responseCopiedToClipboard": {
+    "message": "Response copied to clipboard"
   },
   "panels/common/DOMLinkifier.ts | node": {
     "message": "<node>"
@@ -6965,6 +6968,12 @@
   "panels/elements/CSSRuleValidator.ts | fontVariationSettingsWarning": {
     "message": "Value for setting “{PH1}” {PH2} is outside the supported range [{PH3}, {PH4}] for font-family “{PH5}”."
   },
+  "panels/elements/CSSRuleValidator.ts | invalidAnchorPositioning": {
+    "message": "An anchor was defined but the element was not anchor-positioned but positioned \"{POSITION}\"."
+  },
+  "panels/elements/CSSRuleValidator.ts | invalidAnchorPositioningFix": {
+    "message": "Set position to either \"fixed\" or \"absolute\"."
+  },
   "panels/elements/CSSRuleValidator.ts | ruleViolatedByParentElementRuleFix": {
     "message": "Try setting the {EXISTING_PARENT_ELEMENT_RULE} property on the parent to {TARGET_PARENT_ELEMENT_RULE}."
   },
@@ -6982,6 +6991,9 @@
   },
   "panels/elements/CSSRuleValidator.ts | ruleViolatedBySameElementRuleReason": {
     "message": "The {REASON_PROPERTY_DECLARATION_CODE} property prevents {AFFECTED_PROPERTY_DECLARATION_CODE} from having an effect."
+  },
+  "panels/elements/CSSRuleValidator.ts | unusedAnchorPositioning": {
+    "message": "An anchor was defined but the element is hidden."
   },
   "panels/elements/ElementIssueUtils.ts | disallowedOptGroupChild": {
     "message": "Invalid element or text node within <optgroup>"
@@ -7396,6 +7408,9 @@
   },
   "panels/elements/ElementsTreeElement.ts | valueIsTooLargeToEdit": {
     "message": "<value is too large to edit>"
+  },
+  "panels/elements/ElementsTreeElement.ts | viewSourceCode": {
+    "message": "View source code"
   },
   "panels/elements/ElementsTreeElement.ts | wrapTheseItems": {
     "message": "Wrap these items"
@@ -9450,7 +9465,7 @@
     "message": "Provisional headers are shown. Disable cache to see full headers."
   },
   "panels/network/components/RequestHeadersView.ts | earlyHintsHeaders": {
-    "message": "Early Hints Headers"
+    "message": "Early hints headers"
   },
   "panels/network/components/RequestHeadersView.ts | fromDiskCache": {
     "message": "(from disk cache)"
@@ -9492,7 +9507,7 @@
     "message": "Request URL"
   },
   "panels/network/components/RequestHeadersView.ts | responseHeaders": {
-    "message": "Response Headers"
+    "message": "Response headers"
   },
   "panels/network/components/RequestHeadersView.ts | revealHeaderOverrides": {
     "message": "Reveal header override definitions"
@@ -9755,6 +9770,9 @@
   "panels/network/NetworkDataGridNode.ts | blockedTooltip": {
     "message": "This request was blocked due to misconfigured response headers, click to view the headers"
   },
+  "panels/network/NetworkDataGridNode.ts | blocking": {
+    "message": "Blocking"
+  },
   "panels/network/NetworkDataGridNode.ts | broken": {
     "message": "Chrome did not try to establish a HTTP/3 connection because it was marked as broken."
   },
@@ -9809,6 +9827,9 @@
   "panels/network/NetworkDataGridNode.ts | finished": {
     "message": "Finished"
   },
+  "panels/network/NetworkDataGridNode.ts | inBodyParserBlocking": {
+    "message": "In-body parser blocking"
+  },
   "panels/network/NetworkDataGridNode.ts | initialPriorityToolTip": {
     "message": "{PH1}, Initial priority: {PH2}"
   },
@@ -9833,6 +9854,12 @@
   "panels/network/NetworkDataGridNode.ts | memoryCache": {
     "message": "(memory cache)"
   },
+  "panels/network/NetworkDataGridNode.ts | nonBlocking": {
+    "message": "Non-blocking"
+  },
+  "panels/network/NetworkDataGridNode.ts | nonBlockingDynamic": {
+    "message": "Non-blocking dynamic"
+  },
   "panels/network/NetworkDataGridNode.ts | origin": {
     "message": "origin"
   },
@@ -9850,6 +9877,9 @@
   },
   "panels/network/NetworkDataGridNode.ts | pendingq": {
     "message": "(pending)"
+  },
+  "panels/network/NetworkDataGridNode.ts | potentiallyBlocking": {
+    "message": "Potentially blocking"
   },
   "panels/network/NetworkDataGridNode.ts | prefetchCache": {
     "message": "(prefetch cache)"
@@ -10254,7 +10284,7 @@
     "message": "Domain"
   },
   "panels/network/NetworkLogViewColumns.ts | endTime": {
-    "message": "End Time"
+    "message": "End time"
   },
   "panels/network/NetworkLogViewColumns.ts | hasOverrides": {
     "message": "Has overrides"
@@ -10263,7 +10293,7 @@
     "message": "Initiator"
   },
   "panels/network/NetworkLogViewColumns.ts | initiatorAddressSpace": {
-    "message": "Initiator Address Space"
+    "message": "Initiator address space"
   },
   "panels/network/NetworkLogViewColumns.ts | isAdRelated": {
     "message": "Is Ad-Related"
@@ -10293,19 +10323,22 @@
     "message": "Protocol"
   },
   "panels/network/NetworkLogViewColumns.ts | remoteAddress": {
-    "message": "Remote Address"
+    "message": "Remote address"
   },
   "panels/network/NetworkLogViewColumns.ts | remoteAddressSpace": {
-    "message": "Remote Address Space"
+    "message": "Remote address space"
+  },
+  "panels/network/NetworkLogViewColumns.ts | renderBlocking": {
+    "message": "Render Blocking"
   },
   "panels/network/NetworkLogViewColumns.ts | requestHeaders": {
-    "message": "Request Headers"
+    "message": "Request headers"
   },
   "panels/network/NetworkLogViewColumns.ts | responseHeaders": {
-    "message": "Response Headers"
+    "message": "Response headers"
   },
   "panels/network/NetworkLogViewColumns.ts | responseTime": {
-    "message": "Response Time"
+    "message": "Response time"
   },
   "panels/network/NetworkLogViewColumns.ts | scheme": {
     "message": "Scheme"
@@ -10317,7 +10350,7 @@
     "message": "Size"
   },
   "panels/network/NetworkLogViewColumns.ts | startTime": {
-    "message": "Start Time"
+    "message": "Start time"
   },
   "panels/network/NetworkLogViewColumns.ts | status": {
     "message": "Status"
@@ -10329,7 +10362,7 @@
     "message": "Time"
   },
   "panels/network/NetworkLogViewColumns.ts | totalDuration": {
-    "message": "Total Duration"
+    "message": "Total duration"
   },
   "panels/network/NetworkLogViewColumns.ts | type": {
     "message": "Type"
@@ -15548,8 +15581,17 @@
   "panels/timeline/timeline-meta.ts | stop": {
     "message": "Stop"
   },
+  "panels/timeline/TimelineController.ts | initializingTracing": {
+    "message": "Initializing tracing…"
+  },
   "panels/timeline/TimelineController.ts | tracingNotSupported": {
     "message": "Performance trace recording not supported for this type of target"
+  },
+  "panels/timeline/TimelineController.ts | waitingForLoadEvent": {
+    "message": "Waiting for load event…"
+  },
+  "panels/timeline/TimelineController.ts | waitingForLoadEventPlus5Seconds": {
+    "message": "Waiting for load event (+5s)…"
   },
   "panels/timeline/TimelineDetailsView.ts | bottomup": {
     "message": "Bottom-up"
@@ -15686,6 +15728,9 @@
   "panels/timeline/TimelinePanel.ts | close": {
     "message": "Close"
   },
+  "panels/timeline/TimelinePanel.ts | compressingTraceForDownload": {
+    "message": "Compressing…"
+  },
   "panels/timeline/TimelinePanel.ts | cpu": {
     "message": "CPU:"
   },
@@ -15710,6 +15755,9 @@
   "panels/timeline/TimelinePanel.ts | enableSelectorStats": {
     "message": "Enable CSS selector stats (slow)"
   },
+  "panels/timeline/TimelinePanel.ts | encodingTraceForDownload": {
+    "message": "Encoding…"
+  },
   "panels/timeline/TimelinePanel.ts | eventSelected": {
     "message": "Event {PH1} selected"
   },
@@ -15727,9 +15775,6 @@
   },
   "panels/timeline/TimelinePanel.ts | hideSidebar": {
     "message": "Hide sidebar"
-  },
-  "panels/timeline/TimelinePanel.ts | initializingTracing": {
-    "message": "Initializing tracing…"
   },
   "panels/timeline/TimelinePanel.ts | JavascriptSamplingIsDisabled": {
     "message": "- JavaScript sampling is disabled"
@@ -15754,6 +15799,9 @@
   },
   "panels/timeline/TimelinePanel.ts | NetworkThrottlingIsEnabled": {
     "message": "- Network throttling is enabled"
+  },
+  "panels/timeline/TimelinePanel.ts | preparingTraceForDownload": {
+    "message": "Preparing…"
   },
   "panels/timeline/TimelinePanel.ts | processed": {
     "message": "Processed"
@@ -16884,7 +16932,7 @@
     "message": "expanded"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | headerOptions": {
-    "message": "Header Options"
+    "message": "Header options"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | levelS": {
     "message": "level {PH1}"
@@ -16893,7 +16941,7 @@
     "message": "Refresh"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | resetColumns": {
-    "message": "Reset Columns"
+    "message": "Reset columns"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | rowsS": {
     "message": "Rows: {PH1}"
@@ -16902,7 +16950,7 @@
     "message": "Sortable column. Press enter to apply sorting filter"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sortByString": {
-    "message": "Sort By"
+    "message": "Sort by"
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sRowS": {
     "message": "{PH1} Row {PH2}"

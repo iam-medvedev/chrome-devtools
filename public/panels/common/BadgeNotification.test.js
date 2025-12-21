@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as Badges from '../../models/badges/badges.js';
 import { renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -74,7 +73,7 @@ describeWithEnvironment('BadgeNotification', () => {
     it('presents an activity-based badge', async () => {
         const { view, widget } = await createWidget();
         const badge = createMockBadge(TestBadge);
-        await widget.present(badge);
+        await widget.present(badge, "Award" /* Badges.BadgeTriggerReason.AWARD */);
         const input = await view.nextInput;
         assert.strictEqual(input.imageUri, badge.imageUri);
         assert.lengthOf(input.actions, 2);
@@ -84,14 +83,9 @@ describeWithEnvironment('BadgeNotification', () => {
         widget.detach();
     });
     it('presents a starter badge as an activity-based badge if the user has a profile and has enabled badges', async () => {
-        sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves({
-            profile: { name: 'test/profile-id' },
-            isEligible: false,
-        });
-        sinon.stub(Badges.UserBadges.instance(), 'isReceiveBadgesSettingEnabled').returns(true);
         const { view, widget } = await createWidget();
         const badge = createMockBadge(TestStarterBadge);
-        await widget.present(badge);
+        await widget.present(badge, "Award" /* Badges.BadgeTriggerReason.AWARD */);
         const input = await view.nextInput;
         // Should fall back to the activity-based badge flow.
         assert.strictEqual(input.imageUri, 'starter-badge-image-uri');
@@ -102,56 +96,35 @@ describeWithEnvironment('BadgeNotification', () => {
         widget.detach();
     });
     it('presents a starter badge with an opt-in message if the user has a profile but has disabled badges', async () => {
-        sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves({
-            profile: { name: 'test/profile-id' },
-            isEligible: false,
-        });
-        sinon.stub(Badges.UserBadges.instance(), 'isReceiveBadgesSettingEnabled').returns(false);
         const { view, widget } = await createWidget();
         const badge = createMockBadge(TestStarterBadge);
-        await widget.present(badge);
+        await widget.present(badge, "StarterBadgeSettingsNudge" /* Badges.BadgeTriggerReason.STARTER_BADGE_SETTINGS_NUDGE */);
         const input = await view.nextInput;
         assert.strictEqual(input.imageUri, badge.imageUri);
         assert.lengthOf(input.actions, 2);
-        assert.strictEqual(input.actions[0].label, 'Remind me later');
+        assert.strictEqual(input.actions[0].label, 'No thanks');
         assert.strictEqual(input.actions[1].label, 'Turn on badges');
         assertMessageIncludes(input.message, 'Turn on badges to claim it.');
         widget.detach();
     });
     it('presents a starter badge with a create profile message if the user does not have a profile', async () => {
-        sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves({
-            profile: null,
-            isEligible: true,
-        });
         const { view, widget } = await createWidget();
         const badge = createMockBadge(TestStarterBadge);
-        await widget.present(badge);
+        await widget.present(badge, "StarterBadgeProfileNudge" /* Badges.BadgeTriggerReason.STARTER_BADGE_PROFILE_NUDGE */);
         const input = await view.nextInput;
         assert.strictEqual(input.imageUri, badge.imageUri);
         assert.lengthOf(input.actions, 2);
-        assert.strictEqual(input.actions[0].label, 'Remind me later');
+        assert.strictEqual(input.actions[0].label, 'No thanks');
         assert.strictEqual(input.actions[1].label, 'Create profile');
         assertMessageIncludes(input.message, 'Create a profile to claim your badge.');
         widget.detach();
     });
-    it('does not show a badge if the `getProfile` call returns `null` for starter badge', async () => {
-        sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves(null);
-        const { widget } = await createWidget();
-        const badge = createMockBadge(TestStarterBadge);
-        await widget.present(badge);
-        assert.isEmpty(widget.element.textContent);
-        widget.detach();
-    });
     it('Calls snoozeStarterBadge when the GDP sign up dialog is opened from starter badge and is canceled', async () => {
-        sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves({
-            profile: null,
-            isEligible: true,
-        });
         const snoozeStarterBadgeStub = sinon.stub(Badges.UserBadges.instance(), 'snoozeStarterBadge');
         const gdpSignUpDialogShowStub = sinon.stub(PanelCommon.GdpSignUpDialog, 'show');
         const { view, widget } = await createWidget();
         const badge = createMockBadge(TestStarterBadge);
-        await widget.present(badge);
+        await widget.present(badge, "StarterBadgeProfileNudge" /* Badges.BadgeTriggerReason.STARTER_BADGE_PROFILE_NUDGE */);
         const input = await view.nextInput;
         assert.strictEqual(input.actions[1].label, 'Create profile');
         input.actions[1].onClick();
@@ -163,14 +136,10 @@ describeWithEnvironment('BadgeNotification', () => {
     });
     describe('dismissing', () => {
         it('a starter badge notification calls `dismissStarterBadge`', async () => {
-            sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves({
-                profile: null,
-                isEligible: false,
-            });
             const dismissStarterBadgeSpy = sinon.spy(Badges.UserBadges.instance(), 'dismissStarterBadge');
             const { view, widget } = await createWidget();
             const badge = createMockBadge(TestStarterBadge);
-            await widget.present(badge);
+            await widget.present(badge, "StarterBadgeProfileNudge" /* Badges.BadgeTriggerReason.STARTER_BADGE_PROFILE_NUDGE */);
             await view.nextInput;
             view.input.onDismissClick();
             sinon.assert.calledOnce(dismissStarterBadgeSpy);
@@ -181,7 +150,7 @@ describeWithEnvironment('BadgeNotification', () => {
             const dismissStarterBadgeSpy = sinon.spy(Badges.UserBadges.instance(), 'dismissStarterBadge');
             const { view, widget } = await createWidget();
             const badge = createMockBadge(TestBadge);
-            await widget.present(badge);
+            await widget.present(badge, "Award" /* Badges.BadgeTriggerReason.AWARD */);
             await view.nextInput;
             view.input.onDismissClick();
             sinon.assert.notCalled(dismissStarterBadgeSpy);
@@ -198,14 +167,10 @@ describeWithEnvironment('BadgeNotification', () => {
             clock.restore();
         });
         it('a starter badge notification calls `snoozeStarterBadge`', async () => {
-            sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves({
-                profile: null,
-                isEligible: true,
-            });
             const snoozeStarterBadgeSpy = sinon.spy(Badges.UserBadges.instance(), 'snoozeStarterBadge');
             const { widget } = await createWidget();
             const badge = createMockBadge(TestStarterBadge);
-            await widget.present(badge);
+            await widget.present(badge, "StarterBadgeProfileNudge" /* Badges.BadgeTriggerReason.STARTER_BADGE_PROFILE_NUDGE */);
             await clock.tickAsync(30000);
             sinon.assert.calledOnce(snoozeStarterBadgeSpy);
             assert.isFalse(document.body.contains(widget.element));
@@ -214,7 +179,7 @@ describeWithEnvironment('BadgeNotification', () => {
             const snoozeStarterBadgeSpy = sinon.spy(Badges.UserBadges.instance(), 'snoozeStarterBadge');
             const { widget } = await createWidget();
             const badge = createMockBadge(TestBadge);
-            await widget.present(badge);
+            await widget.present(badge, "Award" /* Badges.BadgeTriggerReason.AWARD */);
             await clock.tickAsync(30000);
             sinon.assert.notCalled(snoozeStarterBadgeSpy);
             assert.isFalse(document.body.contains(widget.element));
@@ -223,25 +188,21 @@ describeWithEnvironment('BadgeNotification', () => {
             const snoozeStarterBadgeSpy = sinon.spy(Badges.UserBadges.instance(), 'snoozeStarterBadge');
             const { widget } = await createWidget();
             const badge = createMockBadge(TestStarterBadge);
-            await widget.present(badge);
+            await widget.present(badge, "StarterBadgeProfileNudge" /* Badges.BadgeTriggerReason.STARTER_BADGE_PROFILE_NUDGE */);
             widget.detach();
             await clock.tickAsync(30000);
             sinon.assert.notCalled(snoozeStarterBadgeSpy);
         });
     });
-    it('snoozes the badge when "Remind me later" is clicked', async () => {
-        sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves({
-            profile: null,
-            isEligible: true,
-        });
-        const snoozeStarterBadgeSpy = sinon.spy(Badges.UserBadges.instance(), 'snoozeStarterBadge');
+    it('dismisses the badge when "No thanks" is clicked', async () => {
+        const dismissStarterBadgeSpy = sinon.spy(Badges.UserBadges.instance(), 'dismissStarterBadge');
         const { view, widget } = await createWidget();
         const badge = createMockBadge(TestStarterBadge);
-        await widget.present(badge);
+        await widget.present(badge, "StarterBadgeProfileNudge" /* Badges.BadgeTriggerReason.STARTER_BADGE_PROFILE_NUDGE */);
         const input = await view.nextInput;
-        const remindMeLaterAction = input.actions.find(action => action.label === 'Remind me later');
-        remindMeLaterAction.onClick();
-        sinon.assert.calledOnce(snoozeStarterBadgeSpy);
+        const noThanksAction = input.actions.find(action => action.label === 'No thanks');
+        noThanksAction.onClick();
+        sinon.assert.calledOnce(dismissStarterBadgeSpy);
         assert.isFalse(document.body.contains(widget.element));
     });
 });

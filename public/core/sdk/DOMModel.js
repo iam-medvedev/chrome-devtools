@@ -72,6 +72,11 @@ export const ARIA_ATTRIBUTES = new Set([
 export var DOMNodeEvents;
 (function (DOMNodeEvents) {
     DOMNodeEvents["TOP_LAYER_INDEX_CHANGED"] = "TopLayerIndexChanged";
+    DOMNodeEvents["SCROLLABLE_FLAG_UPDATED"] = "ScrollableFlagUpdated";
+    DOMNodeEvents["GRID_OVERLAY_STATE_CHANGED"] = "GridOverlayStateChanged";
+    DOMNodeEvents["FLEX_CONTAINER_OVERLAY_STATE_CHANGED"] = "FlexContainerOverlayStateChanged";
+    DOMNodeEvents["SCROLL_SNAP_OVERLAY_STATE_CHANGED"] = "ScrollSnapOverlayStateChanged";
+    DOMNodeEvents["CONTAINER_QUERY_OVERLAY_STATE_CHANGED"] = "ContainerQueryOverlayStateChanged";
 })(DOMNodeEvents || (DOMNodeEvents = {}));
 export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
     #domModel;
@@ -257,6 +262,12 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
         }
         return false;
     }
+    isRootNode() {
+        if (this.nodeType() === Node.ELEMENT_NODE && this.nodeName() === 'HTML') {
+            return true;
+        }
+        return false;
+    }
     isSVGNode() {
         return this.#isSVGNode;
     }
@@ -307,6 +318,11 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
     }
     setIsScrollable(isScrollable) {
         this.#isScrollable = isScrollable;
+        this.dispatchEventToListeners(DOMNodeEvents.SCROLLABLE_FLAG_UPDATED);
+        if (this.nodeName() === '#document') {
+            // We show the scroll badge of the document on the <html> element.
+            this.ownerDocument?.documentElement?.setIsScrollable(isScrollable);
+        }
     }
     setAffectedByStartingStyles(affectedByStartingStyles) {
         this.#affectedByStartingStyles = affectedByStartingStyles;
@@ -1392,7 +1408,6 @@ export class DOMModel extends SDKModel {
             return;
         }
         node.setIsScrollable(isScrollable);
-        this.dispatchEventToListeners(Events.ScrollableFlagUpdated, { node });
     }
     affectedByStartingStylesFlagUpdated(nodeId, affectedByStartingStyles) {
         const node = this.nodeForId(nodeId);
@@ -1609,7 +1624,6 @@ export var Events;
     Events["DistributedNodesChanged"] = "DistributedNodesChanged";
     Events["MarkersChanged"] = "MarkersChanged";
     Events["TopLayerElementsChanged"] = "TopLayerElementsChanged";
-    Events["ScrollableFlagUpdated"] = "ScrollableFlagUpdated";
     Events["AffectedByStartingStylesFlagUpdated"] = "AffectedByStartingStylesFlagUpdated";
     Events["AdoptedStyleSheetsModified"] = "AdoptedStyleSheetsModified";
     /* eslint-enable @typescript-eslint/naming-convention */

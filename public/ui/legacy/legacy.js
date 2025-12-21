@@ -6216,10 +6216,10 @@ var TabbedPaneTab = class {
     const tabElement = document.createElement("div");
     tabElement.classList.add("tabbed-pane-header-tab");
     tabElement.id = "tab-" + this.#id;
-    markAsTab(tabElement);
     setSelected(tabElement, false);
     setLabel(tabElement, this.title);
     const titleElement = tabElement.createChild("span", "tabbed-pane-header-tab-title");
+    markAsTab(titleElement);
     titleElement.textContent = this.title;
     Tooltip.install(titleElement, this.tooltip || "");
     this.createIconElement(tabElement, titleElement, measuring);
@@ -9390,7 +9390,11 @@ var ContextMenu = class _ContextMenu extends SubMenu {
     }
     const menuObject = this.buildMenuDescriptors();
     const ownerDocument = this.eventTarget.ownerDocument;
-    if (this.useSoftMenu || _ContextMenu.useSoftMenu || Host6.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
+    let useSoftMenu = this.useSoftMenu || _ContextMenu.useSoftMenu || Host6.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode();
+    if (!this.useSoftMenu && _ContextMenu.useSoftMenu && this.event.altKey) {
+      useSoftMenu = false;
+    }
+    if (useSoftMenu) {
       this.softMenu = new SoftContextMenu(menuObject, this.itemSelected.bind(this), this.keepOpen, void 0, this.onSoftMenuClosed, this.loggableParent);
       const isMouseEvent = this.event.pointerType === "mouse" && this.event.button >= 0;
       this.softMenu.setFocusOnTheFirstItem(!isMouseEvent);
@@ -12553,6 +12557,9 @@ var ToolbarComboBox = class extends ToolbarItem {
     if (jslogContext) {
       this.element.setAttribute("jslog", `${VisualLogging13.dropDown().track({ change: true }).context(jslogContext)}`);
     }
+  }
+  turnShrinkable() {
+    this.element.classList.add("toolbar-has-dropdown-shrinkable");
   }
   size() {
     return this.element.childElementCount;
@@ -20045,6 +20052,7 @@ var SearchableView = class extends VBox {
   replaceToggleButton;
   searchInputElement;
   matchesElement;
+  matchesElementValue;
   searchNavigationPrevElement;
   searchNavigationNextElement;
   replaceInputElement;
@@ -20179,6 +20187,9 @@ var SearchableView = class extends VBox {
     this.matchesElement.style.color = "var(--sys-color-on-surface-subtle)";
     this.matchesElement.style.padding = "0 var(--sys-size-3)";
     this.matchesElement.classList.add("search-results-matches");
+    markAsPoliteLiveRegion(this.matchesElement, false);
+    this.matchesElementValue = this.matchesElement.createChild("span");
+    setHidden(this.matchesElementValue, true);
     toolbar4.appendToolbarItem(matchesText);
     const cancelButtonElement = new Buttons10.Button.Button();
     cancelButtonElement.data = {
@@ -20297,7 +20308,7 @@ var SearchableView = class extends VBox {
   resetSearch() {
     this.clearSearch();
     this.updateReplaceVisibility();
-    this.matchesElement.textContent = "";
+    this.matchesElementValue.textContent = "";
   }
   refreshSearch() {
     if (!this.searchIsVisible) {
@@ -20339,14 +20350,16 @@ var SearchableView = class extends VBox {
   }
   updateSearchMatchesCountAndCurrentMatchIndex(matches, currentMatchIndex) {
     if (!this.currentQuery) {
-      this.matchesElement.textContent = "";
+      this.matchesElementValue.textContent = "";
     } else if (matches === 0 || currentMatchIndex >= 0) {
-      this.matchesElement.textContent = i18nString16(UIStrings16.dOfD, { PH1: currentMatchIndex + 1, PH2: matches });
+      this.matchesElementValue.textContent = i18nString16(UIStrings16.dOfD, { PH1: currentMatchIndex + 1, PH2: matches });
       setLabel(this.matchesElement, i18nString16(UIStrings16.accessibledOfD, { PH1: currentMatchIndex + 1, PH2: matches }));
     } else if (matches === 1) {
-      this.matchesElement.textContent = i18nString16(UIStrings16.matchString);
+      this.matchesElementValue.textContent = i18nString16(UIStrings16.matchString);
+      setLabel(this.matchesElement, i18nString16(UIStrings16.matchString));
     } else {
-      this.matchesElement.textContent = i18nString16(UIStrings16.dMatches, { PH1: matches });
+      this.matchesElementValue.textContent = i18nString16(UIStrings16.dMatches, { PH1: matches });
+      setLabel(this.matchesElement, i18nString16(UIStrings16.dMatches, { PH1: matches }));
     }
     this.updateSearchNavigationButtonState(matches > 0);
   }

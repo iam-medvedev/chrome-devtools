@@ -309,7 +309,8 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     }}
         data-step-index=${input.stepIndex}
         data-section-index=${input.sectionIndex}
-        @click=${() => {
+        @click=${(event) => {
+        event.stopPropagation();
         const stepOrSection = input.step || input.section;
         if (stepOrSection) {
             input.onStepClick(stepOrSection);

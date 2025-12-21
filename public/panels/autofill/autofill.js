@@ -260,9 +260,9 @@ var DEFAULT_VIEW = (input, _output, target) => {
                   <td>${field.name || `#${field.id}`} (${field.htmlType})</td>
                   <td>
                       ${field.autofillType}
-                      ${field.fillingStrategy === "autocompleteAttribute" ? html`<devtools-adorner title=${i18nString(UIStrings.autocompleteAttribute)} .data=${{ name: field.fillingStrategy }}>
+                      ${field.fillingStrategy === "autocompleteAttribute" ? html`<devtools-adorner .name=${field.fillingStrategy} title=${i18nString(UIStrings.autocompleteAttribute)}>
                               <span>${i18nString(UIStrings.attr)}</span>
-                            </devtools-adorner>` : field.fillingStrategy === "autofillInferred" ? html`<devtools-adorner title=${i18nString(UIStrings.inferredByHeuristics)} .data=${{ name: field.fillingStrategy }}>
+                            </devtools-adorner>` : field.fillingStrategy === "autofillInferred" ? html`<devtools-adorner .name=${field.fillingStrategy} title=${i18nString(UIStrings.inferredByHeuristics)}>
                               <span>${i18nString(UIStrings.heur)}</span>
                             </devtools-adorner>` : Lit.nothing}
                   </td>

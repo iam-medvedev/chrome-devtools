@@ -8,21 +8,21 @@ var __export = (target, all) => {
 import "./../../ui/kit/kit.js";
 import * as Common5 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Platform5 from "./../../core/platform/platform.js";
+import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as Platform4 from "./../../core/platform/platform.js";
 import * as Root5 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as AiAssistanceModel4 from "./../../models/ai_assistance/ai_assistance.js";
+import * as AiAssistanceModel5 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Annotations from "./../../models/annotations/annotations.js";
 import * as Badges from "./../../models/badges/badges.js";
-import * as GreenDev3 from "./../../models/greendev/greendev.js";
+import * as GreenDev4 from "./../../models/greendev/greendev.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Workspace6 from "./../../models/workspace/workspace.js";
-import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
-import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
+import * as Buttons7 from "./../../ui/components/buttons/buttons.js";
+import * as Snackbars2 from "./../../ui/components/snackbars/snackbars.js";
 import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
-import * as UI9 from "./../../ui/legacy/legacy.js";
-import * as Lit7 from "./../../ui/lit/lit.js";
+import * as UI10 from "./../../ui/legacy/legacy.js";
+import * as Lit8 from "./../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 import * as NetworkForward from "./../network/forward/forward.js";
 import * as NetworkPanel from "./../network/network.js";
@@ -405,20 +405,10 @@ var ArtifactsViewer = class extends UI.Widget.Widget {
 // gen/front_end/panels/ai_assistance/components/ChatView.js
 import "./../../ui/components/spinners/spinners.js";
 import * as Host4 from "./../../core/host/host.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform4 from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
-import * as GreenDev from "./../../models/greendev/greendev.js";
-import * as Trace3 from "./../../models/trace/trace.js";
-import * as Workspace5 from "./../../models/workspace/workspace.js";
-import * as PanelsCommon from "./../common/common.js";
-import * as PanelUtils from "./../utils/utils.js";
-import * as Marked from "./../../third_party/marked/marked.js";
-import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import * as Lit5 from "./../../ui/lit/lit.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
+import * as UI6 from "./../../ui/legacy/legacy.js";
+import * as Lit6 from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/ai_assistance/PatchWidget.js
 var PatchWidget_exports = {};
@@ -436,6 +426,7 @@ import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
+import * as GreenDev from "./../../models/greendev/greendev.js";
 import * as Persistence2 from "./../../models/persistence/persistence.js";
 import * as Workspace3 from "./../../models/workspace/workspace.js";
 import * as WorkspaceDiff from "./../../models/workspace_diff/workspace_diff.js";
@@ -943,7 +934,9 @@ var DEFAULT_VIEW2 = (input, output, target) => {
           class="link"
           title="${UIStringsNotTranslate2.viewUploadedFiles} ${UIStringsNotTranslate2.opensInNewTab}"
           href="data:text/plain;charset=utf-8,${encodeURIComponent(input.sources)}"
-          jslog=${VisualLogging2.link("files-used-in-patching").track({ click: true })}>
+          jslog=${VisualLogging2.link("files-used-in-patching").track({
+      click: true
+    })}>
           ${UIStringsNotTranslate2.viewUploadedFiles}
         </x-link>`;
   }
@@ -998,6 +991,16 @@ var DEFAULT_VIEW2 = (input, output, target) => {
         ${input.patchSuggestionState === PatchSuggestionState.ERROR ? html5`<div class="error-container">
               <devtools-icon name="cross-circle-filled"></devtools-icon>${lockedString2(UIStringsNotTranslate2.genericErrorMessage)} ${renderSourcesLink()}
             </div>` : nothing3}`;
+  }
+  function renderCopyPrompt(changedCode) {
+    if (!GreenDev.Prototypes.instance().isEnabled("copyToGemini") || !changedCode) {
+      return nothing3;
+    }
+    return html5`<devtools-widget class="copy-to-prompt"
+      .widgetConfig=${UI3.Widget.widgetConfig(PanelCommon.CopyChangesToPrompt, {
+      workspaceDiff: input.workspaceDiff,
+      patchAgentCSSChange: changedCode
+    })}></devtools-widget>`;
   }
   function renderFooter() {
     if (input.savedToDisk) {
@@ -1059,6 +1062,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                 </span>
               </div>
             ` : html5`
+               ${renderCopyPrompt(input.changeSummary)}
                 <devtools-button
                 @click=${input.onApplyToWorkspace}
                 .jslogContext=${"patch-widget.apply-to-workspace"}
@@ -1488,9 +1492,31 @@ window.aiAssistanceTestPatchPrompt = async (projectName, changeSummary, expected
   }
 };
 
-// gen/front_end/panels/ai_assistance/components/chatView.css.js
-var chatView_css_default = `/*
- * Copyright 2024 The Chromium Authors
+// gen/front_end/panels/ai_assistance/components/ChatInput.js
+var ChatInput_exports = {};
+__export(ChatInput_exports, {
+  ChatInput: () => ChatInput,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3
+});
+import "./../../ui/components/tooltips/tooltips.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as SDK from "./../../core/sdk/sdk.js";
+import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
+import * as GreenDev2 from "./../../models/greendev/greendev.js";
+import * as Trace3 from "./../../models/trace/trace.js";
+import * as Workspace5 from "./../../models/workspace/workspace.js";
+import * as PanelsCommon from "./../common/common.js";
+import * as PanelUtils from "./../utils/utils.js";
+import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
+import * as Input from "./../../ui/components/input/input.js";
+import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
+import * as UI4 from "./../../ui/legacy/legacy.js";
+import * as Lit4 from "./../../ui/lit/lit.js";
+import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+
+// gen/front_end/panels/ai_assistance/components/chatInput.css.js
+var chatInput_css_default = `/*
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1502,68 +1528,18 @@ var chatView_css_default = `/*
 }
 
 :host {
-  width: 100%;
-  height: 100%;
-  user-select: text;
   display: flex;
   flex-direction: column;
-  background-color: var(--sys-color-cdt-base-container);
-}
-
-.chat-ui {
-  width: 100%;
-  height: 100%;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  container-type: size;
-  container-name: --chat-ui-container;
 }
 
 .input-form {
   display: flex;
   flex-direction: column;
-  padding: 0 var(--sys-size-5) 0 var(--sys-size-5);
+  padding: 0 var(--sys-size-5) var(--sys-size-5) var(--sys-size-5);
   max-width: var(--sys-size-36);
   background-color: var(--sys-color-cdt-base-container);
   width: 100%;
-  position: sticky;
-  z-index: 9999;
-  bottom: 0;
-  padding-bottom: var(--sys-size-5);
-  /*
-  The \\'box-shadow\\' is a workaround to hide the content appearing between the \\'.input-form\\'
-  and the footer in some resolutions even though the \\'.input-form\\' has \\'bottom: 0\\'.
-  */
-  box-shadow: 0 1px var(--sys-color-cdt-base-container);
 
-  /* Prevents the input form from jumping when the scrollbar is shown */
-  /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
-  @container (width > 688px) {
-    --half-scrollbar-width: calc((100cqw - 100%) / 2);
-
-    margin-left: var(--half-scrollbar-width);
-    margin-right: calc(-1 * var(--half-scrollbar-width));
-  }
-
-  /* when there isn't enough space to view the messages,
-  do not overlay the input form on top of the messages */
-  /* height < var(--sys-size-27) */
-  @container (height < 224px) {
-    margin-top: var(--sys-size-4);
-    margin-bottom: var(--sys-size-4);
-    position: static;
-  }
-
-  @container --chat-ui-container (width < 400px) {
-    /*
-      The footer already adds necessary paddings for this state.
-      However, without the \\'padding-bottom\\' here, the outline in the bottom
-      is rendered behind the footer. So, we add 1px space here to make sure
-      that the outline is rendered fully.
-    */
-    padding-bottom: var(--sys-size-1);
-  }
 }
 
 .chat-readonly-container {
@@ -1578,18 +1554,6 @@ var chatView_css_default = `/*
   border-radius: var(--sys-shape-corner-medium-small);
   margin-bottom: var(--sys-size-5);
   color: var(--sys-color-on-surface-subtle);
-}
-
-.info-tooltip-container {
-  max-width: var(--sys-size-28);
-  padding: var(--sys-size-4) var(--sys-size-5);
-}
-
-.tooltip-link {
-  display: block;
-  margin-top: var(--sys-size-4);
-  color: var(--sys-color-primary);
-  padding-left: 0;
 }
 
 .chat-input-container {
@@ -1767,129 +1731,6 @@ var chatView_css_default = `/*
   padding-left: 3px;
 }
 
-.chat-cancel-context-button {
-  padding-bottom: 3px;
-  padding-right: var(--sys-size-3);
-}
-
-footer.chat-view-footer {
-  display: flex;
-  justify-content: center;
-  padding-block: var(--sys-size-3);
-  font: var(--sys-typescale-body5-regular);
-  border-top: 1px solid var(--sys-color-divider);
-  text-wrap: balance;
-  text-align: center;
-
-  /*
-    The footer (for active conversations) is hidden by default on wider screens
-    because the disclaimer is shown inline within the chat input actions. Show it only on narrow widths (< 400px).
-  */
-  &:not(.is-read-only) {
-    display: none;
-    border: none;
-
-    @container --chat-ui-container (width < 400px) {
-      display: flex;
-    }
-  }
-}
-
-.messages-container {
-  flex-grow: 1;
-  width: 100%;
-  max-width: var(--sys-size-36);
-
-  /* Prevents the container from jumping when the scrollbar is shown */
-  /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
-  @container (width > 688px) {
-    --half-scrollbar-width: calc((100cqw - 100%) / 2);
-
-    margin-left: var(--half-scrollbar-width);
-    margin-right: calc(-1 * var(--half-scrollbar-width));
-  }
-}
-
-.chat-message {
-  user-select: text;
-  cursor: initial;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sys-size-5);
-  width: 100%;
-  padding: var(--sys-size-7) var(--sys-size-5);
-  font-size: 12px;
-  word-break: normal;
-  overflow-wrap: anywhere;
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-
-  &:last-of-type {
-    border-bottom: 0;
-  }
-
-  .message-info {
-    display: flex;
-    align-items: center;
-    height: var(--sys-size-11);
-    gap: var(--sys-size-4);
-    font: var(--sys-typescale-body4-bold);
-
-    img {
-      border: 0;
-      border-radius: var(--sys-shape-corner-full);
-      display: block;
-      height: var(--sys-size-9);
-      width: var(--sys-size-9);
-    }
-
-    h2 {
-      font: var(--sys-typescale-body4-bold);
-    }
-  }
-
-  .actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--sys-size-8);
-    max-width: 100%;
-  }
-
-  .aborted {
-    color: var(--sys-color-on-surface-subtle);
-  }
-
-  .image-link {
-    width: fit-content;
-    border-radius: var(--sys-shape-corner-small);
-    outline-offset: var(--sys-size-2);
-
-    img {
-      max-height: var(--sys-size-20);
-      max-width: 100%;
-      border-radius: var(--sys-shape-corner-small);
-      border: 1px solid var(--sys-color-neutral-outline);
-      width: fit-content;
-      vertical-align: bottom;
-    }
-  }
-
-  .unavailable-image {
-    margin: var(--sys-size-4) 0;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    height: var(--sys-size-17);
-    width: var(--sys-size-18);
-    background-color: var(--sys-color-surface3);
-    border-radius: var(--sys-shape-corner-small);
-    border: 1px solid var(--sys-color-neutral-outline);
-
-    devtools-icon {
-      color: var(--sys-color-state-disabled);
-    }
-  }
-}
-
 .select-element {
   display: flex;
   gap: var(--sys-size-3);
@@ -1972,152 +1813,711 @@ footer.chat-view-footer {
   }
 
   .resource-link.disabled,
-  .resource-task.disabled,
-  .resource-link.not-selected,
-  .resource-task.not-selected {
+  .resource-task.disabled {
     color: var(--sys-color-state-disabled);
     border-color: var(--sys-color-neutral-outline);
-  }
-
-  .resource-link.disabled,
-  .resource-task.disabled {
     pointer-events: none;
   }
 }
 
-.indicator {
-  color: var(--sys-color-green-bright);
+.link {
+  color: var(--text-link);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
-.summary {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  padding: var(--sys-size-3);
-  line-height: var(--sys-size-9);
-  cursor: default;
-  gap: var(--sys-size-3);
+button.link {
+  border: none;
+  background: none;
+  font: inherit;
+
+  &:focus-visible {
+    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+    outline-offset: 0;
+    border-radius: var(--sys-shape-corner-extra-small);
+  }
+}
+
+.floaty {
+  font: var(--sys-typescale-body4);
+  color: var(--sys-color-on-surface);
+  user-select: none;
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-end;
+  gap: var(--sys-size-2);
+  margin-bottom: var(--sys-size-2);
+
+  li {
+    background: var(--sys-color-surface3);
+    border-radius: var(--sys-shape-corner-small);
+    border: 1px solid var(--sys-color-neutral-outline);
+    padding: var(--sys-size-2) var(--sys-size-3);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sys-size-2);
+    min-height: var(--sys-size-8);
+  }
+
+  .context-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sys-size-2);
+  }
+
+  .open-floaty {
+    padding: 0;
+    border: none;
+
+    /* To align with other chips */
+    margin-bottom: 1px;
+  }
+}
+
+.chat-input-footer {
+  display: flex;
   justify-content: center;
-  align-items: center;
+  padding-block: var(--sys-size-3);
+  font: var(--sys-typescale-body5-regular);
+  border-top: 1px solid var(--sys-color-divider);
+  text-wrap: balance;
+  text-align: center;
+  width: 100%;
 
-  .title {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    font: var(--sys-typescale-body4-regular);
+  /*
+    The footer (for active conversations) is hidden by default on wider screens
+    because the disclaimer is shown inline within the chat input actions. Show it only on narrow widths (< 400px).
+  */
+  &:not(.is-read-only) {
+    display: none;
+    border: none;
 
-    .paused {
-      font: var(--sys-typescale-body4-bold);
+    @container --chat-ui-container (width < 400px) {
+      display: flex;
     }
   }
 }
 
-.step-code {
+/*# sourceURL=${import.meta.resolve("././components/chatInput.css")} */`;
+
+// gen/front_end/panels/ai_assistance/components/ChatInput.js
+var { html: html6, Directives: { createRef, ref } } = Lit4;
+var UIStrings = {
+  /**
+   * @description Label added to the text input to describe the context for screen readers. Not shown visibly on screen.
+   */
+  inputTextAriaDescription: "You can also use one of the suggested prompts above to start your conversation",
+  /**
+   * @description Label added to the button that reveals the selected context item in DevTools
+   */
+  revealContextDescription: "Reveal the selected context item in DevTools",
+  /**
+   * @description The footer disclaimer that links to more information about the AI feature.
+   */
+  learnAbout: "Learn about AI in DevTools"
+};
+var UIStringsNotTranslate3 = {
+  /**
+   * @description Title for the send icon button.
+   */
+  sendButtonTitle: "Send",
+  /**
+   * @description Title for the start new chat
+   */
+  startNewChat: "Start new chat",
+  /**
+   * @description Title for the cancel icon button.
+   */
+  cancelButtonTitle: "Cancel",
+  /**
+   * @description Label for the "select an element" button.
+   */
+  selectAnElement: "Select an element",
+  /**
+   * @description Title for the take screenshot button.
+   */
+  takeScreenshotButtonTitle: "Take screenshot",
+  /**
+   * @description Title for the remove image input button.
+   */
+  removeImageInputButtonTitle: "Remove image input",
+  /**
+   * @description Title for the add image button.
+   */
+  addImageButtonTitle: "Add image",
+  /**
+   * @description Text displayed when the chat input is disabled due to reading past conversation.
+   */
+  pastConversation: "You're viewing a past conversation.",
+  /**
+   * @description Message displayed in toast in case of any failures while taking a screenshot of the page.
+   */
+  screenshotFailureMessage: "Failed to take a screenshot. Please try again.",
+  /**
+   * @description Message displayed in toast in case of any failures while uploading an image file as input.
+   */
+  uploadImageFailureMessage: "Failed to upload image. Please try again."
+};
+var str_ = i18n5.i18n.registerUIStrings("panels/ai_assistance/components/ChatInput.ts", UIStrings);
+var i18nString = i18n5.i18n.getLocalizedString.bind(void 0, str_);
+var lockedString3 = i18n5.i18n.lockedString;
+var SCREENSHOT_QUALITY = 80;
+var JPEG_MIME_TYPE = "image/jpeg";
+var SHOW_LOADING_STATE_TIMEOUT = 100;
+var RELEVANT_DATA_LINK_CHAT_ID = "relevant-data-link-chat";
+var RELEVANT_DATA_LINK_FOOTER_ID = "relevant-data-link-footer";
+var DEFAULT_VIEW3 = (input, output, target) => {
+  const chatInputContainerCls = Lit4.Directives.classMap({
+    "chat-input-container": true,
+    "single-line-layout": !input.selectedContext,
+    disabled: input.isTextInputDisabled
+  });
+  const renderRelevantDataDisclaimer = (tooltipId) => {
+    const classes = Lit4.Directives.classMap({
+      "chat-input-disclaimer": true,
+      "hide-divider": !input.isLoading && input.blockedByCrossOrigin
+    });
+    return html6`
+      <div class=${classes}>
+        <button
+          class="link"
+          role="link"
+          aria-details=${tooltipId}
+          jslog=${VisualLogging3.link("open-ai-settings").track({
+      click: true
+    })}
+          @click=${() => {
+      void UI4.ViewManager.ViewManager.instance().showView("chrome-ai");
+    }}
+        >${lockedString3("Relevant data")}</button>&nbsp;${lockedString3("is sent to Google")}
+        <devtools-tooltip
+          id=${tooltipId}
+          variant="rich"
+        ><div class="info-tooltip-container">
+          ${input.disclaimerText}
+          <button
+            class="link tooltip-link"
+            role="link"
+            jslog=${VisualLogging3.link("open-ai-settings").track({
+      click: true
+    })}
+            @click=${() => {
+      void UI4.ViewManager.ViewManager.instance().showView("chrome-ai");
+    }}>${i18nString(UIStrings.learnAbout)}
+          </button>
+        </div></devtools-tooltip>
+      </div>
+    `;
+  };
+  Lit4.render(html6`
+    <style>${Input.textInputStyles}</style>
+    <style>${chatInput_css_default}</style>
+    ${input.isReadOnly ? html6`
+        <div
+          class="chat-readonly-container"
+          jslog=${VisualLogging3.section("read-only")}
+        >
+          <span>${lockedString3(UIStringsNotTranslate3.pastConversation)}</span>
+          <devtools-button
+            aria-label=${lockedString3(UIStringsNotTranslate3.startNewChat)}
+            class="chat-inline-button"
+            @click=${input.onNewConversation}
+            .data=${{
+    variant: "text",
+    title: lockedString3(UIStringsNotTranslate3.startNewChat),
+    jslogContext: "start-new-chat"
+  }}
+          >${lockedString3(UIStringsNotTranslate3.startNewChat)}</devtools-button>
+        </div>` : html6`
+        <form class="input-form" @submit=${input.onSubmit}>
+          ${GreenDev2.Prototypes.instance().isEnabled("inDevToolsFloaty") ? html6`
+              <ul class="floaty">
+                ${input.additionalFloatyContext.map((c) => {
+    return html6`
+                    <li>
+                      <span class="context-item">
+                        ${c instanceof SDK.NetworkRequest.NetworkRequest ? html6`${c.url()}` : c instanceof SDK.DOMModel.DOMNode ? html6`
+                            <devtools-widget .widgetConfig=${UI4.Widget.widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node: c })}
+                            ></devtools-widget>` : "insight" in c ? html6`${c.insight.title}` : "event" in c && "traceStartTime" in c ? html6`
+                            ${c.event.name} @ ${i18n5.TimeUtilities.formatMicroSecondsAsMillisFixed(Trace3.Types.Timing.Micro(c.event.ts - c.traceStartTime))}` : Lit4.nothing}
+                      </span>
+                      <devtools-button
+                        class="floaty-delete-button"
+                        @click=${(e) => {
+      e.preventDefault();
+      UI4.Floaty.onFloatyContextDelete(c);
+    }}
+                        .data=${{
+      variant: "icon",
+      iconName: "cross",
+      title: "Delete",
+      size: "SMALL"
+    }}
+                      ></devtools-button>
+                    </li>`;
+  })}
+                <li class="open-floaty">
+                  <devtools-button
+                    class="floaty-add-button"
+                    @click=${UI4.Floaty.onFloatyOpen}
+                    .data=${{
+    variant: "icon",
+    iconName: "select-element",
+    title: "Open context picker",
+    size: "SMALL"
+  }}
+                  ></devtools-button>
+                </li>
+              </ul>` : Lit4.nothing}
+          <div class=${chatInputContainerCls}>
+            ${input.multimodalInputEnabled && input.imageInput && !input.isTextInputDisabled ? html6`
+                <div class="image-input-container">
+                  <devtools-button
+                    aria-label=${lockedString3(UIStringsNotTranslate3.removeImageInputButtonTitle)}
+                    @click=${input.onRemoveImageInput}
+                    .data=${{
+    variant: "icon",
+    size: "MICRO",
+    iconName: "cross",
+    title: lockedString3(UIStringsNotTranslate3.removeImageInputButtonTitle)
+  }}
+                  ></devtools-button>
+                  ${input.imageInput.isLoading ? html6`
+                      <div class="loading">
+                        <devtools-spinner></devtools-spinner>
+                      </div>` : html6`
+                      <img src="data:${input.imageInput.mimeType};base64, ${input.imageInput.data}" alt="Image input" />`}
+                </div>` : Lit4.nothing}
+            <textarea
+              class="chat-input"
+              .disabled=${input.isTextInputDisabled}
+              wrap="hard"
+              maxlength="10000"
+              @keydown=${input.onTextAreaKeyDown}
+              @input=${(event) => {
+    input.onTextInputChange(event.target.value);
+  }}
+              placeholder=${input.inputPlaceholder}
+              jslog=${VisualLogging3.textField("query").track({
+    change: true,
+    keydown: "Enter"
+  })}
+              aria-description=${i18nString(UIStrings.inputTextAriaDescription)}
+              ${ref(input.textAreaRef)}
+            ></textarea>
+            <div class="chat-input-actions">
+              <div class="chat-input-actions-left">
+                ${input.selectedContext ? html6`
+                    <div class="select-element">
+                      ${input.conversationType === "freestyler" ? html6`
+                          <devtools-button
+                            .data=${{
+    variant: "icon_toggle",
+    size: "SMALL",
+    iconName: "select-element",
+    toggledIconName: "select-element",
+    toggleType: "primary-toggle",
+    toggled: input.inspectElementToggled,
+    title: lockedString3(UIStringsNotTranslate3.selectAnElement),
+    jslogContext: "select-element",
+    disabled: input.isTextInputDisabled
+  }}
+                            @click=${input.onInspectElementClick}
+                          ></devtools-button>` : Lit4.nothing}
+                      <div
+                        role=button
+                        class=${Lit4.Directives.classMap({
+    "resource-link": true,
+    "has-picker-behavior": input.conversationType === "freestyler",
+    disabled: input.isTextInputDisabled
+  })}
+                        tabindex=${input.conversationType === "freestyler" || input.isTextInputDisabled ? "-1" : "0"}
+                        @click=${input.onContextClick}
+                        @keydown=${(ev) => {
+    if (ev.key === "Enter" || ev.key === " ") {
+      void input.onContextClick();
+    }
+  }}
+                        aria-description=${i18nString(UIStrings.revealContextDescription)}
+                      >
+                        ${input.selectedContext.getItem() instanceof SDK.NetworkRequest.NetworkRequest ? PanelUtils.PanelUtils.getIconForNetworkRequest(input.selectedContext.getItem()) : input.selectedContext.getItem() instanceof Workspace5.UISourceCode.UISourceCode ? PanelUtils.PanelUtils.getIconForSourceFile(input.selectedContext.getItem()) : input.selectedContext.getItem() instanceof AiAssistanceModel3.AIContext.AgentFocus ? html6`<devtools-icon name="performance" title="Performance"></devtools-icon>` : Lit4.nothing}
+                        <span class="title">
+                          ${input.selectedContext.getItem() instanceof SDK.DOMModel.DOMNode ? html6`
+                              <devtools-widget .widgetConfig=${UI4.Widget.widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, {
+    node: input.selectedContext.getItem(),
+    options: {
+      hiddenClassList: input.selectedContext.getItem().classNames().filter((className) => className.startsWith(AiAssistanceModel3.Injected.AI_ASSISTANCE_CSS_CLASS_NAME)),
+      disabled: input.isTextInputDisabled
+    }
+  })}></devtools-widget>` : input.selectedContext.getTitle()}
+                        </span>
+                      </div>
+                    </div>` : Lit4.nothing}
+              </div>
+              <div class="chat-input-actions-right">
+                <div class="chat-input-disclaimer-container">
+                  ${renderRelevantDataDisclaimer(RELEVANT_DATA_LINK_CHAT_ID)}
+                </div>
+                ${input.multimodalInputEnabled && !input.blockedByCrossOrigin ? html6`
+                    ${input.uploadImageInputEnabled ? html6`
+                        <devtools-button
+                          class="chat-input-button"
+                          aria-label=${lockedString3(UIStringsNotTranslate3.addImageButtonTitle)}
+                          @click=${input.onImageUpload}
+                          .data=${{
+    variant: "icon",
+    size: "REGULAR",
+    disabled: input.isTextInputDisabled || input.imageInput?.isLoading,
+    iconName: "add-photo",
+    title: lockedString3(UIStringsNotTranslate3.addImageButtonTitle),
+    jslogContext: "upload-image"
+  }}
+                        ></devtools-button>` : Lit4.nothing}
+                    <devtools-button
+                      class="chat-input-button"
+                      aria-label=${lockedString3(UIStringsNotTranslate3.takeScreenshotButtonTitle)}
+                      @click=${input.onTakeScreenshot}
+                      .data=${{
+    variant: "icon",
+    size: "REGULAR",
+    disabled: input.isTextInputDisabled || input.imageInput?.isLoading,
+    iconName: "photo-camera",
+    title: lockedString3(UIStringsNotTranslate3.takeScreenshotButtonTitle),
+    jslogContext: "take-screenshot"
+  }}
+                    ></devtools-button>` : Lit4.nothing}
+                ${input.isLoading ? html6`
+                    <devtools-button
+                      class="chat-input-button"
+                      aria-label=${lockedString3(UIStringsNotTranslate3.cancelButtonTitle)}
+                      @click=${input.onCancel}
+                      .data=${{
+    variant: "icon",
+    size: "REGULAR",
+    iconName: "record-stop",
+    title: lockedString3(UIStringsNotTranslate3.cancelButtonTitle),
+    jslogContext: "stop"
+  }}
+                    ></devtools-button>` : input.blockedByCrossOrigin ? html6`
+                      <devtools-button
+                        class="start-new-chat-button"
+                        aria-label=${lockedString3(UIStringsNotTranslate3.startNewChat)}
+                        @click=${input.onNewConversation}
+                        .data=${{
+    variant: "outlined",
+    size: "SMALL",
+    title: lockedString3(UIStringsNotTranslate3.startNewChat),
+    jslogContext: "start-new-chat"
+  }}
+                      >${lockedString3(UIStringsNotTranslate3.startNewChat)}</devtools-button>` : html6`
+                      <devtools-button
+                        class="chat-input-button"
+                        aria-label=${lockedString3(UIStringsNotTranslate3.sendButtonTitle)}
+                        .data=${{
+    type: "submit",
+    variant: "icon",
+    size: "REGULAR",
+    disabled: input.isTextInputDisabled || input.isTextInputEmpty || input.imageInput?.isLoading,
+    iconName: "send",
+    title: lockedString3(UIStringsNotTranslate3.sendButtonTitle),
+    jslogContext: "send"
+  }}
+                      ></devtools-button>`}
+              </div>
+            </div>
+          </div>
+        </form>`}
+    <footer
+      class=${Lit4.Directives.classMap({
+    "chat-input-footer": true,
+    "is-read-only": input.isReadOnly
+  })}
+      jslog=${VisualLogging3.section("footer")}
+    >
+      ${renderRelevantDataDisclaimer(RELEVANT_DATA_LINK_FOOTER_ID)}
+    </footer>
+  `, target);
+};
+var ChatInput = class extends UI4.Widget.Widget {
+  isLoading = false;
+  blockedByCrossOrigin = false;
+  isTextInputDisabled = false;
+  inputPlaceholder = "";
+  selectedContext = null;
+  inspectElementToggled = false;
+  additionalFloatyContext = [];
+  disclaimerText = "";
+  conversationType = "freestyler";
+  multimodalInputEnabled = false;
+  uploadImageInputEnabled = false;
+  isReadOnly = false;
+  #textAreaRef = createRef();
+  #imageInput;
+  setInputValue(text) {
+    if (this.#textAreaRef.value) {
+      this.#textAreaRef.value.value = text;
+    }
+    this.performUpdate();
+  }
+  #isTextInputEmpty() {
+    return !this.#textAreaRef.value?.value?.trim();
+  }
+  onTextSubmit = () => {
+  };
+  onContextClick = () => {
+  };
+  onInspectElementClick = () => {
+  };
+  onCancelClick = () => {
+  };
+  onNewConversation = () => {
+  };
+  async #handleTakeScreenshot() {
+    const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!mainTarget) {
+      throw new Error("Could not find main target");
+    }
+    const model = mainTarget.model(SDK.ScreenCaptureModel.ScreenCaptureModel);
+    if (!model) {
+      throw new Error("Could not find model");
+    }
+    const showLoadingTimeout = setTimeout(() => {
+      this.#imageInput = { isLoading: true };
+      this.performUpdate();
+    }, SHOW_LOADING_STATE_TIMEOUT);
+    const bytes = await model.captureScreenshot(
+      "jpeg",
+      SCREENSHOT_QUALITY,
+      "fromViewport"
+      /* SDK.ScreenCaptureModel.ScreenshotMode.FROM_VIEWPORT */
+    );
+    clearTimeout(showLoadingTimeout);
+    if (bytes) {
+      this.#imageInput = {
+        isLoading: false,
+        data: bytes,
+        mimeType: JPEG_MIME_TYPE,
+        inputType: "screenshot"
+        /* AiAssistanceModel.AiAgent.MultimodalInputType.SCREENSHOT */
+      };
+      this.performUpdate();
+      void this.updateComplete.then(() => {
+        this.focusTextInput();
+      });
+    } else {
+      this.#imageInput = void 0;
+      this.performUpdate();
+      Snackbars.Snackbar.Snackbar.show({ message: lockedString3(UIStringsNotTranslate3.screenshotFailureMessage) });
+    }
+  }
+  targetAdded(_target) {
+  }
+  targetRemoved(_target) {
+  }
+  #handleRemoveImageInput() {
+    this.#imageInput = void 0;
+    this.performUpdate();
+    void this.updateComplete.then(() => {
+      this.focusTextInput();
+    });
+  }
+  async #handleLoadImage(file) {
+    const showLoadingTimeout = setTimeout(() => {
+      this.#imageInput = { isLoading: true };
+      this.performUpdate();
+    }, SHOW_LOADING_STATE_TIMEOUT);
+    try {
+      const reader = new FileReader();
+      const dataUrl = await new Promise((resolve, reject) => {
+        reader.onload = () => {
+          if (typeof reader.result === "string") {
+            resolve(reader.result);
+          } else {
+            reject(new Error("FileReader result was not a string."));
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+      const commaIndex = dataUrl.indexOf(",");
+      const bytes = dataUrl.substring(commaIndex + 1);
+      this.#imageInput = {
+        isLoading: false,
+        data: bytes,
+        mimeType: file.type,
+        inputType: "uploaded-image"
+        /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
+      };
+    } catch {
+      this.#imageInput = void 0;
+      Snackbars.Snackbar.Snackbar.show({ message: lockedString3(UIStringsNotTranslate3.uploadImageFailureMessage) });
+    }
+    clearTimeout(showLoadingTimeout);
+    this.performUpdate();
+    void this.updateComplete.then(() => {
+      this.focusTextInput();
+    });
+  }
+  #view;
+  constructor(element, view) {
+    super(element);
+    this.#view = view ?? DEFAULT_VIEW3;
+  }
+  wasShown() {
+    super.wasShown();
+    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+  }
+  willHide() {
+    super.willHide();
+    SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+  }
+  #onPrimaryPageChanged() {
+    this.#imageInput = void 0;
+    this.performUpdate();
+  }
+  performUpdate() {
+    this.#view({
+      inputPlaceholder: this.inputPlaceholder,
+      isLoading: this.isLoading,
+      blockedByCrossOrigin: this.blockedByCrossOrigin,
+      isTextInputDisabled: this.isTextInputDisabled,
+      selectedContext: this.selectedContext,
+      inspectElementToggled: this.inspectElementToggled,
+      isTextInputEmpty: this.#isTextInputEmpty(),
+      additionalFloatyContext: this.additionalFloatyContext,
+      disclaimerText: this.disclaimerText,
+      conversationType: this.conversationType,
+      multimodalInputEnabled: this.multimodalInputEnabled,
+      imageInput: this.#imageInput,
+      uploadImageInputEnabled: this.uploadImageInputEnabled,
+      isReadOnly: this.isReadOnly,
+      textAreaRef: this.#textAreaRef,
+      onContextClick: this.onContextClick,
+      onInspectElementClick: this.onInspectElementClick,
+      onNewConversation: this.onNewConversation,
+      onTextInputChange: () => {
+        this.requestUpdate();
+      },
+      onTakeScreenshot: this.#handleTakeScreenshot.bind(this),
+      onRemoveImageInput: this.#handleRemoveImageInput.bind(this),
+      onSubmit: this.onSubmit,
+      onTextAreaKeyDown: this.onTextAreaKeyDown,
+      onCancel: this.onCancel,
+      onImageUpload: this.onImageUpload
+    }, void 0, this.contentElement);
+  }
+  focusTextInput() {
+    this.#textAreaRef.value?.focus();
+  }
+  onSubmit = (event) => {
+    event.preventDefault();
+    if (this.#imageInput?.isLoading) {
+      return;
+    }
+    const imageInput = !this.#imageInput?.isLoading && this.#imageInput?.data ? { inlineData: { data: this.#imageInput.data, mimeType: this.#imageInput.mimeType } } : void 0;
+    this.onTextSubmit(this.#textAreaRef.value?.value ?? "", imageInput, this.#imageInput?.inputType);
+    this.#imageInput = void 0;
+    this.setInputValue("");
+  };
+  onTextAreaKeyDown = (event) => {
+    if (!event.target || !(event.target instanceof HTMLTextAreaElement)) {
+      return;
+    }
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      if (!event.target?.value || this.#imageInput?.isLoading) {
+        return;
+      }
+      const imageInput = !this.#imageInput?.isLoading && this.#imageInput?.data ? { inlineData: { data: this.#imageInput.data, mimeType: this.#imageInput.mimeType } } : void 0;
+      this.onTextSubmit(event.target.value, imageInput, this.#imageInput?.inputType);
+      this.#imageInput = void 0;
+      this.setInputValue("");
+    }
+  };
+  onCancel = (ev) => {
+    ev.preventDefault();
+    if (!this.isLoading) {
+      return;
+    }
+    this.onCancelClick();
+  };
+  onImageUpload = (ev) => {
+    ev.stopPropagation();
+    const fileSelector = UI4.UIUtils.createFileSelectorElement(this.#handleLoadImage.bind(this), ".jpeg,.jpg,.png");
+    fileSelector.click();
+  };
+};
+
+// gen/front_end/panels/ai_assistance/components/chatView.css.js
+var chatView_css_default = `/*
+ * Copyright 2024 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:host {
+  width: 100%;
+  height: 100%;
+  user-select: text;
   display: flex;
   flex-direction: column;
-  gap: var(--sys-size-2);
+  background-color: var(--sys-color-cdt-base-container);
 }
 
-.js-code-output {
-  devtools-code-block {
-    --code-block-max-code-height: 50px;
+.chat-ui {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  container-type: size;
+  container-name: --chat-ui-container;
+}
+
+.info-tooltip-container {
+  max-width: var(--sys-size-28);
+  padding: var(--sys-size-4) var(--sys-size-5);
+}
+
+.tooltip-link {
+  display: block;
+  margin-top: var(--sys-size-4);
+  color: var(--sys-color-primary);
+  padding-left: 0;
+}
+
+.chat-cancel-context-button {
+  padding-bottom: 3px;
+  padding-right: var(--sys-size-3);
+}
+
+
+.messages-container {
+  flex-grow: 1;
+  width: 100%;
+  max-width: var(--sys-size-36);
+
+  /* Prevents the container from jumping when the scrollbar is shown */
+  /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
+  @container (width > 688px) {
+    --half-scrollbar-width: calc((100cqw - 100%) / 2);
+
+    margin-left: var(--half-scrollbar-width);
+    margin-right: calc(-1 * var(--half-scrollbar-width));
   }
 }
 
-.context-details {
-  devtools-code-block {
-    --code-block-max-code-height: 80px;
-  }
-}
 
-.step {
-  width: fit-content;
-  background-color: var(--sys-color-surface3);
-  border-radius: var(--sys-size-6);
-  position: relative;
-
-  &.empty {
-    pointer-events: none;
-
-    .arrow {
-      display: none;
-    }
-  }
-
-  &:not(&[open]):hover::after {
-    content: '';
-    height: 100%;
-    width: 100%;
-    border-radius: inherit;
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    background-color: var(--sys-color-state-hover-on-subtle);
-  }
-
-  &.paused {
-    .indicator {
-      color: var(--sys-color-on-surface-subtle);
-    }
-  }
-
-  &.canceled {
-    .summary {
-      color: var(--sys-color-state-disabled);
-      text-decoration: line-through;
-    }
-
-    .indicator {
-      color: var(--sys-color-state-disabled);
-    }
-  }
-
-  devtools-markdown-view {
-    --code-background-color: var(--sys-color-surface1);
-  }
-
-  devtools-icon {
-    vertical-align: bottom;
-  }
-
-  devtools-spinner {
-    width: var(--sys-size-9);
-    height: var(--sys-size-9);
-    padding: var(--sys-size-2);
-  }
-
-  &[open] {
-    width: auto;
-
-    .summary .title {
-      white-space: normal;
-      overflow: unset;
-    }
-
-    .summary .arrow {
-      transform: rotate(180deg);
-    }
-  }
-
-  summary::marker {
-    content: '';
-  }
-
-  summary {
-    border-radius: var(--sys-size-6);
-  }
-
-  .step-details {
-    padding: 0 var(--sys-size-5) var(--sys-size-4) var(--sys-size-12);
-    display: flex;
-    flex-direction: column;
-    gap: var(--sys-size-6);
-
-    devtools-code-block {
-      --code-block-background-color: var(--sys-color-surface1);
-    }
-  }
-}
 
 .link {
   color: var(--text-link);
@@ -2220,21 +2620,7 @@ main {
   }
 }
 
-.error-step {
-  color: var(--sys-color-error);
-}
 
-.side-effect-confirmation {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sys-size-5);
-  padding-bottom: var(--sys-size-4);
-}
-
-.side-effect-buttons-container {
-  display: flex;
-  gap: var(--sys-size-4);
-}
 
 .change-summary {
   background-color: var(--sys-color-surface3);
@@ -2406,31 +2792,48 @@ main {
   }
 }
 
-.floaty {
-  margin: var(--sys-size-3) 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  gap: var(--sys-size-4);
+.sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 9999;
+}
 
-  li {
-    border: var(--sys-size-1) solid var(--sys-color-divider);
-    padding: var(--sys-size-2) var(--sys-size-3);
-    max-width: 150px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+.chat-input-widget {
+  width: 100%;
+  max-width: var(--sys-size-36);
+  background-color: var(--sys-color-cdt-base-container);
+  /*
+  The \\'box-shadow\\' is a workaround to hide the content appearing between the \\'.input-form\\'
+  and the footer in some resolutions even though the \\'.input-form\\' has \\'bottom: 0\\'.
+  */
+  box-shadow: 0 1px var(--sys-color-cdt-base-container);
 
-    .context-item {
-      max-width: 130px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex-grow: 0;
-    }
+  /* Prevents the input form from jumping when the scrollbar is shown */
+  /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
+  @container (width > 688px) {
+    --half-scrollbar-width: calc((100cqw - 100%) / 2);
+
+    margin-left: var(--half-scrollbar-width);
+    margin-right: calc(-1 * var(--half-scrollbar-width));
   }
 
-  .open-floaty {
-    margin-left: auto;
+  /* when there isn't enough space to view the messages,
+  do not overlay the input form on top of the messages */
+  /* height < var(--sys-size-27) */
+  @container (height < 224px) {
+    margin-top: var(--sys-size-4);
+    margin-bottom: var(--sys-size-4);
+    position: static;
+  }
+
+  @container --chat-ui-container (width < 400px) {
+    /*
+      The footer already adds necessary paddings for this state.
+      However, without the \\'padding-bottom\\' here, the outline in the bottom
+      is rendered behind the footer. So, we add 1px space here to make sure
+      that the outline is rendered fully.
+    */
+    padding-bottom: var(--sys-size-1);
   }
 }
 
@@ -2439,18 +2842,21 @@ main {
 // gen/front_end/panels/ai_assistance/components/UserActionRow.js
 var UserActionRow_exports = {};
 __export(UserActionRow_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   UserActionRow: () => UserActionRow
 });
+import "./../../ui/components/markdown_view/markdown_view.js";
 import * as Common3 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
-import * as Input from "./../../ui/components/input/input.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as AiAssistanceModel4 from "./../../models/ai_assistance/ai_assistance.js";
+import * as Marked from "./../../third_party/marked/marked.js";
+import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
+import * as Input2 from "./../../ui/components/input/input.js";
 import * as UIHelpers from "./../../ui/helpers/helpers.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import * as Lit4 from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
+import * as Lit5 from "./../../ui/lit/lit.js";
+import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/ai_assistance/components/userActionRow.css.js
 var userActionRow_css_default = `/*
@@ -2573,13 +2979,246 @@ var userActionRow_css_default = `/*
       padding: 0 var(--sys-size-4);
     }
   }
+
+  .chat-message {
+    user-select: text;
+    cursor: initial;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-5);
+    width: 100%;
+    padding: var(--sys-size-7) var(--sys-size-5);
+    font-size: 12px;
+    word-break: normal;
+    overflow-wrap: anywhere;
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+
+    &.is-last-message {
+      border-bottom: 0;
+    }
+
+    .message-info {
+      display: flex;
+      align-items: center;
+      height: var(--sys-size-11);
+      gap: var(--sys-size-4);
+      font: var(--sys-typescale-body4-bold);
+
+      img {
+        border: 0;
+        border-radius: var(--sys-shape-corner-full);
+        display: block;
+        height: var(--sys-size-9);
+        width: var(--sys-size-9);
+      }
+
+      h2 {
+        font: var(--sys-typescale-body4-bold);
+      }
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sys-size-8);
+      max-width: 100%;
+    }
+
+    .aborted {
+      color: var(--sys-color-on-surface-subtle);
+    }
+
+    .image-link {
+      width: fit-content;
+      border-radius: var(--sys-shape-corner-small);
+      outline-offset: var(--sys-size-2);
+
+      img {
+        max-height: var(--sys-size-20);
+        max-width: 100%;
+        border-radius: var(--sys-shape-corner-small);
+        border: 1px solid var(--sys-color-neutral-outline);
+        width: fit-content;
+        vertical-align: bottom;
+      }
+    }
+
+    .unavailable-image {
+      margin: var(--sys-size-4) 0;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      height: var(--sys-size-17);
+      width: var(--sys-size-18);
+      background-color: var(--sys-color-surface3);
+      border-radius: var(--sys-shape-corner-small);
+      border: 1px solid var(--sys-color-neutral-outline);
+
+      devtools-icon {
+        color: var(--sys-color-state-disabled);
+      }
+    }
+  }
+
+  .indicator {
+    color: var(--sys-color-green-bright);
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    padding: var(--sys-size-3);
+    line-height: var(--sys-size-9);
+    cursor: default;
+    gap: var(--sys-size-3);
+    justify-content: center;
+    align-items: center;
+
+    .title {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      font: var(--sys-typescale-body4-regular);
+
+      .paused {
+        font: var(--sys-typescale-body4-bold);
+      }
+    }
+  }
+
+  .step-code {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-2);
+  }
+
+  .js-code-output {
+    devtools-code-block {
+      --code-block-max-code-height: 50px;
+    }
+  }
+
+  .context-details {
+    devtools-code-block {
+      --code-block-max-code-height: 80px;
+    }
+  }
+
+  .step {
+    width: fit-content;
+    background-color: var(--sys-color-surface3);
+    border-radius: var(--sys-size-6);
+    position: relative;
+
+    &.empty {
+      pointer-events: none;
+
+      .arrow {
+        display: none;
+      }
+    }
+
+    &:not(&[open]):hover::after {
+      content: '';
+      height: 100%;
+      width: 100%;
+      border-radius: inherit;
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      background-color: var(--sys-color-state-hover-on-subtle);
+    }
+
+    &.paused {
+      .indicator {
+        color: var(--sys-color-on-surface-subtle);
+      }
+    }
+
+    &.canceled {
+      .summary {
+        color: var(--sys-color-state-disabled);
+        text-decoration: line-through;
+      }
+
+      .indicator {
+        color: var(--sys-color-state-disabled);
+      }
+    }
+
+    devtools-markdown-view {
+      --code-background-color: var(--sys-color-surface1);
+    }
+
+    devtools-icon {
+      vertical-align: bottom;
+    }
+
+    devtools-spinner {
+      width: var(--sys-size-9);
+      height: var(--sys-size-9);
+      padding: var(--sys-size-2);
+    }
+
+    &[open] {
+      width: auto;
+
+      .summary .title {
+        white-space: normal;
+        overflow: unset;
+      }
+
+      .summary .arrow {
+        transform: rotate(180deg);
+      }
+    }
+
+    summary::marker {
+      content: '';
+    }
+
+    summary {
+      border-radius: var(--sys-size-6);
+    }
+
+    .step-details {
+      padding: 0 var(--sys-size-5) var(--sys-size-4) var(--sys-size-12);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sys-size-6);
+
+      devtools-code-block {
+        --code-block-background-color: var(--sys-color-surface1);
+      }
+    }
+  }
+
+  .error-step {
+    color: var(--sys-color-error);
+  }
+
+  .side-effect-confirmation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-5);
+    padding-bottom: var(--sys-size-4);
+  }
+
+  .side-effect-buttons-container {
+    display: flex;
+    gap: var(--sys-size-4);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("././components/userActionRow.css")} */`;
 
 // gen/front_end/panels/ai_assistance/components/UserActionRow.js
-var { html: html6, Directives: { ref } } = Lit4;
-var UIStringsNotTranslate3 = {
+var { html: html7, Directives: { ref: ref2, ifDefined } } = Lit5;
+var lockedString4 = i18n7.i18n.lockedString;
+var REPORT_URL = "https://crbug.com/364805393";
+var SCROLL_ROUNDING_OFFSET = 1;
+var UIStringsNotTranslate4 = {
   /**
    * @description The title of the button that allows submitting positive
    * feedback about the response for AI assistance.
@@ -2627,327 +3266,7 @@ var UIStringsNotTranslate3 = {
   /**
    * @description The title of the button that copies the AI-generated response to the clipboard.
    */
-  copyResponse: "Copy response"
-};
-var lockedString3 = i18n5.i18n.lockedString;
-var REPORT_URL = "https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504";
-var SCROLL_ROUNDING_OFFSET = 1;
-var DEFAULT_VIEW3 = (input, output, target) => {
-  Lit4.render(html6`
-    <style>${Input.textInputStyles}</style>
-    <style>${userActionRow_css_default}</style>
-    <div class="ai-assistance-feedback-row">
-      <div class="action-buttons">
-        ${input.showRateButtons ? html6`
-          <devtools-button
-            .data=${{
-    variant: "icon",
-    size: "SMALL",
-    iconName: "thumb-up",
-    toggledIconName: "thumb-up-filled",
-    toggled: input.currentRating === "POSITIVE",
-    toggleType: "primary-toggle",
-    title: lockedString3(UIStringsNotTranslate3.thumbsUp),
-    jslogContext: "thumbs-up"
-  }}
-            @click=${() => input.onRatingClick(
-    "POSITIVE"
-    /* Host.AidaClient.Rating.POSITIVE */
-  )}
-          ></devtools-button>
-          <devtools-button
-            .data=${{
-    variant: "icon",
-    size: "SMALL",
-    iconName: "thumb-down",
-    toggledIconName: "thumb-down-filled",
-    toggled: input.currentRating === "NEGATIVE",
-    toggleType: "primary-toggle",
-    title: lockedString3(UIStringsNotTranslate3.thumbsDown),
-    jslogContext: "thumbs-down"
-  }}
-            @click=${() => input.onRatingClick(
-    "NEGATIVE"
-    /* Host.AidaClient.Rating.NEGATIVE */
-  )}
-          ></devtools-button>
-          <div class="vertical-separator"></div>
-        ` : Lit4.nothing}
-        <devtools-button
-          .data=${{
-    variant: "icon",
-    size: "SMALL",
-    title: lockedString3(UIStringsNotTranslate3.report),
-    iconName: "report",
-    jslogContext: "report"
-  }}
-          @click=${input.onReportClick}
-        ></devtools-button>
-        <div class="vertical-separator"></div>
-          <devtools-button
-            .data=${{
-    variant: "icon",
-    size: "SMALL",
-    title: lockedString3(UIStringsNotTranslate3.copyResponse),
-    iconName: "copy",
-    jslogContext: "copy-ai-response"
-  }}
-            aria-label=${lockedString3(UIStringsNotTranslate3.copyResponse)}
-            @click=${input.onCopyResponseClick}></devtools-button>
-      </div>
-      ${input.suggestions ? html6`<div class="suggestions-container">
-        <div class="scroll-button-container left hidden" ${ref((element) => {
-    output.suggestionsLeftScrollButtonContainer = element;
-  })}>
-          <devtools-button
-            class='scroll-button'
-            .data=${{
-    variant: "icon",
-    size: "SMALL",
-    iconName: "chevron-left",
-    title: lockedString3(UIStringsNotTranslate3.scrollToPrevious),
-    jslogContext: "chevron-left"
-  }}
-            @click=${() => input.scrollSuggestionsScrollContainer("left")}
-          ></devtools-button>
-        </div>
-        <div class="suggestions-scroll-container" @scroll=${input.onSuggestionsScrollOrResize} ${ref((element) => {
-    output.suggestionsScrollContainer = element;
-  })}>
-          ${input.suggestions.map((suggestion) => html6`<devtools-button
-            class='suggestion'
-            .data=${{
-    variant: "outlined",
-    title: suggestion,
-    jslogContext: "suggestion"
-  }}
-            @click=${() => input.onSuggestionClick(suggestion)}
-          >${suggestion}</devtools-button>`)}
-        </div>
-        <div class="scroll-button-container right hidden" ${ref((element) => {
-    output.suggestionsRightScrollButtonContainer = element;
-  })}>
-          <devtools-button
-            class='scroll-button'
-            .data=${{
-    variant: "icon",
-    size: "SMALL",
-    iconName: "chevron-right",
-    title: lockedString3(UIStringsNotTranslate3.scrollToNext),
-    jslogContext: "chevron-right"
-  }}
-            @click=${() => input.scrollSuggestionsScrollContainer("right")}
-          ></devtools-button>
-        </div>
-      </div>` : Lit4.nothing}
-    </div>
-    ${input.isShowingFeedbackForm ? html6`
-      <form class="feedback-form" @submit=${input.onSubmit}>
-        <div class="feedback-header">
-          <h4 class="feedback-title">${lockedString3(UIStringsNotTranslate3.whyThisRating)}</h4>
-          <devtools-button
-            aria-label=${lockedString3(UIStringsNotTranslate3.close)}
-            @click=${input.onClose}
-            .data=${{
-    variant: "icon",
-    iconName: "cross",
-    size: "SMALL",
-    title: lockedString3(UIStringsNotTranslate3.close),
-    jslogContext: "close"
-  }}
-          ></devtools-button>
-        </div>
-        <input
-          type="text"
-          class="devtools-text-input feedback-input"
-          @input=${(event) => input.onInputChange(event.target.value)}
-          placeholder=${lockedString3(UIStringsNotTranslate3.provideFeedbackPlaceholder)}
-          jslog=${VisualLogging3.textField("feedback").track({ keydown: "Enter" })}
-        >
-        <span class="feedback-disclaimer">${lockedString3(UIStringsNotTranslate3.disclaimer)}</span>
-        <div>
-          <devtools-button
-          aria-label=${lockedString3(UIStringsNotTranslate3.submit)}
-          .data=${{
-    type: "submit",
-    disabled: input.isSubmitButtonDisabled,
-    variant: "outlined",
-    size: "SMALL",
-    title: lockedString3(UIStringsNotTranslate3.submit),
-    jslogContext: "send"
-  }}
-          >${lockedString3(UIStringsNotTranslate3.submit)}</devtools-button>
-        </div>
-      </div>
-    </form>
-    ` : Lit4.nothing}
-  `, target);
-};
-var UserActionRow = class extends UI4.Widget.Widget {
-  showRateButtons = false;
-  onFeedbackSubmit = () => {
-  };
-  suggestions;
-  onCopyResponseClick = () => {
-  };
-  onSuggestionClick = () => {
-  };
-  canShowFeedbackForm = false;
-  #suggestionsResizeObserver = new ResizeObserver(() => this.#handleSuggestionsScrollOrResize());
-  #suggestionsEvaluateLayoutThrottler = new Common3.Throttler.Throttler(50);
-  #feedbackValue = "";
-  #currentRating;
-  #isShowingFeedbackForm = false;
-  #isSubmitButtonDisabled = true;
-  #view;
-  #viewOutput = {};
-  constructor(element, view) {
-    super(element);
-    this.#view = view ?? DEFAULT_VIEW3;
-  }
-  wasShown() {
-    super.wasShown();
-    void this.performUpdate();
-    this.#evaluateSuggestionsLayout();
-    if (this.#viewOutput.suggestionsScrollContainer) {
-      this.#suggestionsResizeObserver.observe(this.#viewOutput.suggestionsScrollContainer);
-    }
-  }
-  performUpdate() {
-    this.#view({
-      onSuggestionClick: this.onSuggestionClick,
-      onRatingClick: this.#handleRateClick.bind(this),
-      onReportClick: () => UIHelpers.openInNewTab(REPORT_URL),
-      onCopyResponseClick: this.onCopyResponseClick,
-      scrollSuggestionsScrollContainer: this.#scrollSuggestionsScrollContainer.bind(this),
-      onSuggestionsScrollOrResize: this.#handleSuggestionsScrollOrResize.bind(this),
-      onSubmit: this.#handleSubmit.bind(this),
-      onClose: this.#handleClose.bind(this),
-      onInputChange: this.#handleInputChange.bind(this),
-      isSubmitButtonDisabled: this.#isSubmitButtonDisabled,
-      showRateButtons: this.showRateButtons,
-      suggestions: this.suggestions,
-      currentRating: this.#currentRating,
-      isShowingFeedbackForm: this.#isShowingFeedbackForm
-    }, this.#viewOutput, this.contentElement);
-  }
-  #handleInputChange(value) {
-    this.#feedbackValue = value;
-    const disableSubmit = !value;
-    if (disableSubmit !== this.#isSubmitButtonDisabled) {
-      this.#isSubmitButtonDisabled = disableSubmit;
-      void this.performUpdate();
-    }
-  }
-  #evaluateSuggestionsLayout = () => {
-    const suggestionsScrollContainer = this.#viewOutput.suggestionsScrollContainer;
-    const leftScrollButtonContainer = this.#viewOutput.suggestionsLeftScrollButtonContainer;
-    const rightScrollButtonContainer = this.#viewOutput.suggestionsRightScrollButtonContainer;
-    if (!suggestionsScrollContainer || !leftScrollButtonContainer || !rightScrollButtonContainer) {
-      return;
-    }
-    const shouldShowLeftButton = suggestionsScrollContainer.scrollLeft > SCROLL_ROUNDING_OFFSET;
-    const shouldShowRightButton = suggestionsScrollContainer.scrollLeft + suggestionsScrollContainer.offsetWidth + SCROLL_ROUNDING_OFFSET < suggestionsScrollContainer.scrollWidth;
-    leftScrollButtonContainer.classList.toggle("hidden", !shouldShowLeftButton);
-    rightScrollButtonContainer.classList.toggle("hidden", !shouldShowRightButton);
-  };
-  willHide() {
-    super.willHide();
-    this.#suggestionsResizeObserver.disconnect();
-  }
-  #handleSuggestionsScrollOrResize() {
-    void this.#suggestionsEvaluateLayoutThrottler.schedule(() => {
-      this.#evaluateSuggestionsLayout();
-      return Promise.resolve();
-    });
-  }
-  #scrollSuggestionsScrollContainer(direction) {
-    const suggestionsScrollContainer = this.#viewOutput.suggestionsScrollContainer;
-    if (!suggestionsScrollContainer) {
-      return;
-    }
-    suggestionsScrollContainer.scroll({
-      top: 0,
-      left: direction === "left" ? suggestionsScrollContainer.scrollLeft - suggestionsScrollContainer.clientWidth : suggestionsScrollContainer.scrollLeft + suggestionsScrollContainer.clientWidth,
-      behavior: "smooth"
-    });
-  }
-  #handleRateClick(rating) {
-    if (this.#currentRating === rating) {
-      this.#currentRating = void 0;
-      this.#isShowingFeedbackForm = false;
-      this.#isSubmitButtonDisabled = true;
-      this.onFeedbackSubmit(
-        "SENTIMENT_UNSPECIFIED"
-        /* Host.AidaClient.Rating.SENTIMENT_UNSPECIFIED */
-      );
-      void this.performUpdate();
-      return;
-    }
-    this.#currentRating = rating;
-    this.#isShowingFeedbackForm = this.canShowFeedbackForm;
-    this.onFeedbackSubmit(rating);
-    void this.performUpdate();
-  }
-  #handleClose() {
-    this.#isShowingFeedbackForm = false;
-    this.#isSubmitButtonDisabled = true;
-    void this.performUpdate();
-  }
-  #handleSubmit(ev) {
-    ev.preventDefault();
-    const input = this.#feedbackValue;
-    if (!this.#currentRating || !input) {
-      return;
-    }
-    this.onFeedbackSubmit(this.#currentRating, input);
-    this.#isShowingFeedbackForm = false;
-    this.#isSubmitButtonDisabled = true;
-    void this.performUpdate();
-  }
-};
-
-// gen/front_end/panels/ai_assistance/components/ChatView.js
-var { html: html7, Directives: { ifDefined, ref: ref2 } } = Lit5;
-var UIStrings = {
-  /**
-   * @description The footer disclaimer that links to more information about the AI feature.
-   */
-  learnAbout: "Learn about AI in DevTools",
-  /**
-   * @description Label added to the text input to describe the context for screen readers. Not shown visibly on screen.
-   */
-  inputTextAriaDescription: "You can also use one of the suggested prompts above to start your conversation",
-  /**
-   * @description Label added to the button that reveals the selected context item in DevTools
-   */
-  revealContextDescription: "Reveal the selected context item in DevTools"
-};
-var UIStringsNotTranslate4 = {
-  /**
-   * @description Title for the send icon button.
-   */
-  sendButtonTitle: "Send",
-  /**
-   * @description Title for the start new chat
-   */
-  startNewChat: "Start new chat",
-  /**
-   * @description Title for the cancel icon button.
-   */
-  cancelButtonTitle: "Cancel",
-  /**
-   * @description Label for the "select an element" button.
-   */
-  selectAnElement: "Select an element",
-  /**
-   * @description Label for the "select an element" button.
-   */
-  noElementSelected: "No element selected",
-  /**
-   * @description Text for the empty state of the AI assistance panel.
-   */
-  emptyStateText: "How can I help you?",
+  copyResponse: "Copy response",
   /**
    * @description The error message when the request to the LLM failed for some reason.
    */
@@ -3009,18 +3328,6 @@ var UIStringsNotTranslate4 = {
    */
   canceled: "Canceled",
   /**
-   * @description Text displayed when the chat input is disabled due to reading past conversation.
-   */
-  pastConversation: "You're viewing a past conversation.",
-  /**
-   * @description Title for the take screenshot button.
-   */
-  takeScreenshotButtonTitle: "Take screenshot",
-  /**
-   * @description Title for the remove image input button.
-   */
-  removeImageInputButtonTitle: "Remove image input",
-  /**
    * @description Alt text for the image input (displayed in the chat messages) that has been sent to the model.
    */
   imageInputSentToTheModel: "Image input sent to the model",
@@ -3035,249 +3342,64 @@ var UIStringsNotTranslate4 = {
   /**
    * @description Alt text for image when it is not available.
    */
-  imageUnavailable: "Image unavailable",
-  /**
-   * @description Title for the add image button.
-   */
-  addImageButtonTitle: "Add image"
+  imageUnavailable: "Image unavailable"
 };
-var str_ = i18n7.i18n.registerUIStrings("panels/ai_assistance/components/ChatView.ts", UIStrings);
-var i18nString = i18n7.i18n.getLocalizedString.bind(void 0, str_);
-var lockedString4 = i18n7.i18n.lockedString;
-var SCROLL_ROUNDING_OFFSET2 = 1;
-var RELEVANT_DATA_LINK_FOOTER_ID = "relevant-data-link-footer";
-var RELEVANT_DATA_LINK_CHAT_ID = "relevant-data-link-chat";
-var ChatView = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #scrollTop;
-  #props;
-  #messagesContainerElement;
-  #mainElementRef = Lit5.Directives.createRef();
-  #messagesContainerResizeObserver = new ResizeObserver(() => this.#handleMessagesContainerResize());
-  /**
-   * Indicates whether the chat scroll position should be pinned to the bottom.
-   *
-   * This is true when:
-   *   - The scroll is at the very bottom, allowing new messages to push the scroll down automatically.
-   *   - The panel is initially rendered and the user hasn't scrolled yet.
-   *
-   * It is set to false when the user scrolls up to view previous messages.
-   */
-  #pinScrollToBottom = true;
-  /**
-   * Indicates whether the scroll event originated from code
-   * or a user action. When set to `true`, `handleScroll` will ignore the event,
-   * allowing it to only handle user-driven scrolls and correctly decide
-   * whether to pin the content to the bottom.
-   */
-  #isProgrammaticScroll = false;
-  constructor(props) {
-    super();
-    this.#props = props;
-  }
-  set props(props) {
-    this.#props = props;
-    this.#render();
-  }
-  connectedCallback() {
-    this.#render();
-    if (this.#messagesContainerElement) {
-      this.#messagesContainerResizeObserver.observe(this.#messagesContainerElement);
-    }
-  }
-  disconnectedCallback() {
-    this.#messagesContainerResizeObserver.disconnect();
-  }
-  focusTextInput() {
-    const textArea = this.#shadow.querySelector(".chat-input");
-    if (!textArea) {
-      return;
-    }
-    textArea.focus();
-  }
-  restoreScrollPosition() {
-    if (this.#scrollTop === void 0) {
-      return;
-    }
-    if (!this.#mainElementRef?.value) {
-      return;
-    }
-    this.#setMainElementScrollTop(this.#scrollTop);
-  }
-  scrollToBottom() {
-    if (!this.#mainElementRef?.value) {
-      return;
-    }
-    this.#setMainElementScrollTop(this.#mainElementRef.value.scrollHeight);
-  }
-  #handleMessagesContainerResize() {
-    if (!this.#pinScrollToBottom) {
-      return;
-    }
-    if (!this.#mainElementRef?.value) {
-      return;
-    }
-    if (this.#pinScrollToBottom) {
-      this.#setMainElementScrollTop(this.#mainElementRef.value.scrollHeight);
-    }
-  }
-  #setMainElementScrollTop(scrollTop) {
-    if (!this.#mainElementRef?.value) {
-      return;
-    }
-    this.#scrollTop = scrollTop;
-    this.#isProgrammaticScroll = true;
-    this.#mainElementRef.value.scrollTop = scrollTop;
-  }
-  #setInputText(text) {
-    const textArea = this.#shadow.querySelector(".chat-input");
-    if (!textArea) {
-      return;
-    }
-    textArea.value = text;
-    this.#props.onTextInputChange(text);
-  }
-  #handleMessageContainerRef(el) {
-    this.#messagesContainerElement = el;
-    if (el) {
-      this.#messagesContainerResizeObserver.observe(el);
-    } else {
-      this.#pinScrollToBottom = true;
-      this.#messagesContainerResizeObserver.disconnect();
-    }
-  }
-  #handleScroll = (ev) => {
-    if (!ev.target || !(ev.target instanceof HTMLElement)) {
-      return;
-    }
-    if (this.#isProgrammaticScroll) {
-      this.#isProgrammaticScroll = false;
-      return;
-    }
-    this.#scrollTop = ev.target.scrollTop;
-    this.#pinScrollToBottom = ev.target.scrollTop + ev.target.clientHeight + SCROLL_ROUNDING_OFFSET2 > ev.target.scrollHeight;
-  };
-  #handleSubmit = (ev) => {
-    ev.preventDefault();
-    if (this.#props.imageInput?.isLoading) {
-      return;
-    }
-    const textArea = this.#shadow.querySelector(".chat-input");
-    if (!textArea?.value) {
-      return;
-    }
-    const imageInput = !this.#props.imageInput?.isLoading && this.#props.imageInput?.data ? { inlineData: { data: this.#props.imageInput.data, mimeType: this.#props.imageInput.mimeType } } : void 0;
-    void this.#props.onTextSubmit(textArea.value, imageInput, this.#props.imageInput?.inputType);
-    textArea.value = "";
-  };
-  #handleTextAreaKeyDown = (ev) => {
-    if (!ev.target || !(ev.target instanceof HTMLTextAreaElement)) {
-      return;
-    }
-    if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) {
-      ev.preventDefault();
-      if (!ev.target?.value || this.#props.imageInput?.isLoading) {
-        return;
-      }
-      const imageInput = !this.#props.imageInput?.isLoading && this.#props.imageInput?.data ? { inlineData: { data: this.#props.imageInput.data, mimeType: this.#props.imageInput.mimeType } } : void 0;
-      void this.#props.onTextSubmit(ev.target.value, imageInput, this.#props.imageInput?.inputType);
-      ev.target.value = "";
-    }
-  };
-  #handleCancel = (ev) => {
-    ev.preventDefault();
-    if (!this.#props.isLoading) {
-      return;
-    }
-    this.#props.onCancelClick();
-  };
-  #handleImageUpload = (ev) => {
-    ev.stopPropagation();
-    if (this.#props.onLoadImage) {
-      const fileSelector = UI5.UIUtils.createFileSelectorElement(this.#props.onLoadImage.bind(this), ".jpeg,.jpg,.png");
-      fileSelector.click();
-    }
-  };
-  #handleSuggestionClick = (suggestion) => {
-    this.#setInputText(suggestion);
-    this.focusTextInput();
-    Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.AiAssistanceDynamicSuggestionClicked);
-  };
-  #render() {
-    const renderFooter = () => {
-      const classes = Lit5.Directives.classMap({
-        "chat-view-footer": true,
-        "is-read-only": this.#props.isReadOnly
-      });
-      return html7`
-        <footer class=${classes} jslog=${VisualLogging4.section("footer")}>
-          ${renderRelevantDataDisclaimer({
-        isLoading: this.#props.isLoading,
-        blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
-        tooltipId: RELEVANT_DATA_LINK_FOOTER_ID,
-        disclaimerText: this.#props.disclaimerText
-      })}
-        </footer>
-      `;
-    };
-    const renderInputOrReadOnlySection = () => {
-      if (this.#props.isReadOnly) {
-        return renderReadOnlySection({
-          onNewConversation: this.#props.onNewConversation
-        });
-      }
-      return renderChatInput({
-        isLoading: this.#props.isLoading,
-        blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
-        isTextInputDisabled: this.#props.isTextInputDisabled,
-        inputPlaceholder: this.#props.inputPlaceholder,
-        disclaimerText: this.#props.disclaimerText,
-        selectedContext: this.#props.selectedContext,
-        inspectElementToggled: this.#props.inspectElementToggled,
-        multimodalInputEnabled: this.#props.multimodalInputEnabled,
-        conversationType: this.#props.conversationType,
-        imageInput: this.#props.imageInput,
-        isTextInputEmpty: this.#props.isTextInputEmpty,
-        uploadImageInputEnabled: this.#props.uploadImageInputEnabled,
-        onContextClick: this.#props.onContextClick,
-        onInspectElementClick: this.#props.onInspectElementClick,
-        onSubmit: this.#handleSubmit,
-        onTextAreaKeyDown: this.#handleTextAreaKeyDown,
-        onCancel: this.#handleCancel,
-        onNewConversation: this.#props.onNewConversation,
-        onTakeScreenshot: this.#props.onTakeScreenshot,
-        onRemoveImageInput: this.#props.onRemoveImageInput,
-        onTextInputChange: this.#props.onTextInputChange,
-        onImageUpload: this.#handleImageUpload,
-        additionalFloatyContext: this.#props.additionalFloatyContext
-      });
-    };
+var DEFAULT_VIEW4 = (input, output, target) => {
+  const message = input.message;
+  if (message.entity === "user") {
+    const name = input.userInfo.accountFullName || lockedString4(UIStringsNotTranslate4.you);
+    const image = input.userInfo.accountImage ? html7`<img src="data:image/png;base64, ${input.userInfo.accountImage}" alt=${UIStringsNotTranslate4.accountAvatar} />` : html7`<devtools-icon
+          name="profile"
+        ></devtools-icon>`;
+    const imageInput = message.imageInput && "inlineData" in message.imageInput ? renderImageChatMessage(message.imageInput.inlineData) : Lit5.nothing;
     Lit5.render(html7`
-      <style>${chatView_css_default}</style>
-      <div class="chat-ui">
-        <main @scroll=${this.#handleScroll} ${ref2(this.#mainElementRef)}>
-          ${renderMainContents({
-      messages: this.#props.messages,
-      isLoading: this.#props.isLoading,
-      isReadOnly: this.#props.isReadOnly,
-      canShowFeedbackForm: this.#props.canShowFeedbackForm,
-      isTextInputDisabled: this.#props.isTextInputDisabled,
-      suggestions: this.#props.emptyStateSuggestions,
-      userInfo: this.#props.userInfo,
-      markdownRenderer: this.#props.markdownRenderer,
-      changeSummary: this.#props.changeSummary,
-      changeManager: this.#props.changeManager,
-      onSuggestionClick: this.#handleSuggestionClick,
-      onFeedbackSubmit: this.#props.onFeedbackSubmit,
-      onMessageContainerRef: this.#handleMessageContainerRef,
-      onCopyResponseClick: this.#props.onCopyResponseClick
-    })}
-          ${renderInputOrReadOnlySection()}
-        </main>
-       ${renderFooter()}
-      </div>
-    `, this.#shadow, { host: this });
+      <style>${Input2.textInputStyles}</style>
+      <style>${userActionRow_css_default}</style>
+      <section
+        class="chat-message query ${input.isLastMessage ? "is-last-message" : ""}"
+        jslog=${VisualLogging4.section("question")}
+      >
+        <div class="message-info">
+          ${image}
+          <div class="message-name">
+            <h2>${name}</h2>
+          </div>
+        </div>
+        ${imageInput}
+        <div class="message-content">${renderTextAsMarkdown(message.text, input.markdownRenderer)}</div>
+      </section>
+    `, target);
+    return;
   }
+  Lit5.render(html7`
+    <style>${Input2.textInputStyles}</style>
+    <style>${userActionRow_css_default}</style>
+    <section
+      class="chat-message answer ${input.isLastMessage ? "is-last-message" : ""}"
+      jslog=${VisualLogging4.section("answer")}
+    >
+      <div class="message-info">
+        <devtools-icon name="smart-assistant"></devtools-icon>
+        <div class="message-name">
+          <h2>${lockedString4(UIStringsNotTranslate4.ai)}</h2>
+        </div>
+      </div>
+      ${Lit5.Directives.repeat(message.parts, (_, index) => index, (part, index) => {
+    const isLastPart = index === message.parts.length - 1;
+    if (part.type === "answer") {
+      return html7`<p>${renderTextAsMarkdown(part.text, input.markdownRenderer, { animate: !input.isReadOnly && input.isLoading && isLastPart && input.isLastMessage })}</p>`;
+    }
+    return renderStep({
+      step: part.step,
+      isLoading: input.isLoading,
+      markdownRenderer: input.markdownRenderer,
+      isLast: isLastPart
+    });
+  })}
+      ${renderError(message)}
+      ${input.isLastMessage && !input.isLoading ? renderActions(input, output) : Lit5.nothing}
+    </section>
+  `, target);
 };
 function renderTextAsMarkdown(text, markdownRenderer, { animate, ref: refFn } = {}) {
   let tokens = [];
@@ -3437,69 +3559,8 @@ function renderError(message) {
   }
   return Lit5.nothing;
 }
-function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm, isLast, userInfo, markdownRenderer, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick }) {
-  if (message.entity === "user") {
-    const name = userInfo.accountFullName || lockedString4(UIStringsNotTranslate4.you);
-    const image = userInfo.accountImage ? html7`<img src="data:image/png;base64, ${userInfo.accountImage}" alt=${UIStringsNotTranslate4.accountAvatar} />` : html7`<devtools-icon
-          name="profile"
-        ></devtools-icon>`;
-    const imageInput = message.imageInput && "inlineData" in message.imageInput ? renderImageChatMessage(message.imageInput.inlineData) : Lit5.nothing;
-    return html7`<section
-      class="chat-message query"
-      jslog=${VisualLogging4.section("question")}
-    >
-      <div class="message-info">
-        ${image}
-        <div class="message-name">
-          <h2>${name}</h2>
-        </div>
-      </div>
-      ${imageInput}
-      <div class="message-content">${renderTextAsMarkdown(message.text, markdownRenderer)}</div>
-    </section>`;
-  }
-  return html7`
-    <section
-      class="chat-message answer"
-      jslog=${VisualLogging4.section("answer")}
-    >
-      <div class="message-info">
-        <devtools-icon name="smart-assistant"></devtools-icon>
-        <div class="message-name">
-          <h2>${lockedString4(UIStringsNotTranslate4.ai)}</h2>
-        </div>
-      </div>
-      ${Lit5.Directives.repeat(message.parts, (_, index) => index, (part, index) => {
-    const isLastPart = index === message.parts.length - 1;
-    if (part.type === "answer") {
-      return html7`<p>${renderTextAsMarkdown(part.text, markdownRenderer, { animate: !isReadOnly && isLoading && isLast && isLastPart })}</p>`;
-    }
-    return renderStep({
-      step: part.step,
-      isLoading,
-      markdownRenderer,
-      isLast: isLastPart && isLast
-    });
-  })}
-      ${renderError(message)}
-      ${isLast && isLoading ? Lit5.nothing : html7`<devtools-widget class="actions" .widgetConfig=${UI5.Widget.widgetConfig(UserActionRow, {
-    showRateButtons: message.rpcId !== void 0,
-    onFeedbackSubmit: (rating, feedback) => {
-      if (!message.rpcId) {
-        return;
-      }
-      onFeedbackSubmit(message.rpcId, rating, feedback);
-    },
-    suggestions: isLast && !isReadOnly && message.parts.at(-1)?.type === "answer" ? message.parts.at(-1).suggestions : void 0,
-    onSuggestionClick,
-    onCopyResponseClick: () => onCopyResponseClick(message),
-    canShowFeedbackForm
-  })}></devtools-widget>`}
-    </section>
-  `;
-}
 function renderImageChatMessage(inlineData) {
-  if (inlineData.data === AiAssistanceModel3.AiConversation.NOT_FOUND_IMAGE_DATA) {
+  if (inlineData.data === AiAssistanceModel4.AiConversation.NOT_FOUND_IMAGE_DATA) {
     return html7`<div class="unavailable-image" title=${UIStringsNotTranslate4.imageUnavailable}>
       <devtools-icon name='file-image'></devtools-icon>
     </div>`;
@@ -3512,417 +3573,474 @@ function renderImageChatMessage(inlineData) {
       <img src=${imageUrl} alt=${UIStringsNotTranslate4.imageInputSentToTheModel} />
     </x-link>`;
 }
-function renderContextIcon(context) {
-  if (!context) {
-    return Lit5.nothing;
-  }
-  const item = context.getItem();
-  if (item instanceof SDK.NetworkRequest.NetworkRequest) {
-    return PanelUtils.PanelUtils.getIconForNetworkRequest(item);
-  }
-  if (item instanceof Workspace5.UISourceCode.UISourceCode) {
-    return PanelUtils.PanelUtils.getIconForSourceFile(item);
-  }
-  if (item instanceof AiAssistanceModel3.AIContext.AgentFocus) {
-    return html7`<devtools-icon name="performance" title="Performance"></devtools-icon>`;
-  }
-  if (item instanceof SDK.DOMModel.DOMNode) {
-    return Lit5.nothing;
-  }
-  return Lit5.nothing;
-}
-function renderContextTitle(context, disabled) {
-  const item = context.getItem();
-  if (item instanceof SDK.DOMModel.DOMNode) {
-    const hiddenClassList = item.classNames().filter((className) => className.startsWith(AiAssistanceModel3.Injected.AI_ASSISTANCE_CSS_CLASS_NAME));
-    return html7`<devtools-widget .widgetConfig=${UI5.Widget.widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, {
-      node: item,
-      options: { hiddenClassList, disabled }
-    })}></devtools-widget>`;
-  }
-  return context.getTitle();
-}
-function renderSelection({ selectedContext, inspectElementToggled, conversationType, isTextInputDisabled, onContextClick, onInspectElementClick }) {
-  if (!selectedContext) {
-    return Lit5.nothing;
-  }
-  const hasPickerBehavior = conversationType === "freestyler";
-  const resourceClass = Lit5.Directives.classMap({
-    "not-selected": !selectedContext,
-    "resource-link": true,
-    "has-picker-behavior": hasPickerBehavior,
-    disabled: isTextInputDisabled
-  });
-  const handleKeyDown = (ev) => {
-    if (ev.key === "Enter" || ev.key === " ") {
-      void onContextClick();
-    }
-  };
-  return html7`<div class="select-element">
-    ${hasPickerBehavior ? html7`
+function renderActions(input, output) {
+  return html7`
+    <div class="ai-assistance-feedback-row">
+      <div class="action-buttons">
+        ${input.showRateButtons ? html7`
+          <devtools-button
+            .data=${{
+    variant: "icon",
+    size: "SMALL",
+    iconName: "thumb-up",
+    toggledIconName: "thumb-up-filled",
+    toggled: input.currentRating === "POSITIVE",
+    toggleType: "primary-toggle",
+    title: lockedString4(UIStringsNotTranslate4.thumbsUp),
+    jslogContext: "thumbs-up"
+  }}
+            @click=${() => input.onRatingClick(
+    "POSITIVE"
+    /* Host.AidaClient.Rating.POSITIVE */
+  )}
+          ></devtools-button>
+          <devtools-button
+            .data=${{
+    variant: "icon",
+    size: "SMALL",
+    iconName: "thumb-down",
+    toggledIconName: "thumb-down-filled",
+    toggled: input.currentRating === "NEGATIVE",
+    toggleType: "primary-toggle",
+    title: lockedString4(UIStringsNotTranslate4.thumbsDown),
+    jslogContext: "thumbs-down"
+  }}
+            @click=${() => input.onRatingClick(
+    "NEGATIVE"
+    /* Host.AidaClient.Rating.NEGATIVE */
+  )}
+          ></devtools-button>
+          <div class="vertical-separator"></div>
+        ` : Lit5.nothing}
         <devtools-button
           .data=${{
-    variant: "icon_toggle",
-    size: "SMALL",
-    iconName: "select-element",
-    toggledIconName: "select-element",
-    toggleType: "primary-toggle",
-    toggled: inspectElementToggled,
-    title: lockedString4(UIStringsNotTranslate4.selectAnElement),
-    jslogContext: "select-element",
-    disabled: isTextInputDisabled
-  }}
-          @click=${onInspectElementClick}
-        ></devtools-button>
-      ` : Lit5.nothing}
-    <div
-      role=button
-      class=${resourceClass}
-      tabindex=${hasPickerBehavior || isTextInputDisabled ? "-1" : "0"}
-      @click=${onContextClick}
-      @keydown=${handleKeyDown}
-      aria-description=${i18nString(UIStrings.revealContextDescription)}
-    >
-      ${renderContextIcon(selectedContext)}
-      <span class="title">${selectedContext ? renderContextTitle(selectedContext, isTextInputDisabled) : lockedString4(UIStringsNotTranslate4.noElementSelected)}</span>
-    </div>
-  </div>`;
-}
-function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef }) {
-  function renderPatchWidget() {
-    if (isLoading) {
-      return Lit5.nothing;
-    }
-    return html7`<devtools-widget
-      .widgetConfig=${UI5.Widget.widgetConfig(PatchWidget, {
-      changeSummary: changeSummary ?? "",
-      changeManager
-    })}
-    ></devtools-widget>`;
-  }
-  return html7`
-    <div class="messages-container" ${ref2(onMessageContainerRef)}>
-      ${messages.map((message, _, array) => renderChatMessage({
-    message,
-    isLoading,
-    isReadOnly,
-    canShowFeedbackForm,
-    isLast: array.at(-1) === message,
-    userInfo,
-    markdownRenderer,
-    onSuggestionClick,
-    onFeedbackSubmit,
-    onCopyResponseClick
-  }))}
-      ${renderPatchWidget()}
-    </div>
-  `;
-}
-function renderEmptyState({ isTextInputDisabled, suggestions, onSuggestionClick }) {
-  return html7`<div class="empty-state-container">
-    <div class="header">
-      <div class="icon">
-        <devtools-icon
-          name="smart-assistant"
-        ></devtools-icon>
-      </div>
-      <h1>${lockedString4(UIStringsNotTranslate4.emptyStateText)}</h1>
-    </div>
-    <div class="empty-state-content">
-      ${suggestions.map(({ title, jslogContext }) => {
-    return html7`<devtools-button
-          class="suggestion"
-          @click=${() => onSuggestionClick(title)}
-          .data=${{
-      variant: "outlined",
-      size: "REGULAR",
-      title,
-      jslogContext: jslogContext ?? "suggestion",
-      disabled: isTextInputDisabled
-    }}
-        >${title}</devtools-button>`;
-  })}
-    </div>
-  </div>`;
-}
-function renderReadOnlySection({ onNewConversation }) {
-  return html7`<div
-    class="chat-readonly-container"
-    jslog=${VisualLogging4.section("read-only")}
-  >
-    <span>${lockedString4(UIStringsNotTranslate4.pastConversation)}</span>
-    <devtools-button
-      aria-label=${lockedString4(UIStringsNotTranslate4.startNewChat)}
-      class="chat-inline-button"
-      @click=${onNewConversation}
-      .data=${{
-    variant: "text",
-    title: lockedString4(UIStringsNotTranslate4.startNewChat),
-    jslogContext: "start-new-chat"
-  }}
-    >${lockedString4(UIStringsNotTranslate4.startNewChat)}</devtools-button>
-  </div>`;
-}
-function renderChatInputButtons({ isLoading, blockedByCrossOrigin, isTextInputDisabled, isTextInputEmpty, imageInput, onCancel, onNewConversation }) {
-  if (isLoading) {
-    return html7`<devtools-button
-      class="chat-input-button"
-      aria-label=${lockedString4(UIStringsNotTranslate4.cancelButtonTitle)}
-      @click=${onCancel}
-      .data=${{
-      variant: "icon",
-      size: "REGULAR",
-      iconName: "record-stop",
-      title: lockedString4(UIStringsNotTranslate4.cancelButtonTitle),
-      jslogContext: "stop"
-    }}
-    ></devtools-button>`;
-  }
-  if (blockedByCrossOrigin) {
-    return html7`
-      <devtools-button
-        class="start-new-chat-button"
-        aria-label=${lockedString4(UIStringsNotTranslate4.startNewChat)}
-        @click=${onNewConversation}
-        .data=${{
-      variant: "outlined",
-      size: "SMALL",
-      title: lockedString4(UIStringsNotTranslate4.startNewChat),
-      jslogContext: "start-new-chat"
-    }}
-      >${lockedString4(UIStringsNotTranslate4.startNewChat)}</devtools-button>
-    `;
-  }
-  return html7`<devtools-button
-    class="chat-input-button"
-    aria-label=${lockedString4(UIStringsNotTranslate4.sendButtonTitle)}
-    .data=${{
-    type: "submit",
     variant: "icon",
-    size: "REGULAR",
-    disabled: isTextInputDisabled || isTextInputEmpty || imageInput?.isLoading,
-    iconName: "send",
-    title: lockedString4(UIStringsNotTranslate4.sendButtonTitle),
+    size: "SMALL",
+    title: lockedString4(UIStringsNotTranslate4.report),
+    iconName: "report",
+    jslogContext: "report"
+  }}
+          @click=${input.onReportClick}
+        ></devtools-button>
+        <div class="vertical-separator"></div>
+          <devtools-button
+            .data=${{
+    variant: "icon",
+    size: "SMALL",
+    title: lockedString4(UIStringsNotTranslate4.copyResponse),
+    iconName: "copy",
+    jslogContext: "copy-ai-response"
+  }}
+            aria-label=${lockedString4(UIStringsNotTranslate4.copyResponse)}
+            @click=${input.onCopyResponseClick}></devtools-button>
+      </div>
+      ${input.suggestions ? html7`<div class="suggestions-container">
+        <div class="scroll-button-container left hidden" ${ref2((element) => {
+    output.suggestionsLeftScrollButtonContainer = element;
+  })}>
+          <devtools-button
+            class='scroll-button'
+            .data=${{
+    variant: "icon",
+    size: "SMALL",
+    iconName: "chevron-left",
+    title: lockedString4(UIStringsNotTranslate4.scrollToPrevious),
+    jslogContext: "chevron-left"
+  }}
+            @click=${() => input.scrollSuggestionsScrollContainer("left")}
+          ></devtools-button>
+        </div>
+        <div class="suggestions-scroll-container" @scroll=${input.onSuggestionsScrollOrResize} ${ref2((element) => {
+    output.suggestionsScrollContainer = element;
+  })}>
+          ${input.suggestions.map((suggestion) => html7`<devtools-button
+            class='suggestion'
+            .data=${{
+    variant: "outlined",
+    title: suggestion,
+    jslogContext: "suggestion"
+  }}
+            @click=${() => input.onSuggestionClick(suggestion)}
+          >${suggestion}</devtools-button>`)}
+        </div>
+        <div class="scroll-button-container right hidden" ${ref2((element) => {
+    output.suggestionsRightScrollButtonContainer = element;
+  })}>
+          <devtools-button
+            class='scroll-button'
+            .data=${{
+    variant: "icon",
+    size: "SMALL",
+    iconName: "chevron-right",
+    title: lockedString4(UIStringsNotTranslate4.scrollToNext),
+    jslogContext: "chevron-right"
+  }}
+            @click=${() => input.scrollSuggestionsScrollContainer("right")}
+          ></devtools-button>
+        </div>
+      </div>` : Lit5.nothing}
+    </div>
+    ${input.isShowingFeedbackForm ? html7`
+      <form class="feedback-form" @submit=${input.onSubmit}>
+        <div class="feedback-header">
+          <h4 class="feedback-title">${lockedString4(UIStringsNotTranslate4.whyThisRating)}</h4>
+          <devtools-button
+            aria-label=${lockedString4(UIStringsNotTranslate4.close)}
+            @click=${input.onClose}
+            .data=${{
+    variant: "icon",
+    iconName: "cross",
+    size: "SMALL",
+    title: lockedString4(UIStringsNotTranslate4.close),
+    jslogContext: "close"
+  }}
+          ></devtools-button>
+        </div>
+        <input
+          type="text"
+          class="devtools-text-input feedback-input"
+          @input=${(event) => input.onInputChange(event.target.value)}
+          placeholder=${lockedString4(UIStringsNotTranslate4.provideFeedbackPlaceholder)}
+          jslog=${VisualLogging4.textField("feedback").track({ keydown: "Enter" })}
+        >
+        <span class="feedback-disclaimer">${lockedString4(UIStringsNotTranslate4.disclaimer)}</span>
+        <div>
+          <devtools-button
+          aria-label=${lockedString4(UIStringsNotTranslate4.submit)}
+          .data=${{
+    type: "submit",
+    disabled: input.isSubmitButtonDisabled,
+    variant: "outlined",
+    size: "SMALL",
+    title: lockedString4(UIStringsNotTranslate4.submit),
     jslogContext: "send"
   }}
-  ></devtools-button>`;
-}
-function renderMultimodalInputButtons({ multimodalInputEnabled, blockedByCrossOrigin, isTextInputDisabled, imageInput, uploadImageInputEnabled, onTakeScreenshot, onImageUpload }) {
-  if (!multimodalInputEnabled || blockedByCrossOrigin) {
-    return Lit5.nothing;
-  }
-  const addImageButton = uploadImageInputEnabled ? html7`<devtools-button
-    class="chat-input-button"
-    aria-label=${lockedString4(UIStringsNotTranslate4.addImageButtonTitle)}
-    @click=${onImageUpload}
-    .data=${{
-    variant: "icon",
-    size: "REGULAR",
-    disabled: isTextInputDisabled || imageInput?.isLoading,
-    iconName: "add-photo",
-    title: lockedString4(UIStringsNotTranslate4.addImageButtonTitle),
-    jslogContext: "upload-image"
-  }}
-  ></devtools-button>` : Lit5.nothing;
-  return html7`${addImageButton}<devtools-button
-    class="chat-input-button"
-    aria-label=${lockedString4(UIStringsNotTranslate4.takeScreenshotButtonTitle)}
-    @click=${onTakeScreenshot}
-    .data=${{
-    variant: "icon",
-    size: "REGULAR",
-    disabled: isTextInputDisabled || imageInput?.isLoading,
-    iconName: "photo-camera",
-    title: lockedString4(UIStringsNotTranslate4.takeScreenshotButtonTitle),
-    jslogContext: "take-screenshot"
-  }}
-  ></devtools-button>`;
-}
-function renderImageInput({ multimodalInputEnabled, imageInput, isTextInputDisabled, onRemoveImageInput }) {
-  if (!multimodalInputEnabled || !imageInput || isTextInputDisabled) {
-    return Lit5.nothing;
-  }
-  const crossButton = html7`<devtools-button
-      aria-label=${lockedString4(UIStringsNotTranslate4.removeImageInputButtonTitle)}
-      @click=${onRemoveImageInput}
-      .data=${{
-    variant: "icon",
-    size: "MICRO",
-    iconName: "cross",
-    title: lockedString4(UIStringsNotTranslate4.removeImageInputButtonTitle)
-  }}
-    ></devtools-button>`;
-  if (imageInput.isLoading) {
-    return html7`<div class="image-input-container">
-        ${crossButton}
-        <div class="loading">
-          <devtools-spinner></devtools-spinner>
-        </div>
-      </div>`;
-  }
-  return html7`
-    <div class="image-input-container">
-      ${crossButton}
-      <img src="data:${imageInput.mimeType};base64, ${imageInput.data}" alt="Image input" />
-    </div>`;
-}
-function renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin, tooltipId, disclaimerText }) {
-  const classes = Lit5.Directives.classMap({
-    "chat-input-disclaimer": true,
-    "hide-divider": !isLoading && blockedByCrossOrigin
-  });
-  return html7`
-    <p class=${classes}>
-      <button
-        class="link"
-        role="link"
-        aria-details=${tooltipId}
-        jslog=${VisualLogging4.link("open-ai-settings").track({
-    click: true
-  })}
-        @click=${() => {
-    void UI5.ViewManager.ViewManager.instance().showView("chrome-ai");
-  }}
-      >${lockedString4("Relevant data")}</button>&nbsp;${lockedString4("is sent to Google")}
-      ${renderDisclaimerTooltip(tooltipId, disclaimerText)}
-    </p>
-  `;
-}
-function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, disclaimerText, additionalFloatyContext, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload }) {
-  const chatInputContainerCls = Lit5.Directives.classMap({
-    "chat-input-container": true,
-    "single-line-layout": !selectedContext,
-    disabled: isTextInputDisabled
-  });
-  return html7` <form class="input-form" @submit=${onSubmit}>
-  ${renderFloatyExtraContext(additionalFloatyContext)}
-    <div class=${chatInputContainerCls}>
-      ${renderImageInput({
-    multimodalInputEnabled,
-    imageInput,
-    isTextInputDisabled,
-    onRemoveImageInput
-  })}
-      <textarea
-        class="chat-input"
-        .disabled=${isTextInputDisabled}
-        wrap="hard"
-        maxlength="10000"
-        @keydown=${onTextAreaKeyDown}
-        @input=${(event) => onTextInputChange(event.target.value)}
-        placeholder=${inputPlaceholder}
-        jslog=${VisualLogging4.textField("query").track({
-    change: true,
-    keydown: "Enter"
-  })}
-        aria-description=${i18nString(UIStrings.inputTextAriaDescription)}
-        ${ref2((el) => {
-    if (el && isTextInputDisabled) {
-      el.value = "";
-    }
-  })}
-      ></textarea>
-      <div class="chat-input-actions">
-        <div class="chat-input-actions-left">
-          ${renderSelection({
-    selectedContext,
-    inspectElementToggled,
-    conversationType,
-    isTextInputDisabled,
-    onContextClick,
-    onInspectElementClick
-  })}
-        </div>
-        <div class="chat-input-actions-right">
-          <div class="chat-input-disclaimer-container">
-            ${renderRelevantDataDisclaimer({
-    isLoading,
-    blockedByCrossOrigin,
-    tooltipId: RELEVANT_DATA_LINK_CHAT_ID,
-    disclaimerText
-  })}
-          </div>
-          ${renderMultimodalInputButtons({
-    multimodalInputEnabled,
-    blockedByCrossOrigin,
-    isTextInputDisabled,
-    imageInput,
-    uploadImageInputEnabled,
-    onTakeScreenshot,
-    onImageUpload
-  })}
-          ${renderChatInputButtons({
-    isLoading,
-    blockedByCrossOrigin,
-    isTextInputDisabled,
-    isTextInputEmpty,
-    imageInput,
-    onCancel,
-    onNewConversation
-  })}
+          >${lockedString4(UIStringsNotTranslate4.submit)}</devtools-button>
         </div>
       </div>
-    </div>
-  </form>`;
-}
-function renderFloatyExtraContext(contexts) {
-  if (!GreenDev.Prototypes.instance().isEnabled("inDevToolsFloaty")) {
-    return Lit5.nothing;
-  }
-  return html7`
-  <ul class="floaty">
-    ${contexts.map((c) => {
-    function onDelete(e) {
-      e.preventDefault();
-      UI5.Floaty.onFloatyContextDelete(c);
-    }
-    return html7`<li>
-        <span class="context-item">
-          ${renderFloatyContext(c)}
-        </span>
-        <devtools-button
-          class="floaty-delete-button"
-          @click=${onDelete}
-          .data=${{
-      variant: "icon",
-      iconName: "cross",
-      title: "Delete",
-      size: "SMALL"
-    }}
-        ></devtools-button>
-      </li>`;
-  })}
-    <li class="open-floaty">
-      <devtools-button
-        class="floaty-add-button"
-        @click=${UI5.Floaty.onFloatyOpen}
-        .data=${{
-    variant: "icon",
-    iconName: "select-element",
-    title: "Open context picker",
-    size: "SMALL"
-  }}
-      ></devtools-button>
-    </li>
-  </ul>
+    </form>
+    ` : Lit5.nothing}
   `;
 }
-function renderFloatyContext(context) {
-  if (context instanceof SDK.NetworkRequest.NetworkRequest) {
-    return html7`${context.url()}`;
+var UserActionRow = class extends UI5.Widget.Widget {
+  message = { entity: "user", text: "" };
+  isLoading = false;
+  isReadOnly = false;
+  canShowFeedbackForm = false;
+  isLastMessage = false;
+  userInfo = {};
+  markdownRenderer;
+  onSuggestionClick = () => {
+  };
+  onFeedbackSubmit = () => {
+  };
+  onCopyResponseClick = () => {
+  };
+  #suggestionsResizeObserver = new ResizeObserver(() => this.#handleSuggestionsScrollOrResize());
+  #suggestionsEvaluateLayoutThrottler = new Common3.Throttler.Throttler(50);
+  #feedbackValue = "";
+  #currentRating;
+  #isShowingFeedbackForm = false;
+  #isSubmitButtonDisabled = true;
+  #view;
+  #viewOutput = {};
+  constructor(element, view) {
+    super(element);
+    this.#view = view ?? DEFAULT_VIEW4;
   }
-  if (context instanceof SDK.DOMModel.DOMNode) {
-    return html7`<devtools-widget .widgetConfig=${UI5.Widget.widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node: context })}>`;
+  wasShown() {
+    super.wasShown();
+    void this.performUpdate();
+    this.#evaluateSuggestionsLayout();
+    if (this.#viewOutput.suggestionsScrollContainer) {
+      this.#suggestionsResizeObserver.observe(this.#viewOutput.suggestionsScrollContainer);
+    }
   }
-  if ("insight" in context) {
-    return html7`${context.insight.title}`;
+  performUpdate() {
+    this.#view({
+      message: this.message,
+      isLoading: this.isLoading,
+      isReadOnly: this.isReadOnly,
+      canShowFeedbackForm: this.canShowFeedbackForm,
+      userInfo: this.userInfo,
+      markdownRenderer: this.markdownRenderer,
+      isLastMessage: this.isLastMessage,
+      onSuggestionClick: this.onSuggestionClick,
+      onRatingClick: this.#handleRateClick.bind(this),
+      onReportClick: () => UIHelpers.openInNewTab(REPORT_URL),
+      onCopyResponseClick: () => {
+        if (this.message.entity === "model") {
+          this.onCopyResponseClick(this.message);
+        }
+      },
+      scrollSuggestionsScrollContainer: this.#scrollSuggestionsScrollContainer.bind(this),
+      onSuggestionsScrollOrResize: this.#handleSuggestionsScrollOrResize.bind(this),
+      onSubmit: this.#handleSubmit.bind(this),
+      onClose: this.#handleClose.bind(this),
+      onInputChange: this.#handleInputChange.bind(this),
+      isSubmitButtonDisabled: this.#isSubmitButtonDisabled,
+      // Props for actions logic
+      showRateButtons: this.message.entity === "model" && !!this.message.rpcId,
+      suggestions: this.message.entity === "model" && !this.isReadOnly && this.message.parts.at(-1)?.type === "answer" ? this.message.parts.at(-1).suggestions : void 0,
+      currentRating: this.#currentRating,
+      isShowingFeedbackForm: this.#isShowingFeedbackForm,
+      onFeedbackSubmit: this.onFeedbackSubmit
+    }, this.#viewOutput, this.contentElement);
   }
-  if ("event" in context && "traceStartTime" in context) {
-    const time = Trace3.Types.Timing.Micro(context.event.ts - context.traceStartTime);
-    return html7`${context.event.name} @ ${i18n7.TimeUtilities.formatMicroSecondsAsMillisFixed(time)}`;
+  #handleInputChange(value) {
+    this.#feedbackValue = value;
+    const disableSubmit = !value;
+    if (disableSubmit !== this.#isSubmitButtonDisabled) {
+      this.#isSubmitButtonDisabled = disableSubmit;
+      void this.performUpdate();
+    }
   }
-  Platform4.assertNever(context, "Unsupported context");
-}
+  #evaluateSuggestionsLayout = () => {
+    const suggestionsScrollContainer = this.#viewOutput.suggestionsScrollContainer;
+    const leftScrollButtonContainer = this.#viewOutput.suggestionsLeftScrollButtonContainer;
+    const rightScrollButtonContainer = this.#viewOutput.suggestionsRightScrollButtonContainer;
+    if (!suggestionsScrollContainer || !leftScrollButtonContainer || !rightScrollButtonContainer) {
+      return;
+    }
+    const shouldShowLeftButton = suggestionsScrollContainer.scrollLeft > SCROLL_ROUNDING_OFFSET;
+    const shouldShowRightButton = suggestionsScrollContainer.scrollLeft + suggestionsScrollContainer.offsetWidth + SCROLL_ROUNDING_OFFSET < suggestionsScrollContainer.scrollWidth;
+    leftScrollButtonContainer.classList.toggle("hidden", !shouldShowLeftButton);
+    rightScrollButtonContainer.classList.toggle("hidden", !shouldShowRightButton);
+  };
+  willHide() {
+    super.willHide();
+    this.#suggestionsResizeObserver.disconnect();
+  }
+  #handleSuggestionsScrollOrResize() {
+    void this.#suggestionsEvaluateLayoutThrottler.schedule(() => {
+      this.#evaluateSuggestionsLayout();
+      return Promise.resolve();
+    });
+  }
+  #scrollSuggestionsScrollContainer(direction) {
+    const suggestionsScrollContainer = this.#viewOutput.suggestionsScrollContainer;
+    if (!suggestionsScrollContainer) {
+      return;
+    }
+    suggestionsScrollContainer.scroll({
+      top: 0,
+      left: direction === "left" ? suggestionsScrollContainer.scrollLeft - suggestionsScrollContainer.clientWidth : suggestionsScrollContainer.scrollLeft + suggestionsScrollContainer.clientWidth,
+      behavior: "smooth"
+    });
+  }
+  #handleRateClick(rating) {
+    if (this.#currentRating === rating) {
+      this.#currentRating = void 0;
+      this.#isShowingFeedbackForm = false;
+      this.#isSubmitButtonDisabled = true;
+      if (this.message.entity === "model" && this.message.rpcId) {
+        this.onFeedbackSubmit(
+          this.message.rpcId,
+          "SENTIMENT_UNSPECIFIED"
+          /* Host.AidaClient.Rating.SENTIMENT_UNSPECIFIED */
+        );
+      }
+      void this.performUpdate();
+      return;
+    }
+    this.#currentRating = rating;
+    this.#isShowingFeedbackForm = this.canShowFeedbackForm;
+    if (this.message.entity === "model" && this.message.rpcId) {
+      this.onFeedbackSubmit(this.message.rpcId, rating);
+    }
+    void this.performUpdate();
+  }
+  #handleClose() {
+    this.#isShowingFeedbackForm = false;
+    this.#isSubmitButtonDisabled = true;
+    void this.performUpdate();
+  }
+  #handleSubmit(ev) {
+    ev.preventDefault();
+    const input = this.#feedbackValue;
+    if (!this.#currentRating || !input) {
+      return;
+    }
+    if (this.message.entity === "model" && this.message.rpcId) {
+      this.onFeedbackSubmit(this.message.rpcId, this.#currentRating, input);
+    }
+    this.#isShowingFeedbackForm = false;
+    this.#isSubmitButtonDisabled = true;
+    void this.performUpdate();
+  }
+};
+
+// gen/front_end/panels/ai_assistance/components/ChatView.js
+var { html: html8, Directives: { ref: ref3, repeat, createRef: createRef2 } } = Lit6;
+var UIStringsNotTranslate5 = {
+  /**
+   * @description Text for the empty state of the AI assistance panel.
+   */
+  emptyStateText: "How can I help you?"
+};
+var lockedString5 = i18n9.i18n.lockedString;
+var SCROLL_ROUNDING_OFFSET2 = 1;
+var ChatView = class extends HTMLElement {
+  #shadow = this.attachShadow({ mode: "open" });
+  #scrollTop;
+  #props;
+  #messagesContainerElement;
+  #mainElementRef = createRef2();
+  #messagesContainerResizeObserver = new ResizeObserver(() => this.#handleMessagesContainerResize());
+  /**
+   * Indicates whether the chat scroll position should be pinned to the bottom.
+   *
+   * This is true when:
+   *   - The scroll is at the very bottom, allowing new messages to push the scroll down automatically.
+   *   - The panel is initially rendered and the user hasn't scrolled yet.
+   *
+   * It is set to false when the user scrolls up to view previous messages.
+   */
+  #pinScrollToBottom = true;
+  /**
+   * Indicates whether the scroll event originated from code
+   * or a user action. When set to `true`, `handleScroll` will ignore the event,
+   * allowing it to only handle user-driven scrolls and correctly decide
+   * whether to pin the content to the bottom.
+   */
+  #isProgrammaticScroll = false;
+  #inputRef = createRef2();
+  constructor(props) {
+    super();
+    this.#props = props;
+  }
+  set props(props) {
+    this.#props = props;
+    this.#render();
+  }
+  connectedCallback() {
+    this.#render();
+    if (this.#messagesContainerElement) {
+      this.#messagesContainerResizeObserver.observe(this.#messagesContainerElement);
+    }
+  }
+  disconnectedCallback() {
+    this.#messagesContainerResizeObserver.disconnect();
+  }
+  focusTextInput() {
+    const textArea = this.#shadow.querySelector(".chat-input");
+    if (!textArea) {
+      return;
+    }
+    textArea.focus();
+  }
+  restoreScrollPosition() {
+    if (this.#scrollTop === void 0) {
+      return;
+    }
+    if (!this.#mainElementRef?.value) {
+      return;
+    }
+    this.#setMainElementScrollTop(this.#scrollTop);
+  }
+  scrollToBottom() {
+    if (!this.#mainElementRef?.value) {
+      return;
+    }
+    this.#setMainElementScrollTop(this.#mainElementRef.value.scrollHeight);
+  }
+  #handleMessagesContainerResize() {
+    if (!this.#pinScrollToBottom) {
+      return;
+    }
+    if (!this.#mainElementRef?.value) {
+      return;
+    }
+    if (this.#pinScrollToBottom) {
+      this.#setMainElementScrollTop(this.#mainElementRef.value.scrollHeight);
+    }
+  }
+  #setMainElementScrollTop(scrollTop) {
+    if (!this.#mainElementRef?.value) {
+      return;
+    }
+    this.#scrollTop = scrollTop;
+    this.#isProgrammaticScroll = true;
+    this.#mainElementRef.value.scrollTop = scrollTop;
+  }
+  #handleMessageContainerRef(el) {
+    this.#messagesContainerElement = el;
+    if (el) {
+      this.#messagesContainerResizeObserver.observe(el);
+    } else {
+      this.#pinScrollToBottom = true;
+      this.#messagesContainerResizeObserver.disconnect();
+    }
+  }
+  #handleScroll = (ev) => {
+    if (!ev.target || !(ev.target instanceof HTMLElement)) {
+      return;
+    }
+    if (this.#isProgrammaticScroll) {
+      this.#isProgrammaticScroll = false;
+      return;
+    }
+    this.#scrollTop = ev.target.scrollTop;
+    this.#pinScrollToBottom = ev.target.scrollTop + ev.target.clientHeight + SCROLL_ROUNDING_OFFSET2 > ev.target.scrollHeight;
+  };
+  #handleSuggestionClick = (suggestion) => {
+    this.#inputRef.value?.getWidget()?.setInputValue(suggestion);
+    this.#render();
+    this.focusTextInput();
+    Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.AiAssistanceDynamicSuggestionClicked);
+  };
+  #render() {
+    const inputWidgetClasses = Lit6.Directives.classMap({
+      "chat-input-widget": true,
+      sticky: !this.#props.isReadOnly
+    });
+    Lit6.render(html8`
+      <style>${chatView_css_default}</style>
+      <div class="chat-ui">
+        <main @scroll=${this.#handleScroll} ${ref3(this.#mainElementRef)}>
+          ${renderMainContents({
+      messages: this.#props.messages,
+      isLoading: this.#props.isLoading,
+      isReadOnly: this.#props.isReadOnly,
+      canShowFeedbackForm: this.#props.canShowFeedbackForm,
+      isTextInputDisabled: this.#props.isTextInputDisabled,
+      suggestions: this.#props.emptyStateSuggestions,
+      userInfo: this.#props.userInfo,
+      markdownRenderer: this.#props.markdownRenderer,
+      changeSummary: this.#props.changeSummary,
+      changeManager: this.#props.changeManager,
+      onSuggestionClick: this.#handleSuggestionClick,
+      onFeedbackSubmit: this.#props.onFeedbackSubmit,
+      onMessageContainerRef: this.#handleMessageContainerRef,
+      onCopyResponseClick: this.#props.onCopyResponseClick
+    })}
+          <devtools-widget class=${inputWidgetClasses} .widgetConfig=${UI6.Widget.widgetConfig(ChatInput, {
+      isLoading: this.#props.isLoading,
+      blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
+      isTextInputDisabled: this.#props.isTextInputDisabled,
+      inputPlaceholder: this.#props.inputPlaceholder,
+      disclaimerText: this.#props.disclaimerText,
+      selectedContext: this.#props.selectedContext,
+      inspectElementToggled: this.#props.inspectElementToggled,
+      multimodalInputEnabled: this.#props.multimodalInputEnabled ?? false,
+      conversationType: this.#props.conversationType,
+      uploadImageInputEnabled: this.#props.uploadImageInputEnabled ?? false,
+      isReadOnly: this.#props.isReadOnly,
+      additionalFloatyContext: this.#props.additionalFloatyContext,
+      onContextClick: this.#props.onContextClick,
+      onInspectElementClick: this.#props.onInspectElementClick,
+      onTextSubmit: (text, imageInput, multimodalInputType) => {
+        this.#props.onTextSubmit(text, imageInput, multimodalInputType);
+        this.#render();
+      },
+      onCancelClick: this.#props.onCancelClick,
+      onNewConversation: this.#props.onNewConversation
+    })} ${ref3(this.#inputRef)}></devtools-widget>
+        </main>
+      </div>
+    `, this.#shadow, { host: this });
+  }
+};
 function renderMainContents({ messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef }) {
   if (messages.length > 0) {
     return renderMessages({
@@ -3942,41 +4060,77 @@ function renderMainContents({ messages, isLoading, isReadOnly, canShowFeedbackFo
   }
   return renderEmptyState({ isTextInputDisabled, suggestions, onSuggestionClick });
 }
-function renderDisclaimerTooltip(id, disclaimerText) {
-  return html7`
-    <devtools-tooltip
-      id=${id}
-      variant="rich"
-    >
-      <div class="info-tooltip-container">
-        ${disclaimerText}
-        <button
-          class="link tooltip-link"
-          role="link"
-          jslog=${VisualLogging4.link("open-ai-settings").track({
-    click: true
-  })}
-          @click=${() => {
-    void UI5.ViewManager.ViewManager.instance().showView("chrome-ai");
-  }}>${i18nString(UIStrings.learnAbout)}
-        </button>
+function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef }) {
+  function renderPatchWidget() {
+    if (isLoading) {
+      return Lit6.nothing;
+    }
+    return html8`<devtools-widget
+      .widgetConfig=${UI6.Widget.widgetConfig(PatchWidget, {
+      changeSummary: changeSummary ?? "",
+      changeManager
+    })}
+    ></devtools-widget>`;
+  }
+  return html8`
+    <div class="messages-container" ${ref3(onMessageContainerRef)}>
+      ${repeat(messages, (message) => html8`<devtools-widget .widgetConfig=${UI6.Widget.widgetConfig(UserActionRow, {
+    message,
+    isLoading,
+    isReadOnly,
+    canShowFeedbackForm,
+    userInfo,
+    markdownRenderer,
+    isLastMessage: messages.at(-1) === message,
+    onSuggestionClick,
+    onFeedbackSubmit,
+    onCopyResponseClick
+  })}></devtools-widget>`)}
+      ${renderPatchWidget()}
+    </div>
+  `;
+}
+function renderEmptyState({ isTextInputDisabled, suggestions, onSuggestionClick }) {
+  return html8`<div class="empty-state-container">
+    <div class="header">
+      <div class="icon">
+        <devtools-icon
+          name="smart-assistant"
+        ></devtools-icon>
       </div>
-    </devtools-tooltip>`;
+      <h1>${lockedString5(UIStringsNotTranslate5.emptyStateText)}</h1>
+    </div>
+    <div class="empty-state-content">
+      ${suggestions.map(({ title, jslogContext }) => {
+    return html8`<devtools-button
+          class="suggestion"
+          @click=${() => onSuggestionClick(title)}
+          .data=${{
+      variant: "outlined",
+      size: "REGULAR",
+      title,
+      jslogContext: jslogContext ?? "suggestion",
+      disabled: isTextInputDisabled
+    }}
+        >${title}</devtools-button>`;
+  })}
+    </div>
+  </div>`;
 }
 customElements.define("devtools-ai-chat-view", ChatView);
 
 // gen/front_end/panels/ai_assistance/components/DisabledWidget.js
 var DisabledWidget_exports = {};
 __export(DisabledWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   DisabledWidget: () => DisabledWidget
 });
 import * as Host5 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
 import * as uiI18n from "./../../ui/i18n/i18n.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
-import { html as html8, render as render8 } from "./../../ui/lit/lit.js";
+import * as UI7 from "./../../ui/legacy/legacy.js";
+import { html as html9, render as render9 } from "./../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/ai_assistance/components/disabledWidget.css.js
@@ -4067,29 +4221,29 @@ var UIStrings2 = {
    */
   notAvailableInIncognitoMode: "AI assistance is not available in Incognito mode or Guest mode"
 };
-var str_2 = i18n9.i18n.registerUIStrings("panels/ai_assistance/components/DisabledWidget.ts", UIStrings2);
-var i18nString2 = i18n9.i18n.getLocalizedString.bind(void 0, str_2);
+var str_2 = i18n11.i18n.registerUIStrings("panels/ai_assistance/components/DisabledWidget.ts", UIStrings2);
+var i18nString2 = i18n11.i18n.getLocalizedString.bind(void 0, str_2);
 function renderAidaUnavailableContents(aidaAvailability) {
   switch (aidaAvailability) {
     case "no-account-email":
     case "sync-is-paused": {
-      return html8`${i18nString2(UIStrings2.notLoggedIn)}`;
+      return html9`${i18nString2(UIStrings2.notLoggedIn)}`;
     }
     case "no-internet": {
-      return html8`${i18nString2(UIStrings2.offline)}`;
+      return html9`${i18nString2(UIStrings2.offline)}`;
     }
   }
 }
 function renderConsentViewContents(hostConfig) {
   if (hostConfig.isOffTheRecord) {
-    return html8`${i18nString2(UIStrings2.notAvailableInIncognitoMode)}`;
+    return html9`${i18nString2(UIStrings2.notAvailableInIncognitoMode)}`;
   }
   const settingsLink = document.createElement("span");
   settingsLink.textContent = i18nString2(UIStrings2.settingsLink);
   settingsLink.classList.add("link");
-  UI6.ARIAUtils.markAsLink(settingsLink);
+  UI7.ARIAUtils.markAsLink(settingsLink);
   settingsLink.addEventListener("click", () => {
-    void UI6.ViewManager.ViewManager.instance().showView("chrome-ai");
+    void UI7.ViewManager.ViewManager.instance().showView("chrome-ai");
   });
   settingsLink.setAttribute("jslog", `${VisualLogging5.action("open-ai-settings").track({ click: true })}`);
   let consentViewContents;
@@ -4102,10 +4256,10 @@ function renderConsentViewContents(hostConfig) {
   } else {
     consentViewContents = uiI18n.getFormatLocalizedString(str_2, UIStrings2.turnOnForStyles, { PH1: settingsLink });
   }
-  return html8`${consentViewContents}`;
+  return html9`${consentViewContents}`;
 }
-var DEFAULT_VIEW4 = (input, _output, target) => {
-  render8(html8`
+var DEFAULT_VIEW5 = (input, _output, target) => {
+  render9(html9`
       <style>
         ${disabledWidget_css_default}
       </style>
@@ -4119,10 +4273,10 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
       </div>
     `, target);
 };
-var DisabledWidget = class extends UI6.Widget.Widget {
+var DisabledWidget = class extends UI7.Widget.Widget {
   aidaAvailability = "no-account-email";
   #view;
-  constructor(element, view = DEFAULT_VIEW4) {
+  constructor(element, view = DEFAULT_VIEW5) {
     super(element);
     this.#view = view;
   }
@@ -4142,13 +4296,13 @@ var DisabledWidget = class extends UI6.Widget.Widget {
 // gen/front_end/panels/ai_assistance/components/ExploreWidget.js
 var ExploreWidget_exports = {};
 __export(ExploreWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW5,
+  DEFAULT_VIEW: () => DEFAULT_VIEW6,
   ExploreWidget: () => ExploreWidget
 });
-import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Root4 from "./../../core/root/root.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
-import { html as html9, render as render9 } from "./../../ui/lit/lit.js";
+import * as UI8 from "./../../ui/legacy/legacy.js";
+import { html as html10, render as render10 } from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/ai_assistance/components/exploreWidget.css.js
@@ -4291,7 +4445,7 @@ var exploreWidget_css_default = `/*
 /*# sourceURL=${import.meta.resolve("././components/exploreWidget.css")} */`;
 
 // gen/front_end/panels/ai_assistance/components/ExploreWidget.js
-var UIStringsNotTranslate5 = {
+var UIStringsNotTranslate6 = {
   /**
    * @description Text for the empty state of the AI assistance panel when there is no agent selected.
    */
@@ -4301,10 +4455,10 @@ var UIStringsNotTranslate5 = {
    */
   learnAbout: "Learn about AI in DevTools"
 };
-var lockedString5 = i18n11.i18n.lockedString;
-var DEFAULT_VIEW5 = (input, _output, target) => {
+var lockedString6 = i18n13.i18n.lockedString;
+var DEFAULT_VIEW6 = (input, _output, target) => {
   function renderFeatureCardContent(featureCard) {
-    return html9`Open
+    return html10`Open
      <button
        class="link"
        role="link"
@@ -4315,7 +4469,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
      >${featureCard.panelName}</button>
      ${featureCard.text}`;
   }
-  render9(html9`
+  render10(html10`
       <style>
         ${exploreWidget_css_default}
       </style>
@@ -4324,7 +4478,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
           <div class="icon">
             <devtools-icon name="smart-assistant"></devtools-icon>
           </div>
-          <h1>${lockedString5(UIStringsNotTranslate5.Explore)}</h1>
+          <h1>${lockedString6(UIStringsNotTranslate6.Explore)}</h1>
           <p>
             To chat about an item, right-click and select${" "}
             <strong>Ask AI</strong>.
@@ -4333,14 +4487,14 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
               role="link"
               jslog=${VisualLogging6.link("open-ai-settings").track({ click: true })}
               @click=${() => {
-    void UI7.ViewManager.ViewManager.instance().showView("chrome-ai");
+    void UI8.ViewManager.ViewManager.instance().showView("chrome-ai");
   }}
-            >${lockedString5(UIStringsNotTranslate5.learnAbout)}
+            >${lockedString6(UIStringsNotTranslate6.learnAbout)}
             </button>
           </p>
         </div>
         <div class="content">
-          ${input.featureCards.map((featureCard) => html9`
+          ${input.featureCards.map((featureCard) => html10`
               <div class="feature-card">
                 <div class="feature-card-icon">
                   <devtools-icon name=${featureCard.icon}></devtools-icon>
@@ -4355,9 +4509,9 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
       </div>
     `, target);
 };
-var ExploreWidget = class extends UI7.Widget.Widget {
+var ExploreWidget = class extends UI8.Widget.Widget {
   #view;
-  constructor(element, view = DEFAULT_VIEW5) {
+  constructor(element, view = DEFAULT_VIEW6) {
     super(element);
     this.#view = view;
   }
@@ -4368,49 +4522,49 @@ var ExploreWidget = class extends UI7.Widget.Widget {
   performUpdate() {
     const config = Root4.Runtime.hostConfig;
     const featureCards = [];
-    if (config.devToolsFreestyler?.enabled && UI7.ViewManager.ViewManager.instance().hasView("elements")) {
+    if (config.devToolsFreestyler?.enabled && UI8.ViewManager.ViewManager.instance().hasView("elements")) {
       featureCards.push({
         icon: "brush-2",
         heading: "CSS styles",
         jslogContext: "open-elements-panel",
         onClick: () => {
-          void UI7.ViewManager.ViewManager.instance().showView("elements");
+          void UI8.ViewManager.ViewManager.instance().showView("elements");
         },
         panelName: "Elements",
         text: "to ask about CSS styles"
       });
     }
-    if (config.devToolsAiAssistanceNetworkAgent?.enabled && UI7.ViewManager.ViewManager.instance().hasView("network")) {
+    if (config.devToolsAiAssistanceNetworkAgent?.enabled && UI8.ViewManager.ViewManager.instance().hasView("network")) {
       featureCards.push({
         icon: "arrow-up-down",
         heading: "Network",
         jslogContext: "open-network-panel",
         onClick: () => {
-          void UI7.ViewManager.ViewManager.instance().showView("network");
+          void UI8.ViewManager.ViewManager.instance().showView("network");
         },
         panelName: "Network",
         text: "to ask about a request's details"
       });
     }
-    if (config.devToolsAiAssistanceFileAgent?.enabled && UI7.ViewManager.ViewManager.instance().hasView("sources")) {
+    if (config.devToolsAiAssistanceFileAgent?.enabled && UI8.ViewManager.ViewManager.instance().hasView("sources")) {
       featureCards.push({
         icon: "document",
         heading: "Files",
         jslogContext: "open-sources-panel",
         onClick: () => {
-          void UI7.ViewManager.ViewManager.instance().showView("sources");
+          void UI8.ViewManager.ViewManager.instance().showView("sources");
         },
         panelName: "Sources",
         text: "to ask about a file's content"
       });
     }
-    if (config.devToolsAiAssistancePerformanceAgent?.enabled && UI7.ViewManager.ViewManager.instance().hasView("timeline")) {
+    if (config.devToolsAiAssistancePerformanceAgent?.enabled && UI8.ViewManager.ViewManager.instance().hasView("timeline")) {
       featureCards.push({
         icon: "performance",
         heading: "Performance",
         jslogContext: "open-performance-panel",
         onClick: () => {
-          void UI7.ViewManager.ViewManager.instance().showView("timeline");
+          void UI8.ViewManager.ViewManager.instance().showView("timeline");
         },
         panelName: "Performance",
         text: "to ask about a trace item"
@@ -4442,20 +4596,20 @@ import "./../../models/trace/insights/insights.js";
 import "./../timeline/components/components.js";
 import * as Common4 from "./../../core/common/common.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as GreenDev2 from "./../../models/greendev/greendev.js";
+import * as GreenDev3 from "./../../models/greendev/greendev.js";
 import * as Logs2 from "./../../models/logs/logs.js";
 import * as NetworkTimeCalculator3 from "./../../models/network_time_calculator/network_time_calculator.js";
 import * as Helpers2 from "./../../models/trace/helpers/helpers.js";
 import * as Trace4 from "./../../models/trace/trace.js";
-import * as UI8 from "./../../ui/legacy/legacy.js";
-import * as Lit6 from "./../../ui/lit/lit.js";
+import * as UI9 from "./../../ui/legacy/legacy.js";
+import * as Lit7 from "./../../ui/lit/lit.js";
 import * as PanelsCommon2 from "./../common/common.js";
 import * as Network2 from "./../network/network.js";
 import * as TimelineComponents from "./../timeline/components/components.js";
 import * as Insights2 from "./../timeline/components/insights/insights.js";
-var { html: html10 } = Lit6.StaticHtml;
-var { ref: ref3, createRef } = Lit6.Directives;
-var { widgetConfig } = UI8.Widget;
+var { html: html11 } = Lit7.StaticHtml;
+var { ref: ref4, createRef: createRef3 } = Lit7.Directives;
+var { widgetConfig } = UI9.Widget;
 var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlock {
   mainFrameId;
   lookupEvent;
@@ -4471,13 +4625,13 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
     if (!this.parsedTrace) {
       return null;
     }
-    if (token.type === "html" && GreenDev2.Prototypes.instance().isEnabled("inlineWidgets")) {
+    if (token.type === "html" && GreenDev3.Prototypes.instance().isEnabled("inlineWidgets")) {
       if (token.text.includes("<flame-chart-widget")) {
         const startMatch = token.text.match(/start="?(\d+)"?/);
         const endMatch = token.text.match(/end="?(\d+)"?/);
         const start = startMatch ? Number(startMatch[1]) : this.parsedTrace.data.Meta.traceBounds.min;
         const end = endMatch ? Number(endMatch[1]) : this.parsedTrace.data.Meta.traceBounds.max;
-        return html10`<devtools-performance-agent-flame-chart .data=${{
+        return html11`<devtools-performance-agent-flame-chart .data=${{
           parsedTrace: this.parsedTrace,
           start,
           end
@@ -4498,7 +4652,7 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
         if (!insightM) {
           return null;
         }
-        return html10`<devtools-collapsible-assistance-content-widget  .data=${{
+        return html11`<devtools-collapsible-assistance-content-widget  .data=${{
           headerText: `Insight - ${componentName}`
         }}>
         ${this.#insightRenderer.renderInsightToWidgetElement(this.parsedTrace, insightSet, insightM, componentName, {
@@ -4515,11 +4669,11 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
           const networkRequest = rawTraceEvent ? Logs2.NetworkLog.NetworkLog.instance().requestsForId(rawTraceEventId).find((r) => r.url() === rawTraceEventUrl) : null;
           if (networkRequest) {
             const calculator = new NetworkTimeCalculator3.NetworkTimeCalculator(true);
-            return html10`<devtools-collapsible-assistance-content-widget
+            return html11`<devtools-collapsible-assistance-content-widget
             .data=${{
               headerText: `Network Request: ${networkRequest.url().length > 80 ? networkRequest.url().slice(0, 80) + "..." : networkRequest.url()}`
             }}>
-            <devtools-widget class="actions" .widgetConfig=${UI8.Widget.widgetConfig(Network2.RequestTimingView.RequestTimingView, {
+            <devtools-widget class="actions" .widgetConfig=${UI9.Widget.widgetConfig(Network2.RequestTimingView.RequestTimingView, {
               request: networkRequest,
               calculator
             })}></devtools-widget>
@@ -4529,11 +4683,11 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
         const syntheticRequest = Helpers2.SyntheticEvents.SyntheticEventsManager.getActiveManager().syntheticEventForRawEventIndex(Number(value));
         let networkTooltip = null;
         if (syntheticRequest && Trace4.Types.Events.isSyntheticNetworkRequest(syntheticRequest)) {
-          networkTooltip = html10`<devtools-widget .widgetConfig=${widgetConfig(TimelineComponents.NetworkRequestTooltip.NetworkRequestTooltip, {
+          networkTooltip = html11`<devtools-widget .widgetConfig=${widgetConfig(TimelineComponents.NetworkRequestTooltip.NetworkRequestTooltip, {
             networkRequest: syntheticRequest
           })}></devtools-widget>`;
         }
-        return html10`<devtools-collapsible-assistance-content-widget
+        return html11`<devtools-collapsible-assistance-content-widget
         .data=${{
           headerText: "Network Request"
         }}>
@@ -4545,7 +4699,7 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
     if (token.type === "link" && token.href.startsWith("#")) {
       if (token.href.startsWith("#node-")) {
         const nodeId = Number(token.href.replace("#node-", ""));
-        const templateRef = createRef();
+        const templateRef = createRef3();
         void this.#linkifyNode(nodeId, token.text).then((node) => {
           if (!templateRef.value || !node) {
             return;
@@ -4553,11 +4707,11 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
           templateRef.value.textContent = "";
           templateRef.value.append(node);
         });
-        return html10`<span ${ref3(templateRef)}>${token.text}</span>`;
+        return html11`<span ${ref4(templateRef)}>${token.text}</span>`;
       }
       const event = this.lookupEvent(token.href.slice(1));
       if (!event) {
-        return html10`${token.text}`;
+        return html11`${token.text}`;
       }
       let label = token.text;
       let title = "";
@@ -4566,7 +4720,7 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
       } else {
         label += ` (${event.name})`;
       }
-      return html10`<a href="#" draggable=false .title=${title} @click=${(e) => {
+      return html11`<a href="#" draggable=false .title=${title} @click=${(e) => {
         e.stopPropagation();
         void Common4.Revealer.reveal(new SDK2.TraceObject.RevealableEvent(event));
       }}>${label}</a>`;
@@ -4599,12 +4753,9 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
 };
 
 // gen/front_end/panels/ai_assistance/AiAssistancePanel.js
-var { html: html11 } = Lit7;
+var { html: html12 } = Lit8;
 var AI_ASSISTANCE_SEND_FEEDBACK = "https://crbug.com/364805393";
 var AI_ASSISTANCE_HELP = "https://developer.chrome.com/docs/devtools/ai-assistance";
-var SCREENSHOT_QUALITY = 100;
-var SHOW_LOADING_STATE_TIMEOUT = 100;
-var JPEG_MIME_TYPE = "image/jpeg";
 var UIStrings3 = {
   /**
    * @description AI assistance UI text creating a new chat.
@@ -4663,7 +4814,7 @@ var UIStrings3 = {
    */
   responseCopiedToClipboard: "Response copied to clipboard"
 };
-var UIStringsNotTranslate6 = {
+var UIStringsNotTranslate7 = {
   /**
    * @description Announcement text for screen readers when the conversation starts.
    */
@@ -4743,19 +4894,11 @@ var UIStringsNotTranslate6 = {
   /**
    * @description Disclaimer text right after the chat input.
    */
-  inputDisclaimerForPerformanceEnterpriseNoLogging: "Chat messages and data from your performance trace are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
-  /**
-   * @description Message displayed in toast in case of any failures while taking a screenshot of the page.
-   */
-  screenshotFailureMessage: "Failed to take a screenshot. Please try again.",
-  /**
-   * @description Message displayed in toast in case of any failures while uploading an image file as input.
-   */
-  uploadImageFailureMessage: "Failed to upload image. Please try again."
+  inputDisclaimerForPerformanceEnterpriseNoLogging: "Chat messages and data from your performance trace are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right."
 };
-var str_3 = i18n13.i18n.registerUIStrings("panels/ai_assistance/AiAssistancePanel.ts", UIStrings3);
-var i18nString3 = i18n13.i18n.getLocalizedString.bind(void 0, str_3);
-var lockedString6 = i18n13.i18n.lockedString;
+var str_3 = i18n15.i18n.registerUIStrings("panels/ai_assistance/AiAssistancePanel.ts", UIStrings3);
+var i18nString3 = i18n15.i18n.getLocalizedString.bind(void 0, str_3);
+var lockedString7 = i18n15.i18n.lockedString;
 function selectedElementFilter(maybeNode) {
   if (maybeNode) {
     return maybeNode.nodeType() === Node.ELEMENT_NODE ? maybeNode : null;
@@ -4798,12 +4941,12 @@ async function getEmptyStateSuggestions(conversation) {
       ];
     }
     default:
-      Platform5.assertNever(conversation.type, "Unknown conversation type");
+      Platform4.assertNever(conversation.type, "Unknown conversation type");
   }
 }
 function getMarkdownRenderer(conversation) {
   const context = conversation?.selectedContext;
-  if (context instanceof AiAssistanceModel4.PerformanceAgent.PerformanceTraceContext) {
+  if (context instanceof AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext) {
     if (!context.external) {
       const focus = context.getItem();
       return new PerformanceAgentMarkdownRenderer(focus.parsedTrace.data.Meta.mainFrameId, focus.lookupEvent.bind(focus), focus.parsedTrace);
@@ -4814,10 +4957,10 @@ function getMarkdownRenderer(conversation) {
   return new MarkdownRendererWithCodeBlock();
 }
 function toolbarView(input) {
-  return html11`
+  return html12`
     <div class="toolbar-container" role="toolbar" jslog=${VisualLogging7.toolbar()}>
       <devtools-toolbar class="freestyler-left-toolbar" role="presentation">
-      ${input.showChatActions ? html11`<devtools-button
+      ${input.showChatActions ? html12`<devtools-button
           title=${i18nString3(UIStrings3.newChat)}
           aria-label=${i18nString3(UIStrings3.newChat)}
           .iconName=${"plus"}
@@ -4831,8 +4974,8 @@ function toolbarView(input) {
           .iconName=${"history"}
           .jslogContext=${"freestyler.history"}
           .populateMenuCall=${input.populateHistoryMenu}
-        ></devtools-menu-button>` : Lit7.nothing}
-        ${input.showActiveConversationActions ? html11`
+        ></devtools-menu-button>` : Lit8.nothing}
+        ${input.showActiveConversationActions ? html12`
           <devtools-button
               title=${i18nString3(UIStrings3.deleteChat)}
               aria-label=${i18nString3(UIStrings3.deleteChat)}
@@ -4849,7 +4992,7 @@ function toolbarView(input) {
             .jslogContext=${"export-ai-conversation"}
             .variant=${"toolbar"}
             @click=${input.onExportConversationClick}>
-          </devtools-button>` : Lit7.nothing}
+          </devtools-button>` : Lit8.nothing}
       </devtools-toolbar>
       <devtools-toolbar class="freestyler-right-toolbar" role="presentation">
         <devtools-link
@@ -4874,12 +5017,12 @@ function toolbarView(input) {
           .variant=${"toolbar"}
           @click=${input.onSettingsClick}></devtools-button>
         <!-- If the green experiment is enabled, render the artifacts sidebar toggle button -->
-        ${GreenDev3.Prototypes.instance().isEnabled("artifactViewer") ? html11`<devtools-button
+        ${GreenDev4.Prototypes.instance().isEnabled("artifactViewer") ? html12`<devtools-button
           title=${i18nString3(UIStrings3.settings)}
           aria-label=${i18nString3(UIStrings3.settings)}
           .iconName=${input.artifactsSidebarVisible ? "left-panel-open" : "left-panel-close"}
           .variant=${"toolbar"}
-          @click=${input.onArtifactsSidebarToggle}></devtools-button>` : Lit7.nothing}
+          @click=${input.onArtifactsSidebarToggle}></devtools-button>` : Lit8.nothing}
       </devtools-toolbar>
     </div>
   `;
@@ -4888,10 +5031,10 @@ function defaultView(input, output, target) {
   function renderState() {
     switch (input.state) {
       case "chat-view": {
-        return html11`
+        return html12`
         <devtools-ai-chat-view
           .props=${input.props}
-          ${Lit7.Directives.ref((el) => {
+          ${Lit8.Directives.ref((el) => {
           if (!el || !(el instanceof ChatView)) {
             return;
           }
@@ -4900,22 +5043,22 @@ function defaultView(input, output, target) {
         ></devtools-ai-chat-view>`;
       }
       case "explore-view":
-        return html11`<devtools-widget
+        return html12`<devtools-widget
           class="fill-panel"
-          .widgetConfig=${UI9.Widget.widgetConfig(ExploreWidget)}
+          .widgetConfig=${UI10.Widget.widgetConfig(ExploreWidget)}
         ></devtools-widget>`;
       case "disabled-view":
-        return html11`<devtools-widget
+        return html12`<devtools-widget
           class="fill-panel"
-          .widgetConfig=${UI9.Widget.widgetConfig(DisabledWidget, input.props)}
+          .widgetConfig=${UI10.Widget.widgetConfig(DisabledWidget, input.props)}
         ></devtools-widget>`;
     }
   }
-  const panelWithToolbar = html11`
+  const panelWithToolbar = html12`
     ${toolbarView(input)}
     <div class="ai-assistance-view-container">${renderState()}</div>`;
-  if (GreenDev3.Prototypes.instance().isEnabled("artifactViewer")) {
-    Lit7.render(html11`
+  if (GreenDev4.Prototypes.instance().isEnabled("artifactViewer")) {
+    Lit8.render(html12`
         <devtools-split-view
           direction="column"
           sidebar-visibility=${input.artifactsSidebarVisible ? "visible" : "hidden"}
@@ -4931,42 +5074,42 @@ function defaultView(input, output, target) {
             </div>
             <devtools-widget
               class="fill-panel"
-              .widgetConfig=${UI9.Widget.widgetConfig(ArtifactsViewer)}
+              .widgetConfig=${UI10.Widget.widgetConfig(ArtifactsViewer)}
             ></devtools-widget>
           </div>
         </devtools-split-view>
       `, target);
   } else {
-    Lit7.render(panelWithToolbar, target);
+    Lit8.render(panelWithToolbar, target);
   }
 }
 function createNodeContext(node) {
   if (!node) {
     return null;
   }
-  return new AiAssistanceModel4.StylingAgent.NodeContext(node);
+  return new AiAssistanceModel5.StylingAgent.NodeContext(node);
 }
 function createFileContext(file) {
   if (!file) {
     return null;
   }
-  return new AiAssistanceModel4.FileAgent.FileContext(file);
+  return new AiAssistanceModel5.FileAgent.FileContext(file);
 }
 function createRequestContext(request) {
   if (!request) {
     return null;
   }
   const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-  return new AiAssistanceModel4.NetworkAgent.RequestContext(request, calculator);
+  return new AiAssistanceModel5.NetworkAgent.RequestContext(request, calculator);
 }
 function createPerformanceTraceContext(focus) {
   if (!focus) {
     return null;
   }
-  return new AiAssistanceModel4.PerformanceAgent.PerformanceTraceContext(focus);
+  return new AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext(focus);
 }
 var panelInstance;
-var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
+var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
   view;
   static panelName = "freestyler";
   // NodeJS debugging does not have Elements panel, thus this action might not exist.
@@ -4975,7 +5118,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   #viewOutput = {};
   #serverSideLoggingEnabled = isAiAssistanceServerSideLoggingEnabled();
   #aiAssistanceEnabledSetting;
-  #changeManager = new AiAssistanceModel4.ChangeManager.ChangeManager();
+  #changeManager = new AiAssistanceModel5.ChangeManager.ChangeManager();
   #mutex = new Common5.Mutex.Mutex();
   #conversation;
   #selectedFile = null;
@@ -4991,9 +5134,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   #aidaAvailability;
   // Info of the currently logged in user.
   #userInfo;
-  #imageInput;
-  // Used to disable send button when there is not text input.
-  #isTextInputEmpty = true;
   #timelinePanelInstance = null;
   #runAbortController = new AbortController();
   #additionalContextItemsFromFloaty = [];
@@ -5008,12 +5148,12 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       accountImage: syncInfo.accountImage,
       accountFullName: syncInfo.accountFullName
     };
-    if (UI9.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
-      this.#toggleSearchElementAction = UI9.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
+    if (UI10.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
+      this.#toggleSearchElementAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
     }
-    AiAssistanceModel4.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
-    if (GreenDev3.Prototypes.instance().isEnabled("artifactViewer")) {
-      AiAssistanceModel4.ArtifactsManager.ArtifactsManager.instance().addEventListener(AiAssistanceModel4.ArtifactsManager.ArtifactAddedEvent.eventName, this.#onArtifactAdded.bind(this));
+    AiAssistanceModel5.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
+    if (GreenDev4.Prototypes.instance().isEnabled("artifactViewer")) {
+      AiAssistanceModel5.ArtifactsManager.ArtifactsManager.instance().addEventListener(AiAssistanceModel5.ArtifactsManager.ArtifactAddedEvent.eventName, this.#onArtifactAdded.bind(this));
     }
   }
   async #getPanelViewInput() {
@@ -5044,19 +5184,15 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
           userInfo: this.#userInfo,
           canShowFeedbackForm: this.#serverSideLoggingEnabled,
           multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() && this.#conversation.type === "freestyler",
-          imageInput: this.#imageInput,
           isTextInputDisabled: this.#isTextInputDisabled(),
           emptyStateSuggestions,
           inputPlaceholder: this.#getChatInputPlaceholder(),
           disclaimerText: this.#getDisclaimerText(),
-          isTextInputEmpty: this.#isTextInputEmpty,
           changeManager: this.#changeManager,
           uploadImageInputEnabled: isAiAssistanceMultimodalUploadInputEnabled() && this.#conversation.type === "freestyler",
           markdownRenderer,
           isArtifactsSidebarOpen: this.#isArtifactsSidebarOpen,
           onTextSubmit: async (text, imageInput, multimodalInputType) => {
-            this.#imageInput = void 0;
-            this.#isTextInputEmpty = true;
             Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.AiAssistanceQuerySubmitted);
             await this.#startConversation(text, imageInput, multimodalInputType);
           },
@@ -5065,11 +5201,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
           onCancelClick: this.#cancel.bind(this),
           onContextClick: this.#handleContextClick.bind(this),
           onNewConversation: this.#handleNewChatRequest.bind(this),
-          onTakeScreenshot: isAiAssistanceMultimodalInputEnabled() ? this.#handleTakeScreenshot.bind(this) : void 0,
-          onRemoveImageInput: isAiAssistanceMultimodalInputEnabled() ? this.#handleRemoveImageInput.bind(this) : void 0,
-          onCopyResponseClick: this.#onCopyResponseClick.bind(this),
-          onTextInputChange: this.#handleTextInputChange.bind(this),
-          onLoadImage: isAiAssistanceMultimodalUploadInputEnabled() ? this.#handleLoadImage.bind(this) : void 0
+          onCopyResponseClick: this.#onCopyResponseClick.bind(this)
         }
       };
     }
@@ -5102,7 +5234,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
    * the performance panel but have no trace imported.
    */
   #bindTimelineTraceListener() {
-    const timelinePanel = UI9.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
+    const timelinePanel = UI10.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
     if (timelinePanel === this.#timelinePanelInstance) {
       return;
     }
@@ -5113,7 +5245,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
   }
   #bindFloatyListener() {
-    const additionalContexts = UI9.Context.Context.instance().flavor(UI9.Floaty.FloatyFlavor);
+    const additionalContexts = UI10.Context.Context.instance().flavor(UI10.Floaty.FloatyFlavor);
     if (!additionalContexts) {
       return;
     }
@@ -5122,7 +5254,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   }
   #getDefaultConversationType() {
     const { hostConfig } = Root5.Runtime;
-    const viewManager = UI9.ViewManager.ViewManager.instance();
+    const viewManager = UI10.ViewManager.ViewManager.instance();
     const isElementsPanelVisible = viewManager.isViewVisible("elements");
     const isNetworkPanelVisible = viewManager.isViewVisible("network");
     const isSourcesPanelVisible = viewManager.isViewVisible("sources");
@@ -5149,7 +5281,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (this.#conversation?.type === targetConversationType) {
       return;
     }
-    const conversation = targetConversationType ? new AiAssistanceModel4.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager) : void 0;
+    const conversation = targetConversationType ? new AiAssistanceModel5.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager) : void 0;
     this.#updateConversationState(conversation);
   }
   #updateConversationState(conversation) {
@@ -5161,7 +5293,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       if (!conversation) {
         const conversationType = this.#getDefaultConversationType();
         if (conversationType) {
-          conversation = new AiAssistanceModel4.AiConversation.AiConversation(conversationType, [], void 0, false, this.#aidaClient, this.#changeManager);
+          conversation = new AiAssistanceModel5.AiConversation.AiConversation(conversationType, [], void 0, false, this.#aidaClient, this.#changeManager);
         }
       }
       this.#conversation = conversation;
@@ -5174,33 +5306,32 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     this.#viewOutput.chatView?.restoreScrollPosition();
     this.#viewOutput.chatView?.focusTextInput();
     void this.#handleAidaAvailabilityChange();
-    this.#selectedElement = createNodeContext(selectedElementFilter(UI9.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode)));
-    this.#selectedRequest = createRequestContext(UI9.Context.Context.instance().flavor(SDK3.NetworkRequest.NetworkRequest));
-    this.#selectedPerformanceTrace = createPerformanceTraceContext(UI9.Context.Context.instance().flavor(AiAssistanceModel4.AIContext.AgentFocus));
-    this.#selectedFile = createFileContext(UI9.Context.Context.instance().flavor(Workspace6.UISourceCode.UISourceCode));
+    this.#selectedElement = createNodeContext(selectedElementFilter(UI10.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode)));
+    this.#selectedRequest = createRequestContext(UI10.Context.Context.instance().flavor(SDK3.NetworkRequest.NetworkRequest));
+    this.#selectedPerformanceTrace = createPerformanceTraceContext(UI10.Context.Context.instance().flavor(AiAssistanceModel5.AIContext.AgentFocus));
+    this.#selectedFile = createFileContext(UI10.Context.Context.instance().flavor(Workspace6.UISourceCode.UISourceCode));
     this.#updateConversationState(this.#conversation);
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
     Host6.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.addEventListener("Toggled", this.requestUpdate, this);
-    UI9.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
-    UI9.Context.Context.instance().addFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI9.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel4.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
-    UI9.Context.Context.instance().addFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
-    UI9.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
+    UI10.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+    UI10.Context.Context.instance().addFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+    UI10.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel5.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI10.Context.Context.instance().addFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
+    UI10.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
     SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
-    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
-    UI9.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
+    UI10.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
     this.#bindTimelineTraceListener();
     this.#selectDefaultAgentIfNeeded();
     Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.AiAssistancePanelOpened);
-    if (GreenDev3.Prototypes.instance().isEnabled("inDevToolsFloaty")) {
-      UI9.Context.Context.instance().addFlavorChangeListener(UI9.Floaty.FloatyFlavor, this.#bindFloatyListener, this);
+    if (GreenDev4.Prototypes.instance().isEnabled("inDevToolsFloaty")) {
+      UI10.Context.Context.instance().addFlavorChangeListener(UI10.Floaty.FloatyFlavor, this.#bindFloatyListener, this);
       this.#bindFloatyListener();
     }
   }
   #onArtifactAdded() {
-    if (AiAssistanceModel4.ArtifactsManager.ArtifactsManager.instance().artifacts.length > 0) {
+    if (AiAssistanceModel5.ArtifactsManager.ArtifactsManager.instance().artifacts.length > 0) {
       this.#isArtifactsSidebarOpen = true;
       this.requestUpdate();
     }
@@ -5210,15 +5341,14 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     this.#aiAssistanceEnabledSetting?.removeChangeListener(this.requestUpdate, this);
     Host6.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.removeEventListener("Toggled", this.requestUpdate, this);
-    UI9.Context.Context.instance().removeFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
-    UI9.Context.Context.instance().removeFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI9.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel4.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
-    UI9.Context.Context.instance().removeFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
-    UI9.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
-    UI9.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
+    UI10.Context.Context.instance().removeFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+    UI10.Context.Context.instance().removeFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+    UI10.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel5.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI10.Context.Context.instance().removeFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
+    UI10.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
+    UI10.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
     SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
     SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
-    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     if (this.#timelinePanelInstance) {
       this.#timelinePanelInstance.removeEventListener("IsViewingTrace", this.requestUpdate, this);
       this.#timelinePanelInstance = null;
@@ -5256,7 +5386,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
     if (Boolean(ev.data)) {
       const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-      this.#selectedRequest = new AiAssistanceModel4.NetworkAgent.RequestContext(ev.data, calculator);
+      this.#selectedRequest = new AiAssistanceModel5.NetworkAgent.RequestContext(ev.data, calculator);
     } else {
       this.#selectedRequest = null;
     }
@@ -5266,7 +5396,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (this.#selectedPerformanceTrace?.getItem() === ev.data) {
       return;
     }
-    this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel4.PerformanceAgent.PerformanceTraceContext(ev.data) : null;
+    this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext(ev.data) : null;
     this.#updateConversationState(this.#conversation);
   };
   #handleUISourceCodeFlavorChange = (ev) => {
@@ -5274,16 +5404,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (!newFile || this.#selectedFile?.getItem() === newFile) {
       return;
     }
-    this.#selectedFile = new AiAssistanceModel4.FileAgent.FileContext(ev.data);
+    this.#selectedFile = new AiAssistanceModel5.FileAgent.FileContext(ev.data);
     this.#updateConversationState(this.#conversation);
   };
-  #onPrimaryPageChanged() {
-    if (!this.#imageInput) {
-      return;
-    }
-    this.#imageInput = void 0;
-    this.requestUpdate();
-  }
   #getChangeSummary() {
     if (!isAiAssistancePatchingEnabled() || !this.#conversation || this.#conversation?.isReadOnly) {
       return;
@@ -5307,7 +5430,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
         UIHelpers2.openInNewTab(AI_ASSISTANCE_HELP);
       },
       onSettingsClick: () => {
-        void UI9.ViewManager.ViewManager.instance().showView("chrome-ai");
+        void UI10.ViewManager.ViewManager.instance().showView("chrome-ai");
       },
       onArtifactsSidebarToggle: () => {
         this.#isArtifactsSidebarOpen = !this.#isArtifactsSidebarOpen;
@@ -5326,13 +5449,13 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     const markdown = getResponseMarkdown(message);
     if (markdown) {
       Host6.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(markdown);
-      Snackbars.Snackbar.Snackbar.show({
+      Snackbars2.Snackbar.Snackbar.show({
         message: i18nString3(UIStrings3.responseCopiedToClipboard)
       });
     }
   }
   #handleSelectElementClick() {
-    UI9.Context.Context.instance().setFlavor(Common5.ReturnToPanel.ReturnToPanelFlavor, new Common5.ReturnToPanel.ReturnToPanelFlavor(this.panelName));
+    UI10.Context.Context.instance().setFlavor(Common5.ReturnToPanel.ReturnToPanelFlavor, new Common5.ReturnToPanel.ReturnToPanelFlavor(this.panelName));
     void this.#toggleSearchElementAction?.execute();
   }
   #isTextInputDisabled() {
@@ -5363,21 +5486,21 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       return i18nString3(UIStrings3.followTheSteps);
     }
     if (this.#conversation && this.#conversation.isBlockedByOrigin) {
-      return lockedString6(UIStringsNotTranslate6.crossOriginError);
+      return lockedString7(UIStringsNotTranslate7.crossOriginError);
     }
     switch (this.#conversation.type) {
       case "freestyler":
-        return this.#conversation.selectedContext ? lockedString6(UIStringsNotTranslate6.inputPlaceholderForStyling) : lockedString6(UIStringsNotTranslate6.inputPlaceholderForStylingNoContext);
+        return this.#conversation.selectedContext ? lockedString7(UIStringsNotTranslate7.inputPlaceholderForStyling) : lockedString7(UIStringsNotTranslate7.inputPlaceholderForStylingNoContext);
       case "drjones-file":
-        return this.#conversation.selectedContext ? lockedString6(UIStringsNotTranslate6.inputPlaceholderForFile) : lockedString6(UIStringsNotTranslate6.inputPlaceholderForFileNoContext);
+        return this.#conversation.selectedContext ? lockedString7(UIStringsNotTranslate7.inputPlaceholderForFile) : lockedString7(UIStringsNotTranslate7.inputPlaceholderForFileNoContext);
       case "drjones-network-request":
-        return this.#conversation.selectedContext ? lockedString6(UIStringsNotTranslate6.inputPlaceholderForNetwork) : lockedString6(UIStringsNotTranslate6.inputPlaceholderForNetworkNoContext);
+        return this.#conversation.selectedContext ? lockedString7(UIStringsNotTranslate7.inputPlaceholderForNetwork) : lockedString7(UIStringsNotTranslate7.inputPlaceholderForNetworkNoContext);
       case "drjones-performance-full": {
-        const perfPanel = UI9.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
+        const perfPanel = UI10.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
         if (perfPanel?.hasActiveTrace()) {
-          return this.#conversation.selectedContext ? lockedString6(UIStringsNotTranslate6.inputPlaceholderForPerformanceTrace) : lockedString6(UIStringsNotTranslate6.inputPlaceholderForPerformanceTraceNoContext);
+          return this.#conversation.selectedContext ? lockedString7(UIStringsNotTranslate7.inputPlaceholderForPerformanceTrace) : lockedString7(UIStringsNotTranslate7.inputPlaceholderForPerformanceTraceNoContext);
         }
-        return lockedString6(UIStringsNotTranslate6.inputPlaceholderForPerformanceWithNoRecording);
+        return lockedString7(UIStringsNotTranslate7.inputPlaceholderForPerformanceWithNoRecording);
       }
     }
   }
@@ -5389,26 +5512,26 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     switch (this.#conversation.type) {
       case "freestyler":
         if (noLogging) {
-          return lockedString6(UIStringsNotTranslate6.inputDisclaimerForStylingEnterpriseNoLogging);
+          return lockedString7(UIStringsNotTranslate7.inputDisclaimerForStylingEnterpriseNoLogging);
         }
-        return lockedString6(UIStringsNotTranslate6.inputDisclaimerForStyling);
+        return lockedString7(UIStringsNotTranslate7.inputDisclaimerForStyling);
       case "drjones-file":
         if (noLogging) {
-          return lockedString6(UIStringsNotTranslate6.inputDisclaimerForFileEnterpriseNoLogging);
+          return lockedString7(UIStringsNotTranslate7.inputDisclaimerForFileEnterpriseNoLogging);
         }
-        return lockedString6(UIStringsNotTranslate6.inputDisclaimerForFile);
+        return lockedString7(UIStringsNotTranslate7.inputDisclaimerForFile);
       case "drjones-network-request":
         if (noLogging) {
-          return lockedString6(UIStringsNotTranslate6.inputDisclaimerForNetworkEnterpriseNoLogging);
+          return lockedString7(UIStringsNotTranslate7.inputDisclaimerForNetworkEnterpriseNoLogging);
         }
-        return lockedString6(UIStringsNotTranslate6.inputDisclaimerForNetwork);
+        return lockedString7(UIStringsNotTranslate7.inputDisclaimerForNetwork);
       // It is deliberate that both Performance agents use the same disclaimer
       // text and this has been approved by Privacy.
       case "drjones-performance-full":
         if (noLogging) {
-          return lockedString6(UIStringsNotTranslate6.inputDisclaimerForPerformanceEnterpriseNoLogging);
+          return lockedString7(UIStringsNotTranslate7.inputDisclaimerForPerformanceEnterpriseNoLogging);
         }
-        return lockedString6(UIStringsNotTranslate6.inputDisclaimerForPerformance);
+        return lockedString7(UIStringsNotTranslate7.inputDisclaimerForPerformance);
     }
   }
   #handleFeedbackSubmit(rpcId, rating, feedback) {
@@ -5430,7 +5553,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       return;
     }
     const context = this.#conversation.selectedContext;
-    if (context instanceof AiAssistanceModel4.NetworkAgent.RequestContext) {
+    if (context instanceof AiAssistanceModel5.NetworkAgent.RequestContext) {
       const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(
         context.getItem(),
         "headers-component"
@@ -5438,10 +5561,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       );
       return Common5.Revealer.reveal(requestLocation);
     }
-    if (context instanceof AiAssistanceModel4.FileAgent.FileContext) {
+    if (context instanceof AiAssistanceModel5.FileAgent.FileContext) {
       return Common5.Revealer.reveal(context.getItem().uiLocation(0, 0));
     }
-    if (context instanceof AiAssistanceModel4.PerformanceAgent.PerformanceTraceContext) {
+    if (context instanceof AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext) {
       const focus = context.getItem();
       if (focus.callTree) {
         const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
@@ -5511,7 +5634,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
     let conversation = this.#conversation;
     if (!this.#conversation || this.#conversation.type !== targetConversationType || this.#conversation.isEmpty) {
-      conversation = new AiAssistanceModel4.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager);
+      conversation = new AiAssistanceModel5.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager);
     }
     this.#updateConversationState(conversation);
     const predefinedPrompt = opts?.["prompt"];
@@ -5519,8 +5642,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       if (!this.#canExecuteQuery()) {
         return;
       }
-      this.#imageInput = void 0;
-      this.#isTextInputEmpty = true;
       Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.AiAssistanceQuerySubmitted);
       if (this.#conversation && this.#conversation.isBlockedByOrigin) {
         this.#handleNewChatRequest();
@@ -5531,7 +5652,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
   }
   #populateHistoryMenu(contextMenu) {
-    const historicalConversations = AiAssistanceModel4.AiHistoryStorage.AiHistoryStorage.instance().getHistory().map((serializedConversation) => AiAssistanceModel4.AiConversation.AiConversation.fromSerializedConversation(serializedConversation));
+    const historicalConversations = AiAssistanceModel5.AiHistoryStorage.AiHistoryStorage.instance().getHistory().map((serializedConversation) => AiAssistanceModel5.AiConversation.AiConversation.fromSerializedConversation(serializedConversation));
     for (const conversation of historicalConversations.reverse()) {
       if (conversation.isEmpty || !conversation.title) {
         continue;
@@ -5548,7 +5669,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       });
     }
     contextMenu.footerSection().appendItem(i18nString3(UIStrings3.clearChatHistory), () => {
-      void AiAssistanceModel4.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
+      void AiAssistanceModel5.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
     }, {
       disabled: historyEmpty
     });
@@ -5560,9 +5681,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (!this.#conversation) {
       return;
     }
-    void AiAssistanceModel4.AiHistoryStorage.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
+    void AiAssistanceModel5.AiHistoryStorage.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
     this.#updateConversationState();
-    UI9.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.chatDeleted));
+    UI10.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.chatDeleted));
   }
   async #onExportConversationClick() {
     if (!this.#conversation) {
@@ -5570,7 +5691,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
     const markdownContent = this.#conversation.getConversationMarkdown();
     const contentData = new TextUtils.ContentData.ContentData(markdownContent, false, "text/markdown");
-    const titleFormatted = Platform5.StringUtilities.toSnakeCase(this.#conversation.title || "");
+    const titleFormatted = Platform4.StringUtilities.toSnakeCase(this.#conversation.title || "");
     const prefix = "devtools_";
     const suffix = ".md";
     const maxTitleLength = 64 - prefix.length - suffix.length;
@@ -5591,102 +5712,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   }
   #handleNewChatRequest() {
     this.#updateConversationState();
-    UI9.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.newChatCreated));
+    UI10.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.newChatCreated));
     if (Annotations.AnnotationRepository.annotationsEnabled()) {
       Annotations.AnnotationRepository.instance().deleteAllAnnotations();
     }
-  }
-  async #handleTakeScreenshot() {
-    const mainTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
-    if (!mainTarget) {
-      throw new Error("Could not find main target");
-    }
-    const model = mainTarget.model(SDK3.ScreenCaptureModel.ScreenCaptureModel);
-    if (!model) {
-      throw new Error("Could not find model");
-    }
-    const showLoadingTimeout = setTimeout(() => {
-      this.#imageInput = { isLoading: true };
-      this.requestUpdate();
-    }, SHOW_LOADING_STATE_TIMEOUT);
-    const bytes = await model.captureScreenshot(
-      "jpeg",
-      SCREENSHOT_QUALITY,
-      "fromViewport"
-      /* SDK.ScreenCaptureModel.ScreenshotMode.FROM_VIEWPORT */
-    );
-    clearTimeout(showLoadingTimeout);
-    if (bytes) {
-      this.#imageInput = {
-        isLoading: false,
-        data: bytes,
-        mimeType: JPEG_MIME_TYPE,
-        inputType: "screenshot"
-        /* AiAssistanceModel.AiAgent.MultimodalInputType.SCREENSHOT */
-      };
-      this.requestUpdate();
-      void this.updateComplete.then(() => {
-        this.#viewOutput.chatView?.focusTextInput();
-      });
-    } else {
-      this.#imageInput = void 0;
-      this.requestUpdate();
-      Snackbars.Snackbar.Snackbar.show({
-        message: lockedString6(UIStringsNotTranslate6.screenshotFailureMessage)
-      });
-    }
-  }
-  #handleRemoveImageInput() {
-    this.#imageInput = void 0;
-    this.requestUpdate();
-    void this.updateComplete.then(() => {
-      this.#viewOutput.chatView?.focusTextInput();
-    });
-  }
-  #handleTextInputChange(value) {
-    const disableSubmit = !value;
-    if (disableSubmit !== this.#isTextInputEmpty) {
-      this.#isTextInputEmpty = disableSubmit;
-      void this.requestUpdate();
-    }
-  }
-  async #handleLoadImage(file) {
-    const showLoadingTimeout = setTimeout(() => {
-      this.#imageInput = { isLoading: true };
-      this.requestUpdate();
-    }, SHOW_LOADING_STATE_TIMEOUT);
-    try {
-      const reader = new FileReader();
-      const dataUrl = await new Promise((resolve, reject) => {
-        reader.onload = () => {
-          if (typeof reader.result === "string") {
-            resolve(reader.result);
-          } else {
-            reject(new Error("FileReader result was not a string."));
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-      const commaIndex = dataUrl.indexOf(",");
-      const bytes = dataUrl.substring(commaIndex + 1);
-      this.#imageInput = {
-        isLoading: false,
-        data: bytes,
-        mimeType: file.type,
-        inputType: "uploaded-image"
-        /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
-      };
-    } catch {
-      this.#imageInput = void 0;
-      Snackbars.Snackbar.Snackbar.show({
-        message: lockedString6(UIStringsNotTranslate6.uploadImageFailureMessage)
-      });
-    }
-    clearTimeout(showLoadingTimeout);
-    this.requestUpdate();
-    void this.updateComplete.then(() => {
-      this.#viewOutput.chatView?.focusTextInput();
-    });
   }
   #cancel() {
     this.#runAbortController.abort();
@@ -5883,15 +5912,15 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
           }
           switch (data.type) {
             case "context":
-              UI9.ARIAUtils.LiveAnnouncer.status(data.title);
+              UI10.ARIAUtils.LiveAnnouncer.status(data.title);
               break;
             case "answer": {
               if (!data.complete && !announcedAnswerLoading) {
                 announcedAnswerLoading = true;
-                UI9.ARIAUtils.LiveAnnouncer.status(lockedString6(UIStringsNotTranslate6.answerLoading));
+                UI10.ARIAUtils.LiveAnnouncer.status(lockedString7(UIStringsNotTranslate7.answerLoading));
               } else if (data.complete && !announcedAnswerReady) {
                 announcedAnswerReady = true;
-                UI9.ARIAUtils.LiveAnnouncer.status(lockedString6(UIStringsNotTranslate6.answerReady));
+                UI10.ARIAUtils.LiveAnnouncer.status(lockedString7(UIStringsNotTranslate7.answerReady));
               }
             }
           }
@@ -5917,7 +5946,7 @@ ${part.text}`);
         contentParts.push(`### ${step.title}`);
       }
       if (step.contextDetails) {
-        contentParts.push(AiAssistanceModel4.AiConversation.generateContextDetailsMarkdown(step.contextDetails));
+        contentParts.push(AiAssistanceModel5.AiConversation.generateContextDetailsMarkdown(step.contextDetails));
       }
       if (step.thought) {
         contentParts.push(step.thought);
@@ -5950,14 +5979,14 @@ var ActionDelegate = class {
       case "drjones.sources-floating-button":
       case "drjones.sources-panel-context": {
         void (async () => {
-          const view = UI9.ViewManager.ViewManager.instance().view(AiAssistancePanel.panelName);
+          const view = UI10.ViewManager.ViewManager.instance().view(AiAssistancePanel.panelName);
           if (!view) {
             return;
           }
-          await UI9.ViewManager.ViewManager.instance().showView(AiAssistancePanel.panelName);
-          const minDrawerSize = UI9.InspectorView.InspectorView.instance().totalSize() / 4;
-          if (UI9.InspectorView.InspectorView.instance().drawerSize() < minDrawerSize) {
-            UI9.InspectorView.InspectorView.instance().setDrawerSize(minDrawerSize);
+          await UI10.ViewManager.ViewManager.instance().showView(AiAssistancePanel.panelName);
+          const minDrawerSize = UI10.InspectorView.InspectorView.instance().totalSize() / 4;
+          if (UI10.InspectorView.InspectorView.instance().drawerSize() < minDrawerSize) {
+            UI10.InspectorView.InspectorView.instance().setDrawerSize(minDrawerSize);
           }
           const widget = await view.widget();
           void widget.handleAction(actionId, opts);
@@ -5980,6 +6009,7 @@ function isAiAssistanceServerSideLoggingEnabled() {
 export {
   ActionDelegate,
   AiAssistancePanel,
+  ChatInput_exports as ChatInput,
   ChatView,
   DisabledWidget_exports as DisabledWidget,
   ExploreWidget_exports as ExploreWidget,

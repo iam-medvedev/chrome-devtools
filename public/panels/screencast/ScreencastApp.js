@@ -39,6 +39,7 @@ export class ScreencastApp {
     }
     presentUI(document) {
         this.rootView = new UI.RootView.RootView();
+        this.rootView.registerRequiredCSS(UI.inspectorCommonStyles);
         this.rootSplitWidget =
             new UI.SplitWidget.SplitWidget(false, true, 'inspector-view.screencast-split-view-state', 300, 300);
         this.rootSplitWidget.setVertical(true);

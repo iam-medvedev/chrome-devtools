@@ -216,9 +216,17 @@ const UIStrings = {
      */
     processingTrace: 'Processing trace…',
     /**
-     * @description Text in Timeline Panel of the Performance panel
+     * @description Text in Timeline Panel of the Performance panel. Shown to the user after they request to download the trace.
      */
-    initializingTracing: 'Initializing tracing…',
+    preparingTraceForDownload: 'Preparing…',
+    /**
+     * @description Text in Timeline Panel of the Performance panel. Shown to the user after they request to download the trace.
+     */
+    compressingTraceForDownload: 'Compressing…',
+    /**
+     * @description Text in Timeline Panel of the Performance panel. Shown to the user after they request to download the trace.
+     */
+    encodingTraceForDownload: 'Encoding…',
     /**
      * @description Tooltip description for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
      */
@@ -297,7 +305,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     recordingOptionUIControls;
     state;
     recordingPageReload;
-    millisecondsToRecordAfterLoadEvent;
     toggleRecordAction;
     recordReloadAction;
     #historyManager;
@@ -394,18 +401,14 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
       ">💫</div>`;
         const adorner = new Adorners.Adorner.Adorner();
         adorner.classList.add('fix-perf-icon');
-        adorner.data = {
-            name: i18nString(UIStrings.fixMe),
-            content: adornerContent,
-        };
+        adorner.name = i18nString(UIStrings.fixMe);
+        adorner.append(adornerContent);
         this.#traceEngineModel = traceModel || this.#instantiateNewModel();
-        this.#listenForProcessingProgress();
         this.element.addEventListener('contextmenu', this.contextMenu.bind(this), false);
         this.dropTarget = new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.File, UI.DropTarget.Type.URI], i18nString(UIStrings.dropTimelineFileOrUrlHere), this.handleDrop.bind(this));
         this.recordingOptionUIControls = [];
         this.state = "Idle" /* State.IDLE */;
         this.recordingPageReload = false;
-        this.millisecondsToRecordAfterLoadEvent = 5000;
         this.toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
         this.recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
         this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, this.#isNode);
@@ -453,7 +456,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         });
         this.statusPaneContainer = this.timelinePane.element.createChild('div', 'status-pane-container fill');
         this.createFileSelector();
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.loadEventFired, this);
         this.flameChart = new TimelineFlameChartView(this);
         this.element.addEventListener('toggle-popover', event => this.flameChart.togglePopover(event.detail));
         this.#onMainEntryHovered = this.#onEntryHovered.bind(this, this.flameChart.getMainDataProvider());
@@ -567,7 +569,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
      * Pass `highlightInsight: true` to flash the insight with the background highlight colour.
      */
     #setActiveInsight(insight, opts = { highlightInsight: false }) {
-        if (insight) {
+        if (insight && this.#splitWidget.showMode() !== "Both" /* UI.SplitWidget.ShowMode.BOTH */) {
             this.#splitWidget.showBoth();
         }
         this.#sideBar.setActiveInsight(insight, { highlight: opts.highlightInsight });
@@ -614,7 +616,22 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         config.showAllEvents = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
         config.includeRuntimeCallStats = Root.Runtime.experiments.isEnabled('timeline-v8-runtime-call-stats');
         config.debugMode = Root.Runtime.experiments.isEnabled("timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */);
-        return Trace.TraceModel.Model.createWithAllHandlers(config);
+        const traceEngineModel = Trace.TraceModel.Model.createWithAllHandlers(config);
+        traceEngineModel.addEventListener(Trace.TraceModel.ModelUpdateEvent.eventName, e => {
+            const updateEvent = e;
+            const str = i18nString(UIStrings.processed);
+            // Trace Engine will report progress from [0...1] but we still have more work to do. So, scale them down a bit.
+            const traceParseMaxProgress = 0.7;
+            if (updateEvent.data.type === "COMPLETE" /* Trace.TraceModel.ModelUpdateType.COMPLETE */) {
+                this.statusDialog?.updateProgressBar(str, 100 * traceParseMaxProgress);
+            }
+            else if (updateEvent.data.type === "PROGRESS_UPDATE" /* Trace.TraceModel.ModelUpdateType.PROGRESS_UPDATE */) {
+                const data = updateEvent.data.data;
+                this.statusDialog?.updateProgressBar(str, data.percent * 100 * traceParseMaxProgress);
+            }
+        });
+        this.#traceEngineModel = traceEngineModel;
+        return this.#traceEngineModel;
     }
     static extensionDataVisibilitySetting() {
         // Calling this multiple times doesn't recreate the setting.
@@ -1203,8 +1220,27 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             }
             this.#showExportTraceErrorDialog(error);
         }
+        finally {
+            this.statusDialog?.remove();
+            this.statusDialog = null;
+        }
     }
     async innerSaveToFile(traceEvents, metadata, config) {
+        this.statusDialog = new StatusDialog({
+            hideStopButton: true,
+            showProgress: true,
+        }, async () => {
+            this.statusDialog?.remove();
+            this.statusDialog = null;
+        });
+        this.statusDialog.showPane(this.statusPaneContainer, 'tinted');
+        this.statusDialog.updateStatus(i18nString(UIStrings.preparingTraceForDownload));
+        this.statusDialog.updateProgressBar(i18nString(UIStrings.preparingTraceForDownload), 0);
+        this.statusDialog.requestUpdate();
+        await this.statusDialog.updateComplete;
+        // Not sure why the above isn't sufficient.
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise(resolve => requestAnimationFrame(resolve));
         // Base the filename on the trace's time of recording
         const isoDate = Platform.DateUtilities.toISO8601Compact(metadata.startTime ? new Date(metadata.startTime) : new Date());
         const isCpuProfile = metadata.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */;
@@ -1232,8 +1268,14 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         }
         let blob = new Blob(blobParts, { type: 'application/json' });
         if (config.shouldCompress) {
+            this.statusDialog.updateStatus(i18nString(UIStrings.compressingTraceForDownload));
+            this.statusDialog.updateProgressBar(i18nString(UIStrings.compressingTraceForDownload), 0);
             fileName = `${fileName}.gz`;
-            const gzStream = Common.Gzip.compressStream(blob.stream());
+            const inputSize = blob.size;
+            const monitoredStream = Common.Gzip.createMonitoredStream(blob.stream(), bytesRead => {
+                this.statusDialog?.updateProgressBar(i18nString(UIStrings.compressingTraceForDownload), bytesRead / inputSize * 100);
+            });
+            const gzStream = Common.Gzip.compressStream(monitoredStream);
             blob = await new Response(gzStream, {
                 headers: { 'Content-Type': 'application/gzip' },
             }).blob();
@@ -1246,6 +1288,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         try {
             // The maximum string length in v8 is `2 ** 29 - 23`, aka 538 MB.
             // If the gzipped&base64-encoded trace is larger than that, this'll throw a RangeError.
+            this.statusDialog.updateStatus(i18nString(UIStrings.encodingTraceForDownload));
+            this.statusDialog.updateProgressBar(i18nString(UIStrings.encodingTraceForDownload), 100);
             bytesAsB64 = await Common.Base64.encode(blob);
         }
         catch {
@@ -1264,6 +1308,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             a.click();
             URL.revokeObjectURL(url);
         }
+        this.statusDialog.remove();
+        this.statusDialog = null;
     }
     async handleSaveToFileAction() {
         const exportTraceOptionsElement = this.saveButton.element;
@@ -1495,39 +1541,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const navigationEntry = entries[currentIndex];
         return navigationEntry.url;
     }
-    async #navigateToAboutBlank() {
-        const aboutBlankNavigationComplete = new Promise(async (resolve, reject) => {
-            if (!this.controller) {
-                reject('Could not find TimelineController');
-                return;
-            }
-            const target = this.controller.primaryPageTarget;
-            const resourceModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            if (!resourceModel) {
-                reject('Could not load resourceModel');
-                return;
-            }
-            /**
-             * To clear out the page and any state from prior test runs, we
-             * navigate to about:blank before initiating the trace recording.
-             * Once we have navigated to about:blank, we start recording and
-             * then navigate to the original page URL, to ensure we profile the
-             * page load.
-             **/
-            function waitForAboutBlank(event) {
-                if (event.data.url === 'about:blank') {
-                    resolve();
-                }
-                else {
-                    reject(`Unexpected navigation to ${event.data.url}`);
-                }
-                resourceModel?.removeEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForAboutBlank);
-            }
-            resourceModel.addEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForAboutBlank);
-            await resourceModel.navigate('about:blank');
-        });
-        await aboutBlankNavigationComplete;
-    }
     async #startCPUProfilingRecording() {
         try {
             this.cpuProfiler = UI.Context.Context.instance().flavor(SDK.CPUProfilerModel.CPUProfilerModel);
@@ -1583,30 +1596,16 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 throw new Error('Could not create Timeline controller');
             }
             const urlToTrace = await this.#evaluateInspectedURL();
-            // If we are doing "Reload & record", we first navigate the page to
-            // about:blank. This is to ensure any data on the timeline from any
-            // previous performance recording is lost, avoiding the problem where a
-            // timeline will show data & screenshots from a previous page load that
-            // was not relevant.
-            if (this.recordingPageReload) {
-                await this.#navigateToAboutBlank();
-            }
-            const recordingOptions = {
+            // Order is important here: we tell the controller to start recording, which enables tracing.
+            await this.controller.startRecording({
                 enableJSSampling: !this.disableCaptureJSProfileSetting.get(),
                 capturePictures: this.captureLayersAndPicturesSetting.get(),
                 captureFilmStrip: this.showScreenshotsSetting.get(),
                 captureSelectorStats: this.captureSelectorStatsSetting.get(),
-            };
-            // Order is important here: we tell the controller to start recording, which enables tracing.
-            const response = await this.controller.startRecording(recordingOptions);
-            if (response.getError()) {
-                throw new Error(response.getError());
-            }
+                navigateToUrl: this.recordingPageReload ? urlToTrace : undefined,
+            });
             // Once we get here, we know tracing is active.
-            // This is when, if the user has hit "Reload & Record" that we now need to navigate to the original URL.
-            // If the user has just hit "record", we don't do any navigating.
-            const recordingConfig = this.recordingPageReload ? { navigateToUrl: urlToTrace } : undefined;
-            this.recordingStarted(recordingConfig);
+            this.recordingStarted();
         }
         catch (e) {
             await this.recordingFailed(e.message);
@@ -1654,7 +1653,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.statusDialog = new StatusDialog({
             description: error,
             buttonText: i18nString(UIStrings.close),
-            hideStopButton: true,
+            hideStopButton: false,
             showProgress: undefined,
             showTimer: undefined,
         }, 
@@ -1732,7 +1731,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     }
     onClearButton() {
         this.#historyManager.clear();
-        this.#traceEngineModel = this.#instantiateNewModel();
+        this.#instantiateNewModel();
         ModificationsManager.reset();
         this.#uninstallSourceMapsResolver();
         this.flameChart.getMainDataProvider().reset();
@@ -1996,27 +1995,11 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         console.warn('Could not get entry color for ', entry);
         return ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-system');
     }
-    recordingStarted(config) {
-        if (config && this.recordingPageReload && this.controller) {
-            // If the user hit "Reload & record", by this point we have:
-            // 1. Navigated to about:blank
-            // 2. Initiated tracing.
-            // We therefore now should navigate back to the original URL that the user wants to profile.
-            const resourceModel = this.controller?.primaryPageTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            if (!resourceModel) {
-                void this.recordingFailed('Could not navigate to original URL');
-                return;
-            }
-            // We don't need to await this because we are purposefully showing UI
-            // progress as the page loads & tracing is underway.
-            void resourceModel.navigate(config.navigateToUrl);
-        }
+    recordingStarted() {
         this.#changeView({ mode: 'STATUS_PANE_OVERLAY' });
         this.setState("Recording" /* State.RECORDING */);
-        this.showRecordingStarted();
         if (this.statusDialog) {
             this.statusDialog.enableAndFocusButton();
-            this.statusDialog.updateStatus(i18nString(UIStrings.tracing));
             this.statusDialog.updateProgressBar(i18nString(UIStrings.bufferUsage), 0);
             this.statusDialog.startTimer();
         }
@@ -2024,6 +2007,11 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     recordingProgress(usage) {
         if (this.statusDialog) {
             this.statusDialog.updateProgressBar(i18nString(UIStrings.bufferUsage), usage * 100);
+        }
+    }
+    recordingStatus(status) {
+        if (this.statusDialog) {
+            this.statusDialog.updateStatus(status);
         }
     }
     /**
@@ -2083,21 +2071,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     }
     async processingStarted() {
         this.statusDialog?.updateStatus(i18nString(UIStrings.processingTrace));
-    }
-    #listenForProcessingProgress() {
-        this.#traceEngineModel.addEventListener(Trace.TraceModel.ModelUpdateEvent.eventName, e => {
-            const updateEvent = e;
-            const str = i18nString(UIStrings.processed);
-            // Trace Engine will report progress from [0...1] but we still have more work to do. So, scale them down a bit.
-            const traceParseMaxProgress = 0.7;
-            if (updateEvent.data.type === "COMPLETE" /* Trace.TraceModel.ModelUpdateType.COMPLETE */) {
-                this.statusDialog?.updateProgressBar(str, 100 * traceParseMaxProgress);
-            }
-            else if (updateEvent.data.type === "PROGRESS_UPDATE" /* Trace.TraceModel.ModelUpdateType.PROGRESS_UPDATE */) {
-                const data = updateEvent.data.data;
-                this.statusDialog?.updateProgressBar(str, data.percent * 100 * traceParseMaxProgress);
-            }
-        });
     }
     #onSourceMapsNodeNamesResolved() {
         // Source maps can change the way calls hierarchies should look in
@@ -2412,26 +2385,13 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             buttonText: undefined,
         }, () => this.stopRecording());
         this.statusDialog.showPane(this.statusPaneContainer);
-        this.statusDialog.updateStatus(i18nString(UIStrings.initializingTracing));
+        this.statusDialog.updateStatus(i18nString(UIStrings.tracing));
         this.statusDialog.updateProgressBar(i18nString(UIStrings.bufferUsage), 0);
     }
     cancelLoading() {
         if (this.loader) {
             void this.loader.cancel();
         }
-    }
-    async loadEventFired(event) {
-        if (this.state !== "Recording" /* State.RECORDING */ || !this.recordingPageReload ||
-            this.controller?.primaryPageTarget !== event.data.resourceTreeModel.target()) {
-            return;
-        }
-        const controller = this.controller;
-        await new Promise(r => window.setTimeout(r, this.millisecondsToRecordAfterLoadEvent));
-        // Check if we're still in the same recording session.
-        if (controller !== this.controller || this.state !== "Recording" /* State.RECORDING */) {
-            return;
-        }
-        void this.stopRecording();
     }
     frameForSelection(selection) {
         if (this.#viewMode.mode !== 'VIEWING_TRACE') {
@@ -2583,7 +2543,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
      * 3. Flash the Insight with the highlight colour we use in other panels.
      */
     revealInsight(insightModel) {
-        const insightSetKey = insightModel.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
+        const insightSetKey = insightModel.navigation?.args.data?.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
         this.#setActiveInsight({ model: insightModel, insightSetKey }, { highlightInsight: true });
     }
     static async *handleExternalRecordRequest() {

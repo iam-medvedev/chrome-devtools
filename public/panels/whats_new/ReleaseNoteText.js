@@ -16,23 +16,29 @@ export function getReleaseNote() {
     return releaseNote;
 }
 let releaseNote = {
-    version: 143,
-    header: 'What\'s new in DevTools 143',
+    version: 144,
+    header: 'What\'s new in DevTools 144',
     markdownLinks: [
         {
+            key: 'request-conditions',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-144/#request-conditions',
+        },
+        {
             key: 'mcp-server',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-143/#mcp-server',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-144/#mcp-server',
         },
         {
-            key: 'trace-sharing',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-143/#trace-sharing',
-        },
-        {
-            key: 'starting-style',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-143/#starting-style',
+            key: 'adopted-stylesheets',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-144/#adopted-stylesheets',
         },
     ],
-    videoLinks: [],
-    link: 'https://developer.chrome.com/blog/new-in-devtools-143/',
+    videoLinks: [
+        {
+            description: 'See past highlights from Chrome 144',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-144',
+            type: "WhatsNew" /* VideoType.WHATS_NEW */,
+        },
+    ],
+    link: 'https://developer.chrome.com/blog/new-in-devtools-144/',
 };
 //# sourceMappingURL=ReleaseNoteText.js.map

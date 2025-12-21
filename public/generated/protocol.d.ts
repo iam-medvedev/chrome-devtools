@@ -2055,7 +2055,9 @@ export declare namespace Browser {
         IdleDetection = "idleDetection",
         KeyboardLock = "keyboardLock",
         LocalFonts = "localFonts",
+        LocalNetwork = "localNetwork",
         LocalNetworkAccess = "localNetworkAccess",
+        LoopbackNetwork = "loopbackNetwork",
         Midi = "midi",
         MidiSysex = "midiSysex",
         Nfc = "nfc",
@@ -9229,6 +9231,16 @@ export declare namespace Network {
         VeryHigh = "VeryHigh"
     }
     /**
+     * The render blocking behavior of a resource request.
+     */
+    const enum RenderBlockingBehavior {
+        Blocking = "Blocking",
+        InBodyParserBlocking = "InBodyParserBlocking",
+        NonBlocking = "NonBlocking",
+        NonBlockingDynamic = "NonBlockingDynamic",
+        PotentiallyBlocking = "PotentiallyBlocking"
+    }
+    /**
      * Post data entry for HTTP request
      */
     interface PostDataEntry {
@@ -10721,9 +10733,21 @@ export declare namespace Network {
         /**
          * Enable storing response bodies outside of renderer, so that these survive
          * a cross-process navigation. Requires maxTotalBufferSize to be set.
-         * Currently defaults to false.
+         * Currently defaults to false. This field is being deprecated in favor of the dedicated
+         * configureDurableMessages command, due to the possibility of deadlocks when awaiting
+         * Network.enable before issuing Runtime.runIfWaitingForDebugger.
          */
         enableDurableMessages?: boolean;
+    }
+    interface ConfigureDurableMessagesRequest {
+        /**
+         * Buffer size in bytes to use when preserving network payloads (XHRs, etc).
+         */
+        maxTotalBufferSize?: integer;
+        /**
+         * Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
+         */
+        maxResourceBufferSize?: integer;
     }
     interface GetAllCookiesResponse extends ProtocolResponseWithError {
         /**
@@ -11252,6 +11276,10 @@ export declare namespace Network {
          * Whether the request is initiated by a user gesture. Defaults to false.
          */
         hasUserGesture?: boolean;
+        /**
+         * The render blocking behavior of the request.
+         */
+        renderBlockingBehavior?: RenderBlockingBehavior;
     }
     /**
      * Fired when resource loading priority is changed
@@ -12733,7 +12761,9 @@ export declare namespace Page {
         LanguageDetector = "language-detector",
         LanguageModel = "language-model",
         LocalFonts = "local-fonts",
+        LocalNetwork = "local-network",
         LocalNetworkAccess = "local-network-access",
+        LoopbackNetwork = "loopback-network",
         Magnetometer = "magnetometer",
         ManualText = "manual-text",
         MediaPlaybackWhileNotVisible = "media-playback-while-not-visible",
@@ -17027,6 +17057,10 @@ export declare namespace Target {
          * An array of browser context ids.
          */
         browserContextIds: Browser.BrowserContextID[];
+        /**
+         * The id of the default browser context if available.
+         */
+        defaultBrowserContextId?: Browser.BrowserContextID;
     }
     interface CreateTargetRequest {
         /**
@@ -17415,6 +17449,12 @@ export declare namespace Tracing {
          * A list of supported tracing categories.
          */
         categories: string[];
+    }
+    interface GetTrackEventDescriptorResponse extends ProtocolResponseWithError {
+        /**
+         * Base64-encoded serialized perfetto.protos.TrackEventDescriptor protobuf message.
+         */
+        descriptor: binary;
     }
     interface RecordClockSyncMarkerRequest {
         /**
