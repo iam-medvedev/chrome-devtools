@@ -4546,6 +4546,7 @@ function renderSettings({ settings, replaySettingsExpanded, onSelectMenuLabelCli
           class=${Lit10.Directives.classMap(replaySettingsButtonClassMap)}
           @keydown=${isEditable && onReplaySettingsKeydown}
           @click=${isEditable && onToggleReplaySettings}
+          aria-expanded=${replaySettingsButtonClassMap.expanded ?? false}
           tabindex="0"
           role="button"
           jslog=${VisualLogging8.action("replay-settings").track({ click: true })}
