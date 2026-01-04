@@ -123,6 +123,26 @@ describeWithEnvironment('ChatInput', () => {
             view.input.onSubmit(submitEvent);
             assert.isUndefined(view.input.imageInput);
         });
+        it('handles image paste from clipboard', async () => {
+            const [view, component] = createComponent();
+            component.conversationType = "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */;
+            const file = new File(['test'], 'pasted_image.png', { type: 'image/png' });
+            const fileReaderStub = sinon.stub(window, 'FileReader');
+            fileReaderStub.returns(new MockFileReader());
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            const clipboardEvent = new ClipboardEvent('paste', {
+                clipboardData: dataTransfer,
+            });
+            view.input.onImagePaste(clipboardEvent);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            assert.deepEqual(view.input.imageInput, {
+                isLoading: false,
+                data: btoa('test'),
+                mimeType: 'image/png',
+                inputType: "uploaded-image" /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
+            });
+        });
         it('should clear image input on primary page change', async () => {
             const target = createTarget();
             const [view] = createComponent();
@@ -173,6 +193,7 @@ describeWithEnvironment('ChatInput', () => {
                 onTakeScreenshot: () => { },
                 onRemoveImageInput: () => { },
                 onImageUpload: () => { },
+                onImagePaste: () => { },
             }, undefined, target);
             await assertScreenshot('ai_assistance/chat_input_multimodal_enabled.png');
         });
@@ -204,6 +225,7 @@ describeWithEnvironment('ChatInput', () => {
                 onTakeScreenshot: () => { },
                 onRemoveImageInput: () => { },
                 onImageUpload: () => { },
+                onImagePaste: () => { },
             }, undefined, target);
             await assertScreenshot('ai_assistance/chat_input_multimodal_disabled.png');
         });

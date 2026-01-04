@@ -116,6 +116,86 @@ describe('CSSMatchedStyles', () => {
             testComputedVariableValueEquals('--bar', styleFoo3, 'bar0', matchedStyles.registeredProperties()[0]);
             testComputedVariableValueEquals('--foo', styleBaz, 'foo3', styleFoo3.leadingProperties()[0]);
         });
+        it('correctly resolves highlight properties', async () => {
+            const highlightNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            const parent = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            const parentHighlight = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.id = 1;
+            node.parentNode = parent;
+            parent.id = 2;
+            highlightNode.id = 3;
+            highlightNode.parentNode = node;
+            parentHighlight.id = 4;
+            parentHighlight.parentNode = parent;
+            node.pseudoElements.returns(new Map([["highlight" /* Protocol.DOM.PseudoType.Highlight */, [highlightNode]]]));
+            parent.pseudoElements.returns(new Map([["highlight" /* Protocol.DOM.PseudoType.Highlight */, [parentHighlight]]]));
+            const matchedStyles = await getMatchedStyles({
+                node,
+                matchedPayload: [ruleMatch('div.b', [{ name: '--color', value: 'green' }])],
+                inheritedPayload: [
+                    {
+                        matchedCSSRules: [ruleMatch('div.a', [{ name: '--color', value: 'yellow' }])],
+                    },
+                ],
+                pseudoPayload: [
+                    {
+                        pseudoType: "highlight" /* Protocol.DOM.PseudoType.Highlight */,
+                        pseudoIdentifier: 'highlight-foo',
+                        matches: [ruleMatch('.b::highlight(highlight-foo)', [{ name: '--text-color', value: 'var(--color)' }])],
+                    },
+                ],
+                inheritedPseudoPayload: [{
+                        pseudoElements: [{
+                                pseudoType: "highlight" /* Protocol.DOM.PseudoType.Highlight */,
+                                pseudoIdentifier: 'highlight-foo',
+                                matches: [ruleMatch('.a::highlight(highlight-foo)', [{ name: '--color', value: 'blue' },])],
+                            }]
+                    }]
+            });
+            // Compute the variable value as it is visible to `startingCascade` and compare with the expectation
+            const testComputedVariableValueEquals = (name, startingCascade, expectedValue) => {
+                const { value } = matchedStyles.computeCSSVariable(startingCascade, name);
+                assert.strictEqual(value, expectedValue);
+            };
+            const styles = matchedStyles.customHighlightPseudoStyles('highlight-foo');
+            assert.lengthOf(styles, 2);
+            const highlightStyle = styles[0];
+            testComputedVariableValueEquals('--text-color', highlightStyle, 'green');
+        });
+        it('correctly resolves variables in pseudo elements', async () => {
+            const afterNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.id = 1;
+            afterNode.id = 2;
+            afterNode.parentNode = node;
+            node.pseudoElements.returns(new Map([["after" /* Protocol.DOM.PseudoType.After */, [afterNode]]]));
+            const matchedStyles = await getMatchedStyles({
+                node,
+                matchedPayload: [ruleMatch('div.b', [{ name: '--color', value: 'green' }, { name: '--bg-color', value: 'red' }])],
+                pseudoPayload: [
+                    {
+                        pseudoType: "after" /* Protocol.DOM.PseudoType.After */,
+                        matches: [ruleMatch('.b::after', [
+                                { name: '--color', value: 'blue' },
+                                { name: '--color2', value: 'var(--color)' },
+                                { name: '--color3', value: 'var(--bg-color)' },
+                            ])],
+                    },
+                ],
+            });
+            // Compute the variable value as it is visible to `startingCascade` and compare with the expectation
+            const testComputedVariableValueEquals = (name, startingCascade, expectedValue) => {
+                const { value } = matchedStyles.computeCSSVariable(startingCascade, name);
+                assert.strictEqual(value, expectedValue);
+            };
+            const styles = matchedStyles.pseudoStyles("after" /* Protocol.DOM.PseudoType.After */);
+            assert.lengthOf(styles, 1);
+            const pseudoStyle = styles[0];
+            testComputedVariableValueEquals('--color', pseudoStyle, 'blue');
+            testComputedVariableValueEquals('--color2', pseudoStyle, 'blue');
+            testComputedVariableValueEquals('--color3', pseudoStyle, 'red');
+        });
         describe('cyclic references', () => {
             it('should return `null` when the variable references itself', async () => {
                 await testCssValueEquals('--itself', null);
