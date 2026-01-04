@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
+import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -13,7 +14,8 @@ describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
             citationsTooltipId: 'citations-tooltip',
             disclaimerTooltipId: 'disclaimer-tooltip',
             spinnerTooltipId: 'spinner-tooltip',
-            hasTopBorder: false
+            hasTopBorder: false,
+            panel: "sources" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.SOURCES */,
         }, view);
         widget.markAsRoot();
         renderElementIntoDOM(widget);

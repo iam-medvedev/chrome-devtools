@@ -11,10 +11,74 @@ export default `/*
 
 @scope to (devtools-widget > *) {
     .ai-code-generation-teaser {
+        pointer-events: all;
+        font-style: italic;
+        padding-left: var(--sys-size-3);
+        line-height: var(--sys-size-7);
+
+        .ai-code-generation-teaser-trigger {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .ai-code-generation-teaser-generated {
+            display: inline-flex;
+            gap: var(--sys-size-2);
+            color: var(--sys-color-primary);
+
+            span {
+                border: var(--sys-size-1) solid var(--sys-color-primary);
+                border-radius: var(--sys-shape-corner-extra-small);
+                padding: 0 var(--sys-size-3);
+            }
+        }
+
         .new-badge {
             font-style: normal;
             display: inline-block;
         }
+
+        devtools-tooltip:popover-open {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            .disclaimer-tooltip-container {
+                padding: var(--sys-size-4) 0;
+                max-width: var(--sys-size-30);
+                white-space: normal;
+
+                .tooltip-text {
+                    color: var(--sys-color-on-surface-subtle);
+                    padding: 0 var(--sys-size-5);
+                    align-items: flex-start;
+                    gap: 10px;
+                }
+
+                .link {
+                    margin: var(--sys-size-5) var(--sys-size-8) 0 var(--sys-size-5);
+                    display: inline-block;
+                }
+            }
+        }
+
+        .ai-code-generation-spinner::before {
+            content: "⠋";
+            animation: teaser-spinner-animation 1s linear infinite;
+        }
+    }
+
+    @keyframes teaser-spinner-animation {
+        0% { content: "⠋"; }
+        10% { content: "⠙"; }
+        20% { content: "⠹"; }
+        30% { content: "⠸"; }
+        40% { content: "⠼"; }
+        50% { content: "⠴"; }
+        60% { content: "⠦"; }
+        70% { content: "⠧"; }
+        80% { content: "⠇"; }
+        90% { content: "⠏"; }
     }
 }
 

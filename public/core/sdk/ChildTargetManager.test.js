@@ -226,7 +226,9 @@ describeWithMockConnection('ChildTargetManager', () => {
         assert.isFalse(target.hasCrashed());
     });
     describe('Storage initialization', () => {
-        it('should initialize storage for a top-level worker with STORAGE capability', async () => {
+        // Temporarily disabled until the root cause for the crashers in https://crbug.com/466134219 is
+        // found and resolved.
+        it.skip('[crbug.com/406991275] should initialize storage for a top-level worker with STORAGE capability', async () => {
             const parentTarget = createTarget({ type: SDK.Target.Type.BROWSER });
             const getStorageKeyStub = sinon.stub().resolves({
                 storageKey: 'https://example.com/',

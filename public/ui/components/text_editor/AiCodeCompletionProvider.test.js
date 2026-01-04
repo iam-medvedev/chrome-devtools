@@ -77,8 +77,8 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
                 effects: AiCodeCompletionProvider.setAiCodeCompletionTeaserMode.of(AiCodeCompletionProvider.AiCodeCompletionTeaserMode.ON),
             });
             editor.dispatch({ changes: { from: 5, insert: 'W' }, selection: { anchor: 6 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
-                AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
+                AiCodeCompletionProvider.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
             provider.dispose();
         });
@@ -88,12 +88,12 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
                 effects: AiCodeCompletionProvider.setAiCodeCompletionTeaserMode.of(AiCodeCompletionProvider.AiCodeCompletionTeaserMode.ON),
             });
             editor.dispatch({ changes: { from: 5, insert: 'W' }, selection: { anchor: 6 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
-                AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
+                AiCodeCompletionProvider.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
             editor.dispatch({ changes: { from: 0, insert: '!' }, selection: { anchor: 1 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
-                AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
+                AiCodeCompletionProvider.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             assert.isNull(editor.editor.dom.querySelector('.cm-placeholder'));
             provider.dispose();
         });
@@ -103,8 +103,8 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
                 effects: AiCodeCompletionProvider.setAiCodeCompletionTeaserMode.of(AiCodeCompletionProvider.AiCodeCompletionTeaserMode.ON),
             });
             editor.dispatch({ changes: { from: 5, insert: 'W' }, selection: { anchor: 6 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
-                AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
+                AiCodeCompletionProvider.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
             editor.dispatch({ selection: { anchor: 2, head: 4 } });
             assert.isNull(editor.editor.dom.querySelector('.cm-placeholder'));
@@ -154,7 +154,7 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             const completeCodeStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'completeCode');
             await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
             editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
             sinon.assert.called(completeCodeStub);
             assert.deepEqual(completeCodeStub.firstCall.args, ['Hello', '', 5, undefined, undefined]);
             provider.dispose();
@@ -166,13 +166,13 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             const { editor, provider } = createEditorWithProvider('');
             await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
             editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
             sinon.assert.notCalled(completeCodeStub);
             checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             await Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
             await clock.tickAsync(0);
             editor.dispatch({ changes: { from: 5, insert: 'Bye' }, selection: { anchor: 8 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
             sinon.assert.calledOnce(completeCodeStub);
             assert.deepEqual(completeCodeStub.firstCall.args, ['HelloBye', '', 8, undefined, undefined]);
             provider.dispose();
@@ -184,13 +184,13 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             const { editor, provider } = createEditorWithProvider('');
             await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
             editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
             sinon.assert.calledOnce(completeCodeStub);
             checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
             await Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
             await clock.tickAsync(0);
             editor.dispatch({ changes: { from: 5, insert: 'Bye' }, selection: { anchor: 8 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
             sinon.assert.calledOnce(completeCodeStub);
             assert.deepEqual(completeCodeStub.firstCall.args, ['Hello', '', 5, undefined, undefined]);
             provider.dispose();
@@ -204,7 +204,7 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             editor.dispatch({ changes: { from: 0, insert: 'p' }, selection: { anchor: 1 } });
             editor.dispatch({ changes: { from: 1, insert: 'r' }, selection: { anchor: 2 } });
             editor.dispatch({ changes: { from: 2, insert: 'e' }, selection: { anchor: 3 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
             sinon.assert.calledOnce(completeCodeStub);
             assert.deepEqual(completeCodeStub.firstCall.args, ['pre', '', 3, undefined, undefined]);
             provider.dispose();
@@ -231,10 +231,10 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             const { editor, provider } = createEditorWithProvider('');
             await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
             editor.dispatch({ changes: { from: 0, insert: 'prefix' }, selection: { anchor: 6 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
             sinon.assert.calledOnce(completeCodeStub);
             const dispatchSpy = sinon.spy(editor, 'dispatch');
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             const suggestion = editor.editor.state.field(Config.aiAutoCompleteSuggestionState);
             assert.strictEqual(suggestion?.text, 'suggestion');
             assert.strictEqual(suggestion?.from, 6);
@@ -259,10 +259,10 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             const { editor, provider } = createEditorWithProvider('');
             await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
             editor.dispatch({ changes: { from: 0, insert: 'console.log("");\n' }, selection: { anchor: 13 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
             sinon.assert.calledOnce(completeCodeStub);
             const dispatchSpy = sinon.spy(editor, 'dispatch');
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             const suggestion = editor.editor.state.field(Config.aiAutoCompleteSuggestionState);
             assert.strictEqual(suggestion?.text, 'Hello World');
             assert.strictEqual(suggestion?.from, 13);
@@ -291,10 +291,10 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             const { editor, provider } = createEditorWithProvider('');
             await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
             editor.dispatch({ changes: { from: 0, insert: 'prefix' }, selection: { anchor: 6 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
             sinon.assert.calledOnce(completeCodeStub);
             const dispatchSpy = sinon.spy(editor, 'dispatch');
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             sinon.assert.notCalled(dispatchSpy);
             provider.dispose();
         });
@@ -314,10 +314,10 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             const { editor, provider } = createEditorWithProvider('');
             await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
             editor.dispatch({ changes: { from: 0, insert: 'prefix suggestion' }, selection: { anchor: 17 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
             sinon.assert.calledOnce(completeCodeStub);
             const dispatchSpy = sinon.spy(editor, 'dispatch');
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             sinon.assert.notCalled(dispatchSpy);
             provider.dispose();
         });
@@ -337,13 +337,13 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
             const { editor, provider } = createEditorWithProvider('');
             await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
             editor.dispatch({ changes: { from: 0, insert: 'prefix' }, selection: { anchor: 6 } });
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
             sinon.assert.calledOnce(completeCodeStub);
             editor.editor.dispatch({
                 selection: CodeMirror.EditorSelection.cursor(1),
             });
             const dispatchSpy = sinon.spy(editor, 'dispatch');
-            await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+            await clock.tickAsync(AiCodeCompletionProvider.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             sinon.assert.notCalled(dispatchSpy);
             provider.dispose();
         });

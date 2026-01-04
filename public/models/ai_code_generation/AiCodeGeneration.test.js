@@ -27,7 +27,7 @@ describeWithEnvironment('AiCodeGeneration', () => {
         assert.strictEqual(request.preamble, 'preamble');
         assert.deepEqual(request.current_message, {
             parts: [{
-                    text: 'prompt',
+                    text: 'preambleprompt\n**Target Language:** JAVASCRIPT',
                 }],
             role: Host.AidaClient.Role.USER,
         });
@@ -35,8 +35,6 @@ describeWithEnvironment('AiCodeGeneration', () => {
         assert.deepEqual(request.options, {
             temperature: 0.5,
             model_id: 'test-model',
-            inference_language: "JAVASCRIPT" /* Host.AidaClient.AidaInferenceLanguage.JAVASCRIPT */,
-            expect_code_output: true,
         });
         assert.isTrue(request.metadata.disable_user_content_logging);
         assert.strictEqual(request.metadata.user_tier, Host.AidaClient.UserTier.BETA);
