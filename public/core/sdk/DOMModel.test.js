@@ -322,5 +322,133 @@ describeWithMockConnection('DOMModel', () => {
             });
         });
     });
+    describe('document.open() URL update (crbug.com/370690261)', () => {
+        it('updates iframe contentDocument URL and dispatches DocumentURLChanged event', async () => {
+            const target = createTarget();
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            const DOCUMENT_NODE_ID = 1;
+            const IFRAME_NODE_ID = 2;
+            const CONTENT_DOCUMENT_NODE_ID = 3;
+            const IFRAME_FRAME_ID = 'iframe-frame-id';
+            domModel.setDocumentForTest({
+                nodeId: DOCUMENT_NODE_ID,
+                backendNodeId: 1,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                localName: '',
+                nodeValue: '',
+                documentURL: 'https://example.com/',
+                baseURL: 'https://example.com/',
+                childNodeCount: 1,
+                children: [
+                    {
+                        nodeId: IFRAME_NODE_ID,
+                        backendNodeId: 2,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'IFRAME',
+                        localName: 'iframe',
+                        nodeValue: '',
+                        frameId: IFRAME_FRAME_ID,
+                        contentDocument: {
+                            nodeId: CONTENT_DOCUMENT_NODE_ID,
+                            backendNodeId: 3,
+                            nodeType: Node.DOCUMENT_NODE,
+                            nodeName: '#document',
+                            localName: '',
+                            nodeValue: '',
+                            documentURL: 'about:blank',
+                            baseURL: 'about:blank',
+                            childNodeCount: 0,
+                            children: [],
+                        },
+                    },
+                ],
+            });
+            const iframeNode = domModel.nodeForId(IFRAME_NODE_ID);
+            assert.exists(iframeNode);
+            const contentDocument = iframeNode.contentDocument();
+            assert.exists(contentDocument);
+            assert.strictEqual(contentDocument.documentURL, 'about:blank');
+            const documentURLChangedPromise = domModel.once(SDK.DOMModel.Events.DocumentURLChanged);
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            resourceTreeModel.documentOpened({
+                id: IFRAME_FRAME_ID,
+                loaderId: 'loader-1',
+                url: 'https://example.com/',
+                domainAndRegistry: 'example.com',
+                securityOrigin: 'https://example.com',
+                mimeType: 'text/html',
+                secureContextType: "Secure" /* ProtocolModule.Page.SecureContextType.Secure */,
+                crossOriginIsolatedContextType: "Isolated" /* ProtocolModule.Page.CrossOriginIsolatedContextType.Isolated */,
+                gatedAPIFeatures: [],
+            });
+            const changedDocument = await documentURLChangedPromise;
+            assert.strictEqual(changedDocument, contentDocument);
+            assert.strictEqual(contentDocument.documentURL, 'https://example.com/');
+        });
+        it('does not dispatch event when URL has not changed', async () => {
+            const target = createTarget();
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            const DOCUMENT_NODE_ID = 1;
+            const IFRAME_NODE_ID = 2;
+            const CONTENT_DOCUMENT_NODE_ID = 3;
+            const IFRAME_FRAME_ID = 'iframe-frame-id';
+            domModel.setDocumentForTest({
+                nodeId: DOCUMENT_NODE_ID,
+                backendNodeId: 1,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                localName: '',
+                nodeValue: '',
+                documentURL: 'https://example.com/',
+                baseURL: 'https://example.com/',
+                childNodeCount: 1,
+                children: [
+                    {
+                        nodeId: IFRAME_NODE_ID,
+                        backendNodeId: 2,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'IFRAME',
+                        localName: 'iframe',
+                        nodeValue: '',
+                        frameId: IFRAME_FRAME_ID,
+                        contentDocument: {
+                            nodeId: CONTENT_DOCUMENT_NODE_ID,
+                            backendNodeId: 3,
+                            nodeType: Node.DOCUMENT_NODE,
+                            nodeName: '#document',
+                            localName: '',
+                            nodeValue: '',
+                            documentURL: 'https://example.com/',
+                            baseURL: 'https://example.com/',
+                            childNodeCount: 0,
+                            children: [],
+                        },
+                    },
+                ],
+            });
+            let eventDispatched = false;
+            domModel.addEventListener(SDK.DOMModel.Events.DocumentURLChanged, () => {
+                eventDispatched = true;
+            });
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            resourceTreeModel.documentOpened({
+                id: IFRAME_FRAME_ID,
+                loaderId: 'loader-1',
+                url: 'https://example.com/',
+                domainAndRegistry: 'example.com',
+                securityOrigin: 'https://example.com',
+                mimeType: 'text/html',
+                secureContextType: "Secure" /* ProtocolModule.Page.SecureContextType.Secure */,
+                crossOriginIsolatedContextType: "Isolated" /* ProtocolModule.Page.CrossOriginIsolatedContextType.Isolated */,
+                gatedAPIFeatures: [],
+            });
+            assert.isFalse(eventDispatched);
+        });
+    });
 });
 //# sourceMappingURL=DOMModel.test.js.map

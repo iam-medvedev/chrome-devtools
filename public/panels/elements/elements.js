@@ -1416,9 +1416,9 @@ __export(LayersWidget_exports, {
 });
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as Lit2 from "./../../third_party/lit/lit.js";
 import * as TreeOutline2 from "./../../ui/components/tree_outline/tree_outline.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
+import * as Lit2 from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/layersWidget.css.js
@@ -2312,8 +2312,8 @@ var CSSValueTraceView_exports = {};
 __export(CSSValueTraceView_exports, {
   CSSValueTraceView: () => CSSValueTraceView
 });
-import * as Lit3 from "./../../third_party/lit/lit.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as Lit3 from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/cssValueTraceView.css.js
 var cssValueTraceView_css_default = `/*
@@ -14220,6 +14220,9 @@ var DEFAULT_VIEW5 = (input, output, target) => {
       output.alreadyExpandedParentTreeElement = deepestExpandedParent ? treeElementByNode.get(deepestExpandedParent) : output.elementsTreeOutline.rootElement();
       treeElement = output.elementsTreeOutline.createTreeElementFor(input.currentHighlightedNode);
     }
+    if (input.selectedNode) {
+      output.elementsTreeOutline.selectDOMNode(input.selectedNode);
+    }
     output.highlightedTreeElement = treeElement;
     output.elementsTreeOutline.setHoverEffect(treeElement);
     treeElement?.reveal(true);
@@ -14337,6 +14340,7 @@ var DOMTreeWidget = class extends UI19.Widget.Widget {
       preventTabOrder: this.preventTabOrder,
       deindentSingleNode: this.deindentSingleNode,
       currentHighlightedNode: this.#currentHighlightedNode,
+      selectedNode: this.selectedDOMNode(),
       onElementsTreeUpdated: this.onElementsTreeUpdated.bind(this),
       onSelectedNodeChanged: (event) => {
         this.#clearHighlightedNode();
@@ -15311,6 +15315,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common11.ObjectWrap
     domModel.addEventListener(SDK16.DOMModel.Events.AttrRemoved, this.attributeRemoved, this);
     domModel.addEventListener(SDK16.DOMModel.Events.CharacterDataModified, this.characterDataModified, this);
     domModel.addEventListener(SDK16.DOMModel.Events.DocumentUpdated, this.documentUpdated, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.DocumentURLChanged, this.documentURLChanged, this);
     domModel.addEventListener(SDK16.DOMModel.Events.ChildNodeCountUpdated, this.childNodeCountUpdated, this);
     domModel.addEventListener(SDK16.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
     domModel.addEventListener(SDK16.DOMModel.Events.AffectedByStartingStylesFlagUpdated, this.affectedByStartingStylesFlagUpdated, this);
@@ -15324,6 +15329,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common11.ObjectWrap
     domModel.removeEventListener(SDK16.DOMModel.Events.AttrRemoved, this.attributeRemoved, this);
     domModel.removeEventListener(SDK16.DOMModel.Events.CharacterDataModified, this.characterDataModified, this);
     domModel.removeEventListener(SDK16.DOMModel.Events.DocumentUpdated, this.documentUpdated, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.DocumentURLChanged, this.documentURLChanged, this);
     domModel.removeEventListener(SDK16.DOMModel.Events.ChildNodeCountUpdated, this.childNodeCountUpdated, this);
     domModel.removeEventListener(SDK16.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
     domModel.removeEventListener(SDK16.DOMModel.Events.AffectedByStartingStylesFlagUpdated, this.affectedByStartingStylesFlagUpdated, this);
@@ -15368,6 +15374,10 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common11.ObjectWrap
     if (node.parentNode && node.parentNode.firstChild === node.parentNode.lastChild) {
       this.addUpdateRecord(node.parentNode).childrenModified();
     }
+    this.updateModifiedNodesSoon();
+  }
+  documentURLChanged(event) {
+    this.addUpdateRecord(event.data).charDataModified();
     this.updateModifiedNodesSoon();
   }
   nodeInserted(event) {
@@ -16781,7 +16791,9 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
       }
       previousBox = boxElement;
     }
-    metricsElement.appendChild(previousBox);
+    if (previousBox) {
+      metricsElement.appendChild(previousBox);
+    }
     metricsElement.addEventListener("mouseover", this.highlightDOMNode.bind(this, false, "all"), false);
     metricsElement.addEventListener("mouseleave", this.highlightDOMNode.bind(this, false, "all"), false);
     this.contentElement.removeChildren();

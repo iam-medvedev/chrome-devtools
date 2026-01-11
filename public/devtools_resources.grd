@@ -219,6 +219,7 @@
       <include file="Images/lighthouse_logo.svg" name="IMAGES_LIGHTHOUSE_LOGO_SVG" resource_path="Images/lighthouse_logo.svg" type="BINDATA" compress="false"/>
       <include file="Images/list.svg" name="IMAGES_LIST_SVG" resource_path="Images/list.svg" type="BINDATA" compress="false"/>
       <include file="Images/location-on.svg" name="IMAGES_LOCATION_ON_SVG" resource_path="Images/location-on.svg" type="BINDATA" compress="false"/>
+      <include file="Images/lock-person.svg" name="IMAGES_LOCK_PERSON_SVG" resource_path="Images/lock-person.svg" type="BINDATA" compress="false"/>
       <include file="Images/lock.svg" name="IMAGES_LOCK_SVG" resource_path="Images/lock.svg" type="BINDATA" compress="false"/>
       <include file="Images/mark-email-unread.svg" name="IMAGES_MARK_EMAIL_UNREAD_SVG" resource_path="Images/mark-email-unread.svg" type="BINDATA" compress="false"/>
       <include file="Images/match-case.svg" name="IMAGES_MATCH_CASE_SVG" resource_path="Images/match-case.svg" type="BINDATA" compress="false"/>
@@ -432,7 +433,6 @@
       <include file="models/issues_manager/descriptions/SameSiteExcludeContextDowngradeRead.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEEXCLUDECONTEXTDOWNGRADEREAD_MD" resource_path="models/issues_manager/descriptions/SameSiteExcludeContextDowngradeRead.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteExcludeContextDowngradeSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEEXCLUDECONTEXTDOWNGRADESET_MD" resource_path="models/issues_manager/descriptions/SameSiteExcludeContextDowngradeSet.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteExcludeNavigationContextDowngrade.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEEXCLUDENAVIGATIONCONTEXTDOWNGRADE_MD" resource_path="models/issues_manager/descriptions/SameSiteExcludeNavigationContextDowngrade.md" type="BINDATA" compress="false"/>
-      <include file="models/issues_manager/descriptions/SameSiteInvalidSameParty.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITEINVALIDSAMEPARTY_MD" resource_path="models/issues_manager/descriptions/SameSiteInvalidSameParty.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteNoneInsecureErrorRead.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITENONEINSECUREERRORREAD_MD" resource_path="models/issues_manager/descriptions/SameSiteNoneInsecureErrorRead.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteNoneInsecureErrorSet.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITENONEINSECUREERRORSET_MD" resource_path="models/issues_manager/descriptions/SameSiteNoneInsecureErrorSet.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/SameSiteNoneInsecureWarnRead.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SAMESITENONEINSECUREWARNREAD_MD" resource_path="models/issues_manager/descriptions/SameSiteNoneInsecureWarnRead.md" type="BINDATA" compress="false"/>

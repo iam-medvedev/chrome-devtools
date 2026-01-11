@@ -45,6 +45,7 @@
   },
   "files": [
     "../../../../../../../front_end/models/trace/extras/FilmStrip.test.ts",
+    "../../../../../../../front_end/models/trace/extras/Initiators.test.ts",
     "../../../../../../../front_end/models/trace/extras/MainThreadActivity.test.ts",
     "../../../../../../../front_end/models/trace/extras/ScriptDuplication.test.ts",
     "../../../../../../../front_end/models/trace/extras/StackTraceForEvent.test.ts",

@@ -567,7 +567,6 @@ var generatedProperties = [
       "grid-column-end",
       "grid-column-start",
       "grid-lanes-direction",
-      "grid-lanes-fill",
       "grid-row-end",
       "grid-row-start",
       "grid-template-areas",
@@ -682,6 +681,7 @@ var generatedProperties = [
       "padding-right",
       "padding-top",
       "page",
+      "page-margin-safety",
       "page-orientation",
       "paint-order",
       "pathname",
@@ -809,11 +809,11 @@ var generatedProperties = [
       "text-wrap-mode",
       "text-wrap-style",
       "timeline-scope",
-      "timeline-trigger-exit-range-end",
-      "timeline-trigger-exit-range-start",
+      "timeline-trigger-active-range-end",
+      "timeline-trigger-active-range-start",
+      "timeline-trigger-entry-range-end",
+      "timeline-trigger-entry-range-start",
       "timeline-trigger-name",
-      "timeline-trigger-range-end",
-      "timeline-trigger-range-start",
       "timeline-trigger-source",
       "top",
       "touch-action",
@@ -1799,6 +1799,13 @@ var generatedProperties = [
     "name": "column-rule-color"
   },
   {
+    "longhands": [
+      "column-rule-edge-inset-start",
+      "column-rule-edge-inset-end"
+    ],
+    "name": "column-rule-edge-inset"
+  },
+  {
     "inherited": false,
     "name": "column-rule-edge-inset-end"
   },
@@ -1814,6 +1821,13 @@ var generatedProperties = [
       "column-rule-interior-inset-end"
     ],
     "name": "column-rule-inset"
+  },
+  {
+    "longhands": [
+      "column-rule-interior-inset-start",
+      "column-rule-interior-inset-end"
+    ],
+    "name": "column-rule-interior-inset"
   },
   {
     "inherited": false,
@@ -2722,33 +2736,19 @@ var generatedProperties = [
     "longhands": [
       "grid-template-areas",
       "grid-template-columns",
-      "grid-lanes-direction",
-      "grid-lanes-fill"
+      "grid-lanes-direction"
     ],
     "name": "grid-lanes"
   },
   {
     "keywords": [
+      "normal",
       "row",
       "row-reverse",
       "column",
       "column-reverse"
     ],
     "name": "grid-lanes-direction"
-  },
-  {
-    "keywords": [
-      "normal",
-      "reverse"
-    ],
-    "name": "grid-lanes-fill"
-  },
-  {
-    "longhands": [
-      "grid-lanes-direction",
-      "grid-lanes-fill"
-    ],
-    "name": "grid-lanes-flow"
   },
   {
     "longhands": [
@@ -3592,6 +3592,14 @@ var generatedProperties = [
     "name": "page-break-inside"
   },
   {
+    "keywords": [
+      "none",
+      "clamp",
+      "add"
+    ],
+    "name": "page-margin-safety"
+  },
+  {
     "name": "page-orientation"
   },
   {
@@ -3828,6 +3836,13 @@ var generatedProperties = [
     "name": "row-rule-color"
   },
   {
+    "longhands": [
+      "row-rule-edge-inset-start",
+      "row-rule-edge-inset-end"
+    ],
+    "name": "row-rule-edge-inset"
+  },
+  {
     "inherited": false,
     "name": "row-rule-edge-inset-end"
   },
@@ -3843,6 +3858,13 @@ var generatedProperties = [
       "row-rule-interior-inset-end"
     ],
     "name": "row-rule-inset"
+  },
+  {
+    "longhands": [
+      "row-rule-interior-inset-start",
+      "row-rule-interior-inset-end"
+    ],
+    "name": "row-rule-interior-inset"
   },
   {
     "inherited": false,
@@ -3940,6 +3962,15 @@ var generatedProperties = [
     "longhands": [
       "row-rule-edge-inset-start",
       "row-rule-edge-inset-end",
+      "column-rule-edge-inset-start",
+      "column-rule-edge-inset-end"
+    ],
+    "name": "rule-edge-inset"
+  },
+  {
+    "longhands": [
+      "row-rule-edge-inset-start",
+      "row-rule-edge-inset-end",
       "row-rule-interior-inset-start",
       "row-rule-interior-inset-end",
       "column-rule-edge-inset-start",
@@ -3948,6 +3979,15 @@ var generatedProperties = [
       "column-rule-interior-inset-end"
     ],
     "name": "rule-inset"
+  },
+  {
+    "longhands": [
+      "row-rule-interior-inset-start",
+      "row-rule-interior-inset-end",
+      "column-rule-interior-inset-start",
+      "column-rule-interior-inset-end"
+    ],
+    "name": "rule-interior-inset"
   },
   {
     "longhands": [
@@ -4609,41 +4649,41 @@ var generatedProperties = [
     "longhands": [
       "timeline-trigger-name",
       "timeline-trigger-source",
-      "timeline-trigger-range-start",
-      "timeline-trigger-range-end",
-      "timeline-trigger-exit-range-start",
-      "timeline-trigger-exit-range-end"
+      "timeline-trigger-entry-range-start",
+      "timeline-trigger-entry-range-end",
+      "timeline-trigger-active-range-start",
+      "timeline-trigger-active-range-end"
     ],
     "name": "timeline-trigger"
   },
   {
     "longhands": [
-      "timeline-trigger-exit-range-start",
-      "timeline-trigger-exit-range-end"
+      "timeline-trigger-active-range-start",
+      "timeline-trigger-active-range-end"
     ],
-    "name": "timeline-trigger-exit-range"
+    "name": "timeline-trigger-active-range"
   },
   {
-    "name": "timeline-trigger-exit-range-end"
+    "name": "timeline-trigger-active-range-end"
   },
   {
-    "name": "timeline-trigger-exit-range-start"
-  },
-  {
-    "name": "timeline-trigger-name"
+    "name": "timeline-trigger-active-range-start"
   },
   {
     "longhands": [
-      "timeline-trigger-range-start",
-      "timeline-trigger-range-end"
+      "timeline-trigger-entry-range-start",
+      "timeline-trigger-entry-range-end"
     ],
-    "name": "timeline-trigger-range"
+    "name": "timeline-trigger-entry-range"
   },
   {
-    "name": "timeline-trigger-range-end"
+    "name": "timeline-trigger-entry-range-end"
   },
   {
-    "name": "timeline-trigger-range-start"
+    "name": "timeline-trigger-entry-range-start"
+  },
+  {
+    "name": "timeline-trigger-name"
   },
   {
     "keywords": [
@@ -6087,16 +6127,11 @@ var generatedPropertyValues = {
   },
   "grid-lanes-direction": {
     "values": [
+      "normal",
       "row",
       "row-reverse",
       "column",
       "column-reverse"
-    ]
-  },
-  "grid-lanes-fill": {
-    "values": [
-      "normal",
-      "reverse"
     ]
   },
   "grid-row-end": {
@@ -6517,6 +6552,13 @@ var generatedPropertyValues = {
   "page": {
     "values": [
       "auto"
+    ]
+  },
+  "page-margin-safety": {
+    "values": [
+      "none",
+      "clamp",
+      "add"
     ]
   },
   "paint-order": {
@@ -10554,6 +10596,9 @@ var NetworkManager = class _NetworkManager extends SDKModel {
   async enableReportingApi(enable = true) {
     return await this.#networkAgent.invoke_enableReportingApi({ enable });
   }
+  async enableDeviceBoundSessions(enable = true) {
+    return await this.#networkAgent.invoke_enableDeviceBoundSessions({ enable });
+  }
   async loadNetworkResource(frameId, url, options) {
     const result = await this.#networkAgent.invoke_loadNetworkResource({ frameId: frameId ?? void 0, url, options });
     if (result.getError()) {
@@ -10578,6 +10623,8 @@ var Events2;
   Events12["ReportingApiReportAdded"] = "ReportingApiReportAdded";
   Events12["ReportingApiReportUpdated"] = "ReportingApiReportUpdated";
   Events12["ReportingApiEndpointsChangedForOrigin"] = "ReportingApiEndpointsChangedForOrigin";
+  Events12["DeviceBoundSessionsAdded"] = "DeviceBoundSessionsAdded";
+  Events12["DeviceBoundSessionEventOccurred"] = "DeviceBoundSessionEventOccurred";
 })(Events2 || (Events2 = {}));
 var BlockingConditions = {
   key: "BLOCKING",
@@ -11433,6 +11480,12 @@ var NetworkDispatcher = class {
   }
   reportingApiEndpointsChangedForOrigin(data) {
     this.#manager.dispatchEventToListeners(Events2.ReportingApiEndpointsChangedForOrigin, data);
+  }
+  deviceBoundSessionsAdded(_params) {
+    this.#manager.dispatchEventToListeners(Events2.DeviceBoundSessionsAdded, _params.sessions);
+  }
+  deviceBoundSessionEventOccurred(_params) {
+    this.#manager.dispatchEventToListeners(Events2.DeviceBoundSessionEventOccurred, _params);
   }
   policyUpdated() {
   }
@@ -24704,6 +24757,7 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
     this.#isInShadowTree = isInShadowTree;
     this.id = payload.nodeId;
     this.#backendNodeId = payload.backendNodeId;
+    this.#frameOwnerFrameId = payload.frameId || null;
     this.#domModel.registerNode(this);
     this.#nodeType = payload.nodeType;
     this.#nodeName = payload.nodeName;
@@ -24712,7 +24766,6 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
     this.#pseudoType = payload.pseudoType;
     this.#pseudoIdentifier = payload.pseudoIdentifier;
     this.#shadowRootType = payload.shadowRootType;
-    this.#frameOwnerFrameId = payload.frameId || null;
     this.#xmlVersion = payload.xmlVersion;
     this.#isSVGNode = Boolean(payload.isSVG);
     this.#isScrollable = Boolean(payload.isScrollable);
@@ -25645,6 +25698,7 @@ var AdoptedStyleSheet = class {
 var DOMModel = class _DOMModel extends SDKModel {
   agent;
   idToDOMNode = /* @__PURE__ */ new Map();
+  frameIdToOwnerNode = /* @__PURE__ */ new Map();
   #document = null;
   #attributeLoadNodeIds = /* @__PURE__ */ new Set();
   runtimeModelInternal;
@@ -25655,11 +25709,14 @@ var DOMModel = class _DOMModel extends SDKModel {
   #searchId;
   #topLayerThrottler = new Common21.Throttler.Throttler(100);
   #topLayerNodes = [];
+  #resourceTreeModel = null;
   constructor(target) {
     super(target);
     this.agent = target.domAgent();
     target.registerDOMDispatcher(new DOMDispatcher(this));
     this.runtimeModelInternal = target.model(RuntimeModel);
+    this.#resourceTreeModel = target.model(ResourceTreeModel);
+    this.#resourceTreeModel?.addEventListener(Events3.DocumentOpened, this.onDocumentOpened, this);
     if (!target.suspended()) {
       void this.agent.invoke_enable({});
     }
@@ -25692,6 +25749,18 @@ var DOMModel = class _DOMModel extends SDKModel {
         return;
       }
       this.dispatchEventToListeners(Events8.DOMMutated, node2);
+    }
+  }
+  onDocumentOpened(event) {
+    const frame = event.data;
+    const node = this.frameIdToOwnerNode.get(frame.id);
+    if (node) {
+      const contentDocument = node.contentDocument();
+      if (contentDocument && contentDocument.documentURL !== frame.url) {
+        contentDocument.documentURL = frame.url;
+        contentDocument.baseURL = frame.url;
+        this.dispatchEventToListeners(Events8.DocumentURLChanged, contentDocument);
+      }
     }
   }
   requestDocument() {
@@ -25839,6 +25908,7 @@ var DOMModel = class _DOMModel extends SDKModel {
   }
   setDocument(payload) {
     this.idToDOMNode = /* @__PURE__ */ new Map();
+    this.frameIdToOwnerNode = /* @__PURE__ */ new Map();
     if (payload && "nodeId" in payload) {
       this.#document = new DOMDocument(this, payload);
     } else {
@@ -25998,6 +26068,10 @@ var DOMModel = class _DOMModel extends SDKModel {
   }
   unbind(node) {
     this.idToDOMNode.delete(node.id);
+    const frameId = node.frameOwnerFrameId();
+    if (frameId) {
+      this.frameIdToOwnerNode.delete(frameId);
+    }
     const children = node.children();
     for (let i = 0; children && i < children.length; ++i) {
       this.unbind(children[i]);
@@ -26150,6 +26224,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     await this.agent.invoke_enable({});
   }
   dispose() {
+    this.#resourceTreeModel?.removeEventListener(Events3.DocumentOpened, this.onDocumentOpened, this);
     DOMModelUndoStack.instance().dispose(this);
   }
   parentModel() {
@@ -26161,6 +26236,10 @@ var DOMModel = class _DOMModel extends SDKModel {
   }
   registerNode(node) {
     this.idToDOMNode.set(node.id, node);
+    const frameId = node.frameOwnerFrameId();
+    if (frameId) {
+      this.frameIdToOwnerNode.set(frameId, node);
+    }
   }
 };
 var Events8;
@@ -26169,6 +26248,7 @@ var Events8;
   Events12["AttrRemoved"] = "AttrRemoved";
   Events12["CharacterDataModified"] = "CharacterDataModified";
   Events12["DOMMutated"] = "DOMMutated";
+  Events12["DocumentURLChanged"] = "DocumentURLChanged";
   Events12["NodeInserted"] = "NodeInserted";
   Events12["NodeRemoved"] = "NodeRemoved";
   Events12["DocumentUpdated"] = "DocumentUpdated";
@@ -26752,10 +26832,13 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
   documentOpened(framePayload) {
     this.frameNavigated(framePayload, void 0);
     const frame = this.framesInternal.get(framePayload.id);
-    if (frame && !frame.getResourcesMap().get(framePayload.url)) {
-      const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common24.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
-      frameResource.isGenerated = true;
-      frame.addResource(frameResource);
+    if (frame) {
+      this.dispatchEventToListeners(Events3.DocumentOpened, frame);
+      if (!frame.getResourcesMap().get(framePayload.url)) {
+        const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common24.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
+        frameResource.isGenerated = true;
+        frame.addResource(frameResource);
+      }
     }
   }
   frameDetached(frameId, isSwap) {
@@ -27034,6 +27117,7 @@ var Events3;
   Events12["FrameDetached"] = "FrameDetached";
   Events12["FrameResized"] = "FrameResized";
   Events12["FrameWillNavigate"] = "FrameWillNavigate";
+  Events12["DocumentOpened"] = "DocumentOpened";
   Events12["PrimaryPageChanged"] = "PrimaryPageChanged";
   Events12["ResourceAdded"] = "ResourceAdded";
   Events12["WillLoadCachedResources"] = "WillLoadCachedResources";
@@ -28288,10 +28372,6 @@ var UIStrings9 = {
    */
   schemefulSameSiteUnspecifiedTreatedAsLax: 'This cookie didn\'t specify a "`SameSite`" attribute when it was stored, was defaulted to "`SameSite=Lax"`, and was blocked because the request was cross-site and was not initiated by a top-level navigation. This request is considered cross-site because the URL has a different scheme than the current site.',
   /**
-   * @description Tooltip to explain why a cookie was blocked due to SameParty
-   */
-  samePartyFromCrossPartyContext: "This cookie was blocked because it had the \"`SameParty`\" attribute but the request was cross-party. The request was considered cross-party because the domain of the resource's URL and the domains of the resource's enclosing frames/documents are neither owners nor members in the same First-Party Set.",
-  /**
    * @description Tooltip to explain why a cookie was blocked due to exceeding the maximum size
    */
   nameValuePairExceedsMaxSize: "This cookie was blocked because it was too large. The combined size of the name and value must be less than or equal to 4096 characters.",
@@ -28328,14 +28408,6 @@ var UIStrings9 = {
    * @description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
    */
   thisSetcookieDidntSpecifyASamesite: 'This `Set-Cookie` header didn\'t specify a "`SameSite`" attribute, was defaulted to "`SameSite=Lax"`, and was blocked because it came from a cross-site response which was not the response to a top-level navigation. This response is considered cross-site because the URL has a different scheme than the current site.',
-  /**
-   * @description Tooltip to explain why a cookie was blocked due to SameParty
-   */
-  thisSetcookieWasBlockedBecauseItHadTheSameparty: "This attempt to set a cookie via a `Set-Cookie` header was blocked because it had the \"`SameParty`\" attribute but the request was cross-party. The request was considered cross-party because the domain of the resource's URL and the domains of the resource's enclosing frames/documents are neither owners nor members in the same First-Party Set.",
-  /**
-   * @description Tooltip to explain why a cookie was blocked due to SameParty
-   */
-  thisSetcookieWasBlockedBecauseItHadTheSamepartyAttribute: 'This attempt to set a cookie via a `Set-Cookie` header was blocked because it had the "`SameParty`" attribute but also had other conflicting attributes. Chrome requires cookies that use the "`SameParty`" attribute to also have the "Secure" attribute, and to not be restricted to "`SameSite=Strict`".',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
@@ -29711,8 +29783,6 @@ var cookieBlockedReasonToUiString = function(blockedReason) {
       return i18nString9(UIStrings9.schemefulSameSiteLax);
     case "SchemefulSameSiteUnspecifiedTreatedAsLax":
       return i18nString9(UIStrings9.schemefulSameSiteUnspecifiedTreatedAsLax);
-    case "SamePartyFromCrossPartyContext":
-      return i18nString9(UIStrings9.samePartyFromCrossPartyContext);
     case "NameValuePairExceedsMaxSize":
       return i18nString9(UIStrings9.nameValuePairExceedsMaxSize);
     case "ThirdPartyPhaseout":
@@ -29756,10 +29826,6 @@ var setCookieBlockedReasonToUiString = function(blockedReason) {
       return i18nString9(UIStrings9.thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax, { PH1: "SameSite=Lax" });
     case "SchemefulSameSiteUnspecifiedTreatedAsLax":
       return i18nString9(UIStrings9.thisSetcookieDidntSpecifyASamesite);
-    case "SamePartyFromCrossPartyContext":
-      return i18nString9(UIStrings9.thisSetcookieWasBlockedBecauseItHadTheSameparty);
-    case "SamePartyConflictsWithOtherAttributes":
-      return i18nString9(UIStrings9.thisSetcookieWasBlockedBecauseItHadTheSamepartyAttribute);
     case "NameValuePairExceedsMaxSize":
       return i18nString9(UIStrings9.thisSetcookieWasBlockedBecauseTheNameValuePairExceedsMaxSize);
     case "DisallowedCharacter":
@@ -29785,7 +29851,6 @@ var cookieBlockedReasonToAttribute = function(blockedReason) {
     case "SchemefulSameSiteLax":
     case "SchemefulSameSiteUnspecifiedTreatedAsLax":
       return "same-site";
-    case "SamePartyFromCrossPartyContext":
     case "NameValuePairExceedsMaxSize":
     case "UserPreferences":
     case "ThirdPartyPhaseout":
@@ -29811,8 +29876,6 @@ var setCookieBlockedReasonToAttribute = function(blockedReason) {
       return "domain";
     case "InvalidPrefix":
       return "name";
-    case "SamePartyConflictsWithOtherAttributes":
-    case "SamePartyFromCrossPartyContext":
     case "NameValuePairExceedsMaxSize":
     case "UserPreferences":
     case "ThirdPartyPhaseout":

@@ -8217,6 +8217,8 @@ var softContextMenu_css_default = `/*
     background-color: Highlight;
     color: HighlightText;
     forced-color-adjust: none;
+
+    --icon-default: HighlightText;
   }
 
   .soft-context-menu .soft-context-menu-item devtools-icon,
@@ -13500,7 +13502,7 @@ button.link:focus-visible {
 @media (forced-colors: active) {
   .dimmed,
   select:disabled {
-    opacity: 100%;
+    opacity: 70%;
   }
 
   .harmony-input:not([type]),
@@ -18978,6 +18980,7 @@ var PopoverHelper = class _PopoverHelper {
   boundMouseDown;
   boundMouseMove;
   boundMouseOut;
+  boundScrollEnd;
   boundKeyUp;
   jslogContext;
   constructor(container, getRequest, jslogContext) {
@@ -18994,6 +18997,7 @@ var PopoverHelper = class _PopoverHelper {
     this.boundMouseDown = this.mouseDown.bind(this);
     this.boundMouseMove = this.mouseMove.bind(this);
     this.boundMouseOut = this.mouseOut.bind(this);
+    this.boundScrollEnd = this.scrollEnd.bind(this);
     this.boundKeyUp = this.keyUp.bind(this);
     this.container.addEventListener("mousedown", this.boundMouseDown, false);
     this.container.addEventListener("mousemove", this.boundMouseMove, false);
@@ -19010,6 +19014,9 @@ var PopoverHelper = class _PopoverHelper {
   }
   eventInScheduledContent(event) {
     return this.scheduledRequest ? this.scheduledRequest.box.contains(event.clientX, event.clientY) : false;
+  }
+  scrollEnd(_event) {
+    this.hidePopover();
   }
   mouseDown(event) {
     if (this.disableOnClick) {
@@ -19140,12 +19147,14 @@ var PopoverHelper = class _PopoverHelper {
       popover2.contentElement.addEventListener("mouseout", this.popoverMouseOut.bind(this, popover2), true);
       popover2.setContentAnchorBox(request.box);
       popover2.show(document2);
+      this.container.addEventListener("scrollend", this.boundScrollEnd, true);
       this.hidePopoverCallback = () => {
         if (request.hide) {
           request.hide.call(null);
         }
         popover2.hide();
         popoverHelperInstance = null;
+        this.container.removeEventListener("scrollend", this.boundScrollEnd, true);
       };
     });
   }
@@ -19161,6 +19170,7 @@ var PopoverHelper = class _PopoverHelper {
     this.container.removeEventListener("mousedown", this.boundMouseDown, false);
     this.container.removeEventListener("mousemove", this.boundMouseMove, false);
     this.container.removeEventListener("mouseout", this.boundMouseOut, false);
+    this.container.removeEventListener("keyup", this.boundKeyUp, false);
   }
 };
 var popoverHelperInstance = null;
@@ -21298,6 +21308,12 @@ ol.tree-outline.tree-variant-navigation:not(.hide-selection-when-blurred) li.sel
   .tree-outline.hide-selection-when-blurred .selected:focus-visible span {
     forced-color-adjust: none;
     color: HighlightText;
+
+    --icon-default: HighlightText;
+
+     &.event-listener-details .text-button {
+      color: HighlightText;
+    }
   }
 
   .tree-outline:not(.hide-selection-when-blurred) li.selected:focus-visible devtools-adorner,
