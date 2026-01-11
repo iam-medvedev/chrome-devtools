@@ -112,7 +112,7 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
             providerConfig.onRequestTriggered();
             sinon.assert.calledOnce(fakeLoadingSetter);
             assert.isTrue(fakeLoadingSetter.firstCall.args[0]);
-            providerConfig.onResponseReceived([]);
+            providerConfig.onResponseReceived();
             sinon.assert.calledTwice(fakeLoadingSetter);
             assert.isFalse(fakeLoadingSetter.secondCall.args[0]);
         });
@@ -125,8 +125,8 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
             const editorDispatchSpy = sinon.spy(editor, 'dispatch');
             plugin.editorInitialized(editor);
             providerConfig.onFeatureEnabled();
-            providerConfig.onResponseReceived([{ uri: 'https://example.com/source' }]);
-            providerConfig.onSuggestionAccepted();
+            providerConfig.onResponseReceived();
+            providerConfig.onSuggestionAccepted([{ uri: 'https://example.com/source' }]);
             sinon.assert.calledOnce(updateCitationsSpy);
             assert.deepEqual(updateCitationsSpy.firstCall.args, [['https://example.com/source']]);
             sinon.assert.calledWith(editorDispatchSpy, {
@@ -142,8 +142,8 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
             const editorDispatchSpy = sinon.spy(editor, 'dispatch');
             plugin.editorInitialized(editor);
             providerConfig.onFeatureEnabled();
-            providerConfig.onResponseReceived([]);
-            providerConfig.onSuggestionAccepted();
+            providerConfig.onResponseReceived();
+            providerConfig.onSuggestionAccepted([]);
             sinon.assert.notCalled(updateCitationsSpy);
             sinon.assert.notCalled(editorDispatchSpy);
         });

@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors
+// Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 const sheet = new CSSStyleSheet();
@@ -218,6 +218,7 @@ style.setProperty('--image-file-lightbulb', 'url(\"' + new URL(new URL('lightbul
 style.setProperty('--image-file-lighthouse_logo', 'url(\"' + new URL(new URL('lighthouse_logo.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-list', 'url(\"' + new URL(new URL('list.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-location-on', 'url(\"' + new URL(new URL('location-on.svg', import.meta.url).href).toString() + '\")');
+style.setProperty('--image-file-lock-person', 'url(\"' + new URL(new URL('lock-person.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-lock', 'url(\"' + new URL(new URL('lock.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-mark-email-unread', 'url(\"' + new URL(new URL('mark-email-unread.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-match-case', 'url(\"' + new URL(new URL('match-case.svg', import.meta.url).href).toString() + '\")');

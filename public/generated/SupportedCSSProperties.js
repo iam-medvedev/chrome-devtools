@@ -504,7 +504,6 @@ export const generatedProperties = [
             "grid-column-end",
             "grid-column-start",
             "grid-lanes-direction",
-            "grid-lanes-fill",
             "grid-row-end",
             "grid-row-start",
             "grid-template-areas",
@@ -619,6 +618,7 @@ export const generatedProperties = [
             "padding-right",
             "padding-top",
             "page",
+            "page-margin-safety",
             "page-orientation",
             "paint-order",
             "pathname",
@@ -746,11 +746,11 @@ export const generatedProperties = [
             "text-wrap-mode",
             "text-wrap-style",
             "timeline-scope",
-            "timeline-trigger-exit-range-end",
-            "timeline-trigger-exit-range-start",
+            "timeline-trigger-active-range-end",
+            "timeline-trigger-active-range-start",
+            "timeline-trigger-entry-range-end",
+            "timeline-trigger-entry-range-start",
             "timeline-trigger-name",
-            "timeline-trigger-range-end",
-            "timeline-trigger-range-start",
             "timeline-trigger-source",
             "top",
             "touch-action",
@@ -1736,6 +1736,13 @@ export const generatedProperties = [
         "name": "column-rule-color"
     },
     {
+        "longhands": [
+            "column-rule-edge-inset-start",
+            "column-rule-edge-inset-end"
+        ],
+        "name": "column-rule-edge-inset"
+    },
+    {
         "inherited": false,
         "name": "column-rule-edge-inset-end"
     },
@@ -1751,6 +1758,13 @@ export const generatedProperties = [
             "column-rule-interior-inset-end"
         ],
         "name": "column-rule-inset"
+    },
+    {
+        "longhands": [
+            "column-rule-interior-inset-start",
+            "column-rule-interior-inset-end"
+        ],
+        "name": "column-rule-interior-inset"
     },
     {
         "inherited": false,
@@ -2659,33 +2673,19 @@ export const generatedProperties = [
         "longhands": [
             "grid-template-areas",
             "grid-template-columns",
-            "grid-lanes-direction",
-            "grid-lanes-fill"
+            "grid-lanes-direction"
         ],
         "name": "grid-lanes"
     },
     {
         "keywords": [
+            "normal",
             "row",
             "row-reverse",
             "column",
             "column-reverse"
         ],
         "name": "grid-lanes-direction"
-    },
-    {
-        "keywords": [
-            "normal",
-            "reverse"
-        ],
-        "name": "grid-lanes-fill"
-    },
-    {
-        "longhands": [
-            "grid-lanes-direction",
-            "grid-lanes-fill"
-        ],
-        "name": "grid-lanes-flow"
     },
     {
         "longhands": [
@@ -3529,6 +3529,14 @@ export const generatedProperties = [
         "name": "page-break-inside"
     },
     {
+        "keywords": [
+            "none",
+            "clamp",
+            "add"
+        ],
+        "name": "page-margin-safety"
+    },
+    {
         "name": "page-orientation"
     },
     {
@@ -3765,6 +3773,13 @@ export const generatedProperties = [
         "name": "row-rule-color"
     },
     {
+        "longhands": [
+            "row-rule-edge-inset-start",
+            "row-rule-edge-inset-end"
+        ],
+        "name": "row-rule-edge-inset"
+    },
+    {
         "inherited": false,
         "name": "row-rule-edge-inset-end"
     },
@@ -3780,6 +3795,13 @@ export const generatedProperties = [
             "row-rule-interior-inset-end"
         ],
         "name": "row-rule-inset"
+    },
+    {
+        "longhands": [
+            "row-rule-interior-inset-start",
+            "row-rule-interior-inset-end"
+        ],
+        "name": "row-rule-interior-inset"
     },
     {
         "inherited": false,
@@ -3877,6 +3899,15 @@ export const generatedProperties = [
         "longhands": [
             "row-rule-edge-inset-start",
             "row-rule-edge-inset-end",
+            "column-rule-edge-inset-start",
+            "column-rule-edge-inset-end"
+        ],
+        "name": "rule-edge-inset"
+    },
+    {
+        "longhands": [
+            "row-rule-edge-inset-start",
+            "row-rule-edge-inset-end",
             "row-rule-interior-inset-start",
             "row-rule-interior-inset-end",
             "column-rule-edge-inset-start",
@@ -3885,6 +3916,15 @@ export const generatedProperties = [
             "column-rule-interior-inset-end"
         ],
         "name": "rule-inset"
+    },
+    {
+        "longhands": [
+            "row-rule-interior-inset-start",
+            "row-rule-interior-inset-end",
+            "column-rule-interior-inset-start",
+            "column-rule-interior-inset-end"
+        ],
+        "name": "rule-interior-inset"
     },
     {
         "longhands": [
@@ -4546,41 +4586,41 @@ export const generatedProperties = [
         "longhands": [
             "timeline-trigger-name",
             "timeline-trigger-source",
-            "timeline-trigger-range-start",
-            "timeline-trigger-range-end",
-            "timeline-trigger-exit-range-start",
-            "timeline-trigger-exit-range-end"
+            "timeline-trigger-entry-range-start",
+            "timeline-trigger-entry-range-end",
+            "timeline-trigger-active-range-start",
+            "timeline-trigger-active-range-end"
         ],
         "name": "timeline-trigger"
     },
     {
         "longhands": [
-            "timeline-trigger-exit-range-start",
-            "timeline-trigger-exit-range-end"
+            "timeline-trigger-active-range-start",
+            "timeline-trigger-active-range-end"
         ],
-        "name": "timeline-trigger-exit-range"
+        "name": "timeline-trigger-active-range"
     },
     {
-        "name": "timeline-trigger-exit-range-end"
+        "name": "timeline-trigger-active-range-end"
     },
     {
-        "name": "timeline-trigger-exit-range-start"
-    },
-    {
-        "name": "timeline-trigger-name"
+        "name": "timeline-trigger-active-range-start"
     },
     {
         "longhands": [
-            "timeline-trigger-range-start",
-            "timeline-trigger-range-end"
+            "timeline-trigger-entry-range-start",
+            "timeline-trigger-entry-range-end"
         ],
-        "name": "timeline-trigger-range"
+        "name": "timeline-trigger-entry-range"
     },
     {
-        "name": "timeline-trigger-range-end"
+        "name": "timeline-trigger-entry-range-end"
     },
     {
-        "name": "timeline-trigger-range-start"
+        "name": "timeline-trigger-entry-range-start"
+    },
+    {
+        "name": "timeline-trigger-name"
     },
     {
         "keywords": [
@@ -6024,16 +6064,11 @@ export const generatedPropertyValues = {
     },
     "grid-lanes-direction": {
         "values": [
+            "normal",
             "row",
             "row-reverse",
             "column",
             "column-reverse"
-        ]
-    },
-    "grid-lanes-fill": {
-        "values": [
-            "normal",
-            "reverse"
         ]
     },
     "grid-row-end": {
@@ -6454,6 +6489,13 @@ export const generatedPropertyValues = {
     "page": {
         "values": [
             "auto"
+        ]
+    },
+    "page-margin-safety": {
+        "values": [
+            "none",
+            "clamp",
+            "add"
         ]
     },
     "paint-order": {

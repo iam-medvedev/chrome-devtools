@@ -45,7 +45,6 @@
   },
   "files": [
     "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionProvider.test.ts",
-    "../../../../../../../front_end/ui/components/text_editor/AiCodeCompletionTeaserPlaceholder.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AiCodeGenerationParser.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AiCodeGenerationProvider.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/AutocompleteHistory.test.ts",

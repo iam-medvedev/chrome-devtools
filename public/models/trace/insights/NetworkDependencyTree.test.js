@@ -332,7 +332,7 @@ describe('generatePreconnectedOrigins', () => {
 describeWithEnvironment('generatePreconnectCandidates', () => {
     const mockParsedTrace = {
         NetworkRequests: {
-            eventToInitiator: new Map(),
+            incompleteInitiator: new Map(),
             byTime: [],
             byId: new Map(),
             linkPreconnectEvents: [],
@@ -390,7 +390,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         ts: 1500,
     };
     beforeEach(() => {
-        mockParsedTrace.NetworkRequests.eventToInitiator.clear();
+        mockParsedTrace.NetworkRequests.incompleteInitiator.clear();
         mockParsedTrace.NetworkRequests.byTime.length = 0;
         mockParsedTrace.NetworkRequests.byId.clear();
         mockParsedTrace.NetworkRequests.linkPreconnectEvents.length = 0;
@@ -432,7 +432,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         const initiatedByMainRequest = JSON.parse(JSON.stringify(validRequest));
         initiatedByMainRequest.args.data.url = 'https://example.com/script.js';
         mockParsedTrace.NetworkRequests.byTime.push(initiatedByMainRequest);
-        mockParsedTrace.NetworkRequests.eventToInitiator.set(initiatedByMainRequest, mainRequest);
+        mockParsedTrace.NetworkRequests.incompleteInitiator.set(initiatedByMainRequest, mainRequest);
         const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext, mockParsedTrace.NetworkRequests.byTime);
         assert.lengthOf(preconnectCandidates, 0);
     });

@@ -58,7 +58,13 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../generated/protocol-tsconfig.json"
+    },
+    {
       "path": "../../models/text_utils/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/highlighting/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"
@@ -68,6 +74,12 @@
     },
     {
       "path": "../../ui/legacy/components/settings_ui/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/lit/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/visual_logging/bundle-tsconfig.json"
     }
   ]
 }

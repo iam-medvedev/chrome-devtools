@@ -65,10 +65,16 @@
       "path": "../../models/geometry/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/buttons/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/inline_editor/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/lit/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/visual_logging/bundle-tsconfig.json"

@@ -444,6 +444,14 @@ export namespace ProtocolMapping {
     'Network.reportingApiReportUpdated': [Protocol.Network.ReportingApiReportUpdatedEvent];
     'Network.reportingApiEndpointsChangedForOrigin': [Protocol.Network.ReportingApiEndpointsChangedForOriginEvent];
     /**
+     * Triggered when the initial set of device bound sessions is added.
+     */
+    'Network.deviceBoundSessionsAdded': [Protocol.Network.DeviceBoundSessionsAddedEvent];
+    /**
+     * Triggered when a device bound session event occurs.
+     */
+    'Network.deviceBoundSessionEventOccurred': [Protocol.Network.DeviceBoundSessionEventOccurredEvent];
+    /**
      * Fired when the node should be inspected. This happens after call to `setInspectMode` or when
      * user manually inspects an element.
      */
@@ -3517,6 +3525,20 @@ export namespace ProtocolMapping {
     'Network.enableReportingApi': {
       paramsType: [Protocol.Network.EnableReportingApiRequest];
       returnType: void;
+    };
+    /**
+     * Sets up tracking device bound sessions and fetching of initial set of sessions.
+     */
+    'Network.enableDeviceBoundSessions': {
+      paramsType: [Protocol.Network.EnableDeviceBoundSessionsRequest];
+      returnType: void;
+    };
+    /**
+     * Fetches the schemeful site for a specific origin.
+     */
+    'Network.fetchSchemefulSite': {
+      paramsType: [Protocol.Network.FetchSchemefulSiteRequest];
+      returnType: Protocol.Network.FetchSchemefulSiteResponse;
     };
     /**
      * Fetches the resource and returns the content.
