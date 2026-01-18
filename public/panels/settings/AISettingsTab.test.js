@@ -66,7 +66,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.strictEqual(settingParams[0].settingDescription, 'Helps you understand and fix console warnings and errors');
         assert.strictEqual(settingParams[1].settingDescription, 'Get help with understanding CSS styles');
         assert.strictEqual(settingParams[2].settingDescription, 'Automatically generate titles for performance trace annotations');
-        assert.strictEqual(settingParams[3].settingDescription, 'Get help completing your code');
+        assert.strictEqual(settingParams[3].settingDescription, 'Write code faster with AI-powered suggestions');
     });
     it('has different dislaimers for managed users which have logging disabled', async () => {
         Common.Settings.moduleSetting('console-insights-enabled').set(true);

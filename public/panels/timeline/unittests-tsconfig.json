@@ -92,10 +92,19 @@
       "path": "../../models/trace/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/trace_source_maps_resolver/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
       "path": "../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/theme_support/bundle-tsconfig.json"
     },
     {
       "path": "components/bundle-tsconfig.json"

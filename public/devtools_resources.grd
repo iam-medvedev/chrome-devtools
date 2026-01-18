@@ -174,6 +174,7 @@
       <include file="Images/global.svg" name="IMAGES_GLOBAL_SVG" resource_path="Images/global.svg" type="BINDATA" compress="false"/>
       <include file="Images/google.svg" name="IMAGES_GOOGLE_SVG" resource_path="Images/google.svg" type="BINDATA" compress="false"/>
       <include file="Images/goto-filled.svg" name="IMAGES_GOTO_FILLED_SVG" resource_path="Images/goto-filled.svg" type="BINDATA" compress="false"/>
+      <include file="Images/grid-direction.svg" name="IMAGES_GRID_DIRECTION_SVG" resource_path="Images/grid-direction.svg" type="BINDATA" compress="false"/>
       <include file="Images/grid-on.svg" name="IMAGES_GRID_ON_SVG" resource_path="Images/grid-on.svg" type="BINDATA" compress="false"/>
       <include file="Images/group.svg" name="IMAGES_GROUP_SVG" resource_path="Images/group.svg" type="BINDATA" compress="false"/>
       <include file="Images/heap-snapshot.svg" name="IMAGES_HEAP_SNAPSHOT_SVG" resource_path="Images/heap-snapshot.svg" type="BINDATA" compress="false"/>

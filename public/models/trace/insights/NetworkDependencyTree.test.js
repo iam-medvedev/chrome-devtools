@@ -337,6 +337,12 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
             byId: new Map(),
             linkPreconnectEvents: [],
         },
+        Renderer: {
+            entryToNode: new Map(),
+        },
+        Samples: {
+            entryToNode: new Map(),
+        }
     };
     const mockContext = {
         // This is not need to calculate the data of this insight, but is needed to check this is a context with lantern data.
@@ -378,6 +384,10 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
             },
         },
         ts: 0,
+        rawSourceEvent: {
+            cat: 'devtools.timeline',
+            name: 'ResourceSendRequest',
+        }
     };
     const validRequest = {
         args: {
@@ -388,6 +398,10 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
             },
         },
         ts: 1500,
+        rawSourceEvent: {
+            cat: 'devtools.timeline',
+            name: 'ResourceSendRequest',
+        }
     };
     beforeEach(() => {
         mockParsedTrace.NetworkRequests.incompleteInitiator.clear();

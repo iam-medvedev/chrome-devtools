@@ -2596,7 +2596,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.34.0";
+var packageVersion = "24.35.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -4423,6 +4423,14 @@ var Page = (() => {
      * @internal
      */
     _timeoutSettings = new TimeoutSettings();
+    /**
+     * Internal API to get an implementation-specific identifier
+     * for the tab. In Chrome, it is a tab target id. If unknown,
+     * returns an empty string.
+     *
+     * @internal
+     */
+    _tabId = "";
     #requestHandlers = /* @__PURE__ */ new WeakMap();
     #inflight$ = new ReplaySubject(1);
     /**
@@ -5750,16 +5758,18 @@ var ConsoleMessage = class {
   #stackTraceLocations;
   #frame;
   #rawStackTrace;
+  #targetId;
   /**
    * @internal
    */
-  constructor(type, text, args, stackTraceLocations, frame, rawStackTrace) {
+  constructor(type, text, args, stackTraceLocations, frame, rawStackTrace, targetId) {
     this.#type = type;
     this.#text = text;
     this.#args = args;
     this.#stackTraceLocations = stackTraceLocations;
     this.#frame = frame;
     this.#rawStackTrace = rawStackTrace;
+    this.#targetId = targetId;
   }
   /**
    * The type of the console message.
@@ -5798,6 +5808,14 @@ var ConsoleMessage = class {
    */
   _rawStackTrace() {
     return this.#rawStackTrace;
+  }
+  /**
+   * The targetId from which this console message originated.
+   *
+   * @internal
+   */
+  _targetId() {
+    return this.#targetId;
   }
 };
 
@@ -15929,9 +15947,7 @@ var CdpWebWorker = class extends WebWorker {
     });
     this.#world.emitter.on("consoleapicalled", async (event) => {
       try {
-        return consoleAPICalled(event.type, event.args.map((object) => {
-          return new CdpJSHandle(this.#world, object);
-        }), event.stackTrace);
+        return consoleAPICalled(this.#world, event);
       } catch (err) {
         debugError(err);
       }
@@ -16087,6 +16103,7 @@ var CdpPage = class _CdpPage extends Page {
     assert(this.#tabTargetClient, "Tab target session is not defined.");
     this.#tabTarget = this.#tabTargetClient.target();
     assert(this.#tabTarget, "Tab target is not defined.");
+    this._tabId = this.#tabTarget._getTargetInfo().targetId;
     this.#primaryTarget = target;
     this.#targetManager = target._targetManager();
     this.#keyboard = new CdpKeyboard(client);
@@ -16217,7 +16234,7 @@ var CdpPage = class _CdpPage extends Page {
     assert(session instanceof CdpCDPSession);
     this.#frameManager.onAttachedToTarget(session.target());
     if (session.target()._getTargetInfo().type === "worker") {
-      const worker = new CdpWebWorker(session, session.target().url(), session.target()._targetId, session.target().type(), this.#addConsoleMessage.bind(this), this.#handleException.bind(this), this.#frameManager.networkManager);
+      const worker = new CdpWebWorker(session, session.target().url(), session.target()._targetId, session.target().type(), this.#onConsoleAPI.bind(this), this.#handleException.bind(this), this.#frameManager.networkManager);
       this.#workers.set(session.id(), worker);
       this.emit("workercreated", worker);
     }
@@ -16342,7 +16359,7 @@ var CdpPage = class _CdpPage extends Page {
       });
     }
     if (source2 !== "worker") {
-      this.emit("console", new ConsoleMessage(convertConsoleMessageLevel(level), text, [], [{ url, lineNumber }], void 0, stackTrace));
+      this.emit("console", new ConsoleMessage(convertConsoleMessageLevel(level), text, [], [{ url, lineNumber }], void 0, stackTrace, this.#primaryTarget._targetId));
     }
   }
   mainFrame() {
@@ -16549,7 +16566,40 @@ var CdpPage = class _CdpPage extends Page {
     const values = event.args.map((arg) => {
       return world.createCdpHandle(arg);
     });
-    this.#addConsoleMessage(convertConsoleMessageLevel(event.type), values, event.stackTrace);
+    if (!this.listenerCount(
+      "console"
+      /* PageEvent.Console */
+    )) {
+      values.forEach((arg) => {
+        return arg.dispose();
+      });
+      return;
+    }
+    const textTokens = [];
+    for (const arg of values) {
+      const remoteObject = arg.remoteObject();
+      if (remoteObject.objectId) {
+        textTokens.push(arg.toString());
+      } else {
+        textTokens.push(valueFromRemoteObject(remoteObject));
+      }
+    }
+    const stackTraceLocations = [];
+    if (event.stackTrace) {
+      for (const callFrame of event.stackTrace.callFrames) {
+        stackTraceLocations.push({
+          url: callFrame.url,
+          lineNumber: callFrame.lineNumber,
+          columnNumber: callFrame.columnNumber
+        });
+      }
+    }
+    let targetId;
+    if (world.environment.client instanceof CdpCDPSession) {
+      targetId = world.environment.client.target()._targetId;
+    }
+    const message = new ConsoleMessage(convertConsoleMessageLevel(event.type), textTokens.join(" "), values, stackTraceLocations, void 0, event.stackTrace, targetId);
+    this.emit("console", message);
   }
   async #onBindingCalled(world, event) {
     let payload;
@@ -16568,38 +16618,6 @@ var CdpPage = class _CdpPage extends Page {
     }
     const binding = this.#bindings.get(name);
     await binding?.run(context2, seq, args, isTrivial);
-  }
-  #addConsoleMessage(eventType, args, stackTrace) {
-    if (!this.listenerCount(
-      "console"
-      /* PageEvent.Console */
-    )) {
-      args.forEach((arg) => {
-        return arg.dispose();
-      });
-      return;
-    }
-    const textTokens = [];
-    for (const arg of args) {
-      const remoteObject = arg.remoteObject();
-      if (remoteObject.objectId) {
-        textTokens.push(arg.toString());
-      } else {
-        textTokens.push(valueFromRemoteObject(remoteObject));
-      }
-    }
-    const stackTraceLocations = [];
-    if (stackTrace) {
-      for (const callFrame of stackTrace.callFrames) {
-        stackTraceLocations.push({
-          url: callFrame.url,
-          lineNumber: callFrame.lineNumber,
-          columnNumber: callFrame.columnNumber
-        });
-      }
-    }
-    const message = new ConsoleMessage(convertConsoleMessageLevel(eventType), textTokens.join(" "), args, stackTraceLocations, void 0, stackTrace);
-    this.emit("console", message);
   }
   #onDialog(event) {
     const type = validateDialogType(event.type);
@@ -17688,7 +17706,8 @@ var CdpBrowser = class _CdpBrowser extends Browser {
       height: windowBounds?.height,
       windowState: windowBounds?.windowState,
       // Works around crbug.com/454825274.
-      newWindow: hasTargets && options?.type === "window" ? true : void 0
+      newWindow: hasTargets && options?.type === "window" ? true : void 0,
+      background: options?.background
     });
     const target = await this.waitForTarget((t) => {
       return t._targetId === targetId;

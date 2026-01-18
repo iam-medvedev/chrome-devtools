@@ -804,8 +804,8 @@ describeWithMockConnection('PreloadingSummaryView', () => {
         await emulator.activateAndDispatchEvents('prerendered.html');
         await RenderCoordinator.done();
         const usedPreloadingComponent = view.getUsedPreloadingForTest();
-        assert.isNotNull(usedPreloadingComponent.shadowRoot);
-        assert.include(usedPreloadingComponent.shadowRoot.textContent, 'This page was successfully prerendered.');
+        await usedPreloadingComponent.updateComplete;
+        assert.include(usedPreloadingComponent.contentElement.textContent, 'This page was successfully prerendered.');
     });
 });
 //# sourceMappingURL=PreloadingView.test.js.map

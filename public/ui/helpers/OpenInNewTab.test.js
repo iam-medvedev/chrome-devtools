@@ -19,6 +19,12 @@ describe('openInNewTab', () => {
         sinon.assert.callCount(stub, 1);
         assert.deepEqual(stub.args[0], ['https://www.google.com/']);
     });
+    it('opens URLs and appends slash if needed', () => {
+        const stub = sinon.stub(InspectorFrontendHostInstance, 'openInNewTab');
+        openInNewTab('https://www.google.com');
+        sinon.assert.callCount(stub, 1);
+        assert.deepEqual(stub.args[0], ['https://www.google.com/']);
+    });
     it('doesn\'t override existing `utm_source` search parameters', () => {
         const URLs = [
             'http://developer.chrome.com/docs/devtools/workspaces/?utm_source=unittests',

@@ -2636,6 +2636,7 @@ var StepEditor = class StepEditor2 extends LitElement {
     return html7`
       <devtools-button
         title=${opts.title}
+        .accessibleLabel=${opts.title}
         .size=${"SMALL"}
         .iconName=${opts.iconName}
         .variant=${"icon"}
@@ -2674,8 +2675,9 @@ var StepEditor = class StepEditor2 extends LitElement {
   #renderTypeRow(editable) {
     this.#renderedAttributes.add("type");
     return html7`<div class="row attribute" data-attribute="type" jslog=${VisualLogging6.treeItem("type")}>
-      <div>type<span class="separator">:</span></div>
+      <div id="type">type<span class="separator">:</span></div>
       <devtools-suggestion-input
+        aria-labelledby="type"
         .disabled=${!editable || this.disabled}
         .options=${Object.values(Models5.Schema.StepType)}
         .placeholder=${defaultValuesByAttribute.type}
@@ -2691,9 +2693,10 @@ var StepEditor = class StepEditor2 extends LitElement {
       return;
     }
     return html7`<div class="row attribute" data-attribute=${attribute} jslog=${VisualLogging6.treeItem(Platform3.StringUtilities.toKebabCase(attribute))}>
-      <div>${attribute}<span class="separator">:</span></div>
+      <div id=${attribute}>${attribute}<span class="separator">:</span></div>
       <devtools-suggestion-input
         .disabled=${this.disabled}
+        aria-labelledby=${attribute}
         .placeholder=${defaultValuesByAttribute[attribute].toString()}
         .value=${live(attributeValue)}
         .mimeType=${(() => {
@@ -2736,13 +2739,14 @@ var StepEditor = class StepEditor2 extends LitElement {
     return html7`
       <div class="attribute" data-attribute="frame" jslog=${VisualLogging6.treeItem("frame")}>
         <div class="row">
-          <div>frame<span class="separator">:</span></div>
+          <div id="frame">frame<span class="separator">:</span></div>
           ${this.#renderDeleteButton("frame")}
         </div>
         ${this.state.frame.map((frame, index, frames) => {
       return html7`
             <div class="padded row">
               <devtools-suggestion-input
+                aria-labelledby="frame"
                 .disabled=${this.disabled}
                 .placeholder=${defaultValuesByAttribute.frame[0].toString()}
                 .value=${live(frame.toString())}
@@ -2813,7 +2817,7 @@ var StepEditor = class StepEditor2 extends LitElement {
       </div>
       ${this.state.selectors.map((selector, index, selectors) => {
       return html7`<div class="padded row" data-selector-path=${index}>
-            <div>selector #${index + 1}<span class="separator">:</span></div>
+            <div id="selector-${index}">selector #${index + 1}<span class="separator">:</span></div>
             ${this.#renderInlineButton({
         class: "add-selector",
         title: i18nString6(UIStrings6.addSelector),
@@ -2847,6 +2851,7 @@ var StepEditor = class StepEditor2 extends LitElement {
               data-selector-path="${index}.${partIndex}"
             >
               <devtools-suggestion-input
+                aria-labelledby="selector-${index}"
                 .disabled=${this.disabled}
                 .placeholder=${defaultValuesByAttribute.selectors[0][0]}
                 .value=${live(part)}
@@ -2919,12 +2924,13 @@ var StepEditor = class StepEditor2 extends LitElement {
       </div>
       ${this.state.assertedEvents.map((event, index) => {
       return html7` <div class="padded row" jslog=${VisualLogging6.treeItem("event-type")}>
-            <div>type<span class="separator">:</span></div>
-            <div>${event.type}</div>
+            <div id="event-type">type<span class="separator">:</span></div>
+            <div aria-labelledby="event-type">${event.type}</div>
           </div>
           <div class="padded row" jslog=${VisualLogging6.treeItem("event-title")}>
-            <div>title<span class="separator">:</span></div>
+            <div id="event-title">title<span class="separator">:</span></div>
             <devtools-suggestion-input
+              aria-labelledby="event-title"
               .disabled=${this.disabled}
               .placeholder=${defaultValuesByAttribute.assertedEvents[0].title}
               .value=${live(event.title ?? "")}
@@ -2944,9 +2950,10 @@ var StepEditor = class StepEditor2 extends LitElement {
       })}
             ></devtools-suggestion-input>
           </div>
-          <div class="padded row" jslog=${VisualLogging6.treeItem("event-url")}>
+          <div  id="event-url" class="padded row" jslog=${VisualLogging6.treeItem("event-url")}>
             <div>url<span class="separator">:</span></div>
             <devtools-suggestion-input
+              aria-labelledby="event-url"
               .disabled=${this.disabled}
               .placeholder=${defaultValuesByAttribute.assertedEvents[0].url}
               .value=${live(event.url ?? "")}

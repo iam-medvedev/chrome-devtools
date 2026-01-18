@@ -62,6 +62,9 @@
     },
     {
       "path": "../../core/platform/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../testing/testing-tsconfig.json"
     }
   ]
 }

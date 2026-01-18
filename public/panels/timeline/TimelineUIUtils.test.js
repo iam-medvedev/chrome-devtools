@@ -1343,7 +1343,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markLCPEvent);
             const url = html.querySelector('x-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/lcp/');
-            assert.strictEqual(html.innerText, 'Learn more about largest contentful paint.');
+            assert.strictEqual(html.innerText, 'Learn more about Largest Contentful Paint.');
         });
         it('builds the right link for an FCP Event', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -1351,7 +1351,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markFCPEvent);
             const url = html.querySelector('x-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/first-contentful-paint/');
-            assert.strictEqual(html.innerText, 'Learn more about first contentful paint.');
+            assert.strictEqual(html.innerText, 'Learn more about First Contentful Paint.');
         });
         it('builds a generic event for other marker events', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
