@@ -1,7 +1,6 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 /*
  * Copyright (C) 2007 Apple Inc.  All rights reserved.
  *
@@ -33,48 +32,177 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 import metricsSidebarPaneStyles from './metricsSidebarPane.css.js';
+const { live } = Directives;
+const DEFAULT_VIEW = (input, output, target) => {
+    const { style, highlightedMode, node, contentWidth, contentHeight, onHighlightNode, onStartEditing } = input;
+    function createBoxPartElement(style, name, side, suffix) {
+        const propertyName = (name !== 'position' ? name + '-' : '') + side + suffix;
+        let value = style.get(propertyName);
+        if (value === '' || (name !== 'position' && value === 'unset')) {
+            value = '\u2012';
+        }
+        else if (name === 'position' && value === 'auto') {
+            value = '\u2012';
+        }
+        value = value?.replace(/px$/, '');
+        value = value ? Platform.NumberUtilities.toFixedIfFloating(value) : value;
+        // clang-format off
+        return html `<div class=${side} jslog=${VisualLogging.value(propertyName).track({
+            dblclick: true, keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown', change: true,
+        })}
+        @dblclick=${(e) => onStartEditing(e.currentTarget, name, propertyName, style)}
+        .innerText=${live(value ?? '')}>
+    </div>`;
+        // clang-format on
+    }
+    // Display types for which margin is ignored.
+    const noMarginDisplayType = new Set([
+        'table-cell',
+        'table-column',
+        'table-column-group',
+        'table-footer-group',
+        'table-header-group',
+        'table-row',
+        'table-row-group',
+    ]);
+    // Display types for which padding is ignored.
+    const noPaddingDisplayType = new Set([
+        'table-column',
+        'table-column-group',
+        'table-footer-group',
+        'table-header-group',
+        'table-row',
+        'table-row-group',
+    ]);
+    // Position types for which top, left, bottom and right are ignored.
+    const noPositionType = new Set(['static']);
+    const boxes = ['content', 'padding', 'border', 'margin', 'position'];
+    const boxColors = [
+        Common.Color.PageHighlight.Content,
+        Common.Color.PageHighlight.Padding,
+        Common.Color.PageHighlight.Border,
+        Common.Color.PageHighlight.Margin,
+        Common.Color.Legacy.fromRGBA([0, 0, 0, 0]),
+    ];
+    const boxLabels = ['content', 'padding', 'border', 'margin', 'position'];
+    let previousBox = nothing;
+    for (let i = 0; i < boxes.length; ++i) {
+        const name = boxes[i];
+        const display = style.get('display');
+        const position = style.get('position');
+        if (!display || !position) {
+            continue;
+        }
+        if (name === 'margin' && noMarginDisplayType.has(display)) {
+            continue;
+        }
+        if (name === 'padding' && noPaddingDisplayType.has(display)) {
+            continue;
+        }
+        if (name === 'position' && noPositionType.has(position)) {
+            continue;
+        }
+        const shouldHighlight = !node || highlightedMode === 'all' || name === highlightedMode;
+        const backgroundColor = boxColors[i].asString("rgba" /* Common.Color.Format.RGBA */) || '';
+        const suffix = (name === 'border' ? '-width' : '');
+        // clang-format off
+        const box = html `
+      <div
+          class="${name} ${shouldHighlight ? 'highlighted' : ''}"
+          style="background-color: ${shouldHighlight ? backgroundColor : ''}"
+          jslog=${VisualLogging.metricsBox().context(name).track({ hover: true })}
+          @mouseover=${(e) => { e.consume(); onHighlightNode(true, name === 'position' ? 'all' : name); }}>
+      ${name === 'content' ? html `
+        <span jslog=${VisualLogging.value('width').track({
+            dblclick: true,
+            keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown',
+            change: true,
+        })}
+            @dblclick=${(e) => onStartEditing(e.currentTarget, 'width', 'width', style)}
+            .innerText=${live(contentWidth)}>
+        </span>
+        <span> × </span>
+        <span jslog=${VisualLogging.value('height').track({
+            dblclick: true,
+            keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown',
+            change: true,
+        })}
+            @dblclick=${(e) => onStartEditing(e.currentTarget, 'height', 'height', style)}
+            .innerText=${live(contentHeight)}>
+        </span>` : html `
+        <div class="label">${boxLabels[i]}</div>
+          ${createBoxPartElement(style, name, 'top', suffix)}
+          <br>
+          ${createBoxPartElement(style, name, 'left', suffix)}
+          ${previousBox}
+          ${createBoxPartElement(style, name, 'right', suffix)}
+          <br>
+          ${createBoxPartElement(style, name, 'bottom', suffix)}`}
+        </div>`;
+        // clang-format on
+        previousBox = box;
+    }
+    // clang-format off
+    render(html `
+    <div class="metrics ${!node ? 'collapsed' : ''}" @mouseover=${(e) => { e.consume(); onHighlightNode(true, 'all'); }}
+        @mouseleave=${(e) => { e.consume(); onHighlightNode(false, 'all'); }}>
+      ${previousBox}
+    </div>`, target);
+    // clang-format on
+};
 export class MetricsSidebarPane extends ElementsSidebarPane {
     originalPropertyData;
     previousPropertyDataCandidate;
     inlineStyle;
     highlightMode;
-    boxElements;
+    computedStyle;
     isEditingMetrics;
-    constructor(computedStyleModel) {
-        super(computedStyleModel);
+    view;
+    constructor(computedStyleModel, view = DEFAULT_VIEW) {
+        super(computedStyleModel, { jslog: `${VisualLogging.pane('styles-metrics')}` });
         this.registerRequiredCSS(metricsSidebarPaneStyles);
         this.originalPropertyData = null;
         this.previousPropertyDataCandidate = null;
         this.inlineStyle = null;
         this.highlightMode = '';
-        this.boxElements = [];
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('styles-metrics')}`);
+        this.computedStyle = null;
+        this.view = view;
     }
-    doUpdate() {
+    async performUpdate() {
         // "style" attribute might have changed. Update metrics unless they are being edited
         // (if a CSS property is added, a StyleSheetChanged event is dispatched).
         if (this.isEditingMetrics) {
-            return Promise.resolve();
+            return await Promise.resolve();
         }
         // FIXME: avoid updates of a collapsed pane.
         const node = this.node();
         const cssModel = this.cssModel();
         if (!node || node.nodeType() !== Node.ELEMENT_NODE || !cssModel) {
-            this.contentElement.removeChildren();
-            this.element.classList.add('collapsed');
-            return Promise.resolve();
+            this.view({
+                style: new Map(),
+                highlightedMode: '',
+                node: null,
+                contentWidth: '',
+                contentHeight: '',
+                onHighlightNode: () => { },
+                onStartEditing: () => { },
+            }, undefined, this.contentElement);
+            return await Promise.resolve();
         }
         function callback(style) {
             if (!style || this.node() !== node) {
+                this.computedStyle = null;
                 return;
             }
+            this.computedStyle = style;
             this.updateMetrics(style);
         }
         if (!node.id) {
-            return Promise.resolve();
+            return await Promise.resolve();
         }
         const promises = [
             cssModel.getComputedStyle(node.id).then(callback.bind(this)),
@@ -84,19 +212,10 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
                 }
             }),
         ];
-        return Promise.all(promises);
+        return await Promise.all(promises);
     }
     onCSSModelChanged() {
-        this.update();
-    }
-    /**
-     * Toggle the visibility of the Metrics pane. This toggle allows external
-     * callers to control the visibility of this pane, but toggling this on does
-     * not guarantee the pane will always show up, because the pane's visibility
-     * is also controlled by the internal condition that style cannot be empty.
-     */
-    toggleVisibility(isVisible) {
-        this.element.classList.toggle('invisible', !isVisible);
+        this.requestUpdate();
     }
     getPropertyValueAsPx(style, propertyName) {
         const propertyValue = style.get(propertyName);
@@ -113,8 +232,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
         const bottom = this.getPropertyValueAsPx(computedStyle, componentName + '-bottom' + suffix);
         return { left, top, right, bottom };
     }
-    highlightDOMNode(showHighlight, mode, event) {
-        event.consume();
+    highlightDOMNode(showHighlight, mode) {
         const node = this.node();
         if (showHighlight && node) {
             if (this.highlightMode === mode) {
@@ -127,174 +245,48 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
             this.highlightMode = '';
             SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
         }
-        for (const { element, name, backgroundColor } of this.boxElements) {
-            const shouldHighlight = !node || mode === 'all' || name === mode;
-            element.style.backgroundColor = shouldHighlight ? backgroundColor : '';
-            element.classList.toggle('highlighted', shouldHighlight);
+        if (this.computedStyle) {
+            this.updateMetrics(this.computedStyle, mode);
         }
     }
-    updateMetrics(style) {
-        // Updating with computed style.
-        const metricsElement = document.createElement('div');
-        metricsElement.className = 'metrics';
-        const self = this;
-        function createBoxPartElement(style, name, side, suffix) {
-            const element = document.createElement('div');
-            element.className = side;
-            const propertyName = (name !== 'position' ? name + '-' : '') + side + suffix;
-            let value = style.get(propertyName);
-            if (value === undefined) {
-                return element;
-            }
-            if (value === '' || (name !== 'position' && value === 'unset')) {
-                value = '\u2012';
-            }
-            else if (name === 'position' && value === 'auto') {
-                value = '\u2012';
-            }
-            value = value.replace(/px$/, '');
-            value = Platform.NumberUtilities.toFixedIfFloating(value);
-            element.textContent = value;
-            element.setAttribute('jslog', `${VisualLogging.value(propertyName).track({
-                dblclick: true,
-                keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown',
-                change: true,
-            })}`);
-            element.addEventListener('dblclick', this.startEditing.bind(this, element, name, propertyName, style), false);
-            return element;
+    getContentAreaWidthPx(style) {
+        let width = style.get('width');
+        if (!width) {
+            return '';
         }
-        function getContentAreaWidthPx(style) {
-            let width = style.get('width');
-            if (!width) {
-                return '';
-            }
-            width = width.replace(/px$/, '');
-            const widthValue = Number(width);
-            if (!isNaN(widthValue) && style.get('box-sizing') === 'border-box') {
-                const borderBox = self.getBox(style, 'border');
-                const paddingBox = self.getBox(style, 'padding');
-                width = (widthValue - borderBox.left - borderBox.right - paddingBox.left - paddingBox.right).toString();
-            }
-            return Platform.NumberUtilities.toFixedIfFloating(width);
+        width = width.replace(/px$/, '');
+        const widthValue = Number(width);
+        if (!isNaN(widthValue) && style.get('box-sizing') === 'border-box') {
+            const borderBox = this.getBox(style, 'border');
+            const paddingBox = this.getBox(style, 'padding');
+            width = (widthValue - borderBox.left - borderBox.right - paddingBox.left - paddingBox.right).toString();
         }
-        function getContentAreaHeightPx(style) {
-            let height = style.get('height');
-            if (!height) {
-                return '';
-            }
-            height = height.replace(/px$/, '');
-            const heightValue = Number(height);
-            if (!isNaN(heightValue) && style.get('box-sizing') === 'border-box') {
-                const borderBox = self.getBox(style, 'border');
-                const paddingBox = self.getBox(style, 'padding');
-                height = (heightValue - borderBox.top - borderBox.bottom - paddingBox.top - paddingBox.bottom).toString();
-            }
-            return Platform.NumberUtilities.toFixedIfFloating(height);
+        return Platform.NumberUtilities.toFixedIfFloating(width);
+    }
+    getContentAreaHeightPx(style) {
+        let height = style.get('height');
+        if (!height) {
+            return '';
         }
-        // Display types for which margin is ignored.
-        const noMarginDisplayType = new Set([
-            'table-cell',
-            'table-column',
-            'table-column-group',
-            'table-footer-group',
-            'table-header-group',
-            'table-row',
-            'table-row-group',
-        ]);
-        // Display types for which padding is ignored.
-        const noPaddingDisplayType = new Set([
-            'table-column',
-            'table-column-group',
-            'table-footer-group',
-            'table-header-group',
-            'table-row',
-            'table-row-group',
-        ]);
-        // Position types for which top, left, bottom and right are ignored.
-        const noPositionType = new Set(['static']);
-        const boxes = ['content', 'padding', 'border', 'margin', 'position'];
-        const boxColors = [
-            Common.Color.PageHighlight.Content,
-            Common.Color.PageHighlight.Padding,
-            Common.Color.PageHighlight.Border,
-            Common.Color.PageHighlight.Margin,
-            Common.Color.Legacy.fromRGBA([0, 0, 0, 0]),
-        ];
-        const boxLabels = ['content', 'padding', 'border', 'margin', 'position'];
-        let previousBox = null;
-        this.boxElements = [];
-        for (let i = 0; i < boxes.length; ++i) {
-            const name = boxes[i];
-            const display = style.get('display');
-            const position = style.get('position');
-            if (!display || !position) {
-                continue;
-            }
-            if (name === 'margin' && noMarginDisplayType.has(display)) {
-                continue;
-            }
-            if (name === 'padding' && noPaddingDisplayType.has(display)) {
-                continue;
-            }
-            if (name === 'position' && noPositionType.has(position)) {
-                continue;
-            }
-            const boxElement = document.createElement('div');
-            boxElement.className = `${name} highlighted`;
-            const backgroundColor = boxColors[i].asString("rgba" /* Common.Color.Format.RGBA */) || '';
-            boxElement.style.backgroundColor = backgroundColor;
-            boxElement.setAttribute('jslog', `${VisualLogging.metricsBox().context(name).track({ hover: true })}`);
-            boxElement.addEventListener('mouseover', this.highlightDOMNode.bind(this, true, name === 'position' ? 'all' : name), false);
-            this.boxElements.push({ element: boxElement, name, backgroundColor });
-            if (name === 'content') {
-                const widthElement = document.createElement('span');
-                widthElement.textContent = getContentAreaWidthPx(style);
-                widthElement.addEventListener('dblclick', this.startEditing.bind(this, widthElement, 'width', 'width', style), false);
-                widthElement.setAttribute('jslog', `${VisualLogging.value('width').track({
-                    dblclick: true,
-                    keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown',
-                    change: true,
-                })}`);
-                const heightElement = document.createElement('span');
-                heightElement.textContent = getContentAreaHeightPx(style);
-                heightElement.addEventListener('dblclick', this.startEditing.bind(this, heightElement, 'height', 'height', style), false);
-                heightElement.setAttribute('jslog', `${VisualLogging.value('height').track({
-                    dblclick: true,
-                    keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown',
-                    change: true,
-                })}`);
-                const timesElement = document.createElement('span');
-                timesElement.textContent = ' × ';
-                boxElement.appendChild(widthElement);
-                boxElement.appendChild(timesElement);
-                boxElement.appendChild(heightElement);
-            }
-            else {
-                const suffix = (name === 'border' ? '-width' : '');
-                const labelElement = document.createElement('div');
-                labelElement.className = 'label';
-                labelElement.textContent = boxLabels[i];
-                boxElement.appendChild(labelElement);
-                boxElement.appendChild(createBoxPartElement.call(this, style, name, 'top', suffix));
-                boxElement.appendChild(document.createElement('br'));
-                boxElement.appendChild(createBoxPartElement.call(this, style, name, 'left', suffix));
-                if (previousBox) {
-                    boxElement.appendChild(previousBox);
-                }
-                boxElement.appendChild(createBoxPartElement.call(this, style, name, 'right', suffix));
-                boxElement.appendChild(document.createElement('br'));
-                boxElement.appendChild(createBoxPartElement.call(this, style, name, 'bottom', suffix));
-            }
-            previousBox = boxElement;
+        height = height.replace(/px$/, '');
+        const heightValue = Number(height);
+        if (!isNaN(heightValue) && style.get('box-sizing') === 'border-box') {
+            const borderBox = this.getBox(style, 'border');
+            const paddingBox = this.getBox(style, 'padding');
+            height = (heightValue - borderBox.top - borderBox.bottom - paddingBox.top - paddingBox.bottom).toString();
         }
-        if (previousBox) {
-            metricsElement.appendChild(previousBox);
-        }
-        metricsElement.addEventListener('mouseover', this.highlightDOMNode.bind(this, false, 'all'), false);
-        metricsElement.addEventListener('mouseleave', this.highlightDOMNode.bind(this, false, 'all'), false);
-        this.contentElement.removeChildren();
-        this.contentElement.appendChild(metricsElement);
-        this.element.classList.remove('collapsed');
+        return Platform.NumberUtilities.toFixedIfFloating(height);
+    }
+    updateMetrics(style, highlightedMode = 'all') {
+        this.view({
+            style,
+            highlightedMode,
+            node: this.node(),
+            contentWidth: this.getContentAreaWidthPx(style),
+            contentHeight: this.getContentAreaHeightPx(style),
+            onHighlightNode: this.highlightDOMNode.bind(this),
+            onStartEditing: this.startEditing.bind(this),
+        }, undefined, this.contentElement);
     }
     startEditing(targetElement, box, styleProperty, computedStyle) {
         if (UI.UIUtils.isBeingEdited(targetElement)) {
@@ -343,7 +335,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
             }
         }
         this.editingEnded(element, context);
-        this.update();
+        this.requestUpdate();
     }
     applyUserInput(element, userInput, previousContent, context, commitEditor) {
         if (!this.inlineStyle) {
@@ -412,7 +404,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
                 node.highlight(this.highlightMode);
             }
             if (commitEditor) {
-                this.update();
+                this.requestUpdate();
             }
         }
     }

@@ -6,7 +6,7 @@ import * as Persistence from '../../models/persistence/persistence.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createTarget, describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import { createWorkspaceProject } from '../../testing/OverridesHelpers.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
@@ -1135,6 +1135,27 @@ describeWithMockConnection('MultitargetNetworkManager', () => {
             packetReordering: undefined,
             connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
         });
+    });
+    it('applies global conditions if request conditions are disabled', () => {
+        updateHostConfig({ devToolsIndividualRequestThrottling: { enabled: true } });
+        createTarget();
+        const manager = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
+        const rules = [];
+        setMockConnectionResponseHandler('Network.emulateNetworkConditionsByRule', request => {
+            rules.push(request);
+            return { ruleIds: [] };
+        });
+        manager.setNetworkConditions(SDK.NetworkManager.Slow4GConditions);
+        assert.deepEqual(rules, [{
+                matchedNetworkConditions: [{
+                        connectionType: "cellular4g" /* Protocol.Network.ConnectionType.Cellular4g */,
+                        downloadThroughput: SDK.NetworkManager.Slow4GConditions.download,
+                        latency: SDK.NetworkManager.Slow4GConditions.latency,
+                        uploadThroughput: SDK.NetworkManager.Slow4GConditions.upload,
+                        urlPattern: '',
+                    }],
+                offline: false
+            }]);
     });
     it('calls the request conditions model for global throttling if individual request throttling is enabled', () => {
         updateHostConfig({ devToolsIndividualRequestThrottling: { enabled: true } });

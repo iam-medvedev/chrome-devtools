@@ -4,9 +4,8 @@
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents, getHeaderCells, getValuesOfAllBodyRows } from '../../../../testing/DataGridHelpers.js';
-import { getElementsWithinComponent, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { getElementsWithinComponent, raf, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../../ui/components/report_view/report_view.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as PreloadingComponents from './components.js';
@@ -15,9 +14,9 @@ async function renderUsedPreloadingView(data) {
     const component = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
     component.data = data;
     renderElementIntoDOM(component);
-    assert.isNotNull(component.shadowRoot);
-    await RenderCoordinator.done();
-    return component;
+    await component.updateComplete;
+    await raf(); // Wait for the data grid to render.
+    return component.element;
 }
 describeWithEnvironment('UsedPreloadingView', () => {
     it('renderes prefetch used', async () => {

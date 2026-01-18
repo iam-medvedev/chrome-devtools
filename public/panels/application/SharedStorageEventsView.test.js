@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { raf } from '../../testing/DOMHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Resources from './application.js';
 var View = Resources.SharedStorageEventsView;
 describeWithMockConnection('SharedStorageEventsView', () => {
@@ -166,7 +167,7 @@ describeWithMockConnection('SharedStorageEventsView', () => {
     });
     it('initially has placeholder sidebar', () => {
         const view = new View.SharedStorageEventsView();
-        assert.notDeepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
+        assert.notInstanceOf(view.sidebarWidget(), UI.SearchableView.SearchableView);
         assert.deepEqual(view.sidebarWidget()?.contentElement.firstChild?.textContent, 'No shared storage event selected');
     });
     it('updates sidebarWidget upon receiving cellFocusedEvent', async () => {
@@ -182,7 +183,7 @@ describeWithMockConnection('SharedStorageEventsView', () => {
         grid.onSelect(EVENTS[0]);
         await raf();
         sinon.assert.calledOnce(spy);
-        assert.deepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
+        assert.instanceOf(view.sidebarWidget(), UI.SearchableView.SearchableView);
     });
     it('clears sidebarWidget upon clearEvents', async () => {
         const view = new View.SharedStorageEventsView();
@@ -197,10 +198,10 @@ describeWithMockConnection('SharedStorageEventsView', () => {
         grid.onSelect(EVENTS[0]);
         await raf();
         sinon.assert.calledOnce(spy);
-        assert.deepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
+        assert.instanceOf(view.sidebarWidget(), UI.SearchableView.SearchableView);
         view.clearEvents();
         sinon.assert.calledTwice(spy);
-        assert.notDeepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
+        assert.notInstanceOf(view.sidebarWidget(), UI.SearchableView.SearchableView);
         assert.deepEqual(view.sidebarWidget()?.contentElement.firstChild?.textContent, 'No shared storage event selected');
     });
     it('records events only from the target page', () => {

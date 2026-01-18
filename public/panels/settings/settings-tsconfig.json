@@ -71,6 +71,9 @@
       "path": "../../models/ai_assistance/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/ai_code_generation/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/bindings/bundle-tsconfig.json"
     },
     {
@@ -90,6 +93,12 @@
     },
     {
       "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/buttons/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/input/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/legacy_wrapper/bundle-tsconfig.json"
@@ -120,6 +129,9 @@
     },
     {
       "path": "../../ui/lit/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/visual_logging/bundle-tsconfig.json"
     },
     {
       "path": "../utils/bundle-tsconfig.json"

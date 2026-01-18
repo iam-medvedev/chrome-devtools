@@ -473,6 +473,7 @@ export const generatedProperties = [
             "float",
             "flood-color",
             "flood-opacity",
+            "flow-tolerance",
             "font-display",
             "font-family",
             "font-feature-settings",
@@ -504,6 +505,7 @@ export const generatedProperties = [
             "grid-column-end",
             "grid-column-start",
             "grid-lanes-direction",
+            "grid-lanes-pack",
             "grid-row-end",
             "grid-row-start",
             "grid-template-areas",
@@ -530,7 +532,6 @@ export const generatedProperties = [
             "interest-delay-start",
             "interpolate-size",
             "isolation",
-            "item-tolerance",
             "justify-content",
             "justify-items",
             "justify-self",
@@ -602,12 +603,10 @@ export const generatedProperties = [
             "overflow-y",
             "overlay",
             "override-colors",
-            "overscroll-area",
             "overscroll-behavior-block",
             "overscroll-behavior-inline",
             "overscroll-behavior-x",
             "overscroll-behavior-y",
-            "overscroll-position",
             "pad",
             "padding-block-end",
             "padding-block-start",
@@ -2309,6 +2308,13 @@ export const generatedProperties = [
         "name": "flood-opacity"
     },
     {
+        "keywords": [
+            "normal",
+            "infinite"
+        ],
+        "name": "flow-tolerance"
+    },
+    {
         "inherited": true,
         "longhands": [
             "font-style",
@@ -2681,11 +2687,18 @@ export const generatedProperties = [
         "keywords": [
             "normal",
             "row",
-            "row-reverse",
             "column",
-            "column-reverse"
+            "fill-reverse",
+            "track-reverse"
         ],
         "name": "grid-lanes-direction"
+    },
+    {
+        "keywords": [
+            "normal",
+            "dense"
+        ],
+        "name": "grid-lanes-pack"
     },
     {
         "longhands": [
@@ -2873,13 +2886,6 @@ export const generatedProperties = [
             "isolate"
         ],
         "name": "isolation"
-    },
-    {
-        "keywords": [
-            "normal",
-            "infinite"
-        ],
-        "name": "item-tolerance"
     },
     {
         "name": "justify-content"
@@ -3414,12 +3420,6 @@ export const generatedProperties = [
         "name": "override-colors"
     },
     {
-        "keywords": [
-            "none"
-        ],
-        "name": "overscroll-area"
-    },
-    {
         "longhands": [
             "overscroll-behavior-x",
             "overscroll-behavior-y"
@@ -3447,12 +3447,6 @@ export const generatedProperties = [
             "none"
         ],
         "name": "overscroll-behavior-y"
-    },
-    {
-        "keywords": [
-            "none"
-        ],
-        "name": "overscroll-position"
     },
     {
         "name": "pad"
@@ -5840,6 +5834,12 @@ export const generatedPropertyValues = {
             "currentcolor"
         ]
     },
+    "flow-tolerance": {
+        "values": [
+            "normal",
+            "infinite"
+        ]
+    },
     "font-feature-settings": {
         "values": [
             "normal"
@@ -6066,9 +6066,15 @@ export const generatedPropertyValues = {
         "values": [
             "normal",
             "row",
-            "row-reverse",
             "column",
-            "column-reverse"
+            "fill-reverse",
+            "track-reverse"
+        ]
+    },
+    "grid-lanes-pack": {
+        "values": [
+            "normal",
+            "dense"
         ]
     },
     "grid-row-end": {
@@ -6153,12 +6159,6 @@ export const generatedPropertyValues = {
         "values": [
             "auto",
             "isolate"
-        ]
-    },
-    "item-tolerance": {
-        "values": [
-            "normal",
-            "infinite"
         ]
     },
     "left": {
@@ -6462,11 +6462,6 @@ export const generatedPropertyValues = {
             "auto"
         ]
     },
-    "overscroll-area": {
-        "values": [
-            "none"
-        ]
-    },
     "overscroll-behavior-x": {
         "values": [
             "auto",
@@ -6478,11 +6473,6 @@ export const generatedPropertyValues = {
         "values": [
             "auto",
             "contain",
-            "none"
-        ]
-    },
-    "overscroll-position": {
-        "values": [
             "none"
         ]
     },

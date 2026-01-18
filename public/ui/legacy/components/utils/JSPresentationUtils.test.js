@@ -101,6 +101,7 @@ describeWithMockConnection('JSPresentationUtils', () => {
         const options = { expandable: true };
         const component = new Components.JSPresentationUtils.StackTracePreviewContent(undefined, target, linkifier, options);
         renderElementIntoDOM(component);
+        assert.isFalse(component.hasContent());
         component.stackTrace = stackTrace;
         await component.updateComplete;
         assert.deepEqual(component.contentElement.deepInnerText().split('\n'), ['\tfoo\t@\twww.google.com/script.js:1']);
@@ -108,6 +109,7 @@ describeWithMockConnection('JSPresentationUtils', () => {
         assert.exists(expandButton);
         expandButton.click();
         await component.updateComplete;
+        assert.isTrue(component.hasContent());
         assert.deepEqual(component.contentElement.deepInnerText().split('\n'), [
             '\tfoo\t@\twww.google.com/script.js:1',
             '\tbar\t@\tbar.js:2',

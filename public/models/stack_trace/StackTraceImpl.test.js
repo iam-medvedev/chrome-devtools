@@ -57,6 +57,9 @@ describe('FragmentImpl', () => {
             const fragment = FragmentImpl.getOrCreate(node);
             assert.strictEqual(stringifyFragment(fragment), 'at foo (foo.ts:1:0)');
         });
+        it('handles empty fragments correctly', () => {
+            assert.lengthOf(FragmentImpl.EMPTY_FRAGMENT.frames, 0);
+        });
     });
 });
 //# sourceMappingURL=StackTraceImpl.test.js.map

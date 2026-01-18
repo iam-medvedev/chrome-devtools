@@ -536,6 +536,7 @@ var generatedProperties = [
       "float",
       "flood-color",
       "flood-opacity",
+      "flow-tolerance",
       "font-display",
       "font-family",
       "font-feature-settings",
@@ -567,6 +568,7 @@ var generatedProperties = [
       "grid-column-end",
       "grid-column-start",
       "grid-lanes-direction",
+      "grid-lanes-pack",
       "grid-row-end",
       "grid-row-start",
       "grid-template-areas",
@@ -593,7 +595,6 @@ var generatedProperties = [
       "interest-delay-start",
       "interpolate-size",
       "isolation",
-      "item-tolerance",
       "justify-content",
       "justify-items",
       "justify-self",
@@ -665,12 +666,10 @@ var generatedProperties = [
       "overflow-y",
       "overlay",
       "override-colors",
-      "overscroll-area",
       "overscroll-behavior-block",
       "overscroll-behavior-inline",
       "overscroll-behavior-x",
       "overscroll-behavior-y",
-      "overscroll-position",
       "pad",
       "padding-block-end",
       "padding-block-start",
@@ -2372,6 +2371,13 @@ var generatedProperties = [
     "name": "flood-opacity"
   },
   {
+    "keywords": [
+      "normal",
+      "infinite"
+    ],
+    "name": "flow-tolerance"
+  },
+  {
     "inherited": true,
     "longhands": [
       "font-style",
@@ -2744,11 +2750,18 @@ var generatedProperties = [
     "keywords": [
       "normal",
       "row",
-      "row-reverse",
       "column",
-      "column-reverse"
+      "fill-reverse",
+      "track-reverse"
     ],
     "name": "grid-lanes-direction"
+  },
+  {
+    "keywords": [
+      "normal",
+      "dense"
+    ],
+    "name": "grid-lanes-pack"
   },
   {
     "longhands": [
@@ -2936,13 +2949,6 @@ var generatedProperties = [
       "isolate"
     ],
     "name": "isolation"
-  },
-  {
-    "keywords": [
-      "normal",
-      "infinite"
-    ],
-    "name": "item-tolerance"
   },
   {
     "name": "justify-content"
@@ -3477,12 +3483,6 @@ var generatedProperties = [
     "name": "override-colors"
   },
   {
-    "keywords": [
-      "none"
-    ],
-    "name": "overscroll-area"
-  },
-  {
     "longhands": [
       "overscroll-behavior-x",
       "overscroll-behavior-y"
@@ -3510,12 +3510,6 @@ var generatedProperties = [
       "none"
     ],
     "name": "overscroll-behavior-y"
-  },
-  {
-    "keywords": [
-      "none"
-    ],
-    "name": "overscroll-position"
   },
   {
     "name": "pad"
@@ -5903,6 +5897,12 @@ var generatedPropertyValues = {
       "currentcolor"
     ]
   },
+  "flow-tolerance": {
+    "values": [
+      "normal",
+      "infinite"
+    ]
+  },
   "font-feature-settings": {
     "values": [
       "normal"
@@ -6129,9 +6129,15 @@ var generatedPropertyValues = {
     "values": [
       "normal",
       "row",
-      "row-reverse",
       "column",
-      "column-reverse"
+      "fill-reverse",
+      "track-reverse"
+    ]
+  },
+  "grid-lanes-pack": {
+    "values": [
+      "normal",
+      "dense"
     ]
   },
   "grid-row-end": {
@@ -6216,12 +6222,6 @@ var generatedPropertyValues = {
     "values": [
       "auto",
       "isolate"
-    ]
-  },
-  "item-tolerance": {
-    "values": [
-      "normal",
-      "infinite"
     ]
   },
   "left": {
@@ -6525,11 +6525,6 @@ var generatedPropertyValues = {
       "auto"
     ]
   },
-  "overscroll-area": {
-    "values": [
-      "none"
-    ]
-  },
   "overscroll-behavior-x": {
     "values": [
       "auto",
@@ -6541,11 +6536,6 @@ var generatedPropertyValues = {
     "values": [
       "auto",
       "contain",
-      "none"
-    ]
-  },
-  "overscroll-position": {
-    "values": [
       "none"
     ]
   },
@@ -11761,9 +11751,9 @@ var RequestConditions = class extends Common5.ObjectWrapper.ObjectWrapper {
             matchedNetworkConditions.push({ ruleIds, urlPattern, conditions });
           }
         }
-        if (globalConditions) {
-          matchedNetworkConditions.push({ conditions: globalConditions });
-        }
+      }
+      if (globalConditions) {
+        matchedNetworkConditions.push({ conditions: globalConditions });
       }
       const promises = [];
       for (const agent of agents) {
@@ -25361,7 +25351,7 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
     }
   }
   toAdoptedStyleSheets(ids) {
-    return ids.map((id) => new AdoptedStyleSheet(id, this.#domModel.cssModel()));
+    return ids.map((id) => new AdoptedStyleSheet(id, this));
   }
   setAdoptedStyleSheets(ids) {
     this.#adoptedStyleSheets = this.toAdoptedStyleSheets(ids);
@@ -25689,10 +25679,13 @@ var DOMDocument = class extends DOMNode {
 };
 var AdoptedStyleSheet = class {
   id;
-  cssModel;
-  constructor(id, cssModel) {
+  parent;
+  constructor(id, parent) {
     this.id = id;
-    this.cssModel = cssModel;
+    this.parent = parent;
+  }
+  get cssModel() {
+    return this.parent.domModel().cssModel();
   }
 };
 var DOMModel = class _DOMModel extends SDKModel {
