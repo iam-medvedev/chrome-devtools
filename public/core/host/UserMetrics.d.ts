@@ -24,15 +24,9 @@ export declare class UserMetrics {
     developerResourceScheme(developerResourceScheme: DeveloperResourceScheme): void;
     language(language: Intl.UnicodeBCP47LocaleIdentifier): void;
     syncSetting(devtoolsSyncSettingEnabled: boolean): void;
-    recordingAssertion(value: RecordingAssertion): void;
     recordingToggled(value: RecordingToggled): void;
     recordingReplayFinished(value: RecordingReplayFinished): void;
-    recordingReplaySpeed(value: RecordingReplaySpeed): void;
     recordingReplayStarted(value: RecordingReplayStarted): void;
-    recordingEdited(value: RecordingEdited): void;
-    recordingExported(value: RecordingExported): void;
-    recordingCodeToggled(value: RecordingCodeToggled): void;
-    recordingCopiedToClipboard(value: RecordingCopiedToClipboard): void;
     lighthouseModeRun(type: LighthouseModeRun): void;
     lighthouseCategoryUsed(type: LighthouseCategoryUsed): void;
     swatchActivated(swatch: SwatchType): void;
@@ -519,7 +513,7 @@ export declare enum DevtoolsExperiments {
     'live-heap-profile' = 11,
     'protocol-monitor' = 13,
     'sampling-heap-profiler-timeline' = 17,
-    'show-option-tp-expose-internals-in-heap-snapshot' = 18,
+    'show-option-to-expose-internals-in-heap-snapshot' = 18,
     'timeline-invalidation-tracking' = 26,
     'timeline-show-all-events' = 27,
     'timeline-v8-runtime-call-stats' = 28,

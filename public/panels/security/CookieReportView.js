@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-lit-render-outside-of-view */
 import '../../ui/legacy/components/data_grid/data_grid.js';
+import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -11,7 +12,6 @@ import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as uiI18n from '../../ui/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as NetworkForward from '../network/forward/forward.js';
 import cookieReportViewStyles from './cookieReportView.css.js';
 const { render, html, Directives: { ref } } = Lit;
@@ -179,6 +179,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/security/CookieReportView.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const i18nFormatString = uiI18n.getFormatLocalizedString.bind(undefined, str_);
+export const i18nFormatStringTemplate = uiI18n.getFormatLocalizedStringTemplate.bind(undefined, str_);
 const DEFAULT_VIEW = (input, output, target) => {
     const deprecationMessage = html `
     <div class="deprecation-warning">
@@ -188,9 +189,8 @@ const DEFAULT_VIEW = (input, output, target) => {
           class="medium"
           style="color: var(--icon-warning); margin-right: var(--sys-size-2);">
         </devtools-icon>
-        ${i18nFormatString(UIStrings.upperDeprecationWarning, {
-        PH1: UI.Fragment
-            .html `<x-link class="devtools-link" href="https://privacysandbox.com/news/privacy-sandbox-update/" jslog=${VisualLogging.link('privacy-sandbox-update').track({ click: true })}>${i18nString(UIStrings.blogPostLink)}</x-link>`,
+        ${i18nFormatStringTemplate(UIStrings.upperDeprecationWarning, {
+        PH1: html `<devtools-link class="devtools-link" href="https://privacysandbox.com/news/privacy-sandbox-update/" jslogcontext="privacy-sandbox-update">${i18nString(UIStrings.blogPostLink)}</devtools-link>`,
     })}
       </div>
       <div class="body">
@@ -203,7 +203,7 @@ const DEFAULT_VIEW = (input, output, target) => {
         <div class="report overflow-auto">
             <div class="header">
               <h1>${i18nString(UIStrings.title)}</h1>
-              <div class="body">${i18nString(UIStrings.body)} <x-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/prepare/audit-cookies" jslog=${VisualLogging.link('learn-more').track({ click: true })}>${i18nString(UIStrings.learnMoreLink)}</x-link></div>
+              <div class="body">${i18nString(UIStrings.body)} <devtools-link class="devtools-link" href="https://developers.google.com/privacy-sandbox/cookies/prepare/audit-cookies" jslogcontext="learn-more">${i18nString(UIStrings.learnMoreLink)}</devtools-link></div>
             </div>
             ${input.cookieRows.length > 0 ?
         html `
@@ -421,20 +421,21 @@ export class CookieReportView extends UI.Widget.VBox {
         }
         switch (insight.type) {
             case "GitHubResource" /* Protocol.Audits.InsightType.GitHubResource */: {
-                const githubLink = UI.XLink.XLink.create(insight.tableEntryUrl ?
-                    insight.tableEntryUrl :
-                    'https://github.com/privacysandbox/privacy-sandbox-dev-support/blob/main/3pc-migration-readiness.md', i18nString(UIStrings.guidance), undefined, undefined, 'readiness-list-link');
-                return html `${uiI18n.getFormatLocalizedString(str_, UIStrings.gitHubResource, {
+                const githubLink = html `<devtools-link href=${insight.tableEntryUrl ??
+                    'https://github.com/privacysandbox/privacy-sandbox-dev-support/blob/main/3pc-migration-readiness.md'} jslogcontext="readiness-list-link">${i18nString(UIStrings.guidance)}</devtools-link>`;
+                return html `${uiI18n.getFormatLocalizedStringTemplate(str_, UIStrings.gitHubResource, {
                     PH1: githubLink,
                 })}`;
             }
             case "GracePeriod" /* Protocol.Audits.InsightType.GracePeriod */: {
                 const url = SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.inspectedURL();
-                const gracePeriodLink = UI.XLink.XLink.create('https://developers.google.com/privacy-sandbox/cookies/dashboard?url=' +
+                const gracePeriodLink = html `<devtools-link
+            href=${'https://developers.google.com/privacy-sandbox/cookies/dashboard?url=' +
                     // The order of the URLs matters - needs to be 1P + 3P.
                     (url ? Common.ParsedURL.ParsedURL.fromString(url)?.host + '+' : '') +
-                    (domain.charAt(0) === '.' ? domain.substring(1) : domain), i18nString(UIStrings.reportedIssues), undefined, undefined, 'compatibility-lookup-link');
-                return html `${uiI18n.getFormatLocalizedString(str_, UIStrings.gracePeriod, {
+                    (domain.charAt(0) === '.' ? domain.substring(1) : domain)}
+            jslogcontext="compatibility-lookup-link">${i18nString(UIStrings.reportedIssues)}</devtools-link>`;
+                return html `${uiI18n.getFormatLocalizedStringTemplate(str_, UIStrings.gracePeriod, {
                     PH1: gracePeriodLink,
                 })}`;
             }

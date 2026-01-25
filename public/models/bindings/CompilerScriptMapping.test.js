@@ -461,7 +461,7 @@ describeWithMockConnection('CompilerScriptMapping', () => {
             assert.isFalse(await compilerScriptMapping.translateRawFramesStep([{ lineNumber: -1, columnNumber: -1, functionName: 'Array.map' }], []));
         });
         it('translates a single frame using "proposal scopes" information', async () => {
-            Root.Runtime.experiments.enableForTest("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */);
+            Root.Runtime.experiments.enableForTest(Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES);
             const target = createTarget();
             const compilerScriptMapping = new Bindings.CompilerScriptMapping.CompilerScriptMapping(target.model(SDK.DebuggerModel.DebuggerModel), workspace, debuggerWorkspaceBinding);
             const sourceMap = encodeSourceMap([
@@ -494,7 +494,7 @@ describeWithMockConnection('CompilerScriptMapping', () => {
                         uiSourceCode: await uiSourceCodePromise,
                         url: undefined,
                     }]]);
-            Root.Runtime.experiments.disableForTest("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */);
+            Root.Runtime.experiments.disableForTest(Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES);
         });
         it('translates a single frame using "fallback" scope information (created from AST and mappigns)', async () => {
             const target = createTarget();
@@ -526,7 +526,7 @@ describeWithMockConnection('CompilerScriptMapping', () => {
                     }]]);
         });
         it('expands inlined frames and populates UISourceCode', async () => {
-            Root.Runtime.experiments.enableForTest("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */);
+            Root.Runtime.experiments.enableForTest(Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES);
             const target = createTarget();
             const compilerScriptMapping = new Bindings.CompilerScriptMapping.CompilerScriptMapping(target.model(SDK.DebuggerModel.DebuggerModel), workspace, debuggerWorkspaceBinding);
             //
@@ -579,7 +579,7 @@ describeWithMockConnection('CompilerScriptMapping', () => {
             assert.strictEqual(translatedFrames[0][0].uiSourceCode, uiSourceCode);
             assert.strictEqual(translatedFrames[0][1].uiSourceCode, uiSourceCode);
             assert.strictEqual(translatedFrames[0][2].uiSourceCode, uiSourceCode);
-            Root.Runtime.experiments.disableForTest("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */);
+            Root.Runtime.experiments.disableForTest(Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES);
         });
     });
 });

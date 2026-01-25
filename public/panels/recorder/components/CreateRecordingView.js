@@ -155,13 +155,13 @@ export const DEFAULT_VIEW = (input, output, target) => {
         />
         <label class="row-label" for="selector-attribute">
           <span>${i18nString(UIStrings.selectorAttribute)}</span>
-          <x-link
+          <devtools-link
             class="link" href="https://g.co/devtools/recorder#selector"
             title=${i18nString(UIStrings.learnMore)}
-            jslog=${VisualLogging.link('recorder-selector-help').track({ click: true })}>
+            .jslogContext=${'recorder-selector-help'}>
             <devtools-icon name="help">
             </devtools-icon>
-          </x-link>
+          </devtools-link>
         </label>
         <input
           value=${selectorAttribute}
@@ -176,13 +176,13 @@ export const DEFAULT_VIEW = (input, output, target) => {
         />
         <label class="row-label">
           <span>${i18nString(UIStrings.selectorTypes)}</span>
-          <x-link
+          <devtools-link
             class="link" href="https://g.co/devtools/recorder#selector"
             title=${i18nString(UIStrings.learnMore)}
-            jslog=${VisualLogging.link('recorder-selector-help').track({ click: true })}>
+            .jslogContext=${'recorder-selector-help'}>
             <devtools-icon name="help">
             </devtools-icon>
-          </x-link>
+          </devtools-link>
         </label>
         <div class="checkbox-container">
           ${repeat(selectorTypes, item => {

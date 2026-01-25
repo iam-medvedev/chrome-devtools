@@ -42,13 +42,10 @@ describe('Runtime', () => {
         });
     });
     it('allConfigurableExperiments returns all registered experiments', () => {
-        Root.Runtime.experiments.register('example', 'example');
-        Root.Runtime.experiments.register('configurable', 'configurable');
+        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.FONT_EDITOR, 'font editor');
+        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.APCA, 'apca');
         const experiments = Root.Runtime.experiments.allConfigurableExperiments();
-        assert.deepEqual(experiments.map(experiment => experiment.name), ['example', 'configurable']);
-    });
-    it('getChromeVersion result has the correct shape', () => {
-        assert.isTrue(/^\d{3}\.0\.0\.0$/.test(Root.Runtime.getChromeVersion()));
+        assert.deepEqual(experiments.map(experiment => experiment.name), [Root.ExperimentNames.ExperimentName.FONT_EDITOR, Root.ExperimentNames.ExperimentName.APCA]);
     });
 });
 //# sourceMappingURL=Runtime.test.js.map

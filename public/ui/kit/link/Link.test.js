@@ -35,13 +35,13 @@ describe('devtools-link', () => {
         });
     });
     describe('visual logging', () => {
-        it('should default to href', () => {
+        it('should default to empty link', () => {
             const link = new Link();
             link.setAttribute('href', 'https://example.com/');
             renderElementIntoDOM(link);
             const jslog = link.getAttribute('jslog');
             assert.isNotEmpty(jslog);
-            assert.include(jslog, 'example');
+            assert.include(jslog, 'Link');
         });
         it('should use the specific value', () => {
             const link = new Link();

@@ -92,11 +92,17 @@ export class Runtime {
         if (experiment === '*') {
             return true;
         }
-        if (experiment && experiment.startsWith('!') && experiments.isEnabled(experiment.substring(1))) {
-            return false;
+        if (experiment?.startsWith('!')) {
+            const experimentName = experiment.substring(1);
+            if (experiments.isEnabled(experimentName)) {
+                return false;
+            }
         }
-        if (experiment && !experiment.startsWith('!') && !experiments.isEnabled(experiment)) {
-            return false;
+        if (experiment && !experiment.startsWith('!')) {
+            const experimentName = experiment;
+            if (!experiments.isEnabled(experimentName)) {
+                return false;
+            }
         }
         const { condition } = descriptor;
         return condition ? condition(hostConfig) : true;
@@ -166,10 +172,11 @@ export class ExperimentsSupport {
             this.#enabledByDefault.add(experimentName);
         }
     }
-    setServerEnabledExperiments(experimentNames) {
-        for (const experiment of experimentNames) {
-            this.checkExperiment(experiment);
-            this.#serverEnabled.add(experiment);
+    setServerEnabledExperiments(experiments) {
+        for (const experiment of experiments) {
+            const experimentName = experiment;
+            this.checkExperiment(experimentName);
+            this.#serverEnabled.add(experimentName);
         }
     }
     enableForTest(experimentName) {
@@ -235,6 +242,10 @@ class ExperimentStorage {
         self.localStorage?.setItem('experiments', JSON.stringify(this.#experiments));
     }
 }
+/**
+ * @deprecated Experiments should not be used anymore, instead use base::Feature.
+ * See docs/contributing/settings-experiments-features.md
+ */
 export class Experiment {
     name;
     title;

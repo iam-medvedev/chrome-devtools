@@ -683,6 +683,7 @@ __export(ConsoleInsightTeaser_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
 import "./../../ui/components/tooltips/tooltips.js";
+import "./../../ui/kit/kit.js";
 import * as Common5 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
@@ -1678,24 +1679,18 @@ function parseSourcePositionsFromErrorStack(runtimeModel, stack) {
     let left = match[0].length;
     let right = line.length;
     let enclosedInBraces = false;
-    while (line[right - 1] === ")") {
+    if (line[right - 1] === ")") {
       right--;
       enclosedInBraces = true;
-      do {
-        left = line.indexOf("(", left);
-        if (left < 0) {
-          return null;
-        }
-        left++;
-        if (!line.substring(left).startsWith("eval at ")) {
-          break;
-        }
-        left += 8;
-        right = line.lastIndexOf(", ", right) - 1;
-        if (right < 0) {
-          return null;
-        }
-      } while (true);
+      left = line.lastIndexOf(" (", right);
+      if (left < 0) {
+        return null;
+      }
+      left += 2;
+      const newRight = line.indexOf("), ", left);
+      if (newRight > left) {
+        right = newRight;
+      }
     }
     const linkCandidate = line.substring(left, right);
     const splitResult = Common3.ParsedURL.ParsedURL.splitLineAndColumn(linkCandidate);
@@ -3327,8 +3322,8 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     const formattedResult = document.createElement("span");
     for (let i = 0; i < linkInfos.length; ++i) {
       const newline = i < linkInfos.length - 1 ? "\n" : "";
-      const { line, link: link2, isCallFrame } = linkInfos[i];
-      if (!link2 && exceptionDetails && line.startsWith("SyntaxError")) {
+      const { line, link, isCallFrame } = linkInfos[i];
+      if (!link && exceptionDetails && line.startsWith("SyntaxError")) {
         appendOrShow(formattedResult, this.linkifyStringAsFragment(line));
         const maybeScriptLocation = this.createScriptLocationLinkForSyntaxError(debuggerModel, exceptionDetails);
         if (maybeScriptLocation) {
@@ -3344,16 +3339,16 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
         continue;
       }
       const formattedLine = document.createElement("span");
-      if (!link2) {
+      if (!link) {
         appendOrShow(formattedLine, this.linkifyStringAsFragment(`${line}${newline}`));
         formattedLine.classList.add("formatted-builtin-stack-frame");
         formattedResult.appendChild(formattedLine);
         continue;
       }
-      const suffix = `${link2.suffix}${newline}`;
-      appendOrShow(formattedLine, this.linkifyStringAsFragment(link2.prefix));
-      const scriptLocationLink = this.linkifier.linkifyScriptLocation(debuggerModel.target(), link2.scriptId || null, link2.url, link2.lineNumber, {
-        columnNumber: link2.columnNumber,
+      const suffix = `${link.suffix}${newline}`;
+      appendOrShow(formattedLine, this.linkifyStringAsFragment(link.prefix));
+      const scriptLocationLink = this.linkifier.linkifyScriptLocation(debuggerModel.target(), link.scriptId || null, link.url, link.lineNumber, {
+        columnNumber: link.columnNumber,
         inlineFrameIndex: 0,
         showColumnNumber: true
       });
@@ -3363,12 +3358,12 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       appendOrShow(formattedLine, this.linkifyStringAsFragment(suffix));
       formattedLine.classList.add("formatted-stack-frame");
       formattedResult.appendChild(formattedLine);
-      if (!link2.enclosedInBraces) {
+      if (!link.enclosedInBraces) {
         continue;
       }
-      const prefixWithoutFunction = link2.prefix.substring(0, link2.prefix.lastIndexOf(" ", link2.prefix.length - 3));
+      const prefixWithoutFunction = link.prefix.substring(0, link.prefix.lastIndexOf(" ", link.prefix.length - 3));
       const selectableChildIndex = this.selectableChildren.length - 1;
-      void this.expandInlineStackFrames(debuggerModel, prefixWithoutFunction, suffix, link2.url, link2.lineNumber, link2.columnNumber, formattedResult, formattedLine).then((modified) => {
+      void this.expandInlineStackFrames(debuggerModel, prefixWithoutFunction, suffix, link.url, link.lineNumber, link.columnNumber, formattedResult, formattedLine).then((modified) => {
         if (modified) {
           formattedResult.removeChild(formattedLine);
           this.selectableChildren.splice(selectableChildIndex, 1);
@@ -4105,13 +4100,13 @@ function renderNoModel(input) {
       <div class="response-container">
         <h2>${input.isForWarning ? lockedString(UIStringsNotTranslate.getHelpForWarning) : lockedString(UIStringsNotTranslate.getHelpForError)}
         </h2>
-        <div>You can get quick answers from <x-link
-            .jslog=${VisualLogging2.link().track({ click: true, keydown: "Enter|Space" }).context("insights-teaser-built-in-ai-documentation")}
+        <div>You can get quick answers from <devtools-link
+            jslogcontext="insights-teaser-built-in-ai-documentation"
             class="link"
             href=${BUILT_IN_AI_DOCUMENTATION}
           >
             Chrome’s Built-in AI
-          </x-link>
+          </devtools-link>
           , without any data leaving your device.
         </div>
         <div>${lockedString(UIStringsNotTranslate.toUseDownload)}</div>
@@ -4243,12 +4238,12 @@ function renderFooter(input) {
       >
         <div class="info-tooltip-text">${lockedString(UIStringsNotTranslate.infoTooltipText)}</div>
         <div class="learn-more">
-          <x-link
+          <devtools-link
             class="devtools-link"
             title=${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}
             href=${DATA_USAGE_URL}
-            jslog=${VisualLogging2.link().track({ click: true, keydown: "Enter|Space" }).context("explain.teaser.learn-more")}
-          >${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}</x-link>
+            jslogcontext="explain.teaser.learn-more"
+          >${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}</devtools-link>
         </div>
       </devtools-tooltip>
       ${renderDontShowCheckbox(input)}
@@ -4404,13 +4399,11 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
         {
           iconName: "warning",
           // clang-format off
-          content: html2`<x-link
+          content: html2`<devtools-link
             href=${CODE_SNIPPET_WARNING_URL}
             class="link devtools-link"
-            jslog=${VisualLogging2.link("explain.teaser.code-snippets-explainer").track({
-            click: true
-          })}
-          >${lockedString(UIStringsNotTranslate.freDisclaimerTextUseWithCaution)}</x-link>`
+            jslogcontext="explain.teaser.code-snippets-explainer"
+          >${lockedString(UIStringsNotTranslate.freDisclaimerTextUseWithCaution)}</devtools-link>`
           // clang-format on
         }
       ],

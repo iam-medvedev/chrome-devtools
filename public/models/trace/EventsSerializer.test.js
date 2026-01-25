@@ -52,5 +52,24 @@ describeWithEnvironment('EventsSerializer', () => {
         const resolvedFrame = eventsSerializer.eventForKey(frameKey, parsedTrace);
         assert.strictEqual(resolvedFrame, frame);
     });
+    it('returns null for a JSSample event', async function () {
+        const eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
+        const jsSample = {
+            name: "JSSample" /* Trace.Types.Events.Name.JS_SAMPLE */,
+            cat: 'devtools.timeline',
+            ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+            ts: Trace.Types.Timing.Micro(100),
+            dur: Trace.Types.Timing.Micro(0),
+            pid: Trace.Types.Events.ProcessID(1),
+            tid: Trace.Types.Events.ThreadID(1),
+            args: {
+                data: {
+                    stackTrace: [],
+                },
+            },
+        };
+        const key = eventsSerializer.keyForEvent(jsSample);
+        assert.isNull(key);
+    });
 });
 //# sourceMappingURL=EventsSerializer.test.js.map

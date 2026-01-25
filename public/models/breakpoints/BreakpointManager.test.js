@@ -311,7 +311,7 @@ describeWithMockConnection('BreakpointManager', () => {
         assert.strictEqual(req2.condition, 'o > 0\n\n//# sourceURL=debugger://breakpoint');
     });
     it('allows awaiting the restoration of breakpoints', async () => {
-        Root.Runtime.experiments.enableForTest("instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */);
+        Root.Runtime.experiments.enableForTest(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS);
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
         const { uiSourceCode, project } = createContentProviderUISourceCode({ url: URL, mimeType: 'text/javascript' });
@@ -348,10 +348,10 @@ describeWithMockConnection('BreakpointManager', () => {
         // Clean up.
         await breakpoint.remove(false);
         Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
-        Root.Runtime.experiments.disableForTest("instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */);
+        Root.Runtime.experiments.disableForTest(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS);
     });
     it('allows awaiting on scheduled update in debugger', async () => {
-        Root.Runtime.experiments.enableForTest("instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */);
+        Root.Runtime.experiments.enableForTest(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS);
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
         const { uiSourceCode, project } = createContentProviderUISourceCode({ url: URL, mimeType: 'text/javascript' });
@@ -385,7 +385,7 @@ describeWithMockConnection('BreakpointManager', () => {
         Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
     });
     it('allows awaiting on removal of breakpoint in debugger', async () => {
-        Root.Runtime.experiments.enableForTest("instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */);
+        Root.Runtime.experiments.enableForTest(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS);
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
         const script = await backend.addScript(target, scriptDescription, null);
@@ -717,11 +717,11 @@ describeWithMockConnection('BreakpointManager', () => {
         beforeEach(() => {
             const targetManager = SDK.TargetManager.TargetManager.instance();
             const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-            Root.Runtime.experiments.enableForTest("instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */);
+            Root.Runtime.experiments.enableForTest(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS);
             breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({ forceNew: true, targetManager, workspace, debuggerWorkspaceBinding });
         });
         afterEach(() => {
-            Root.Runtime.experiments.disableForTest("instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */);
+            Root.Runtime.experiments.disableForTest(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS);
         });
         async function testBreakpointMovedOnInstrumentationBreak(fileSystemPath, fileSystemFileUrl, content, type) {
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
@@ -1237,7 +1237,7 @@ describeWithMockConnection('BreakpointManager', () => {
         assert.isTrue(slidingBreakpoint.isRemoved);
     });
     it('Breakpoint does not keep file system source code alive after file system removal', async () => {
-        Root.Runtime.experiments.enableForTest("instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */);
+        Root.Runtime.experiments.enableForTest(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS);
         const breakpointLine = 0;
         const resolvedBreakpointLine = 1;
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
@@ -1277,7 +1277,7 @@ describeWithMockConnection('BreakpointManager', () => {
         // the file system breakpoint location should be in the storage.
         assert.isEmpty(breakpointManager.breakpointLocationsForUISourceCode(fileSystemUiSourceCode));
         assert.lengthOf(breakpointManager.storage.breakpointItems(fileSystemUiSourceCode.url()), 1);
-        Root.Runtime.experiments.disableForTest("instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */);
+        Root.Runtime.experiments.disableForTest(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS);
     });
     it('Breakpoints are set only into network project', async () => {
         const breakpointLine = 0;

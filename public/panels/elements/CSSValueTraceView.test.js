@@ -20,6 +20,7 @@ async function setUpStyles() {
     const node = new SDK.DOMModel.DOMNode(domModel);
     node.id = 0;
     UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+    computedStyleModel.node = node;
     const matchedStyles = await getMatchedStylesWithBlankRule({ cssModel });
     const stylesPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
     return { matchedStyles, stylesPane };
@@ -51,7 +52,7 @@ async function showTrace(property, matchedStyles, treeElement) {
     const viewFunction = createViewFunctionStub(Elements.CSSValueTraceView.CSSValueTraceView);
     const view = new Elements.CSSValueTraceView.CSSValueTraceView(undefined, viewFunction);
     await viewFunction.nextInput;
-    void view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, treeElement.parentPane(), matchedStyles, treeElement, treeElement.getComputedStyles() ?? new Map()), false, 0, false);
+    void view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, treeElement.parentPane(), matchedStyles, treeElement, treeElement.getComputedStyles() ?? new Map(), treeElement.getComputedStyleExtraFields()), false, 0, false);
     return await viewFunction.nextInput;
 }
 function getLineText(line) {

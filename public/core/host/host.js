@@ -1005,6 +1005,9 @@ var AidaClient = class {
     if (!InspectorFrontendHostInstance.doAidaConversation) {
       throw new Error("doAidaConversation is not available");
     }
+    if (Root2.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
+      request.metadata.disable_user_content_logging = true;
+    }
     const stream = (() => {
       let { promise, resolve, reject } = Promise.withResolvers();
       options?.signal?.addEventListener("abort", () => {
@@ -1676,14 +1679,6 @@ var UserMetrics = class {
       );
     });
   }
-  recordingAssertion(value) {
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(
-      "DevTools.RecordingAssertion",
-      value,
-      4
-      /* RecordingAssertion.MAX_VALUE */
-    );
-  }
   recordingToggled(value) {
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
       "DevTools.RecordingToggled",
@@ -1700,52 +1695,12 @@ var UserMetrics = class {
       /* RecordingReplayFinished.MAX_VALUE */
     );
   }
-  recordingReplaySpeed(value) {
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(
-      "DevTools.RecordingReplaySpeed",
-      value,
-      5
-      /* RecordingReplaySpeed.MAX_VALUE */
-    );
-  }
   recordingReplayStarted(value) {
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
       "DevTools.RecordingReplayStarted",
       value,
       4
       /* RecordingReplayStarted.MAX_VALUE */
-    );
-  }
-  recordingEdited(value) {
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(
-      "DevTools.RecordingEdited",
-      value,
-      11
-      /* RecordingEdited.MAX_VALUE */
-    );
-  }
-  recordingExported(value) {
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(
-      "DevTools.RecordingExported",
-      value,
-      6
-      /* RecordingExported.MAX_VALUE */
-    );
-  }
-  recordingCodeToggled(value) {
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(
-      "DevTools.RecordingCodeToggled",
-      value,
-      3
-      /* RecordingCodeToggled.MAX_VALUE */
-    );
-  }
-  recordingCopiedToClipboard(value) {
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(
-      "DevTools.RecordingCopiedToClipboard",
-      value,
-      9
-      /* RecordingCopiedToClipboard.MAX_VALUE */
     );
   }
   lighthouseModeRun(type) {
@@ -2265,7 +2220,7 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["live-heap-profile"] = 11] = "live-heap-profile";
   DevtoolsExperiments2[DevtoolsExperiments2["protocol-monitor"] = 13] = "protocol-monitor";
   DevtoolsExperiments2[DevtoolsExperiments2["sampling-heap-profiler-timeline"] = 17] = "sampling-heap-profiler-timeline";
-  DevtoolsExperiments2[DevtoolsExperiments2["show-option-tp-expose-internals-in-heap-snapshot"] = 18] = "show-option-tp-expose-internals-in-heap-snapshot";
+  DevtoolsExperiments2[DevtoolsExperiments2["show-option-to-expose-internals-in-heap-snapshot"] = 18] = "show-option-to-expose-internals-in-heap-snapshot";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-invalidation-tracking"] = 26] = "timeline-invalidation-tracking";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-show-all-events"] = 27] = "timeline-show-all-events";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-v8-runtime-call-stats"] = 28] = "timeline-v8-runtime-call-stats";

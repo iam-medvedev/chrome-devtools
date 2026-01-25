@@ -1,8 +1,6 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
-import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
@@ -57,12 +55,6 @@ const UIStrings = {
      * @description Label for a group of items in the replay menu that indicate various extensions that can be used for replay.
      */
     extensionGroup: 'Extensions',
-};
-const replaySpeedToMetricSpeedMap = {
-    ["normal" /* PlayRecordingSpeed.NORMAL */]: 1 /* Host.UserMetrics.RecordingReplaySpeed.NORMAL */,
-    ["slow" /* PlayRecordingSpeed.SLOW */]: 2 /* Host.UserMetrics.RecordingReplaySpeed.SLOW */,
-    ["very_slow" /* PlayRecordingSpeed.VERY_SLOW */]: 3 /* Host.UserMetrics.RecordingReplaySpeed.VERY_SLOW */,
-    ["extremely_slow" /* PlayRecordingSpeed.EXTREMELY_SLOW */]: 4 /* Host.UserMetrics.RecordingReplaySpeed.EXTREMELY_SLOW */,
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/components/ReplaySection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -138,7 +130,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         >
           ${i18nString(UIStrings.Replay)}
         </devtools-button>
-      </div>`, target, { host: target });
+      </div>`, target);
     // clang-format on
 };
 /**
@@ -266,9 +258,6 @@ export class ReplaySection extends UI.Widget.Widget {
         if (this.#settings && speed) {
             this.#settings.speed = speed;
             this.#settings.replayExtension = '';
-        }
-        if (replaySpeedToMetricSpeedMap[speed]) {
-            Host.userMetrics.recordingReplaySpeed(replaySpeedToMetricSpeedMap[speed]);
         }
         this.performUpdate();
     }

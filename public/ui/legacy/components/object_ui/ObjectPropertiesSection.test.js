@@ -45,6 +45,22 @@ describe('ObjectPropertiesSection', () => {
     });
 });
 describeWithEnvironment('ObjectPropertyTreeElement', () => {
+    it('populates the context menu with a copy option for LocalJSONObjects', () => {
+        const parentObject = SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: 'bar' });
+        const parentProperty = new SDK.RemoteObject.RemoteObjectProperty('parentNode', parentObject);
+        const parentNode = new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(parentProperty);
+        const childObject = SDK.RemoteObject.RemoteObject.fromLocalObject('bar');
+        const childProperty = new SDK.RemoteObject.RemoteObjectProperty('foo', childObject);
+        const childNode = new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(childProperty, undefined, parentNode);
+        const treeElement = new ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement(childNode);
+        const event = new MouseEvent('contextmenu');
+        const contextMenu = treeElement.getContextMenu(event);
+        const copyValueItem = contextMenu.clipboardSection().items.find((item) => item.buildDescriptor().label === 'Copy value');
+        assert.exists(copyValueItem);
+        const copyText = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
+        contextMenu.invokeHandler(copyValueItem.id());
+        sinon.assert.calledWith(copyText, 'bar');
+    });
     it('can edit values', async () => {
         const property = new SDK.RemoteObject.RemoteObjectProperty('name', SDK.RemoteObject.RemoteObject.fromLocalObject(42), true, true);
         const container = document.createElement('div');

@@ -10,6 +10,7 @@ __export(AutofillView_exports, {
   AutofillView: () => AutofillView,
   i18nString: () => i18nString
 });
+import "./../../ui/kit/kit.js";
 import "./../../ui/components/adorners/adorners.js";
 import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as Common from "./../../core/common/common.js";
@@ -291,14 +292,14 @@ var DEFAULT_VIEW = (input, _output, target) => {
                 jslog=${VisualLogging.toggle(input.autoOpenViewSetting.name).track({ change: true })}>
               ${i18nString(UIStrings.autoShow)}
             </devtools-checkbox>
-            <x-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslog=${VisualLogging.link("feedback").track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
+            <devtools-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslogcontext="feedback">${i18nString(UIStrings.sendFeedback)}</devtools-link>
           </div>
           <div class="placeholder-container" jslog=${VisualLogging.pane("autofill-empty")}>
             <div class="empty-state">
               <span class="empty-state-header">${i18nString(UIStrings.noAutofill)}</span>
               <div class="empty-state-description">
                 <span>${i18nString(UIStrings.toStartDebugging)}</span>
-                <x-link href=${AUTOFILL_INFO_URL} class="link" jslog=${VisualLogging.link("learn-more").track({ click: true })}>${i18nString(UIStrings.learnMore)}</x-link>
+                <devtools-link href=${AUTOFILL_INFO_URL} class="link" jslogcontext="learn-more">${i18nString(UIStrings.learnMore)}</devtools-link>
               </div>
             </div>
           </div>
@@ -329,7 +330,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
                   ${i18nString(UIStrings.autoShow)}
                 </devtools-checkbox>
               </div>
-              <x-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslog=${VisualLogging.link("feedback").track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
+              <devtools-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslogcontext="feedback">${i18nString(UIStrings.sendFeedback)}</devtools-link>
             </div>
             ${renderAddress()}
           </div>

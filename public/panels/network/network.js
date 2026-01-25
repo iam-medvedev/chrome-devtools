@@ -229,6 +229,7 @@ __export(RequestConditionsDrawer_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
   RequestConditionsDrawer: () => RequestConditionsDrawer
 });
+import "./../../ui/kit/kit.js";
 import "./../../ui/legacy/legacy.js";
 import "./../../ui/components/tooltips/tooltips.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
@@ -339,7 +340,7 @@ var requestConditionsDrawer_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./requestConditionsDrawer.css")} */`;
 
 // gen/front_end/panels/network/RequestConditionsDrawer.js
-var { ref } = Directives;
+var { ref, live } = Directives;
 var { widgetConfig } = UI2.Widget;
 var UIStrings2 = {
   /**
@@ -483,7 +484,6 @@ var DEFAULT_VIEW = (input, output, target) => {
   render(
     // clang-format off
     html`
-    <style>${RequestConditionsDrawer}</style>
     <devtools-toolbar jslog=${VisualLogging.toolbar()}>
       <devtools-checkbox
         ?checked=${input.enabled}
@@ -593,13 +593,13 @@ var AffectedCountWidget = class extends UI2.Widget.Widget {
   }
 };
 function learnMore() {
-  return html`<x-link
+  return html`<devtools-link
         href=${NETWORK_REQUEST_BLOCKING_EXPLANATION_URL}
         tabindex=0
         class=devtools-link
-        jslog=${VisualLogging.link().track({ click: true, keydown: "Enter|Space" }).context("learn-more")}>
+        .jslogContext=${"learn-more"}>
           ${i18nString2(UIStrings2.learnMore)}
-      </x-link>`;
+      </devtools-link>`;
 }
 var RequestConditionsDrawer = class _RequestConditionsDrawer extends UI2.Widget.VBox {
   manager;
@@ -683,10 +683,10 @@ var RequestConditionsDrawer = class _RequestConditionsDrawer extends UI2.Widget.
         // clang-format off
         html`
     <input class=blocked-url-checkbox
-      @click=${toggle2}
+      @change=${toggle2}
       type=checkbox
       title=${i18nString2(UIStrings2.enableThrottlingToggleLabel, { PH1: constructorStringOrWildcardURL })}
-      .checked=${enabled}
+      .checked=${live(enabled)}
       .disabled=${!editable || !originalOrUpgradedURLPattern}
       jslog=${VisualLogging.toggle().track({ change: true })}>
     <devtools-button
@@ -759,7 +759,7 @@ var RequestConditionsDrawer = class _RequestConditionsDrawer extends UI2.Widget.
         // clang-format off
         html`
     <input class=blocked-url-checkbox
-      @click=${toggle2}
+      @change=${toggle2}
       type=checkbox
       .checked=${condition.enabled}
       .disabled=${!editable}
@@ -2834,11 +2834,11 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
     UI5.Tooltip.Tooltip.install(element, title || text);
   }
   setTextAndTitleAsLink(element, cellText, titleText, handler) {
-    const link3 = document.createElement("span");
-    link3.classList.add("devtools-link");
-    link3.textContent = cellText;
-    link3.addEventListener("click", handler);
-    element.appendChild(link3);
+    const link = document.createElement("span");
+    link.classList.add("devtools-link");
+    link.textContent = cellText;
+    link.addEventListener("click", handler);
+    element.appendChild(link);
     UI5.Tooltip.Tooltip.install(element, titleText);
   }
   renderCell(c, columnId) {
@@ -3252,9 +3252,9 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
         cell.appendChild(document.createTextNode(i18nString5(UIStrings5.preflight)));
         if (initiator.initiatorRequest) {
           const icon = createIcon("arrow-up-down-circle");
-          const link3 = Components.Linkifier.Linkifier.linkifyRevealable(initiator.initiatorRequest, icon, void 0, i18nString5(UIStrings5.selectTheRequestThatTriggered), "trailing-link-icon", "initator-request");
-          UI5.ARIAUtils.setLabel(link3, i18nString5(UIStrings5.selectTheRequestThatTriggered));
-          cell.appendChild(link3);
+          const link = Components.Linkifier.Linkifier.linkifyRevealable(initiator.initiatorRequest, icon, void 0, i18nString5(UIStrings5.selectTheRequestThatTriggered), "trailing-link-icon", "initator-request");
+          UI5.ARIAUtils.setLabel(link, i18nString5(UIStrings5.selectTheRequestThatTriggered));
+          cell.appendChild(link);
         }
         break;
       }
@@ -3552,8 +3552,8 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
       ` : Lit.nothing}
 
       <div class="cookies-panel-item site-has-cookies-in-other-partition ${input.siteHasCookieInOtherPartition ? "" : "hidden"}">
-        ${uiI18n2.getFormatLocalizedString(str_6, UIStrings6.siteHasCookieInOtherPartition, {
-    PH1: UI6.XLink.XLink.create("https://developer.chrome.com/en/docs/privacy-sandbox/chips/", i18nString6(UIStrings6.learnMore), void 0, void 0, "learn-more")
+        ${uiI18n2.getFormatLocalizedStringTemplate(str_6, UIStrings6.siteHasCookieInOtherPartition, {
+    PH1: html2`<devtools-link href="https://developer.chrome.com/en/docs/privacy-sandbox/chips/" .jslogContext=${"learn-more"}>${i18nString6(UIStrings6.learnMore)}</devtools-link>`
   })}
       </div>
 
@@ -5368,6 +5368,7 @@ __export(RequestTimingView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW6,
   RequestTimingView: () => RequestTimingView
 });
+import "./../../ui/kit/kit.js";
 import * as Common8 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
@@ -6096,12 +6097,12 @@ var DEFAULT_VIEW6 = (input, output, target) => {
           </tr>` : nothing6}
        <tr class=network-timing-footer>
          <td colspan=1>
-           <x-link
+           <devtools-link
              href="https://developer.chrome.com/docs/devtools/network/reference/#timing-explanation"
              class=devtools-link
-             jslog=${VisualLogging8.link().track({ click: true, keydown: "Enter|Space" }).context("explanation")}>
+             jslogcontext="explanation">
                ${i18nString12(UIStrings12.explanation)}
-           </x-link>
+           </devtools-link>
          <td></td>
          <td class=${input.wasThrottled ? "throttled" : ""} title=${ifDefined(throttledRequestTitle)}>
            ${input.wasThrottled ? html6` <devtools-icon name=watch @click=${revealThrottled}></devtools-icon>` : nothing6}
@@ -6123,7 +6124,7 @@ var DEFAULT_VIEW6 = (input, output, target) => {
        ${input.serverTimings.length === 0 ? html6`
          <tr>
            <td colspan=3>
-             ${uiI18n3.getFormatLocalizedString(str_12, UIStrings12.duringDevelopmentYouCanUseSToAdd, { PH1: UI13.XLink.XLink.create("https://web.dev/custom-metrics/#server-timing-api", i18nString12(UIStrings12.theServerTimingApi), void 0, void 0, "server-timing-api") })}
+${uiI18n3.getFormatLocalizedStringTemplate(str_12, UIStrings12.duringDevelopmentYouCanUseSToAdd, { PH1: html6`<devtools-link href="https://web.dev/custom-metrics/#server-timing-api" .jslogContext=${"server-timing-api"}>${i18nString12(UIStrings12.theServerTimingApi)}</devtools-link>` })}
            </td>
          </tr>` : nothing6}
    </table>`,

@@ -729,14 +729,13 @@ export const generatedProperties = [
             "text-emphasis-color",
             "text-emphasis-position",
             "text-emphasis-style",
-            "text-grow",
+            "text-fit",
             "text-indent",
             "text-justify",
             "text-orientation",
             "text-overflow",
             "text-rendering",
             "text-shadow",
-            "text-shrink",
             "text-size-adjust",
             "text-spacing-trim",
             "text-transform",
@@ -1793,8 +1792,7 @@ export const generatedProperties = [
         "keywords": [
             "all",
             "around",
-            "between",
-            "none"
+            "between"
         ],
         "name": "column-rule-visibility-items"
     },
@@ -3825,8 +3823,7 @@ export const generatedProperties = [
         "keywords": [
             "all",
             "around",
-            "between",
-            "none"
+            "between"
         ],
         "name": "row-rule-visibility-items"
     },
@@ -4439,7 +4436,7 @@ export const generatedProperties = [
         "name": "text-emphasis-style"
     },
     {
-        "name": "text-grow"
+        "name": "text-fit"
     },
     {
         "inherited": true,
@@ -4487,9 +4484,6 @@ export const generatedProperties = [
             "none"
         ],
         "name": "text-shadow"
-    },
-    {
-        "name": "text-shrink"
     },
     {
         "inherited": true,
@@ -5524,8 +5518,7 @@ export const generatedPropertyValues = {
         "values": [
             "all",
             "around",
-            "between",
-            "none"
+            "between"
         ]
     },
     "column-rule-width": {
@@ -6648,8 +6641,7 @@ export const generatedPropertyValues = {
         "values": [
             "all",
             "around",
-            "between",
-            "none"
+            "between"
         ]
     },
     "row-rule-width": {

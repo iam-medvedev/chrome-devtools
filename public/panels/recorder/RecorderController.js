@@ -1,12 +1,13 @@
-// Copyright 2023 The Chromium Authors
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+// Copyright 2023 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -569,7 +570,6 @@ let RecorderController = class RecorderController extends LitElement {
         const indexToInsertAt = currentIndex + (position === "before" /* Components.StepView.AddStepPosition.BEFORE */ ? 0 : 1);
         steps.splice(indexToInsertAt, 0, { type: Models.Schema.StepType.WaitForElement, selectors: ['body'] });
         const recording = { ...this.currentRecording, flow: { ...this.currentRecording.flow, steps } };
-        Host.userMetrics.recordingEdited(2 /* Host.UserMetrics.RecordingEdited.STEP_ADDED */);
         this.#stepBreakpointIndexes = new Set([...this.#stepBreakpointIndexes.values()].map(breakpointIndex => {
             if (indexToInsertAt > breakpointIndex) {
                 return breakpointIndex;
@@ -593,7 +593,6 @@ let RecorderController = class RecorderController extends LitElement {
         const currentIndex = steps.indexOf(event.step);
         steps.splice(currentIndex, 1);
         const flow = { ...this.currentRecording.flow, steps };
-        Host.userMetrics.recordingEdited(3 /* Host.UserMetrics.RecordingEdited.STEP_REMOVED */);
         this.#stepBreakpointIndexes = new Set([...this.#stepBreakpointIndexes.values()]
             .map(breakpointIndex => {
             if (currentIndex > breakpointIndex) {
@@ -795,11 +794,9 @@ let RecorderController = class RecorderController extends LitElement {
         await this.#exportContent(converter.getFilename(this.currentRecording.flow), content);
         const builtInMetric = CONVERTER_ID_TO_METRIC[converter.getId()];
         if (builtInMetric) {
-            Host.userMetrics.recordingExported(builtInMetric);
             UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.recordingExported));
         }
         else if (converter.getId().startsWith(Converters.ExtensionConverter.EXTENSION_PREFIX)) {
-            Host.userMetrics.recordingExported(4 /* Host.UserMetrics.RecordingExported.TO_EXTENSION */);
             UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.recordingExported));
         }
         else {
@@ -828,7 +825,6 @@ let RecorderController = class RecorderController extends LitElement {
         const flow = this.currentRecordingSession.cloneUserFlow();
         flow.steps.push({ type: 'waitForElement', selectors: [['.cls']] });
         this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, flow), { keepBreakpoints: true, updateSession: true });
-        Host.userMetrics.recordingAssertion(1 /* Host.UserMetrics.RecordingAssertion.ASSERTION_ADDED */);
         await this.updateComplete;
         // FIXME: call a method on the recording view widget.
         await this.#recordingView?.updateComplete;
@@ -1006,13 +1002,11 @@ let RecorderController = class RecorderController extends LitElement {
         <div class="empty-state-header">${i18nString(UIStrings.header)}</div>
         <div class="empty-state-description">
           <span>${i18nString(UIStrings.recordingDescription)}</span>
-          <x-link
-            class="x-link devtools-link"
+          <devtools-link
+            class="devtools-link"
             href=${RECORDER_EXPLANATION_URL}
-            jslog=${VisualLogging.link()
-            .track({ click: true, keydown: 'Enter|Space' })
-            .context('learn-more')}
-          >${i18nString(UIStrings.learnMore)}</x-link>
+            jslogcontext="learn-more"
+          >${i18nString(UIStrings.learnMore)}</devtools-link>
         </div>
         <devtools-button .variant=${"tonal" /* Buttons.Button.Variant.TONAL */} jslogContext=${"chrome-recorder.create-recording" /* Actions.RecorderActions.CREATE_RECORDING */} @click=${this.#onCreateNewRecording}>${i18nString(UIStrings.createRecording)}</devtools-button>
       </div>
@@ -1244,7 +1238,7 @@ let RecorderController = class RecorderController extends LitElement {
         }}
             ></devtools-button>
             <div class="feedback">
-              <x-link class="x-link" title=${i18nString(UIStrings.sendFeedback)} href=${FEEDBACK_URL} jslog=${VisualLogging.link('feedback').track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
+              <devtools-link class="devtools-link" title=${i18nString(UIStrings.sendFeedback)} href=${FEEDBACK_URL} jslogcontext="feedback">${i18nString(UIStrings.sendFeedback)}</devtools-link>
             </div>
             <div class="separator"></div>
             <devtools-shortcut-dialog

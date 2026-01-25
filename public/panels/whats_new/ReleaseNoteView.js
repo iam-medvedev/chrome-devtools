@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../ui/components/markdown_view/markdown_view.js';
+import '../../ui/kit/kit.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Marked from '../../third_party/marked/marked.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -69,14 +70,14 @@ export class ReleaseNoteView extends UI.Panel.Panel {
             <div class="video-container">
               ${releaseNote.videoLinks.map((value) => {
             return html `
-                  <x-link
+                  <devtools-link
                   href=${value.link}
-                  jslog=${VisualLogging.link().track({ click: true }).context('learn-more')}>
+                  jslogcontext="learn-more">
                     <div class="video">
                       <img class="thumbnail" src=${input.getThumbnailPath(value.type ?? "WhatsNew" /* VideoType.WHATS_NEW */)}>
                       <div class="thumbnail-description"><span>${value.description}</span></div>
                     </div>
-                </x-link>
+                </devtools-link>
                 `;
         })}
             </div>

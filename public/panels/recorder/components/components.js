@@ -417,13 +417,13 @@ var DEFAULT_VIEW2 = (input, output, target) => {
         />
         <label class="row-label" for="selector-attribute">
           <span>${i18nString(UIStrings.selectorAttribute)}</span>
-          <x-link
+          <devtools-link
             class="link" href="https://g.co/devtools/recorder#selector"
             title=${i18nString(UIStrings.learnMore)}
-            jslog=${VisualLogging.link("recorder-selector-help").track({ click: true })}>
+            .jslogContext=${"recorder-selector-help"}>
             <devtools-icon name="help">
             </devtools-icon>
-          </x-link>
+          </devtools-link>
         </label>
         <input
           value=${selectorAttribute}
@@ -438,13 +438,13 @@ var DEFAULT_VIEW2 = (input, output, target) => {
         />
         <label class="row-label">
           <span>${i18nString(UIStrings.selectorTypes)}</span>
-          <x-link
+          <devtools-link
             class="link" href="https://g.co/devtools/recorder#selector"
             title=${i18nString(UIStrings.learnMore)}
-            jslog=${VisualLogging.link("recorder-selector-help").track({ click: true })}>
+            .jslogContext=${"recorder-selector-help"}>
             <devtools-icon name="help">
             </devtools-icon>
-          </x-link>
+          </devtools-link>
         </label>
         <div class="checkbox-container">
           ${repeat(selectorTypes, (item4) => {
@@ -1042,7 +1042,7 @@ var ExtensionView = class extends HTMLElement {
 customElements.define("devtools-recorder-extension-view", ExtensionView);
 
 // gen/front_end/panels/recorder/components/RecordingView.js
-import * as Host3 from "./../../../core/host/host.js";
+import * as Host from "./../../../core/host/host.js";
 import * as i18n15 from "./../../../core/i18n/i18n.js";
 import * as Platform5 from "./../../../core/platform/platform.js";
 import * as SDK2 from "./../../../core/sdk/sdk.js";
@@ -1430,7 +1430,6 @@ __export(ReplaySection_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW4,
   ReplaySection: () => ReplaySection
 });
-import * as Host from "./../../../core/host/host.js";
 import * as i18n7 from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
 import * as Buttons4 from "./../../../ui/components/buttons/buttons.js";
@@ -1510,24 +1509,6 @@ var UIStrings4 = {
    */
   extensionGroup: "Extensions"
 };
-var replaySpeedToMetricSpeedMap = {
-  [
-    "normal"
-    /* PlayRecordingSpeed.NORMAL */
-  ]: 1,
-  [
-    "slow"
-    /* PlayRecordingSpeed.SLOW */
-  ]: 2,
-  [
-    "very_slow"
-    /* PlayRecordingSpeed.VERY_SLOW */
-  ]: 3,
-  [
-    "extremely_slow"
-    /* PlayRecordingSpeed.EXTREMELY_SLOW */
-  ]: 4
-};
 var str_4 = i18n7.i18n.registerUIStrings("panels/recorder/components/ReplaySection.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var REPLAY_EXTENSION_PREFIX = "extension";
@@ -1600,7 +1581,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
         >
           ${i18nString4(UIStrings4.Replay)}
         </devtools-button>
-      </div>`, target, { host: target });
+      </div>`, target);
 };
 var ReplaySection = class extends UI4.Widget.Widget {
   onStartReplay;
@@ -1730,9 +1711,6 @@ var ReplaySection = class extends UI4.Widget.Widget {
       this.#settings.speed = speed;
       this.#settings.replayExtension = "";
     }
-    if (replaySpeedToMetricSpeedMap[speed]) {
-      Host.userMetrics.recordingReplaySpeed(replaySpeedToMetricSpeedMap[speed]);
-    }
     this.performUpdate();
   }
 };
@@ -1759,7 +1737,6 @@ __export(StepEditor_exports, {
   StepEditedEvent: () => StepEditedEvent,
   StepEditor: () => StepEditor
 });
-import * as Host2 from "./../../../core/host/host.js";
 import * as i18n11 from "./../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../core/platform/platform.js";
 import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
@@ -2562,14 +2539,11 @@ var StepEditor = class StepEditor2 extends LitElement {
   #handleAttributeRequested = (send) => {
     this.dispatchEvent(new RequestSelectorAttributeEvent(send));
   };
-  #handleAddOrRemoveClick = (assignments, query, metric) => (event) => {
+  #handleAddOrRemoveClick = (assignments, query) => (event) => {
     event.preventDefault();
     event.stopPropagation();
     this.#commit(immutableDeepAssign(this.state, assignments));
     this.#ensureFocus(query);
-    if (metric) {
-      Host2.userMetrics.recordingEdited(metric);
-    }
   };
   #handleKeyDownEvent = (event) => {
     assert(event instanceof KeyboardEvent);
@@ -2597,9 +2571,6 @@ var StepEditor = class StepEditor2 extends LitElement {
       return;
     }
     this.#commit(immutableDeepAssign(this.state, assignments));
-    if (opts.metric) {
-      Host2.userMetrics.recordingEdited(opts.metric);
-    }
   };
   #handleTypeInputBlur = async (event) => {
     assert(event.target instanceof SuggestionInput.SuggestionInput.SuggestionInput);
@@ -2615,10 +2586,6 @@ var StepEditor = class StepEditor2 extends LitElement {
       return;
     }
     this.#commit(await EditorState.default(value2));
-    Host2.userMetrics.recordingEdited(
-      9
-      /* Host.UserMetrics.RecordingEdited.TYPE_CHANGED */
-    );
   };
   #handleAddRowClickEvent = async (event) => {
     event.preventDefault();
@@ -2715,17 +2682,8 @@ var StepEditor = class StepEditor2 extends LitElement {
         if (this.state[attribute] === void 0) {
           return;
         }
-        switch (attribute) {
-          case "properties":
-            Host2.userMetrics.recordingAssertion(
-              2
-              /* Host.UserMetrics.RecordingAssertion.PROPERTY_ASSERTION_EDITED */
-            );
-            break;
-        }
         return { [attribute]: value2 };
-      },
-      metric: 10
+      }
     })}
       ></devtools-suggestion-input>
       ${this.#renderDeleteButton(attribute)}
@@ -2760,37 +2718,26 @@ var StepEditor = class StepEditor2 extends LitElement {
           return {
             frame: new ArrayAssignments({ [index]: value2 })
           };
-        },
-        metric: 10
+        }
       })}
               ></devtools-suggestion-input>
               ${this.#renderInlineButton({
         class: "add-frame",
         title: i18nString6(UIStrings6.addFrameIndex),
         iconName: "plus",
-        onClick: this.#handleAddOrRemoveClick(
-          {
-            frame: new ArrayAssignments({
-              [index + 1]: new InsertAssignment(defaultValuesByAttribute.frame[0])
-            })
-          },
-          `devtools-suggestion-input[data-path="frame.${index + 1}"]`,
-          10
-          /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */
-        )
+        onClick: this.#handleAddOrRemoveClick({
+          frame: new ArrayAssignments({
+            [index + 1]: new InsertAssignment(defaultValuesByAttribute.frame[0])
+          })
+        }, `devtools-suggestion-input[data-path="frame.${index + 1}"]`)
       })}
               ${this.#renderInlineButton({
         class: "remove-frame",
         title: i18nString6(UIStrings6.removeFrameIndex),
         iconName: "minus",
-        onClick: this.#handleAddOrRemoveClick(
-          {
-            frame: new ArrayAssignments({ [index]: void 0 })
-          },
-          `devtools-suggestion-input[data-path="frame.${Math.min(index, frames.length - 2)}"]`,
-          10
-          /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */
-        )
+        onClick: this.#handleAddOrRemoveClick({
+          frame: new ArrayAssignments({ [index]: void 0 })
+        }, `devtools-suggestion-input[data-path="frame.${Math.min(index, frames.length - 2)}"]`)
       })}
             </div>
           `;
@@ -2822,27 +2769,17 @@ var StepEditor = class StepEditor2 extends LitElement {
         class: "add-selector",
         title: i18nString6(UIStrings6.addSelector),
         iconName: "plus",
-        onClick: this.#handleAddOrRemoveClick(
-          {
-            selectors: new ArrayAssignments({
-              [index + 1]: new InsertAssignment(structuredClone(defaultValuesByAttribute.selectors[0]))
-            })
-          },
-          `devtools-suggestion-input[data-path="selectors.${index + 1}.0"]`,
-          4
-          /* Host.UserMetrics.RecordingEdited.SELECTOR_ADDED */
-        )
+        onClick: this.#handleAddOrRemoveClick({
+          selectors: new ArrayAssignments({
+            [index + 1]: new InsertAssignment(structuredClone(defaultValuesByAttribute.selectors[0]))
+          })
+        }, `devtools-suggestion-input[data-path="selectors.${index + 1}.0"]`)
       })}
             ${this.#renderInlineButton({
         class: "remove-selector",
         title: i18nString6(UIStrings6.removeSelector),
         iconName: "minus",
-        onClick: this.#handleAddOrRemoveClick(
-          { selectors: new ArrayAssignments({ [index]: void 0 }) },
-          `devtools-suggestion-input[data-path="selectors.${Math.min(index, selectors.length - 2)}.0"]`,
-          5
-          /* Host.UserMetrics.RecordingEdited.SELECTOR_REMOVED */
-        )
+        onClick: this.#handleAddOrRemoveClick({ selectors: new ArrayAssignments({ [index]: void 0 }) }, `devtools-suggestion-input[data-path="selectors.${Math.min(index, selectors.length - 2)}.0"]`)
       })}
           </div>
           ${selector.map((part, partIndex, parts) => {
@@ -2869,43 +2806,32 @@ var StepEditor = class StepEditor2 extends LitElement {
                 })
               })
             };
-          },
-          metric: 7
+          }
         })}
               ></devtools-suggestion-input>
               ${this.#renderInlineButton({
           class: "add-selector-part",
           title: i18nString6(UIStrings6.addSelectorPart),
           iconName: "plus",
-          onClick: this.#handleAddOrRemoveClick(
-            {
-              selectors: new ArrayAssignments({
-                [index]: new ArrayAssignments({
-                  [partIndex + 1]: new InsertAssignment(defaultValuesByAttribute.selectors[0][0])
-                })
+          onClick: this.#handleAddOrRemoveClick({
+            selectors: new ArrayAssignments({
+              [index]: new ArrayAssignments({
+                [partIndex + 1]: new InsertAssignment(defaultValuesByAttribute.selectors[0][0])
               })
-            },
-            `devtools-suggestion-input[data-path="selectors.${index}.${partIndex + 1}"]`,
-            6
-            /* Host.UserMetrics.RecordingEdited.SELECTOR_PART_ADDED */
-          )
+            })
+          }, `devtools-suggestion-input[data-path="selectors.${index}.${partIndex + 1}"]`)
         })}
               ${this.#renderInlineButton({
           class: "remove-selector-part",
           title: i18nString6(UIStrings6.removeSelectorPart),
           iconName: "minus",
-          onClick: this.#handleAddOrRemoveClick(
-            {
-              selectors: new ArrayAssignments({
-                [index]: new ArrayAssignments({
-                  [partIndex]: void 0
-                })
+          onClick: this.#handleAddOrRemoveClick({
+            selectors: new ArrayAssignments({
+              [index]: new ArrayAssignments({
+                [partIndex]: void 0
               })
-            },
-            `devtools-suggestion-input[data-path="selectors.${index}.${Math.min(partIndex, parts.length - 2)}"]`,
-            8
-            /* Host.UserMetrics.RecordingEdited.SELECTOR_PART_REMOVED */
-          )
+            })
+          }, `devtools-suggestion-input[data-path="selectors.${index}.${Math.min(partIndex, parts.length - 2)}"]`)
         })}
             </div>`;
       })}`;
@@ -2945,8 +2871,7 @@ var StepEditor = class StepEditor2 extends LitElement {
               [index]: { title: value2 }
             })
           };
-        },
-        metric: 10
+        }
       })}
             ></devtools-suggestion-input>
           </div>
@@ -2968,8 +2893,7 @@ var StepEditor = class StepEditor2 extends LitElement {
               [index]: { url: value2 }
             })
           };
-        },
-        metric: 10
+        }
       })}
             ></devtools-suggestion-input>
           </div>`;
@@ -3000,15 +2924,10 @@ var StepEditor = class StepEditor2 extends LitElement {
           if (this.state.attributes?.[index]?.name === void 0) {
             return;
           }
-          Host2.userMetrics.recordingAssertion(
-            3
-            /* Host.UserMetrics.RecordingAssertion.ATTRIBUTE_ASSERTION_EDITED */
-          );
           return {
             attributes: new ArrayAssignments({ [index]: { name: name2 } })
           };
-        },
-        metric: 10
+        }
       })}
           ></devtools-suggestion-input>
           <span class="separator">:</span>
@@ -3023,54 +2942,39 @@ var StepEditor = class StepEditor2 extends LitElement {
           if (this.state.attributes?.[index]?.value === void 0) {
             return;
           }
-          Host2.userMetrics.recordingAssertion(
-            3
-            /* Host.UserMetrics.RecordingAssertion.ATTRIBUTE_ASSERTION_EDITED */
-          );
           return {
             attributes: new ArrayAssignments({ [index]: { value: value3 } })
           };
-        },
-        metric: 10
+        }
       })}
           ></devtools-suggestion-input>
           ${this.#renderInlineButton({
         class: "add-attribute-assertion",
         title: i18nString6(UIStrings6.addSelectorPart),
         iconName: "plus",
-        onClick: this.#handleAddOrRemoveClick(
-          {
-            attributes: new ArrayAssignments({
-              [index + 1]: new InsertAssignment((() => {
-                {
-                  const names = new Set(attributes.map(({ name: name3 }) => name3));
-                  const defaultAttribute = defaultValuesByAttribute.attributes[0];
-                  let name2 = defaultAttribute.name;
-                  let i = 0;
-                  while (names.has(name2)) {
-                    ++i;
-                    name2 = `${defaultAttribute.name}-${i}`;
-                  }
-                  return { ...defaultAttribute, name: name2 };
+        onClick: this.#handleAddOrRemoveClick({
+          attributes: new ArrayAssignments({
+            [index + 1]: new InsertAssignment((() => {
+              {
+                const names = new Set(attributes.map(({ name: name3 }) => name3));
+                const defaultAttribute = defaultValuesByAttribute.attributes[0];
+                let name2 = defaultAttribute.name;
+                let i = 0;
+                while (names.has(name2)) {
+                  ++i;
+                  name2 = `${defaultAttribute.name}-${i}`;
                 }
-              })())
-            })
-          },
-          `devtools-suggestion-input[data-path="attributes.${index + 1}.name"]`,
-          10
-          /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */
-        )
+                return { ...defaultAttribute, name: name2 };
+              }
+            })())
+          })
+        }, `devtools-suggestion-input[data-path="attributes.${index + 1}.name"]`)
       })}
           ${this.#renderInlineButton({
         class: "remove-attribute-assertion",
         title: i18nString6(UIStrings6.removeSelectorPart),
         iconName: "minus",
-        onClick: this.#handleAddOrRemoveClick(
-          { attributes: new ArrayAssignments({ [index]: void 0 }) },
-          `devtools-suggestion-input[data-path="attributes.${Math.min(index, attributes.length - 2)}.value"]`,
-          10
-          /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */
-        )
+        onClick: this.#handleAddOrRemoveClick({ attributes: new ArrayAssignments({ [index]: void 0 }) }, `devtools-suggestion-input[data-path="attributes.${Math.min(index, attributes.length - 2)}.value"]`)
       })}
         </div>`;
     })}
@@ -4439,32 +4343,6 @@ var networkConditionPresets = [
   SDK2.NetworkManager.Slow4GConditions,
   SDK2.NetworkManager.Fast4GConditions
 ];
-function converterIdToFlowMetric(converterId) {
-  switch (converterId) {
-    case "puppeteer":
-    case "puppeteer-firefox":
-      return 1;
-    case "json":
-      return 2;
-    case "@puppeteer/replay":
-      return 3;
-    default:
-      return 4;
-  }
-}
-function converterIdToStepMetric(converterId) {
-  switch (converterId) {
-    case "puppeteer":
-    case "puppeteer-firefox":
-      return 5;
-    case "json":
-      return 6;
-    case "@puppeteer/replay":
-      return 7;
-    default:
-      return 8;
-  }
-}
 function renderSettings({ settings, replaySettingsExpanded, onSelectMenuLabelClick, onNetworkConditionsChange, onTimeoutInput, isRecording, replayState, onReplaySettingsKeydown, onToggleReplaySettings }) {
   if (!settings) {
     return Lit10.nothing;
@@ -5184,9 +5062,7 @@ var RecordingView = class extends UI9.Widget.Widget {
     } else if (this.recording) {
       [text] = await converter.stringify(this.recording);
     }
-    Host3.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);
-    const metric = step ? converterIdToStepMetric(converter.getId()) : converterIdToFlowMetric(converter.getId());
-    Host3.userMetrics.recordingCopiedToClipboard(metric);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);
   }
   #onCopyStepEvent(event) {
     event.stopPropagation();
@@ -5198,7 +5074,7 @@ var RecordingView = class extends UI9.Widget.Widget {
     }
     event.preventDefault();
     await this.#copyCurrentSelection(this.#selectedStep);
-    Host3.userMetrics.keyboardShortcutFired(
+    Host.userMetrics.keyboardShortcutFired(
       "chrome-recorder.copy-recording-or-step"
       /* Actions.RecorderActions.COPY_RECORDING_OR_STEP */
     );
@@ -5212,10 +5088,6 @@ var RecordingView = class extends UI9.Widget.Widget {
   }
   showCodeToggle = () => {
     this.#showCodeView = !this.#showCodeView;
-    Host3.userMetrics.recordingCodeToggled(
-      this.#showCodeView ? 1 : 2
-      /* Host.UserMetrics.RecordingCodeToggled.CODE_HIDDEN */
-    );
     void this.#convertToCode();
   };
   #convertToCode = async () => {

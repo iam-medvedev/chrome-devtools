@@ -454,6 +454,7 @@ import * as PanelCommon from "./../../panels/common/common.js";
 import * as Snippets from "./../../panels/snippets/snippets.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as Snackbar from "./../../ui/components/snackbars/snackbars.js";
+import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
@@ -521,7 +522,11 @@ var UIStrings2 = {
   /**
    * @description Notification shown to the user whenever DevTools has finished downloading a local AI model.
    */
-  aiModelDownloaded: "AI model downloaded"
+  aiModelDownloaded: "AI model downloaded",
+  /**
+   * @description A title of the menu item in the main menu leading to https://github.com/ChromeDevTools/chrome-devtools-mcp.
+   */
+  getDevToolsMcp: "Get `DevTools MCP`"
 };
 var str_2 = i18n3.i18n.registerUIStrings("entrypoints/main/MainImpl.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -671,28 +676,29 @@ var MainImpl = class {
     return { syncedStorage, globalStorage, localStorage };
   }
   #initializeExperiments() {
-    Root2.Runtime.experiments.register("capture-node-creation-stacks", "Capture node creation stacks");
-    Root2.Runtime.experiments.register("live-heap-profile", "Live heap profile");
-    Root2.Runtime.experiments.register("protocol-monitor", "Protocol Monitor", "https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor");
-    Root2.Runtime.experiments.register("sampling-heap-profiler-timeline", "Sampling heap profiler timeline");
-    Root2.Runtime.experiments.register("show-option-tp-expose-internals-in-heap-snapshot", "Show option to expose internals in heap snapshots");
-    Root2.Runtime.experiments.register("timeline-invalidation-tracking", "Performance panel: invalidation tracking");
-    Root2.Runtime.experiments.register("timeline-show-all-events", "Performance panel: show all events");
-    Root2.Runtime.experiments.register("timeline-v8-runtime-call-stats", "Performance panel: V8 runtime call stats");
-    Root2.Runtime.experiments.register("timeline-debug-mode", "Performance panel: debug mode (trace event details, etc)");
-    Root2.Runtime.experiments.register("instrumentation-breakpoints", "Instrumentation breakpoints");
-    Root2.Runtime.experiments.register("use-source-map-scopes", "Use scope information from source maps");
-    Root2.Runtime.experiments.register("apca", "Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines", "https://developer.chrome.com/blog/new-in-devtools-89/#apca");
-    Root2.Runtime.experiments.register("full-accessibility-tree", "Full accessibility tree view in the Elements panel", "https://developer.chrome.com/blog/new-in-devtools-90/#accessibility-tree", "https://g.co/devtools/a11y-tree-feedback");
-    Root2.Runtime.experiments.register("font-editor", "New font editor in the Styles tab", "https://developer.chrome.com/blog/new-in-devtools-89/#font");
-    Root2.Runtime.experiments.register("contrast-issues", "Automatic contrast issue reporting via the Issues panel", "https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast");
-    Root2.Runtime.experiments.register("experimental-cookie-features", "Experimental cookie features");
-    Root2.Runtime.experiments.register("authored-deployed-grouping", "Group sources into authored and deployed trees", "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
-    Root2.Runtime.experiments.register("just-my-code", "Hide ignore-listed code in Sources tree view");
-    Root2.Runtime.experiments.register("timeline-show-postmessage-events", "Performance panel: show postMessage dispatch and handling flows");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS, "Capture node creation stacks");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE, "Live heap profile");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, "Protocol Monitor", "https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.SAMPLING_HEAP_PROFILER_TIMELINE, "Sampling heap profiler timeline");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.SHOW_OPTION_TO_EXPOSE_INTERNALS_IN_HEAP_SNAPSHOT, "Show option to expose internals in heap snapshots");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_INVALIDATION_TRACKING, "Performance panel: invalidation tracking");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_SHOW_ALL_EVENTS, "Performance panel: show all events");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_V8_RUNTIME_CALL_STATS, "Performance panel: V8 runtime call stats");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_DEBUG_MODE, "Performance panel: debug mode (trace event details, etc)");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, "Instrumentation breakpoints");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, "Use scope information from source maps");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.APCA, "Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines", "https://developer.chrome.com/blog/new-in-devtools-89/#apca");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE, "Full accessibility tree view in the Elements panel", "https://developer.chrome.com/blog/new-in-devtools-90/#accessibility-tree", "https://g.co/devtools/a11y-tree-feedback");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.FONT_EDITOR, "New font editor in the Styles tab", "https://developer.chrome.com/blog/new-in-devtools-89/#font");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.CONTRAST_ISSUES, "Automatic contrast issue reporting via the Issues panel", "https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.EXPERIMENTAL_COOKIE_FEATURES, "Experimental cookie features");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.AUTHORED_DEPLOYED_GROUPING, "Group sources into authored and deployed trees", "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.JUST_MY_CODE, "Hide ignore-listed code in Sources tree view");
+    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS, "Performance panel: show postMessage dispatch and handling flows");
     Root2.Runtime.experiments.enableExperimentsByDefault([
-      "full-accessibility-tree",
-      ...Root2.Runtime.Runtime.queryParam("isChromeForTesting") ? ["protocol-monitor"] : []
+      Root2.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE,
+      Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES,
+      ...Root2.Runtime.Runtime.queryParam("isChromeForTesting") ? [Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR] : []
     ]);
     Root2.Runtime.experiments.cleanUpStaleExperiments();
     const enabledExperiments = Root2.Runtime.Runtime.queryParam("enabledExperiments");
@@ -703,7 +709,7 @@ var MainImpl = class {
     if (Host.InspectorFrontendHost.isUnderTest()) {
       const testParam = Root2.Runtime.Runtime.queryParam("test");
       if (testParam?.includes("live-line-level-heap-profile.js")) {
-        Root2.Runtime.experiments.enableForTest("live-heap-profile");
+        Root2.Runtime.experiments.enableForTest(Root2.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE);
       }
     }
     for (const experiment of Root2.Runtime.experiments.allConfigurableExperiments()) {
@@ -819,6 +825,9 @@ var MainImpl = class {
     const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance();
     conversationHandler.addEventListener("ExternalRequestReceived", () => Snackbar.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.externalRequestReceived) }));
     conversationHandler.addEventListener("ExternalConversationStarted", (event) => void VisualLogging2.logFunctionCall(`start-conversation-${event.data}`, "external"));
+    if (Root2.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
+      await PanelCommon.GeminiRebrandPromoDialog.maybeShow();
+    }
     _a.timeEnd("Main._createAppUI");
     const appProvider = Common2.AppProvider.getRegisteredAppProviders()[0];
     if (!appProvider) {
@@ -903,7 +912,7 @@ var MainImpl = class {
       const runnable = await lateInitializationLoader();
       return await runnable.run();
     });
-    if (Root2.Runtime.experiments.isEnabled("live-heap-profile")) {
+    if (Root2.Runtime.experiments.isEnabled(Root2.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE)) {
       const PerfUI = await import("./../../ui/legacy/components/perf_ui/perf_ui.js");
       const setting = "memory-live-heap-profile";
       if (Common2.Settings.Settings.instance().moduleSetting(setting).get()) {
@@ -1166,6 +1175,13 @@ var MainMenuItem = class _MainMenuItem {
       /* optional */
       true
     );
+    contextMenu.defaultSection().appendItem(i18nString2(UIStrings2.getDevToolsMcp), () => {
+      UIHelpers.openInNewTab("https://github.com/ChromeDevTools/chrome-devtools-mcp");
+    }, {
+      additionalElement: UI2.UIUtils.maybeCreateNewBadge("get-devtools-mcp"),
+      jslogContext: "get-devtools-mcp"
+    });
+    contextMenu.defaultSection().appendSeparator();
     if (dockController.dockSide() === "undocked") {
       const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
       if (mainTarget && mainTarget.type() === SDK2.Target.Type.FRAME) {

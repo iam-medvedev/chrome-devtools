@@ -52,7 +52,7 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
     });
     const setupBuiltInAi = (generateResponse) => {
         updateHostConfig({
-            devToolsAiPromptApi: {
+            devToolsConsoleInsightsTeasers: {
                 enabled: true,
                 allowWithoutGpu: true,
             },
@@ -96,7 +96,7 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
     });
     it('can download the AI model', async () => {
         updateHostConfig({
-            devToolsAiPromptApi: {
+            devToolsConsoleInsightsTeasers: {
                 enabled: true,
                 allowWithoutGpu: true,
             },

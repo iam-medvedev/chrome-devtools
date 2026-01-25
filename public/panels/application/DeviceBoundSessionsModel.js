@@ -38,11 +38,21 @@ export class DeviceBoundSessionsModel extends Common.ObjectWrapper.ObjectWrapper
             return;
         }
         const emptySessions = new Map();
+        const noLongerFailedSessions = new Map();
         const emptySites = new Set();
         for (const [site, sessionIdToSessionMap] of [...this.#siteSessions]) {
             let emptySessionsSiteEntry = emptySessions.get(site);
+            let noLongerFailedSessionsSiteEntry = noLongerFailedSessions.get(site);
             for (const [sessionId, sessionAndEvents] of sessionIdToSessionMap) {
                 sessionAndEvents.eventsById.clear();
+                if (sessionAndEvents.hasErrors) {
+                    sessionAndEvents.hasErrors = false;
+                    if (!noLongerFailedSessionsSiteEntry) {
+                        noLongerFailedSessionsSiteEntry = [];
+                        noLongerFailedSessions.set(site, noLongerFailedSessionsSiteEntry);
+                    }
+                    noLongerFailedSessionsSiteEntry.push(sessionId);
+                }
                 if (sessionAndEvents.session) {
                     continue;
                 }
@@ -60,10 +70,24 @@ export class DeviceBoundSessionsModel extends Common.ObjectWrapper.ObjectWrapper
                 emptySites.add(site);
             }
         }
-        this.dispatchEventToListeners("CLEAR_EVENTS" /* DeviceBoundSessionModelEvents.CLEAR_EVENTS */, { emptySessions, emptySites });
+        this.dispatchEventToListeners("CLEAR_EVENTS" /* DeviceBoundSessionModelEvents.CLEAR_EVENTS */, { emptySessions, emptySites, noLongerFailedSessions });
     }
     isSiteVisible(site) {
         return this.#visibleSites.has(site);
+    }
+    isSessionTerminated(site, sessionId) {
+        const session = this.getSession(site, sessionId);
+        if (session === undefined) {
+            return false;
+        }
+        return session.isSessionTerminated;
+    }
+    sessionHasErrors(site, sessionId) {
+        const session = this.getSession(site, sessionId);
+        if (session === undefined) {
+            return false;
+        }
+        return session.hasErrors;
     }
     getSession(site, sessionId) {
         return this.#siteSessions.get(site)?.get(sessionId);
@@ -86,7 +110,12 @@ export class DeviceBoundSessionsModel extends Common.ObjectWrapper.ObjectWrapper
         }
         let sessionAndEvent = sessionIdToSessionMap.get(sessionId);
         if (!sessionAndEvent) {
-            sessionAndEvent = { session: undefined, eventsById: new Map() };
+            sessionAndEvent = {
+                session: undefined,
+                isSessionTerminated: false,
+                hasErrors: false,
+                eventsById: new Map()
+            };
             sessionIdToSessionMap.set(sessionId, sessionAndEvent);
         }
         return sessionAndEvent;
@@ -108,6 +137,19 @@ export class DeviceBoundSessionsModel extends Common.ObjectWrapper.ObjectWrapper
         // Add the new challenge onto the session if there is one.
         if (event.succeeded && sessionAndEvent.session && event.challengeEventDetails) {
             sessionAndEvent.session.cachedChallenge = event.challengeEventDetails.challenge;
+        }
+        // Set the session's terminated status based on the event.
+        if (event.succeeded) {
+            if (event.terminationEventDetails) {
+                sessionAndEvent.isSessionTerminated = true;
+            }
+            else if (event.creationEventDetails) {
+                sessionAndEvent.isSessionTerminated = false;
+            }
+        }
+        // Set that the session has errors if the latest event failed.
+        if (!event.succeeded) {
+            sessionAndEvent.hasErrors = true;
         }
         this.dispatchEventToListeners("EVENT_OCCURRED" /* DeviceBoundSessionModelEvents.EVENT_OCCURRED */, { site: eventWithTimestamp.event.site, sessionId: eventWithTimestamp.event.sessionId });
     }

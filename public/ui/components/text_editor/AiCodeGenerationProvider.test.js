@@ -87,13 +87,13 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
             assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
             provider.dispose();
         });
-        it('hides teaser when cursor is not at the end of a block comment', async () => {
+        it('shows teaser when cursor is not at the end of a block comment', async () => {
             const { editor, provider } = createEditorWithProvider(`/**
   * Hello
   */`);
             editor.dispatch({ selection: { anchor: 13 } });
             await clock.tickAsync(0);
-            assert.isNull(editor.editor.dom.querySelector('.cm-placeholder'));
+            assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
             provider.dispose();
         });
         it('hides teaser when block comment syntax is incomplete', async () => {
@@ -104,11 +104,11 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
             assert.isNull(editor.editor.dom.querySelector('.cm-placeholder'));
             provider.dispose();
         });
-        it('hides teaser when cursor is not at the end of the line', async () => {
+        it('shows teaser when cursor is not at the end of the line', async () => {
             const { editor, provider } = createEditorWithProvider('// Hello');
             editor.dispatch({ selection: { anchor: 5 } });
             await clock.tickAsync(0);
-            assert.isNull(editor.editor.dom.querySelector('.cm-placeholder'));
+            assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
             provider.dispose();
         });
         it('hides teaser when the line is not a comment', async () => {

@@ -761,10 +761,10 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         tmp.searchParams.set('device', device);
         const cruxVis = `${tmp.origin}/#/${tmp.search}`;
         return html `
-        (<x-link href=${cruxVis}
+        (<devtools-link href=${cruxVis}
                  class="local-field-link"
                  title=${i18nString(UIStrings.fieldDataHistoryTooltip)}
-        >${i18nString(UIStrings.fieldDataHistoryLink)}</x-link>)
+        >${i18nString(UIStrings.fieldDataHistoryLink)}</devtools-link>)
       `;
     }
     #renderCollectionPeriod() {
@@ -790,11 +790,13 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         if (this.#cruxManager.getConfigSetting().get().enabled) {
             return this.#renderCollectionPeriod();
         }
-        const linkEl = UI.XLink.XLink.create('https://developer.chrome.com/docs/crux', i18n.i18n.lockedString('Chrome UX Report'));
-        const messageEl = uiI18n.getFormatLocalizedString(str_, UIStrings.seeHowYourLocalMetricsCompare, { PH1: linkEl });
+        // clang-format off
         return html `
-      <div class="field-data-message">${messageEl}</div>
+      <div class="field-data-message">
+        ${uiI18n.getFormatLocalizedStringTemplate(str_, UIStrings.seeHowYourLocalMetricsCompare, { PH1: html `<devtools-link href="https://developer.chrome.com/docs/crux">${i18n.i18n.lockedString('Chrome UX Report')}</devtools-link>` })}
+      </div>
     `;
+        // clang-format on
     }
     #renderLogSection() {
         // clang-format off
@@ -1023,11 +1025,11 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
                 ${this.#renderInpCard()}
               </div>
             </div>
-            <x-link
+            <devtools-link
               href=${helpLink}
               class="local-field-link"
               title=${i18nString(UIStrings.localFieldLearnMoreTooltip)}
-            >${i18nString(UIStrings.localFieldLearnMoreLink)}</x-link>
+            >${i18nString(UIStrings.localFieldLearnMoreLink)}</devtools-link>
             ${this.#renderLogSection()}
           </main>
           <aside class="next-steps" aria-labelledby="next-steps-section-title">

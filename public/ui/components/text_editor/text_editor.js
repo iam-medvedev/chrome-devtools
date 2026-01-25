@@ -116,7 +116,7 @@ function resolveCommentNode(state, cursorPosition) {
   const lookupPos = findLastNonWhitespacePos(state, cursorPosition);
   const node = tree.resolveInner(lookupPos, -1);
   const nodeType = node.type.name;
-  if (nodeType.includes("Comment") && cursorPosition >= node.to) {
+  if (nodeType.includes("Comment")) {
     if (!nodeType.includes("BlockComment")) {
       return node;
     }
@@ -137,7 +137,14 @@ function resolveCommentNode(state, cursorPosition) {
   return;
 }
 function extractBlockComment(rawText) {
-  let cleaned = rawText.replace(BLOCK_COMMENT_START_PATTERN, "").replace(BLOCK_COMMENT_END_PATTERN, "");
+  if (!rawText.match(BLOCK_COMMENT_START_PATTERN)) {
+    return;
+  }
+  let cleaned = rawText.replace(BLOCK_COMMENT_START_PATTERN, "");
+  if (!cleaned.match(BLOCK_COMMENT_END_PATTERN)) {
+    return;
+  }
+  cleaned = cleaned.replace(BLOCK_COMMENT_END_PATTERN, "");
   cleaned = cleaned.split("\n").map((line) => line.replace(BLOCK_COMMENT_LINE_PREFIX_PATTERN, "")).join("\n").trim();
   return cleaned;
 }
@@ -145,20 +152,25 @@ function extractLineComment(rawText) {
   return rawText.replace(LINE_COMMENT_PATTERN, "").trim();
 }
 var AiCodeGenerationParser = class {
-  static extractCommentText(state, cursorPosition) {
+  static extractCommentNodeInfo(state, cursorPosition) {
     const node = resolveCommentNode(state, cursorPosition);
     if (!node) {
       return;
     }
     const nodeType = node.type.name;
     const rawText = state.doc.sliceString(node.from, node.to);
+    let text = "";
     if (nodeType.includes("LineComment")) {
-      return extractLineComment(rawText);
+      text = extractLineComment(rawText);
+    } else if (nodeType.includes("BlockComment")) {
+      text = extractBlockComment(rawText) ?? "";
+    } else {
+      text = rawText;
     }
-    if (nodeType.includes("BlockComment")) {
-      return extractBlockComment(rawText);
+    if (!Boolean(text)) {
+      return;
     }
-    return rawText;
+    return { text, to: node.to };
   }
 };
 
@@ -1102,12 +1114,17 @@ var AiCodeGenerationProvider = class _AiCodeGenerationProvider {
       return;
     }
     this.#aiCodeGenerationCitations = [];
-    this.#generationTeaser.displayState = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.LOADING;
     const cursor = this.#editor.state.selection.main.head;
-    const query = AiCodeGenerationParser.extractCommentText(this.#editor.state, cursor);
+    const commentNodeInfo = AiCodeGenerationParser.extractCommentNodeInfo(this.#editor.state, cursor);
+    if (!commentNodeInfo) {
+      return;
+    }
+    this.#editor.dispatch({ selection: { anchor: commentNodeInfo.to } });
+    const query = commentNodeInfo.text;
     if (!query || query.trim().length === 0) {
       return;
     }
+    this.#generationTeaser.displayState = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.LOADING;
     try {
       const startTime = performance.now();
       this.#aiCodeGenerationConfig?.onRequestTriggered();
@@ -1132,7 +1149,7 @@ var AiCodeGenerationProvider = class _AiCodeGenerationProvider {
         effects: [
           setAiAutoCompleteSuggestion.of({
             text: "\n" + suggestionText,
-            from: cursor,
+            from: commentNodeInfo.to,
             rpcGlobalId: generationResponse.metadata.rpcGlobalId,
             sampleId: topSample.sampleId,
             startTime,
@@ -1182,11 +1199,16 @@ function aiCodeGenerationTeaserExtension(teaser) {
       const line = this.#view.state.doc.lineAt(cursorPosition);
       const isEmptyLine = line.length === 0;
       const canShowDiscoveryState = UI2.UIUtils.PromotionManager.instance().canShowPromotion(PanelCommon.AiCodeGenerationTeaser.PROMOTION_ID);
-      const isComment = Boolean(AiCodeGenerationParser.extractCommentText(this.#view.state, cursorPosition));
-      const isCursorAtEndOfLine = cursorPosition >= line.to;
-      if (isEmptyLine && canShowDiscoveryState || isComment && isCursorAtEndOfLine) {
+      if (isEmptyLine && canShowDiscoveryState) {
         return CodeMirror2.Decoration.set([
           CodeMirror2.Decoration.widget({ widget: new AccessiblePlaceholder(teaser), side: 1 }).range(cursorPosition)
+        ]);
+      }
+      const commentInfo = AiCodeGenerationParser.extractCommentNodeInfo(this.#view.state, cursorPosition);
+      if (commentInfo) {
+        const decorationPos = Math.max(cursorPosition, commentInfo.to);
+        return CodeMirror2.Decoration.set([
+          CodeMirror2.Decoration.widget({ widget: new AccessiblePlaceholder(teaser), side: 1 }).range(decorationPos)
         ]);
       }
       return CodeMirror2.Decoration.none;
@@ -1212,6 +1234,18 @@ function aiCodeGenerationTeaserExtension(teaser) {
       },
       mousedown(event) {
         return event.target instanceof Node && teaser.contentElement.contains(event.target);
+      },
+      keydown(event) {
+        if (!UI2.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) || teaser.displayState !== PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.TRIGGER) {
+          return false;
+        }
+        if (event.key === ".") {
+          event.consume(true);
+          void VisualLogging2.logKeyDown(event.currentTarget, event, "ai-code-generation-teaser.show-disclaimer-info-tooltip");
+          teaser.showTooltip();
+          return true;
+        }
+        return false;
       }
     }
   });
@@ -1663,6 +1697,11 @@ var AutocompleteHistory = class _AutocompleteHistory {
   #historyOffset = 1;
   #uncommittedIsTop = false;
   /**
+   * Tracks session-local edits made to history entries during navigation.
+   * Maps history index to edited text. Cleared when a new command is committed.
+   */
+  #editedEntries = /* @__PURE__ */ new Map();
+  /**
    * Creates a new settings-backed history. The class assumes it has sole
    * ownership of the setting.
    */
@@ -1674,6 +1713,7 @@ var AutocompleteHistory = class _AutocompleteHistory {
     this.#data = [];
     this.#setting.set([]);
     this.#historyOffset = 1;
+    this.#editedEntries.clear();
   }
   length() {
     return this.#data.length;
@@ -1687,6 +1727,7 @@ var AutocompleteHistory = class _AutocompleteHistory {
       this.#uncommittedIsTop = false;
     }
     this.#historyOffset = 1;
+    this.#editedEntries.clear();
     if (text !== this.#currentHistoryItem()) {
       this.#data.push(text);
     }
@@ -1708,9 +1749,29 @@ var AutocompleteHistory = class _AutocompleteHistory {
     }
     if (this.#historyOffset === 1) {
       this.#pushCurrentText(currentText);
+    } else {
+      this.#saveCurrentEdit(currentText);
     }
     ++this.#historyOffset;
     return this.#currentHistoryItem();
+  }
+  /**
+   * Saves the current text as an edit if it differs from the current history item
+   * (which may already have edits from a previous navigation).
+   * Only saves non-empty edits to avoid issues with navigation-only calls.
+   */
+  #saveCurrentEdit(text) {
+    const index = this.#data.length - this.#historyOffset;
+    const currentValue = this.#currentHistoryItem();
+    if (text === currentValue) {
+      return;
+    }
+    const original = this.#data[index];
+    if (text !== original && text.length > 0) {
+      this.#editedEntries.set(index, text);
+    } else {
+      this.#editedEntries.delete(index);
+    }
   }
   next() {
     if (this.#historyOffset === 1) {
@@ -1731,7 +1792,8 @@ var AutocompleteHistory = class _AutocompleteHistory {
     return result;
   }
   #currentHistoryItem() {
-    return this.#data[this.#data.length - this.#historyOffset];
+    const index = this.#data.length - this.#historyOffset;
+    return this.#editedEntries.get(index) ?? this.#data[index];
   }
   #store() {
     this.#setting.set(this.#data.slice(-_AutocompleteHistory.#historySize));

@@ -6,6 +6,7 @@ import * as Badges from '../../models/badges/badges.js';
 import { renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as PanelCommon from './common.js';
 class TestBadge extends Badges.Badge {
     name = 'testBadge';
@@ -35,20 +36,15 @@ function createMockBadge(badgeCtor) {
     });
 }
 function assertMessageIncludes(messageInput, textToInclude) {
-    let actualText;
-    if (messageInput instanceof HTMLElement) {
-        actualText = messageInput.textContent;
-    }
-    else {
-        actualText = messageInput;
-    }
-    assert.include(actualText, textToInclude);
+    const el = document.createElement('div');
+    render(messageInput, el);
+    assert.include(el.innerText, textToInclude);
 }
 describeWithEnvironment('BadgeNotification', () => {
     async function createWidget(properties) {
         const view = createViewFunctionStub(PanelCommon.BadgeNotification);
         const widget = new PanelCommon.BadgeNotification(undefined, view);
-        widget.message = properties?.message ?? 'Test message';
+        widget.message = properties?.message ?? html `Test message`;
         widget.imageUri = properties?.imageUri ?? 'test.png';
         widget.actions = properties?.actions ?? [];
         renderElementIntoDOM(widget, { allowMultipleChildren: true });

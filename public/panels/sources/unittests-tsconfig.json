@@ -49,6 +49,7 @@
     "../../../../../../front_end/panels/sources/BreakpointsView.test.ts",
     "../../../../../../front_end/panels/sources/BreakpointsViewUtils.test.ts",
     "../../../../../../front_end/panels/sources/CSSPlugin.test.ts",
+    "../../../../../../front_end/panels/sources/CallStackSidebarPane.test.ts",
     "../../../../../../front_end/panels/sources/CoveragePlugin.test.ts",
     "../../../../../../front_end/panels/sources/DebuggerPausedMessage.test.ts",
     "../../../../../../front_end/panels/sources/DebuggerPlugin.test.ts",

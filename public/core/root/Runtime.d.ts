@@ -1,4 +1,5 @@
 import * as Platform from '../platform/platform.js';
+import type { ExperimentName } from './ExperimentNames.js';
 /**
  * Returns the base URL (similar to `<base>`).
  * Used to resolve the relative URLs of any additional DevTools files (locale strings, etc) needed.
@@ -43,49 +44,34 @@ export interface Option {
 export declare class ExperimentsSupport {
     #private;
     allConfigurableExperiments(): Experiment[];
-    register(experimentName: string, experimentTitle: string, docLink?: string, feedbackLink?: string): void;
-    isEnabled(experimentName: string): boolean;
-    setEnabled(experimentName: string, enabled: boolean): void;
-    enableExperimentsTransiently(experimentNames: string[]): void;
-    enableExperimentsByDefault(experimentNames: string[]): void;
-    setServerEnabledExperiments(experimentNames: string[]): void;
-    enableForTest(experimentName: string): void;
-    disableForTest(experimentName: string): void;
+    register(experimentName: ExperimentName, experimentTitle: string, docLink?: string, feedbackLink?: string): void;
+    isEnabled(experimentName: ExperimentName): boolean;
+    setEnabled(experimentName: ExperimentName, enabled: boolean): void;
+    enableExperimentsTransiently(experimentNames: ExperimentName[]): void;
+    enableExperimentsByDefault(experimentNames: ExperimentName[]): void;
+    setServerEnabledExperiments(experiments: string[]): void;
+    enableForTest(experimentName: ExperimentName): void;
+    disableForTest(experimentName: ExperimentName): void;
     clearForTest(): void;
     cleanUpStaleExperiments(): void;
     private checkExperiment;
 }
+/**
+ * @deprecated Experiments should not be used anymore, instead use base::Feature.
+ * See docs/contributing/settings-experiments-features.md
+ */
 export declare class Experiment {
     #private;
-    name: string;
+    name: ExperimentName;
     title: string;
     docLink?: Platform.DevToolsPath.UrlString;
     readonly feedbackLink?: Platform.DevToolsPath.UrlString;
-    constructor(experiments: ExperimentsSupport, name: string, title: string, docLink: Platform.DevToolsPath.UrlString, feedbackLink: Platform.DevToolsPath.UrlString);
+    constructor(experiments: ExperimentsSupport, name: ExperimentName, title: string, docLink: Platform.DevToolsPath.UrlString, feedbackLink: Platform.DevToolsPath.UrlString);
     isEnabled(): boolean;
     setEnabled(enabled: boolean): void;
 }
 /** This must be constructed after the query parameters have been parsed. **/
 export declare const experiments: ExperimentsSupport;
-/**
- * @deprecated Experiments should not be used anymore, instead use base::Feature.
- * See docs/contributing/settings-experiments-features.md
- */
-export declare const enum ExperimentName {
-    CAPTURE_NODE_CREATION_STACKS = "capture-node-creation-stacks",
-    CSS_OVERVIEW = "css-overview",
-    LIVE_HEAP_PROFILE = "live-heap-profile",
-    ALL = "*",
-    PROTOCOL_MONITOR = "protocol-monitor",
-    FULL_ACCESSIBILITY_TREE = "full-accessibility-tree",
-    HEADER_OVERRIDES = "header-overrides",
-    INSTRUMENTATION_BREAKPOINTS = "instrumentation-breakpoints",
-    AUTHORED_DEPLOYED_GROUPING = "authored-deployed-grouping",
-    JUST_MY_CODE = "just-my-code",
-    USE_SOURCE_MAP_SCOPES = "use-source-map-scopes",
-    TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
-    TIMELINE_DEBUG_MODE = "timeline-debug-mode"
-}
 export declare enum GenAiEnterprisePolicyValue {
     ALLOW = 0,
     ALLOW_WITHOUT_LOGGING = 1,
@@ -157,6 +143,9 @@ export interface HostConfigDeepLinksViaExtensibilityApi {
 export interface HostConfigGreenDevUi {
     enabled: boolean;
 }
+export interface HostConfigGeminiRebranding {
+    enabled: boolean;
+}
 export interface HostConfigVeLogging {
     enabled: boolean;
     testing: boolean;
@@ -182,6 +171,9 @@ export interface HostConfigThirdPartyCookieControls {
     thirdPartyCookieMetadataEnabled: boolean;
     thirdPartyCookieHeuristicsEnabled: boolean;
     managedBlockThirdPartyCookies: string | boolean;
+}
+export interface HostConfigAiAssistanceV2 {
+    enabled: boolean;
 }
 interface AiGeneratedTimelineLabels {
     enabled: boolean;
@@ -229,6 +221,10 @@ export interface DevToolsEnableDurableMessages {
 interface HostConfigAiAssistanceContextSelectionAgent {
     enabled: boolean;
 }
+interface ConsoleInsightsTeasers {
+    enabled: boolean;
+    allowWithoutGpu: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -252,6 +248,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
     devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;
     devToolsAiAssistancePerformanceAgent: HostConfigAiAssistancePerformanceAgent;
+    devToolsAiAssistanceV2: HostConfigAiAssistanceV2;
     devToolsAiCodeCompletion: HostConfigAiCodeCompletion;
     devToolsAiCodeGeneration: HostConfigAiCodeGeneration;
     devToolsVeLogging: HostConfigVeLogging;
@@ -277,6 +274,8 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAiPromptApi: AiPromptApi;
     devToolsEnableDurableMessages: DevToolsEnableDurableMessages;
     devToolsAiAssistanceContextSelectionAgent: HostConfigAiAssistanceContextSelectionAgent;
+    devToolsConsoleInsightsTeasers: ConsoleInsightsTeasers;
+    devToolsGeminiRebranding: HostConfigGeminiRebranding;
 }>;
 /**
  * The host configuration for this DevTools instance.
