@@ -4651,7 +4651,7 @@ var AXBreadcrumbsPane = class extends AccessibilitySubPane {
     const previewToggle = new Feedback.PreviewToggle.PreviewToggle();
     previewToggle.setAttribute("jslog", `${VisualLogging3.toggle("full-accessibility-tree")}`);
     const name = i18nString3(UIStrings4.fullTreeExperimentName);
-    const experiment = "full-accessibility-tree";
+    const experiment = Root.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE;
     const onChangeCallback = (checked) => {
       Host.userMetrics.experimentChanged(experiment, checked);
       UI4.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString3(UIStrings4.reloadRequired));
@@ -5336,7 +5336,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widge
     if (!accessibilityModel) {
       return;
     }
-    if (!Root2.Runtime.experiments.isEnabled("full-accessibility-tree")) {
+    if (!Root2.Runtime.experiments.isEnabled(Root2.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE)) {
       accessibilityModel.clear();
     }
     await accessibilityModel.requestPartialAXTree(node);

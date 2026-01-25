@@ -171,11 +171,11 @@ div.raw-headers-row {
   color: var(--sys-color-on-surface);
 }
 
-x-link {
+devtools-link {
   position: relative;
 }
 
-x-link .inline-icon {
+devtools-link .inline-icon {
   padding-right: 3px;
 }
 
@@ -576,6 +576,7 @@ __export(HeaderSectionRow_exports, {
   compareHeaders: () => compareHeaders,
   isValidHeaderName: () => isValidHeaderName
 });
+import "./../../../ui/kit/kit.js";
 import "./../../../ui/legacy/legacy.js";
 import * as Host2 from "./../../../core/host/host.js";
 import * as i18n3 from "./../../../core/i18n/i18n.js";
@@ -1025,11 +1026,11 @@ var HeaderSectionRow = class extends HTMLElement {
     }
     if (blockedDetails?.link) {
       return html3`
-        <x-link href=${blockedDetails.link.url} class="link">
+        <devtools-link href=${blockedDetails.link.url} class="link">
           <devtools-icon name="open-externally" class="inline-icon extra-large" style="color: var(--icon-link);">
           </devtools-icon
           >${i18nString2(UIStrings2.learnMore)}
-        </x-link>
+        </devtools-link>
       `;
     }
     return Lit2.nothing;
@@ -1153,6 +1154,7 @@ __export(RequestHeaderSection_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW2,
   RequestHeaderSection: () => RequestHeaderSection
 });
+import "./../../../ui/kit/kit.js";
 import * as i18n5 from "./../../../core/i18n/i18n.js";
 import * as Platform2 from "./../../../core/platform/platform.js";
 import * as UI2 from "./../../../ui/legacy/legacy.js";
@@ -1283,7 +1285,7 @@ function renderProvisionalHeadersWarning(isRequestCached) {
         <div class="explanation" title=${cautionTitle}>
           <devtools-icon class="inline-icon medium" name='warning-filled'>
           </devtools-icon>
-          ${cautionText} <x-link href="https://developer.chrome.com/docs/devtools/network/reference/#provisional-headers" class="link">${i18nString3(UIStrings3.learnMore)}</x-link>
+          ${cautionText} <devtools-link href="https://developer.chrome.com/docs/devtools/network/reference/#provisional-headers" class="link">${i18nString3(UIStrings3.learnMore)}</devtools-link>
         </div>
       </div>
     </div>
@@ -1337,6 +1339,7 @@ __export(RequestHeadersView_exports, {
   RequestHeadersView: () => RequestHeadersView,
   ToggleRawHeadersEvent: () => ToggleRawHeadersEvent
 });
+import "./../../../ui/kit/kit.js";
 import * as Common3 from "./../../../core/common/common.js";
 import * as Host4 from "./../../../core/host/host.js";
 import * as i18n9 from "./../../../core/i18n/i18n.js";
@@ -2146,22 +2149,22 @@ var RequestHeadersView = class extends LegacyWrapper.LegacyWrapper.WrappableComp
       }
     };
     return html6`
-      <x-link
+      <devtools-link
           href="https://goo.gle/devtools-override"
           class="link devtools-link"
-          jslog=${VisualLogging6.link("devtools-override").track({ click: true })}
+          jslogcontext="devtools-override"
       >
         <devtools-icon name="help" class="inline-icon medium">
         </devtools-icon>
-      </x-link>
-      <x-link
+      </devtools-link>
+      <devtools-link
           @click=${revealHeadersFile}
           class="link devtools-link"
           title=${UIStrings5.revealHeaderOverrides}
-          jslog=${VisualLogging6.link("reveal-header-overrides").track({ click: true })}
+          jslogcontext="reveal-header-overrides"
       >
         ${fileIcon}${Persistence2.NetworkPersistenceManager.HEADERS_FILENAME}
-      </x-link>
+      </devtools-link>
     `;
   }
   #getHeaderOverridesFileUrl() {

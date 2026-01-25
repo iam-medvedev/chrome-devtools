@@ -111,6 +111,7 @@
       <include file="Images/cross.svg" name="IMAGES_CROSS_SVG" resource_path="Images/cross.svg" type="BINDATA" compress="false"/>
       <include file="Images/cssoverview_icons_2x.avif" name="IMAGES_CSSOVERVIEW_ICONS_2X_AVIF" resource_path="Images/cssoverview_icons_2x.avif" type="BINDATA" compress="false"/>
       <include file="Images/custom-typography.svg" name="IMAGES_CUSTOM_TYPOGRAPHY_SVG" resource_path="Images/custom-typography.svg" type="BINDATA" compress="false"/>
+      <include file="Images/database-off.svg" name="IMAGES_DATABASE_OFF_SVG" resource_path="Images/database-off.svg" type="BINDATA" compress="false"/>
       <include file="Images/database.svg" name="IMAGES_DATABASE_SVG" resource_path="Images/database.svg" type="BINDATA" compress="false"/>
       <include file="Images/deployed.svg" name="IMAGES_DEPLOYED_SVG" resource_path="Images/deployed.svg" type="BINDATA" compress="false"/>
       <include file="Images/device-fold.svg" name="IMAGES_DEVICE_FOLD_SVG" resource_path="Images/device-fold.svg" type="BINDATA" compress="false"/>
@@ -171,6 +172,8 @@
       <include file="Images/gear-filled.svg" name="IMAGES_GEAR_FILLED_SVG" resource_path="Images/gear-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/gear.svg" name="IMAGES_GEAR_SVG" resource_path="Images/gear.svg" type="BINDATA" compress="false"/>
       <include file="Images/gears.svg" name="IMAGES_GEARS_SVG" resource_path="Images/gears.svg" type="BINDATA" compress="false"/>
+      <include file="Images/geminiInDevTools.png" name="IMAGES_GEMINIINDEVTOOLS_PNG" resource_path="Images/geminiInDevTools.png" type="BINDATA" compress="false"/>
+      <include file="Images/geminiInDevTools_2x.png" name="IMAGES_GEMINIINDEVTOOLS_2X_PNG" resource_path="Images/geminiInDevTools_2x.png" type="BINDATA" compress="false"/>
       <include file="Images/global.svg" name="IMAGES_GLOBAL_SVG" resource_path="Images/global.svg" type="BINDATA" compress="false"/>
       <include file="Images/google.svg" name="IMAGES_GOOGLE_SVG" resource_path="Images/google.svg" type="BINDATA" compress="false"/>
       <include file="Images/goto-filled.svg" name="IMAGES_GOTO_FILLED_SVG" resource_path="Images/goto-filled.svg" type="BINDATA" compress="false"/>

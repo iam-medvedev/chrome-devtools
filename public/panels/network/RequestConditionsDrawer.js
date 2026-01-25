@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-lit-render-outside-of-view */
 /* eslint-disable @devtools/no-imperative-dom-api */
+import '../../ui/kit/kit.js';
 import '../../ui/legacy/legacy.js';
 import '../../ui/components/tooltips/tooltips.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -18,7 +19,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as PanelUtils from '../utils/utils.js';
 import requestConditionsDrawerStyles from './requestConditionsDrawer.css.js';
-const { ref } = Directives;
+const { ref, live } = Directives;
 const { widgetConfig } = UI.Widget;
 const UIStrings = {
     /**
@@ -162,7 +163,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
     render(
     // clang-format off
     html `
-    <style>${RequestConditionsDrawer}</style>
     <devtools-toolbar jslog=${VisualLogging.toolbar()}>
       <devtools-checkbox
         ?checked=${input.enabled}
@@ -283,13 +283,13 @@ export class AffectedCountWidget extends UI.Widget.Widget {
     }
 }
 function learnMore() {
-    return html `<x-link
+    return html `<devtools-link
         href=${NETWORK_REQUEST_BLOCKING_EXPLANATION_URL}
         tabindex=0
         class=devtools-link
-        jslog=${VisualLogging.link().track({ click: true, keydown: 'Enter|Space' }).context('learn-more')}>
+        .jslogContext=${'learn-more'}>
           ${i18nString(UIStrings.learnMore)}
-      </x-link>`;
+      </devtools-link>`;
 }
 export class RequestConditionsDrawer extends UI.Widget.VBox {
     manager;
@@ -373,10 +373,10 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
             // clang-format off
             html `
     <input class=blocked-url-checkbox
-      @click=${toggle}
+      @change=${toggle}
       type=checkbox
       title=${i18nString(UIStrings.enableThrottlingToggleLabel, { PH1: constructorStringOrWildcardURL })}
-      .checked=${enabled}
+      .checked=${live(enabled)}
       .disabled=${!editable || !originalOrUpgradedURLPattern}
       jslog=${VisualLogging.toggle().track({ change: true })}>
     <devtools-button
@@ -452,7 +452,7 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
             // clang-format off
             html `
     <input class=blocked-url-checkbox
-      @click=${toggle}
+      @change=${toggle}
       type=checkbox
       .checked=${condition.enabled}
       .disabled=${!editable}

@@ -360,7 +360,7 @@ describeWithMockConnection('NameResolver', () => {
     });
     describe('Function name resolving from scopes', () => {
         it('resolves function scope name at scope start for a debugger frame', async () => {
-            Root.Runtime.experiments.enableForTest('use-source-map-scopes');
+            Root.Runtime.experiments.enableForTest(Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES);
             const sourceMapUrl = 'file:///tmp/example.js.min.map';
             const sourceMapContent = JSON.stringify({
                 version: 3,
@@ -387,7 +387,7 @@ describeWithMockConnection('NameResolver', () => {
             const callFrame = await backend.createCallFrame(target, { url: URL, content: source + `//# sourceMappingURL=${sourceMapUrl}` }, scopes, { url: sourceMapUrl, content: sourceMapContent });
             const functionName = await SourceMapScopes.NamesResolver.resolveDebuggerFrameFunctionName(callFrame);
             assert.strictEqual(functionName, 'main');
-            Root.Runtime.experiments.disableForTest('use-source-map-scopes');
+            Root.Runtime.experiments.disableForTest(Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES);
         });
     });
     it('ignores the argument name during arrow function name resolution', async () => {

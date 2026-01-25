@@ -58,7 +58,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/application/components/Protocol
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nTemplate = unboundI18nTemplate.bind(undefined, str_);
 function renderStatusMessage(protocolHandlers, manifestLink) {
-    const manifestInTextLink = UI.XLink.XLink.create(manifestLink, i18nString(UIStrings.manifest), undefined, undefined, 'manifest');
     const statusString = protocolHandlers.length > 0 ? UIStrings.protocolDetected : UIStrings.protocolNotDetected;
     // clang-format off
     return html `
@@ -66,7 +65,9 @@ function renderStatusMessage(protocolHandlers, manifestLink) {
       <devtools-icon class="inline-icon"
                      name=${protocolHandlers.length > 0 ? 'check-circle' : 'info'}>
       </devtools-icon>
-      ${uiI18n.getFormatLocalizedString(str_, statusString, { PH1: manifestInTextLink })}
+      ${uiI18n.getFormatLocalizedStringTemplate(str_, statusString, { PH1: html `
+        <devtools-link href=${manifestLink} jslogcontext="manifest">${i18nString(UIStrings.manifest)}</devtools-link>
+        ` })}
     </div>`;
     // clang-format on
 }
@@ -103,9 +104,9 @@ const DEFAULT_VIEW = (input, _output, target) => {
     ${renderStatusMessage(input.protocolHandler, input.manifestLink)}
     <div class="protocol-handlers-row">
       ${i18nTemplate(UIStrings.needHelpReadOur, { PH1: html `
-        <x-link href=${PROTOCOL_DOCUMENT_URL} tabindex=0 class="devtools-link" autofocus jslog=${VisualLogging.link('learn-more').track({ click: true, keydown: 'Enter|Space' })}>
+        <devtools-link href=${PROTOCOL_DOCUMENT_URL} class="devtools-link" autofocus jslogcontext="learn-more">
           ${i18nString(UIStrings.protocolHandlerRegistrations)}
-        </x-link>` })}
+        </devtools-link>` })}
     </div>
     ${renderProtocolTest(input.protocolHandler, input.queryInputState, input.protocolSelectHandler, input.queryInputChangeHandler, input.testProtocolClickHandler)}
   `, target);

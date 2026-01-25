@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { debuggerCallFrame, protocolCallFrame, stringifyStackTrace } from '../../testing/StackTraceHelpers.js';
 import * as StackTrace from './stack_trace.js';
 // TODO(crbug.com/444191656): Expose a `testing` bundle.
 // eslint-disable-next-line @devtools/es-modules-import
 import * as StackTraceImpl from './stack_trace_impl.js';
-describeWithMockConnection('StackTraceModel', () => {
+describe('StackTraceModel', () => {
+    setupSettingsHooks();
+    setupRuntimeHooks();
     const identityTranslateFn = (frames, _target) => Promise.resolve(frames.map(f => [{
             url: f.url,
             name: f.functionName,
@@ -17,9 +21,11 @@ describeWithMockConnection('StackTraceModel', () => {
             column: f.columnNumber,
         }]));
     function setup() {
-        const target = createTarget();
+        const connection = new MockCDPConnection();
+        const target = createTarget({ connection });
         return {
             model: target.model(StackTraceImpl.StackTraceModel.StackTraceModel),
+            connection,
             translateSpy: sinon.spy(identityTranslateFn),
             debuggerModel: target.model(SDK.DebuggerModel.DebuggerModel),
         };
@@ -74,14 +80,15 @@ describeWithMockConnection('StackTraceModel', () => {
             ].join('\n'));
         });
         it('correctly handles a async fragments from different targets', async () => {
+            const { model, connection } = setup();
             {
                 let index = 0;
-                setMockConnectionResponseHandler('Debugger.enable', () => ({ debuggerId: `target${index++}` }));
+                connection.setHandler('Debugger.enable', () => ({ result: { debuggerId: `target${index++}` } }));
                 sinon.stub(SDK.DebuggerModel.DebuggerModel, 'resyncDebuggerIdForModels');
             }
-            const { model } = setup();
             const [model1, model2] = [
-                createTarget().model(SDK.DebuggerModel.DebuggerModel), createTarget().model(SDK.DebuggerModel.DebuggerModel)
+                createTarget({ connection }).model(SDK.DebuggerModel.DebuggerModel),
+                createTarget({ connection }).model(SDK.DebuggerModel.DebuggerModel)
             ];
             await Promise.all([
                 model1.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause),

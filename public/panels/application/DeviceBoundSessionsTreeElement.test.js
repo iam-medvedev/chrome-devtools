@@ -103,7 +103,8 @@ describeWithMockConnection('DeviceBoundSessionsTreeElement', () => {
                 ['example2.com', ['session_1']],
                 ['hidden.com', ['session_1']],
             ]),
-            emptySites: new Set(['example2.com', 'hidden.com'])
+            emptySites: new Set(['example2.com', 'hidden.com']),
+            noLongerFailedSessions: new Map(),
         });
         model.addVisibleSite('hidden.com');
         assert.strictEqual(root.childCount(), 1);
@@ -202,8 +203,11 @@ describeWithMockConnection('DeviceBoundSessionsTreeElement', () => {
         assert.strictEqual(siteNode3.title, 'example1.com');
         assert.strictEqual(siteNode3.childCount(), 3);
         assert.strictEqual(siteNode3.children()[0].title, 'No session');
+        assert.isTrue(siteNode3.children()[0].listItemElement.classList.contains('no-device-bound-session'));
         assert.strictEqual(siteNode3.children()[1].title, 'session_1');
+        assert.isFalse(siteNode3.children()[1].listItemElement.classList.contains('no-device-bound-session'));
         assert.strictEqual(siteNode3.children()[2].title, 'session_2');
+        assert.isFalse(siteNode3.children()[2].listItemElement.classList.contains('no-device-bound-session'));
         // An event occurs that adds a "no session" to a new site.
         model.dispatchEventToListeners("EVENT_OCCURRED" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.EVENT_OCCURRED */, { site: 'example2.com' });
         assert.strictEqual(root.childCount(), 2);
@@ -212,11 +216,79 @@ describeWithMockConnection('DeviceBoundSessionsTreeElement', () => {
         assert.strictEqual(siteNode4.title, 'example2.com');
         assert.strictEqual(siteNode4.childCount(), 1);
         assert.strictEqual(siteNode4.children()[0].title, 'No session');
+        assert.isTrue(siteNode4.children()[0].listItemElement.classList.contains('no-device-bound-session'));
         // An event occurs that adds a new session + site but it is not visible.
         model.dispatchEventToListeners("EVENT_OCCURRED" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.EVENT_OCCURRED */, { site: 'hidden.com', sessionId: 'hidden_session' });
         assert.strictEqual(root.childCount(), 2);
         assert.strictEqual(root.children()[0].title, 'example1.com');
         assert.strictEqual(root.children()[1].title, 'example2.com');
+    });
+    it('updates the session tree element visual state when a session is terminated', () => {
+        const root = new Application.DeviceBoundSessionsTreeElement.RootTreeElement(mockPanel, model);
+        root.onbind();
+        const site = 'example.com';
+        const sessionId = 'session_1';
+        const otherSessionId = 'session_2';
+        model.addVisibleSite(site);
+        const session1 = makeSession(site, sessionId);
+        const session2 = makeSession(site, otherSessionId);
+        model.dispatchEventToListeners("INITIALIZE_SESSIONS" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.INITIALIZE_SESSIONS */, { sessions: [session1, session2] });
+        const siteNode = root.children()[0];
+        const session1Node = siteNode.children()[0];
+        const session2Node = siteNode.children()[1];
+        // Initially is not terminated.
+        assert.isFalse(session1Node.listItemElement.classList.contains('device-bound-session-terminated'));
+        assert.isFalse(session2Node.listItemElement.classList.contains('device-bound-session-terminated'));
+        // Simulate termination event.
+        const isSessionTerminatedStub = sinon.stub(model, 'isSessionTerminated');
+        isSessionTerminatedStub.withArgs(site, sessionId).returns(true);
+        model.dispatchEventToListeners("EVENT_OCCURRED" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.EVENT_OCCURRED */, { site, sessionId });
+        // Session 1 should now be terminated. Session 2 remains unterminated.
+        assert.isTrue(session1Node.listItemElement.classList.contains('device-bound-session-terminated'));
+        assert.isFalse(session2Node.listItemElement.classList.contains('device-bound-session-terminated'));
+        // Simulate recreation event.
+        isSessionTerminatedStub.withArgs(site, sessionId).returns(false);
+        model.dispatchEventToListeners("EVENT_OCCURRED" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.EVENT_OCCURRED */, { site, sessionId });
+        // Session 1 should no longer be terminated.
+        assert.isFalse(session1Node.listItemElement.classList.contains('device-bound-session-terminated'));
+        assert.isFalse(session2Node.listItemElement.classList.contains('device-bound-session-terminated'));
+    });
+    it('updates the session tree element visual state when a session has errors', () => {
+        const root = new Application.DeviceBoundSessionsTreeElement.RootTreeElement(mockPanel, model);
+        root.onbind();
+        const site = 'example.com';
+        const sessionId = 'session_1';
+        const sessionId2 = 'session_2';
+        model.addVisibleSite(site);
+        const session = makeSession(site, sessionId);
+        const session2 = makeSession(site, sessionId2);
+        model.dispatchEventToListeners("INITIALIZE_SESSIONS" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.INITIALIZE_SESSIONS */, { sessions: [session, session2] });
+        const siteNode = root.children()[0];
+        const sessionNode = siteNode.children()[0];
+        const sessionNode2 = siteNode.children()[1];
+        function checkIcon(node, expectedIcon) {
+            const icon = node.listItemElement.querySelector('devtools-icon');
+            assert.exists(icon);
+            assert.strictEqual(icon.getAttribute('name'), expectedIcon);
+        }
+        // Initially has database icon.
+        checkIcon(sessionNode, 'database');
+        checkIcon(sessionNode2, 'database');
+        // A failed event should change it to a warning icon.
+        const sessionHasErrorsStub = sinon.stub(model, 'sessionHasErrors');
+        sessionHasErrorsStub.withArgs(site, sessionId).returns(true);
+        model.dispatchEventToListeners("EVENT_OCCURRED" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.EVENT_OCCURRED */, { site, sessionId });
+        checkIcon(sessionNode, 'warning');
+        checkIcon(sessionNode2, 'database');
+        // Clearing events should change it back to a database icon.
+        sessionHasErrorsStub.withArgs(site, sessionId).returns(false);
+        model.dispatchEventToListeners("CLEAR_EVENTS" /* Application.DeviceBoundSessionsModel.DeviceBoundSessionModelEvents.CLEAR_EVENTS */, {
+            emptySessions: new Map(),
+            emptySites: new Set(),
+            noLongerFailedSessions: new Map([[site, [sessionId]]]),
+        });
+        checkIcon(sessionNode, 'database');
+        checkIcon(sessionNode2, 'database');
     });
 });
 //# sourceMappingURL=DeviceBoundSessionsTreeElement.test.js.map

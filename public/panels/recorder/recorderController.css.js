@@ -134,7 +134,7 @@ devtools-recording-list-view {
   margin-right: 4px;
 }
 
-.feedback .x-link {
+.feedback .devtools-link {
   letter-spacing: 0.03em;
   text-decoration-line: underline;
   font-size: var(--sys-typescale-body4-size);
@@ -143,8 +143,8 @@ devtools-recording-list-view {
   outline-offset: 3px;
 }
 
-.feedback .x-link:focus-visible,
-.empty-state-description .x-link:focus-visible {
+.feedback .devtools-link:focus-visible,
+.empty-state-description .devtools-link:focus-visible {
   outline: -webkit-focus-ring-color auto 1px;
 }
 
@@ -172,7 +172,7 @@ devtools-recording-list-view {
     font: var(--sys-typescale-body4-regular);
     color: var(--sys-color-on-surface-subtle);
 
-    > x-link {
+    > devtools-link {
       white-space: nowrap;
       margin-left: var(--sys-size-3);
       cursor: pointer;

@@ -435,7 +435,7 @@ export class SourceMap {
             nameIndex += tokenIter.nextVLQ();
             this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
         }
-        if (Root.Runtime.experiments.isEnabled("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */)) {
+        if (Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES)) {
             if (!this.#scopesInfo) {
                 this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
             }
@@ -602,13 +602,6 @@ export class SourceMap {
     compatibleForURL(sourceURL, other) {
         return this.embeddedContentByURL(sourceURL) === other.embeddedContentByURL(sourceURL) &&
             this.hasIgnoreListHint(sourceURL) === other.hasIgnoreListHint(sourceURL);
-    }
-    expandCallFrame(frame) {
-        this.#ensureSourceMapProcessed();
-        if (this.#scopesInfo === null) {
-            return [frame];
-        }
-        return this.#scopesInfo.expandCallFrame(frame);
     }
     resolveScopeChain(frame) {
         this.#ensureSourceMapProcessed();

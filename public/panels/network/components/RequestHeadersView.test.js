@@ -267,7 +267,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         assert.isNotNull(responseHeadersCategory.shadowRoot);
-        const linkElements = responseHeadersCategory.shadowRoot.querySelectorAll('x-link');
+        const linkElements = responseHeadersCategory.shadowRoot.querySelectorAll('devtools-link');
         assert.lengthOf(linkElements, 2);
         assert.instanceOf(linkElements[0], HTMLElement);
         assert.strictEqual(linkElements[0].title, 'https://goo.gle/devtools-override');
@@ -286,7 +286,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         assert.isNotNull(responseHeadersCategory.shadowRoot);
-        const linkElement = responseHeadersCategory.shadowRoot.querySelector('x-link');
+        const linkElement = responseHeadersCategory.shadowRoot.querySelector('devtools-link');
         assert.isNull(linkElement);
     });
     it('allows enabling header overrides via buttons located next to each header', async () => {

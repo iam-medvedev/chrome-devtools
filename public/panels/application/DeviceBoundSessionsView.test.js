@@ -22,6 +22,8 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
     function createMockSession() {
         return {
             eventsById: new Map(),
+            isSessionTerminated: false,
+            hasErrors: false,
             session: {
                 key: { site: mockSite, id: mockSessionId },
                 refreshUrl: 'https://example.com/refresh',
@@ -283,6 +285,8 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
     it('renders events correctly', async () => {
         const sessionAndEvents = {
             eventsById: new Map(),
+            isSessionTerminated: false,
+            hasErrors: false,
             session: undefined,
         };
         const date = new Date('2026-01-01T10:00:00.000Z');

@@ -1389,18 +1389,17 @@ var IsolateSelector = class _IsolateSelector extends UI2.Widget.VBox {
     const trendIntervalMinutes = Math.round(SDK.IsolateManager.MemoryTrendWindowMs / 6e4);
     UI2.Tooltip.Tooltip.install(this.totalTrendDiv, i18nString2(UIStrings2.totalPageJsHeapSizeChangeTrend, { PH1: trendIntervalMinutes }));
     UI2.Tooltip.Tooltip.install(this.totalValueDiv, i18nString2(UIStrings2.totalPageJsHeapSizeAcrossAllVm));
+    SDK.IsolateManager.IsolateManager.instance().observeIsolates(this);
     SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged", this.targetChanged, this);
     SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged", this.targetChanged, this);
   }
   wasShown() {
     super.wasShown();
-    SDK.IsolateManager.IsolateManager.instance().observeIsolates(this);
     SDK.IsolateManager.IsolateManager.instance().addEventListener("MemoryChanged", this.heapStatsChanged, this);
   }
   willHide() {
     super.willHide();
     SDK.IsolateManager.IsolateManager.instance().removeEventListener("MemoryChanged", this.heapStatsChanged, this);
-    SDK.IsolateManager.IsolateManager.instance().unobserveIsolates(this);
   }
   isolateAdded(isolate) {
     this.list.element.tabIndex = 0;
@@ -4662,7 +4661,7 @@ var HeapProfileView = class extends ProfileView {
     this.totalTime = 0;
     this.lastOrdinal = 0;
     this.timelineOverview = new HeapTimelineOverview();
-    if (Root.Runtime.experiments.isEnabled("sampling-heap-profiler-timeline")) {
+    if (Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.SAMPLING_HEAP_PROFILER_TIMELINE)) {
       this.timelineOverview.addEventListener("IdsRangeChanged", this.onIdsRangeChanged.bind(this));
       this.timelineOverview.show(this.element, this.element.firstChild);
       this.timelineOverview.start();
@@ -4843,7 +4842,7 @@ var SamplingHeapProfileType = class _SamplingHeapProfileType extends SamplingHea
     return formattedDescription.join("\n");
   }
   hasTemporaryView() {
-    return Root.Runtime.experiments.isEnabled("sampling-heap-profiler-timeline");
+    return Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.SAMPLING_HEAP_PROFILER_TIMELINE);
   }
   startSampling() {
     const heapProfilerModel = this.obtainRecordingProfile();
@@ -4851,7 +4850,7 @@ var SamplingHeapProfileType = class _SamplingHeapProfileType extends SamplingHea
       return;
     }
     void heapProfilerModel.startSampling();
-    if (Root.Runtime.experiments.isEnabled("sampling-heap-profiler-timeline")) {
+    if (Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.SAMPLING_HEAP_PROFILER_TIMELINE)) {
       this.updateTimer = window.setTimeout(() => {
         void this.updateStats();
       }, this.updateIntervalMs);
@@ -8701,7 +8700,7 @@ var HeapSnapshotProfileType = class _HeapSnapshotProfileType extends Common13.Ob
     return i18nString13(UIStrings14.heapSnapshotProfilesShowMemory);
   }
   customContent() {
-    const showOptionToExposeInternalsInHeapSnapshot = Root2.Runtime.experiments.isEnabled("show-option-tp-expose-internals-in-heap-snapshot");
+    const showOptionToExposeInternalsInHeapSnapshot = Root2.Runtime.experiments.isEnabled(Root2.ExperimentNames.ExperimentName.SHOW_OPTION_TO_EXPOSE_INTERNALS_IN_HEAP_SNAPSHOT);
     const exposeInternalsInHeapSnapshotCheckbox = SettingsUI.SettingsUI.createSettingCheckbox(i18nString13(UIStrings14.exposeInternals), this.exposeInternals);
     this.customContentInternal = exposeInternalsInHeapSnapshotCheckbox;
     return showOptionToExposeInternalsInHeapSnapshot ? exposeInternalsInHeapSnapshotCheckbox : null;

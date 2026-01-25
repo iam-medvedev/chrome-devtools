@@ -1,3 +1,4 @@
+import '../../ui/kit/kit.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as Components from './components/components.js';
 import * as Models from './models/models.js';

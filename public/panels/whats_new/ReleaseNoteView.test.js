@@ -103,7 +103,7 @@ describeWithEnvironment('Release Note View', () => {
         sinon.stub(WhatsNew.ReleaseNoteView.ReleaseNoteView, 'getFileContent').returns(Promise.resolve(''));
         const releaseNoteView = new WhatsNew.ReleaseNoteView.ReleaseNoteView();
         await releaseNoteView.updateComplete;
-        const videos = releaseNoteView.contentElement.querySelectorAll('.video-container > x-link');
+        const videos = releaseNoteView.contentElement.querySelectorAll('.video-container > devtools-link');
         assert.lengthOf(videos, 3);
         const releaseNotes = WhatsNew.ReleaseNoteText.getReleaseNote();
         const descriptions = Array.from(videos).map(n => n.innerText.trim());

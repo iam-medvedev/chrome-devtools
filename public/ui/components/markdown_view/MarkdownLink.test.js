@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import * as UI from '../../legacy/legacy.js';
+import { Link } from '../../kit/kit.js';
 import * as MarkdownView from './markdown_view.js';
 const { urlString } = Platform.DevToolsPath;
 describe('MarkdownLink', () => {
@@ -15,10 +15,10 @@ describe('MarkdownLink', () => {
         component.data = { key: 'test-link', title: 'Test link' };
         renderElementIntoDOM(component);
         assert.isNotNull(component.shadowRoot);
-        const linkComponent = getElementWithinComponent(component, 'x-link', UI.XLink.XLink);
+        const linkComponent = getElementWithinComponent(component, 'devtools-link', Link);
         assert.isNotNull(linkComponent);
         assert.strictEqual(linkComponent.textContent, 'Test link');
-        assert.strictEqual(linkComponent.href, urlString `http://examplelink/`);
+        assert.strictEqual(linkComponent.href, urlString `http://exampleLink`);
     });
 });
 //# sourceMappingURL=MarkdownLink.test.js.map

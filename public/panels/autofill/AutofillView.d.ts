@@ -1,3 +1,4 @@
+import '../../ui/kit/kit.js';
 import '../../ui/components/adorners/adorners.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Common from '../../core/common/common.js';

@@ -1,3 +1,4 @@
+import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -26,7 +27,7 @@ interface ViewInput {
     disabledReasons: string[];
     sharedDisclaimerBulletPoints: Array<{
         icon: string;
-        text: Common.UIString.LocalizedString | Lit.TemplateResult;
+        text: Common.UIString.LocalizedString | Lit.LitTemplate;
     }>;
     settingToParams: Map<Common.Settings.Setting<boolean>, AiSettingParams>;
     expandSetting(setting: Common.Settings.Setting<boolean>): void;

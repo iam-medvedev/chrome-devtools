@@ -792,14 +792,13 @@ var generatedProperties = [
       "text-emphasis-color",
       "text-emphasis-position",
       "text-emphasis-style",
-      "text-grow",
+      "text-fit",
       "text-indent",
       "text-justify",
       "text-orientation",
       "text-overflow",
       "text-rendering",
       "text-shadow",
-      "text-shrink",
       "text-size-adjust",
       "text-spacing-trim",
       "text-transform",
@@ -1856,8 +1855,7 @@ var generatedProperties = [
     "keywords": [
       "all",
       "around",
-      "between",
-      "none"
+      "between"
     ],
     "name": "column-rule-visibility-items"
   },
@@ -3888,8 +3886,7 @@ var generatedProperties = [
     "keywords": [
       "all",
       "around",
-      "between",
-      "none"
+      "between"
     ],
     "name": "row-rule-visibility-items"
   },
@@ -4502,7 +4499,7 @@ var generatedProperties = [
     "name": "text-emphasis-style"
   },
   {
-    "name": "text-grow"
+    "name": "text-fit"
   },
   {
     "inherited": true,
@@ -4550,9 +4547,6 @@ var generatedProperties = [
       "none"
     ],
     "name": "text-shadow"
-  },
-  {
-    "name": "text-shrink"
   },
   {
     "inherited": true,
@@ -5587,8 +5581,7 @@ var generatedPropertyValues = {
     "values": [
       "all",
       "around",
-      "between",
-      "none"
+      "between"
     ]
   },
   "column-rule-width": {
@@ -6711,8 +6704,7 @@ var generatedPropertyValues = {
     "values": [
       "all",
       "around",
-      "between",
-      "none"
+      "between"
     ]
   },
   "row-rule-width": {
@@ -13472,6 +13464,9 @@ var MathFunctionMatch = class extends BaseFunctionMatch {
       case "calc":
       case "sibling-count":
       case "sibling-index":
+      case "round":
+      case "mod":
+      case "rem":
         return true;
     }
     const catchFallback = func;
@@ -13490,6 +13485,9 @@ var MathFunctionMatcher = class _MathFunctionMatcher extends matcherBase(MathFun
       case "calc":
       case "sibling-count":
       case "sibling-index":
+      case "round":
+      case "mod":
+      case "rem":
         return maybeFunc;
     }
     const catchFallback = maybeFunc;
@@ -14452,7 +14450,7 @@ var CSSProperty = class _CSSProperty extends Common7.ObjectWrapper.ObjectWrapper
   #matchers(matchedStyles, computedStyles) {
     const matchers = matchedStyles.propertyMatchers(this.ownerStyle, computedStyles);
     matchers.push(new CSSWideKeywordMatcher(this, matchedStyles));
-    if (Root3.Runtime.experiments.isEnabled("font-editor")) {
+    if (Root3.Runtime.experiments.isEnabled(Root3.ExperimentNames.ExperimentName.FONT_EDITOR)) {
       matchers.push(new FontMatcher());
     }
     return matchers;
@@ -18999,28 +18997,6 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
     return result;
   }
   /**
-   * Takes a V8 provided call frame and expands any inlined frames into virtual call frames.
-   *
-   * For call frames where nothing was inlined, the result contains only a single element,
-   * the provided frame but with the original name.
-   *
-   * For call frames where we are paused in inlined code, this function returns a list of
-   * call frames from "inner to outer". This is the call frame at index 0
-   * signifies the top of this stack trace fragment.
-   *
-   * The rest are "virtual" call frames and will have an "inlineFrameIndex" set in ascending
-   * order, so the condition `result[index] === result[index].inlineFrameIndex` always holds.
-   */
-  expandCallFrame(callFrame) {
-    const { originalFunctionName, inlinedFunctions } = this.findInlinedFunctions(callFrame.location().lineNumber, callFrame.location().columnNumber);
-    const result = [];
-    for (const [index, fn] of inlinedFunctions.entries()) {
-      result.push(callFrame.createVirtualCallFrame(index, fn.name));
-    }
-    result.push(callFrame.createVirtualCallFrame(result.length, originalFunctionName));
-    return result;
-  }
-  /**
    * Given a generated position, this returns all the surrounding generated ranges from outer
    * to inner.
    */
@@ -19631,10 +19607,7 @@ var SourceMap = class {
       nameIndex += tokenIter.nextVLQ();
       this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
     }
-    if (Root5.Runtime.experiments.isEnabled(
-      "use-source-map-scopes"
-      /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */
-    )) {
+    if (Root5.Runtime.experiments.isEnabled(Root5.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES)) {
       if (!this.#scopesInfo) {
         this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
       }
@@ -19780,13 +19753,6 @@ var SourceMap = class {
    */
   compatibleForURL(sourceURL, other) {
     return this.embeddedContentByURL(sourceURL) === other.embeddedContentByURL(sourceURL) && this.hasIgnoreListHint(sourceURL) === other.hasIgnoreListHint(sourceURL);
-  }
-  expandCallFrame(frame) {
-    this.#ensureSourceMapProcessed();
-    if (this.#scopesInfo === null) {
-      return [frame];
-    }
-    return this.#scopesInfo.expandCallFrame(frame);
   }
   resolveScopeChain(frame) {
     this.#ensureSourceMapProcessed();
@@ -20375,6 +20341,12 @@ var CSSModel = class _CSSModel extends SDKModel {
     }
     return await this.#styleLoader.computedStylePromise(nodeId);
   }
+  async getComputedStyleExtraFields(nodeId) {
+    if (!this.isEnabled()) {
+      await this.enable();
+    }
+    return await this.#styleLoader.extraFieldsPromise(nodeId);
+  }
   async getLayoutPropertiesFromComputedStyle(nodeId) {
     const styles = await this.getComputedStyle(nodeId);
     if (!styles) {
@@ -20908,24 +20880,32 @@ var ComputedStyleLoader = class {
   constructor(cssModel) {
     this.#cssModel = cssModel;
   }
-  computedStylePromise(nodeId) {
+  #getResponsePromise(nodeId) {
     let promise = this.#nodeIdToPromise.get(nodeId);
     if (promise) {
       return promise;
     }
-    promise = this.#cssModel.getAgent().invoke_getComputedStyleForNode({ nodeId }).then(({ computedStyle }) => {
+    promise = this.#cssModel.getAgent().invoke_getComputedStyleForNode({ nodeId }).then(({ computedStyle, extraFields }) => {
       this.#nodeIdToPromise.delete(nodeId);
       if (!computedStyle?.length) {
-        return null;
+        return { style: null, extraFields };
       }
       const result = /* @__PURE__ */ new Map();
       for (const property of computedStyle) {
         result.set(property.name, property.value);
       }
-      return result;
+      return { style: result, extraFields };
     });
     this.#nodeIdToPromise.set(nodeId, promise);
     return promise;
+  }
+  async computedStylePromise(nodeId) {
+    const computedStyleWithExtraFields = await this.#getResponsePromise(nodeId);
+    return computedStyleWithExtraFields.style;
+  }
+  async extraFieldsPromise(nodeId) {
+    const computedStyleWithExtraFields = await this.#getResponsePromise(nodeId);
+    return computedStyleWithExtraFields.extraFields;
   }
 };
 var InlineStyleResult = class {
@@ -22406,10 +22386,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     const maxScriptsCacheSize = isRemoteFrontend ? 1e7 : 1e8;
     const enablePromise = this.agent.invoke_enable({ maxScriptsCacheSize });
     let instrumentationPromise;
-    if (Root7.Runtime.experiments.isEnabled(
-      "instrumentation-breakpoints"
-      /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */
-    )) {
+    if (Root7.Runtime.experiments.isEnabled(Root7.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS)) {
       instrumentationPromise = this.agent.invoke_setInstrumentationBreakpoint({
         instrumentation: "beforeScriptExecution"
       });
@@ -22738,22 +22715,6 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     if (this.#expandCallFramesCallback) {
       pausedDetails.callFrames = await this.#expandCallFramesCallback.call(null, pausedDetails.callFrames);
     }
-    if (!Root7.Runtime.experiments.isEnabled(
-      "use-source-map-scopes"
-      /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */
-    )) {
-      return;
-    }
-    const finalFrames = [];
-    for (const frame of pausedDetails.callFrames) {
-      const sourceMap = await this.sourceMapManager().sourceMapForClientPromise(frame.script);
-      if (sourceMap?.hasScopeInfo()) {
-        finalFrames.push(...sourceMap.expandCallFrame(frame));
-      } else {
-        finalFrames.push(frame);
-      }
-    }
-    pausedDetails.callFrames = finalFrames;
   }
   resumedScript() {
     this.resetDebuggerPausedDetails();
@@ -22772,7 +22733,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     const script = new Script(this, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isLiveEdit, sourceMapURL, hasSourceURLComment, length, isModule, originStackTrace, codeOffset, scriptLanguage, selectedDebugSymbol, embedderName, buildId);
     this.registerScript(script);
     this.dispatchEventToListeners(Events7.ParsedScriptSource, script);
-    if (script.sourceMapURL && !hasSyntaxError) {
+    if ((!selectedDebugSymbol || selectedDebugSymbol.type === "SourceMap") && script.sourceMapURL && !hasSyntaxError) {
       this.#sourceMapManager.attachSourceMap(script, script.sourceURL, script.sourceMapURL);
     }
     const isDiscardable = hasSyntaxError && script.isAnonymousScript();
@@ -24236,7 +24197,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
       gridHighlightConfig: {},
       flexContainerHighlightConfig: {},
       flexItemHighlightConfig: {},
-      contrastAlgorithm: Root8.Runtime.experiments.isEnabled("apca") ? "apca" : "aa"
+      contrastAlgorithm: Root8.Runtime.experiments.isEnabled(Root8.ExperimentNames.ExperimentName.APCA) ? "apca" : "aa"
     };
     if (mode === "all" || mode === "content") {
       highlightConfig.contentColor = Common20.Color.PageHighlight.Content.toProtocolRGBA();
@@ -25713,7 +25674,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     if (!target.suspended()) {
       void this.agent.invoke_enable({});
     }
-    if (Root9.Runtime.experiments.isEnabled("capture-node-creation-stacks")) {
+    if (Root9.Runtime.experiments.isEnabled(Root9.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS)) {
       void this.agent.invoke_setNodeStackTracesEnabled({ enable: true });
     }
   }
@@ -27621,7 +27582,7 @@ var CookieModel = class extends SDKModel {
     if (cookie.expires()) {
       expires = Math.floor(Date.parse(`${cookie.expires()}`) / 1e3);
     }
-    const enabled = Root10.Runtime.experiments.isEnabled("experimental-cookie-features");
+    const enabled = Root10.Runtime.experiments.isEnabled(Root10.ExperimentNames.ExperimentName.EXPERIMENTAL_COOKIE_FEATURES);
     const preserveUnset = (scheme) => scheme === "Unset" ? scheme : void 0;
     const protocolCookie = {
       name: cookie.name(),
@@ -34625,12 +34586,6 @@ var IsolateManager = class _IsolateManager extends Common39.ObjectWrapper.Object
     this.#observers.add(observer);
     for (const isolate of this.#isolates.values()) {
       observer.isolateAdded(isolate);
-    }
-  }
-  unobserveIsolates(observer) {
-    this.#observers.delete(observer);
-    if (!this.#observers.size) {
-      this.#pollId++;
     }
   }
   modelAdded(model) {

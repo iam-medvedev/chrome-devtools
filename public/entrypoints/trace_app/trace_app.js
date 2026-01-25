@@ -828,7 +828,7 @@ UI.ContextMenu.registerProvider({
     ];
   },
   async loadProvider() {
-    return new UI.XLink.ContextMenuProvider();
+    return new UI.LinkContextMenuProvider.LinkContextMenuProvider();
   },
   experiment: void 0
 });
@@ -2957,7 +2957,7 @@ UI6.ViewManager.registerViewExtension({
     const ProtocolMonitor = await loadProtocolMonitorModule();
     return new ProtocolMonitor.ProtocolMonitor.ProtocolMonitorImpl();
   },
-  experiment: "protocol-monitor"
+  experiment: Root3.ExperimentNames.ExperimentName.PROTOCOL_MONITOR
 });
 
 // gen/front_end/panels/settings/settings-meta.js
@@ -3123,7 +3123,7 @@ UI22.ViewManager.registerViewExtension({
   title: i18nLazyString22(UIStrings22.experiments),
   commandPrompt: i18nLazyString22(UIStrings22.showExperiments),
   order: 3,
-  experiment: "*",
+  experiment: Root4.ExperimentNames.ExperimentName.ALL,
   async loadView() {
     const Settings22 = await loadSettingsModule();
     return new Settings22.SettingsScreen.ExperimentsSettingsTab();
@@ -6211,7 +6211,7 @@ Common14.Settings.registerSettingExtension({
 });
 Common14.Settings.registerSettingExtension({
   category: "MEMORY",
-  experiment: "live-heap-profile",
+  experiment: Root6.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE,
   title: i18nLazyString15(UIStrings15.liveMemoryAllocationAnnotations),
   settingName: "memory-live-heap-profile",
   settingType: "boolean",

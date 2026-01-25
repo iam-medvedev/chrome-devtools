@@ -1,4 +1,5 @@
 import '../../ui/components/markdown_view/markdown_view.js';
+import '../../ui/kit/kit.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as Marked from '../../third_party/marked/marked.js';
 import * as UI from '../../ui/legacy/legacy.js';

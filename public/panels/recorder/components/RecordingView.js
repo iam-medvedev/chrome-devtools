@@ -133,32 +133,6 @@ const networkConditionPresets = [
     SDK.NetworkManager.Slow4GConditions,
     SDK.NetworkManager.Fast4GConditions,
 ];
-function converterIdToFlowMetric(converterId) {
-    switch (converterId) {
-        case "puppeteer" /* Models.ConverterIds.ConverterIds.PUPPETEER */:
-        case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PUPPETEER_FIREFOX */:
-            return 1 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_PUPPETEER */;
-        case "json" /* Models.ConverterIds.ConverterIds.JSON */:
-            return 2 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_JSON */;
-        case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */:
-            return 3 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_REPLAY */;
-        default:
-            return 4 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_EXTENSION */;
-    }
-}
-function converterIdToStepMetric(converterId) {
-    switch (converterId) {
-        case "puppeteer" /* Models.ConverterIds.ConverterIds.PUPPETEER */:
-        case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PUPPETEER_FIREFOX */:
-            return 5 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_PUPPETEER */;
-        case "json" /* Models.ConverterIds.ConverterIds.JSON */:
-            return 6 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_JSON */;
-        case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */:
-            return 7 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_REPLAY */;
-        default:
-            return 8 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_EXTENSION */;
-    }
-}
 function renderSettings({ settings, replaySettingsExpanded, onSelectMenuLabelClick, onNetworkConditionsChange, onTimeoutInput, isRecording, replayState, onReplaySettingsKeydown, onToggleReplaySettings }) {
     if (!settings) {
         return Lit.nothing;
@@ -930,8 +904,6 @@ export class RecordingView extends UI.Widget.Widget {
             [text] = await converter.stringify(this.recording);
         }
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);
-        const metric = step ? converterIdToStepMetric(converter.getId()) : converterIdToFlowMetric(converter.getId());
-        Host.userMetrics.recordingCopiedToClipboard(metric);
     }
     #onCopyStepEvent(event) {
         event.stopPropagation();
@@ -954,8 +926,6 @@ export class RecordingView extends UI.Widget.Widget {
     }
     showCodeToggle = () => {
         this.#showCodeView = !this.#showCodeView;
-        Host.userMetrics.recordingCodeToggled(this.#showCodeView ? 1 /* Host.UserMetrics.RecordingCodeToggled.CODE_SHOWN */ :
-            2 /* Host.UserMetrics.RecordingCodeToggled.CODE_HIDDEN */);
         void this.#convertToCode();
     };
     #convertToCode = async () => {
