@@ -451,7 +451,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
@@ -460,7 +460,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -485,7 +485,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
@@ -494,7 +494,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -523,7 +523,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(view.input.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
@@ -532,7 +532,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -560,7 +560,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'User question to Freestyler?',
                     imageInput,
                 },
@@ -569,7 +569,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -581,7 +581,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'User question to DrJones?',
                     imageInput: undefined,
                 },
@@ -590,7 +590,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test2',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -602,7 +602,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert.isTrue(nextInput.props.isReadOnly);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'User question to Freestyler?',
                     imageInput,
                 },
@@ -611,7 +611,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -643,7 +643,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'User question to Freestyler?',
                     imageInput: undefined,
                 },
@@ -652,11 +652,11 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'Second question to Freestyler?',
                     imageInput: undefined,
                 },
@@ -665,7 +665,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test2',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -691,7 +691,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
                 assert.deepEqual(nextInput.props.messages, [
                     {
-                        entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                        entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                         text: 'Tell me more',
                         imageInput: undefined,
                     },
@@ -700,7 +700,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                                 type: 'answer',
                                 text: 'test',
                             }],
-                        entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                        entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                         rpcId: undefined,
                     },
                 ]);
@@ -782,7 +782,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(currentView.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(currentView.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'first question',
                     imageInput: undefined,
                 },
@@ -791,7 +791,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'Thinking...',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -801,7 +801,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(currentView.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(currentView.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'first question',
                     imageInput: undefined,
                 },
@@ -810,12 +810,12 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'Thinking...',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     error: "abort" /* AiAssistanceModel.AiAgent.ErrorType.ABORT */,
                 },
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'interrupting prompt',
                     imageInput: undefined,
                 },
@@ -824,7 +824,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'Interrupted and answered',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -925,7 +925,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
@@ -934,7 +934,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -959,7 +959,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
@@ -968,7 +968,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -988,7 +988,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'User question to Freestyler?',
                     imageInput: undefined,
                 },
@@ -997,7 +997,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -1009,7 +1009,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'User question to DrJones?',
                     imageInput: undefined,
                 },
@@ -1018,7 +1018,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test2',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -1035,6 +1035,29 @@ describeWithMockConnection('AI Assistance Panel', () => {
             contextMenu = openHistoryContextMenu(view.input, 'User question to Freestyler?').contextMenu;
             const menuItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'No past conversations');
             assert(menuItem);
+        });
+        it('should have empty chat state if context selection is enabled', async () => {
+            updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
+            const { view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test2' }]]) });
+            assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            view.input.props.onTextSubmit('User question to Freestyler?');
+            const nextInput = await view.nextInput;
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assert.deepEqual(nextInput.props.messages, [
+                {
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
+                    text: 'User question to Freestyler?',
+                    imageInput: undefined,
+                },
+                {
+                    parts: [{
+                            type: 'answer',
+                            text: 'test',
+                        }],
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                },
+            ]);
         });
     });
     describe('cross-origin', () => {
@@ -1090,7 +1113,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
@@ -1099,7 +1122,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -1112,7 +1135,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert.isFalse(nextInput.props.isReadOnly);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
@@ -1121,11 +1144,11 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'test2',
                     imageInput: undefined,
                 },
@@ -1134,7 +1157,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test2',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -1206,7 +1229,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             enableAllFeatureAndSetting();
             const { view } = await createAiAssistancePanel();
             const modelMessage = {
-                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [{
                         type: 'answer',
                         text: 'test',
@@ -1352,12 +1375,12 @@ describeWithMockConnection('AI Assistance Panel', () => {
         assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
         assert.deepEqual(nextInput.props.messages, [
             {
-                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                 text: 'test',
                 imageInput: undefined,
             },
             {
-                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [],
                 error: "block" /* AiAssistanceModel.AiAgent.ErrorType.BLOCK */,
             },
@@ -1476,7 +1499,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
         const snapshotTester = new SnapshotTester(this, import.meta);
         it('should generate correct markdown from a message object', function () {
             const message = {
-                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [
                     {
                         type: 'step',
@@ -1597,7 +1620,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'User question to DrJones?',
                     imageInput: undefined,
                 },
@@ -1606,7 +1629,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -1622,7 +1645,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.deepEqual(nextInput.props.messages, [
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'User question to DrJones?',
                     imageInput: undefined,
                 },
@@ -1631,11 +1654,11 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
                 {
-                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
                     text: 'Follow-up question to DrJones?',
                     imageInput: undefined,
                 },
@@ -1644,7 +1667,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             type: 'answer',
                             text: 'test3',
                         }],
-                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                 },
             ]);
@@ -1698,7 +1721,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             const lastMessage = nextInput.props.messages.at(-1);
             assert.exists(lastMessage);
-            assert.strictEqual(lastMessage.entity, "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */);
+            assert.strictEqual(lastMessage.entity, "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */);
             const modelMessage = lastMessage;
             assert.lengthOf(modelMessage.parts, 3);
             const [part1, part2, part3] = modelMessage.parts;
@@ -1736,7 +1759,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             const lastMessage = nextInput.props.messages.at(-1);
             assert.exists(lastMessage);
-            assert.strictEqual(lastMessage.entity, "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */);
+            assert.strictEqual(lastMessage.entity, "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */);
             const modelMessage = lastMessage;
             assert.lengthOf(modelMessage.parts, 1);
             const part1 = modelMessage.parts[0];

@@ -14,6 +14,7 @@ import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as SDK from "./../../core/sdk/sdk.js";
+import * as StackTrace from "./../../models/stack_trace/stack_trace.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 
@@ -100,7 +101,7 @@ var ConsoleContextSelector = class {
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextDestroyed, this.onExecutionContextDestroyed, this, { scoped: true });
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.frameNavigated, this, { scoped: true });
     UI.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.executionContextChangedExternally, this);
-    UI.Context.Context.instance().addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.callFrameSelectedInUI, this);
+    UI.Context.Context.instance().addFlavorChangeListener(StackTrace.StackTrace.DebuggableFrameFlavor, this.callFrameSelectedInUI, this);
     SDK.TargetManager.TargetManager.instance().observeModels(SDK.RuntimeModel.RuntimeModel, this, { scoped: true });
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.CallFrameSelected, this.callFrameSelectedInModel, this);
   }
@@ -266,8 +267,8 @@ var ConsoleContextSelector = class {
     UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, item2);
   }
   callFrameSelectedInUI() {
-    const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
-    const callFrameContext = callFrame?.script.executionContext();
+    const callFrame = UI.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
+    const callFrameContext = callFrame?.sdkFrame.script.executionContext();
     if (callFrameContext) {
       UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, callFrameContext);
     }
@@ -654,9 +655,18 @@ var format = (fmt, args) => {
   addStringToken(fmt);
   return { tokens, args: args.slice(argIndex) };
 };
+var cssEscapeRegex = (cssString) => {
+  return [...cssString].map((char) => {
+    const charCodes = new Set([char.toLowerCase(), char.toUpperCase()].map((c) => c.charCodeAt(0).toString(16)));
+    const charCodeRegex = [...charCodes].map((charCode) => `\\\\0{0,${6 - charCode.length}}${charCode}[ \\n\\t]?`).join("|");
+    return `\\\\?(?:${charCodeRegex}|${char})`;
+  }).join("");
+};
 var updateStyle = (currentStyle, styleToAdd) => {
   const ALLOWED_PROPERTY_PREFIXES = ["background", "border", "color", "font", "line", "margin", "padding", "text"];
-  const URL_REGEX = /url\([\'\"]?([^\)]*)/g;
+  const URL_REGEX = new RegExp(`(?=${cssEscapeRegex("url")}\\(['"]?([^\\)]*))`, "gi");
+  const IMAGESET_REGEX = new RegExp(`(?=(${cssEscapeRegex("image-set")}\\(.*))`, "gi");
+  const GOOD_IMAGESET_REGEX = /^image-set\((?:(?:(?:url|type)\("[^\\"]*"\)|[\d.]+(?:x|dpi|dpcm|dppx)),?\s*)+\)/i;
   currentStyle.clear();
   const buffer = document.createElement("span");
   buffer.setAttribute("style", styleToAdd);
@@ -665,6 +675,10 @@ var updateStyle = (currentStyle, styleToAdd) => {
       continue;
     }
     const value = buffer.style.getPropertyValue(property);
+    const imageSets = [...value.matchAll(IMAGESET_REGEX)];
+    if (imageSets.some((match) => !GOOD_IMAGESET_REGEX.test(match[1]))) {
+      continue;
+    }
     const potentialUrls = [...value.matchAll(URL_REGEX)].map((match) => match[1]);
     if (potentialUrls.some((potentialUrl) => !Common2.ParsedURL.schemeIs(potentialUrl, "data:"))) {
       continue;
@@ -2971,6 +2985,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     this.elementInternal.className = "console-message-wrapper";
     this.elementInternal.setAttribute("jslog", `${VisualLogging.item("console-message").track({
       click: true,
+      resize: true,
       keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter|Space|Home|End"
     })}`);
     this.elementInternal.removeChildren();
@@ -4385,8 +4400,9 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
   }
   async #showFreDialog() {
     const noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+    const iconName = AiAssistanceModel3.AiUtils.getIconName();
     const result = await PanelCommon.FreDialog.show({
-      header: { iconName: "smart-assistant", text: lockedString(UIStringsNotTranslate.freDisclaimerHeader) },
+      header: { iconName, text: lockedString(UIStringsNotTranslate.freDisclaimerHeader) },
       reminderItems: [
         {
           iconName: "psychiatry",
@@ -4506,6 +4522,7 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
     this.#startTime = performance.now();
     let teaserText = "";
     let firstChunkReceived = false;
+    let firstChunkTime = 0;
     try {
       for await (const chunk of this.#getOnDeviceInsight()) {
         teaserText += chunk;
@@ -4514,7 +4531,9 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
         this.requestUpdate();
         if (!firstChunkReceived) {
           firstChunkReceived = true;
-          Host2.userMetrics.consoleInsightTeaserFirstChunkGenerated(performance.now() - this.#startTime);
+          firstChunkTime = performance.now();
+          Host2.userMetrics.consoleInsightTeaserFirstChunkGenerated(firstChunkTime - this.#startTime);
+          Host2.userMetrics.consoleInsightTeaserFirstChunkGeneratedMedium(firstChunkTime - this.#startTime);
         }
       }
     } catch (err) {
@@ -4532,6 +4551,8 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
     clearTimeout(this.#timeoutId);
     const duration = performance.now() - this.#startTime;
     Host2.userMetrics.consoleInsightTeaserGenerated(duration);
+    Host2.userMetrics.consoleInsightTeaserGeneratedMedium(duration);
+    Host2.userMetrics.consoleInsightTeaserChunkToEndMedium(performance.now() - firstChunkTime);
     if (teaserText.length > 300) {
       Host2.userMetrics.consoleInsightLongTeaserGenerated(duration);
     } else {

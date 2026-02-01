@@ -1313,6 +1313,7 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
     listItemElement.setAttribute("jslog", `${VisualLogging6.item().track({
       click: true,
       dblclick: true,
+      resize: true,
       keydown: "ArrowUp|ArrowDown|PageUp|PageDown|Enter|Space"
     })}`);
     return listItemElement;

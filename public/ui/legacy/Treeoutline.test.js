@@ -210,8 +210,8 @@ describe('TreeViewElement', () => {
           </ul>
         `}></devtools-tree>`);
         assert.deepEqual(component.getInternalTreeOutlineForTest().rootElement().children().map(element => element.listItemElement.getAttribute('jslog')), [
-            'TreeItem; parent: parentTreeItem; context: first; track: click, keydown: ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End',
-            'TreeItem; parent: parentTreeItem; context: second; track: click, keydown: ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End'
+            'TreeItem; parent: parentTreeItem; context: first; track: click, resize, keydown: ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End',
+            'TreeItem; parent: parentTreeItem; context: second; track: click, resize, keydown: ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End'
         ]);
     });
     it('applies aria attributes to tree eleemnts', async () => {

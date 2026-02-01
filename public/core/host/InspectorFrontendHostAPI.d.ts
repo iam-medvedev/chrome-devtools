@@ -273,6 +273,7 @@ export interface InspectorFrontendHostAPI {
     recordCountHistogram(histogramName: string, sample: number, min: number, exclusiveMax: number, bucketSize: number): void;
     recordEnumeratedHistogram(actionName: EnumeratedHistogram, actionCode: number, bucketSize: number): void;
     recordPerformanceHistogram(histogramName: string, duration: number): void;
+    recordPerformanceHistogramMedium(histogramName: string, duration: number): void;
     recordUserMetricsAction(umaName: string): void;
     recordNewBadgeUsage(featureName: string): void;
     sendMessageToBackend(message: string): void;
@@ -309,6 +310,7 @@ export interface InspectorFrontendHostAPI {
     recordKeyDown(event: KeyDownEvent): void;
     recordSettingAccess(event: SettingAccessEvent): void;
     recordFunctionCall(event: FunctionCallEvent): void;
+    setChromeFlag(flagName: string, value: boolean): void;
 }
 export interface AcceleratorDescriptor {
     keyCode: number;
@@ -365,11 +367,13 @@ export interface SyncInformation {
     accountImage?: string;
     /** The full name of the account used for syncing */
     accountFullName?: string;
+    /** The given name of the account used for syncing */
+    accountGivenName?: string;
     /** Whether Chrome Sync is paused, equivalent to the user being logged out automatically */
     isSyncPaused?: boolean;
 }
 /**
- * Enum for recordPerformanceHistogram
+ * Enum for recordEnumeratedHistogram
  * Warning: There is another definition of this enum in the DevTools code
  * base, keep them in sync:
  * front_end/devtools_compatibility.js

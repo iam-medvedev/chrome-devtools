@@ -409,7 +409,7 @@
   // InspectorFrontendHostImpl --------------------------------------------------
 
   /**
-   * Enum for recordPerformanceHistogram
+   * Enum for recordEnumeratedHistogram
    * Warning: There is another definition of this enum in the DevTools code
    * base, keep them in sync:
    * front_end/core/host/InspectorFrontendHostAPI.ts
@@ -755,6 +755,14 @@
     }
 
     /**
+     * @param histogramName
+     * @param duration
+     */
+    recordPerformanceHistogramMedium(histogramName, duration) {
+      DevToolsAPI.sendMessageToEmbedder('recordPerformanceHistogramMedium', [histogramName, duration], null);
+    }
+
+    /**
      * @param featureName
      */
     recordNewBadgeUsage(featureName) {
@@ -1019,6 +1027,13 @@
      */
     recordFunctionCall(functionCallEvent) {
       DevToolsAPI.sendMessageToEmbedder('recordFunctionCall', [functionCallEvent], null);
+    }
+
+    /**
+     * @param featureName
+     */
+    setChromeFlag(featureName, value) {
+      DevToolsAPI.sendMessageToEmbedder('setChromeFlag', [featureName, value], null);
     }
 
     // Backward-compatible methods below this line --------------------------------------------

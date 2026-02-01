@@ -357,7 +357,7 @@ function renderTextEditor(input, output) {
     // clang-format off
     return html `
     <div class="text-editor" jslog=${VisualLogging.textField().track({ change: true })}>
-      <devtools-text-editor .state=${input.editorState} ${Lit.Directives.ref((editor) => {
+      <devtools-text-editor .state=${input.editorState} ${Lit.Directives.ref(editor => {
         if (!editor || !(editor instanceof TextEditor.TextEditor.TextEditor)) {
             return;
         }

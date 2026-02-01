@@ -500,6 +500,12 @@ var InspectorFrontendHostStub = class {
     }
     this.recordedPerformanceHistograms.push({ histogramName, duration });
   }
+  recordPerformanceHistogramMedium(histogramName, duration) {
+    if (this.recordedPerformanceHistograms.length >= MAX_RECORDED_HISTOGRAMS_SIZE) {
+      this.recordedPerformanceHistograms.shift();
+    }
+    this.recordedPerformanceHistograms.push({ histogramName, duration });
+  }
   recordUserMetricsAction(_umaName) {
   }
   recordNewBadgeUsage(_featureName) {
@@ -736,6 +742,8 @@ var InspectorFrontendHostStub = class {
   recordSettingAccess(_event) {
   }
   recordFunctionCall(_event) {
+  }
+  setChromeFlag(_flagName, _value) {
   }
 };
 
@@ -1115,6 +1123,9 @@ var AidaClient = class {
     };
   }
   registerClientEvent(clientEvent) {
+    if (Root2.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
+      clientEvent.disable_user_content_logging = true;
+    }
     const { promise, resolve } = Promise.withResolvers();
     InspectorFrontendHostInstance.registerAidaClientEvent(JSON.stringify({
       client: CLIENT_NAME,
@@ -1126,6 +1137,9 @@ var AidaClient = class {
   async completeCode(request) {
     if (!InspectorFrontendHostInstance.aidaCodeComplete) {
       throw new Error("aidaCodeComplete is not available");
+    }
+    if (Root2.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
+      request.metadata.disable_user_content_logging = true;
     }
     const { promise, resolve } = Promise.withResolvers();
     InspectorFrontendHostInstance.aidaCodeComplete(JSON.stringify(request), resolve);
@@ -1166,6 +1180,9 @@ var AidaClient = class {
     return { generatedSamples, metadata };
   }
   async generateCode(request, options) {
+    if (Root2.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
+      request.metadata.disable_user_content_logging = true;
+    }
     const response = await makeHttpRequest({
       service: SERVICE_NAME,
       path: "/v1/aida:generateCode",
@@ -1759,8 +1776,17 @@ var UserMetrics = class {
   consoleInsightTeaserGenerated(timeInMilliseconds) {
     InspectorFrontendHostInstance.recordPerformanceHistogram("DevTools.Insights.TeaserGenerationTime", timeInMilliseconds);
   }
+  consoleInsightTeaserGeneratedMedium(timeInMilliseconds) {
+    InspectorFrontendHostInstance.recordPerformanceHistogramMedium("DevTools.Insights.TeaserGenerationTimeMedium", timeInMilliseconds);
+  }
   consoleInsightTeaserFirstChunkGenerated(timeInMilliseconds) {
     InspectorFrontendHostInstance.recordPerformanceHistogram("DevTools.Insights.TeaserFirstChunkGenerationTime", timeInMilliseconds);
+  }
+  consoleInsightTeaserFirstChunkGeneratedMedium(timeInMilliseconds) {
+    InspectorFrontendHostInstance.recordPerformanceHistogramMedium("DevTools.Insights.TeaserFirstChunkGenerationTimeMedium", timeInMilliseconds);
+  }
+  consoleInsightTeaserChunkToEndMedium(timeInMilliseconds) {
+    InspectorFrontendHostInstance.recordPerformanceHistogramMedium("DevTools.Insights.TeaserChunkToEndMedium", timeInMilliseconds);
   }
   consoleInsightTeaserAbortedAfterFirstCharacter(timeInMilliseconds) {
     InspectorFrontendHostInstance.recordPerformanceHistogram("DevTools.Insights.TeaserAfterFirstCharacterAbortionTime", timeInMilliseconds);

@@ -250,13 +250,44 @@ describe('StylesSidebarPane', () => {
             }
             beforeEach(() => {
                 sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify').returns(document.createElement('div'));
+                sinon.stub(UI.ViewManager.ViewManager.instance(), 'isViewVisible').returns(false);
                 updateHostConfig({
                     devToolsAnimationStylesInStylesTab: {
                         enabled: true,
                     },
                 });
             });
-            it('should render transition & animation styles in the styles tab', async () => {
+            it('should not render transition & animation styles when the animations panel is not visible', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
+                const matchedStyles = await getMatchedStyles({
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node: sinon.createStubInstance(SDK.DOMModel.DOMNode),
+                    animationStylesPayload: [
+                        {
+                            name: '--animation-name',
+                            style: {
+                                cssProperties: [{
+                                        name: 'background-color',
+                                        value: 'blue',
+                                    }],
+                                shorthandEntries: [],
+                            },
+                        },
+                    ],
+                    transitionsStylePayload: {
+                        cssProperties: [{
+                                name: 'color',
+                                value: 'red',
+                            }],
+                        shorthandEntries: [],
+                    },
+                    inheritedAnimatedPayload: [],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                assert.lengthOf(sectionBlocks[0].sections, 0);
+            });
+            it('should render transition & animation styles in the styles tab when the animations panel is visible', async () => {
+                UI.ViewManager.ViewManager.instance().isViewVisible.returns(true);
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());
                 const matchedStyles = await getMatchedStyles({
                     cssModel: stylesSidebarPane.cssModel(),
@@ -298,6 +329,9 @@ describe('StylesSidebarPane', () => {
                 assert.strictEqual(sectionBlocks[0].sections[2].headerText(), 'animation style');
             });
             describe('should auto update animated style sections when onComputedStyleChanged called', () => {
+                beforeEach(() => {
+                    UI.ViewManager.ViewManager.instance().isViewVisible.returns(true);
+                });
                 describe('transition styles', () => {
                     it('should trigger re-render when there was no transition style before', async () => {
                         mockGetAnimatedComputedStyles({

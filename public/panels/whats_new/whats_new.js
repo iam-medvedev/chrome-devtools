@@ -25,30 +25,30 @@ function getReleaseNote() {
   return releaseNote;
 }
 var releaseNote = {
-  version: 144,
-  header: "What's new in DevTools 144",
+  version: 145,
+  header: "What's new in DevTools 145",
   markdownLinks: [
     {
-      key: "request-conditions",
-      link: "https://developer.chrome.com/blog/new-in-devtools-144/#request-conditions"
+      key: "soft-navigations",
+      link: "https://developer.chrome.com/blog/new-in-devtools-145/#soft-navigations"
+    },
+    {
+      key: "render-blocking",
+      link: "https://developer.chrome.com/blog/new-in-devtools-145/#render-blocking"
     },
     {
       key: "mcp-server",
-      link: "https://developer.chrome.com/blog/new-in-devtools-144/#mcp-server"
-    },
-    {
-      key: "adopted-stylesheets",
-      link: "https://developer.chrome.com/blog/new-in-devtools-144/#adopted-stylesheets"
+      link: "https://developer.chrome.com/blog/new-in-devtools-145/#mcp-server"
     }
   ],
   videoLinks: [
     {
-      description: "See past highlights from Chrome 144",
-      link: "https://developer.chrome.com/blog/new-in-devtools-144",
+      description: "See past highlights from Chrome 142-144",
+      link: "https://www.youtube.com/watch?v=2rOeZ98AOb8",
       type: "WhatsNew"
     }
   ],
-  link: "https://developer.chrome.com/blog/new-in-devtools-144/"
+  link: "https://developer.chrome.com/blog/new-in-devtools-145/"
 };
 
 // gen/front_end/panels/whats_new/ReleaseNoteView.js
@@ -181,7 +181,7 @@ var releaseNoteView_css_default = `/*
     }
   }
 
-  x-link:focus .video {
+  devtools-link:focus .video {
     outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
   }
 

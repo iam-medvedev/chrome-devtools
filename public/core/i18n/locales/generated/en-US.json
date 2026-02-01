@@ -1022,8 +1022,14 @@
   "entrypoints/main/GlobalAiButton.ts | aiAssistance": {
     "message": "AI assistance"
   },
+  "entrypoints/main/GlobalAiButton.ts | gemini": {
+    "message": "Gemini"
+  },
   "entrypoints/main/GlobalAiButton.ts | openAiAssistance": {
     "message": "Open AI assistance panel"
+  },
+  "entrypoints/main/GlobalAiButton.ts | openGemini": {
+    "message": "Open Gemini panel"
   },
   "entrypoints/main/main-meta.ts | auto": {
     "message": "auto"
@@ -1466,17 +1472,11 @@
   "models/bindings/ContentProviderBasedProject.ts | unknownErrorLoadingFile": {
     "message": "Unknown error loading file"
   },
-  "models/bindings/DebuggerLanguagePlugins.ts | debugSymbolsIncomplete": {
-    "message": "The debug information for function {PH1} is incomplete"
-  },
   "models/bindings/DebuggerLanguagePlugins.ts | errorInDebuggerLanguagePlugin": {
     "message": "Error in debugger language plugin: {PH1}"
   },
   "models/bindings/DebuggerLanguagePlugins.ts | failedToLoadDebugSymbolsFor": {
     "message": "[{PH1}] Failed to load debug symbols for {PH2} ({PH3})"
-  },
-  "models/bindings/DebuggerLanguagePlugins.ts | failedToLoadDebugSymbolsForFunction": {
-    "message": "No debug information for function \"{PH1}\""
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadedDebugSymbolsForButDidnt": {
     "message": "[{PH1}] Loaded debug symbols for {PH2}, but didn't find any source files"
@@ -3038,8 +3038,17 @@
   "panels/ai_assistance/ai_assistance-meta.ts | debugWithAi": {
     "message": "Debug with AI"
   },
+  "panels/ai_assistance/ai_assistance-meta.ts | debugWithGemini": {
+    "message": "Debug with Gemini"
+  },
   "panels/ai_assistance/ai_assistance-meta.ts | enableAiAssistance": {
     "message": "Enable AI assistance"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | enableGemini": {
+    "message": "Enable Gemini"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | gemini": {
+    "message": "Gemini"
   },
   "panels/ai_assistance/ai_assistance-meta.ts | geoRestricted": {
     "message": "This feature is unavailable in your region."
@@ -3049,6 +3058,9 @@
   },
   "panels/ai_assistance/ai_assistance-meta.ts | showAiAssistance": {
     "message": "Show AI assistance"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | showGemini": {
+    "message": "Show Gemini"
   },
   "panels/ai_assistance/ai_assistance-meta.ts | wrongLocale": {
     "message": "To use this feature, set your language preference to English in DevTools settings."
@@ -4442,6 +4454,12 @@
   "panels/application/DeviceBoundSessionsTreeElement.ts | noSession": {
     "message": "No session"
   },
+  "panels/application/DeviceBoundSessionsTreeElement.ts | sessionWithErrors": {
+    "message": "{sessionName}, Session has errors"
+  },
+  "panels/application/DeviceBoundSessionsTreeElement.ts | terminatedSession": {
+    "message": "{sessionName}, Session terminated"
+  },
   "panels/application/DeviceBoundSessionsView.ts | allowedRefreshInitiators": {
     "message": "Allowed refresh initiators"
   },
@@ -4753,6 +4771,9 @@
   },
   "panels/application/DeviceBoundSessionsView.ts | sessionDeletedDuringRefresh": {
     "message": "Session deleted during refresh"
+  },
+  "panels/application/DeviceBoundSessionsView.ts | sessionDetails": {
+    "message": "Session details"
   },
   "panels/application/DeviceBoundSessionsView.ts | sessionId": {
     "message": "Session ID"
@@ -8015,11 +8036,17 @@
   "panels/elements/StylePropertyTreeElement.ts | jumpToAnimationsPanel": {
     "message": "Jump to Animations panel"
   },
+  "panels/elements/StylePropertyTreeElement.ts | openAnimationsPanel": {
+    "message": "Open Animations panel"
+  },
   "panels/elements/StylePropertyTreeElement.ts | openColorPickerS": {
     "message": "Open color picker. {PH1}"
   },
   "panels/elements/StylePropertyTreeElement.ts | openInSourcesPanel": {
     "message": "Open in Sources panel"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | overriddenByAnimation": {
+    "message": "Overridden by animation styles."
   },
   "panels/elements/StylePropertyTreeElement.ts | shiftClickToChangeColorFormat": {
     "message": "Shift + Click to change color format."
@@ -10355,6 +10382,9 @@
   "panels/network/NetworkItemView.ts | cookies": {
     "message": "Cookies"
   },
+  "panels/network/NetworkItemView.ts | deviceBoundSessions": {
+    "message": "Device bound sessions"
+  },
   "panels/network/NetworkItemView.ts | directsocketMessages": {
     "message": "DirectSocket messages"
   },
@@ -10988,6 +11018,30 @@
   "panels/network/RequestCookiesView.ts | thisRequestHasNoCookies": {
     "message": "This request has no cookies."
   },
+  "panels/network/RequestDeviceBoundSessionsView.ts | deferralDecision": {
+    "message": "Deferral decision"
+  },
+  "panels/network/RequestDeviceBoundSessionsView.ts | deferred": {
+    "message": "Deferred (Refresh)"
+  },
+  "panels/network/RequestDeviceBoundSessionsView.ts | inScopeRefreshNotAllowed": {
+    "message": "Not deferred (Request is in scope of session but initiator is not allowed to trigger refresh)"
+  },
+  "panels/network/RequestDeviceBoundSessionsView.ts | inScopeRefreshNotYetNeeded": {
+    "message": "Not deferred (Request is in scope of session but cookies are still present)"
+  },
+  "panels/network/RequestDeviceBoundSessionsView.ts | notInScope": {
+    "message": "Not deferred (Request is not in scope of session)"
+  },
+  "panels/network/RequestDeviceBoundSessionsView.ts | proactiveRefreshAttempted": {
+    "message": "Not deferred (Proactive refresh attempted)"
+  },
+  "panels/network/RequestDeviceBoundSessionsView.ts | proactiveRefreshNotPossible": {
+    "message": "Not deferred (Request is in scope of session but proactive refresh is not possible)"
+  },
+  "panels/network/RequestDeviceBoundSessionsView.ts | sessionId": {
+    "message": "Session ID"
+  },
   "panels/network/RequestInitiatorView.ts | noInitiator": {
     "message": "No initiator data"
   },
@@ -11014,9 +11068,6 @@
   },
   "panels/network/RequestPayloadView.ts | requestPayload": {
     "message": "Request Payload"
-  },
-  "panels/network/RequestPayloadView.ts | showMore": {
-    "message": "Show more"
   },
   "panels/network/RequestPayloadView.ts | unableToDecodeValue": {
     "message": "(unable to decode value)"
@@ -11281,6 +11332,9 @@
   },
   "panels/network/ResourceWebSocketFrameView.ts | webSocketFrame": {
     "message": "Web Socket Frame"
+  },
+  "panels/network/ShowMoreDetailsWidget.ts | showMore": {
+    "message": "Show more"
   },
   "panels/network/SignedExchangeInfoView.ts | certificate": {
     "message": "Certificate"
@@ -13434,10 +13488,10 @@
     "message": "Understand CSS styles, network activity, performance bottlenecks, and file origins with AI-powered insights"
   },
   "panels/settings/AISettingsTab.ts | freestylerSendsData": {
-    "message": "To generate explanations, any user query and data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google. This data may be seen by human reviewers to improve this feature. Don’t use on pages with personal or sensitive information."
+    "message": "To generate explanations, your chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google. This data may be seen by human reviewers to improve this feature. Don’t use on pages with personal or sensitive information."
   },
   "panels/settings/AISettingsTab.ts | freestylerSendsDataNoLogging": {
-    "message": "To generate explanations, any user query and data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time."
+    "message": "To generate explanations, your chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time."
   },
   "panels/settings/AISettingsTab.ts | generatedAiAnnotationsSendData": {
     "message": "To generate annotation suggestions, your performance trace is sent to Google. This data may be seen by human reviewers to improve this feature."
@@ -14050,6 +14104,12 @@
   },
   "panels/sources/CallStackSidebarPane.ts | debugFileNotFound": {
     "message": "Failed to load debug file \"{PH1}\"."
+  },
+  "panels/sources/CallStackSidebarPane.ts | debugSymbolsIncomplete": {
+    "message": "The debug information for function {PH1} is incomplete"
+  },
+  "panels/sources/CallStackSidebarPane.ts | failedToLoadDebugSymbolsForFunction": {
+    "message": "No debug information for function \"{PH1}\""
   },
   "panels/sources/CallStackSidebarPane.ts | notPaused": {
     "message": "Not paused"

@@ -3250,7 +3250,8 @@ Common9.Revealer.registerRevealer({
   contextTypes() {
     return [
       Common9.Settings.Setting,
-      Root4.Runtime.Experiment
+      Root4.Runtime.Experiment,
+      Root4.Runtime.HostExperiment
     ];
   },
   destination: void 0,
@@ -3277,6 +3278,7 @@ import * as i18n22 from "./../../core/i18n/i18n.js";
 import * as Root5 from "./../../core/root/root.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as Breakpoints from "./../../models/breakpoints/breakpoints.js";
+import * as StackTrace from "./../../models/stack_trace/stack_trace.js";
 import * as Workspace2 from "./../../models/workspace/workspace.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as QuickOpen from "./../../ui/legacy/components/quick_open/quick_open.js";
@@ -5168,7 +5170,7 @@ UI8.Context.registerListener({
 });
 UI8.Context.registerListener({
   contextTypes() {
-    return [SDK4.DebuggerModel.CallFrame];
+    return [StackTrace.StackTrace.DebuggableFrameFlavor];
   },
   async loadListener() {
     const Sources = await loadSourcesModule2();
@@ -5906,6 +5908,7 @@ Common12.Revealer.registerRevealer({
 // gen/front_end/panels/ai_assistance/ai_assistance-meta.js
 import * as Common13 from "./../../core/common/common.js";
 import * as i18n28 from "./../../core/i18n/i18n.js";
+import * as Root6 from "./../../core/root/root.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 var UIStrings14 = {
   /**
@@ -5927,6 +5930,22 @@ var UIStrings14 = {
    */
   debugWithAi: "Debug with AI",
   /**
+   * @description The title of the Gemini panel.
+   */
+  gemini: "Gemini",
+  /**
+   * @description The title of the command menu action for showing the Gemini panel.
+   */
+  showGemini: "Show Gemini",
+  /**
+   * @description The setting title to enable the Gemini via the settings tab.
+   */
+  enableGemini: "Enable Gemini",
+  /**
+   * @description Text of a context menu item to redirect to the Gemini panel with the current context
+   */
+  debugWithGemini: "Debug with Gemini",
+  /**
    * @description Message shown to the user if the DevTools locale is not
    * supported.
    */
@@ -5944,7 +5963,9 @@ var UIStrings14 = {
 };
 var str_14 = i18n28.i18n.registerUIStrings("panels/ai_assistance/ai_assistance-meta.ts", UIStrings14);
 var i18nString = i18n28.i18n.getLocalizedString.bind(void 0, str_14);
-var i18nLazyString14 = i18n28.i18n.getLazilyComputedLocalizedString.bind(void 0, str_14);
+function i18nAiBrandedString(gemini, assistance) {
+  return () => Root6.Runtime.hostConfig.devToolsGeminiRebranding?.enabled ? i18nString(gemini) : i18nString(assistance);
+}
 var setting = "ai-assistance-enabled";
 function isLocaleRestricted() {
   const devtoolsLocale = i18n28.DevToolsLocale.DevToolsLocale.instance();
@@ -5981,8 +6002,8 @@ function isAnyFeatureAvailable(config) {
 UI11.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "freestyler",
-  commandPrompt: i18nLazyString14(UIStrings14.showAiAssistance),
-  title: i18nLazyString14(UIStrings14.aiAssistance),
+  commandPrompt: i18nAiBrandedString(UIStrings14.showGemini, UIStrings14.showAiAssistance),
+  title: i18nAiBrandedString(UIStrings14.gemini, UIStrings14.aiAssistance),
   order: 10,
   persistence: "closeable",
   hasToolbar: false,
@@ -5996,7 +6017,7 @@ Common13.Settings.registerSettingExtension({
   category: "AI",
   settingName: setting,
   settingType: "boolean",
-  title: i18nLazyString14(UIStrings14.enableAiAssistance),
+  title: i18nAiBrandedString(UIStrings14.enableGemini, UIStrings14.enableAiAssistance),
   defaultValue: false,
   reloadRequired: false,
   condition: isAnyFeatureAvailable,
@@ -6023,13 +6044,14 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
   },
-  condition: (config) => isAnyFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config)
+  condition: (config) => isAnyFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config),
+  featurePromotionId: "debug-with-ai"
 });
 UI11.ActionRegistration.registerActionExtension({
   actionId: "freestyler.elements-floating-button",
@@ -6037,7 +6059,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6051,7 +6073,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6065,7 +6087,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6079,7 +6101,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6093,7 +6115,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6107,7 +6129,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6121,7 +6143,7 @@ UI11.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString14(UIStrings14.debugWithAi),
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
   configurableBindings: false,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
@@ -6133,7 +6155,7 @@ UI11.ActionRegistration.registerActionExtension({
 // gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.js
 import * as Common14 from "./../../core/common/common.js";
 import * as i18n30 from "./../../core/i18n/i18n.js";
-import * as Root6 from "./../../core/root/root.js";
+import * as Root7 from "./../../core/root/root.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 var UIStrings15 = {
   /**
@@ -6171,7 +6193,7 @@ var UIStrings15 = {
   collectGarbage: "Collect garbage"
 };
 var str_15 = i18n30.i18n.registerUIStrings("ui/legacy/components/perf_ui/perf_ui-meta.ts", UIStrings15);
-var i18nLazyString15 = i18n30.i18n.getLazilyComputedLocalizedString.bind(void 0, str_15);
+var i18nLazyString14 = i18n30.i18n.getLazilyComputedLocalizedString.bind(void 0, str_15);
 var loadedPerfUIModule;
 async function loadPerfUIModule() {
   if (!loadedPerfUIModule) {
@@ -6182,7 +6204,7 @@ async function loadPerfUIModule() {
 UI12.ActionRegistration.registerActionExtension({
   actionId: "components.collect-garbage",
   category: "PERFORMANCE",
-  title: i18nLazyString15(UIStrings15.collectGarbage),
+  title: i18nLazyString14(UIStrings15.collectGarbage),
   iconClass: "mop",
   async loadActionDelegate() {
     const PerfUI = await loadPerfUIModule();
@@ -6192,38 +6214,38 @@ UI12.ActionRegistration.registerActionExtension({
 Common14.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
-  title: i18nLazyString15(UIStrings15.flamechartSelectedNavigation),
+  title: i18nLazyString14(UIStrings15.flamechartSelectedNavigation),
   settingName: "flamechart-selected-navigation",
   settingType: "enum",
   defaultValue: "classic",
   options: [
     {
-      title: i18nLazyString15(UIStrings15.modern),
-      text: i18nLazyString15(UIStrings15.modern),
+      title: i18nLazyString14(UIStrings15.modern),
+      text: i18nLazyString14(UIStrings15.modern),
       value: "modern"
     },
     {
-      title: i18nLazyString15(UIStrings15.classic),
-      text: i18nLazyString15(UIStrings15.classic),
+      title: i18nLazyString14(UIStrings15.classic),
+      text: i18nLazyString14(UIStrings15.classic),
       value: "classic"
     }
   ]
 });
 Common14.Settings.registerSettingExtension({
   category: "MEMORY",
-  experiment: Root6.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE,
-  title: i18nLazyString15(UIStrings15.liveMemoryAllocationAnnotations),
+  experiment: Root7.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE,
+  title: i18nLazyString14(UIStrings15.liveMemoryAllocationAnnotations),
   settingName: "memory-live-heap-profile",
   settingType: "boolean",
   defaultValue: false,
   options: [
     {
       value: true,
-      title: i18nLazyString15(UIStrings15.showLiveMemoryAllocation)
+      title: i18nLazyString14(UIStrings15.showLiveMemoryAllocation)
     },
     {
       value: false,
-      title: i18nLazyString15(UIStrings15.hideLiveMemoryAllocation)
+      title: i18nLazyString14(UIStrings15.hideLiveMemoryAllocation)
     }
   ]
 });
@@ -6242,7 +6264,7 @@ var UIStrings16 = {
   runCommand: "Run command"
 };
 var str_16 = i18n33.i18n.registerUIStrings("ui/legacy/components/quick_open/quick_open-meta.ts", UIStrings16);
-var i18nLazyString16 = i18n33.i18n.getLazilyComputedLocalizedString.bind(void 0, str_16);
+var i18nLazyString15 = i18n33.i18n.getLazilyComputedLocalizedString.bind(void 0, str_16);
 var loadedQuickOpenModule;
 async function loadQuickOpenModule() {
   if (!loadedQuickOpenModule) {
@@ -6253,7 +6275,7 @@ async function loadQuickOpenModule() {
 UI13.ActionRegistration.registerActionExtension({
   actionId: "quick-open.show-command-menu",
   category: "GLOBAL",
-  title: i18nLazyString16(UIStrings16.runCommand),
+  title: i18nLazyString15(UIStrings16.runCommand),
   async loadActionDelegate() {
     const QuickOpen2 = await loadQuickOpenModule();
     return new QuickOpen2.CommandMenu.ShowActionDelegate();
@@ -6286,7 +6308,7 @@ UI13.ActionRegistration.registerActionExtension({
 UI13.ActionRegistration.registerActionExtension({
   actionId: "quick-open.show",
   category: "GLOBAL",
-  title: i18nLazyString16(UIStrings16.openFile),
+  title: i18nLazyString15(UIStrings16.openFile),
   async loadActionDelegate() {
     const QuickOpen2 = await loadQuickOpenModule();
     return new QuickOpen2.QuickOpen.ShowActionDelegate();
@@ -6380,33 +6402,33 @@ var UIStrings17 = {
   tabCharacter: "Tab character"
 };
 var str_17 = i18n35.i18n.registerUIStrings("ui/legacy/components/source_frame/source_frame-meta.ts", UIStrings17);
-var i18nLazyString17 = i18n35.i18n.getLazilyComputedLocalizedString.bind(void 0, str_17);
+var i18nLazyString16 = i18n35.i18n.getLazilyComputedLocalizedString.bind(void 0, str_17);
 Common15.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
-  title: i18nLazyString17(UIStrings17.defaultIndentation),
+  title: i18nLazyString16(UIStrings17.defaultIndentation),
   settingName: "text-editor-indent",
   settingType: "enum",
   defaultValue: "    ",
   options: [
     {
-      title: i18nLazyString17(UIStrings17.setIndentationToSpaces),
-      text: i18nLazyString17(UIStrings17.Spaces),
+      title: i18nLazyString16(UIStrings17.setIndentationToSpaces),
+      text: i18nLazyString16(UIStrings17.Spaces),
       value: "  "
     },
     {
-      title: i18nLazyString17(UIStrings17.setIndentationToFSpaces),
-      text: i18nLazyString17(UIStrings17.fSpaces),
+      title: i18nLazyString16(UIStrings17.setIndentationToFSpaces),
+      text: i18nLazyString16(UIStrings17.fSpaces),
       value: "    "
     },
     {
-      title: i18nLazyString17(UIStrings17.setIndentationToESpaces),
-      text: i18nLazyString17(UIStrings17.eSpaces),
+      title: i18nLazyString16(UIStrings17.setIndentationToESpaces),
+      text: i18nLazyString16(UIStrings17.eSpaces),
       value: "        "
     },
     {
-      title: i18nLazyString17(UIStrings17.setIndentationToTabCharacter),
-      text: i18nLazyString17(UIStrings17.tabCharacter),
+      title: i18nLazyString16(UIStrings17.setIndentationToTabCharacter),
+      text: i18nLazyString16(UIStrings17.tabCharacter),
       value: "	"
     }
   ]

@@ -296,10 +296,29 @@ export class MainImpl {
         const globalStorage = new Common.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
         return { syncedStorage, globalStorage, localStorage };
     }
+    #migrateValueFromLegacyToHostExperiment(legacyExperimentName, hostExperiment) {
+        const value = Root.Runtime.experiments.getValueFromStorage(legacyExperimentName);
+        if (value !== undefined && hostExperiment.aboutFlag) {
+            // Set the host experiment to the same value as the legacy experiment.
+            hostExperiment.setEnabled(value);
+            // Set the chrome flag to the same value as the legacy experiment.
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(hostExperiment.aboutFlag, value);
+            // The legacy experiment will be cleaned up by `cleanUpStaleExperiments`.
+        }
+    }
     #initializeExperiments() {
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS, 'Capture node creation stacks');
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE, 'Live heap profile');
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, 'Protocol Monitor', 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor');
+        const enableProtocolMonitor = (Root.Runtime.hostConfig.devToolsProtocolMonitor?.enabled ?? false) ||
+            Boolean(Root.Runtime.Runtime.queryParam('isChromeForTesting'));
+        const protocolMonitorExperiment = Root.Runtime.experiments.registerHostExperiment({
+            name: Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
+            title: 'Protocol Monitor',
+            aboutFlag: 'devtools-protocol-monitor',
+            isEnabled: enableProtocolMonitor,
+            docLink: 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor',
+        });
+        this.#migrateValueFromLegacyToHostExperiment(Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, protocolMonitorExperiment);
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.SAMPLING_HEAP_PROFILER_TIMELINE, 'Sampling heap profiler timeline');
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.SHOW_OPTION_TO_EXPOSE_INTERNALS_IN_HEAP_SNAPSHOT, 'Show option to expose internals in heap snapshots');
         // Timeline
@@ -328,16 +347,12 @@ export class MainImpl {
         Root.Runtime.experiments.enableExperimentsByDefault([
             Root.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE,
             Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES,
-            ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ?
-                [Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR] :
-                []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
         const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
         if (enabledExperiments) {
             Root.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(';'));
         }
-        Root.Runtime.experiments.enableExperimentsTransiently([]);
         if (Host.InspectorFrontendHost.isUnderTest()) {
             const testParam = Root.Runtime.Runtime.queryParam('test');
             if (testParam?.includes('live-line-level-heap-profile.js')) {

@@ -47,5 +47,90 @@ describe('Runtime', () => {
         const experiments = Root.Runtime.experiments.allConfigurableExperiments();
         assert.deepEqual(experiments.map(experiment => experiment.name), [Root.ExperimentNames.ExperimentName.FONT_EDITOR, Root.ExperimentNames.ExperimentName.APCA]);
     });
+    describe('ExperimentsSupport', () => {
+        it('throws for unknown experiment', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            assert.throws(() => support.isEnabled('test-experiment'));
+        });
+        it('throws if registering the same experiment twice', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.register('experiment', 'experiment title');
+            assert.throws(() => {
+                support.register('experiment', 'experiment title');
+            });
+        });
+        it('registers a host experiment', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.registerHostExperiment({
+                name: 'experiment',
+                title: 'experiment title',
+                aboutFlag: 'about:flag',
+                isEnabled: false,
+            });
+            assert.isFalse(support.isEnabled('experiment'));
+        });
+        it('enables a host experiment', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.registerHostExperiment({
+                name: 'experiment',
+                title: 'experiment title',
+                aboutFlag: 'about:flag',
+                isEnabled: false,
+            });
+            support.setEnabled('experiment', true);
+            assert.isTrue(support.isEnabled('experiment'));
+        });
+        it('enables a host experiment via initialization', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.registerHostExperiment({
+                name: 'experiment',
+                title: 'experiment title',
+                aboutFlag: 'about:flag',
+                isEnabled: true,
+            });
+            assert.isTrue(support.isEnabled('experiment'));
+        });
+        it('enables a host experiment for test', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.registerHostExperiment({
+                name: 'experiment',
+                title: 'experiment title',
+                aboutFlag: 'about:flag',
+                isEnabled: false,
+            });
+            assert.isFalse(support.isEnabled('experiment'));
+            support.enableForTest('experiment');
+            assert.isTrue(support.isEnabled('experiment'));
+        });
+        it('throws if registering a host experiment with the same name as an existing experiment', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.register('experiment', 'experiment title');
+            assert.throws(() => {
+                support.registerHostExperiment({
+                    name: 'experiment',
+                    title: 'experiment title',
+                    aboutFlag: 'about:flag',
+                    isEnabled: false,
+                });
+            });
+        });
+        it('throws if registering a host experiment with the same name as an existing host experiment', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.registerHostExperiment({
+                name: 'experiment',
+                title: 'experiment title',
+                aboutFlag: 'about:flag',
+                isEnabled: false,
+            });
+            assert.throws(() => {
+                support.registerHostExperiment({
+                    name: 'experiment',
+                    title: 'experiment title',
+                    aboutFlag: 'about:flag',
+                    isEnabled: false,
+                });
+            });
+        });
+    });
 });
 //# sourceMappingURL=Runtime.test.js.map

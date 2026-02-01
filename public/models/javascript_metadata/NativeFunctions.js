@@ -6044,6 +6044,11 @@ export const NativeFunctions = [
     },
     {
         name: "respondWith",
+        signatures: [["agentResponse"]],
+        receivers: ["SubmitEvent"]
+    },
+    {
+        name: "respondWith",
         signatures: [["paymentAbortedResponse"]],
         receivers: ["AbortPaymentEvent"]
     },
@@ -7131,8 +7136,16 @@ export const NativeFunctions = [
         signatures: [["?options"]]
     },
     {
+        name: "deferPageSwap",
+        signatures: [["options"]]
+    },
+    {
         name: "NavigationCurrentEntryChangeEvent",
         signatures: [["type", "eventInit"]]
+    },
+    {
+        name: "addRestoreCallback",
+        signatures: [["callback"]]
     },
     {
         name: "addHandler",
@@ -7181,6 +7194,10 @@ export const NativeFunctions = [
     {
         name: "setMenuListOptionsBoundsInAXTree",
         signatures: [["options_bounds", "children_updated"]]
+    },
+    {
+        name: "debugLog",
+        signatures: [["message"]]
     },
     {
         name: "allowsFeature",

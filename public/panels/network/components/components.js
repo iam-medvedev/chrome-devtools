@@ -722,7 +722,7 @@ var HeaderSectionRow_css_default = `/*
   color: var(--sys-color-token-subtle);
 }
 
-x-link .inline-icon {
+devtools-link .inline-icon {
   padding-right: 3px;
 }
 
@@ -1265,7 +1265,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     ${headers.map((header) => html4`
       <devtools-header-section-row
         .data=${{ header }}
-        jslog=${VisualLogging4.item("request-header")}
+        jslog=${VisualLogging4.item("request-header").track({ resize: true })}
       ></devtools-header-section-row>
     `)}
   `, target);

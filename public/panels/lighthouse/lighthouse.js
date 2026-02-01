@@ -1441,7 +1441,7 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
       if (!id) {
         continue;
       }
-      auditEl.setAttribute("jslog", `${VisualLogging.item(`lighthouse.audit.${id}`)}`);
+      auditEl.setAttribute("jslog", `${VisualLogging.item(`lighthouse.audit.${id}`).track({ resize: true })}`);
       let state;
       for (const className of auditEl.classList) {
         switch (className) {
@@ -1584,6 +1584,7 @@ __export(LighthouseStartView_exports, {
 import "./../../ui/legacy/legacy.js";
 import * as i18n6 from "./../../core/i18n/i18n.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
+import { Link } from "./../../ui/kit/kit.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/lighthouse/lighthouseStartView.css.js
@@ -1870,7 +1871,7 @@ var StartView = class extends UI4.Widget.Widget {
     labelEl.classList.add("lighthouse-form-section-label");
     labelEl.textContent = label;
     if (runtimeSetting.learnMore) {
-      const link = UI4.XLink.XLink.create(runtimeSetting.learnMore, i18nString3(UIStrings3.learnMore), "lighthouse-learn-more", void 0, "learn-more");
+      const link = Link.create(runtimeSetting.learnMore, i18nString3(UIStrings3.learnMore), "lighthouse-learn-more", "learn-more");
       labelEl.append(link);
     }
     parentElement.appendChild(labelEl);
@@ -1887,7 +1888,7 @@ var StartView = class extends UI4.Widget.Widget {
     const control = new UI4.Toolbar.ToolbarSettingCheckbox(runtimeSetting.setting, runtimeSetting.description());
     toolbar2.appendToolbarItem(control);
     if (runtimeSetting.learnMore) {
-      const link = UI4.XLink.XLink.create(runtimeSetting.learnMore, i18nString3(UIStrings3.learnMore), "lighthouse-learn-more", void 0, "learn-more");
+      const link = Link.create(runtimeSetting.learnMore, i18nString3(UIStrings3.learnMore), "lighthouse-learn-more", "learn-more");
       link.style.margin = "5px";
       control.element.appendChild(link);
     }
@@ -1903,7 +1904,7 @@ var StartView = class extends UI4.Widget.Widget {
     control.setTitle(runtimeSetting.description());
     toolbar2.appendToolbarItem(control);
     if (runtimeSetting.learnMore) {
-      const link = UI4.XLink.XLink.create(runtimeSetting.learnMore, i18nString3(UIStrings3.learnMore), "lighthouse-learn-more", void 0, "learn-more");
+      const link = Link.create(runtimeSetting.learnMore, i18nString3(UIStrings3.learnMore), "lighthouse-learn-more", "learn-more");
       link.style.marginLeft = "5px";
       link.style.display = "inline-flex";
       link.style.height = "revert";

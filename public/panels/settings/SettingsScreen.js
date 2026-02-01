@@ -11,7 +11,7 @@ import * as Root from '../../core/root/root.js';
 import * as GreenDev from '../../models/greendev/greendev.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UIHelpers from '../../ui/helpers/helpers.js';
-import { createIcon } from '../../ui/kit/kit.js';
+import { createIcon, Link } from '../../ui/kit/kit.js';
 import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -386,6 +386,9 @@ export class ExperimentsSettingsTab extends UI.Widget.VBox {
         checkbox.classList.add('experiment-label');
         checkbox.name = experiment.name;
         function listener() {
+            if (experiment instanceof Root.Runtime.HostExperiment) {
+                Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, checkbox.checked);
+            }
             experiment.setEnabled(checkbox.checked);
             Host.userMetrics.experimentChanged(experiment.name, experiment.isEnabled());
             UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.oneOrMoreSettingsHaveChanged));
@@ -410,7 +413,7 @@ export class ExperimentsSettingsTab extends UI.Widget.VBox {
             p.appendChild(linkButton);
         }
         if (experiment.feedbackLink) {
-            const link = UI.XLink.XLink.create(experiment.feedbackLink, undefined, undefined, undefined, `${experiment.name}-feedback`);
+            const link = Link.create(experiment.feedbackLink, undefined, undefined, `${experiment.name}-feedback`);
             link.textContent = i18nString(UIStrings.sendFeedback);
             link.classList.add('feedback-link');
             p.appendChild(link);
@@ -418,7 +421,7 @@ export class ExperimentsSettingsTab extends UI.Widget.VBox {
         return p;
     }
     highlightObject(experiment) {
-        if (experiment instanceof Root.Runtime.Experiment) {
+        if (experiment instanceof Root.Runtime.Experiment || experiment instanceof Root.Runtime.HostExperiment) {
             const element = this.experimentToControl.get(experiment);
             if (element) {
                 PanelUtils.highlightElement(element);
@@ -453,7 +456,7 @@ export class ActionDelegate {
 export class Revealer {
     async reveal(object) {
         const context = UI.Context.Context.instance();
-        if (object instanceof Root.Runtime.Experiment) {
+        if (object instanceof Root.Runtime.Experiment || object instanceof Root.Runtime.HostExperiment) {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
             await SettingsScreen.showSettingsScreen({ name: 'experiments' });
             const experimentsSettingsTab = context.flavor(ExperimentsSettingsTab);

@@ -1371,19 +1371,6 @@ function getIssueCode2(details) {
       return "CorsIssue::NoCorsRedirectModeNotFollow";
     case "InvalidPrivateNetworkAccess":
       return "CorsIssue::InvalidPrivateNetworkAccess";
-    case "UnexpectedPrivateNetworkAccess":
-      return "CorsIssue::UnexpectedPrivateNetworkAccess";
-    case "PreflightMissingAllowPrivateNetwork":
-    case "PreflightInvalidAllowPrivateNetwork":
-      return "CorsIssue::PreflightAllowPrivateNetworkError";
-    case "PreflightMissingPrivateNetworkAccessId":
-      return "CorsIssue::PreflightMissingPrivateNetworkAccessId";
-    case "PreflightMissingPrivateNetworkAccessName":
-      return "CorsIssue::PreflightMissingPrivateNetworkAccessName";
-    case "PrivateNetworkAccessPermissionUnavailable":
-      return "CorsIssue::PrivateNetworkAccessPermissionUnavailable";
-    case "PrivateNetworkAccessPermissionDenied":
-      return "CorsIssue::PrivateNetworkAccessPermissionDenied";
     case "LocalNetworkAccessPermissionDenied":
       return "CorsIssue::LocalNetworkAccessPermissionDenied";
   }
@@ -1400,14 +1387,6 @@ var CorsIssue = class _CorsIssue extends Issue {
       case "CorsIssue::InsecurePrivateNetwork":
         return {
           file: "corsInsecurePrivateNetwork.md",
-          links: [{
-            link: "https://developer.chrome.com/blog/private-network-access-update",
-            linkTitle: i18nString3(UIStrings6.corsPrivateNetworkAccess)
-          }]
-        };
-      case "CorsIssue::PreflightAllowPrivateNetworkError":
-        return {
-          file: "corsPreflightAllowPrivateNetworkError.md",
           links: [{
             link: "https://developer.chrome.com/blog/private-network-access-update",
             linkTitle: i18nString3(UIStrings6.corsPrivateNetworkAccess)
@@ -1501,17 +1480,6 @@ var CorsIssue = class _CorsIssue extends Issue {
             linkTitle: i18nString3(UIStrings6.CORS)
           }]
         };
-      // TODO(1462857): Change the link after we have a blog post for PNA
-      // permission prompt.
-      case "CorsIssue::PreflightMissingPrivateNetworkAccessId":
-      case "CorsIssue::PreflightMissingPrivateNetworkAccessName":
-        return {
-          file: "corsPrivateNetworkPermissionDenied.md",
-          links: [{
-            link: "https://developer.chrome.com/blog/private-network-access-update",
-            linkTitle: i18nString3(UIStrings6.corsPrivateNetworkAccess)
-          }]
-        };
       case "CorsIssue::LocalNetworkAccessPermissionDenied":
         return {
           file: "corsLocalNetworkAccessPermissionDenied.md",
@@ -1523,9 +1491,6 @@ var CorsIssue = class _CorsIssue extends Issue {
       case "CorsIssue::PreflightMissingAllowExternal":
       case "CorsIssue::PreflightInvalidAllowExternal":
       case "CorsIssue::InvalidPrivateNetworkAccess":
-      case "CorsIssue::UnexpectedPrivateNetworkAccess":
-      case "CorsIssue::PrivateNetworkAccessPermissionUnavailable":
-      case "CorsIssue::PrivateNetworkAccessPermissionDenied":
         return null;
     }
   }
@@ -1533,7 +1498,7 @@ var CorsIssue = class _CorsIssue extends Issue {
     return JSON.stringify(this.details());
   }
   getKind() {
-    if (this.details().isWarning && (this.details().corsErrorStatus.corsError === "InsecurePrivateNetwork" || this.details().corsErrorStatus.corsError === "PreflightMissingAllowPrivateNetwork" || this.details().corsErrorStatus.corsError === "PreflightInvalidAllowPrivateNetwork")) {
+    if (this.details().isWarning && this.details().corsErrorStatus.corsError === "InsecurePrivateNetwork") {
       return "BreakingChange";
     }
     return "PageError";
