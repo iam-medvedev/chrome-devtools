@@ -2162,6 +2162,7 @@ __export(CallStackSidebarPane_exports, {
   ActionDelegate: () => ActionDelegate4,
   CallStackSidebarPane: () => CallStackSidebarPane,
   Item: () => Item,
+  convertMissingDebugInfo: () => convertMissingDebugInfo,
   defaultMaxAsyncStackChainDepth: () => defaultMaxAsyncStackChainDepth,
   elementSymbol: () => elementSymbol
 });
@@ -2173,6 +2174,7 @@ import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as Bindings9 from "./../../models/bindings/bindings.js";
 import * as Persistence10 from "./../../models/persistence/persistence.js";
 import * as SourceMapScopes2 from "./../../models/source_map_scopes/source_map_scopes.js";
+import * as StackTrace5 from "./../../models/stack_trace/stack_trace.js";
 import * as Workspace24 from "./../../models/workspace/workspace.js";
 import { Icon as Icon3 } from "./../../ui/kit/kit.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
@@ -2343,6 +2345,7 @@ import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as Badges2 from "./../../models/badges/badges.js";
 import * as Bindings8 from "./../../models/bindings/bindings.js";
 import * as Breakpoints3 from "./../../models/breakpoints/breakpoints.js";
+import * as StackTrace3 from "./../../models/stack_trace/stack_trace.js";
 import * as Workspace22 from "./../../models/workspace/workspace.js";
 import * as PanelCommon3 from "./../common/common.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
@@ -2942,6 +2945,7 @@ import * as i18n14 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as AiAssistance from "./../../models/ai_assistance/ai_assistance.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
 import * as Persistence3 from "./../../models/persistence/persistence.js";
 import * as TextUtils4 from "./../../models/text_utils/text_utils.js";
@@ -4559,7 +4563,8 @@ var NavigatorSourceTreeElement = class extends UI8.TreeOutline.TreeElement {
     const action3 = UI8.ActionRegistry.ActionRegistry.instance().getAction("drjones.sources-floating-button");
     if (!this.aiButtonContainer) {
       this.aiButtonContainer = this.listItemElement.createChild("span", "ai-button-container");
-      const floatingButton = Buttons2.FloatingButton.create("smart-assistant", action3.title(), "ask-ai");
+      const icon = AiAssistance.AiUtils.getIconName();
+      const floatingButton = Buttons2.FloatingButton.create(icon, action3.title(), "ask-ai");
       floatingButton.addEventListener("click", (ev) => {
         ev.stopPropagation();
         this.navigatorView.sourceSelected(this.uiSourceCode, false);
@@ -5398,7 +5403,7 @@ import * as TextUtils10 from "./../../models/text_utils/text_utils.js";
 import * as Workspace18 from "./../../models/workspace/workspace.js";
 import * as Tooltips2 from "./../../ui/components/tooltips/tooltips.js";
 import * as uiI18n3 from "./../../ui/i18n/i18n.js";
-import { Icon as Icon2 } from "./../../ui/kit/kit.js";
+import { Icon as Icon2, Link } from "./../../ui/kit/kit.js";
 import * as SourceFrame10 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 import { html as html5 } from "./../../ui/lit/lit.js";
@@ -6082,6 +6087,7 @@ import * as Bindings5 from "./../../models/bindings/bindings.js";
 import * as Breakpoints2 from "./../../models/breakpoints/breakpoints.js";
 import * as Formatter from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes from "./../../models/source_map_scopes/source_map_scopes.js";
+import * as StackTrace from "./../../models/stack_trace/stack_trace.js";
 import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
 import * as Workspace13 from "./../../models/workspace/workspace.js";
 import * as CodeMirror4 from "./../../third_party/codemirror.next/codemirror.next.js";
@@ -6237,7 +6243,6 @@ var DebuggerPlugin = class extends Plugin {
   // truth for re-creating the breakpoints.
   breakpoints = [];
   continueToLocations = null;
-  liveLocationPool;
   // When the editor content is changed by the user, this becomes
   // true. When the plugin is muted, breakpoints show up as disabled
   // and can't be manipulated. It is cleared again when the content is
@@ -6271,8 +6276,7 @@ var DebuggerPlugin = class extends Plugin {
     this.loader.addEventListener("Update", this.showSourceMapInfobarIfNeeded.bind(this), this);
     this.ignoreListCallback = this.showIgnoreListInfobarIfNeeded.bind(this);
     Workspace13.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListCallback);
-    UI11.Context.Context.instance().addFlavorChangeListener(SDK8.DebuggerModel.CallFrame, this.callFrameChanged, this);
-    this.liveLocationPool = new Bindings5.LiveLocation.LiveLocationPool();
+    UI11.Context.Context.instance().addFlavorChangeListener(StackTrace.StackTrace.DebuggableFrameFlavor, this.callFrameChanged, this);
     this.updateScriptFiles();
     this.muted = this.uiSourceCode.isDirty();
     this.initializedMuted = this.muted;
@@ -6601,10 +6605,11 @@ var DebuggerPlugin = class extends Plugin {
     if (!debuggerModel || !debuggerModel.isPaused() || !editor) {
       return null;
     }
-    const selectedCallFrame = UI11.Context.Context.instance().flavor(SDK8.DebuggerModel.CallFrame);
-    if (!selectedCallFrame) {
+    const debuggableFrame = UI11.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
+    if (!debuggableFrame) {
       return null;
     }
+    const selectedCallFrame = debuggableFrame.sdkFrame;
     let textPosition = editor.editor.posAtCoords(event);
     if (!textPosition) {
       return null;
@@ -6661,8 +6666,8 @@ var DebuggerPlugin = class extends Plugin {
           return false;
         }
         objectPopoverHelper = await ObjectUI.ObjectPopoverHelper.ObjectPopoverHelper.buildObjectPopover(result.object, popover);
-        const potentiallyUpdatedCallFrame = UI11.Context.Context.instance().flavor(SDK8.DebuggerModel.CallFrame);
-        if (!objectPopoverHelper || selectedCallFrame !== potentiallyUpdatedCallFrame) {
+        const potentiallyUpdatedCallFrame = UI11.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
+        if (!objectPopoverHelper || debuggableFrame !== potentiallyUpdatedCallFrame) {
           debuggerModel.runtimeModel().releaseObjectGroup("popover");
           if (objectPopoverHelper) {
             objectPopoverHelper.dispose();
@@ -6894,10 +6899,11 @@ var DebuggerPlugin = class extends Plugin {
     if (!executionContext) {
       return null;
     }
-    const callFrame = UI11.Context.Context.instance().flavor(SDK8.DebuggerModel.CallFrame);
-    if (!callFrame) {
+    const debuggableFrame = UI11.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
+    if (!debuggableFrame) {
       return null;
     }
+    const callFrame = debuggableFrame.sdkFrame;
     const url = this.uiSourceCode.url();
     const rawLocationToEditorOffset = (location) => this.#rawLocationToEditorOffset(location, url);
     const functionOffsetPromise = this.#rawLocationToEditorOffset(callFrame.functionLocation(), url);
@@ -6950,10 +6956,11 @@ var DebuggerPlugin = class extends Plugin {
     if (!executionContext || !this.editor) {
       return;
     }
-    const callFrame = UI11.Context.Context.instance().flavor(SDK8.DebuggerModel.CallFrame);
-    if (!callFrame) {
+    const debuggableFrame = UI11.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
+    if (!debuggableFrame) {
       return;
     }
+    const callFrame = debuggableFrame.sdkFrame;
     const start = callFrame.functionLocation() || callFrame.location();
     const debuggerModel = callFrame.debuggerModel;
     const { state } = this.editor;
@@ -7469,21 +7476,18 @@ var DebuggerPlugin = class extends Plugin {
   breakpointWasSetForTest(_lineNumber, _columnNumber, _condition, _enabled) {
   }
   async callFrameChanged() {
-    this.liveLocationPool.disposeAll();
-    const callFrame = UI11.Context.Context.instance().flavor(SDK8.DebuggerModel.CallFrame);
-    if (!callFrame) {
-      this.setExecutionLocation(null);
+    const frameFlavor = UI11.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
+    if (frameFlavor?.frame.uiSourceCode?.canonicalScriptId() === this.uiSourceCode.canonicalScriptId()) {
+      const uiLocation = new Workspace13.UISourceCode.UILocation(frameFlavor.frame.uiSourceCode, frameFlavor.frame.line, frameFlavor.frame.column);
+      this.setExecutionLocation(uiLocation);
+      if (frameFlavor.sdkFrame.missingDebugInfoDetails) {
+        this.updateMissingDebugInfoInfobar(convertMissingDebugInfo(frameFlavor.sdkFrame.missingDebugInfoDetails, frameFlavor.sdkFrame.functionName));
+      } else {
+        this.updateMissingDebugInfoInfobar(null);
+      }
+      this.#recordSourcesPanelDebuggedMetrics();
     } else {
-      await Bindings5.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createCallFrameLiveLocation(callFrame.location(), async (liveLocation) => {
-        const uiLocation = await liveLocation.uiLocation();
-        if (uiLocation && uiLocation.uiSourceCode.canonicalScriptId() === this.uiSourceCode.canonicalScriptId()) {
-          this.setExecutionLocation(uiLocation);
-          this.updateMissingDebugInfoInfobar(callFrame.missingDebugInfoDetails);
-          this.#recordSourcesPanelDebuggedMetrics();
-        } else {
-          this.setExecutionLocation(null);
-        }
-      }, this.liveLocationPool);
+      this.setExecutionLocation(null);
     }
   }
   setExecutionLocation(executionLocation) {
@@ -7536,7 +7540,6 @@ var DebuggerPlugin = class extends Plugin {
     window.clearTimeout(this.refreshBreakpointsTimeout);
     this.editor = void 0;
     UI11.Context.Context.instance().removeFlavorChangeListener(SDK8.DebuggerModel.CallFrame, this.callFrameChanged, this);
-    this.liveLocationPool.disposeAll();
   }
   /**
    * Only records metrics once per DebuggerPlugin instance and must only be
@@ -9624,7 +9627,7 @@ var TabbedEditorContainer = class extends Common10.ObjectWrapper.ObjectWrapper {
           });
           tooltip2.append(uiI18n3.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace, { PH1: link }));
         } else {
-          const link = UI15.XLink.XLink.create("https://developer.chrome.com/docs/devtools/workspaces/", "Workspace");
+          const link = Link.create("https://developer.chrome.com/docs/devtools/workspaces/", "Workspace");
           tooltip2.append(uiI18n3.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace, { PH1: link }));
         }
         suffixElement.append(icon, tooltip2);
@@ -10722,7 +10725,6 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
   threadsSidebarPane;
   watchSidebarPane;
   callstackPane;
-  liveLocationPool;
   lastModificationTime;
   #paused;
   switchToPausedTargetTimeout;
@@ -10790,11 +10792,10 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     Common12.Settings.Settings.instance().moduleSetting("sidebar-position").addChangeListener(this.updateSidebarPosition.bind(this));
     this.updateSidebarPosition();
     void this.updateDebuggerButtonsAndStatus();
-    this.liveLocationPool = new Bindings8.LiveLocation.LiveLocationPool();
     this.setTarget(UI18.Context.Context.instance().flavor(SDK11.Target.Target));
     Common12.Settings.Settings.instance().moduleSetting("breakpoints-active").addChangeListener(this.breakpointsActiveStateChanged, this);
     UI18.Context.Context.instance().addFlavorChangeListener(SDK11.Target.Target, this.onCurrentTargetChanged, this);
-    UI18.Context.Context.instance().addFlavorChangeListener(SDK11.DebuggerModel.CallFrame, this.callFrameChanged, this);
+    UI18.Context.Context.instance().addFlavorChangeListener(StackTrace3.StackTrace.DebuggableFrameFlavor, this.callFrameChanged, this);
     SDK11.TargetManager.TargetManager.instance().addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.DebuggerWasEnabled, this.debuggerWasEnabled, this);
     SDK11.TargetManager.TargetManager.instance().addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.DebuggerPaused, this.debuggerPaused, this);
     SDK11.TargetManager.TargetManager.instance().addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.DebugInfoAttached, this.debugInfoAttached, this);
@@ -11063,28 +11064,16 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
   updateLastModificationTime() {
     this.lastModificationTime = window.performance.now();
   }
-  async executionLineChanged(liveLocation) {
-    const uiLocation = await liveLocation.uiLocation();
-    if (liveLocation.isDisposed()) {
+  async callFrameChanged() {
+    const frameFlavor = UI18.Context.Context.instance().flavor(StackTrace3.StackTrace.DebuggableFrameFlavor);
+    if (!frameFlavor?.frame.uiSourceCode) {
       return;
     }
-    if (!uiLocation) {
-      return;
-    }
+    const uiLocation = new Workspace22.UISourceCode.UILocation(frameFlavor.frame.uiSourceCode, frameFlavor.frame.line, frameFlavor.frame.column);
     if (window.performance.now() - this.lastModificationTime < lastModificationTimeout) {
       return;
     }
     this.#sourcesView.showSourceLocation(uiLocation.uiSourceCode, uiLocation, void 0, true);
-  }
-  async callFrameChanged() {
-    const callFrame = UI18.Context.Context.instance().flavor(SDK11.DebuggerModel.CallFrame);
-    if (!callFrame) {
-      return;
-    }
-    if (this.executionLineLocation) {
-      this.executionLineLocation.dispose();
-    }
-    this.executionLineLocation = await Bindings8.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createCallFrameLiveLocation(callFrame.location(), this.executionLineChanged.bind(this), this.liveLocationPool);
   }
   async updateDebuggerButtonsAndStatus() {
     const currentTarget = UI18.Context.Context.instance().flavor(SDK11.Target.Target);
@@ -11126,7 +11115,6 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     if (this.switchToPausedTargetTimeout) {
       clearTimeout(this.switchToPausedTargetTimeout);
     }
-    this.liveLocationPool.disposeAll();
   }
   switchToPausedTarget(debuggerModel) {
     delete this.switchToPausedTargetTimeout;
@@ -11750,7 +11738,17 @@ var UIStrings18 = {
    * "frame" is a noun. "Frame" refers to an individual item in the call stack, i.e. a call frame.
    * The user opens this context menu by selecting a specific call frame in the call stack sidebar pane.
    */
-  restartFrame: "Restart frame"
+  restartFrame: "Restart frame",
+  /**
+   * @description Error message that is displayed in UI debugging information cannot be found for a call frame
+   * @example {main} PH1
+   */
+  failedToLoadDebugSymbolsForFunction: 'No debug information for function "{PH1}"',
+  /**
+   * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
+   * @example {mainp.debug.wasm.dwp} PH1
+   */
+  debugSymbolsIncomplete: "The debug information for function {PH1} is incomplete"
 };
 var str_18 = i18n37.i18n.registerUIStrings("panels/sources/CallStackSidebarPane.ts", UIStrings18);
 var i18nString17 = i18n37.i18n.getLocalizedString.bind(void 0, str_18);
@@ -11875,16 +11873,17 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI19.View.SimpleV
       this.showMoreMessageElement.classList.add("hidden");
       this.items.replaceAll([]);
       UI19.Context.Context.instance().setFlavor(SDK12.DebuggerModel.CallFrame, null);
+      UI19.Context.Context.instance().setFlavor(StackTrace5.StackTrace.DebuggableFrameFlavor, null);
       return;
     }
     this.notPausedMessageElement.classList.add("hidden");
     const itemPromises = [];
     const uniqueWarnings = /* @__PURE__ */ new Set();
     for (const frame of details.callFrames) {
-      const itemPromise = Item.createForDebuggerCallFrame(frame, this.locationPool, this.refreshItem.bind(this));
+      const itemPromise = Item.createForDebuggerCallFrame(frame, this.locationPool, this.refreshItem.bind(this), this.list);
       itemPromises.push(itemPromise);
       if (frame.missingDebugInfoDetails) {
-        uniqueWarnings.add(frame.missingDebugInfoDetails.details);
+        uniqueWarnings.add(convertMissingDebugInfo(frame.missingDebugInfoDetails, frame.functionName).details);
       }
     }
     const items = await Promise.all(itemPromises);
@@ -11898,7 +11897,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI19.View.SimpleV
     for await (const { stackTrace } of details.debuggerModel.iterateAsyncParents(details)) {
       asyncStackTrace = stackTrace;
       const title = UI19.UIUtils.asyncStackTraceLabel(asyncStackTrace.description, previousStackTrace);
-      items.push(...await Item.createItemsForAsyncStack(title, details.debuggerModel, asyncStackTrace.callFrames, this.locationPool, this.refreshItem.bind(this)));
+      items.push(...await Item.createItemsForAsyncStack(title, details.debuggerModel, asyncStackTrace.callFrames, this.locationPool, this.refreshItem.bind(this), this.list));
       previousStackTrace = asyncStackTrace.callFrames;
       if (--maxAsyncStackChainDepth <= 0) {
         break;
@@ -11987,8 +11986,9 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI19.View.SimpleV
       const icon2 = new Icon3();
       icon2.name = "warning-filled";
       icon2.classList.add("call-frame-warning-icon", "small");
-      const messages = callframe.missingDebugInfoDetails.resources.map((r) => i18nString17(UIStrings18.debugFileNotFound, { PH1: Common13.ParsedURL.ParsedURL.extractName(r.resourceUrl) }));
-      UI19.Tooltip.Tooltip.install(icon2, [callframe.missingDebugInfoDetails.details, ...messages].join("\n"));
+      const { resources, details } = convertMissingDebugInfo(callframe.missingDebugInfoDetails, callframe.functionName);
+      const messages = resources.map((r) => i18nString17(UIStrings18.debugFileNotFound, { PH1: Common13.ParsedURL.ParsedURL.extractName(r.resourceUrl) }));
+      UI19.Tooltip.Tooltip.install(icon2, [details, ...messages].join("\n"));
       element.appendChild(icon2);
     }
     return element;
@@ -12045,6 +12045,12 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI19.View.SimpleV
     if (debuggerCallFrame && oldItem !== item) {
       debuggerCallFrame.debuggerModel.setSelectedCallFrame(debuggerCallFrame);
       UI19.Context.Context.instance().setFlavor(SDK12.DebuggerModel.CallFrame, debuggerCallFrame);
+      UI19.Context.Context.instance().setFlavor(StackTrace5.StackTrace.DebuggableFrameFlavor, StackTrace5.StackTrace.DebuggableFrameFlavor.for({
+        uiSourceCode: item.uiLocation?.uiSourceCode,
+        line: uiLocation.lineNumber,
+        column: uiLocation.columnNumber ?? -1,
+        sdkFrame: debuggerCallFrame
+      }));
       if (oldItem) {
         this.refreshItem(oldItem);
       }
@@ -12134,9 +12140,10 @@ var Item = class _Item {
   updateDelegate;
   /** Only set for synchronous frames */
   frame;
-  static async createForDebuggerCallFrame(frame, locationPool, updateDelegate) {
+  list;
+  static async createForDebuggerCallFrame(frame, locationPool, updateDelegate, list) {
     const name = frame.functionName;
-    const item = new _Item(UI19.UIUtils.beautifyFunctionName(name), updateDelegate, frame);
+    const item = new _Item(UI19.UIUtils.beautifyFunctionName(name), updateDelegate, frame, list);
     await Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createCallFrameLiveLocation(frame.location(), item.update.bind(item), locationPool);
     void SourceMapScopes2.NamesResolver.resolveDebuggerFrameFunctionName(frame).then((functionName) => {
       if (functionName && functionName !== name) {
@@ -12146,15 +12153,15 @@ var Item = class _Item {
     });
     return item;
   }
-  static async createItemsForAsyncStack(title, debuggerModel, frames, locationPool, updateDelegate) {
+  static async createItemsForAsyncStack(title, debuggerModel, frames, locationPool, updateDelegate, list) {
     const headerItemToItemsSet = /* @__PURE__ */ new WeakMap();
-    const asyncHeaderItem = new _Item(title, updateDelegate);
+    const asyncHeaderItem = new _Item(title, updateDelegate, void 0, list);
     headerItemToItemsSet.set(asyncHeaderItem, /* @__PURE__ */ new Set());
     asyncHeaderItem.isAsyncHeader = true;
     const asyncFrameItems = [];
     const liveLocationPromises = [];
     for (const frame of frames) {
-      const item = new _Item(UI19.UIUtils.beautifyFunctionName(frame.functionName), update);
+      const item = new _Item(UI19.UIUtils.beautifyFunctionName(frame.functionName), update, void 0, list);
       const rawLocation = debuggerModel.createRawLocationByScriptId(frame.scriptId, frame.lineNumber, frame.columnNumber);
       liveLocationPromises.push(Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createCallFrameLiveLocation(rawLocation, item.update.bind(item), locationPool));
       void SourceMapScopes2.NamesResolver.resolveProfileFrameFunctionName(frame, debuggerModel.target()).then((functionName) => {
@@ -12187,7 +12194,7 @@ var Item = class _Item {
       }
     }
   }
-  constructor(title, updateDelegate, frame) {
+  constructor(title, updateDelegate, frame, list) {
     this.isIgnoreListed = false;
     this.title = title;
     this.linkText = "";
@@ -12195,15 +12202,38 @@ var Item = class _Item {
     this.isAsyncHeader = false;
     this.updateDelegate = updateDelegate;
     this.frame = frame;
+    this.list = list;
   }
   async update(liveLocation) {
     const uiLocation = await liveLocation.uiLocation();
     this.isIgnoreListed = Boolean(uiLocation?.isIgnoreListed());
     this.linkText = uiLocation ? uiLocation.linkText() : "";
     this.uiLocation = uiLocation;
+    if (this.frame && uiLocation && this === this.list.selectedItem()) {
+      UI19.Context.Context.instance().setFlavor(StackTrace5.StackTrace.DebuggableFrameFlavor, StackTrace5.StackTrace.DebuggableFrameFlavor.for({
+        uiSourceCode: uiLocation.uiSourceCode,
+        line: uiLocation.lineNumber,
+        column: uiLocation.columnNumber ?? -1,
+        sdkFrame: this.frame
+      }));
+    }
     this.updateDelegate(this);
   }
 };
+function convertMissingDebugInfo(missingDebugInfo, functionName) {
+  switch (missingDebugInfo.type) {
+    case "PARTIAL_INFO":
+      return {
+        details: i18nString17(UIStrings18.debugSymbolsIncomplete, { PH1: functionName ?? "" }),
+        resources: missingDebugInfo.missingDebugFiles
+      };
+    case "NO_INFO":
+      return {
+        details: i18nString17(UIStrings18.failedToLoadDebugSymbolsForFunction, { PH1: functionName ?? "" }),
+        resources: []
+      };
+  }
+}
 
 // gen/front_end/panels/sources/FilePathScoreFunction.js
 var FilePathScoreFunction_exports = {};
@@ -13497,6 +13527,7 @@ __export(ScopeChainSidebarPane_exports, {
 import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as SourceMapScopes3 from "./../../models/source_map_scopes/source_map_scopes.js";
+import * as StackTrace7 from "./../../models/stack_trace/stack_trace.js";
 import * as ObjectUI3 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
@@ -13590,7 +13621,7 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBo
     this.infoElement = document.createElement("div");
     this.infoElement.className = "gray-info-message";
     this.infoElement.tabIndex = -1;
-    this.flavorChanged(UI24.Context.Context.instance().flavor(SDK14.DebuggerModel.CallFrame));
+    this.flavorChanged(UI24.Context.Context.instance().flavor(StackTrace7.StackTrace.DebuggableFrameFlavor));
   }
   static instance() {
     if (!scopeChainSidebarPaneInstance) {
@@ -13606,7 +13637,7 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBo
     this.contentElement.appendChild(this.infoElement);
     if (callFrame) {
       this.infoElement.textContent = i18nString23(UIStrings24.loading);
-      this.#scopeChainModel = new SourceMapScopes3.ScopeChainModel.ScopeChainModel(callFrame);
+      this.#scopeChainModel = new SourceMapScopes3.ScopeChainModel.ScopeChainModel(callFrame.sdkFrame);
       this.#scopeChainModel.addEventListener("ScopeChainUpdated", (event) => this.buildScopeTreeOutline(event.data), this);
     } else {
       this.infoElement.textContent = i18nString23(UIStrings24.notPaused);
@@ -13714,6 +13745,7 @@ import * as Persistence18 from "./../../models/persistence/persistence.js";
 import * as TextUtils13 from "./../../models/text_utils/text_utils.js";
 import * as Workspace30 from "./../../models/workspace/workspace.js";
 import * as uiI18n4 from "./../../ui/i18n/i18n.js";
+import { Link as Link2 } from "./../../ui/kit/kit.js";
 import * as UI25 from "./../../ui/legacy/legacy.js";
 import * as Snippets5 from "./../snippets/snippets.js";
 
@@ -13893,7 +13925,7 @@ var FilesNavigatorView = class extends NavigatorView {
     const placeholder2 = new UI25.EmptyWidget.EmptyWidget(i18nString24(UIStrings25.noWorkspace), i18nString24(UIStrings25.explainWorkspace));
     this.setPlaceholder(placeholder2);
     placeholder2.link = "https://developer.chrome.com/docs/devtools/workspaces/";
-    const link = UI25.XLink.XLink.create("https://goo.gle/devtools-automatic-workspace-folders", "com.chrome.devtools.json");
+    const link = Link2.create("https://goo.gle/devtools-automatic-workspace-folders", "com.chrome.devtools.json");
     this.#automaticFileSystemNudge = uiI18n4.getFormatLocalizedString(str_25, UIStrings25.automaticWorkspaceNudge, { PH1: link });
     this.#automaticFileSystemNudge.classList.add("automatic-file-system-nudge");
     this.contentElement.insertBefore(this.#automaticFileSystemNudge, this.contentElement.firstChild);

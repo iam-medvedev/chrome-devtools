@@ -42,6 +42,7 @@ describe('DebuggerLanguagePluginManager', () => {
     describeWithMockConnection('getFunctionInfo', () => {
         let target;
         let pluginManager;
+        let debuggerWorkspaceBinding;
         const MISSING_DWO_FILE = 'test.dwo';
         const MISSING_DEBUG_FILES = {
             resourceUrl: urlString `${MISSING_DWO_FILE}`,
@@ -70,7 +71,7 @@ describe('DebuggerLanguagePluginManager', () => {
             const targetManager = target.targetManager();
             const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
             const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-            const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
                 forceNew: true,
                 resourceMapping,
                 targetManager,
@@ -115,6 +116,15 @@ describe('DebuggerLanguagePluginManager', () => {
             assert.exists(result);
             assert.deepEqual(result, { frames: [{ name: FUNCTION_NAME }], missingSymbolFiles: [MISSING_DEBUG_FILES] });
         });
+        it('correctly updates locations when missing debug info is reported', async () => {
+            const plugin = new Plugin('TestPlugin');
+            sinon.stub(plugin, 'addRawModule').returns(Promise.resolve({ missingSymbolFiles: [MISSING_DWO_FILE] }));
+            pluginManager.addPlugin(plugin);
+            const updateLocationsSpy = sinon.spy(debuggerWorkspaceBinding, 'updateLocations');
+            const script = createAndRegisterScript();
+            await pluginManager.getSourcesForScript(script);
+            sinon.assert.calledWith(updateLocationsSpy, script);
+        });
     });
     describeWithMockConnection('translateRawFramesStep', () => {
         function setup() {
@@ -123,7 +133,7 @@ describe('DebuggerLanguagePluginManager', () => {
             const debuggerWorkspaceBinding = sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
             const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
             const pluginManager = new Bindings.DebuggerLanguagePlugins.DebuggerLanguagePluginManager(target.targetManager(), workspace, debuggerWorkspaceBinding);
-            return { target, backend, pluginManager };
+            return { target, backend, pluginManager, debuggerWorkspaceBinding };
         }
         it('returns false if no plugin is registered for the top-most frame', async () => {
             const { target, backend, pluginManager } = setup();
@@ -249,6 +259,32 @@ describe('DebuggerLanguagePluginManager', () => {
                 'at foo (foo.cc:2:5)',
                 'at bar (bar.cc:4:10)',
             ]);
+        });
+        it('uses the translated source position when the plugin lacks function info', async () => {
+            const { target, backend, pluginManager, debuggerWorkspaceBinding } = setup();
+            const script = await backend.addScript(target, { url: urlString `foo.js`, content: '' }, null);
+            const plugin = new (class extends TestPlugin {
+                getFunctionInfo(_rawLocation) {
+                    return Promise.resolve({ missingSymbolFiles: ['foo.dwo'] });
+                }
+                handleScript(_) {
+                    return true;
+                }
+            })('TestPlugin');
+            pluginManager.addPlugin(plugin);
+            const uiSourceCode = createContentProviderUISourceCode({ url: urlString `foo.cc`, target, mimeType: 'text/plain' }).uiSourceCode;
+            debuggerWorkspaceBinding.rawLocationToUILocation.resolves(uiSourceCode.uiLocation(10, 5));
+            const rawFrames = [protocolCallFrame(`${script.sourceURL}:${script.scriptId}:foo:1:10`)];
+            const translatedFrames = [];
+            assert.isTrue(await pluginManager.translateRawFramesStep(rawFrames, translatedFrames, target));
+            assert.lengthOf(rawFrames, 0);
+            assert.lengthOf(translatedFrames, 1);
+            assert.strictEqual(translatedFrames[0].map(stringifyFrame).join('\n'), 'at foo (foo.cc:10:5)');
+            assert.strictEqual(translatedFrames[0][0].uiSourceCode, uiSourceCode);
+            assert.deepEqual(translatedFrames[0][0].missingDebugInfo, {
+                type: "PARTIAL_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.PARTIAL_INFO */,
+                missingDebugFiles: [{ resourceUrl: urlString `foo.dwo`, initiator: plugin.createPageResourceLoadInitiator() }],
+            });
         });
     });
 });

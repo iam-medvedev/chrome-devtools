@@ -58,6 +58,12 @@ export class AiAgent {
     constructor(opts) {
         this.#aidaClient = opts.aidaClient;
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
+        // Disable logging for now.
+        // For context, see b/454563259#comment35.
+        // We should be able to remove this ~end of April.
+        if (Root.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
+            this.#serverSideLoggingEnabled = false;
+        }
         this.#sessionId = opts.sessionId ?? crypto.randomUUID();
         this.confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
     }
@@ -303,6 +309,13 @@ export class AiAgent {
                         yield this.#createErrorResponse("abort" /* ErrorType.ABORT */);
                         break;
                     }
+                    if ('context' in result) {
+                        yield {
+                            type: "context-change" /* ResponseType.CONTEXT_CHANGE */,
+                            context: result.context,
+                        };
+                        return;
+                    }
                     query = {
                         functionResponse: {
                             name: functionCall.name,
@@ -325,6 +338,7 @@ export class AiAgent {
         if (isStructuredLogEnabled()) {
             window.dispatchEvent(new CustomEvent('aiassistancedone'));
         }
+        return;
     }
     async *#callFunction(name, args, options) {
         const call = this.#functionDeclarations.get(name);
@@ -420,6 +434,9 @@ export class AiAgent {
                 output: result.error,
                 canceled: false,
             };
+        }
+        if ('context' in result) {
+            return result;
         }
         return result;
     }

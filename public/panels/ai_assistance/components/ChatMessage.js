@@ -100,6 +100,10 @@ const UIStringsNotTranslate = {
      */
     ai: 'AI',
     /**
+     * @description Gemini (do not translate)
+     */
+    gemini: 'Gemini',
+    /**
      * @description The fallback text when we can't find the user full name
      */
     you: 'You',
@@ -140,7 +144,7 @@ const UIStringsNotTranslate = {
      */
     accountAvatar: 'Account avatar',
     /**
-     * @description Title for the x-link which wraps the image input rendered in chat messages.
+     * @description Title for the link which wraps the image input rendered in chat messages.
      */
     openImageInNewTab: 'Open image in a new tab',
     /**
@@ -151,7 +155,8 @@ const UIStringsNotTranslate = {
 export const DEFAULT_VIEW = (input, output, target) => {
     const message = input.message;
     if (message.entity === "user" /* ChatMessageEntity.USER */) {
-        const name = input.userInfo.accountFullName || lockedString(UIStringsNotTranslate.you);
+        const givenName = AiAssistanceModel.AiUtils.isGeminiBranding() ? input.userInfo.accountGivenName : '';
+        const name = givenName || input.userInfo.accountFullName || lockedString(UIStringsNotTranslate.you);
         const image = input.userInfo.accountImage ?
             html `<img src="data:image/png;base64, ${input.userInfo.accountImage}" alt=${UIStringsNotTranslate.accountAvatar} />` :
             html `<devtools-icon
@@ -181,6 +186,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         // clang-format on
         return;
     }
+    const icon = AiAssistanceModel.AiUtils.getIconName();
     // clang-format off
     Lit.render(html `
     <style>${Input.textInputStyles}</style>
@@ -190,9 +196,9 @@ export const DEFAULT_VIEW = (input, output, target) => {
       jslog=${VisualLogging.section('answer')}
     >
       <div class="message-info">
-        <devtools-icon name="smart-assistant"></devtools-icon>
+        <devtools-icon name=${icon}></devtools-icon>
         <div class="message-name">
-          <h2>${lockedString(UIStringsNotTranslate.ai)}</h2>
+          <h2>${AiAssistanceModel.AiUtils.isGeminiBranding() ? lockedString(UIStringsNotTranslate.gemini) : lockedString(UIStringsNotTranslate.ai)}</h2>
         </div>
       </div>
       ${Lit.Directives.repeat(message.parts, (_, index) => index, (part, index) => {

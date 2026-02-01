@@ -357,6 +357,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "ai-code-completion-teaser.dismiss",
   "ai-code-completion-teaser.fre",
   "ai-code-generation-disclaimer",
+  "ai-code-generation-onboarding-completed",
   "ai-code-generation-teaser.info-button",
   "ai-code-generation-teaser.show-disclaimer-info-tooltip",
   "ai-code-generation-upgrade-dialog.continue",
@@ -1194,6 +1195,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "dblclick",
   "de",
   "debug",
+  "debug-with-ai",
   "debugger",
   "debugger-paused",
   "debugger.breakpoint-input-window",
@@ -1264,6 +1266,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "device-bound-sessions",
   "device-bound-sessions-empty",
   "device-bound-sessions-preserve-log",
+  "device-bound-sessions-request",
   "device-fold",
   "device-frame-enable",
   "device-mode",
@@ -1391,6 +1394,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "elements.capture-area-screenshot",
   "elements.color-mix-popover",
   "elements.copy-styles",
+  "elements.css-animation-hint",
   "elements.css-color-mix",
   "elements.css-hint",
   "elements.css-property-doc",
@@ -1430,6 +1434,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "em",
   "emoji",
   "emptied",
+  "empty",
   "empty-cells",
   "empty-view",
   "emulate-auto-dark-mode",
@@ -1688,6 +1693,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "frame",
   "frame-creation-stack-trace",
   "frame-resource",
+  "frame-sizing",
   "frame-viewer-hide-chrome-window",
   "frame-viewer-show-paints",
   "frame-viewer-show-slow-scroll-rects",
@@ -1745,6 +1751,10 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "gdp-profile",
   "gdp-sign-up-dialog",
   "gdp.ai-conversation-count",
+  "gemini-promo-dialog",
+  "gemini-promo-dialog-shown",
+  "gemini-promo-dismiss",
+  "gemini-promo-get-started",
   "gemini-rebranding-dialog-shown",
   "gen-ai-settings-panel",
   "general",
@@ -1891,6 +1901,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "identity",
   "ignore-this-retainer",
   "image",
+  "image-animation",
   "image-orientation",
   "image-rendering",
   "image-url",
@@ -3254,6 +3265,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "rule-set",
   "rule-set-details",
   "rule-style",
+  "rule-visibility-items",
   "rule-width",
   "rulers-enable",
   "run",
@@ -4205,6 +4217,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "view-transition-class",
   "view-transition-group",
   "view-transition-name",
+  "view-transition-scope",
   "views-location-override",
   "virtual-authenticators",
   "visibility",
@@ -5748,21 +5761,23 @@ async function onResizeOrIntersection(entries) {
     if (!loggingState?.size) {
       continue;
     }
-    let hasPendingParent = false;
-    for (const pendingElement of pendingResize.keys()) {
+    const resizeToOrFromZero = overlap.width * overlap.height * loggingState.size.width * loggingState.size.height === 0;
+    let suppressedByParentResize = false;
+    for (const [pendingElement, overlap2] of pendingResize.entries()) {
       if (pendingElement === element) {
         continue;
       }
       const pendingState = getLoggingState(pendingElement);
-      if (isAncestorOf(pendingState, loggingState)) {
-        hasPendingParent = true;
+      const pendingResizeToOrFromZero = overlap2.width * overlap2.height * (pendingState?.size?.width || 0) * (pendingState?.size?.height || 0) === 0;
+      if (isAncestorOf(pendingState, loggingState) && resizeToOrFromZero && pendingResizeToOrFromZero) {
+        suppressedByParentResize = true;
         break;
       }
-      if (isAncestorOf(loggingState, pendingState)) {
+      if (isAncestorOf(loggingState, pendingState) && resizeToOrFromZero && pendingResizeToOrFromZero) {
         pendingResize.delete(pendingElement);
       }
     }
-    if (hasPendingParent) {
+    if (suppressedByParentResize) {
       continue;
     }
     pendingResize.set(element, overlap);

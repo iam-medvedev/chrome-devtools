@@ -37,6 +37,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
+import * as StackTrace from '../../models/stack_trace/stack_trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as PanelCommon from '../../panels/common/common.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
@@ -205,7 +206,6 @@ export class SourcesPanel extends UI.Panel.Panel {
     threadsSidebarPane;
     watchSidebarPane;
     callstackPane;
-    liveLocationPool;
     lastModificationTime;
     #paused;
     switchToPausedTargetTimeout;
@@ -284,13 +284,12 @@ export class SourcesPanel extends UI.Panel.Panel {
             .addChangeListener(this.updateSidebarPosition.bind(this));
         this.updateSidebarPosition();
         void this.updateDebuggerButtonsAndStatus();
-        this.liveLocationPool = new Bindings.LiveLocation.LiveLocationPool();
         this.setTarget(UI.Context.Context.instance().flavor(SDK.Target.Target));
         Common.Settings.Settings.instance()
             .moduleSetting('breakpoints-active')
             .addChangeListener(this.breakpointsActiveStateChanged, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, this.onCurrentTargetChanged, this);
-        UI.Context.Context.instance().addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.callFrameChanged, this);
+        UI.Context.Context.instance().addFlavorChangeListener(StackTrace.StackTrace.DebuggableFrameFlavor, this.callFrameChanged, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerWasEnabled, this.debuggerWasEnabled, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this.debuggerPaused, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebugInfoAttached, this.debugInfoAttached, this);
@@ -582,29 +581,16 @@ export class SourcesPanel extends UI.Panel.Panel {
     updateLastModificationTime() {
         this.lastModificationTime = window.performance.now();
     }
-    async executionLineChanged(liveLocation) {
-        const uiLocation = await liveLocation.uiLocation();
-        if (liveLocation.isDisposed()) {
+    async callFrameChanged() {
+        const frameFlavor = UI.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
+        if (!frameFlavor?.frame.uiSourceCode) {
             return;
         }
-        if (!uiLocation) {
-            return;
-        }
+        const uiLocation = new Workspace.UISourceCode.UILocation(frameFlavor.frame.uiSourceCode, frameFlavor.frame.line, frameFlavor.frame.column);
         if (window.performance.now() - this.lastModificationTime < lastModificationTimeout) {
             return;
         }
         this.#sourcesView.showSourceLocation(uiLocation.uiSourceCode, uiLocation, undefined, true);
-    }
-    async callFrameChanged() {
-        const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
-        if (!callFrame) {
-            return;
-        }
-        if (this.executionLineLocation) {
-            this.executionLineLocation.dispose();
-        }
-        this.executionLineLocation =
-            await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createCallFrameLiveLocation(callFrame.location(), this.executionLineChanged.bind(this), this.liveLocationPool);
     }
     async updateDebuggerButtonsAndStatus() {
         const currentTarget = UI.Context.Context.instance().flavor(SDK.Target.Target);
@@ -648,7 +634,6 @@ export class SourcesPanel extends UI.Panel.Panel {
         if (this.switchToPausedTargetTimeout) {
             clearTimeout(this.switchToPausedTargetTimeout);
         }
-        this.liveLocationPool.disposeAll();
     }
     switchToPausedTarget(debuggerModel) {
         delete this.switchToPausedTargetTimeout;

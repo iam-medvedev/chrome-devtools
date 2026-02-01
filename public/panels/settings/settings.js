@@ -22,7 +22,7 @@ import * as Root from "./../../core/root/root.js";
 import * as GreenDev from "./../../models/greendev/greendev.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UIHelpers from "./../../ui/helpers/helpers.js";
-import { createIcon } from "./../../ui/kit/kit.js";
+import { createIcon, Link } from "./../../ui/kit/kit.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI from "./../../ui/legacy/legacy.js";
@@ -601,6 +601,9 @@ var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.VBo
     checkbox.classList.add("experiment-label");
     checkbox.name = experiment.name;
     function listener() {
+      if (experiment instanceof Root.Runtime.HostExperiment) {
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(experiment.aboutFlag, checkbox.checked);
+      }
       experiment.setEnabled(checkbox.checked);
       Host.userMetrics.experimentChanged(experiment.name, experiment.isEnabled());
       UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.oneOrMoreSettingsHaveChanged));
@@ -625,7 +628,7 @@ var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.VBo
       p.appendChild(linkButton);
     }
     if (experiment.feedbackLink) {
-      const link = UI.XLink.XLink.create(experiment.feedbackLink, void 0, void 0, void 0, `${experiment.name}-feedback`);
+      const link = Link.create(experiment.feedbackLink, void 0, void 0, `${experiment.name}-feedback`);
       link.textContent = i18nString(UIStrings.sendFeedback);
       link.classList.add("feedback-link");
       p.appendChild(link);
@@ -633,7 +636,7 @@ var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.VBo
     return p;
   }
   highlightObject(experiment) {
-    if (experiment instanceof Root.Runtime.Experiment) {
+    if (experiment instanceof Root.Runtime.Experiment || experiment instanceof Root.Runtime.HostExperiment) {
       const element = this.experimentToControl.get(experiment);
       if (element) {
         PanelUtils.highlightElement(element);
@@ -668,7 +671,7 @@ var ActionDelegate = class {
 var Revealer = class {
   async reveal(object) {
     const context = UI.Context.Context.instance();
-    if (object instanceof Root.Runtime.Experiment) {
+    if (object instanceof Root.Runtime.Experiment || object instanceof Root.Runtime.HostExperiment) {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
       await SettingsScreen.showSettingsScreen({ name: "experiments" });
       const experimentsSettingsTab = context.flavor(ExperimentsSettingsTab);
@@ -1150,11 +1153,11 @@ var UIStrings2 = {
   /**
    * @description Explainer for which data is being sent by the AI assistance feature
    */
-  freestylerSendsData: "To generate explanations, any user query and data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google. This data may be seen by human reviewers to improve this feature. Don\u2019t use on pages with personal or sensitive information.",
+  freestylerSendsData: "To generate explanations, your chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google. This data may be seen by human reviewers to improve this feature. Don\u2019t use on pages with personal or sensitive information.",
   /**
    * @description Explainer for which data is being sent by the AI assistance feature
    */
-  freestylerSendsDataNoLogging: "To generate explanations, any user query and data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
+  freestylerSendsDataNoLogging: "To generate explanations, your chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
    * @description Explainer for which data is being sent by the AI generated annotations feature
    */
@@ -1411,8 +1414,8 @@ var AISettingsTab = class extends UI2.Widget.VBox {
     }
     if (this.#aiAssistanceSetting) {
       const aiAssistanceData = {
-        settingName: i18n3.i18n.lockedString("AI assistance"),
-        iconName: "smart-assistant",
+        settingName: i18n3.i18n.lockedString(AiAssistanceModel.AiUtils.isGeminiBranding() ? "Gemini in Chrome DevTools" : "AI assistance"),
+        iconName: AiAssistanceModel.AiUtils.getIconName(),
         settingDescription: this.#getAiAssistanceSettingDescription(),
         enableSettingText: i18nString2(UIStrings2.enableAiAssistance),
         settingItems: [
@@ -2160,13 +2163,12 @@ __export(KeybindsSettingsTab_exports, {
   KeybindsSettingsTab: () => KeybindsSettingsTab,
   ShortcutListItem: () => ShortcutListItem
 });
-import "./../../ui/kit/kit.js";
 import * as Common4 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
-import { createIcon as createIcon2 } from "./../../ui/kit/kit.js";
+import { createIcon as createIcon2, Link as Link2 } from "./../../ui/kit/kit.js";
 import * as SettingsUI5 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
@@ -2462,7 +2464,7 @@ var KeybindsSettingsTab = class extends UI5.Widget.VBox {
     UI5.ARIAUtils.setLabel(this.list.element, i18nString5(UIStrings5.keyboardShortcutsList));
     const footer = document.createElement("div");
     footer.classList.add("keybinds-footer");
-    const docsLink = UI5.XLink.XLink.create("https://developer.chrome.com/docs/devtools/shortcuts/", i18nString5(UIStrings5.FullListOfDevtoolsKeyboard), void 0, void 0, "learn-more");
+    const docsLink = Link2.create("https://developer.chrome.com/docs/devtools/shortcuts/", i18nString5(UIStrings5.FullListOfDevtoolsKeyboard), void 0, "learn-more");
     docsLink.classList.add("docs-link");
     footer.appendChild(docsLink);
     const restoreDefaultShortcutsButton = UI5.UIUtils.createTextButton(i18nString5(UIStrings5.RestoreDefaultShortcuts), () => {
@@ -2634,7 +2636,7 @@ var ShortcutListItem = class {
     this.settingsTab = settingsTab;
     this.item = item2;
     this.element = document.createElement("div");
-    this.element.setAttribute("jslog", `${VisualLogging4.item().context(item2.id()).track({ keydown: "Escape" })}`);
+    this.element.setAttribute("jslog", `${VisualLogging4.item().context(item2.id()).track({ keydown: "Escape", resize: true })}`);
     this.editedShortcuts = /* @__PURE__ */ new Map();
     this.shortcutInputs = /* @__PURE__ */ new Map();
     this.shortcuts = UI5.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(item2.id());

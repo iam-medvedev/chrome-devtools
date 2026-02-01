@@ -320,29 +320,5 @@ describeWithMockConnection('NetworkLog', () => {
             assert.deepEqual(networkLog.requests().map(request => request.requestId()), ['mockId1', 'mockId2']);
         });
     });
-    it('removes preflight requests with a UnexpectedPrivateNetworkAccess CORS error', () => {
-        const target = createTarget();
-        const networkManager = target.model(SDK.NetworkManager.NetworkManager);
-        if (!networkManager) {
-            throw new Error('No networkManager');
-        }
-        const networkLog = Logs.NetworkLog.NetworkLog.instance();
-        let removedRequest = null;
-        networkLog.addEventListener(Logs.NetworkLog.Events.RequestRemoved, event => {
-            assert.isNull(removedRequest, 'Request was removed multiple times.');
-            removedRequest = event.data.request;
-        });
-        const request = {
-            requestId: () => 'request-id',
-            isPreflightRequest: () => true,
-            initiator: () => null,
-            corsErrorStatus: () => ({ corsError: "UnexpectedPrivateNetworkAccess" /* Protocol.Network.CorsError.UnexpectedPrivateNetworkAccess */ }),
-        };
-        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestStarted, { request, originalRequest: null });
-        assert.lengthOf(networkLog.requests(), 1);
-        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestUpdated, request);
-        assert.strictEqual(request, removedRequest);
-        assert.lengthOf(networkLog.requests(), 0);
-    });
 });
 //# sourceMappingURL=NetworkLog.test.js.map

@@ -45,3 +45,19 @@ export declare const enum Events {
 export interface EventTypes {
     [Events.UPDATED]: void;
 }
+/**
+ * A small wrapper around a DebuggableFrame usable as a UI.Context flavor.
+ * This is necessary as DebuggableFrame are just interfaces and the impl classes are hidden.
+ *
+ * Moreover, re-translation creates a new DebuggableFrame instance even though the
+ * translation result stays the same, in which case we don't need a new instance for the flavor.
+ */
+export declare class DebuggableFrameFlavor {
+    #private;
+    readonly frame: DebuggableFrame;
+    /** Use the static {@link for}. Only public to satisfy the `setFlavor` Ctor type  */
+    constructor(frame: DebuggableFrame);
+    get sdkFrame(): SDK.DebuggerModel.CallFrame;
+    /** @returns the same instance of DebuggableFrameFlavor for repeated calls with the same (i.e. deep equal) DebuggableFrame */
+    static for(frame: DebuggableFrame): DebuggableFrameFlavor;
+}

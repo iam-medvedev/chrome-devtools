@@ -407,7 +407,11 @@ export class AXBreadcrumb {
         this.#axNode = axNode;
         this.#element = document.createElement('div');
         this.#element.classList.add('ax-breadcrumb');
-        this.#element.setAttribute('jslog', `${VisualLogging.treeItem().track({ click: true, keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter' })}`);
+        this.#element.setAttribute('jslog', `${VisualLogging.treeItem().track({
+            click: true,
+            resize: true,
+            keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter'
+        })}`);
         elementsToAXBreadcrumb.set(this.#element, this);
         this.#nodeElement = document.createElement('div');
         this.#nodeElement.classList.add('ax-node');

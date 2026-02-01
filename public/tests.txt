@@ -75,6 +75,7 @@ models/issues_manager/SRIMessageSignatureIssue.test.js
 models/issues_manager/SharedDictionaryIssue.test.js
 models/issues_manager/StylesheetLoadingIssue.test.js
 models/issues_manager/UnencodedDigestIssue.test.js
+models/stack_trace/StackTrace.test.js
 models/stack_trace/StackTraceImpl.test.js
 models/stack_trace/StackTraceModel.test.js
 models/stack_trace/Trie.test.js
@@ -150,6 +151,7 @@ models/ai_assistance/ConversationHandler.test.js
 models/ai_assistance/EvaluateAction.test.js
 models/ai_assistance/ExtensionScope.test.js
 models/ai_assistance/agents/AiAgent.test.js
+models/ai_assistance/agents/ContextSelectionAgent.test.js
 models/ai_assistance/agents/FileAgent.test.js
 models/ai_assistance/agents/NetworkAgent.test.js
 models/ai_assistance/agents/PatchAgent.test.js
@@ -190,6 +192,7 @@ models/heap_snapshot_model/heap_snapshot_model.test.js
 models/issues_manager/CheckFormsIssuesTrigger.test.js
 models/issues_manager/IssuesManager.test.js
 models/javascript_metadata/JavaScriptMetadata.test.js
+models/live-metrics/LiveMetrics.test.js
 models/logs/NetworkLog.test.js
 models/logs/RequestResolver.test.js
 models/persistence/AutomaticFileSystemManager.test.js
@@ -462,6 +465,7 @@ panels/network/NetworkPanel.test.js
 panels/network/NetworkSearchScope.test.js
 panels/network/RequestConditionsDrawer.test.js
 panels/network/RequestCookiesView.test.js
+panels/network/RequestDeviceBoundSessionsView.test.js
 panels/network/RequestHTMLView.test.js
 panels/network/RequestInitiatorView.test.js
 panels/network/RequestPayloadView.test.js
@@ -469,6 +473,7 @@ panels/network/RequestPreviewView.test.js
 panels/network/RequestResponseView.test.js
 panels/network/RequestTimingView.test.js
 panels/network/ResourceDirectSocketChunkView.test.js
+panels/network/ShowMoreDetailsWidget.test.js
 panels/network/components/DirectSocketConnectionView.test.js
 panels/network/components/HeaderSectionRow.test.js
 panels/network/components/RequestHeaderSection.test.js
@@ -476,9 +481,6 @@ panels/network/components/RequestHeadersView.test.js
 panels/network/components/RequestTrustTokensView.test.js
 panels/network/components/ResponseHeaderSection.test.js
 panels/performance_monitor/PerformanceMonitor.test.js
-panels/profiler/HeapDetachedElementsView.test.js
-panels/profiler/HeapProfileView.test.js
-panels/profiler/HeapSnapshotView.test.js
 panels/protocol_monitor/JSONEditor.test.js
 panels/protocol_monitor/ProtocolMonitor.test.js
 panels/recorder/RecorderController.test.js
@@ -702,7 +704,6 @@ ui/legacy/View.test.js
 ui/legacy/ViewManager.test.js
 ui/legacy/ViewRegistration.test.js
 ui/legacy/Widget.test.js
-ui/legacy/XLink.test.js
 ui/legacy/components/color_picker/ColorFormatSpec.test.js
 ui/legacy/components/color_picker/Spectrum.test.js
 ui/legacy/components/data_grid/DataGridElement.test.js

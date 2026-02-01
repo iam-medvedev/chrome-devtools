@@ -182,6 +182,7 @@ __export(GlobalAiButton_exports, {
 import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
+import * as AIAssistance from "./../../models/ai_assistance/ai_assistance.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
@@ -272,7 +273,15 @@ var UIStrings = {
   /**
    * @description Button's tooltip text.
    */
-  openAiAssistance: "Open AI assistance panel"
+  openAiAssistance: "Open AI assistance panel",
+  /**
+   * @description Button's string in promotion state.
+   */
+  gemini: "Gemini",
+  /**
+   * @description Button's tooltip text.
+   */
+  openGemini: "Open Gemini panel"
 };
 var str_ = i18n.i18n.registerUIStrings("entrypoints/main/GlobalAiButton.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -301,12 +310,14 @@ var DEFAULT_VIEW = (input, output, target) => {
     "global-ai-button": true,
     expanded: inPromotionState
   });
+  const strings = AIAssistance.AiUtils.isGeminiBranding() ? { title: i18nString(UIStrings.openGemini), label: i18nString(UIStrings.gemini) } : { title: i18nString(UIStrings.openAiAssistance), label: i18nString(UIStrings.aiAssistance) };
+  const icon = AIAssistance.AiUtils.getIconName();
   render(html`
     <style>${globalAiButton_css_default}</style>
     <div class="global-ai-button-container">
-      <button class=${classes} @click=${input.onClick} title=${i18nString(UIStrings.openAiAssistance)} jslog=${VisualLogging.action().track({ click: true }).context("global-ai-button")}>
-        <devtools-icon name="smart-assistant"></devtools-icon>
-        <span class="button-text">${` ${i18nString(UIStrings.aiAssistance)}`}</span>
+      <button class=${classes} @click=${input.onClick} title=${strings.title} jslog=${VisualLogging.action().track({ click: true }).context("global-ai-button")}>
+        <devtools-icon name=${icon}></devtools-icon>
+        <span class="button-text">${` ${strings.label}`}</span>
       </button>
     </div>
   `, target);
@@ -675,10 +686,25 @@ var MainImpl = class {
     const globalStorage = new Common2.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
     return { syncedStorage, globalStorage, localStorage };
   }
+  #migrateValueFromLegacyToHostExperiment(legacyExperimentName, hostExperiment) {
+    const value = Root2.Runtime.experiments.getValueFromStorage(legacyExperimentName);
+    if (value !== void 0 && hostExperiment.aboutFlag) {
+      hostExperiment.setEnabled(value);
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.setChromeFlag(hostExperiment.aboutFlag, value);
+    }
+  }
   #initializeExperiments() {
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS, "Capture node creation stacks");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE, "Live heap profile");
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, "Protocol Monitor", "https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor");
+    const enableProtocolMonitor = (Root2.Runtime.hostConfig.devToolsProtocolMonitor?.enabled ?? false) || Boolean(Root2.Runtime.Runtime.queryParam("isChromeForTesting"));
+    const protocolMonitorExperiment = Root2.Runtime.experiments.registerHostExperiment({
+      name: Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
+      title: "Protocol Monitor",
+      aboutFlag: "devtools-protocol-monitor",
+      isEnabled: enableProtocolMonitor,
+      docLink: "https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor"
+    });
+    this.#migrateValueFromLegacyToHostExperiment(Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, protocolMonitorExperiment);
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.SAMPLING_HEAP_PROFILER_TIMELINE, "Sampling heap profiler timeline");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.SHOW_OPTION_TO_EXPOSE_INTERNALS_IN_HEAP_SNAPSHOT, "Show option to expose internals in heap snapshots");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_INVALIDATION_TRACKING, "Performance panel: invalidation tracking");
@@ -697,15 +723,13 @@ var MainImpl = class {
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS, "Performance panel: show postMessage dispatch and handling flows");
     Root2.Runtime.experiments.enableExperimentsByDefault([
       Root2.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE,
-      Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES,
-      ...Root2.Runtime.Runtime.queryParam("isChromeForTesting") ? [Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR] : []
+      Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES
     ]);
     Root2.Runtime.experiments.cleanUpStaleExperiments();
     const enabledExperiments = Root2.Runtime.Runtime.queryParam("enabledExperiments");
     if (enabledExperiments) {
       Root2.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(";"));
     }
-    Root2.Runtime.experiments.enableExperimentsTransiently([]);
     if (Host.InspectorFrontendHost.isUnderTest()) {
       const testParam = Root2.Runtime.Runtime.queryParam("test");
       if (testParam?.includes("live-line-level-heap-profile.js")) {

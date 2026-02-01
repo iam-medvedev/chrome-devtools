@@ -1341,7 +1341,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const markLCPEvent = getEventOfType(parsedTrace.data.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isAnyLargestContentfulPaintCandidate);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markLCPEvent);
-            const url = html.querySelector('x-link')?.getAttribute('href');
+            const url = html.querySelector('devtools-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/lcp/');
             assert.strictEqual(html.innerText, 'Learn more about Largest Contentful Paint.');
         });
@@ -1349,7 +1349,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const markFCPEvent = getEventOfType(parsedTrace.data.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isFirstContentfulPaint);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markFCPEvent);
-            const url = html.querySelector('x-link')?.getAttribute('href');
+            const url = html.querySelector('devtools-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/first-contentful-paint/');
             assert.strictEqual(html.innerText, 'Learn more about First Contentful Paint.');
         });
@@ -1357,7 +1357,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const markLoadEvent = getEventOfType(parsedTrace.data.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isMarkLoad);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markLoadEvent);
-            const url = html.querySelector('x-link')?.getAttribute('href');
+            const url = html.querySelector('devtools-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/user-centric-performance-metrics/');
             assert.strictEqual(html.innerText, 'Learn more about page performance metrics.');
         });

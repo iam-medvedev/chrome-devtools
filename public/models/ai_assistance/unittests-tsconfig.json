@@ -52,6 +52,7 @@
     "../../../../../../front_end/models/ai_assistance/EvaluateAction.test.ts",
     "../../../../../../front_end/models/ai_assistance/ExtensionScope.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/AiAgent.test.ts",
+    "../../../../../../front_end/models/ai_assistance/agents/ContextSelectionAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/FileAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/NetworkAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PatchAgent.test.ts",

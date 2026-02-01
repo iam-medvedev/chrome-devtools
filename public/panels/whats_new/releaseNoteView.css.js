@@ -113,7 +113,7 @@ export default `/*
     }
   }
 
-  x-link:focus .video {
+  devtools-link:focus .video {
     outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
   }
 
