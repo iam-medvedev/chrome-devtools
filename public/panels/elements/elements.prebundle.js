@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 import './InspectElementModeController.js';
 import './ColorSwatchPopoverIcon.js';
-import './ComputedStyleModel.js';
 import './DOMPath.js';
 import './ElementsSidebarPane.js';
 import './ElementsTreeElement.js';
+import './AdoptedStyleSheetTreeElement.js';
 import './TopLayerContainer.js';
 import './ElementsTreeOutline.js';
 import './EventListenersWidget.js';
@@ -28,9 +28,9 @@ import './AccessibilityTreeUtils.js';
 import './AccessibilityTreeView.js';
 import * as AccessibilityTreeUtils from './AccessibilityTreeUtils.js';
 import * as AccessibilityTreeView from './AccessibilityTreeView.js';
+import * as AdoptedStyleSheetTreeElement from './AdoptedStyleSheetTreeElement.js';
 import * as ClassesPaneWidget from './ClassesPaneWidget.js';
 import * as ColorSwatchPopoverIcon from './ColorSwatchPopoverIcon.js';
-import * as ComputedStyleModel from './ComputedStyleModel.js';
 import * as ComputedStyleWidget from './ComputedStyleWidget.js';
 import * as CSSRuleValidator from './CSSRuleValidator.js';
 import * as CSSValueTraceView from './CSSValueTraceView.js';
@@ -59,5 +59,5 @@ import * as StylePropertyUtils from './StylePropertyUtils.js';
 import * as StylesSidebarPane from './StylesSidebarPane.js';
 import * as TopLayerContainer from './TopLayerContainer.js';
 import * as WebCustomData from './WebCustomData.js';
-export { AccessibilityTreeUtils, AccessibilityTreeView, ClassesPaneWidget, ColorSwatchPopoverIcon, ComputedStyleModel, ComputedStyleWidget, CSSRuleValidator, CSSValueTraceView, DOMPath, ElementsPanel, ElementsSidebarPane, ElementStatePaneWidget, ElementsTreeElement, ElementsTreeOutline, ElementsTreeOutlineRenderer, EventListenersWidget, InspectElementModeController, LayersWidget, LayoutPane, MarkerDecorator, MetricsSidebarPane, NodeStackTraceWidget, PlatformFontsWidget, PropertiesWidget, PropertyRenderer, StyleEditorWidget, StylePropertiesSection, StylePropertyHighlighter, StylePropertyTreeElement, StylePropertyUtils, StylesSidebarPane, TopLayerContainer, WebCustomData, };
+export { AccessibilityTreeUtils, AccessibilityTreeView, AdoptedStyleSheetTreeElement, ClassesPaneWidget, ColorSwatchPopoverIcon, ComputedStyleWidget, CSSRuleValidator, CSSValueTraceView, DOMPath, ElementsPanel, ElementsSidebarPane, ElementStatePaneWidget, ElementsTreeElement, ElementsTreeOutline, ElementsTreeOutlineRenderer, EventListenersWidget, InspectElementModeController, LayersWidget, LayoutPane, MarkerDecorator, MetricsSidebarPane, NodeStackTraceWidget, PlatformFontsWidget, PropertiesWidget, PropertyRenderer, StyleEditorWidget, StylePropertiesSection, StylePropertyHighlighter, StylePropertyTreeElement, StylePropertyUtils, StylesSidebarPane, TopLayerContainer, WebCustomData, };
 //# sourceMappingURL=elements.prebundle.js.map

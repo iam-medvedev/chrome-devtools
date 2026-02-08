@@ -956,6 +956,12 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "content-type",
   "content-visibility",
   "context",
+  "context-change-drjones-file",
+  "context-change-drjones-network-request",
+  "context-change-drjones-performance",
+  "context-change-freestyler",
+  "context-change-none",
+  "context-change-performance-insight",
   "context3",
   "contextmenu",
   "continue",
@@ -3200,6 +3206,9 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "request-header-sec-fetch-mode",
   "request-header-user-agent",
   "request-headers",
+  "request-info-form-data-category-expanded",
+  "request-info-query-string-category-expanded",
+  "request-info-request-payload-category-expanded",
   "request-payload",
   "request-types",
   "required",
@@ -3719,6 +3728,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "start-conversation-drjones-performance",
   "start-conversation-freestyler",
   "start-conversation-performance-insight",
+  "start-conversation-performance-none",
   "start-new-chat",
   "start-recording",
   "start-time",
@@ -5133,7 +5143,7 @@ async function expectVeEvents(expectedEvents) {
   pendingEventExpectation = { expectedEvents, success, fail, unmatchedEvents: [] };
   checkPendingEventExpectation();
   const timeout = setTimeout(() => {
-    if (pendingEventExpectation?.missingEvents) {
+    if (pendingEventExpectation?.missingEvents?.length) {
       const allLogs = veDebugEventsLog.filter((ve) => {
         if ("interaction" in ve) {
           return ve.interaction !== "SettingAccess";
@@ -5174,6 +5184,7 @@ function checkPendingEventExpectation() {
             event.impressions = event.impressions.filter((impression) => !matchedImpressions.has(impression));
           }
         }
+        pendingEventExpectation.missingEvents = pendingEventExpectation.missingEvents.filter((event) => !("impressions" in event) || event.impressions.length > 0);
         return;
       }
       if (!compareVeEvents(actualEvents[i], expectedEvent)) {

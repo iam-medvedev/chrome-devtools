@@ -31,6 +31,10 @@ const UIStrings = {
      * @description The footer disclaimer that links to more information about the AI feature.
      */
     learnAbout: 'Learn about AI in DevTools',
+    /**
+     * @description Label added to the button that remove the currently selected context in AI Assistance panel.
+     */
+    removeContext: 'Remove selected context',
 };
 /*
 * Strings that don't need to be translated at this time.
@@ -88,7 +92,7 @@ const RELEVANT_DATA_LINK_FOOTER_ID = 'relevant-data-link-footer';
 export const DEFAULT_VIEW = (input, output, target) => {
     const chatInputContainerCls = Lit.Directives.classMap({
         'chat-input-container': true,
-        'single-line-layout': !input.selectedContext,
+        'single-line-layout': !input.selectedContext && !input.onContextAdd,
         disabled: input.isTextInputDisabled,
     });
     const renderRelevantDataDisclaimer = (tooltipId) => {
@@ -302,9 +306,29 @@ export const DEFAULT_VIEW = (input, output, target) => {
                     :
                         input.selectedContext.getTitle()}
                         </span>
+                        ${input.onContextRemoved ? html `
+                                  <devtools-button
+                                    title=${i18nString(UIStrings.removeContext)}
+                                    aria-label=${i18nString(UIStrings.removeContext)}
+                                    class="remove-context"
+                                    .iconName=${'cross'}
+                                    .size=${"MICRO" /* Buttons.Button.Size.MICRO */}
+                                    .jslogContext=${'context-removed'}
+                                    .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                                    @click=${input.onContextRemoved}></devtools-button>` : Lit.nothing}
                       </div>
                     </div>`
-                : Lit.nothing}
+                :
+                    input.onContextAdd ? html `
+                                  <devtools-button
+                                    title=${i18nString(UIStrings.removeContext)}
+                                    aria-label=${i18nString(UIStrings.removeContext)}
+                                    class="add-context"
+                                    .iconName=${'plus'}
+                                    .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+                                    .jslogContext=${'context-add'}
+                                    .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                                    @click=${input.onContextAdd}></devtools-button>` : Lit.nothing}
               </div>
               <div class="chat-input-actions-right">
                 <div class="chat-input-disclaimer-container">
@@ -433,6 +457,8 @@ export class ChatInput extends UI.Widget.Widget {
     onInspectElementClick = () => { };
     onCancelClick = () => { };
     onNewConversation = () => { };
+    onContextRemoved = null;
+    onContextAdd = null;
     async #handleTakeScreenshot() {
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         if (!mainTarget) {
@@ -590,6 +616,8 @@ export class ChatInput extends UI.Widget.Widget {
             onImageUpload: this.onImageUpload,
             onImageDragOver: this.#handleImageDragOver,
             onImageDrop: this.#handleImageDrop,
+            onContextRemoved: this.onContextRemoved,
+            onContextAdd: this.onContextAdd,
         }, undefined, this.contentElement);
     }
     focusTextInput() {

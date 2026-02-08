@@ -4,6 +4,7 @@
 /* eslint-disable @devtools/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as StackTrace from '../../models/stack_trace/stack_trace.js';
 import { Icon } from '../../ui/kit/kit.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -354,7 +355,7 @@ export class NetworkLogViewColumns {
     }
     createWaterfallHeader() {
         this.waterfallHeaderElement = this.waterfallColumn.contentElement.createChild('div', 'network-waterfall-header');
-        this.waterfallHeaderElement.setAttribute('jslog', `${VisualLogging.tableHeader('waterfall').track({ click: true, resize: true })}`);
+        this.waterfallHeaderElement.setAttribute('jslog', `${VisualLogging.tableHeader('waterfall').track({ click: true })}`);
         this.waterfallHeaderElement.addEventListener('click', waterfallHeaderClicked.bind(this));
         this.waterfallHeaderElement.addEventListener('contextmenu', event => {
             const contextMenu = new UI.ContextMenu.ContextMenu(event);
@@ -729,20 +730,30 @@ export class NetworkLogViewColumns {
         if (!request) {
             return null;
         }
+        let descriptor = undefined;
         return {
             box: anchor.boxInWindow(),
             show: async (popover) => {
-                this.popupLinkifier.addEventListener("liveLocationUpdated" /* Components.Linkifier.Events.LIVE_LOCATION_UPDATED */, () => {
-                    popover.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
-                });
-                const content = RequestInitiatorView.createStackTracePreview((request), this.popupLinkifier, false);
+                const content = await RequestInitiatorView.createStackTracePreview((request), this.popupLinkifier, false);
                 if (!content) {
                     return false;
                 }
-                content.show(popover.contentElement);
+                descriptor = content.stackTrace?.addEventListener("UPDATED" /* StackTrace.StackTrace.Events.UPDATED */, async () => {
+                    await content.preview.updateComplete;
+                    popover.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
+                });
+                content.preview.show(popover.contentElement);
+                await content.preview.updateComplete.then(() => {
+                    popover.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
+                });
                 return true;
             },
-            hide: this.popupLinkifier.reset.bind(this.popupLinkifier),
+            hide: () => {
+                this.popupLinkifier.reset();
+                if (descriptor) {
+                    Common.EventTarget.removeEventListeners([descriptor]);
+                }
+            },
         };
     }
     addEventDividers(times, className) {

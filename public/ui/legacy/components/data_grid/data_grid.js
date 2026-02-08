@@ -1825,10 +1825,7 @@ var DataGridNode = class {
   }
   createElement() {
     this.elementInternal = document.createElement("tr");
-    this.elementInternal.setAttribute("jslog", `${VisualLogging.tableRow().track({
-      resize: true,
-      keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter|Space"
-    })}`);
+    this.elementInternal.setAttribute("jslog", `${VisualLogging.tableRow().track({ keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter|Space" })}`);
     this.elementInternal.classList.add("data-grid-data-grid-node");
     if (this.dataGrid) {
       this.dataGrid.elementToDataGridNode.set(this.elementInternal, this);
@@ -2214,6 +2211,7 @@ var DataGridNode = class {
     for (let i = 0; i < this.children.length; ++i) {
       this.children[i].revealed = false;
     }
+    this.dataGrid?.dispatchEventToListeners("CollapsedNode", this);
   }
   collapseRecursively() {
     let item = this;
@@ -2261,6 +2259,7 @@ var DataGridNode = class {
       this.dataGrid.announceSelectedGridNode();
     }
     this.expandedInternal = true;
+    this.dataGrid?.dispatchEventToListeners("ExpandedNode", this);
   }
   expandRecursively() {
     let item = this;
@@ -2870,6 +2869,7 @@ var ViewportDataGridNode = class extends DataGridNode {
       this.dataGrid.announceSelectedGridNode();
     }
     this.dataGrid.scheduleUpdateStructure();
+    this.dataGrid?.dispatchEventToListeners("CollapsedNode", this);
   }
   expand() {
     if (this.expanded) {
@@ -2933,10 +2933,8 @@ var SortableDataGrid = class _SortableDataGrid extends ViewportDataGrid {
     return 0;
   }
   static NumericComparator(columnId, a, b) {
-    const aValue = a.data[columnId];
-    const bValue = b.data[columnId];
-    const aNumber = Number(aValue instanceof Node ? aValue.textContent : aValue);
-    const bNumber = Number(bValue instanceof Node ? bValue.textContent : bValue);
+    const aNumber = a.getNumericValue(columnId);
+    const bNumber = b.getNumericValue(columnId);
     return aNumber < bNumber ? -1 : aNumber > bNumber ? 1 : 0;
   }
   static StringComparator(columnId, a, b) {
@@ -3020,6 +3018,45 @@ var SortableDataGrid = class _SortableDataGrid extends ViewportDataGrid {
   }
 };
 var SortableDataGridNode = class extends ViewportDataGridNode {
+  #numericData = /* @__PURE__ */ new Map();
+  #childrenDirty = true;
+  #lastSortingFunction = null;
+  get data() {
+    return super.data;
+  }
+  set data(x) {
+    this.#numericData.clear();
+    super.data = x;
+  }
+  getNumericValue(columnId) {
+    let value = this.#numericData.get(columnId);
+    if (value === void 0) {
+      const rawValue = this.data[columnId];
+      value = Number(rawValue instanceof Node ? rawValue.textContent : rawValue);
+      this.#numericData.set(columnId, value);
+    }
+    return value;
+  }
+  insertChild(child, index) {
+    super.insertChild(child, index);
+    this.#childrenDirty = true;
+  }
+  removeChild(child) {
+    super.removeChild(child);
+    this.#childrenDirty = true;
+  }
+  refresh() {
+    this.#numericData.clear();
+    super.refresh();
+    this.parent?.markChildrenDirty();
+  }
+  expand() {
+    super.expand();
+    this.sortChildren();
+  }
+  markChildrenDirty() {
+    this.#childrenDirty = true;
+  }
   insertChildOrdered(node) {
     const dataGrid = this.dataGrid;
     if (dataGrid) {
@@ -3028,13 +3065,17 @@ var SortableDataGridNode = class extends ViewportDataGridNode {
   }
   sortChildren() {
     const dataGrid = this.dataGrid;
-    if (!dataGrid) {
+    if (!dataGrid || !this.expanded) {
       return;
     }
-    this.children.sort(dataGrid.sortingFunction);
-    for (let i = 0; i < this.children.length; ++i) {
-      const child = this.children[i];
-      child.recalculateSiblings(i);
+    if (this.#childrenDirty || this.#lastSortingFunction !== dataGrid.sortingFunction) {
+      this.children.sort(dataGrid.sortingFunction);
+      this.#childrenDirty = false;
+      this.#lastSortingFunction = dataGrid.sortingFunction;
+      for (let i = 0; i < this.children.length; ++i) {
+        const child = this.children[i];
+        child.recalculateSiblings(i);
+      }
     }
     for (let i = 0; i < this.children.length; ++i) {
       const child = this.children[i];
@@ -3152,6 +3193,7 @@ var ShowMoreDataGridNode = class extends DataGridNode {
 };
 
 // gen/front_end/ui/legacy/components/data_grid/DataGridElement.js
+import * as Lit from "./../../../lit/lit.js";
 import * as UI3 from "./../../legacy.js";
 var DUMMY_COLUMN_ID = "dummy";
 var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate {
@@ -3176,6 +3218,8 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
     this.#dataGrid.addEventListener("SelectedNode", (e) => e.data.configElement.dispatchEvent(new CustomEvent("select")));
     this.#dataGrid.addEventListener("DeselectedNode", () => this.dispatchEvent(new CustomEvent("deselect")));
     this.#dataGrid.addEventListener("OpenedNode", (e) => e.data.configElement.dispatchEvent(new CustomEvent("open")));
+    this.#dataGrid.addEventListener("ExpandedNode", (e) => e.data.configElement.dispatchEvent(new CustomEvent("expand")));
+    this.#dataGrid.addEventListener("CollapsedNode", (e) => e.data.configElement.dispatchEvent(new CustomEvent("collapse")));
     this.#dataGrid.addEventListener("SortingChanged", () => this.dispatchEvent(new CustomEvent("sort", {
       detail: { columnId: this.#dataGrid.sortColumnId(), ascending: this.#dataGrid.isSortOrderAscending() }
     })));
@@ -3249,6 +3293,13 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
   }
   get columns() {
     return this.#columns;
+  }
+  #updateHasChildren(dataGridNode, dataRow) {
+    let hasChildren = dataGridNode.children.length > 0;
+    if (!hasChildren) {
+      hasChildren = Boolean(dataRow.querySelector("td table"));
+    }
+    dataGridNode.setHasChildren(hasChildren);
   }
   #updateColumns() {
     for (const column of Object.keys(this.#dataGrid.columns)) {
@@ -3363,6 +3414,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
       const nextNode = this.#findNextExistingNode(element);
       const index = nextNode ? parentNode.children.indexOf(nextNode) : parentNode.children.length;
       const node = new DataGridElementNode(element, this);
+      this.#updateHasChildren(node, element);
       if ((parentRow || node.hasChildren()) && !this.#dataGrid.disclosureColumnId) {
         this.#dataGrid.disclosureColumnId = this.#columns[0].id;
       }
@@ -3392,7 +3444,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
     for (const element of this.#getDataRows(nodes)) {
       const node = DataGridElementNode.get(element);
       if (node) {
-        node.remove();
+        DataGridElementNode.remove(node);
       }
     }
   }
@@ -3416,6 +3468,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
       } else if (attributeName === "highlighted") {
         dataGridNode.setHighlighted(hasBooleanAttribute(dataRow, "highlighted"));
       } else {
+        this.#updateHasChildren(dataGridNode, dataRow);
         dataGridNode.refresh();
       }
     }
@@ -3617,10 +3670,40 @@ function hasBooleanAttribute(element, name) {
 var INTERNAL_TOKEN = {
   token: "DataGridInternalToken"
 };
+var ifExpanded = Lit.Directive.directive(class extends Lit.Directive.Directive {
+  #partInfo;
+  constructor(partInfo) {
+    if (partInfo.type !== Lit.Directive.PartType.CHILD) {
+      throw new Error("expand directive must be used in a child node");
+    }
+    super(partInfo);
+    this.#partInfo = partInfo;
+  }
+  render(content) {
+    return this.#isInExpandedRow(this.#partInfo.startNode) ? content() : Lit.nothing;
+  }
+  #isInExpandedRow(element) {
+    if (!element) {
+      return false;
+    }
+    if (!(element instanceof HTMLElement)) {
+      element = element.parentNode;
+    }
+    if (!(element instanceof HTMLElement)) {
+      return false;
+    }
+    const node = DataGridElementNode.get(element.closest("tr") ?? void 0);
+    if (!node) {
+      return false;
+    }
+    return node.expanded;
+  }
+});
 export {
   DataGrid_exports as DataGrid,
   ShowMoreDataGridNode_exports as ShowMoreDataGridNode,
   SortableDataGrid_exports as SortableDataGrid,
-  ViewportDataGrid_exports as ViewportDataGrid
+  ViewportDataGrid_exports as ViewportDataGrid,
+  ifExpanded
 };
 //# sourceMappingURL=data_grid.js.map

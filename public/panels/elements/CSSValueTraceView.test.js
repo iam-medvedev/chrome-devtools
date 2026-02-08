@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
@@ -13,7 +14,7 @@ async function setUpStyles() {
     stubNoopSettings();
     setMockConnectionResponseHandler('CSS.enable', () => ({}));
     setMockConnectionResponseHandler('CSS.getEnvironmentVariables', () => ({}));
-    const computedStyleModel = new Elements.ComputedStyleModel.ComputedStyleModel();
+    const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
     const cssModel = new SDK.CSSModel.CSSModel(createTarget());
     await cssModel.resumeModel();
     const domModel = cssModel.domModel();

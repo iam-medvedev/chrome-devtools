@@ -2925,9 +2925,6 @@ var config = {
       ]
     },
     {
-      "implicitValues": {
-        "aria-live": "off"
-      },
       "name": "marquee",
       "nameFrom": [
         "author"
@@ -3586,9 +3583,6 @@ var config = {
       ]
     },
     {
-      "implicitValues": {
-        "aria-live": "off"
-      },
       "name": "timer",
       "nameFrom": [
         "author"
@@ -4987,11 +4981,7 @@ var AXBreadcrumb = class {
     this.#axNode = axNode;
     this.#element = document.createElement("div");
     this.#element.classList.add("ax-breadcrumb");
-    this.#element.setAttribute("jslog", `${VisualLogging3.treeItem().track({
-      click: true,
-      resize: true,
-      keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter"
-    })}`);
+    this.#element.setAttribute("jslog", `${VisualLogging3.treeItem().track({ click: true, keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter" })}`);
     elementsToAXBreadcrumb.set(this.#element, this);
     this.#nodeElement = document.createElement("div");
     this.#nodeElement.classList.add("ax-node");

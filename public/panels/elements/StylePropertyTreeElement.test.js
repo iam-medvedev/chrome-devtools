@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
@@ -26,7 +27,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
     let cssModel;
     const environmentVariables = { a: 'A' };
     beforeEach(async () => {
-        computedStyleModel = new Elements.ComputedStyleModel.ComputedStyleModel();
+        computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
         stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
         mockVariableMap = {
             '--a': 'red',
@@ -86,7 +87,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         const property = new SDK.CSSProperty.CSSProperty(matchedStyles.functionRules()[0].style, matchedStyles.functionRules()[0].style.pastLastSourcePropertyIndex(), propertyName, result, true, false, true, false, '', undefined, []);
         matchedStyles.functionRules()[0].style.allProperties().push(property);
         return new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
-            stylesPane: stylesSidebarPane,
+            stylesPane: new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel),
             section: sinon.createStubInstance(Elements.StylePropertiesSection.StylePropertiesSection),
             matchedStyles,
             property,
@@ -98,7 +99,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
     }
     function getTreeElement(name, value, longhandProperties = []) {
         const property = addProperty(name, value, longhandProperties);
-        const section = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, matchedStyles, property.ownerStyle, 0, null, null, null);
+        const section = new Elements.StylePropertiesSection.StylePropertiesSection(new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel), matchedStyles, property.ownerStyle, 0, null, null, null);
         return new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
             stylesPane: stylesSidebarPane,
             section,

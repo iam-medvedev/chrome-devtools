@@ -1,14 +1,12 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { CookieReportTreeElement } from './CookieReportTreeElement.js';
 import { OriginTreeElement } from './OriginTreeElement.js';
 import { OriginGroup } from './SecurityPanel.js';
 export declare class SecurityPanelSidebar extends UI.Widget.VBox {
     #private;
     readonly sidebarTree: UI.TreeOutline.TreeOutlineInShadow;
     securityOverviewElement: OriginTreeElement;
-    readonly cookieReportTreeElement: CookieReportTreeElement | undefined;
     constructor(element?: HTMLElement);
     elementsByOrigin(): Map<string, OriginTreeElement>;
     showLastSelectedElement(): void;

@@ -1952,6 +1952,7 @@ var currentUpdateQueue = null;
 var currentlyProcessed = /* @__PURE__ */ new Set();
 var nextUpdateQueue = /* @__PURE__ */ new Map();
 var pendingAnimationFrame = null;
+var overallUpdatePromise = null;
 function enqueueIntoNextUpdateQueue(widget) {
   const scheduledUpdate = nextUpdateQueue.get(widget) ?? Promise.withResolvers();
   nextUpdateQueue.delete(widget);
@@ -2007,6 +2008,10 @@ function runNextUpdate() {
     } else {
       currentUpdateQueue = null;
       currentlyProcessed.clear();
+      if (!pendingAnimationFrame && overallUpdatePromise) {
+        overallUpdatePromise.resolve();
+        overallUpdatePromise = null;
+      }
     }
   });
 }
@@ -2207,6 +2212,15 @@ var Widget = class _Widget {
    */
   static get(node) {
     return widgetMap.get(node);
+  }
+  static get allUpdatesComplete() {
+    if (!pendingAnimationFrame && !currentUpdateQueue) {
+      return Promise.resolve();
+    }
+    if (!overallUpdatePromise) {
+      overallUpdatePromise = Promise.withResolvers();
+    }
+    return overallUpdatePromise.promise;
   }
   static getOrCreateWidget(element) {
     const widget = _Widget.get(element);
@@ -7535,6 +7549,7 @@ var InspectorView = class _InspectorView extends VBox {
   focusRestorer;
   ownerSplitWidget;
   reloadRequiredInfobar;
+  #debuggedTabReloadRequiredInfobar;
   #selectOverrideFolderInfobar;
   #resizeObserver;
   #toggleOrientationButton;
@@ -7906,7 +7921,7 @@ var InspectorView = class _InspectorView extends VBox {
     }
   }
   displayDebuggedTabReloadRequiredWarning(message) {
-    if (!this.reloadRequiredInfobar) {
+    if (!this.#debuggedTabReloadRequiredInfobar) {
       const infobar = new Infobar("info", message, [
         {
           text: i18nString7(UIStrings7.reloadDebuggedTab),
@@ -7921,16 +7936,16 @@ var InspectorView = class _InspectorView extends VBox {
       ], void 0, "reload-required");
       infobar.setParentView(this);
       this.attachInfobar(infobar);
-      this.reloadRequiredInfobar = infobar;
+      this.#debuggedTabReloadRequiredInfobar = infobar;
       infobar.setCloseCallback(() => {
-        delete this.reloadRequiredInfobar;
+        this.#debuggedTabReloadRequiredInfobar = void 0;
       });
       SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.removeDebuggedTabReloadRequiredWarning, this);
     }
   }
   removeDebuggedTabReloadRequiredWarning() {
-    if (this.reloadRequiredInfobar) {
-      this.reloadRequiredInfobar.dispose();
+    if (this.#debuggedTabReloadRequiredInfobar) {
+      this.#debuggedTabReloadRequiredInfobar.dispose();
       SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.removeDebuggedTabReloadRequiredWarning, this);
     }
   }
@@ -8522,7 +8537,7 @@ var SoftContextMenu = class _SoftContextMenu {
     menuItemElement.addEventListener("mouseover", this.menuItemMouseOver.bind(this), false);
     menuItemElement.addEventListener("mouseleave", this.menuItemMouseLeave.bind(this), false);
     if (item8.jslogContext) {
-      menuItemElement.setAttribute("jslog", `${VisualLogging8.item(item8.jslogContext).track({ click: true, resize: true })}`);
+      menuItemElement.setAttribute("jslog", `${VisualLogging8.item().context(item8.jslogContext)}`);
     }
     return menuItemElement;
   }
@@ -10023,7 +10038,7 @@ var ListControl = class {
     if (!element) {
       element = this.delegate.createElementForItem(item8);
       if (!element.hasAttribute("jslog")) {
-        element.setAttribute("jslog", `${VisualLogging10.item().track({ click: true, resize: true, keydown: "ArrowUp|ArrowDown|PageUp|PageDown" })}`);
+        element.setAttribute("jslog", `${VisualLogging10.item().track({ click: true, keydown: "ArrowUp|ArrowDown|PageUp|PageDown" })}`);
       }
       this.itemToElement.set(item8, element);
       this.updateElementARIA(element, index);
@@ -17996,7 +18011,7 @@ var InplaceEditor = class _InplaceEditor {
       element.dispatchEvent(new Event("change"));
     }
     function defaultFinishHandler(event) {
-      if (event.key === "Enter") {
+      if (event.key === "Enter" && !event.shiftKey) {
         return "commit";
       }
       if (event.keyCode === Keys.Esc.code || event.key === Platform21.KeyboardUtilities.ESCAPE_KEY) {
@@ -18394,7 +18409,7 @@ var ListWidget = class extends VBox {
     }
     const content = this.delegate.renderItem(item8, editable, this.#items.length - 1);
     if (!content.hasAttribute("jslog")) {
-      element.setAttribute("jslog", `${VisualLogging18.item().track({ resize: true })}`);
+      element.setAttribute("jslog", `${VisualLogging18.item()}`);
     }
     element.appendChild(content);
     if (editable) {
@@ -20205,8 +20220,10 @@ var SearchableView = class extends VBox {
   updateSearchNavigationButtonState(enabled) {
     this.replaceButtonElement.disabled = !enabled;
     this.replaceAllButtonElement.disabled = !enabled;
-    this.searchNavigationPrevElement.setEnabled(enabled);
-    this.searchNavigationNextElement.setEnabled(enabled);
+    if (this.searchProvider.supportsMatchCounts?.() === true) {
+      this.searchNavigationPrevElement.setEnabled(enabled);
+      this.searchNavigationNextElement.setEnabled(enabled);
+    }
   }
   updateSearchMatchesCountAndCurrentMatchIndex(matches, currentMatchIndex) {
     if (!this.currentQuery) {
@@ -20434,6 +20451,9 @@ var softDropDown_css_default = `/*
 
 .item.highlighted {
   background-color: var(--sys-color-state-hover-on-subtle);
+  outline: var(--sys-size-2) solid var(--sys-color-primary);
+  outline-offset: calc(-1 * var(--sys-size-2));
+  border-radius: var(--sys-shape-corner-extra-small);
 }
 
 @media (forced-colors: active) {
@@ -20442,7 +20462,7 @@ var softDropDown_css_default = `/*
   }
 
   .item-list {
-    border: 1px solid ButtonText;
+    border: var(--sys-size-1) solid ButtonText;
     background-color: ButtonFace;
   }
 
@@ -20450,6 +20470,9 @@ var softDropDown_css_default = `/*
     forced-color-adjust: none;
     color: HighlightText;
     background-color: Highlight;
+    outline: var(--sys-size-2) solid Highlight;
+    outline-offset: calc(-1 * var(--sys-size-2));
+    border-radius: var(--sys-shape-corner-extra-small);
   }
 }
 
@@ -20843,6 +20866,7 @@ var Treeoutline_exports = {};
 __export(Treeoutline_exports, {
   Events: () => Events2,
   TreeElement: () => TreeElement,
+  TreeElementWrapper: () => TreeElementWrapper,
   TreeOutline: () => TreeOutline,
   TreeOutlineInShadow: () => TreeOutlineInShadow,
   TreeSearch: () => TreeSearch,
@@ -21543,7 +21567,6 @@ var TreeElement = class {
     this.listItemNode.addEventListener("dblclick", this.handleDoubleClick.bind(this), false);
     this.listItemNode.setAttribute("jslog", `${VisualLogging24.treeItem().parent("parentTreeItem").context(jslogContext).track({
       click: true,
-      resize: true,
       keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End"
     })}`);
     markAsTreeitem(this.listItemNode);
@@ -22395,6 +22418,7 @@ var TreeSearch = class {
   }
 };
 var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
+  static CLONED_ATTRIBUTES = SDK3.DOMModel.ARIA_ATTRIBUTES.union(/* @__PURE__ */ new Set(["jslog"]));
   #clonedAttributes = /* @__PURE__ */ new Set();
   #clonedClasses = /* @__PURE__ */ new Set();
   static #elementToTreeElement = /* @__PURE__ */ new WeakMap();
@@ -22413,7 +22437,7 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     this.#clonedClasses.clear();
     for (let i = 0; i < this.configElement.attributes.length; ++i) {
       const attribute = this.configElement.attributes.item(i);
-      if (attribute && attribute.name !== "role" && SDK3.DOMModel.ARIA_ATTRIBUTES.has(attribute.name)) {
+      if (attribute && attribute.name !== "role" && _TreeViewTreeElement.CLONED_ATTRIBUTES.has(attribute.name)) {
         this.listItemElement.setAttribute(attribute.name, attribute.value);
         this.#clonedAttributes.add(attribute.name);
       }
@@ -22429,27 +22453,30 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
       }
       this.titleElement.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
     }
+    this.hidden = hasBooleanAttribute(this.configElement, "hidden");
     Highlighting.HighlightManager.HighlightManager.instance().apply(this.titleElement);
   }
   static get(configElement) {
     return configElement && _TreeViewTreeElement.#elementToTreeElement.get(configElement);
   }
   remove() {
-    const parent = this.parent;
-    if (parent) {
-      parent.removeChild(this);
-      parent.setExpandable(parent.children().length > 0);
-    }
+    removeNode(this);
     _TreeViewTreeElement.#elementToTreeElement.delete(this.configElement);
   }
 };
 function getTreeNodes(nodeList) {
   return nodeList.values().flatMap((node) => {
+    if (node instanceof TreeElementWrapper) {
+      return [node];
+    }
     if (node instanceof HTMLLIElement && node.role === "treeitem") {
-      return [node, ...node.querySelectorAll('ul[role="group"] li[role="treeitem"]')];
+      return [
+        node,
+        ...node.querySelectorAll('ul[role="group"] li[role="treeitem"],ul[role="group"] devtools-tree-wrapper')
+      ];
     }
     if (node instanceof HTMLElement) {
-      return node.querySelectorAll('li[role="treeitem"]');
+      return node.querySelectorAll('li[role="treeitem"],devtools-tree-wrapper');
     }
     return [];
   }).toArray();
@@ -22465,8 +22492,15 @@ function getStyleElements(nodes) {
     return [];
   });
 }
+function removeNode(node) {
+  const parent = node.parent;
+  if (parent) {
+    parent.removeChild(node);
+    parent.setExpandable(parent.children().length > 0);
+  }
+}
 var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemplate {
-  static observedAttributes = ["navigation-variant", "hide-overflow"];
+  static observedAttributes = ["navigation-variant", "hide-overflow", "dense"];
   #treeOutline = new TreeOutlineInShadow(void 0, this);
   constructor() {
     super();
@@ -22543,15 +22577,25 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       }
       const nextElement = nextSibling ? TreeViewTreeElement.get(nextSibling) : null;
       const index = nextElement ? parent.treeElement.indexOfChild(nextElement) : parent.treeElement.children().length;
-      const treeElement = new TreeViewTreeElement(this.#treeOutline, node);
-      const expandable = Boolean(node.querySelector('ul[role="group"]'));
-      treeElement.setExpandable(expandable);
-      parent.treeElement.insertChild(treeElement, index);
-      if (hasBooleanAttribute(node, "selected")) {
-        treeElement.revealAndSelect(true);
+      let treeElement;
+      if (node instanceof HTMLLIElement) {
+        treeElement = new TreeViewTreeElement(this.#treeOutline, node);
+        const expandable = Boolean(node.querySelector('ul[role="group"]'));
+        treeElement.setExpandable(expandable);
+      } else {
+        treeElement = node.treeElement;
       }
-      if (parent.expanded) {
-        parent.treeElement.expand();
+      if (treeElement) {
+        if (treeElement.parent) {
+          removeNode(treeElement);
+        }
+        parent.treeElement.insertChild(treeElement, index);
+        if (hasBooleanAttribute(node, "selected")) {
+          treeElement.revealAndSelect(true);
+        }
+        if (parent.expanded) {
+          parent.treeElement.expand();
+        }
       }
     }
     for (const element of getStyleElements(nodes)) {
@@ -22560,7 +22604,11 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
   }
   removeNodes(nodes) {
     for (const node of getTreeNodes(nodes)) {
-      TreeViewTreeElement.get(node)?.remove();
+      if (node instanceof HTMLLIElement) {
+        TreeViewTreeElement.get(node)?.remove();
+      } else if (node.treeElement) {
+        removeNode(node.treeElement);
+      }
     }
   }
   set hideOverflow(hide) {
@@ -22575,19 +22623,30 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
   get navigationVariant() {
     return hasBooleanAttribute(this, "navigation-variant");
   }
+  set dense(dense) {
+    this.toggleAttribute("dense", dense);
+  }
+  get dense() {
+    return hasBooleanAttribute(this, "dense");
+  }
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) {
       return;
     }
+    const booleanValueIsTrue = newValue !== null && newValue !== "false";
     switch (name) {
       case "navigation-variant":
         this.#treeOutline.setVariant(
-          newValue !== "false" ? "NavigationTree" : "Other"
+          booleanValueIsTrue ? "NavigationTree" : "Other"
           /* TreeVariant.OTHER */
         );
         break;
       case "hide-overflow":
-        this.#treeOutline.setHideOverflow(newValue !== "false");
+        this.#treeOutline.setHideOverflow(booleanValueIsTrue);
+        break;
+      case "dense":
+        this.#treeOutline.setDense(booleanValueIsTrue);
+        break;
     }
   }
 };
@@ -22605,7 +22664,23 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
   }
   TreeViewElement2.ExpandEvent = ExpandEvent;
 })(TreeViewElement || (TreeViewElement = {}));
+var TreeElementWrapper = class extends HTMLElement {
+  #treeElement;
+  set treeElement(treeElement) {
+    if (this.#treeElement?.parent) {
+      const parent = this.#treeElement.parent;
+      const index = parent.indexOfChild(this.#treeElement);
+      parent.removeChildAtIndex(index);
+      parent.insertChild(treeElement, index);
+    }
+    this.#treeElement = treeElement;
+  }
+  get treeElement() {
+    return this.#treeElement;
+  }
+};
 customElements.define("devtools-tree", TreeViewElement);
+customElements.define("devtools-tree-wrapper", TreeElementWrapper);
 function loggingParentProvider(e) {
   const treeElement = TreeElement.getTreeElementBylistItemNode(e);
   const parentElement = treeElement?.parent?.listItemElement;

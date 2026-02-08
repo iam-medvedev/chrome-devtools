@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import * as Bindings from '../../bindings/bindings.js';
+import * as Logs from '../../logs/logs.js';
 import * as Workspace from '../../workspace/workspace.js';
 import { ContextSelectionAgent } from '../ai_assistance.js';
-describeWithMockConnection('FileAgent', function () {
+const { urlString } = Platform.DevToolsPath;
+describeWithMockConnection('ContextSelectionAgent', function () {
     const snapshotTester = new SnapshotTester(this, import.meta);
     function mockHostConfig() {
         updateHostConfig({
@@ -86,6 +89,103 @@ describeWithMockConnection('FileAgent', function () {
                 {
                     role: 2,
                     parts: [{ text: 'This is the answer' }],
+                },
+            ]);
+        });
+    });
+    describe('listNetworkRequests', () => {
+        it('lists network requests', async () => {
+            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/`, urlString `https://example.com/`, null, null, null);
+            request.statusCode = 200;
+            request.setIssueTime(0, 0);
+            request.endTime = 2;
+            const networkLog = Logs.NetworkLog.NetworkLog.instance();
+            sinon.stub(networkLog, 'requests').returns([request]);
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'listNetworkRequests',
+                                    args: {},
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+            });
+            await Array.fromAsync(agent.run('test', { selected: null }));
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            assert.deepEqual(requestToAida.historical_contexts, [
+                {
+                    role: 1,
+                    parts: [{ text: 'test' }],
+                },
+                {
+                    role: 2,
+                    parts: [{
+                            functionCall: {
+                                name: 'listNetworkRequests',
+                                args: {},
+                            },
+                        }],
+                },
+                {
+                    role: Host.AidaClient.Role.ROLE_UNSPECIFIED,
+                    parts: [{
+                            functionResponse: {
+                                name: 'listNetworkRequests',
+                                response: {
+                                    result: [
+                                        {
+                                            url: 'https://example.com/',
+                                            statusCode: 200,
+                                            duration: 2,
+                                        },
+                                    ],
+                                },
+                            },
+                        }],
+                },
+                {
+                    role: 2,
+                    parts: [{ text: 'Done' }],
+                },
+            ]);
+        });
+        it('filters network requests by security origin', async () => {
+            const origin = urlString `https://example.com`;
+            const otherOrigin = urlString `https://other.com`;
+            const target = sinon.createStubInstance(SDK.Target.Target);
+            target.inspectedURL.returns(urlString `${origin}/`);
+            sinon.stub(SDK.TargetManager.TargetManager.instance(), 'primaryPageTarget').returns(target);
+            const sameOriginRequest = SDK.NetworkRequest.NetworkRequest.create('requestId1', urlString `${origin}/foo`, urlString `${origin}/foo`, null, null, null);
+            sameOriginRequest.statusCode = 200;
+            const crossOriginRequest = SDK.NetworkRequest.NetworkRequest.create('requestId2', urlString `${otherOrigin}/bar`, urlString `${otherOrigin}/bar`, null, null, null);
+            crossOriginRequest.statusCode = 200;
+            const networkLog = Logs.NetworkLog.NetworkLog.instance();
+            sinon.stub(networkLog, 'requests').returns([sameOriginRequest, crossOriginRequest]);
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'listNetworkRequests',
+                                    args: {},
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+            });
+            await Array.fromAsync(agent.run('test', { selected: null }));
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            const part = requestToAida.historical_contexts?.[2].parts[0];
+            assert(part && 'functionResponse' in part, 'Expected functionResponse part');
+            assert.strictEqual(part.functionResponse.name, 'listNetworkRequests');
+            assert.deepEqual(part.functionResponse.response.result, [
+                {
+                    url: `${origin}/foo`,
+                    statusCode: 200,
+                    duration: -1,
                 },
             ]);
         });

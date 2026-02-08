@@ -160,7 +160,7 @@ export class LighthouseReportRenderer {
             if (!id) {
                 continue;
             }
-            auditEl.setAttribute('jslog', `${VisualLogging.item(`lighthouse.audit.${id}`).track({ resize: true })}`);
+            auditEl.setAttribute('jslog', `${VisualLogging.item(`lighthouse.audit.${id}`)}`);
             let state;
             for (const className of auditEl.classList) {
                 switch (className) {

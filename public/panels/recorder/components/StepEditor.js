@@ -521,7 +521,7 @@ let StepEditor = class StepEditor extends LitElement {
     #renderTypeRow(editable) {
         this.#renderedAttributes.add('type');
         // clang-format off
-        return html `<div class="row attribute" data-attribute="type" jslog=${VisualLogging.treeItem('type').track({ resize: true })}>
+        return html `<div class="row attribute" data-attribute="type" jslog=${VisualLogging.treeItem('type')}>
       <div id="type">type<span class="separator">:</span></div>
       <devtools-suggestion-input
         aria-labelledby="type"
@@ -541,7 +541,7 @@ let StepEditor = class StepEditor extends LitElement {
             return;
         }
         // clang-format off
-        return html `<div class="row attribute" data-attribute=${attribute} jslog=${VisualLogging.treeItem(Platform.StringUtilities.toKebabCase(attribute)).track({ resize: true })}>
+        return html `<div class="row attribute" data-attribute=${attribute} jslog=${VisualLogging.treeItem(Platform.StringUtilities.toKebabCase(attribute))}>
       <div id=${attribute}>${attribute}<span class="separator">:</span></div>
       <devtools-suggestion-input
         .disabled=${this.disabled}
@@ -579,7 +579,7 @@ let StepEditor = class StepEditor extends LitElement {
         }
         // clang-format off
         return html `
-      <div class="attribute" data-attribute="frame" jslog=${VisualLogging.treeItem('frame').track({ resize: true })}>
+      <div class="attribute" data-attribute="frame" jslog=${VisualLogging.treeItem('frame')}>
         <div class="row">
           <div id="frame">frame<span class="separator">:</span></div>
           ${this.#renderDeleteButton('frame')}

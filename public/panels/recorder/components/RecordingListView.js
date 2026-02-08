@@ -92,7 +92,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                   @keydown=${(event) => onKeyDown(recording.storageName, event)}
                   @click=${(event) => onOpenClick(recording.storageName, event)}
                   jslog=${VisualLogging.item()
-            .track({ click: true, resize: true })
+            .track({ click: true })
             .context('recording')}>
                   <div class="icon">
                     <devtools-icon name="flow">

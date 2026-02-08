@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { getMatchedStyles } from '../../testing/StyleHelpers.js';
@@ -13,7 +14,7 @@ describeWithMockConnection('StylePropertyHighlighter', () => {
         const target = createTarget();
         const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
-        const computedStyleModel = new Elements.ComputedStyleModel.ComputedStyleModel(node);
+        const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel(node);
         const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
         const matchedStyles = await getMatchedStyles({ node: stylesSidebarPane.node(), cssModel: target.model(SDK.CSSModel.CSSModel) });
         return {

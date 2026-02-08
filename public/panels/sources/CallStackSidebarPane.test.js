@@ -47,7 +47,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
     it('updates call stack sidebar pane and activates item when SourceMapAttached event fires and SourcesPanel is active', async () => {
         const { details, debuggerModel, script } = getPausedDetails();
         const callStackSidebarPane = Sources.CallStackSidebarPane.CallStackSidebarPane.instance({ forceNew: true });
-        callStackSidebarPane.flavorChanged(details);
+        await callStackSidebarPane.flavorChanged(details);
         const setSelectedCallFrameSpy = sinon.spy(debuggerModel, 'setSelectedCallFrame');
         UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.SourcesPanel, sinon.createStubInstance(Sources.SourcesPanel.SourcesPanel));
         UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.QuickSourceView, null);
@@ -63,7 +63,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
     it('updates call stack sidebar pane and activates item when SourceMapAttached event fires and QuickSourceView is active', async () => {
         const { details, debuggerModel, script } = getPausedDetails();
         const callStackSidebarPane = Sources.CallStackSidebarPane.CallStackSidebarPane.instance({ forceNew: true });
-        callStackSidebarPane.flavorChanged(details);
+        await callStackSidebarPane.flavorChanged(details);
         const setSelectedCallFrameSpy = sinon.spy(debuggerModel, 'setSelectedCallFrame');
         UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.SourcesPanel, null);
         UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.QuickSourceView, sinon.createStubInstance(Sources.SourcesPanel.QuickSourceView));
@@ -79,7 +79,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
     it('does not activate item when SourceMapAttached event fires and no view is active', async () => {
         const { details, debuggerModel, script } = getPausedDetails();
         const callStackSidebarPane = Sources.CallStackSidebarPane.CallStackSidebarPane.instance({ forceNew: true });
-        callStackSidebarPane.flavorChanged(details);
+        await callStackSidebarPane.flavorChanged(details);
         const setSelectedCallFrameSpy = sinon.spy(debuggerModel, 'setSelectedCallFrame');
         UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.SourcesPanel, null);
         UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.QuickSourceView, null);

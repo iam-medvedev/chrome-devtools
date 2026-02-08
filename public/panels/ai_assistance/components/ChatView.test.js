@@ -21,6 +21,8 @@ describeWithEnvironment('ChatView', () => {
             onContextClick: noop,
             onCopyResponseClick: noop,
             onNewConversation: noop,
+            onContextRemoved: noop,
+            onContextAdd: noop,
             changeManager: new AiAssistanceModel.ChangeManager.ChangeManager(),
             inspectElementToggled: false,
             conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,

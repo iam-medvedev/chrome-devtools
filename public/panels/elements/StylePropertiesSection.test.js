@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { getMatchedStylesWithBlankRule, getMatchedStylesWithStylesheet } from '../../testing/StyleHelpers.js';
@@ -12,7 +13,7 @@ describeWithMockConnection('StylesPropertySection', () => {
     let computedStyleModel;
     beforeEach(() => {
         SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
-        computedStyleModel = new Elements.ComputedStyleModel.ComputedStyleModel();
+        computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
     });
     afterEach(() => {
         SDK.PageResourceLoader.PageResourceLoader.removeInstance();

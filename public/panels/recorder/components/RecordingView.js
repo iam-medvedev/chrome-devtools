@@ -123,6 +123,14 @@ const UIStrings = {
      * @description The title of the button that open current recording in Performance panel.
      */
     performancePanel: 'Performance panel',
+    /**
+     * @description The announcement when the code sidebar is opened.
+     */
+    codeSidebarOpened: 'Code sidebar opened',
+    /**
+     * @description The announcement when the code sidebar is closed.
+     */
+    codeSidebarClosed: 'Code sidebar closed'
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/components/RecordingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -926,6 +934,12 @@ export class RecordingView extends UI.Widget.Widget {
     }
     showCodeToggle = () => {
         this.#showCodeView = !this.#showCodeView;
+        if (this.#showCodeView) {
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.codeSidebarOpened));
+        }
+        else {
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.codeSidebarClosed));
+        }
         void this.#convertToCode();
     };
     #convertToCode = async () => {

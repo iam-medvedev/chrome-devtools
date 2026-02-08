@@ -148,6 +148,10 @@ const UIStringsNotTranslate = {
      */
     inputPlaceholderForNoContext: 'Ask AI Assistance',
     /**
+     * @description Placeholder text for the chat UI input with branding Gemini (do not translate)
+     */
+    inputPlaceholderForNoContextBranded: 'Ask Gemini',
+    /**
      * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForStyling: 'Chat messages and any data the inspected page can access via Web APIs are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.',
@@ -445,6 +449,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (this.#conversation) {
             const emptyStateSuggestions = await getEmptyStateSuggestions(this.#conversation);
             const markdownRenderer = getMarkdownRenderer(this.#conversation);
+            let onContextAdd = null;
+            if (isAiAssistanceContextSelectionAgentEnabled() &&
+                // Only add it the button if can have anything already selected
+                this.#getConversationContext(this.#getDefaultConversationType())) {
+                onContextAdd = this.#handleContextAdd.bind(this);
+            }
             return {
                 state: "chat-view" /* ViewState.CHAT_VIEW */,
                 props: {
@@ -479,6 +489,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     onContextClick: this.#handleContextClick.bind(this),
                     onNewConversation: this.#handleNewChatRequest.bind(this),
                     onCopyResponseClick: this.#onCopyResponseClick.bind(this),
+                    onContextRemoved: isAiAssistanceContextSelectionAgentEnabled() ? this.#handleContextRemoved.bind(this) : null,
+                    onContextAdd,
                 }
             };
         }
@@ -592,7 +604,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             }
             this.#conversation = conversation;
         }
-        this.#conversation?.setContext(this.#getConversationContext(this.#conversation));
+        this.#conversation?.setContext(this.#getConversationContext(isAiAssistanceContextSelectionAgentEnabled() ? this.#getDefaultConversationType() :
+            (this.#conversation?.type ?? null)));
         this.requestUpdate();
     }
     wasShown() {
@@ -802,6 +815,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 return lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceWithNoRecording);
             }
             case "none" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NONE */:
+                if (AiAssistanceModel.AiUtils.isGeminiBranding()) {
+                    return lockedString(UIStringsNotTranslate.inputPlaceholderForNoContextBranded);
+                }
                 return lockedString(UIStringsNotTranslate.inputPlaceholderForNoContext);
         }
     }
@@ -879,6 +895,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             }
         }
         // Node picker is using linkifier.
+    }
+    #handleContextRemoved() {
+        this.#conversation?.setContext(null);
+        this.requestUpdate();
+    }
+    #handleContextAdd() {
+        this.#conversation?.setContext(this.#getConversationContext(this.#getDefaultConversationType()));
+        this.requestUpdate();
     }
     #canExecuteQuery() {
         const isBrandedBuild = Boolean(Root.Runtime.hostConfig.aidaAvailability?.enabled);
@@ -1024,11 +1048,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#runAbortController.abort();
         this.#runAbortController = new AbortController();
     }
-    #getConversationContext(conversation) {
-        if (!conversation) {
-            return null;
-        }
-        switch (conversation.type) {
+    #getConversationContext(type) {
+        switch (type) {
             case "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */:
                 return this.#selectedElement;
             case "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */:
@@ -1038,38 +1059,34 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             case "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */:
                 return this.#selectedPerformanceTrace;
             case "none" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NONE */:
+            case undefined:
                 return null;
         }
     }
     #handleConversationContextChange = (data) => {
         if (data instanceof Workspace.UISourceCode.UISourceCode) {
-            if (this.#selectedFile?.getItem() === data) {
-                return;
-            }
-            this.#selectedFile = new AiAssistanceModel.FileAgent.FileContext(data);
+            const context = new AiAssistanceModel.FileAgent.FileContext(data);
+            this.#selectedFile = context;
+            this.#conversation?.setContext(context);
         }
         else if (data instanceof SDK.DOMModel.DOMNode) {
-            if (this.#selectedElement?.getItem() === data ||
-                // Ignore non node type like comments or html tags
-                data.nodeType() === Node.ELEMENT_NODE) {
-                return;
-            }
-            this.#selectedElement = new AiAssistanceModel.StylingAgent.NodeContext(data);
+            const context = new AiAssistanceModel.StylingAgent.NodeContext(data);
+            this.#selectedElement = context;
+            this.#conversation?.setContext(context);
         }
         else if (data instanceof SDK.NetworkRequest.NetworkRequest) {
-            if (this.#selectedRequest?.getItem() === data) {
-                return;
-            }
             const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-            this.#selectedRequest = new AiAssistanceModel.NetworkAgent.RequestContext(data, calculator);
+            const context = new AiAssistanceModel.NetworkAgent.RequestContext(data, calculator);
+            this.#selectedRequest = context;
+            this.#conversation?.setContext(context);
         }
         else if (data instanceof AiAssistanceModel.AIContext.AgentFocus) {
-            if (this.#selectedPerformanceTrace?.getItem() === data) {
-                return;
-            }
-            this.#selectedPerformanceTrace = new AiAssistanceModel.PerformanceAgent.PerformanceTraceContext(data);
+            const context = new AiAssistanceModel.PerformanceAgent.PerformanceTraceContext(data);
+            this.#selectedPerformanceTrace = context;
+            this.#conversation?.setContext(context);
         }
-        this.#updateConversationState(this.#conversation);
+        void VisualLogging.logFunctionCall(`context-change-${this.#conversation?.type}`);
+        this.requestUpdate();
     };
     async #startConversation(text, imageInput, multimodalInputType) {
         if (!this.#conversation) {
@@ -1078,7 +1095,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         // Cancel any previous in-flight conversation.
         this.#cancel();
         const signal = this.#runAbortController.signal;
-        const context = this.#getConversationContext(this.#conversation);
+        const context = this.#getConversationContext(this.#conversation.type);
         this.#conversation.setContext(context);
         // If a different context is provided, it must be from the same origin.
         if (this.#conversation.isBlockedByOrigin) {

@@ -1787,8 +1787,7 @@ var generatedProperties = [
     "inherited": false,
     "keywords": [
       "none",
-      "auto",
-      "spanning-item",
+      "normal",
       "intersection"
     ],
     "name": "column-rule-break"
@@ -2752,6 +2751,7 @@ var generatedProperties = [
     "longhands": [
       "grid-template-areas",
       "grid-template-columns",
+      "grid-template-rows",
       "grid-lanes-direction"
     ],
     "name": "grid-lanes"
@@ -3836,8 +3836,7 @@ var generatedProperties = [
     "inherited": false,
     "keywords": [
       "none",
-      "auto",
-      "spanning-item",
+      "normal",
       "intersection"
     ],
     "name": "row-rule-break"
@@ -5589,8 +5588,7 @@ var generatedPropertyValues = {
   "column-rule-break": {
     "values": [
       "none",
-      "auto",
-      "spanning-item",
+      "normal",
       "intersection"
     ]
   },
@@ -6727,8 +6725,7 @@ var generatedPropertyValues = {
   "row-rule-break": {
     "values": [
       "none",
-      "auto",
-      "spanning-item",
+      "normal",
       "intersection"
     ]
   },
@@ -10455,9 +10452,6 @@ var NetworkManager = class _NetworkManager extends SDKModel {
     if (Common5.Settings.Settings.instance().moduleSetting("cache-disabled").get()) {
       void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: true });
     }
-    if (Root2.Runtime.hostConfig.devToolsPrivacyUI?.enabled && Root2.Runtime.hostConfig.thirdPartyCookieControls?.managedBlockThirdPartyCookies !== true && (Common5.Settings.Settings.instance().createSetting("cookie-control-override-enabled", void 0).get() || Common5.Settings.Settings.instance().createSetting("grace-period-mitigation-disabled", void 0).get() || Common5.Settings.Settings.instance().createSetting("heuristic-mitigation-disabled", void 0).get())) {
-      this.cookieControlFlagsSettingChanged();
-    }
     void this.#networkAgent.invoke_enable({
       maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH,
       enableDurableMessages: Root2.Runtime.hostConfig.devToolsEnableDurableMessages?.enabled,
@@ -10471,9 +10465,6 @@ var NetworkManager = class _NetworkManager extends SDKModel {
     }
     this.#bypassServiceWorkerSetting.addChangeListener(this.bypassServiceWorkerChanged, this);
     Common5.Settings.Settings.instance().moduleSetting("cache-disabled").addChangeListener(this.cacheDisabledSettingChanged, this);
-    Common5.Settings.Settings.instance().createSetting("cookie-control-override-enabled", void 0).addChangeListener(this.cookieControlFlagsSettingChanged, this);
-    Common5.Settings.Settings.instance().createSetting("grace-period-mitigation-disabled", void 0).addChangeListener(this.cookieControlFlagsSettingChanged, this);
-    Common5.Settings.Settings.instance().createSetting("heuristic-mitigation-disabled", void 0).addChangeListener(this.cookieControlFlagsSettingChanged, this);
   }
   static forRequest(request) {
     return requestToManagerMap.get(request) || null;
@@ -10608,16 +10599,6 @@ var NetworkManager = class _NetworkManager extends SDKModel {
   }
   cacheDisabledSettingChanged({ data: enabled }) {
     void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: enabled });
-  }
-  cookieControlFlagsSettingChanged() {
-    const overridesEnabled = Boolean(Common5.Settings.Settings.instance().createSetting("cookie-control-override-enabled", void 0).get());
-    const gracePeriodEnabled = overridesEnabled ? Boolean(Common5.Settings.Settings.instance().createSetting("grace-period-mitigation-disabled", void 0).get()) : false;
-    const heuristicEnabled = overridesEnabled ? Boolean(Common5.Settings.Settings.instance().createSetting("heuristic-mitigation-disabled", void 0).get()) : false;
-    void this.#networkAgent.invoke_setCookieControls({
-      enableThirdPartyCookieRestriction: overridesEnabled,
-      disableThirdPartyCookieMetadata: gracePeriodEnabled,
-      disableThirdPartyCookieHeuristics: heuristicEnabled
-    });
   }
   dispose() {
     Common5.Settings.Settings.instance().moduleSetting("cache-disabled").removeChangeListener(this.cacheDisabledSettingChanged, this);
@@ -21318,7 +21299,12 @@ var HeapProfilerModel = class extends SDKModel {
     return Boolean(response.getError());
   }
   async takeHeapSnapshot(heapSnapshotOptions) {
-    await this.#heapProfilerAgent.invoke_takeHeapSnapshot(heapSnapshotOptions);
+    await TargetManager.instance().suspendAllTargets("heap-snapshot");
+    try {
+      await this.#heapProfilerAgent.invoke_takeHeapSnapshot(heapSnapshotOptions);
+    } finally {
+      await TargetManager.instance().resumeAllTargets();
+    }
   }
   async startTrackingHeapObjects(recordAllocationStacks) {
     const response = await this.#heapProfilerAgent.invoke_startTrackingHeapObjects({ trackAllocations: recordAllocationStacks });
@@ -22391,7 +22377,6 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   #skipAllPausesTimeout = 0;
   #beforePausedCallback = null;
   #computeAutoStepRangesCallback = null;
-  #expandCallFramesCallback = null;
   evaluateOnCallFrameCallback = null;
   #synchronizeBreakpointsCallback = null;
   // We need to be able to register listeners for individual breakpoints. As such, we dispatch
@@ -22754,9 +22739,6 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   setBeforePausedCallback(callback) {
     this.#beforePausedCallback = callback;
   }
-  setExpandCallFramesCallback(callback) {
-    this.#expandCallFramesCallback = callback;
-  }
   setEvaluateOnCallFrameCallback(callback) {
     this.evaluateOnCallFrameCallback = callback;
   }
@@ -22773,7 +22755,6 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       return;
     }
     const pausedDetails = new DebuggerPausedDetails(this, callFrames, reason, auxData, breakpointIds, asyncStackTrace, asyncStackTraceId);
-    await this.#expandCallFrames(pausedDetails);
     if (this.continueToLocationCallback) {
       const callback = this.continueToLocationCallback;
       this.continueToLocationCallback = null;
@@ -22789,12 +22770,6 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       }
     } else {
       Common17.EventTarget.fireEvent("DevTools.DebuggerPaused");
-    }
-  }
-  /** Delegates to the DebuggerLanguagePlugin and potential attached source maps to expand inlined call frames */
-  async #expandCallFrames(pausedDetails) {
-    if (this.#expandCallFramesCallback) {
-      pausedDetails.callFrames = await this.#expandCallFramesCallback.call(null, pausedDetails.callFrames);
     }
   }
   resumedScript() {
@@ -22830,9 +22805,6 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     this.#sourceMapManager.attachSourceMap(script, script.sourceURL, script.sourceMapURL);
   }
   async setDebugInfoURL(script, _externalURL) {
-    if (this.#expandCallFramesCallback && this.#debuggerPausedDetails) {
-      this.#debuggerPausedDetails.callFrames = await this.#expandCallFramesCallback.call(null, this.#debuggerPausedDetails.callFrames);
-    }
     this.dispatchEventToListeners(Events7.DebugInfoAttached, script);
   }
   executionContextDestroyed(executionContext) {
@@ -23150,7 +23122,6 @@ var CallFrame = class _CallFrame {
   functionName;
   #functionLocation;
   #returnValue;
-  missingDebugInfoDetails;
   exception;
   canBeRestarted;
   constructor(debuggerModel, script, payload, inlineFrameIndex, functionName, exception = null) {
@@ -23162,7 +23133,6 @@ var CallFrame = class _CallFrame {
     this.#localScope = null;
     this.inlineFrameIndex = inlineFrameIndex || 0;
     this.functionName = functionName ?? payload.functionName;
-    this.missingDebugInfoDetails = null;
     this.canBeRestarted = Boolean(payload.canBeRestarted);
     this.exception = exception;
     for (let i = 0; i < payload.scopeChain.length; ++i) {
@@ -33009,7 +32979,6 @@ var ConsoleMessage = class _ConsoleMessage {
   #exceptionId = void 0;
   #affectedResources;
   category;
-  isCookieReportIssue = false;
   /**
    * The parent frame of the `console.log` call of logpoints or conditional breakpoints
    * if they called `console.*` explicitly. The parent frame is where V8 paused
@@ -33036,7 +33005,6 @@ var ConsoleMessage = class _ConsoleMessage {
     this.workerId = details?.workerId;
     this.#affectedResources = details?.affectedResources;
     this.category = details?.category;
-    this.isCookieReportIssue = Boolean(details?.isCookieReportIssue);
     if (!this.#executionContextId && this.#runtimeModel) {
       if (this.scriptId) {
         this.#executionContextId = this.#runtimeModel.executionContextIdForScriptId(this.scriptId);

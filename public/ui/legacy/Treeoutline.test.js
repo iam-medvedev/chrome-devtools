@@ -210,8 +210,8 @@ describe('TreeViewElement', () => {
           </ul>
         `}></devtools-tree>`);
         assert.deepEqual(component.getInternalTreeOutlineForTest().rootElement().children().map(element => element.listItemElement.getAttribute('jslog')), [
-            'TreeItem; parent: parentTreeItem; context: first; track: click, resize, keydown: ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End',
-            'TreeItem; parent: parentTreeItem; context: second; track: click, resize, keydown: ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End'
+            'TreeItem; parent: parentTreeItem; context: first; track: click, keydown: ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End',
+            'TreeItem; parent: parentTreeItem; context: second; track: click, keydown: ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End'
         ]);
     });
     it('applies aria attributes to tree eleemnts', async () => {
@@ -311,6 +311,105 @@ describe('TreeViewElement', () => {
     `}></devtools-tree>`);
         const treeOutline = component.getInternalTreeOutlineForTest();
         assert.isTrue(treeOutline.rootElement().childAt(0).isExpandable());
+    });
+    it('correctly handles TreeElementWrapper nodes', async () => {
+        const treeElement = new UI.TreeOutline.TreeElement('wrapper node');
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        render(html `
+      <devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem">first node</li>
+        <devtools-tree-wrapper .treeElement=${treeElement}></devtools-tree-wrapper>
+        <li role="treeitem">last node</li>
+      </ul>`}></devtools-tree>
+    `, container);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        let component = container.querySelector('devtools-tree');
+        let treeOutline = component.getInternalTreeOutlineForTest();
+        let children = treeOutline.rootElement().children();
+        assert.lengthOf(children, 3);
+        assert.strictEqual(children[0].titleElement.textContent?.trim(), 'first node');
+        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node');
+        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'last node');
+        // Rerender with same wrapper but some changes in the nodes
+        render(html `
+      <devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem">first node</li>
+        <devtools-tree-wrapper .treeElement=${treeElement}></devtools-tree-wrapper>
+        <li role="treeitem" class=X>X node</li>
+      </ul>`}></devtools-tree>
+    `, container);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        component = container.querySelector('devtools-tree');
+        treeOutline = component.getInternalTreeOutlineForTest();
+        children = treeOutline.rootElement().children();
+        assert.lengthOf(children, 3);
+        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node');
+        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'X node');
+        // Rerender with same wrapper and the original tree
+        render(html `
+      <devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem">first node</li>
+        <devtools-tree-wrapper .treeElement=${treeElement}></devtools-tree-wrapper>
+        <li role="treeitem">last node</li>
+      </ul>`}></devtools-tree>
+    `, container);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        component = container.querySelector('devtools-tree');
+        treeOutline = component.getInternalTreeOutlineForTest();
+        children = treeOutline.rootElement().children();
+        assert.lengthOf(children, 3);
+        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node');
+        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'last node');
+        // Rerender with same wrapper
+        render(html `
+      <devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem">first node</li>
+        <devtools-tree-wrapper .treeElement=${treeElement}></devtools-tree-wrapper>
+        <li role="treeitem">last node</li>
+      </ul>`}></devtools-tree>
+    `, container);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        component = container.querySelector('devtools-tree');
+        treeOutline = component.getInternalTreeOutlineForTest();
+        children = treeOutline.rootElement().children();
+        assert.lengthOf(children, 3);
+        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node');
+        // Rerender with different wrapper
+        const treeElement2 = new UI.TreeOutline.TreeElement('wrapper node 2');
+        render(html `
+      <devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem">first node</li>
+        <devtools-tree-wrapper .treeElement=${treeElement2}></devtools-tree-wrapper>
+        <li role="treeitem">last node</li>
+      </ul>`}></devtools-tree>
+    `, container);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        component = container.querySelector('devtools-tree');
+        treeOutline = component.getInternalTreeOutlineForTest();
+        children = treeOutline.rootElement().children();
+        assert.lengthOf(children, 3);
+        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node 2');
+        // Rerender with removed wrapper
+        render(html `
+      <devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem">first node</li>
+        <li role="treeitem">last node</li>
+      </ul>`}></devtools-tree>
+    `, container);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        component = container.querySelector('devtools-tree');
+        treeOutline = component.getInternalTreeOutlineForTest();
+        children = treeOutline.rootElement().children();
+        assert.lengthOf(children, 2);
+        assert.strictEqual(children[0].titleElement.textContent?.trim(), 'first node');
+        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'last node');
     });
 });
 class TestTreeNode {

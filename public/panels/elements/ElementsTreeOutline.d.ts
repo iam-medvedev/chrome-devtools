@@ -3,9 +3,11 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ElementsTreeElement } from './ElementsTreeElement.js';
+import elementsTreeOutlineStyles from './elementsTreeOutline.css.js';
 import type { MarkerDecoratorRegistration } from './MarkerDecorator.js';
 import { TopLayerContainer } from './TopLayerContainer.js';
 export type View = typeof DEFAULT_VIEW;
+export { elementsTreeOutlineStyles };
 interface ViewInput {
     omitRootDOMNode: boolean;
     selectEnabled: boolean;
@@ -169,7 +171,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     update(): void;
     selectedNodeChanged(focus: boolean): void;
     private fireElementsTreeUpdated;
-    findTreeElement(node: SDK.DOMModel.DOMNode | SDK.DOMModel.AdoptedStyleSheet): ElementsTreeElement | null;
+    findTreeElement(node: SDK.DOMModel.DOMNode | SDK.DOMModel.AdoptedStyleSheet[]): ElementsTreeElement | null;
     private lookUpTreeElement;
     createTreeElementFor(node: SDK.DOMModel.DOMNode): ElementsTreeElement | null;
     private revealAndSelectNode;
@@ -237,7 +239,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private createExpandAllButtonTreeElement;
     setExpandedChildrenLimit(treeElement: ElementsTreeElement, expandedChildrenLimit: number): void;
     private updateChildren;
-    insertChildElement(treeElement: ElementsTreeElement | TopLayerContainer, child: SDK.DOMModel.DOMNode | SDK.DOMModel.AdoptedStyleSheet, index: number, isClosingTag?: boolean): UI.TreeOutline.TreeElement;
+    insertChildElement(treeElement: ElementsTreeElement | TopLayerContainer, child: SDK.DOMModel.DOMNode | SDK.DOMModel.AdoptedStyleSheet[], index: number, isClosingTag?: boolean): UI.TreeOutline.TreeElement;
     private moveChild;
     private markersChanged;
     private affectedByStartingStylesFlagUpdated;
@@ -265,4 +267,3 @@ export interface ClipboardData {
     node: SDK.DOMModel.DOMNode;
     isCut: boolean;
 }
-export {};

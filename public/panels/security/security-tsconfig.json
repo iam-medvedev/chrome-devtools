@@ -35,10 +35,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/panels/security/CookieControlsTreeElement.ts",
-    "../../../../../../front_end/panels/security/CookieControlsView.ts",
-    "../../../../../../front_end/panels/security/CookieReportTreeElement.ts",
-    "../../../../../../front_end/panels/security/CookieReportView.ts",
     "../../../../../../front_end/panels/security/OriginTreeElement.ts",
     "../../../../../../front_end/panels/security/SecurityModel.ts",
     "../../../../../../front_end/panels/security/SecurityPanel.ts",

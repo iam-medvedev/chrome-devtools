@@ -4,7 +4,7 @@
 import * as UI from '../../../front_end/ui/legacy/legacy.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, registerActions } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Elements from './elements.js';
@@ -37,6 +37,68 @@ describe('ElementsTreeElement', () => {
             assert.strictEqual(result.text, expected.text);
             assert.deepEqual(result.entityRanges, expected.entityRanges);
         });
+    });
+    it('renders gutter decorations correctly', async () => {
+        const target = document.createElement('div');
+        target.style.width = '100px';
+        target.style.height = '20px';
+        const style = document.createElement('style');
+        // FIXME: styles are currently external to ElementsTreeElement.
+        style.innerText = Elements.ElementsTreeOutline.elementsTreeOutlineStyles;
+        target.append(style);
+        renderElementIntoDOM(target, {
+            includeCommonStyles: true,
+        });
+        const decorations = [
+            { title: 'Decoration 1', color: 'red' },
+            { title: 'Decoration 2', color: 'blue' },
+        ];
+        const descendantDecorations = [
+            { title: 'Descendant 1', color: 'green' },
+        ];
+        Elements.ElementsTreeElement.DEFAULT_VIEW({
+            containerAdornerActive: false,
+            showAdAdorner: false,
+            showContainerAdorner: false,
+            showFlexAdorner: false,
+            flexAdornerActive: false,
+            showGridAdorner: false,
+            showGridLanesAdorner: false,
+            showMediaAdorner: false,
+            showPopoverAdorner: false,
+            showTopLayerAdorner: false,
+            gridAdornerActive: false,
+            popoverAdornerActive: false,
+            isSubgrid: false,
+            showViewSourceAdorner: false,
+            showScrollAdorner: false,
+            showScrollSnapAdorner: false,
+            scrollSnapAdornerActive: false,
+            showSlotAdorner: false,
+            showStartingStyleAdorner: false,
+            startingStyleAdornerActive: false,
+            onStartingStyleAdornerClick: () => { },
+            onSlotAdornerClick: () => { },
+            topLayerIndex: -1,
+            onViewSourceAdornerClick: () => { },
+            onGutterClick: () => { },
+            onContainerAdornerClick: () => { },
+            onFlexAdornerClick: () => { },
+            onGridAdornerClick: () => { },
+            onMediaAdornerClick: () => { },
+            onPopoverAdornerClick: () => { },
+            onScrollSnapAdornerClick: () => { },
+            onTopLayerAdornerClick: () => { },
+            isHovered: false,
+            isSelected: false,
+            showAiButton: false,
+            onAiButtonClick: () => { },
+            decorations,
+            descendantDecorations,
+            decorationsTooltip: 'Title',
+            indent: 20,
+        }, {}, target);
+        await assertScreenshot('elements/gutter_decorations.png');
     });
 });
 describeWithMockConnection('ElementsTreeElement', () => {
@@ -384,6 +446,36 @@ describeWithMockConnection('ElementsTreeElement highlighting', () => {
         attrTestNode.setAttribute('attrFoo', 'baz');
         domModel.dispatchEventToListeners(SDK.DOMModel.Events.AttrModified, { node: attrTestNode, name: 'attrFoo' });
         assert.strictEqual(await highlights, 1);
+    });
+    it('edits a text node', async () => {
+        const longText = 'This is a long text that is longer than 80 characters to ensure that the text node is ' +
+            'not rendered inline and the parent element is expandable.';
+        const textNodePayload = createTextNodePayload(longText);
+        const textNode = SDK.DOMModel.DOMNode.create(domModel, textTestNode.ownerDocument, false, textNodePayload);
+        textTestNode.setChildrenPayload([textNodePayload]);
+        textNode.parentNode = textTestNode;
+        const setNodeValueSpy = sinon.spy(textNode, 'setNodeValue');
+        sinon.stub(SDK.OverlayModel.OverlayModel, 'hideDOMNodeHighlight');
+        const textNodeTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(textNode);
+        assert.exists(textNodeTreeElement);
+        textTestTreeElement.appendChild(textNodeTreeElement);
+        await textTestTreeElement.onpopulate();
+        treeOutline.selectDOMNode(textNode, true);
+        const textElementDOM = textNodeTreeElement.listItemElement.querySelector('.webkit-html-text-node');
+        assert.exists(textElementDOM);
+        // Start editing by calling ondblclick
+        const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
+        Object.defineProperty(event, 'target', { value: textElementDOM });
+        assert.isFalse(textNodeTreeElement.ondblclick(event));
+        assert.isTrue(textNodeTreeElement.isEditing());
+        assert.strictEqual(textElementDOM.textContent, longText);
+        // The inplace editor is now active on textElementDOM.
+        textElementDOM.textContent = 'New Text';
+        // The commit is triggered by blur or enter.
+        textElementDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+        assert.isFalse(textNodeTreeElement.isEditing());
+        sinon.assert.calledOnce(setNodeValueSpy);
+        sinon.assert.calledWith(setNodeValueSpy, 'New Text');
     });
 });
 //# sourceMappingURL=ElementsTreeElement.test.js.map
