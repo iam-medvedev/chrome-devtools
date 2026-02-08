@@ -42,6 +42,8 @@ export interface ViewInput {
     onImagePaste: (event: ClipboardEvent) => void;
     onImageDragOver: (event: DragEvent) => void;
     onImageDrop: (event: DragEvent) => void;
+    onContextRemoved: (() => void) | null;
+    onContextAdd: (() => void) | null;
 }
 export type ViewOutput = undefined;
 export declare const DEFAULT_VIEW: (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
@@ -68,6 +70,8 @@ export declare class ChatInput extends UI.Widget.Widget implements SDK.TargetMan
     onInspectElementClick: () => void;
     onCancelClick: () => void;
     onNewConversation: () => void;
+    onContextRemoved: (() => void) | null;
+    onContextAdd: (() => void) | null;
     targetAdded(_target: SDK.Target.Target): void;
     targetRemoved(_target: SDK.Target.Target): void;
     constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);

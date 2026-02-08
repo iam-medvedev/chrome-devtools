@@ -6896,11 +6896,25 @@ export declare namespace Extensions {
         Sync = "sync",
         Managed = "managed"
     }
+    interface TriggerActionRequest {
+        /**
+         * Extension id.
+         */
+        id: string;
+        /**
+         * A tab target ID to trigger the default extension action on.
+         */
+        targetId: string;
+    }
     interface LoadUnpackedRequest {
         /**
          * Absolute file path.
          */
         path: string;
+        /**
+         * Enable the extension in incognito
+         */
+        enableInIncognito?: boolean;
     }
     interface LoadUnpackedResponse extends ProtocolResponseWithError {
         /**
@@ -10386,7 +10400,7 @@ export declare namespace Network {
          */
         remotePort?: integer;
     }
-    const enum PrivateNetworkRequestPolicy {
+    const enum LocalNetworkAccessRequestPolicy {
         Allow = "Allow",
         BlockFromInsecureToMorePrivate = "BlockFromInsecureToMorePrivate",
         WarnFromInsecureToMorePrivate = "WarnFromInsecureToMorePrivate",
@@ -10410,7 +10424,7 @@ export declare namespace Network {
     interface ClientSecurityState {
         initiatorIsSecureContext: boolean;
         initiatorIPAddressSpace: IPAddressSpace;
-        privateNetworkRequestPolicy: PrivateNetworkRequestPolicy;
+        localNetworkAccessRequestPolicy: LocalNetworkAccessRequestPolicy;
     }
     const enum CrossOriginOpenerPolicyValue {
         SameOrigin = "SameOrigin",
@@ -13893,6 +13907,7 @@ export declare namespace Page {
         SharedWorkerMessage = "SharedWorkerMessage",
         SharedWorkerWithNoActiveClient = "SharedWorkerWithNoActiveClient",
         WebLocks = "WebLocks",
+        WebLocksContention = "WebLocksContention",
         WebHID = "WebHID",
         WebBluetooth = "WebBluetooth",
         WebShare = "WebShare",
@@ -16131,6 +16146,7 @@ export declare namespace SmartCardEmulation {
     }
     interface ReportBeginTransactionResultRequest {
         requestId: string;
+        handle: integer;
     }
     interface ReportPlainResultRequest {
         requestId: string;

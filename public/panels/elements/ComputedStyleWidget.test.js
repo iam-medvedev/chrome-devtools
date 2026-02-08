@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Elements from './elements.js';
@@ -46,7 +47,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
                     new SDK.CSSStyleDeclaration.CSSStyleDeclaration({}, parentRule ?? null, stubCSSStyle, cssStyleDeclarationType, cssStyleDeclarationName),
                 ]
             });
-            const computedStyleModel = new Elements.ComputedStyleModel.ComputedStyleModel(node);
+            const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel(node);
             sinon.stub(computedStyleModel, 'fetchComputedStyle').callsFake(() => {
                 return Promise.resolve({ node, computedStyle: new Map([['color', 'red']]) });
             });

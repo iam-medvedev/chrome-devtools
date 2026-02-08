@@ -90,11 +90,16 @@ describeWithEnvironment('EditFileSystemView widget', () => {
         ]);
         sinon.assert.notCalled(fileSystem.addExcludedFolder);
     });
+    function makeCustomEvent(type, currentTarget, detail = {}) {
+        const event = new CustomEvent(type, { detail });
+        sinon.stub(event, 'currentTarget').value(currentTarget);
+        return event;
+    }
     it('renders the new status when editing a sub-directory', async () => {
         const { view } = await setup(new Set(['foo/']));
         const node = document.createElement('tr');
         node.setAttribute('data-index', '0');
-        view.input.onEdit(new CustomEvent('edit', { detail: { node, columnId: 'url', valueBeforeEditing: 'foo/', newText: '' } }));
+        view.input.onEdit(makeCustomEvent('edit', node, { columnId: 'url', valueBeforeEditing: 'foo/', newText: '' }));
         await view.nextInput;
         assert.deepEqual(view.input.excludedFolderPaths, [
             { path: '', status: 2 /* ExcludedFolderStatus.ERROR_NOT_A_PATH */ },
@@ -104,7 +109,7 @@ describeWithEnvironment('EditFileSystemView widget', () => {
         const { view, fileSystem } = await setup(new Set(['foo/']));
         const node = document.createElement('tr');
         node.setAttribute('data-index', '0');
-        view.input.onEdit(new CustomEvent('edit', { detail: { node, columnId: 'url', valueBeforeEditing: 'foo/', newText: 'bar/' } }));
+        view.input.onEdit(makeCustomEvent('edit', node, { columnId: 'url', valueBeforeEditing: 'foo/', newText: 'bar/' }));
         await view.nextInput;
         sinon.assert.calledOnceWithExactly(fileSystem.removeExcludedFolder, 'foo/');
     });
@@ -112,7 +117,7 @@ describeWithEnvironment('EditFileSystemView widget', () => {
         const { view, fileSystem } = await setup(new Set(['foo/']));
         const node = document.createElement('tr');
         node.setAttribute('data-index', '0');
-        view.input.onEdit(new CustomEvent('edit', { detail: { node, columnId: 'url', valueBeforeEditing: 'foo/', newText: 'bar/' } }));
+        view.input.onEdit(makeCustomEvent('edit', node, { columnId: 'url', valueBeforeEditing: 'foo/', newText: 'bar/' }));
         await view.nextInput;
         sinon.assert.calledOnceWithExactly(fileSystem.addExcludedFolder, 'bar/');
     });
@@ -120,7 +125,7 @@ describeWithEnvironment('EditFileSystemView widget', () => {
         const { view } = await setup(new Set(['foo/']));
         const node = document.createElement('tr');
         node.setAttribute('data-index', '0');
-        view.input.onDelete(new CustomEvent('delete', { detail: node }));
+        view.input.onDelete(makeCustomEvent('delete', node));
         await view.nextInput;
         assert.isEmpty(view.input.excludedFolderPaths);
     });
@@ -128,7 +133,7 @@ describeWithEnvironment('EditFileSystemView widget', () => {
         const { view, fileSystem } = await setup(new Set(['foo/']));
         const node = document.createElement('tr');
         node.setAttribute('data-index', '0');
-        view.input.onDelete(new CustomEvent('delete', { detail: node }));
+        view.input.onDelete(makeCustomEvent('delete', node));
         await view.nextInput;
         sinon.assert.calledOnceWithExactly(fileSystem.removeExcludedFolder, 'foo/');
     });

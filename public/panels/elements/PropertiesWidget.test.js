@@ -5,6 +5,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
@@ -29,6 +30,7 @@ describeWithMockConnection('PropertiesWidget', () => {
         sinon.stub(node, 'resolveToObject').withArgs('properties-sidebar-pane').resolves({
             getAllProperties: () => ({}),
             getOwnProperties: () => ({}),
+            arrayLength: () => 0,
         });
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
         view = new Elements.PropertiesWidget.PropertiesWidget();
@@ -47,5 +49,60 @@ describeWithMockConnection('PropertiesWidget', () => {
     it('does not update UI on out of scope charachter data modified event', updatesUiOnEvent(SDK.DOMModel.Events.CharacterDataModified, false));
     it('updates UI on in scope child node count updated event', updatesUiOnEvent(SDK.DOMModel.Events.ChildNodeCountUpdated, true));
     it('does not update UI on out of scope child node count updated event', updatesUiOnEvent(SDK.DOMModel.Events.ChildNodeCountUpdated, false));
+    it('invokes a getter when clicking on the invoke button', async () => {
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+        const model = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(model);
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        assert.exists(runtimeModel);
+        const node = new SDK.DOMModel.DOMNode(model);
+        const object = runtimeModel.createRemoteObject({
+            type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+            subtype: "null" /* Protocol.Runtime.RemoteObjectSubtype.Null */,
+            objectId: '1',
+        });
+        setMockConnectionResponseHandler('Runtime.getProperties', () => ({
+            result: [
+                {
+                    name: 'myGetter',
+                    isOwn: true,
+                    enumerable: true,
+                    configurable: true,
+                    get: {
+                        type: "function" /* Protocol.Runtime.RemoteObjectType.Function */,
+                        objectId: '2',
+                        className: 'Function',
+                        description: 'get myGetter()',
+                    },
+                },
+            ],
+        }));
+        const callFunctionOn = sinon.stub().resolves({
+            result: {
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                subtype: "null" /* Protocol.Runtime.RemoteObjectSubtype.Null */,
+                value: null,
+            },
+        });
+        setMockConnectionResponseHandler('Runtime.callFunctionOn', callFunctionOn);
+        sinon.stub(node, 'resolveToObject').withArgs('properties-sidebar-pane').resolves(object);
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        const viewFunction = createViewFunctionStub(Elements.PropertiesWidget.PropertiesWidget);
+        view = new Elements.PropertiesWidget.PropertiesWidget(viewFunction);
+        renderElementIntoDOM(view);
+        await viewFunction.nextInput;
+        // Wait for the property widgets to update
+        await UI.Widget.Widget.allUpdatesComplete;
+        const { treeOutlineElement } = viewFunction.input;
+        const treeShadowRoot = treeOutlineElement.shadowRoot;
+        assert.exists(treeShadowRoot);
+        const invokeButton = treeShadowRoot.querySelector('.object-value-calculate-value-button');
+        assert.exists(invokeButton);
+        invokeButton.click();
+        sinon.assert.calledWith(callFunctionOn, sinon.match({
+            objectId: '1',
+            arguments: sinon.match([{ objectId: '2' }]),
+        }));
+    });
 });
 //# sourceMappingURL=PropertiesWidget.test.js.map

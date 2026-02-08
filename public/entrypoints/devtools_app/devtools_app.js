@@ -1443,28 +1443,17 @@ Common2.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/security/security-meta.js
-import * as Common3 from "./../../core/common/common.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Root4 from "./../../core/root/root.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
-import * as Security from "./../../panels/security/security.js";
 var UIStrings5 = {
   /**
    * @description Default Title of the security panel
    */
   security: "Security",
   /**
-   * @description Title of privacy and security panel. This is used when the kDevToolsPrivacyUI feature flag is enabled.
-   */
-  PrivacyAndSecurity: "Privacy and security",
-  /**
    * @description Default command to open the security panel
    */
-  showSecurity: "Show Security",
-  /**
-   * @description Command to open the privacy and security panel. This is used when the kDevToolPrivacyUI feature flag is enabled
-   */
-  showPrivacyAndSecurity: "Show Privacy and security"
+  showSecurity: "Show Security"
 };
 var str_5 = i18n9.i18n.registerUIStrings("panels/security/security-meta.ts", UIStrings5);
 var i18nLazyString5 = i18n9.i18n.getLazilyComputedLocalizedString.bind(void 0, str_5);
@@ -1478,32 +1467,20 @@ async function loadSecurityModule() {
 UI5.ViewManager.registerViewExtension({
   location: "panel",
   id: "security",
-  title: () => Root4.Runtime.hostConfig.devToolsPrivacyUI?.enabled ? i18nLazyString5(UIStrings5.PrivacyAndSecurity)() : i18nLazyString5(UIStrings5.security)(),
-  commandPrompt: () => Root4.Runtime.hostConfig.devToolsPrivacyUI?.enabled ? i18nLazyString5(UIStrings5.showPrivacyAndSecurity)() : i18nLazyString5(UIStrings5.showSecurity)(),
+  title: () => i18nLazyString5(UIStrings5.security)(),
+  commandPrompt: () => i18nLazyString5(UIStrings5.showSecurity)(),
   order: 80,
   persistence: "closeable",
   async loadView() {
-    const Security2 = await loadSecurityModule();
-    return Security2.SecurityPanel.SecurityPanel.instance();
-  }
-});
-Common3.Revealer.registerRevealer({
-  contextTypes() {
-    return [
-      Security.CookieReportView.CookieReportView
-    ];
-  },
-  destination: Common3.Revealer.RevealerDestination.SECURITY_PANEL,
-  async loadRevealer() {
-    const Security2 = await loadSecurityModule();
-    return new Security2.SecurityPanel.SecurityRevealer();
+    const Security = await loadSecurityModule();
+    return Security.SecurityPanel.SecurityPanel.instance();
   }
 });
 
 // gen/front_end/panels/emulation/emulation-meta.js
-import * as Common4 from "./../../core/common/common.js";
+import * as Common3 from "./../../core/common/common.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Root5 from "./../../core/root/root.js";
+import * as Root4 from "./../../core/root/root.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 var UIStrings6 = {
   /**
@@ -1573,7 +1550,7 @@ UI6.ActionRegistration.registerActionExtension({
     const Emulation = await loadEmulationModule();
     return new Emulation.DeviceModeWrapper.ActionDelegate();
   },
-  condition: Root5.Runtime.conditions.canDock,
+  condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.toggleDeviceToolbar),
   iconClass: "devices",
   bindings: [
@@ -1594,7 +1571,7 @@ UI6.ActionRegistration.registerActionExtension({
     const Emulation = await loadEmulationModule();
     return new Emulation.DeviceModeWrapper.ActionDelegate();
   },
-  condition: Root5.Runtime.conditions.canDock,
+  condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.captureScreenshot)
 });
 UI6.ActionRegistration.registerActionExtension({
@@ -1604,7 +1581,7 @@ UI6.ActionRegistration.registerActionExtension({
     const Emulation = await loadEmulationModule();
     return new Emulation.DeviceModeWrapper.ActionDelegate();
   },
-  condition: Root5.Runtime.conditions.canDock,
+  condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.captureFullSizeScreenshot)
 });
 UI6.ActionRegistration.registerActionExtension({
@@ -1614,10 +1591,10 @@ UI6.ActionRegistration.registerActionExtension({
     const Emulation = await loadEmulationModule();
     return new Emulation.DeviceModeWrapper.ActionDelegate();
   },
-  condition: Root5.Runtime.conditions.canDock,
+  condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.captureNodeScreenshot)
 });
-Common4.Settings.registerSettingExtension({
+Common3.Settings.registerSettingExtension({
   category: "MOBILE",
   settingName: "show-media-query-inspector",
   settingType: "boolean",
@@ -1634,7 +1611,7 @@ Common4.Settings.registerSettingExtension({
   ],
   tags: [i18nLazyString6(UIStrings6.device)]
 });
-Common4.Settings.registerSettingExtension({
+Common3.Settings.registerSettingExtension({
   category: "MOBILE",
   settingName: "emulation.show-rulers",
   settingType: "boolean",
@@ -1651,7 +1628,7 @@ Common4.Settings.registerSettingExtension({
   ],
   tags: [i18nLazyString6(UIStrings6.device)]
 });
-Common4.Settings.registerSettingExtension({
+Common3.Settings.registerSettingExtension({
   category: "MOBILE",
   settingName: "emulation.show-device-outline",
   settingType: "boolean",
@@ -1670,18 +1647,18 @@ Common4.Settings.registerSettingExtension({
 });
 UI6.Toolbar.registerToolbarItem({
   actionId: "emulation.toggle-device-mode",
-  condition: Root5.Runtime.conditions.canDock,
+  condition: Root4.Runtime.conditions.canDock,
   location: "main-toolbar-left",
   order: 1,
   loadItem: void 0,
   separator: void 0
 });
-Common4.AppProvider.registerAppProvider({
+Common3.AppProvider.registerAppProvider({
   async loadAppProvider() {
     const Emulation = await loadEmulationModule();
     return Emulation.AdvancedApp.AdvancedAppProvider.instance();
   },
-  condition: Root5.Runtime.conditions.canDock,
+  condition: Root4.Runtime.conditions.canDock,
   order: 0
 });
 UI6.ContextMenu.registerItem({
@@ -1696,7 +1673,7 @@ UI6.ContextMenu.registerItem({
 });
 
 // gen/front_end/panels/sensors/sensors-meta.js
-import * as Common5 from "./../../core/common/common.js";
+import * as Common4 from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 var UIStrings7 = {
@@ -1853,7 +1830,7 @@ UI7.ViewManager.registerViewExtension({
   ],
   iconName: "location-on"
 });
-Common5.Settings.registerSettingExtension({
+Common4.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "emulation.locations",
   settingType: "array",
@@ -1934,7 +1911,7 @@ Common5.Settings.registerSettingExtension({
     }
   ]
 });
-Common5.Settings.registerSettingExtension({
+Common4.Settings.registerSettingExtension({
   title: i18nLazyString7(UIStrings7.cpuPressure),
   reloadRequired: true,
   settingName: "emulation.cpu-pressure",
@@ -1968,7 +1945,7 @@ Common5.Settings.registerSettingExtension({
     }
   ]
 });
-Common5.Settings.registerSettingExtension({
+Common4.Settings.registerSettingExtension({
   title: i18nLazyString7(UIStrings7.touch),
   reloadRequired: true,
   settingName: "emulation.touch",
@@ -1987,7 +1964,7 @@ Common5.Settings.registerSettingExtension({
     }
   ]
 });
-Common5.Settings.registerSettingExtension({
+Common4.Settings.registerSettingExtension({
   title: i18nLazyString7(UIStrings7.emulateIdleDetectorState),
   settingName: "emulation.idle-detection",
   settingType: "enum",
@@ -2057,7 +2034,7 @@ UI8.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/panels/animation/animation-meta.js
-import * as Common6 from "./../../core/common/common.js";
+import * as Common5 from "./../../core/common/common.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
@@ -2092,13 +2069,13 @@ UI9.ViewManager.registerViewExtension({
     return Animation.AnimationTimeline.AnimationTimeline.instance();
   }
 });
-Common6.Revealer.registerRevealer({
+Common5.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK4.AnimationModel.AnimationGroup
     ];
   },
-  destination: Common6.Revealer.RevealerDestination.SOURCES_PANEL,
+  destination: Common5.Revealer.RevealerDestination.SOURCES_PANEL,
   async loadRevealer() {
     const Animation = await loadAnimationModule();
     return new Animation.AnimationTimeline.AnimationGroupRevealer();
@@ -2106,7 +2083,7 @@ Common6.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/developer_resources/developer_resources-meta.js
-import * as Common7 from "./../../core/common/common.js";
+import * as Common6 from "./../../core/common/common.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
@@ -2141,11 +2118,11 @@ UI10.ViewManager.registerViewExtension({
     return new DeveloperResources.DeveloperResourcesView.DeveloperResourcesView();
   }
 });
-Common7.Revealer.registerRevealer({
+Common6.Revealer.registerRevealer({
   contextTypes() {
     return [SDK5.PageResourceLoader.ResourceKey];
   },
-  destination: Common7.Revealer.RevealerDestination.DEVELOPER_RESOURCES_PANEL,
+  destination: Common6.Revealer.RevealerDestination.DEVELOPER_RESOURCES_PANEL,
   async loadRevealer() {
     const DeveloperResources = await loadDeveloperResourcesModule();
     return new DeveloperResources.DeveloperResourcesView.DeveloperResourcesRevealer();
@@ -2188,7 +2165,7 @@ UI11.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/entrypoints/inspector_main/inspector_main-meta.js
-import * as Common8 from "./../../core/common/common.js";
+import * as Common7 from "./../../core/common/common.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
@@ -2382,7 +2359,7 @@ UI12.ActionRegistration.registerActionExtension({
     return new InspectorMain.RenderingOptions.ReloadActionDelegate();
   }
 });
-Common8.Settings.registerSettingExtension({
+Common7.Settings.registerSettingExtension({
   category: "NETWORK",
   title: i18nLazyString12(UIStrings12.forceAdBlocking),
   settingName: "network.ad-blocking-enabled",
@@ -2400,7 +2377,7 @@ Common8.Settings.registerSettingExtension({
     }
   ]
 });
-Common8.Settings.registerSettingExtension({
+Common7.Settings.registerSettingExtension({
   category: "GLOBAL",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.autoOpenDevTools),
@@ -2419,7 +2396,7 @@ Common8.Settings.registerSettingExtension({
     }
   ]
 });
-Common8.Settings.registerSettingExtension({
+Common7.Settings.registerSettingExtension({
   category: "APPEARANCE",
   storageType: "Synced",
   title: i18nLazyString12(UIStrings12.disablePaused),
@@ -2445,7 +2422,7 @@ UI12.Toolbar.registerToolbarItem({
 });
 
 // gen/front_end/panels/application/application-meta.js
-import * as Common9 from "./../../core/common/common.js";
+import * as Common8 from "./../../core/common/common.js";
 import * as i18n25 from "./../../core/i18n/i18n.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
@@ -2560,45 +2537,45 @@ UI13.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common9.Revealer.registerRevealer({
+Common8.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK6.Resource.Resource
     ];
   },
-  destination: Common9.Revealer.RevealerDestination.APPLICATION_PANEL,
+  destination: Common8.Revealer.RevealerDestination.APPLICATION_PANEL,
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.ResourceRevealer();
   }
 });
-Common9.Revealer.registerRevealer({
+Common8.Revealer.registerRevealer({
   contextTypes() {
     return [
       SDK6.ResourceTreeModel.ResourceTreeFrame
     ];
   },
-  destination: Common9.Revealer.RevealerDestination.APPLICATION_PANEL,
+  destination: Common8.Revealer.RevealerDestination.APPLICATION_PANEL,
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.FrameDetailsRevealer();
   }
 });
-Common9.Revealer.registerRevealer({
+Common8.Revealer.registerRevealer({
   contextTypes() {
     return [PreloadingHelper.PreloadingForward.RuleSetView];
   },
-  destination: Common9.Revealer.RevealerDestination.APPLICATION_PANEL,
+  destination: Common8.Revealer.RevealerDestination.APPLICATION_PANEL,
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.RuleSetViewRevealer();
   }
 });
-Common9.Revealer.registerRevealer({
+Common8.Revealer.registerRevealer({
   contextTypes() {
     return [PreloadingHelper.PreloadingForward.AttemptViewWithFilter];
   },
-  destination: Common9.Revealer.RevealerDestination.APPLICATION_PANEL,
+  destination: Common8.Revealer.RevealerDestination.APPLICATION_PANEL,
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.AttemptViewWithFilterRevealer();
@@ -2606,7 +2583,7 @@ Common9.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/issues/issues-meta.js
-import * as Common10 from "./../../core/common/common.js";
+import * as Common9 from "./../../core/common/common.js";
 import * as i18n27 from "./../../core/i18n/i18n.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
@@ -2641,13 +2618,13 @@ UI14.ViewManager.registerViewExtension({
     return new Issues.IssuesPane.IssuesPane();
   }
 });
-Common10.Revealer.registerRevealer({
+Common9.Revealer.registerRevealer({
   contextTypes() {
     return [
       IssuesManager.Issue.Issue
     ];
   },
-  destination: Common10.Revealer.RevealerDestination.ISSUES_VIEW,
+  destination: Common9.Revealer.RevealerDestination.ISSUES_VIEW,
   async loadRevealer() {
     const Issues = await loadIssuesModule();
     return new Issues.IssueRevealer.IssueRevealer();
@@ -2767,7 +2744,7 @@ UI17.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/panels/mobile_throttling/mobile_throttling-meta.js
-import * as Common11 from "./../../core/common/common.js";
+import * as Common10 from "./../../core/common/common.js";
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
 var UIStrings18 = {
@@ -2883,7 +2860,7 @@ UI18.ActionRegistration.registerActionExtension({
     i18nLazyString18(UIStrings18.throttlingTag)
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common10.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "custom-network-conditions",
   settingType: "array",
@@ -2953,7 +2930,7 @@ UI19.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/panels/timeline/timeline-meta.js
-import * as Common12 from "./../../core/common/common.js";
+import * as Common11 from "./../../core/common/common.js";
 import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
@@ -3240,7 +3217,7 @@ UI20.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common12.Settings.registerSettingExtension({
+Common11.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString20(UIStrings20.hideChromeFrameInLayersView),
@@ -3248,7 +3225,7 @@ Common12.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common12.Settings.registerSettingExtension({
+Common11.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   settingName: "annotations-hidden",
@@ -3265,31 +3242,31 @@ UI20.ContextMenu.registerItem({
   actionId: "timeline.save-to-file",
   order: 15
 });
-Common12.Revealer.registerRevealer({
+Common11.Revealer.registerRevealer({
   contextTypes() {
     return [SDK7.TraceObject.TraceObject];
   },
-  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.TraceRevealer();
   }
 });
-Common12.Revealer.registerRevealer({
+Common11.Revealer.registerRevealer({
   contextTypes() {
     return [SDK7.TraceObject.RevealableEvent];
   },
-  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.EventRevealer();
   }
 });
-Common12.Revealer.registerRevealer({
+Common11.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.Helpers.RevealableInsight]);
   },
-  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.InsightRevealer();
@@ -3676,7 +3653,7 @@ UI24.ActionRegistration.registerActionExtension({
 });
 
 // gen/front_end/panels/whats_new/whats_new-meta.js
-import * as Common13 from "./../../core/common/common.js";
+import * as Common12 from "./../../core/common/common.js";
 import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as UI25 from "./../../ui/legacy/legacy.js";
 var UIStrings25 = {
@@ -3721,7 +3698,7 @@ async function loadWhatsNewModule() {
 UI25.ViewManager.maybeRemoveViewExtension("release-note");
 UI25.ActionRegistration.maybeRemoveActionExtension("help.release-notes");
 UI25.ActionRegistration.maybeRemoveActionExtension("help.report-issue");
-Common13.Settings.maybeRemoveSettingExtension("help.show-release-note");
+Common12.Settings.maybeRemoveSettingExtension("help.show-release-note");
 UI25.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
   actionId: "help.release-notes",
@@ -3732,7 +3709,7 @@ UI25.ContextMenu.maybeRemoveItem({
   actionId: "help.report-issue",
   order: void 0
 });
-Common13.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
+Common12.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
 UI25.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "release-note",
@@ -3764,7 +3741,7 @@ UI25.ActionRegistration.registerActionExtension({
   },
   tags: [i18nLazyString25(UIStrings25.bug)]
 });
-Common13.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "APPEARANCE",
   title: i18nLazyString25(UIStrings25.showWhatsNewAfterEachUpdate),
   settingName: "help.show-release-note",
@@ -3791,7 +3768,7 @@ UI25.ContextMenu.registerItem({
   actionId: "help.report-issue",
   order: 11
 });
-Common13.Runnable.registerLateInitializationRunnable({
+Common12.Runnable.registerLateInitializationRunnable({
   id: "whats-new",
   async loadRunnable() {
     const WhatsNew = await loadWhatsNewModule();
@@ -3800,8 +3777,8 @@ Common13.Runnable.registerLateInitializationRunnable({
 });
 
 // gen/front_end/entrypoints/devtools_app/devtools_app.prebundle.js
-import * as Root6 from "./../../core/root/root.js";
+import * as Root5 from "./../../core/root/root.js";
 import * as Main from "./../main/main.js";
-self.runtime = Root6.Runtime.Runtime.instance({ forceNew: true });
+self.runtime = Root5.Runtime.Runtime.instance({ forceNew: true });
 new Main.MainImpl.MainImpl();
 //# sourceMappingURL=devtools_app.js.map

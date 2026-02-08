@@ -8,6 +8,18 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { PanelUtils } from '../utils/utils.js';
+export class AdoptedStyleSheetSetTreeElement extends UI.TreeOutline.TreeElement {
+    adoptedStyleSheets;
+    constructor(adoptedStyleSheets) {
+        super('');
+        this.adoptedStyleSheets = adoptedStyleSheets;
+        const documentElement = this.listItemElement.createChild('span');
+        UI.UIUtils.createTextChild(documentElement, '#adopted-style-sheets');
+        for (const adoptedStyleSheet of adoptedStyleSheets) {
+            this.appendChild(new AdoptedStyleSheetTreeElement(adoptedStyleSheet));
+        }
+    }
+}
 export class AdoptedStyleSheetTreeElement extends UI.TreeOutline.TreeElement {
     adoptedStyleSheet;
     eventListener = null;
@@ -50,6 +62,7 @@ export class AdoptedStyleSheetTreeElement extends UI.TreeOutline.TreeElement {
 }
 export class AdoptedStyleSheetContentsTreeElement extends UI.TreeOutline.TreeElement {
     styleSheetHeader;
+    editing = null;
     constructor(styleSheetHeader) {
         super('');
         this.styleSheetHeader = styleSheetHeader;
@@ -59,6 +72,9 @@ export class AdoptedStyleSheetContentsTreeElement extends UI.TreeOutline.TreeEle
         void this.onpopulate();
     }
     onunbind() {
+        if (this.editing) {
+            this.editing.cancel();
+        }
         this.styleSheetHeader.cssModel().removeEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.onStyleSheetChanged, this);
     }
     async onpopulate() {
@@ -76,6 +92,62 @@ export class AdoptedStyleSheetContentsTreeElement extends UI.TreeOutline.TreeEle
         if (styleSheetId === this.styleSheetHeader.id) {
             void this.onpopulate();
         }
+    }
+    ondblclick(event) {
+        if (this.editing) {
+            return false;
+        }
+        void this.startEditing(event.target);
+        return false;
+    }
+    onenter() {
+        if (this.editing) {
+            return false;
+        }
+        const target = this.listItemElement.querySelector('.webkit-html-text-node');
+        if (target) {
+            void this.startEditing(target);
+            return true;
+        }
+        return false;
+    }
+    async startEditing(target) {
+        if (this.editing || UI.UIUtils.isBeingEdited(target)) {
+            return;
+        }
+        const textNode = target.enclosingNodeOrSelfWithClass('webkit-html-text-node');
+        if (!textNode) {
+            return;
+        }
+        const data = await this.styleSheetHeader.requestContentData();
+        textNode.textContent = (TextUtils.ContentData.ContentData.isError(data) || !data.isTextContent) ? '' : data.text;
+        const config = new UI.InplaceEditor.Config(this.editingCommitted.bind(this), () => this.editingCancelled(), undefined);
+        const editorHandles = UI.InplaceEditor.InplaceEditor.startEditing(textNode, config);
+        if (!editorHandles) {
+            return;
+        }
+        this.editing = {
+            commit: editorHandles.commit,
+            cancel: editorHandles.cancel,
+            editor: undefined,
+            resize: () => { },
+        };
+        const componentSelection = this.listItemElement.getComponentSelection();
+        componentSelection?.selectAllChildren(textNode);
+    }
+    async editingCommitted(element, newText, oldText) {
+        this.editing = null;
+        if (newText !== oldText) {
+            await this.styleSheetHeader.cssModel().setStyleSheetText(this.styleSheetHeader.id, newText, false);
+        }
+        this.editingCancelled();
+    }
+    editingCancelled() {
+        this.editing = null;
+        void this.onpopulate();
+    }
+    isEditing() {
+        return this.editing !== null;
     }
 }
 //# sourceMappingURL=AdoptedStyleSheetTreeElement.js.map

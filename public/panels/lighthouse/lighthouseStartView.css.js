@@ -31,6 +31,12 @@ export default `/*
   margin-bottom: 16px;
 }
 
+.lighthouse-start-view .lighthouse-title {
+  margin: 0;
+  font-size: inherit;
+  font-weight: normal;
+}
+
 .lighthouse-logo {
   width: 75px;
   height: 75px;

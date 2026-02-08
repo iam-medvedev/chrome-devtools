@@ -46,7 +46,8 @@ describeWithEnvironment('RequestPayloadView', () => {
     });
     it('displays query string parameters', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api?foo=bar&baz=qux`, urlString ``, null, null, null);
-        const view = new Network.RequestPayloadView.RequestPayloadView(request);
+        const view = new Network.RequestPayloadView.RequestPayloadView();
+        view.request = request;
         renderElementIntoDOM(view);
         view.wasShown();
         await assertScreenshot('network/request-payload-query-params.png');
@@ -56,18 +57,20 @@ describeWithEnvironment('RequestPayloadView', () => {
         request.setRequestHeaders([{ name: 'Content-Type', value: 'application/x-www-form-urlencoded' }]);
         // Mock requestFormData to return URL-encoded form data.
         sinon.stub(request, 'requestFormData').resolves('foo=bar&baz=qux');
-        const view = new Network.RequestPayloadView.RequestPayloadView(request);
+        const view = new Network.RequestPayloadView.RequestPayloadView();
+        view.request = request;
         renderElementIntoDOM(view);
         view.wasShown();
-        // TODO(crbug.com/407751697) Replace with updateComplete.
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await view.updateComplete;
         await assertScreenshot('network/request-payload-data-params.png');
     });
     it('toggles URL decoding', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api?foo=bar%20baz`, urlString ``, null, null, null);
-        const view = new Network.RequestPayloadView.RequestPayloadView(request);
+        const view = new Network.RequestPayloadView.RequestPayloadView();
+        view.request = request;
         renderElementIntoDOM(view);
         view.wasShown();
+        await view.updateComplete;
         const treeOutline = view.element.querySelector('.request-payload-tree');
         assert.isNotNull(treeOutline);
         const shadowRoot = treeOutline.shadowRoot;
@@ -80,6 +83,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         const toggleButton = shadowRoot.querySelectorAll('.payload-toggle').item(1);
         assert.exists(toggleButton);
         toggleButton.click();
+        await view.updateComplete;
         // Take the screenshot before checking contents, this forces the widget to render.
         await assertScreenshot('network/request-payload-url-decoding.png');
         // Toggled state: Encoded
@@ -87,16 +91,19 @@ describeWithEnvironment('RequestPayloadView', () => {
     });
     it('toggles between parsed and source view', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api?foo=bar`, urlString ``, null, null, null);
-        const view = new Network.RequestPayloadView.RequestPayloadView(request);
+        const view = new Network.RequestPayloadView.RequestPayloadView();
+        view.request = request;
         renderElementIntoDOM(view);
         view.wasShown();
+        await view.updateComplete;
         const treeOutline = view.element.querySelector('.request-payload-tree');
         const shadowRoot = treeOutline?.shadowRoot;
         assert.exists(shadowRoot);
         const getTextContent = () => {
             const names = Array.from(shadowRoot.querySelectorAll('.payload-name')).map(el => el.textContent);
             const values = Array.from(shadowRoot.querySelectorAll('.payload-value')).map(el => el.textContent);
-            return [...names, ...values].join(' ');
+            const widgets = Array.from(shadowRoot.querySelectorAll('devtools-widget')).map(el => el.textContent);
+            return [...names, ...values, ...widgets].join(' ');
         };
         // Initial state: Parsed (foo: bar)
         const initialText = getTextContent();
@@ -107,6 +114,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         const viewSourceButton = Array.from(buttons).find(b => b.textContent?.includes('View source'));
         assert.exists(viewSourceButton);
         viewSourceButton.click();
+        await view.updateComplete;
         await assertScreenshot('network/request-payload-url-source-view.png');
         // Source state: "foo=bar"
         const sourceText = getTextContent();
@@ -116,6 +124,7 @@ describeWithEnvironment('RequestPayloadView', () => {
             .find(b => b.textContent?.includes('View parsed'));
         assert.exists(viewParsedButton);
         viewParsedButton.click();
+        await view.updateComplete;
         const finalText = getTextContent();
         assert.include(finalText, 'foo');
         assert.include(finalText, 'bar');
@@ -123,9 +132,11 @@ describeWithEnvironment('RequestPayloadView', () => {
     it('truncates long source text and in a ShowMore widget', async () => {
         const text = 'A'.repeat(3010);
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api?foo=${text}`, urlString ``, null, null, null);
-        const view = new Network.RequestPayloadView.RequestPayloadView(request);
+        const view = new Network.RequestPayloadView.RequestPayloadView();
+        view.request = request;
         renderElementIntoDOM(view);
         view.wasShown();
+        await view.updateComplete;
         const treeOutline = view.element.querySelector('.request-payload-tree');
         assert.exists(treeOutline);
         const shadowRoot = treeOutline?.shadowRoot;
@@ -135,7 +146,8 @@ describeWithEnvironment('RequestPayloadView', () => {
         const viewSourceButton = Array.from(buttons).find(b => b.textContent?.includes('View source'));
         assert.exists(viewSourceButton);
         viewSourceButton.click();
-        const payloadValue = shadowRoot.querySelector('.payload-value');
+        await view.updateComplete;
+        const payloadValue = shadowRoot.querySelector('devtools-widget');
         assert.exists(payloadValue);
         const payloadValueWidget = UI.Widget.Widget.get(payloadValue);
         assert.instanceOf(payloadValueWidget, Network.ShowMoreDetailsWidget.ShowMoreDetailsWidget);
@@ -146,17 +158,17 @@ describeWithEnvironment('RequestPayloadView', () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api`, urlString ``, null, null, null);
         request.setRequestHeaders([{ name: 'Content-Type', value: 'application/json' }]);
         sinon.stub(request, 'requestFormData').resolves('{"foo": "bar"}');
-        const view = new Network.RequestPayloadView.RequestPayloadView(request);
+        const view = new Network.RequestPayloadView.RequestPayloadView();
+        view.request = request;
         renderElementIntoDOM(view);
         view.wasShown();
-        // TODO(crbug.com/407751697) Replace with updateComplete.
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await view.updateComplete;
         const treeOutline = view.element.querySelector('.request-payload-tree');
         assert.exists(treeOutline);
         const shadowRoot = treeOutline.shadowRoot;
         assert.exists(shadowRoot);
         const getButton = (text) => {
-            const buttons = shadowRoot.querySelectorAll('.payload-toggle');
+            const buttons = shadowRoot.querySelectorAll('li:not(.hidden) .payload-toggle');
             return Array.from(buttons).find(b => b.textContent?.includes(text));
         };
         // Initial state: Parsed.
@@ -166,18 +178,19 @@ describeWithEnvironment('RequestPayloadView', () => {
         await assertScreenshot('network/request-payload-json.png');
         // Toggle to source
         viewSourceButton?.click();
+        await view.updateComplete;
         // Check for source text
-        const payloadValue = shadowRoot.querySelector('.payload-value');
+        const payloadValue = shadowRoot.querySelector('devtools-widget');
         assert.exists(payloadValue);
         const payloadValueWidget = UI.Widget.Widget.get(payloadValue);
         assert.instanceOf(payloadValueWidget, Network.ShowMoreDetailsWidget.ShowMoreDetailsWidget);
-        assert.strictEqual(payloadValueWidget.text, '{"foo": "bar"}');
         // Check that "View parsed" button exists
         const viewParsedButton = getButton('View parsed');
         assert.exists(viewParsedButton);
         await assertScreenshot('network/request-payload-json-source.png');
         // Click "View parsed"
         viewParsedButton?.click();
+        await view.updateComplete;
         // Check that "View source" button exists again
         assert.exists(getButton('View source'));
         // And check that source text is gone

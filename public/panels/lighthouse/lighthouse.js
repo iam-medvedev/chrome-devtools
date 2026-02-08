@@ -1441,7 +1441,7 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
       if (!id) {
         continue;
       }
-      auditEl.setAttribute("jslog", `${VisualLogging.item(`lighthouse.audit.${id}`).track({ resize: true })}`);
+      auditEl.setAttribute("jslog", `${VisualLogging.item(`lighthouse.audit.${id}`)}`);
       let state;
       for (const className of auditEl.classList) {
         switch (className) {
@@ -1614,6 +1614,12 @@ var lighthouseStartView_css_default = `/*
   align-items: center;
   column-gap: 16px;
   margin-bottom: 16px;
+}
+
+.lighthouse-start-view .lighthouse-title {
+  margin: 0;
+  font-size: inherit;
+  font-weight: normal;
 }
 
 .lighthouse-logo {
@@ -1941,7 +1947,7 @@ var StartView = class extends UI4.Widget.Widget {
 <form class="lighthouse-start-view">
   <header class="hbox">
     <div class="lighthouse-logo"></div>
-    <div class="lighthouse-title">${i18nString3(UIStrings3.generateLighthouseReport)}</div>
+    <h1 class="lighthouse-title">${i18nString3(UIStrings3.generateLighthouseReport)}</h1>
     <div class="lighthouse-start-button-container" $="start-button-container">${this.startButton}</div>
   </header>
   <div $="help-text" class="lighthouse-help-text hidden"></div>

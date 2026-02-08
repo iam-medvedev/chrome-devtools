@@ -44,8 +44,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/panels/security/CookieControlsView.test.ts",
-    "../../../../../../front_end/panels/security/CookieReportView.test.ts",
     "../../../../../../front_end/panels/security/SecurityModel.test.ts",
     "../../../../../../front_end/panels/security/SecurityPanel.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

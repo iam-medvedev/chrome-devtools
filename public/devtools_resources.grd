@@ -416,6 +416,7 @@
       <include file="models/badges/badges.js" name="MODELS_BADGES_BADGES_JS" resource_path="models/badges/badges.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
       <include file="models/breakpoints/breakpoints.js" name="MODELS_BREAKPOINTS_BREAKPOINTS_JS" resource_path="models/breakpoints/breakpoints.js" type="BINDATA" compress="false"/>
+      <include file="models/computed_style/computed_style.js" name="MODELS_COMPUTED_STYLE_COMPUTED_STYLE_JS" resource_path="models/computed_style/computed_style.js" type="BINDATA" compress="false"/>
       <include file="models/cpu_profile/cpu_profile.js" name="MODELS_CPU_PROFILE_CPU_PROFILE_JS" resource_path="models/cpu_profile/cpu_profile.js" type="BINDATA" compress="false"/>
       <include file="models/crux-manager/crux-manager.js" name="MODELS_CRUX_MANAGER_CRUX_MANAGER_JS" resource_path="models/crux-manager/crux-manager.js" type="BINDATA" compress="false"/>
       <include file="models/elements/elements.js" name="MODELS_ELEMENTS_ELEMENTS_JS" resource_path="models/elements/elements.js" type="BINDATA" compress="false"/>

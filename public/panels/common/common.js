@@ -252,6 +252,7 @@ var FreDialog = class {
     if (ariaLabel) {
       dialog2.setAriaLabel(ariaLabel);
     }
+    dialog2.contentElement.tabIndex = -1;
     const result = Promise.withResolvers();
     Lit.render(html`
       <div class="fre-disclaimer">
@@ -320,6 +321,7 @@ var FreDialog = class {
     );
     dialog2.setDimmed(true);
     dialog2.show();
+    dialog2.contentElement.focus();
     return result.promise;
   }
   constructor() {
@@ -683,11 +685,11 @@ var UIStringsNotTranslate2 = {
   /**
    * @description Text for teaser to generate code.
    */
-  ctrlItoGenerateCode: "Ctrl+I to generate code",
+  ctrlItoGenerateCode: "ctrl+i to generate code",
   /**
    * @description Text for teaser to generate code in Mac.
    */
-  cmdItoGenerateCode: "Cmd+I to generate code",
+  cmdItoGenerateCode: "cmd+i to generate code",
   /**
    * @description Aria label for teaser to generate code.
    */
@@ -1038,15 +1040,15 @@ var UIStringsNotTranslate3 = {
   /**
    * @description First item in the description.
    */
-  describeCodeInComment: "Pressing Ctrl+I on a comment in the Console and Sources panels now generates entire code blocks based on the instructions in the comment.",
+  describeCodeInComment: "Pressing ctrl+i on a comment in the Console and Sources panels now generates entire code blocks based on the instructions in the comment",
   /**
    * @description First item in the description.
    */
-  describeCodeInCommentForMacOs: "Pressing Cmd+I on a comment in the Console and Sources panels now generates entire code blocks based on the instructions in the comment.",
+  describeCodeInCommentForMacOs: "Pressing cmd+i on a comment in the Console and Sources panels now generates entire code blocks based on the instructions in the comment",
   /**
    * @description Second item in the description.
    */
-  asYouType: "You will still receive the real-time, as-you-type suggestions to help you code faster.",
+  asYouType: "You will still receive the real-time, as-you-type suggestions to help you code faster",
   /**
    * @description Third item in the description.
    */
@@ -1104,7 +1106,7 @@ var AiCodeGenerationUpgradeDialog = class {
           <div class="right-buttons">
             <devtools-button
               @click=${() => {
-      result.resolve(true);
+      result.resolve(false);
       void UI4.ViewManager.ViewManager.instance().showView("chrome-ai");
     }}
               jslogcontext="ai-code-generation-upgrade-dialog.manage-in-settings"
@@ -1892,6 +1894,8 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
         <div class="title">Gemini 3 Flash in DevTools</div>
         <div class="close-button">
           <devtools-button
+            aria-hidden="true"
+            tabindex="-1"
             .iconName=${"cross"}
             .variant=${"icon"}
             .size=${"REGULAR"}
@@ -3048,6 +3052,9 @@ var ExtensionPanel = class extends UI12.Panel.Panel {
   performSearch(searchConfig, _shouldJump, _jumpBackwards) {
     const query = searchConfig.query;
     this.server.notifySearchAction(this.id, "performSearch", query);
+  }
+  supportsMatchCounts() {
+    return false;
   }
   jumpToNextSearchResult() {
     this.server.notifySearchAction(

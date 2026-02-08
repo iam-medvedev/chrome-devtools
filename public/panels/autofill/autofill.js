@@ -216,7 +216,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
       });
       return html`
         <span class=${spanClasses}
-              jslog=${VisualLogging.item("matched-address-item").track({ hover: true, resize: true })}
+              jslog=${VisualLogging.item("matched-address-item").track({ hover: true })}
               @mouseenter=${() => input.onHighlightMatchesInAddress(startIndex)}
               @mouseleave=${input.onClearHighlightedMatches}>
           ${templateLines}
