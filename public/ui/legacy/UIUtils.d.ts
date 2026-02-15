@@ -51,6 +51,12 @@ export declare class ElementFocusRestorer {
     restore(): void;
 }
 export declare function runCSSAnimationOnce(element: Element, className: string): void;
+declare class AnimateOnDirective extends Lit.Directive.Directive {
+    #private;
+    render(_condition: boolean, _className: string): void;
+    update(part: Lit.Directive.ElementPart, [condition, className]: [boolean, string]): void;
+}
+export declare const animateOn: (_condition: boolean, _className: string) => Lit.DirectiveResult<typeof AnimateOnDirective>;
 export declare function measurePreferredSize(element: Element, containerElement?: Element | null): Geometry.Size;
 export declare function startBatchUpdate(): void;
 export declare function endBatchUpdate(): void;
@@ -143,7 +149,7 @@ export declare class CheckboxLabel extends HTMLElement {
     #private;
     static readonly observedAttributes: string[];
     constructor();
-    static create(title?: Platform.UIString.LocalizedString, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
+    static create(title?: Platform.UIString.LocalizedString, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean, tooltip?: Platform.UIString.LocalizedString): CheckboxLabel;
     attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null): void;
     getLabelText(): string | null;
     setLabelText(content: string): void;
@@ -286,7 +292,7 @@ export declare class InterceptBindingDirective extends Lit.Directive.Directive {
     #private;
     update(part: Lit.Directive.Part, [listener]: [BindingEventListener]): unknown;
     render(_listener: Function): undefined;
-    static attachEventListeners(templateElement: Element, renderedElement: Element): void;
+    static setEventListeners(templateElement: Element, renderedElement: Element): void;
 }
 export declare const cloneCustomElement: <T extends HTMLElement>(element: T, deep?: boolean) => T;
 export declare class HTMLElementWithLightDOMTemplate extends HTMLElement {
@@ -314,7 +320,11 @@ export declare function getDevToolsBoundingElement(): HTMLElement;
  */
 export declare const bindCheckbox: (input: CheckboxLabel, setting: Common.Settings.Setting<boolean>, metric?: UserMetricOptions) => void;
 export declare const bindCheckboxImpl: (input: CheckboxLabel, apply: (value: boolean) => void, metric?: UserMetricOptions) => (value: boolean) => void;
-export declare const bindToSetting: (settingOrName: string | Common.Settings.Setting<boolean | string> | Common.Settings.RegExpSetting, stringValidator?: (newSettingValue: string) => boolean) => ReturnType<typeof Directives.ref>;
+export type BindToSettingOpts = ((newSettingValue: string) => boolean) | {
+    validator?: (newSettingValue: string) => boolean;
+    jslog?: boolean;
+};
+export declare const bindToSetting: (settingOrName: string | Common.Settings.Setting<boolean | string> | Common.Settings.RegExpSetting, optionsOrValidator?: BindToSettingOpts) => ReturnType<typeof Directives.ref>;
 /**
  * Track toggle action as a whole or
  * track on and off action separately.

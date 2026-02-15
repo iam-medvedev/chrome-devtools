@@ -562,7 +562,6 @@ var generatedProperties = [
       "font-weight",
       "forced-color-adjust",
       "frame-sizing",
-      "gap-rule-overlap",
       "grid-auto-columns",
       "grid-auto-flow",
       "grid-auto-rows",
@@ -617,6 +616,7 @@ var generatedProperties = [
       "margin-left",
       "margin-right",
       "margin-top",
+      "margin-trim",
       "marker-end",
       "marker-mid",
       "marker-start",
@@ -722,6 +722,7 @@ var generatedProperties = [
       "ruby-align",
       "ruby-overhang",
       "ruby-position",
+      "rule-overlap",
       "rx",
       "ry",
       "scale",
@@ -809,10 +810,10 @@ var generatedProperties = [
       "text-wrap-mode",
       "text-wrap-style",
       "timeline-scope",
+      "timeline-trigger-activation-range-end",
+      "timeline-trigger-activation-range-start",
       "timeline-trigger-active-range-end",
       "timeline-trigger-active-range-start",
-      "timeline-trigger-entry-range-end",
-      "timeline-trigger-entry-range-start",
       "timeline-trigger-name",
       "timeline-trigger-source",
       "top",
@@ -2678,14 +2679,6 @@ var generatedProperties = [
     "name": "gap"
   },
   {
-    "inherited": false,
-    "keywords": [
-      "row-over-column",
-      "column-over-row"
-    ],
-    "name": "gap-rule-overlap"
-  },
-  {
     "longhands": [
       "grid-template-rows",
       "grid-template-columns",
@@ -3134,6 +3127,9 @@ var generatedProperties = [
       "auto"
     ],
     "name": "margin-top"
+  },
+  {
+    "name": "margin-trim"
   },
   {
     "inherited": true,
@@ -3730,7 +3726,9 @@ var generatedProperties = [
       "none",
       "flip-block",
       "flip-inline",
-      "flip-start"
+      "flip-start",
+      "flip-x",
+      "flip-y"
     ],
     "name": "position-try-fallbacks"
   },
@@ -3999,6 +3997,14 @@ var generatedProperties = [
       "column-rule-interior-inset-end"
     ],
     "name": "rule-interior-inset"
+  },
+  {
+    "inherited": false,
+    "keywords": [
+      "row-over-column",
+      "column-over-row"
+    ],
+    "name": "rule-overlap"
   },
   {
     "longhands": [
@@ -4608,6 +4614,7 @@ var generatedProperties = [
       "uppercase",
       "lowercase",
       "full-width",
+      "full-size-kana",
       "none",
       "math-auto"
     ],
@@ -4664,12 +4671,25 @@ var generatedProperties = [
     "longhands": [
       "timeline-trigger-name",
       "timeline-trigger-source",
-      "timeline-trigger-entry-range-start",
-      "timeline-trigger-entry-range-end",
+      "timeline-trigger-activation-range-start",
+      "timeline-trigger-activation-range-end",
       "timeline-trigger-active-range-start",
       "timeline-trigger-active-range-end"
     ],
     "name": "timeline-trigger"
+  },
+  {
+    "longhands": [
+      "timeline-trigger-activation-range-start",
+      "timeline-trigger-activation-range-end"
+    ],
+    "name": "timeline-trigger-activation-range"
+  },
+  {
+    "name": "timeline-trigger-activation-range-end"
+  },
+  {
+    "name": "timeline-trigger-activation-range-start"
   },
   {
     "longhands": [
@@ -4683,19 +4703,6 @@ var generatedProperties = [
   },
   {
     "name": "timeline-trigger-active-range-start"
-  },
-  {
-    "longhands": [
-      "timeline-trigger-entry-range-start",
-      "timeline-trigger-entry-range-end"
-    ],
-    "name": "timeline-trigger-entry-range"
-  },
-  {
-    "name": "timeline-trigger-entry-range-end"
-  },
-  {
-    "name": "timeline-trigger-entry-range-start"
   },
   {
     "name": "timeline-trigger-name"
@@ -6124,12 +6131,6 @@ var generatedPropertyValues = {
       "content-inline-size"
     ]
   },
-  "gap-rule-overlap": {
-    "values": [
-      "row-over-column",
-      "column-over-row"
-    ]
-  },
   "grid-auto-columns": {
     "values": [
       "auto",
@@ -6660,7 +6661,9 @@ var generatedPropertyValues = {
       "none",
       "flip-block",
       "flip-inline",
-      "flip-start"
+      "flip-start",
+      "flip-x",
+      "flip-y"
     ]
   },
   "position-try-order": {
@@ -6780,6 +6783,12 @@ var generatedPropertyValues = {
     "values": [
       "over",
       "under"
+    ]
+  },
+  "rule-overlap": {
+    "values": [
+      "row-over-column",
+      "column-over-row"
     ]
   },
   "rx": {
@@ -7102,6 +7111,7 @@ var generatedPropertyValues = {
       "uppercase",
       "lowercase",
       "full-width",
+      "full-size-kana",
       "none",
       "math-auto"
     ]
@@ -8068,6 +8078,7 @@ var CSSWideKeywords = [
   "initial",
   "revert",
   "revert-layer",
+  "revert-rule",
   "unset"
 ];
 var PositionTryOrderKeywords = [
@@ -9713,7 +9724,7 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
     this.#capabilitiesMask = 0;
     switch (type) {
       case Type.FRAME:
-        this.#capabilitiesMask = 1 | 8192 | 2 | 4 | 8 | 16 | 32 | 128 | 256 | 1024 | 2048 | 32768 | 65536 | 131072 | 262144 | 524288;
+        this.#capabilitiesMask = 1 | 8192 | 2 | 4 | 8 | 16 | 32 | 128 | 256 | 1024 | 2048 | 32768 | 65536 | 131072 | 262144 | 524288 | 1048576;
         if (parentTarget?.type() !== Type.FRAME) {
           this.#capabilitiesMask |= 4096 | 64 | 512 | 16384;
           if (Common3.ParsedURL.schemeIs(targetInfo?.url, "chrome-extension:")) {
@@ -9746,7 +9757,7 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
         this.#capabilitiesMask = 4 | 8 | 524288 | 16;
         break;
       case Type.NODE:
-        this.#capabilitiesMask = 4 | 16 | 32 | 131072;
+        this.#capabilitiesMask = 4 | 16 | 32 | 131072 | 1048576;
         break;
       case Type.AUCTION_WORKLET:
         this.#capabilitiesMask = 4 | 524288;
@@ -11617,17 +11628,7 @@ var RequestCondition = class extends Common5.ObjectWrapper.ObjectWrapper {
     return this.#pattern instanceof RequestURLPattern ? this.#pattern.constructorString : this.#pattern.upgradedPattern?.constructorString ?? this.#pattern.wildcardURL;
   }
   set pattern(pattern) {
-    if (typeof pattern === "string") {
-      if (Root2.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
-        throw new Error("Should not use wildcard urls");
-      }
-      this.#pattern = {
-        wildcardURL: pattern,
-        upgradedPattern: RequestURLPattern.upgradeFromWildcard(pattern) ?? void 0
-      };
-    } else {
-      this.#pattern = pattern;
-    }
+    this.#pattern = pattern;
     this.dispatchEventToListeners(
       "request-condition-changed"
       /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */
@@ -11704,10 +11705,7 @@ var RequestConditions = class extends Common5.ObjectWrapper.ObjectWrapper {
     this.#conditionsEnabledSetting.set(enabled);
   }
   findCondition(pattern) {
-    if (Root2.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
-      return this.#conditions.find((condition) => condition.constructorString === pattern);
-    }
-    return this.#conditions.find((condition) => condition.wildcardURL === pattern);
+    return this.#conditions.find((condition) => condition.constructorString === pattern);
   }
   has(url) {
     return Boolean(this.findCondition(url));
@@ -11765,70 +11763,63 @@ var RequestConditions = class extends Common5.ObjectWrapper.ObjectWrapper {
     function isNonBlockingCondition(condition) {
       return !("block" in condition);
     }
-    if (Root2.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
-      const urlPatterns = [];
-      const matchedNetworkConditions = [];
-      if (this.conditionsEnabled) {
-        for (const condition of this.#conditions) {
-          const urlPattern = condition.constructorString;
-          const conditions = condition.conditions;
-          if (!condition.enabled || !urlPattern || conditions === NoThrottlingConditions) {
-            continue;
-          }
-          const block = !isNonBlockingCondition(conditions);
-          urlPatterns.push({ urlPattern, block });
-          if (!block) {
-            const { ruleIds } = condition;
-            matchedNetworkConditions.push({ ruleIds, urlPattern, conditions });
-          }
+    const urlPatterns = [];
+    const matchedNetworkConditions = [];
+    if (this.conditionsEnabled) {
+      for (const condition of this.#conditions) {
+        const urlPattern = condition.constructorString;
+        const conditions = condition.conditions;
+        if (!condition.enabled || !urlPattern || conditions === NoThrottlingConditions) {
+          continue;
+        }
+        const block = !isNonBlockingCondition(conditions);
+        urlPatterns.push({ urlPattern, block });
+        if (!block) {
+          const { ruleIds } = condition;
+          matchedNetworkConditions.push({ ruleIds, urlPattern, conditions });
         }
       }
-      if (globalConditions) {
-        matchedNetworkConditions.push({ conditions: globalConditions });
-      }
-      const promises = [];
-      for (const agent of agents) {
-        promises.push(agent.invoke_setBlockedURLs({ urlPatterns }));
-        promises.push(agent.invoke_emulateNetworkConditionsByRule({
-          offline,
-          matchedNetworkConditions: matchedNetworkConditions.map(({ urlPattern, conditions }) => ({
-            urlPattern: urlPattern ?? "",
-            latency: conditions.latency,
-            downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
-            uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
-            packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
-            packetQueueLength: conditions.packetQueueLength,
-            packetReordering: conditions.packetReordering,
-            connectionType: NetworkManager.connectionType(conditions)
-          }))
-        }).then((response) => {
-          if (!response.getError()) {
-            for (let i = 0; i < response.ruleIds.length; ++i) {
-              const ruleId = response.ruleIds[i];
-              const { ruleIds, conditions, urlPattern } = matchedNetworkConditions[i];
-              if (ruleIds) {
-                this.#requestConditionsById.set(ruleId, { urlPattern, conditions });
-                matchedNetworkConditions[i].ruleIds?.add(ruleId);
-              }
+    }
+    if (globalConditions) {
+      matchedNetworkConditions.push({ conditions: globalConditions });
+    }
+    const promises = [];
+    for (const agent of agents) {
+      promises.push(agent.invoke_setBlockedURLs({ urlPatterns }));
+      promises.push(agent.invoke_emulateNetworkConditionsByRule({
+        offline,
+        matchedNetworkConditions: matchedNetworkConditions.map(({ urlPattern, conditions }) => ({
+          urlPattern: urlPattern ?? "",
+          latency: conditions.latency,
+          downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
+          uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
+          packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
+          packetQueueLength: conditions.packetQueueLength,
+          packetReordering: conditions.packetReordering,
+          connectionType: NetworkManager.connectionType(conditions)
+        }))
+      }).then((response) => {
+        if (!response.getError()) {
+          for (let i = 0; i < response.ruleIds.length; ++i) {
+            const ruleId = response.ruleIds[i];
+            const { ruleIds, conditions, urlPattern } = matchedNetworkConditions[i];
+            if (ruleIds) {
+              this.#requestConditionsById.set(ruleId, { urlPattern, conditions });
+              matchedNetworkConditions[i].ruleIds?.add(ruleId);
             }
           }
-        }));
-        promises.push(agent.invoke_overrideNetworkState({
-          offline,
-          latency: globalConditions?.latency ?? 0,
-          downloadThroughput: globalConditions?.download ?? -1,
-          uploadThroughput: globalConditions?.upload ?? -1,
-          connectionType: globalConditions ? NetworkManager.connectionType(globalConditions) : "none"
-        }));
-      }
-      this.#conditionsAppliedForTestPromise = this.#conditionsAppliedForTestPromise.then(() => Promise.all(promises));
-      return urlPatterns.length > 0;
+        }
+      }));
+      promises.push(agent.invoke_overrideNetworkState({
+        offline,
+        latency: globalConditions?.latency ?? 0,
+        downloadThroughput: globalConditions?.download ?? -1,
+        uploadThroughput: globalConditions?.upload ?? -1,
+        connectionType: globalConditions ? NetworkManager.connectionType(globalConditions) : "none"
+      }));
     }
-    const urls = this.conditionsEnabled ? this.#conditions.filter((condition) => condition.enabled && condition.wildcardURL).map((condition) => condition.wildcardURL) : [];
-    for (const agent of agents) {
-      void agent.invoke_setBlockedURLs({ urls });
-    }
-    return urls.length > 0;
+    this.#conditionsAppliedForTestPromise = this.#conditionsAppliedForTestPromise.then(() => Promise.all(promises));
+    return urlPatterns.length > 0;
   }
   conditionsAppliedForTest() {
     return this.#conditionsAppliedForTestPromise;
@@ -11940,9 +11931,6 @@ var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common5
     }
     this.#networkAgents.add(networkAgent);
     this.#fetchAgents.add(fetchAgent);
-    if (this.isThrottling() && !Root2.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
-      this.updateNetworkConditions(networkAgent);
-    }
   }
   modelRemoved(networkManager) {
     for (const entry of this.inflightMainResourceRequests) {
@@ -11963,13 +11951,7 @@ var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common5
   }
   setNetworkConditions(conditions) {
     this.#networkConditions = conditions;
-    if (Root2.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
-      this.#requestConditions.applyConditions(this.isOffline(), this.isThrottling() ? this.#networkConditions : null, ...this.#networkAgents);
-    } else {
-      for (const agent of this.#networkAgents) {
-        this.updateNetworkConditions(agent);
-      }
-    }
+    this.#requestConditions.applyConditions(this.isOffline(), this.isThrottling() ? this.#networkConditions : null, ...this.#networkAgents);
     this.dispatchEventToListeners(
       "ConditionsChanged"
       /* MultitargetNetworkManager.Events.CONDITIONS_CHANGED */
@@ -12070,21 +12052,6 @@ var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common5
   }
   isBlocking() {
     return this.#isBlocking && this.requestConditions.conditionsEnabled;
-  }
-  /**
-   * @deprecated Kept for layout tests
-   * TODO(pfaffe) remove
-   */
-  setBlockingEnabled(enabled) {
-    this.requestConditions.conditionsEnabled = enabled;
-  }
-  /**
-   * @deprecated Kept for layout tests
-   * TODO(pfaffe) remove
-   */
-  setBlockedPatterns(patterns) {
-    this.requestConditions.clear();
-    this.requestConditions.add(...patterns.map((pattern) => RequestCondition.createFromSetting(pattern)));
   }
   updateBlockedPatterns() {
     this.#isBlocking = this.#requestConditions.applyConditions(this.isOffline(), this.isThrottling() ? this.#networkConditions : null, ...this.#networkAgents);
@@ -16750,6 +16717,12 @@ var DOMInheritanceCascade = class {
           "revert"
           /* CSSWideKeyword.REVERT */
         );
+      case "revert-rule":
+        return this.#findPropertyInPreviousStyle(property, () => true) ?? this.resolveGlobalKeyword(
+          property,
+          "unset"
+          /* CSSWideKeyword.UNSET */
+        );
       case "unset":
         return this.#findPropertyInParentCascadeIfInherited(property) ?? this.#findCustomPropertyRegistration(property.name);
     }
@@ -17323,6 +17296,10 @@ var RemoteObject = class _RemoteObject {
     const matches = object.description?.match(descriptionLengthParenRegex);
     return matches ? parseInt(matches[1], 10) : 0;
   }
+  static isEmptyArray(object) {
+    const matches = object.description?.match(descriptionLengthParenRegex);
+    return Boolean(matches?.[1] === "0");
+  }
   static unserializableDescription(object) {
     if (typeof object === "number") {
       const description = String(object);
@@ -17703,7 +17680,7 @@ var RemoteObjectImpl = class extends RemoteObject {
     return Boolean(this.#objectId) && this.type === "object" && this.subtype === "node";
   }
   isLinearMemoryInspectable() {
-    return this.type === "object" && this.subtype !== void 0 && ["webassemblymemory", "typedarray", "dataview", "arraybuffer"].includes(this.subtype);
+    return this.type === "object" && this.subtype !== void 0 && ["webassemblymemory", "typedarray", "dataview", "arraybuffer"].includes(this.subtype) && !RemoteObject.isEmptyArray(this);
   }
 };
 var ScopeRemoteObject = class extends RemoteObjectImpl {
@@ -24483,6 +24460,12 @@ var OverlayModel = class _OverlayModel extends SDKModel {
   async hasStyleSheetText(url) {
     return await this.#windowControls.initializeStyleSheetText(url);
   }
+  inspectPanelShowRequested({ backendNodeId }) {
+    this.dispatchEventToListeners("InspectPanelShowRequested", backendNodeId);
+  }
+  inspectedElementWindowRestored({ backendNodeId }) {
+    this.dispatchEventToListeners("InspectedElementWindowRestored", backendNodeId);
+  }
 };
 var WindowControls = class _WindowControls {
   #cssModel;
@@ -26652,7 +26635,12 @@ var StorageKeyManager = class extends SDKModel {
 function parseStorageKey(storageKeyString) {
   const components = storageKeyString.split("^");
   const origin = Common23.ParsedURL.ParsedURL.extractOrigin(components[0]);
-  const storageKey = { origin, components: /* @__PURE__ */ new Map() };
+  const storageKey = {
+    // For file:// URLs, extracting the origin collapses it to "file://".
+    // Node.js uses the full file URL as the StorageKey, so keep the original URL here.
+    origin: origin === "file://" ? components[0] : origin,
+    components: /* @__PURE__ */ new Map()
+  };
   for (let i = 1; i < components.length; ++i) {
     storageKey.components.set(components[i].charAt(0), components[i].substring(1));
   }

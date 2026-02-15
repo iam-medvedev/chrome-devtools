@@ -89,7 +89,7 @@ export class NodeChildTargetManager extends SDK.SDKModel.SDKModel {
     }
     targetDestroyed(_event) {
     }
-    attachedToTarget({ sessionId, targetInfo }) {
+    async attachedToTarget({ sessionId, targetInfo }) {
         let target;
         if (targetInfo.type === 'node_worker') {
             target = this.#targetManager.createTarget(targetInfo.targetId, targetInfo.title, SDK.Target.Type.NODE_WORKER, this.#parentTarget, sessionId, true, undefined, targetInfo);
@@ -103,6 +103,21 @@ export class NodeChildTargetManager extends SDK.SDKModel.SDKModel {
         }
         this.#childTargets.set(sessionId, target);
         void target.runtimeAgent().invoke_runIfWaitingForDebugger();
+        await this.#initializeStorage(target);
+    }
+    async #initializeStorage(target) {
+        const storageAgent = target.storageAgent();
+        const response = await storageAgent.invoke_getStorageKey({});
+        const storageKey = response.storageKey;
+        if (response.getError() || !storageKey) {
+            console.error(`Failed to get storage key for target ${target.id()}: ${response.getError()}`);
+            return;
+        }
+        const storageKeyManager = target.model(SDK.StorageKeyManager.StorageKeyManager);
+        if (storageKeyManager) {
+            storageKeyManager.setMainStorageKey(storageKey);
+            storageKeyManager.updateStorageKeys(new Set([storageKey]));
+        }
     }
     detachedFromTarget({ sessionId }) {
         const childTarget = this.#childTargets.get(sessionId);

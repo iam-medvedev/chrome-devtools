@@ -111,5 +111,80 @@ describe('NetworkRequestFormatter', () => {
             assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatHeaders('test:', [{ name: 'authorization', value: 'foo' }]), 'test:\nauthorization: <redacted>');
         });
     });
+    describe('formatStatus', () => {
+        it('handles pending state correctly', () => {
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatStatus({
+                statusCode: 0,
+                statusText: '',
+                failed: false,
+                canceled: false,
+                preserved: false,
+                finished: false,
+            }), 'Network request status: pending\n');
+        });
+        it('handles finished state with status code correctly', () => {
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatStatus({
+                statusCode: 200,
+                statusText: 'OK',
+                failed: false,
+                canceled: false,
+                preserved: false,
+                finished: true,
+            }), 'Response status: 200 OK\nNetwork request status: finished\n');
+        });
+        it('handles preserved state correctly', () => {
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatStatus({
+                statusCode: 0,
+                statusText: '',
+                failed: false,
+                canceled: false,
+                preserved: true,
+                finished: true,
+            }), 'Network request status: finished, preserved\n');
+        });
+        it('handles failed and canceled states correctly', () => {
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatStatus({
+                statusCode: 0,
+                statusText: '',
+                failed: true,
+                canceled: true,
+                preserved: false,
+                finished: true,
+            }), 'Network request status: finished, failed, canceled\n');
+        });
+    });
+    describe('formatFailureReasons', () => {
+        it('handles no failure reason correctly', () => {
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatFailureReasons({
+                blockedReason: undefined,
+                corsErrorStatus: undefined,
+                localizedFailDescription: null,
+            }), '');
+        });
+        it('handles blocked reason correctly', () => {
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatFailureReasons({
+                blockedReason: "inspector" /* Protocol.Network.BlockedReason.Inspector */,
+                corsErrorStatus: undefined,
+                localizedFailDescription: null,
+            }), 'Blocked reason: inspector\n');
+        });
+        it('handles CORS error correctly', () => {
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatFailureReasons({
+                blockedReason: undefined,
+                corsErrorStatus: {
+                    corsError: "AllowOriginMismatch" /* Protocol.Network.CorsError.AllowOriginMismatch */,
+                    failedParameter: 'foo',
+                },
+                localizedFailDescription: null,
+            }), 'CORS error: AllowOriginMismatch foo\n');
+        });
+        it('handles localized fail description correctly', () => {
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatFailureReasons({
+                blockedReason: undefined,
+                corsErrorStatus: undefined,
+                localizedFailDescription: 'net::ERR_FAILED',
+            }), 'Fail description: net::ERR_FAILED\n');
+        });
+    });
 });
 //# sourceMappingURL=NetworkRequestFormatter.test.js.map

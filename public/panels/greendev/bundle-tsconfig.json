@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"outDir":".","baseUrl":".","rootDir":"../../../../../../front_end/panels/greendev"},"files":["../../../../../../front_end/panels/greendev/greendev.ts"],"references":[{"path":"./greendev-tsconfig.json"},{"path":"./greendev_shared-tsconfig.json"}]}

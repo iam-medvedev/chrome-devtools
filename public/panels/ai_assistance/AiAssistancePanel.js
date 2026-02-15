@@ -11,7 +11,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Annotations from '../../models/annotations/annotations.js';
 import * as Badges from '../../models/badges/badges.js';
-import * as GreenDev from '../../models/greendev/greendev.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -408,6 +407,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #selectedRequest = null;
     // Messages displayed in the `ChatView` component.
     #messages = [];
+    #isContextAutoSelectionSuspended = false;
     // Whether the UI should show loading or not.
     #isLoading = false;
     // Stores the availability status of the `AidaClient` and the reason for unavailability, if any.
@@ -416,7 +416,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #userInfo;
     #timelinePanelInstance = null;
     #runAbortController = new AbortController();
-    #additionalContextItemsFromFloaty = [];
     constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
         super(AiAssistancePanel.panelName);
         this.view = view;
@@ -458,7 +457,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return {
                 state: "chat-view" /* ViewState.CHAT_VIEW */,
                 props: {
-                    additionalFloatyContext: this.#additionalContextItemsFromFloaty,
                     blockedByCrossOrigin: this.#conversation.isBlockedByOrigin,
                     isLoading: this.#isLoading,
                     messages: this.#messages,
@@ -536,13 +534,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#timelinePanelInstance.addEventListener("IsViewingTrace" /* TimelinePanel.TimelinePanel.Events.IS_VIEWING_TRACE */, this.requestUpdate, this);
         }
     }
-    #bindFloatyListener() {
-        const additionalContexts = UI.Context.Context.instance().flavor(UI.Floaty.FloatyFlavor);
-        if (!additionalContexts) {
-            return;
-        }
-        this.#additionalContextItemsFromFloaty = additionalContexts.selectedContexts;
-        this.requestUpdate();
+    async #handlePerformanceRecordAndReload() {
+        return await TimelinePanel.TimelinePanel.TimelinePanel.executeRecordAndReload();
     }
     #getDefaultConversationType() {
         const { hostConfig } = Root.Runtime;
@@ -572,10 +565,20 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     // We select the default agent based on the open panels if
     // there isn't any active conversation.
     #selectDefaultAgentIfNeeded() {
+        // We don't change the current agent when there is a message in flight.
+        if (this.#isLoading) {
+            return;
+        }
         // If there already is an agent and if it is not empty,
-        // we don't automatically change the agent. In addition to this,
-        // we don't change the current agent when there is a message in flight.
-        if ((this.#conversation && !this.#conversation.isEmpty) || this.#isLoading) {
+        // we don't automatically change the agent.
+        if (this.#conversation && !this.#conversation.isEmpty) {
+            // If the context selection agent is enabled,
+            // we update the context of the current agent.
+            const context = this.#getConversationContext(this.#getDefaultConversationType());
+            if (context && isAiAssistanceContextSelectionAgentEnabled()) {
+                this.#conversation?.setContext(context);
+                this.requestUpdate();
+            }
             return;
         }
         const targetConversationType = this.#getDefaultConversationType();
@@ -585,7 +588,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         const conversation = targetConversationType ?
-            new AiAssistanceModel.AiConversation.AiConversation(targetConversationType, [], undefined, false, this.#aidaClient, this.#changeManager) :
+            new AiAssistanceModel.AiConversation.AiConversation(targetConversationType, [], undefined, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator()) :
             undefined;
         this.#updateConversationState(conversation);
     }
@@ -599,13 +602,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             if (!conversation) {
                 const conversationType = this.#getDefaultConversationType();
                 if (conversationType) {
-                    conversation = new AiAssistanceModel.AiConversation.AiConversation(conversationType, [], undefined, false, this.#aidaClient, this.#changeManager);
+                    conversation = new AiAssistanceModel.AiConversation.AiConversation(conversationType, [], undefined, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator());
                 }
             }
             this.#conversation = conversation;
+            this.#isContextAutoSelectionSuspended = false;
         }
-        this.#conversation?.setContext(this.#getConversationContext(isAiAssistanceContextSelectionAgentEnabled() ? this.#getDefaultConversationType() :
-            (this.#conversation?.type ?? null)));
+        if (!this.#isContextAutoSelectionSuspended) {
+            this.#conversation?.setContext(this.#getConversationContext(isAiAssistanceContextSelectionAgentEnabled() ? this.#getDefaultConversationType() :
+                (this.#conversation?.type ?? null)));
+        }
         this.requestUpdate();
     }
     wasShown() {
@@ -638,10 +644,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#bindTimelineTraceListener();
         this.#selectDefaultAgentIfNeeded();
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistancePanelOpened);
-        if (GreenDev.Prototypes.instance().isEnabled('inDevToolsFloaty')) {
-            UI.Context.Context.instance().addFlavorChangeListener(UI.Floaty.FloatyFlavor, this.#bindFloatyListener, this);
-            this.#bindFloatyListener();
-        }
     }
     willHide() {
         super.willHide();
@@ -898,9 +900,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #handleContextRemoved() {
         this.#conversation?.setContext(null);
+        this.#isContextAutoSelectionSuspended = true;
         this.requestUpdate();
     }
     #handleContextAdd() {
+        this.#isContextAutoSelectionSuspended = false;
         this.#conversation?.setContext(this.#getConversationContext(this.#getDefaultConversationType()));
         this.requestUpdate();
     }
@@ -918,6 +922,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#viewOutput.chatView?.focusTextInput();
             return;
         }
+        this.#isContextAutoSelectionSuspended = false;
         let targetConversationType;
         switch (actionId) {
             case 'freestyler.elements-floating-button': {
@@ -961,7 +966,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         let conversation = this.#conversation;
         if (!this.#conversation || this.#conversation.type !== targetConversationType || this.#conversation.isEmpty) {
-            conversation = new AiAssistanceModel.AiConversation.AiConversation(targetConversationType, [], undefined, false, this.#aidaClient, this.#changeManager);
+            conversation = new AiAssistanceModel.AiConversation.AiConversation(targetConversationType, [], undefined, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator());
         }
         this.#updateConversationState(conversation);
         const predefinedPrompt = opts?.['prompt'];
@@ -1064,30 +1069,69 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
     }
     #handleConversationContextChange = (data) => {
-        if (data instanceof Workspace.UISourceCode.UISourceCode) {
-            const context = new AiAssistanceModel.FileAgent.FileContext(data);
-            this.#selectedFile = context;
-            this.#conversation?.setContext(context);
+        if (data instanceof AiAssistanceModel.FileAgent.FileContext) {
+            this.#selectedFile = data;
         }
-        else if (data instanceof SDK.DOMModel.DOMNode) {
-            const context = new AiAssistanceModel.StylingAgent.NodeContext(data);
-            this.#selectedElement = context;
-            this.#conversation?.setContext(context);
+        else if (data instanceof AiAssistanceModel.StylingAgent.NodeContext) {
+            this.#selectedElement = data;
         }
-        else if (data instanceof SDK.NetworkRequest.NetworkRequest) {
-            const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-            const context = new AiAssistanceModel.NetworkAgent.RequestContext(data, calculator);
-            this.#selectedRequest = context;
-            this.#conversation?.setContext(context);
+        else if (data instanceof AiAssistanceModel.NetworkAgent.RequestContext) {
+            this.#selectedRequest = data;
         }
-        else if (data instanceof AiAssistanceModel.AIContext.AgentFocus) {
-            const context = new AiAssistanceModel.PerformanceAgent.PerformanceTraceContext(data);
-            this.#selectedPerformanceTrace = context;
-            this.#conversation?.setContext(context);
+        else if (data instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
+            this.#selectedPerformanceTrace = data;
         }
+        this.#isContextAutoSelectionSuspended = false;
         void VisualLogging.logFunctionCall(`context-change-${this.#conversation?.type}`);
         this.requestUpdate();
     };
+    async #handleInspectElement() {
+        if (!this.#toggleSearchElementAction) {
+            return null;
+        }
+        const result = new Promise(resolve => {
+            // Track the new flavor change for dom node.
+            const handleDOMNodeFlavorChange = (ev) => {
+                if (!ev.data) {
+                    return;
+                }
+                resolve(selectedElementFilter(ev.data));
+                removeListeners();
+            };
+            // If the inspect mode is toggled, we want to resolve null.
+            const handleInspectModeToggled = (ev) => {
+                if (!ev.data) {
+                    // The inspect element is toggled off
+                    // before the flavor change event fires
+                    // so we need to wait a bit to see if the flavor changed.
+                    window.setTimeout(() => {
+                        resolve((selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode))));
+                        removeListeners();
+                    }, 50);
+                }
+            };
+            const removeListeners = () => {
+                UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, handleDOMNodeFlavorChange);
+                this.#toggleSearchElementAction?.removeEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, handleInspectModeToggled);
+            };
+            UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, handleDOMNodeFlavorChange);
+            this.#toggleSearchElementAction?.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, handleInspectModeToggled);
+            // Clean-up listeners in case of abort.
+            this.#runAbortController.signal.addEventListener('abort', () => {
+                resolve(null);
+                removeListeners();
+            }, { once: true });
+        });
+        void this.#toggleSearchElementAction.execute();
+        try {
+            return await result;
+        }
+        finally {
+            if (this.#toggleSearchElementAction.toggled()) {
+                void this.#toggleSearchElementAction.execute();
+            }
+        }
+    }
     async #startConversation(text, imageInput, multimodalInputType) {
         if (!this.#conversation) {
             return;
@@ -1115,7 +1159,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         void VisualLogging.logFunctionCall(`start-conversation-${this.#conversation.type}`, 'ui');
         await this.#doConversation(this.#conversation.run(text, {
             signal,
-            extraContext: this.#additionalContextItemsFromFloaty,
             multimodalInput,
         }));
     }

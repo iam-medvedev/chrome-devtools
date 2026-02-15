@@ -66,6 +66,7 @@ describe('Runtime', () => {
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
                 isEnabled: false,
+                requiresChromeRestart: false,
             });
             assert.isFalse(support.isEnabled('experiment'));
         });
@@ -76,6 +77,7 @@ describe('Runtime', () => {
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
                 isEnabled: false,
+                requiresChromeRestart: false,
             });
             support.setEnabled('experiment', true);
             assert.isTrue(support.isEnabled('experiment'));
@@ -87,6 +89,7 @@ describe('Runtime', () => {
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
                 isEnabled: true,
+                requiresChromeRestart: false,
             });
             assert.isTrue(support.isEnabled('experiment'));
         });
@@ -97,6 +100,7 @@ describe('Runtime', () => {
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
                 isEnabled: false,
+                requiresChromeRestart: false,
             });
             assert.isFalse(support.isEnabled('experiment'));
             support.enableForTest('experiment');
@@ -111,6 +115,7 @@ describe('Runtime', () => {
                     title: 'experiment title',
                     aboutFlag: 'about:flag',
                     isEnabled: false,
+                    requiresChromeRestart: false,
                 });
             });
         });
@@ -121,6 +126,7 @@ describe('Runtime', () => {
                 title: 'experiment title',
                 aboutFlag: 'about:flag',
                 isEnabled: false,
+                requiresChromeRestart: false,
             });
             assert.throws(() => {
                 support.registerHostExperiment({
@@ -128,6 +134,7 @@ describe('Runtime', () => {
                     title: 'experiment title',
                     aboutFlag: 'about:flag',
                     isEnabled: false,
+                    requiresChromeRestart: false,
                 });
             });
         });

@@ -10,10 +10,10 @@ import { Frame, type GoToOptions, type WaitForOptions } from '../api/Frame.js';
 import { type WaitTimeoutOptions } from '../api/Page.js';
 import { Accessibility } from '../cdp/Accessibility.js';
 import type { TimeoutSettings } from '../common/TimeoutSettings.js';
-import type { Awaitable } from '../common/types.js';
+import type { Awaitable, HandleFor } from '../common/types.js';
 import { BidiCdpSession } from './CDPSession.js';
 import type { BrowsingContext } from './core/BrowsingContext.js';
-import type { BidiElementHandle } from './ElementHandle.js';
+import { BidiElementHandle } from './ElementHandle.js';
 import type { BidiHTTPResponse } from './HTTPResponse.js';
 import type { BidiPage } from './Page.js';
 import type { BidiRealm } from './Realm.js';
@@ -47,6 +47,7 @@ export declare class BidiFrame extends Frame {
     removeExposedFunction(name: string): Promise<void>;
     createCDPSession(): Promise<CDPSession>;
     setFiles(element: BidiElementHandle, files: string[]): Promise<void>;
+    frameElement(): Promise<HandleFor<HTMLIFrameElement> | null>;
     locateNodes(element: BidiElementHandle, locator: Bidi.BrowsingContext.Locator): Promise<Bidi.Script.NodeRemoteValue[]>;
 }
 //# sourceMappingURL=Frame.d.ts.map

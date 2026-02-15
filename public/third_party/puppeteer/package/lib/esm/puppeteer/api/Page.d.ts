@@ -544,6 +544,17 @@ export interface ReloadOptions extends WaitForOptions {
     ignoreCache?: boolean;
 }
 /**
+ * Options for {@link Page.captureHeapSnapshot}.
+ *
+ * @public
+ */
+export interface HeapSnapshotOptions {
+    /**
+     * The file path to save the heap snapshot to.
+     */
+    path: string;
+}
+/**
  * Page provides methods to interact with a single tab or
  * {@link https://developer.chrome.com/extensions/background_pages | extension background page}
  * in the browser.
@@ -1402,6 +1413,10 @@ export declare abstract class Page extends EventEmitter<PageEvents> {
      */
     abstract metrics(): Promise<Metrics>;
     /**
+     * Captures a snapshot of the JavaScript heap and writes it to a file.
+     */
+    abstract captureHeapSnapshot(options: HeapSnapshotOptions): Promise<void>;
+    /**
      * The page's URL.
      *
      * @remarks
@@ -1484,6 +1499,8 @@ export declare abstract class Page extends EventEmitter<PageEvents> {
      * - `timeout`: Maximum wait time in milliseconds, defaults to `30` seconds, pass
      *   `0` to disable the timeout. The default value can be changed by using the
      *   {@link Page.setDefaultTimeout} method.
+     *
+     * - `signal`: A signal object that allows you to cancel a waitForRequest call.
      */
     waitForRequest(urlOrPredicate: string | AwaitablePredicate<HTTPRequest>, options?: WaitTimeoutOptions): Promise<HTTPRequest>;
     /**
@@ -1512,6 +1529,8 @@ export declare abstract class Page extends EventEmitter<PageEvents> {
      * - `timeout`: Maximum wait time in milliseconds, defaults to `30` seconds,
      *   pass `0` to disable the timeout. The default value can be changed by using
      *   the {@link Page.setDefaultTimeout} method.
+     *
+     * - `signal`: A signal object that allows you to cancel a waitForResponse call.
      */
     waitForResponse(urlOrPredicate: string | AwaitablePredicate<HTTPResponse>, options?: WaitTimeoutOptions): Promise<HTTPResponse>;
     /**
@@ -2286,6 +2305,8 @@ export declare abstract class Page extends EventEmitter<PageEvents> {
      * - `timeout`: maximum time to wait for in milliseconds. Defaults to `30000`
      *   (30 seconds). Pass `0` to disable timeout. The default value can be changed
      *   by using the {@link Page.setDefaultTimeout} method.
+     *
+     * - `signal`: A signal object that allows you to cancel a waitForSelector call.
      */
     waitForSelector<Selector extends string>(selector: Selector, options?: WaitForSelectorOptions): Promise<ElementHandle<NodeFor<Selector>> | null>;
     /**

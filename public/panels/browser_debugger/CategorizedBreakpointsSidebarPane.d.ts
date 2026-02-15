@@ -6,6 +6,8 @@ interface ViewOutput {
 interface ViewInput {
     onFilterChanged: (filterText: string | null) => void;
     onBreakpointChange: (breakpoint: SDK.CategorizedBreakpoint.CategorizedBreakpoint, enabled: boolean) => void;
+    onItemSelected: (item: SDK.CategorizedBreakpoint.Category | SDK.CategorizedBreakpoint.CategorizedBreakpoint | null) => void;
+    onSpaceKeyDown: () => void;
     filterText: string | null;
     userExpandedCategories: Set<SDK.CategorizedBreakpoint.Category>;
     highlightedItem: SDK.CategorizedBreakpoint.CategorizedBreakpoint | null;

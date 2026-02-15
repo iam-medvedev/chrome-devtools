@@ -7,15 +7,10 @@ import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('ChatMessage', () => {
-    function createComponent(props) {
+    function createComponent(props = {}) {
         const view = createViewFunctionStub(AiAssistance.ChatMessage.ChatMessage);
         const component = new AiAssistance.ChatMessage.ChatMessage(undefined, view);
-        Object.assign(component, props);
-        component.wasShown();
-        return [view, component];
-    }
-    it('should show the feedback form when canShowFeedbackForm is true', async () => {
-        const [view] = createComponent({
+        Object.assign(component, {
             message: {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [],
@@ -30,6 +25,14 @@ describeWithEnvironment('ChatMessage', () => {
             onSuggestionClick: sinon.stub(),
             onCopyResponseClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
+            ...props,
+        });
+        component.wasShown();
+        return [view, component];
+    }
+    it('should show the feedback form when canShowFeedbackForm is true', async () => {
+        const [view] = createComponent({
+            canShowFeedbackForm: true,
         });
         sinon.assert.callCount(view, 1);
         {
@@ -44,20 +47,7 @@ describeWithEnvironment('ChatMessage', () => {
     });
     it('should not show the feedback form when canShowFeedbackForm is false', async () => {
         const [view] = createComponent({
-            message: {
-                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [],
-                rpcId: 99,
-            },
-            isLoading: false,
-            isReadOnly: false,
-            isLastMessage: true,
-            userInfo: {},
-            markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
             canShowFeedbackForm: false,
-            onSuggestionClick: sinon.stub(),
-            onCopyResponseClick: sinon.stub(),
-            onFeedbackSubmit: sinon.stub(),
         });
         sinon.assert.callCount(view, 1);
         {
@@ -71,20 +61,7 @@ describeWithEnvironment('ChatMessage', () => {
     });
     it('should disable the submit button when the input is empty', async () => {
         const [view] = createComponent({
-            message: {
-                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [],
-                rpcId: 99,
-            },
-            isLoading: false,
-            isReadOnly: false,
             isLastMessage: false,
-            userInfo: {},
-            markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
-            canShowFeedbackForm: true,
-            onSuggestionClick: sinon.stub(),
-            onCopyResponseClick: sinon.stub(),
-            onFeedbackSubmit: sinon.stub(),
         });
         sinon.assert.callCount(view, 1);
         {
@@ -110,18 +87,61 @@ describeWithEnvironment('ChatMessage', () => {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [],
             },
-            isLoading: false,
-            isReadOnly: false,
-            isLastMessage: true,
-            userInfo: {},
-            markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
-            canShowFeedbackForm: true,
-            onSuggestionClick: sinon.stub(),
-            onCopyResponseClick: sinon.stub(),
-            onFeedbackSubmit: sinon.stub(),
         });
         sinon.assert.callCount(view, 1);
         expect(view.input.showRateButtons).equals(false);
+    });
+    it('should show actions when it is not the last message and it is loading', async () => {
+        const [view] = createComponent({
+            isLoading: true,
+            isLastMessage: false,
+        });
+        sinon.assert.callCount(view, 1);
+        expect(view.input.showActions).equals(true);
+    });
+    it('should not show actions when it is the last message and it is loading', async () => {
+        const [view] = createComponent({
+            isLoading: true,
+            isLastMessage: true,
+        });
+        sinon.assert.callCount(view, 1);
+        expect(view.input.showActions).equals(false);
+    });
+    it('should not show suggestions when it is not the last message', async () => {
+        const [view] = createComponent({
+            message: {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [
+                    {
+                        type: 'answer',
+                        text: 'test',
+                        suggestions: ['suggestion'],
+                    },
+                ],
+                rpcId: 99,
+            },
+            isLastMessage: false,
+        });
+        sinon.assert.callCount(view, 1);
+        expect(view.input.suggestions).equals(undefined);
+    });
+    it('should show suggestions when it is the last message', async () => {
+        const [view] = createComponent({
+            message: {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [
+                    {
+                        type: 'answer',
+                        text: 'test',
+                        suggestions: ['suggestion'],
+                    },
+                ],
+                rpcId: 99,
+            },
+            isLastMessage: true,
+        });
+        sinon.assert.callCount(view, 1);
+        expect(view.input.suggestions).deep.equals(['suggestion']);
     });
     describe('view', () => {
         it('renders a minimal model message', async () => {
@@ -142,6 +162,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isSubmitButtonDisabled: false,
                 isShowingFeedbackForm: true,
                 isLastMessage: true,
+                showActions: true,
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                     parts: [],
@@ -174,6 +195,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isSubmitButtonDisabled: false,
                 isShowingFeedbackForm: true,
                 isLastMessage: true,
+                showActions: true,
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                     rpcId: 99,
@@ -223,6 +245,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isSubmitButtonDisabled: false,
                 isShowingFeedbackForm: false,
                 isLastMessage: true,
+                showActions: false,
                 message: {
                     entity: "user" /* AiAssistance.ChatMessage.ChatMessageEntity.USER */,
                     text: 'Can you help me fix specific CSS rules?',

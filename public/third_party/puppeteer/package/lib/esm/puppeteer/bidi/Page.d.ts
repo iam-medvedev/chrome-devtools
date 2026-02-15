@@ -11,7 +11,7 @@ import type { CDPSession } from '../api/CDPSession.js';
 import type { DeviceRequestPrompt } from '../api/DeviceRequestPrompt.js';
 import type { WaitForOptions } from '../api/Frame.js';
 import type { HTTPResponse } from '../api/HTTPResponse.js';
-import type { Credentials, GeolocationOptions, MediaFeature, PageEvents, ReloadOptions, WaitTimeoutOptions } from '../api/Page.js';
+import type { Credentials, GeolocationOptions, HeapSnapshotOptions, MediaFeature, PageEvents, ReloadOptions, WaitTimeoutOptions } from '../api/Page.js';
 import { Page, type NewDocumentScriptEvaluation, type ScreenshotOptions } from '../api/Page.js';
 import { Coverage } from '../cdp/Coverage.js';
 import type { NetworkConditions } from '../cdp/NetworkManager.js';
@@ -128,6 +128,7 @@ export declare class BidiPage extends Page {
     deleteCookie(...cookies: DeleteCookiesRequest[]): Promise<void>;
     removeExposedFunction(name: string): Promise<void>;
     metrics(): never;
+    captureHeapSnapshot(_options: HeapSnapshotOptions): Promise<void>;
     goBack(options?: WaitForOptions): Promise<HTTPResponse | null>;
     goForward(options?: WaitForOptions): Promise<HTTPResponse | null>;
     waitForDevicePrompt(options?: WaitTimeoutOptions): Promise<DeviceRequestPrompt>;

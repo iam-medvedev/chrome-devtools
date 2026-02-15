@@ -1330,7 +1330,7 @@ class TreeViewTreeElement extends TreeElement {
             this.listItemElement.classList.add(className);
             this.#clonedClasses.add(className);
         }
-        InterceptBindingDirective.attachEventListeners(this.configElement, this.listItemElement);
+        InterceptBindingDirective.setEventListeners(this.configElement, this.listItemElement);
         for (const child of this.configElement.childNodes) {
             if (child instanceof HTMLUListElement && child.role === 'group') {
                 continue;
@@ -1457,7 +1457,7 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
         super();
         this.#treeOutline.addEventListener(Events.ElementSelected, event => {
             if (event.data instanceof TreeViewTreeElement) {
-                this.dispatchEvent(new TreeViewElement.SelectEvent(event.data.configElement));
+                event.data.listItemElement.dispatchEvent(new TreeViewElement.SelectEvent());
             }
         });
         this.#treeOutline.addEventListener(Events.ElementExpanded, event => {
@@ -1603,8 +1603,8 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
 }
 (function (TreeViewElement) {
     class SelectEvent extends CustomEvent {
-        constructor(detail) {
-            super('select', { detail });
+        constructor() {
+            super('select');
         }
     }
     TreeViewElement.SelectEvent = SelectEvent;

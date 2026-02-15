@@ -42,8 +42,7 @@ var __setFunctionName = (this && this.__setFunctionName) || function (f, name, p
     return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
 };
 import { Browser, } from '../api/Browser.js';
-import { ProtocolError } from '../common/Errors.js';
-import { UnsupportedOperation } from '../common/Errors.js';
+import { ProtocolError, UnsupportedOperation } from '../common/Errors.js';
 import { EventEmitter } from '../common/EventEmitter.js';
 import { debugError } from '../common/util.js';
 import { bubble } from '../util/decorators.js';
@@ -267,11 +266,36 @@ let BidiBrowser = (() => {
         removeScreen(_screenId) {
             throw new UnsupportedOperation();
         }
-        getWindowBounds(_windowId) {
-            throw new UnsupportedOperation();
+        async getWindowBounds(windowId) {
+            const clientWindowInfo = await this.#browserCore.getClientWindowInfo(windowId);
+            return {
+                left: clientWindowInfo.x,
+                top: clientWindowInfo.y,
+                width: clientWindowInfo.width,
+                height: clientWindowInfo.height,
+                windowState: clientWindowInfo.state,
+            };
         }
-        setWindowBounds(_windowId, _windowBounds) {
-            throw new UnsupportedOperation();
+        async setWindowBounds(windowId, windowBounds) {
+            let params;
+            const windowState = windowBounds.windowState ?? 'normal';
+            if (windowState === 'normal') {
+                params = {
+                    clientWindow: windowId,
+                    state: 'normal',
+                    x: windowBounds.left,
+                    y: windowBounds.top,
+                    width: windowBounds.width,
+                    height: windowBounds.height,
+                };
+            }
+            else {
+                params = {
+                    clientWindow: windowId,
+                    state: windowState,
+                };
+            }
+            await this.#browserCore.setClientWindowState(params);
         }
         targets() {
             return [

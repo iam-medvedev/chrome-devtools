@@ -2596,7 +2596,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.36.1";
+var packageVersion = "24.37.2";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -3114,6 +3114,25 @@ var Browser = class extends EventEmitter {
    */
   async deleteMatchingCookies(...filters) {
     return await this.defaultBrowserContext().deleteMatchingCookies(...filters);
+  }
+  /**
+   * Sets the permission for a specific origin in the default
+   * {@link BrowserContext}.
+   *
+   * @remarks
+   *
+   * Shortcut for
+   * {@link BrowserContext.setPermission |
+   * browser.defaultBrowserContext().setPermission()}.
+   *
+   * @param origin - The origin to set the permission for.
+   * @param permission - The permission descriptor.
+   * @param state - The state of the permission.
+   *
+   * @public
+   */
+  async setPermission(origin, ...permissions) {
+    return await this.defaultBrowserContext().setPermission(origin, ...permissions);
   }
   /**
    * Whether Puppeteer is connected to this {@link Browser | browser}.
@@ -3892,6 +3911,7 @@ var Locator = class extends EventEmitter {
   }
   #fill(value, options) {
     const signal = options?.signal;
+    const typingThreshold = options?.typingThreshold ?? 100;
     const cause = new Error("Locator.fill");
     return this._wait(options).pipe(this.operators.conditions([
       this.#ensureElementIsInTheViewportIfNeeded,
@@ -3928,41 +3948,59 @@ var Locator = class extends EventEmitter {
         }
         return "unknown";
       })).pipe(mergeMap((inputType) => {
+        const fillDirectly = () => {
+          return from(handle.focus()).pipe(mergeMap(() => {
+            return from(handle.evaluate((input, newValue) => {
+              const element = input;
+              const currentValue = element.isContentEditable ? element.innerText : element.value;
+              if (currentValue === newValue) {
+                return;
+              }
+              if (element.isContentEditable) {
+                element.innerText = newValue;
+              } else {
+                element.value = newValue;
+              }
+              element.dispatchEvent(new Event("input", { bubbles: true }));
+              element.dispatchEvent(new Event("change", { bubbles: true }));
+            }, value));
+          }));
+        };
         switch (inputType) {
           case "select":
             return from(handle.select(value).then(noop));
           case "contenteditable":
           case "typeable-input":
-            return from(handle.evaluate((input, newValue) => {
-              const currentValue = input.isContentEditable ? input.innerText : input.value;
-              if (newValue.length <= currentValue.length || !newValue.startsWith(input.value)) {
-                if (input.isContentEditable) {
-                  input.innerText = "";
+            if (value.length < typingThreshold) {
+              return from(handle.evaluate((input, newValue) => {
+                const element = input;
+                const currentValue = element.isContentEditable ? element.innerText : input.value;
+                if (newValue.length <= currentValue.length || !newValue.startsWith(currentValue)) {
+                  if (element.isContentEditable) {
+                    element.innerText = "";
+                  } else {
+                    input.value = "";
+                  }
+                  return newValue;
+                }
+                if (element.isContentEditable) {
+                  element.innerText = "";
+                  element.innerText = currentValue;
                 } else {
                   input.value = "";
+                  input.value = currentValue;
                 }
-                return newValue;
-              }
-              const originalValue = input.isContentEditable ? input.innerText : input.value;
-              if (input.isContentEditable) {
-                input.innerText = "";
-                input.innerText = originalValue;
-              } else {
-                input.value = "";
-                input.value = originalValue;
-              }
-              return newValue.substring(originalValue.length);
-            }, value)).pipe(mergeMap((textToType) => {
-              return from(handle.type(textToType));
-            }));
+                return newValue.substring(currentValue.length);
+              }, value)).pipe(mergeMap((textToType) => {
+                if (!textToType) {
+                  return of(void 0);
+                }
+                return from(handle.type(textToType));
+              }));
+            }
+            return fillDirectly();
           case "other-input":
-            return from(handle.focus()).pipe(mergeMap(() => {
-              return from(handle.evaluate((input, value2) => {
-                input.value = value2;
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-                input.dispatchEvent(new Event("change", { bubbles: true }));
-              }, value));
-            }));
+            return fillDirectly();
           case "unknown":
             throw new Error(`Element cannot be filled out.`);
         }
@@ -4891,6 +4929,8 @@ var Page = (() => {
      * - `timeout`: Maximum wait time in milliseconds, defaults to `30` seconds, pass
      *   `0` to disable the timeout. The default value can be changed by using the
      *   {@link Page.setDefaultTimeout} method.
+     *
+     * - `signal`: A signal object that allows you to cancel a waitForRequest call.
      */
     waitForRequest(urlOrPredicate, options = {}) {
       const { timeout: ms = this._timeoutSettings.timeout(), signal } = options;
@@ -4939,6 +4979,8 @@ var Page = (() => {
      * - `timeout`: Maximum wait time in milliseconds, defaults to `30` seconds,
      *   pass `0` to disable the timeout. The default value can be changed by using
      *   the {@link Page.setDefaultTimeout} method.
+     *
+     * - `signal`: A signal object that allows you to cancel a waitForResponse call.
      */
     waitForResponse(urlOrPredicate, options = {}) {
       const { timeout: ms = this._timeoutSettings.timeout(), signal } = options;
@@ -5647,6 +5689,8 @@ var Page = (() => {
      * - `timeout`: maximum time to wait for in milliseconds. Defaults to `30000`
      *   (30 seconds). Pass `0` to disable timeout. The default value can be changed
      *   by using the {@link Page.setDefaultTimeout} method.
+     *
+     * - `signal`: A signal object that allows you to cancel a waitForSelector call.
      */
     async waitForSelector(selector, options = {}) {
       return await this.mainFrame().waitForSelector(selector, options);
@@ -8012,7 +8056,7 @@ var CSSQueryHandler = class extends QueryHandler {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/injected.js
-var source = '"use strict";var g=Object.defineProperty;var X=Object.getOwnPropertyDescriptor;var B=Object.getOwnPropertyNames;var Y=Object.prototype.hasOwnProperty;var l=(t,e)=>{for(var r in e)g(t,r,{get:e[r],enumerable:!0})},G=(t,e,r,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let s of B(e))!Y.call(t,s)&&s!==r&&g(t,s,{get:()=>e[s],enumerable:!(o=X(e,s))||o.enumerable});return t};var J=t=>G(g({},"__esModule",{value:!0}),t);var pe={};l(pe,{default:()=>he});module.exports=J(pe);var N=class extends Error{constructor(e,r){super(e,r),this.name=this.constructor.name}get[Symbol.toStringTag](){return this.constructor.name}},p=class extends N{};var c=class t{static create(e){return new t(e)}static async race(e){let r=new Set;try{let o=e.map(s=>s instanceof t?(s.#s&&r.add(s),s.valueOrThrow()):s);return await Promise.race(o)}finally{for(let o of r)o.reject(new Error("Timeout cleared"))}}#e=!1;#r=!1;#o;#t;#a=new Promise(e=>{this.#t=e});#s;#i;constructor(e){e&&e.timeout>0&&(this.#i=new p(e.message),this.#s=setTimeout(()=>{this.reject(this.#i)},e.timeout))}#l(e){clearTimeout(this.#s),this.#o=e,this.#t()}resolve(e){this.#r||this.#e||(this.#e=!0,this.#l(e))}reject(e){this.#r||this.#e||(this.#r=!0,this.#l(e))}resolved(){return this.#e}finished(){return this.#e||this.#r}value(){return this.#o}#n;valueOrThrow(){return this.#n||(this.#n=(async()=>{if(await this.#a,this.#r)throw this.#o;return this.#o})()),this.#n}};var L=new Map,W=t=>{let e=L.get(t);return e||(e=new Function(`return ${t}`)(),L.set(t,e),e)};var b={};l(b,{ariaQuerySelector:()=>z,ariaQuerySelectorAll:()=>x});var z=(t,e)=>globalThis.__ariaQuerySelector(t,e),x=async function*(t,e){yield*await globalThis.__ariaQuerySelectorAll(t,e)};var E={};l(E,{cssQuerySelector:()=>K,cssQuerySelectorAll:()=>Z});var K=(t,e)=>t.querySelector(e),Z=function(t,e){return t.querySelectorAll(e)};var A={};l(A,{customQuerySelectors:()=>P});var v=class{#e=new Map;register(e,r){if(!r.queryOne&&r.queryAll){let o=r.queryAll;r.queryOne=(s,i)=>{for(let n of o(s,i))return n;return null}}else if(r.queryOne&&!r.queryAll){let o=r.queryOne;r.queryAll=(s,i)=>{let n=o(s,i);return n?[n]:[]}}else if(!r.queryOne||!r.queryAll)throw new Error("At least one query method must be defined.");this.#e.set(e,{querySelector:r.queryOne,querySelectorAll:r.queryAll})}unregister(e){this.#e.delete(e)}get(e){return this.#e.get(e)}clear(){this.#e.clear()}},P=new v;var R={};l(R,{pierceQuerySelector:()=>ee,pierceQuerySelectorAll:()=>te});var ee=(t,e)=>{let r=null,o=s=>{let i=document.createTreeWalker(s,NodeFilter.SHOW_ELEMENT);do{let n=i.currentNode;n.shadowRoot&&o(n.shadowRoot),!(n instanceof ShadowRoot)&&n!==s&&!r&&n.matches(e)&&(r=n)}while(!r&&i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r},te=(t,e)=>{let r=[],o=s=>{let i=document.createTreeWalker(s,NodeFilter.SHOW_ELEMENT);do{let n=i.currentNode;n.shadowRoot&&o(n.shadowRoot),!(n instanceof ShadowRoot)&&n!==s&&n.matches(e)&&r.push(n)}while(i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r};var u=(t,e)=>{if(!t)throw new Error(e)};var y=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=new MutationObserver(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())}),this.#o.observe(this.#r,{childList:!0,subtree:!0,attributes:!0})}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(this.#o.disconnect(),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}},w=class{#e;#r;constructor(e){this.#e=e}async start(){let e=this.#r=c.create(),r=await this.#e();if(r){e.resolve(r);return}let o=async()=>{if(e.finished())return;let s=await this.#e();if(!s){window.requestAnimationFrame(o);return}e.resolve(s),await this.stop()};window.requestAnimationFrame(o)}async stop(){u(this.#r,"Polling never started."),this.#r.finished()||this.#r.reject(new Error("Polling stopped"))}result(){return u(this.#r,"Polling never started."),this.#r.valueOrThrow()}},T=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=setInterval(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())},this.#r)}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(clearInterval(this.#o),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}};var _={};l(_,{PCombinator:()=>H,pQuerySelector:()=>fe,pQuerySelectorAll:()=>$});var a=class{static async*map(e,r){for await(let o of e)yield await r(o)}static async*flatMap(e,r){for await(let o of e)yield*r(o)}static async collect(e){let r=[];for await(let o of e)r.push(o);return r}static async first(e){for await(let r of e)return r}};var C={};l(C,{textQuerySelectorAll:()=>m});var re=new Set(["checkbox","image","radio"]),oe=t=>t instanceof HTMLSelectElement||t instanceof HTMLTextAreaElement||t instanceof HTMLInputElement&&!re.has(t.type),se=new Set(["SCRIPT","STYLE"]),f=t=>!se.has(t.nodeName)&&!document.head?.contains(t),I=new WeakMap,F=t=>{for(;t;)I.delete(t),t instanceof ShadowRoot?t=t.host:t=t.parentNode},j=new WeakSet,ne=new MutationObserver(t=>{for(let e of t)F(e.target)}),d=t=>{let e=I.get(t);if(e||(e={full:"",immediate:[]},!f(t)))return e;let r="";if(oe(t))e.full=t.value,e.immediate.push(t.value),t.addEventListener("input",o=>{F(o.target)},{once:!0,capture:!0});else{for(let o=t.firstChild;o;o=o.nextSibling){if(o.nodeType===Node.TEXT_NODE){e.full+=o.nodeValue??"",r+=o.nodeValue??"";continue}r&&e.immediate.push(r),r="",o.nodeType===Node.ELEMENT_NODE&&(e.full+=d(o).full)}r&&e.immediate.push(r),t instanceof Element&&t.shadowRoot&&(e.full+=d(t.shadowRoot).full),j.has(t)||(ne.observe(t,{childList:!0,characterData:!0,subtree:!0}),j.add(t))}return I.set(t,e),e};var m=function*(t,e){let r=!1;for(let o of t.childNodes)if(o instanceof Element&&f(o)){let s;o.shadowRoot?s=m(o.shadowRoot,e):s=m(o,e);for(let i of s)yield i,r=!0}r||t instanceof Element&&f(t)&&d(t).full.includes(e)&&(yield t)};var k={};l(k,{checkVisibility:()=>le,pierce:()=>S,pierceAll:()=>O});var ie=["hidden","collapse"],le=(t,e)=>{if(!t)return e===!1;if(e===void 0)return t;let r=t.nodeType===Node.TEXT_NODE?t.parentElement:t,o=window.getComputedStyle(r),s=o&&!ie.includes(o.visibility)&&!ae(r);return e===s?t:!1};function ae(t){let e=t.getBoundingClientRect();return e.width===0||e.height===0}var ce=t=>"shadowRoot"in t&&t.shadowRoot instanceof ShadowRoot;function*S(t){ce(t)?yield t.shadowRoot:yield t}function*O(t){t=S(t).next().value,yield t;let e=[document.createTreeWalker(t,NodeFilter.SHOW_ELEMENT)];for(let r of e){let o;for(;o=r.nextNode();)o.shadowRoot&&(yield o.shadowRoot,e.push(document.createTreeWalker(o.shadowRoot,NodeFilter.SHOW_ELEMENT)))}}var D={};l(D,{xpathQuerySelectorAll:()=>q});var q=function*(t,e,r=-1){let s=(t.ownerDocument||document).evaluate(e,t,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE),i=[],n;for(;(n=s.iterateNext())&&(i.push(n),!(r&&i.length===r)););for(let h=0;h<i.length;h++)n=i[h],yield n,delete i[h]};var ue=/[-\\w\\P{ASCII}*]/u,H=(r=>(r.Descendent=">>>",r.Child=">>>>",r))(H||{}),V=t=>"querySelectorAll"in t,Q=class{#e;#r=[];#o=void 0;elements;constructor(e,r){this.elements=[e],this.#e=r,this.#t()}async run(){for(typeof this.#o=="string"&&this.#o.trimStart()===":scope"&&this.#t();this.#o!==void 0;this.#t()){let e=this.#o;typeof e=="string"?e[0]&&ue.test(e[0])?this.elements=a.flatMap(this.elements,async function*(r){V(r)&&(yield*r.querySelectorAll(e))}):this.elements=a.flatMap(this.elements,async function*(r){if(!r.parentElement){if(!V(r))return;yield*r.querySelectorAll(e);return}let o=0;for(let s of r.parentElement.children)if(++o,s===r)break;yield*r.parentElement.querySelectorAll(`:scope>:nth-child(${o})${e}`)}):this.elements=a.flatMap(this.elements,async function*(r){switch(e.name){case"text":yield*m(r,e.value);break;case"xpath":yield*q(r,e.value);break;case"aria":yield*x(r,e.value);break;default:let o=P.get(e.name);if(!o)throw new Error(`Unknown selector type: ${e.name}`);yield*o.querySelectorAll(r,e.value)}})}}#t(){if(this.#r.length!==0){this.#o=this.#r.shift();return}if(this.#e.length===0){this.#o=void 0;return}let e=this.#e.shift();switch(e){case">>>>":{this.elements=a.flatMap(this.elements,S),this.#t();break}case">>>":{this.elements=a.flatMap(this.elements,O),this.#t();break}default:this.#r=e,this.#t();break}}},M=class{#e=new WeakMap;calculate(e,r=[]){if(e===null)return r;e instanceof ShadowRoot&&(e=e.host);let o=this.#e.get(e);if(o)return[...o,...r];let s=0;for(let n=e.previousSibling;n;n=n.previousSibling)++s;let i=this.calculate(e.parentNode,[s]);return this.#e.set(e,i),[...i,...r]}},U=(t,e)=>{if(t.length+e.length===0)return 0;let[r=-1,...o]=t,[s=-1,...i]=e;return r===s?U(o,i):r<s?-1:1},de=async function*(t){let e=new Set;for await(let o of t)e.add(o);let r=new M;yield*[...e.values()].map(o=>[o,r.calculate(o)]).sort(([,o],[,s])=>U(o,s)).map(([o])=>o)},$=function(t,e){let r=JSON.parse(e);if(r.some(o=>{let s=0;return o.some(i=>(typeof i=="string"?++s:s=0,s>1))}))throw new Error("Multiple deep combinators found in sequence.");return de(a.flatMap(r,o=>{let s=new Q(t,o);return s.run(),s.elements}))},fe=async function(t,e){for await(let r of $(t,e))return r;return null};var me=Object.freeze({...b,...A,...R,..._,...C,...k,...D,...E,Deferred:c,createFunction:W,createTextContent:d,IntervalPoller:T,isSuitableNodeForTextMatching:f,MutationPoller:y,RAFPoller:w}),he=me;\n';
+var source = '"use strict";var g=Object.defineProperty;var X=Object.getOwnPropertyDescriptor;var B=Object.getOwnPropertyNames;var Y=Object.prototype.hasOwnProperty;var l=(t,e)=>{for(var r in e)g(t,r,{get:e[r],enumerable:!0})},G=(t,e,r,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let s of B(e))!Y.call(t,s)&&s!==r&&g(t,s,{get:()=>e[s],enumerable:!(o=X(e,s))||o.enumerable});return t};var J=t=>G(g({},"__esModule",{value:!0}),t);var pe={};l(pe,{default:()=>he});module.exports=J(pe);var N=class extends Error{constructor(e,r){super(e,r),this.name=this.constructor.name}get[Symbol.toStringTag](){return this.constructor.name}},p=class extends N{};var c=class t{static create(e){return new t(e)}static async race(e){let r=new Set;try{let o=e.map(s=>s instanceof t?(s.#s&&r.add(s),s.valueOrThrow()):s);return await Promise.race(o)}finally{for(let o of r)o.reject(new Error("Timeout cleared"))}}#e=!1;#r=!1;#o;#t;#a=new Promise(e=>{this.#t=e});#s;#i;constructor(e){e&&e.timeout>0&&(this.#i=new p(e.message),this.#s=setTimeout(()=>{this.reject(this.#i)},e.timeout))}#l(e){clearTimeout(this.#s),this.#o=e,this.#t()}resolve(e){this.#r||this.#e||(this.#e=!0,this.#l(e))}reject(e){this.#r||this.#e||(this.#r=!0,this.#l(e))}resolved(){return this.#e}finished(){return this.#e||this.#r}value(){return this.#o}#n;valueOrThrow(){return this.#n||(this.#n=(async()=>{if(await this.#a,this.#r)throw this.#o;return this.#o})()),this.#n}};var L=new Map,W=t=>{let e=L.get(t);return e||(e=new Function(`return ${t}`)(),L.set(t,e),e)};var b={};l(b,{ariaQuerySelector:()=>z,ariaQuerySelectorAll:()=>x});var z=(t,e)=>globalThis.__ariaQuerySelector(t,e),x=async function*(t,e){yield*await globalThis.__ariaQuerySelectorAll(t,e)};var E={};l(E,{cssQuerySelector:()=>K,cssQuerySelectorAll:()=>Z});var K=(t,e)=>t.querySelector(e),Z=function(t,e){return t.querySelectorAll(e)};var A={};l(A,{customQuerySelectors:()=>P});var v=class{#e=new Map;register(e,r){if(!r.queryOne&&r.queryAll){let o=r.queryAll;r.queryOne=(s,i)=>{for(let n of o(s,i))return n;return null}}else if(r.queryOne&&!r.queryAll){let o=r.queryOne;r.queryAll=(s,i)=>{let n=o(s,i);return n?[n]:[]}}else if(!r.queryOne||!r.queryAll)throw new Error("At least one query method must be defined.");this.#e.set(e,{querySelector:r.queryOne,querySelectorAll:r.queryAll})}unregister(e){this.#e.delete(e)}get(e){return this.#e.get(e)}clear(){this.#e.clear()}},P=new v;var R={};l(R,{pierceQuerySelector:()=>ee,pierceQuerySelectorAll:()=>te});var ee=(t,e)=>{let r=null,o=s=>{let i=document.createTreeWalker(s,NodeFilter.SHOW_ELEMENT);do{let n=i.currentNode;n.shadowRoot&&o(n.shadowRoot),!(n instanceof ShadowRoot)&&n!==s&&!r&&n.matches(e)&&(r=n)}while(!r&&i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r},te=(t,e)=>{let r=[],o=s=>{let i=document.createTreeWalker(s,NodeFilter.SHOW_ELEMENT);do{let n=i.currentNode;n.shadowRoot&&o(n.shadowRoot),!(n instanceof ShadowRoot)&&n!==s&&n.matches(e)&&r.push(n)}while(i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r};var u=(t,e)=>{if(!t)throw new Error(e)};var y=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=new MutationObserver(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())}),this.#o.observe(this.#r,{childList:!0,subtree:!0,attributes:!0})}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(this.#o.disconnect(),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}},w=class{#e;#r;constructor(e){this.#e=e}async start(){let e=this.#r=c.create(),r=await this.#e();if(r){e.resolve(r);return}let o=async()=>{if(e.finished())return;let s=await this.#e();if(!s){window.requestAnimationFrame(o);return}e.resolve(s),await this.stop()};window.requestAnimationFrame(o)}async stop(){u(this.#r,"Polling never started."),this.#r.finished()||this.#r.reject(new Error("Polling stopped"))}result(){return u(this.#r,"Polling never started."),this.#r.valueOrThrow()}},T=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=setInterval(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())},this.#r)}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(clearInterval(this.#o),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}};var _={};l(_,{PCombinator:()=>H,pQuerySelector:()=>fe,pQuerySelectorAll:()=>$});var a=class{static async*map(e,r){for await(let o of e)yield await r(o)}static async*flatMap(e,r){for await(let o of e)yield*r(o)}static async collect(e){let r=[];for await(let o of e)r.push(o);return r}static async first(e){for await(let r of e)return r}};var C={};l(C,{textQuerySelectorAll:()=>m});var re=new Set(["checkbox","image","radio"]),oe=t=>t instanceof HTMLSelectElement||t instanceof HTMLTextAreaElement||t instanceof HTMLInputElement&&!re.has(t.type),se=new Set(["SCRIPT","STYLE"]),f=t=>!se.has(t.nodeName)&&!document.head?.contains(t),I=new WeakMap,F=t=>{for(;t;)I.delete(t),t instanceof ShadowRoot?t=t.host:t=t.parentNode},j=new WeakSet,ne=new MutationObserver(t=>{for(let e of t)F(e.target)}),d=t=>{let e=I.get(t);if(e||(e={full:"",immediate:[]},!f(t)))return e;let r="";if(oe(t))e.full=t.value,e.immediate.push(t.value),t.addEventListener("input",o=>{F(o.target)},{once:!0,capture:!0});else{for(let o=t.firstChild;o;o=o.nextSibling){if(o.nodeType===Node.TEXT_NODE){e.full+=o.nodeValue??"",r+=o.nodeValue??"";continue}r&&e.immediate.push(r),r="",o.nodeType===Node.ELEMENT_NODE&&(e.full+=d(o).full)}r&&e.immediate.push(r),t instanceof Element&&t.shadowRoot&&(e.full+=d(t.shadowRoot).full),j.has(t)||(ne.observe(t,{childList:!0,characterData:!0,subtree:!0}),j.add(t))}return I.set(t,e),e};var m=function*(t,e){let r=!1;for(let o of t.childNodes)if(o instanceof Element&&f(o)){let s;o.shadowRoot?s=m(o.shadowRoot,e):s=m(o,e);for(let i of s)yield i,r=!0}r||t instanceof Element&&f(t)&&d(t).full.includes(e)&&(yield t)};var k={};l(k,{checkVisibility:()=>le,pierce:()=>S,pierceAll:()=>O});var ie=["hidden","collapse"],le=(t,e)=>{if(!t)return e===!1;if(e===void 0)return t;let r=t.nodeType===Node.TEXT_NODE?t.parentElement:t,o=window.getComputedStyle(r),s=o&&!ie.includes(o.visibility)&&!ae(r);return e===s?t:!1};function ae(t){let e=t.getBoundingClientRect();return e.width===0||e.height===0}var ce=t=>"shadowRoot"in t&&t.shadowRoot instanceof ShadowRoot;function*S(t){ce(t)?yield t.shadowRoot:yield t}function*O(t){t=S(t).next().value,yield t;let e=[document.createTreeWalker(t,NodeFilter.SHOW_ELEMENT)];for(let r of e){let o;for(;o=r.nextNode();)o.shadowRoot&&(yield o.shadowRoot,e.push(document.createTreeWalker(o.shadowRoot,NodeFilter.SHOW_ELEMENT)))}}var D={};l(D,{xpathQuerySelectorAll:()=>q});var q=function*(t,e,r=-1){let s=(t.ownerDocument||document).evaluate(e,t,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE),i=[],n;for(;(n=s.iterateNext())&&(i.push(n),!(r&&i.length===r)););for(let h=0;h<i.length;h++)n=i[h],yield n,i[h]=null};var ue=/[-\\w\\P{ASCII}*]/u,H=(r=>(r.Descendent=">>>",r.Child=">>>>",r))(H||{}),V=t=>"querySelectorAll"in t,Q=class{#e;#r=[];#o=void 0;elements;constructor(e,r){this.elements=[e],this.#e=r,this.#t()}async run(){for(typeof this.#o=="string"&&this.#o.trimStart()===":scope"&&this.#t();this.#o!==void 0;this.#t()){let e=this.#o;typeof e=="string"?e[0]&&ue.test(e[0])?this.elements=a.flatMap(this.elements,async function*(r){V(r)&&(yield*r.querySelectorAll(e))}):this.elements=a.flatMap(this.elements,async function*(r){if(!r.parentElement){if(!V(r))return;yield*r.querySelectorAll(e);return}let o=0;for(let s of r.parentElement.children)if(++o,s===r)break;yield*r.parentElement.querySelectorAll(`:scope>:nth-child(${o})${e}`)}):this.elements=a.flatMap(this.elements,async function*(r){switch(e.name){case"text":yield*m(r,e.value);break;case"xpath":yield*q(r,e.value);break;case"aria":yield*x(r,e.value);break;default:let o=P.get(e.name);if(!o)throw new Error(`Unknown selector type: ${e.name}`);yield*o.querySelectorAll(r,e.value)}})}}#t(){if(this.#r.length!==0){this.#o=this.#r.shift();return}if(this.#e.length===0){this.#o=void 0;return}let e=this.#e.shift();switch(e){case">>>>":{this.elements=a.flatMap(this.elements,S),this.#t();break}case">>>":{this.elements=a.flatMap(this.elements,O),this.#t();break}default:this.#r=e,this.#t();break}}},M=class{#e=new WeakMap;calculate(e,r=[]){if(e===null)return r;e instanceof ShadowRoot&&(e=e.host);let o=this.#e.get(e);if(o)return[...o,...r];let s=0;for(let n=e.previousSibling;n;n=n.previousSibling)++s;let i=this.calculate(e.parentNode,[s]);return this.#e.set(e,i),[...i,...r]}},U=(t,e)=>{if(t.length+e.length===0)return 0;let[r=-1,...o]=t,[s=-1,...i]=e;return r===s?U(o,i):r<s?-1:1},de=async function*(t){let e=new Set;for await(let o of t)e.add(o);let r=new M;yield*[...e.values()].map(o=>[o,r.calculate(o)]).sort(([,o],[,s])=>U(o,s)).map(([o])=>o)},$=function(t,e){let r=JSON.parse(e);if(r.some(o=>{let s=0;return o.some(i=>(typeof i=="string"?++s:s=0,s>1))}))throw new Error("Multiple deep combinators found in sequence.");return de(a.flatMap(r,o=>{let s=new Q(t,o);return s.run(),s.elements}))},fe=async function(t,e){for await(let r of $(t,e))return r;return null};var me=Object.freeze({...b,...A,...R,..._,...C,...k,...D,...E,Deferred:c,createFunction:W,createTextContent:d,IntervalPoller:T,isSuitableNodeForTextMatching:f,MutationPoller:y,RAFPoller:w}),he=me;\n';
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/ScriptInjector.js
 var ScriptInjector = class {
@@ -8978,7 +9022,7 @@ var Frame = (() => {
      * ```
      *
      * @param pageFunction - the function to evaluate in the frame context.
-     * @param options - options to configure the polling method and timeout.
+     * @param options - options to configure the polling method, timeout and signal.
      * @param args - arguments to pass to the `pageFunction`.
      * @returns the promise which resolve when the `pageFunction` returns a truthy value.
      */
@@ -10790,7 +10834,7 @@ function createEvaluationError(details) {
     name = "Error";
     message = details.text;
   } else if ((details.exception.type !== "object" || details.exception.subtype !== "error") && !details.exception.objectId) {
-    return valueFromRemoteObject(details.exception);
+    return valueFromPrimitiveRemoteObject(details.exception);
   } else {
     const detail = getErrorDetails(details);
     name = detail.name;
@@ -10840,7 +10884,7 @@ function createClientError(details) {
     name = "Error";
     message = details.text;
   } else if ((details.exception.type !== "object" || details.exception.subtype !== "error") && !details.exception.objectId) {
-    return valueFromRemoteObject(details.exception);
+    return valueFromPrimitiveRemoteObject(details.exception);
   } else {
     const detail = getErrorDetails(details);
     name = detail.name;
@@ -10862,7 +10906,28 @@ function createClientError(details) {
   error.stack = [...messageLines, ...stackLines].join("\n");
   return error;
 }
-function valueFromRemoteObject(remoteObject) {
+function valueFromJSHandle(handle) {
+  const remoteObject = handle.remoteObject();
+  if (remoteObject.objectId) {
+    return valueFromRemoteObjectReference(handle);
+  } else {
+    return valueFromPrimitiveRemoteObject(remoteObject);
+  }
+}
+function valueFromRemoteObjectReference(handle) {
+  const remoteObject = handle.remoteObject();
+  assert(remoteObject.objectId, "Cannot extract value when no objectId is given");
+  const description = remoteObject.description ?? "";
+  if (remoteObject.subtype === "error" && description) {
+    const newlineIdx = description.indexOf("\n");
+    if (newlineIdx === -1) {
+      return description;
+    }
+    return description.slice(0, newlineIdx);
+  }
+  return `[${remoteObject.subtype || remoteObject.type} ${remoteObject.className}]`;
+}
+function valueFromPrimitiveRemoteObject(remoteObject) {
   assert(!remoteObject.objectId, "Cannot extract value when objectId is given");
   if (remoteObject.unserializableValue) {
     if (remoteObject.type === "bigint") {
@@ -10945,7 +11010,7 @@ var CdpJSHandle = class extends JSHandle {
   }
   async jsonValue() {
     if (!this.#remoteObject.objectId) {
-      return valueFromRemoteObject(this.#remoteObject);
+      return valueFromPrimitiveRemoteObject(this.#remoteObject);
     }
     const value = await this.evaluate((object) => {
       return object;
@@ -10971,7 +11036,7 @@ var CdpJSHandle = class extends JSHandle {
   }
   toString() {
     if (!this.#remoteObject.objectId) {
-      return "JSHandle:" + valueFromRemoteObject(this.#remoteObject);
+      return "JSHandle:" + valueFromPrimitiveRemoteObject(this.#remoteObject);
     }
     const type = this.#remoteObject.subtype || this.#remoteObject.type;
     return "JSHandle@" + type;
@@ -11499,7 +11564,7 @@ ${sourceUrlComment}
         throw createEvaluationError(exceptionDetails2);
       }
       if (returnByValue) {
-        return valueFromRemoteObject(remoteObject2);
+        return valueFromPrimitiveRemoteObject(remoteObject2);
       }
       return this.#world.createCdpHandle(remoteObject2);
     }
@@ -11536,7 +11601,7 @@ ${sourceUrlComment}
       throw createEvaluationError(exceptionDetails);
     }
     if (returnByValue) {
-      return valueFromRemoteObject(remoteObject);
+      return valueFromPrimitiveRemoteObject(remoteObject);
     }
     return this.#world.createCdpHandle(remoteObject);
     async function convertArgumentAsync(context2, arg) {
@@ -11816,16 +11881,24 @@ var AXNode = class _AXNode {
   #editable = false;
   #focusable = false;
   #hidden = false;
+  #busy = false;
+  #modal = false;
+  #hasErrormessage = false;
+  #hasDetails = false;
   #name;
   #role;
+  #description;
+  #roledescription;
+  #live;
   #ignored;
   #cachedHasFocusableChild;
   #realm;
   constructor(realm, payload) {
     this.payload = payload;
-    this.#name = this.payload.name ? this.payload.name.value : "";
     this.#role = this.payload.role ? this.payload.role.value : "Unknown";
     this.#ignored = this.payload.ignored;
+    this.#name = this.payload.name ? this.payload.name.value : "";
+    this.#description = this.payload.description ? this.payload.description.value : void 0;
     this.#realm = realm;
     for (const property of this.payload.properties || []) {
       if (property.name === "editable") {
@@ -11837,6 +11910,24 @@ var AXNode = class _AXNode {
       }
       if (property.name === "hidden") {
         this.#hidden = property.value.value;
+      }
+      if (property.name === "busy") {
+        this.#busy = property.value.value;
+      }
+      if (property.name === "live") {
+        this.#live = property.value.value;
+      }
+      if (property.name === "modal") {
+        this.#modal = property.value.value;
+      }
+      if (property.name === "roledescription") {
+        this.#roledescription = property.value.value;
+      }
+      if (property.name === "errormessage") {
+        this.#hasErrormessage = true;
+      }
+      if (property.name === "details") {
+        this.#hasDetails = true;
       }
     }
   }
@@ -11957,7 +12048,7 @@ var AXNode = class _AXNode {
     if (this.isLandmark()) {
       return true;
     }
-    if (this.#focusable || this.#richlyEditable) {
+    if (this.#focusable || this.#richlyEditable || this.#busy || this.#live && this.#live !== "off" || this.#modal || this.#hasErrormessage || this.#hasDetails || this.#roledescription) {
       return true;
     }
     if (this.isControl()) {
@@ -11966,7 +12057,7 @@ var AXNode = class _AXNode {
     if (insideControl) {
       return false;
     }
-    return this.isLeafNode() && !!this.#name;
+    return this.isLeafNode() && (!!this.#name || !!this.#description);
   }
   serialize() {
     const properties = /* @__PURE__ */ new Map();
@@ -12033,17 +12124,18 @@ var AXNode = class _AXNode {
       "multiselectable",
       "readonly",
       "required",
-      "selected"
+      "selected",
+      "busy",
+      "atomic"
     ];
     const getBooleanPropertyValue = (key) => {
-      return properties.get(key);
+      return !!properties.get(key);
     };
     for (const booleanProperty of booleanProperties) {
       if (booleanProperty === "focused" && this.#role === "RootWebArea") {
         continue;
       }
-      const value = getBooleanPropertyValue(booleanProperty);
-      if (value === void 0) {
+      if (!properties.has(booleanProperty)) {
         continue;
       }
       node[booleanProperty] = getBooleanPropertyValue(booleanProperty);
@@ -12074,7 +12166,11 @@ var AXNode = class _AXNode {
       "autocomplete",
       "haspopup",
       "invalid",
-      "orientation"
+      "orientation",
+      "live",
+      "relevant",
+      "errormessage",
+      "details"
     ];
     const getTokenPropertyValue = (key) => {
       return properties.get(key);
@@ -13419,7 +13515,15 @@ var CdpHTTPRequest = class extends HTTPRequest {
     this.#url = data.request.url + (data.request.urlFragment ?? "");
     this.#resourceType = (data.type || "other").toLowerCase();
     this.#method = data.request.method;
-    this.#postData = data.request.postData;
+    if (data.request.postDataEntries && data.request.postDataEntries.length > 0) {
+      this.#postData = new TextDecoder().decode(mergeUint8Arrays(data.request.postDataEntries.map((entry) => {
+        return entry.bytes ? stringToTypedArray(entry.bytes, true) : null;
+      }).filter((entry) => {
+        return entry !== null;
+      })));
+    } else {
+      this.#postData = data.request.postData;
+    }
     this.#hasPostData = data.request.hasPostData ?? false;
     this.#frame = frame;
     this._redirectChain = redirectChain;
@@ -16064,6 +16168,16 @@ function convertConsoleMessageLevel(method) {
       return method;
   }
 }
+function convertSameSiteFromPuppeteerToCdp(sameSite) {
+  switch (sameSite) {
+    case "Strict":
+    case "Lax":
+    case "None":
+      return sameSite;
+    default:
+      return void 0;
+  }
+}
 var CdpPage = class _CdpPage extends Page {
   static async _create(client, target, defaultViewport) {
     const page = new _CdpPage(client, target);
@@ -16495,7 +16609,8 @@ var CdpPage = class _CdpPage extends Page {
         cookies: items.map((cookieParam) => {
           return {
             ...cookieParam,
-            partitionKey: convertCookiesPartitionKeyFromPuppeteerToCdp(cookieParam.partitionKey)
+            partitionKey: convertCookiesPartitionKeyFromPuppeteerToCdp(cookieParam.partitionKey),
+            sameSite: convertSameSiteFromPuppeteerToCdp(cookieParam.sameSite)
           };
         })
       });
@@ -16553,6 +16668,31 @@ var CdpPage = class _CdpPage extends Page {
     const response = await this.#primaryTargetClient.send("Performance.getMetrics");
     return this.#buildMetricsObject(response.metrics);
   }
+  async captureHeapSnapshot(options) {
+    const { createWriteStream } = environment.value.fs;
+    const stream = createWriteStream(options.path);
+    const streamPromise = new Promise((resolve, reject) => {
+      stream.on("error", reject);
+      stream.on("finish", resolve);
+    });
+    const client = this.#primaryTargetClient;
+    await client.send("HeapProfiler.enable");
+    await client.send("HeapProfiler.collectGarbage");
+    const handler = (event) => {
+      stream.write(event.chunk);
+    };
+    client.on("HeapProfiler.addHeapSnapshotChunk", handler);
+    try {
+      await client.send("HeapProfiler.takeHeapSnapshot", {
+        reportProgress: false
+      });
+    } finally {
+      client.off("HeapProfiler.addHeapSnapshotChunk", handler);
+      await client.send("HeapProfiler.disable");
+    }
+    stream.end();
+    await streamPromise;
+  }
   #emitMetrics(event) {
     this.emit("metrics", {
       title: event.title,
@@ -16586,12 +16726,7 @@ var CdpPage = class _CdpPage extends Page {
     }
     const textTokens = [];
     for (const arg of values) {
-      const remoteObject = arg.remoteObject();
-      if (remoteObject.objectId) {
-        textTokens.push(arg.toString());
-      } else {
-        textTokens.push(valueFromRemoteObject(remoteObject));
-      }
+      textTokens.push(valueFromJSHandle(arg));
     }
     const stackTraceLocations = [];
     if (event.stackTrace) {
@@ -16996,6 +17131,23 @@ var CdpBrowserContext = class extends BrowserContext {
       permissions: protocolPermissions
     });
   }
+  async setPermission(origin, ...permissions) {
+    await Promise.all(permissions.map(async (permission) => {
+      const protocolPermission = {
+        name: permission.permission.name,
+        userVisibleOnly: permission.permission.userVisibleOnly,
+        sysex: permission.permission.sysex,
+        allowWithoutSanitization: permission.permission.allowWithoutSanitization,
+        panTiltZoom: permission.permission.panTiltZoom
+      };
+      await this.#connection.send("Browser.setPermission", {
+        origin: origin === "*" ? void 0 : origin,
+        browserContextId: this.#id || void 0,
+        permission: protocolPermission,
+        setting: permission.state
+      });
+    }));
+  }
   async clearPermissionOverrides() {
     await this.#connection.send("Browser.resetPermissions", {
       browserContextId: this.#id || void 0
@@ -17042,7 +17194,8 @@ var CdpBrowserContext = class extends BrowserContext {
       cookies: cookies.map((cookie) => {
         return {
           ...cookie,
-          partitionKey: convertCookiesPartitionKeyFromPuppeteerToCdp(cookie.partitionKey)
+          partitionKey: convertCookiesPartitionKeyFromPuppeteerToCdp(cookie.partitionKey),
+          sameSite: convertSameSiteFromPuppeteerToCdp(cookie.sameSite)
         };
       })
     });

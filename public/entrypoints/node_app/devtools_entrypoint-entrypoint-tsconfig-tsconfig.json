@@ -51,6 +51,9 @@
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {
+      "path": "../../panels/application/bundle-tsconfig.json"
+    },
+    {
       "path": "../../panels/js_timeline/meta-tsconfig.json"
     },
     {

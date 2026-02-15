@@ -76,6 +76,35 @@ describeWithMockConnection('CategorizedBreakpointsSidebarPane', () => {
         const postInput = await pane.view.nextInput;
         assert.strictEqual(postInput.highlightedItem, pane.breakpoints[0]);
     });
+    it('toggles a single breakpoint on Space key', async () => {
+        const pane = new TestSidebarPane();
+        pane.update();
+        const input = await pane.view.nextInput;
+        // Simulate selecting a breakpoint
+        input.onItemSelected(pane.breakpoints[1]);
+        assert.isFalse(pane.breakpoints[1].enabled());
+        // Press Space
+        input.onSpaceKeyDown();
+        assert.isTrue(pane.breakpoints[1].enabled());
+        // Press Space again to disable
+        const input2 = await pane.view.nextInput;
+        input2.onItemSelected(pane.breakpoints[1]);
+        input2.onSpaceKeyDown();
+        assert.isFalse(pane.breakpoints[1].enabled());
+    });
+    it('toggles all breakpoints in a category on Space key', async () => {
+        const pane = new TestSidebarPane();
+        pane.update();
+        const input = await pane.view.nextInput;
+        // Simulate selecting a category
+        input.onItemSelected("animation" /* SDK.CategorizedBreakpoint.Category.ANIMATION */);
+        assert.isFalse(pane.breakpoints[1].enabled());
+        assert.isFalse(pane.breakpoints[3].enabled());
+        // Press Space — enables all breakpoints in the category
+        input.onSpaceKeyDown();
+        assert.isTrue(pane.breakpoints[1].enabled());
+        assert.isTrue(pane.breakpoints[3].enabled());
+    });
     describe('View', () => {
         const categories = new Map([
             [
@@ -103,6 +132,8 @@ describeWithMockConnection('CategorizedBreakpointsSidebarPane', () => {
                 onBreakpointChange: function () {
                     throw new Error('Function not implemented.');
                 },
+                onItemSelected: function () { },
+                onSpaceKeyDown: function () { },
                 filterText: null,
                 highlightedItem: null,
                 categories,
@@ -123,6 +154,8 @@ describeWithMockConnection('CategorizedBreakpointsSidebarPane', () => {
                 onBreakpointChange: function () {
                     throw new Error('Function not implemented.');
                 },
+                onItemSelected: function () { },
+                onSpaceKeyDown: function () { },
                 filterText: null,
                 highlightedItem: categories.get("canvas" /* SDK.CategorizedBreakpoint.Category.CANVAS */)[0],
                 categories,
@@ -144,6 +177,8 @@ describeWithMockConnection('CategorizedBreakpointsSidebarPane', () => {
                 onBreakpointChange: function () {
                     throw new Error('Function not implemented.');
                 },
+                onItemSelected: function () { },
+                onSpaceKeyDown: function () { },
                 filterText: null,
                 categories,
                 sortedCategoryNames: categories.keys().toArray().toSorted(),

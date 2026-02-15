@@ -76,24 +76,21 @@ describeWithMockConnection('JSPresentationUtils', () => {
             ],
         }, target);
     }
-    async function checkLinkContentForStackTracePreview(target, linkifier, stackTrace, expectedNumLinks, expectedLinkContent) {
-        const options = { tabStops: false };
-        const component = new Components.JSPresentationUtils.StackTracePreviewContent(undefined, target, linkifier, options);
-        component.stackTrace = stackTrace;
-        await component.updateComplete;
-        assert.lengthOf(component.linkElements, expectedNumLinks);
-        assert.strictEqual(component.linkElements[0].textContent, expectedLinkContent);
-    }
     it('renders stack trace, and re-renders on update', async () => {
         const { target, debuggerWorkspaceBinding, linkifier } = setUpEnvironment();
         const stackTrace = await createStackTrace(target, debuggerWorkspaceBinding);
-        const expectedNumLinks = 3;
-        await checkLinkContentForStackTracePreview(target, linkifier, stackTrace, expectedNumLinks, 'www.google.com/script.js:1');
+        const component = new Components.JSPresentationUtils.StackTracePreviewContent(undefined, target, linkifier, { tabStops: false });
+        component.stackTrace = stackTrace;
+        await component.updateComplete;
+        assert.lengthOf(component.linkElements, 3);
+        assert.strictEqual(component.linkElements[0].textContent, 'www.google.com/script.js:1');
         // Modify stack trace and re-render.
         // @ts-expect-error
         stackTrace.syncFragment.frames[0].line = 100;
         stackTrace.dispatchEventToListeners("UPDATED" /* StackTrace.StackTrace.Events.UPDATED */);
-        await checkLinkContentForStackTracePreview(target, linkifier, stackTrace, expectedNumLinks, 'www.google.com/script.js:101');
+        await component.updateComplete;
+        assert.lengthOf(component.linkElements, 3);
+        assert.strictEqual(component.linkElements[0].textContent, 'www.google.com/script.js:101');
     });
     it('renders expandable stack trace', async () => {
         const { target, debuggerWorkspaceBinding, linkifier } = setUpEnvironment();

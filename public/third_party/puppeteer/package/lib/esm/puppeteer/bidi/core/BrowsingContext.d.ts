@@ -96,12 +96,13 @@ export declare class BrowsingContext extends EventEmitter<{
     };
 }> {
     #private;
-    static from(userContext: UserContext, parent: BrowsingContext | undefined, id: string, url: string, originalOpener: string | null): BrowsingContext;
+    static from(userContext: UserContext, parent: BrowsingContext | undefined, id: string, url: string, originalOpener: string | null, clientWindow: string): BrowsingContext;
     readonly defaultRealm: WindowRealm;
     readonly id: string;
     readonly parent: BrowsingContext | undefined;
     readonly userContext: UserContext;
     readonly originalOpener: string | null;
+    readonly windowId: string;
     private constructor();
     get children(): Iterable<BrowsingContext>;
     get closed(): boolean;
@@ -137,7 +138,7 @@ export declare class BrowsingContext extends EventEmitter<{
     addInterception(events: [string, ...string[]]): Promise<void>;
     [disposeSymbol](): void;
     deleteCookie(...cookieFilters: Bidi.Storage.CookieFilter[]): Promise<void>;
-    locateNodes(locator: Bidi.BrowsingContext.Locator, startNodes: [Bidi.Script.SharedReference, ...Bidi.Script.SharedReference[]]): Promise<Bidi.Script.NodeRemoteValue[]>;
+    locateNodes(locator: Bidi.BrowsingContext.Locator, startNodes?: Bidi.Script.SharedReference[]): Promise<Bidi.Script.NodeRemoteValue[]>;
     setJavaScriptEnabled(enabled: boolean): Promise<void>;
     isJavaScriptEnabled(): boolean;
     setUserAgent(userAgent: string | null): Promise<void>;

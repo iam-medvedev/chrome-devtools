@@ -597,16 +597,33 @@ export class ElementFocusRestorer {
 export function runCSSAnimationOnce(element, className) {
     function animationEndCallback() {
         element.classList.remove(className);
-        element.removeEventListener('webkitAnimationEnd', animationEndCallback, false);
+        element.removeEventListener('animationend', animationEndCallback, false);
         element.removeEventListener('animationcancel', animationEndCallback, false);
     }
-    if (element.classList.contains(className)) {
-        element.classList.remove(className);
-    }
-    element.addEventListener('webkitAnimationEnd', animationEndCallback, false);
+    // Remove class if it exists.
+    element.classList.toggle(className, /* force=*/ false);
+    element.addEventListener('animationend', animationEndCallback, false);
     element.addEventListener('animationcancel', animationEndCallback, false);
     element.classList.add(className);
 }
+class AnimateOnDirective extends Lit.Directive.Directive {
+    #previousValue = false;
+    render(_condition, _className) {
+        return undefined; // Directives don't have to render HTML
+    }
+    update(part, [condition, className]) {
+        const el = part.element;
+        // Only trigger if the condition transitioned from false -> true
+        if (condition && !this.#previousValue) {
+            this.#animate(el, className);
+        }
+        this.#previousValue = condition;
+    }
+    #animate(el, className) {
+        runCSSAnimationOnce(el, className);
+    }
+}
+export const animateOn = Lit.Directive.directive(AnimateOnDirective);
 export function measurePreferredSize(element, containerElement) {
     const oldParent = element.parentElement;
     const oldNextSibling = element.nextSibling;
@@ -1003,7 +1020,7 @@ export class CheckboxLabel extends HTMLElement {
         this.#textElement.addEventListener('click', e => e.stopPropagation());
         this.#textElement.createChild('slot');
     }
-    static create(title, checked, subtitle, jslogContext, small) {
+    static create(title, checked, subtitle, jslogContext, small, tooltip) {
         const element = document.createElement('devtools-checkbox');
         element.#checkboxElement.checked = Boolean(checked);
         if (jslogContext) {
@@ -1011,10 +1028,16 @@ export class CheckboxLabel extends HTMLElement {
         }
         if (title !== undefined) {
             element.#textElement.textContent = title;
-            element.#checkboxElement.title = title;
             if (subtitle !== undefined) {
                 element.#textElement.createChild('div', 'devtools-checkbox-subtitle').textContent = subtitle;
             }
+        }
+        // checkboxElement tooltip: tooltip first, then title (custom tooltip takes precedence for the input)
+        const inputTooltip = tooltip ?? title;
+        if (inputTooltip) {
+            element.#checkboxElement.title = inputTooltip;
+            // Set aria-description for screen reader announcement
+            element.#checkboxElement.setAttribute('aria-description', inputTooltip);
         }
         element.#checkboxElement.classList.toggle('small', small);
         return element;
@@ -1667,6 +1690,7 @@ export function bindToAction(actionName) {
 }
 export class InterceptBindingDirective extends Lit.Directive.Directive {
     static #interceptedBindings = new WeakMap();
+    static #attachedBindings = new WeakMap();
     update(part, [listener]) {
         if (part.type !== Lit.Directive.PartType.EVENT) {
             return listener;
@@ -1683,13 +1707,22 @@ export class InterceptBindingDirective extends Lit.Directive.Directive {
     render(_listener) {
         return undefined;
     }
-    static attachEventListeners(templateElement, renderedElement) {
-        const eventListeners = InterceptBindingDirective.#interceptedBindings.get(templateElement);
-        if (!eventListeners) {
-            return;
+    static setEventListeners(templateElement, renderedElement) {
+        const attachedListeners = InterceptBindingDirective.#attachedBindings.get(renderedElement);
+        if (attachedListeners) {
+            for (const [name, listener] of attachedListeners) {
+                renderedElement.removeEventListener(name, listener);
+            }
         }
-        for (const [name, listener] of eventListeners) {
-            renderedElement.addEventListener(name, listener);
+        const newListeners = InterceptBindingDirective.#interceptedBindings.get(templateElement);
+        if (newListeners?.size) {
+            for (const [name, listener] of newListeners) {
+                renderedElement.addEventListener(name, listener);
+            }
+            InterceptBindingDirective.#attachedBindings.set(renderedElement, new Map(newListeners));
+        }
+        else {
+            InterceptBindingDirective.#attachedBindings.delete(renderedElement);
         }
     }
 }
@@ -1718,7 +1751,7 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
             clone.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
         }
         if (node instanceof Element && clone instanceof Element) {
-            InterceptBindingDirective.attachEventListeners(node, clone);
+            InterceptBindingDirective.setEventListeners(node, clone);
         }
         return clone;
     }
@@ -1745,7 +1778,7 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
                 HTMLElementWithLightDOMTemplate.patchLitTemplate(value);
                 return value;
             }
-            if (Array.isArray(value)) {
+            if (Array.isArray(value) || value instanceof Iterator) {
                 return value.map(patchValue);
             }
             return value;
@@ -1840,10 +1873,22 @@ export const bindCheckboxImpl = function (input, apply, metric) {
         }
     };
 };
-export const bindToSetting = (settingOrName, stringValidator) => {
+export const bindToSetting = (settingOrName, optionsOrValidator) => {
     const setting = typeof settingOrName === 'string' ?
         Common.Settings.Settings.instance().moduleSetting(settingOrName) :
         settingOrName;
+    let stringValidator;
+    let jslog = true;
+    if (typeof optionsOrValidator === 'function') {
+        stringValidator = optionsOrValidator;
+    }
+    else if (optionsOrValidator) {
+        stringValidator = optionsOrValidator.validator;
+        if (optionsOrValidator.jslog !== undefined) {
+            jslog = optionsOrValidator.jslog;
+        }
+    }
+    const jslogBuilder = jslog ? VisualLogging.toggle(setting.name).track({ change: true }) : null;
     // We can't use `setValue` as the change listener directly, otherwise we won't
     // be able to remove it again.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1857,6 +1902,9 @@ export const bindToSetting = (settingOrName, stringValidator) => {
                 setting.removeChangeListener(settingChanged);
                 return;
             }
+            if (jslogBuilder) {
+                e.setAttribute('jslog', jslogBuilder.toString());
+            }
             setting.addChangeListener(settingChanged);
             setValue =
                 bindCheckboxImpl(e, setting.set.bind(setting));
@@ -1868,6 +1916,9 @@ export const bindToSetting = (settingOrName, stringValidator) => {
             if (e === undefined) {
                 setting.removeChangeListener(settingChanged);
                 return;
+            }
+            if (jslogBuilder) {
+                e.setAttribute('jslog', jslogBuilder.toString());
             }
             setting.addChangeListener(settingChanged);
             setValue = bindInput(e, setting.set.bind(setting), (value) => {
@@ -1887,6 +1938,9 @@ export const bindToSetting = (settingOrName, stringValidator) => {
             if (e === undefined) {
                 setting.removeChangeListener(settingChanged);
                 return;
+            }
+            if (jslogBuilder) {
+                e.setAttribute('jslog', jslogBuilder.toString());
             }
             setting.addChangeListener(settingChanged);
             setValue = bindInput(e, setting.set.bind(setting), stringValidator ?? (() => true), /* numeric */ false);

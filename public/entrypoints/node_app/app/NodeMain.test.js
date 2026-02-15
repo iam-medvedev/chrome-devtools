@@ -10,7 +10,7 @@ describeWithMockConnection('NodeChildTargetManager', () => {
         const browserTarget = createTarget({ type: SDK.Target.Type.BROWSER });
         const childTargetManager = browserTarget.model(App.NodeMain.NodeChildTargetManager);
         assert.exists(childTargetManager);
-        childTargetManager.attachedToTarget({
+        void childTargetManager.attachedToTarget({
             sessionId: 'session ID',
             targetInfo: {
                 attached: true,
@@ -32,7 +32,7 @@ describeWithMockConnection('NodeChildTargetManager', () => {
         const sendStub = sinon.stub(browserTarget.targetAgent(), 'invoke_sendMessageToTarget');
         const childTargetManager = browserTarget.model(App.NodeMain.NodeChildTargetManager);
         assert.exists(childTargetManager);
-        childTargetManager.attachedToTarget({
+        void childTargetManager.attachedToTarget({
             sessionId: 'session ID',
             targetInfo: {
                 attached: true,

@@ -15,7 +15,7 @@ function createCommandMenuProvider(inputs) {
         category: "APPEARANCE" /* Common.SettingRegistration.SettingCategory.APPEARANCE */,
         defaultValue: false,
     });
-    const provider = new QuickOpen.CommandMenu.CommandMenuProvider(inputs.map(input => QuickOpen.CommandMenu.CommandMenu.createSettingCommand(setting, i18n.i18n.lockedString(input), true)));
+    const provider = new QuickOpen.CommandMenu.CommandMenuProvider('', inputs.map(input => QuickOpen.CommandMenu.CommandMenu.createSettingCommand(setting, i18n.i18n.lockedString(input), true)));
     return provider;
 }
 async function testMatch(inputs, query, expectedSelection, expectedMatches) {

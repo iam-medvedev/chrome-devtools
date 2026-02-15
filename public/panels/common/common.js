@@ -104,6 +104,12 @@ var aiCodeCompletionTeaser_css_default = `/*
         .ai-code-completion-teaser-dismiss {
             text-decoration: underline;
             cursor: pointer;
+
+            &:focus-visible {
+                border-radius: var(--sys-shape-corner-extra-small);
+                outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+                outline-offset: 0;
+            }
         }
 
         .ai-code-completion-teaser-action {
@@ -382,11 +388,11 @@ var UIStringsNotTranslate = {
   /**
    * @description Code generation disclaimer item text for the fre dialog.
    */
-  freDisclaimerDescribeCodeInComment: "In Console or Sources, describe the code you need in a comment, then press Ctrl+I to generate it.",
+  freDisclaimerDescribeCodeInComment: "In Console or Sources, describe the code you need in a comment, then press ctrl+i to generate it.",
   /**
    * @description Code generation disclaimer item text for the fre dialog.
    */
-  freDisclaimerDescribeCodeInCommentForMacOs: "In Console or Sources, describe the code you need in a comment, then press Cmd+I to generate it.",
+  freDisclaimerDescribeCodeInCommentForMacOs: "In Console or Sources, describe the code you need in a comment, then press cmd+i to generate it.",
   /**
    * @description Privacy disclaimer item text for the fre dialog.
    */
@@ -430,7 +436,16 @@ var DEFAULT_VIEW = (input, _output, target) => {
               <span>${lockedString(UIStringsNotTranslate.i)}</span>
             </span>
             </span>&nbsp;${lockedString(UIStringsNotTranslate.toTurnOnCodeSuggestions)}&nbsp;
-            <span role="button" class="ai-code-completion-teaser-dismiss" @click=${input.onDismiss}
+            <span role="button" class="ai-code-completion-teaser-dismiss"
+              tabindex="0"
+              @click=${input.onDismiss}
+              @keydown=${(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      input.onDismiss(e);
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }}
               jslog=${VisualLogging.action("ai-code-completion-teaser.dismiss").track({ click: true })}>
                 ${lockedString(UIStringsNotTranslate.dontShowAgain)}
             </span>
@@ -691,6 +706,14 @@ var UIStringsNotTranslate2 = {
    */
   cmdItoGenerateCode: "cmd+i to generate code",
   /**
+   * @description Text for teaser to learn how data is being used.
+   */
+  ctrlOneTimeDisclaimerToLearnHowYourDataIsBeingUsed: "ctrl+. to learn how your data is being used.",
+  /**
+   * @description Text for teaser to learn how data is being used in Mac.
+   */
+  cmdOneTimeDisclaimerToLearnHowYourDataIsBeingUsed: "cmd+. to learn how your data is being used.",
+  /**
    * @description Aria label for teaser to generate code.
    */
   pressCtrlPeriodToLearnHowYourDataIsBeingUsed: "Press ctrl . (\u201Cperiod\u201D) to learn how your data is being used.",
@@ -773,14 +796,16 @@ var DEFAULT_VIEW2 = (input, output, target) => {
         return;
       }
       const toGenerateCode = Host2.Platform.isMac() ? lockedString2(UIStringsNotTranslate2.cmdItoGenerateCode) : lockedString2(UIStringsNotTranslate2.ctrlItoGenerateCode);
-      const toLearnHowYourDataIsBeingUsed = Host2.Platform.isMac() ? lockedString2(UIStringsNotTranslate2.pressCmdPeriodToLearnHowYourDataIsBeingUsed) : lockedString2(UIStringsNotTranslate2.pressCtrlPeriodToLearnHowYourDataIsBeingUsed);
+      const toLearnHowYourDataIsBeingUsedScreenReaderOnly = Host2.Platform.isMac() ? lockedString2(UIStringsNotTranslate2.pressCmdPeriodToLearnHowYourDataIsBeingUsed) : lockedString2(UIStringsNotTranslate2.pressCtrlPeriodToLearnHowYourDataIsBeingUsed);
+      const toLearnHowYourDataIsBeingUsedVisible = Host2.Platform.isMac() ? lockedString2(UIStringsNotTranslate2.cmdOneTimeDisclaimerToLearnHowYourDataIsBeingUsed) : lockedString2(UIStringsNotTranslate2.ctrlOneTimeDisclaimerToLearnHowYourDataIsBeingUsed);
       const tooltipDisclaimerText = getTooltipDisclaimerText(input.noLogging, input.panel);
       teaserLabel = html3`<div class="ai-code-generation-teaser-trigger">
-        <span aria-atomic="true" aria-live="assertive">${toGenerateCode}&nbsp;</span>
-        <div class="ai-code-generation-teaser-screen-reader-only" aria-atomic="true" aria-live="assertive">
-          ${toLearnHowYourDataIsBeingUsed}
-        </div>
-        <devtools-button
+        <span aria-atomic="true" aria-live="assertive">${toGenerateCode}</span>
+        ${input.showDataUsageTeaser ? html3`<span aria-hidden="true">${". " + toLearnHowYourDataIsBeingUsedVisible}</span>` : nothing2}
+        <span class="ai-code-generation-teaser-screen-reader-only" aria-atomic="true" aria-live="assertive">
+          ${toLearnHowYourDataIsBeingUsedScreenReaderOnly}
+        </span>
+        &nbsp;<devtools-button
           .data=${{
         title: lockedString2(UIStringsNotTranslate2.learnMoreAboutHowYourDataIsBeingUsed),
         size: "MICRO",
@@ -856,16 +881,17 @@ var DEFAULT_VIEW2 = (input, output, target) => {
           </div>
         `, target);
 };
-var AiCodeGenerationTeaser = class extends UI3.Widget.Widget {
+var AiCodeGenerationTeaser = class _AiCodeGenerationTeaser extends UI3.Widget.Widget {
   #view;
   #viewOutput = {};
-  #displayState = AiCodeGenerationTeaserDisplayState.TRIGGER;
+  #displayState = AiCodeGenerationTeaserDisplayState.DISCOVERY;
   #disclaimerTooltipId;
   #noLogging;
   // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
   #panel;
   #timerIntervalId;
   #loadStartTime;
+  static #showDataUsageTeaser = true;
   constructor(view) {
     super();
     this.markAsExternallyManaged();
@@ -879,6 +905,7 @@ var AiCodeGenerationTeaser = class extends UI3.Widget.Widget {
       onManageInSettingsTooltipClick: this.#onManageInSettingsTooltipClick.bind(this),
       disclaimerTooltipId: this.#disclaimerTooltipId,
       noLogging: this.#noLogging,
+      showDataUsageTeaser: _AiCodeGenerationTeaser.#showDataUsageTeaser,
       panel: this.#panel
     }, this.#viewOutput, this.contentElement);
   }
@@ -892,6 +919,9 @@ var AiCodeGenerationTeaser = class extends UI3.Widget.Widget {
   set displayState(displayState) {
     if (displayState === this.#displayState) {
       return;
+    }
+    if (this.#displayState === AiCodeGenerationTeaserDisplayState.TRIGGER) {
+      _AiCodeGenerationTeaser.#showDataUsageTeaser = false;
     }
     this.#displayState = displayState;
     this.requestUpdate();

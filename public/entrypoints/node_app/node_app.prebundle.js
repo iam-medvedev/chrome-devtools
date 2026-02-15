@@ -34,6 +34,14 @@ const UIStrings = {
      * @description Command for showing the 'Node' tool in the Network Navigator View, which is part of the Sources tool
      */
     showNode: 'Show Node',
+    /**
+     * @description Text in Application Panel Sidebar of the Application panel
+     */
+    application: 'Application',
+    /**
+     * @description Command for showing the 'Application' tool
+     */
+    showApplication: 'Show Application',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/node_app/node_app.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -66,6 +74,28 @@ UI.ViewManager.registerViewExtension({
         const Sources = await loadSourcesModule();
         return Sources.SourcesNavigator.NetworkNavigatorView.instance();
     },
+});
+let loadedResourcesModule;
+async function loadResourcesModule() {
+    if (!loadedResourcesModule) {
+        loadedResourcesModule = await import('../../panels/application/application.js');
+    }
+    return loadedResourcesModule;
+}
+UI.ViewManager.registerViewExtension({
+    location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
+    id: 'resources',
+    title: i18nLazyString(UIStrings.application),
+    commandPrompt: i18nLazyString(UIStrings.showApplication),
+    order: 70,
+    async loadView() {
+        const Resources = await loadResourcesModule();
+        return Resources.ResourcesPanel.ResourcesPanel.instance({
+            forceNew: true,
+            mode: 'node',
+        });
+    },
+    tags: [],
 });
 // @ts-expect-error Exposed for legacy layout tests
 self.runtime = Root.Runtime.Runtime.instance({ forceNew: true });

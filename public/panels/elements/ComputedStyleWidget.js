@@ -42,13 +42,14 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as ElementsComponents from './components/components.js';
-import computedStyleSidebarPaneStyles from './computedStyleSidebarPane.css.js';
+import computedStyleWidgetStyles from './computedStyleWidget.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { PlatformFontsWidget } from './PlatformFontsWidget.js';
 import { categorizePropertyName, DefaultCategoryOrder } from './PropertyNameCategories.js';
 import { Renderer, rendererBase, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
-const { html } = Lit;
+const { html, render } = Lit;
+const { bindToSetting } = UI.UIUtils;
 const UIStrings = {
     /**
      * @description Text for a checkbox setting that controls whether the user-supplied filter text
@@ -171,7 +172,7 @@ const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles,
     };
     return trace;
 };
-/** clang-format off **/
+// clang-format off
 class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.ColorMatch) {
     // clang-format on
     render(match, context) {
@@ -213,20 +214,50 @@ const propertySorter = (propA, propB) => {
     const canonicalB = SDK.CSSMetadata.cssMetadata().canonicalPropertyName(propB);
     return Platform.StringUtilities.compare(canonicalA, canonicalB);
 };
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <style>${computedStyleWidgetStyles}</style>
+    <div class="styles-sidebar-pane-toolbar">
+      <devtools-toolbar class="styles-pane-toolbar" role="presentation">
+        <devtools-toolbar-input
+          type="filter"
+          autofocus
+          value=${input.filterText}
+          @change=${input.onFilterChanged}
+        ></devtools-toolbar-input>
+        <devtools-checkbox
+          title=${i18nString(UIStrings.showAll)}
+          ${bindToSetting(input.showInheritedComputedStylePropertiesSetting)}
+        >${i18nString(UIStrings.showAll)}</devtools-checkbox>
+        <devtools-checkbox
+          title=${i18nString(UIStrings.group)}
+          ${bindToSetting(input.groupComputedStylesSetting)}
+        >${i18nString(UIStrings.group)}</devtools-checkbox>
+      </devtools-toolbar>
+    </div>
+    <div class="computed-style-tree-outline-container">
+      ${input.computedStylesTree}
+    </div>
+    ${!input.hasMatches ? html `<div class="gray-info-message">${i18nString(UIStrings.noMatchingProperty)}</div>` : ''}
+    <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(PlatformFontsWidget, { sharedModel: input.computedStyleModel })}></devtools-widget>
+  `, target);
+    // clang-format on
+};
 export class ComputedStyleWidget extends UI.Widget.VBox {
     computedStyleModel;
     showInheritedComputedStylePropertiesSetting;
     groupComputedStylesSetting;
-    input;
     filterRegex;
-    noMatchesElement;
     linkifier;
     imagePreviewPopover;
     #computedStylesTree = new TreeOutline.TreeOutline.TreeOutline();
     #treeData;
+    #view;
+    #filterText = '';
     constructor(computedStyleModel) {
         super({ useShadowDom: true });
-        this.registerRequiredCSS(computedStyleSidebarPaneStyles);
+        this.#view = DEFAULT_VIEW;
         this.contentElement.classList.add('styles-sidebar-computed-style-widget');
         this.computedStyleModel = computedStyleModel;
         this.computedStyleModel.addEventListener("CSSModelChanged" /* ComputedStyleModule.ComputedStyleModel.Events.CSS_MODEL_CHANGED */, this.requestUpdate, this);
@@ -238,18 +269,7 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
         this.groupComputedStylesSetting.addChangeListener(() => {
             this.requestUpdate();
         });
-        const hbox = this.contentElement.createChild('div', 'hbox styles-sidebar-pane-toolbar');
-        const toolbar = hbox.createChild('devtools-toolbar', 'styles-pane-toolbar');
-        const filterInput = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, undefined, undefined, false);
-        filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
-        toolbar.appendToolbarItem(filterInput);
-        this.input = filterInput;
         this.filterRegex = null;
-        toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.showInheritedComputedStylePropertiesSetting, undefined, i18nString(UIStrings.showAll)));
-        toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.groupComputedStylesSetting, undefined, i18nString(UIStrings.group)));
-        this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message');
-        this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingProperty);
-        this.contentElement.appendChild(this.#computedStylesTree);
         this.linkifier = new Components.Linkifier.Linkifier(maxLinkLength);
         this.imagePreviewPopover = new ImagePreviewPopover(this.contentElement, event => {
             const link = event.composedPath()[0];
@@ -258,8 +278,7 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
             }
             return null;
         }, () => this.computedStyleModel.node);
-        const fontsWidget = new PlatformFontsWidget(this.computedStyleModel);
-        fontsWidget.show(this.contentElement);
+        this.#updateView({ hasMatches: true });
     }
     onResize() {
         const isNarrow = this.contentElement.offsetWidth < 260;
@@ -273,10 +292,24 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
         super.willHide();
         UI.Context.Context.instance().setFlavor(ComputedStyleWidget, null);
     }
+    /**
+     * @param input.hasMatches Whether any properties matched the current filter (or if any properties exist at all).
+     */
+    #updateView({ hasMatches }) {
+        this.#view({
+            computedStylesTree: this.#computedStylesTree,
+            hasMatches,
+            computedStyleModel: this.computedStyleModel,
+            showInheritedComputedStylePropertiesSetting: this.showInheritedComputedStylePropertiesSetting,
+            groupComputedStylesSetting: this.groupComputedStylesSetting,
+            onFilterChanged: this.onFilterChanged.bind(this),
+            filterText: this.#filterText,
+        }, null, this.contentElement);
+    }
     async performUpdate() {
-        const [nodeStyles, matchedStyles] = await Promise.all([this.computedStyleModel.fetchComputedStyle(), this.fetchMatchedCascade()]);
+        const { computedStyle: nodeStyles, matchedStyles } = await this.computedStyleModel.fetchAllComputedStyleInfo();
         if (!nodeStyles || !matchedStyles) {
-            this.noMatchesElement.classList.remove('hidden');
+            this.#updateView({ hasMatches: false });
             return;
         }
         const shouldGroupComputedStyles = this.groupComputedStylesSetting.get();
@@ -285,20 +318,6 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
         }
         else {
             await this.rebuildAlphabeticalList(nodeStyles, matchedStyles);
-        }
-    }
-    async fetchMatchedCascade() {
-        const node = this.computedStyleModel.node;
-        if (!node || !this.computedStyleModel.cssModel()) {
-            return null;
-        }
-        const cssModel = this.computedStyleModel.cssModel();
-        if (!cssModel) {
-            return null;
-        }
-        return await cssModel.cachedMatchedCascadeForNode(node).then(validateStyles.bind(this));
-        function validateStyles(matchedStyles) {
-            return matchedStyles && matchedStyles.node() === this.computedStyleModel.node ? matchedStyles : null;
         }
     }
     async rebuildAlphabeticalList(nodeStyle, matchedStyles) {
@@ -343,7 +362,7 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
         this.linkifier.reset();
         const cssModel = this.computedStyleModel.cssModel();
         if (!nodeStyle || !matchedStyles || !cssModel) {
-            this.noMatchesElement.classList.remove('hidden');
+            this.#updateView({ hasMatches: false });
             return;
         }
         const node = nodeStyle.node;
@@ -495,9 +514,10 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
         return result;
     }
     async onFilterChanged(event) {
-        await this.filterComputedStyles(event.data ? new RegExp(Platform.StringUtilities.escapeForRegExp(event.data), 'i') : null);
-        if (event.data && this.#computedStylesTree.data && this.#computedStylesTree.data.tree) {
-            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.filterUpdateAriaText, { PH1: event.data, PH2: this.#computedStylesTree.data.tree.length }));
+        this.#filterText = event.detail;
+        await this.filterComputedStyles(event.detail ? new RegExp(Platform.StringUtilities.escapeForRegExp(event.detail), 'i') : null);
+        if (event.detail && this.#computedStylesTree.data && this.#computedStylesTree.data.tree) {
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.filterUpdateAriaText, { PH1: event.detail, PH2: this.#computedStylesTree.data.tree.length }));
         }
     }
     async filterComputedStyles(regex) {
@@ -506,6 +526,10 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
             return await this.filterGroupLists();
         }
         return this.filterAlphabeticalList();
+    }
+    setFilterInput(text) {
+        this.#filterText = text;
+        this.requestUpdate();
     }
     nodeFilter(node) {
         const regex = this.filterRegex;
@@ -526,7 +550,7 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
             defaultRenderer: this.#treeData.defaultRenderer,
             compact: this.#treeData.compact,
         };
-        this.noMatchesElement.classList.toggle('hidden', Boolean(tree.length));
+        this.#updateView({ hasMatches: Boolean(tree.length) });
     }
     async filterGroupLists() {
         if (!this.#treeData) {
@@ -550,7 +574,7 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
             compact: this.#treeData.compact,
         };
         await this.#computedStylesTree.expandRecursively(0);
-        this.noMatchesElement.classList.toggle('hidden', Boolean(tree.length));
+        this.#updateView({ hasMatches: Boolean(tree.length) });
     }
 }
 const maxLinkLength = 30;

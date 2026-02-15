@@ -1,0 +1,39 @@
+// gen/front_end/panels/greendev/greendev-meta.prebundle.js
+import * as i18n from "./../../core/i18n/i18n.js";
+import * as UI from "./../../ui/legacy/legacy.js";
+var loadedGreenDevModule;
+async function loadGreenDevModule() {
+  if (!loadedGreenDevModule) {
+    loadedGreenDevModule = await import("./greendev.js");
+  }
+  return loadedGreenDevModule;
+}
+UI.ViewManager.registerViewExtension({
+  location: "panel",
+  id: "greendev",
+  title: i18n.i18n.lockedLazyString("GreenDev"),
+  commandPrompt: i18n.i18n.lockedLazyString("Show GreenDev"),
+  persistence: "closeable",
+  order: 100,
+  async loadView() {
+    const GreenDev = await loadGreenDevModule();
+    return GreenDev.GreenDevPanel.GreenDevPanel.instance();
+  },
+  condition: (config) => {
+    return Boolean(config?.devToolsGreenDevUi?.enabled);
+  }
+});
+var syncChannel = new BroadcastChannel("green-dev-sync");
+syncChannel.postMessage({ type: "main-window-alive" });
+syncChannel.onmessage = (event) => {
+  if (event.data.type === "activate-panel") {
+    console.error("[GreenDev] Meta: Received activate-panel broadcast");
+    void UI.ViewManager.ViewManager.instance().showView("greendev").then(() => {
+      console.error("[GreenDev] Meta: View shown, broadcasting select-tab");
+      const replyChannel = new BroadcastChannel("green-dev-sync");
+      replyChannel.postMessage({ type: "select-tab", sessionId: event.data.sessionId });
+      replyChannel.close();
+    });
+  }
+};
+//# sourceMappingURL=greendev-meta.js.map

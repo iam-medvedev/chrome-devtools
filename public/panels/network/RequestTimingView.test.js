@@ -8,6 +8,7 @@ import * as NetworkTimeCalculator from '../../models/network_time_calculator/net
 import { assertScreenshot, getCleanTextContentFromElements, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 function createNetworkRequest(matchedSource, actualSource) {
@@ -156,6 +157,52 @@ describe('ResourceTimingView', () => {
         const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal');
         icon.click();
         sinon.assert.calledOnceWithExactly(revealStub, wasThrottled, false);
+    });
+    it('correctly passes requestUnfinished to the view', async () => {
+        stubNoopSettings();
+        const request = createNetworkRequest("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */, "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
+        request.finished = false;
+        const calculator = new NetworkTimeCalculator.NetworkTimeCalculator(true);
+        const viewStub = createViewFunctionStub(Network.RequestTimingView.RequestTimingView);
+        const component = new Network.RequestTimingView.RequestTimingView(undefined, viewStub);
+        renderElementIntoDOM(component);
+        component.request = request;
+        component.calculator = calculator;
+        const input = await viewStub.nextInput;
+        assert.isTrue(input.requestUnfinished, 'requestUnfinished should be true when request is not finished');
+        const requestFinished = createNetworkRequest("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */, "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
+        requestFinished.finished = true;
+        component.request = requestFinished;
+        const inputFinished = await viewStub.nextInput;
+        assert.isFalse(inputFinished.requestUnfinished, 'requestUnfinished should be false when request is finished');
+    });
+    it('shows caution message in DEFAULT_VIEW if and only if requestUnfinished is true', async () => {
+        stubNoopSettings();
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        const request = createNetworkRequest("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */, "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
+        const timeRanges = NetworkTimeCalculator.calculateRequestTimeRanges(request, 100);
+        const calculator = new NetworkTimeCalculator.NetworkTimeCalculator(true);
+        const baseInput = {
+            requestUnfinished: false,
+            requestStartTime: 0,
+            requestIssueTime: 0,
+            totalDuration: 100,
+            startTime: 0,
+            endTime: 100,
+            timeRanges,
+            calculator,
+            serverTimings: [],
+        };
+        // Case 1: requestUnfinished = true
+        Network.RequestTimingView.DEFAULT_VIEW({ ...baseInput, requestUnfinished: true }, {}, container);
+        const cautionElementTrue = container.querySelector('.caution');
+        assert.isNotNull(cautionElementTrue, 'caution element should exist when requestUnfinished is true');
+        assert.include(cautionElementTrue?.textContent, 'CAUTION: request is not finished yet!');
+        // Case 2: requestUnfinished = false
+        Network.RequestTimingView.DEFAULT_VIEW({ ...baseInput, requestUnfinished: false }, {}, container);
+        const cautionElementFalse = container.querySelector('.caution');
+        assert.isNull(cautionElementFalse, 'caution element should not exist when requestUnfinished is false');
     });
 });
 //# sourceMappingURL=RequestTimingView.test.js.map
