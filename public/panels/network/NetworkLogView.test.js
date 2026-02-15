@@ -10,7 +10,7 @@ import * as HAR from '../../models/har/har.js';
 import * as Logs from '../../models/logs/logs.js';
 import { findMenuItemWithLabel, getContextMenuForElement, getMenu, getMenuItemLabels, } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, dispatchClickEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, registerActions, registerNoopActions, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, registerActions, registerNoopActions, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
@@ -813,7 +813,6 @@ Invoke-WebRequest -UseBasicParsing -Uri "url-header-und-content-overridden"`]);
     });
     describe('Request blocking and throttling', () => {
         beforeEach(() => {
-            updateHostConfig({ devToolsIndividualRequestThrottling: { enabled: true } });
             SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
         });
         async function invokeMenuItem(menu, action) {
@@ -909,7 +908,6 @@ Invoke-WebRequest -UseBasicParsing -Uri "url-header-und-content-overridden"`]);
         setMockConnectionResponseHandler('Network.setBlockedURLs', () => ({}));
         setMockConnectionResponseHandler('Network.overrideNetworkState', () => ({}));
         setMockConnectionResponseHandler('Network.emulateNetworkConditionsByRule', params => params.matchedNetworkConditions.length > 0 ? { ruleIds: [ruleId] } : { ruleIds: [] });
-        updateHostConfig({ devToolsIndividualRequestThrottling: { enabled: true } });
         SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
         networkLogView = createNetworkLogView();
         const container = renderElementIntoDOM(document.createElement('div'), { includeCommonStyles: true });

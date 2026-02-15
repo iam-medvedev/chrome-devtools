@@ -55,8 +55,8 @@ export declare class BidiBrowser extends Browser {
     screens(): Promise<ScreenInfo[]>;
     addScreen(_params: AddScreenParams): Promise<ScreenInfo>;
     removeScreen(_screenId: string): Promise<void>;
-    getWindowBounds(_windowId: WindowId): Promise<WindowBounds>;
-    setWindowBounds(_windowId: WindowId, _windowBounds: WindowBounds): Promise<void>;
+    getWindowBounds(windowId: WindowId): Promise<WindowBounds>;
+    setWindowBounds(windowId: WindowId, windowBounds: WindowBounds): Promise<void>;
     targets(): Target[];
     target(): BidiBrowserTarget;
     disconnect(): Promise<void>;

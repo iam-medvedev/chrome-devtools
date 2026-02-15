@@ -15,7 +15,6 @@ import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel5 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Annotations from "./../../models/annotations/annotations.js";
 import * as Badges from "./../../models/badges/badges.js";
-import * as GreenDev3 from "./../../models/greendev/greendev.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Workspace6 from "./../../models/workspace/workspace.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
@@ -1168,8 +1167,6 @@ import "./../../ui/components/tooltips/tooltips.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
-import * as GreenDev2 from "./../../models/greendev/greendev.js";
-import * as Trace from "./../../models/trace/trace.js";
 import * as Workspace5 from "./../../models/workspace/workspace.js";
 import * as PanelsCommon from "./../common/common.js";
 import * as PanelUtils from "./../utils/utils.js";
@@ -1596,7 +1593,11 @@ var UIStrings = {
   /**
    * @description Label added to the button that remove the currently selected context in AI Assistance panel.
    */
-  removeContext: "Remove selected context"
+  removeContext: "Remove from context",
+  /**
+   * @description Label added to the button that add selected context from the current panel in AI Assistance panel.
+   */
+  addContext: "Add selected item as context"
 };
 var UIStringsNotTranslate3 = {
   /**
@@ -1648,7 +1649,7 @@ var JPEG_MIME_TYPE = "image/jpeg";
 var SHOW_LOADING_STATE_TIMEOUT = 100;
 var RELEVANT_DATA_LINK_CHAT_ID = "relevant-data-link-chat";
 var RELEVANT_DATA_LINK_FOOTER_ID = "relevant-data-link-footer";
-var DEFAULT_VIEW2 = (input, output, target) => {
+var DEFAULT_VIEW2 = (input, _output, target) => {
   const chatInputContainerCls = Lit.Directives.classMap({
     "chat-input-container": true,
     "single-line-layout": !input.selectedContext && !input.onContextAdd,
@@ -1712,45 +1713,6 @@ var DEFAULT_VIEW2 = (input, output, target) => {
           >${lockedString3(UIStringsNotTranslate3.startNewChat)}</devtools-button>
         </div>` : html3`
         <form class="input-form" @submit=${input.onSubmit}>
-          ${GreenDev2.Prototypes.instance().isEnabled("inDevToolsFloaty") ? html3`
-              <ul class="floaty">
-                ${input.additionalFloatyContext.map((c) => {
-    return html3`
-                    <li>
-                      <span class="context-item">
-                        ${c instanceof SDK.NetworkRequest.NetworkRequest ? html3`${c.url()}` : c instanceof SDK.DOMModel.DOMNode ? html3`
-                            <devtools-widget .widgetConfig=${UI3.Widget.widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, { node: c })}
-                            ></devtools-widget>` : "insight" in c ? html3`${c.insight.title}` : "event" in c && "traceStartTime" in c ? html3`
-                            ${c.event.name} @ ${i18n5.TimeUtilities.formatMicroSecondsAsMillisFixed(Trace.Types.Timing.Micro(c.event.ts - c.traceStartTime))}` : Lit.nothing}
-                      </span>
-                      <devtools-button
-                        class="floaty-delete-button"
-                        @click=${(e) => {
-      e.preventDefault();
-      UI3.Floaty.onFloatyContextDelete(c);
-    }}
-                        .data=${{
-      variant: "icon",
-      iconName: "cross",
-      title: "Delete",
-      size: "SMALL"
-    }}
-                      ></devtools-button>
-                    </li>`;
-  })}
-                <li class="open-floaty">
-                  <devtools-button
-                    class="floaty-add-button"
-                    @click=${UI3.Floaty.onFloatyOpen}
-                    .data=${{
-    variant: "icon",
-    iconName: "select-element",
-    title: "Open context picker",
-    size: "SMALL"
-  }}
-                  ></devtools-button>
-                </li>
-              </ul>` : Lit.nothing}
           <div class=${chatInputContainerCls}>
             ${input.multimodalInputEnabled && input.imageInput && !input.isTextInputDisabled ? html3`
                 <div class="image-input-container">
@@ -1849,12 +1811,12 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                       </div>
                     </div>` : input.onContextAdd ? html3`
                                   <devtools-button
-                                    title=${i18nString(UIStrings.removeContext)}
-                                    aria-label=${i18nString(UIStrings.removeContext)}
+                                    title=${i18nString(UIStrings.addContext)}
+                                    aria-label=${i18nString(UIStrings.addContext)}
                                     class="add-context"
                                     .iconName=${"plus"}
                                     .size=${"SMALL"}
-                                    .jslogContext=${"context-add"}
+                                    .jslogContext=${"context-added"}
                                     .variant=${"icon"}
                                     @click=${input.onContextAdd}></devtools-button>` : Lit.nothing}
               </div>
@@ -1949,7 +1911,6 @@ var ChatInput = class extends UI3.Widget.Widget {
   inputPlaceholder = "";
   selectedContext = null;
   inspectElementToggled = false;
-  additionalFloatyContext = [];
   disclaimerText = "";
   conversationType = "freestyler";
   multimodalInputEnabled = false;
@@ -2116,7 +2077,6 @@ var ChatInput = class extends UI3.Widget.Widget {
       selectedContext: this.selectedContext,
       inspectElementToggled: this.inspectElementToggled,
       isTextInputEmpty: this.#isTextInputEmpty(),
-      additionalFloatyContext: this.additionalFloatyContext,
       disclaimerText: this.disclaimerText,
       conversationType: this.conversationType,
       multimodalInputEnabled: this.multimodalInputEnabled,
@@ -2750,7 +2710,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     });
   })}
       ${renderError(message)}
-      ${input.isLastMessage && !input.isLoading ? renderActions(input, output) : Lit2.nothing}
+      ${input.showActions ? renderActions(input, output) : Lit2.nothing}
     </section>
   `, target);
 };
@@ -3133,8 +3093,9 @@ var ChatMessage = class extends UI4.Widget.Widget {
       onInputChange: this.#handleInputChange.bind(this),
       isSubmitButtonDisabled: this.#isSubmitButtonDisabled,
       // Props for actions logic
+      showActions: !(this.isLastMessage && this.isLoading),
       showRateButtons: this.message.entity === "model" && !!this.message.rpcId,
-      suggestions: this.message.entity === "model" && !this.isReadOnly && this.message.parts.at(-1)?.type === "answer" ? this.message.parts.at(-1).suggestions : void 0,
+      suggestions: this.isLastMessage && this.message.entity === "model" && !this.isReadOnly && this.message.parts.at(-1)?.type === "answer" ? this.message.parts.at(-1).suggestions : void 0,
       currentRating: this.#currentRating,
       isShowingFeedbackForm: this.#isShowingFeedbackForm,
       onFeedbackSubmit: this.onFeedbackSubmit
@@ -3732,7 +3693,6 @@ var DEFAULT_VIEW4 = (input, output, target) => {
     conversationType: input.conversationType,
     uploadImageInputEnabled: input.uploadImageInputEnabled ?? false,
     isReadOnly: input.isReadOnly,
-    additionalFloatyContext: input.additionalFloatyContext,
     onContextClick: input.onContextClick,
     onInspectElementClick: input.onInspectElementClick,
     onTextSubmit: input.onTextSubmit,
@@ -4344,7 +4304,7 @@ var MarkdownRendererWithCodeBlock = class extends MarkdownView.MarkdownView.Mark
 // gen/front_end/panels/ai_assistance/components/PerformanceAgentMarkdownRenderer.js
 import * as Common4 from "./../../core/common/common.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as Trace2 from "./../../models/trace/trace.js";
+import * as Trace from "./../../models/trace/trace.js";
 import * as Lit3 from "./../../ui/lit/lit.js";
 import * as PanelsCommon2 from "./../common/common.js";
 var { html: html8 } = Lit3.StaticHtml;
@@ -4377,7 +4337,7 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
       }
       let label = token.text;
       let title = "";
-      if (Trace2.Types.Events.isSyntheticNetworkRequest(event)) {
+      if (Trace.Types.Events.isSyntheticNetworkRequest(event)) {
         title = event.args.data.url;
       } else {
         label += ` (${event.name})`;
@@ -4781,6 +4741,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
   #selectedRequest = null;
   // Messages displayed in the `ChatView` component.
   #messages = [];
+  #isContextAutoSelectionSuspended = false;
   // Whether the UI should show loading or not.
   #isLoading = false;
   // Stores the availability status of the `AidaClient` and the reason for unavailability, if any.
@@ -4789,7 +4750,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
   #userInfo;
   #timelinePanelInstance = null;
   #runAbortController = new AbortController();
-  #additionalContextItemsFromFloaty = [];
   constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
     super(_AiAssistancePanel.panelName);
     this.view = view;
@@ -4828,7 +4788,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
       return {
         state: "chat-view",
         props: {
-          additionalFloatyContext: this.#additionalContextItemsFromFloaty,
           blockedByCrossOrigin: this.#conversation.isBlockedByOrigin,
           isLoading: this.#isLoading,
           messages: this.#messages,
@@ -4901,13 +4860,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
       this.#timelinePanelInstance.addEventListener("IsViewingTrace", this.requestUpdate, this);
     }
   }
-  #bindFloatyListener() {
-    const additionalContexts = UI8.Context.Context.instance().flavor(UI8.Floaty.FloatyFlavor);
-    if (!additionalContexts) {
-      return;
-    }
-    this.#additionalContextItemsFromFloaty = additionalContexts.selectedContexts;
-    this.requestUpdate();
+  async #handlePerformanceRecordAndReload() {
+    return await TimelinePanel.TimelinePanel.TimelinePanel.executeRecordAndReload();
   }
   #getDefaultConversationType() {
     const { hostConfig } = Root5.Runtime;
@@ -4934,14 +4888,22 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
   // We select the default agent based on the open panels if
   // there isn't any active conversation.
   #selectDefaultAgentIfNeeded() {
-    if (this.#conversation && !this.#conversation.isEmpty || this.#isLoading) {
+    if (this.#isLoading) {
+      return;
+    }
+    if (this.#conversation && !this.#conversation.isEmpty) {
+      const context = this.#getConversationContext(this.#getDefaultConversationType());
+      if (context && isAiAssistanceContextSelectionAgentEnabled()) {
+        this.#conversation?.setContext(context);
+        this.requestUpdate();
+      }
       return;
     }
     const targetConversationType = this.#getDefaultConversationType();
     if (this.#conversation?.type === targetConversationType) {
       return;
     }
-    const conversation = targetConversationType ? new AiAssistanceModel5.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager) : void 0;
+    const conversation = targetConversationType ? new AiAssistanceModel5.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator()) : void 0;
     this.#updateConversationState(conversation);
   }
   #updateConversationState(conversation) {
@@ -4953,12 +4915,15 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
       if (!conversation) {
         const conversationType = this.#getDefaultConversationType();
         if (conversationType) {
-          conversation = new AiAssistanceModel5.AiConversation.AiConversation(conversationType, [], void 0, false, this.#aidaClient, this.#changeManager);
+          conversation = new AiAssistanceModel5.AiConversation.AiConversation(conversationType, [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator());
         }
       }
       this.#conversation = conversation;
+      this.#isContextAutoSelectionSuspended = false;
     }
-    this.#conversation?.setContext(this.#getConversationContext(isAiAssistanceContextSelectionAgentEnabled() ? this.#getDefaultConversationType() : this.#conversation?.type ?? null));
+    if (!this.#isContextAutoSelectionSuspended) {
+      this.#conversation?.setContext(this.#getConversationContext(isAiAssistanceContextSelectionAgentEnabled() ? this.#getDefaultConversationType() : this.#conversation?.type ?? null));
+    }
     this.requestUpdate();
   }
   wasShown() {
@@ -4985,10 +4950,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
     this.#bindTimelineTraceListener();
     this.#selectDefaultAgentIfNeeded();
     Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.AiAssistancePanelOpened);
-    if (GreenDev3.Prototypes.instance().isEnabled("inDevToolsFloaty")) {
-      UI8.Context.Context.instance().addFlavorChangeListener(UI8.Floaty.FloatyFlavor, this.#bindFloatyListener, this);
-      this.#bindFloatyListener();
-    }
   }
   willHide() {
     super.willHide();
@@ -5238,9 +5199,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
   }
   #handleContextRemoved() {
     this.#conversation?.setContext(null);
+    this.#isContextAutoSelectionSuspended = true;
     this.requestUpdate();
   }
   #handleContextAdd() {
+    this.#isContextAutoSelectionSuspended = false;
     this.#conversation?.setContext(this.#getConversationContext(this.#getDefaultConversationType()));
     this.requestUpdate();
   }
@@ -5259,6 +5222,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
       this.#viewOutput.chatView?.focusTextInput();
       return;
     }
+    this.#isContextAutoSelectionSuspended = false;
     let targetConversationType;
     switch (actionId) {
       case "freestyler.elements-floating-button": {
@@ -5302,7 +5266,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
     }
     let conversation = this.#conversation;
     if (!this.#conversation || this.#conversation.type !== targetConversationType || this.#conversation.isEmpty) {
-      conversation = new AiAssistanceModel5.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager);
+      conversation = new AiAssistanceModel5.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator());
     }
     this.#updateConversationState(conversation);
     const predefinedPrompt = opts?.["prompt"];
@@ -5405,27 +5369,59 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
     }
   }
   #handleConversationContextChange = (data) => {
-    if (data instanceof Workspace6.UISourceCode.UISourceCode) {
-      const context = new AiAssistanceModel5.FileAgent.FileContext(data);
-      this.#selectedFile = context;
-      this.#conversation?.setContext(context);
-    } else if (data instanceof SDK3.DOMModel.DOMNode) {
-      const context = new AiAssistanceModel5.StylingAgent.NodeContext(data);
-      this.#selectedElement = context;
-      this.#conversation?.setContext(context);
-    } else if (data instanceof SDK3.NetworkRequest.NetworkRequest) {
-      const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-      const context = new AiAssistanceModel5.NetworkAgent.RequestContext(data, calculator);
-      this.#selectedRequest = context;
-      this.#conversation?.setContext(context);
-    } else if (data instanceof AiAssistanceModel5.AIContext.AgentFocus) {
-      const context = new AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext(data);
-      this.#selectedPerformanceTrace = context;
-      this.#conversation?.setContext(context);
+    if (data instanceof AiAssistanceModel5.FileAgent.FileContext) {
+      this.#selectedFile = data;
+    } else if (data instanceof AiAssistanceModel5.StylingAgent.NodeContext) {
+      this.#selectedElement = data;
+    } else if (data instanceof AiAssistanceModel5.NetworkAgent.RequestContext) {
+      this.#selectedRequest = data;
+    } else if (data instanceof AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext) {
+      this.#selectedPerformanceTrace = data;
     }
+    this.#isContextAutoSelectionSuspended = false;
     void VisualLogging6.logFunctionCall(`context-change-${this.#conversation?.type}`);
     this.requestUpdate();
   };
+  async #handleInspectElement() {
+    if (!this.#toggleSearchElementAction) {
+      return null;
+    }
+    const result = new Promise((resolve) => {
+      const handleDOMNodeFlavorChange = (ev) => {
+        if (!ev.data) {
+          return;
+        }
+        resolve(selectedElementFilter(ev.data));
+        removeListeners();
+      };
+      const handleInspectModeToggled = (ev) => {
+        if (!ev.data) {
+          window.setTimeout(() => {
+            resolve(selectedElementFilter(UI8.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode)));
+            removeListeners();
+          }, 50);
+        }
+      };
+      const removeListeners = () => {
+        UI8.Context.Context.instance().removeFlavorChangeListener(SDK3.DOMModel.DOMNode, handleDOMNodeFlavorChange);
+        this.#toggleSearchElementAction?.removeEventListener("Toggled", handleInspectModeToggled);
+      };
+      UI8.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, handleDOMNodeFlavorChange);
+      this.#toggleSearchElementAction?.addEventListener("Toggled", handleInspectModeToggled);
+      this.#runAbortController.signal.addEventListener("abort", () => {
+        resolve(null);
+        removeListeners();
+      }, { once: true });
+    });
+    void this.#toggleSearchElementAction.execute();
+    try {
+      return await result;
+    } finally {
+      if (this.#toggleSearchElementAction.toggled()) {
+        void this.#toggleSearchElementAction.execute();
+      }
+    }
+  }
   async #startConversation(text, imageInput, multimodalInputType) {
     if (!this.#conversation) {
       return;
@@ -5448,7 +5444,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI8.Panel.Panel {
     void VisualLogging6.logFunctionCall(`start-conversation-${this.#conversation.type}`, "ui");
     await this.#doConversation(this.#conversation.run(text, {
       signal,
-      extraContext: this.#additionalContextItemsFromFloaty,
       multimodalInput
     }));
   }

@@ -844,7 +844,8 @@ import * as ElementsComponents7 from "./components/components.js";
 // gen/front_end/panels/elements/ComputedStyleWidget.js
 var ComputedStyleWidget_exports = {};
 __export(ComputedStyleWidget_exports, {
-  ComputedStyleWidget: () => ComputedStyleWidget
+  ComputedStyleWidget: () => ComputedStyleWidget,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3
 });
 import "./../../ui/legacy/legacy.js";
 import * as Common6 from "./../../core/common/common.js";
@@ -859,27 +860,39 @@ import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as Lit5 from "./../../ui/lit/lit.js";
 import * as ElementsComponents4 from "./components/components.js";
 
-// gen/front_end/panels/elements/computedStyleSidebarPane.css.js
-var computedStyleSidebarPane_css_default = `/*
+// gen/front_end/panels/elements/computedStyleWidget.css.js
+var computedStyleWidget_css_default = `/*
  * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-.styles-sidebar-pane-toolbar {
-  border-bottom: 1px solid var(--sys-color-divider);
-  flex-shrink: 0;
+@scope to (devtools-widget > *) {
+  .styles-sidebar-pane-toolbar {
+    border-bottom: 1px solid var(--sys-color-divider);
+    flex-shrink: 0;
+  }
+
+  .styles-pane-toolbar {
+    width: 100%;
+  }
+
+  .styles-sidebar-computed-style-widget {
+    min-height: auto;
+  }
+
+  .computed-style-tree-outline-container {
+    flex-grow: 1;
+    flex-shrink: 0;
+  }
+
+  devtools-toolbar-input[type="filter"] {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
 }
 
-.styles-sidebar-computed-style-widget {
-  min-height: auto;
-}
-
-.styles-pane-toolbar {
-  width: 100%;
-}
-
-/*# sourceURL=${import.meta.resolve("./computedStyleSidebarPane.css")} */`;
+/*# sourceURL=${import.meta.resolve("./computedStyleWidget.css")} */`;
 
 // gen/front_end/panels/elements/ImagePreviewPopover.js
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
@@ -1054,19 +1067,29 @@ var DEFAULT_VIEW = (input, _output, target) => {
     </div>`, target);
 };
 var PlatformFontsWidget = class extends UI4.Widget.VBox {
-  sharedModel;
   #view;
-  constructor(sharedModel, view = DEFAULT_VIEW) {
-    super({ useShadowDom: true });
+  #sharedModel = null;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, { useShadowDom: true });
     this.#view = view;
     this.registerRequiredCSS(platformFontsWidget_css_default);
-    this.sharedModel = sharedModel;
-    this.sharedModel.addEventListener("CSSModelChanged", this.requestUpdate, this);
-    this.sharedModel.addEventListener("ComputedStyleChanged", this.requestUpdate, this);
+  }
+  get sharedModel() {
+    return this.#sharedModel;
+  }
+  set sharedModel(model) {
+    if (model !== this.sharedModel) {
+      this.sharedModel?.removeEventListener("CSSModelChanged", this.requestUpdate, this);
+      this.sharedModel?.removeEventListener("ComputedStyleChanged", this.requestUpdate, this);
+      model.addEventListener("CSSModelChanged", this.requestUpdate, this);
+      model.addEventListener("ComputedStyleChanged", this.requestUpdate, this);
+    }
+    this.#sharedModel = model;
+    void this.requestUpdate();
   }
   async performUpdate() {
-    const cssModel = this.sharedModel.cssModel();
-    const node = this.sharedModel.node;
+    const cssModel = this.#sharedModel?.cssModel();
+    const node = this.#sharedModel?.node;
     if (!node || !cssModel) {
       this.#view({ platformFonts: null }, {}, this.contentElement);
       return;
@@ -4607,6 +4630,9 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     return matches;
   }
   renderedPropertyText() {
+    if (!this.#isConnected()) {
+      return "";
+    }
     if (!this.nameElement || !this.valueElement) {
       return "";
     }
@@ -5194,8 +5220,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     }
     const regex = new RegExp(propertyNamePattern, "i");
     await computedStyleWidget.filterComputedStyles(regex);
-    computedStyleWidget.input.setValue(this.property.name);
-    computedStyleWidget.input.element.focus();
+    computedStyleWidget.setFilterInput(this.property.name);
   }
   copyCssDeclarationAsJs() {
     const cssDeclarationValue = getCssDeclarationAsJavascriptProperty(this.property);
@@ -5621,11 +5646,23 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
   }
   styleTextAppliedForTest() {
   }
+  // If the item isn't connected to the DOM, then reading its innerText will
+  // also include any invisible text (e.g. sources, styles), so we don't want
+  // to do that.
+  #isConnected() {
+    return this.listItemElement.isConnected;
+  }
   applyStyleText(styleText, majorChange, property) {
+    if (!this.#isConnected()) {
+      return Promise.resolve();
+    }
     return this.applyStyleThrottler.schedule(this.innerApplyStyleText.bind(this, styleText, majorChange, property));
   }
   async innerApplyStyleText(styleText, majorChange, property) {
     if (!this.treeOutline || !this.property) {
+      return;
+    }
+    if (!this.#isConnected()) {
       return;
     }
     const oldStyleRange = this.style.range;
@@ -8894,18 +8931,18 @@ ${allDeclarationText}
     const toolbarPaneContent = toolbarPaneContainer.createChild("div", "styles-sidebar-toolbar-pane");
     return toolbarPaneContent;
   }
-  showToolbarPane(widget, toggle6) {
+  showToolbarPane(widget, toggle4) {
     if (this.pendingWidgetToggle) {
       this.pendingWidgetToggle.setToggled(false);
     }
-    this.pendingWidgetToggle = toggle6;
+    this.pendingWidgetToggle = toggle4;
     if (this.animatedToolbarPane) {
       this.pendingWidget = widget;
     } else {
       this.startToolbarPaneAnimation(widget);
     }
-    if (widget && toggle6) {
-      toggle6.setToggled(true);
+    if (widget && toggle4) {
+      toggle4.setToggled(true);
     }
   }
   appendToolbarItem(item2) {
@@ -9986,7 +10023,8 @@ var BinOpRenderer = class extends rendererBase(SDK9.CSSPropertyParserMatchers.Bi
 };
 
 // gen/front_end/panels/elements/ComputedStyleWidget.js
-var { html: html6 } = Lit5;
+var { html: html6, render: render5 } = Lit5;
+var { bindToSetting } = UI13.UIUtils;
 var UIStrings9 = {
   /**
    * @description Text for a checkbox setting that controls whether the user-supplied filter text
@@ -10127,20 +10165,48 @@ var propertySorter = (propA, propB) => {
   const canonicalB = SDK10.CSSMetadata.cssMetadata().canonicalPropertyName(propB);
   return Platform6.StringUtilities.compare(canonicalA, canonicalB);
 };
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  render5(html6`
+    <style>${computedStyleWidget_css_default}</style>
+    <div class="styles-sidebar-pane-toolbar">
+      <devtools-toolbar class="styles-pane-toolbar" role="presentation">
+        <devtools-toolbar-input
+          type="filter"
+          autofocus
+          value=${input.filterText}
+          @change=${input.onFilterChanged}
+        ></devtools-toolbar-input>
+        <devtools-checkbox
+          title=${i18nString9(UIStrings9.showAll)}
+          ${bindToSetting(input.showInheritedComputedStylePropertiesSetting)}
+        >${i18nString9(UIStrings9.showAll)}</devtools-checkbox>
+        <devtools-checkbox
+          title=${i18nString9(UIStrings9.group)}
+          ${bindToSetting(input.groupComputedStylesSetting)}
+        >${i18nString9(UIStrings9.group)}</devtools-checkbox>
+      </devtools-toolbar>
+    </div>
+    <div class="computed-style-tree-outline-container">
+      ${input.computedStylesTree}
+    </div>
+    ${!input.hasMatches ? html6`<div class="gray-info-message">${i18nString9(UIStrings9.noMatchingProperty)}</div>` : ""}
+    <devtools-widget .widgetConfig=${UI13.Widget.widgetConfig(PlatformFontsWidget, { sharedModel: input.computedStyleModel })}></devtools-widget>
+  `, target);
+};
 var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
   computedStyleModel;
   showInheritedComputedStylePropertiesSetting;
   groupComputedStylesSetting;
-  input;
   filterRegex;
-  noMatchesElement;
   linkifier;
   imagePreviewPopover;
   #computedStylesTree = new TreeOutline6.TreeOutline.TreeOutline();
   #treeData;
+  #view;
+  #filterText = "";
   constructor(computedStyleModel) {
     super({ useShadowDom: true });
-    this.registerRequiredCSS(computedStyleSidebarPane_css_default);
+    this.#view = DEFAULT_VIEW3;
     this.contentElement.classList.add("styles-sidebar-computed-style-widget");
     this.computedStyleModel = computedStyleModel;
     this.computedStyleModel.addEventListener("CSSModelChanged", this.requestUpdate, this);
@@ -10151,18 +10217,7 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
     this.groupComputedStylesSetting.addChangeListener(() => {
       this.requestUpdate();
     });
-    const hbox = this.contentElement.createChild("div", "hbox styles-sidebar-pane-toolbar");
-    const toolbar2 = hbox.createChild("devtools-toolbar", "styles-pane-toolbar");
-    const filterInput = new UI13.Toolbar.ToolbarFilter(void 0, 1, 1, void 0, void 0, false);
-    filterInput.addEventListener("TextChanged", this.onFilterChanged, this);
-    toolbar2.appendToolbarItem(filterInput);
-    this.input = filterInput;
     this.filterRegex = null;
-    toolbar2.appendToolbarItem(new UI13.Toolbar.ToolbarSettingCheckbox(this.showInheritedComputedStylePropertiesSetting, void 0, i18nString9(UIStrings9.showAll)));
-    toolbar2.appendToolbarItem(new UI13.Toolbar.ToolbarSettingCheckbox(this.groupComputedStylesSetting, void 0, i18nString9(UIStrings9.group)));
-    this.noMatchesElement = this.contentElement.createChild("div", "gray-info-message");
-    this.noMatchesElement.textContent = i18nString9(UIStrings9.noMatchingProperty);
-    this.contentElement.appendChild(this.#computedStylesTree);
     this.linkifier = new Components4.Linkifier.Linkifier(maxLinkLength);
     this.imagePreviewPopover = new ImagePreviewPopover(this.contentElement, (event) => {
       const link2 = event.composedPath()[0];
@@ -10171,8 +10226,7 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
       }
       return null;
     }, () => this.computedStyleModel.node);
-    const fontsWidget = new PlatformFontsWidget(this.computedStyleModel);
-    fontsWidget.show(this.contentElement);
+    this.#updateView({ hasMatches: true });
   }
   onResize() {
     const isNarrow = this.contentElement.offsetWidth < 260;
@@ -10186,10 +10240,24 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
     super.willHide();
     UI13.Context.Context.instance().setFlavor(_ComputedStyleWidget, null);
   }
+  /**
+   * @param input.hasMatches Whether any properties matched the current filter (or if any properties exist at all).
+   */
+  #updateView({ hasMatches }) {
+    this.#view({
+      computedStylesTree: this.#computedStylesTree,
+      hasMatches,
+      computedStyleModel: this.computedStyleModel,
+      showInheritedComputedStylePropertiesSetting: this.showInheritedComputedStylePropertiesSetting,
+      groupComputedStylesSetting: this.groupComputedStylesSetting,
+      onFilterChanged: this.onFilterChanged.bind(this),
+      filterText: this.#filterText
+    }, null, this.contentElement);
+  }
   async performUpdate() {
-    const [nodeStyles, matchedStyles] = await Promise.all([this.computedStyleModel.fetchComputedStyle(), this.fetchMatchedCascade()]);
+    const { computedStyle: nodeStyles, matchedStyles } = await this.computedStyleModel.fetchAllComputedStyleInfo();
     if (!nodeStyles || !matchedStyles) {
-      this.noMatchesElement.classList.remove("hidden");
+      this.#updateView({ hasMatches: false });
       return;
     }
     const shouldGroupComputedStyles = this.groupComputedStylesSetting.get();
@@ -10197,20 +10265,6 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
       await this.rebuildGroupedList(nodeStyles, matchedStyles);
     } else {
       await this.rebuildAlphabeticalList(nodeStyles, matchedStyles);
-    }
-  }
-  async fetchMatchedCascade() {
-    const node = this.computedStyleModel.node;
-    if (!node || !this.computedStyleModel.cssModel()) {
-      return null;
-    }
-    const cssModel = this.computedStyleModel.cssModel();
-    if (!cssModel) {
-      return null;
-    }
-    return await cssModel.cachedMatchedCascadeForNode(node).then(validateStyles.bind(this));
-    function validateStyles(matchedStyles) {
-      return matchedStyles && matchedStyles.node() === this.computedStyleModel.node ? matchedStyles : null;
     }
   }
   async rebuildAlphabeticalList(nodeStyle, matchedStyles) {
@@ -10255,7 +10309,7 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
     this.linkifier.reset();
     const cssModel = this.computedStyleModel.cssModel();
     if (!nodeStyle || !matchedStyles || !cssModel) {
-      this.noMatchesElement.classList.remove("hidden");
+      this.#updateView({ hasMatches: false });
       return;
     }
     const node = nodeStyle.node;
@@ -10408,9 +10462,10 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
     return result;
   }
   async onFilterChanged(event) {
-    await this.filterComputedStyles(event.data ? new RegExp(Platform6.StringUtilities.escapeForRegExp(event.data), "i") : null);
-    if (event.data && this.#computedStylesTree.data && this.#computedStylesTree.data.tree) {
-      UI13.ARIAUtils.LiveAnnouncer.alert(i18nString9(UIStrings9.filterUpdateAriaText, { PH1: event.data, PH2: this.#computedStylesTree.data.tree.length }));
+    this.#filterText = event.detail;
+    await this.filterComputedStyles(event.detail ? new RegExp(Platform6.StringUtilities.escapeForRegExp(event.detail), "i") : null);
+    if (event.detail && this.#computedStylesTree.data && this.#computedStylesTree.data.tree) {
+      UI13.ARIAUtils.LiveAnnouncer.alert(i18nString9(UIStrings9.filterUpdateAriaText, { PH1: event.detail, PH2: this.#computedStylesTree.data.tree.length }));
     }
   }
   async filterComputedStyles(regex) {
@@ -10419,6 +10474,10 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
       return await this.filterGroupLists();
     }
     return this.filterAlphabeticalList();
+  }
+  setFilterInput(text) {
+    this.#filterText = text;
+    this.requestUpdate();
   }
   nodeFilter(node) {
     const regex = this.filterRegex;
@@ -10439,7 +10498,7 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
       defaultRenderer: this.#treeData.defaultRenderer,
       compact: this.#treeData.compact
     };
-    this.noMatchesElement.classList.toggle("hidden", Boolean(tree3.length));
+    this.#updateView({ hasMatches: Boolean(tree3.length) });
   }
   async filterGroupLists() {
     if (!this.#treeData) {
@@ -10463,7 +10522,7 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI13.Widget.VBox {
       compact: this.#treeData.compact
     };
     await this.#computedStylesTree.expandRecursively(0);
-    this.noMatchesElement.classList.toggle("hidden", Boolean(tree3.length));
+    this.#updateView({ hasMatches: Boolean(tree3.length) });
   }
 };
 var maxLinkLength = 30;
@@ -10559,7 +10618,7 @@ devtools-tree-outline {
 // gen/front_end/panels/elements/ElementsTreeOutline.js
 var ElementsTreeOutline_exports = {};
 __export(ElementsTreeOutline_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW5,
+  DEFAULT_VIEW: () => DEFAULT_VIEW6,
   DOMTreeWidget: () => DOMTreeWidget,
   ElementsTreeOutline: () => ElementsTreeOutline,
   MappedCharToEntity: () => MappedCharToEntity,
@@ -10575,7 +10634,7 @@ import * as CodeHighlighter5 from "./../../ui/components/code_highlighter/code_h
 import * as Highlighting3 from "./../../ui/components/highlighting/highlighting.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
-import { html as html10, nothing as nothing3, render as render7 } from "./../../ui/lit/lit.js";
+import { html as html10, nothing as nothing3, render as render9 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/AdoptedStyleSheetTreeElement.js
@@ -10882,7 +10941,7 @@ function getTooltipFromElementAccessibilityIssue(reason) {
 // gen/front_end/panels/elements/ElementsTreeElement.js
 var ElementsTreeElement_exports = {};
 __export(ElementsTreeElement_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   EditTagBlocklist: () => EditTagBlocklist,
   ElementsTreeElement: () => ElementsTreeElement,
   ForbiddenClosingTagElements: () => ForbiddenClosingTagElements,
@@ -11248,7 +11307,8 @@ function getRegisteredDecorators() {
 }
 
 // gen/front_end/panels/elements/ElementsTreeElement.js
-var { html: html8, nothing: nothing2, render: render5, Directives: { ref: ref2 } } = Lit6;
+var { html: html8, nothing: nothing2, render: render7, Directives: { ref: ref2 } } = Lit6;
+var { animateOn } = UI15.UIUtils;
 var UIStrings12 = {
   /**
    * @description Title for Ad adorner. This iframe is marked as advertisement frame.
@@ -11552,6 +11612,7 @@ function adornerRef() {
     }
   });
 }
+var DOM_UPDATE_ANIMATION_CLASS_NAME = "dom-update-highlight";
 function handleAdornerKeydown(cb) {
   return (event) => {
     if (event.code === "Enter" || event.code === "Space") {
@@ -11561,17 +11622,315 @@ function handleAdornerKeydown(cb) {
     }
   };
 }
-var DEFAULT_VIEW3 = (input, output, target) => {
+function renderTitle(node, isClosingTag, expanded, isExpandable, isXMLMimeType, updateRecord, onUpdateSearchHighlight, onExpand) {
+  switch (node.nodeType()) {
+    case Node.ATTRIBUTE_NODE:
+      return renderAttribute({ name: node.name, value: node.value }, updateRecord, true, node);
+    case Node.ELEMENT_NODE: {
+      if (node.pseudoType()) {
+        let pseudoElementName = node.nodeName();
+        const pseudoIdentifier = node.pseudoIdentifier();
+        if (pseudoIdentifier) {
+          pseudoElementName += `(${pseudoIdentifier})`;
+        }
+        return html8`<span class="webkit-html-pseudo-element">${pseudoElementName}</span>\u200B`;
+      }
+      const tagName = node.nodeNameInCorrectCase();
+      if (isClosingTag) {
+        return renderTag(node, tagName, true, expanded, true, updateRecord);
+      }
+      const openingTag = renderTag(node, tagName, false, expanded, false, updateRecord);
+      if (isExpandable) {
+        if (!expanded) {
+          return html8`${openingTag}<devtools-elements-tree-expand-button .data=${{ clickHandler: onExpand }}></devtools-elements-tree-expand-button><span style="font-size: 0;"
+                  >…</span>\u200B${renderTag(node, tagName, true, expanded, false, updateRecord)}`;
+        }
+        return openingTag;
+      }
+      if (ElementsTreeElement.canShowInlineText(node)) {
+        const firstChild = node.firstChild;
+        if (!firstChild) {
+          throw new Error("ElementsTreeElement._nodeTitleInfo expects node.firstChild to be defined.");
+        }
+        const result = convertUnicodeCharsToHTMLEntities(firstChild.nodeValue());
+        const textContent = Platform7.StringUtilities.collapseWhitespace(result.text);
+        const renderTextNode = ref2((el) => {
+          if (el) {
+            el.textContent = textContent;
+            Highlighting2.highlightRangesWithStyleClass(el, result.entityRanges, "webkit-html-entity-value");
+          }
+        });
+        return html8`${openingTag}<span class="webkit-html-text-node" jslog=${VisualLogging8.value("text-node").track({ change: true, dblclick: true })} ${animateOn(Boolean(updateRecord?.hasChangedChildren() || updateRecord?.isCharDataModified()), DOM_UPDATE_ANIMATION_CLASS_NAME)} ${renderTextNode}></span>\u200B${renderTag(node, tagName, true, expanded, false, updateRecord)}`;
+      }
+      if (isXMLMimeType || !ForbiddenClosingTagElements.has(tagName)) {
+        return html8`${openingTag}${renderTag(node, tagName, true, expanded, false, updateRecord)}`;
+      }
+      return openingTag;
+    }
+    case Node.TEXT_NODE: {
+      if (node.parentNode && node.parentNode.nodeName().toLowerCase() === "script") {
+        const text = node.nodeValue();
+        const highlightNode = ref2((el) => {
+          if (el) {
+            el.textContent = text.replace(/^[\n\r]+|\s+$/g, "");
+            void CodeHighlighter3.CodeHighlighter.highlightNode(el, "text/javascript").then(onUpdateSearchHighlight);
+          }
+        });
+        return html8`<span class="webkit-html-text-node webkit-html-js-node" jslog=${VisualLogging8.value("script-text-node").track({ change: true, dblclick: true })} ${highlightNode}></span>`;
+      }
+      if (node.parentNode && node.parentNode.nodeName().toLowerCase() === "style") {
+        const text = node.nodeValue();
+        const highlightNode = ref2((el) => {
+          if (el) {
+            el.textContent = text.replace(/^[\n\r]+|\s+$/g, "");
+            void CodeHighlighter3.CodeHighlighter.highlightNode(el, "text/css").then(onUpdateSearchHighlight);
+          }
+        });
+        return html8`<span class="webkit-html-text-node webkit-html-css-node" jslog=${VisualLogging8.value("css-text-node").track({ change: true, dblclick: true })} ${highlightNode}></span>`;
+      }
+      const result = convertUnicodeCharsToHTMLEntities(node.nodeValue());
+      const textContent = Platform7.StringUtilities.collapseWhitespace(result.text);
+      const renderTextNode = ref2((el) => {
+        if (el) {
+          el.textContent = textContent;
+          Highlighting2.highlightRangesWithStyleClass(el, result.entityRanges, "webkit-html-entity-value");
+        }
+      });
+      return html8`"<span class="webkit-html-text-node" jslog=${VisualLogging8.value("text-node").track({
+        change: true,
+        dblclick: true
+      })} ${animateOn(Boolean(updateRecord?.isCharDataModified()), DOM_UPDATE_ANIMATION_CLASS_NAME)} ${renderTextNode}></span>"`;
+    }
+    case Node.COMMENT_NODE: {
+      return html8`<span class="webkit-html-comment">&lt;!--${node.nodeValue()}--&gt;</span>`;
+    }
+    case Node.DOCUMENT_TYPE_NODE: {
+      let doctype = "<!DOCTYPE " + node.nodeName();
+      if (node.publicId) {
+        doctype += ' PUBLIC "' + node.publicId + '"';
+        if (node.systemId) {
+          doctype += ' "' + node.systemId + '"';
+        }
+      } else if (node.systemId) {
+        doctype += ' SYSTEM "' + node.systemId + '"';
+      }
+      if (node.internalSubset) {
+        doctype += " [" + node.internalSubset + "]";
+      }
+      doctype += ">";
+      return html8`<span class="webkit-html-doctype">${doctype}</span>`;
+    }
+    case Node.CDATA_SECTION_NODE: {
+      return html8`<span class="webkit-html-text-node">&lt;![CDATA[${node.nodeValue()}]]&gt;</span>`;
+    }
+    case Node.DOCUMENT_NODE: {
+      const text = node.documentURL;
+      const linkify = ref2((el) => {
+        if (el) {
+          el.removeChildren();
+          el.appendChild(Components6.Linkifier.Linkifier.linkifyURL(text, {
+            text,
+            preventClick: true,
+            showColumnNumber: false,
+            inlineFrameIndex: 0
+          }));
+        }
+      });
+      return html8`<span>#document (<span ${linkify}></span>)</span>`;
+    }
+    case Node.DOCUMENT_FRAGMENT_NODE: {
+      return html8`<span class="webkit-html-fragment">${Platform7.StringUtilities.collapseWhitespace(node.nodeNameInCorrectCase())}</span>`;
+    }
+    default: {
+      return html8`${Platform7.StringUtilities.collapseWhitespace(node.nodeNameInCorrectCase())}`;
+    }
+  }
+}
+function renderAttribute(attr, updateRecord, isDiff, node) {
+  const name = attr.name;
+  const value5 = attr.value || "";
+  const forceValue = isDiff;
+  const closingPunctuationRegex = /[\/;:\)\]\}]/g;
+  let highlightIndex = 0;
+  let highlightCount = 0;
+  let additionalHighlightOffset = 0;
+  function setValueWithEntities(element, value6) {
+    const result = convertUnicodeCharsToHTMLEntities(value6);
+    highlightCount = result.entityRanges.length;
+    const newValue = result.text.replace(closingPunctuationRegex, (match, replaceOffset) => {
+      while (highlightIndex < highlightCount && result.entityRanges[highlightIndex].offset < replaceOffset) {
+        result.entityRanges[highlightIndex].offset += additionalHighlightOffset;
+        ++highlightIndex;
+      }
+      additionalHighlightOffset += 1;
+      return match + "\u200B";
+    });
+    while (highlightIndex < highlightCount) {
+      result.entityRanges[highlightIndex].offset += additionalHighlightOffset;
+      ++highlightIndex;
+    }
+    element.setTextContentTruncatedIfNeeded(newValue);
+    Highlighting2.highlightRangesWithStyleClass(element, result.entityRanges, "webkit-html-entity-value");
+  }
+  const hasText = forceValue || value5.length > 0;
+  const jslog = VisualLogging8.value(name === "style" ? "style-attribute" : "attribute").track({
+    change: true,
+    dblclick: true
+  });
+  function linkifyValue(value6) {
+    const rewrittenHref = node ? node.resolveURL(value6) : null;
+    if (rewrittenHref === null) {
+      const span = document.createElement("span");
+      setValueWithEntities(span, value6);
+      return span;
+    }
+    value6 = value6.replace(closingPunctuationRegex, "$&\u200B");
+    if (value6.startsWith("data:")) {
+      value6 = Platform7.StringUtilities.trimMiddle(value6, 60);
+    }
+    const link2 = node && node.nodeName().toLowerCase() === "a" ? Link.create(rewrittenHref, value6, void 0, "image-url") : Components6.Linkifier.Linkifier.linkifyURL(rewrittenHref, {
+      text: value6,
+      preventClick: true,
+      showColumnNumber: false,
+      inlineFrameIndex: 0
+    });
+    return ImagePreviewPopover.setImageUrl(link2, rewrittenHref);
+  }
+  function linkifySrcset(value6) {
+    const fragment = document.createDocumentFragment();
+    let i = 0;
+    while (value6.length) {
+      if (i++ > 0) {
+        UI15.UIUtils.createTextChild(fragment, " ");
+      }
+      value6 = value6.trim();
+      let url = "";
+      let descriptor = "";
+      const indexOfSpace = value6.search(/\s/);
+      if (indexOfSpace === -1) {
+        url = value6;
+      } else if (indexOfSpace > 0 && value6[indexOfSpace - 1] === ",") {
+        url = value6.substring(0, indexOfSpace);
+      } else {
+        url = value6.substring(0, indexOfSpace);
+        const indexOfComma = value6.indexOf(",", indexOfSpace);
+        if (indexOfComma !== -1) {
+          descriptor = value6.substring(indexOfSpace, indexOfComma + 1);
+        } else {
+          descriptor = value6.substring(indexOfSpace);
+        }
+      }
+      if (url) {
+        if (url.endsWith(",")) {
+          fragment.appendChild(linkifyValue(url.substring(0, url.length - 1)));
+          UI15.UIUtils.createTextChild(fragment, ",");
+        } else {
+          fragment.appendChild(linkifyValue(url));
+        }
+      }
+      if (descriptor) {
+        UI15.UIUtils.createTextChild(fragment, descriptor);
+      }
+      value6 = value6.substring(url.length + descriptor.length);
+    }
+    return fragment;
+  }
+  const nodeName = node ? node.nodeName().toLowerCase() : "";
+  const setAttrValue = ref2((el) => {
+    if (!el) {
+      return;
+    }
+    const valueElement = el;
+    valueElement.removeChildren();
+    if (nodeName && (name === "src" || name === "href") && value5) {
+      valueElement.appendChild(linkifyValue(value5));
+    } else if ((nodeName === "img" || nodeName === "source") && name === "srcset") {
+      valueElement.appendChild(linkifySrcset(value5));
+    } else if (nodeName === "image" && (name === "xlink:href" || name === "href")) {
+      valueElement.appendChild(linkifySrcset(value5));
+    } else {
+      setValueWithEntities(valueElement, value5);
+    }
+  });
+  const relationRef = (relation, tooltip) => ref2((el) => {
+    if (!el) {
+      return;
+    }
+    void (async () => {
+      const relatedElementId = await node.domModel().getElementByRelation(node.id, relation);
+      const relatedElement = node.domModel().nodeForId(relatedElementId);
+      if (!relatedElement) {
+        return;
+      }
+      const link2 = PanelsCommon3.DOMLinkifier.Linkifier.instance().linkify(relatedElement, {
+        preventKeyboardFocus: true,
+        tooltip,
+        textContent: el.textContent || void 0,
+        isDynamicLink: true
+      });
+      el.removeChildren();
+      el.append(link2);
+    })();
+  });
+  let relationRefDirective = ref2(() => {
+  });
+  if (!value5) {
+    if (name === "popovertarget") {
+      relationRefDirective = relationRef("PopoverTarget", i18nString11(UIStrings12.showPopoverTarget));
+    } else if (name === "interesttarget") {
+      relationRefDirective = relationRef("InterestTarget", i18nString11(UIStrings12.showInterestTarget));
+    } else if (name === "commandfor") {
+      relationRefDirective = relationRef("CommandFor", i18nString11(UIStrings12.showCommandForTarget));
+    }
+  }
+  let valueRelationRefDirective = ref2(() => {
+  });
+  if (value5) {
+    if (name === "popovertarget") {
+      valueRelationRefDirective = relationRef("PopoverTarget", i18nString11(UIStrings12.showPopoverTarget));
+    } else if (name === "interesttarget") {
+      valueRelationRefDirective = relationRef("InterestTarget", i18nString11(UIStrings12.showInterestTarget));
+    } else if (name === "commandfor") {
+      valueRelationRefDirective = relationRef("CommandFor", i18nString11(UIStrings12.showCommandForTarget));
+    }
+  }
+  return html8`<span class="webkit-html-attribute" jslog=${jslog}><span class="webkit-html-attribute-name"
+      ${animateOn(Boolean(updateRecord?.isAttributeModified(name) && !hasText), DOM_UPDATE_ANIMATION_CLASS_NAME)} ${relationRefDirective}>${name}</span>${hasText ? html8`=\u200B"<span class="webkit-html-attribute-value" ${animateOn(Boolean(updateRecord?.isAttributeModified(name) && hasText), DOM_UPDATE_ANIMATION_CLASS_NAME)} ${setAttrValue} ${valueRelationRefDirective}></span>"` : nothing2}</span>`;
+}
+function renderTag(node, tagName, isClosingTag, expanded, isDistinctTreeElement, updateRecord) {
+  const classMap3 = {
+    "webkit-html-tag": true,
+    close: isClosingTag && isDistinctTreeElement
+  };
+  let hasUpdates = false;
+  const attributes = !isClosingTag && node.hasAttributes() ? node.attributes() : [];
+  if (!isClosingTag && updateRecord) {
+    hasUpdates = updateRecord.hasRemovedAttributes() || updateRecord.hasRemovedChildren();
+    hasUpdates = hasUpdates || !expanded && updateRecord.hasChangedChildren();
+  }
+  const setAriaLabel = ref2((el) => {
+    if (el?.textContent) {
+      UI15.ARIAUtils.setLabel(el, el.textContent);
+    }
+  });
+  const tagNameClass = isClosingTag ? "webkit-html-close-tag-name" : "webkit-html-tag-name";
+  const tagString = (isClosingTag ? "/" : "") + tagName;
+  const jslog = !isClosingTag ? VisualLogging8.value("tag-name").track({ change: true, dblclick: true }) : "";
+  return html8`<span
+      class=${Lit6.Directives.classMap(classMap3)} ${setAriaLabel}
+      >&lt;<span class=${tagNameClass} jslog=${jslog || nothing2} ${animateOn(hasUpdates, DOM_UPDATE_ANIMATION_CLASS_NAME)}>${tagString}</span>${attributes.map((attr) => html8` ${renderAttribute(attr, updateRecord, false, node)}`)}&gt;</span>\u200B`;
+}
+var DEFAULT_VIEW4 = (input, output, target) => {
   const hasAdorners = input.showAdAdorner || input.showContainerAdorner || input.showFlexAdorner || input.showGridAdorner || input.showGridLanesAdorner || input.showMediaAdorner || input.showPopoverAdorner || input.showTopLayerAdorner || input.showViewSourceAdorner || input.showScrollAdorner || input.showScrollSnapAdorner || input.showSlotAdorner || input.showStartingStyleAdorner;
   const gutterContainerClasses = {
     "has-decorations": input.decorations.length || input.descendantDecorations.length,
     "gutter-container": true
   };
-  render5(html8`
+  render7(html8`
     <div ${ref2((el) => {
     output.contentElement = el;
   })}>
-      ${input.nodeInfo ? html8`<span class="highlight">${input.nodeInfo}</span>` : nothing2}
+      ${input.node ? html8`<span class="highlight">${renderTitle(input.node, input.isClosingTag, input.expanded, input.isExpandable, input.isXMLMimeType, input.updateRecord, input.onHighlightSearchResults, input.onExpand)}</span>` : nothing2}
       ${input.isHovered || input.isSelected ? html8`
         <div class="selection fill" style=${`margin-left: ${-input.indent}px`}></div>
       ` : nothing2}
@@ -11770,8 +12129,6 @@ var DEFAULT_VIEW3 = (input, output, target) => {
 var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.TreeElement {
   nodeInternal;
   treeOutline;
-  // Handled by the view output for now.
-  contentElement;
   searchQuery;
   #expandedChildrenLimit;
   decorationsThrottler;
@@ -11785,7 +12142,6 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
   #highlights = [];
   tagTypeContext;
   #adornersThrottler = new Common7.Throttler.Throttler(100);
-  #nodeInfo;
   #containerAdornerActive = false;
   #flexAdornerActive = false;
   #gridAdornerActive = false;
@@ -11796,6 +12152,10 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
   #decorations = [];
   #descendantDecorations = [];
   #decorationsTooltip = "";
+  #updateRecord = null;
+  // Used to add the content to TreeElement's title element.
+  // Relied on by web tests.
+  #contentElement;
   constructor(node, isClosingTag) {
     super();
     this.nodeInternal = node;
@@ -11842,7 +12202,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
   }
   static animateOnDOMUpdate(treeElement) {
     const tagName = treeElement.listItemElement.querySelector(".webkit-html-tag-name");
-    UI15.UIUtils.runCSSAnimationOnce(tagName || treeElement.listItemElement, "dom-update-highlight");
+    UI15.UIUtils.runCSSAnimationOnce(tagName || treeElement.listItemElement, DOM_UPDATE_ANIMATION_CLASS_NAME);
   }
   static visibleShadowRoots(node) {
     let roots = node.shadowRoots();
@@ -11883,8 +12243,21 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
       node.domModel().cssModel().forcePseudoState(node, pseudoState, enabled);
     }
   }
-  performUpdate() {
-    DEFAULT_VIEW3({
+  // ClearNode param is used to clean DOM after in-place editing..
+  performUpdate(clearNode = false) {
+    if (this.editing) {
+      return;
+    }
+    const output = {};
+    DEFAULT_VIEW4({
+      node: !clearNode ? this.nodeInternal : null,
+      isClosingTag: this.isClosingTag(),
+      expanded: this.expanded,
+      isExpandable: this.isExpandable(),
+      isXMLMimeType: Boolean(this.treeOutline?.isXMLMimeType),
+      updateRecord: this.#updateRecord,
+      onHighlightSearchResults: () => this.#highlightSearchResults(),
+      onExpand: () => this.expand(),
       containerAdornerActive: this.#containerAdornerActive,
       showAdAdorner: this.nodeInternal.isAdFrameNode(),
       showContainerAdorner: Boolean(this.#layout?.containerType) && !this.isClosingTag(),
@@ -11910,7 +12283,6 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
       showSlotAdorner: Boolean(this.nodeInternal.assignedSlot) && !this.isClosingTag(),
       showStartingStyleAdorner: this.nodeInternal.affectedByStartingStyles() && !this.isClosingTag(),
       startingStyleAdornerActive: this.#startingStyleAdornerActive,
-      nodeInfo: this.#nodeInfo,
       onStartingStyleAdornerClick: (event) => this.#onStartingStyleAdornerClick(event),
       onSlotAdornerClick: () => {
         if (this.nodeInternal.assignedSlot) {
@@ -11947,7 +12319,11 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
           void action2.execute();
         }
       }
-    }, this, this.listItemElement);
+    }, output, this.listItemElement);
+    this.#contentElement = output.contentElement;
+    if (this.#updateRecord) {
+      this.#updateRecord = null;
+    }
   }
   #onContainerAdornerClick(event) {
     event.stopPropagation();
@@ -12030,7 +12406,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
         }
       }
     }
-    UI15.UIUtils.runCSSAnimationOnce(animationElement, "dom-update-highlight");
+    UI15.UIUtils.runCSSAnimationOnce(animationElement, DOM_UPDATE_ANIMATION_CLASS_NAME);
   }
   isClosingTag() {
     return !isOpeningTag(this.tagTypeContext);
@@ -12127,11 +12503,14 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
   setExpandedChildrenLimit(expandedChildrenLimit) {
     this.#expandedChildrenLimit = expandedChildrenLimit;
   }
+  onTopLayerIndexChanged() {
+    this.performUpdate();
+  }
   onbind() {
     this.performUpdate();
     if (this.treeOutline && !this.isClosingTag()) {
       this.treeOutline.treeElementByNode.set(this.nodeInternal, this);
-      this.nodeInternal.addEventListener(SDK13.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.performUpdate, this);
+      this.nodeInternal.addEventListener(SDK13.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.onTopLayerIndexChanged, this);
       this.nodeInternal.addEventListener(SDK13.DOMModel.DOMNodeEvents.SCROLLABLE_FLAG_UPDATED, this.#onScrollableFlagUpdated, this);
       this.nodeInternal.addEventListener(SDK13.DOMModel.DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED, this.#onPersistentContainerQueryOverlayStateChanged, this);
       this.nodeInternal.addEventListener(SDK13.DOMModel.DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED, this.#onPersistentFlexContainerOverlayStateChanged, this);
@@ -12143,7 +12522,17 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
     if (this.editing) {
       this.editing.cancel();
     }
-    DEFAULT_VIEW3({
+    DEFAULT_VIEW4({
+      node: null,
+      isClosingTag: false,
+      expanded: false,
+      isExpandable: false,
+      isXMLMimeType: false,
+      updateRecord: null,
+      onHighlightSearchResults: () => {
+      },
+      onExpand: () => {
+      },
       containerAdornerActive: false,
       showAdAdorner: false,
       showContainerAdorner: false,
@@ -12165,7 +12554,6 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
       showSlotAdorner: false,
       showStartingStyleAdorner: false,
       startingStyleAdornerActive: false,
-      nodeInfo: this.#nodeInfo,
       onStartingStyleAdornerClick: () => {
       },
       onSlotAdornerClick: () => {
@@ -12198,11 +12586,11 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
       descendantDecorations: [],
       decorationsTooltip: "",
       indent: 0
-    }, this, this.listItemElement);
+    }, {}, this.listItemElement);
     if (this.treeOutline && this.treeOutline.treeElementByNode.get(this.nodeInternal) === this) {
       this.treeOutline.treeElementByNode.delete(this.nodeInternal);
     }
-    this.nodeInternal.removeEventListener(SDK13.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.performUpdate, this);
+    this.nodeInternal.removeEventListener(SDK13.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.onTopLayerIndexChanged, this);
     this.nodeInternal.removeEventListener(SDK13.DOMModel.DOMNodeEvents.SCROLLABLE_FLAG_UPDATED, this.#onScrollableFlagUpdated, this);
     this.nodeInternal.removeEventListener(SDK13.DOMModel.DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED, this.#onPersistentContainerQueryOverlayStateChanged, this);
     this.nodeInternal.removeEventListener(SDK13.DOMModel.DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED, this.#onPersistentFlexContainerOverlayStateChanged, this);
@@ -12273,13 +12661,6 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
   }
   select(omitFocus, selectedByUser) {
     if (this.editing) {
-      return false;
-    }
-    const handledByFloaty = UI15.Floaty.onFloatyClick({
-      type: "ELEMENT_NODE_ID",
-      data: { nodeId: this.nodeInternal.id }
-    });
-    if (handledByFloaty) {
       return false;
     }
     return super.select(omitFocus, selectedByUser);
@@ -12647,7 +13028,8 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
   }
   addNewAttribute() {
     const container = document.createElement("span");
-    const attr = this.buildAttributeDOM(container, " ", "", null);
+    Lit6.render(renderAttribute({ name: " ", value: "" }, null, false, this.nodeInternal), container);
+    const attr = container.firstElementChild;
     attr.style.marginLeft = "2px";
     attr.style.marginRight = "2px";
     attr.setAttribute("jslog", `${VisualLogging8.value("new-attribute").track({ change: true, resize: true })}`);
@@ -12683,7 +13065,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
     }
     const attributeName = attributeNameElement.textContent;
     const attributeValueElement = attribute.getElementsByClassName("webkit-html-attribute-value")[0];
-    elementForSelection = attributeValueElement.isAncestor(elementForSelection) ? attributeValueElement : elementForSelection;
+    elementForSelection = attributeValueElement?.isAncestor(elementForSelection) ? attributeValueElement : elementForSelection;
     function removeZeroWidthSpaceRecursive(node) {
       if (node.nodeType === Node.TEXT_NODE) {
         node.nodeValue = node.nodeValue ? node.nodeValue.replace(/\u200B/g, "") : "";
@@ -12706,7 +13088,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
       UI15.UIUtils.handleElementValueModifications(event, attribute);
       return "";
     }
-    if (!Common7.ParsedURL.ParsedURL.fromString(attributeValueElement.textContent || "")) {
+    if (!Common7.ParsedURL.ParsedURL.fromString(attributeValueElement?.textContent || "")) {
       config.setPostKeydownFinishHandler(postKeyDownFinishHandler);
     }
     this.updateEditorHandles(attribute, config);
@@ -12809,7 +13191,9 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
     this.htmlEditElement.className = "source-code elements-tree-editor";
     let child = this.listItemElement.firstChild;
     while (child) {
-      child.style.display = "none";
+      if (child instanceof HTMLElement) {
+        child.style.display = "none";
+      }
       child = child.nextSibling;
     }
     if (this.childrenListElement) {
@@ -12889,7 +13273,9 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
       }
       let child2 = this.listItemElement.firstChild;
       while (child2) {
-        child2.style.removeProperty("display");
+        if (child2 instanceof HTMLElement) {
+          child2.style.removeProperty("display");
+        }
         child2 = child2.nextSibling;
       }
       if (this.treeOutline) {
@@ -13021,7 +13407,11 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
     if (this.editing) {
       return;
     }
-    this.#nodeInfo = this.nodeTitleInfo(updateRecord || null);
+    this.performUpdate(
+      /* clearNode= */
+      true
+    );
+    this.#updateRecord = updateRecord ?? null;
     if (this.nodeInternal.nodeType() === Node.DOCUMENT_FRAGMENT_NODE && this.nodeInternal.isInShadowTree() && this.nodeInternal.shadowRootType()) {
       this.childrenListElement.classList.add("shadow-root");
       let depth = 4;
@@ -13037,7 +13427,9 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
       }
     }
     this.performUpdate();
-    this.title = this.contentElement;
+    if (this.#contentElement) {
+      this.title = this.#contentElement;
+    }
     this.updateDecorations();
     for (const issue of this.#elementIssues.values()) {
       this.#applyIssueStyleAndTooltip(issue);
@@ -13114,335 +13506,6 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI15.TreeOutline.Tr
       this.#decorationsTooltip = tooltip.join("\n");
       this.performUpdate();
     }
-  }
-  buildAttributeDOM(parentElement, name, value5, updateRecord, forceValue, node) {
-    const closingPunctuationRegex = /[\/;:\)\]\}]/g;
-    let highlightIndex = 0;
-    let highlightCount = 0;
-    let additionalHighlightOffset = 0;
-    function setValueWithEntities(element, value6) {
-      const result = convertUnicodeCharsToHTMLEntities(value6);
-      highlightCount = result.entityRanges.length;
-      value6 = result.text.replace(closingPunctuationRegex, (match, replaceOffset) => {
-        while (highlightIndex < highlightCount && result.entityRanges[highlightIndex].offset < replaceOffset) {
-          result.entityRanges[highlightIndex].offset += additionalHighlightOffset;
-          ++highlightIndex;
-        }
-        additionalHighlightOffset += 1;
-        return match + "\u200B";
-      });
-      while (highlightIndex < highlightCount) {
-        result.entityRanges[highlightIndex].offset += additionalHighlightOffset;
-        ++highlightIndex;
-      }
-      element.setTextContentTruncatedIfNeeded(value6);
-      Highlighting2.highlightRangesWithStyleClass(element, result.entityRanges, "webkit-html-entity-value");
-    }
-    const hasText = forceValue || value5.length > 0;
-    const attrSpanElement = parentElement.createChild("span", "webkit-html-attribute");
-    attrSpanElement.setAttribute("jslog", `${VisualLogging8.value(name === "style" ? "style-attribute" : "attribute").track({
-      change: true,
-      dblclick: true
-    })}`);
-    const attrNameElement = attrSpanElement.createChild("span", "webkit-html-attribute-name");
-    attrNameElement.textContent = name;
-    if (hasText) {
-      UI15.UIUtils.createTextChild(attrSpanElement, '=\u200B"');
-    }
-    const attrValueElement = attrSpanElement.createChild("span", "webkit-html-attribute-value");
-    if (updateRecord?.isAttributeModified(name)) {
-      UI15.UIUtils.runCSSAnimationOnce(hasText ? attrValueElement : attrNameElement, "dom-update-highlight");
-    }
-    function linkifyValue(value6) {
-      const rewrittenHref = node ? node.resolveURL(value6) : null;
-      if (rewrittenHref === null) {
-        const span = document.createElement("span");
-        setValueWithEntities.call(this, span, value6);
-        return span;
-      }
-      value6 = value6.replace(closingPunctuationRegex, "$&\u200B");
-      if (value6.startsWith("data:")) {
-        value6 = Platform7.StringUtilities.trimMiddle(value6, 60);
-      }
-      const link2 = node && node.nodeName().toLowerCase() === "a" ? Link.create(rewrittenHref, value6, void 0, "image-url") : Components6.Linkifier.Linkifier.linkifyURL(rewrittenHref, {
-        text: value6,
-        preventClick: true,
-        showColumnNumber: false,
-        inlineFrameIndex: 0
-      });
-      return ImagePreviewPopover.setImageUrl(link2, rewrittenHref);
-    }
-    const nodeName = node ? node.nodeName().toLowerCase() : "";
-    if (nodeName && (name === "src" || name === "href") && value5) {
-      attrValueElement.appendChild(linkifyValue.call(this, value5));
-    } else if ((nodeName === "img" || nodeName === "source") && name === "srcset") {
-      attrValueElement.appendChild(linkifySrcset.call(this, value5));
-    } else if (nodeName === "image" && (name === "xlink:href" || name === "href")) {
-      attrValueElement.appendChild(linkifySrcset.call(this, value5));
-    } else {
-      setValueWithEntities.call(this, attrValueElement, value5);
-    }
-    switch (name) {
-      case "popovertarget": {
-        const linkedPart = value5 ? attrValueElement : attrNameElement;
-        void this.linkifyElementByRelation(linkedPart, "PopoverTarget", i18nString11(UIStrings12.showPopoverTarget));
-        break;
-      }
-      case "interesttarget": {
-        const linkedPart = value5 ? attrValueElement : attrNameElement;
-        void this.linkifyElementByRelation(linkedPart, "InterestTarget", i18nString11(UIStrings12.showInterestTarget));
-        break;
-      }
-      case "commandfor": {
-        const linkedPart = value5 ? attrValueElement : attrNameElement;
-        void this.linkifyElementByRelation(linkedPart, "CommandFor", i18nString11(UIStrings12.showCommandForTarget));
-        break;
-      }
-    }
-    if (hasText) {
-      UI15.UIUtils.createTextChild(attrSpanElement, '"');
-    }
-    function linkifySrcset(value6) {
-      const fragment = document.createDocumentFragment();
-      let i = 0;
-      while (value6.length) {
-        if (i++ > 0) {
-          UI15.UIUtils.createTextChild(fragment, " ");
-        }
-        value6 = value6.trim();
-        let url = "";
-        let descriptor = "";
-        const indexOfSpace = value6.search(/\s/);
-        if (indexOfSpace === -1) {
-          url = value6;
-        } else if (indexOfSpace > 0 && value6[indexOfSpace - 1] === ",") {
-          url = value6.substring(0, indexOfSpace);
-        } else {
-          url = value6.substring(0, indexOfSpace);
-          const indexOfComma = value6.indexOf(",", indexOfSpace);
-          if (indexOfComma !== -1) {
-            descriptor = value6.substring(indexOfSpace, indexOfComma + 1);
-          } else {
-            descriptor = value6.substring(indexOfSpace);
-          }
-        }
-        if (url) {
-          if (url.endsWith(",")) {
-            fragment.appendChild(linkifyValue.call(this, url.substring(0, url.length - 1)));
-            UI15.UIUtils.createTextChild(fragment, ",");
-          } else {
-            fragment.appendChild(linkifyValue.call(this, url));
-          }
-        }
-        if (descriptor) {
-          UI15.UIUtils.createTextChild(fragment, descriptor);
-        }
-        value6 = value6.substring(url.length + descriptor.length);
-      }
-      return fragment;
-    }
-    return attrSpanElement;
-  }
-  async linkifyElementByRelation(linkContainer, relation, tooltip) {
-    const relatedElementId = await this.nodeInternal.domModel().getElementByRelation(this.nodeInternal.id, relation);
-    const relatedElement = this.nodeInternal.domModel().nodeForId(relatedElementId);
-    if (!relatedElement) {
-      return;
-    }
-    const link2 = PanelsCommon3.DOMLinkifier.Linkifier.instance().linkify(relatedElement, {
-      preventKeyboardFocus: true,
-      tooltip,
-      textContent: linkContainer.textContent || void 0,
-      isDynamicLink: true
-    });
-    linkContainer.removeChildren();
-    linkContainer.append(link2);
-  }
-  buildPseudoElementDOM(parentElement, pseudoElementName) {
-    const pseudoElement = parentElement.createChild("span", "webkit-html-pseudo-element");
-    pseudoElement.textContent = pseudoElementName;
-    UI15.UIUtils.createTextChild(parentElement, "\u200B");
-  }
-  buildTagDOM(parentElement, tagName, isClosingTag, isDistinctTreeElement, updateRecord) {
-    const node = this.nodeInternal;
-    const classes = ["webkit-html-tag"];
-    if (isClosingTag && isDistinctTreeElement) {
-      classes.push("close");
-    }
-    const tagElement = parentElement.createChild("span", classes.join(" "));
-    UI15.UIUtils.createTextChild(tagElement, "<");
-    const tagNameElement = tagElement.createChild("span", isClosingTag ? "webkit-html-close-tag-name" : "webkit-html-tag-name");
-    if (!isClosingTag) {
-      tagNameElement.setAttribute("jslog", `${VisualLogging8.value("tag-name").track({ change: true, dblclick: true })}`);
-    }
-    tagNameElement.textContent = (isClosingTag ? "/" : "") + tagName;
-    if (!isClosingTag) {
-      if (node.hasAttributes()) {
-        const attributes = node.attributes();
-        for (let i = 0; i < attributes.length; ++i) {
-          const attr = attributes[i];
-          UI15.UIUtils.createTextChild(tagElement, " ");
-          this.buildAttributeDOM(tagElement, attr.name, attr.value, updateRecord, false, node);
-        }
-      }
-      if (updateRecord) {
-        let hasUpdates = updateRecord.hasRemovedAttributes() || updateRecord.hasRemovedChildren();
-        hasUpdates = hasUpdates || !this.expanded && updateRecord.hasChangedChildren();
-        if (hasUpdates) {
-          UI15.UIUtils.runCSSAnimationOnce(tagNameElement, "dom-update-highlight");
-        }
-      }
-    }
-    UI15.UIUtils.createTextChild(tagElement, ">");
-    UI15.UIUtils.createTextChild(parentElement, "\u200B");
-    if (tagElement.textContent) {
-      UI15.ARIAUtils.setLabel(tagElement, tagElement.textContent);
-    }
-  }
-  nodeTitleInfo(updateRecord) {
-    const node = this.nodeInternal;
-    const titleDOM = document.createDocumentFragment();
-    const updateSearchHighlight = () => {
-      this.#highlightSearchResults();
-    };
-    switch (node.nodeType()) {
-      case Node.ATTRIBUTE_NODE:
-        this.buildAttributeDOM(titleDOM, node.name, node.value, updateRecord, true);
-        break;
-      case Node.ELEMENT_NODE: {
-        if (node.pseudoType()) {
-          let pseudoElementName = node.nodeName();
-          const pseudoIdentifier = node.pseudoIdentifier();
-          if (pseudoIdentifier) {
-            pseudoElementName += `(${pseudoIdentifier})`;
-          }
-          this.buildPseudoElementDOM(titleDOM, pseudoElementName);
-          break;
-        }
-        const tagName = node.nodeNameInCorrectCase();
-        if (this.isClosingTag()) {
-          this.buildTagDOM(titleDOM, tagName, true, true, updateRecord);
-          break;
-        }
-        this.buildTagDOM(titleDOM, tagName, false, false, updateRecord);
-        if (this.isExpandable()) {
-          if (!this.expanded) {
-            const expandButton = new ElementsComponents5.ElementsTreeExpandButton.ElementsTreeExpandButton();
-            expandButton.data = {
-              clickHandler: () => this.expand()
-            };
-            titleDOM.appendChild(expandButton);
-            const hidden = document.createElement("span");
-            hidden.textContent = "\u2026";
-            hidden.style.fontSize = "0";
-            titleDOM.appendChild(hidden);
-            UI15.UIUtils.createTextChild(titleDOM, "\u200B");
-            this.buildTagDOM(titleDOM, tagName, true, false, updateRecord);
-          }
-          break;
-        }
-        if (_ElementsTreeElement.canShowInlineText(node)) {
-          const textNodeElement = titleDOM.createChild("span", "webkit-html-text-node");
-          textNodeElement.setAttribute("jslog", `${VisualLogging8.value("text-node").track({ change: true, dblclick: true })}`);
-          const firstChild = node.firstChild;
-          if (!firstChild) {
-            throw new Error("ElementsTreeElement._nodeTitleInfo expects node.firstChild to be defined.");
-          }
-          const result = convertUnicodeCharsToHTMLEntities(firstChild.nodeValue());
-          textNodeElement.textContent = Platform7.StringUtilities.collapseWhitespace(result.text);
-          Highlighting2.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
-          UI15.UIUtils.createTextChild(titleDOM, "\u200B");
-          this.buildTagDOM(titleDOM, tagName, true, false, updateRecord);
-          if (updateRecord?.hasChangedChildren()) {
-            UI15.UIUtils.runCSSAnimationOnce(textNodeElement, "dom-update-highlight");
-          }
-          if (updateRecord?.isCharDataModified()) {
-            UI15.UIUtils.runCSSAnimationOnce(textNodeElement, "dom-update-highlight");
-          }
-          break;
-        }
-        if (this.treeOutline?.isXMLMimeType || !ForbiddenClosingTagElements.has(tagName)) {
-          this.buildTagDOM(titleDOM, tagName, true, false, updateRecord);
-        }
-        break;
-      }
-      case Node.TEXT_NODE:
-        if (node.parentNode && node.parentNode.nodeName().toLowerCase() === "script") {
-          const newNode = titleDOM.createChild("span", "webkit-html-text-node webkit-html-js-node");
-          newNode.setAttribute("jslog", `${VisualLogging8.value("script-text-node").track({ change: true, dblclick: true })}`);
-          const text = node.nodeValue();
-          newNode.textContent = text.replace(/^[\n\r]+|\s+$/g, "");
-          void CodeHighlighter3.CodeHighlighter.highlightNode(newNode, "text/javascript").then(updateSearchHighlight);
-        } else if (node.parentNode && node.parentNode.nodeName().toLowerCase() === "style") {
-          const newNode = titleDOM.createChild("span", "webkit-html-text-node webkit-html-css-node");
-          newNode.setAttribute("jslog", `${VisualLogging8.value("css-text-node").track({ change: true, dblclick: true })}`);
-          const text = node.nodeValue();
-          newNode.textContent = text.replace(/^[\n\r]+|\s+$/g, "");
-          void CodeHighlighter3.CodeHighlighter.highlightNode(newNode, "text/css").then(updateSearchHighlight);
-        } else {
-          UI15.UIUtils.createTextChild(titleDOM, '"');
-          const textNodeElement = titleDOM.createChild("span", "webkit-html-text-node");
-          textNodeElement.setAttribute("jslog", `${VisualLogging8.value("text-node").track({ change: true, dblclick: true })}`);
-          const result = convertUnicodeCharsToHTMLEntities(node.nodeValue());
-          textNodeElement.textContent = Platform7.StringUtilities.collapseWhitespace(result.text);
-          Highlighting2.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
-          UI15.UIUtils.createTextChild(titleDOM, '"');
-          if (updateRecord?.isCharDataModified()) {
-            UI15.UIUtils.runCSSAnimationOnce(textNodeElement, "dom-update-highlight");
-          }
-        }
-        break;
-      case Node.COMMENT_NODE: {
-        const commentElement = titleDOM.createChild("span", "webkit-html-comment");
-        UI15.UIUtils.createTextChild(commentElement, "<!--" + node.nodeValue() + "-->");
-        break;
-      }
-      case Node.DOCUMENT_TYPE_NODE: {
-        const docTypeElement = titleDOM.createChild("span", "webkit-html-doctype");
-        UI15.UIUtils.createTextChild(docTypeElement, "<!DOCTYPE " + node.nodeName());
-        if (node.publicId) {
-          UI15.UIUtils.createTextChild(docTypeElement, ' PUBLIC "' + node.publicId + '"');
-          if (node.systemId) {
-            UI15.UIUtils.createTextChild(docTypeElement, ' "' + node.systemId + '"');
-          }
-        } else if (node.systemId) {
-          UI15.UIUtils.createTextChild(docTypeElement, ' SYSTEM "' + node.systemId + '"');
-        }
-        if (node.internalSubset) {
-          UI15.UIUtils.createTextChild(docTypeElement, " [" + node.internalSubset + "]");
-        }
-        UI15.UIUtils.createTextChild(docTypeElement, ">");
-        break;
-      }
-      case Node.CDATA_SECTION_NODE: {
-        const cdataElement = titleDOM.createChild("span", "webkit-html-text-node");
-        UI15.UIUtils.createTextChild(cdataElement, "<![CDATA[" + node.nodeValue() + "]]>");
-        break;
-      }
-      case Node.DOCUMENT_NODE: {
-        const documentElement = titleDOM.createChild("span");
-        UI15.UIUtils.createTextChild(documentElement, "#document (");
-        const text = node.documentURL;
-        documentElement.appendChild(Components6.Linkifier.Linkifier.linkifyURL(text, {
-          text,
-          preventClick: true,
-          showColumnNumber: false,
-          inlineFrameIndex: 0
-        }));
-        UI15.UIUtils.createTextChild(documentElement, ")");
-        break;
-      }
-      case Node.DOCUMENT_FRAGMENT_NODE: {
-        const fragmentElement = titleDOM.createChild("span", "webkit-html-fragment");
-        fragmentElement.textContent = Platform7.StringUtilities.collapseWhitespace(node.nodeNameInCorrectCase());
-        break;
-      }
-      default: {
-        const nameWithSpaceCollapsed = Platform7.StringUtilities.collapseWhitespace(node.nodeNameInCorrectCase());
-        UI15.UIUtils.createTextChild(titleDOM, nameWithSpaceCollapsed);
-      }
-    }
-    return titleDOM;
   }
   async remove() {
     if (this.treeOutline?.isToggledToHidden(this.nodeInternal)) {
@@ -14045,7 +14108,7 @@ import * as UI16 from "./../../ui/legacy/legacy.js";
 import * as Lit7 from "./../../ui/lit/lit.js";
 import * as VisualElements from "./../../ui/visual_logging/visual_logging.js";
 import * as ElementsComponents6 from "./components/components.js";
-var { html: html9, render: render6 } = Lit7;
+var { html: html9, render: render8 } = Lit7;
 var UIStrings13 = {
   /**
    * @description Link text content in Elements Tree Outline of the Elements panel
@@ -14054,8 +14117,8 @@ var UIStrings13 = {
 };
 var str_13 = i18n25.i18n.registerUIStrings("panels/elements/ShortcutTreeElement.ts", UIStrings13);
 var i18nString12 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
-var DEFAULT_VIEW4 = (input, _output, target) => {
-  render6(html9`
+var DEFAULT_VIEW5 = (input, _output, target) => {
+  render8(html9`
     <div class="selection fill"></div>
     <span class="elements-tree-shortcut-title">\u21AA ${input.title}</span>
     <devtools-adorner
@@ -14077,7 +14140,7 @@ var ShortcutTreeElement = class extends UI16.TreeOutline.TreeElement {
   nodeShortcut;
   #hovered;
   #view;
-  constructor(nodeShortcut, view = DEFAULT_VIEW4) {
+  constructor(nodeShortcut, view = DEFAULT_VIEW5) {
     super("");
     this.nodeShortcut = nodeShortcut;
     this.#view = view;
@@ -14212,7 +14275,7 @@ var str_14 = i18n27.i18n.registerUIStrings("panels/elements/ElementsTreeOutline.
 var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var elementsTreeOutlineByDOMModel = /* @__PURE__ */ new WeakMap();
 var populatedTreeElements = /* @__PURE__ */ new WeakSet();
-var DEFAULT_VIEW5 = (input, output, target) => {
+var DEFAULT_VIEW6 = (input, output, target) => {
   if (!output.elementsTreeOutline) {
     output.elementsTreeOutline = new ElementsTreeOutline(input.omitRootDOMNode, input.selectEnabled, input.hideGutter);
     output.elementsTreeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, input.onSelectedNodeChanged, void 0);
@@ -14320,7 +14383,7 @@ var DOMTreeWidget = class extends UI18.Widget.Widget {
       useShadowDom: false,
       delegatesFocus: false
     });
-    this.#view = view ?? DEFAULT_VIEW5;
+    this.#view = view ?? DEFAULT_VIEW6;
     if (Common9.Settings.Settings.instance().moduleSetting("highlight-node-on-hover-in-overlay").get()) {
       SDK15.TargetManager.TargetManager.instance().addModelListener(SDK15.OverlayModel.OverlayModel, "HighlightNodeRequested", this.#highlightNode, this, { scoped: true });
       SDK15.TargetManager.TargetManager.instance().addModelListener(SDK15.OverlayModel.OverlayModel, "InspectModeWillBeToggled", this.#clearHighlightedNode, this, { scoped: true });
@@ -14611,7 +14674,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common9.ObjectWrapp
         box: hoveredNode.boxInWindow(),
         show: async (popover) => {
           popover.setIgnoreLeftMargin(true);
-          render7(html10`
+          render9(html10`
             <div class="squiggles-content">
               ${issues.map((issue) => {
             const elementIssueDetails = getElementIssueDetails(issue);
@@ -16027,7 +16090,7 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("panels/elements/LayoutPane.ts", UIStrings15);
 var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-var { render: render8, html: html11 } = Lit8;
+var { render: render10, html: html11 } = Lit8;
 var nodeToLayoutElement = (node) => {
   const className = node.getAttribute("class");
   const nodeId = node.id;
@@ -16107,7 +16170,7 @@ function isBooleanSetting(setting) {
   return setting.type === "boolean";
 }
 var layoutPaneInstance;
-var DEFAULT_VIEW6 = (input, output, target) => {
+var DEFAULT_VIEW7 = (input, output, target) => {
   const onColorLabelKeyUp = (event) => {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
@@ -16173,7 +16236,7 @@ var DEFAULT_VIEW6 = (input, output, target) => {
            @click=${(e) => input.onElementClick(element, e)}
            ></devtools-button>
       </div>`;
-  render8(
+  render10(
     html11`
       <div style="min-width: min-content;" jslog=${VisualLogging10.pane("layout").track({ resize: true })}>
         <style>${layoutPane_css_default}</style>
@@ -16245,7 +16308,7 @@ var LayoutPane = class _LayoutPane extends UI19.Widget.Widget {
   #uaShadowDOMSetting;
   #domModels;
   #view;
-  constructor(element, view = DEFAULT_VIEW6) {
+  constructor(element, view = DEFAULT_VIEW7) {
     super(element);
     this.#settings = this.#makeSettings();
     this.#uaShadowDOMSetting = Common10.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom");
@@ -16449,7 +16512,7 @@ import * as Common11 from "./../../core/common/common.js";
 import * as Platform9 from "./../../core/platform/platform.js";
 import * as SDK17 from "./../../core/sdk/sdk.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html12, nothing as nothing4, render as render9 } from "./../../ui/lit/lit.js";
+import { Directives as Directives2, html as html12, nothing as nothing4, render as render11 } from "./../../ui/lit/lit.js";
 import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/metricsSidebarPane.css.js
@@ -16607,7 +16670,7 @@ visible. */
 
 // gen/front_end/panels/elements/MetricsSidebarPane.js
 var { live } = Directives2;
-var DEFAULT_VIEW7 = (input, output, target) => {
+var DEFAULT_VIEW8 = (input, output, target) => {
   const { style, highlightedMode, node, contentWidth, contentHeight, onHighlightNode, onStartEditing } = input;
   function createBoxPartElement(style2, name, side, suffix) {
     const propertyName = (name !== "position" ? name + "-" : "") + side + suffix;
@@ -16716,7 +16779,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
         </div>`;
     previousBox = box;
   }
-  render9(html12`
+  render11(html12`
     <div class="metrics ${!node ? "collapsed" : ""}" @mouseover=${(e) => {
     e.consume();
     onHighlightNode(true, "all");
@@ -16736,7 +16799,7 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
   computedStyle;
   isEditingMetrics;
   view;
-  constructor(computedStyleModel, view = DEFAULT_VIEW7) {
+  constructor(computedStyleModel, view = DEFAULT_VIEW8) {
     super(computedStyleModel, { jslog: `${VisualLogging11.pane("styles-metrics")}` });
     this.registerRequiredCSS(metricsSidebarPane_css_default);
     this.originalPropertyData = null;
@@ -17272,8 +17335,8 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
   resolveLocation(_locationName) {
     return this.sidebarPaneView || null;
   }
-  showToolbarPane(widget, toggle6) {
-    this.stylesWidget.showToolbarPane(widget, toggle6);
+  showToolbarPane(widget, toggle4) {
+    this.stylesWidget.showToolbarPane(widget, toggle4);
   }
   modelAdded(domModel) {
     this.setupStyleTracking(domModel.cssModel());
@@ -18268,7 +18331,7 @@ var ToggleSearchActionDelegate = class {
 var EventListenersWidget_exports = {};
 __export(EventListenersWidget_exports, {
   ActionDelegate: () => ActionDelegate2,
-  DEFAULT_VIEW: () => DEFAULT_VIEW8,
+  DEFAULT_VIEW: () => DEFAULT_VIEW9,
   DispatchFilterBy: () => DispatchFilterBy,
   EventListenersWidget: () => EventListenersWidget
 });
@@ -18276,10 +18339,10 @@ import * as Common14 from "./../../core/common/common.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as SDK20 from "./../../core/sdk/sdk.js";
 import * as UI23 from "./../../ui/legacy/legacy.js";
-import { html as html13, render as render10 } from "./../../ui/lit/lit.js";
+import { html as html13, render as render12 } from "./../../ui/lit/lit.js";
 import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 import * as EventListeners from "./../event_listeners/event_listeners.js";
-var { bindToAction, bindToSetting } = UI23.UIUtils;
+var { bindToAction, bindToSetting: bindToSetting2 } = UI23.UIUtils;
 var UIStrings17 = {
   /**
    * @description Title of show framework listeners setting in event listeners widget of the elements panel
@@ -18317,14 +18380,13 @@ var UIStrings17 = {
 var str_17 = i18n33.i18n.registerUIStrings("panels/elements/EventListenersWidget.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var eventListenersWidgetInstance;
-var DEFAULT_VIEW8 = (input, _output, target) => {
-  render10(html13`
+var DEFAULT_VIEW9 = (input, _output, target) => {
+  render12(html13`
     <div jslog=${VisualLogging14.pane("elements.event-listeners").track({ resize: true })}>
       <devtools-toolbar class="event-listener-toolbar" role="presentation">
         <devtools-button ${bindToAction(input.refreshEventListenersActionName)}></devtools-button>
         <devtools-checkbox title=${i18nString16(UIStrings17.showListenersOnTheAncestors)}
-          ${bindToSetting(input.showForAncestorsSetting)}
-          jslog=${VisualLogging14.toggle("show-event-listeners-for-ancestors").track({ change: true })}>
+          ${bindToSetting2(input.showForAncestorsSetting)}>
           ${i18nString16(UIStrings17.ancestors)}
         </devtools-checkbox>
         <select class="dispatch-filter"
@@ -18338,8 +18400,7 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
             </option>`)}
         </select>
         <devtools-checkbox title=${i18nString16(UIStrings17.resolveEventListenersBoundWith)}
-          ${bindToSetting(input.showFrameworkListenersSetting)}
-          jslog=${VisualLogging14.toggle("show-frameowkr-listeners").track({ change: true })}>
+          ${bindToSetting2(input.showFrameworkListenersSetting)}>
           ${i18nString16(UIStrings17.frameworkListeners)}
         </devtools-checkbox>
       </devtools-toolbar>
@@ -18356,7 +18417,7 @@ var EventListenersWidget = class _EventListenersWidget extends UI23.Widget.VBox 
   showFrameworkListenersSetting;
   lastRequestedNode;
   #view;
-  constructor(view = DEFAULT_VIEW8) {
+  constructor(view = DEFAULT_VIEW9) {
     super();
     this.#view = view;
     this.showForAncestorsSetting = Common14.Settings.Settings.instance().moduleSetting("show-event-listeners-for-ancestors");
@@ -18483,7 +18544,7 @@ var ActionDelegate2 = class {
 // gen/front_end/panels/elements/PropertiesWidget.js
 var PropertiesWidget_exports = {};
 __export(PropertiesWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW9,
+  DEFAULT_VIEW: () => DEFAULT_VIEW10,
   PropertiesWidget: () => PropertiesWidget
 });
 import "./../../ui/legacy/legacy.js";
@@ -18494,7 +18555,7 @@ import * as Platform11 from "./../../core/platform/platform.js";
 import * as SDK21 from "./../../core/sdk/sdk.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
-import { html as html14, nothing as nothing5, render as render11 } from "./../../ui/lit/lit.js";
+import { html as html14, nothing as nothing5, render as render13 } from "./../../ui/lit/lit.js";
 import * as VisualLogging15 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/propertiesWidget.css.js
@@ -18522,7 +18583,7 @@ var propertiesWidget_css_default = `/*
 
 // gen/front_end/panels/elements/PropertiesWidget.js
 var OBJECT_GROUP_NAME = "properties-sidebar-pane";
-var { bindToSetting: bindToSetting2 } = UI24.UIUtils;
+var { bindToSetting: bindToSetting3 } = UI24.UIUtils;
 var UIStrings18 = {
   /**
    * @description Text on the checkbox in the Properties tab of the Elements panel, which controls whether
@@ -18544,14 +18605,13 @@ var UIStrings18 = {
 };
 var str_18 = i18n35.i18n.registerUIStrings("panels/elements/PropertiesWidget.ts", UIStrings18);
 var i18nString17 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
-var DEFAULT_VIEW9 = (input, _output, target) => {
-  render11(html14`
+var DEFAULT_VIEW10 = (input, _output, target) => {
+  render13(html14`
     <div jslog=${VisualLogging15.pane("element-properties").track({ resize: true })}>
       <div class="hbox properties-widget-toolbar">
         <devtools-toolbar class="styles-pane-toolbar" role="presentation">
           <devtools-toolbar-input type="filter" @change=${input.onFilterChanged} style="flex-grow:1; flex-shrink:1"></devtools-toolbar-input>
-          <devtools-checkbox title=${i18nString17(UIStrings18.showAllTooltip)} ${bindToSetting2(getShowAllPropertiesSetting())}
-              jslog=${VisualLogging15.toggle("show-all-properties").track({ change: true })}>
+          <devtools-checkbox title=${i18nString17(UIStrings18.showAllTooltip)} ${bindToSetting3(getShowAllPropertiesSetting())}>
             ${i18nString17(UIStrings18.showAll)}
           </devtools-checkbox>
         </devtools-toolbar>
@@ -18575,7 +18635,7 @@ var PropertiesWidget = class extends UI24.Widget.VBox {
   lastRequestedNode;
   #view;
   #displayNoMatchingPropertyMessage = false;
-  constructor(view = DEFAULT_VIEW9) {
+  constructor(view = DEFAULT_VIEW10) {
     super({ useShadowDom: true });
     this.registerRequiredCSS(propertiesWidget_css_default);
     this.showAllPropertiesSetting = getShowAllPropertiesSetting();
@@ -18678,7 +18738,7 @@ var PropertiesWidget = class extends UI24.Widget.VBox {
 // gen/front_end/panels/elements/NodeStackTraceWidget.js
 var NodeStackTraceWidget_exports = {};
 __export(NodeStackTraceWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW10,
+  DEFAULT_VIEW: () => DEFAULT_VIEW11,
   MaxLengthForLinks: () => MaxLengthForLinks,
   NodeStackTraceWidget: () => NodeStackTraceWidget
 });
@@ -18687,7 +18747,7 @@ import * as SDK22 from "./../../core/sdk/sdk.js";
 import * as Bindings5 from "./../../models/bindings/bindings.js";
 import * as Components7 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI25 from "./../../ui/legacy/legacy.js";
-import { html as html15, render as render12 } from "./../../ui/lit/lit.js";
+import { html as html15, render as render14 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/nodeStackTraceWidget.css.js
 var nodeStackTraceWidget_css_default = `/*
@@ -18713,9 +18773,9 @@ var UIStrings19 = {
 };
 var str_19 = i18n37.i18n.registerUIStrings("panels/elements/NodeStackTraceWidget.ts", UIStrings19);
 var i18nString18 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
-var DEFAULT_VIEW10 = (input, _output, target) => {
+var DEFAULT_VIEW11 = (input, _output, target) => {
   const { target: sdkTarget, linkifier, stackTrace } = input;
-  render12(html15`
+  render14(html15`
     <style>${nodeStackTraceWidget_css_default}</style>
     ${target && stackTrace ? html15`<devtools-widget
                 class="stack-trace"
@@ -18725,7 +18785,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
 var NodeStackTraceWidget = class extends UI25.Widget.VBox {
   #linkifier = new Components7.Linkifier.Linkifier(MaxLengthForLinks);
   #view;
-  constructor(view = DEFAULT_VIEW10) {
+  constructor(view = DEFAULT_VIEW11) {
     super({ useShadowDom: true });
     this.#view = view;
   }
@@ -19127,7 +19187,7 @@ var ClassNamePrompt = class extends UI26.TextPrompt.TextPrompt {
 var ElementStatePaneWidget_exports = {};
 __export(ElementStatePaneWidget_exports, {
   ButtonProvider: () => ButtonProvider4,
-  DEFAULT_VIEW: () => DEFAULT_VIEW11,
+  DEFAULT_VIEW: () => DEFAULT_VIEW12,
   ElementStatePaneWidget: () => ElementStatePaneWidget
 });
 import * as i18n41 from "./../../core/i18n/i18n.js";
@@ -19135,7 +19195,7 @@ import * as SDK24 from "./../../core/sdk/sdk.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as UI27 from "./../../ui/legacy/legacy.js";
-import { html as html16, render as render13 } from "./../../ui/lit/lit.js";
+import { html as html16, render as render15 } from "./../../ui/lit/lit.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/elementStatePaneWidget.css.js
@@ -19195,7 +19255,7 @@ var elementStatePaneWidget_css_default = `/**
 /*# sourceURL=${import.meta.resolve("./elementStatePaneWidget.css")} */`;
 
 // gen/front_end/panels/elements/ElementStatePaneWidget.js
-var { bindToSetting: bindToSetting3 } = UI27.UIUtils;
+var { bindToSetting: bindToSetting4 } = UI27.UIUtils;
 var UIStrings21 = {
   /**
    * @description Title of a section in the Element State Pane Widget of the Elements panel. The
@@ -19251,7 +19311,7 @@ var SpecificPseudoStates;
   SpecificPseudoStates2["OPEN"] = "open";
   SpecificPseudoStates2["TARGET_CURRENT"] = "target-current";
 })(SpecificPseudoStates || (SpecificPseudoStates = {}));
-var DEFAULT_VIEW11 = (input, _output, target) => {
+var DEFAULT_VIEW12 = (input, _output, target) => {
   const createElementStateCheckbox = (state) => {
     return html16`
         <div id=${state.state}>
@@ -19262,13 +19322,13 @@ var DEFAULT_VIEW11 = (input, _output, target) => {
         </devtools-checkbox>
         </div>`;
   };
-  render13(html16`
+  render15(html16`
     <style>${elementStatePaneWidget_css_default}</style>
     <div class="styles-element-state-pane"
         jslog=${VisualLogging17.pane("element-states")}>
       <div class="page-state-checkbox">
         <devtools-checkbox class="small" title=${i18nString20(UIStrings21.emulatesAFocusedPage)}
-            jslog=${VisualLogging17.toggle("emulate-page-focus").track({ change: true })} ${bindToSetting3("emulate-page-focus")}>${i18nString20(UIStrings21.emulateFocusedPage)}</devtools-checkbox>
+            ${bindToSetting4("emulate-page-focus")}>${i18nString20(UIStrings21.emulateFocusedPage)}</devtools-checkbox>
         <devtools-button
             @click=${() => UIHelpers.openInNewTab("https://developer.chrome.com/docs/devtools/rendering/apply-effects#emulate_a_focused_page")}
            .data=${{
@@ -19300,7 +19360,7 @@ var ElementStatePaneWidget = class extends UI27.Widget.Widget {
   #cssModel;
   #states = /* @__PURE__ */ new Map();
   #view;
-  constructor(view = DEFAULT_VIEW11) {
+  constructor(view = DEFAULT_VIEW12) {
     super({ useShadowDom: true });
     this.#view = view;
     this.#duals = /* @__PURE__ */ new Map();

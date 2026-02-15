@@ -170,6 +170,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
                     sampleId: 1,
                     startTime: performance.now(),
                     onImpression: () => { },
+                    source: "generation" /* Config.AiSuggestionSource.GENERATION */,
                 }),
             });
             editor.editor.contentDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
@@ -187,6 +188,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
                     sampleId: 1,
                     startTime: performance.now(),
                     onImpression: () => { },
+                    source: "generation" /* Config.AiSuggestionSource.GENERATION */,
                 }),
             });
             assert.isNotNull(editor.editor.state.field(Config.aiAutoCompleteSuggestionState));

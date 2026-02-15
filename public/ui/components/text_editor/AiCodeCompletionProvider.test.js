@@ -365,6 +365,7 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
                     startTime: performance.now(),
                     clearCachedRequest: () => { },
                     onImpression: () => { },
+                    source: "completion" /* Config.AiSuggestionSource.COMPLETION */,
                 }),
             });
             editor.editor.contentDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
@@ -384,6 +385,7 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
                     startTime: performance.now(),
                     clearCachedRequest: () => { },
                     onImpression: () => { },
+                    source: "completion" /* Config.AiSuggestionSource.COMPLETION */,
                 }),
             });
             assert.isNotNull(editor.editor.state.field(Config.aiAutoCompleteSuggestionState));

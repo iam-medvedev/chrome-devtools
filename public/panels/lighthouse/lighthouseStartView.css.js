@@ -57,6 +57,12 @@ export default `/*
   flex: 1 1;
 }
 
+.lighthouse-form-categories-fieldset {
+  border: none;
+  margin: 0;
+  padding: 8px;
+}
+
 .lighthouse-form-section-label {
   margin: 7px 0;
   font-weight: 500;

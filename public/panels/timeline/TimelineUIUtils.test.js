@@ -755,8 +755,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const markerStackTraceData = getStackTraceForDetailsElement(markerDetails);
             assert.exists(markerStackTraceData);
             assert.deepEqual(markerStackTraceData, [
-                `${function3.callFrame.functionName} @ unknown`,
-                `${function1.callFrame.functionName} @ unknown`,
+                `${function3.callFrame.functionName} @ (unknown)`,
+                `${function1.callFrame.functionName} @ (unknown)`,
             ]);
             const mockExtensionTrackEntry = {
                 cat: 'devtools.extension',
@@ -774,8 +774,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const trackEntryStackTraceData = getStackTraceForDetailsElement(trackEntryDetails);
             assert.exists(trackEntryStackTraceData);
             assert.deepEqual(trackEntryStackTraceData, [
-                `${function2.callFrame.functionName} @ unknown`,
-                `${function1.callFrame.functionName} @ unknown`,
+                `${function2.callFrame.functionName} @ (unknown)`,
+                `${function1.callFrame.functionName} @ (unknown)`,
             ]);
         });
         it('renders the stack trace of user timings properly', async function () {
@@ -789,15 +789,15 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const markerStackTraceData = getStackTraceForDetailsElement(markerDetails);
             assert.exists(markerStackTraceData);
             assert.deepEqual(markerStackTraceData, [
-                `${function3.callFrame.functionName} @ unknown`,
-                `${function1.callFrame.functionName} @ unknown`,
+                `${function3.callFrame.functionName} @ (unknown)`,
+                `${function1.callFrame.functionName} @ (unknown)`,
             ]);
             const trackEntryDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, measure, new Components.Linkifier.Linkifier(), false, null);
             const trackEntryStackTraceData = getStackTraceForDetailsElement(trackEntryDetails);
             assert.exists(trackEntryStackTraceData);
             assert.deepEqual(trackEntryStackTraceData, [
-                `${function2.callFrame.functionName} @ unknown`,
-                `${function1.callFrame.functionName} @ unknown`,
+                `${function2.callFrame.functionName} @ (unknown)`,
+                `${function1.callFrame.functionName} @ (unknown)`,
             ]);
         });
         it('renders the warning for a trace event in its details', async function () {
@@ -985,12 +985,12 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 return { description: description?.innerText || '', stackFrames };
             });
             assert.deepEqual(testData, [
-                { description: '', stackFrames: ['\tbaz\t@\tunknown'] },
-                { description: '\trequestIdleCallback\t\t', stackFrames: ['\tbar\t@\tunknown'] },
-                { description: '\tsetTimeout\t\t', stackFrames: ['\tfoo\t@\tunknown'] },
+                { description: '', stackFrames: ['\tbaz\t@\t(unknown)'] },
+                { description: '\trequestIdleCallback\t\t', stackFrames: ['\tbar\t@\t(unknown)'] },
+                { description: '\tsetTimeout\t\t', stackFrames: ['\tfoo\t@\t(unknown)'] },
                 {
                     description: '\trequestAnimationFrame\t\t',
-                    stackFrames: ['\tstartExample\t@\tunknown', '\t(anonymous)\t@\tunknown'],
+                    stackFrames: ['\tstartExample\t@\t(unknown)', '\t(anonymous)\t@\t(unknown)'],
                 },
             ]);
         });

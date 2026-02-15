@@ -114,12 +114,6 @@ describeWithMockConnection('NetworkAgent', () => {
             const responses = await Array.fromAsync(agent.run('test', { selected: new NetworkAgent.RequestContext(selectedNetworkRequest, calculator) }));
             assert.deepEqual(responses, [
                 {
-                    type: "user-query" /* AiAgent.ResponseType.USER_QUERY */,
-                    query: 'test',
-                    imageInput: undefined,
-                    imageId: undefined,
-                },
-                {
                     type: "context" /* AiAgent.ResponseType.CONTEXT */,
                     title: 'Analyzing network data',
                     details: [
@@ -129,7 +123,7 @@ describeWithMockConnection('NetworkAgent', () => {
                         },
                         {
                             title: 'Response',
-                            text: `Response Status: 200 \n\nResponse headers:\ncontent-type: bar2\nx-forwarded-for: bar3\n\nResponse body:\n${exampleResponse}`
+                            text: `Response headers:\ncontent-type: bar2\nx-forwarded-for: bar3\n\nResponse body:\n${exampleResponse}\n\nResponse status: 200 \nNetwork request status: pending\n`
                         },
                         {
                             title: 'Timing',
@@ -172,7 +166,9 @@ x-forwarded-for: bar3
 Response body:
 ${exampleResponse}
 
-Response status: 200 \n
+Response status: 200 
+Network request status: pending
+
 Request timing:
 Queued at (timestamp): 0 s
 Started at (timestamp): 501 s

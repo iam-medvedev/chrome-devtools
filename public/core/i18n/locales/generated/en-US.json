@@ -1256,6 +1256,9 @@
   "entrypoints/node_app/app/NodeMain.ts | NodejsTitleS": {
     "message": "DevTools - Node.js: {PH1}"
   },
+  "entrypoints/node_app/node_app.ts | application": {
+    "message": "Application"
+  },
   "entrypoints/node_app/node_app.ts | connection": {
     "message": "Connection"
   },
@@ -1264,6 +1267,9 @@
   },
   "entrypoints/node_app/node_app.ts | node": {
     "message": "node"
+  },
+  "entrypoints/node_app/node_app.ts | showApplication": {
+    "message": "Show Application"
   },
   "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "Show Connection"
@@ -1550,6 +1556,9 @@
   "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
     "message": "Client Hints Infrastructure"
   },
+  "models/issues_manager/ConnectionAllowlistIssue.ts | connectionAllowlistHeader": {
+    "message": "Connection-Allowlist specification"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "Content Security Policy - Eval"
   },
@@ -1585,9 +1594,6 @@
   },
   "models/issues_manager/CorsIssue.ts | corsLocalNetworkAccess": {
     "message": "Local Network Access"
-  },
-  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
-    "message": "Private Network Access"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP and COEP"
@@ -3104,6 +3110,9 @@
   "panels/ai_assistance/AiAssistancePanel.ts | settings": {
     "message": "Settings"
   },
+  "panels/ai_assistance/components/ChatInput.ts | addContext": {
+    "message": "Add selected item as context"
+  },
   "panels/ai_assistance/components/ChatInput.ts | inputTextAriaDescription": {
     "message": "You can also use one of the suggested prompts above to start your conversation"
   },
@@ -3111,7 +3120,7 @@
     "message": "Learn about AI in DevTools"
   },
   "panels/ai_assistance/components/ChatInput.ts | removeContext": {
-    "message": "Remove selected context"
+    "message": "Remove from context"
   },
   "panels/ai_assistance/components/ChatInput.ts | revealContextDescription": {
     "message": "Reveal the selected context item in DevTools"
@@ -5365,6 +5374,9 @@
   },
   "panels/application/preloading/components/PreloadingString.ts | PrefetchFailedNon2XX": {
     "message": "The prefetch failed because of a non-2xx HTTP response status code."
+  },
+  "panels/application/preloading/components/PreloadingString.ts | PrefetchFailedNon2XXWithStatusCode": {
+    "message": "The prefetch failed because of a non-2xx HTTP response status code ({PH1})."
   },
   "panels/application/preloading/components/PreloadingString.ts | PrefetchIneligibleRetryAfter": {
     "message": "A previous prefetch to the origin got a HTTP 503 response with an Retry-After header that has not elapsed yet."
@@ -10049,9 +10061,6 @@
   "panels/network/network-meta.ts | addNetworkRequestBlockingOrThrottlingPattern": {
     "message": "Add network request blocking or throttling pattern"
   },
-  "panels/network/network-meta.ts | addNetworkRequestBlockingPattern": {
-    "message": "Add network request blocking pattern"
-  },
   "panels/network/network-meta.ts | allowToGenerateHarWithSensitiveData": {
     "message": "Allow to generate HAR with sensitive data"
   },
@@ -10103,9 +10112,6 @@
   "panels/network/network-meta.ts | networkConditions": {
     "message": "Network conditions"
   },
-  "panels/network/network-meta.ts | networkRequestBlocking": {
-    "message": "Network request blocking"
-  },
   "panels/network/network-meta.ts | networkRequestConditions": {
     "message": "Request conditions"
   },
@@ -10118,9 +10124,6 @@
   "panels/network/network-meta.ts | removeAllNetworkRequestBlockingOrThrottlingPatterns": {
     "message": "Remove all network request blocking or throttling patterns"
   },
-  "panels/network/network-meta.ts | removeAllNetworkRequestBlockingPatterns": {
-    "message": "Remove all network request blocking patterns"
-  },
   "panels/network/network-meta.ts | resourceType": {
     "message": "resource type"
   },
@@ -10132,9 +10135,6 @@
   },
   "panels/network/network-meta.ts | showNetworkConditions": {
     "message": "Show Network conditions"
-  },
-  "panels/network/network-meta.ts | showNetworkRequestBlocking": {
-    "message": "Show Network request blocking"
   },
   "panels/network/network-meta.ts | showRequestConditions": {
     "message": "Show Request conditions"
@@ -10892,26 +10892,14 @@
   "panels/network/NetworkSearchScope.ts | url": {
     "message": "URL"
   },
-  "panels/network/RequestConditionsDrawer.ts | addNetworkRequestBlockingPattern": {
-    "message": "Add network request blocking pattern"
-  },
-  "panels/network/RequestConditionsDrawer.ts | addPattern": {
-    "message": "Add pattern"
-  },
   "panels/network/RequestConditionsDrawer.ts | addPatternLabel": {
     "message": "Add network request throttling or blocking pattern"
-  },
-  "panels/network/RequestConditionsDrawer.ts | addPatternToBlock": {
-    "message": "Add a pattern by clicking on the \"{PH1}\" button."
   },
   "panels/network/RequestConditionsDrawer.ts | addRule": {
     "message": "Add rule"
   },
   "panels/network/RequestConditionsDrawer.ts | dAffected": {
     "message": "{PH1} affected"
-  },
-  "panels/network/RequestConditionsDrawer.ts | dBlocked": {
-    "message": "{PH1} blocked"
   },
   "panels/network/RequestConditionsDrawer.ts | decreasePriority": {
     "message": "Move down {PH1}"
@@ -10921,9 +10909,6 @@
   },
   "panels/network/RequestConditionsDrawer.ts | enableBlockingAndThrottling": {
     "message": "Enable blocking and throttling"
-  },
-  "panels/network/RequestConditionsDrawer.ts | enableNetworkRequestBlocking": {
-    "message": "Enable network request blocking"
   },
   "panels/network/RequestConditionsDrawer.ts | enableThrottlingToggleLabel": {
     "message": "Throttle or block {PH1}"
@@ -10939,9 +10924,6 @@
   },
   "panels/network/RequestConditionsDrawer.ts | learnMoreLabel": {
     "message": "Learn more about URL pattern syntax"
-  },
-  "panels/network/RequestConditionsDrawer.ts | noNetworkRequestsBlocked": {
-    "message": "No blocked network requests"
   },
   "panels/network/RequestConditionsDrawer.ts | noPattern": {
     "message": "Nothing throttled or blocked"
@@ -10978,9 +10960,6 @@
   },
   "panels/network/RequestConditionsDrawer.ts | textEditPattern": {
     "message": "Text pattern to block or throttle matching requests; use URL Pattern syntax."
-  },
-  "panels/network/RequestConditionsDrawer.ts | textPatternToBlockMatching": {
-    "message": "Text pattern to block matching requests; use * for wildcard"
   },
   "panels/network/RequestCookiesView.ts | cookiesThatWereReceivedFromThe": {
     "message": "Cookies that were received from the server in the 'set-cookie' header of the response"
@@ -13762,6 +13741,9 @@
   },
   "panels/settings/SettingsScreen.ts | settingsChangedReloadDevTools": {
     "message": "Settings changed. To apply, reload DevTools."
+  },
+  "panels/settings/SettingsScreen.ts | settingsChangedRestartChrome": {
+    "message": "Settings changed. To apply, restart Chrome."
   },
   "panels/settings/SettingsScreen.ts | shortcuts": {
     "message": "Shortcuts"
@@ -17759,6 +17741,9 @@
   "ui/legacy/Infobar.ts | dontShowAgain": {
     "message": "Don't show again"
   },
+  "ui/legacy/InspectorView.ts | areYouSureYouWantToRestartChrome": {
+    "message": "Are you sure you want to restart Chrome?"
+  },
   "ui/legacy/InspectorView.ts | closeDrawer": {
     "message": "Close drawer"
   },
@@ -17794,6 +17779,9 @@
   },
   "ui/legacy/InspectorView.ts | reloadDevtools": {
     "message": "Reload DevTools"
+  },
+  "ui/legacy/InspectorView.ts | restartChrome": {
+    "message": "Restart Chrome"
   },
   "ui/legacy/InspectorView.ts | selectFolder": {
     "message": "Select folder"

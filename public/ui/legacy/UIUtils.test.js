@@ -258,15 +258,91 @@ describe('UIUtils', () => {
             });
         });
     });
+    describe('animateOn', () => {
+        it('triggers an animation when the condition transitions from false to true', () => {
+            const { animateOn } = UI.UIUtils;
+            const container = document.createElement('div');
+            const className = 'animate-me';
+            function render(condition) {
+                Lit.render(html `<div ${animateOn(condition, className)}></div>`, container);
+            }
+            render(false);
+            const div = container.firstElementChild;
+            assert.isFalse(div.classList.contains(className));
+            render(true);
+            assert.isTrue(div.classList.contains(className));
+        });
+        it('does not trigger an animation when the condition remains true', () => {
+            const { animateOn } = UI.UIUtils;
+            const container = document.createElement('div');
+            const className = 'animate-me';
+            function render(condition) {
+                Lit.render(html `<div ${animateOn(condition, className)}></div>`, container);
+            }
+            render(true);
+            const div = container.firstElementChild;
+            assert.isTrue(div.classList.contains(className));
+            // Manually remove the class to see if it gets re-added
+            div.classList.remove(className);
+            render(true);
+            assert.isFalse(div.classList.contains(className));
+        });
+        it('does not trigger an animation when the condition remains false', () => {
+            const { animateOn } = UI.UIUtils;
+            const container = document.createElement('div');
+            const className = 'animate-me';
+            function render(condition) {
+                Lit.render(html `<div ${animateOn(condition, className)}></div>`, container);
+            }
+            render(false);
+            const div = container.firstElementChild;
+            assert.isFalse(div.classList.contains(className));
+            render(false);
+            assert.isFalse(div.classList.contains(className));
+        });
+        it('does not trigger an animation when the condition transitions from true to false', () => {
+            const { animateOn } = UI.UIUtils;
+            const container = document.createElement('div');
+            const className = 'animate-me';
+            function render(condition) {
+                Lit.render(html `<div ${animateOn(condition, className)}></div>`, container);
+            }
+            render(true);
+            const div = container.firstElementChild;
+            assert.isTrue(div.classList.contains(className));
+            // Manually remove the class
+            div.classList.remove(className);
+            render(false);
+            assert.isFalse(div.classList.contains(className));
+        });
+        it('triggers an animation when it transitions from false to true, then false, then true again', () => {
+            const { animateOn } = UI.UIUtils;
+            const container = document.createElement('div');
+            const className = 'animate-me';
+            function render(condition) {
+                Lit.render(html `<div ${animateOn(condition, className)}></div>`, container);
+            }
+            render(false);
+            const div = container.firstElementChild;
+            assert.isFalse(div.classList.contains(className));
+            render(true);
+            assert.isTrue(div.classList.contains(className));
+            div.classList.remove(className);
+            render(false);
+            assert.isFalse(div.classList.contains(className));
+            render(true);
+            assert.isTrue(div.classList.contains(className));
+        });
+    });
 });
 describe('bindToSetting (string)', () => {
-    function setup(validate) {
+    function setup(opts = {}) {
         const { bindToSetting } = UI.UIUtils;
         const setting = createFakeSetting('fake-setting', 'defaultValue');
         const container = document.createElement('div');
         renderElementIntoDOM(container);
         const inputRef = Lit.Directives.createRef();
-        Lit.render(html `<input ${Lit.Directives.ref(inputRef)} ${bindToSetting(setting, validate)}></input>`, container);
+        Lit.render(html `<input ${Lit.Directives.ref(inputRef)} ${bindToSetting(setting, opts)}></input>`, container);
         const input = inputRef.value;
         assert.exists(input);
         return { input, setting, container };
@@ -274,6 +350,14 @@ describe('bindToSetting (string)', () => {
     it('shows the current value on initial render', () => {
         const { input } = setup();
         assert.strictEqual(input.value, 'defaultValue');
+    });
+    it('adds jslog for tracking changes', async () => {
+        const { input } = setup();
+        assert.strictEqual(input.getAttribute('jslog'), 'Toggle; context: fake-setting; track: change');
+    });
+    it('does not add jslog if disabled via options', async () => {
+        const { input } = setup({ jslog: false });
+        assert.isNull(input.getAttribute('jslog'));
     });
     it('changes the setting when the input changes', () => {
         const { setting, input } = setup();
@@ -287,7 +371,7 @@ describe('bindToSetting (string)', () => {
         assert.strictEqual(input.value, 'new value via change listener');
     });
     it('does not change the setting when validation fails', () => {
-        const { setting, input } = setup(arg => /[0-9]+/.test(arg));
+        const { setting, input } = setup({ validator: arg => /[0-9]+/.test(arg) });
         input.value = 'text must not update the setting';
         input.dispatchEvent(new Event('change'));
         assert.strictEqual(setting.get(), 'defaultValue');
@@ -304,13 +388,13 @@ describe('bindToSetting (string)', () => {
     });
 });
 describe('bindToSetting (boolean)', () => {
-    function setup() {
+    function setup(opts = {}) {
         const { bindToSetting } = UI.UIUtils;
         const setting = createFakeSetting('fake-setting', true);
         const container = document.createElement('div');
         renderElementIntoDOM(container);
         const inputRef = Lit.Directives.createRef();
-        Lit.render(html `<devtools-checkbox ${Lit.Directives.ref(inputRef)} ${bindToSetting(setting)}></devtools-checkbox>`, container);
+        Lit.render(html `<devtools-checkbox ${Lit.Directives.ref(inputRef)} ${bindToSetting(setting, opts)}></devtools-checkbox>`, container);
         const input = inputRef.value;
         assert.exists(input);
         return { input, setting, container };
@@ -318,6 +402,14 @@ describe('bindToSetting (boolean)', () => {
     it('shows the current value on initial render', () => {
         const { input } = setup();
         assert.isTrue(input.checked);
+    });
+    it('adds jslog for tracking changes', async () => {
+        const { input } = setup();
+        assert.strictEqual(input.getAttribute('jslog'), 'Toggle; context: fake-setting; track: change');
+    });
+    it('does not add jslog if disabled via options', async () => {
+        const { input } = setup({ jslog: false });
+        assert.isNull(input.getAttribute('jslog'));
     });
     it('changes the setting when the checkbox changes', () => {
         const { input, setting } = setup();

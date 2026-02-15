@@ -294,15 +294,7 @@ var UIStrings3 = {
   /**
    * @description Command for showing the 'Network request blocking' tool
    */
-  showNetworkRequestBlocking: "Show Network request blocking",
-  /**
-   * @description Command for showing the 'Network request blocking' tool
-   */
   showRequestConditions: "Show Request conditions",
-  /**
-   * @description Title of the 'Network request blocking' tool in the bottom drawer
-   */
-  networkRequestBlocking: "Network request blocking",
   /**
    * @description Title of the 'Request conditions' tool in the bottom drawer
    */
@@ -394,14 +386,6 @@ var UIStrings3 = {
   /**
    * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
    */
-  addNetworkRequestBlockingPattern: "Add network request blocking pattern",
-  /**
-   * @description Title of an action in the Network request blocking panel to clear all URL patterns.
-   */
-  removeAllNetworkRequestBlockingPatterns: "Remove all network request blocking patterns",
-  /**
-   * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
-   */
   addNetworkRequestBlockingOrThrottlingPattern: "Add network request blocking or throttling pattern",
   /**
    * @description Title of an action in the Network request blocking panel to clear all URL patterns.
@@ -452,12 +436,11 @@ UI3.ViewManager.registerViewExtension({
     return Network.NetworkPanel.NetworkPanel.instance();
   }
 });
-var individualThrottlingEnabled = () => Boolean(Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled);
 UI3.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "network.blocked-urls",
-  commandPrompt: () => individualThrottlingEnabled() ? i18nString(UIStrings3.showRequestConditions) : i18nString(UIStrings3.showNetworkRequestBlocking),
-  title: () => individualThrottlingEnabled() ? i18nString(UIStrings3.networkRequestConditions) : i18nString(UIStrings3.networkRequestBlocking),
+  commandPrompt: () => i18nString(UIStrings3.showRequestConditions),
+  title: () => i18nString(UIStrings3.networkRequestConditions),
   persistence: "closeable",
   order: 60,
   async loadView() {
@@ -602,7 +585,7 @@ UI3.ActionRegistration.registerActionExtension({
 UI3.ActionRegistration.registerActionExtension({
   actionId: "network.add-network-request-blocking-pattern",
   category: "NETWORK",
-  title: () => individualThrottlingEnabled() ? i18nString(UIStrings3.addNetworkRequestBlockingOrThrottlingPattern) : i18nString(UIStrings3.addNetworkRequestBlockingPattern),
+  title: () => i18nString(UIStrings3.addNetworkRequestBlockingOrThrottlingPattern),
   iconClass: "plus",
   contextTypes() {
     return maybeRetrieveContextTypes((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
@@ -615,7 +598,7 @@ UI3.ActionRegistration.registerActionExtension({
 UI3.ActionRegistration.registerActionExtension({
   actionId: "network.remove-all-network-request-blocking-patterns",
   category: "NETWORK",
-  title: () => individualThrottlingEnabled() ? i18nString(UIStrings3.removeAllNetworkRequestBlockingOrThrottlingPatterns) : i18nString(UIStrings3.removeAllNetworkRequestBlockingPatterns),
+  title: () => i18nString(UIStrings3.removeAllNetworkRequestBlockingOrThrottlingPatterns),
   iconClass: "clear",
   contextTypes() {
     return maybeRetrieveContextTypes((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
@@ -800,7 +783,15 @@ var UIStrings4 = {
   /**
    * @description Command for showing the 'Node' tool in the Network Navigator View, which is part of the Sources tool
    */
-  showNode: "Show Node"
+  showNode: "Show Node",
+  /**
+   * @description Text in Application Panel Sidebar of the Application panel
+   */
+  application: "Application",
+  /**
+   * @description Command for showing the 'Application' tool
+   */
+  showApplication: "Show Application"
 };
 var str_4 = i18n7.i18n.registerUIStrings("entrypoints/node_app/node_app.ts", UIStrings4);
 var i18nLazyString4 = i18n7.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
@@ -833,6 +824,28 @@ UI4.ViewManager.registerViewExtension({
     const Sources = await loadSourcesModule();
     return Sources.SourcesNavigator.NetworkNavigatorView.instance();
   }
+});
+var loadedResourcesModule;
+async function loadResourcesModule() {
+  if (!loadedResourcesModule) {
+    loadedResourcesModule = await import("./../../panels/application/application.js");
+  }
+  return loadedResourcesModule;
+}
+UI4.ViewManager.registerViewExtension({
+  location: "panel",
+  id: "resources",
+  title: i18nLazyString4(UIStrings4.application),
+  commandPrompt: i18nLazyString4(UIStrings4.showApplication),
+  order: 70,
+  async loadView() {
+    const Resources = await loadResourcesModule();
+    return Resources.ResourcesPanel.ResourcesPanel.instance({
+      forceNew: true,
+      mode: "node"
+    });
+  },
+  tags: []
 });
 self.runtime = Root2.Runtime.Runtime.instance({ forceNew: true });
 Common4.Runnable.registerEarlyInitializationRunnable(NodeMainImpl.instance);

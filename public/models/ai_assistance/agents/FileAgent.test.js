@@ -114,12 +114,6 @@ describeWithMockConnection('FileAgent', () => {
                 const responses = await Array.fromAsync(agent.run('test', { selected: uiSourceCode ? new FileAgent.FileContext(uiSourceCode) : null }));
                 assert.deepEqual(responses, [
                     {
-                        type: "user-query" /* AiAgent.ResponseType.USER_QUERY */,
-                        query: 'test',
-                        imageInput: undefined,
-                        imageId: undefined,
-                    },
-                    {
                         type: "context" /* AiAgent.ResponseType.CONTEXT */,
                         title: 'Analyzing file',
                         details: [

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
+import * as Logs from '../../../../models/logs/logs.js';
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
@@ -369,6 +370,64 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             ['Action', 'Prefetch'],
             ['Status', 'Speculative load failed.'],
             ['Failure reason', 'The prefetch failed because of a non-2xx HTTP response status code.'],
+            ['Rule set', 'example.com/'],
+        ]);
+    });
+    it('renders prefetch details with status code for non-2xx', async () => {
+        const fakeRequestResolver = {
+            waitFor: (_requestId) => {
+                return Promise.reject();
+            },
+        };
+        const requestId = 'requestId:1';
+        sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requestsForId').withArgs(requestId).returns([
+            { statusCode: 404 },
+        ]);
+        const url = urlString `https://example.com/prefetch.html`;
+        const data = {
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
+                    action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                    prefetchStatus: "PrefetchFailedNon2XX" /* Protocol.Preload.PrefetchStatus.PrefetchFailedNon2XX */,
+                    requestId,
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                }]),
+            ruleSets: [
+                {
+                    id: 'ruleSetId',
+                    loaderId: 'loaderId',
+                    sourceText: `
+{
+  "prefetch": [
+    {
+      "source": "list",
+      "urls": ["/subresource.js"]
+    }
+  ]
+}
+`,
+                },
+            ],
+            pageURL: urlString `https://example.com/`,
+            requestResolver: fakeRequestResolver,
+        };
+        const component = await renderPreloadingDetailsReportView(data);
+        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
+        const values = getCleanTextContentFromElements(report, 'devtools-report-value');
+        assert.deepEqual(zip2(keys, values), [
+            ['URL', ''],
+            ['Action', 'Prefetch'],
+            ['Status', 'Speculative load failed.'],
+            ['Failure reason', 'The prefetch failed because of a non-2xx HTTP response status code (404).'],
             ['Rule set', 'example.com/'],
         ]);
     });

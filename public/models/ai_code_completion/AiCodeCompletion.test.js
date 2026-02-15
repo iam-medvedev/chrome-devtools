@@ -10,7 +10,9 @@ function createCallbacks(editor) {
     return {
         getSelectionHead: () => editor.editor.state.selection.main.head,
         getCompletionHint: () => editor.editor.plugin(TextEditor.Config.showCompletionHint)?.currentHint,
-        setAiAutoCompletion: (args) => editor.dispatch({ effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(args) }),
+        setAiAutoCompletion: (args) => editor.dispatch({
+            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(args)
+        }),
     };
 }
 describeWithEnvironment('AiCodeCompletion', () => {

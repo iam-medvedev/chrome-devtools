@@ -9,7 +9,7 @@
  *
  * @public
  */
-export type CookieSameSite = 'Strict' | 'Lax' | 'None';
+export type CookieSameSite = 'Strict' | 'Lax' | 'None' | 'Default';
 /**
  * Represents the cookie's 'Priority' status:
  * https://tools.ietf.org/html/draft-west-cookie-priority-00

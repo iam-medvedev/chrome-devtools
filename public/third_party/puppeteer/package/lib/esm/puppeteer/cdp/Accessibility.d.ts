@@ -73,6 +73,35 @@ export interface SerializedAXNode {
     invalid?: string;
     orientation?: string;
     /**
+     * Whether the node is {@link https://www.w3.org/TR/wai-aria/#aria-busy | busy}.
+     */
+    busy?: boolean;
+    /**
+     * The {@link https://www.w3.org/TR/wai-aria/#aria-live | live} status of the
+     * node.
+     */
+    live?: string;
+    /**
+     * Whether the live region is
+     * {@link https://www.w3.org/TR/wai-aria/#aria-atomic | atomic}.
+     */
+    atomic?: boolean;
+    /**
+     * The {@link https://www.w3.org/TR/wai-aria/#aria-relevant | relevant}
+     * changes for the live region.
+     */
+    relevant?: string;
+    /**
+     * The {@link https://www.w3.org/TR/wai-aria/#aria-errormessage | error message}
+     * for the node.
+     */
+    errormessage?: string;
+    /**
+     * The {@link https://www.w3.org/TR/wai-aria/#aria-details | details} for the
+     * node.
+     */
+    details?: string;
+    /**
      * Url for link elements.
      */
     url?: string;

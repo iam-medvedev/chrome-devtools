@@ -4,6 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { getMatchedStyles } from '../../testing/StyleHelpers.js';
 import * as ComputedStyle from './computed_style.js';
 function createNode(target, { nodeId }) {
     const domModel = target.model(SDK.DOMModel.DOMModel);
@@ -74,6 +75,39 @@ describeWithMockConnection('ComputedStyleModel', () => {
         computedStyleModel.addEventListener("ComputedStyleChanged" /* ComputedStyle.ComputedStyleModel.Events.COMPUTED_STYLE_CHANGED */, computedStyleListener);
         cssModel.dispatchEventToListeners(SDK.CSSModel.Events.ComputedStyleUpdated, { nodeId: (domNode1.id + 1) });
         sinon.assert.callCount(computedStyleListener, 0);
+    });
+    it('fetchAllComputedStyleInfo calls the backend and returns the data', async () => {
+        const cssModel = domNode1.domModel().cssModel();
+        assert.isOk(cssModel);
+        computedStyleModel.node = domNode1;
+        const mockComputedStyle = new Map([['color', 'red']]);
+        const getComputedStyleStub = sinon.stub(cssModel, 'getComputedStyle').resolves(mockComputedStyle);
+        const mockMatchedStyles = await getMatchedStyles({
+            node: domNode1,
+        });
+        const cachedMatchedCascadeForNodeStub = sinon.stub(cssModel, 'cachedMatchedCascadeForNode').resolves(mockMatchedStyles);
+        const result = await computedStyleModel.fetchAllComputedStyleInfo();
+        sinon.assert.calledOnce(getComputedStyleStub);
+        sinon.assert.calledOnce(cachedMatchedCascadeForNodeStub);
+        assert.deepEqual(result.computedStyle?.computedStyle, mockComputedStyle);
+        assert.deepEqual(result.matchedStyles, mockMatchedStyles);
+    });
+    it('fetchAllComputedStyleInfo returns null for matchedStyles if the node does not match', async () => {
+        const cssModel = domNode1.domModel().cssModel();
+        assert.isOk(cssModel);
+        computedStyleModel.node = domNode1;
+        const mockComputedStyle = new Map([['color', 'red']]);
+        const getComputedStyleStub = sinon.stub(cssModel, 'getComputedStyle').resolves(mockComputedStyle);
+        const domNode2 = createNode(target, { nodeId: 2 });
+        const mockMatchedStyles = await getMatchedStyles({
+            node: domNode2,
+        });
+        const cachedMatchedCascadeForNodeStub = sinon.stub(cssModel, 'cachedMatchedCascadeForNode').resolves(mockMatchedStyles);
+        const result = await computedStyleModel.fetchAllComputedStyleInfo();
+        sinon.assert.calledOnce(getComputedStyleStub);
+        sinon.assert.calledOnce(cachedMatchedCascadeForNodeStub);
+        assert.deepEqual(result.computedStyle?.computedStyle, mockComputedStyle);
+        assert.isNull(result.matchedStyles);
     });
 });
 //# sourceMappingURL=ComputedStyleModel.test.js.map

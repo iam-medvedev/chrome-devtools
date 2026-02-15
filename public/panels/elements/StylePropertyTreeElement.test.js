@@ -358,6 +358,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
     });
     it('applies the new style when the color format is changed', async () => {
         const stylePropertyTreeElement = getTreeElement('color', 'color(srgb .5 .5 1)');
+        renderElementIntoDOM(stylePropertyTreeElement.listItemElement);
         const applyStyleTextStub = sinon.stub(stylePropertyTreeElement, 'applyStyleText');
         // Make sure we don't leave a dangling promise behind:
         const returnValue = (async () => { })();
@@ -670,9 +671,12 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         });
         it('retains empty fallbacks', async () => {
             const stylePropertyTreeElement = getTreeElement('color', 'var(--blue,)');
+            // We need the list element in the DOM Because applyStyleText checks that
+            // the node is attached before attempting to update the text.
+            renderElementIntoDOM(stylePropertyTreeElement.listItemElement, { allowMultipleChildren: true });
             stylePropertyTreeElement.updateTitle();
             assert.exists(stylePropertyTreeElement.valueElement);
-            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement, { allowMultipleChildren: true });
             assert.strictEqual(stylePropertyTreeElement.renderedPropertyText(), 'color: var(--blue, )');
         });
     });
@@ -947,9 +951,10 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         });
         it('updates the style for shadow editor changes', () => {
             const stylePropertyTreeElement = getTreeElement('box-shadow', '10px 11px red');
+            renderElementIntoDOM(stylePropertyTreeElement.listItemElement, { allowMultipleChildren: true });
             stylePropertyTreeElement.updateTitle();
             assert.exists(stylePropertyTreeElement.valueElement);
-            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement, { allowMultipleChildren: true });
             const swatches = stylePropertyTreeElement.valueElement?.querySelectorAll('css-shadow-swatch');
             assert.exists(swatches);
             assert.lengthOf(swatches, 1);
@@ -964,9 +969,10 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         it('updates the style for shadow editor changes and respects ordering', () => {
             mockVariableMap['--y-color'] = '11px red';
             const stylePropertyTreeElement = getTreeElement('box-shadow', '10px var(--y-color)');
+            renderElementIntoDOM(stylePropertyTreeElement.listItemElement, { allowMultipleChildren: true });
             stylePropertyTreeElement.updateTitle();
             assert.exists(stylePropertyTreeElement.valueElement);
-            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement, { allowMultipleChildren: true });
             const swatches = stylePropertyTreeElement.valueElement?.querySelectorAll('css-shadow-swatch');
             assert.exists(swatches);
             assert.lengthOf(swatches, 1);
@@ -1752,7 +1758,9 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.updateTitle();
             stylePropertyTreeElement.startEditingValue();
             const autocompletions = await suggestions();
-            assert.deepEqual(autocompletions.map(({ text }) => text), ['row-name', 'row-name-2', 'auto', 'none', 'inherit', 'initial', 'revert', 'revert-layer', 'unset']);
+            assert.deepEqual(autocompletions.map(({ text }) => text), [
+                'row-name', 'row-name-2', 'auto', 'none', 'inherit', 'initial', 'revert', 'revert-layer', 'revert-rule', 'unset'
+            ]);
         });
         it('includes grid column names', async () => {
             setParentComputedStyle({ display: 'grid', 'grid-template-columns': '[col-name] 1fr [col-name-2]' });
@@ -1761,7 +1769,9 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.updateTitle();
             stylePropertyTreeElement.startEditingValue();
             const autocompletions = await suggestions();
-            assert.deepEqual(autocompletions.map(({ text }) => text), ['col-name', 'col-name-2', 'auto', 'none', 'inherit', 'initial', 'revert', 'revert-layer', 'unset']);
+            assert.deepEqual(autocompletions.map(({ text }) => text), [
+                'col-name', 'col-name-2', 'auto', 'none', 'inherit', 'initial', 'revert', 'revert-layer', 'revert-rule', 'unset'
+            ]);
         });
         it('includes grid area names', async () => {
             setParentComputedStyle({ display: 'grid', 'grid-template-areas': '"area-name-a area-name-b" "area-name-c ."' });
@@ -1780,6 +1790,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 'initial',
                 'revert',
                 'revert-layer',
+                'revert-rule',
                 'unset',
             ]);
         });

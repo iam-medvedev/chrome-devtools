@@ -53,8 +53,23 @@ export type IsPageTargetCallback = (target: Target) => boolean;
 export declare const WEB_PERMISSION_TO_PROTOCOL_PERMISSION: Map<Permission, Protocol.Browser.PermissionType>;
 /**
  * @public
+ * @deprecated in favor of {@link PermissionDescriptor}.
  */
 export type Permission = 'accelerometer' | 'ambient-light-sensor' | 'background-sync' | 'camera' | 'clipboard-read' | 'clipboard-sanitized-write' | 'clipboard-write' | 'geolocation' | 'gyroscope' | 'idle-detection' | 'keyboard-lock' | 'magnetometer' | 'microphone' | 'midi-sysex' | 'midi' | 'notifications' | 'payment-handler' | 'persistent-storage' | 'pointer-lock';
+/**
+ * @public
+ */
+export interface PermissionDescriptor {
+    name: string;
+    userVisibleOnly?: boolean;
+    sysex?: boolean;
+    panTiltZoom?: boolean;
+    allowWithoutSanitization?: boolean;
+}
+/**
+ * @public
+ */
+export type PermissionState = 'granted' | 'denied' | 'prompt';
 /**
  * @public
  */
@@ -445,6 +460,26 @@ export declare abstract class Browser extends EventEmitter<BrowserEvents> {
      * browser.defaultBrowserContext().deleteMatchingCookies()}.
      */
     deleteMatchingCookies(...filters: DeleteCookiesRequest[]): Promise<void>;
+    /**
+     * Sets the permission for a specific origin in the default
+     * {@link BrowserContext}.
+     *
+     * @remarks
+     *
+     * Shortcut for
+     * {@link BrowserContext.setPermission |
+     * browser.defaultBrowserContext().setPermission()}.
+     *
+     * @param origin - The origin to set the permission for.
+     * @param permission - The permission descriptor.
+     * @param state - The state of the permission.
+     *
+     * @public
+     */
+    setPermission(origin: string, ...permissions: Array<{
+        permission: PermissionDescriptor;
+        state: PermissionState;
+    }>): Promise<void>;
     /**
      * Installs an extension and returns the ID. In Chrome, this is only
      * available if the browser was created using `pipe: true` and the

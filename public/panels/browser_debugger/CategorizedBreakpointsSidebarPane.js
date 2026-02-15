@@ -167,6 +167,12 @@ export const DEFAULT_VIEW = (input, output, target) => {
             output.userExpandedCategories.delete(category);
         }
     };
+    const onKeyDown = (e) => {
+        if (e.key === ' ') {
+            input.onSpaceKeyDown();
+            e.preventDefault();
+        }
+    };
     render(
     // clang-format off
     html `
@@ -177,10 +183,11 @@ export const DEFAULT_VIEW = (input, output, target) => {
         style="flex: 1;"
         ></devtools-toolbar-input>
     </devtools-toolbar>
-    <devtools-tree autofocus .template=${html `
+    <devtools-tree autofocus @keydown=${onKeyDown} .template=${html `
       <ul role="tree">
         ${filteredCategories.map(([category, breakpoints]) => html `
-          <li @expand=${(e) => onExpand(category, e)}
+          <li @select=${() => input.onItemSelected(category)}
+              @expand=${(e) => onExpand(category, e)}
               role="treeitem"
               jslog-context=${category}
               aria-checked=${breakpoints.some(breakpoint => breakpoint.enabled())
@@ -200,7 +207,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                 role="group"
                 ?hidden=${!shouldExpandCategory(breakpoints) && !input.userExpandedCategories.has(category)}>
               ${breakpoints.map(breakpoint => html `
-              <li
+              <li @select=${() => input.onItemSelected(breakpoint)}
                   role="treeitem"
                   aria-checked=${breakpoint.enabled()}
                   jslog-context=${Platform.StringUtilities.toKebabCase(breakpoint.name)}>
@@ -230,6 +237,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     #filterText = null;
     #view;
     #userExpandedCategories = new Set();
+    #selectedItem = null;
     constructor(breakpoints, jslog, viewId, view = DEFAULT_VIEW) {
         super({ useShadowDom: true, jslog });
         this.#view = view;
@@ -271,6 +279,25 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
         this.#filterText = filterText;
         this.requestUpdate();
     }
+    #onItemSelected(item) {
+        this.#selectedItem = item;
+    }
+    #onSpaceKeyDown() {
+        const selected = this.#selectedItem;
+        if (!selected) {
+            return;
+        }
+        if (selected instanceof SDK.CategorizedBreakpoint.CategorizedBreakpoint) {
+            this.onBreakpointChanged(selected, !selected.enabled());
+        }
+        else {
+            const breakpoints = this.categories.get(selected);
+            if (breakpoints) {
+                const newEnabled = breakpoints.some(bp => !bp.enabled());
+                breakpoints.forEach(bp => this.onBreakpointChanged(bp, newEnabled));
+            }
+        }
+    }
     onBreakpointChanged(breakpoint, enabled) {
         breakpoint.setEnabled(enabled);
         this.requestUpdate();
@@ -280,6 +307,8 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
             filterText: this.#filterText,
             onFilterChanged: this.#onFilterChanged.bind(this),
             onBreakpointChange: this.onBreakpointChanged.bind(this),
+            onItemSelected: this.#onItemSelected.bind(this),
+            onSpaceKeyDown: this.#onSpaceKeyDown.bind(this),
             sortedCategoryNames: this.#sortedCategories,
             categories: this.categories,
             highlightedItem: this.#highlightedItem,

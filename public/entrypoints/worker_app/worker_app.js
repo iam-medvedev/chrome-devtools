@@ -649,15 +649,7 @@ var UIStrings6 = {
   /**
    * @description Command for showing the 'Network request blocking' tool
    */
-  showNetworkRequestBlocking: "Show Network request blocking",
-  /**
-   * @description Command for showing the 'Network request blocking' tool
-   */
   showRequestConditions: "Show Request conditions",
-  /**
-   * @description Title of the 'Network request blocking' tool in the bottom drawer
-   */
-  networkRequestBlocking: "Network request blocking",
   /**
    * @description Title of the 'Request conditions' tool in the bottom drawer
    */
@@ -749,14 +741,6 @@ var UIStrings6 = {
   /**
    * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
    */
-  addNetworkRequestBlockingPattern: "Add network request blocking pattern",
-  /**
-   * @description Title of an action in the Network request blocking panel to clear all URL patterns.
-   */
-  removeAllNetworkRequestBlockingPatterns: "Remove all network request blocking patterns",
-  /**
-   * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
-   */
   addNetworkRequestBlockingOrThrottlingPattern: "Add network request blocking or throttling pattern",
   /**
    * @description Title of an action in the Network request blocking panel to clear all URL patterns.
@@ -807,12 +791,11 @@ UI6.ViewManager.registerViewExtension({
     return Network.NetworkPanel.NetworkPanel.instance();
   }
 });
-var individualThrottlingEnabled = () => Boolean(Root2.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled);
 UI6.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "network.blocked-urls",
-  commandPrompt: () => individualThrottlingEnabled() ? i18nString(UIStrings6.showRequestConditions) : i18nString(UIStrings6.showNetworkRequestBlocking),
-  title: () => individualThrottlingEnabled() ? i18nString(UIStrings6.networkRequestConditions) : i18nString(UIStrings6.networkRequestBlocking),
+  commandPrompt: () => i18nString(UIStrings6.showRequestConditions),
+  title: () => i18nString(UIStrings6.networkRequestConditions),
   persistence: "closeable",
   order: 60,
   async loadView() {
@@ -957,7 +940,7 @@ UI6.ActionRegistration.registerActionExtension({
 UI6.ActionRegistration.registerActionExtension({
   actionId: "network.add-network-request-blocking-pattern",
   category: "NETWORK",
-  title: () => individualThrottlingEnabled() ? i18nString(UIStrings6.addNetworkRequestBlockingOrThrottlingPattern) : i18nString(UIStrings6.addNetworkRequestBlockingPattern),
+  title: () => i18nString(UIStrings6.addNetworkRequestBlockingOrThrottlingPattern),
   iconClass: "plus",
   contextTypes() {
     return maybeRetrieveContextTypes2((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
@@ -970,7 +953,7 @@ UI6.ActionRegistration.registerActionExtension({
 UI6.ActionRegistration.registerActionExtension({
   actionId: "network.remove-all-network-request-blocking-patterns",
   category: "NETWORK",
-  title: () => individualThrottlingEnabled() ? i18nString(UIStrings6.removeAllNetworkRequestBlockingOrThrottlingPatterns) : i18nString(UIStrings6.removeAllNetworkRequestBlockingPatterns),
+  title: () => i18nString(UIStrings6.removeAllNetworkRequestBlockingOrThrottlingPatterns),
   iconClass: "clear",
   contextTypes() {
     return maybeRetrieveContextTypes2((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);

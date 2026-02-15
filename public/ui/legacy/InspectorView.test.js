@@ -260,5 +260,34 @@ describeWithEnvironment('InspectorView', () => {
             assert.strictEqual(secondLabel.textContent, 'DevTools reload required');
         });
     });
+    describe('Chrome restart required warnings', () => {
+        function assertShowsOnlyChromeRestartWarning(inspectorView) {
+            const infoBarDiv = inspectorView.contentElement.querySelector('.flex-none');
+            assert.exists(infoBarDiv);
+            assert.strictEqual(infoBarDiv.childElementCount, 1);
+            const infobar = infoBarDiv.children[0];
+            assert.exists(infobar.shadowRoot);
+            const label = infobar.shadowRoot.querySelector('.infobar-info-text');
+            assert.exists(label);
+            assert.strictEqual(label.textContent, 'Chrome restart required');
+        }
+        it('displays Chrome restart warning', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            inspectorView.displayChromeRestartRequiredWarning('Chrome restart required');
+            assertShowsOnlyChromeRestartWarning(inspectorView);
+        });
+        it('hides reload warning when Chrome restart warning is displayed', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            inspectorView.displayReloadRequiredWarning('Reload required');
+            inspectorView.displayChromeRestartRequiredWarning('Chrome restart required');
+            assertShowsOnlyChromeRestartWarning(inspectorView);
+        });
+        it('does not display reload warning when Chrome restart warning is already displayed', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            inspectorView.displayChromeRestartRequiredWarning('Chrome restart required');
+            inspectorView.displayReloadRequiredWarning('Reload required');
+            assertShowsOnlyChromeRestartWarning(inspectorView);
+        });
+    });
 });
 //# sourceMappingURL=InspectorView.test.js.map

@@ -130,12 +130,6 @@ describeWithMockConnection('PerformanceAgent – call tree focus', () => {
             const expectedData = new PerformanceTraceFormatter.PerformanceTraceFormatter(context.getItem()).formatTraceSummary();
             assert.deepEqual(responses, [
                 {
-                    type: "user-query" /* AiAgent.ResponseType.USER_QUERY */,
-                    query: 'test',
-                    imageInput: undefined,
-                    imageId: undefined,
-                },
-                {
                     type: "context" /* AiAgent.ResponseType.CONTEXT */,
                     title: 'Analyzing trace',
                     details: [
@@ -317,12 +311,6 @@ code
             const expectedDetailText = new PerformanceTraceFormatter.PerformanceTraceFormatter(context.getItem()).formatTraceSummary();
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             assert.deepEqual(responses, [
-                {
-                    type: "user-query" /* AiAgent.ResponseType.USER_QUERY */,
-                    query: 'test',
-                    imageInput: undefined,
-                    imageId: undefined,
-                },
                 {
                     type: "context" /* AiAgent.ResponseType.CONTEXT */,
                     title: 'Analyzing trace',
