@@ -171,7 +171,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     accessibilityTreeView;
     breadcrumbs;
     stylesWidget;
-    computedStyleWidget;
+    #computedStyleWidget;
     metricsWidget;
     searchResults;
     currentSearchResultIndex;
@@ -182,6 +182,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     domTreeButton;
     selectedNodeOnReset;
     hasNonDefaultSelectedNode;
+    #restorationGeneration = 0;
     searchConfig;
     omitDefaultSelection;
     notFirstInspectElement;
@@ -251,7 +252,10 @@ export class ElementsPanel extends UI.Panel.Panel {
         UI.Context.Context.instance().addFlavorChangeListener(StylesSidebarPane, this.evaluateTrackingComputedStyleUpdatesForNode, this);
         UI.Context.Context.instance().addFlavorChangeListener(ComputedStyleWidget, this.evaluateTrackingComputedStyleUpdatesForNode, this);
         this.stylesWidget = new StylesSidebarPane(this.#computedStyleModel);
-        this.computedStyleWidget = new ComputedStyleWidget(this.#computedStyleModel);
+        this.#computedStyleWidget = new ComputedStyleWidget();
+        this.#computedStyleWidget.computedStyleModel = this.#computedStyleModel;
+        this.#computedStyleModel.addEventListener("ComputedStyleChanged" /* ComputedStyle.ComputedStyleModel.Events.COMPUTED_STYLE_CHANGED */, this.#updateComputedStyles, this);
+        this.#computedStyleModel.addEventListener("CSSModelChanged" /* ComputedStyle.ComputedStyleModel.Events.CSS_MODEL_CHANGED */, this.#updateComputedStyles, this);
         this.metricsWidget = new MetricsSidebarPane(this.#computedStyleModel);
         Common.Settings.Settings.instance()
             .moduleSetting('sidebar-position')
@@ -294,6 +298,12 @@ export class ElementsPanel extends UI.Panel.Panel {
             (isStylesTabVisible && Root.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled);
         void selectedNode.domModel()?.cssModel()?.trackComputedStyleUpdatesForNode(shouldTrackComputedStyleUpdates ? selectedNode.id : undefined);
     }, 100);
+    async #updateComputedStyles() {
+        const computedStyle = await this.#computedStyleModel.fetchComputedStyle();
+        const matchedCascade = await this.#computedStyleModel.fetchMatchedCascade();
+        this.#computedStyleWidget.nodeStyle = computedStyle;
+        this.#computedStyleWidget.matchedStyles = matchedCascade;
+    }
     handleElementExpanded() {
         if (Annotations.AnnotationRepository.annotationsEnabled()) {
             void PanelCommon.AnnotationManager.instance().resolveAnnotationsOfType(Annotations.AnnotationType.ELEMENT_NODE);
@@ -479,6 +489,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         if (focus) {
             this.selectedNodeOnReset = selectedNode;
             this.hasNonDefaultSelectedNode = true;
+            this.#restorationGeneration++;
         }
         const executionContexts = selectedNode.domModel().runtimeModel().executionContexts();
         const nodeFrameId = selectedNode.frameId();
@@ -508,27 +519,109 @@ export class ElementsPanel extends UI.Panel.Panel {
             return;
         }
         const savedSelectedNodeOnReset = this.selectedNodeOnReset;
-        void restoreNode.call(this, domModel, this.selectedNodeOnReset || null);
-        async function restoreNode(domModel, staleNode) {
-            const nodePath = staleNode ? staleNode.path() : null;
-            const restoredNodeId = nodePath ? await domModel.pushNodeByPathToFrontend(nodePath) : null;
+        void this.restoreSelectedNodeAfterUpdate(domModel, this.selectedNodeOnReset || null, savedSelectedNodeOnReset);
+    }
+    /**
+     * Best-effort restoration of the previously focused node after a reload.
+     *
+     * The CDP path-based mechanism works well for stable DOMs, but can be
+     * unreliable for pages that render asynchronously after the initial
+     * document update. To improve reliability we retry a few times, and also
+     * fall back to evaluating a JS path (document.querySelector(...)) when
+     * possible.
+     *
+     * Node resolution (computation) is separated from view state updates:
+     * resolveNode returns a DOMNode|null, and this method handles selection.
+     */
+    async restoreSelectedNodeAfterUpdate(domModel, staleNode, savedSelectedNodeOnReset) {
+        // Fast path: no previous node to restore -- just select the fallback
+        // synchronously so callers that check selection immediately still work.
+        if (!staleNode) {
+            this.trySetFallbackSelection(domModel);
+            return;
+        }
+        const nodePath = staleNode.path();
+        // Keep the panel usable quickly by selecting a reasonable default node as
+        // soon as we can, but continue trying to restore the stale node.
+        let didSetFallbackSelection = false;
+        // Retry with exponential-ish backoff, capping total wait at ~3s.
+        // Most async-rendered pages settle well within this window.
+        const attemptDelaysMs = [0, 250, 500, 1000, 1500];
+        // Capture the restoration generation so any user interaction (node
+        // selection, style editing, node reveal, etc.) cancels pending retries.
+        const restorationGeneration = this.#restorationGeneration;
+        for (let attempt = 0; attempt < attemptDelaysMs.length; ++attempt) {
             if (savedSelectedNodeOnReset !== this.selectedNodeOnReset) {
                 return;
             }
-            let node = domModel.nodeForId(restoredNodeId);
-            if (!node) {
-                const inspectedDocument = domModel.existingDocument();
-                node = inspectedDocument ? inspectedDocument.body || inspectedDocument.documentElement : null;
+            if (this.hasNonDefaultSelectedNode || this.pendingNodeReveal ||
+                restorationGeneration !== this.#restorationGeneration) {
+                return;
             }
-            // If `node` is null here, the document hasn't been transmitted from the backend yet
-            // and isn't in a valid state to have a default-selected node. Another document update
-            // should be forthcoming. In the meantime, don't set the default-selected node or notify
-            // the test that it's ready, because it isn't.
-            if (node) {
-                this.setDefaultSelectedNode(node);
+            if (attemptDelaysMs[attempt]) {
+                await new Promise(resolve => window.setTimeout(resolve, attemptDelaysMs[attempt]));
+            }
+            if (savedSelectedNodeOnReset !== this.selectedNodeOnReset) {
+                return;
+            }
+            if (this.hasNonDefaultSelectedNode || this.pendingNodeReveal ||
+                restorationGeneration !== this.#restorationGeneration) {
+                return;
+            }
+            // Computation: resolve the node without touching view state.
+            const restoredNode = await this.resolveNodeForRestoration(domModel, nodePath);
+            if (restoredNode) {
+                this.setDefaultSelectedNode(restoredNode);
                 this.lastSelectedNodeSelectedForTest();
+                return;
+            }
+            if (!didSetFallbackSelection) {
+                // If we cannot compute a fallback selection yet, the document likely
+                // has not been transmitted from the backend and isn't in a valid state
+                // to have a default-selected node. Another document update should be
+                // forthcoming. In the meantime, don't notify tests that selection is
+                // ready, because it isn't.
+                if (!this.trySetFallbackSelection(domModel)) {
+                    return;
+                }
+                didSetFallbackSelection = true;
             }
         }
+    }
+    /**
+     * Attempts to resolve a DOM node by its CDP path.
+     * Pure computation -- does not modify view state.
+     */
+    async resolveNodeForRestoration(domModel, nodePath) {
+        try {
+            if (nodePath) {
+                const restoredNodeId = await domModel.pushNodeByPathToFrontend(nodePath);
+                const restoredNode = domModel.nodeForId(restoredNodeId);
+                if (restoredNode) {
+                    return restoredNode;
+                }
+            }
+        }
+        catch {
+            // CDP calls (pushNodeByPathToFrontend) can reject when the target or
+            // session is closed, e.g. if the page navigates again while we are
+            // retrying. Safe to swallow: we either retry on the next iteration or
+            // fall through to the fallback node.
+        }
+        return null;
+    }
+    trySetFallbackSelection(domModel) {
+        const inspectedDocument = domModel.existingDocument();
+        const fallbackNode = inspectedDocument ? inspectedDocument.body || inspectedDocument.documentElement : null;
+        if (!fallbackNode) {
+            return false;
+        }
+        this.setDefaultSelectedNode(fallbackNode);
+        this.lastSelectedNodeSelectedForTest();
+        return true;
+    }
+    cancelPendingRestoration() {
+        this.#restorationGeneration++;
     }
     lastSelectedNodeSelectedForTest() {
     }
@@ -823,7 +916,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         const computedStylePanesWrapper = new UI.Widget.VBox();
         computedStylePanesWrapper.element.classList.add('style-panes-wrapper');
         computedStylePanesWrapper.element.setAttribute('jslog', `${VisualLogging.pane('computed').track({ resize: true })}`);
-        this.computedStyleWidget.show(computedStylePanesWrapper.element);
+        this.#computedStyleWidget.show(computedStylePanesWrapper.element);
         const stylesSplitWidget = new UI.SplitWidget.SplitWidget(true /* isVertical */, true /* secondIsSidebar */, 'elements.styles.sidebar.width', 100);
         stylesSplitWidget.setMainWidget(matchedStylePanesWrapper);
         stylesSplitWidget.hideSidebar();
@@ -835,7 +928,7 @@ export class ElementsPanel extends UI.Panel.Panel {
             this.stylesWidget.appendToolbarItem(stylesSplitWidget.createShowHideSidebarButton(i18nString(UIStrings.showComputedStylesSidebar), i18nString(UIStrings.hideComputedStylesSidebar), i18nString(UIStrings.computedStylesShown), i18nString(UIStrings.computedStylesHidden), 'computed-styles'));
         });
         const showMetricsWidgetInComputedPane = () => {
-            this.metricsWidget.show(computedStylePanesWrapper.element, this.computedStyleWidget.element);
+            this.metricsWidget.show(computedStylePanesWrapper.element, this.#computedStyleWidget.element);
             this.stylesWidget.removeEventListener("StylesUpdateCompleted" /* StylesSidebarPaneEvents.STYLES_UPDATE_COMPLETED */, toggleMetricsWidget);
         };
         const showMetricsWidgetInStylesPane = () => {
@@ -938,7 +1031,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         }
     }
     getComputedStyleWidget() {
-        return this.computedStyleWidget;
+        return this.#computedStyleWidget;
     }
     setupStyleTracking(cssModel) {
         const cssPropertyTracker = cssModel.createCSSPropertyTracker(TrackedCSSProperties);
@@ -1108,6 +1201,7 @@ export class DOMNodeRevealer {
     reveal(node, omitFocus) {
         const panel = ElementsPanel.instance();
         panel.pendingNodeReveal = true;
+        panel.cancelPendingRestoration();
         return (new Promise(revealPromise)).catch((reason) => {
             let message;
             if (Platform.UserVisibleError.isUserVisibleError(reason)) {

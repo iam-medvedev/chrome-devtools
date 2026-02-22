@@ -144,20 +144,11 @@ export class AiCodeGenerationProvider {
             },
             {
                 key: 'Tab',
-                run: () => {
-                    if (!this.#aiCodeGeneration || !this.#editor || !hasActiveAiSuggestion(this.#editor.state)) {
-                        return false;
-                    }
-                    const { accepted, suggestion } = acceptAiAutoCompleteSuggestion(this.#editor.editor);
-                    if (!accepted) {
-                        return false;
-                    }
-                    if (suggestion?.rpcGlobalId) {
-                        this.#aiCodeGeneration.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
-                    }
-                    this.#aiCodeGenerationConfig?.onSuggestionAccepted(this.#aiCodeGenerationCitations);
-                    return true;
-                },
+                run: this.#acceptAiSuggestion.bind(this),
+            },
+            {
+                key: 'Enter',
+                run: this.#acceptAiSuggestion.bind(this),
             },
             {
                 any: (_view, event) => {
@@ -202,6 +193,20 @@ export class AiCodeGenerationProvider {
                 setAiAutoCompleteSuggestion.of(null),
             ]
         });
+    }
+    #acceptAiSuggestion() {
+        if (!this.#aiCodeGeneration || !this.#editor || !hasActiveAiSuggestion(this.#editor.state)) {
+            return false;
+        }
+        const { accepted, suggestion } = acceptAiAutoCompleteSuggestion(this.#editor.editor);
+        if (!accepted) {
+            return false;
+        }
+        if (suggestion?.rpcGlobalId) {
+            this.#aiCodeGeneration.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
+        }
+        this.#aiCodeGenerationConfig?.onSuggestionAccepted(this.#aiCodeGenerationCitations);
+        return true;
     }
     #activateTeaser(update) {
         const currentTeaserMode = update.state.field(aiCodeGenerationTeaserModeState);
@@ -284,7 +289,7 @@ export class AiCodeGenerationProvider {
             this.#editor.dispatch({
                 effects: [
                     setAiAutoCompleteSuggestion.of({
-                        text: '\n' + suggestionText,
+                        text: '\n' + suggestionText + '\n',
                         from: commentNodeInfo.to,
                         rpcGlobalId: generationResponse.metadata.rpcGlobalId,
                         sampleId: topSample.sampleId,
@@ -379,9 +384,19 @@ function aiCodeGenerationTeaserExtension(teaser) {
                 // Required for mouse hover to propagate to the info button in teaser.
                 return (event.target instanceof Node && teaser.contentElement.contains(event.target));
             },
-            mousedown(event) {
-                // Required for mouse click to propagate to the info tooltip in teaser.
-                return (event.target instanceof Node && teaser.contentElement.contains(event.target));
+            mousedown(event, view) {
+                if (!(event.target instanceof Node) || !teaser.contentElement.contains(event.target)) {
+                    return false;
+                }
+                // On mouse click, move the cursor position to the end of the line.
+                const cursorPosition = view.state.selection.main.head;
+                const line = view.state.doc.lineAt(cursorPosition);
+                if (cursorPosition !== line.to) {
+                    view.dispatch({ selection: { anchor: line.to, head: line.to } });
+                }
+                // Explicitly focus the editor.
+                view.focus();
+                return true;
             },
             keydown(event) {
                 if (!UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) ||

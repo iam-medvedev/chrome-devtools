@@ -4,6 +4,8 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createFakeSetting } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import * as Lit from '../lit/lit.js';
 import * as UI from './legacy.js';
 const { html, nothing } = Lit;
@@ -451,6 +453,39 @@ describe('bindCheckbox', () => {
         const { input, setting } = setup();
         setting.set(false);
         assert.isFalse(input.checked);
+    });
+    describe('asyncFragmentLabel', () => {
+        setupLocaleHooks();
+        it('returns "Async Call" if description is missing', () => {
+            const stackTrace = StubStackTrace.create([], [{ description: '', frames: [] }]);
+            assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[0]), 'Async Call');
+        });
+        it('returns the description as is for other descriptions', () => {
+            const stackTrace = StubStackTrace.create([], [{ description: 'Other description', frames: [] }]);
+            assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[0]), 'Other description');
+        });
+        it('returns "Promise resolved (async)" if description is "Promise.resolve"', () => {
+            const stackTrace = StubStackTrace.create([], [{ description: 'Promise.resolve', frames: [] }]);
+            assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[0]), 'Promise resolved (async)');
+        });
+        it('returns "Promise rejected (async)" if description is "Promise.reject"', () => {
+            const stackTrace = StubStackTrace.create([], [{ description: 'Promise.reject', frames: [] }]);
+            assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[0]), 'Promise rejected (async)');
+        });
+        it('returns "await in <functionName>" if description is "await" and there is a previous frame', () => {
+            const stackTrace = StubStackTrace.create(['url:1:functionName:10:1'], [{ description: 'await', frames: [] }]);
+            assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[0]), 'await in functionName');
+        });
+        it('returns "await" if description is "await" and there is no previous frame', () => {
+            const stackTrace = StubStackTrace.create([], [{ description: 'await', frames: [] }]);
+            assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[0]), 'await');
+        });
+        it('returns "await in <functionName>" if description is "await" and the previous frame is another async fragment', () => {
+            const stackTrace = StubStackTrace.create([], [
+                { description: 'someAsyncCall', frames: ['url:1:asyncFunction:10:1'] }, { description: 'await', frames: [] }
+            ]);
+            assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[1]), 'await in asyncFunction');
+        });
     });
 });
 //# sourceMappingURL=UIUtils.test.js.map

@@ -520,7 +520,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 {
                     // The "Recalculation forced" Stack trace
                     title: undefined,
-                    value: 'testFuncs.changeAttributeAndDisplay @ chromedevtools.github.io/performance-stories/style-invalidations/app.js:47:40\n(anonymous) @ chromedevtools.github.io/performance-stories/style-invalidations/app.js:64:36',
+                    value: 'testFuncs.changeAttributeAndDisplay @ chromedevtools.githu…ations/app.js:47:40\n(anonymous) @ chromedevtools.githu…ations/app.js:64:36',
                 },
                 {
                     title: 'Initiated by',
@@ -1375,16 +1375,14 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const fragment = Timeline.TimelineUIUtils.TimelineUIUtils.parseStringForLinks(rawString);
             const container = document.createElement('div');
             container.appendChild(fragment);
-            assert.strictEqual(container.innerHTML, 'Check out: <button class="devtools-link text-button link-style" title="https://example.com" jslog="Link; context: url; track: click" role="link" tabindex="-1"></button>.');
+            assert.strictEqual(container.innerHTML, 'Check out: <button role="link" class=" devtools-link text-button link-style " title="https://example.com" jslog="Link; context: url; track: click" tabindex="-1"></button>.');
         });
         it('should handle URLs anywhere within the string', () => {
             const rawString = 'http://example.com at the beginning. http://example.com in the middle or at the end: http://example.com';
             const fragment = Timeline.TimelineUIUtils.TimelineUIUtils.parseStringForLinks(rawString);
             const container = document.createElement('div');
             container.appendChild(fragment);
-            assert.strictEqual(container.innerHTML, `<button class="devtools-link text-button link-style" title="http://example.com" jslog="Link; context: url; track: click" role="link" tabindex="-1"></button>
-at the beginning. <button class="devtools-link text-button link-style" title="http://example.com" jslog="Link; context: url; track: click" role="link" tabindex="-1"></button>
-in the middle or at the end: <button class="devtools-link text-button link-style" title="http://example.com" jslog="Link; context: url; track: click" role="link" tabindex="-1"></button>`
+            assert.strictEqual(container.innerHTML, `<button role="link" class=" devtools-link text-button link-style " title="http://example.com" jslog="Link; context: url; track: click" tabindex="-1"></button> at the beginning. <button role="link" class=" devtools-link text-button link-style " title="http://example.com" jslog="Link; context: url; track: click" tabindex="-1"></button> in the middle or at the end: <button role="link" class=" devtools-link text-button link-style " title="http://example.com" jslog="Link; context: url; track: click" tabindex="-1"></button>`
                 .replace(/\n/g, ' '));
         });
         it('should parse a string with multiple links and create link elements for them', () => {
@@ -1392,7 +1390,7 @@ in the middle or at the end: <button class="devtools-link text-button link-style
             const fragment = Timeline.TimelineUIUtils.TimelineUIUtils.parseStringForLinks(rawString);
             const container = document.createElement('div');
             container.appendChild(fragment);
-            assert.strictEqual(container.innerHTML, 'Node: <button class="devtools-link text-button link-style" jslog="Link; context: url; track: click" role="link" tabindex="-1">ext://node/123</button>   Root Cause: <button class="devtools-link text-button link-style" jslog="Link; context: url; track: click" role="link" tabindex="-1">ext://node/13566</button>');
+            assert.strictEqual(container.innerHTML, 'Node: <button role="link" class=" devtools-link text-button link-style " jslog="Link; context: url; track: click" tabindex="-1">ext://node/123</button>   Root Cause: <button role="link" class=" devtools-link text-button link-style " jslog="Link; context: url; track: click" tabindex="-1">ext://node/13566</button>');
         });
         it('does not linkify data URI or www. prefixed text handle a data URI', () => {
             const rawString = 'so data:text/html,%3Cscript%3Ealert%28%27hi%27%29%3B%3C%2Fscript%3E and www.site.com remain plain';

@@ -20,6 +20,7 @@ core/common/SegmentedRange.test.js
 core/common/SettingRegistration.test.js
 core/common/Settings.test.js
 core/common/SimpleHistoryManager.test.js
+core/common/Srcset.test.js
 core/common/StringOutputStream.test.js
 core/common/TextDictionary.test.js
 core/common/Throttler.test.js
@@ -431,6 +432,7 @@ panels/elements/StylePropertiesSection.test.js
 panels/elements/StylePropertyHighlighter.test.js
 panels/elements/StylePropertyTreeElement.test.js
 panels/elements/StylePropertyUtils.test.js
+panels/elements/StylesAiCodeCompletionProvider.test.js
 panels/elements/StylesSidebarPane.test.js
 panels/elements/WebCustomData.test.js
 panels/emulation/AdvancedApp.test.js
@@ -470,6 +472,7 @@ panels/network/RequestConditionsDrawer.test.js
 panels/network/RequestCookiesView.test.js
 panels/network/RequestDeviceBoundSessionsView.test.js
 panels/network/RequestHTMLView.test.js
+panels/network/RequestHeadersView.test.js
 panels/network/RequestInitiatorView.test.js
 panels/network/RequestPayloadView.test.js
 panels/network/RequestPreviewView.test.js
@@ -480,7 +483,6 @@ panels/network/ShowMoreDetailsWidget.test.js
 panels/network/components/DirectSocketConnectionView.test.js
 panels/network/components/HeaderSectionRow.test.js
 panels/network/components/RequestHeaderSection.test.js
-panels/network/components/RequestHeadersView.test.js
 panels/network/components/RequestTrustTokensView.test.js
 panels/network/components/ResponseHeaderSection.test.js
 panels/performance_monitor/PerformanceMonitor.test.js

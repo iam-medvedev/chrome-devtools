@@ -76,38 +76,42 @@ describeWithMockConnection('ComputedStyleModel', () => {
         cssModel.dispatchEventToListeners(SDK.CSSModel.Events.ComputedStyleUpdated, { nodeId: (domNode1.id + 1) });
         sinon.assert.callCount(computedStyleListener, 0);
     });
-    it('fetchAllComputedStyleInfo calls the backend and returns the data', async () => {
+    it('fetchMatchedCascade returns null for matchedStyles if the node does not match', async () => {
         const cssModel = domNode1.domModel().cssModel();
         assert.isOk(cssModel);
         computedStyleModel.node = domNode1;
-        const mockComputedStyle = new Map([['color', 'red']]);
-        const getComputedStyleStub = sinon.stub(cssModel, 'getComputedStyle').resolves(mockComputedStyle);
-        const mockMatchedStyles = await getMatchedStyles({
-            node: domNode1,
-        });
-        const cachedMatchedCascadeForNodeStub = sinon.stub(cssModel, 'cachedMatchedCascadeForNode').resolves(mockMatchedStyles);
-        const result = await computedStyleModel.fetchAllComputedStyleInfo();
-        sinon.assert.calledOnce(getComputedStyleStub);
-        sinon.assert.calledOnce(cachedMatchedCascadeForNodeStub);
-        assert.deepEqual(result.computedStyle?.computedStyle, mockComputedStyle);
-        assert.deepEqual(result.matchedStyles, mockMatchedStyles);
-    });
-    it('fetchAllComputedStyleInfo returns null for matchedStyles if the node does not match', async () => {
-        const cssModel = domNode1.domModel().cssModel();
-        assert.isOk(cssModel);
-        computedStyleModel.node = domNode1;
-        const mockComputedStyle = new Map([['color', 'red']]);
-        const getComputedStyleStub = sinon.stub(cssModel, 'getComputedStyle').resolves(mockComputedStyle);
         const domNode2 = createNode(target, { nodeId: 2 });
-        const mockMatchedStyles = await getMatchedStyles({
+        const mockMatchedStylesForNode2 = await getMatchedStyles({
             node: domNode2,
         });
-        const cachedMatchedCascadeForNodeStub = sinon.stub(cssModel, 'cachedMatchedCascadeForNode').resolves(mockMatchedStyles);
-        const result = await computedStyleModel.fetchAllComputedStyleInfo();
-        sinon.assert.calledOnce(getComputedStyleStub);
+        const cachedMatchedCascadeForNodeStub = sinon.stub(cssModel, 'cachedMatchedCascadeForNode').resolves(mockMatchedStylesForNode2);
+        const matchedStyles = await computedStyleModel.fetchMatchedCascade();
         sinon.assert.calledOnce(cachedMatchedCascadeForNodeStub);
-        assert.deepEqual(result.computedStyle?.computedStyle, mockComputedStyle);
-        assert.isNull(result.matchedStyles);
+        assert.isNull(matchedStyles);
+    });
+    it('fetchComputedStyle returns null if the node has become outdated', async () => {
+        const cssModel = domNode1.domModel().cssModel();
+        assert.isOk(cssModel);
+        computedStyleModel.node = domNode1;
+        const domNode2 = createNode(target, { nodeId: 2 });
+        // We need to control when this promise resolves, hence using callsFake and
+        // providing the promise manually.
+        const computedStylePromise = Promise.withResolvers();
+        const getComputedStyleStub = sinon.stub(cssModel, 'getComputedStyle').callsFake(() => {
+            return computedStylePromise.promise;
+        });
+        // To emulate this scenario we need to:
+        // 1. Set the node to ID=1, and make the fetchComputedStyle() call.
+        const stylesPromise = computedStyleModel.fetchComputedStyle();
+        // 2. Before that resolves, set the node to ID = 2
+        computedStyleModel.node = domNode2;
+        // 3. Resolve the getComputedStyle promise, at which point the node check
+        //    will see that the nodes are different.
+        const mockComputedStyle = new Map([['color', 'red']]);
+        computedStylePromise.resolve(mockComputedStyle);
+        const styles = await stylesPromise;
+        sinon.assert.calledOnce(getComputedStyleStub);
+        assert.isNull(styles);
     });
 });
 //# sourceMappingURL=ComputedStyleModel.test.js.map

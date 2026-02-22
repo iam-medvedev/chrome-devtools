@@ -7,8 +7,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
-import { expectCall } from '../../testing/ExpectStubCall.js';
-import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { expectCall, expectCalled } from '../../testing/ExpectStubCall.js';
+import { clearMockConnectionResponseHandler, describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 describeWithMockConnection('ElementsPanel', () => {
@@ -91,6 +91,100 @@ describeWithMockConnection('ElementsPanel', () => {
         assert.isTrue(selectedTreeElement.expanded);
         panel.detach();
     });
+    it('restores the focused node after reload when it becomes available later', async () => {
+        const clock = sinon.useFakeTimers();
+        try {
+            let includeDivInDocument = true;
+            const documentResponse = (includeDiv) => ({
+                root: {
+                    nodeId: 1,
+                    backendNodeId: 2,
+                    nodeType: Node.DOCUMENT_NODE,
+                    nodeName: '#document',
+                    childNodeCount: 1,
+                    children: [{
+                            nodeId: 4,
+                            parentId: 1,
+                            backendNodeId: 5,
+                            nodeType: Node.ELEMENT_NODE,
+                            nodeName: 'HTML',
+                            childNodeCount: 1,
+                            children: [{
+                                    nodeId: 6,
+                                    parentId: 4,
+                                    backendNodeId: 7,
+                                    nodeType: Node.ELEMENT_NODE,
+                                    nodeName: 'BODY',
+                                    childNodeCount: includeDiv ? 1 : 0,
+                                    children: includeDiv ? [{
+                                            nodeId: 8,
+                                            parentId: 6,
+                                            backendNodeId: 9,
+                                            nodeType: Node.ELEMENT_NODE,
+                                            nodeName: 'DIV',
+                                            childNodeCount: 0,
+                                            attributes: ['id', 'target'],
+                                        }] :
+                                        [],
+                                }],
+                        }],
+                },
+            });
+            clearMockConnectionResponseHandler('DOM.getDocument');
+            setMockConnectionResponseHandler('DOM.getDocument', () => documentResponse(includeDivInDocument));
+            setMockConnectionResponseHandler('DOM.pushNodeByPathToFrontend', () => ({
+                nodeId: 8,
+            }));
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            const model = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(model);
+            const panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
+            panel.markAsRoot();
+            renderElementIntoDOM(panel);
+            await model.requestDocument();
+            const inspectedDocument = model.existingDocument();
+            assert.exists(inspectedDocument);
+            const body = inspectedDocument.body;
+            assert.exists(body);
+            const bodyChildren = body.children();
+            assert.exists(bodyChildren);
+            const div = bodyChildren[0];
+            assert.exists(div);
+            panel.selectDOMNode(div, true);
+            assert.strictEqual(panel.selectedDOMNode()?.nodeName(), 'DIV');
+            // Simulate a reload where the selected node appears later.
+            includeDivInDocument = false;
+            dispatchEvent(target, 'DOM.documentUpdated');
+            // Wait for the new document to arrive.
+            await model.requestDocument();
+            await clock.tickAsync(0);
+            assert.strictEqual(panel.selectedDOMNode()?.nodeName(), 'BODY');
+            // Insert the node later and let the retry logic pick it up.
+            await clock.tickAsync(300);
+            dispatchEvent(target, 'DOM.childNodeInserted', {
+                parentNodeId: 6,
+                previousNodeId: 0,
+                node: {
+                    nodeId: 8,
+                    parentId: 6,
+                    backendNodeId: 9,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'DIV',
+                    childNodeCount: 0,
+                    attributes: ['id', 'target'],
+                },
+            });
+            await clock.tickAsync(600);
+            assert.strictEqual(panel.selectedDOMNode()?.nodeName(), 'DIV');
+            panel.detach();
+            // Ensure all pending tasks triggered via the fake timers have a chance to
+            // complete before the test ends.
+            await clock.runAllAsync();
+        }
+        finally {
+            clock.restore();
+        }
+    });
     it('searches in in scope models', () => {
         const anotherTarget = createTarget();
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
@@ -169,16 +263,20 @@ describeWithMockConnection('ElementsPanel', () => {
         treeOutline.runPendingUpdates();
         panel.detach();
     });
-    describe('tracking Computed styles', () => {
+    describe('tracking and updating Computed styles', () => {
         const StylesSidebarPane = Elements.StylesSidebarPane.StylesSidebarPane;
         const ComputedStyleModel = ComputedStyle.ComputedStyleModel.ComputedStyleModel;
         const ComputedStyleWidget = Elements.ComputedStyleWidget.ComputedStyleWidget;
         let computedStyleNodeSpy;
+        let computedStyleFetchStylesSpy;
+        let computedStyleFetchCascadeSpy;
         let panel;
         let node;
         let cssModel;
         beforeEach(() => {
             computedStyleNodeSpy = sinon.spy(ComputedStyleModel.prototype, 'node', ['get', 'set']);
+            computedStyleFetchStylesSpy = sinon.stub(ComputedStyleModel.prototype, 'fetchComputedStyle').resolves(null);
+            computedStyleFetchCascadeSpy = sinon.stub(ComputedStyleModel.prototype, 'fetchMatchedCascade').resolves(null);
             Common.Debouncer.enableTestOverride();
             panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
             cssModel = sinon.createStubInstance(SDK.CSSModel.CSSModel, {
@@ -201,6 +299,11 @@ describeWithMockConnection('ElementsPanel', () => {
         it('updates the model when the selected DOM node changes', async () => {
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
             sinon.assert.calledOnceWithExactly(computedStyleNodeSpy.set, node);
+        });
+        it('fetches the styles from the computed style model when the dom node changes', async () => {
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+            await expectCalled(computedStyleFetchStylesSpy);
+            await expectCalled(computedStyleFetchCascadeSpy);
         });
         it('enables tracking when a ComputedStyleWidget is created', async () => {
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);

@@ -8,7 +8,7 @@ import type * as StackTrace from '../../../../models/stack_trace/stack_trace.js'
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import type * as Trace from '../../../../models/trace/trace.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
-import { type LitTemplate } from '../../../lit/lit.js';
+import { type LitTemplate, type TemplateResult } from '../../../lit/lit.js';
 import * as UI from '../../legacy.js';
 export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SDK.TargetManager.Observer {
     #private;
@@ -38,7 +38,7 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     linkifyScriptLocation(target: SDK.Target.Target | null, scriptId: Protocol.Runtime.ScriptId | null, sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number | undefined, options?: LinkifyOptions): HTMLElement;
     linkifyRawLocation(rawLocation: SDK.DebuggerModel.Location, fallbackUrl: Platform.DevToolsPath.UrlString, className?: string, options?: LinkifyOptions): HTMLElement;
     maybeLinkifyConsoleCallFrame(target: SDK.Target.Target | null, callFrame: Protocol.Runtime.CallFrame | Trace.Types.Events.CallFrame, options?: LinkifyOptions): HTMLElement | null;
-    maybeLinkifyStackTraceFrame(target: SDK.Target.Target | null, frame: StackTrace.StackTrace.Frame, options?: LinkifyOptions): HTMLElement;
+    static linkifyStackTraceFrame(frame: StackTrace.StackTrace.Frame, options?: LinkifyOptions): HTMLElement;
     linkifyStackTraceTopFrame(target: SDK.Target.Target | null, stackTrace: Protocol.Runtime.StackTrace): HTMLElement;
     linkifyCSSLocation(rawLocation: SDK.CSSModel.CSSLocation, classes?: string): Element;
     reset(): void;
@@ -46,8 +46,16 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     private updateAnchor;
     private static updateAnchorFromUILocation;
     private static updateLinkDecorations;
+    static renderLinkifiedUrl(url: Platform.DevToolsPath.UrlString, options?: LinkifyURLOptions): TemplateResult;
+    /**
+     * @deprecated use renderLinkifiedUrl.
+     */
     static linkifyURL(url: Platform.DevToolsPath.UrlString, options?: LinkifyURLOptions): HTMLElement;
     static linkifyRevealable(revealable: Object, text: string | HTMLElement, fallbackHref?: Platform.DevToolsPath.UrlString, title?: string, className?: string, jslogContext?: string): HTMLElement;
+    private static renderLink;
+    /**
+     * @deprecated use renderLink.
+     */
     private static createLink;
     private static setTrimmedText;
     private static appendTextWithoutHashes;
@@ -125,6 +133,7 @@ export interface LinkifyURLOptions {
     userMetric?: Host.UserMetrics.Action;
     jslogContext?: string;
     omitOrigin?: boolean;
+    onRef?: (el: HTMLElement) => void;
 }
 export interface LinkifyOptions {
     className?: string;

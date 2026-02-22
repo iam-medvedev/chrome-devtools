@@ -330,7 +330,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
             sinon.assert.calledOnce(generateCodeStub);
             const suggestion = editor.editor.state.field(Config.aiAutoCompleteSuggestionState);
             assert.exists(suggestion);
-            assert.strictEqual(suggestion.text, '\nconsole.log(\'suggestion\');');
+            assert.strictEqual(suggestion.text, '\nconsole.log(\'suggestion\');\n');
             assert.strictEqual(suggestion.from, 8);
             assert.strictEqual(suggestion.sampleId, 1);
             assert.strictEqual(suggestion.rpcGlobalId, 1);

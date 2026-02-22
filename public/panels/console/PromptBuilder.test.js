@@ -8,9 +8,11 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../testing/ConsoleHelpers.js';
+import { raf } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
 const { urlString } = Platform.DevToolsPath;
 describe('PromptBuilder', () => {
@@ -240,10 +242,9 @@ export const y = "";
             const stackTrace = createStackTrace([
                 `${SCRIPT_ID}::userNestedFunction::${URL}::${LINE_NUMBER}::15`,
                 `${SCRIPT_ID}::userFunction::http://example.com/script.js::10::2`,
-                `${SCRIPT_ID}::entry::http://example.com/app.js::25::10`,
+                `${SCRIPT_ID}_app::entry::http://example.com/app.js::25::10`,
             ]);
-            // Linkifier is mocked in this test, therefore, no link text after @.
-            const STACK_TRACE = ['userNestedFunction @ ', 'userFunction @ ', 'entry @'].join('\n');
+            const STACK_TRACE = ['userNestedFunction @ script.js:43', 'userFunction @ script.js:11', 'entry @ /app.js:26'].join('\n');
             const messageDetails = {
                 type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
                 stackTrace,
@@ -253,6 +254,9 @@ export const y = "";
             const ERROR_MESSAGE = 'kaboom!';
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            message.toMessageElement(); // Trigger rendering.
+            await raf();
+            await UI.Widget.Widget.allUpdatesComplete;
             const promptBuilder = new Console.PromptBuilder.PromptBuilder(message);
             const { prompt, sources } = await promptBuilder.buildPrompt();
             assert.strictEqual(prompt, [
@@ -360,7 +364,8 @@ export const y = "";
             const SCRIPT_ID = script.scriptId;
             const STACK_FRAME = `${SCRIPT_ID}::userNestedFunction::${URL}::${LINE_NUMBER}::15`;
             const stackTrace = createStackTrace(Array(80).fill(STACK_FRAME));
-            const STACK_TRACE = 'userNestedFunction @ \n'.repeat(45).trim();
+            const STACK_TRACE = `userNestedFunction @ ${'a'.repeat(100)}.js:1\n`.repeat(7) +
+                'userNestedFunction @ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
             const messageDetails = {
                 type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
                 stackTrace,
@@ -370,6 +375,9 @@ export const y = "";
             const ERROR_MESSAGE = 'kaboom!';
             const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            message.toMessageElement(); // Trigger rendering.
+            await raf();
+            await UI.Widget.Widget.allUpdatesComplete;
             const promptBuilder = new Console.PromptBuilder.PromptBuilder(message);
             const { prompt, sources } = await promptBuilder.buildPrompt();
             assert.strictEqual(prompt, [

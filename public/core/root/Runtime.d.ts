@@ -167,6 +167,12 @@ export interface HostConfigAiCodeGeneration {
     enabled: boolean;
     userTier: string;
 }
+export interface HostConfigAiCodeCompletionStyles {
+    modelId: string;
+    temperature: number;
+    enabled: boolean;
+    userTier: string;
+}
 export interface HostConfigDeepLinksViaExtensibilityApi {
     enabled: boolean;
 }
@@ -238,10 +244,6 @@ interface DevToolsFlexibleLayout {
 interface DeviceBoundSessionsDebugging {
     enabled: boolean;
 }
-interface AiPromptApi {
-    enabled: boolean;
-    allowWithoutGpu: boolean;
-}
 export interface DevToolsEnableDurableMessages {
     enabled: boolean;
 }
@@ -281,6 +283,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAiAssistanceV2: HostConfigAiAssistanceV2;
     devToolsAiCodeCompletion: HostConfigAiCodeCompletion;
     devToolsAiCodeGeneration: HostConfigAiCodeGeneration;
+    devToolsAiCodeCompletionStyles: HostConfigAiCodeCompletionStyles;
     devToolsVeLogging: HostConfigVeLogging;
     devToolsWellKnown: HostConfigWellKnown;
     /**
@@ -299,7 +302,6 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsLiveEdit: LiveEdit;
     devToolsFlexibleLayout: DevToolsFlexibleLayout;
     deviceBoundSessionsDebugging: DeviceBoundSessionsDebugging;
-    devToolsAiPromptApi: AiPromptApi;
     devToolsEnableDurableMessages: DevToolsEnableDurableMessages;
     devToolsAiAssistanceContextSelectionAgent: HostConfigAiAssistanceContextSelectionAgent;
     devToolsConsoleInsightsTeasers: ConsoleInsightsTeasers;

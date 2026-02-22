@@ -2559,6 +2559,9 @@ var assert = (value, message) => {
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/encoding.js
 function stringToTypedArray(string, base64Encoded = false) {
   if (base64Encoded) {
+    if ("fromBase64" in Uint8Array) {
+      return Uint8Array.fromBase64(string);
+    }
     if (typeof Buffer === "function") {
       return Buffer.from(string, "base64");
     }
@@ -2596,7 +2599,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.37.2";
+var packageVersion = "24.37.5";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -2863,15 +2866,15 @@ async function getReadableFromProtocolStream(client, handle) {
     }
   });
 }
+var VALID_DIALOG_TYPES = /* @__PURE__ */ new Set([
+  "alert",
+  "confirm",
+  "prompt",
+  "beforeunload"
+]);
 function validateDialogType(type) {
   let dialogType = null;
-  const validDialogTypes = /* @__PURE__ */ new Set([
-    "alert",
-    "confirm",
-    "prompt",
-    "beforeunload"
-  ]);
-  if (validDialogTypes.has(type)) {
+  if (VALID_DIALOG_TYPES.has(type)) {
     dialogType = type;
   }
   assert(dialogType, `Unknown javascript dialog type: ${type}`);
@@ -14743,7 +14746,7 @@ var FrameManager = class extends EventEmitter {
       frame.updateClient(target._session());
     }
     this.setupEventListeners(target._session());
-    void this.initialize(target._session(), frame);
+    void this.initialize(target._session(), frame).catch(debugError);
   }
   _deviceRequestPromptManager(client) {
     let manager = this.#deviceRequestPromptManagerMap.get(client);

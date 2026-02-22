@@ -14,6 +14,7 @@ import { createTarget, describeWithEnvironment, registerNoopActions, } from '../
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as TimelineComponents from './components/components.js';
 import * as Timeline from './timeline.js';
 async function contentDataToFile(contentData) {
     if (contentData.isTextContent) {
@@ -26,6 +27,7 @@ async function contentDataToFile(contentData) {
 describeWithEnvironment('TimelinePanel', function () {
     let timeline;
     let traceModel;
+    let resourceLoader;
     beforeEach(() => {
         registerNoopActions(['timeline.toggle-recording', 'timeline.record-reload', 'timeline.show-history', 'components.collect-garbage']);
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), Workspace.Workspace.WorkspaceImpl.instance());
@@ -39,7 +41,7 @@ describeWithEnvironment('TimelinePanel', function () {
         });
         Timeline.ModificationsManager.ModificationsManager.reset();
         traceModel = Trace.TraceModel.Model.createWithAllHandlers();
-        const resourceLoader = { loadResource: sinon.stub() };
+        resourceLoader = { loadResource: sinon.stub() };
         timeline = Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, traceModel });
         renderElementIntoDOM(timeline);
     });
@@ -171,6 +173,29 @@ describeWithEnvironment('TimelinePanel', function () {
             const key = k;
             assert.deepEqual(file.metadata[key], metadata[key]);
         }
+    });
+    describe('auto-toggling the sidebar', () => {
+        function setupStubs(config) {
+            sinon.stub(TimelineComponents.Sidebar.SidebarWidget.prototype, 'sidebarHasBeenOpened')
+                .returns(config.sidebarHasBeenOpened);
+            sinon.stub(UI.SplitWidget.SplitWidget.prototype, 'sidebarIsShowing').returns(config.sidebarIsShowing);
+        }
+        it('opens the sidebar once a trace is imported if the user has not seen it before', async function () {
+            setupStubs({ sidebarHasBeenOpened: false, sidebarIsShowing: false });
+            const timeline = Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, traceModel });
+            const showBothStub = sinon.stub(timeline.splitWidget(), 'showBoth').callsFake(() => { });
+            const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
+            await timeline.loadingComplete(events, null, null);
+            sinon.assert.calledOnce(showBothStub);
+        });
+        it('does not open the sidebar if the user has seen it already', async function () {
+            setupStubs({ sidebarHasBeenOpened: true, sidebarIsShowing: false });
+            const timeline = Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, traceModel });
+            const showBothStub = sinon.stub(timeline.splitWidget(), 'showBoth').callsFake(() => { });
+            const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
+            await timeline.loadingComplete(events, null, null);
+            sinon.assert.notCalled(showBothStub);
+        });
     });
     describe('handleExternalRecordRequest', () => {
         it('returns information on the insights found in the recording', async function () {

@@ -238,7 +238,7 @@ function textContentWithLineBreaks(node) {
   let ignoreFirst = false;
   while (currentNode.traverseNextNode(node)) {
     currentNode = currentNode.traverseNextNode(node);
-    if (currentNode.nodeType === Node.TEXT_NODE && currentNode.parentNode?.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+    if (currentNode.nodeType === Node.TEXT_NODE && currentNode.parentNode?.nodeType !== Node.DOCUMENT_FRAGMENT_NODE && currentNode.parentNode?.nodeName !== "STYLE") {
       buffer += currentNode.nodeValue;
     } else if (currentNode.nodeName === "LI" || currentNode.nodeName === "TR") {
       if (!ignoreFirst) {
@@ -932,6 +932,7 @@ async function dumpInspectedPageElementText(querySelector) {
 async function waitForPendingLiveLocationUpdates() {
   await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pendingLiveLocationChangesPromise();
   await Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().pendingLiveLocationChangesPromise();
+  await UI.Widget.Widget.allUpdatesComplete;
 }
 self.testRunner;
 TestRunner.StringOutputStream = StringOutputStream;

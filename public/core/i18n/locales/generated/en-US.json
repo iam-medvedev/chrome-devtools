@@ -1346,6 +1346,15 @@
   "generated/Deprecation.ts | IntlV8BreakIterator": {
     "message": "Intl.v8BreakIterator is deprecated. Please use Intl.Segmenter instead."
   },
+  "generated/Deprecation.ts | LanguageModelParams": {
+    "message": "LanguageModel.params() is deprecated and now only available in extension contexts. The topK and temperature related fields within its result are also deprecated."
+  },
+  "generated/Deprecation.ts | LanguageModelTemperature": {
+    "message": "The 'temperature' parameter/attribute for LanguageModel is deprecated. It is only functional within extensions and may be removed in the future."
+  },
+  "generated/Deprecation.ts | LanguageModelTopK": {
+    "message": "The 'topK' parameter/attribute for LanguageModel is deprecated. It is only functional within extensions and may be removed in the future."
+  },
   "generated/Deprecation.ts | LocalCSSFileExtensionRejected": {
     "message": "CSS cannot be loaded from file: URLs unless they end in a .css file extension."
   },
@@ -3110,17 +3119,11 @@
   "panels/ai_assistance/AiAssistancePanel.ts | settings": {
     "message": "Settings"
   },
-  "panels/ai_assistance/components/ChatInput.ts | addContext": {
-    "message": "Add selected item as context"
-  },
   "panels/ai_assistance/components/ChatInput.ts | inputTextAriaDescription": {
     "message": "You can also use one of the suggested prompts above to start your conversation"
   },
   "panels/ai_assistance/components/ChatInput.ts | learnAbout": {
     "message": "Learn about AI in DevTools"
-  },
-  "panels/ai_assistance/components/ChatInput.ts | removeContext": {
-    "message": "Remove from context"
   },
   "panels/ai_assistance/components/ChatInput.ts | revealContextDescription": {
     "message": "Reveal the selected context item in DevTools"
@@ -9899,60 +9902,6 @@
   "panels/network/components/RequestHeaderSection.ts | provisionalHeadersAreShownDisableCache": {
     "message": "Provisional headers are shown. Disable cache to see full headers."
   },
-  "panels/network/components/RequestHeadersView.ts | earlyHintsHeaders": {
-    "message": "Early hints headers"
-  },
-  "panels/network/components/RequestHeadersView.ts | fromDiskCache": {
-    "message": "(from disk cache)"
-  },
-  "panels/network/components/RequestHeadersView.ts | fromEarlyHints": {
-    "message": "(from early hints)"
-  },
-  "panels/network/components/RequestHeadersView.ts | fromMemoryCache": {
-    "message": "(from memory cache)"
-  },
-  "panels/network/components/RequestHeadersView.ts | fromPrefetchCache": {
-    "message": "(from prefetch cache)"
-  },
-  "panels/network/components/RequestHeadersView.ts | fromServiceWorker": {
-    "message": "(from service worker)"
-  },
-  "panels/network/components/RequestHeadersView.ts | fromSignedexchange": {
-    "message": "(from signed-exchange)"
-  },
-  "panels/network/components/RequestHeadersView.ts | general": {
-    "message": "General"
-  },
-  "panels/network/components/RequestHeadersView.ts | raw": {
-    "message": "Raw"
-  },
-  "panels/network/components/RequestHeadersView.ts | referrerPolicy": {
-    "message": "Referrer Policy"
-  },
-  "panels/network/components/RequestHeadersView.ts | remoteAddress": {
-    "message": "Remote Address"
-  },
-  "panels/network/components/RequestHeadersView.ts | requestHeaders": {
-    "message": "Request Headers"
-  },
-  "panels/network/components/RequestHeadersView.ts | requestMethod": {
-    "message": "Request Method"
-  },
-  "panels/network/components/RequestHeadersView.ts | requestUrl": {
-    "message": "Request URL"
-  },
-  "panels/network/components/RequestHeadersView.ts | responseHeaders": {
-    "message": "Response headers"
-  },
-  "panels/network/components/RequestHeadersView.ts | revealHeaderOverrides": {
-    "message": "Reveal header override definitions"
-  },
-  "panels/network/components/RequestHeadersView.ts | showMore": {
-    "message": "Show more"
-  },
-  "panels/network/components/RequestHeadersView.ts | statusCode": {
-    "message": "Status Code"
-  },
   "panels/network/components/RequestTrustTokensView.ts | aClientprovidedArgumentWas": {
     "message": "A client-provided argument was malformed or otherwise invalid."
   },
@@ -11017,6 +10966,60 @@
   },
   "panels/network/RequestDeviceBoundSessionsView.ts | sessionId": {
     "message": "Session ID"
+  },
+  "panels/network/RequestHeadersView.ts | earlyHintsHeaders": {
+    "message": "Early hints headers"
+  },
+  "panels/network/RequestHeadersView.ts | fromDiskCache": {
+    "message": "(from disk cache)"
+  },
+  "panels/network/RequestHeadersView.ts | fromEarlyHints": {
+    "message": "(from early hints)"
+  },
+  "panels/network/RequestHeadersView.ts | fromMemoryCache": {
+    "message": "(from memory cache)"
+  },
+  "panels/network/RequestHeadersView.ts | fromPrefetchCache": {
+    "message": "(from prefetch cache)"
+  },
+  "panels/network/RequestHeadersView.ts | fromServiceWorker": {
+    "message": "(from service worker)"
+  },
+  "panels/network/RequestHeadersView.ts | fromSignedexchange": {
+    "message": "(from signed-exchange)"
+  },
+  "panels/network/RequestHeadersView.ts | general": {
+    "message": "General"
+  },
+  "panels/network/RequestHeadersView.ts | raw": {
+    "message": "Raw"
+  },
+  "panels/network/RequestHeadersView.ts | referrerPolicy": {
+    "message": "Referrer Policy"
+  },
+  "panels/network/RequestHeadersView.ts | remoteAddress": {
+    "message": "Remote Address"
+  },
+  "panels/network/RequestHeadersView.ts | requestHeaders": {
+    "message": "Request Headers"
+  },
+  "panels/network/RequestHeadersView.ts | requestMethod": {
+    "message": "Request Method"
+  },
+  "panels/network/RequestHeadersView.ts | requestUrl": {
+    "message": "Request URL"
+  },
+  "panels/network/RequestHeadersView.ts | responseHeaders": {
+    "message": "Response headers"
+  },
+  "panels/network/RequestHeadersView.ts | revealHeaderOverrides": {
+    "message": "Reveal header override definitions"
+  },
+  "panels/network/RequestHeadersView.ts | showMore": {
+    "message": "Show more"
+  },
+  "panels/network/RequestHeadersView.ts | statusCode": {
+    "message": "Status Code"
   },
   "panels/network/RequestInitiatorView.ts | noInitiator": {
     "message": "No initiator data"
@@ -17689,9 +17692,6 @@
   },
   "ui/legacy/components/utils/JSPresentationUtils.ts | showMoreFrames": {
     "message": "Show ignore-listed frames"
-  },
-  "ui/legacy/components/utils/JSPresentationUtils.ts | unknownSource": {
-    "message": "unknown"
   },
   "ui/legacy/components/utils/Linkifier.ts | auto": {
     "message": "auto"

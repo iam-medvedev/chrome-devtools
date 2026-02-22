@@ -6,7 +6,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
-import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
@@ -17,12 +16,10 @@ describe('RequestInitiatorView', () => {
         renderElementIntoDOM(component);
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/foo.js`, urlString `https://example.com`, null, null, null);
         const initiatorGraph = { initiators: new Set(), initiated: new Map() };
-        const linkifier = new Components.Linkifier.Linkifier();
         Network.RequestInitiatorView.DEFAULT_VIEW({
             initiatorGraph,
             stackTrace: null,
             request,
-            linkifier,
         }, undefined, component);
         await assertScreenshot('network/request-initiator-view-empty.png');
     });
@@ -33,12 +30,10 @@ describe('RequestInitiatorView', () => {
             type: "script" /* Protocol.Network.InitiatorType.Script */,
         });
         const initiatorGraph = { initiators: new Set(), initiated: new Map() };
-        const linkifier = new Components.Linkifier.Linkifier();
         Network.RequestInitiatorView.DEFAULT_VIEW({
             initiatorGraph,
             stackTrace: StubStackTrace.create(['https://example.com/foo.js:foo:10:5']),
             request,
-            linkifier,
         }, undefined, component);
         await Promise.resolve(); // Trigger MutationObserver (which requests widget updates).
         await UI.Widget.Widget.allUpdatesComplete;
@@ -50,12 +45,10 @@ describe('RequestInitiatorView', () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/foo.js`, urlString `https://example.com`, null, null, null);
         const initiator = SDK.NetworkRequest.NetworkRequest.create('initiatorId', urlString `https://example.com/initiator.js`, urlString `https://example.com`, null, null, null);
         const initiatorGraph = { initiators: new Set([initiator, request]), initiated: new Map() };
-        const linkifier = new Components.Linkifier.Linkifier();
         Network.RequestInitiatorView.DEFAULT_VIEW({
             initiatorGraph,
             stackTrace: null,
             request,
-            linkifier,
         }, undefined, component);
         await assertScreenshot('network/request-initiator-view-chain.png');
     });
@@ -67,12 +60,10 @@ describe('RequestInitiatorView', () => {
         });
         const initiator = SDK.NetworkRequest.NetworkRequest.create('initiatorId', urlString `https://example.com/initiator.js`, urlString `https://example.com`, null, null, null);
         const initiatorGraph = { initiators: new Set([initiator, request]), initiated: new Map() };
-        const linkifier = new Components.Linkifier.Linkifier();
         Network.RequestInitiatorView.DEFAULT_VIEW({
             initiatorGraph,
             stackTrace: StubStackTrace.create(['https://example.com/foo.js:foo:10:5']),
             request,
-            linkifier,
         }, undefined, component);
         await Promise.resolve(); // Trigger MutationObserver (which requests widget updates).
         await UI.Widget.Widget.allUpdatesComplete;

@@ -609,14 +609,26 @@ export class ConsoleViewMessage {
             clickableElement.tabIndex = -1;
         }
         clickableElement.appendChild(messageElement);
-        const stackTraceElement = contentElement.createChild('div');
-        const stackTracePreview = new Components.JSPresentationUtils.StackTracePreviewContent(undefined, target ?? undefined, this.linkifier, { runtimeStackTrace: stackTrace, widthConstrained: true });
+        const stackTraceElement = contentElement.createChild('div', 'hidden-stack-trace');
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const stackTraceTarget = target ?? targetManager.primaryPageTarget() ?? targetManager.rootTarget();
+        const stackTracePreview = new Components.JSPresentationUtils.StackTracePreviewContent();
+        stackTracePreview.options = { widthConstrained: true };
+        if (stackTraceTarget && stackTrace) {
+            const selectableChildIndex = this.selectableChildren.length;
+            void Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+                .createStackTraceFromProtocolRuntime(stackTrace, stackTraceTarget)
+                .then(stackTrace => {
+                stackTracePreview.stackTrace = stackTrace;
+                return stackTracePreview.updateComplete;
+            })
+                .then(() => {
+                const selectableLinks = stackTracePreview.linkElements.map(element => ({ element, forceSelect: () => element.focus() }));
+                this.selectableChildren.splice(selectableChildIndex, 0, ...selectableLinks);
+            });
+        }
         stackTracePreview.markAsRoot();
         stackTracePreview.show(stackTraceElement);
-        for (const linkElement of stackTracePreview.linkElements) {
-            this.selectableChildren.push({ element: linkElement, forceSelect: () => linkElement.focus() });
-        }
-        stackTraceElement.classList.add('hidden-stack-trace');
         UI.ARIAUtils.setLabel(contentElement, `${messageElement.textContent} ${i18nString(UIStrings.stackMessageCollapsed)}`);
         UI.ARIAUtils.markAsGroup(stackTraceElement);
         return { stackTraceElement, contentElement, messageElement, clickableElement, toggleElement };
@@ -2058,10 +2070,6 @@ export class ConsoleTableMessageView extends ConsoleViewMessage {
  * @constant
  */
 const MaxLengthToIgnoreHighlighter = 10000;
-/**
- * @constant
- */
-export const MaxLengthForLinks = 40;
 let maxTokenizableStringLength = 10000;
 let longStringVisibleLength = 5000;
 export const getMaxTokenizableStringLength = () => {

@@ -66,6 +66,7 @@
     "../../../../../../front_end/panels/elements/StylePropertyHighlighter.test.ts",
     "../../../../../../front_end/panels/elements/StylePropertyTreeElement.test.ts",
     "../../../../../../front_end/panels/elements/StylePropertyUtils.test.ts",
+    "../../../../../../front_end/panels/elements/StylesAiCodeCompletionProvider.test.ts",
     "../../../../../../front_end/panels/elements/StylesSidebarPane.test.ts",
     "../../../../../../front_end/panels/elements/WebCustomData.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

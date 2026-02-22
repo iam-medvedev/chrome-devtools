@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import * as Bindings from '../../models/bindings/bindings.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../testing/ConsoleHelpers.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -15,7 +16,6 @@ import * as Console from './console.js';
 // The css files aren't exported by the bundle, so we need to import it directly.
 // eslint-disable-next-line @devtools/es-modules-import
 import consoleViewStyles from './consoleView.css.js';
-const { urlString } = Platform.DevToolsPath;
 describe('ConsoleViewMessage', () => {
     describe('concatErrorDescriptionAndIssueSummary', () => {
         const { concatErrorDescriptionAndIssueSummary } = Console.ConsoleViewMessage;
@@ -186,16 +186,19 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             }
             return results;
         }
-        function expandStructuredTrace(element) {
+        async function expandStructuredTrace(element) {
             element.querySelector('.console-message-stack-trace-wrapper > div').click();
+            await UI.Widget.Widget.allUpdatesComplete;
         }
-        function expandIgnored(element) {
+        async function expandIgnored(element) {
             const { showAll } = findLinks(element);
             showAll.querySelector('.link').click();
+            await UI.Widget.Widget.allUpdatesComplete;
         }
-        function collapseIgnored(element) {
+        async function collapseIgnored(element) {
             const { showLess } = findLinks(element);
             showLess.querySelector('.link').click();
+            await UI.Widget.Widget.allUpdatesComplete;
         }
         async function createConsoleMessageWithIgnoreListing(ignoreListFn, withBuiltinFrames) {
             const target = createTarget();
@@ -225,19 +228,21 @@ describeWithMockConnection('ConsoleViewMessage', () => {
                 }
                 return link;
             });
-            linkifier.maybeLinkifyConsoleCallFrame.callsFake((_target, callFrame, options) => {
-                const link = Components.Linkifier.Linkifier.linkifyURL(urlString `${callFrame.url}`, { lineNumber: callFrame.lineNumber, ...options });
-                if (ignoreListFn(callFrame.url)) {
+            const originalLinkifyStackTraceFrame = Components.Linkifier.Linkifier.linkifyStackTraceFrame;
+            sinon.stub(Components.Linkifier.Linkifier, 'linkifyStackTraceFrame').callsFake((frame, options) => {
+                const link = originalLinkifyStackTraceFrame(frame, options);
+                if ((frame.url && ignoreListFn(frame.url)) || (frame.uiSourceCode && ignoreListFn(frame.uiSourceCode.url()))) {
                     link.classList.add(IGNORE_LIST_LINK);
                 }
                 return link;
             });
             const element = message.toMessageElement(); // Trigger rendering.
-            await message.formatErrorStackPromiseForTest();
             const wrapperElement = document.createElement('div');
             const shadowElement = UI.UIUtils.createShadowRootWithCoreStyles(wrapperElement, { cssFile: consoleViewStyles });
             shadowElement.appendChild(element);
             renderElementIntoDOM(wrapperElement);
+            await raf();
+            await UI.Widget.Widget.allUpdatesComplete;
             assert.isTrue(element.checkVisibility());
             return element;
         }
@@ -265,20 +270,32 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             '    at JSON.parse (<anonymous>)\n',
         ];
         const EXPANDED_STRUCTURED = [
-            '\nuserNestedFunction @ example.com/script.js:41',
-            '\nuserFunction @ example.com/script.js:11',
-            '\nentry @ example.com/app.js:26',
+            '\nuserNestedFunction @ /script.js:41',
+            '\nuserFunction @ /script.js:11',
+            '\nentry @ /app.js:26',
         ];
         const COLLAPSED_STRUCTURED = [
-            '\nuserNestedFunction @ example.com/script.js:41',
-            '\nuserFunction @ example.com/script.js:11',
+            '\nuserNestedFunction @ /script.js:41',
+            '\nuserFunction @ /script.js:11',
         ];
+        beforeEach(() => {
+            const targetManager = SDK.TargetManager.TargetManager.instance();
+            const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, Workspace.Workspace.WorkspaceImpl.instance());
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+            Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+                forceNew: true,
+                resourceMapping,
+                targetManager,
+                ignoreListManager,
+                workspace: Workspace.Workspace.WorkspaceImpl.instance(),
+            });
+        });
         it('shows everything with no links when nothing is ignore listed', async () => {
             const element = await createConsoleMessageWithIgnoreListing(_ => false);
             assertNoLinks(element);
             assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED);
             assert.deepEqual(getStructuredCallFrames(element), []);
-            expandStructuredTrace(element);
+            await expandStructuredTrace(element);
             assertNoLinks(element);
             assert.deepEqual(getStructuredCallFrames(element), EXPANDED_STRUCTURED);
         });
@@ -287,7 +304,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             assertNoLinks(element);
             assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED);
             assert.deepEqual(getStructuredCallFrames(element), []);
-            expandStructuredTrace(element);
+            await expandStructuredTrace(element);
             assertNoLinks(element);
             assert.deepEqual(getStructuredCallFrames(element), EXPANDED_STRUCTURED);
         });
@@ -296,20 +313,20 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             assertShowAllLink(element);
             assert.deepEqual(getStructuredCallFrames(element), []);
             assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED);
-            expandIgnored(element);
+            await expandIgnored(element);
             assertShowLessLink(element);
             assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED);
-            collapseIgnored(element);
+            await collapseIgnored(element);
             assertShowAllLink(element);
-            expandStructuredTrace(element);
+            await expandStructuredTrace(element);
             assertShowAllLink(element);
             assert.deepEqual(getStructuredCallFrames(element), COLLAPSED_STRUCTURED);
             assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED);
-            expandIgnored(element);
+            await expandIgnored(element);
             assertShowLessLink(element);
             assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED);
             assert.deepEqual(getStructuredCallFrames(element), EXPANDED_STRUCTURED);
-            collapseIgnored(element);
+            await collapseIgnored(element);
             assertShowAllLink(element);
             assert.deepEqual(getStructuredCallFrames(element), COLLAPSED_STRUCTURED);
             assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED);
@@ -319,7 +336,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             assertNoLinks(element);
             assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED_WITH_BUILTIN);
             assert.deepEqual(getStructuredCallFrames(element), []);
-            expandStructuredTrace(element);
+            await expandStructuredTrace(element);
             assertNoLinks(element);
             assert.deepEqual(getStructuredCallFrames(element), EXPANDED_STRUCTURED);
         });
@@ -328,7 +345,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             assertNoLinks(element);
             assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED_WITH_BUILTIN);
             assert.deepEqual(getStructuredCallFrames(element), []);
-            expandStructuredTrace(element);
+            await expandStructuredTrace(element);
             assertNoLinks(element);
             assert.deepEqual(getStructuredCallFrames(element), EXPANDED_STRUCTURED);
         });
@@ -337,20 +354,20 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             assertShowAllLink(element);
             assert.deepEqual(getStructuredCallFrames(element), []);
             assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED_WITH_BUILTIN);
-            expandIgnored(element);
+            await expandIgnored(element);
             assertShowLessLink(element);
             assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED_WITH_BUILTIN);
-            collapseIgnored(element);
+            await collapseIgnored(element);
             assertShowAllLink(element);
-            expandStructuredTrace(element);
+            await expandStructuredTrace(element);
             assertShowAllLink(element);
             assert.deepEqual(getStructuredCallFrames(element), COLLAPSED_STRUCTURED);
             assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED_WITH_BUILTIN);
-            expandIgnored(element);
+            await expandIgnored(element);
             assertShowLessLink(element);
             assert.deepEqual(getCallFrames(element), EXPANDED_UNSTRUCTURED_WITH_BUILTIN);
             assert.deepEqual(getStructuredCallFrames(element), EXPANDED_STRUCTURED);
-            collapseIgnored(element);
+            await collapseIgnored(element);
             assertShowAllLink(element);
             assert.deepEqual(getStructuredCallFrames(element), COLLAPSED_STRUCTURED);
             assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED_WITH_BUILTIN);

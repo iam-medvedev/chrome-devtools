@@ -54,8 +54,11 @@ describeWithMockConnection('ComputedStyleWidget', () => {
             sinon.stub(computedStyleModel, 'cssModel').callsFake(() => {
                 return sinon.createStubInstance(SDK.CSSModel.CSSModel, { cachedMatchedCascadeForNode: Promise.resolve(cssMatchedStyles) });
             });
-            const computedStyleWidget = new Elements.ComputedStyleWidget.ComputedStyleWidget(computedStyleModel);
+            const computedStyleWidget = new Elements.ComputedStyleWidget.ComputedStyleWidget();
             renderElementIntoDOM(computedStyleWidget);
+            computedStyleWidget.computedStyleModel = computedStyleModel;
+            computedStyleWidget.nodeStyle = { node, computedStyle: new Map([['color', 'red']]) };
+            computedStyleWidget.matchedStyles = cssMatchedStyles;
             return computedStyleWidget;
         }
         it('renders colors correctly', async () => {

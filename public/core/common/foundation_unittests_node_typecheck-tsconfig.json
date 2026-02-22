@@ -67,6 +67,7 @@
     "../../../../../../front_end/core/common/SettingRegistration.test.ts",
     "../../../../../../front_end/core/common/Settings.test.ts",
     "../../../../../../front_end/core/common/SimpleHistoryManager.test.ts",
+    "../../../../../../front_end/core/common/Srcset.test.ts",
     "../../../../../../front_end/core/common/StringOutputStream.test.ts",
     "../../../../../../front_end/core/common/TextDictionary.test.ts",
     "../../../../../../front_end/core/common/Throttler.test.ts",
