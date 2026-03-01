@@ -158,6 +158,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     userOperation = false;
     isEditingStyle = false;
     #filterRegex = null;
+    #isRegex = false;
+    #filterText = '';
     isActivePropertyHighlighted = false;
     initialUpdateCompleted = false;
     hasMatchedStyles = false;
@@ -223,58 +225,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     }
     setUserOperation(userOperation) {
         this.userOperation = userOperation;
-    }
-    static ignoreErrorsForProperty(property) {
-        function hasUnknownVendorPrefix(string) {
-            return !string.startsWith('-webkit-') && /^[-_][\w\d]+-\w/.test(string);
-        }
-        const name = property.name.toLowerCase();
-        // IE hack.
-        if (name.charAt(0) === '_') {
-            return true;
-        }
-        // IE has a different format for this.
-        if (name === 'filter') {
-            return true;
-        }
-        // Common IE-specific property prefix.
-        if (name.startsWith('scrollbar-')) {
-            return true;
-        }
-        if (hasUnknownVendorPrefix(name)) {
-            return true;
-        }
-        const value = property.value.toLowerCase();
-        // IE hack.
-        if (value.endsWith('\\9')) {
-            return true;
-        }
-        if (hasUnknownVendorPrefix(value)) {
-            return true;
-        }
-        return false;
-    }
-    static formatLeadingProperties(section) {
-        const selectorText = section.headerText();
-        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
-        const style = section.style();
-        const lines = [];
-        // Invalid property should also be copied.
-        // For example: *display: inline.
-        for (const property of style.leadingProperties()) {
-            if (property.disabled) {
-                lines.push(`${indent}/* ${property.name}: ${property.value}; */`);
-            }
-            else {
-                lines.push(`${indent}${property.name}: ${property.value};`);
-            }
-        }
-        const allDeclarationText = lines.join('\n');
-        const ruleText = `${selectorText} {\n${allDeclarationText}\n}`;
-        return {
-            allDeclarationText,
-            ruleText,
-        };
     }
     revealProperty(cssProperty) {
         void this.decorator.highlightProperty(cssProperty);
@@ -397,9 +347,27 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             return !header.isViaInspector() && !header.isInline && Boolean(header.resourceURL());
         }
     }
+    #buildFilterRegex(text) {
+        if (!text) {
+            return null;
+        }
+        if (this.#isRegex) {
+            try {
+                return new RegExp(text, 'i');
+            }
+            catch {
+                // Invalid regex: fall through to plain-text matching.
+            }
+        }
+        return new RegExp(Platform.StringUtilities.escapeForRegExp(text), 'i');
+    }
     onFilterChanged(event) {
-        const regex = event.data ? new RegExp(Platform.StringUtilities.escapeForRegExp(event.data), 'i') : null;
-        this.setFilter(regex);
+        this.#filterText = event.data;
+        this.setFilter(this.#buildFilterRegex(event.data));
+    }
+    onRegexToggled() {
+        this.#isRegex = !this.#isRegex;
+        this.setFilter(this.#buildFilterRegex(this.#filterText));
     }
     setFilter(regex) {
         this.lastFilterChange = Date.now();
@@ -610,9 +578,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         if (!Root.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled) {
             return;
         }
-        if (!UI.ViewManager.ViewManager.instance().isViewVisible('animations')) {
-            return;
-        }
         void this.computedStyleUpdateThrottler.schedule(async () => {
             await this.#updateAnimatedStyles();
             this.handledComputedStyleChangedForTest();
@@ -630,11 +595,19 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     }
     #scheduleResetUpdateIfNotEditing() {
         this.scheduleResetUpdateIfNotEditingCalledForTest();
+        // Don't schedule if editing; the edit completion will handle the update.
+        if (this.userOperation || this.isEditingStyle) {
+            return;
+        }
         void this.resetUpdateThrottler.schedule(async () => {
             this.#resetUpdateIfNotEditing();
         });
     }
     scheduleResetUpdateIfNotEditingCalledForTest() {
+    }
+    #hasAnimatedStyles(animatedStyles) {
+        return Boolean(animatedStyles.animationStyles?.length || animatedStyles.transitionsStyle?.cssProperties.length ||
+            animatedStyles.inherited?.some(inherited => inherited.animationStyles?.length || inherited.transitionsStyle?.cssProperties.length));
     }
     async #updateAnimatedStyles() {
         if (!this.matchedStyles) {
@@ -646,6 +619,16 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }
         const animatedStyles = await this.cssModel()?.getAnimatedStylesForNode(nodeId);
         if (!animatedStyles) {
+            return;
+        }
+        if (!this.#hasAnimatedStyles(animatedStyles)) {
+            // A computed style change that doesn't correspond to any animation is
+            // likely to be a change in the matched styles. In this case, we should
+            // update the matched styles.
+            this.#scheduleResetUpdateIfNotEditing();
+            return;
+        }
+        if (!UI.ViewManager.ViewManager.instance().isViewVisible('animations')) {
             return;
         }
         const updateStyleSection = (currentStyle, newStyle) => {
@@ -1126,7 +1109,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
         const toolbar = hbox.createChild('devtools-toolbar', 'styles-pane-toolbar');
         toolbar.role = 'presentation';
-        const filterInput = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, undefined, undefined, false);
+        const filterInput = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, undefined, undefined, false, undefined, undefined, /* showRegexToggle=*/ true, this.onRegexToggled.bind(this));
         filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);
         void toolbar.appendItemsAtLocation('styles-sidebarpane-toolbar');
@@ -1283,7 +1266,6 @@ export class SectionBlock {
         UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFromSPseudoOf, { PH1: pseudoTypeString }));
         const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
             preventKeyboardFocus: true,
-            tooltip: undefined,
         });
         separatorElement.appendChild(link);
         return new SectionBlock(separatorElement);
@@ -1330,7 +1312,6 @@ export class SectionBlock {
         UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFroms));
         const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
             preventKeyboardFocus: true,
-            tooltip: undefined,
         });
         separatorElement.appendChild(link);
         return new SectionBlock(separatorElement);
@@ -1604,14 +1585,6 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         if (!this.isEditingName && !results.length && query.length > 1 && '!important'.startsWith(lowerQuery)) {
             results.push({
                 text: '!important',
-                title: undefined,
-                subtitle: undefined,
-                priority: undefined,
-                isSecondary: undefined,
-                subtitleRenderer: undefined,
-                selectionRange: undefined,
-                hideGhostText: undefined,
-                iconElement: undefined,
             });
         }
         const userEnteredText = query.replace('-', '');
@@ -1680,14 +1653,6 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
             const index = completion.toLowerCase().indexOf(lowerQuery);
             const result = {
                 text: completion,
-                title: undefined,
-                subtitle: undefined,
-                priority: undefined,
-                isSecondary: undefined,
-                subtitleRenderer: undefined,
-                selectionRange: undefined,
-                hideGhostText: undefined,
-                iconElement: undefined,
                 isCSSVariableColor: false,
             };
             if (variable) {
@@ -1716,7 +1681,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         }
         function colorSwatchRenderer(color) {
             const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
-            swatch.color = color;
+            swatch.renderColor(color);
             swatch.style.pointerEvents = 'none';
             return swatch;
         }

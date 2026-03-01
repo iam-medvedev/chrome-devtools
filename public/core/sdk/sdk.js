@@ -1825,6 +1825,20 @@ var generatedProperties = [
   },
   {
     "longhands": [
+      "column-rule-edge-inset-end",
+      "column-rule-interior-inset-end"
+    ],
+    "name": "column-rule-inset-end"
+  },
+  {
+    "longhands": [
+      "column-rule-edge-inset-start",
+      "column-rule-interior-inset-start"
+    ],
+    "name": "column-rule-inset-start"
+  },
+  {
+    "longhands": [
       "column-rule-interior-inset-start",
       "column-rule-interior-inset-end"
     ],
@@ -3872,6 +3886,20 @@ var generatedProperties = [
   },
   {
     "longhands": [
+      "row-rule-edge-inset-end",
+      "row-rule-interior-inset-end"
+    ],
+    "name": "row-rule-inset-end"
+  },
+  {
+    "longhands": [
+      "row-rule-edge-inset-start",
+      "row-rule-interior-inset-start"
+    ],
+    "name": "row-rule-inset-start"
+  },
+  {
+    "longhands": [
       "row-rule-interior-inset-start",
       "row-rule-interior-inset-end"
     ],
@@ -3990,6 +4018,24 @@ var generatedProperties = [
       "column-rule-interior-inset-end"
     ],
     "name": "rule-inset"
+  },
+  {
+    "longhands": [
+      "column-rule-edge-inset-end",
+      "column-rule-interior-inset-end",
+      "row-rule-edge-inset-end",
+      "row-rule-interior-inset-end"
+    ],
+    "name": "rule-inset-end"
+  },
+  {
+    "longhands": [
+      "column-rule-edge-inset-start",
+      "column-rule-interior-inset-start",
+      "row-rule-edge-inset-start",
+      "row-rule-interior-inset-start"
+    ],
+    "name": "rule-inset-start"
   },
   {
     "longhands": [
@@ -10576,11 +10622,45 @@ var NetworkManager = class _NetworkManager extends SDKModel {
       return null;
     }
     try {
-      const { postData } = await manager.#networkAgent.invoke_getRequestPostData({ requestId });
+      const { postData, base64Encoded } = await manager.#networkAgent.invoke_getRequestPostData({ requestId });
+      if (base64Encoded && postData) {
+        const binaryString = window.atob(postData);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const requestContentType = request.requestContentType();
+        const charset = requestContentType ? Platform3.MimeType.parseContentType(requestContentType).charset ?? "utf-8" : "utf-8";
+        const contentEncoding = request.requestContentEncoding()?.toLowerCase();
+        if (contentEncoding) {
+          const decompressed = await _NetworkManager.#tryDecompressBody(bytes.buffer, contentEncoding, charset);
+          if (decompressed !== null) {
+            return decompressed;
+          }
+        }
+        return new TextDecoder(charset).decode(bytes);
+      }
       return postData;
     } catch (e) {
       return e.message;
     }
+  }
+  /**
+   * Attempts to decompress a compressed request body.
+   * Returns the decompressed string, or null if decompression is not applicable.
+   */
+  static async #tryDecompressBody(buffer, encoding, charset) {
+    try {
+      if (encoding.includes("gzip") && Common5.Gzip.isGzip(buffer)) {
+        return await Common5.Gzip.decompress(buffer, charset);
+      }
+      if (encoding.includes("deflate")) {
+        return await Common5.Gzip.decompressDeflate(buffer, charset);
+      }
+    } catch (e) {
+      console.warn("Failed to decompress request body:", e);
+    }
+    return null;
   }
   static connectionType(conditions) {
     if (!conditions.download && !conditions.upload) {
@@ -10780,7 +10860,8 @@ var NetworkDispatcher = class {
   updateNetworkRequestWithRequest(networkRequest, request) {
     networkRequest.requestMethod = request.method;
     networkRequest.setRequestHeaders(this.headersMapToHeadersArray(request.headers));
-    networkRequest.setRequestFormData(Boolean(request.hasPostData), request.postData || null);
+    const isCompressed = Boolean(networkRequest.requestContentEncoding());
+    networkRequest.setRequestFormData(Boolean(request.hasPostData), isCompressed ? null : request.postData || null);
     networkRequest.setInitialPriority(request.initialPriority);
     networkRequest.mixedContentType = request.mixedContentType || "none";
     networkRequest.setReferrerPolicy(request.referrerPolicy);
@@ -14676,6 +14757,32 @@ var CSSProperty = class _CSSProperty extends Common7.ObjectWrapper.ObjectWrapper
   getLonghandProperties() {
     return this.#longhandProperties;
   }
+  ignoreErrors() {
+    function hasUnknownVendorPrefix(string) {
+      return !string.startsWith("-webkit-") && /^[-_][\w\d]+-\w/.test(string);
+    }
+    const name = this.name.toLowerCase();
+    if (name.charAt(0) === "_") {
+      return true;
+    }
+    if (name === "filter") {
+      return true;
+    }
+    if (name.startsWith("scrollbar-")) {
+      return true;
+    }
+    if (hasUnknownVendorPrefix(name)) {
+      return true;
+    }
+    const value = this.value.toLowerCase();
+    if (value.endsWith("\\9")) {
+      return true;
+    }
+    if (hasUnknownVendorPrefix(value)) {
+      return true;
+    }
+    return false;
+  }
 };
 
 // gen/front_end/core/sdk/CSSRule.js
@@ -15415,7 +15522,7 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
     const dummyPayload = {
       selectorList: {
         text: "",
-        selectors: [{ text: selectorText, value: void 0 }]
+        selectors: [{ text: selectorText }]
       },
       style: {
         styleSheetId: "0",
@@ -15497,8 +15604,7 @@ var CSSPropertyRule = class extends CSSRule {
     super(cssModel, {
       origin: payload.origin,
       style: payload.style,
-      header: styleSheetHeaderForRule(cssModel, payload),
-      originTreeScopeNodeId: void 0
+      header: styleSheetHeaderForRule(cssModel, payload)
     });
     this.#name = new CSSValue(payload.propertyName);
   }
@@ -15534,8 +15640,7 @@ var CSSAtRule = class extends CSSRule {
     super(cssModel, {
       origin: payload.origin,
       style: payload.style,
-      header: styleSheetHeaderForRule(cssModel, payload),
-      originTreeScopeNodeId: void 0
+      header: styleSheetHeaderForRule(cssModel, payload)
     });
     this.#name = payload.name ? new CSSValue(payload.name) : null;
     this.#type = payload.type;
@@ -15572,8 +15677,7 @@ var CSSKeyframeRule = class extends CSSRule {
     super(cssModel, {
       origin: payload.origin,
       style: payload.style,
-      header: styleSheetHeaderForRule(cssModel, payload),
-      originTreeScopeNodeId: void 0
+      header: styleSheetHeaderForRule(cssModel, payload)
     });
     this.reinitializeKey(payload.keyText);
     this.#parentRuleName = parentRuleName;
@@ -15620,8 +15724,7 @@ var CSSPositionTryRule = class extends CSSRule {
     super(cssModel, {
       origin: payload.origin,
       style: payload.style,
-      header: styleSheetHeaderForRule(cssModel, payload),
-      originTreeScopeNodeId: void 0
+      header: styleSheetHeaderForRule(cssModel, payload)
     });
     this.#name = new CSSValue(payload.name);
     this.#active = payload.active;
@@ -15641,8 +15744,7 @@ var CSSFunctionRule = class extends CSSRule {
     super(cssModel, {
       origin: payload.origin,
       style: { cssProperties: [], shorthandEntries: [] },
-      header: styleSheetHeaderForRule(cssModel, payload),
-      originTreeScopeNodeId: void 0
+      header: styleSheetHeaderForRule(cssModel, payload)
     });
     this.#name = new CSSValue(payload.name);
     this.#parameters = payload.parameters.map(({ name }) => name);
@@ -18357,7 +18459,13 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
       throw new Error("Invalid initiator");
     }
     const key = _PageResourceLoader.makeKey(url, initiator);
-    const pageResource = { success: null, size: null, duration: null, errorMessage: void 0, url, initiator };
+    const pageResource = {
+      success: null,
+      size: null,
+      duration: null,
+      url,
+      initiator
+    };
     this.#pageResources.set(key, pageResource);
     this.dispatchEventToListeners(
       "Update"
@@ -18421,7 +18529,10 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
             return {
               success: false,
               content: "",
-              errorDescription: { statusCode: 0, netError: void 0, netErrorName: void 0, message: e.message, urlValid: void 0 }
+              errorDescription: {
+                statusCode: 0,
+                message: e.message
+              }
             };
           }
         }
@@ -18479,8 +18590,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
           statusCode: resource.httpStatusCode || 0,
           netError: resource.netError,
           netErrorName: resource.netErrorName,
-          message: Host2.ResourceLoader.netErrorToMessage(resource.netError, resource.httpStatusCode, resource.netErrorName) || "",
-          urlValid: void 0
+          message: Host2.ResourceLoader.netErrorToMessage(resource.netError, resource.httpStatusCode, resource.netErrorName) || ""
         }
       };
     } finally {
@@ -18531,6 +18641,9 @@ import * as Formatter from "./../../models/formatter/formatter.js";
 import * as TextUtils15 from "./../../models/text_utils/text_utils.js";
 var scopeTrees = /* @__PURE__ */ new WeakMap();
 function scopeTreeForScript(script) {
+  if (script.isWasm()) {
+    return Promise.resolve(null);
+  }
   let promise = scopeTrees.get(script);
   if (promise === void 0) {
     promise = script.requestContentData().then((content) => {
@@ -19405,8 +19518,7 @@ var SourceMap = class {
         sourceIndex: callsite.sourceIndex,
         sourceURL: this.sourceURLs()[callsite.sourceIndex],
         sourceLineNumber: callsite.line,
-        sourceColumnNumber: callsite.column,
-        name: void 0
+        sourceColumnNumber: callsite.column
       };
     }
     const mappings = this.mappings();
@@ -20005,7 +20117,6 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
     let clientData = {
       relativeSourceURL,
       relativeSourceMapURL,
-      sourceMap: void 0,
       sourceMapPromise: Promise.resolve(void 0)
     };
     if (this.#isEnabled) {
@@ -24668,6 +24779,7 @@ var DOMNodeEvents;
 (function(DOMNodeEvents2) {
   DOMNodeEvents2["TOP_LAYER_INDEX_CHANGED"] = "TopLayerIndexChanged";
   DOMNodeEvents2["SCROLLABLE_FLAG_UPDATED"] = "ScrollableFlagUpdated";
+  DOMNodeEvents2["AD_RELATED_STATE_UPDATED"] = "AdRelatedStateUpdated";
   DOMNodeEvents2["GRID_OVERLAY_STATE_CHANGED"] = "GridOverlayStateChanged";
   DOMNodeEvents2["FLEX_CONTAINER_OVERLAY_STATE_CHANGED"] = "FlexContainerOverlayStateChanged";
   DOMNodeEvents2["SCROLL_SNAP_OVERLAY_STATE_CHANGED"] = "ScrollSnapOverlayStateChanged";
@@ -24732,6 +24844,10 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
    * for non-backdrop nodes.
    */
   #topLayerIndex = -1;
+  /**
+   * Set if a DOMNode is ad related.
+   */
+  #isAdRelatedInternal = false;
   constructor(domModel) {
     super();
     this.#domModel = domModel;
@@ -24809,6 +24925,9 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
       this.setChildrenPayload(payload.children);
     }
     this.setPseudoElements(payload.pseudoElements);
+    if (payload.isAdRelated) {
+      this.#isAdRelatedInternal = true;
+    }
     if (this.#nodeType === Node.ELEMENT_NODE) {
       if (this.ownerDocument && !this.ownerDocument.documentElement && this.#nodeName === "HTML") {
         this.ownerDocument.documentElement = this;
@@ -24840,7 +24959,7 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
   topLayerIndex() {
     return this.#topLayerIndex;
   }
-  isAdFrameNode() {
+  isAdRelatedNode() {
     if (this.isIframe() && this.#frameOwnerFrameId) {
       const frame = FrameManager.instance().getFrame(this.#frameOwnerFrameId);
       if (!frame) {
@@ -24848,7 +24967,7 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
       }
       return frame.adFrameType() !== "none";
     }
-    return false;
+    return this.#isAdRelatedInternal;
   }
   isRootNode() {
     if (this.nodeType() === Node.ELEMENT_NODE && this.nodeName() === "HTML") {
@@ -24910,6 +25029,10 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
     if (this.nodeName() === "#document") {
       this.ownerDocument?.documentElement?.setIsScrollable(isScrollable);
     }
+  }
+  setIsAdRelated(isAdRelated) {
+    this.#isAdRelatedInternal = isAdRelated;
+    this.dispatchEventToListeners(DOMNodeEvents.AD_RELATED_STATE_UPDATED);
   }
   setAffectedByStartingStyles(affectedByStartingStyles) {
     this.#affectedByStartingStyles = affectedByStartingStyles;
@@ -25493,13 +25616,17 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
     return null;
   }
   highlight(mode) {
-    this.#domModel.overlayModel().highlightInOverlay({ node: this, selectorList: void 0 }, mode);
+    this.#domModel.overlayModel().highlightInOverlay({ node: this }, mode);
   }
   highlightForTwoSeconds() {
-    this.#domModel.overlayModel().highlightInOverlayForTwoSeconds({ node: this, selectorList: void 0 });
+    this.#domModel.overlayModel().highlightInOverlayForTwoSeconds({ node: this });
   }
   async resolveToObject(objectGroup, executionContextId) {
-    const { object } = await this.#agent.invoke_resolveNode({ nodeId: this.id, backendNodeId: void 0, executionContextId, objectGroup });
+    const { object } = await this.#agent.invoke_resolveNode({
+      nodeId: this.id,
+      executionContextId,
+      objectGroup
+    });
     return object && this.#domModel.runtimeModelInternal.createRemoteObject(object) || null;
   }
   async boxModel() {
@@ -26029,6 +26156,13 @@ var DOMModel = class _DOMModel extends SDKModel {
     }
     node.setIsScrollable(isScrollable);
   }
+  adRelatedStateUpdated(nodeId, isAdRelated) {
+    const node = this.nodeForId(nodeId);
+    if (!node || node.isAdRelatedNode() === isAdRelated) {
+      return;
+    }
+    node.setIsAdRelated(isAdRelated);
+  }
   affectedByStartingStylesFlagUpdated(nodeId, affectedByStartingStyles) {
     const node = this.nodeForId(nodeId);
     if (!node || node.affectedByStartingStyles() === affectedByStartingStyles) {
@@ -26311,6 +26445,9 @@ var DOMDispatcher = class {
   }
   affectedByStartingStylesFlagUpdated({ nodeId, affectedByStartingStyles }) {
     this.#domModel.affectedByStartingStylesFlagUpdated(nodeId, affectedByStartingStyles);
+  }
+  adRelatedStateUpdated({ nodeId, isAdRelated }) {
+    this.#domModel.adRelatedStateUpdated(nodeId, isAdRelated);
   }
 };
 var domModelUndoStackInstance = null;
@@ -27153,9 +27290,7 @@ var ResourceTreeFrame = class {
   #childFrames = /* @__PURE__ */ new Set();
   resourcesMap = /* @__PURE__ */ new Map();
   backForwardCacheDetails = {
-    restoredFromCache: void 0,
-    explanations: [],
-    explanationsTree: void 0
+    explanations: []
   };
   constructor(model, parentFrame, frameId, payload, creationStackTrace) {
     this.#model = model;
@@ -27215,9 +27350,7 @@ var ResourceTreeFrame = class {
     this.#crossOriginIsolatedContextType = framePayload.crossOriginIsolatedContextType;
     this.#gatedAPIFeatures = framePayload.gatedAPIFeatures;
     this.backForwardCacheDetails = {
-      restoredFromCache: void 0,
-      explanations: [],
-      explanationsTree: void 0
+      explanations: []
     };
     const mainResource = this.resourcesMap.get(this.#url);
     this.resourcesMap.clear();
@@ -27668,7 +27801,6 @@ var CookieModel = class extends SDKModel {
     this.#cookieToBlockedReasons.clear();
     await Promise.all(cookies.map((cookie) => networkAgent.invoke_deleteCookies({
       name: cookie.name(),
-      url: void 0,
       domain: cookie.domain(),
       path: cookie.path(),
       partitionKey: cookie.partitionKey()
@@ -29409,6 +29541,9 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   }
   requestContentType() {
     return this.requestHeaderValue("Content-Type");
+  }
+  requestContentEncoding() {
+    return this.requestHeaderValue("Content-Encoding");
   }
   hasErrorStatusCode() {
     return this.statusCode >= 400;
@@ -31220,7 +31355,7 @@ var ChildTargetManager = class _ChildTargetManager extends SDKModel {
   }
   dispose() {
     for (const sessionId of this.#childTargetsBySessionId.keys()) {
-      this.detachedFromTarget({ sessionId, targetId: void 0 });
+      this.detachedFromTarget({ sessionId });
     }
   }
   targetCreated({ targetInfo }) {
@@ -33304,6 +33439,7 @@ var EmulationModel = class extends SDKModel {
       this.setLocalFontsDisabled(localFontsDisabledSetting.get());
     }
     const avifFormatDisabledSetting = Common36.Settings.Settings.instance().moduleSetting("avif-format-disabled");
+    const jpegXlFormatDisabledSetting = Common36.Settings.Settings.instance().moduleSetting("jpeg-xl-format-disabled");
     const webpFormatDisabledSetting = Common36.Settings.Settings.instance().moduleSetting("webp-format-disabled");
     const updateDisabledImageFormats = () => {
       const types = [];
@@ -33311,6 +33447,12 @@ var EmulationModel = class extends SDKModel {
         types.push(
           "avif"
           /* Protocol.Emulation.DisabledImageType.Avif */
+        );
+      }
+      if (jpegXlFormatDisabledSetting.get()) {
+        types.push(
+          "jxl"
+          /* Protocol.Emulation.DisabledImageType.Jxl */
         );
       }
       if (webpFormatDisabledSetting.get()) {
@@ -33322,8 +33464,9 @@ var EmulationModel = class extends SDKModel {
       this.setDisabledImageTypes(types);
     };
     avifFormatDisabledSetting.addChangeListener(updateDisabledImageFormats);
+    jpegXlFormatDisabledSetting.addChangeListener(updateDisabledImageFormats);
     webpFormatDisabledSetting.addChangeListener(updateDisabledImageFormats);
-    if (avifFormatDisabledSetting.get() || webpFormatDisabledSetting.get()) {
+    if (avifFormatDisabledSetting.get() || jpegXlFormatDisabledSetting.get() || webpFormatDisabledSetting.get()) {
       updateDisabledImageFormats();
     }
     this.#cpuPressureEnabled = false;
@@ -33593,11 +33736,11 @@ var Location2 = class _Location {
   }
   static accuracyValidator(value) {
     if (!value) {
-      return { valid: true, errorMessage: void 0 };
+      return { valid: true };
     }
     const numValue = parseFloat(value);
     const valid = /^([+-]?[\d]+(\.\d+)?|[+-]?\.\d+)$/.test(value) && numValue >= 0;
-    return { valid, errorMessage: void 0 };
+    return { valid };
   }
   toSetting() {
     return `${this.latitude}@${this.longitude}:${this.timezoneId}:${this.locale}:${this.unavailable || ""}:${this.accuracy || ""}`;
@@ -35164,6 +35307,21 @@ var PreloadingModel = class _PreloadingModel extends SDKModel {
     TargetManager.instance().removeModelListener(ResourceTreeModel, Events3.PrimaryPageChanged, this.onPrimaryPageChanged, this);
     void this.agent.invoke_disable();
   }
+  reset() {
+    this.documents.clear();
+    this.loaderIds = [];
+    this.targetJustAttached = true;
+    this.dispatchEventToListeners(
+      "ModelUpdated"
+      /* Events.MODEL_UPDATED */
+    );
+  }
+  maybeInferLoaderId(loaderId) {
+    if (this.currentLoaderId() === null) {
+      this.loaderIds = [loaderId];
+      this.targetJustAttached = false;
+    }
+  }
   ensureDocumentPreloadingData(loaderId) {
     if (this.documents.get(loaderId) === void 0) {
       this.documents.set(loaderId, new DocumentPreloadingData());
@@ -35303,10 +35461,7 @@ var PreloadingModel = class _PreloadingModel extends SDKModel {
   onRuleSetUpdated(event) {
     const ruleSet = event.ruleSet;
     const loaderId = ruleSet.loaderId;
-    if (this.currentLoaderId() === null) {
-      this.loaderIds = [loaderId];
-      this.targetJustAttached = false;
-    }
+    this.maybeInferLoaderId(loaderId);
     this.ensureDocumentPreloadingData(loaderId);
     this.documents.get(loaderId)?.ruleSets.upsert(ruleSet);
     this.dispatchEventToListeners(

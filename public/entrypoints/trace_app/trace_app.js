@@ -818,8 +818,7 @@ UI.ContextMenu.registerProvider({
   },
   async loadProvider() {
     return new Components.Linkifier.ContentProviderContextMenuProvider();
-  },
-  experiment: void 0
+  }
 });
 UI.ContextMenu.registerProvider({
   contextTypes() {
@@ -829,8 +828,7 @@ UI.ContextMenu.registerProvider({
   },
   async loadProvider() {
     return new UI.LinkContextMenuProvider.LinkContextMenuProvider();
-  },
-  experiment: void 0
+  }
 });
 UI.ContextMenu.registerProvider({
   contextTypes() {
@@ -840,8 +838,7 @@ UI.ContextMenu.registerProvider({
   },
   async loadProvider() {
     return new Components.Linkifier.LinkContextMenuProvider();
-  },
-  experiment: void 0
+  }
 });
 UI.Toolbar.registerToolbarItem({
   separator: true,
@@ -1467,6 +1464,14 @@ var UIStrings3 = {
    * @description Title of a setting that enables AVIF format
    */
   enableAvifFormat: "Enable `AVIF` format",
+  /**
+   * @description Title of a setting that disables JPEG XL format
+   */
+  disableJpegXlFormat: "Disable `JPEG XL` format",
+  /**
+   * @description Title of a setting that enables JPEG XL format
+   */
+  enableJpegXlFormat: "Enable `JPEG XL` format",
   /**
    * @description Title of a setting that disables WebP format
    */
@@ -2189,6 +2194,23 @@ Common3.Settings.registerSettingExtension({
     {
       value: false,
       title: i18nLazyString3(UIStrings3.enableAvifFormat)
+    }
+  ],
+  defaultValue: false
+});
+Common3.Settings.registerSettingExtension({
+  category: "RENDERING",
+  settingName: "jpeg-xl-format-disabled",
+  settingType: "boolean",
+  storageType: "Session",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString3(UIStrings3.disableJpegXlFormat)
+    },
+    {
+      value: false,
+      title: i18nLazyString3(UIStrings3.enableJpegXlFormat)
     }
   ],
   defaultValue: false
@@ -3254,7 +3276,6 @@ Common9.Revealer.registerRevealer({
       Root4.Runtime.HostExperiment
     ];
   },
-  destination: void 0,
   async loadRevealer() {
     const Settings22 = await loadSettingsModule();
     return new Settings22.SettingsScreen.Revealer();
@@ -3262,13 +3283,11 @@ Common9.Revealer.registerRevealer({
 });
 UI22.ContextMenu.registerItem({
   location: "mainMenu/footer",
-  actionId: "settings.shortcuts",
-  order: void 0
+  actionId: "settings.shortcuts"
 });
 UI22.ContextMenu.registerItem({
   location: "mainMenuHelp/default",
-  actionId: "settings.documentation",
-  order: void 0
+  actionId: "settings.documentation"
 });
 
 // gen/front_end/panels/sources/sources-meta.js
@@ -5044,8 +5063,7 @@ UI8.ContextMenu.registerProvider({
   async loadProvider() {
     const Sources = await loadSourcesModule2();
     return Sources.SourcesPanel.SourcesPanel.instance();
-  },
-  experiment: void 0
+  }
 });
 UI8.ContextMenu.registerProvider({
   async loadProvider() {
@@ -5057,8 +5075,7 @@ UI8.ContextMenu.registerProvider({
       ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement,
       ...maybeRetrieveContextTypes2((Sources) => [Sources.UISourceCodeFrame.UISourceCodeFrame])
     ];
-  },
-  experiment: void 0
+  }
 });
 Common10.Revealer.registerRevealer({
   contextTypes() {
@@ -5136,7 +5153,6 @@ Common10.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes2((Sources) => [Sources.SearchSourcesView.SearchSources]);
   },
-  destination: void 0,
   async loadRevealer() {
     const Sources = await loadSourcesModule2();
     return new Sources.SearchSourcesView.Revealer();
@@ -5145,10 +5161,7 @@ Common10.Revealer.registerRevealer({
 UI8.Toolbar.registerToolbarItem({
   actionId: "sources.add-folder-to-workspace",
   location: "files-navigator-toolbar",
-  label: i18nLazyString11(UIStrings11.addFolderManually),
-  loadItem: void 0,
-  order: void 0,
-  separator: void 0
+  label: i18nLazyString11(UIStrings11.addFolderManually)
 });
 UI8.Context.registerListener({
   contextTypes() {
@@ -5179,13 +5192,11 @@ UI8.Context.registerListener({
 });
 UI8.ContextMenu.registerItem({
   location: "navigatorMenu/default",
-  actionId: "quick-open.show",
-  order: void 0
+  actionId: "quick-open.show"
 });
 UI8.ContextMenu.registerItem({
   location: "mainMenu/default",
-  actionId: "sources.search",
-  order: void 0
+  actionId: "sources.search"
 });
 QuickOpen.FilteredListWidget.registerProvider({
   prefix: "@",
@@ -5234,8 +5245,7 @@ UI8.ContextMenu.registerProvider({
   async loadProvider() {
     const Sources = await loadSourcesModule2();
     return new Sources.PersistenceActions.ContextMenuProvider();
-  },
-  experiment: void 0
+  }
 });
 
 // gen/front_end/panels/sensors/sensors-meta.js
@@ -5621,7 +5631,7 @@ var UIStrings13 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  hideChromeFrameInLayersView: "Hide `chrome` frame in Layers view"
+  chromeFrameInLayersView: "Chrome frame in Layers view"
 };
 var str_13 = i18n26.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings13);
 var i18nLazyString13 = i18n26.i18n.getLazilyComputedLocalizedString.bind(void 0, str_13);
@@ -5855,10 +5865,10 @@ UI10.ActionRegistration.registerActionExtension({
 Common12.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
-  title: i18nLazyString13(UIStrings13.hideChromeFrameInLayersView),
-  settingName: "frame-viewer-hide-chrome-window",
+  title: i18nLazyString13(UIStrings13.chromeFrameInLayersView),
+  settingName: "frame-viewer-chrome-window",
   settingType: "boolean",
-  defaultValue: false
+  defaultValue: true
 });
 Common12.Settings.registerSettingExtension({
   category: "PERFORMANCE",
@@ -6353,13 +6363,11 @@ UI13.ActionRegistration.registerActionExtension({
 });
 UI13.ContextMenu.registerItem({
   location: "mainMenu/default",
-  actionId: "quick-open.show-command-menu",
-  order: void 0
+  actionId: "quick-open.show-command-menu"
 });
 UI13.ContextMenu.registerItem({
   location: "mainMenu/default",
-  actionId: "quick-open.show",
-  order: void 0
+  actionId: "quick-open.show"
 });
 
 // gen/front_end/ui/legacy/components/source_frame/source_frame-meta.js

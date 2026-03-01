@@ -698,8 +698,7 @@ UI3.ContextMenu.registerProvider({
   async loadProvider() {
     const Network = await loadNetworkModule();
     return Network.NetworkPanel.NetworkPanel.instance();
-  },
-  experiment: void 0
+  }
 });
 Common3.Revealer.registerRevealer({
   contextTypes() {
@@ -717,7 +716,6 @@ Common3.Revealer.registerRevealer({
   contextTypes() {
     return [NetworkForward.UIRequestLocation.UIRequestLocation];
   },
-  destination: void 0,
   async loadRevealer() {
     const Network = await loadNetworkModule();
     return new Network.NetworkPanel.RequestLocationRevealer();

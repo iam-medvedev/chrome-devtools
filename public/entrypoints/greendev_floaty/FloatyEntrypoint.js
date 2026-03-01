@@ -310,6 +310,14 @@ var UIStrings = {
    */
   enableAvifFormat: "Enable `AVIF` format",
   /**
+   * @description Title of a setting that disables JPEG XL format
+   */
+  disableJpegXlFormat: "Disable `JPEG XL` format",
+  /**
+   * @description Title of a setting that enables JPEG XL format
+   */
+  enableJpegXlFormat: "Enable `JPEG XL` format",
+  /**
    * @description Title of a setting that disables WebP format
    */
   disableWebpFormat: "Disable `WebP` format",
@@ -1031,6 +1039,23 @@ Common.Settings.registerSettingExtension({
     {
       value: false,
       title: i18nLazyString(UIStrings.enableAvifFormat)
+    }
+  ],
+  defaultValue: false
+});
+Common.Settings.registerSettingExtension({
+  category: "RENDERING",
+  settingName: "jpeg-xl-format-disabled",
+  settingType: "boolean",
+  storageType: "Session",
+  options: [
+    {
+      value: true,
+      title: i18nLazyString(UIStrings.disableJpegXlFormat)
+    },
+    {
+      value: false,
+      title: i18nLazyString(UIStrings.enableJpegXlFormat)
     }
   ],
   defaultValue: false
@@ -2599,8 +2624,7 @@ UI3.ContextMenu.registerProvider({
   },
   async loadProvider() {
     return new Components.Linkifier.ContentProviderContextMenuProvider();
-  },
-  experiment: void 0
+  }
 });
 UI3.ContextMenu.registerProvider({
   contextTypes() {
@@ -2610,8 +2634,7 @@ UI3.ContextMenu.registerProvider({
   },
   async loadProvider() {
     return new UI3.LinkContextMenuProvider.LinkContextMenuProvider();
-  },
-  experiment: void 0
+  }
 });
 UI3.ContextMenu.registerProvider({
   contextTypes() {
@@ -2621,8 +2644,7 @@ UI3.ContextMenu.registerProvider({
   },
   async loadProvider() {
     return new Components.Linkifier.LinkContextMenuProvider();
-  },
-  experiment: void 0
+  }
 });
 UI3.Toolbar.registerToolbarItem({
   separator: true,

@@ -137,15 +137,15 @@ describe('TreeViewElement', () => {
         assert.isFalse(nodes[0].selected);
         assert.isTrue(nodes[1].selected);
     });
-    it('expands subtrees based on the `hidden` attribute', async () => {
+    it('expands subtrees based on the `open` attribute', async () => {
         const component = await makeTree(html `<devtools-tree .template=${html `
       <ul role="tree">
         <li role="treeitem">first subtree
-          <ul role="group" hidden>
+          <ul role="group">
             <li role="treeitem">in first subtree</li>
           </ul>
         </li>
-        <li role="treeitem">second subtree
+        <li role="treeitem" open>second subtree
           <ul role="group">
             <li role="treeitem">in second subtree</li>
           </ul>
@@ -155,6 +155,54 @@ describe('TreeViewElement', () => {
         assert.lengthOf(nodes, 2);
         assert.isFalse(nodes[0].expanded);
         assert.isTrue(nodes[1].expanded);
+    });
+    it('keeps the node expanded after re-rendering initially expanded', async () => {
+        const component = await makeTree(html `<devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem" open>subtree
+          <ul role="group">
+            <li role="treeitem">in subtree</li>
+          </ul>
+        </li>
+      </ul>`}></devtools-tree>`);
+        const node = component.getInternalTreeOutlineForTest().rootElement().children()[0];
+        assert.isTrue(node.expanded);
+        // Re-render with the same template (simulating an update that doesn't change 'open')
+        component.template = html `
+      <ul role="tree">
+        <li role="treeitem" open class="some-change">subtree
+          <ul role="group">
+            <li role="treeitem">in subtree</li>
+          </ul>
+        </li>
+      </ul>`;
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isTrue(node.expanded, 'Node should remain expanded after re-render');
+    });
+    it('keeps the node collapsed after re-rendering if the user has manually collapsed it', async () => {
+        const component = await makeTree(html `<devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem" open>subtree
+          <ul role="group">
+            <li role="treeitem">in subtree</li>
+          </ul>
+        </li>
+      </ul>`}></devtools-tree>`);
+        const node = component.getInternalTreeOutlineForTest().rootElement().children()[0];
+        assert.isTrue(node.expanded);
+        node.collapse();
+        assert.isFalse(node.expanded);
+        // Re-render with the same template (simulating an update that doesn't change 'open')
+        component.template = html `
+      <ul role="tree">
+        <li role="treeitem" open class="some-change">subtree
+          <ul role="group">
+            <li role="treeitem">in subtree</li>
+          </ul>
+        </li>
+      </ul>`;
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isFalse(node.expanded, 'Node should remain collapsed after re-render');
     });
     it('sends a `select` event when a node is selected', async () => {
         const onSelectFirst = sinon.stub();
@@ -191,12 +239,12 @@ describe('TreeViewElement', () => {
        .template=${html `
          <ul role="tree">
            <li @expand=${onExpand1} role="treeitem">first subtree
-             <ul role="group" hidden>
+             <ul role="group">
                <li role="treeitem">in first subtree</li>
              </ul>
            </li>
            <li @expand=${onExpand2} role="treeitem">second subtree
-             <ul role="group" hidden>
+             <ul role="group">
                <li role="treeitem">in second subtree</li>
              </ul>
            </li>

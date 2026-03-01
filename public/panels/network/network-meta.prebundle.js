@@ -426,7 +426,6 @@ UI.ContextMenu.registerProvider({
         const Network = await loadNetworkModule();
         return Network.NetworkPanel.NetworkPanel.instance();
     },
-    experiment: undefined,
 });
 Common.Revealer.registerRevealer({
     contextTypes() {
@@ -444,7 +443,6 @@ Common.Revealer.registerRevealer({
     contextTypes() {
         return [NetworkForward.UIRequestLocation.UIRequestLocation];
     },
-    destination: undefined,
     async loadRevealer() {
         const Network = await loadNetworkModule();
         return new Network.NetworkPanel.RequestLocationRevealer();

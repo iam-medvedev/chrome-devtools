@@ -716,6 +716,62 @@ describe('updateVersionFrom38To39', () => {
         });
     });
 });
+describe('updateVersionFrom40To41', () => {
+    let settings;
+    let hideNetworkMessagesSetting;
+    let networkMessagesSetting;
+    let hideChromeFrameSetting;
+    let chromeFrameSetting;
+    beforeEach(() => {
+        const mockStore = new InMemoryStorage();
+        const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        settings = new Common.Settings.Settings({
+            syncedStorage,
+            globalStorage,
+            localStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            runSettingsMigration: false,
+        });
+        hideNetworkMessagesSetting =
+            settings.createSetting('hide-network-messages', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
+        networkMessagesSetting =
+            settings.createSetting('network-messages', true, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
+        hideChromeFrameSetting =
+            settings.createSetting('frame-viewer-hide-chrome-window', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
+        chromeFrameSetting =
+            settings.createSetting('frame-viewer-chrome-window', true, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
+    });
+    it('migrates network messages setting', () => {
+        hideNetworkMessagesSetting.set(true); // User had "Hide network messages" changed from default value to ON
+        const versionController = new VersionController(settings);
+        versionController.updateVersionFrom40To41();
+        assert.isFalse(networkMessagesSetting.get()); // Should now have "Network messages" OFF
+        assert.isFalse(settings.syncedStorage.has('hide-network-messages'));
+    });
+    it('migrates chrome frame setting', () => {
+        hideChromeFrameSetting.set(true); // User had "Hide chrome frame" changed from default value to ON
+        const versionController = new VersionController(settings);
+        versionController.updateVersionFrom40To41();
+        assert.isFalse(chromeFrameSetting.get()); // Should now have "Chrome frame" OFF
+        assert.isFalse(settings.syncedStorage.has('frame-viewer-hide-chrome-window'));
+    });
+    it('does not overwrite existing new settings', () => {
+        hideNetworkMessagesSetting.set(true);
+        hideChromeFrameSetting.set(true);
+        // User already started using the new setting
+        networkMessagesSetting.set(true);
+        chromeFrameSetting.set(true);
+        const versionController = new VersionController(settings);
+        versionController.updateVersionFrom40To41();
+        assert.isTrue(networkMessagesSetting.get());
+        assert.isTrue(chromeFrameSetting.get());
+        // Should NOT have been flipped to false
+        assert.isFalse(settings.syncedStorage.has('hide-network-messages'));
+        assert.isFalse(settings.syncedStorage.has('frame-viewer-hide-chrome-window'));
+    });
+});
 describe('access logging', () => {
     let settings;
     let logSettingAccess;

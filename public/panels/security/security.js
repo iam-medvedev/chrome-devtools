@@ -1616,8 +1616,7 @@ var SecurityPanel = class _SecurityPanel extends UI3.Panel.Panel {
       const newOriginState = {
         securityState,
         securityDetails: request.securityDetails(),
-        loadedFromCache: request.cached(),
-        originView: void 0
+        loadedFromCache: request.cached()
       };
       this.origins.set(origin, newOriginState);
       this.sidebar.addOrigin(origin, securityState);

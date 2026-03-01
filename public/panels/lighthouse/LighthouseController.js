@@ -640,7 +640,6 @@ export const RuntimeSettings = [
                 value: 'desktop'
             },
         ],
-        learnMore: undefined,
     },
     {
         setting: Common.Settings.Settings.instance().createSetting('lighthouse.mode', 'navigation', "Synced" /* Common.Settings.SettingStorageType.SYNCED */),
@@ -695,8 +694,6 @@ export const RuntimeSettings = [
         setFlags: (flags, value) => {
             flags.disableStorageReset = !value;
         },
-        options: undefined,
-        learnMore: undefined,
     },
     {
         setting: Common.Settings.Settings.instance().createSetting('lighthouse.enable-sampling', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */),
@@ -710,8 +707,6 @@ export const RuntimeSettings = [
                 flags.additionalTraceCategories = '';
             }
         },
-        options: undefined,
-        learnMore: undefined,
     },
 ];
 export var Events;

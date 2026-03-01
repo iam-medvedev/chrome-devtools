@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 describeWithMockConnection('DeviceBoundSessionsView', () => {
     const mockSessionId = 'session-id-123';
@@ -72,7 +73,16 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
                 site: mockSite,
                 sessionId: mockSessionId,
                 succeeded: true,
-                creationEventDetails: { fetchResult: "Success" /* Protocol.Network.DeviceBoundSessionFetchResult.Success */, newSession: sessionAndEvents.session }
+                creationEventDetails: {
+                    fetchResult: "Success" /* Protocol.Network.DeviceBoundSessionFetchResult.Success */,
+                    newSession: sessionAndEvents.session,
+                    failedRequest: {
+                        requestUrl: 'https://example.com/creation-fail',
+                        netError: 'net::ERR_FAILED',
+                        responseError: 400,
+                        responseErrorBody: '{"error": {"message": "Creation failed body", "details": {"inner": "more info"}}}'
+                    }
+                }
             },
             timestamp: dates[0]
         });
@@ -96,7 +106,13 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
                     refreshResult: "Refreshed" /* Protocol.Network.RefreshEventDetailsRefreshResult.Refreshed */,
                     wasFullyProactiveRefresh: false,
                     fetchResult: "Success" /* Protocol.Network.DeviceBoundSessionFetchResult.Success */,
-                    newSession: sessionAndEvents.session
+                    newSession: sessionAndEvents.session,
+                    failedRequest: {
+                        requestUrl: 'https://example.com/refresh-fail',
+                        netError: 'net::ERR_ABORTED',
+                        responseError: 500,
+                        responseErrorBody: '{"error": {"message": "Refresh failed body", "otherDetails": {"inner": "more info"}}}'
+                    }
                 }
             },
             timestamp: dates[1]
@@ -133,6 +149,93 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
                 terminationEventDetails: { deletionReason: "Expired" /* Protocol.Network.TerminationEventDetailsDeletionReason.Expired */ }
             },
             timestamp: dates[3]
+        });
+        sessionAndEvents.eventsById.set('invalid-failed-request-body-invalid-json', {
+            event: {
+                eventId: 'invalid-failed-request-invalid-json',
+                site: mockSite,
+                sessionId: mockSessionId,
+                succeeded: false,
+                refreshEventDetails: {
+                    refreshResult: "FatalError" /* Protocol.Network.RefreshEventDetailsRefreshResult.FatalError */,
+                    wasFullyProactiveRefresh: false,
+                    failedRequest: {
+                        requestUrl: 'https://example.com/refresh-body-issue',
+                        responseErrorBody: '{"error": {"message": "JSON does not parse", "otherDetails": {"inner": "more info"'
+                    }
+                }
+            },
+            timestamp: dates[0]
+        });
+        sessionAndEvents.eventsById.set('invalid-failed-request-body-string', {
+            event: {
+                eventId: 'invalid-failed-request-body-string',
+                site: mockSite,
+                sessionId: mockSessionId,
+                succeeded: false,
+                refreshEventDetails: {
+                    refreshResult: "FatalError" /* Protocol.Network.RefreshEventDetailsRefreshResult.FatalError */,
+                    wasFullyProactiveRefresh: false,
+                    failedRequest: { requestUrl: 'https://example.com/refresh-body-issue', responseErrorBody: 'justAString' }
+                }
+            },
+            timestamp: dates[0]
+        });
+        sessionAndEvents.eventsById.set('invalid-failed-request-body-boolean', {
+            event: {
+                eventId: 'invalid-failed-request-body-boolean',
+                site: mockSite,
+                sessionId: mockSessionId,
+                succeeded: false,
+                refreshEventDetails: {
+                    refreshResult: "FatalError" /* Protocol.Network.RefreshEventDetailsRefreshResult.FatalError */,
+                    wasFullyProactiveRefresh: false,
+                    failedRequest: { requestUrl: 'https://example.com/refresh-body-issue', responseErrorBody: 'true' }
+                }
+            },
+            timestamp: dates[0]
+        });
+        sessionAndEvents.eventsById.set('invalid-failed-request-body-number', {
+            event: {
+                eventId: 'invalid-failed-request-body-number',
+                site: mockSite,
+                sessionId: mockSessionId,
+                succeeded: false,
+                refreshEventDetails: {
+                    refreshResult: "FatalError" /* Protocol.Network.RefreshEventDetailsRefreshResult.FatalError */,
+                    wasFullyProactiveRefresh: false,
+                    failedRequest: { requestUrl: 'https://example.com/refresh-body-issue', responseErrorBody: '12345' }
+                }
+            },
+            timestamp: dates[0]
+        });
+        sessionAndEvents.eventsById.set('invalid-failed-request-body-null', {
+            event: {
+                eventId: 'invalid-failed-request-body-null',
+                site: mockSite,
+                sessionId: mockSessionId,
+                succeeded: false,
+                refreshEventDetails: {
+                    refreshResult: "FatalError" /* Protocol.Network.RefreshEventDetailsRefreshResult.FatalError */,
+                    wasFullyProactiveRefresh: false,
+                    failedRequest: { requestUrl: 'https://example.com/refresh-body-issue', responseErrorBody: 'null' }
+                }
+            },
+            timestamp: dates[0]
+        });
+        sessionAndEvents.eventsById.set('minimal-failed-request', {
+            event: {
+                eventId: 'minimal-failed-request',
+                site: mockSite,
+                sessionId: mockSessionId,
+                succeeded: false,
+                refreshEventDetails: {
+                    refreshResult: "FatalError" /* Protocol.Network.RefreshEventDetailsRefreshResult.FatalError */,
+                    wasFullyProactiveRefresh: false,
+                    failedRequest: { requestUrl: 'https://example.com/only-request-url' }
+                }
+            },
+            timestamp: dates[0]
         });
         return sessionAndEvents;
     }
@@ -251,18 +354,18 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
             selectedEvent: undefined,
             onEventRowSelected: () => { },
         };
-        const target = document.createElement('div');
-        renderElementIntoDOM(target);
-        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, target);
+        const targetWidget = new UI.Widget.VBox();
+        renderElementIntoDOM(targetWidget);
+        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, targetWidget.contentElement);
         const dataGrid = customElements.get('devtools-data-grid');
         assert.exists(dataGrid);
         assert.isFunction(dataGrid.prototype.deselectRow);
         const deselectSpy = sinon.spy(dataGrid.prototype, 'deselectRow');
-        Application.DeviceBoundSessionsView.DEFAULT_VIEW({ ...viewInput, selectedEvent: eventWrapper1.event }, {}, target);
+        Application.DeviceBoundSessionsView.DEFAULT_VIEW({ ...viewInput, selectedEvent: eventWrapper1.event }, {}, targetWidget.contentElement);
         sinon.assert.notCalled(deselectSpy);
-        Application.DeviceBoundSessionsView.DEFAULT_VIEW({ ...viewInput, selectedEvent: eventWrapper2.event }, {}, target);
+        Application.DeviceBoundSessionsView.DEFAULT_VIEW({ ...viewInput, selectedEvent: eventWrapper2.event }, {}, targetWidget.contentElement);
         sinon.assert.notCalled(deselectSpy);
-        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, target);
+        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, targetWidget.contentElement);
         sinon.assert.calledOnce(deselectSpy);
         deselectSpy.restore();
     });
@@ -273,13 +376,11 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
             selectedEvent: undefined,
             onEventRowSelected: () => { },
         };
-        const target = document.createElement('div');
-        target.style.width = '800px';
-        target.style.height = '800px';
-        target.style.display = 'flex';
-        target.style.flexDirection = 'column';
-        renderElementIntoDOM(target);
-        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, target);
+        const targetWidget = new UI.Widget.VBox();
+        targetWidget.element.style.width = '800px';
+        targetWidget.element.style.height = '800px';
+        renderElementIntoDOM(targetWidget);
+        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, targetWidget.contentElement);
         await assertScreenshot('application/DeviceBoundSessionsView/session.png');
     });
     it('renders events correctly', async () => {
@@ -305,13 +406,11 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
             selectedEvent: undefined,
             onEventRowSelected: () => { },
         };
-        const target = document.createElement('div');
-        target.style.width = '800px';
-        target.style.height = '400px';
-        target.style.display = 'flex';
-        target.style.flexDirection = 'column';
-        renderElementIntoDOM(target);
-        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, target);
+        const targetWidget = new UI.Widget.VBox();
+        targetWidget.element.style.width = '800px';
+        targetWidget.element.style.height = '400px';
+        renderElementIntoDOM(targetWidget);
+        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, targetWidget.contentElement);
         await assertScreenshot('application/DeviceBoundSessionsView/events.png');
     });
     it('renders session and events correctly', async () => {
@@ -322,13 +421,11 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
             selectedEvent: undefined,
             onEventRowSelected: () => { },
         };
-        const target = document.createElement('div');
-        target.style.width = '800px';
-        target.style.height = '850px';
-        target.style.display = 'flex';
-        target.style.flexDirection = 'column';
-        renderElementIntoDOM(target);
-        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, target);
+        const targetWidget = new UI.Widget.VBox();
+        targetWidget.element.style.width = '800px';
+        targetWidget.element.style.height = '850px';
+        renderElementIntoDOM(targetWidget);
+        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, targetWidget.contentElement);
         await assertScreenshot('application/DeviceBoundSessionsView/session_and_events.png');
     });
     it('renders the default view correctly', async () => {
@@ -337,13 +434,11 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
             defaultDescription: 'Default Description',
             preserveLogSetting: createSetting(),
         };
-        const target = document.createElement('div');
-        target.style.width = '300px';
-        target.style.height = '300px';
-        target.style.display = 'flex';
-        target.style.flexDirection = 'column';
-        renderElementIntoDOM(target);
-        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, target);
+        const targetWidget = new UI.Widget.VBox();
+        targetWidget.element.style.width = '300px';
+        targetWidget.element.style.height = '300px';
+        renderElementIntoDOM(targetWidget);
+        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, targetWidget.contentElement);
         await assertScreenshot('application/DeviceBoundSessionsView/default_view.png');
     });
     it('renders event details default view correctly', async () => {
@@ -356,13 +451,11 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
             selectedEvent: selectedEvent.event,
             onEventRowSelected: () => { },
         };
-        const target = document.createElement('div');
-        target.style.width = '800px';
-        target.style.height = '800px';
-        target.style.display = 'flex';
-        target.style.flexDirection = 'column';
-        renderElementIntoDOM(target);
-        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, target);
+        const targetWidget = new UI.Widget.VBox();
+        targetWidget.element.style.width = '800px';
+        targetWidget.element.style.height = '800px';
+        renderElementIntoDOM(targetWidget);
+        Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, targetWidget.contentElement);
         await assertScreenshot(`application/DeviceBoundSessionsView/session_and_events_and_event_details.png`);
     });
     // These just display the event details portion because otherwise the height
@@ -381,7 +474,9 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
         Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, target);
         const eventDetailContents = target.querySelector('.device-bound-session-sidebar');
         assert.isNotNull(eventDetailContents);
-        renderElementIntoDOM(eventDetailContents);
+        const targetWidget = new UI.Widget.VBox();
+        renderElementIntoDOM(targetWidget);
+        targetWidget.contentElement.appendChild(eventDetailContents);
         await assertScreenshot(screenshotFileName);
     }
     it('renders creation full details correctly', async () => {
@@ -401,6 +496,24 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
     });
     it('renders termination event details correctly', async () => {
         await runEventDetailsTest('termination', 'application/DeviceBoundSessionsView/termination_event_details.png');
+    });
+    it('renders invalid json failed request body correctly', async () => {
+        await runEventDetailsTest('invalid-failed-request-body-invalid-json', 'application/DeviceBoundSessionsView/invalid_failed_request_body_invalid_json_event_details.png');
+    });
+    it('renders string failed request body correctly', async () => {
+        await runEventDetailsTest('invalid-failed-request-body-string', 'application/DeviceBoundSessionsView/invalid_failed_request_body_string_event_details.png');
+    });
+    it('renders boolean failed request body correctly', async () => {
+        await runEventDetailsTest('invalid-failed-request-body-boolean', 'application/DeviceBoundSessionsView/invalid_failed_request_body_boolean_event_details.png');
+    });
+    it('renders number failed request body correctly', async () => {
+        await runEventDetailsTest('invalid-failed-request-body-number', 'application/DeviceBoundSessionsView/invalid_failed_request_body_number_event_details.png');
+    });
+    it('renders null failed request body correctly', async () => {
+        await runEventDetailsTest('invalid-failed-request-body-null', 'application/DeviceBoundSessionsView/invalid_failed_request_body_null_event_details.png');
+    });
+    it('renders minimal failed request correctly', async () => {
+        await runEventDetailsTest('minimal-failed-request', 'application/DeviceBoundSessionsView/minimal_failed_request_event_details.png');
     });
 });
 //# sourceMappingURL=DeviceBoundSessionsView.test.js.map

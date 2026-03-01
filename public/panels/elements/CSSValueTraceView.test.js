@@ -29,7 +29,7 @@ async function setUpStyles() {
 async function getTreeElement(matchedStyles, stylesPane, name, value, variables) {
     const property = new SDK.CSSProperty.CSSProperty(matchedStyles.nodeStyles()[0], matchedStyles.nodeStyles()[0].pastLastSourcePropertyIndex(), name, value, true, false, true, false, '', undefined, []);
     const treeElement = new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
-        stylesPane,
+        stylesContainer: stylesPane,
         section: sinon.createStubInstance(Elements.StylePropertiesSection.StylePropertiesSection),
         matchedStyles,
         property,
@@ -53,7 +53,7 @@ async function showTrace(property, matchedStyles, treeElement) {
     const viewFunction = createViewFunctionStub(Elements.CSSValueTraceView.CSSValueTraceView);
     const view = new Elements.CSSValueTraceView.CSSValueTraceView(undefined, viewFunction);
     await viewFunction.nextInput;
-    void view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, treeElement.parentPane(), matchedStyles, treeElement, treeElement.getComputedStyles() ?? new Map(), treeElement.getComputedStyleExtraFields()), false, 0, false);
+    void view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, treeElement.stylesContainer(), matchedStyles, treeElement, treeElement.getComputedStyles() ?? new Map(), treeElement.getComputedStyleExtraFields()), false, 0, false);
     return await viewFunction.nextInput;
 }
 function getLineText(line) {
@@ -148,7 +148,7 @@ describeWithMockConnection('CSSValueTraceView', () => {
     it('shows intermediate evaluation steps', async () => {
         const { matchedStyles, stylesPane } = await setUpStyles();
         const { property, treeElement } = await getTreeElement(matchedStyles, stylesPane, 'font-size', 'calc(clamp(16px, calc(1vw + 1em), 24px) + 3.2px)');
-        const resolveValuesSpy = sinon.spy(treeElement.parentPane().cssModel().resolveValues);
+        const resolveValuesSpy = sinon.spy(treeElement.stylesContainer().cssModel().resolveValues);
         const input = await showTrace(property, matchedStyles, treeElement);
         const substitutions = getLineText(input.substitutions);
         const evaluations = getLineText(input.evaluations);

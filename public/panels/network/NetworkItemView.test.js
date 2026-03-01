@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -15,7 +16,7 @@ function renderNetworkItemView(request) {
     if (!request) {
         request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/foo.html`, urlString ``, null, null, null);
     }
-    const networkItemView = new Network.NetworkItemView.NetworkItemView(request, {});
+    const networkItemView = new Network.NetworkItemView.NetworkItemView(request, new NetworkTimeCalculator.NetworkTimeCalculator(true));
     const div = document.createElement('div');
     renderElementIntoDOM(div);
     networkItemView.markAsRoot();

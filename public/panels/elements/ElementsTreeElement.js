@@ -103,6 +103,10 @@ const UIStrings = {
      */
     editAsHtml: 'Edit as HTML',
     /**
+     * @description A context menu item in the Elements Tree Element of the Elements panel
+     */
+    editData: 'Edit data',
+    /**
      * @description Text to cut an element, cut should be used as a verb
      */
     cut: 'Cut',
@@ -491,6 +495,15 @@ function renderTitle(node, isClosingTag, expanded, isExpandable, isXMLMimeType, 
         }
         case Node.DOCUMENT_FRAGMENT_NODE: {
             return html `<span class="webkit-html-fragment">${Platform.StringUtilities.collapseWhitespace(node.nodeNameInCorrectCase())}</span>`;
+        }
+        case Node.PROCESSING_INSTRUCTION_NODE: {
+            const nodeValue = node.nodeValue();
+            const maybeSpace = nodeValue ? ' ' : '';
+            return html `<span class="webkit-html-processing-instruction">&lt;?<span
+          class="webkit-html-tag-name" jslog=${VisualLogging.value('tag-name').track({ change: true, dblclick: true })}>${node.nodeName()}</span>${maybeSpace}<span class="webkit-html-processing-instruction-value" jslog=${VisualLogging.value('processing-instruction-value').track({
+                change: true,
+                dblclick: true,
+            })}>${nodeValue}</span>?&gt;</span>`;
         }
         default: {
             return html `${Platform.StringUtilities.collapseWhitespace(node.nodeNameInCorrectCase())}`;
@@ -1007,7 +1020,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             onHighlightSearchResults: () => this.#highlightSearchResults(),
             onExpand: () => this.expand(),
             containerAdornerActive: this.#containerAdornerActive,
-            showAdAdorner: this.nodeInternal.isAdFrameNode(),
+            showAdAdorner: this.nodeInternal.isAdRelatedNode(),
             showContainerAdorner: Boolean(this.#layout?.containerType) && !this.isClosingTag(),
             containerType: this.#layout?.containerType,
             showFlexAdorner: Boolean(this.#layout?.isFlex) && !this.isClosingTag(),
@@ -1272,6 +1285,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             this.treeOutline.treeElementByNode.set(this.nodeInternal, this);
             this.nodeInternal.addEventListener(SDK.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.onTopLayerIndexChanged, this);
             this.nodeInternal.addEventListener(SDK.DOMModel.DOMNodeEvents.SCROLLABLE_FLAG_UPDATED, this.#onScrollableFlagUpdated, this);
+            this.nodeInternal.addEventListener(SDK.DOMModel.DOMNodeEvents.AD_RELATED_STATE_UPDATED, this.#onAdRelatedStateUpdated, this);
             this.nodeInternal.addEventListener(SDK.DOMModel.DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED, this.#onPersistentContainerQueryOverlayStateChanged, this);
             this.nodeInternal.addEventListener(SDK.DOMModel.DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED, this.#onPersistentFlexContainerOverlayStateChanged, this);
             this.nodeInternal.addEventListener(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, this.#onPersistentGridOverlayStateChanged, this);
@@ -1342,12 +1356,16 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
         this.nodeInternal.removeEventListener(SDK.DOMModel.DOMNodeEvents.TOP_LAYER_INDEX_CHANGED, this.onTopLayerIndexChanged, this);
         this.nodeInternal.removeEventListener(SDK.DOMModel.DOMNodeEvents.SCROLLABLE_FLAG_UPDATED, this.#onScrollableFlagUpdated, this);
+        this.nodeInternal.removeEventListener(SDK.DOMModel.DOMNodeEvents.AD_RELATED_STATE_UPDATED, this.#onAdRelatedStateUpdated, this);
         this.nodeInternal.removeEventListener(SDK.DOMModel.DOMNodeEvents.CONTAINER_QUERY_OVERLAY_STATE_CHANGED, this.#onPersistentContainerQueryOverlayStateChanged, this);
         this.nodeInternal.removeEventListener(SDK.DOMModel.DOMNodeEvents.FLEX_CONTAINER_OVERLAY_STATE_CHANGED, this.#onPersistentFlexContainerOverlayStateChanged, this);
         this.nodeInternal.removeEventListener(SDK.DOMModel.DOMNodeEvents.GRID_OVERLAY_STATE_CHANGED, this.#onPersistentGridOverlayStateChanged, this);
         this.nodeInternal.removeEventListener(SDK.DOMModel.DOMNodeEvents.SCROLL_SNAP_OVERLAY_STATE_CHANGED, this.#onPersistentScrollSnapOverlayStateChanged, this);
     }
     #onScrollableFlagUpdated() {
+        void this.#updateAdorners();
+    }
+    #onAdRelatedStateUpdated() {
         void this.#updateAdorners();
     }
     #onPersistentContainerQueryOverlayStateChanged(event) {
@@ -1493,10 +1511,12 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         if (!this.treeOutline || this.treeOutline.selectedDOMNode() !== this.nodeInternal) {
             return false;
         }
-        if (this.nodeInternal.nodeType() !== Node.ELEMENT_NODE && this.nodeInternal.nodeType() !== Node.TEXT_NODE) {
+        if (this.nodeInternal.nodeType() !== Node.ELEMENT_NODE && this.nodeInternal.nodeType() !== Node.TEXT_NODE &&
+            this.nodeInternal.nodeType() !== Node.PROCESSING_INSTRUCTION_NODE) {
             return false;
         }
-        const textNode = eventTarget.enclosingNodeOrSelfWithClass('webkit-html-text-node');
+        const textNode = eventTarget.enclosingNodeOrSelfWithClass('webkit-html-text-node') ??
+            eventTarget.enclosingNodeOrSelfWithClass('webkit-html-processing-instruction-value');
         if (textNode) {
             return this.startEditingTextNode(textNode);
         }
@@ -1768,6 +1788,18 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             }, { jslogContext: 'show-frame-details' });
         }
     }
+    async populateProcessingElementContextMenu(contextMenu) {
+        const treeOutline = this.treeOutline;
+        if (!treeOutline) {
+            return;
+        }
+        contextMenu.editSection().appendItem(i18nString(UIStrings.editData), this.startEditingProcessingInstructionValue.bind(this), { jslogContext: 'elements.edit-data' });
+        contextMenu.editSection().appendItem(i18nString(UIStrings.duplicateElement), treeOutline.duplicateNode.bind(treeOutline, this.nodeInternal), {
+            disabled: (this.nodeInternal.isInShadowTree()),
+            jslogContext: 'elements.duplicate-element',
+        });
+        contextMenu.editSection().appendItem(i18nString(UIStrings.deleteElement), this.remove.bind(this), { jslogContext: 'delete-element' });
+    }
     startEditing() {
         if (!this.treeOutline || this.treeOutline.selectedDOMNode() !== this.nodeInternal) {
             return;
@@ -1785,6 +1817,16 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             if (textNode) {
                 return this.startEditingTextNode(textNode);
             }
+        }
+        if (this.nodeInternal.nodeType() === Node.PROCESSING_INSTRUCTION_NODE) {
+            return this.startEditingProcessingInstructionValue();
+        }
+        return;
+    }
+    startEditingProcessingInstructionValue() {
+        const processingInstructionValue = this.listItemElement.getElementsByClassName('webkit-html-processing-instruction-value')[0];
+        if (processingInstructionValue) {
+            return this.startEditingTextNode(processingInstructionValue);
         }
         return;
     }
@@ -2142,6 +2184,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             moveToNextAttributeIfNeeded.call(self);
         }
         function moveToNextAttributeIfNeeded() {
+            if (this.nodeInternal.nodeType() === Node.PROCESSING_INSTRUCTION_NODE) {
+                this.startEditingProcessingInstructionValue();
+                return;
+            }
             if (moveDirection !== 'forward') {
                 this.addNewAttribute();
                 return;

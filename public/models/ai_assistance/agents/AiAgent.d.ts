@@ -70,6 +70,12 @@ export interface SideEffectResponse {
 }
 export interface ContextChangeResponse {
     type: ResponseType.CONTEXT_CHANGE;
+    /**
+     * Information to pass down what was selected
+     * Use to make the LLM understand the the user
+     * already selected something.
+     */
+    description: string;
     context: ConversationContext<unknown>;
 }
 interface SerializedSideEffectResponse extends Omit<SideEffectResponse, 'confirm'> {
@@ -105,6 +111,7 @@ export interface AgentOptions {
     sessionId?: string;
     confirmSideEffectForTest?: typeof Promise.withResolvers;
     onInspectElement?: () => Promise<SDK.DOMModel.DOMNode | null>;
+    history?: Host.AidaClient.Content[];
 }
 export interface ParsedAnswer {
     answer: string;
@@ -154,7 +161,8 @@ export type FunctionCallHandlerResult<Result> = {
 } | {
     result: Result;
 } | {
-    context: unknown;
+    context: ConversationContext<unknown>;
+    description: string;
 } | {
     error: string;
 };
@@ -225,6 +233,7 @@ export declare abstract class AiAgent<T> {
     constructor(opts: AgentOptions);
     enhanceQuery(query: string, selected: ConversationContext<T> | null, multimodalInputType?: MultimodalInputType): Promise<string>;
     currentFacts(): ReadonlySet<Host.AidaClient.RequestFact>;
+    get history(): Host.AidaClient.Content[];
     /**
      * Add a fact which will be sent for any subsequent requests.
      * Returns the new list of all facts.

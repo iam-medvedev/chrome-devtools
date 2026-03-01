@@ -1408,8 +1408,7 @@ UI5.ContextMenu.registerProvider({
   async loadProvider() {
     const Network = await loadNetworkModule();
     return Network.NetworkPanel.NetworkPanel.instance();
-  },
-  experiment: void 0
+  }
 });
 Common2.Revealer.registerRevealer({
   contextTypes() {
@@ -1427,7 +1426,6 @@ Common2.Revealer.registerRevealer({
   contextTypes() {
     return [NetworkForward.UIRequestLocation.UIRequestLocation];
   },
-  destination: void 0,
   async loadRevealer() {
     const Network = await loadNetworkModule();
     return new Network.NetworkPanel.RequestLocationRevealer();
@@ -1671,9 +1669,7 @@ UI7.Toolbar.registerToolbarItem({
   actionId: "emulation.toggle-device-mode",
   condition: Root4.Runtime.conditions.canDock,
   location: "main-toolbar-left",
-  order: 1,
-  loadItem: void 0,
-  separator: void 0
+  order: 1
 });
 Common3.AppProvider.registerAppProvider({
   async loadAppProvider() {
@@ -3008,7 +3004,7 @@ var UIStrings20 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  hideChromeFrameInLayersView: "Hide `chrome` frame in Layers view"
+  chromeFrameInLayersView: "Chrome frame in Layers view"
 };
 var str_20 = i18n41.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings20);
 var i18nLazyString20 = i18n41.i18n.getLazilyComputedLocalizedString.bind(void 0, str_20);
@@ -3242,10 +3238,10 @@ UI21.ActionRegistration.registerActionExtension({
 Common11.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
-  title: i18nLazyString20(UIStrings20.hideChromeFrameInLayersView),
-  settingName: "frame-viewer-hide-chrome-window",
+  title: i18nLazyString20(UIStrings20.chromeFrameInLayersView),
+  settingName: "frame-viewer-chrome-window",
   settingType: "boolean",
-  defaultValue: false
+  defaultValue: true
 });
 Common11.Settings.registerSettingExtension({
   category: "PERFORMANCE",
@@ -3723,13 +3719,11 @@ UI26.ActionRegistration.maybeRemoveActionExtension("help.report-issue");
 Common12.Settings.maybeRemoveSettingExtension("help.show-release-note");
 UI26.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
-  actionId: "help.release-notes",
-  order: void 0
+  actionId: "help.release-notes"
 });
 UI26.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
-  actionId: "help.report-issue",
-  order: void 0
+  actionId: "help.report-issue"
 });
 Common12.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
 UI26.ViewManager.registerViewExtension({

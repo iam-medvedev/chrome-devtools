@@ -271,14 +271,12 @@ var NodeConnectionsView = class extends UI.Widget.VBox {
       const match = input2.value.trim().match(/^([a-zA-Z0-9\.\-_]+):(\d+)$/);
       if (!match) {
         return {
-          valid: false,
-          errorMessage: void 0
+          valid: false
         };
       }
       const port = parseInt(match[2], 10);
       return {
-        valid: port <= 65535,
-        errorMessage: void 0
+        valid: port <= 65535
       };
     }
   }

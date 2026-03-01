@@ -891,5 +891,76 @@ describeWithMockConnection('PreloadingModel', () => {
             },
         ]);
     });
+    it('reset() clears all rule sets and preloading attempts', async () => {
+        const target = createTarget();
+        const model = target.model(SDK.PreloadingModel.PreloadingModel);
+        assert.exists(model);
+        const loaderId = getMainFrame(target).loaderId;
+        // Add a rule set
+        dispatchEvent(target, 'Preload.ruleSetUpdated', {
+            ruleSet: {
+                id: 'ruleSetId:1',
+                loaderId,
+                sourceText: `
+{
+  "prefetch":[
+    {
+      "source": "list",
+      "urls": ["/subresource.js"]
+    }
+  ]
+}
+`,
+            },
+        });
+        // Add preloading attempt sources
+        dispatchEvent(target, 'Preload.preloadingAttemptSourcesUpdated', {
+            loaderId,
+            preloadingAttemptSources: [
+                {
+                    key: {
+                        loaderId,
+                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                        url: 'https://example.com/subresource.js',
+                    },
+                    ruleSetIds: ['ruleSetId:1'],
+                    nodeIds: [1],
+                },
+            ],
+        });
+        // Verify data exists
+        assert.lengthOf(model.getAllRuleSets(), 1);
+        assert.lengthOf(model.getRepresentativePreloadingAttempts(null), 1);
+        // Call reset
+        model.reset();
+        // Verify data is cleared
+        assert.deepEqual(model.getAllRuleSets(), []);
+        assert.deepEqual(model.getRepresentativePreloadingAttempts(null), []);
+        // Verify new events after reset are picked up (loaderId re-inferred via ruleSetUpdated)
+        dispatchEvent(target, 'Preload.ruleSetUpdated', {
+            ruleSet: {
+                id: 'ruleSetId:1',
+                loaderId,
+                sourceText: '{"prefetch":[{"source":"list","urls":["/new-page.js"]}]}',
+            },
+        });
+        dispatchEvent(target, 'Preload.preloadingAttemptSourcesUpdated', {
+            loaderId,
+            preloadingAttemptSources: [
+                {
+                    key: {
+                        loaderId,
+                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                        url: 'https://example.com/new-page.js',
+                    },
+                    ruleSetIds: ['ruleSetId:1'],
+                    nodeIds: [1],
+                },
+            ],
+        });
+        assert.lengthOf(model.getAllRuleSets(), 1);
+        assert.lengthOf(model.getRepresentativePreloadingAttempts(null), 1);
+        assert.strictEqual(model.getRepresentativePreloadingAttempts(null)[0].value.key.url, 'https://example.com/new-page.js');
+    });
 });
 //# sourceMappingURL=PreloadingModel.test.js.map

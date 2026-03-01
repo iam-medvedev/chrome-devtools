@@ -43,7 +43,6 @@ import * as Lit from '../../ui/lit/lit.js';
 import * as ElementsComponents from './components/components.js';
 import computedStyleWidgetStyles from './computedStyleWidget.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
-import { PlatformFontsWidget } from './PlatformFontsWidget.js';
 import { categorizePropertyName, DefaultCategoryOrder } from './PropertyNameCategories.js';
 import { Renderer, rendererBase, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
@@ -86,29 +85,15 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/ComputedStyleWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-/**
- * Rendering a property's name and value is expensive, and each time we do it
- * it generates a new HTML element. If we call this directly from our Lit
- * components, we will generate a brand new DOM element on each single render.
- * This is very expensive and unnecessary - for the majority of re-renders a
- * property's name and value does not change. So we cache the rest of rendering
- * the name and value in a map, where the key used is a combination of the
- * property's name and value. This ensures that we only re-generate this element
- * if the node itself changes.
- * The resulting Element nodes are inserted into the ComputedStyleProperty
- * component via <slot>s, ensuring that Lit doesn't directly render/re-render
- * the element.
- */
-const propertyContentsCache = new Map();
 function matchProperty(name, value) {
     return SDK.CSSPropertyParser.matchDeclaration(name, value, [
         new SDK.CSSPropertyParserMatchers.ColorMatcher(), new SDK.CSSPropertyParserMatchers.URLMatcher(),
         new SDK.CSSPropertyParserMatchers.StringMatcher()
     ]);
 }
-function renderPropertyContents(node, propertyName, propertyValue) {
+function renderPropertyContents(node, cache, propertyName, propertyValue) {
     const cacheKey = propertyName + ':' + propertyValue;
-    const valueFromCache = propertyContentsCache.get(cacheKey);
+    const valueFromCache = cache.get(cacheKey);
     if (valueFromCache) {
         return valueFromCache;
     }
@@ -118,15 +103,15 @@ function renderPropertyContents(node, propertyName, propertyValue) {
         .renderValueElement({ name: propertyName, value: propertyValue }, matchProperty(propertyName, propertyValue), [new ColorRenderer(), new URLRenderer(null, node), new StringRenderer()])
         .valueElement;
     value.slot = 'value';
-    propertyContentsCache.set(cacheKey, { name, value });
+    cache.set(cacheKey, { name, value });
     return { name, value };
 }
 /**
  * Note: this function is called for each tree node on each render, so we need
  * to ensure nothing expensive runs here, or if it does it is safely cached.
  **/
-const createPropertyElement = (node, propertyName, propertyValue, traceable, inherited, activeProperty, onContextMenu) => {
-    const { name, value } = renderPropertyContents(node, propertyName, propertyValue);
+const createPropertyElement = (node, cache, propertyName, propertyValue, traceable, inherited, activeProperty, onContextMenu) => {
+    const { name, value } = renderPropertyContents(node, cache, propertyName, propertyValue);
     // clang-format off
     return html `<devtools-computed-style-property
         .traceable=${traceable}
@@ -180,8 +165,8 @@ class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.ColorMatc
             return [document.createTextNode(match.text)];
         }
         const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
-        swatch.readonly = true;
-        swatch.color = color;
+        swatch.setReadonly(true);
+        swatch.renderColor(color);
         const valueElement = document.createElement('span');
         valueElement.textContent = match.text;
         swatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, (event) => {
@@ -217,27 +202,30 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
     <style>${computedStyleWidgetStyles}</style>
-    <div class="styles-sidebar-pane-toolbar">
-      <devtools-toolbar class="styles-pane-toolbar" role="presentation">
-        <devtools-toolbar-input
-          type="filter"
-          autofocus
-          value=${input.filterText}
-          @change=${input.onFilterChanged}
-        ></devtools-toolbar-input>
-        <devtools-checkbox
-          title=${i18nString(UIStrings.showAll)}
-          ${bindToSetting(input.showInheritedComputedStylePropertiesSetting)}
-        >${i18nString(UIStrings.showAll)}</devtools-checkbox>
-        <devtools-checkbox
-          title=${i18nString(UIStrings.group)}
-          ${bindToSetting(input.groupComputedStylesSetting)}
-        >${i18nString(UIStrings.group)}</devtools-checkbox>
-      </devtools-toolbar>
-    </div>
+    ${input.includeToolbar ? html `
+      <div class="styles-sidebar-pane-toolbar">
+        <devtools-toolbar class="styles-pane-toolbar" role="presentation">
+          <devtools-toolbar-input
+            type="filter"
+            autofocus
+            ?regex=${true}
+            value=${input.filterText}
+            @change=${input.onFilterChanged}
+            @regextoggle=${input.onRegexToggled}
+          ></devtools-toolbar-input>
+          <devtools-checkbox
+            title=${i18nString(UIStrings.showAll)}
+            ${bindToSetting(input.showInheritedComputedStylePropertiesSetting)}
+          >${i18nString(UIStrings.showAll)}</devtools-checkbox>
+          <devtools-checkbox
+            title=${i18nString(UIStrings.group)}
+            ${bindToSetting(input.groupComputedStylesSetting)}
+          >${i18nString(UIStrings.group)}</devtools-checkbox>
+        </devtools-toolbar>
+      </div>
+      ` : Lit.nothing}
     ${input.computedStylesTree}
     ${!input.hasMatches ? html `<div class="gray-info-message">${i18nString(UIStrings.noMatchingProperty)}</div>` : ''}
-    ${input.computedStyleModel ? html `<devtools-widget .widgetConfig=${UI.Widget.widgetConfig(PlatformFontsWidget, { sharedModel: input.computedStyleModel })}></devtools-widget>` : ''}
   `, target);
     // clang-format on
 };
@@ -247,13 +235,39 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
     #matchedStyles = null;
     showInheritedComputedStylePropertiesSetting;
     groupComputedStylesSetting;
-    filterRegex;
+    filterRegex = null;
     linkifier;
     imagePreviewPopover;
+    /**
+     * Rendering a property's name and value is expensive, and each time we do it
+     * it generates a new HTML element. If we call this directly from our Lit
+     * components, we will generate a brand new DOM element on each single render.
+     * This is very expensive and unnecessary - for the majority of re-renders a
+     * property's name and value does not change. So we cache the rest of rendering
+     * the name and value in a map, where the key used is a combination of the
+     * property's name and value. This ensures that we only re-generate this element
+     * if the node itself changes.
+     * The resulting Element nodes are inserted into the ComputedStyleProperty
+     * component via <slot>s, ensuring that Lit doesn't directly render/re-render
+     * the element.
+     * We have to store this cache per widget because it is possible to have
+     * multiple widgets for the same NodeId showing at once. In that case, if we
+     * reuse the same element from the cache, only one of the widgets will be
+     * populated, because an HTML node cannot be in two locations at once.
+     */
+    #propertyElementsCache = new Map();
     #computedStylesTree = new TreeOutline.TreeOutline.TreeOutline();
     #treeData;
     #view;
+    /**
+     * TODO(b/407751272): the state here is confusing (3 instance variables relating to filtering).
+     * There is also a bug where the Toolbar Input's regex flag cannot be
+     * controlled, so if you set a regex filter here, the toolbar might not
+     * reflect it.
+     */
     #filterText = '';
+    #filterIsRegex = false;
+    #includeToolbar = true;
     constructor() {
         super({ useShadowDom: true });
         this.#view = DEFAULT_VIEW;
@@ -280,13 +294,29 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
         const isNarrow = this.contentElement.offsetWidth < 260;
         this.#computedStylesTree.classList.toggle('computed-narrow', isNarrow);
     }
-    wasShown() {
-        UI.Context.Context.instance().setFlavor(ComputedStyleWidget, this);
-        super.wasShown();
+    get filterText() {
+        return this.#filterText;
     }
-    willHide() {
-        super.willHide();
-        UI.Context.Context.instance().setFlavor(ComputedStyleWidget, null);
+    get filterIsRegex() {
+        return this.#filterIsRegex;
+    }
+    set filterText(newFilter) {
+        if (typeof newFilter === 'string') {
+            this.#filterText = newFilter;
+            this.#filterIsRegex = false;
+        }
+        else {
+            this.#filterText = newFilter.source;
+            this.#filterIsRegex = true;
+        }
+        this.requestUpdate();
+    }
+    get includeToolbar() {
+        return this.#includeToolbar;
+    }
+    set includeToolbar(inc) {
+        this.#includeToolbar = inc;
+        this.requestUpdate();
     }
     /**
      * @param input.hasMatches Whether any properties matched the current filter (or if any properties exist at all).
@@ -294,12 +324,13 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
     #updateView({ hasMatches }) {
         this.#view({
             computedStylesTree: this.#computedStylesTree,
+            includeToolbar: this.#includeToolbar,
             hasMatches,
-            computedStyleModel: this.#computedStyleModel,
             showInheritedComputedStylePropertiesSetting: this.showInheritedComputedStylePropertiesSetting,
             groupComputedStylesSetting: this.groupComputedStylesSetting,
             onFilterChanged: this.onFilterChanged.bind(this),
             filterText: this.#filterText,
+            onRegexToggled: this.onRegexToggled.bind(this),
         }, null, this.contentElement);
     }
     get nodeStyle() {
@@ -448,7 +479,7 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
             if (data.tag === 'property') {
                 const trace = propertyTraces.get(data.propertyName);
                 const activeProperty = trace?.find(property => matchedStyles.propertyState(property) === "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
-                const propertyElement = createPropertyElement(domNode, data.propertyName, data.propertyValue, propertyTraces.has(data.propertyName), data.inherited, activeProperty, event => {
+                const propertyElement = createPropertyElement(domNode, this.#propertyElementsCache, data.propertyName, data.propertyValue, propertyTraces.has(data.propertyName), data.inherited, activeProperty, event => {
                     if (activeProperty) {
                         this.handleContextMenuEvent(matchedStyles, activeProperty, event);
                     }
@@ -531,9 +562,27 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
         }
         return result;
     }
+    #buildFilterRegex(text) {
+        if (!text) {
+            return null;
+        }
+        if (this.#filterIsRegex) {
+            try {
+                return new RegExp(text, 'i');
+            }
+            catch {
+                // Invalid regex: fall through to plain-text matching.
+            }
+        }
+        return new RegExp(Platform.StringUtilities.escapeForRegExp(text), 'i');
+    }
+    async onRegexToggled() {
+        this.#filterIsRegex = !this.#filterIsRegex;
+        await this.filterComputedStyles(this.#buildFilterRegex(this.#filterText));
+    }
     async onFilterChanged(event) {
         this.#filterText = event.detail;
-        await this.filterComputedStyles(event.detail ? new RegExp(Platform.StringUtilities.escapeForRegExp(event.detail), 'i') : null);
+        await this.filterComputedStyles(this.#buildFilterRegex(event.detail));
         if (event.detail && this.#computedStylesTree.data && this.#computedStylesTree.data.tree) {
             UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.filterUpdateAriaText, { PH1: event.detail, PH2: this.#computedStylesTree.data.tree.length }));
         }
@@ -544,10 +593,6 @@ export class ComputedStyleWidget extends UI.Widget.VBox {
             return await this.filterGroupLists();
         }
         return this.filterAlphabeticalList();
-    }
-    setFilterInput(text) {
-        this.#filterText = text;
-        this.requestUpdate();
     }
     nodeFilter(node) {
         const regex = this.filterRegex;

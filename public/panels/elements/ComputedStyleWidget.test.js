@@ -1,10 +1,13 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 async function waitForTraceElement(treeOutline) {
     const element = treeOutline.shadowRoot?.querySelector('devtools-computed-style-trace');
@@ -18,8 +21,55 @@ async function waitForTraceElement(treeOutline) {
         });
     });
 }
+function createWidgetWithMultipleProperties(properties) {
+    Common.Settings.Settings.instance().createSetting('group-computed-styles', false).set(false);
+    const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+    node.id = 1;
+    const cssMatchedStyles = sinon.createStubInstance(SDK.CSSMatchedStyles.CSSMatchedStyles, {
+        node,
+        propertyState: "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */,
+        nodeStyles: [],
+    });
+    const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel(node);
+    sinon.stub(computedStyleModel, 'fetchComputedStyle').callsFake(() => {
+        return Promise.resolve({ node, computedStyle: properties });
+    });
+    sinon.stub(computedStyleModel, 'cssModel').callsFake(() => {
+        return sinon.createStubInstance(SDK.CSSModel.CSSModel, { cachedMatchedCascadeForNode: Promise.resolve(cssMatchedStyles) });
+    });
+    const widget = new Elements.ComputedStyleWidget.ComputedStyleWidget();
+    widget.computedStyleModel = computedStyleModel;
+    widget.nodeStyle = { node, computedStyle: properties };
+    widget.matchedStyles = cssMatchedStyles;
+    renderElementIntoDOM(widget);
+    return widget;
+}
+async function getDisplayedProperties(computedStyleWidget) {
+    const treeOutline = computedStyleWidget.contentElement.querySelector('devtools-tree-outline');
+    const matchedPropertyNames = [];
+    for (const node of treeOutline.data.tree) {
+        const data = node.treeNodeData;
+        if (data.tag === 'property') {
+            matchedPropertyNames.push(data.propertyName);
+            continue;
+        }
+        if (data.tag === 'category' && node.children) {
+            const children = await node.children();
+            for (const child of children) {
+                const childData = child.treeNodeData;
+                if (childData.tag === 'property') {
+                    matchedPropertyNames.push(childData.propertyName);
+                }
+            }
+        }
+    }
+    return matchedPropertyNames;
+}
 describeWithMockConnection('ComputedStyleWidget', () => {
     let computedStyleWidget;
+    beforeEach(() => {
+        stubNoopSettings();
+    });
     afterEach(() => {
         computedStyleWidget.detach();
     });
@@ -121,6 +171,80 @@ describeWithMockConnection('ComputedStyleWidget', () => {
             const traceElement = await waitForTraceElement(treeOutline);
             const traceSelector = traceElement.shadowRoot?.querySelector('.trace-selector');
             assert.strictEqual(traceSelector?.textContent, 'element.style');
+        });
+    });
+    describe('filtering', () => {
+        it('can take a filter that is passed as a string', async () => {
+            const properties = new Map([
+                ['display', 'block'],
+                ['height', '100px'],
+                ['width', '200px'],
+            ]);
+            computedStyleWidget = createWidgetWithMultipleProperties(properties);
+            computedStyleWidget.requestUpdate();
+            computedStyleWidget.filterText = 'display|height';
+            await computedStyleWidget.updateComplete;
+            await UI.Widget.Widget.allUpdatesComplete;
+            const matchedPropertyNames = await getDisplayedProperties(computedStyleWidget);
+            // We filtered for the exact string `display|height`, not the regex
+            assert.lengthOf(matchedPropertyNames, 0);
+            assert.isFalse(computedStyleWidget.filterIsRegex);
+        });
+        it('can take a filter that is passed as a regexp', async () => {
+            const properties = new Map([
+                ['display', 'block'],
+                ['height', '100px'],
+                ['width', '200px'],
+            ]);
+            computedStyleWidget = createWidgetWithMultipleProperties(properties);
+            computedStyleWidget.requestUpdate();
+            computedStyleWidget.filterText = new RegExp('display|height');
+            await computedStyleWidget.updateComplete;
+            await UI.Widget.Widget.allUpdatesComplete;
+            const matchedPropertyNames = await getDisplayedProperties(computedStyleWidget);
+            assert.sameMembers(matchedPropertyNames, ['display', 'height']);
+            assert.isTrue(computedStyleWidget.filterIsRegex);
+        });
+        it('renders a regex toggle button that is off by default', async () => {
+            const properties = new Map([
+                ['display', 'block'],
+                ['height', '100px'],
+            ]);
+            computedStyleWidget = createWidgetWithMultipleProperties(properties);
+            computedStyleWidget.requestUpdate();
+            await computedStyleWidget.updateComplete;
+            await UI.Widget.Widget.allUpdatesComplete;
+            const regexButton = computedStyleWidget.contentElement.querySelector('devtools-button');
+            assert.exists(regexButton);
+        });
+        it('filters with plain text by default (pipe is literal, not OR)', async () => {
+            const properties = new Map([
+                ['display', 'block'],
+                ['height', '100px'],
+                ['width', '200px'],
+            ]);
+            computedStyleWidget = createWidgetWithMultipleProperties(properties);
+            computedStyleWidget.requestUpdate();
+            await computedStyleWidget.updateComplete;
+            // In plain text mode, "display|height" is escaped and treated as a literal string.
+            // No property name contains the literal character "|", so nothing matches.
+            await computedStyleWidget.filterComputedStyles(new RegExp('display\\|height', 'i'));
+            const treeOutline = computedStyleWidget.contentElement.querySelector('devtools-tree-outline');
+            assert.lengthOf(treeOutline.data.tree, 0);
+        });
+        it('filters with regex OR when given a real regex', async () => {
+            const properties = new Map([
+                ['display', 'block'],
+                ['height', '100px'],
+                ['width', '200px'],
+            ]);
+            computedStyleWidget = createWidgetWithMultipleProperties(properties);
+            computedStyleWidget.requestUpdate();
+            await computedStyleWidget.updateComplete;
+            // When regex mode is on, "display|width" is a real regex OR.
+            await computedStyleWidget.filterComputedStyles(new RegExp('display|width', 'i'));
+            const matchedPropertyNames = await getDisplayedProperties(computedStyleWidget);
+            assert.sameMembers(matchedPropertyNames, ['display', 'width']);
         });
     });
 });

@@ -50,12 +50,10 @@ Common.Settings.maybeRemoveSettingExtension('help.show-release-note');
 UI.ContextMenu.maybeRemoveItem({
     location: "mainMenuHelp/default" /* UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT */,
     actionId: 'help.release-notes',
-    order: undefined,
 });
 UI.ContextMenu.maybeRemoveItem({
     location: "mainMenuHelp/default" /* UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT */,
     actionId: 'help.report-issue',
-    order: undefined,
 });
 Common.Runnable.maybeRemoveLateInitializationRunnable('whats-new');
 UI.ViewManager.registerViewExtension({

@@ -20,7 +20,10 @@ export class HeapSnapshotWorkerDispatcher {
         this.#postMessage({ eventName: name, data });
     }
     async dispatchMessage({ data, ports }) {
-        const response = { callId: data.callId, result: null, error: undefined, errorCallStack: undefined, errorMethodName: undefined };
+        const response = {
+            callId: data.callId,
+            result: null,
+        };
         try {
             switch (data.disposition) {
                 case 'createLoader':

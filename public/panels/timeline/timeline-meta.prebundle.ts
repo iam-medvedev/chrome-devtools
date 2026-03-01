@@ -61,7 +61,7 @@ const UIStrings = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  hideChromeFrameInLayersView: 'Hide `chrome` frame in Layers view',
+  chromeFrameInLayersView: 'Chrome frame in Layers view',
 } as const;
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/timeline-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -308,10 +308,10 @@ UI.ActionRegistration.registerActionExtension({
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.PERFORMANCE,
   storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.hideChromeFrameInLayersView),
-  settingName: 'frame-viewer-hide-chrome-window',
+  title: i18nLazyString(UIStrings.chromeFrameInLayersView),
+  settingName: 'frame-viewer-chrome-window',
   settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false,
+  defaultValue: true,
 });
 
 // IMPORTANT: if you are updating this, you should also update the setting in

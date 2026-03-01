@@ -362,7 +362,10 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "ai-code-generation-teaser.show-disclaimer-info-tooltip",
   "ai-code-generation-upgrade-dialog.continue",
   "ai-code-generation-upgrade-dialog.manage-in-settings",
+  "ai-code-generation-used",
   "ai-explorer",
+  "ai-hide-walkthrough-sidebar",
+  "ai-show-walkthrough-sidebar",
   "ai_assistance",
   "align-content",
   "align-content-center",
@@ -769,6 +772,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "clear-palette",
   "clear-replace-input",
   "clear-search-input",
+  "clear-speculative-loads",
   "clear-storage",
   "clear-storage-cache-storage",
   "clear-storage-cookies",
@@ -790,6 +794,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "close-others",
   "close-search",
   "close-tabs-to-the-right",
+  "close-walkthrough",
   "closeable-tabs",
   "closeableTabs",
   "code",
@@ -829,6 +834,8 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "column-rule-edge-start-inset",
   "column-rule-edge-start-outset",
   "column-rule-inset",
+  "column-rule-inset-end",
+  "column-rule-inset-start",
   "column-rule-interior-end-inset",
   "column-rule-interior-end-outset",
   "column-rule-interior-inset",
@@ -1375,6 +1382,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "drjones.sources-panel-context.performance",
   "drjones.sources-panel-context.script",
   "drop",
+  "durable-messages",
   "duration",
   "durationchange",
   "dynamic-local-setting",
@@ -1416,6 +1424,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "elements.dom-properties",
   "elements.duplicate-element",
   "elements.edit-as-html",
+  "elements.edit-data",
   "elements.event-listeners",
   "elements.generic-sidebar-popover",
   "elements.hide-element",
@@ -1704,6 +1713,9 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "frame-creation-stack-trace",
   "frame-resource",
   "frame-sizing",
+  "frame-viewer-chrome-window",
+  "frame-viewer-chrome-window-false",
+  "frame-viewer-chrome-window-true",
   "frame-viewer-hide-chrome-window",
   "frame-viewer-show-paints",
   "frame-viewer-show-slow-scroll-rects",
@@ -1876,7 +1888,6 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "hide-issues",
   "hide-messages-from",
   "hide-network-messages",
-  "hide-network-messages-true",
   "hide-player",
   "hide-repeating-children",
   "highlight-node-on-hover-in-overlay",
@@ -2050,6 +2061,8 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "java-script-disabled-true",
   "javascript",
   "javascript-context",
+  "jpeg-xl-format-disabled",
+  "jpeg-xl-format-disabled-true",
   "jpg-header",
   "js-event-listeners",
   "js-heap-total-size",
@@ -2700,6 +2713,9 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "network-log.preserve-log-true",
   "network-log.record-log",
   "network-main",
+  "network-messages",
+  "network-messages-false",
+  "network-messages-true",
   "network-only-blocked-requests",
   "network-only-ip-protected-requests",
   "network-only-third-party-setting",
@@ -3016,6 +3032,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "privacy-policy.console-insights",
   "privacy-sandbox-update",
   "private-state-tokens",
+  "processing-instruction-value",
   "production-origin",
   "profile-loading-failed",
   "profile-options",
@@ -3254,6 +3271,8 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "row-rule-edge-start-inset",
   "row-rule-edge-start-outset",
   "row-rule-inset",
+  "row-rule-inset-end",
+  "row-rule-inset-start",
   "row-rule-interior-end-inset",
   "row-rule-interior-end-outset",
   "row-rule-interior-inset",
@@ -3276,6 +3295,8 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "rule-color",
   "rule-edge-inset",
   "rule-inset",
+  "rule-inset-end",
+  "rule-inset-start",
   "rule-interior-inset",
   "rule-outset",
   "rule-overlap",
@@ -3580,6 +3601,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "show-scroll-bottleneck-rects-true",
   "show-shortcuts",
   "show-test-addresses-in-autofill-menu-on-event",
+  "show-thinking",
   "show-third-party-issues",
   "show-ua-shadow-dom",
   "show-url-decoded",
@@ -5142,49 +5164,58 @@ ${JSON.stringify(allLogs, null, 2)}
   });
 }
 var numMatchedEvents = 0;
+function recordUnmatchedEvent(pendingExpectation, actualEvent, expectedEvent, matchedImpressions) {
+  const unmatched = { ...actualEvent };
+  if ("impressions" in unmatched && "impressions" in expectedEvent) {
+    unmatched.impressions = unmatched.impressions.filter((impression) => {
+      const matched = expectedEvent.impressions.includes(impression);
+      if (matched) {
+        matchedImpressions.add(impression);
+      }
+      return !matched;
+    });
+  }
+  pendingExpectation.unmatchedEvents.push(unmatched);
+}
+function processMissingEvents(pendingExpectation, expectedEventIndex, matchedImpressions) {
+  pendingExpectation.missingEvents = pendingExpectation.expectedEvents.slice(expectedEventIndex);
+  for (const event of pendingExpectation.missingEvents) {
+    if ("impressions" in event) {
+      event.impressions = event.impressions.filter((impression) => !matchedImpressions.has(impression));
+    }
+  }
+  pendingExpectation.missingEvents = pendingExpectation.missingEvents.filter((event) => !("impressions" in event) || event.impressions.length > 0);
+}
 function checkPendingEventExpectation() {
   if (!pendingEventExpectation) {
     return;
   }
-  const actualEvents = [...veDebugEventsLog];
-  let partialMatch = false;
+  const actualEvents = veDebugEventsLog;
+  let actualEventIndex = 0;
+  let matchStarted = false;
   const matchedImpressions = /* @__PURE__ */ new Set();
   pendingEventExpectation.unmatchedEvents = [];
-  for (let i = 0; i < pendingEventExpectation.expectedEvents.length; ++i) {
-    const expectedEvent = pendingEventExpectation.expectedEvents[i];
-    while (true) {
-      if (actualEvents.length <= i) {
-        pendingEventExpectation.missingEvents = pendingEventExpectation.expectedEvents.slice(i);
-        for (const event of pendingEventExpectation.missingEvents) {
-          if ("impressions" in event) {
-            event.impressions = event.impressions.filter((impression) => !matchedImpressions.has(impression));
-          }
-        }
-        pendingEventExpectation.missingEvents = pendingEventExpectation.missingEvents.filter((event) => !("impressions" in event) || event.impressions.length > 0);
-        return;
-      }
-      if (!compareVeEvents(actualEvents[i], expectedEvent)) {
-        if (partialMatch) {
-          const unmatched = { ...actualEvents[i] };
-          if ("impressions" in unmatched && "impressions" in expectedEvent) {
-            unmatched.impressions = unmatched.impressions.filter((impression) => {
-              const matched = expectedEvent.impressions.includes(impression);
-              if (matched) {
-                matchedImpressions.add(impression);
-              }
-              return !matched;
-            });
-          }
-          pendingEventExpectation.unmatchedEvents.push(unmatched);
-        }
-        actualEvents.splice(i, 1);
-      } else {
-        partialMatch = true;
+  for (let expectedEventIndex = 0; expectedEventIndex < pendingEventExpectation.expectedEvents.length; ++expectedEventIndex) {
+    const expectedEvent = pendingEventExpectation.expectedEvents[expectedEventIndex];
+    let found = false;
+    while (actualEventIndex < actualEvents.length) {
+      if (compareVeEvents(actualEvents[actualEventIndex], expectedEvent)) {
+        found = true;
+        matchStarted = true;
+        actualEventIndex++;
         break;
       }
+      if (matchStarted) {
+        recordUnmatchedEvent(pendingEventExpectation, actualEvents[actualEventIndex], expectedEvent, matchedImpressions);
+      }
+      actualEventIndex++;
+    }
+    if (!found) {
+      processMissingEvents(pendingEventExpectation, expectedEventIndex, matchedImpressions);
+      return;
     }
   }
-  numMatchedEvents = veDebugEventsLog.length - actualEvents.length + pendingEventExpectation.expectedEvents.length;
+  numMatchedEvents = actualEventIndex;
   pendingEventExpectation.success();
 }
 function getUnmatchedVeEvents() {
@@ -5299,7 +5330,11 @@ var logResize = (loggable, size) => {
     return;
   }
   loggingState.size = size;
-  const resizeEvent = { veid: loggingState.veid, width: loggingState.size.width, height: loggingState.size.height };
+  const resizeEvent = {
+    veid: loggingState.veid,
+    width: Math.round(loggingState.size.width),
+    height: Math.round(loggingState.size.height)
+  };
   Host2.InspectorFrontendHost.InspectorFrontendHostInstance.recordResize(resizeEvent);
   processEventForDebugging("Resize", loggingState, { width: Math.round(size.width), height: Math.round(size.height) });
 };

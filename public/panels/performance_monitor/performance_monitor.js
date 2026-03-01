@@ -533,14 +533,7 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
   createChartInfos() {
     const themeSupport = ThemeSupport.ThemeSupport.instance();
     const elementForStyles = this.contentElement;
-    const defaults = {
-      color: void 0,
-      format: void 0,
-      currentMax: void 0,
-      max: void 0,
-      smooth: void 0,
-      stacked: void 0
-    };
+    const defaults = {};
     return [
       {
         ...defaults,
@@ -567,8 +560,7 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
         smooth: true,
         stacked: true,
         color: themeSupport.getComputedValue("--override-color-perf-monitor-cpu", elementForStyles),
-        max: 1,
-        currentMax: void 0
+        max: 1
       },
       {
         ...defaults,

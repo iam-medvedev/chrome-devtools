@@ -12,6 +12,7 @@ import * as ElementsComponents from './components/components.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
 import type { StylePropertyTreeElement } from './StylePropertyTreeElement.js';
+import type { StylesContainer } from './StylesContainer.js';
 import { WebCustomData } from './WebCustomData.js';
 /** Title of the registered properties section **/
 export declare const REGISTERED_PROPERTY_SECTION_NAME = "@property";
@@ -27,7 +28,7 @@ declare const StylesSidebarPane_base: (new (...args: any[]) => {
     hasEventListeners(eventType: keyof EventTypes): boolean;
     dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof ElementsSidebarPane;
-export declare class StylesSidebarPane extends StylesSidebarPane_base {
+export declare class StylesSidebarPane extends StylesSidebarPane_base implements StylesContainer {
     #private;
     private matchedStyles;
     private currentToolbarPane;
@@ -64,11 +65,6 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private onScroll;
     swatchPopoverHelper(): InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper;
     setUserOperation(userOperation: boolean): void;
-    static ignoreErrorsForProperty(property: SDK.CSSProperty.CSSProperty): boolean;
-    static formatLeadingProperties(section: StylePropertiesSection): {
-        allDeclarationText: string;
-        ruleText: string;
-    };
     revealProperty(cssProperty: SDK.CSSProperty.CSSProperty): void;
     jumpToProperty(propertyName: string, sectionName?: string, blockName?: string): boolean;
     jumpToDeclaration(valueSource: SDK.CSSMatchedStyles.CSSValueSource): void;
@@ -82,6 +78,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     resetFocus(): void;
     onAddButtonLongClick(event: Event): void;
     private onFilterChanged;
+    private onRegexToggled;
     setFilter(regex: RegExp | null): void;
     refreshUpdate(editedSection: StylePropertiesSection, editedTreeElement?: StylePropertyTreeElement): void;
     performUpdate(): Promise<void>;

@@ -322,6 +322,17 @@ describeWithMockConnection('ElementsTreeElement highlighting', () => {
             childNodeCount: 0,
         };
     }
+    function createProcessingInstructionPayload(target, nodeValue) {
+        return {
+            nodeId: ++nodeId,
+            backendNodeId: ++nodeId,
+            nodeType: Node.PROCESSING_INSTRUCTION_NODE,
+            nodeName: target,
+            localName: '',
+            nodeValue,
+            childNodeCount: 0,
+        };
+    }
     beforeEach(async () => {
         const target = createTarget();
         domModel = target.model(SDK.DOMModel.DOMModel);
@@ -457,6 +468,73 @@ describeWithMockConnection('ElementsTreeElement highlighting', () => {
         const highlights = waitForHighlights(textTestTreeElement);
         domModel.characterDataModified(textNode.id, '');
         assert.strictEqual(await highlights, 2);
+    });
+    it('highlights changing processing instruction node content', async () => {
+        const piPayload = createProcessingInstructionPayload('pi-target', 'pi-data');
+        const piNode = SDK.DOMModel.DOMNode.create(domModel, textTestNode.ownerDocument, false, piPayload);
+        textTestNode.setChildrenPayload([piPayload]);
+        piNode.parentNode = textTestNode;
+        const piTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(piNode);
+        textTestTreeElement.appendChild(piTreeElement);
+        const highlights = waitForHighlights(textTestTreeElement);
+        domModel.characterDataModified(piNode.id, 'Changed');
+        assert.strictEqual(await highlights, 1);
+    });
+    it('edits a processing instruction node', async () => {
+        const piPayload = createProcessingInstructionPayload('pi-target', 'pi-data');
+        const piNode = SDK.DOMModel.DOMNode.create(domModel, textTestNode.ownerDocument, false, piPayload);
+        textTestNode.setChildrenPayload([piPayload]);
+        piNode.parentNode = textTestNode;
+        const setNodeValueSpy = sinon.spy(piNode, 'setNodeValue');
+        sinon.stub(SDK.OverlayModel.OverlayModel, 'hideDOMNodeHighlight');
+        const piTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(piNode);
+        assert.exists(piTreeElement);
+        textTestTreeElement.appendChild(piTreeElement);
+        await textTestTreeElement.onpopulate();
+        treeOutline.selectDOMNode(piNode, true);
+        const piElementDOM = piTreeElement.listItemElement.querySelector('.webkit-html-processing-instruction-value');
+        assert.exists(piElementDOM);
+        // Start editing by calling ondblclick
+        const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
+        Object.defineProperty(event, 'target', { value: piElementDOM });
+        assert.isFalse(piTreeElement.ondblclick(event));
+        assert.isTrue(piTreeElement.isEditing());
+        assert.strictEqual(piElementDOM.textContent, 'pi-data');
+        // The inplace editor is now active on piElementDOM.
+        piElementDOM.textContent = 'New Data';
+        // The commit is triggered by blur or enter.
+        piElementDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+        assert.isFalse(piTreeElement.isEditing());
+        sinon.assert.calledOnce(setNodeValueSpy);
+        sinon.assert.calledWith(setNodeValueSpy, 'New Data');
+    });
+    it('edits a processing instruction node without data', async () => {
+        const piPayload = createProcessingInstructionPayload('pi-target', '');
+        const piNode = SDK.DOMModel.DOMNode.create(domModel, textTestNode.ownerDocument, false, piPayload);
+        textTestNode.setChildrenPayload([piPayload]);
+        piNode.parentNode = textTestNode;
+        const setNodeValueSpy = sinon.spy(piNode, 'setNodeValue');
+        sinon.stub(SDK.OverlayModel.OverlayModel, 'hideDOMNodeHighlight');
+        const piTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(piNode);
+        assert.exists(piTreeElement);
+        textTestTreeElement.appendChild(piTreeElement);
+        await textTestTreeElement.onpopulate();
+        treeOutline.selectDOMNode(piNode, true);
+        const piElementDOM = piTreeElement.listItemElement.querySelector('.webkit-html-processing-instruction-value');
+        assert.exists(piElementDOM);
+        // Start editing by calling ondblclick
+        const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
+        Object.defineProperty(event, 'target', { value: piElementDOM });
+        assert.isFalse(piTreeElement.ondblclick(event));
+        assert.isTrue(piTreeElement.isEditing());
+        assert.strictEqual(piElementDOM.textContent, '');
+        // The inplace editor is now active on piElementDOM.
+        piElementDOM.textContent = 'New Data';
+        // The commit is triggered by blur or enter.
+        piElementDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+        assert.isFalse(piTreeElement.isEditing());
+        sinon.assert.calledOnce(setNodeValueSpy);
+        sinon.assert.calledWith(setNodeValueSpy, 'New Data');
     });
     it('does not highlight when panel is hidden', async () => {
         treeOutline.setVisible(false);

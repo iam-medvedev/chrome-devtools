@@ -317,6 +317,7 @@ panels/ai_assistance/components/ChatView.test.js
 panels/ai_assistance/components/DisabledWidget.test.js
 panels/ai_assistance/components/ExploreWidget.test.js
 panels/ai_assistance/components/MarkdownRendererWithCodeBlock.test.js
+panels/ai_assistance/components/WalkthroughView.test.js
 panels/animation/AnimationTimeline.test.js
 panels/application/AppManifestView.test.js
 panels/application/ApplicationPanelSidebar.test.js
@@ -647,7 +648,6 @@ ui/components/linkifier/LinkifierImpl.test.js
 ui/components/list/List.test.js
 ui/components/markdown_view/CodeBlock.test.js
 ui/components/markdown_view/MarkdownImage.test.js
-ui/components/markdown_view/MarkdownLink.test.js
 ui/components/markdown_view/MarkdownView.test.js
 ui/components/menus/SelectMenu.test.js
 ui/components/node_text/NodeText.test.js

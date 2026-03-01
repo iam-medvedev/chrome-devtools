@@ -32,7 +32,7 @@ import * as Platform8 from "./../../core/platform/platform.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK24 from "./../../core/sdk/sdk.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
-import * as LegacyWrapper5 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import * as LegacyWrapper3 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import { createIcon as createIcon13 } from "./../../ui/kit/kit.js";
 import * as SourceFrame5 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
@@ -2094,9 +2094,7 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI3.Widget.VBox
     ];
     const dataGrid = new DataGrid.DataGrid.DataGridImpl({
       displayName: i18nString3(UIStrings3.backgroundServices),
-      columns,
-      refreshCallback: void 0,
-      deleteCallback: void 0
+      columns
     });
     dataGrid.setStriped(true);
     dataGrid.addEventListener("SelectedNode", (event) => this.showPreview(event.data));
@@ -2412,7 +2410,6 @@ var DeviceBoundSessionsModel = class extends Common3.ObjectWrapper.ObjectWrapper
     let sessionAndEvent = sessionIdToSessionMap.get(sessionId);
     if (!sessionAndEvent) {
       sessionAndEvent = {
-        session: void 0,
         isSessionTerminated: false,
         hasErrors: false,
         eventsById: /* @__PURE__ */ new Map()
@@ -3364,7 +3361,7 @@ function renderOriginTrialTree(originTrial) {
         <devtools-adorner class="badge-secondary">
           ${i18nString6(UIStrings6.tokens, { PH1: originTrial.tokensWithStatus.length })}
         </devtools-adorner>` : nothing2}
-      <ul role="group" hidden>
+      <ul role="group">
         ${originTrial.tokensWithStatus.length > 1 ? originTrial.tokensWithStatus.map(renderTokenNode) : renderTokenDetailsNodes(originTrial.tokensWithStatus[0])}
       </ul>
     </li>`;
@@ -3377,7 +3374,7 @@ function renderTokenNode(token) {
       <devtools-adorner class="token-status-badge badge-${success ? "success" : "error"}">
         ${token.status}
       </devtools-adorner>
-      <ul role="group" hidden>
+      <ul role="group">
         ${renderTokenDetailsNodes(token)}
       </ul>
     </li>`;
@@ -3399,7 +3396,7 @@ function renderRawTokenTextNode(tokenText) {
   return html2`
     <li role="treeitem">
       ${i18nString6(UIStrings6.rawTokenText)}
-      <ul role="group" hidden>
+      <ul role="group">
         <li role="treeitem">
           <div style="overflow-wrap: break-word;">
             ${tokenText}
@@ -5170,23 +5167,15 @@ var IDBDataView = class extends UI7.View.SimpleView {
     const keyPath = this.isIndex && this.index ? this.index.keyPath : this.objectStore.keyPath;
     const columns = [];
     const columnDefaults = {
-      title: void 0,
-      titleDOMFragment: void 0,
-      sortable: false,
-      sort: void 0,
-      align: void 0,
-      width: void 0,
-      fixedWidth: void 0,
-      editable: void 0,
-      nonSelectable: void 0,
-      longText: void 0,
-      disclosure: void 0,
-      weight: void 0,
-      allowInSortByEvenWhenHidden: void 0,
-      dataType: void 0,
-      defaultWeight: void 0
+      sortable: false
     };
-    columns.push({ ...columnDefaults, id: "number", title: "#", sortable: false, width: "50px" });
+    columns.push({
+      ...columnDefaults,
+      id: "number",
+      title: "#",
+      sortable: false,
+      width: "50px"
+    });
     columns.push({
       ...columnDefaults,
       id: "key",
@@ -5202,7 +5191,12 @@ var IDBDataView = class extends UI7.View.SimpleView {
       });
     }
     const title = i18nString8(UIStrings8.valueString);
-    columns.push({ ...columnDefaults, id: "value", title, sortable: false });
+    columns.push({
+      ...columnDefaults,
+      id: "value",
+      title,
+      sortable: false
+    });
     const dataGrid = new DataGrid3.DataGrid.DataGridImpl({
       displayName: i18nString8(UIStrings8.indexedDb),
       columns,
@@ -6864,6 +6858,7 @@ var PreloadingAttemptView = class extends UI10.Widget.VBox {
   preloadingGrid = new PreloadingComponents.PreloadingGrid.PreloadingGrid();
   preloadingDetails = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
   ruleSetSelector;
+  clearButton;
   constructor(model) {
     super({
       jslog: `${VisualLogging6.pane("preloading-speculations")}`,
@@ -6883,6 +6878,16 @@ var PreloadingAttemptView = class extends UI10.Widget.VBox {
     const vbox = new UI10.Widget.VBox();
     const toolbar6 = vbox.contentElement.createChild("devtools-toolbar", "preloading-toolbar");
     toolbar6.setAttribute("jslog", `${VisualLogging6.toolbar()}`);
+    this.clearButton = new UI10.Toolbar.ToolbarButton("Clear speculative loads", "clear", void 0, "clear-speculative-loads");
+    this.clearButton.addEventListener("Click", () => {
+      const model2 = SDK14.TargetManager.TargetManager.instance().scopeTarget()?.model(SDK14.PreloadingModel.PreloadingModel);
+      if (!model2) {
+        return;
+      }
+      model2.reset();
+      this.ruleSetSelector.select(null);
+    });
+    toolbar6.appendToolbarItem(this.clearButton);
     this.ruleSetSelector = new PreloadingRuleSetSelector(() => this.render());
     toolbar6.appendToolbarItem(this.ruleSetSelector.item());
     this.preloadingGrid.onSelect = this.onPreloadingGridCellFocused.bind(this);
@@ -7568,7 +7573,6 @@ import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as SDK16 from "./../../core/sdk/sdk.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
-import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
@@ -8106,7 +8110,9 @@ var RequestView = class extends UI12.Widget.VBox {
     this.tabbedPane.element.setAttribute("jslog", `${VisualLogging8.section("network-item-preview")}`);
     this.tabbedPane.addEventListener(UI12.TabbedPane.Events.TabSelected, this.tabSelected, this);
     this.resourceViewTabSetting = Common10.Settings.Settings.instance().createSetting("cache-storage-view-tab", "preview");
-    this.tabbedPane.appendTab("headers", i18nString17(UIStrings17.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI12.Widget.VBox, new Network.RequestHeadersView.RequestHeadersView(request)));
+    const requestHeadersView = new Network.RequestHeadersView.RequestHeadersView();
+    requestHeadersView.request = request;
+    this.tabbedPane.appendTab("headers", i18nString17(UIStrings17.headers), requestHeadersView);
     this.tabbedPane.appendTab("preview", i18nString17(UIStrings17.preview), new Network.RequestPreviewView.RequestPreviewView(request));
     this.tabbedPane.show(this.element);
   }
@@ -10592,7 +10598,7 @@ __export(StorageBucketsTreeElement_exports, {
 });
 import * as i18n51 from "./../../core/i18n/i18n.js";
 import * as SDK22 from "./../../core/sdk/sdk.js";
-import * as LegacyWrapper3 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import { createIcon as createIcon11 } from "./../../ui/kit/kit.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
 import { StorageMetadataView as StorageMetadataView5 } from "./components/components.js";
@@ -10728,7 +10734,7 @@ var StorageBucketsTreeElement = class extends ExpandableApplicationPanelTreeElem
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
     if (!this.view) {
-      this.view = LegacyWrapper3.LegacyWrapper.legacyWrapper(UI20.Widget.Widget, new StorageMetadataView5.StorageMetadataView());
+      this.view = LegacyWrapper.LegacyWrapper.legacyWrapper(UI20.Widget.Widget, new StorageMetadataView5.StorageMetadataView());
       this.view.getComponent().enableStorageBucketControls(this.model);
       this.view.getComponent().setStorageBucket(this.storageBucketInfo);
     }
@@ -12573,7 +12579,7 @@ var IDBDatabaseTreeElement = class extends ApplicationPanelTreeElement {
       return false;
     }
     if (!this.view) {
-      this.view = LegacyWrapper5.LegacyWrapper.legacyWrapper(UI22.Widget.VBox, new IDBDatabaseView(this.model, this.database), "indexeddb-data");
+      this.view = LegacyWrapper3.LegacyWrapper.legacyWrapper(UI22.Widget.VBox, new IDBDatabaseView(this.model, this.database), "indexeddb-data");
     }
     this.showView(this.view);
     Host9.userMetrics.panelShown("indexed-db");
@@ -13734,6 +13740,7 @@ __export(DeviceBoundSessionsView_exports, {
 import "./../../ui/components/report_view/report_view.js";
 import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n61 from "./../../core/i18n/i18n.js";
+import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
 import { Directives as Directives4, html as html9, nothing as nothing6, render as render8 } from "./../../ui/lit/lit.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
@@ -13949,6 +13956,22 @@ var UIStrings31 = {
    *@description Label for the reason why a session was deleted.
    */
   deletionReason: "Deletion reason",
+  /**
+   *@description Label for the URL of a failed network request.
+   */
+  failedRequestUrl: "Failed request URL",
+  /**
+   *@description Label for the network error of a failed network request.
+   */
+  failedRequestNetError: "Net error",
+  /**
+   *@description Label for the HTTP response error code of a failed network request.
+   */
+  failedRequestResponseCode: "Response error code",
+  /**
+   *@description Label for the response body of a failed network request.
+   */
+  failedRequestResponseBody: "Response body",
   /**
    *@description Explanation for an event outcome. Key refers to a cryptographic key.
    */
@@ -14417,6 +14440,31 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
               </devtools-data-grid>
             </div>
           ` : html9`<div class="device-bound-session-no-events-wrapper">${i18nString31(UIStrings31.noEvents)}</div>`}`;
+  const failedRequestDetailsGetter = (failedRequest) => {
+    if (!failedRequest) {
+      return nothing6;
+    }
+    return html9`${failedRequest.requestUrl && html9`
+        <devtools-report-key>${i18nString31(UIStrings31.failedRequestUrl)}</devtools-report-key>
+        <devtools-report-value>${failedRequest.requestUrl}</devtools-report-value>
+      `}
+      ${failedRequest.netError && html9`
+        <devtools-report-key>${i18nString31(UIStrings31.failedRequestNetError)}</devtools-report-key>
+        <devtools-report-value>${failedRequest.netError}</devtools-report-value>
+      `}
+      ${failedRequest.responseError !== void 0 ? html9`
+        <devtools-report-key>${i18nString31(UIStrings31.failedRequestResponseCode)}</devtools-report-key>
+        <devtools-report-value>${failedRequest.responseError}</devtools-report-value>
+      ` : nothing6}
+      ${failedRequest.responseErrorBody && html9`
+        <devtools-report-key>${i18nString31(UIStrings31.failedRequestResponseBody)}</devtools-report-key>
+        <devtools-report-value>
+          <devtools-widget .widgetConfig=${UI24.Widget.widgetConfig(SourceFrame6.JSONView.SearchableJsonView, {
+      jsonObject: tryParseJson(failedRequest.responseErrorBody)
+    })}></devtools-widget>
+        </devtools-report-value>
+      `}`;
+  };
   const creationEventDetails = selectedEvent?.creationEventDetails && html9`
           <devtools-report-key>${i18nString31(UIStrings31.fetchResult)}</devtools-report-key>
           <devtools-report-value>${fetchResultToString(selectedEvent.creationEventDetails.fetchResult)}</devtools-report-value>
@@ -14424,7 +14472,8 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
               <devtools-report-key>${i18nString31(UIStrings31.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString31(UIStrings31.yes)}</devtools-report-value>
             `}
-          `;
+          ${failedRequestDetailsGetter(selectedEvent.creationEventDetails.failedRequest)}
+      `;
   const refreshEventDetails = selectedEvent?.refreshEventDetails && html9`
           <devtools-report-key>${i18nString31(UIStrings31.refreshResult)}</devtools-report-key>
           <devtools-report-value>${refreshResultToString(selectedEvent.refreshEventDetails.refreshResult)}</devtools-report-value>
@@ -14438,7 +14487,8 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
               <devtools-report-key>${i18nString31(UIStrings31.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString31(UIStrings31.yes)}</devtools-report-value>
             `}
-          `;
+          ${failedRequestDetailsGetter(selectedEvent.refreshEventDetails.failedRequest)}
+      `;
   const challengeEventDetails = selectedEvent?.challengeEventDetails && html9`
           <devtools-report-key>${i18nString31(UIStrings31.challengeResult)}</devtools-report-key>
           <devtools-report-value>${challengeResultToString(selectedEvent.challengeEventDetails.challengeResult)}</devtools-report-value>
@@ -14775,6 +14825,18 @@ function boolToString(bool) {
 function succeededToString(succeeded) {
   return succeeded ? i18nString31(UIStrings31.success) : i18nString31(UIStrings31.error);
 }
+function tryParseJson(body) {
+  let parsedBody;
+  try {
+    parsedBody = JSON.parse(body);
+  } catch {
+    return { body };
+  }
+  if (typeof parsedBody === "object" && parsedBody !== null) {
+    return parsedBody;
+  }
+  return { body: parsedBody };
+}
 
 // gen/front_end/panels/application/DOMStorageItemsView.js
 var DOMStorageItemsView_exports = {};
@@ -14784,7 +14846,7 @@ __export(DOMStorageItemsView_exports, {
 import * as Common19 from "./../../core/common/common.js";
 import * as i18n63 from "./../../core/i18n/i18n.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
-import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame7 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI25 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging18 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings32 = {
@@ -14822,7 +14884,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
     const protocol = this.domStorage.isLocalStorage ? "localstorage" : "sessionstorage";
     const url = `${protocol}://${key}`;
     const provider = TextUtils2.StaticContentProvider.StaticContentProvider.fromString(url, Common19.ResourceType.resourceTypes.XHR, value);
-    return SourceFrame6.PreviewFactory.PreviewFactory.createPreview(provider, "text/plain");
+    return SourceFrame7.PreviewFactory.PreviewFactory.createPreview(provider, "text/plain");
   }
   setStorage(domStorage) {
     Common19.EventTarget.removeEventListeners(this.eventListeners);
@@ -14905,7 +14967,7 @@ import * as Common20 from "./../../core/common/common.js";
 import * as i18n65 from "./../../core/i18n/i18n.js";
 import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as JSON5 from "./../../third_party/json5/json5.js";
-import * as SourceFrame7 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI26 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging19 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings33 = {
@@ -14960,7 +15022,7 @@ var ExtensionStorageItemsView = class extends KeyValueStorageItemsView {
   createPreview(key, value) {
     const url = "extension-storage://" + this.#extensionStorage.extensionId + "/" + this.#extensionStorage.storageArea + "/preview/" + key;
     const provider = TextUtils3.StaticContentProvider.StaticContentProvider.fromString(url, Common20.ResourceType.resourceTypes.XHR, value);
-    return SourceFrame7.PreviewFactory.PreviewFactory.createPreview(provider, "text/plain");
+    return SourceFrame8.PreviewFactory.PreviewFactory.createPreview(provider, "text/plain");
   }
   setStorage(extensionStorage) {
     this.#extensionStorage = extensionStorage;
@@ -15020,7 +15082,7 @@ import "./../../ui/legacy/legacy.js";
 import * as Common21 from "./../../core/common/common.js";
 import * as Platform9 from "./../../core/platform/platform.js";
 import * as SDK26 from "./../../core/sdk/sdk.js";
-import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame9 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI27 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging20 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -15219,9 +15281,9 @@ var ResourcesPanel = class _ResourcesPanel extends UI27.Panel.PanelWithSidebar {
   }
   static shouldCloseOnReset(view) {
     const viewClassesToClose = [
-      SourceFrame8.ResourceSourceFrame.ResourceSourceFrame,
-      SourceFrame8.ImageView.ImageView,
-      SourceFrame8.FontView.FontView,
+      SourceFrame9.ResourceSourceFrame.ResourceSourceFrame,
+      SourceFrame9.ImageView.ImageView,
+      SourceFrame9.FontView.FontView,
       StorageItemsToolbar
     ];
     return viewClassesToClose.some((type) => view instanceof type);

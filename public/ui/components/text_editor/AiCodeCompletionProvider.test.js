@@ -10,6 +10,7 @@ import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.nex
 import { AiCodeCompletionProvider, Config, TextEditor } from './text_editor.js';
 function createEditorWithProvider(doc, config = {
     completionContext: {},
+    generationContext: {},
     onFeatureEnabled: () => { },
     onFeatureDisabled: () => { },
     onSuggestionAccepted: () => { },

@@ -862,8 +862,7 @@ var RuntimeSettings = [
         tooltip: i18nLazyString(UIStrings.applyDesktopEmulationDuring),
         value: "desktop"
       }
-    ],
-    learnMore: void 0
+    ]
   },
   {
     setting: Common.Settings.Settings.instance().createSetting(
@@ -931,9 +930,7 @@ var RuntimeSettings = [
     description: i18nLazyString(UIStrings.resetStorageLocalstorage),
     setFlags: (flags, value) => {
       flags.disableStorageReset = !value;
-    },
-    options: void 0,
-    learnMore: void 0
+    }
   },
   {
     setting: Common.Settings.Settings.instance().createSetting(
@@ -950,9 +947,7 @@ var RuntimeSettings = [
       } else {
         flags.additionalTraceCategories = "";
       }
-    },
-    options: void 0,
-    learnMore: void 0
+    }
   }
 ];
 var Events;

@@ -649,7 +649,6 @@ export class SecurityPanel extends UI.Panel.Panel {
                 securityState,
                 securityDetails: request.securityDetails(),
                 loadedFromCache: request.cached(),
-                originView: undefined,
             };
             this.origins.set(origin, newOriginState);
             this.sidebar.addOrigin(origin, securityState);

@@ -3928,7 +3928,6 @@ var StepView = class extends UI8.Widget.Widget {
     builtInConverters: [],
     extensionConverters: [],
     isSelected: false,
-    recorderSettings: void 0,
     actions: [],
     stepEdited: this.#stepEdited.bind(this),
     onBreakpointClick: this.#onBreakpointClick.bind(this),

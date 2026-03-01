@@ -1431,6 +1431,60 @@ export declare namespace Audits {
         disableReason?: string;
     }
     /**
+     * Metadata about the ad script that was on the stack that caused the current
+     * script in the `AdAncestry` to be considered ad related.
+     */
+    interface AdScriptIdentifier {
+        /**
+         * The script's v8 identifier.
+         */
+        scriptId: Runtime.ScriptId;
+        /**
+         * v8's debugging id for the v8::Context.
+         */
+        debuggerId: Runtime.UniqueDebuggerId;
+        /**
+         * The script's url (or generated name based on id if inline script).
+         */
+        name: string;
+    }
+    /**
+     * Providence about how an ad script was determined to be such. It is an ad
+     * because its url matched a filterlist rule, or because some other ad script
+     * was on the stack when this script was loaded.
+     */
+    interface AdAncestry {
+        /**
+         * The ad-script in the stack when the offending script was loaded. This is
+         * recursive down to the root script that was tagged due to the filterlist
+         * rule.
+         */
+        adAncestryChain: AdScriptIdentifier[];
+        /**
+         * The filterlist rule that caused the root (last) script in
+         * `adAncestry` to be ad-tagged.
+         */
+        rootScriptFilterlistRule?: string;
+    }
+    /**
+     * The issue warns about blocked calls to privacy sensitive APIs via the
+     * Selective Permissions Intervention.
+     */
+    interface SelectivePermissionsInterventionIssueDetails {
+        /**
+         * Which API was intervened on.
+         */
+        apiName: string;
+        /**
+         * Why the ad script using the API is considered an ad.
+         */
+        adAncestry: AdAncestry;
+        /**
+         * The stack trace at the time of the intervention.
+         */
+        stackTrace?: Runtime.StackTrace;
+    }
+    /**
      * A unique identifier for the type of issue. Each type may use one of the
      * optional fields in InspectorIssueDetails to convey more specific
      * information about the kind of issue.
@@ -1464,7 +1518,8 @@ export declare namespace Audits {
         ConnectionAllowlistIssue = "ConnectionAllowlistIssue",
         UserReidentificationIssue = "UserReidentificationIssue",
         PermissionElementIssue = "PermissionElementIssue",
-        PerformanceIssue = "PerformanceIssue"
+        PerformanceIssue = "PerformanceIssue",
+        SelectivePermissionsInterventionIssue = "SelectivePermissionsInterventionIssue"
     }
     /**
      * This struct holds a list of optional fields with additional information
@@ -1504,6 +1559,7 @@ export declare namespace Audits {
         userReidentificationIssueDetails?: UserReidentificationIssueDetails;
         permissionElementIssueDetails?: PermissionElementIssueDetails;
         performanceIssueDetails?: PerformanceIssueDetails;
+        selectivePermissionsInterventionIssueDetails?: SelectivePermissionsInterventionIssueDetails;
     }
     /**
      * A unique id for a DevTools inspector issue. Allows other entities (e.g.
@@ -4381,6 +4437,7 @@ export declare namespace DOM {
         isScrollable?: boolean;
         affectedByStartingStyles?: boolean;
         adoptedStyleSheets?: StyleSheetId[];
+        isAdRelated?: boolean;
     }
     /**
      * A structure to hold the top-level node of a detached tree and an array of its retained descendants.
@@ -5340,6 +5397,19 @@ export declare namespace DOM {
          * If the node is scrollable.
          */
         isScrollable: boolean;
+    }
+    /**
+     * Fired when a node's ad related state changes.
+     */
+    interface AdRelatedStateUpdatedEvent {
+        /**
+         * The id of the node.
+         */
+        nodeId: DOM.NodeId;
+        /**
+         * If the node is ad related.
+         */
+        isAdRelated: boolean;
     }
     /**
      * Fired when a node's starting styles changes.
@@ -6474,6 +6544,7 @@ export declare namespace Emulation {
      */
     const enum DisabledImageType {
         Avif = "avif",
+        Jxl = "jxl",
         Webp = "webp"
     }
     interface CanEmulateResponse extends ProtocolResponseWithError {
@@ -6510,6 +6581,10 @@ export declare namespace Emulation {
     }
     interface SetSafeAreaInsetsOverrideRequest {
         insets: SafeAreaInsets;
+    }
+    const enum SetDeviceMetricsOverrideRequestScrollbarType {
+        Overlay = "overlay",
+        Default = "default"
     }
     interface SetDeviceMetricsOverrideRequest {
         /**
@@ -6576,6 +6651,10 @@ export declare namespace Emulation {
          * @deprecated
          */
         devicePosture?: DevicePosture;
+        /**
+         * Scrollbar type. Default: `default`.
+         */
+        scrollbarType?: SetDeviceMetricsOverrideRequestScrollbarType;
     }
     interface SetDevicePostureOverrideRequest {
         posture: DevicePosture;
@@ -6883,6 +6962,9 @@ export declare namespace Emulation {
     interface RemoveScreenRequest {
         screenId: ScreenId;
     }
+    interface SetPrimaryScreenRequest {
+        screenId: ScreenId;
+    }
 }
 /**
  * EventBreakpoints permits setting JavaScript breakpoints on operations and events
@@ -6916,6 +6998,31 @@ export declare namespace Extensions {
         Sync = "sync",
         Managed = "managed"
     }
+    /**
+     * Detailed information about an extension.
+     */
+    interface ExtensionInfo {
+        /**
+         * Extension id.
+         */
+        id: string;
+        /**
+         * Extension name.
+         */
+        name: string;
+        /**
+         * Extension version.
+         */
+        version: string;
+        /**
+         * The path from which the extension was loaded.
+         */
+        path: string;
+        /**
+         * Extension enabled status.
+         */
+        enabled: boolean;
+    }
     interface TriggerActionRequest {
         /**
          * Extension id.
@@ -6941,6 +7048,9 @@ export declare namespace Extensions {
          * Extension id.
          */
         id: string;
+    }
+    interface GetExtensionsResponse extends ProtocolResponseWithError {
+        extensions: ExtensionInfo[];
     }
     interface UninstallRequest {
         /**
@@ -10752,6 +10862,29 @@ export declare namespace Network {
         SessionDeletedDuringRefresh = "SessionDeletedDuringRefresh"
     }
     /**
+     * Details about a failed device bound session network request.
+     */
+    interface DeviceBoundSessionFailedRequest {
+        /**
+         * The failed request URL.
+         */
+        requestUrl: string;
+        /**
+         * The net error of the response if it was not OK.
+         */
+        netError?: string;
+        /**
+         * The response code if the net error was OK and the response code was not
+         * 200.
+         */
+        responseError?: integer;
+        /**
+         * The body of the response if the net error was OK, the response code was
+         * not 200, and the response body was not empty.
+         */
+        responseErrorBody?: string;
+    }
+    /**
      * Session event details specific to creation.
      */
     interface CreationEventDetails {
@@ -10764,6 +10897,11 @@ export declare namespace Network {
          * all successful creation events.
          */
         newSession?: DeviceBoundSession;
+        /**
+         * Details about a failed device bound session network request if there was
+         * one.
+         */
+        failedRequest?: DeviceBoundSessionFailedRequest;
     }
     const enum RefreshEventDetailsRefreshResult {
         Refreshed = "Refreshed",
@@ -10795,6 +10933,11 @@ export declare namespace Network {
          * See comments on `net::device_bound_sessions::RefreshEventResult::was_fully_proactive_refresh`.
          */
         wasFullyProactiveRefresh: boolean;
+        /**
+         * Details about a failed device bound session network request if there was
+         * one.
+         */
+        failedRequest?: DeviceBoundSessionFailedRequest;
     }
     const enum TerminationEventDetailsDeletionReason {
         Expired = "Expired",

@@ -1053,8 +1053,7 @@ UI6.ContextMenu.registerProvider({
   async loadProvider() {
     const Network = await loadNetworkModule();
     return Network.NetworkPanel.NetworkPanel.instance();
-  },
-  experiment: void 0
+  }
 });
 Common4.Revealer.registerRevealer({
   contextTypes() {
@@ -1072,7 +1071,6 @@ Common4.Revealer.registerRevealer({
   contextTypes() {
     return [NetworkForward.UIRequestLocation.UIRequestLocation];
   },
-  destination: void 0,
   async loadRevealer() {
     const Network = await loadNetworkModule();
     return new Network.NetworkPanel.RequestLocationRevealer();
@@ -1327,7 +1325,7 @@ var UIStrings8 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  hideChromeFrameInLayersView: "Hide `chrome` frame in Layers view"
+  chromeFrameInLayersView: "Chrome frame in Layers view"
 };
 var str_8 = i18n15.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings8);
 var i18nLazyString8 = i18n15.i18n.getLazilyComputedLocalizedString.bind(void 0, str_8);
@@ -1561,10 +1559,10 @@ UI8.ActionRegistration.registerActionExtension({
 Common6.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
-  title: i18nLazyString8(UIStrings8.hideChromeFrameInLayersView),
-  settingName: "frame-viewer-hide-chrome-window",
+  title: i18nLazyString8(UIStrings8.chromeFrameInLayersView),
+  settingName: "frame-viewer-chrome-window",
   settingType: "boolean",
-  defaultValue: false
+  defaultValue: true
 });
 Common6.Settings.registerSettingExtension({
   category: "PERFORMANCE",

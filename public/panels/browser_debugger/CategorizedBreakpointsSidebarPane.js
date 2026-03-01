@@ -123,14 +123,22 @@ const str_ = i18n.i18n.registerUIStrings('panels/browser_debugger/CategorizedBre
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 const { html, render } = Lit;
+const { ifExpanded } = UI.TreeOutline;
 export const DEFAULT_VIEW = (input, output, target) => {
     const shouldExpandCategory = (breakpoints) => Boolean(input.filterText) || (input.highlightedItem && breakpoints.includes(input.highlightedItem)) ||
         breakpoints.some(breakpoint => breakpoint.enabled());
-    const filter = (breakpoint) => !input.filterText ||
-        Boolean(Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name).match(input.filterText)) ||
+    const filterRegex = input.filterText ? new RegExp(Platform.StringUtilities.escapeForRegExp(input.filterText), 'i') : null;
+    const filter = (breakpoint) => !filterRegex ||
+        Boolean(Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name).match(filterRegex)) ||
         breakpoint === input.highlightedItem;
     const filteredCategories = input.sortedCategoryNames.values()
-        .map(category => [category, input.categories.get(category)?.filter(filter)])
+        .map(category => {
+        const breakpoints = input.categories.get(category);
+        if (filterRegex && getLocalizedCategory(category).match(filterRegex)) {
+            return [category, breakpoints];
+        }
+        return [category, breakpoints?.filter(filter)];
+    })
         .filter((filteredCategory) => Boolean(filteredCategory[1]?.length))
         .toArray();
     const onCheckboxClicked = (event, target) => {
@@ -151,22 +159,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
         'source-code': true,
         'breakpoint-hit': input.highlightedItem === breakpoint,
     });
-    const onExpand = (category, { detail: { expanded } }) => {
-        const breakpoints = category && input.categories.get(category);
-        if (!breakpoints) {
-            return;
-        }
-        if (shouldExpandCategory(breakpoints)) {
-            // Basically ignore expand/collapse when the category is expanded by default.
-            return;
-        }
-        if (expanded) {
-            output.userExpandedCategories.add(category);
-        }
-        else {
-            output.userExpandedCategories.delete(category);
-        }
-    };
     const onKeyDown = (e) => {
         if (e.key === ' ') {
             input.onSpaceKeyDown();
@@ -187,12 +179,13 @@ export const DEFAULT_VIEW = (input, output, target) => {
       <ul role="tree">
         ${filteredCategories.map(([category, breakpoints]) => html `
           <li @select=${() => input.onItemSelected(category)}
-              @expand=${(e) => onExpand(category, e)}
+              @expand=${() => input.onExpandCollapse()}
               role="treeitem"
               jslog-context=${category}
               aria-checked=${breakpoints.some(breakpoint => breakpoint.enabled())
         ? breakpoints.some(breakpoint => !breakpoint.enabled()) ? 'mixed' : true
-        : false}>
+        : false}
+              ?open=${shouldExpandCategory(breakpoints)}>
             <style>${categorizedBreakpointsSidebarPaneStyles}</style>
             <devtools-checkbox
               class="small"
@@ -203,25 +196,23 @@ export const DEFAULT_VIEW = (input, output, target) => {
               ?checked=${!breakpoints.some(breakpoint => !breakpoint.enabled())}
               @change=${(e) => onCheckboxClicked(e, category)}
             >${getLocalizedCategory(category)}</devtools-checkbox>
-            <ul
-                role="group"
-                ?hidden=${!shouldExpandCategory(breakpoints) && !input.userExpandedCategories.has(category)}>
-              ${breakpoints.map(breakpoint => html `
-              <li @select=${() => input.onItemSelected(breakpoint)}
-                  role="treeitem"
-                  aria-checked=${breakpoint.enabled()}
-                  jslog-context=${Platform.StringUtilities.toKebabCase(breakpoint.name)}>
-                <div ?hidden=${breakpoint !== input.highlightedItem} class="breakpoint-hit-marker"></div>
-                <devtools-checkbox
-                  class=${classes(breakpoint)}
-                  tabIndex=-1
-                  title=${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}
-                  ?checked=${breakpoint.enabled()}
-                  aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit)
+            <ul role="group">
+              ${ifExpanded(html `${breakpoints.map(breakpoint => html `
+                <li @select=${() => input.onItemSelected(breakpoint)}
+                    role="treeitem"
+                    aria-checked=${breakpoint.enabled()}
+                    jslog-context=${Platform.StringUtilities.toKebabCase(breakpoint.name)}>
+                  <div ?hidden=${breakpoint !== input.highlightedItem} class="breakpoint-hit-marker"></div>
+                  <devtools-checkbox
+                    class=${classes(breakpoint)}
+                    tabIndex=-1
+                    title=${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}
+                    ?checked=${breakpoint.enabled()}
+                    aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit)
         : Lit.nothing}
-                  @change=${(e) => onCheckboxClicked(e, breakpoint)}
-                >${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}</devtools-checkbox>
-              </li>`)}
+                    @change=${(e) => onCheckboxClicked(e, breakpoint)}
+                  >${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}</devtools-checkbox>
+                </li>`)}`)}
             </ul>
           </li>`)}
       </ul>`}>
@@ -236,7 +227,6 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     #highlightedItem = null;
     #filterText = null;
     #view;
-    #userExpandedCategories = new Set();
     #selectedItem = null;
     constructor(breakpoints, jslog, viewId, view = DEFAULT_VIEW) {
         super({ useShadowDom: true, jslog });
@@ -312,12 +302,11 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
             sortedCategoryNames: this.#sortedCategories,
             categories: this.categories,
             highlightedItem: this.#highlightedItem,
-            userExpandedCategories: this.#userExpandedCategories,
+            onExpandCollapse: () => {
+                this.requestUpdate();
+            },
         };
-        const output = {
-            userExpandedCategories: this.#userExpandedCategories,
-        };
-        this.#view(input, output, this.contentElement);
+        this.#view(input, undefined, this.contentElement);
     }
 }
 const LOCALIZED_CATEGORIES = {

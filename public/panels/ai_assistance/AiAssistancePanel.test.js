@@ -38,6 +38,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             'devToolsAiAssistanceNetworkAgent',
             'devToolsAiAssistanceFileAgent',
             'devToolsAiAssistancePerformanceAgent',
+            'devToolsAiAssistanceV2',
         ]
             .reduce((acc, flag) => {
             return {
@@ -382,7 +383,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.strictEqual(nextInput.props.selectedContext?.getItem(), node2);
         });
-        it('should update the context when the conversation is not empty if the feature is enabled', async () => {
+        it('should not update the context when the conversation is not empty if the feature is enabled', async () => {
             updateHostConfig({
                 devToolsAiAssistanceContextSelectionAgent: {
                     enabled: true,
@@ -396,7 +397,9 @@ describeWithMockConnection('AI Assistance Panel', () => {
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, initialNode);
             viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
             const { panel, view } = await createAiAssistancePanel({
-                aidaClient: mockAidaClient([[{ explanation: 'test response' }]]),
+                aidaClient: mockAidaClient([
+                    [{ explanation: 'test response' }, { explanation: 'test response' }],
+                ]),
             });
             void panel.handleAction('freestyler.elements-floating-button');
             let nextInput = await view.nextInput;
@@ -409,9 +412,10 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'network');
             UI.ViewManager.ViewManager.instance().dispatchEventToListeners("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, { location: 'panel', revealedViewId: 'network', hiddenViewId: undefined });
+            nextInput.props.onTextSubmit('test');
             nextInput = await view.nextInput;
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            assert.strictEqual(nextInput.props.selectedContext?.getItem(), networkRequest, 'selectedContext should be updated to network request');
+            assert.strictEqual(nextInput.props.selectedContext?.getItem(), initialNode, 'selectedContext should be initial node');
         });
     });
     describe('toggle search element action', () => {
@@ -1870,6 +1874,116 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const part1 = modelMessage.parts[0];
             assert.strictEqual(part1.type, 'answer');
             assert.strictEqual(part1.text, 'Part 1 updated');
+        });
+    });
+    describe('Walkthrough', () => {
+        beforeEach(async () => {
+            await enableAllFeatureAndSetting();
+        });
+        it('should open walkthrough when onOpenWalkthrough is called', async () => {
+            const { panel, view } = await createAiAssistancePanel({
+                aidaClient: mockAidaClient([[{
+                            explanation: 'test',
+                            metadata: {
+                                rpcGlobalId: 123,
+                            },
+                        }]]),
+            });
+            void panel.handleAction('freestyler.elements-floating-button');
+            let nextInput = await view.nextInput;
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            nextInput.props.onTextSubmit('test');
+            nextInput = await view.nextInput; // User message
+            // Drain updates until loading is done
+            while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
+                nextInput = await view.nextInput;
+            }
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assert.isFalse(nextInput.walkthrough.isExpanded);
+            nextInput.walkthrough.onToggle(true);
+            nextInput = await view.nextInput;
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assert.isTrue(nextInput.walkthrough.isExpanded);
+        });
+        it('should open walkthrough for the specific message when onOpenWalkthrough is called with a message', async () => {
+            const runStub = sinon.stub(AiAssistanceModel.StylingAgent.StylingAgent.prototype, 'run');
+            runStub.callsFake(async function* (initialQuery) {
+                yield {
+                    type: "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */,
+                    query: initialQuery,
+                };
+                if (initialQuery === 'test 1') {
+                    yield {
+                        type: "thought" /* AiAssistanceModel.AiAgent.ResponseType.THOUGHT */,
+                        thought: 'step 1',
+                        rpcId: 1,
+                    };
+                    yield {
+                        type: "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */,
+                        text: 'answer 1',
+                        rpcId: 1,
+                        complete: true,
+                    };
+                }
+                else if (initialQuery === 'test 2') {
+                    yield {
+                        type: "thought" /* AiAssistanceModel.AiAgent.ResponseType.THOUGHT */,
+                        thought: 'step 2',
+                        rpcId: 2,
+                    };
+                    yield {
+                        type: "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */,
+                        text: 'answer 2',
+                        rpcId: 2,
+                        complete: true,
+                    };
+                }
+            });
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('freestyler.elements-floating-button');
+            // 1. Send first message
+            let nextInput = await view.nextInput;
+            if (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
+                nextInput.props.onTextSubmit('test 1');
+            }
+            nextInput = await view.nextInput; // User message
+            while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
+                nextInput = await view.nextInput;
+            }
+            // 2. Send second message
+            if (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
+                nextInput.props.onTextSubmit('test 2');
+            }
+            nextInput = await view.nextInput; // User message
+            while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
+                nextInput = await view.nextInput;
+            }
+            // 3. Get messages
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            const modelMessages = nextInput.props.messages.filter(m => m.entity === "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */ && m.parts.length > 0);
+            assert.lengthOf(modelMessages, 2);
+            const [msg1, msg2] = modelMessages;
+            // 4. Open walkthrough for first message
+            nextInput.props.walkthrough.onOpen(msg1);
+            nextInput = await view.nextInput;
+            if (nextInput.state !== "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
+                assert.fail('Expected CHAT_VIEW');
+            }
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assert.isTrue(nextInput.walkthrough.isExpanded);
+            // Verify steps match msg1
+            const msg1Steps = nextInput.props.walkthrough.activeMessage?.parts.filter(p => p.type === 'step').map(p => p.step) ?? [];
+            assert.strictEqual(msg1Steps.at(0)?.thought, 'step 1');
+            // 5. Open walkthrough for second message
+            nextInput.props.walkthrough.onOpen(msg2);
+            nextInput = await view.nextInput;
+            if (nextInput.state !== "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
+                assert.fail('Expected CHAT_VIEW');
+            }
+            assert.isTrue(nextInput.walkthrough.isExpanded);
+            // Verify steps match msg2
+            const msg2Steps = nextInput.props.walkthrough.activeMessage?.parts.filter(p => p.type === 'step').map(p => p.step) ?? [];
+            assert.strictEqual(msg2Steps.at(0)?.thought, 'step 2');
         });
     });
 });

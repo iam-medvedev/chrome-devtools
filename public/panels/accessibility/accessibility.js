@@ -1255,12 +1255,12 @@ var AXNodePropertyTreeElement = class _AXNodePropertyTreeElement extends UI2.Tre
   }
   appendRelatedNode(relatedNode, _index) {
     const deferredNode = new SDK.DOMModel.DeferredDOMNode(this.axNode.accessibilityModel().target(), relatedNode.backendDOMNodeId);
-    const nodeTreeElement = new AXRelatedNodeSourceTreeElement({ deferredNode, idref: void 0 }, relatedNode);
+    const nodeTreeElement = new AXRelatedNodeSourceTreeElement({ deferredNode }, relatedNode);
     this.appendChild(nodeTreeElement);
   }
   appendRelatedNodeInline(relatedNode) {
     const deferredNode = new SDK.DOMModel.DeferredDOMNode(this.axNode.accessibilityModel().target(), relatedNode.backendDOMNodeId);
-    const linkedNode = new AXRelatedNodeElement({ deferredNode, idref: void 0 });
+    const linkedNode = new AXRelatedNodeElement({ deferredNode });
     this.listItemElement.appendChild(linkedNode.render());
   }
   appendRelatedNodeListValueElement(value) {
@@ -1350,9 +1350,9 @@ var AXValueSourceTreeElement = class extends AXNodePropertyTreeElement {
       if (matchingNode) {
         this.appendRelatedNodeWithIdref(matchingNode, idref);
       } else if (idrefs.length === 1) {
-        this.listItemElement.appendChild(new AXRelatedNodeElement({ deferredNode: void 0, idref }).render());
+        this.listItemElement.appendChild(new AXRelatedNodeElement({ idref }).render());
       } else {
-        this.appendChild(new AXRelatedNodeSourceTreeElement({ deferredNode: void 0, idref }));
+        this.appendChild(new AXRelatedNodeSourceTreeElement({ idref }));
       }
     }
   }
@@ -1471,7 +1471,9 @@ var AXRelatedNodeElement = class {
         if (!node) {
           return;
         }
-        valueElement.appendChild(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, { tooltip: void 0, preventKeyboardFocus: true }));
+        valueElement.appendChild(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
+          preventKeyboardFocus: true
+        }));
       });
     } else if (this.idref) {
       element.classList.add("invalid");

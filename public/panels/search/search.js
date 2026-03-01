@@ -169,6 +169,7 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/search/SearchResultsPane.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var { ifExpanded } = UI.TreeOutline;
 var DEFAULT_VIEW = (input, _output, target) => {
   const { results, matches, expandedResults, onSelectMatch, onExpandSearchResult, onShowMoreMatches } = input;
   const onExpand = (searchResult, { detail: { expanded } }) => {
@@ -185,11 +186,12 @@ var DEFAULT_VIEW = (input, _output, target) => {
         ${results.map((searchResult) => html`
           <li @expand=${(e) => onExpand(searchResult, e)}
               role="treeitem"
-              class="search-result">
+              class="search-result"
+              ?open=${expandedResults.has(searchResult)}>
             <style>${searchResultsPane_css_default}</style>
             ${renderSearchResult(searchResult)}
-            <ul role="group" ?hidden=${!expandedResults.has(searchResult)}>
-              ${renderSearchMatches(searchResult, matches, onSelectMatch, onShowMoreMatches)}
+            <ul role="group">
+              ${ifExpanded(renderSearchMatches(searchResult, matches, onSelectMatch, onShowMoreMatches))}
             </ul>
           </li>`)}
       </ul>

@@ -173,8 +173,6 @@ UI.Toolbar.registerToolbarItem({
     condition: Root.Runtime.conditions.canDock,
     location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
     order: 1,
-    loadItem: undefined,
-    separator: undefined,
 });
 Common.AppProvider.registerAppProvider({
     async loadAppProvider() {

@@ -6550,12 +6550,28 @@ export const NativeFunctions = [
         signatures: [["milliseconds"]]
     },
     {
-        name: "AttributePart",
-        signatures: [["root", "element", "localName", "?init"]]
+        name: "beforeHTML",
+        signatures: [["html", "?options"]]
     },
     {
-        name: "ChildNodePart",
-        signatures: [["root", "previousSibling", "nextSibling", "?init"]]
+        name: "beforeHTMLUnsafe",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "afterHTML",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "afterHTMLUnsafe",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "replaceWithHTML",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "replaceWithHTMLUnsafe",
+        signatures: [["html", "?options"]]
     },
     {
         name: "Comment",
@@ -6606,6 +6622,30 @@ export const NativeFunctions = [
         signatures: [["?options"]]
     },
     {
+        name: "streamAppendHTML",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamHTML",
+        signatures: [["?options"]]
+    },
+    {
+        name: "appendHTML",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "appendHTMLUnsafe",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "prependHTML",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "prependHTMLUnsafe",
+        signatures: [["html", "?options"]]
+    },
+    {
         name: "scrollIntoViewIfNeeded",
         signatures: [["?centerIfNeeded"]]
     },
@@ -6620,10 +6660,6 @@ export const NativeFunctions = [
     {
         name: "Event",
         signatures: [["type", "?eventInitDict"]]
-    },
-    {
-        name: "getValueRange",
-        signatures: [["start", "end"]]
     },
     {
         name: "getBoxQuads",
@@ -6644,10 +6680,6 @@ export const NativeFunctions = [
     {
         name: "MutationObserver",
         signatures: [["callback"]]
-    },
-    {
-        name: "NodePart",
-        signatures: [["root", "node", "?init"]]
     },
     {
         name: "Observable",
@@ -6680,6 +6712,10 @@ export const NativeFunctions = [
     {
         name: "last",
         signatures: [["?options"]]
+    },
+    {
+        name: "createValueRange",
+        signatures: [["start", "end"]]
     },
     {
         name: "moveBefore",
@@ -6798,10 +6834,6 @@ export const NativeFunctions = [
     {
         name: "MouseEvent",
         signatures: [["type", "?eventInitDict"]]
-    },
-    {
-        name: "OverscrollEvent",
-        signatures: [["type", "bubbles", "?eventInitDict"]]
     },
     {
         name: "PageTransitionEvent",
@@ -6986,6 +7018,10 @@ export const NativeFunctions = [
     {
         name: "Highlight",
         signatures: [["...initRanges"]]
+    },
+    {
+        name: "CanvasPaintEvent",
+        signatures: [["type", "?eventInitDict"]]
     },
     {
         name: "getElementTransform",
@@ -8946,7 +8982,7 @@ export const NativeFunctions = [
     },
     {
         name: "framebufferTexturePixelLocalStorageWEBGL",
-        signatures: [["plane", "texture", "level", "layer"]]
+        signatures: [["plane", "texture", "level", "layer", "usage"]]
     },
     {
         name: "framebufferPixelLocalClearValuefvWEBGL",

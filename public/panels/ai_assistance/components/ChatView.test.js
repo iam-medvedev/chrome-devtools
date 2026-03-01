@@ -38,6 +38,13 @@ describeWithEnvironment('ChatView', () => {
             inputPlaceholder: i18n.i18n.lockedString('input placeholder'),
             disclaimerText: i18n.i18n.lockedString('disclaimer text'),
             markdownRenderer: new AiAssistancePanel.MarkdownRendererWithCodeBlock(),
+            walkthrough: {
+                onToggle: () => { },
+                onOpen: () => { },
+                isInlined: false,
+                isExpanded: false,
+                activeMessage: null,
+            },
             ...options,
         };
     }
@@ -68,8 +75,6 @@ describeWithEnvironment('ChatView', () => {
             });
             const chat = new AiAssistancePanel.ChatView(props);
             renderElementIntoDOM(chat);
-            const sideEffect = chat.shadowRoot.querySelector('.side-effect-confirmation');
-            assert.exists(sideEffect);
         });
     });
 });

@@ -55,7 +55,7 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  hideChromeFrameInLayersView: "Hide `chrome` frame in Layers view"
+  chromeFrameInLayersView: "Chrome frame in Layers view"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
@@ -289,10 +289,10 @@ UI.ActionRegistration.registerActionExtension({
 Common.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
-  title: i18nLazyString(UIStrings.hideChromeFrameInLayersView),
-  settingName: "frame-viewer-hide-chrome-window",
+  title: i18nLazyString(UIStrings.chromeFrameInLayersView),
+  settingName: "frame-viewer-chrome-window",
   settingType: "boolean",
-  defaultValue: false
+  defaultValue: true
 });
 Common.Settings.registerSettingExtension({
   category: "PERFORMANCE",

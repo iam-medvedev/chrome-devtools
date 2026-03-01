@@ -273,11 +273,15 @@ describeWithMockConnection('ElementsPanel', () => {
         let panel;
         let node;
         let cssModel;
+        let computedStylesShowingStub;
         beforeEach(() => {
+            computedStylesShowingStub = sinon.stub(ComputedStyleWidget.prototype, 'isShowing');
             computedStyleNodeSpy = sinon.spy(ComputedStyleModel.prototype, 'node', ['get', 'set']);
             computedStyleFetchStylesSpy = sinon.stub(ComputedStyleModel.prototype, 'fetchComputedStyle').resolves(null);
             computedStyleFetchCascadeSpy = sinon.stub(ComputedStyleModel.prototype, 'fetchMatchedCascade').resolves(null);
             Common.Debouncer.enableTestOverride();
+            const viewManager = UI.ViewManager.ViewManager.instance({ forceNew: true });
+            sinon.stub(viewManager, 'showView');
             panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
             cssModel = sinon.createStubInstance(SDK.CSSModel.CSSModel, {
                 target: sinon.createStubInstance(SDK.Target.Target, {
@@ -305,21 +309,22 @@ describeWithMockConnection('ElementsPanel', () => {
             await expectCalled(computedStyleFetchStylesSpy);
             await expectCalled(computedStyleFetchCascadeSpy);
         });
-        it('enables tracking when a ComputedStyleWidget is created', async () => {
+        it('enables tracking when the ComputedStyleWidget is shown', async () => {
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
-            const computedStylesWidget = sinon.createStubInstance(ComputedStyleWidget);
-            UI.Context.Context.instance().setFlavor(ComputedStyleWidget, computedStylesWidget);
+            computedStylesShowingStub.callsFake(() => true);
+            panel.selectAndShowSidebarTab("computed" /* Elements.ElementsPanel.SidebarPaneTabId.COMPUTED */);
             await expectCall(cssModel.trackComputedStyleUpdatesForNode);
             sinon.assert.calledOnceWithExactly(cssModel.trackComputedStyleUpdatesForNode, node.id);
         });
         it('stops tracking when the ComputedStyleWidget is removed', async () => {
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
-            const computedStylesWidget = sinon.createStubInstance(ComputedStyleWidget);
-            UI.Context.Context.instance().setFlavor(ComputedStyleWidget, computedStylesWidget);
+            computedStylesShowingStub.callsFake(() => true);
+            panel.selectAndShowSidebarTab("computed" /* Elements.ElementsPanel.SidebarPaneTabId.COMPUTED */);
             await expectCall(cssModel.trackComputedStyleUpdatesForNode);
             sinon.assert.calledOnceWithExactly(cssModel.trackComputedStyleUpdatesForNode, node.id);
             cssModel.trackComputedStyleUpdatesForNode.resetHistory();
-            UI.Context.Context.instance().setFlavor(ComputedStyleWidget, null);
+            computedStylesShowingStub.callsFake(() => false);
+            panel.selectAndShowSidebarTab("styles" /* Elements.ElementsPanel.SidebarPaneTabId.STYLES */);
             await expectCall(cssModel.trackComputedStyleUpdatesForNode);
             sinon.assert.calledOnceWithExactly(cssModel.trackComputedStyleUpdatesForNode, undefined);
         });

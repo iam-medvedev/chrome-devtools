@@ -19,7 +19,7 @@ function registerAppProvider(registration) {
   registeredAppProvider.push(registration);
 }
 function getRegisteredAppProviders() {
-  return registeredAppProvider.filter((provider) => Root.Runtime.Runtime.isDescriptorEnabled({ experiment: void 0, condition: provider.condition })).sort((firstProvider, secondProvider) => {
+  return registeredAppProvider.filter((provider) => Root.Runtime.Runtime.isDescriptorEnabled({ condition: provider.condition })).sort((firstProvider, secondProvider) => {
     const order1 = firstProvider.order || 0;
     const order2 = secondProvider.order || 0;
     return order1 - order2;
@@ -3152,7 +3152,7 @@ var Legacy = class _Legacy {
   }
   toProtocolRGBA() {
     const rgba = this.canonicalRGBA();
-    const result = { r: rgba[0], g: rgba[1], b: rgba[2], a: void 0 };
+    const result = { r: rgba[0], g: rgba[1], b: rgba[2] };
     if (rgba[3] !== 1) {
       result.a = rgba[3];
     }
@@ -3416,7 +3416,7 @@ var Generator = class {
   #alphaSpace;
   #colors = /* @__PURE__ */ new Map();
   constructor(hueSpace, satSpace, lightnessSpace, alphaSpace) {
-    this.#hueSpace = hueSpace || { min: 0, max: 360, count: void 0 };
+    this.#hueSpace = hueSpace || { min: 0, max: 360 };
     this.#satSpace = satSpace || 67;
     this.#lightnessSpace = lightnessSpace || 80;
     this.#alphaSpace = alphaSpace || 1;
@@ -3822,6 +3822,7 @@ __export(Gzip_exports, {
   compressStream: () => compressStream,
   createMonitoredStream: () => createMonitoredStream,
   decompress: () => decompress,
+  decompressDeflate: () => decompressDeflate,
   decompressStream: () => decompressStream,
   fileToString: () => fileToString,
   isGzip: () => isGzip
@@ -3849,10 +3850,19 @@ async function fileToString(file) {
   const str = new TextDecoder("utf-8").decode(arrayBuffer);
   return str;
 }
-async function decompress(gzippedBuffer) {
+async function decompress(gzippedBuffer, charset = "utf-8") {
   const buffer = await gzipCodec(gzippedBuffer, new DecompressionStream("gzip"));
-  const str = new TextDecoder("utf-8").decode(buffer);
+  const str = new TextDecoder(charset).decode(buffer);
   return str;
+}
+async function decompressDeflate(buffer, charset = "utf-8") {
+  let decompressedBuffer;
+  try {
+    decompressedBuffer = await gzipCodec(buffer, new DecompressionStream("deflate"));
+  } catch {
+    decompressedBuffer = await gzipCodec(buffer, new DecompressionStream("deflate-raw"));
+  }
+  return new TextDecoder(charset).decode(decompressedBuffer);
 }
 async function compress(str) {
   const encoded = new TextEncoder().encode(str);
@@ -4415,7 +4425,7 @@ __export(Progress_exports, {
 var Progress = class {
   totalWork = 0;
   worked = 0;
-  title = void 0;
+  title;
   canceled = false;
   done = false;
 };
@@ -5930,7 +5940,7 @@ var VersionController = class _VersionController {
   static GLOBAL_VERSION_SETTING_NAME = "inspectorVersion";
   static SYNCED_VERSION_SETTING_NAME = "syncedInspectorVersion";
   static LOCAL_VERSION_SETTING_NAME = "localInspectorVersion";
-  static CURRENT_VERSION = 40;
+  static CURRENT_VERSION = 41;
   #settings;
   #globalVersionSetting;
   #syncedVersionSetting;
@@ -6528,6 +6538,46 @@ var VersionController = class _VersionController {
       }
     } finally {
       this.#settings.globalStorage.remove(PREFERRED_NETWORK_COND_SETTING);
+    }
+  }
+  // This migration handles two setting renames that requires inverted logic
+  // (from "Hide X" to "X") and flipped the default values to true.
+  updateVersionFrom40To41() {
+    if (this.#settings.syncedStorage.has("hide-network-messages")) {
+      const oldNetworkSetting = this.#settings.createSetting(
+        "hide-network-messages",
+        false,
+        "Synced"
+        /* SettingStorageType.SYNCED */
+      );
+      if (!this.#settings.syncedStorage.has("network-messages")) {
+        const newNetworkSetting = this.#settings.createSetting(
+          "network-messages",
+          true,
+          "Synced"
+          /* SettingStorageType.SYNCED */
+        );
+        newNetworkSetting.set(!oldNetworkSetting.get());
+      }
+      this.#removeSetting(oldNetworkSetting);
+    }
+    if (this.#settings.syncedStorage.has("frame-viewer-hide-chrome-window")) {
+      const oldChromeFrameSetting = this.#settings.createSetting(
+        "frame-viewer-hide-chrome-window",
+        false,
+        "Synced"
+        /* SettingStorageType.SYNCED */
+      );
+      if (!this.#settings.syncedStorage.has("frame-viewer-chrome-window")) {
+        const newChromeFrameSetting = this.#settings.createSetting(
+          "frame-viewer-chrome-window",
+          true,
+          "Synced"
+          /* SettingStorageType.SYNCED */
+        );
+        newChromeFrameSetting.set(!oldChromeFrameSetting.get());
+      }
+      this.#removeSetting(oldChromeFrameSetting);
     }
   }
   /*

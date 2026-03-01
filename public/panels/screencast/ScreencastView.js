@@ -210,7 +210,7 @@ export class ScreencastView extends UI.Widget.VBox {
             this.screenZoom = this.imageElement.naturalWidth * this.imageZoom / metadata.deviceWidth;
             this.viewportElement.style.width = metadata.deviceWidth * this.screenZoom + bordersSize + 'px';
             this.viewportElement.style.height = metadata.deviceHeight * this.screenZoom + bordersSize + 'px';
-            const data = this.highlightNode ? { node: this.highlightNode, selectorList: undefined } : { clear: true };
+            const data = this.highlightNode ? { node: this.highlightNode } : { clear: true };
             void this.updateHighlightInOverlayAndRepaint(data, this.highlightConfig);
         };
         this.imageElement.src = 'data:image/jpg;base64,' + base64Data;
@@ -268,7 +268,7 @@ export class ScreencastView extends UI.Widget.VBox {
             return;
         }
         if (event.type === 'mousemove') {
-            void this.updateHighlightInOverlayAndRepaint({ node, selectorList: undefined }, this.inspectModeConfig);
+            void this.updateHighlightInOverlayAndRepaint({ node }, this.inspectModeConfig);
             this.domModel.overlayModel().nodeHighlightRequested({ nodeId: node.id });
         }
         else if (event.type === 'click') {

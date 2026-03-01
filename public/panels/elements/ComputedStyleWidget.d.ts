@@ -20,11 +20,12 @@ type ComputedStyleData = {
 interface ComputedStyleWidgetInput {
     computedStylesTree: TreeOutline.TreeOutline.TreeOutline<ComputedStyleData>;
     hasMatches: boolean;
-    computedStyleModel?: ComputedStyleModule.ComputedStyleModel.ComputedStyleModel;
     showInheritedComputedStylePropertiesSetting: Common.Settings.Setting<boolean>;
     groupComputedStylesSetting: Common.Settings.Setting<boolean>;
     onFilterChanged: (event: CustomEvent<string>) => void;
     filterText: string;
+    onRegexToggled: () => void;
+    includeToolbar: boolean;
 }
 type View = (input: ComputedStyleWidgetInput, output: null, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
@@ -37,8 +38,11 @@ export declare class ComputedStyleWidget extends UI.Widget.VBox {
     private readonly imagePreviewPopover;
     constructor();
     onResize(): void;
-    wasShown(): void;
-    willHide(): void;
+    get filterText(): string;
+    get filterIsRegex(): boolean;
+    set filterText(newFilter: RegExp | string);
+    get includeToolbar(): boolean;
+    set includeToolbar(inc: boolean);
     get nodeStyle(): ComputedStyleModule.ComputedStyleModel.ComputedStyle | null;
     set nodeStyle(nodeStyle: ComputedStyleModule.ComputedStyleModel.ComputedStyle | null);
     get matchedStyles(): SDK.CSSMatchedStyles.CSSMatchedStyles | null;
@@ -54,9 +58,9 @@ export declare class ComputedStyleWidget extends UI.Widget.VBox {
     private handleContextMenuEvent;
     private computePropertyTraces;
     private computeNonInheritedProperties;
+    private onRegexToggled;
     private onFilterChanged;
     filterComputedStyles(regex: RegExp | null): Promise<void>;
-    setFilterInput(text: string): void;
     private nodeFilter;
     private filterAlphabeticalList;
     private filterGroupLists;

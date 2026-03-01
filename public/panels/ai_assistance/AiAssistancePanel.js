@@ -28,10 +28,13 @@ import { DisabledWidget } from './components/DisabledWidget.js';
 import { ExploreWidget } from './components/ExploreWidget.js';
 import { MarkdownRendererWithCodeBlock } from './components/MarkdownRendererWithCodeBlock.js';
 import { PerformanceAgentMarkdownRenderer } from './components/PerformanceAgentMarkdownRenderer.js';
+import { WalkthroughView, } from './components/WalkthroughView.js';
 import { isAiAssistancePatchingEnabled } from './PatchWidget.js';
 const { html } = Lit;
 const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
 const AI_ASSISTANCE_HELP = 'https://developer.chrome.com/docs/devtools/ai-assistance';
+const WALKTHROUGH_SIDEBAR_BREAKPOINT = 700;
+const WALKTHROUGH_SIDEBAR_INITIAL_WIDTH = 400;
 const UIStrings = {
     /**
      * @description AI assistance UI text creating a new chat.
@@ -237,9 +240,9 @@ async function getEmptyStateSuggestions(conversation) {
         }
         case "none" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NONE */: {
             return [
-                { title: 'How can I use DevTools to debug?', jslogContext: 'empty' },
-                { title: 'What performance issues exist with my page?', jslogContext: 'empty' },
-                { title: 'What are the slowest requests on this page?', jslogContext: 'empty' },
+                { title: 'What can you help me with?', jslogContext: 'empty' },
+                { title: 'What performance issues exist on the page?', jslogContext: 'empty' },
+                { title: 'What are the slowest network requests on this page?', jslogContext: 'empty' },
             ];
         }
         default:
@@ -334,8 +337,7 @@ function defaultView(input, output, target) {
     function renderState() {
         switch (input.state) {
             case "chat-view" /* ViewState.CHAT_VIEW */: {
-                return html `
-        <devtools-ai-chat-view
+                return html `<devtools-ai-chat-view
           .props=${input.props}
           ${Lit.Directives.ref(el => {
                     if (!el || !(el instanceof ChatView)) {
@@ -357,10 +359,40 @@ function defaultView(input, output, target) {
         ></devtools-widget>`;
         }
     }
-    Lit.render(html `
+    const shouldShowWalkthrough = input.state === "chat-view" /* ViewState.CHAT_VIEW */ && input.walkthrough.isExpanded;
+    if (Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
+        Lit.render(html `
+      ${toolbarView(input)}
+      <div class="ai-assistance-view-container">
+        <devtools-split-view
+          name="ai-assistance-split-view-state"
+          direction="column"
+          sidebar-position="second"
+          sidebar-visibility=${shouldShowWalkthrough && !input.walkthrough.isInlined ? 'visible' : 'hidden'}
+          sidebar-initial-size=${WALKTHROUGH_SIDEBAR_INITIAL_WIDTH}
+        >
+          <div slot="main" class="main-view">
+            ${renderState()}
+          </div>
+          <div slot="sidebar" class="sidebar-view">
+            ${shouldShowWalkthrough ? html `
+              <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(WalkthroughView, {
+            message: input.props.walkthrough.activeMessage,
+            isLoading: input.props.isLoading,
+            markdownRenderer: input.props.markdownRenderer,
+            onToggle: input.props.walkthrough.onToggle,
+        })}></devtools-widget>` : Lit.nothing}
+          </div>
+        </devtools-split-view>
+      </div>
+    `, target);
+    }
+    else {
+        Lit.render(html `
       ${toolbarView(input)}
       <div class="ai-assistance-view-container">${renderState()}</div>
     `, target);
+    }
     // clang-format on
 }
 function createNodeContext(node) {
@@ -407,7 +439,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #selectedRequest = null;
     // Messages displayed in the `ChatView` component.
     #messages = [];
-    #isContextAutoSelectionSuspended = false;
     // Whether the UI should show loading or not.
     #isLoading = false;
     // Stores the availability status of the `AidaClient` and the reason for unavailability, if any.
@@ -416,6 +447,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #userInfo;
     #timelinePanelInstance = null;
     #runAbortController = new AbortController();
+    #walkthrough = {
+        isInlined: false,
+        isExpanded: false,
+        activeMessage: null,
+    };
     constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
         super(AiAssistancePanel.panelName);
         this.view = view;
@@ -433,6 +469,28 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         }
         AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted" /* AiAssistanceModel.AiHistoryStorage.Events.HISTORY_DELETED */, this.#onHistoryDeleted, this);
+    }
+    #getToolbarInput() {
+        return {
+            isLoading: this.#isLoading,
+            showChatActions: this.#shouldShowChatActions(),
+            showActiveConversationActions: Boolean(this.#conversation && !this.#conversation.isEmpty),
+            onNewChatClick: this.#handleNewChatRequest.bind(this),
+            populateHistoryMenu: this.#populateHistoryMenu.bind(this),
+            onDeleteClick: this.#onDeleteClicked.bind(this),
+            onExportConversationClick: this.#onExportConversationClick.bind(this),
+            onHelpClick: () => {
+                UIHelpers.openInNewTab(AI_ASSISTANCE_HELP);
+            },
+            onSettingsClick: () => {
+                void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
+            },
+            walkthrough: {
+                isExpanded: this.#walkthrough.isExpanded,
+                isInlined: this.#walkthrough.isInlined,
+                onToggle: this.#toggleWalkthrough.bind(this),
+            }
+        };
     }
     async #getPanelViewInput() {
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
@@ -489,12 +547,43 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     onCopyResponseClick: this.#onCopyResponseClick.bind(this),
                     onContextRemoved: isAiAssistanceContextSelectionAgentEnabled() ? this.#handleContextRemoved.bind(this) : null,
                     onContextAdd,
+                    walkthrough: {
+                        onToggle: this.#toggleWalkthrough.bind(this),
+                        onOpen: this.#openWalkthrough.bind(this),
+                        isExpanded: this.#walkthrough.isExpanded,
+                        isInlined: this.#walkthrough.isInlined,
+                        activeMessage: this.#walkthrough.activeMessage,
+                    },
                 }
             };
         }
         return {
             state: "explore-view" /* ViewState.EXPLORE_VIEW */,
         };
+    }
+    // Responsive logic for Walkthrough
+    onResize() {
+        super.onResize();
+        if (Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
+            this.#updateWalkthroughResponsiveness();
+        }
+    }
+    #updateWalkthroughResponsiveness() {
+        const isNarrow = this.contentElement.offsetWidth < WALKTHROUGH_SIDEBAR_BREAKPOINT;
+        if (isNarrow === this.#walkthrough.isInlined) {
+            return;
+        }
+        this.#walkthrough.isInlined = isNarrow;
+        this.requestUpdate();
+    }
+    #openWalkthrough(message) {
+        this.#walkthrough.activeMessage = message;
+        this.#walkthrough.isExpanded = true;
+        this.requestUpdate();
+    }
+    #toggleWalkthrough(isOpen) {
+        this.#walkthrough.isExpanded = isOpen;
+        this.requestUpdate();
     }
     #getAiAssistanceEnabledSetting() {
         try {
@@ -572,13 +661,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         // If there already is an agent and if it is not empty,
         // we don't automatically change the agent.
         if (this.#conversation && !this.#conversation.isEmpty) {
-            // If the context selection agent is enabled,
-            // we update the context of the current agent.
-            const context = this.#getConversationContext(this.#getDefaultConversationType());
-            if (context && isAiAssistanceContextSelectionAgentEnabled()) {
-                this.#conversation?.setContext(context);
-                this.requestUpdate();
-            }
             return;
         }
         const targetConversationType = this.#getDefaultConversationType();
@@ -606,11 +688,20 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 }
             }
             this.#conversation = conversation;
-            this.#isContextAutoSelectionSuspended = false;
         }
-        if (!this.#isContextAutoSelectionSuspended) {
-            this.#conversation?.setContext(this.#getConversationContext(isAiAssistanceContextSelectionAgentEnabled() ? this.#getDefaultConversationType() :
-                (this.#conversation?.type ?? null)));
+        if (this.#conversation) {
+            if (this.#conversation.isEmpty && isAiAssistanceContextSelectionAgentEnabled()) {
+                this.#conversation.setContext(this.#getConversationContext(this.#getDefaultConversationType()));
+            }
+            else {
+                const context = this.#getConversationContext(this.#conversation.type);
+                // Don't reset to the context selection agent if
+                // we remove context automatically.
+                // Require explicit user action.
+                if (context || !isAiAssistanceContextSelectionAgentEnabled()) {
+                    this.#conversation.setContext(context);
+                }
+            }
         }
         this.requestUpdate();
     }
@@ -725,28 +816,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         return this.#changeManager.formatChangesForPatching(this.#conversation.id, /* includeSourceLocation= */ true);
     }
-    #getToolbarInput() {
-        return {
-            isLoading: this.#isLoading,
-            showChatActions: this.#shouldShowChatActions(),
-            showActiveConversationActions: Boolean(this.#conversation && !this.#conversation.isEmpty),
-            onNewChatClick: this.#handleNewChatRequest.bind(this),
-            populateHistoryMenu: this.#populateHistoryMenu.bind(this),
-            onDeleteClick: this.#onDeleteClicked.bind(this),
-            onExportConversationClick: this.#onExportConversationClick.bind(this),
-            onHelpClick: () => {
-                UIHelpers.openInNewTab(AI_ASSISTANCE_HELP);
-            },
-            onSettingsClick: () => {
-                void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
-            },
-        };
-    }
     async performUpdate() {
-        this.view({
+        const viewInput = {
             ...this.#getToolbarInput(),
             ...await this.#getPanelViewInput(),
-        }, this.#viewOutput, this.contentElement);
+        };
+        this.view(viewInput, this.#viewOutput, this.contentElement);
     }
     #onCopyResponseClick(message) {
         const markdown = getResponseMarkdown(message);
@@ -900,11 +975,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #handleContextRemoved() {
         this.#conversation?.setContext(null);
-        this.#isContextAutoSelectionSuspended = true;
         this.requestUpdate();
     }
     #handleContextAdd() {
-        this.#isContextAutoSelectionSuspended = false;
         this.#conversation?.setContext(this.#getConversationContext(this.#getDefaultConversationType()));
         this.requestUpdate();
     }
@@ -922,7 +995,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#viewOutput.chatView?.focusTextInput();
             return;
         }
-        this.#isContextAutoSelectionSuspended = false;
         let targetConversationType;
         switch (actionId) {
             case 'freestyler.elements-floating-button': {
@@ -1081,7 +1153,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         else if (data instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
             this.#selectedPerformanceTrace = data;
         }
-        this.#isContextAutoSelectionSuspended = false;
         void VisualLogging.logFunctionCall(`context-change-${this.#conversation?.type}`);
         this.requestUpdate();
     };
@@ -1139,14 +1210,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         // Cancel any previous in-flight conversation.
         this.#cancel();
         const signal = this.#runAbortController.signal;
-        const context = this.#getConversationContext(this.#conversation.type);
-        this.#conversation.setContext(context);
         // If a different context is provided, it must be from the same origin.
-        if (this.#conversation.isBlockedByOrigin) {
-            // This error should not be reached. If it happens, some
-            // invariants do not hold anymore.
-            throw new Error('cross-origin context data should not be included');
-        }
         if (this.#conversation.isEmpty) {
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.STARTED_AI_CONVERSATION);
         }

@@ -165,6 +165,10 @@ export namespace ProtocolMapping {
      */
     'DOM.scrollableFlagUpdated': [Protocol.DOM.ScrollableFlagUpdatedEvent];
     /**
+     * Fired when a node's ad related state changes.
+     */
+    'DOM.adRelatedStateUpdated': [Protocol.DOM.AdRelatedStateUpdatedEvent];
+    /**
      * Fired when a node's starting styles changes.
      */
     'DOM.affectedByStartingStylesFlagUpdated': [Protocol.DOM.AffectedByStartingStylesFlagUpdatedEvent];
@@ -2779,6 +2783,16 @@ export namespace ProtocolMapping {
       returnType: void;
     };
     /**
+     * Set primary screen. Only supported in headless mode.
+     * Note that this changes the coordinate system origin to the top-left
+     * of the new primary screen, updating the bounds and work areas
+     * of all existing screens accordingly.
+     */
+    'Emulation.setPrimaryScreen': {
+      paramsType: [Protocol.Emulation.SetPrimaryScreenRequest];
+      returnType: void;
+    };
+    /**
      * Sets breakpoint on particular native event.
      */
     'EventBreakpoints.setInstrumentationBreakpoint': {
@@ -2818,6 +2832,15 @@ export namespace ProtocolMapping {
     'Extensions.loadUnpacked': {
       paramsType: [Protocol.Extensions.LoadUnpackedRequest];
       returnType: Protocol.Extensions.LoadUnpackedResponse;
+    };
+    /**
+     * Gets a list of all unpacked extensions.
+     * Available if the client is connected using the --remote-debugging-pipe flag
+     * and the --enable-unsafe-extension-debugging flag is set.
+     */
+    'Extensions.getExtensions': {
+      paramsType: [];
+      returnType: Protocol.Extensions.GetExtensionsResponse;
     };
     /**
      * Uninstalls an unpacked extension (others not supported) from the profile.

@@ -47,13 +47,11 @@ UI.ActionRegistration.maybeRemoveActionExtension("help.report-issue");
 Common.Settings.maybeRemoveSettingExtension("help.show-release-note");
 UI.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
-  actionId: "help.release-notes",
-  order: void 0
+  actionId: "help.release-notes"
 });
 UI.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
-  actionId: "help.report-issue",
-  order: void 0
+  actionId: "help.report-issue"
 });
 Common.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
 UI.ViewManager.registerViewExtension({
