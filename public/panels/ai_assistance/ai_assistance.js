@@ -6,22 +6,23 @@ var __export = (target, all) => {
 
 // gen/front_end/panels/ai_assistance/AiAssistancePanel.js
 import "./../../ui/kit/kit.js";
-import * as Common5 from "./../../core/common/common.js";
+import * as Common6 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
-import * as Platform4 from "./../../core/platform/platform.js";
+import * as Platform5 from "./../../core/platform/platform.js";
 import * as Root6 from "./../../core/root/root.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as AiAssistanceModel5 from "./../../models/ai_assistance/ai_assistance.js";
+import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as AiAssistanceModel6 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Annotations from "./../../models/annotations/annotations.js";
 import * as Badges from "./../../models/badges/badges.js";
+import * as Greendev from "./../../models/greendev/greendev.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Workspace5 from "./../../models/workspace/workspace.js";
 import * as Buttons7 from "./../../ui/components/buttons/buttons.js";
 import * as Snackbars2 from "./../../ui/components/snackbars/snackbars.js";
 import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
-import * as Lit5 from "./../../ui/lit/lit.js";
+import * as Lit6 from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 import * as NetworkForward from "./../network/forward/forward.js";
 import * as NetworkPanel from "./../network/network.js";
@@ -1423,21 +1424,16 @@ var chatInput_css_default = `/*
 
     & .title {
       vertical-align: middle;
+      /* Fixed italic text getting cut off */
+      padding-right: var(--sys-size-2);
       font: var(--sys-typescale-body5-regular);
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    & .remove-context {
+    & .remove-context,
+    & .add-context {
       vertical-align: middle;
-    }
-
-    &.has-picker-behavior {
-      overflow: visible;
-
-      .title {
-        overflow: visible;
-      }
     }
 
     &:focus-visible {
@@ -1450,6 +1446,28 @@ var chatInput_css_default = `/*
       vertical-align: middle;
       min-width: var(--sys-size-7);
       min-height: var(--sys-size-7);
+    }
+
+    &.disabled {
+      border-style: dashed;
+      border-color: var(--sys-color-neutral-outline);
+      color: var(--sys-color-on-surface-light);
+
+      devtools-icon,
+      devtools-file-source-icon {
+        /* Override devtools-file-source-icon */
+        --override-file-source-icon-color: var(
+          --sys-color-on-surface-light-graphics
+        );
+        /* Some icons set their style attribute and we need to override it */
+        /* stylelint-disable-next-line declaration-no-important */
+        color: var(--sys-color-on-surface-light-graphics) !important;
+      }
+
+      .title {
+        color: var(--sys-color-on-surface-light);
+        font-style: italic;
+      }
     }
 
     /*
@@ -1684,7 +1702,7 @@ function getContextRemoveLabel(context) {
 var DEFAULT_VIEW2 = (input, _output, target) => {
   const chatInputContainerCls = Lit.Directives.classMap({
     "chat-input-container": true,
-    "single-line-layout": !input.selectedContext && !input.onContextAdd,
+    "single-line-layout": !input.context,
     disabled: input.isTextInputDisabled
   });
   const renderRelevantDataDisclaimer = (tooltipId) => {
@@ -1787,7 +1805,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
             ></textarea>
             <div class="chat-input-actions">
               <div class="chat-input-actions-left">
-                ${input.selectedContext ? html3`
+                ${input.context ? html3`
                     <div class="select-element">
                       ${input.conversationType === "freestyler" ? html3`
                           <devtools-button
@@ -1807,21 +1825,22 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
                       <div
                         class=${Lit.Directives.classMap({
     "resource-link": true,
-    "has-picker-behavior": input.conversationType === "freestyler"
+    disabled: !input.isContextSelected
   })}
                       >
-                        ${input.selectedContext instanceof AiAssistanceModel2.StylingAgent.NodeContext ? html3`
+                        ${input.context instanceof AiAssistanceModel2.StylingAgent.NodeContext ? html3`
                               <devtools-widget
                                 class="title"
                                 .widgetConfig=${UI3.Widget.widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, {
-    node: input.selectedContext.getItem(),
+    node: input.context.getItem(),
     options: {
-      hiddenClassList: input.selectedContext.getItem().classNames().filter((className) => className.startsWith(AiAssistanceModel2.Injected.AI_ASSISTANCE_CSS_CLASS_NAME)),
+      disabled: !input.isContextSelected,
+      hiddenClassList: input.context.getItem().classNames().filter((className) => className.startsWith(AiAssistanceModel2.Injected.AI_ASSISTANCE_CSS_CLASS_NAME)),
       ariaDescription: i18nString(UIStrings.revealContextDescription)
     }
   })}
                               ></devtools-widget>` : html3`
-                          ${input.selectedContext instanceof AiAssistanceModel2.NetworkAgent.RequestContext ? PanelUtils.PanelUtils.getIconForNetworkRequest(input.selectedContext.getItem()) : input.selectedContext instanceof AiAssistanceModel2.FileAgent.FileContext ? PanelUtils.PanelUtils.getIconForSourceFile(input.selectedContext.getItem()) : input.selectedContext instanceof AiAssistanceModel2.PerformanceAgent.PerformanceTraceContext ? html3`<devtools-icon name="performance" title="Performance"></devtools-icon>` : Lit.nothing}
+                          ${input.context instanceof AiAssistanceModel2.NetworkAgent.RequestContext ? PanelUtils.PanelUtils.getIconForNetworkRequest(input.context.getItem()) : input.context instanceof AiAssistanceModel2.FileAgent.FileContext ? PanelUtils.PanelUtils.getIconForSourceFile(input.context.getItem()) : input.context instanceof AiAssistanceModel2.PerformanceAgent.PerformanceTraceContext ? html3`<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` : Lit.nothing}
                             <span 
                               role="button"
                               class="title"
@@ -1833,28 +1852,29 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     }
   }}
                               aria-description=${i18nString(UIStrings.revealContextDescription)}
-                            >${input.selectedContext.getTitle()}</span>`}
-                        ${input.onContextRemoved ? html3`
+                            >${input.context.getTitle()}</span>`}
+                        ${input.isContextSelected && input.onContextRemoved ? html3`
                                   <devtools-button
-                                    title=${getContextRemoveLabel(input.selectedContext)}
-                                    aria-label=${getContextRemoveLabel(input.selectedContext)}
+                                    title=${getContextRemoveLabel(input.context)}
+                                    aria-label=${getContextRemoveLabel(input.context)}
                                     class="remove-context"
                                     .iconName=${"cross"}
                                     .size=${"MICRO"}
                                     .jslogContext=${"context-removed"}
                                     .variant=${"icon"}
                                     @click=${input.onContextRemoved}></devtools-button>` : Lit.nothing}
+                      ${!input.isContextSelected && input.onContextAdd ? html3`
+                                    <devtools-button
+                                      title=${lockedString3(UIStringsNotTranslate3.addContext)}
+                                      aria-label=${lockedString3(UIStringsNotTranslate3.addContext)}
+                                      class="add-context"
+                                      .iconName=${"plus"}
+                                      .size=${"MICRO"}
+                                      .jslogContext=${"context-added"}
+                                      .variant=${"icon"}
+                                      @click=${input.onContextAdd}></devtools-button>` : Lit.nothing}
                       </div>
-                    </div>` : input.onContextAdd ? html3`
-                                  <devtools-button
-                                    title=${lockedString3(UIStringsNotTranslate3.addContext)}
-                                    aria-label=${lockedString3(UIStringsNotTranslate3.addContext)}
-                                    class="add-context"
-                                    .iconName=${"plus"}
-                                    .size=${"SMALL"}
-                                    .jslogContext=${"context-added"}
-                                    .variant=${"icon"}
-                                    @click=${input.onContextAdd}></devtools-button>` : Lit.nothing}
+                    </div>` : Lit.nothing}
               </div>
               <div class="chat-input-actions-right">
                 <div class="chat-input-disclaimer-container">
@@ -1945,7 +1965,8 @@ var ChatInput = class extends UI3.Widget.Widget {
   blockedByCrossOrigin = false;
   isTextInputDisabled = false;
   inputPlaceholder = "";
-  selectedContext = null;
+  context = null;
+  isContextSelected = false;
   inspectElementToggled = false;
   disclaimerText = "";
   conversationType = "freestyler";
@@ -2110,7 +2131,8 @@ var ChatInput = class extends UI3.Widget.Widget {
       isLoading: this.isLoading,
       blockedByCrossOrigin: this.blockedByCrossOrigin,
       isTextInputDisabled: this.isTextInputDisabled,
-      selectedContext: this.selectedContext,
+      context: this.context,
+      isContextSelected: this.isContextSelected,
       inspectElementToggled: this.inspectElementToggled,
       isTextInputEmpty: this.#isTextInputEmpty(),
       disclaimerText: this.disclaimerText,
@@ -2186,7 +2208,8 @@ var ChatMessage_exports = {};
 __export(ChatMessage_exports, {
   ChatMessage: () => ChatMessage,
   DEFAULT_VIEW: () => DEFAULT_VIEW4,
-  renderStep: () => renderStep
+  renderStep: () => renderStep,
+  titleForStep: () => titleForStep
 });
 import "./../../ui/components/markdown_view/markdown_view.js";
 import "./../../ui/kit/kit.js";
@@ -2194,7 +2217,9 @@ import * as Common3 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
+import * as ComputedStyle from "./../../models/computed_style/computed_style.js";
 import * as Marked from "./../../third_party/marked/marked.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as Input3 from "./../../ui/components/input/input.js";
@@ -2202,6 +2227,7 @@ import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as Elements from "./../elements/elements.js";
 
 // gen/front_end/panels/ai_assistance/components/chatMessage.css.js
 var chatMessage_css_default = `/*
@@ -2539,6 +2565,7 @@ var chatMessage_css_default = `/*
     }
   }
 
+
   .error-step {
     color: var(--sys-color-error);
   }
@@ -2560,6 +2587,35 @@ var chatMessage_css_default = `/*
     gap: var(--sys-size-4);
     align-items: center;
   }
+
+
+  .computed-styles-widget {
+    display: block;
+    width: fit-content;
+  }
+
+  .step-widgets-wrapper {
+    width: fit-content;
+  }
+
+  .widget-reveal-container {
+    width: 100%;
+    background: var(--sys-color-surface5);
+    border-bottom-right-radius: var(--sys-shape-corner-medium);
+    border-bottom-left-radius: var(--sys-shape-corner-medium);
+    padding: 0 var(--sys-size-4) var(--sys-size-4) 0;
+  }
+
+  .widget-content-container {
+    padding: var(--sys-size-4);
+    border-top-left-radius: var(--sys-shape-corner-medium);
+    border-top-right-radius: var(--sys-shape-corner-medium);
+    width: 100%;
+    overflow-x: auto;
+    background-color: var(--sys-color-surface3);
+
+    --override-computed-style-property-white-space: normal;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("././components/chatMessage.css")} */`;
@@ -2568,7 +2624,8 @@ var chatMessage_css_default = `/*
 var WalkthroughView_exports = {};
 __export(WalkthroughView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW3,
-  WalkthroughView: () => WalkthroughView
+  WalkthroughView: () => WalkthroughView,
+  walkthroughTitle: () => walkthroughTitle
 });
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
@@ -2657,26 +2714,31 @@ var walkthroughView_css_default = `/*
     border-radius: var(--sys-size-5);
     overflow: hidden;
     background-color: var(--sys-color-surface1);
+    width: fit-content;
+
+    &[open] {
+      width: auto;
+    }
   }
 
-  .walkthrough-inline summary {
+  .walkthrough-inline > summary {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: var(--sys-size-5) var(--sys-size-6);
+    padding: var(--sys-size-4) var(--sys-size-6);
     cursor: pointer;
     background-color: transparent;
-    font-weight: 500;
-    font-size: 11px;
+    font: var(--sys-typescale-body4-regular);
     user-select: none;
     list-style: none; /* Hide default triangle */
+    justify-content: flex-start;
+    gap: var(--sys-size-4);
   }
 
-  .walkthrough-inline summary::-webkit-details-marker {
+  .walkthrough-inline > summary::-webkit-details-marker {
     display: none;
   }
 
-  .walkthrough-inline summary:hover {
+  .walkthrough-inline > summary:hover {
     background-color: var(--sys-color-state-hover-on-subtle);
   }
 
@@ -2702,6 +2764,7 @@ var walkthroughView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("././components/walkthroughView.css")} */`;
 
 // gen/front_end/panels/ai_assistance/components/WalkthroughView.js
+var lockedString4 = i18n7.i18n.lockedString;
 var { html: html4, render: render4 } = Lit2;
 var UIStrings2 = {
   /**
@@ -2713,14 +2776,19 @@ var UIStrings2 = {
    */
   title: "Investigation steps",
   /**
-   * @description Title for the inline walkthrough view.
+   * @description Title for the button that shows the thinking process (walkthrough).
    */
-  inlineTitle: "Show thinking"
+  showThinking: "Show thinking"
 };
 var str_2 = i18n7.i18n.registerUIStrings("panels/ai_assistance/components/WalkthroughView.ts", UIStrings2);
 var i18nString2 = i18n7.i18n.getLocalizedString.bind(void 0, str_2);
-function renderInlineWalkthrough(input, stepsOutput) {
-  if (!input.isInlined) {
+function walkthroughTitle(input) {
+  const title = input.isLoading ? titleForStep(input.lastStep) : lockedString4(UIStrings2.showThinking);
+  return title;
+}
+function renderInlineWalkthrough(input, stepsOutput, steps) {
+  const lastStep = steps.at(-1);
+  if (!input.isInlined || !lastStep) {
     return Lit2.nothing;
   }
   function onToggle(event) {
@@ -2729,7 +2797,8 @@ function renderInlineWalkthrough(input, stepsOutput) {
   return html4`
     <details class="walkthrough-inline" ?open=${input.isExpanded} @toggle=${onToggle}>
       <summary>
-        ${i18nString2(UIStrings2.inlineTitle)}
+        ${input.isLoading ? html4`<devtools-spinner></devtools-spinner>` : Lit2.nothing}
+        ${walkthroughTitle({ isLoading: input.isLoading, lastStep })}
         <devtools-icon name="chevron-down"></devtools-icon>
       </summary>
       ${stepsOutput}
@@ -2785,7 +2854,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
       ${chatMessage_css_default}
       ${walkthroughView_css_default}
     </style>
-    ${input.isInlined ? renderInlineWalkthrough(input, stepsOutput) : renderSidebarWalkthrough(input, stepsOutput, steps.length)}`, target);
+    ${input.isInlined ? renderInlineWalkthrough(input, stepsOutput, steps) : renderSidebarWalkthrough(input, stepsOutput, steps.length)}`, target);
 };
 var WalkthroughView = class extends UI4.Widget.Widget {
   #view;
@@ -2852,7 +2921,7 @@ var WalkthroughView = class extends UI4.Widget.Widget {
 
 // gen/front_end/panels/ai_assistance/components/ChatMessage.js
 var { html: html5, Directives: { ref: ref2, ifDefined } } = Lit3;
-var lockedString4 = i18n9.i18n.lockedString;
+var lockedString5 = i18n9.i18n.lockedString;
 var REPORT_URL = "https://crbug.com/364805393";
 var SCROLL_ROUNDING_OFFSET = 1;
 var UIStringsNotTranslate4 = {
@@ -2917,17 +2986,13 @@ var UIStringsNotTranslate4 = {
    */
   stoppedResponse: "You stopped this response",
   /**
-   * @description Prompt for user to confirm code execution that may affect the page.
-   */
-  sideEffectConfirmationDescription: "This code may modify page content. Continue?",
-  /**
    * @description Button text that confirm code execution that may affect the page.
    */
-  positiveSideEffectConfirmation: "Continue",
+  confirmActionRequestApproval: "Continue",
   /**
    * @description Button text that cancels code execution that may affect the page.
    */
-  negativeSideEffectConfirmation: "Cancel",
+  declineActionRequestApproval: "Cancel",
   /**
    * @description The generic name of the AI agent (do not translate)
    */
@@ -2987,13 +3052,17 @@ var UIStringsNotTranslate4 = {
   /**
    * @description Title for the button that shows the thinking process (walkthrough).
    */
-  showThinking: "Show thinking"
+  showThinking: "Show thinking",
+  /**
+   * @description Title for the button that takes the user into other DevTools panels to reveal items the AI references.
+   */
+  reveal: "Reveal"
 };
 var DEFAULT_VIEW4 = (input, output, target) => {
   const message = input.message;
   if (message.entity === "user") {
     const givenName = AiAssistanceModel3.AiUtils.isGeminiBranding() ? input.userInfo.accountGivenName : "";
-    const name = givenName || input.userInfo.accountFullName || lockedString4(UIStringsNotTranslate4.you);
+    const name = givenName || input.userInfo.accountFullName || lockedString5(UIStringsNotTranslate4.you);
     const image = input.userInfo.accountImage ? html5`<img src="data:image/png;base64, ${input.userInfo.accountImage}" alt=${UIStringsNotTranslate4.accountAvatar} />` : html5`<devtools-icon
           name="profile"
         ></devtools-icon>`;
@@ -3030,7 +3099,7 @@ var DEFAULT_VIEW4 = (input, output, target) => {
       <div class="message-info">
         <devtools-icon name=${icon}></devtools-icon>
         <div class="message-name">
-          <h2>${AiAssistanceModel3.AiUtils.isGeminiBranding() ? lockedString4(UIStringsNotTranslate4.gemini) : lockedString4(UIStringsNotTranslate4.ai)}</h2>
+          <h2>${AiAssistanceModel3.AiUtils.isGeminiBranding() ? lockedString5(UIStringsNotTranslate4.gemini) : lockedString5(UIStringsNotTranslate4.ai)}</h2>
         </div>
       </div>
       ${aiAssistanceV2 ? renderWalkthroughUI(input, steps) : Lit3.nothing}
@@ -3070,17 +3139,17 @@ function renderTextAsMarkdown(text, markdownRenderer, { animate, ref: refFn } = 
   </devtools-markdown-view>`;
 }
 function titleForStep(step) {
-  return step.title ?? `${lockedString4(UIStringsNotTranslate4.investigating)}\u2026`;
+  return step.title ?? `${lockedString5(UIStringsNotTranslate4.investigating)}\u2026`;
 }
 function renderTitle(step) {
-  const paused = step.sideEffect ? html5`<span class="paused">${lockedString4(UIStringsNotTranslate4.paused)}: </span>` : Lit3.nothing;
+  const paused = step.requestApproval ? html5`<span class="paused">${lockedString5(UIStringsNotTranslate4.paused)}: </span>` : Lit3.nothing;
   return html5`<span class="title">${paused}${titleForStep(step)}</span>`;
 }
 function renderStepCode(step) {
   if (!step.code && !step.output) {
     return Lit3.nothing;
   }
-  const codeHeadingText = step.output && !step.canceled ? lockedString4(UIStringsNotTranslate4.codeExecuted) : lockedString4(UIStringsNotTranslate4.codeToExecute);
+  const codeHeadingText = step.output && !step.canceled ? lockedString5(UIStringsNotTranslate4.codeExecuted) : lockedString5(UIStringsNotTranslate4.codeToExecute);
   const code = step.code ? html5`<div class="action-result">
       <devtools-code-block
         .code=${step.code.trim()}
@@ -3095,14 +3164,14 @@ function renderStepCode(step) {
       .code=${step.output}
       .codeLang=${"js"}
       .displayNotice=${true}
-      .header=${lockedString4(UIStringsNotTranslate4.dataReturned)}
+      .header=${lockedString5(UIStringsNotTranslate4.dataReturned)}
       .showCopyButton=${false}
     ></devtools-code-block>
   </div>` : Lit3.nothing;
   return html5`<div class="step-code">${code}${output}</div>`;
 }
 function renderStepDetails({ step, markdownRenderer, isLast }) {
-  const sideEffects = isLast && step.sideEffect ? renderSideEffectConfirmationUi(step) : Lit3.nothing;
+  const sideEffects = isLast && step.requestApproval ? renderSideEffectConfirmationUi(step) : Lit3.nothing;
   const thought = step.thought ? html5`<p>${renderTextAsMarkdown(step.thought, markdownRenderer)}</p>` : Lit3.nothing;
   const contextDetails = step.contextDetails ? html5`${Lit3.Directives.repeat(step.contextDetails, (contextDetail) => {
     return html5`<div class="context-details">
@@ -3127,14 +3196,17 @@ function renderWalkthroughSidebarButton(input, lastStep) {
   if (walkthrough.isInlined) {
     return Lit3.nothing;
   }
-  const title = input.isLoading ? titleForStep(lastStep) : lockedString4(UIStringsNotTranslate4.showThinking);
+  const title = walkthroughTitle({
+    isLoading: input.isLoading,
+    lastStep
+  });
   return html5`
     <div class="walkthrough-toggle-container">
       ${input.isLoading ? html5`<devtools-spinner></devtools-spinner>` : Lit3.nothing}
       <devtools-button
         .variant=${"outlined"}
         .size=${"SMALL"}
-        .title=${lastStep.isLoading ? titleForStep(lastStep) : lockedString4(UIStringsNotTranslate4.showThinking)}
+        .title=${lastStep.isLoading ? titleForStep(lastStep) : lockedString5(UIStringsNotTranslate4.showThinking)}
         .jslogContext=${walkthrough.isExpanded ? "ai-hide-walkthrough-sidebar" : "ai-show-walkthrough-sidebar"}
         data-show-walkthrough
         @click=${() => {
@@ -3153,7 +3225,7 @@ function renderWalkthroughUI(input, steps) {
   if (!lastStep) {
     return Lit3.nothing;
   }
-  const sideEffectSteps = steps.filter((s) => s.sideEffect);
+  const sideEffectSteps = steps.filter((s) => s.requestApproval);
   const openWalkThroughSidebarButton = !input.walkthrough.isInlined ? renderWalkthroughSidebarButton(input, lastStep) : Lit3.nothing;
   const sideEffectStepsUI = !input.walkthrough.isInlined && !input.walkthrough.isExpanded && sideEffectSteps.length > 0 ? sideEffectSteps.map((step) => html5`
     <div class="side-effect-container">
@@ -3171,7 +3243,7 @@ function renderWalkthroughUI(input, steps) {
     isLoading: input.isLoading && input.isLastMessage,
     markdownRenderer: input.markdownRenderer,
     isInlined: true,
-    isExpanded: input.isLastMessage && (input.walkthrough.isExpanded || steps.some((step) => Boolean(step.sideEffect))),
+    isExpanded: input.isLastMessage && (input.walkthrough.isExpanded || steps.some((step) => Boolean(step.requestApproval))),
     onToggle: input.walkthrough.onToggle
   })}></devtools-widget>
     </div>
@@ -3183,18 +3255,18 @@ function renderWalkthroughUI(input, steps) {
   `;
 }
 function renderStepBadge({ step, isLoading, isLast }) {
-  if (isLoading && isLast && !step.sideEffect) {
+  if (isLoading && isLast && !step.requestApproval) {
     return html5`<devtools-spinner></devtools-spinner>`;
   }
   let iconName = "checkmark";
-  let ariaLabel = lockedString4(UIStringsNotTranslate4.completed);
+  let ariaLabel = lockedString5(UIStringsNotTranslate4.completed);
   let role = "button";
-  if (isLast && step.sideEffect) {
+  if (isLast && step.requestApproval) {
     role = void 0;
     ariaLabel = void 0;
     iconName = "pause-circle";
   } else if (step.canceled) {
-    ariaLabel = lockedString4(UIStringsNotTranslate4.canceled);
+    ariaLabel = lockedString5(UIStringsNotTranslate4.canceled);
     iconName = "cross";
   }
   return html5`<devtools-icon
@@ -3205,16 +3277,17 @@ function renderStepBadge({ step, isLoading, isLast }) {
     ></devtools-icon>`;
 }
 function renderStep({ step, isLoading, markdownRenderer, isLast }) {
+  const shouldRenderWidgets = Boolean(step.widgets?.length && Root3.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
   const stepClasses = Lit3.Directives.classMap({
     step: true,
-    empty: !step.thought && !step.code && !step.contextDetails && !step.sideEffect,
-    paused: Boolean(step.sideEffect),
+    empty: !step.thought && !step.code && !step.contextDetails && !step.requestApproval,
+    paused: Boolean(step.requestApproval),
     canceled: Boolean(step.canceled)
   });
   return html5`
     <details class=${stepClasses}
       jslog=${VisualLogging3.section("step")}
-      .open=${Boolean(step.sideEffect)}>
+      .open=${Boolean(step.requestApproval)}>
       <summary>
         <div class="summary">
           ${renderStepBadge({ step, isLoading, isLast })}
@@ -3226,33 +3299,97 @@ function renderStep({ step, isLoading, markdownRenderer, isLast }) {
         </div>
       </summary>
       ${renderStepDetails({ step, markdownRenderer, isLast })}
-    </details>`;
+    </details>
+    ${shouldRenderWidgets ? html5`
+      <div class="step-widgets-wrapper">
+        ${Lit3.Directives.until(renderStepWidgets(step))}
+      </div>` : Lit3.nothing}`;
+}
+async function makeComputedStyleWidget(widgetData) {
+  const target = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+  if (!target) {
+    return null;
+  }
+  const node = new SDK2.DOMModel.DeferredDOMNode(target, widgetData.data.backendNodeId);
+  const resolved = await node.resolvePromise();
+  if (!resolved) {
+    return null;
+  }
+  const model = new ComputedStyle.ComputedStyleModel.ComputedStyleModel(resolved);
+  const styles = new ComputedStyle.ComputedStyleModel.ComputedStyle(resolved, widgetData.data.computedStyles);
+  const widgetConfig = UI5.Widget.widgetConfig(Elements.ComputedStyleWidget.ComputedStyleWidget, {
+    nodeStyle: styles,
+    matchedStyles: widgetData.data.matchedCascade,
+    // This disables showing the nested traces and detailed information in the widget.
+    propertyTraces: null,
+    computedStyleModel: model,
+    allowUserControl: false,
+    filterText: new RegExp(widgetData.data.properties.join("|"), "i")
+  });
+  const widget = html5`<devtools-widget class="computed-styles-widget" .widgetConfig=${widgetConfig}></devtools-widget>`;
+  return { renderedWidget: widget, revealable: new Elements.ElementsPanel.NodeComputedStyles(resolved) };
+}
+function renderWidgetResponse(response) {
+  if (response === null) {
+    return Lit3.nothing;
+  }
+  function onReveal() {
+    if (response === null) {
+      return;
+    }
+    void Common3.Revealer.reveal(response?.revealable);
+  }
+  return html5`
+    <div class="widget-content-container">
+      ${response.renderedWidget}
+    </div>
+    <div class="widget-reveal-container">
+      <devtools-button class="widget-reveal"
+        .iconName=${"tab-move"}
+        .variant=${"text"}
+        @click=${onReveal}
+      >${lockedString5(UIStringsNotTranslate4.reveal)}</devtools-button>
+    </div>
+    `;
+}
+async function renderStepWidgets(step) {
+  if (!step.widgets || step.widgets.length === 0) {
+    return Lit3.nothing;
+  }
+  const ui = await Promise.all(step.widgets.map(async (widgetData) => {
+    if (widgetData.name === "COMPUTED_STYLES") {
+      const response = await makeComputedStyleWidget(widgetData);
+      return renderWidgetResponse(response);
+    }
+    return Lit3.nothing;
+  }));
+  return html5`${ui}`;
 }
 function renderSideEffectConfirmationUi(step) {
-  if (!step.sideEffect) {
+  if (!step.requestApproval) {
     return Lit3.nothing;
   }
   return html5`<div
     class="side-effect-confirmation"
     jslog=${VisualLogging3.section("side-effect-confirmation")}
   >
-    <p>${lockedString4(UIStringsNotTranslate4.sideEffectConfirmationDescription)}</p>
+    ${step.requestApproval.description ? html5`<p>${step.requestApproval.description}</p>` : Lit3.nothing}
     <div class="side-effect-buttons-container">
       <devtools-button
         .data=${{
     variant: "outlined",
     jslogContext: "decline-execute-code"
   }}
-        @click=${() => step.sideEffect?.onAnswer(false)}
-      >${lockedString4(UIStringsNotTranslate4.negativeSideEffectConfirmation)}</devtools-button>
+        @click=${() => step.requestApproval?.onAnswer(false)}
+      >${lockedString5(UIStringsNotTranslate4.declineActionRequestApproval)}</devtools-button>
       <devtools-button
         .data=${{
     variant: "primary",
     jslogContext: "accept-execute-code",
     iconName: "play"
   }}
-        @click=${() => step.sideEffect?.onAnswer(true)}
-      >${lockedString4(UIStringsNotTranslate4.positiveSideEffectConfirmation)}</devtools-button>
+        @click=${() => step.requestApproval?.onAnswer(true)}
+      >${lockedString5(UIStringsNotTranslate4.confirmActionRequestApproval)}</devtools-button>
     </div>
   </div>`;
 }
@@ -3268,9 +3405,9 @@ function renderError(message) {
         errorMessage = UIStringsNotTranslate4.maxStepsError;
         break;
       case "abort":
-        return html5`<p class="aborted" jslog=${VisualLogging3.section("aborted")}>${lockedString4(UIStringsNotTranslate4.stoppedResponse)}</p>`;
+        return html5`<p class="aborted" jslog=${VisualLogging3.section("aborted")}>${lockedString5(UIStringsNotTranslate4.stoppedResponse)}</p>`;
     }
-    return html5`<p class="error" jslog=${VisualLogging3.section("error")}>${lockedString4(errorMessage)}</p>`;
+    return html5`<p class="error" jslog=${VisualLogging3.section("error")}>${lockedString5(errorMessage)}</p>`;
   }
   return Lit3.nothing;
 }
@@ -3301,7 +3438,7 @@ function renderActions(input, output) {
     toggledIconName: "thumb-up-filled",
     toggled: input.currentRating === "POSITIVE",
     toggleType: "primary-toggle",
-    title: lockedString4(UIStringsNotTranslate4.thumbsUp),
+    title: lockedString5(UIStringsNotTranslate4.thumbsUp),
     jslogContext: "thumbs-up"
   }}
             @click=${() => input.onRatingClick(
@@ -3317,7 +3454,7 @@ function renderActions(input, output) {
     toggledIconName: "thumb-down-filled",
     toggled: input.currentRating === "NEGATIVE",
     toggleType: "primary-toggle",
-    title: lockedString4(UIStringsNotTranslate4.thumbsDown),
+    title: lockedString5(UIStringsNotTranslate4.thumbsDown),
     jslogContext: "thumbs-down"
   }}
             @click=${() => input.onRatingClick(
@@ -3331,7 +3468,7 @@ function renderActions(input, output) {
           .data=${{
     variant: "icon",
     size: "SMALL",
-    title: lockedString4(UIStringsNotTranslate4.report),
+    title: lockedString5(UIStringsNotTranslate4.report),
     iconName: "report",
     jslogContext: "report"
   }}
@@ -3342,11 +3479,11 @@ function renderActions(input, output) {
             .data=${{
     variant: "icon",
     size: "SMALL",
-    title: lockedString4(UIStringsNotTranslate4.copyResponse),
+    title: lockedString5(UIStringsNotTranslate4.copyResponse),
     iconName: "copy",
     jslogContext: "copy-ai-response"
   }}
-            aria-label=${lockedString4(UIStringsNotTranslate4.copyResponse)}
+            aria-label=${lockedString5(UIStringsNotTranslate4.copyResponse)}
             @click=${input.onCopyResponseClick}></devtools-button>
       </div>
       ${input.suggestions ? html5`<div class="suggestions-container">
@@ -3359,7 +3496,7 @@ function renderActions(input, output) {
     variant: "icon",
     size: "SMALL",
     iconName: "chevron-left",
-    title: lockedString4(UIStringsNotTranslate4.scrollToPrevious),
+    title: lockedString5(UIStringsNotTranslate4.scrollToPrevious),
     jslogContext: "chevron-left"
   }}
             @click=${() => input.scrollSuggestionsScrollContainer("left")}
@@ -3387,7 +3524,7 @@ function renderActions(input, output) {
     variant: "icon",
     size: "SMALL",
     iconName: "chevron-right",
-    title: lockedString4(UIStringsNotTranslate4.scrollToNext),
+    title: lockedString5(UIStringsNotTranslate4.scrollToNext),
     jslogContext: "chevron-right"
   }}
             @click=${() => input.scrollSuggestionsScrollContainer("right")}
@@ -3398,15 +3535,15 @@ function renderActions(input, output) {
     ${input.isShowingFeedbackForm ? html5`
       <form class="feedback-form" @submit=${input.onSubmit}>
         <div class="feedback-header">
-          <h4 class="feedback-title">${lockedString4(UIStringsNotTranslate4.whyThisRating)}</h4>
+          <h4 class="feedback-title">${lockedString5(UIStringsNotTranslate4.whyThisRating)}</h4>
           <devtools-button
-            aria-label=${lockedString4(UIStringsNotTranslate4.close)}
+            aria-label=${lockedString5(UIStringsNotTranslate4.close)}
             @click=${input.onClose}
             .data=${{
     variant: "icon",
     iconName: "cross",
     size: "SMALL",
-    title: lockedString4(UIStringsNotTranslate4.close),
+    title: lockedString5(UIStringsNotTranslate4.close),
     jslogContext: "close"
   }}
           ></devtools-button>
@@ -3415,22 +3552,22 @@ function renderActions(input, output) {
           type="text"
           class="devtools-text-input feedback-input"
           @input=${(event) => input.onInputChange(event.target.value)}
-          placeholder=${lockedString4(UIStringsNotTranslate4.provideFeedbackPlaceholder)}
+          placeholder=${lockedString5(UIStringsNotTranslate4.provideFeedbackPlaceholder)}
           jslog=${VisualLogging3.textField("feedback").track({ keydown: "Enter" })}
         >
-        <span class="feedback-disclaimer">${lockedString4(UIStringsNotTranslate4.disclaimer)}</span>
+        <span class="feedback-disclaimer">${lockedString5(UIStringsNotTranslate4.disclaimer)}</span>
         <div>
           <devtools-button
-          aria-label=${lockedString4(UIStringsNotTranslate4.submit)}
+          aria-label=${lockedString5(UIStringsNotTranslate4.submit)}
           .data=${{
     type: "submit",
     disabled: input.isSubmitButtonDisabled,
     variant: "outlined",
     size: "SMALL",
-    title: lockedString4(UIStringsNotTranslate4.submit),
+    title: lockedString5(UIStringsNotTranslate4.submit),
     jslogContext: "send"
   }}
-          >${lockedString4(UIStringsNotTranslate4.submit)}</devtools-button>
+          >${lockedString5(UIStringsNotTranslate4.submit)}</devtools-button>
         </div>
       </div>
     </form>
@@ -4024,7 +4161,7 @@ var UIStringsNotTranslate5 = {
    */
   emptyStateTextGemini: "Where should we start?"
 };
-var lockedString5 = i18n11.i18n.lockedString;
+var lockedString6 = i18n11.i18n.lockedString;
 var SCROLL_ROUNDING_OFFSET2 = 1;
 var DEFAULT_VIEW5 = (input, output, target) => {
   const chatUiClasses = classMap({
@@ -4075,8 +4212,8 @@ var DEFAULT_VIEW5 = (input, output, target) => {
                 </div>
                 ${AiAssistanceModel4.AiUtils.isGeminiBranding() ? html6`
                     <h1 class='greeting'>Hello${input.accountGivenName ? `, ${input.accountGivenName}` : ""}</h1>
-                    <p class='cta'>${lockedString5(UIStringsNotTranslate5.emptyStateTextGemini)}</p>
-                  ` : html6`<h1>${lockedString5(UIStringsNotTranslate5.emptyStateText)}</h1>`}
+                    <p class='cta'>${lockedString6(UIStringsNotTranslate5.emptyStateTextGemini)}</p>
+                  ` : html6`<h1>${lockedString6(UIStringsNotTranslate5.emptyStateText)}</h1>`}
               </div>
               <div class="empty-state-content">
                 ${input.emptyStateSuggestions.map(({ title, jslogContext }) => {
@@ -4101,7 +4238,8 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     isTextInputDisabled: input.isTextInputDisabled,
     inputPlaceholder: input.inputPlaceholder,
     disclaimerText: input.disclaimerText,
-    selectedContext: input.selectedContext,
+    context: input.context,
+    isContextSelected: input.isContextSelected,
     inspectElementToggled: input.inspectElementToggled,
     multimodalInputEnabled: input.multimodalInputEnabled ?? false,
     conversationType: input.conversationType,
@@ -4579,7 +4717,7 @@ var UIStringsNotTranslate6 = {
    */
   learnAbout: "Learn about AI in DevTools"
 };
-var lockedString6 = i18n15.i18n.lockedString;
+var lockedString7 = i18n15.i18n.lockedString;
 var DEFAULT_VIEW7 = (input, _output, target) => {
   function renderFeatureCardContent(featureCard) {
     return html8`Open
@@ -4602,7 +4740,7 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
           <div class="icon">
             <devtools-icon name="smart-assistant"></devtools-icon>
           </div>
-          <h1>${lockedString6(UIStringsNotTranslate6.Explore)}</h1>
+          <h1>${lockedString7(UIStringsNotTranslate6.Explore)}</h1>
           <p>
             To chat about an item, right-click and select${" "}
             <strong>Ask AI</strong>.
@@ -4613,7 +4751,7 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
               @click=${() => {
     void UI8.ViewManager.ViewManager.instance().showView("chrome-ai");
   }}
-            >${lockedString6(UIStringsNotTranslate6.learnAbout)}
+            >${lockedString7(UIStringsNotTranslate6.learnAbout)}
             </button>
           </p>
         </div>
@@ -4701,9 +4839,42 @@ var ExploreWidget = class extends UI8.Widget.Widget {
 };
 
 // gen/front_end/panels/ai_assistance/components/MarkdownRendererWithCodeBlock.js
+import * as Common4 from "./../../core/common/common.js";
+import * as Platform4 from "./../../core/platform/platform.js";
+import * as AiAssistanceModel5 from "./../../models/ai_assistance/ai_assistance.js";
+import * as Logs from "./../../models/logs/logs.js";
 import * as MarkdownView from "./../../ui/components/markdown_view/markdown_view.js";
+import * as Lit4 from "./../../ui/lit/lit.js";
+var { html: html9 } = Lit4;
 var MarkdownRendererWithCodeBlock = class extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
+  #revealableLink(revealable, label) {
+    return html9`<devtools-link @click=${(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      void Common4.Revealer.reveal(revealable);
+    }}>${Platform4.StringUtilities.trimEndWithMaxLength(label, 100)}</devtools-link>`;
+  }
+  #renderLink(href) {
+    if (href.startsWith("#req-")) {
+      const request = Logs.NetworkLog.NetworkLog.instance().requests().find((req) => req.requestId() === href.substring(5));
+      if (request) {
+        return this.#revealableLink(request, request.url());
+      }
+    } else if (href.startsWith("#file-")) {
+      const file = AiAssistanceModel5.ContextSelectionAgent.ContextSelectionAgent.getUISourceCodes().find((file2) => AiAssistanceModel5.ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.get(file2) === Number(href.substring(6)));
+      if (file) {
+        return this.#revealableLink(file, file.name());
+      }
+    }
+    return null;
+  }
   templateForToken(token) {
+    if (token.type === "link") {
+      const link4 = this.#renderLink(token.href);
+      if (link4) {
+        return link4;
+      }
+    }
     if (token.type === "code") {
       const lines = token.text.split("\n");
       if (lines[0]?.trim() === "css") {
@@ -4711,18 +4882,27 @@ var MarkdownRendererWithCodeBlock = class extends MarkdownView.MarkdownView.Mark
         token.text = lines.slice(1).join("\n");
       }
     }
+    if (token.type === "codespan") {
+      const matches = token.text.match(/^\[.*\]\((.+)\)$/);
+      if (matches?.[1]) {
+        const link4 = this.#renderLink(matches[1]);
+        if (link4) {
+          return link4;
+        }
+      }
+    }
     return super.templateForToken(token);
   }
 };
 
 // gen/front_end/panels/ai_assistance/components/PerformanceAgentMarkdownRenderer.js
-import * as Common4 from "./../../core/common/common.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as Common5 from "./../../core/common/common.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Trace from "./../../models/trace/trace.js";
-import * as Lit4 from "./../../ui/lit/lit.js";
+import * as Lit5 from "./../../ui/lit/lit.js";
 import * as PanelsCommon2 from "./../common/common.js";
-var { html: html9 } = Lit4.StaticHtml;
-var { ref: ref4, createRef: createRef2 } = Lit4.Directives;
+var { html: html10 } = Lit5.StaticHtml;
+var { ref: ref4, createRef: createRef2 } = Lit5.Directives;
 var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlock {
   mainFrameId;
   lookupEvent;
@@ -4743,11 +4923,11 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
           templateRef.value.textContent = "";
           templateRef.value.append(node);
         });
-        return html9`<span ${ref4(templateRef)}>${token.text}</span>`;
+        return html10`<span ${ref4(templateRef)}>${token.text}</span>`;
       }
       const event = this.lookupEvent(token.href.slice(1));
       if (!event) {
-        return html9`${token.text}`;
+        return html10`${token.text}`;
       }
       let label = token.text;
       let title = "";
@@ -4756,9 +4936,9 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
       } else {
         label += ` (${event.name})`;
       }
-      return html9`<a href="#" draggable=false .title=${title} @click=${(e) => {
+      return html10`<a href="#" draggable=false .title=${title} @click=${(e) => {
         e.stopPropagation();
-        void Common4.Revealer.reveal(new SDK2.TraceObject.RevealableEvent(event));
+        void Common5.Revealer.reveal(new SDK3.TraceObject.RevealableEvent(event));
       }}>${label}</a>`;
     }
     return super.templateForToken(token);
@@ -4770,8 +4950,8 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
     if (backendNodeId === void 0) {
       return;
     }
-    const target = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
-    const domModel = target?.model(SDK2.DOMModel.DOMModel);
+    const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
+    const domModel = target?.model(SDK3.DOMModel.DOMModel);
     if (!domModel) {
       return void 0;
     }
@@ -4789,7 +4969,7 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
 };
 
 // gen/front_end/panels/ai_assistance/AiAssistancePanel.js
-var { html: html10 } = Lit5;
+var { html: html11 } = Lit6;
 var AI_ASSISTANCE_SEND_FEEDBACK = "https://crbug.com/364805393";
 var AI_ASSISTANCE_HELP = "https://developer.chrome.com/docs/devtools/ai-assistance";
 var WALKTHROUGH_SIDEBAR_BREAKPOINT = 700;
@@ -4952,7 +5132,7 @@ var UIStringsNotTranslate7 = {
 };
 var str_4 = i18n17.i18n.registerUIStrings("panels/ai_assistance/AiAssistancePanel.ts", UIStrings4);
 var i18nString4 = i18n17.i18n.getLocalizedString.bind(void 0, str_4);
-var lockedString7 = i18n17.i18n.lockedString;
+var lockedString8 = i18n17.i18n.lockedString;
 function selectedElementFilter(maybeNode) {
   if (maybeNode) {
     return maybeNode.nodeType() === Node.ELEMENT_NODE ? maybeNode : null;
@@ -4994,6 +5174,13 @@ async function getEmptyStateSuggestions(conversation) {
         { title: "What performance issues exist with my page?", jslogContext: "performance-default" }
       ];
     }
+    case "breakpoint": {
+      return [
+        { title: "Why did the code pause here?" },
+        { title: "What function does this breakpoint belong to?" },
+        { title: "Why is this error thrown?" }
+      ];
+    }
     case "none": {
       return [
         { title: "What can you help me with?", jslogContext: "empty" },
@@ -5002,12 +5189,12 @@ async function getEmptyStateSuggestions(conversation) {
       ];
     }
     default:
-      Platform4.assertNever(conversation.type, "Unknown conversation type");
+      Platform5.assertNever(conversation.type, "Unknown conversation type");
   }
 }
 function getMarkdownRenderer(conversation) {
   const context = conversation?.selectedContext;
-  if (context instanceof AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext) {
+  if (context instanceof AiAssistanceModel6.PerformanceAgent.PerformanceTraceContext) {
     if (!context.external) {
       const focus = context.getItem();
       return new PerformanceAgentMarkdownRenderer(focus.parsedTrace.data.Meta.mainFrameId, focus.lookupEvent.bind(focus));
@@ -5018,10 +5205,10 @@ function getMarkdownRenderer(conversation) {
   return new MarkdownRendererWithCodeBlock();
 }
 function toolbarView(input) {
-  return html10`
+  return html11`
     <div class="toolbar-container" role="toolbar" jslog=${VisualLogging6.toolbar()}>
       <devtools-toolbar class="freestyler-left-toolbar" role="presentation">
-      ${input.showChatActions ? html10`<devtools-button
+      ${input.showChatActions ? html11`<devtools-button
           title=${i18nString4(UIStrings4.newChat)}
           aria-label=${i18nString4(UIStrings4.newChat)}
           .iconName=${"plus"}
@@ -5035,8 +5222,8 @@ function toolbarView(input) {
           .iconName=${"history"}
           .jslogContext=${"freestyler.history"}
           .populateMenuCall=${input.populateHistoryMenu}
-        ></devtools-menu-button>` : Lit5.nothing}
-        ${input.showActiveConversationActions ? html10`
+        ></devtools-menu-button>` : Lit6.nothing}
+        ${input.showActiveConversationActions ? html11`
           <devtools-button
               title=${i18nString4(UIStrings4.deleteChat)}
               aria-label=${i18nString4(UIStrings4.deleteChat)}
@@ -5053,7 +5240,7 @@ function toolbarView(input) {
             .jslogContext=${"export-ai-conversation"}
             .variant=${"toolbar"}
             @click=${input.onExportConversationClick}>
-          </devtools-button>` : Lit5.nothing}
+          </devtools-button>` : Lit6.nothing}
       </devtools-toolbar>
       <devtools-toolbar class="freestyler-right-toolbar" role="presentation">
         <devtools-link
@@ -5085,9 +5272,9 @@ function defaultView(input, output, target) {
   function renderState() {
     switch (input.state) {
       case "chat-view": {
-        return html10`<devtools-ai-chat-view
+        return html11`<devtools-ai-chat-view
           .props=${input.props}
-          ${Lit5.Directives.ref((el) => {
+          ${Lit6.Directives.ref((el) => {
           if (!el || !(el instanceof ChatView)) {
             return;
           }
@@ -5096,20 +5283,27 @@ function defaultView(input, output, target) {
         ></devtools-ai-chat-view>`;
       }
       case "explore-view":
-        return html10`<devtools-widget
+        return html11`<devtools-widget
           class="fill-panel"
           .widgetConfig=${UI9.Widget.widgetConfig(ExploreWidget)}
         ></devtools-widget>`;
       case "disabled-view":
-        return html10`<devtools-widget
+        return html11`<devtools-widget
           class="fill-panel"
           .widgetConfig=${UI9.Widget.widgetConfig(DisabledWidget, input.props)}
         ></devtools-widget>`;
     }
   }
-  const shouldShowWalkthrough = input.state === "chat-view" && input.walkthrough.isExpanded;
-  if (Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
-    Lit5.render(html10`
+  if (Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled || Greendev.Prototypes.instance().isEnabled("breakpointDebuggerAgent")) {
+    const shouldShowWalkthrough = input.state === "chat-view" && input.walkthrough.isExpanded;
+    let walkthroughIsForLastMessage = false;
+    if (input.state === "chat-view") {
+      const lastMessage = input.props.messages.at(-1);
+      if (lastMessage && input.props.walkthrough.activeMessage === lastMessage) {
+        walkthroughIsForLastMessage = true;
+      }
+    }
+    Lit6.render(html11`
       ${toolbarView(input)}
       <div class="ai-assistance-view-container">
         <devtools-split-view
@@ -5123,19 +5317,19 @@ function defaultView(input, output, target) {
             ${renderState()}
           </div>
           <div slot="sidebar" class="sidebar-view">
-            ${shouldShowWalkthrough ? html10`
+            ${shouldShowWalkthrough ? html11`
               <devtools-widget .widgetConfig=${UI9.Widget.widgetConfig(WalkthroughView, {
       message: input.props.walkthrough.activeMessage,
-      isLoading: input.props.isLoading,
+      isLoading: input.props.isLoading && walkthroughIsForLastMessage,
       markdownRenderer: input.props.markdownRenderer,
       onToggle: input.props.walkthrough.onToggle
-    })}></devtools-widget>` : Lit5.nothing}
+    })}></devtools-widget>` : Lit6.nothing}
           </div>
         </devtools-split-view>
       </div>
     `, target);
   } else {
-    Lit5.render(html10`
+    Lit6.render(html11`
       ${toolbarView(input)}
       <div class="ai-assistance-view-container">${renderState()}</div>
     `, target);
@@ -5145,26 +5339,32 @@ function createNodeContext(node) {
   if (!node) {
     return null;
   }
-  return new AiAssistanceModel5.StylingAgent.NodeContext(node);
+  return new AiAssistanceModel6.StylingAgent.NodeContext(node);
 }
 function createFileContext(file) {
   if (!file) {
     return null;
   }
-  return new AiAssistanceModel5.FileAgent.FileContext(file);
+  return new AiAssistanceModel6.FileAgent.FileContext(file);
+}
+function createBreakpointContext(uiLocation) {
+  if (!uiLocation) {
+    return null;
+  }
+  return new AiAssistanceModel6.BreakpointDebuggerAgent.BreakpointContext(uiLocation);
 }
 function createRequestContext(request) {
   if (!request) {
     return null;
   }
   const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-  return new AiAssistanceModel5.NetworkAgent.RequestContext(request, calculator);
+  return new AiAssistanceModel6.NetworkAgent.RequestContext(request, calculator);
 }
 function createPerformanceTraceContext(focus) {
   if (!focus) {
     return null;
   }
-  return new AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext(focus);
+  return new AiAssistanceModel6.PerformanceAgent.PerformanceTraceContext(focus);
 }
 var panelInstance;
 var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
@@ -5176,13 +5376,14 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   #viewOutput = {};
   #serverSideLoggingEnabled = isAiAssistanceServerSideLoggingEnabled();
   #aiAssistanceEnabledSetting;
-  #changeManager = new AiAssistanceModel5.ChangeManager.ChangeManager();
-  #mutex = new Common5.Mutex.Mutex();
+  #changeManager = new AiAssistanceModel6.ChangeManager.ChangeManager();
+  #mutex = new Common6.Mutex.Mutex();
   #conversation;
   #selectedFile = null;
   #selectedElement = null;
   #selectedPerformanceTrace = null;
   #selectedRequest = null;
+  #selectedBreakpoint = null;
   // Messages displayed in the `ChatView` component.
   #messages = [];
   // Whether the UI should show loading or not.
@@ -5213,7 +5414,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (UI9.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
       this.#toggleSearchElementAction = UI9.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
     }
-    AiAssistanceModel5.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
+    AiAssistanceModel6.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
   }
   #getToolbarInput() {
     return {
@@ -5261,7 +5462,14 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
           blockedByCrossOrigin: this.#conversation.isBlockedByOrigin,
           isLoading: this.#isLoading,
           messages: this.#messages,
-          selectedContext: this.#conversation.selectedContext ?? null,
+          /**
+           * We pass either the selected context with isContextSelected=true
+           * to make sure the pill is show with normal styling and a remove button.
+           * Or we pass the panels default context with isContextSelected=false
+           * to display a placeholder pill with neutral styling and an add button.
+           */
+          context: this.#conversation.selectedContext ?? this.#getConversationContext(this.#getDefaultConversationType()),
+          isContextSelected: Boolean(this.#conversation.selectedContext),
           conversationType: this.#conversation.type,
           isReadOnly: this.#conversation.isReadOnly ?? false,
           changeSummary: this.#getChangeSummary(),
@@ -5328,7 +5536,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   }
   #getAiAssistanceEnabledSetting() {
     try {
-      return Common5.Settings.moduleSetting("ai-assistance-enabled");
+      return Common6.Settings.moduleSetting("ai-assistance-enabled");
     } catch {
       return;
     }
@@ -5376,6 +5584,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       targetConversationType = "freestyler";
     } else if (isNetworkPanelVisible && hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
       targetConversationType = "drjones-network-request";
+    } else if (isSourcesPanelVisible && this.#conversation?.type === "breakpoint") {
+      targetConversationType = "breakpoint";
     } else if (isSourcesPanelVisible && hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
       targetConversationType = "drjones-file";
     } else if (isPerformancePanelVisible && hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
@@ -5390,16 +5600,19 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   // there isn't any active conversation.
   #selectDefaultAgentIfNeeded() {
     if (this.#isLoading) {
+      this.requestUpdate();
       return;
     }
     if (this.#conversation && !this.#conversation.isEmpty) {
+      this.requestUpdate();
       return;
     }
     const targetConversationType = this.#getDefaultConversationType();
     if (this.#conversation?.type === targetConversationType) {
+      this.requestUpdate();
       return;
     }
-    const conversation = targetConversationType ? new AiAssistanceModel5.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator()) : void 0;
+    const conversation = targetConversationType ? new AiAssistanceModel6.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator()) : void 0;
     this.#updateConversationState(conversation);
   }
   #updateConversationState(conversation) {
@@ -5411,7 +5624,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       if (!conversation) {
         const conversationType = this.#getDefaultConversationType();
         if (conversationType) {
-          conversation = new AiAssistanceModel5.AiConversation.AiConversation(conversationType, [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator());
+          conversation = new AiAssistanceModel6.AiConversation.AiConversation(conversationType, [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator());
         }
       }
       this.#conversation = conversation;
@@ -5428,26 +5641,39 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
     this.requestUpdate();
   }
+  async handleBreakpointConversation(uiLocation, errorMsg) {
+    const context = new AiAssistanceModel6.BreakpointDebuggerAgent.BreakpointContext(uiLocation);
+    this.#selectedBreakpoint = context;
+    const conversation = new AiAssistanceModel6.AiConversation.AiConversation("breakpoint", [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator());
+    this.#updateConversationState(conversation);
+    this.#conversation?.setContext(context);
+    this.requestUpdate();
+    await UI9.ViewManager.ViewManager.instance().showView(_AiAssistancePanel.panelName);
+    const prompt = errorMsg ? `debug the error "${errorMsg}" using breakpoint debugging agent` : "debug the error using breakpoint debugging agent";
+    await this.#startConversation(prompt);
+  }
   wasShown() {
     super.wasShown();
     this.#viewOutput.chatView?.restoreScrollPosition();
     this.#viewOutput.chatView?.focusTextInput();
     void this.#handleAidaAvailabilityChange();
-    this.#selectedElement = createNodeContext(selectedElementFilter(UI9.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode)));
-    this.#selectedRequest = createRequestContext(UI9.Context.Context.instance().flavor(SDK3.NetworkRequest.NetworkRequest));
-    this.#selectedPerformanceTrace = createPerformanceTraceContext(UI9.Context.Context.instance().flavor(AiAssistanceModel5.AIContext.AgentFocus));
+    this.#selectedElement = createNodeContext(selectedElementFilter(UI9.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode)));
+    this.#selectedRequest = createRequestContext(UI9.Context.Context.instance().flavor(SDK4.NetworkRequest.NetworkRequest));
+    this.#selectedPerformanceTrace = createPerformanceTraceContext(UI9.Context.Context.instance().flavor(AiAssistanceModel6.AIContext.AgentFocus));
     this.#selectedFile = createFileContext(UI9.Context.Context.instance().flavor(Workspace5.UISourceCode.UISourceCode));
+    this.#selectedBreakpoint = createBreakpointContext(UI9.Context.Context.instance().flavor(Workspace5.UISourceCode.UILocation));
     this.#updateConversationState(this.#conversation);
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
     Host6.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.addEventListener("Toggled", this.requestUpdate, this);
-    UI9.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
-    UI9.Context.Context.instance().addFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI9.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel5.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI9.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+    UI9.Context.Context.instance().addFlavorChangeListener(SDK4.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+    UI9.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel6.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI9.Context.Context.instance().addFlavorChangeListener(Workspace5.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
+    UI9.Context.Context.instance().addFlavorChangeListener(Workspace5.UISourceCode.UILocation, this.#handleBreakpointFlavorChange);
     UI9.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
-    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
-    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
+    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
+    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
     UI9.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
     this.#bindTimelineTraceListener();
     this.#selectDefaultAgentIfNeeded();
@@ -5458,14 +5684,14 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     this.#aiAssistanceEnabledSetting?.removeChangeListener(this.requestUpdate, this);
     Host6.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.removeEventListener("Toggled", this.requestUpdate, this);
-    UI9.Context.Context.instance().removeFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
-    UI9.Context.Context.instance().removeFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI9.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel5.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI9.Context.Context.instance().removeFlavorChangeListener(SDK4.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+    UI9.Context.Context.instance().removeFlavorChangeListener(SDK4.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+    UI9.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel6.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI9.Context.Context.instance().removeFlavorChangeListener(Workspace5.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI9.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     UI9.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
-    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
-    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
+    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
+    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
     if (this.#timelinePanelInstance) {
       this.#timelinePanelInstance.removeEventListener("IsViewingTrace", this.requestUpdate, this);
       this.#timelinePanelInstance = null;
@@ -5504,7 +5730,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
     if (Boolean(ev.data)) {
       const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-      this.#selectedRequest = new AiAssistanceModel5.NetworkAgent.RequestContext(ev.data, calculator);
+      this.#selectedRequest = new AiAssistanceModel6.NetworkAgent.RequestContext(ev.data, calculator);
     } else {
       this.#selectedRequest = null;
     }
@@ -5514,7 +5740,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (this.#selectedPerformanceTrace?.getItem() === ev.data) {
       return;
     }
-    this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext(ev.data) : null;
+    this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel6.PerformanceAgent.PerformanceTraceContext(ev.data) : null;
     this.#updateConversationState(this.#conversation);
   };
   #handleUISourceCodeFlavorChange = (ev) => {
@@ -5522,7 +5748,15 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     if (!newFile || this.#selectedFile?.getItem() === newFile) {
       return;
     }
-    this.#selectedFile = new AiAssistanceModel5.FileAgent.FileContext(ev.data);
+    this.#selectedFile = new AiAssistanceModel6.FileAgent.FileContext(ev.data);
+    this.#updateConversationState(this.#conversation);
+  };
+  #handleBreakpointFlavorChange = (ev) => {
+    const newBreakpoint = ev.data;
+    if (!newBreakpoint || this.#selectedBreakpoint?.getItem() === newBreakpoint) {
+      return;
+    }
+    this.#selectedBreakpoint = new AiAssistanceModel6.BreakpointDebuggerAgent.BreakpointContext(newBreakpoint);
     this.#updateConversationState(this.#conversation);
   };
   #getChangeSummary() {
@@ -5552,7 +5786,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
   }
   #handleSelectElementClick() {
-    UI9.Context.Context.instance().setFlavor(Common5.ReturnToPanel.ReturnToPanelFlavor, new Common5.ReturnToPanel.ReturnToPanelFlavor(this.panelName));
+    UI9.Context.Context.instance().setFlavor(Common6.ReturnToPanel.ReturnToPanelFlavor, new Common6.ReturnToPanel.ReturnToPanelFlavor(this.panelName));
     void this.#toggleSearchElementAction?.execute();
   }
   #isTextInputDisabled() {
@@ -5583,27 +5817,29 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       return i18nString4(UIStrings4.followTheSteps);
     }
     if (this.#conversation && this.#conversation.isBlockedByOrigin) {
-      return lockedString7(UIStringsNotTranslate7.crossOriginError);
+      return lockedString8(UIStringsNotTranslate7.crossOriginError);
     }
     switch (this.#conversation.type) {
       case "freestyler":
-        return this.#conversation.selectedContext ? lockedString7(UIStringsNotTranslate7.inputPlaceholderForStyling) : lockedString7(UIStringsNotTranslate7.inputPlaceholderForStylingNoContext);
+        return this.#conversation.selectedContext ? lockedString8(UIStringsNotTranslate7.inputPlaceholderForStyling) : lockedString8(UIStringsNotTranslate7.inputPlaceholderForStylingNoContext);
       case "drjones-file":
-        return this.#conversation.selectedContext ? lockedString7(UIStringsNotTranslate7.inputPlaceholderForFile) : lockedString7(UIStringsNotTranslate7.inputPlaceholderForFileNoContext);
+        return this.#conversation.selectedContext ? lockedString8(UIStringsNotTranslate7.inputPlaceholderForFile) : lockedString8(UIStringsNotTranslate7.inputPlaceholderForFileNoContext);
       case "drjones-network-request":
-        return this.#conversation.selectedContext ? lockedString7(UIStringsNotTranslate7.inputPlaceholderForNetwork) : lockedString7(UIStringsNotTranslate7.inputPlaceholderForNetworkNoContext);
+        return this.#conversation.selectedContext ? lockedString8(UIStringsNotTranslate7.inputPlaceholderForNetwork) : lockedString8(UIStringsNotTranslate7.inputPlaceholderForNetworkNoContext);
       case "drjones-performance-full": {
         const perfPanel = UI9.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
         if (perfPanel?.hasActiveTrace()) {
-          return this.#conversation.selectedContext ? lockedString7(UIStringsNotTranslate7.inputPlaceholderForPerformanceTrace) : lockedString7(UIStringsNotTranslate7.inputPlaceholderForPerformanceTraceNoContext);
+          return this.#conversation.selectedContext ? lockedString8(UIStringsNotTranslate7.inputPlaceholderForPerformanceTrace) : lockedString8(UIStringsNotTranslate7.inputPlaceholderForPerformanceTraceNoContext);
         }
-        return lockedString7(UIStringsNotTranslate7.inputPlaceholderForPerformanceWithNoRecording);
+        return lockedString8(UIStringsNotTranslate7.inputPlaceholderForPerformanceWithNoRecording);
       }
+      case "breakpoint":
+        return lockedString8(UIStringsNotTranslate7.inputPlaceholderForNoContext);
       case "none":
-        if (AiAssistanceModel5.AiUtils.isGeminiBranding()) {
-          return lockedString7(UIStringsNotTranslate7.inputPlaceholderForNoContextBranded);
+        if (AiAssistanceModel6.AiUtils.isGeminiBranding()) {
+          return lockedString8(UIStringsNotTranslate7.inputPlaceholderForNoContextBranded);
         }
-        return lockedString7(UIStringsNotTranslate7.inputPlaceholderForNoContext);
+        return lockedString8(UIStringsNotTranslate7.inputPlaceholderForNoContext);
     }
   }
   #getDisclaimerText() {
@@ -5614,31 +5850,32 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     switch (this.#conversation.type) {
       case "freestyler":
         if (noLogging) {
-          return lockedString7(UIStringsNotTranslate7.inputDisclaimerForStylingEnterpriseNoLogging);
+          return lockedString8(UIStringsNotTranslate7.inputDisclaimerForStylingEnterpriseNoLogging);
         }
-        return lockedString7(UIStringsNotTranslate7.inputDisclaimerForStyling);
+        return lockedString8(UIStringsNotTranslate7.inputDisclaimerForStyling);
       case "drjones-file":
         if (noLogging) {
-          return lockedString7(UIStringsNotTranslate7.inputDisclaimerForFileEnterpriseNoLogging);
+          return lockedString8(UIStringsNotTranslate7.inputDisclaimerForFileEnterpriseNoLogging);
         }
-        return lockedString7(UIStringsNotTranslate7.inputDisclaimerForFile);
+        return lockedString8(UIStringsNotTranslate7.inputDisclaimerForFile);
       case "drjones-network-request":
         if (noLogging) {
-          return lockedString7(UIStringsNotTranslate7.inputDisclaimerForNetworkEnterpriseNoLogging);
+          return lockedString8(UIStringsNotTranslate7.inputDisclaimerForNetworkEnterpriseNoLogging);
         }
-        return lockedString7(UIStringsNotTranslate7.inputDisclaimerForNetwork);
+        return lockedString8(UIStringsNotTranslate7.inputDisclaimerForNetwork);
       // It is deliberate that both Performance agents use the same disclaimer
       // text and this has been approved by Privacy.
       case "drjones-performance-full":
         if (noLogging) {
-          return lockedString7(UIStringsNotTranslate7.inputDisclaimerForPerformanceEnterpriseNoLogging);
+          return lockedString8(UIStringsNotTranslate7.inputDisclaimerForPerformanceEnterpriseNoLogging);
         }
-        return lockedString7(UIStringsNotTranslate7.inputDisclaimerForPerformance);
+        return lockedString8(UIStringsNotTranslate7.inputDisclaimerForPerformance);
+      case "breakpoint":
       case "none":
         if (noLogging) {
-          return lockedString7(UIStringsNotTranslate7.inputDisclaimerForNoContextEnterpriseNoLogging);
+          return lockedString8(UIStringsNotTranslate7.inputDisclaimerForNoContextEnterpriseNoLogging);
         }
-        return lockedString7(UIStringsNotTranslate7.inputDisclaimerForNoContext);
+        return lockedString8(UIStringsNotTranslate7.inputDisclaimerForNoContext);
     }
   }
   #handleFeedbackSubmit(rpcId, rating, feedback) {
@@ -5660,26 +5897,26 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       return;
     }
     const context = this.#conversation.selectedContext;
-    if (context instanceof AiAssistanceModel5.NetworkAgent.RequestContext) {
+    if (context instanceof AiAssistanceModel6.NetworkAgent.RequestContext) {
       const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(
         context.getItem(),
         "headers-component"
         /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */
       );
-      return Common5.Revealer.reveal(requestLocation);
+      return Common6.Revealer.reveal(requestLocation);
     }
-    if (context instanceof AiAssistanceModel5.FileAgent.FileContext) {
-      return Common5.Revealer.reveal(context.getItem().uiLocation(0, 0));
+    if (context instanceof AiAssistanceModel6.FileAgent.FileContext) {
+      return Common6.Revealer.reveal(context.getItem().uiLocation(0, 0));
     }
-    if (context instanceof AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext) {
+    if (context instanceof AiAssistanceModel6.PerformanceAgent.PerformanceTraceContext) {
       const focus = context.getItem();
       if (focus.callTree) {
         const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
-        const revealable = new SDK3.TraceObject.RevealableEvent(event);
-        return Common5.Revealer.reveal(revealable);
+        const revealable = new SDK4.TraceObject.RevealableEvent(event);
+        return Common6.Revealer.reveal(revealable);
       }
       if (focus.insight) {
-        return Common5.Revealer.reveal(focus.insight);
+        return Common6.Revealer.reveal(focus.insight);
       }
     }
   }
@@ -5749,7 +5986,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
     let conversation = this.#conversation;
     if (!this.#conversation || this.#conversation.type !== targetConversationType || this.#conversation.isEmpty) {
-      conversation = new AiAssistanceModel5.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator());
+      conversation = new AiAssistanceModel6.AiConversation.AiConversation(targetConversationType, [], void 0, false, this.#aidaClient, this.#changeManager, false, this.#handlePerformanceRecordAndReload.bind(this), this.#handleInspectElement.bind(this), NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator());
     }
     this.#updateConversationState(conversation);
     const predefinedPrompt = opts?.["prompt"];
@@ -5767,7 +6004,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
   }
   #populateHistoryMenu(contextMenu) {
-    const historicalConversations = AiAssistanceModel5.AiHistoryStorage.AiHistoryStorage.instance().getHistory().map((serializedConversation) => AiAssistanceModel5.AiConversation.AiConversation.fromSerializedConversation(serializedConversation));
+    const historicalConversations = AiAssistanceModel6.AiHistoryStorage.AiHistoryStorage.instance().getHistory().map((serializedConversation) => AiAssistanceModel6.AiConversation.AiConversation.fromSerializedConversation(serializedConversation));
     for (const conversation of historicalConversations.reverse()) {
       if (conversation.isEmpty || !conversation.title) {
         continue;
@@ -5784,7 +6021,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       });
     }
     contextMenu.footerSection().appendItem(i18nString4(UIStrings4.clearChatHistory), () => {
-      void AiAssistanceModel5.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
+      void AiAssistanceModel6.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
     }, {
       disabled: historyEmpty
     });
@@ -5792,11 +6029,16 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
   #onHistoryDeleted() {
     this.#updateConversationState();
   }
+  #clearWalkthrough() {
+    this.#walkthrough.isExpanded = false;
+    this.#walkthrough.activeMessage = null;
+  }
   #onDeleteClicked() {
     if (!this.#conversation) {
       return;
     }
-    void AiAssistanceModel5.AiHistoryStorage.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
+    this.#clearWalkthrough();
+    void AiAssistanceModel6.AiHistoryStorage.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
     this.#updateConversationState();
     UI9.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.chatDeleted));
   }
@@ -5806,7 +6048,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
     const markdownContent = this.#conversation.getConversationMarkdown();
     const contentData = new TextUtils.ContentData.ContentData(markdownContent, false, "text/markdown");
-    const titleFormatted = Platform4.StringUtilities.toSnakeCase(this.#conversation.title || "");
+    const titleFormatted = Platform5.StringUtilities.toSnakeCase(this.#conversation.title || "");
     const prefix = "devtools_";
     const suffix = ".md";
     const maxTitleLength = 64 - prefix.length - suffix.length;
@@ -5846,20 +6088,24 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
         return this.#selectedRequest;
       case "drjones-performance-full":
         return this.#selectedPerformanceTrace;
+      case "breakpoint":
+        return this.#selectedBreakpoint;
       case "none":
       case void 0:
         return null;
     }
   }
   #handleConversationContextChange = (data) => {
-    if (data instanceof AiAssistanceModel5.FileAgent.FileContext) {
+    if (data instanceof AiAssistanceModel6.FileAgent.FileContext) {
       this.#selectedFile = data;
-    } else if (data instanceof AiAssistanceModel5.StylingAgent.NodeContext) {
+    } else if (data instanceof AiAssistanceModel6.StylingAgent.NodeContext) {
       this.#selectedElement = data;
-    } else if (data instanceof AiAssistanceModel5.NetworkAgent.RequestContext) {
+    } else if (data instanceof AiAssistanceModel6.NetworkAgent.RequestContext) {
       this.#selectedRequest = data;
-    } else if (data instanceof AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext) {
+    } else if (data instanceof AiAssistanceModel6.PerformanceAgent.PerformanceTraceContext) {
       this.#selectedPerformanceTrace = data;
+    } else if (data instanceof AiAssistanceModel6.BreakpointDebuggerAgent.BreakpointContext) {
+      this.#selectedBreakpoint = data;
     }
     void VisualLogging6.logFunctionCall(`context-change-${this.#conversation?.type}`);
     this.requestUpdate();
@@ -5879,16 +6125,16 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       const handleInspectModeToggled = (ev) => {
         if (!ev.data) {
           window.setTimeout(() => {
-            resolve(selectedElementFilter(UI9.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode)));
+            resolve(selectedElementFilter(UI9.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode)));
             removeListeners();
           }, 50);
         }
       };
       const removeListeners = () => {
-        UI9.Context.Context.instance().removeFlavorChangeListener(SDK3.DOMModel.DOMNode, handleDOMNodeFlavorChange);
+        UI9.Context.Context.instance().removeFlavorChangeListener(SDK4.DOMModel.DOMNode, handleDOMNodeFlavorChange);
         this.#toggleSearchElementAction?.removeEventListener("Toggled", handleInspectModeToggled);
       };
-      UI9.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, handleDOMNodeFlavorChange);
+      UI9.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, handleDOMNodeFlavorChange);
       this.#toggleSearchElementAction?.addEventListener("Toggled", handleInspectModeToggled);
       this.#runAbortController.signal.addEventListener("abort", () => {
         resolve(null);
@@ -5946,7 +6192,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
       let announcedAnswerLoading = false;
       let announcedAnswerReady = false;
       for await (const data of items) {
-        step.sideEffect = void 0;
+        step.requestApproval = void 0;
         switch (data.type) {
           case "user-query": {
             this.#messages.push({
@@ -5959,6 +6205,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
               parts: []
             };
             this.#messages.push(systemMessage);
+            if (Greendev.Prototypes.instance().isEnabled("breakpointDebuggerAgent") && this.#conversation?.type === "breakpoint") {
+              this.#openWalkthrough(systemMessage);
+            }
             break;
           }
           case "querying": {
@@ -6002,10 +6251,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
           case "side-effect": {
             step.isLoading = false;
             step.code ??= data.code;
-            step.sideEffect = {
+            step.requestApproval = {
+              description: data.description,
               onAnswer: (result) => {
                 data.confirm(result);
-                step.sideEffect = void 0;
+                step.requestApproval = void 0;
                 this.requestUpdate();
               }
             };
@@ -6017,6 +6267,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             step.code ??= data.code;
             step.output ??= data.output;
             step.canceled = data.canceled;
+            step.widgets ??= data.widgets;
             commitStep();
             break;
           }
@@ -6086,10 +6337,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             case "answer": {
               if (!data.complete && !announcedAnswerLoading) {
                 announcedAnswerLoading = true;
-                UI9.ARIAUtils.LiveAnnouncer.status(lockedString7(UIStringsNotTranslate7.answerLoading));
+                UI9.ARIAUtils.LiveAnnouncer.status(lockedString8(UIStringsNotTranslate7.answerLoading));
               } else if (data.complete && !announcedAnswerReady) {
                 announcedAnswerReady = true;
-                UI9.ARIAUtils.LiveAnnouncer.status(lockedString7(UIStringsNotTranslate7.answerReady));
+                UI9.ARIAUtils.LiveAnnouncer.status(lockedString8(UIStringsNotTranslate7.answerReady));
               }
             }
           }
@@ -6115,7 +6366,7 @@ ${part.text}`);
         contentParts.push(`### ${step.title}`);
       }
       if (step.contextDetails) {
-        contentParts.push(AiAssistanceModel5.AiConversation.generateContextDetailsMarkdown(step.contextDetails));
+        contentParts.push(AiAssistanceModel6.AiConversation.generateContextDetailsMarkdown(step.contextDetails));
       }
       if (step.thought) {
         contentParts.push(step.thought);

@@ -127,11 +127,11 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Appearance category in Settings
    */
-  enableCtrlShortcutToSwitchPanels: "Enable Ctrl + 1-9 shortcut to switch panels",
+  enableCtrlShortcutToSwitchPanels: "Use Ctrl + 1-9 to switch panels",
   /**
    * @description (Mac only) Title of a setting under the Appearance category in Settings
    */
-  enableShortcutToSwitchPanels: "Enable \u2318 + 1-9 shortcut to switch panels",
+  enableShortcutToSwitchPanels: "Use \u2318 + 1-9 to switch panels",
   /**
    * @description A drop-down menu option to dock to right
    */
@@ -1194,13 +1194,17 @@ var UIStrings3 = {
    */
   captureAsyncStackTraces: "Capture async stack traces",
   /**
-   * @description Text of a setting that  turn on the measuring rulers when hover over a target
+   * @description Text of a setting that turn on the measuring rulers when hover over a target
+   */
+  rulersOnHover: "Rulers on hover",
+  /**
+   * @description Text of an option that turn on the measuring rulers when hover over a target through the Command Menu
    */
   showRulersOnHover: "Show rulers on hover",
   /**
    * @description Text of a setting that do turn off the measuring rulers when hover over a target
    */
-  doNotShowRulersOnHover: "Do not show rulers on hover",
+  doNotShowRulersOnHover: "Don't show rulers on hover",
   /**
    * @description Title of a setting that turns on grid area name labels
    */
@@ -1250,19 +1254,19 @@ var UIStrings3 = {
    */
   showLineNames: "Show line names",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   showPaintFlashingRectangles: "Show paint flashing rectangles",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   hidePaintFlashingRectangles: "Hide paint flashing rectangles",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   showLayoutShiftRegions: "Show layout shift regions",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   hideLayoutShiftRegions: "Hide layout shift regions",
   /**
@@ -1270,31 +1274,31 @@ var UIStrings3 = {
    */
   highlightAdFrames: "Highlight ad frames",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   doNotHighlightAdFrames: "Do not highlight ad frames",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   showLayerBorders: "Show layer borders",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   hideLayerBorders: "Hide layer borders",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   showFramesPerSecondFpsMeter: "Show frames per second (FPS) meter",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   hideFramesPerSecondFpsMeter: "Hide frames per second (FPS) meter",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   showScrollPerformanceBottlenecks: "Show scroll performance bottlenecks",
   /**
-   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of an option under the Rendering category that can be invoked through the Command Menu
    */
   hideScrollPerformanceBottlenecks: "Hide scroll performance bottlenecks",
   /**
@@ -1526,11 +1530,11 @@ var UIStrings3 = {
    */
   javaScriptSourceMaps: "JavaScript source maps",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu
    */
   enableJavaScriptSourceMaps: "Enable JavaScript source maps",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu
    */
   disableJavaScriptSourceMaps: "Disable JavaScript source maps",
   /**
@@ -1538,11 +1542,11 @@ var UIStrings3 = {
    */
   cssSourceMaps: "CSS source maps",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu
    */
   enableCssSourceMaps: "Enable CSS source maps",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu
    */
   disableCssSourceMaps: "Disable CSS source maps",
   /**
@@ -1643,7 +1647,7 @@ Common3.Settings.registerSettingExtension({
 Common3.Settings.registerSettingExtension({
   category: "ELEMENTS",
   storageType: "Synced",
-  title: i18nLazyString3(UIStrings3.showRulersOnHover),
+  title: i18nLazyString3(UIStrings3.rulersOnHover),
   settingName: "show-metrics-rulers",
   settingType: "boolean",
   options: [
@@ -2458,7 +2462,7 @@ var UIStrings5 = {
   /**
    * @description Title of a setting under the Persistence category in Settings
    */
-  enableLocalOverrides: "Enable Local Overrides",
+  localOverrides: "Local overrides",
   /**
    * @description A tag of Enable Local Overrides setting that can be searched in the command menu
    */
@@ -2481,11 +2485,11 @@ var UIStrings5 = {
    */
   request: "request",
   /**
-   * @description Title of a setting under the Persistence category that can be invoked through the Command Menu
+   * @description Title of an option under the Persistence category that can be invoked through the Command Menu
    */
   enableOverrideNetworkRequests: "Enable override network requests",
   /**
-   * @description Title of a setting under the Persistence category that can be invoked through the Command Menu
+   * @description Title of an option under the Persistence category that can be invoked through the Command Menu
    */
   disableOverrideNetworkRequests: "Disable override network requests"
 };
@@ -2493,7 +2497,7 @@ var str_5 = i18n9.i18n.registerUIStrings("models/persistence/persistence-meta.ts
 var i18nLazyString5 = i18n9.i18n.getLazilyComputedLocalizedString.bind(void 0, str_5);
 Common6.Settings.registerSettingExtension({
   category: "PERSISTENCE",
-  title: i18nLazyString5(UIStrings5.enableLocalOverrides),
+  title: i18nLazyString5(UIStrings5.localOverrides),
   settingName: "persistence-network-overrides-enabled",
   settingType: "boolean",
   defaultValue: false,
@@ -3641,13 +3645,17 @@ var UIStrings11 = {
    */
   trailing: "Trailing",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category
+   */
+  variableValuesInlineWhile: "Variable values inline",
+  /**
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu
    */
   displayVariableValuesInlineWhile: "Display variable values inline while debugging",
   /**
-   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of an option under the Sources category that can be invoked through the Command Menu
    */
-  doNotDisplayVariableValuesInline: "Do not display variable values inline while debugging",
+  doNotDisplayVariableValuesInline: "Don't show variable values inline",
   /**
    * @description Title of a setting under the Sources category in Settings
    */
@@ -4928,7 +4936,7 @@ UI8.ActionRegistration.registerActionExtension({
 Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
-  title: i18nLazyString11(UIStrings11.displayVariableValuesInlineWhile),
+  title: i18nLazyString11(UIStrings11.variableValuesInlineWhile),
   settingName: "inline-variable-values",
   settingType: "boolean",
   defaultValue: true,

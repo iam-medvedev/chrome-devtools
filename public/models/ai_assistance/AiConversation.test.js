@@ -55,7 +55,7 @@ describeWithEnvironment('AiConversation', () => {
                     functionCalls: [{
                             name: 'selectSourceFile',
                             args: {
-                                name: 'script.js',
+                                id: 1,
                             },
                         }],
                     explanation: '',
@@ -104,7 +104,7 @@ describeWithEnvironment('AiConversation', () => {
                     explanation: '',
                     functionCalls: [{
                             name: 'selectNetworkRequest',
-                            args: { url: 'https://example.com' },
+                            args: { id: 'requestId-0' },
                         }],
                 },
             ],

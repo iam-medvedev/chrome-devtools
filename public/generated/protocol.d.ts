@@ -1132,7 +1132,8 @@ export declare namespace Audits {
         NavigationEntryMarkedSkippable = "NavigationEntryMarkedSkippable",
         AutofillAndManualTextPolicyControlledFeaturesInfo = "AutofillAndManualTextPolicyControlledFeaturesInfo",
         AutofillPolicyControlledFeatureInfo = "AutofillPolicyControlledFeatureInfo",
-        ManualTextPolicyControlledFeatureInfo = "ManualTextPolicyControlledFeatureInfo"
+        ManualTextPolicyControlledFeatureInfo = "ManualTextPolicyControlledFeatureInfo",
+        FormModelContextParameterMissingTitleAndDescription = "FormModelContextParameterMissingTitleAndDescription"
     }
     /**
      * Depending on the concrete errorType, different properties are set.
@@ -2808,6 +2809,11 @@ export declare namespace CSS {
          * The array enumerates @starting-style at-rules starting with the innermost one, going outwards.
          */
         startingStyles?: CSSStartingStyle[];
+        /**
+         * @navigation CSS at-rule array.
+         * The array enumerates @navigation at-rules starting with the innermost one, going outwards.
+         */
+        navigations?: CSSNavigation[];
     }
     /**
      * Enum indicating the type of a CSS rule, used to represent the order of a style rule's ancestors.
@@ -2820,7 +2826,8 @@ export declare namespace CSS {
         LayerRule = "LayerRule",
         ScopeRule = "ScopeRule",
         StyleRule = "StyleRule",
-        StartingStyleRule = "StartingStyleRule"
+        StartingStyleRule = "StartingStyleRule",
+        NavigationRule = "NavigationRule"
     }
     /**
      * CSS coverage information.
@@ -3092,6 +3099,28 @@ export declare namespace CSS {
          * Whether the supports condition is satisfied.
          */
         active: boolean;
+        /**
+         * The associated rule header range in the enclosing stylesheet (if
+         * available).
+         */
+        range?: SourceRange;
+        /**
+         * Identifier of the stylesheet containing this object (if exists).
+         */
+        styleSheetId?: DOM.StyleSheetId;
+    }
+    /**
+     * CSS Navigation at-rule descriptor.
+     */
+    interface CSSNavigation {
+        /**
+         * Navigation rule text.
+         */
+        text: string;
+        /**
+         * Whether the navigation condition is satisfied.
+         */
+        active?: boolean;
         /**
          * The associated rule header range in the enclosing stylesheet (if
          * available).
@@ -3420,6 +3449,10 @@ export declare namespace CSS {
          * @supports CSS at-rule condition. Only one type of condition should be set.
          */
         supports?: CSSSupports;
+        /**
+         * @navigation condition. Only one type of condition should be set.
+         */
+        navigation?: CSSNavigation;
         /**
          * Block body.
          */
@@ -3857,6 +3890,17 @@ export declare namespace CSS {
          * The resulting CSS Supports rule after modification.
          */
         supports: CSSSupports;
+    }
+    interface SetNavigationTextRequest {
+        styleSheetId: DOM.StyleSheetId;
+        range: SourceRange;
+        text: string;
+    }
+    interface SetNavigationTextResponse extends ProtocolResponseWithError {
+        /**
+         * The resulting CSS Navigation rule after modification.
+         */
+        navigation: CSSNavigation;
     }
     interface SetScopeTextRequest {
         styleSheetId: DOM.StyleSheetId;
@@ -6655,6 +6699,14 @@ export declare namespace Emulation {
          * Scrollbar type. Default: `default`.
          */
         scrollbarType?: SetDeviceMetricsOverrideRequestScrollbarType;
+        /**
+         * If set to true, enables screen orientation lock emulation, which
+         * intercepts screen.orientation.lock() calls from the page and reports
+         * orientation changes via screenOrientationLockChanged events. This is
+         * useful for emulating mobile device orientation lock behavior in
+         * responsive design mode.
+         */
+        screenOrientationLockEmulation?: boolean;
     }
     interface SetDevicePostureOverrideRequest {
         posture: DevicePosture;
@@ -6959,11 +7011,75 @@ export declare namespace Emulation {
     interface AddScreenResponse extends ProtocolResponseWithError {
         screenInfo: ScreenInfo;
     }
+    interface UpdateScreenRequest {
+        /**
+         * Target screen identifier.
+         */
+        screenId: ScreenId;
+        /**
+         * Offset of the left edge of the screen in pixels.
+         */
+        left?: integer;
+        /**
+         * Offset of the top edge of the screen in pixels.
+         */
+        top?: integer;
+        /**
+         * The width of the screen in pixels.
+         */
+        width?: integer;
+        /**
+         * The height of the screen in pixels.
+         */
+        height?: integer;
+        /**
+         * Specifies the screen's work area.
+         */
+        workAreaInsets?: WorkAreaInsets;
+        /**
+         * Specifies the screen's device pixel ratio.
+         */
+        devicePixelRatio?: number;
+        /**
+         * Specifies the screen's rotation angle. Available values are 0, 90, 180 and 270.
+         */
+        rotation?: integer;
+        /**
+         * Specifies the screen's color depth in bits.
+         */
+        colorDepth?: integer;
+        /**
+         * Specifies the descriptive label for the screen.
+         */
+        label?: string;
+        /**
+         * Indicates whether the screen is internal to the device or external, attached to the device. Default is false.
+         */
+        isInternal?: boolean;
+    }
+    interface UpdateScreenResponse extends ProtocolResponseWithError {
+        screenInfo: ScreenInfo;
+    }
     interface RemoveScreenRequest {
         screenId: ScreenId;
     }
     interface SetPrimaryScreenRequest {
         screenId: ScreenId;
+    }
+    /**
+     * Fired when a page calls screen.orientation.lock() or screen.orientation.unlock()
+     * while device emulation is enabled. This allows the DevTools frontend to update the
+     * emulated device orientation accordingly.
+     */
+    interface ScreenOrientationLockChangedEvent {
+        /**
+         * Whether the screen orientation is currently locked.
+         */
+        locked: boolean;
+        /**
+         * The orientation lock type requested by the page. Only set when locked is true.
+         */
+        orientation?: ScreenOrientation;
     }
 }
 /**
@@ -9373,7 +9489,7 @@ export declare namespace Network {
         VeryHigh = "VeryHigh"
     }
     /**
-     * The render blocking behavior of a resource request.
+     * The render-blocking behavior of a resource request.
      */
     const enum RenderBlockingBehavior {
         Blocking = "Blocking",
@@ -11749,7 +11865,7 @@ export declare namespace Network {
          */
         hasUserGesture?: boolean;
         /**
-         * The render blocking behavior of the request.
+         * The render-blocking behavior of the request.
          */
         renderBlockingBehavior?: RenderBlockingBehavior;
     }

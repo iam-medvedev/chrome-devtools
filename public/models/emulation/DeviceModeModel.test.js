@@ -89,5 +89,49 @@ describeWithMockConnection('DeviceModeModel', () => {
         navigate(getMainFrame(target));
         sinon.assert.calledOnce(setShowHinge);
     });
+    it('tracks screen orientation lock state from emulation model events', () => {
+        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
+        const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
+        assert.isNotNull(emulationModel);
+        // Initially not locked.
+        assert.isFalse(deviceModeModel.isScreenOrientationLocked());
+        // Simulate a screenOrientationLockChanged event (lock).
+        emulationModel.screenOrientationLockChanged({
+            locked: true,
+            orientation: { type: "portraitPrimary" /* Protocol.Emulation.ScreenOrientationType.PortraitPrimary */, angle: 0 },
+        });
+        assert.isTrue(deviceModeModel.isScreenOrientationLocked());
+        // Simulate an unlock event.
+        emulationModel.screenOrientationLockChanged({ locked: false });
+        assert.isFalse(deviceModeModel.isScreenOrientationLocked());
+    });
+    it('dispatches UPDATED event when screen orientation lock changes', () => {
+        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
+        const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
+        assert.isNotNull(emulationModel);
+        const updatedSpy = sinon.spy();
+        deviceModeModel.addEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, updatedSpy);
+        emulationModel.screenOrientationLockChanged({
+            locked: true,
+            orientation: { type: "landscapePrimary" /* Protocol.Emulation.ScreenOrientationType.LandscapePrimary */, angle: 90 },
+        });
+        sinon.assert.calledOnce(updatedSpy);
+        emulationModel.screenOrientationLockChanged({ locked: false });
+        sinon.assert.calledTwice(updatedSpy);
+    });
+    it('resets screen orientation lock state when emulation model is removed', () => {
+        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
+        const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
+        assert.isNotNull(emulationModel);
+        // Lock orientation.
+        emulationModel.screenOrientationLockChanged({
+            locked: true,
+            orientation: { type: "portraitPrimary" /* Protocol.Emulation.ScreenOrientationType.PortraitPrimary */, angle: 0 },
+        });
+        assert.isTrue(deviceModeModel.isScreenOrientationLocked());
+        // Simulate model removal.
+        deviceModeModel.modelRemoved(emulationModel);
+        assert.isFalse(deviceModeModel.isScreenOrientationLocked());
+    });
 });
 //# sourceMappingURL=DeviceModeModel.test.js.map

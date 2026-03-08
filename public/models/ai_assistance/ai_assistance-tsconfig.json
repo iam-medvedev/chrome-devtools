@@ -45,6 +45,8 @@
     "../../../../../../front_end/models/ai_assistance/EvaluateAction.ts",
     "../../../../../../front_end/models/ai_assistance/ExtensionScope.ts",
     "../../../../../../front_end/models/ai_assistance/agents/AiAgent.ts",
+    "../../../../../../front_end/models/ai_assistance/agents/BreakpointDebuggerAgent.ts",
+    "../../../../../../front_end/models/ai_assistance/agents/BreakpointDebuggerAgentOverlay.ts",
     "../../../../../../front_end/models/ai_assistance/agents/ContextSelectionAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/FileAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/NetworkAgent.ts",
@@ -87,6 +89,9 @@
     },
     {
       "path": "../../generated/protocol-tsconfig.json"
+    },
+    {
+      "path": "../computed_style/bundle-tsconfig.json"
     },
     {
       "path": "../network_time_calculator/bundle-tsconfig.json"

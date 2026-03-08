@@ -808,9 +808,11 @@ var ErrorType;
 })(ErrorType || (ErrorType = {}));
 var DispatchHttpRequestError = class extends Error {
   type;
-  constructor(type, options) {
+  response;
+  constructor(type, response, options) {
     super(void 0, options);
     this.type = type;
+    this.response = response;
   }
 };
 async function makeHttpRequest(request, options) {
@@ -830,16 +832,19 @@ async function makeHttpRequest(request, options) {
   });
   debugLog({ request, response });
   if (response.statusCode === 404) {
-    throw new DispatchHttpRequestError(ErrorType.NOT_FOUND);
+    throw new DispatchHttpRequestError(ErrorType.NOT_FOUND, response);
   }
   if ("response" in response && response.statusCode === 200) {
+    if (request.streamId && !response.response) {
+      return null;
+    }
     try {
       return JSON.parse(response.response);
     } catch (err) {
-      throw new DispatchHttpRequestError(ErrorType.HTTP_RESPONSE_UNAVAILABLE, { cause: err });
+      throw new DispatchHttpRequestError(ErrorType.HTTP_RESPONSE_UNAVAILABLE, response, { cause: err });
     }
   }
-  throw new DispatchHttpRequestError(ErrorType.HTTP_RESPONSE_UNAVAILABLE);
+  throw new DispatchHttpRequestError(ErrorType.HTTP_RESPONSE_UNAVAILABLE, response);
 }
 function isDebugMode() {
   return Boolean(localStorage.getItem("debugDispatchHttpRequestEnabled"));
@@ -1002,8 +1007,8 @@ var AidaClient = class {
     return "available";
   }
   async *doConversation(request, options) {
-    if (!InspectorFrontendHostInstance.doAidaConversation) {
-      throw new Error("doAidaConversation is not available");
+    if (!InspectorFrontendHostInstance.dispatchHttpRequest) {
+      throw new Error("dispatchHttpRequest is not available");
     }
     if (Root2.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
       request.metadata.disable_user_content_logging = true;
@@ -1028,18 +1033,35 @@ var AidaClient = class {
       };
     })();
     const streamId = bindOutputStream(stream);
-    InspectorFrontendHostInstance.doAidaConversation(JSON.stringify(request), streamId, (result) => {
-      if (result.statusCode === 403) {
-        stream.fail(new Error("Server responded: permission denied"));
-      } else if (result.error) {
-        stream.fail(new Error(`Cannot send request: ${result.error} ${result.detail || ""}`));
-      } else if (result.netErrorName === "net::ERR_TIMED_OUT") {
-        stream.fail(new Error("doAidaConversation timed out"));
-      } else if (result.statusCode !== 200) {
-        stream.fail(new Error(`Request failed: ${JSON.stringify(result)}`));
-      } else {
-        void stream.close();
+    makeHttpRequest({
+      service: SERVICE_NAME,
+      path: "/v1/aida:doConversation",
+      method: "POST",
+      body: JSON.stringify(request),
+      streamId
+    }, options).then(() => {
+      void stream.close();
+    }, (err) => {
+      if (err instanceof DispatchHttpRequestError && err.response) {
+        const result = err.response;
+        if (result.statusCode === 403) {
+          stream.fail(new Error("Server responded: permission denied"));
+          return;
+        }
+        if ("error" in result && result.error) {
+          stream.fail(new Error(`Cannot send request: ${result.error} ${result.detail || ""}`));
+          return;
+        }
+        if ("netErrorName" in result && result.netErrorName === "net::ERR_TIMED_OUT") {
+          stream.fail(new Error("doAidaConversation timed out"));
+          return;
+        }
+        if (result.statusCode !== 200) {
+          stream.fail(new Error(`Request failed: ${JSON.stringify(result)}`));
+          return;
+        }
       }
+      stream.fail(err);
     });
     let chunk;
     const text = [];
@@ -2245,7 +2267,6 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["apca"] = 39] = "apca";
   DevtoolsExperiments2[DevtoolsExperiments2["font-editor"] = 41] = "font-editor";
   DevtoolsExperiments2[DevtoolsExperiments2["full-accessibility-tree"] = 42] = "full-accessibility-tree";
-  DevtoolsExperiments2[DevtoolsExperiments2["contrast-issues"] = 44] = "contrast-issues";
   DevtoolsExperiments2[DevtoolsExperiments2["experimental-cookie-features"] = 45] = "experimental-cookie-features";
   DevtoolsExperiments2[DevtoolsExperiments2["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
   DevtoolsExperiments2[DevtoolsExperiments2["authored-deployed-grouping"] = 63] = "authored-deployed-grouping";
@@ -2254,7 +2275,8 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";
   DevtoolsExperiments2[DevtoolsExperiments2["durable-messages"] = 110] = "durable-messages";
-  DevtoolsExperiments2[DevtoolsExperiments2["MAX_VALUE"] = 111] = "MAX_VALUE";
+  DevtoolsExperiments2[DevtoolsExperiments2["jpeg-xl"] = 111] = "jpeg-xl";
+  DevtoolsExperiments2[DevtoolsExperiments2["MAX_VALUE"] = 112] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 var IssueExpanded;
 (function(IssueExpanded2) {
@@ -2321,7 +2343,6 @@ var IssueCreated;
   IssueCreated2[IssueCreated2["CookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::SetCookie"] = 35] = "CookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::SetCookie";
   IssueCreated2[IssueCreated2["SharedArrayBufferIssue::TransferIssue"] = 36] = "SharedArrayBufferIssue::TransferIssue";
   IssueCreated2[IssueCreated2["SharedArrayBufferIssue::CreationIssue"] = 37] = "SharedArrayBufferIssue::CreationIssue";
-  IssueCreated2[IssueCreated2["LowTextContrastIssue"] = 41] = "LowTextContrastIssue";
   IssueCreated2[IssueCreated2["CorsIssue::InsecureLocalNetwork"] = 42] = "CorsIssue::InsecureLocalNetwork";
   IssueCreated2[IssueCreated2["CorsIssue::InvalidHeaders"] = 44] = "CorsIssue::InvalidHeaders";
   IssueCreated2[IssueCreated2["CorsIssue::WildcardOriginWithCredentials"] = 45] = "CorsIssue::WildcardOriginWithCredentials";

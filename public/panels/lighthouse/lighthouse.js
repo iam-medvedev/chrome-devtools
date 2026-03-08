@@ -1436,7 +1436,7 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
       if (!id) {
         continue;
       }
-      auditEl.setAttribute("jslog", `${VisualLogging.item(`lighthouse.audit.${id}`)}`);
+      auditEl.setAttribute("jslog", `${VisualLogging.item(`lighthouse.audit.${id}`).track({ resize: true })}`);
       let state;
       for (const className of auditEl.classList) {
         switch (className) {
@@ -1581,6 +1581,7 @@ import * as i18n6 from "./../../core/i18n/i18n.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import { Link } from "./../../ui/kit/kit.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html2, render as render2 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/lighthouse/lighthouseStartView.css.js
 var lighthouseStartView_css_default = `/*
@@ -1754,6 +1755,8 @@ __export(RadioSetting_exports, {
   RadioSetting: () => RadioSetting
 });
 import * as UI3 from "./../../ui/legacy/legacy.js";
+import { Directives, html, render } from "./../../ui/lit/lit.js";
+var { ifDefined } = Directives;
 var RadioSetting = class {
   setting;
   options;
@@ -1768,23 +1771,30 @@ var RadioSetting = class {
     UI3.ARIAUtils.setDescription(this.element, description);
     UI3.ARIAUtils.markAsRadioGroup(this.element);
     this.radioElements = [];
-    for (const option of this.options) {
-      const fragment = UI3.Fragment.Fragment.build`
-  <label $="label" class="lighthouse-radio">
-  <input $="input" type="radio" value=${option.value} name=${setting.name}>
-  <span $="span" class="lighthouse-radio-text">${option.label()}</span>
-  </label>
-  `;
-      this.element.appendChild(fragment.element());
+    render(html`
+        ${this.options.map((option) => {
       const tooltip = option.tooltip?.() || description;
-      if (description) {
-        UI3.Tooltip.Tooltip.install(fragment.$("input"), tooltip);
-        UI3.Tooltip.Tooltip.install(fragment.$("span"), tooltip);
-      }
-      const radioElement = fragment.$("input");
-      radioElement.addEventListener("change", this.valueChanged.bind(this));
-      this.radioElements.push(radioElement);
-    }
+      return html`
+            <label class="lighthouse-radio">
+              <input
+                type="radio"
+                value=${option.value}
+                name=${setting.name}
+                @change=${this.valueChanged.bind(this)}
+                title=${ifDefined(description ? tooltip : void 0)}
+                ${Directives.ref((el) => {
+        this.radioElements.push(el);
+      })}
+              />
+              <span
+                class="lighthouse-radio-text"
+               title=${ifDefined(description ? tooltip : void 0)}
+                >${option.label()}</span
+              >
+            </label>
+          `;
+    })}
+      `, this.element);
     this.ignoreChangeEvents = false;
     this.selectedIndex = -1;
     setting.addChangeListener(this.settingChanged, this);
@@ -1851,6 +1861,62 @@ var UIStrings3 = {
 };
 var str_3 = i18n6.i18n.registerUIStrings("panels/lighthouse/LighthouseStartView.ts", UIStrings3);
 var i18nString3 = i18n6.i18n.getLocalizedString.bind(void 0, str_3);
+var renderStartView = (_input, output, target) => {
+  render2(html2`
+      <form class="lighthouse-start-view">
+        <header class="hbox">
+          <div class="lighthouse-logo"></div>
+          <div class="lighthouse-title">
+            ${i18nString3(UIStrings3.generateLighthouseReport)}
+          </div>
+          <div class="lighthouse-start-button-container"></div>
+        </header>
+        <div
+          ${Directives2.ref((e) => {
+    output.helpText = e;
+  })}
+          class="lighthouse-help-text hidden"
+        ></div>
+        <div class="lighthouse-options hbox">
+          <div class="lighthouse-form-section">
+            <div
+              class="lighthouse-form-elements"
+              ${Directives2.ref((e) => {
+    output.modeFormElements = e;
+  })}
+            ></div>
+          </div>
+          <div class="lighthouse-form-section">
+            <div
+              class="lighthouse-form-elements"
+              ${Directives2.ref((e) => {
+    output.deviceTypeFormElements = e;
+  })}
+            ></div>
+          </div>
+          <div class="lighthouse-form-categories">
+            <fieldset class="lighthouse-form-section lighthouse-form-categories-fieldset">
+              <legend class="lighthouse-form-section-label">
+                ${i18nString3(UIStrings3.categories)}
+              </legend>
+              <div
+                class="lighthouse-form-elements"
+                ${Directives2.ref((e) => {
+    output.categoriesFormElements = e;
+  })}
+              ></div>
+            </fieldset>
+          </div>
+        </div>
+        <div
+          ${Directives2.ref((e) => {
+    output.warningText = e;
+  })}
+          class="lighthouse-warning-text hidden"
+        ></div>
+      </form>
+    `, target);
+};
 var StartView = class extends UI4.Widget.Widget {
   controller;
   panel;
@@ -1918,10 +1984,8 @@ var StartView = class extends UI4.Widget.Widget {
       toolbar2.appendToolbarItem(new UI4.Toolbar.ToolbarItem(link));
     }
   }
-  populateFormControls(fragment, mode) {
-    const deviceTypeFormElements = fragment.$("device-type-form-elements");
+  populateFormControls(deviceTypeFormElements, categoryFormElements, mode) {
     this.populateRuntimeSettingAsRadio("lighthouse.device-type", i18nString3(UIStrings3.device), deviceTypeFormElements);
-    const categoryFormElements = fragment.$("categories-form-elements");
     this.checkboxes = [];
     for (const preset of Presets) {
       preset.setting.setTitle(preset.title());
@@ -1941,39 +2005,24 @@ var StartView = class extends UI4.Widget.Widget {
     this.populateRuntimeSettingAsToolbarCheckbox("lighthouse.enable-sampling", this.#settingsToolbar);
     this.populateRuntimeSettingAsToolbarDropdown("lighthouse.throttling", this.#settingsToolbar);
     const { mode } = this.controller.getFlags();
-    this.populateStartButton(mode);
-    const fragment = UI4.Fragment.Fragment.build`
-<form class="lighthouse-start-view">
-  <header class="hbox">
-    <div class="lighthouse-logo"></div>
-    <h1 class="lighthouse-title">${i18nString3(UIStrings3.generateLighthouseReport)}</h1>
-    <div class="lighthouse-start-button-container" $="start-button-container">${this.startButton}</div>
-  </header>
-  <div $="help-text" class="lighthouse-help-text hidden"></div>
-  <div class="lighthouse-options hbox">
-    <div class="lighthouse-form-section">
-      <div class="lighthouse-form-elements" $="mode-form-elements"></div>
-    </div>
-    <div class="lighthouse-form-section">
-      <div class="lighthouse-form-elements" $="device-type-form-elements"></div>
-    </div>
-    <div class="lighthouse-form-categories">
-      <fieldset class="lighthouse-form-section lighthouse-form-categories-fieldset">
-        <legend class="lighthouse-form-section-label">${i18nString3(UIStrings3.categories)}</legend>
-        <div class="lighthouse-form-elements" $="categories-form-elements"></div>
-      </fieldset>
-    </div>
-  </div>
-  <div $="warning-text" class="lighthouse-warning-text hidden"></div>
-</form>
-    `;
-    this.helpText = fragment.$("help-text");
-    this.warningText = fragment.$("warning-text");
-    const modeFormElements = fragment.$("mode-form-elements");
+    const output = {
+      helpText: void 0,
+      warningText: void 0,
+      modeFormElements: void 0,
+      deviceTypeFormElements: void 0,
+      categoriesFormElements: void 0
+    };
+    renderStartView({}, output, this.contentElement);
+    this.helpText = output.helpText;
+    this.warningText = output.warningText;
+    const modeFormElements = output.modeFormElements;
+    const deviceTypeFormElements = output.deviceTypeFormElements;
+    const categoriesFormElements = output.categoriesFormElements;
+    if (!modeFormElements || !deviceTypeFormElements || !categoriesFormElements) {
+      throw new Error("Required elements not found in template");
+    }
     this.populateRuntimeSettingAsRadio("lighthouse.mode", i18nString3(UIStrings3.mode), modeFormElements);
-    this.populateFormControls(fragment, mode);
-    this.contentElement.textContent = "";
-    this.contentElement.append(fragment.element());
+    this.populateFormControls(deviceTypeFormElements, categoriesFormElements, mode);
     this.refresh();
   }
   populateStartButton(mode) {
@@ -2205,7 +2254,7 @@ var lighthouseDialog_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./lighthouseDialog.css")} */`;
 
 // gen/front_end/panels/lighthouse/LighthouseStatusView.js
-var { html } = Lit;
+var { html: html3 } = Lit;
 var UIStrings4 = {
   /**
    * @description Text to cancel something
@@ -2343,12 +2392,12 @@ Chrome Version: ${chromeVersion[1]}
 Stack Trace: ${err.stack}
 \`\`\`
 `;
-    return html`
+    return html3`
       <p>${i18nString4(UIStrings4.ifThisIssueIsReproduciblePlease)}</p>
       <code class="monospace">${issueBody.trim()}</code>
     `;
   };
-  Lit.render(html`
+  Lit.render(html3`
     <div class="lighthouse-view vbox">
       <span class="header">${statusHeader}</span>
       <div class="lighthouse-status vbox">
@@ -2363,9 +2412,9 @@ Stack Trace: ${err.stack}
           ></div>
         </div>
         <div class="lighthouse-status-text" role="status">
-          ${bugReport ? html`
+          ${bugReport ? html3`
             <p>${i18nString4(UIStrings4.ahSorryWeRanIntoAnError)}</p>
-            ${bugReport.knownBugPattern ? html`
+            ${bugReport.knownBugPattern ? html3`
               <p>${i18nString4(UIStrings4.tryToNavigateToTheUrlInAFresh)}</p>
             ` : renderBugReportBody(bugReport.error, bugReport.auditURL)}
           ` : statusText}
@@ -2637,10 +2686,15 @@ var FastFacts = [
 ];
 
 // gen/front_end/panels/lighthouse/LighthouseTimespanView.js
+var LighthouseTimespanView_exports = {};
+__export(LighthouseTimespanView_exports, {
+  TimespanView: () => TimespanView
+});
 import * as i18n10 from "./../../core/i18n/i18n.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives4, html as html4, render as render4 } from "./../../ui/lit/lit.js";
 var UIStrings5 = {
   /**
    * @description Header indicating that a Lighthouse timespan is starting. "Timespan" is a Lighthouse mode that analyzes user interactions over a period of time.
@@ -2665,6 +2719,27 @@ var UIStrings5 = {
 };
 var str_5 = i18n10.i18n.registerUIStrings("panels/lighthouse/LighthouseTimespanView.ts", UIStrings5);
 var i18nString5 = i18n10.i18n.getLocalizedString.bind(void 0, str_5);
+var renderTimespanView = (input, output, target) => {
+  render4(html4`
+      <div class="lighthouse-view vbox">
+        <span
+          ${Directives4.ref((e) => {
+    output.statusHeader = e;
+  })}
+          class="header"
+        ></span>
+        <span
+          ${Directives4.ref((e) => {
+    output.contentContainer = e;
+  })}
+          class="lighthouse-dialog-text"
+        ></span>
+        <div class="lighthouse-action-buttons hbox">
+          ${input.cancelButton} ${input.endButton}
+        </div>
+      </div>
+    `, target);
+};
 var TimespanView = class extends UI6.Dialog.Dialog {
   panel;
   statusHeader;
@@ -2707,19 +2782,16 @@ var TimespanView = class extends UI6.Dialog.Dialog {
       className: "cancel",
       jslogContext: "lighthouse.cancel"
     });
-    const fragment = UI6.Fragment.Fragment.build`
-  <div class="lighthouse-view vbox">
-  <span $="status-header" class="header"></span>
-  <span $="call-to-action" class="lighthouse-dialog-text"></span>
-  <div class="lighthouse-action-buttons hbox">
-  ${cancelButton}
-  ${this.endButton}
-  </div>
-  </div>
-  `;
-    this.statusHeader = fragment.$("status-header");
-    this.contentContainer = fragment.$("call-to-action");
-    dialogRoot.appendChild(fragment.element());
+    const output = {
+      statusHeader: void 0,
+      contentContainer: void 0
+    };
+    renderTimespanView({
+      cancelButton,
+      endButton: this.endButton
+    }, output, dialogRoot);
+    this.statusHeader = output.statusHeader ?? null;
+    this.contentContainer = output.contentContainer ?? null;
     this.setSizeBehavior(
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
@@ -3022,26 +3094,15 @@ var LighthousePanel = class _LighthousePanel extends UI7.Panel.Panel {
     }
   }
 };
-
-// gen/front_end/panels/lighthouse/LighthouseReporterTypes.js
-var LighthouseReporterTypes_exports = {};
-__export(LighthouseReporterTypes_exports, {
-  LighthouseReportGenerator: () => LighthouseReportGenerator
-});
-var LighthouseReportGenerator = class {
-  generateReportHtml(_lhr) {
-    return "";
-  }
-};
 export {
   LighthouseController_exports as LighthouseController,
   LighthousePanel_exports as LighthousePanel,
   LighthouseProtocolService_exports as LighthouseProtocolService,
   LighthouseReportRenderer_exports as LighthouseReportRenderer,
   LighthouseReportSelector_exports as LighthouseReportSelector,
-  LighthouseReporterTypes_exports as LighthouseReporterTypes,
   LighthouseStartView_exports as LighthouseStartView,
   LighthouseStatusView_exports as LighthouseStatusView,
+  LighthouseTimespanView_exports as LighthouseTimespanView,
   RadioSetting_exports as RadioSetting
 };
 /**

@@ -409,7 +409,8 @@ code
                 type: 'action',
                 output: expectedOutput,
                 code: 'getNetworkTrackSummary({min: 658799706428, max: 658804825864})',
-                canceled: false
+                canceled: false,
+                widgets: undefined,
             });
         });
         it('can call getMainThreadTrackSummary', async function () {
@@ -445,7 +446,8 @@ code
                 type: 'action',
                 output: expectedOutput,
                 code: 'getMainThreadTrackSummary({min: 197695826524, max: 197698633660})',
-                canceled: false
+                canceled: false,
+                widgets: undefined,
             });
         });
         it('will not send facts from a previous insight if the context changes', async function () {

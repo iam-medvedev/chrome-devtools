@@ -54,6 +54,10 @@ const UIStringsNotTranslate = {
      */
     writeACommentToGenerateCode: 'Write a comment to generate code',
     /**
+     * @description Text for teaser for discoverability.
+     */
+    writeACommentToGenerateCodeInConsole: 'Write a comment to generate code. Try typing: \'// add red borders to all the divs\'.',
+    /**
      * @description Text for teaser when suggestion has been generated.
      */
     tab: 'tab',
@@ -133,6 +137,9 @@ function getTooltipDisclaimerText(noLogging, panel) {
             return noLogging ?
                 lockedString(UIStringsNotTranslate.tooltipDisclaimerTextForAiCodeGenerationNoLoggingInSources) :
                 lockedString(UIStringsNotTranslate.tooltipDisclaimerTextForAiCodeGenerationInSources);
+        case "styles" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.STYLES */:
+            // TODO(476101019): update with string for styles pane
+            return '';
     }
 }
 export const DEFAULT_VIEW = (input, output, target) => {
@@ -221,9 +228,10 @@ export const DEFAULT_VIEW = (input, output, target) => {
                 break;
             }
             const newBadge = UI.UIUtils.maybeCreateNewBadge(PROMOTION_ID);
-            teaserLabel = newBadge ?
-                html `${lockedString(UIStringsNotTranslate.writeACommentToGenerateCode)}&nbsp;${newBadge}` :
-                nothing;
+            const teaserText = input.panel === "console" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.CONSOLE */ ?
+                lockedString(UIStringsNotTranslate.writeACommentToGenerateCodeInConsole) :
+                lockedString(UIStringsNotTranslate.writeACommentToGenerateCode);
+            teaserLabel = newBadge ? html `${teaserText}&nbsp;${newBadge}` : nothing;
             break;
         }
         case AiCodeGenerationTeaserDisplayState.LOADING: {
@@ -268,7 +276,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
         `, target);
     // clang-format on
 };
-// TODO(b/448063927): Add "Dont show again" for discovery teaser.
 export class AiCodeGenerationTeaser extends UI.Widget.Widget {
     #view;
     #viewOutput = {};

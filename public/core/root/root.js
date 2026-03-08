@@ -66,7 +66,6 @@ var ExperimentName;
   ExperimentName2["APCA"] = "apca";
   ExperimentName2["FONT_EDITOR"] = "font-editor";
   ExperimentName2["FULL_ACCESSIBILITY_TREE"] = "full-accessibility-tree";
-  ExperimentName2["CONTRAST_ISSUES"] = "contrast-issues";
   ExperimentName2["EXPERIMENTAL_COOKIE_FEATURES"] = "experimental-cookie-features";
   ExperimentName2["INSTRUMENTATION_BREAKPOINTS"] = "instrumentation-breakpoints";
   ExperimentName2["AUTHORED_DEPLOYED_GROUPING"] = "authored-deployed-grouping";
@@ -75,6 +74,7 @@ var ExperimentName;
   ExperimentName2["TIMELINE_SHOW_POST_MESSAGE_EVENTS"] = "timeline-show-postmessage-events";
   ExperimentName2["TIMELINE_DEBUG_MODE"] = "timeline-debug-mode";
   ExperimentName2["DURABLE_MESSAGES"] = "durable-messages";
+  ExperimentName2["JPEG_XL"] = "jpeg-xl";
 })(ExperimentName || (ExperimentName = {}));
 
 // gen/front_end/core/root/Runtime.js

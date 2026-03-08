@@ -760,66 +760,6 @@ var issueDescriptions2 = /* @__PURE__ */ new Map([
   ["kTrustedTypesPolicyViolation", cspTrustedTypesPolicyViolation]
 ]);
 
-// gen/front_end/models/issues_manager/ContrastCheckTrigger.js
-var ContrastCheckTrigger_exports = {};
-__export(ContrastCheckTrigger_exports, {
-  ContrastCheckTrigger: () => ContrastCheckTrigger
-});
-import * as Common2 from "./../../core/common/common.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-var contrastCheckTriggerInstance = null;
-var ContrastCheckTrigger = class _ContrastCheckTrigger {
-  #pageLoadListeners = /* @__PURE__ */ new WeakMap();
-  #frameAddedListeners = /* @__PURE__ */ new WeakMap();
-  constructor() {
-    SDK2.TargetManager.TargetManager.instance().observeModels(SDK2.ResourceTreeModel.ResourceTreeModel, this);
-  }
-  static instance({ forceNew } = { forceNew: false }) {
-    if (!contrastCheckTriggerInstance || forceNew) {
-      contrastCheckTriggerInstance = new _ContrastCheckTrigger();
-    }
-    return contrastCheckTriggerInstance;
-  }
-  async modelAdded(resourceTreeModel) {
-    this.#pageLoadListeners.set(resourceTreeModel, resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.Load, this.#pageLoaded, this));
-    this.#frameAddedListeners.set(resourceTreeModel, resourceTreeModel.addEventListener(SDK2.ResourceTreeModel.Events.FrameAdded, this.#frameAdded, this));
-  }
-  modelRemoved(resourceTreeModel) {
-    const pageLoadListener = this.#pageLoadListeners.get(resourceTreeModel);
-    if (pageLoadListener) {
-      Common2.EventTarget.removeEventListeners([pageLoadListener]);
-    }
-    const frameAddedListeners = this.#frameAddedListeners.get(resourceTreeModel);
-    if (frameAddedListeners) {
-      Common2.EventTarget.removeEventListeners([frameAddedListeners]);
-    }
-  }
-  #checkContrast(resourceTreeModel) {
-    if (!Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.CONTRAST_ISSUES)) {
-      return;
-    }
-    void resourceTreeModel.target().auditsAgent().invoke_checkContrast({});
-  }
-  #pageLoaded(event) {
-    const { resourceTreeModel } = event.data;
-    this.#checkContrast(resourceTreeModel);
-  }
-  async #frameAdded(event) {
-    if (!Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.CONTRAST_ISSUES)) {
-      return;
-    }
-    const frame = event.data;
-    if (!frame.isMainFrame()) {
-      return;
-    }
-    const response = await frame.resourceTreeModel().target().runtimeAgent().invoke_evaluate({ expression: "document.readyState", returnByValue: true });
-    if (response.result?.value === "complete") {
-      this.#checkContrast(frame.resourceTreeModel());
-    }
-  }
-};
-
 // gen/front_end/models/issues_manager/CookieDeprecationMetadataIssue.js
 var CookieDeprecationMetadataIssue_exports = {};
 __export(CookieDeprecationMetadataIssue_exports, {
@@ -883,9 +823,9 @@ __export(CookieIssue_exports, {
   CookieIssue: () => CookieIssue,
   isCausedByThirdParty: () => isCausedByThirdParty
 });
-import * as Common3 from "./../../core/common/common.js";
+import * as Common2 from "./../../core/common/common.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 var UIStrings6 = {
   /**
    * @description Label for the link for SameSiteCookies Issues
@@ -954,7 +894,7 @@ var CookieIssue = class _CookieIssue extends Issue {
    * The issue code will be mapped to a CookieIssueSubCategory enum for metric purpose.
    */
   static codeForCookieIssueDetails(reason, warningReasons, operation, cookieUrl) {
-    const isURLSecure = cookieUrl && (Common3.ParsedURL.schemeIs(cookieUrl, "https:") || Common3.ParsedURL.schemeIs(cookieUrl, "wss:"));
+    const isURLSecure = cookieUrl && (Common2.ParsedURL.schemeIs(cookieUrl, "https:") || Common2.ParsedURL.schemeIs(cookieUrl, "wss:"));
     const secure = isURLSecure ? "Secure" : "Insecure";
     if (reason === "ExcludeSameSiteStrict" || reason === "ExcludeSameSiteLax" || reason === "ExcludeSameSiteUnspecifiedTreatedAsLax") {
       if (warningReasons && warningReasons.length > 0) {
@@ -1049,7 +989,7 @@ var CookieIssue = class _CookieIssue extends Issue {
     return resolveLazyDescription(description);
   }
   isCausedByThirdParty() {
-    const outermostFrame = SDK3.FrameManager.FrameManager.instance().getOutermostFrame();
+    const outermostFrame = SDK2.FrameManager.FrameManager.instance().getOutermostFrame();
     return isCausedByThirdParty(outermostFrame, this.details().cookieUrl, this.details().siteForCookies);
   }
   getKind() {
@@ -1117,7 +1057,7 @@ var CookieIssue = class _CookieIssue extends Issue {
       "ExcludeThirdPartyPhaseout"
       /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */
     )) {
-      return new SDK3.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK3.RuntimeModel.RuntimeModel), Common3.Console.FrontendMessageSource.ISSUE_PANEL, "warning", UIStrings6.consoleTpcdErrorMessage, {
+      return new SDK2.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK2.RuntimeModel.RuntimeModel), Common2.Console.FrontendMessageSource.ISSUE_PANEL, "warning", UIStrings6.consoleTpcdErrorMessage, {
         url: this.details().request?.url,
         affectedResources: { requestId: this.details().request?.requestId, issueId: this.issueId }
       });
@@ -1135,7 +1075,7 @@ function isCausedByThirdParty(outermostFrame, cookieUrl, siteForCookies) {
   if (!cookieUrl || outermostFrame.domainAndRegistry() === "") {
     return false;
   }
-  const parsedCookieUrl = Common3.ParsedURL.ParsedURL.fromString(cookieUrl);
+  const parsedCookieUrl = Common2.ParsedURL.ParsedURL.fromString(cookieUrl);
   if (!parsedCookieUrl) {
     return false;
   }
@@ -2712,70 +2652,22 @@ __export(IssueAggregator_exports, {
   AggregatedIssue: () => AggregatedIssue,
   IssueAggregator: () => IssueAggregator
 });
-import * as Common4 from "./../../core/common/common.js";
-
-// gen/front_end/models/issues_manager/LowTextContrastIssue.js
-var LowTextContrastIssue_exports = {};
-__export(LowTextContrastIssue_exports, {
-  LowTextContrastIssue: () => LowTextContrastIssue
-});
-import * as i18n25 from "./../../core/i18n/i18n.js";
-var UIStrings14 = {
-  /**
-   * @description Link title for the Low Text Contrast issue in the Issues panel
-   */
-  colorAndContrastAccessibility: "Color and contrast accessibility"
-};
-var str_13 = i18n25.i18n.registerUIStrings("models/issues_manager/LowTextContrastIssue.ts", UIStrings14);
-var i18nString5 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
-var LowTextContrastIssue = class _LowTextContrastIssue extends Issue {
-  constructor(issueDetails, issuesModel) {
-    super("LowTextContrastIssue", issueDetails, issuesModel);
-  }
-  primaryKey() {
-    return `${this.code()}-(${this.details().violatingNodeId})`;
-  }
-  getCategory() {
-    return "LowTextContrast";
-  }
-  getDescription() {
-    return {
-      file: "LowTextContrast.md",
-      links: [
-        {
-          link: "https://web.dev/color-and-contrast-accessibility/",
-          linkTitle: i18nString5(UIStrings14.colorAndContrastAccessibility)
-        }
-      ]
-    };
-  }
-  getKind() {
-    return "Improvement";
-  }
-  static fromInspectorIssue(issuesModel, inspectorIssue) {
-    const lowTextContrastIssueDetails = inspectorIssue.details.lowTextContrastIssueDetails;
-    if (!lowTextContrastIssueDetails) {
-      console.warn("LowTextContrast issue without details received.");
-      return [];
-    }
-    return [new _LowTextContrastIssue(lowTextContrastIssueDetails, issuesModel)];
-  }
-};
+import * as Common3 from "./../../core/common/common.js";
 
 // gen/front_end/models/issues_manager/MixedContentIssue.js
 var MixedContentIssue_exports = {};
 __export(MixedContentIssue_exports, {
   MixedContentIssue: () => MixedContentIssue
 });
-import * as i18n27 from "./../../core/i18n/i18n.js";
-var UIStrings15 = {
+import * as i18n25 from "./../../core/i18n/i18n.js";
+var UIStrings14 = {
   /**
    * @description Label for the link for Mixed Content Issues
    */
   preventingMixedContent: "Preventing mixed content"
 };
-var str_14 = i18n27.i18n.registerUIStrings("models/issues_manager/MixedContentIssue.ts", UIStrings15);
-var i18nString6 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
+var str_13 = i18n25.i18n.registerUIStrings("models/issues_manager/MixedContentIssue.ts", UIStrings14);
+var i18nString5 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
 var MixedContentIssue = class _MixedContentIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     super("MixedContentIssue", issueDetails, issuesModel);
@@ -2793,7 +2685,7 @@ var MixedContentIssue = class _MixedContentIssue extends Issue {
   getDescription() {
     return {
       file: "mixedContent.md",
-      links: [{ link: "https://web.dev/what-is-mixed-content/", linkTitle: i18nString6(UIStrings15.preventingMixedContent) }]
+      links: [{ link: "https://web.dev/what-is-mixed-content/", linkTitle: i18nString5(UIStrings14.preventingMixedContent) }]
     };
   }
   primaryKey() {
@@ -2824,8 +2716,8 @@ var PartitioningBlobURLIssue_exports = {};
 __export(PartitioningBlobURLIssue_exports, {
   PartitioningBlobURLIssue: () => PartitioningBlobURLIssue
 });
-import * as i18n29 from "./../../core/i18n/i18n.js";
-var UIStrings16 = {
+import * as i18n27 from "./../../core/i18n/i18n.js";
+var UIStrings15 = {
   /**
    * @description Title for Partitioning BlobURL explainer url link.
    */
@@ -2835,8 +2727,8 @@ var UIStrings16 = {
    */
   chromeStatusEntry: "Chrome Status Entry"
 };
-var str_15 = i18n29.i18n.registerUIStrings("models/issues_manager/PartitioningBlobURLIssue.ts", UIStrings16);
-var i18nString7 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
+var str_14 = i18n27.i18n.registerUIStrings("models/issues_manager/PartitioningBlobURLIssue.ts", UIStrings15);
+var i18nString6 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var PartitioningBlobURLIssue = class _PartitioningBlobURLIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     super("PartitioningBlobURLIssue", issueDetails, issuesModel);
@@ -2851,11 +2743,11 @@ var PartitioningBlobURLIssue = class _PartitioningBlobURLIssue extends Issue {
       links: [
         {
           link: "https://developers.google.com/privacy-sandbox/cookies/storage-partitioning",
-          linkTitle: i18nString7(UIStrings16.partitioningBlobURL)
+          linkTitle: i18nString6(UIStrings15.partitioningBlobURL)
         },
         {
           link: "https://chromestatus.com/feature/5130361898795008",
-          linkTitle: i18nString7(UIStrings16.chromeStatusEntry)
+          linkTitle: i18nString6(UIStrings15.chromeStatusEntry)
         }
       ]
     };
@@ -3126,15 +3018,15 @@ var QuirksModeIssue_exports = {};
 __export(QuirksModeIssue_exports, {
   QuirksModeIssue: () => QuirksModeIssue
 });
-import * as i18n31 from "./../../core/i18n/i18n.js";
-var UIStrings17 = {
+import * as i18n29 from "./../../core/i18n/i18n.js";
+var UIStrings16 = {
   /**
    * @description Link title for the Quirks Mode issue in the Issues panel
    */
   documentCompatibilityMode: "Document compatibility mode"
 };
-var str_16 = i18n31.i18n.registerUIStrings("models/issues_manager/QuirksModeIssue.ts", UIStrings17);
-var i18nString8 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
+var str_15 = i18n29.i18n.registerUIStrings("models/issues_manager/QuirksModeIssue.ts", UIStrings16);
+var i18nString7 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var QuirksModeIssue = class _QuirksModeIssue extends Issue {
   constructor(issueDetails, issuesModel) {
     const mode = issueDetails.isLimitedQuirksMode ? "LimitedQuirksMode" : "QuirksMode";
@@ -3153,7 +3045,7 @@ var QuirksModeIssue = class _QuirksModeIssue extends Issue {
       links: [
         {
           link: "https://web.dev/doctype/",
-          linkTitle: i18nString8(UIStrings17.documentCompatibilityMode)
+          linkTitle: i18nString7(UIStrings16.documentCompatibilityMode)
         }
       ]
     };
@@ -3168,6 +3060,54 @@ var QuirksModeIssue = class _QuirksModeIssue extends Issue {
       return [];
     }
     return [new _QuirksModeIssue(quirksModeIssueDetails, issuesModel)];
+  }
+};
+
+// gen/front_end/models/issues_manager/SelectivePermissionsInterventionIssue.js
+var SelectivePermissionsInterventionIssue_exports = {};
+__export(SelectivePermissionsInterventionIssue_exports, {
+  SelectivePermissionsInterventionIssue: () => SelectivePermissionsInterventionIssue
+});
+import * as i18n31 from "./../../core/i18n/i18n.js";
+var UIStrings17 = {
+  /**
+   * @description Title for a learn more link in Selective Permissions Intervention issue description
+   */
+  selectivePermissionsIntervention: "Selective Permissions Intervention"
+};
+var str_16 = i18n31.i18n.registerUIStrings("models/issues_manager/SelectivePermissionsInterventionIssue.ts", UIStrings17);
+var i18nString8 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
+var SelectivePermissionsInterventionIssue = class _SelectivePermissionsInterventionIssue extends Issue {
+  constructor(issueDetails, issuesModel) {
+    super("SelectivePermissionsInterventionIssue", issueDetails, issuesModel);
+  }
+  primaryKey() {
+    return `${"SelectivePermissionsInterventionIssue"}-${JSON.stringify(this.details())}`;
+  }
+  getDescription() {
+    return {
+      file: "selectivePermissionsIntervention.md",
+      links: [
+        {
+          link: "https://crbug.com/435223477",
+          linkTitle: i18nString8(UIStrings17.selectivePermissionsIntervention)
+        }
+      ]
+    };
+  }
+  getCategory() {
+    return "SelectivePermissionsIntervention";
+  }
+  getKind() {
+    return "PageError";
+  }
+  static fromInspectorIssue(issuesModel, inspectorIssue) {
+    const selectivePermissionsInterventionIssueDetails = inspectorIssue.details.selectivePermissionsInterventionIssueDetails;
+    if (!selectivePermissionsInterventionIssueDetails) {
+      console.warn("Selective Permissions Intervention issue without details received.");
+      return [];
+    }
+    return [new _SelectivePermissionsInterventionIssue(selectivePermissionsInterventionIssueDetails, issuesModel)];
   }
 };
 
@@ -3237,11 +3177,11 @@ var AggregatedIssue = class extends Issue {
   #cspIssues = /* @__PURE__ */ new Set();
   #deprecationIssues = /* @__PURE__ */ new Set();
   #issueKind = "Improvement";
-  #lowContrastIssues = /* @__PURE__ */ new Set();
   #cookieDeprecationMetadataIssues = /* @__PURE__ */ new Set();
   #mixedContentIssues = /* @__PURE__ */ new Set();
   #partitioningBlobURLIssues = /* @__PURE__ */ new Set();
   #permissionElementIssues = /* @__PURE__ */ new Set();
+  #selectivePermissionsInterventionIssues = /* @__PURE__ */ new Set();
   #sharedArrayBufferIssues = /* @__PURE__ */ new Set();
   #quirksModeIssues = /* @__PURE__ */ new Set();
   #attributionReportingIssues = /* @__PURE__ */ new Set();
@@ -3296,11 +3236,11 @@ var AggregatedIssue = class extends Issue {
   getDeprecationIssues() {
     return this.#deprecationIssues;
   }
-  getLowContrastIssues() {
-    return this.#lowContrastIssues;
-  }
   requests() {
     return this.#affectedRequests.values();
+  }
+  getSelectivePermissionsInterventionIssues() {
+    return this.#selectivePermissionsInterventionIssues;
   }
   getSharedArrayBufferIssues() {
     return this.#sharedArrayBufferIssues;
@@ -3408,9 +3348,6 @@ var AggregatedIssue = class extends Issue {
     if (issue instanceof SharedArrayBufferIssue) {
       this.#sharedArrayBufferIssues.add(issue);
     }
-    if (issue instanceof LowTextContrastIssue) {
-      this.#lowContrastIssues.add(issue);
-    }
     if (issue instanceof CorsIssue) {
       this.#corsIssues.add(issue);
     }
@@ -3432,6 +3369,9 @@ var AggregatedIssue = class extends Issue {
     if (issue instanceof PermissionElementIssue) {
       this.#permissionElementIssues.add(issue);
     }
+    if (issue instanceof SelectivePermissionsInterventionIssue) {
+      this.#selectivePermissionsInterventionIssues.add(issue);
+    }
   }
   getKind() {
     return this.#issueKind;
@@ -3446,7 +3386,7 @@ var AggregatedIssue = class extends Issue {
     throw new Error("Should not call setHidden on aggregatedIssue");
   }
 };
-var IssueAggregator = class extends Common4.ObjectWrapper.ObjectWrapper {
+var IssueAggregator = class extends Common3.ObjectWrapper.ObjectWrapper {
   issuesManager;
   #aggregatedIssuesByKey = /* @__PURE__ */ new Map();
   #hiddenAggregatedIssuesByKey = /* @__PURE__ */ new Map();
@@ -3528,7 +3468,7 @@ var IssueResolver_exports = {};
 __export(IssueResolver_exports, {
   IssueResolver: () => IssueResolver
 });
-import * as Common7 from "./../../core/common/common.js";
+import * as Common6 from "./../../core/common/common.js";
 
 // gen/front_end/models/issues_manager/IssuesManager.js
 var IssuesManager_exports = {};
@@ -3538,8 +3478,8 @@ __export(IssuesManager_exports, {
   defaultHideIssueByCodeSetting: () => defaultHideIssueByCodeSetting,
   getHideIssueByCodeSetting: () => getHideIssueByCodeSetting
 });
-import * as Common6 from "./../../core/common/common.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as Common5 from "./../../core/common/common.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 
 // gen/front_end/models/issues_manager/BounceTrackingIssue.js
 import * as i18n35 from "./../../core/i18n/i18n.js";
@@ -4145,7 +4085,7 @@ __export(SourceFrameIssuesManager_exports, {
   IssueMessage: () => IssueMessage,
   SourceFrameIssuesManager: () => SourceFrameIssuesManager
 });
-import * as Common5 from "./../../core/common/common.js";
+import * as Common4 from "./../../core/common/common.js";
 import * as Bindings from "./../bindings/bindings.js";
 import * as Workspace from "./../workspace/workspace.js";
 
@@ -4242,7 +4182,7 @@ var SourceFrameIssuesManager = class {
       return;
     }
     const clickHandler = () => {
-      void Common5.Revealer.reveal(issue);
+      void Common4.Revealer.reveal(issue);
     };
     this.#sourceFrameMessageManager.addMessage(new IssueMessage(messageText, issue.getKind(), clickHandler), {
       line: srcLocation.lineNumber,
@@ -4470,10 +4410,6 @@ var issueCodeHandlers = /* @__PURE__ */ new Map([
     SharedDictionaryIssue.fromInspectorIssue
   ],
   [
-    "LowTextContrastIssue",
-    LowTextContrastIssue.fromInspectorIssue
-  ],
-  [
     "CorsIssue",
     CorsIssue.fromInspectorIssue
   ],
@@ -4540,6 +4476,10 @@ var issueCodeHandlers = /* @__PURE__ */ new Map([
   [
     "PermissionElementIssue",
     PermissionElementIssue.fromInspectorIssue
+  ],
+  [
+    "SelectivePermissionsInterventionIssue",
+    SelectivePermissionsInterventionIssue.fromInspectorIssue
   ]
 ]);
 function createIssuesFromProtocolIssue(issuesModel, inspectorIssue) {
@@ -4555,9 +4495,9 @@ function defaultHideIssueByCodeSetting() {
   return setting;
 }
 function getHideIssueByCodeSetting() {
-  return Common6.Settings.Settings.instance().createSetting("hide-issue-by-code-setting-experiment-2021", defaultHideIssueByCodeSetting());
+  return Common5.Settings.Settings.instance().createSetting("hide-issue-by-code-setting-experiment-2021", defaultHideIssueByCodeSetting());
 }
-var IssuesManager = class _IssuesManager extends Common6.ObjectWrapper.ObjectWrapper {
+var IssuesManager = class _IssuesManager extends Common5.ObjectWrapper.ObjectWrapper {
   showThirdPartyIssuesSetting;
   hideIssueSetting;
   #eventListeners = /* @__PURE__ */ new WeakMap();
@@ -4573,12 +4513,12 @@ var IssuesManager = class _IssuesManager extends Common6.ObjectWrapper.ObjectWra
     this.showThirdPartyIssuesSetting = showThirdPartyIssuesSetting;
     this.hideIssueSetting = hideIssueSetting;
     new SourceFrameIssuesManager(this);
-    SDK4.TargetManager.TargetManager.instance().observeModels(SDK4.IssuesModel.IssuesModel, this);
-    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.ResourceTreeModel.ResourceTreeModel, SDK4.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
-    SDK4.FrameManager.FrameManager.instance().addEventListener("FrameAddedToTarget", this.#onFrameAddedToTarget, this);
+    SDK3.TargetManager.TargetManager.instance().observeModels(SDK3.IssuesModel.IssuesModel, this);
+    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    SDK3.FrameManager.FrameManager.instance().addEventListener("FrameAddedToTarget", this.#onFrameAddedToTarget, this);
     this.showThirdPartyIssuesSetting?.addChangeListener(() => this.#updateFilteredIssues());
     this.hideIssueSetting?.addChangeListener(() => this.#updateFilteredIssues());
-    SDK4.TargetManager.TargetManager.instance().observeTargets({
+    SDK3.TargetManager.TargetManager.instance().observeTargets({
       targetAdded: (target) => {
         if (target.outermostTarget() === target) {
           this.#updateFilteredIssues();
@@ -4612,7 +4552,7 @@ var IssuesManager = class _IssuesManager extends Common6.ObjectWrapper.ObjectWra
       } else if (type === "Activation" && frame.resourceTreeModel().target() === issue.model()?.target()) {
         keptIssues.set(key, issue);
       } else if (issue.code() === "BounceTrackingIssue" || issue.code() === "CookieIssue") {
-        const networkManager = frame.resourceTreeModel().target().model(SDK4.NetworkManager.NetworkManager);
+        const networkManager = frame.resourceTreeModel().target().model(SDK3.NetworkManager.NetworkManager);
         if (networkManager?.requestForLoaderId(frame.loaderId)?.hasUserGesture() === false) {
           keptIssues.set(key, issue);
         }
@@ -4623,7 +4563,7 @@ var IssuesManager = class _IssuesManager extends Common6.ObjectWrapper.ObjectWra
   }
   #onFrameAddedToTarget(event) {
     const { frame } = event.data;
-    if (frame.isOutermostFrame() && SDK4.TargetManager.TargetManager.instance().isInScope(frame.resourceTreeModel())) {
+    if (frame.isOutermostFrame() && SDK3.TargetManager.TargetManager.instance().isInScope(frame.resourceTreeModel())) {
       this.#updateFilteredIssues();
     }
   }
@@ -4634,7 +4574,7 @@ var IssuesManager = class _IssuesManager extends Common6.ObjectWrapper.ObjectWra
   modelRemoved(issuesModel) {
     const listener = this.#eventListeners.get(issuesModel);
     if (listener) {
-      Common6.EventTarget.removeEventListeners([listener]);
+      Common5.EventTarget.removeEventListeners([listener]);
     }
   }
   #onIssueAddedEvent(event) {
@@ -4646,7 +4586,7 @@ var IssuesManager = class _IssuesManager extends Common6.ObjectWrapper.ObjectWra
       if (!message) {
         continue;
       }
-      issuesModel.target().model(SDK4.ConsoleModel.ConsoleModel)?.addMessage(message);
+      issuesModel.target().model(SDK3.ConsoleModel.ConsoleModel)?.addMessage(message);
     }
   }
   addIssue(issuesModel, issue) {
@@ -4721,7 +4661,7 @@ var IssuesManager = class _IssuesManager extends Common6.ObjectWrapper.ObjectWra
     return this.#allIssues.size;
   }
   #issueFilter(issue) {
-    const scopeTarget = SDK4.TargetManager.TargetManager.instance().scopeTarget();
+    const scopeTarget = SDK3.TargetManager.TargetManager.instance().scopeTarget();
     if (!scopeTarget) {
       return false;
     }
@@ -4782,13 +4722,13 @@ var IssuesManager = class _IssuesManager extends Common6.ObjectWrapper.ObjectWra
   }
 };
 globalThis.addIssueForTest = (issue) => {
-  const mainTarget = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();
-  const issuesModel = mainTarget?.model(SDK4.IssuesModel.IssuesModel);
+  const mainTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
+  const issuesModel = mainTarget?.model(SDK3.IssuesModel.IssuesModel);
   issuesModel?.issueAdded({ issue });
 };
 
 // gen/front_end/models/issues_manager/IssueResolver.js
-var IssueResolver = class extends Common7.ResolverBase.ResolverBase {
+var IssueResolver = class extends Common6.ResolverBase.ResolverBase {
   #issuesListener = null;
   #issuesManager;
   constructor(issuesManager = IssuesManager.instance()) {
@@ -4815,7 +4755,7 @@ var IssueResolver = class extends Common7.ResolverBase.ResolverBase {
     if (!this.#issuesListener) {
       return;
     }
-    Common7.EventTarget.removeEventListeners([this.#issuesListener]);
+    Common6.EventTarget.removeEventListeners([this.#issuesListener]);
     this.#issuesListener = null;
   }
 };
@@ -4830,8 +4770,8 @@ __export(RelatedIssue_exports, {
   issuesAssociatedWith: () => issuesAssociatedWith,
   reveal: () => reveal
 });
-import * as Common8 from "./../../core/common/common.js";
-import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as Common7 from "./../../core/common/common.js";
+import * as SDK4 from "./../../core/sdk/sdk.js";
 function issuesAssociatedWithNetworkRequest(issues, request) {
   return issues.filter((issue) => {
     for (const affectedRequest of issue.requests()) {
@@ -4853,10 +4793,10 @@ function issuesAssociatedWithCookie(issues, domain, name, path) {
   });
 }
 function issuesAssociatedWith(issues, obj) {
-  if (obj instanceof SDK5.NetworkRequest.NetworkRequest) {
+  if (obj instanceof SDK4.NetworkRequest.NetworkRequest) {
     return issuesAssociatedWithNetworkRequest(issues, obj);
   }
-  if (obj instanceof SDK5.Cookie.Cookie) {
+  if (obj instanceof SDK4.Cookie.Cookie) {
     return issuesAssociatedWithCookie(issues, obj.domain(), obj.name(), obj.path());
   }
   throw new Error(`issues can not be associated with ${JSON.stringify(obj)}`);
@@ -4888,13 +4828,13 @@ async function reveal(obj, category) {
   if (typeof obj === "string") {
     const issue = IssuesManager.instance().getIssueById(obj);
     if (issue) {
-      return await Common8.Revealer.reveal(issue);
+      return await Common7.Revealer.reveal(issue);
     }
   }
   const issues = Array.from(IssuesManager.instance().issues());
   const candidates = issuesAssociatedWith(issues, obj).filter((issue) => !category || issue.getCategory() === category);
   if (candidates.length > 0) {
-    return await Common8.Revealer.reveal(candidates[0]);
+    return await Common7.Revealer.reveal(candidates[0]);
   }
 }
 export {
@@ -4903,7 +4843,6 @@ export {
   ClientHintIssue_exports as ClientHintIssue,
   ConnectionAllowlistIssue_exports as ConnectionAllowlistIssue,
   ContentSecurityPolicyIssue_exports as ContentSecurityPolicyIssue,
-  ContrastCheckTrigger_exports as ContrastCheckTrigger,
   CookieDeprecationMetadataIssue_exports as CookieDeprecationMetadataIssue,
   CookieIssue_exports as CookieIssue,
   CorsIssue_exports as CorsIssue,
@@ -4917,7 +4856,6 @@ export {
   IssueAggregator_exports as IssueAggregator,
   IssueResolver_exports as IssueResolver,
   IssuesManager_exports as IssuesManager,
-  LowTextContrastIssue_exports as LowTextContrastIssue,
   MarkdownIssueDescription_exports as MarkdownIssueDescription,
   MixedContentIssue_exports as MixedContentIssue,
   PartitioningBlobURLIssue_exports as PartitioningBlobURLIssue,
@@ -4926,6 +4864,7 @@ export {
   QuirksModeIssue_exports as QuirksModeIssue,
   RelatedIssue_exports as RelatedIssue,
   SRIMessageSignatureIssue_exports as SRIMessageSignatureIssue,
+  SelectivePermissionsInterventionIssue_exports as SelectivePermissionsInterventionIssue,
   SharedArrayBufferIssue_exports as SharedArrayBufferIssue,
   SharedDictionaryIssue_exports as SharedDictionaryIssue,
   SourceFrameIssuesManager_exports as SourceFrameIssuesManager,

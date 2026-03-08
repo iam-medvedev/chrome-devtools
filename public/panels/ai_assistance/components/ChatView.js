@@ -13,7 +13,7 @@ import { ChatInput } from './ChatInput.js';
 import { ChatMessage } from './ChatMessage.js';
 import chatViewStyles from './chatView.css.js';
 export { ChatInput } from './ChatInput.js';
-const { ref, repeat, classMap } = Directives;
+const { ref, repeat, classMap, } = Directives;
 /*
 * Strings that don't need to be translated at this time.
 */
@@ -104,7 +104,8 @@ const DEFAULT_VIEW = (input, output, target) => {
         isTextInputDisabled: input.isTextInputDisabled,
         inputPlaceholder: input.inputPlaceholder,
         disclaimerText: input.disclaimerText,
-        selectedContext: input.selectedContext,
+        context: input.context,
+        isContextSelected: input.isContextSelected,
         inspectElementToggled: input.inspectElementToggled,
         multimodalInputEnabled: input.multimodalInputEnabled ?? false,
         conversationType: input.conversationType,

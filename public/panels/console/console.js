@@ -855,6 +855,8 @@ import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
+import * as Breakpoints from "./../../models/breakpoints/breakpoints.js";
+import * as Greendev from "./../../models/greendev/greendev.js";
 import * as Logs from "./../../models/logs/logs.js";
 import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
@@ -979,6 +981,7 @@ import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import { render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as AiAssistancePanel from "./../ai_assistance/ai_assistance.js";
 
 // gen/front_end/panels/console/consoleView.css.js
 var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
@@ -1418,11 +1421,16 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
     --display-ignored-formatted-stack-frame: var(--display-formatted-stack-frame-default);
   }
 
-  &:has(.formatted-stack-frame .ignore-list-link):has(.formatted-stack-frame .devtools-link:not(.ignore-list-link)) {
+  &:has(.formatted-stack-frame .ignore-list-link):has(.formatted-stack-frame .devtools-link:not(.ignore-list-link)),
+  &:has(.formatted-stack-frame .ignore-list-link):has(.stack-preview-container.has-non-ignored-links) {
     /* If there are ignored frames and unignored frames, then we want
     to enable the show more/less links. To do that we override some
     variables to always display the structured stack trace, but possibly
-    only the links at the bottom of it, as we share its show more/less links. */
+    only the links at the bottom of it, as we share its show more/less links.
+    We also check the structured stack trace (StackTracePreviewContent) for
+    non-ignored links, so that when all inline Error frames are ignored but
+    the console.error() call stack has non-ignored frames (e.g. in async
+    traces), the toggle is still shown. See crbug.com/379788109. */
     --override-display-stack-preview-toggle-link: table-row;
     --override-display-stack-preview-hidden-div: block;
 
@@ -2463,10 +2471,15 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   formatParameterAsObject(obj, includePreview) {
     const titleElement = document.createElement("span");
     titleElement.classList.add("console-object");
+    const renderPreview = (includeNullOrUndefined) => {
+      if (obj.preview) {
+        titleElement.classList.add("console-object-preview");
+        render2(this.previewFormatter.renderObjectPreview(obj.preview, includeNullOrUndefined), titleElement);
+        ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.appendMemoryIcon(titleElement, obj);
+      }
+    };
     if (includePreview && obj.preview) {
-      titleElement.classList.add("console-object-preview");
-      render2(this.previewFormatter.renderObjectPreview(obj.preview), titleElement);
-      ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.appendMemoryIcon(titleElement, obj);
+      renderPreview(true);
     } else if (obj.type === "function") {
       const functionElement = titleElement.createChild("span");
       void ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.formatObjectAsFunction(obj, functionElement, false);
@@ -2493,6 +2506,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     section.addEventListener(UI2.TreeOutline.Events.ElementAttached, this.messageResized);
     section.addEventListener(UI2.TreeOutline.Events.ElementExpanded, this.messageResized);
     section.addEventListener(UI2.TreeOutline.Events.ElementCollapsed, this.messageResized);
+    section.root.addEventListener("filter-changed", () => renderPreview(section.root.includeNullOrUndefinedValues));
     return section.element;
   }
   formatParameterAsFunction(originalFunction, includePreview) {
@@ -2960,6 +2974,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     this.elementInternal.className = "console-message-wrapper";
     this.elementInternal.setAttribute("jslog", `${VisualLogging.item("console-message").track({
       click: true,
+      resize: true,
       keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter|Space|Home|End"
     })}`);
     this.elementInternal.removeChildren();
@@ -3012,6 +3027,10 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     if (UI2.ActionRegistry.ActionRegistry.instance().hasAction(EXPLAIN_HOVER_ACTION_ID) && this.shouldShowInsights()) {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsoleMessageShown);
       this.consoleRowWrapper.append(this.#createHoverButton());
+    }
+    const breakpointAgentEnabled = Greendev.Prototypes.instance().isEnabled("breakpointDebuggerAgent");
+    if (breakpointAgentEnabled && this.message.level === "error") {
+      this.consoleRowWrapper.append(this.#createBreakpointButton());
     }
     if (this.repeatCountInternal > 1) {
       this.showRepeatCountElement();
@@ -3090,6 +3109,78 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     button.tabIndex = 0;
     button.setAttribute("jslog", `${VisualLogging.action(EXPLAIN_HOVER_ACTION_ID).track({ click: true })}`);
     hoverButtonObserver.observe(button);
+    return button;
+  }
+  #createBreakpointButton() {
+    const button = document.createElement("button");
+    const icon = new Icon();
+    icon.name = "bug";
+    icon.style.color = "var(--devtools-icon-color)";
+    icon.classList.add("medium");
+    button.append(icon);
+    const label = document.createElement("div");
+    label.classList.add("button-label");
+    const text = document.createElement("div");
+    text.innerText = "Debug with breakpoint AI";
+    label.append(text);
+    button.append(label);
+    button.classList.add("hover-button");
+    if (this.shouldShowInsights()) {
+      button.style.right = "36px";
+    }
+    button.ariaLabel = "Debug with breakpoint AI";
+    button.tabIndex = 0;
+    button.onclick = async (event) => {
+      event.stopPropagation();
+      const runtimeModel = this.message.runtimeModel();
+      if (!runtimeModel) {
+        return;
+      }
+      const debuggerModel = runtimeModel.debuggerModel();
+      const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+      let uiLocation = null;
+      if (this.message.stackTrace?.callFrames.length) {
+        const callFrame = this.message.stackTrace.callFrames[0];
+        if (callFrame.scriptId) {
+          const script = debuggerModel.scriptForId(callFrame.scriptId);
+          if (script) {
+            const rawLocation = new SDK3.DebuggerModel.Location(debuggerModel, callFrame.scriptId, callFrame.lineNumber, callFrame.columnNumber);
+            uiLocation = await debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
+          }
+        }
+      }
+      if (!uiLocation && this.message.scriptId) {
+        const script = debuggerModel.scriptForId(this.message.scriptId);
+        if (script) {
+          const rawLocation = new SDK3.DebuggerModel.Location(debuggerModel, this.message.scriptId, this.message.line, this.message.column);
+          uiLocation = await debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
+        }
+      }
+      if (!uiLocation && this.message.url) {
+        const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(this.message.url);
+        if (uiSourceCode) {
+          uiLocation = uiSourceCode.uiLocation(this.message.line, this.message.column);
+        }
+      }
+      if (uiLocation) {
+        await Common4.Revealer.reveal(uiLocation);
+        const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance();
+        await breakpointManager.setBreakpoint(
+          uiLocation.uiSourceCode,
+          uiLocation.lineNumber,
+          uiLocation.columnNumber,
+          Breakpoints.BreakpointManager.EMPTY_BREAKPOINT_CONDITION,
+          /* enabled */
+          true,
+          /* isLogpoint */
+          false,
+          "RESTORED"
+          /* Breakpoints.BreakpointManager.BreakpointOrigin.OTHER */
+        );
+        const aiPanel = await AiAssistancePanel.AiAssistancePanel.instance();
+        void aiPanel.handleBreakpointConversation(uiLocation, this.text);
+      }
+    };
     return button;
   }
   shouldRenderAsWarning() {
@@ -6145,11 +6236,11 @@ var UIStrings5 = {
   /**
    * @description Title of a setting under the Console category that can be invoked through the Command Menu
    */
-  groupSimilarMessagesInConsole: "Group similar messages in console",
+  groupSimilarMessagesInConsole: "Group similar messages",
   /**
    * @description Title of a setting under the Console category that can be invoked through the Command Menu
    */
-  showCorsErrorsInConsole: "Show `CORS` errors in console",
+  showCorsErrorsInConsole: "CORS errors in console",
   /**
    * @description Tooltip for the the console sidebar toggle in the Console panel. Command to
    * open/show the sidebar.

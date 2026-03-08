@@ -750,6 +750,10 @@ var UIStringsNotTranslate2 = {
    */
   writeACommentToGenerateCode: "Write a comment to generate code",
   /**
+   * @description Text for teaser for discoverability.
+   */
+  writeACommentToGenerateCodeInConsole: "Write a comment to generate code. Try typing: '// add red borders to all the divs'.",
+  /**
    * @description Text for teaser when suggestion has been generated.
    */
   tab: "tab",
@@ -825,6 +829,8 @@ function getTooltipDisclaimerText(noLogging, panel2) {
       return noLogging ? lockedString2(UIStringsNotTranslate2.tooltipDisclaimerTextForAiCodeGenerationNoLoggingInConsole) : lockedString2(UIStringsNotTranslate2.tooltipDisclaimerTextForAiCodeGenerationInConsole);
     case "sources":
       return noLogging ? lockedString2(UIStringsNotTranslate2.tooltipDisclaimerTextForAiCodeGenerationNoLoggingInSources) : lockedString2(UIStringsNotTranslate2.tooltipDisclaimerTextForAiCodeGenerationInSources);
+    case "styles":
+      return "";
   }
 }
 var DEFAULT_VIEW2 = (input, output, target) => {
@@ -904,7 +910,8 @@ var DEFAULT_VIEW2 = (input, output, target) => {
         break;
       }
       const newBadge = UI3.UIUtils.maybeCreateNewBadge(PROMOTION_ID2);
-      teaserLabel = newBadge ? html3`${lockedString2(UIStringsNotTranslate2.writeACommentToGenerateCode)}&nbsp;${newBadge}` : nothing2;
+      const teaserText = input.panel === "console" ? lockedString2(UIStringsNotTranslate2.writeACommentToGenerateCodeInConsole) : lockedString2(UIStringsNotTranslate2.writeACommentToGenerateCode);
+      teaserLabel = newBadge ? html3`${teaserText}&nbsp;${newBadge}` : nothing2;
       break;
     }
     case AiCodeGenerationTeaserDisplayState.LOADING: {
@@ -2219,6 +2226,8 @@ function getTooltipDisclaimerText2(noLogging, panel2) {
       return noLogging ? lockedString4(UIStringsNotTranslate4.tooltipDisclaimerTextForAiCodeCompletionNoLoggingInConsole) : lockedString4(UIStringsNotTranslate4.tooltipDisclaimerTextForAiCodeCompletionInConsole);
     case "sources":
       return noLogging ? lockedString4(UIStringsNotTranslate4.tooltipDisclaimerTextForAiCodeCompletionNoLoggingInSources) : lockedString4(UIStringsNotTranslate4.tooltipDisclaimerTextForAiCodeCompletionInSources);
+    case "styles":
+      return "";
   }
 }
 var DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {

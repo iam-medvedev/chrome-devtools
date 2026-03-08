@@ -7,7 +7,8 @@ var __export = (target, all) => {
 // gen/front_end/ui/legacy/components/utils/ImagePreview.js
 var ImagePreview_exports = {};
 __export(ImagePreview_exports, {
-  ImagePreview: () => ImagePreview
+  ImagePreview: () => ImagePreview,
+  loadPrecomputedFeatures: () => loadPrecomputedFeatures
 });
 import * as Common from "./../../../../core/common/common.js";
 import * as Host from "./../../../../core/host/host.js";
@@ -214,31 +215,34 @@ var ImagePreview = class {
       }
     });
   }
-  static async loadDimensionsForNode(node) {
-    if (!node.nodeName() || node.nodeName().toLowerCase() !== "img") {
-      return;
-    }
-    const object = await node.resolveToObject("");
-    if (!object) {
-      return;
-    }
-    const featuresObject = await object.callFunctionJSON(features, void 0);
-    object.release();
-    return featuresObject ?? void 0;
-    function features() {
-      return {
-        renderedWidth: this.width,
-        renderedHeight: this.height,
-        currentSrc: this.currentSrc
-      };
-    }
-  }
   static defaultAltTextForImageURL(url) {
     const parsedImageURL = new Common.ParsedURL.ParsedURL(url);
     const imageSourceText = parsedImageURL.isValid ? parsedImageURL.displayName : i18nString(UIStrings.unknownSource);
     return i18nString(UIStrings.imageFromS, { PH1: imageSourceText });
   }
 };
+async function loadPrecomputedFeatures(node) {
+  if (!node) {
+    return void 0;
+  }
+  if (!node.nodeName() || node.nodeName().toLowerCase() !== "img") {
+    return void 0;
+  }
+  const object = await node.resolveToObject("");
+  if (!object) {
+    return void 0;
+  }
+  const featuresObject = await object.callFunctionJSON(features, void 0);
+  object.release();
+  return featuresObject ?? void 0;
+  function features() {
+    return {
+      renderedWidth: this.width,
+      renderedHeight: this.height,
+      currentSrc: this.currentSrc
+    };
+  }
+}
 
 // gen/front_end/ui/legacy/components/utils/JSPresentationUtils.js
 var JSPresentationUtils_exports = {};
@@ -247,6 +251,7 @@ __export(JSPresentationUtils_exports, {
   StackTracePreviewContent: () => StackTracePreviewContent
 });
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
+import * as Root from "./../../../../core/root/root.js";
 import * as SDK3 from "./../../../../core/sdk/sdk.js";
 import * as StackTrace from "./../../../../models/stack_trace/stack_trace.js";
 import * as Workspace3 from "./../../../../models/workspace/workspace.js";
@@ -1451,6 +1456,33 @@ var StackTracePreviewContent = class extends UI2.Widget.Widget {
       onShowLess: this.#onShowMoreLess.bind(this, false)
     };
     this.#view(input, {}, this.contentElement);
+    this.#updateHasNonIgnoredLinks();
+  }
+  // Propagate ignore-list state to the host element so that CSS outside the
+  // shadow DOM can coordinate ignore-list toggling across multiple stack
+  // traces (e.g. Error inline stack + console.error call stack).
+  // See crbug.com/379788109.
+  #updateHasNonIgnoredLinks = () => {
+    const hasNonIgnoredLinks = this.linkElements.some((link3) => {
+      const uiLocation = Linkifier.uiLocation(link3);
+      if (uiLocation) {
+        return !uiLocation.isIgnoreListed();
+      }
+      return !link3.classList.contains("ignore-list-link");
+    });
+    this.element.classList.toggle("has-non-ignored-links", hasNonIgnoredLinks);
+  };
+  wasShown() {
+    super.wasShown();
+    if (Root.DevToolsContext.globalInstance().has(Workspace3.IgnoreListManager.IgnoreListManager)) {
+      Workspace3.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.#updateHasNonIgnoredLinks);
+    }
+  }
+  willHide() {
+    if (Root.DevToolsContext.globalInstance().has(Workspace3.IgnoreListManager.IgnoreListManager)) {
+      Workspace3.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.#updateHasNonIgnoredLinks);
+    }
+    super.willHide();
   }
   get linkElements() {
     return [...this.contentElement.querySelectorAll("td.link > .devtools-link")];

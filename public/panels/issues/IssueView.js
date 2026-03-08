@@ -5,6 +5,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
@@ -19,12 +20,12 @@ import { AffectedDescendantsWithinSelectElementView } from './AffectedDescendant
 import { AffectedDirectivesView } from './AffectedDirectivesView.js';
 import { AffectedDocumentsInQuirksModeView } from './AffectedDocumentsInQuirksModeView.js';
 import { AffectedElementsView } from './AffectedElementsView.js';
-import { AffectedElementsWithLowContrastView } from './AffectedElementsWithLowContrastView.js';
 import { AffectedHeavyAdView } from './AffectedHeavyAdView.js';
 import { AffectedMetadataAllowedSitesView } from './AffectedMetadataAllowedSitesView.js';
 import { AffectedPartitioningBlobURLView } from './AffectedPartitioningBlobURLView.js';
 import { AffectedPermissionElementsView } from './AffectedPermissionElementsView.js';
 import { AffectedResourcesView, extractShortPath } from './AffectedResourcesView.js';
+import { AffectedSelectivePermissionsInterventionView } from './AffectedSelectivePermissionsInterventionView.js';
 import { AffectedSharedArrayBufferIssueDetailsView } from './AffectedSharedArrayBufferIssueDetailsView.js';
 import { AffectedSourcesView } from './AffectedSourcesView.js';
 import { AffectedTrackingSitesView } from './AffectedTrackingSitesView.js';
@@ -202,7 +203,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     #hiddenIssuesMenu;
     #contentCreated = false;
     constructor(issue, description) {
-        super();
+        super(undefined, undefined, Platform.StringUtilities.toKebabCase(issue.getCategory()));
         this.#issue = issue;
         this.#description = description;
         this.#throttle = new Common.Throttler.Throttler(250);
@@ -221,7 +222,6 @@ export class IssueView extends UI.TreeOutline.TreeElement {
             new AffectedDirectivesView(this, this.#issue, 'directives-details'),
             new AffectedBlockedByResponseView(this, this.#issue, 'blocked-by-response-details'),
             new AffectedSharedArrayBufferIssueDetailsView(this, this.#issue, 'sab-details'),
-            new AffectedElementsWithLowContrastView(this, this.#issue, 'low-contrast-details'),
             new CorsIssueDetailsView(this, this.#issue, 'cors-details'),
             new GenericIssueDetailsView(this, this.#issue, 'generic-details'),
             new AffectedDocumentsInQuirksModeView(this, this.#issue, 'affected-documents'),
@@ -232,6 +232,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
             new AffectedDescendantsWithinSelectElementView(this, this.#issue, 'disallowed-select-descendants-details'),
             new AffectedPartitioningBlobURLView(this, this.#issue, 'partitioning-blob-url-details'),
             new AffectedPermissionElementsView(this, this.#issue, 'permission-element-elements'),
+            new AffectedSelectivePermissionsInterventionView(this, this.#issue, 'selective-permissions-intervention-details'),
         ];
         this.#hiddenIssuesMenu = new Components.HideIssuesMenu.HideIssuesMenu();
         this.#aggregatedIssuesCount = null;

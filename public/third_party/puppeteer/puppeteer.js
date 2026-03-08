@@ -2599,7 +2599,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.37.5";
+var packageVersion = "24.38.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -16567,7 +16567,7 @@ var CdpPage = class _CdpPage extends Page {
         // partition keys.
         partitionKey: cookie.partitionKey ? cookie.partitionKey.topLevelSite : void 0,
         // TODO: remove sameParty as it is removed from Chrome.
-        sameParty: cookie.sameParty ?? false
+        sameParty: false
       };
     });
   }
@@ -17187,7 +17187,7 @@ var CdpBrowserContext = class extends BrowserContext {
           hasCrossSiteAncestor: cookie.partitionKey.hasCrossSiteAncestor
         } : void 0,
         // TODO: remove sameParty as it is removed from Chrome.
-        sameParty: cookie.sameParty ?? false
+        sameParty: false
       };
     });
   }

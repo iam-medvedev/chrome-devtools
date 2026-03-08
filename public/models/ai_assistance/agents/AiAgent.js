@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
+import * as Greendev from '../../greendev/greendev.js';
 import { debugLog, isStructuredLogEnabled } from '../debug.js';
 export const MAX_STEPS = 10;
 export class ConversationContext {
@@ -232,7 +233,10 @@ export class AiAgent {
         // Request is built here to capture history up to this point.
         let request = this.buildRequest(query, Host.AidaClient.Role.USER);
         yield* this.handleContextDetails(options.selected);
-        for (let i = 0; i < MAX_STEPS; i++) {
+        const breakpointAgentEnabled = Greendev.Prototypes.instance().isEnabled('breakpointDebuggerAgent');
+        const isBreakpointDebuggerAgent = this.constructor.name === 'BreakpointDebuggerAgent';
+        const finalMaxSteps = (isBreakpointDebuggerAgent && breakpointAgentEnabled) ? 1000 : MAX_STEPS;
+        for (let i = 0; i < finalMaxSteps; i++) {
             yield {
                 type: "querying" /* ResponseType.QUERYING */,
             };
@@ -400,6 +404,7 @@ export class AiAgent {
             yield {
                 type: "side-effect" /* ResponseType.SIDE_EFFECT */,
                 confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
+                description: result.description,
             };
             const approvedRun = await sideEffectConfirmationPromiseWithResolvers.promise;
             if (!approvedRun) {
@@ -423,6 +428,7 @@ export class AiAgent {
                 type: "action" /* ResponseType.ACTION */,
                 code,
                 output: typeof result.result === 'string' ? result.result : JSON.stringify(result.result),
+                widgets: result.widgets,
                 canceled: false,
             };
         }

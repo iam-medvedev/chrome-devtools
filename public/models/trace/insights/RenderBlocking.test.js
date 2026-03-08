@@ -4,7 +4,7 @@
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
 describeWithEnvironment('RenderBlocking', function () {
-    it('finds render blocking requests', async function () {
+    it('finds render-blocking requests', async function () {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');
         assert.deepEqual([...insights.keys()], ['NAVIGATION_0']);
         const insight = getInsightOrError('RenderBlocking', insights, data.Meta.navigationsByNavigationId.values().next().value);
@@ -27,7 +27,7 @@ describeWithEnvironment('RenderBlocking', function () {
         assert.deepEqual([...insights.keys()], ['NAVIGATION_0', 'NAVIGATION_1']);
         const navigations = Array.from(data.Meta.navigationsByNavigationId.values());
         const insight = getInsightOrError('RenderBlocking', insights, navigations[0]);
-        assert(insight.renderBlockingRequests.length > 0, 'no render blocking requests found');
+        assert(insight.renderBlockingRequests.length > 0, 'no render-blocking requests found');
         assert(insight.renderBlockingRequests.every(r => r.args.data.syntheticData.sendStartTime > navigations[0].ts), 'a result is not contained by the nav bounds');
         assert(insight.renderBlockingRequests.every(r => r.args.data.syntheticData.finishTime < navigations[1].ts), 'a result is not contained by the nav bounds');
     });
@@ -45,7 +45,7 @@ describeWithEnvironment('RenderBlocking', function () {
         assert.deepEqual([...insights.keys()], ['NAVIGATION_0']);
         const navigations = Array.from(data.Meta.navigationsByNavigationId.values());
         const insight = getInsightOrError('RenderBlocking', insights, navigations[0]);
-        assert(insight.renderBlockingRequests.length > 0, 'no render blocking requests found');
+        assert(insight.renderBlockingRequests.length > 0, 'no render-blocking requests found');
         assert(insight.renderBlockingRequests.every(r => r.args.data.frame === data.Meta.mainFrameId), 'a result is not from the main frame');
     });
     it('ignores blocking request after first paint', async function () {

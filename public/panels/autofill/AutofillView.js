@@ -112,7 +112,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
             // clang-format off
             return html `
         <span class=${spanClasses}
-              jslog=${VisualLogging.item('matched-address-item').track({ hover: true })}
+              jslog=${VisualLogging.item('matched-address-item').track({ hover: true, resize: true })}
               @mouseenter=${() => input.onHighlightMatchesInAddress(startIndex)}
               @mouseleave=${input.onClearHighlightedMatches}>
           ${templateLines}

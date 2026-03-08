@@ -7,6 +7,7 @@ import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createStubbedDomNodeWithModels } from '../../testing/StyleHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 async function waitForTraceElement(treeOutline) {
@@ -23,8 +24,7 @@ async function waitForTraceElement(treeOutline) {
 }
 function createWidgetWithMultipleProperties(properties) {
     Common.Settings.Settings.instance().createSetting('group-computed-styles', false).set(false);
-    const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
-    node.id = 1;
+    const { node } = createStubbedDomNodeWithModels({ nodeId: 1 });
     const cssMatchedStyles = sinon.createStubInstance(SDK.CSSMatchedStyles.CSSMatchedStyles, {
         node,
         propertyState: "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */,
@@ -75,8 +75,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
     });
     describe('trace element', () => {
         function createComputedStyleWidgetForTest(cssStyleDeclarationType, cssStyleDeclarationName, parentRule) {
-            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
-            node.id = 1;
+            const { node } = createStubbedDomNodeWithModels({ nodeId: 1 });
             const stubCSSStyle = {
                 styleSheetId: 'STYLE_SHEET_ID',
                 cssProperties: [{
@@ -109,6 +108,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
             computedStyleWidget.computedStyleModel = computedStyleModel;
             computedStyleWidget.nodeStyle = { node, computedStyle: new Map([['color', 'red']]) };
             computedStyleWidget.matchedStyles = cssMatchedStyles;
+            computedStyleWidget.propertyTraces = computedStyleModel.computePropertyTraces(cssMatchedStyles);
             return computedStyleWidget;
         }
         it('renders colors correctly', async () => {

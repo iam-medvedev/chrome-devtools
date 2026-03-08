@@ -275,6 +275,7 @@ describeWithEnvironment('ChatMessage', () => {
             assert.isNull(walkthrough);
         });
         it('renders side effect confirmation when not inline and walkthrough is hidden', () => {
+            const sideEffectDescription = 'Proceed with cation!';
             const sideEffectMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [{
@@ -283,7 +284,8 @@ describeWithEnvironment('ChatMessage', () => {
                             isLoading: false,
                             title: 'Side Effect Step',
                             code: 'doSomethingDangerous()',
-                            sideEffect: {
+                            requestApproval: {
+                                description: sideEffectDescription,
                                 onAnswer: () => { },
                             },
                         },
@@ -300,6 +302,7 @@ describeWithEnvironment('ChatMessage', () => {
             });
             const sideEffectContainer = target.querySelector('.side-effect-container');
             assert.isNotNull(sideEffectContainer);
+            assert.isTrue(sideEffectContainer.textContent.includes(sideEffectDescription));
         });
     });
     describe('view', () => {

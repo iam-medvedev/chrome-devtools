@@ -151,7 +151,7 @@ const UIStrings = {
     /**
      * @description Text in Network Log View Columns of the Network panel
      */
-    renderBlocking: 'Render Blocking',
+    renderBlocking: 'Render-blocking',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkLogViewColumns.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -353,7 +353,7 @@ export class NetworkLogViewColumns {
     }
     createWaterfallHeader() {
         this.waterfallHeaderElement = this.waterfallColumn.contentElement.createChild('div', 'network-waterfall-header');
-        this.waterfallHeaderElement.setAttribute('jslog', `${VisualLogging.tableHeader('waterfall').track({ click: true })}`);
+        this.waterfallHeaderElement.setAttribute('jslog', `${VisualLogging.tableHeader('waterfall').track({ click: true, resize: true })}`);
         this.waterfallHeaderElement.addEventListener('click', waterfallHeaderClicked.bind(this));
         this.waterfallHeaderElement.addEventListener('contextmenu', event => {
             const contextMenu = new UI.ContextMenu.ContextMenu(event);
