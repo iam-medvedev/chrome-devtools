@@ -17,12 +17,12 @@ import { ElementAccessibilityIssue } from './ElementAccessibilityIssue.js';
 import { FederatedAuthRequestIssue } from './FederatedAuthRequestIssue.js';
 import { GenericIssue } from './GenericIssue.js';
 import { HeavyAdIssue } from './HeavyAdIssue.js';
-import { LowTextContrastIssue } from './LowTextContrastIssue.js';
 import { MixedContentIssue } from './MixedContentIssue.js';
 import { PartitioningBlobURLIssue } from './PartitioningBlobURLIssue.js';
 import { PermissionElementIssue } from './PermissionElementIssue.js';
 import { PropertyRuleIssue } from './PropertyRuleIssue.js';
 import { QuirksModeIssue } from './QuirksModeIssue.js';
+import { SelectivePermissionsInterventionIssue } from './SelectivePermissionsInterventionIssue.js';
 import { SharedArrayBufferIssue } from './SharedArrayBufferIssue.js';
 import { SharedDictionaryIssue } from './SharedDictionaryIssue.js';
 import { SourceFrameIssuesManager } from './SourceFrameIssuesManager.js';
@@ -66,10 +66,6 @@ const issueCodeHandlers = new Map([
     [
         "SharedDictionaryIssue" /* Protocol.Audits.InspectorIssueCode.SharedDictionaryIssue */,
         SharedDictionaryIssue.fromInspectorIssue,
-    ],
-    [
-        "LowTextContrastIssue" /* Protocol.Audits.InspectorIssueCode.LowTextContrastIssue */,
-        LowTextContrastIssue.fromInspectorIssue,
     ],
     [
         "CorsIssue" /* Protocol.Audits.InspectorIssueCode.CorsIssue */,
@@ -138,6 +134,10 @@ const issueCodeHandlers = new Map([
     [
         "PermissionElementIssue" /* Protocol.Audits.InspectorIssueCode.PermissionElementIssue */,
         PermissionElementIssue.fromInspectorIssue,
+    ],
+    [
+        "SelectivePermissionsInterventionIssue" /* Protocol.Audits.InspectorIssueCode.SelectivePermissionsInterventionIssue */,
+        SelectivePermissionsInterventionIssue.fromInspectorIssue,
     ],
 ]);
 /**

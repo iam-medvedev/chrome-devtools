@@ -791,7 +791,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
                   class="row"
                   @keydown=${(event) => onKeyDown(recording.storageName, event)}
                   @click=${(event) => onOpenClick(recording.storageName, event)}
-                  jslog=${VisualLogging2.item().track({ click: true }).context("recording")}>
+                  jslog=${VisualLogging2.item().track({ click: true, resize: true }).context("recording")}>
                   <div class="icon">
                     <devtools-icon name="flow">
                     </devtools-icon>
@@ -2646,7 +2646,7 @@ var StepEditor = class StepEditor2 extends LitElement {
   }
   #renderTypeRow(editable) {
     this.#renderedAttributes.add("type");
-    return html7`<div class="row attribute" data-attribute="type" jslog=${VisualLogging6.treeItem("type")}>
+    return html7`<div class="row attribute" data-attribute="type" jslog=${VisualLogging6.treeItem("type").track({ resize: true })}>
       <div id="type">type<span class="separator">:</span></div>
       <devtools-suggestion-input
         aria-labelledby="type"
@@ -2664,7 +2664,7 @@ var StepEditor = class StepEditor2 extends LitElement {
     if (attributeValue === void 0) {
       return;
     }
-    return html7`<div class="row attribute" data-attribute=${attribute} jslog=${VisualLogging6.treeItem(Platform3.StringUtilities.toKebabCase(attribute))}>
+    return html7`<div class="row attribute" data-attribute=${attribute} jslog=${VisualLogging6.treeItem(Platform3.StringUtilities.toKebabCase(attribute)).track({ resize: true })}>
       <div id=${attribute}>${attribute}<span class="separator">:</span></div>
       <devtools-suggestion-input
         .disabled=${this.disabled}
@@ -2700,7 +2700,7 @@ var StepEditor = class StepEditor2 extends LitElement {
       return;
     }
     return html7`
-      <div class="attribute" data-attribute="frame" jslog=${VisualLogging6.treeItem("frame")}>
+      <div class="attribute" data-attribute="frame" jslog=${VisualLogging6.treeItem("frame").track({ resize: true })}>
         <div class="row">
           <div id="frame">frame<span class="separator">:</span></div>
           ${this.#renderDeleteButton("frame")}

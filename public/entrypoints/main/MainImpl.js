@@ -336,8 +336,6 @@ export class MainImpl {
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE, 'Full accessibility tree view in the Elements panel', 'https://developer.chrome.com/blog/new-in-devtools-90/#accessibility-tree', 'https://g.co/devtools/a11y-tree-feedback');
         // Font Editor
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.FONT_EDITOR, 'New font editor in the Styles tab', 'https://developer.chrome.com/blog/new-in-devtools-89/#font');
-        // Contrast issues reported via the Issues panel.
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.CONTRAST_ISSUES, 'Automatic contrast issue reporting via the Issues panel', 'https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast');
         // New cookie features.
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.EXPERIMENTAL_COOKIE_FEATURES, 'Experimental cookie features');
         // Change grouping of sources panel to use Authored/Deployed trees
@@ -351,6 +349,13 @@ export class MainImpl {
             aboutFlag: 'devtools-enable-durable-messages',
             isEnabled: Root.Runtime.hostConfig.devToolsEnableDurableMessages?.enabled ?? false,
             requiresChromeRestart: false,
+        });
+        Root.Runtime.experiments.registerHostExperiment({
+            name: Root.ExperimentNames.ExperimentName.JPEG_XL,
+            title: 'JPEG XL support',
+            aboutFlag: 'enable-jxl-image-format',
+            isEnabled: Root.Runtime.hostConfig.devToolsJpegXlImageFormat?.enabled ?? false,
+            requiresChromeRestart: true,
         });
         Root.Runtime.experiments.enableExperimentsByDefault([
             Root.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE,
@@ -406,7 +411,6 @@ export class MainImpl {
             showThirdPartyIssuesSetting: IssuesManager.Issue.getShowThirdPartyIssuesSetting(),
             hideIssueSetting: IssuesManager.IssuesManager.getHideIssueByCodeSetting(),
         });
-        IssuesManager.ContrastCheckTrigger.ContrastCheckTrigger.instance();
         UI.DockController.DockController.instance({ forceNew: true, canDock });
         SDK.DOMDebuggerModel.DOMDebuggerManager.instance({ forceNew: true });
         const targetManager = SDK.TargetManager.TargetManager.instance();

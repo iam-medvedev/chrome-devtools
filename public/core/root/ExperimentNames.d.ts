@@ -11,7 +11,6 @@ export declare enum ExperimentName {
     APCA = "apca",
     FONT_EDITOR = "font-editor",
     FULL_ACCESSIBILITY_TREE = "full-accessibility-tree",
-    CONTRAST_ISSUES = "contrast-issues",
     EXPERIMENTAL_COOKIE_FEATURES = "experimental-cookie-features",
     INSTRUMENTATION_BREAKPOINTS = "instrumentation-breakpoints",
     AUTHORED_DEPLOYED_GROUPING = "authored-deployed-grouping",
@@ -19,5 +18,6 @@ export declare enum ExperimentName {
     USE_SOURCE_MAP_SCOPES = "use-source-map-scopes",
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
-    DURABLE_MESSAGES = "durable-messages"
+    DURABLE_MESSAGES = "durable-messages",
+    JPEG_XL = "jpeg-xl"
 }

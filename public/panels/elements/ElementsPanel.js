@@ -303,6 +303,9 @@ export class ElementsPanel extends UI.Panel.Panel {
         const matchedCascade = await this.#computedStyleModel.fetchMatchedCascade();
         this.#computedStyleWidget.nodeStyle = computedStyle;
         this.#computedStyleWidget.matchedStyles = matchedCascade;
+        if (matchedCascade) {
+            this.#computedStyleWidget.propertyTraces = this.#computedStyleModel.computePropertyTraces(matchedCascade);
+        }
     }
     handleElementExpanded() {
         if (Annotations.AnnotationRepository.annotationsEnabled()) {
@@ -842,7 +845,7 @@ export class ElementsPanel extends UI.Panel.Panel {
             void this.accessibilityTreeView.revealAndSelectNode(nodeToReveal);
         }
         if (showPanel) {
-            await UI.ViewManager.ViewManager.instance().showView('elements', false, !focus);
+            await UI.ViewManager.ViewManager.instance().showView('elements', false, !focusNode);
         }
         this.selectDOMNode(node, focusNode);
         delete this.omitDefaultSelection;
@@ -857,7 +860,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         const { showPanel = true, focusNode = false } = opts ?? {};
         this.omitDefaultSelection = true;
         if (showPanel) {
-            await UI.ViewManager.ViewManager.instance().showView('elements', false, !focus);
+            await UI.ViewManager.ViewManager.instance().showView('elements', false, !focusNode);
         }
         this.selectDOMNode(nodeToReveal, focusNode);
         delete this.omitDefaultSelection;
@@ -1004,6 +1007,9 @@ export class ElementsPanel extends UI.Panel.Panel {
             this.addExtensionSidebarPane(extensionSidebarPanes[i]);
         }
         this.splitWidget.setSidebarWidget(this.sidebarPaneView.tabbedPane());
+    }
+    revealComputedStylesPane() {
+        this.sidebarPaneView?.tabbedPane().selectTab("computed" /* SidebarPaneTabId.COMPUTED */);
     }
     updateSidebarPosition() {
         if (this.sidebarPaneView?.tabbedPane().shouldHideOnDetach()) {
@@ -1205,6 +1211,16 @@ export class ContextMenuProvider {
         contextMenu.revealSection().appendItem(i18nString(UIStrings.openInElementsPanel), () => Common.Revealer.reveal(object), { jslogContext: 'elements.reveal-node' });
     }
 }
+/**
+ * Wraps around the Node so we can pass it into the DOMNodeRevealer but
+ * distinguish that we want to reveal the computed styles panel.
+ */
+export class NodeComputedStyles {
+    node;
+    constructor(node) {
+        this.node = node;
+    }
+}
 export class DOMNodeRevealer {
     reveal(node, omitFocus) {
         const panel = ElementsPanel.instance();
@@ -1229,6 +1245,11 @@ export class DOMNodeRevealer {
             }
             else if (node instanceof SDK.DOMModel.DeferredDOMNode) {
                 (node).resolve(checkDeferredDOMNodeThenReveal);
+            }
+            else if (node instanceof NodeComputedStyles) {
+                const elements = ElementsPanel.instance();
+                elements.revealComputedStylesPane();
+                onNodeResolved(node.node);
             }
             else {
                 const domModel = node.runtimeModel().target().model(SDK.DOMModel.DOMModel);
@@ -1258,7 +1279,7 @@ export class DOMNodeRevealer {
                     return;
                 }
                 if (resolvedNode) {
-                    const opts = { showPanel: true, focusNode: !omitFocus };
+                    const opts = omitFocus ? { showPanel: false } : { showPanel: true, focusNode: true };
                     const promise = resolvedNode instanceof SDK.DOMModel.AdoptedStyleSheet ?
                         panel.revealAndSelectAdoptedStyleSheet(resolvedNode, opts) :
                         panel.revealAndSelectNode(resolvedNode, opts);

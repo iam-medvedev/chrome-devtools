@@ -3,20 +3,18 @@
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { getMatchedStyles } from '../../testing/StyleHelpers.js';
+import { createStubbedDomNodeWithModels, getMatchedStyles } from '../../testing/StyleHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as PanelUtils from '../utils/utils.js';
 import * as Elements from './elements.js';
 describeWithMockConnection('StylePropertyHighlighter', () => {
     async function setupStylesPane() {
-        const target = createTarget();
-        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        const { cssModel, node } = createStubbedDomNodeWithModels();
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
         const computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel(node);
         const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
-        const matchedStyles = await getMatchedStyles({ node: stylesSidebarPane.node(), cssModel: target.model(SDK.CSSModel.CSSModel) });
+        const matchedStyles = await getMatchedStyles({ node: stylesSidebarPane.node(), cssModel });
         return {
             stylesSidebarPane,
             matchedStyles,

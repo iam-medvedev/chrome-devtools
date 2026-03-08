@@ -35,7 +35,7 @@ describe('Injected', () => {
     <button id="buttonWithNewLines">
       with newlines
     </button>
-    <input id="input"></input>
+    <input id="input">
 
     <script>
       class ShadowCSSSelectorElement extends HTMLElement {

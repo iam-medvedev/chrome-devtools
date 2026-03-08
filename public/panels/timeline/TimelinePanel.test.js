@@ -216,7 +216,7 @@ describeWithEnvironment('TimelinePanel', function () {
             const EXPECTED_INSIGHT_TITLES = [
                 'LCP breakdown',
                 'LCP request discovery',
-                'Render blocking requests',
+                'Render-blocking requests',
                 'Document request latency',
             ];
             for (const title of EXPECTED_INSIGHT_TITLES) {

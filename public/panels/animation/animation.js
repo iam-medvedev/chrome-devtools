@@ -2086,7 +2086,7 @@ var DEFAULT_VIEW = (input, output, target) => {
   render2(html2`
     <div class="animation-group-preview-ui">
       <button
-        jslog=${VisualLogging3.item(`animations.buffer-preview${input.isScrollDrivenAnimationGroup ? "-sda" : ""}`).track({ click: true })}
+        jslog=${VisualLogging3.item(`animations.buffer-preview${input.isScrollDrivenAnimationGroup ? "-sda" : ""}`).track({ click: true, resize: true })}
         class=${classes}
         role="option"
         aria-label=${input.label}

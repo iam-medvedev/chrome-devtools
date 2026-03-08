@@ -1,5 +1,5 @@
+import type * as LighthouseModel from '../../models/lighthouse/lighthouse.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import type * as ReportRenderer from './LighthouseReporterTypes.js';
 export declare class ReportSelector {
     #private;
     private readonly renderNewLighthouseView;
@@ -19,7 +19,7 @@ export declare class Item {
     private readonly renderReport;
     private readonly showLandingCallback;
     private readonly element;
-    constructor(lighthouseResult: ReportRenderer.ReportJSON, renderReport: () => void, showLandingCallback: () => void);
+    constructor(lighthouseResult: LighthouseModel.ReporterTypes.ReportJSON, renderReport: () => void, showLandingCallback: () => void);
     select(): void;
     optionElement(): Element;
     delete(): void;

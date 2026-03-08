@@ -745,7 +745,7 @@ var GREENDEV_VIEW = (input, _output, target) => {
               <span>${i18nString(UIStrings.greenDevUnstable)}</span>
              </div>
              <div class="settings-experiments-block">
-               ${renderPrototypeCheckboxes(input.settings, ["aiAnnotations", "copyToGemini"])}
+               ${renderPrototypeCheckboxes(input.settings, ["aiAnnotations", "copyToGemini", "breakpointDebuggerAgent"])}
              </div>
            </devtools-card>
          </div>
@@ -753,7 +753,8 @@ var GREENDEV_VIEW = (input, _output, target) => {
 };
 var GREENDEV_PROTOTYPE_NAMES = {
   aiAnnotations: "AI auto-annotations",
-  copyToGemini: "Copy changes to AI Prompt"
+  copyToGemini: "Copy changes to AI Prompt",
+  breakpointDebuggerAgent: "Breakpoint Debugger Agent"
 };
 function renderPrototypeCheckboxes(settings, keys) {
   const { bindToSetting } = UI.UIUtils;
@@ -1898,7 +1899,7 @@ var UIStrings4 = {
   /**
    * @description Text in Framework Ignore List Settings Tab of the Settings
    */
-  enableIgnoreListing: "Enable ignore listing",
+  ignoreListing: "Ignore listing",
   /**
    * @description Text in Framework Ignore List Settings Tab of the Settings
    */
@@ -1964,7 +1965,7 @@ var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
     ignoreListingDescription.textContent = i18nString4(UIStrings4.ignoreListingDescription);
     const enabledSetting = Common3.Settings.Settings.instance().moduleSetting("enable-ignore-listing");
     const enableIgnoreListing = this.contentElement.createChild("div", "enable-ignore-listing");
-    enableIgnoreListing.appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.enableIgnoreListing), enabledSetting));
+    enableIgnoreListing.appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListing), enabledSetting));
     UI4.Tooltip.Tooltip.install(enableIgnoreListing, i18nString4(UIStrings4.enableIgnoreListingTooltip));
     const enableIgnoreListingCard = settingsContent.createChild("devtools-card");
     enableIgnoreListingCard.heading = i18nString4(UIStrings4.frameworkIgnoreList);
@@ -2651,7 +2652,7 @@ var ShortcutListItem = class {
     this.settingsTab = settingsTab;
     this.item = item2;
     this.element = document.createElement("div");
-    this.element.setAttribute("jslog", `${VisualLogging4.item().context(item2.id()).track({ keydown: "Escape" })}`);
+    this.element.setAttribute("jslog", `${VisualLogging4.item().context(item2.id()).track({ keydown: "Escape", resize: true })}`);
     this.editedShortcuts = /* @__PURE__ */ new Map();
     this.shortcutInputs = /* @__PURE__ */ new Map();
     this.shortcuts = UI5.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(item2.id());
@@ -3023,7 +3024,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
               class="harmony-input"
               jslog=${VisualLogging5.textField().track({ keydown: "Enter", change: true }).context(input.excludePatternSetting.name)}
               ${UI6.UIUtils.bindToSetting(input.excludePatternSetting, { jslog: false })}
-              id="workspace-setting-folder-exclude-pattern"></input>
+              id="workspace-setting-folder-exclude-pattern">
           </div>
           <div class="mappings-info">${i18nString6(UIStrings6.mappingsAreInferredAutomatically)}</div>
         </devtools-card>

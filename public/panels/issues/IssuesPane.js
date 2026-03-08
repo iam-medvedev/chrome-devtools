@@ -5,6 +5,7 @@
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -105,6 +106,10 @@ const UIStrings = {
      * @description Category title for a group of permission element issues
      */
     permissionElement: 'PEPC Element',
+    /**
+     * @description Category title for the different 'Selective Permissions Intervention' issues.
+     */
+    selectivePermissionsIntervention: 'Selective Permissions Intervention',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/IssuesPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -112,7 +117,7 @@ const ISSUES_PANEL_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools
 class IssueCategoryView extends UI.TreeOutline.TreeElement {
     #category;
     constructor(category) {
-        super();
+        super(undefined, undefined, Platform.StringUtilities.toKebabCase(category));
         this.#category = category;
         this.toggleOnClick = true;
         this.listItemElement.classList.add('issue-category');
@@ -142,6 +147,8 @@ class IssueCategoryView extends UI.TreeOutline.TreeElement {
                 return i18nString(UIStrings.generic);
             case "PermissionElement" /* IssuesManager.Issue.IssueCategory.PERMISSION_ELEMENT */:
                 return i18nString(UIStrings.permissionElement);
+            case "SelectivePermissionsIntervention" /* IssuesManager.Issue.IssueCategory.SELECTIVE_PERMISSIONS_INTERVENTION */:
+                return i18nString(UIStrings.selectivePermissionsIntervention);
             case "Other" /* IssuesManager.Issue.IssueCategory.OTHER */:
                 return i18nString(UIStrings.other);
         }

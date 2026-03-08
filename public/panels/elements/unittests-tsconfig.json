@@ -62,6 +62,7 @@
     "../../../../../../front_end/panels/elements/PlatformFontsWidget.test.ts",
     "../../../../../../front_end/panels/elements/PropertiesWidget.test.ts",
     "../../../../../../front_end/panels/elements/PropertyRenderer.test.ts",
+    "../../../../../../front_end/panels/elements/StandaloneStylesContainer.test.ts",
     "../../../../../../front_end/panels/elements/StylePropertiesSection.test.ts",
     "../../../../../../front_end/panels/elements/StylePropertyHighlighter.test.ts",
     "../../../../../../front_end/panels/elements/StylePropertyTreeElement.test.ts",

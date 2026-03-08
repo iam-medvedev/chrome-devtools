@@ -38,8 +38,10 @@ import * as Platform from '../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import { createIcon, Icon } from '../../ui/kit/kit.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -54,6 +56,7 @@ import * as LayersWidget from './LayersWidget.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { AtRuleSection, BlankStylePropertiesSection, FunctionRuleSection, HighlightPseudoStylePropertiesSection, KeyframePropertiesSection, PositionTryRuleSection, RegisteredPropertiesSection, StylePropertiesSection, } from './StylePropertiesSection.js';
 import { StylePropertyHighlighter } from './StylePropertyHighlighter.js';
+import * as StylesAiCodeCompletionProvider from './StylesAiCodeCompletionProvider.js';
 import stylesSidebarPaneStyles from './stylesSidebarPane.css.js';
 import { WebCustomData } from './WebCustomData.js';
 const UIStrings = {
@@ -202,7 +205,10 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 return link;
             }
             return null;
-        }, () => this.node());
+        }, async () => {
+            const features = await Components.ImagePreview.loadPrecomputedFeatures(this.node());
+            return features;
+        });
         UI.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, event => {
             if (event.data.revealedViewId === 'animations' || event.data.hiddenViewId === 'animations') {
                 this.#scheduleResetUpdateIfNotEditing();
@@ -1138,6 +1144,12 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             this.toolbar.appendToolbarItem(item);
         }
     }
+    addStyleUpdateListener(listener) {
+        this.addEventListener("StylesUpdateCompleted" /* Events.STYLES_UPDATE_COMPLETED */, listener);
+    }
+    removeStyleUpdateListener(listener) {
+        this.removeEventListener("StylesUpdateCompleted" /* Events.STYLES_UPDATE_COMPLETED */, listener);
+    }
     startToolbarPaneAnimation(widget) {
         if (widget === this.currentToolbarPane) {
             return;
@@ -1405,6 +1417,11 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
     treeElement;
     isEditingName;
     cssVariables;
+    aiCodeCompletionConfig;
+    aiCodeCompletionProvider;
+    #debouncedTriggerAiCodeCompletion = Common.Debouncer.debounce(() => {
+        void this.triggerAiCodeCompletion();
+    }, TextEditor.AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
     constructor(treeElement, isEditingName, completions = []) {
         // Use the same callback both for applyItemCallback and acceptItemCallback.
         super();
@@ -1460,6 +1477,26 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
                 }
             }
         }
+        const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
+        if (AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesEnabled(devtoolsLocale.locale)) {
+            this.aiCodeCompletionConfig = {
+                completionContext: {},
+                generationContext: {},
+                onFeatureEnabled: () => { },
+                onFeatureDisabled: () => { },
+                onSuggestionAccepted: () => { },
+                onRequestTriggered: () => { },
+                onResponseReceived: () => { },
+                panel: "styles" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.STYLES */,
+                getCompletionHint: this.getCompletionHint.bind(this),
+                getCurrentText: () => {
+                    return this.text();
+                },
+                setAiAutoCompletion: () => { },
+            };
+            this.aiCodeCompletionProvider =
+                StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider.createInstance(this.aiCodeCompletionConfig);
+        }
     }
     onKeyDown(event) {
         const keyboardEvent = event;
@@ -1503,6 +1540,12 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         this.acceptAutoComplete();
         // Always tab to the next field.
         return false;
+    }
+    onInput(event) {
+        super.onInput(event);
+        if (this.aiCodeCompletionProvider) {
+            this.#debouncedTriggerAiCodeCompletion();
+        }
     }
     handleNameOrValueUpDown(event) {
         function finishHandler(_originalValue, _replacementString) {
@@ -1693,6 +1736,45 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
             subtitleElement.title = `${computedValue}`;
             return subtitleElement;
         }
+    }
+    async triggerAiCodeCompletion() {
+        const selection = this.element().getComponentSelection();
+        if (!this.aiCodeCompletionProvider || !selection || selection.rangeCount === 0) {
+            return;
+        }
+        const range = selection.getRangeAt(0);
+        const userInput = this.text();
+        // Only trigger if caret is at end of text content
+        if (range.endOffset < userInput.length) {
+            return;
+        }
+        const cssModel = this.treeElement.stylesContainer().cssModel();
+        if (!cssModel) {
+            return;
+        }
+        await this.aiCodeCompletionProvider.triggerAiCodeCompletion(userInput, range.endOffset, this.isEditingName, this.treeElement.property, cssModel);
+    }
+    /**
+     * Extracts the remaining portion of the suggestion text that follows the
+     * user's current input.
+     */
+    getCompletionHint() {
+        const topSuggestion = this.isSuggestBoxVisible() ? this.suggestBox?.completion() : null;
+        const suggestionText = topSuggestion?.text;
+        if (!suggestionText) {
+            return null;
+        }
+        const userInput = this.text();
+        let completionHint = suggestionText;
+        // Iterate from the longest possible overlap down to the shortest
+        for (let i = Math.min(userInput.length, suggestionText.length); i > 0; i--) {
+            const overlapCandidate = suggestionText.substring(0, i);
+            if (userInput.endsWith(overlapCandidate)) {
+                completionHint = suggestionText.slice(i);
+                break;
+            }
+        }
+        return completionHint;
     }
 }
 export function unescapeCssString(input) {

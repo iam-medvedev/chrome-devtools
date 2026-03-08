@@ -402,7 +402,7 @@ describe('NetworkRequestsHandler', function () {
             assert.deepEqual(actualLinks, expectedLinks);
         });
     });
-    it('updates render blocking request statuses if they were updated with a preloadRenderBlockingStatusChange event', async function () {
+    it('updates render-blocking request statuses if they were updated with a preloadRenderBlockingStatusChange event', async function () {
         const traceEvents = await TraceLoader.rawEvents(this, 'render-blocking-preload.json.gz');
         for (const event of traceEvents) {
             Trace.Handlers.ModelHandlers.Meta.handleEvent(event);

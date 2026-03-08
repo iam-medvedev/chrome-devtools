@@ -525,6 +525,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "attribute",
   "attribute-modified",
   "attributes",
+  "attribution-reporting",
   "attribution-reporting-details",
   "auction-worklet",
   "audio-context",
@@ -712,6 +713,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "break-before",
   "break-inside",
   "break-on",
+  "breaking-change",
   "breakpoint",
   "breakpoint-group",
   "breakpoint-tooltip",
@@ -961,6 +963,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "content-encoding",
   "content-length",
   "content-policy",
+  "content-security-policy",
   "content-type",
   "content-visibility",
   "context",
@@ -996,6 +999,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "converter-puppeteer",
   "converter-puppeteer-firefox",
   "converter-puppeteer-replay",
+  "cookie",
   "cookie-control-override-enabled",
   "cookie-flag-controls",
   "cookie-preview",
@@ -1087,6 +1091,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "corner-top-right-shape",
   "corner-top-shape",
   "corners",
+  "cors",
   "cors-details",
   "count",
   "count-delta",
@@ -1120,6 +1125,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "credential-id",
   "credentialId",
   "critical",
+  "cross-origin-embedder-policy",
   "cs",
   "css",
   "css-angle",
@@ -1810,6 +1816,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "gen-ai-settings-panel",
   "general",
   "generative-ai-terms-of-service",
+  "generic",
   "generic-details",
   "geolocation",
   "geolocation.get-current-position",
@@ -1828,6 +1835,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "greendev",
   "greendev-ai-annotations-enabled",
   "greendev-artifact-viewer-enabled",
+  "greendev-breakpoint-debugger-agent-enabled",
   "greendev-copy-to-gemini-enabled",
   "greendev-in-devtools-floaty-enabled",
   "greendev-inline-widgets-enabled",
@@ -1895,6 +1903,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "heap-snapshot.retaining-paths-view",
   "heap-tracking-overview",
   "heavy",
+  "heavy-ad",
   "heavy-ad-details",
   "height",
   "help",
@@ -1907,6 +1916,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "heuristic-mitigation-disabled",
   "hex",
   "hi",
+  "hidden-issues",
   "hide-all-others",
   "hide-children",
   "hide-data-urls",
@@ -1965,6 +1975,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "import-har",
   "import-recording",
   "important",
+  "improvement",
   "in-range",
   "increase-priority",
   "indeterminate",
@@ -2090,6 +2101,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "java-script-disabled-true",
   "javascript",
   "javascript-context",
+  "jpeg-xl",
   "jpeg-xl-format-disabled",
   "jpeg-xl-format-disabled-true",
   "jpg-header",
@@ -2535,6 +2547,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "lostpointercapture",
   "low-contrast-details",
   "low-end-mobile",
+  "low-text-contrast",
   "lt",
   "lv",
   "macos",
@@ -2662,6 +2675,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "min-width",
   "missing-debug-info",
   "mix-blend-mode",
+  "mixed-content",
   "mixed-content-details",
   "mk",
   "ml",
@@ -2929,6 +2943,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "page-break-after",
   "page-break-before",
   "page-break-inside",
+  "page-error",
   "page-margin-safety",
   "page-orientation",
   "paint-order",
@@ -2955,6 +2970,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "patch-widget.save-all",
   "patch-widget.workspace",
   "path",
+  "path-length",
   "pathname",
   "pattern",
   "pause",
@@ -2977,6 +2993,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "performance.sidebar-toggle",
   "periodic-background-sync",
   "periodic-sync-tag",
+  "permission-element",
   "permission-element-elements",
   "persist-flame-config",
   "persistence-automatic-workspace-folders",
@@ -3042,6 +3059,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "preloading-speculations",
   "preloading-status-panel",
   "preloading-status-panel-pretty-print",
+  "preloading.clear",
   "presentation",
   "preserve-console-log",
   "preserve-console-log-true",
@@ -3120,6 +3138,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "quick-open.show",
   "quick-open.show-command-menu",
   "quickOpen.show",
+  "quirks-mode",
   "quota-override",
   "quotes",
   "r",
@@ -3464,6 +3483,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "selected-context-filter-enabled",
   "selected-context-filter-enabled-true",
   "selected-profile-type",
+  "selective-permissions-intervention-details",
   "selector",
   "selector-aria",
   "selector-attribute",
@@ -3582,6 +3602,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "show-ad-highlights",
   "show-ad-highlights-true",
   "show-adorner-settings",
+  "show-all",
   "show-all-properties",
   "show-as-javascript-object",
   "show-console-insight-teasers",
@@ -3751,6 +3772,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "srgb",
   "stack-trace",
   "stalled",
+  "standalone-styles",
   "standard-emulated-device-list",
   "start",
   "start-conversation-drjones-file",
@@ -3856,6 +3878,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "test-combo-box-setting",
   "test-device",
   "test-font",
+  "test-radio-setting",
   "test-setting",
   "test-setting-true",
   "test-sidebar",
@@ -4768,7 +4791,7 @@ function processEventForIntuitiveDebugging(event, state2, extraInfo) {
   maybeLogDebugEvent(entry);
 }
 function processEventForTestDebugging(event, state2, _extraInfo) {
-  if (event !== "SettingAccess" && event !== "FunctionCall") {
+  if (event !== "SettingAccess" && event !== "FunctionCall" && event !== "Resize") {
     lastImpressionLogEntry = null;
   }
   maybeLogDebugEvent({ interaction: event, veid: state2?.veid || 0 });
@@ -5248,6 +5271,10 @@ function checkPendingEventExpectation() {
     }
     if (!found) {
       processMissingEvents(pendingEventExpectation, expectedEventIndex, matchedImpressions);
+      if (!pendingEventExpectation.missingEvents?.length) {
+        numMatchedEvents = actualEventIndex;
+        pendingEventExpectation.success();
+      }
       return;
     }
   }

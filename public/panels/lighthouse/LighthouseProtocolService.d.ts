@@ -1,6 +1,6 @@
 import type * as Platform from '../../core/platform/platform.js';
 import type * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
-import type * as ReportRenderer from './LighthouseReporterTypes.js';
+import type * as LighthouseModel from '../../models/lighthouse/lighthouse.js';
 export interface LighthouseRun {
     inspectedURL: Platform.DevToolsPath.UrlString;
     categoryIDs: string[];
@@ -24,7 +24,7 @@ export declare class ProtocolService implements ProtocolClient.CDPConnection.CDP
     attach(): Promise<void>;
     getLocales(): readonly string[];
     startTimespan(currentLighthouseRun: LighthouseRun): Promise<void>;
-    collectLighthouseResults(currentLighthouseRun: LighthouseRun): Promise<ReportRenderer.RunnerResult>;
+    collectLighthouseResults(currentLighthouseRun: LighthouseRun): Promise<LighthouseModel.ReporterTypes.RunnerResult>;
     detach(): Promise<void>;
     registerStatusCallback(callback: (arg0: string) => void): void;
     onEvent<T extends ProtocolClient.CDPConnection.Event>(event: ProtocolClient.CDPConnection.CDPEvent<T>): void;

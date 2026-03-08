@@ -40,7 +40,6 @@
     "../../../../../../front_end/panels/lighthouse/LighthouseProtocolService.ts",
     "../../../../../../front_end/panels/lighthouse/LighthouseReportRenderer.ts",
     "../../../../../../front_end/panels/lighthouse/LighthouseReportSelector.ts",
-    "../../../../../../front_end/panels/lighthouse/LighthouseReporterTypes.ts",
     "../../../../../../front_end/panels/lighthouse/LighthouseStartView.ts",
     "../../../../../../front_end/panels/lighthouse/LighthouseStatusView.ts",
     "../../../../../../front_end/panels/lighthouse/LighthouseTimespanView.ts",
@@ -79,6 +78,9 @@
     },
     {
       "path": "../../models/geometry/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/lighthouse/bundle-tsconfig.json"
     },
     {
       "path": "../../models/text_utils/bundle-tsconfig.json"

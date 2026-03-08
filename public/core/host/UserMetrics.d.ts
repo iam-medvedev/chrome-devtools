@@ -523,7 +523,6 @@ export declare enum DevtoolsExperiments {
     apca = 39,
     'font-editor' = 41,
     'full-accessibility-tree' = 42,
-    'contrast-issues' = 44,
     'experimental-cookie-features' = 45,
     'instrumentation-breakpoints' = 61,
     'authored-deployed-grouping' = 63,
@@ -532,7 +531,8 @@ export declare enum DevtoolsExperiments {
     'timeline-show-postmessage-events' = 86,
     'timeline-debug-mode' = 93,
     'durable-messages' = 110,
-    MAX_VALUE = 111
+    'jpeg-xl' = 111,
+    MAX_VALUE = 112
 }
 /** Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added. **/
 export declare enum IssueExpanded {
@@ -601,7 +601,6 @@ export declare enum IssueCreated {
     'CookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::SetCookie' = 35,
     'SharedArrayBufferIssue::TransferIssue' = 36,
     'SharedArrayBufferIssue::CreationIssue' = 37,
-    LowTextContrastIssue = 41,
     'CorsIssue::InsecureLocalNetwork' = 42,
     'CorsIssue::InvalidHeaders' = 44,
     'CorsIssue::WildcardOriginWithCredentials' = 45,

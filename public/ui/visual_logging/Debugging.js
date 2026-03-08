@@ -220,7 +220,7 @@ export function processEventForIntuitiveDebugging(event, state, extraInfo) {
     maybeLogDebugEvent(entry);
 }
 export function processEventForTestDebugging(event, state, _extraInfo) {
-    if (event !== 'SettingAccess' && event !== 'FunctionCall') {
+    if (event !== 'SettingAccess' && event !== 'FunctionCall' && event !== 'Resize') {
         lastImpressionLogEntry = null;
     }
     maybeLogDebugEvent({ interaction: event, veid: state?.veid || 0 });
@@ -724,6 +724,10 @@ function checkPendingEventExpectation() {
         }
         if (!found) {
             processMissingEvents(pendingEventExpectation, expectedEventIndex, matchedImpressions);
+            if (!pendingEventExpectation.missingEvents?.length) {
+                numMatchedEvents = actualEventIndex;
+                pendingEventExpectation.success();
+            }
             return;
         }
     }

@@ -7,6 +7,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import { Link } from '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives, html, render } from '../../ui/lit/lit.js';
 import { Presets, RuntimeSettings } from './LighthouseController.js';
 import lighthouseStartViewStyles from './lighthouseStartView.css.js';
 import { RadioSetting } from './RadioSetting.js';
@@ -46,6 +47,64 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/lighthouse/LighthouseStartView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const renderStartView = (_input, output, target) => {
+    // clang-format off
+    render(html `
+      <form class="lighthouse-start-view">
+        <header class="hbox">
+          <div class="lighthouse-logo"></div>
+          <div class="lighthouse-title">
+            ${i18nString(UIStrings.generateLighthouseReport)}
+          </div>
+          <div class="lighthouse-start-button-container"></div>
+        </header>
+        <div
+          ${Directives.ref(e => {
+        output.helpText = e;
+    })}
+          class="lighthouse-help-text hidden"
+        ></div>
+        <div class="lighthouse-options hbox">
+          <div class="lighthouse-form-section">
+            <div
+              class="lighthouse-form-elements"
+              ${Directives.ref(e => {
+        output.modeFormElements = e;
+    })}
+            ></div>
+          </div>
+          <div class="lighthouse-form-section">
+            <div
+              class="lighthouse-form-elements"
+              ${Directives.ref(e => {
+        output.deviceTypeFormElements = e;
+    })}
+            ></div>
+          </div>
+          <div class="lighthouse-form-categories">
+            <fieldset class="lighthouse-form-section lighthouse-form-categories-fieldset">
+              <legend class="lighthouse-form-section-label">
+                ${i18nString(UIStrings.categories)}
+              </legend>
+              <div
+                class="lighthouse-form-elements"
+                ${Directives.ref(e => {
+        output.categoriesFormElements = e;
+    })}
+              ></div>
+            </fieldset>
+          </div>
+        </div>
+        <div
+          ${Directives.ref(e => {
+        output.warningText = e;
+    })}
+          class="lighthouse-warning-text hidden"
+        ></div>
+      </form>
+    `, target);
+    // clang-format on
+};
 export class StartView extends UI.Widget.Widget {
     controller;
     panel;
@@ -113,12 +172,10 @@ export class StartView extends UI.Widget.Widget {
             toolbar.appendToolbarItem(new UI.Toolbar.ToolbarItem(link));
         }
     }
-    populateFormControls(fragment, mode) {
+    populateFormControls(deviceTypeFormElements, categoryFormElements, mode) {
         // Populate the device type
-        const deviceTypeFormElements = fragment.$('device-type-form-elements');
         this.populateRuntimeSettingAsRadio('lighthouse.device-type', i18nString(UIStrings.device), deviceTypeFormElements);
         // Populate the categories
-        const categoryFormElements = fragment.$('categories-form-elements');
         this.checkboxes = [];
         for (const preset of Presets) {
             preset.setting.setTitle(preset.title());
@@ -138,39 +195,24 @@ export class StartView extends UI.Widget.Widget {
         this.populateRuntimeSettingAsToolbarCheckbox('lighthouse.enable-sampling', this.#settingsToolbar);
         this.populateRuntimeSettingAsToolbarDropdown('lighthouse.throttling', this.#settingsToolbar);
         const { mode } = this.controller.getFlags();
-        this.populateStartButton(mode);
-        const fragment = UI.Fragment.Fragment.build `
-<form class="lighthouse-start-view">
-  <header class="hbox">
-    <div class="lighthouse-logo"></div>
-    <h1 class="lighthouse-title">${i18nString(UIStrings.generateLighthouseReport)}</h1>
-    <div class="lighthouse-start-button-container" $="start-button-container">${this.startButton}</div>
-  </header>
-  <div $="help-text" class="lighthouse-help-text hidden"></div>
-  <div class="lighthouse-options hbox">
-    <div class="lighthouse-form-section">
-      <div class="lighthouse-form-elements" $="mode-form-elements"></div>
-    </div>
-    <div class="lighthouse-form-section">
-      <div class="lighthouse-form-elements" $="device-type-form-elements"></div>
-    </div>
-    <div class="lighthouse-form-categories">
-      <fieldset class="lighthouse-form-section lighthouse-form-categories-fieldset">
-        <legend class="lighthouse-form-section-label">${i18nString(UIStrings.categories)}</legend>
-        <div class="lighthouse-form-elements" $="categories-form-elements"></div>
-      </fieldset>
-    </div>
-  </div>
-  <div $="warning-text" class="lighthouse-warning-text hidden"></div>
-</form>
-    `;
-        this.helpText = fragment.$('help-text');
-        this.warningText = fragment.$('warning-text');
-        const modeFormElements = fragment.$('mode-form-elements');
+        const output = {
+            helpText: undefined,
+            warningText: undefined,
+            modeFormElements: undefined,
+            deviceTypeFormElements: undefined,
+            categoriesFormElements: undefined,
+        };
+        renderStartView({}, output, this.contentElement);
+        this.helpText = output.helpText;
+        this.warningText = output.warningText;
+        const modeFormElements = output.modeFormElements;
+        const deviceTypeFormElements = output.deviceTypeFormElements;
+        const categoriesFormElements = output.categoriesFormElements;
+        if (!modeFormElements || !deviceTypeFormElements || !categoriesFormElements) {
+            throw new Error('Required elements not found in template');
+        }
         this.populateRuntimeSettingAsRadio('lighthouse.mode', i18nString(UIStrings.mode), modeFormElements);
-        this.populateFormControls(fragment, mode);
-        this.contentElement.textContent = '';
-        this.contentElement.append(fragment.element());
+        this.populateFormControls(deviceTypeFormElements, categoriesFormElements, mode);
         this.refresh();
     }
     populateStartButton(mode) {

@@ -2491,6 +2491,11 @@ var NativeFunctions = [
   },
   {
     name: "getAttribute",
+    signatures: [["name"]],
+    receivers: ["ProcessingInstruction"]
+  },
+  {
+    name: "getAttribute",
     signatures: [["tag"]],
     receivers: ["SmartCardConnection"]
   },
@@ -2512,7 +2517,13 @@ var NativeFunctions = [
   },
   {
     name: "hasAttribute",
-    signatures: [["qualifiedName"], ["name"]]
+    signatures: [["qualifiedName"], ["name"]],
+    receivers: ["Element"]
+  },
+  {
+    name: "hasAttribute",
+    signatures: [["name"]],
+    receivers: ["ProcessingInstruction"]
   },
   {
     name: "hasAttributeNS",
@@ -2546,6 +2557,11 @@ var NativeFunctions = [
     name: "removeAttribute",
     signatures: [["qualifiedName"], ["name"]],
     receivers: ["Element"]
+  },
+  {
+    name: "removeAttribute",
+    signatures: [["name"]],
+    receivers: ["ProcessingInstruction"]
   },
   {
     name: "removeAttribute",
@@ -2592,6 +2608,11 @@ var NativeFunctions = [
   },
   {
     name: "setAttribute",
+    signatures: [["name", "value"]],
+    receivers: ["ProcessingInstruction"]
+  },
+  {
+    name: "setAttribute",
     signatures: [["tag", "value"]],
     receivers: ["SmartCardConnection"]
   },
@@ -2623,7 +2644,13 @@ var NativeFunctions = [
   },
   {
     name: "toggleAttribute",
-    signatures: [["qualifiedName", "?force"]]
+    signatures: [["qualifiedName", "?force"]],
+    receivers: ["Element"]
+  },
+  {
+    name: "toggleAttribute",
+    signatures: [["name", "?force"]],
+    receivers: ["ProcessingInstruction"]
   },
   {
     name: "webkitMatchesSelector",
@@ -3153,7 +3180,7 @@ var NativeFunctions = [
   },
   {
     name: "initKeyboardEvent",
-    signatures: [["typeArg", "?bubblesArg", "?cancelableArg", "?viewArg", "?keyArg", "?locationArg", "?ctrlKey", "?altKey", "?shiftKey", "?metaKey"]]
+    signatures: [["typeArg", "?bubblesArg", "?cancelableArg", "?viewArg", "?keyArg", "?locationArg", "?ctrlKey", "?altKey", "?shiftKey", "?metaKey"], ["type", "?bubbles", "?cancelable", "?view", "?keyIdentifier", "?location", "?ctrlKey", "?altKey", "?shiftKey", "?metaKey"]]
   },
   {
     name: "setKeyframes",
@@ -4187,7 +4214,7 @@ var NativeFunctions = [
   },
   {
     name: "initUIEvent",
-    signatures: [["typeArg", "?bubblesArg", "?cancelableArg", "?viewArg", "?detailArg"], ["type", "?bubbles", "?cancelable", "?view", "?detail"]]
+    signatures: [["typeArg", "?bubblesArg", "?cancelableArg", "?viewArg", "?detailArg"]]
   },
   {
     name: "getTranslatedShaderSource",
@@ -6822,6 +6849,10 @@ var NativeFunctions = [
     signatures: [["type", "?eventInitDict"]]
   },
   {
+    name: "FocusEvent",
+    signatures: [["type", "?eventInitDict"]]
+  },
+  {
     name: "HashChangeEvent",
     signatures: [["type", "?eventInitDict"]]
   },
@@ -6831,6 +6862,10 @@ var NativeFunctions = [
   },
   {
     name: "InterestEvent",
+    signatures: [["type", "?eventInitDict"]]
+  },
+  {
+    name: "KeyboardEvent",
     signatures: [["type", "?eventInitDict"]]
   },
   {
@@ -6870,7 +6905,7 @@ var NativeFunctions = [
     signatures: [["type", "?eventInitDict"]]
   },
   {
-    name: "UIEvent",
+    name: "TouchEvent",
     signatures: [["type", "?eventInitDict"]]
   },
   {
@@ -7226,6 +7261,10 @@ var NativeFunctions = [
     signatures: [["width", "height"]]
   },
   {
+    name: "OverscrollEvent",
+    signatures: [["type", "?eventInitDict"]]
+  },
+  {
     name: "setValueAndClosePopup",
     signatures: [["numberValue", "stringValue", "is_keyboard_event"]]
   },
@@ -7327,15 +7366,11 @@ var NativeFunctions = [
   },
   {
     name: "registerTool",
-    signatures: [["params"]]
+    signatures: [["tool"]]
   },
   {
     name: "unregisterTool",
-    signatures: [["tool_name"]]
-  },
-  {
-    name: "provideContext",
-    signatures: [["params"]]
+    signatures: [["name"]]
   },
   {
     name: "SnapEvent",
@@ -9253,6 +9288,10 @@ var NativeFunctions = [
   {
     name: "MIDIMessageEvent",
     signatures: [["type", "?eventInitDict"]]
+  },
+  {
+    name: "startDiagnosticLogging",
+    signatures: [["?options"]]
   },
   {
     name: "CloseEvent",

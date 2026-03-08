@@ -712,7 +712,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["apca"] = 39] = "apca";
     DevtoolsExperiments[DevtoolsExperiments["font-editor"] = 41] = "font-editor";
     DevtoolsExperiments[DevtoolsExperiments["full-accessibility-tree"] = 42] = "full-accessibility-tree";
-    DevtoolsExperiments[DevtoolsExperiments["contrast-issues"] = 44] = "contrast-issues";
     DevtoolsExperiments[DevtoolsExperiments["experimental-cookie-features"] = 45] = "experimental-cookie-features";
     DevtoolsExperiments[DevtoolsExperiments["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
     DevtoolsExperiments[DevtoolsExperiments["authored-deployed-grouping"] = 63] = "authored-deployed-grouping";
@@ -721,9 +720,10 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";
     DevtoolsExperiments[DevtoolsExperiments["durable-messages"] = 110] = "durable-messages";
+    DevtoolsExperiments[DevtoolsExperiments["jpeg-xl"] = 111] = "jpeg-xl";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 111] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 112] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 /** Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added. **/
 export var IssueExpanded;
@@ -800,7 +800,6 @@ export var IssueCreated;
     IssueCreated[IssueCreated["CookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::SetCookie"] = 35] = "CookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::SetCookie";
     IssueCreated[IssueCreated["SharedArrayBufferIssue::TransferIssue"] = 36] = "SharedArrayBufferIssue::TransferIssue";
     IssueCreated[IssueCreated["SharedArrayBufferIssue::CreationIssue"] = 37] = "SharedArrayBufferIssue::CreationIssue";
-    IssueCreated[IssueCreated["LowTextContrastIssue"] = 41] = "LowTextContrastIssue";
     IssueCreated[IssueCreated["CorsIssue::InsecureLocalNetwork"] = 42] = "CorsIssue::InsecureLocalNetwork";
     IssueCreated[IssueCreated["CorsIssue::InvalidHeaders"] = 44] = "CorsIssue::InvalidHeaders";
     IssueCreated[IssueCreated["CorsIssue::WildcardOriginWithCredentials"] = 45] = "CorsIssue::WildcardOriginWithCredentials";

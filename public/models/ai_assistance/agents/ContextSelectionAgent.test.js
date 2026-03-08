@@ -122,6 +122,7 @@ describeWithMockConnection('ContextSelectionAgent', function () {
             const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/`, urlString `https://example.com/`, null, null, null);
             request.statusCode = 200;
             request.setIssueTime(0, 0);
+            request.setTransferSize(3000);
             request.endTime = 2;
             const networkLog = Logs.NetworkLog.NetworkLog.instance();
             sinon.stub(networkLog, 'requests').returns([request]);
@@ -161,9 +162,11 @@ describeWithMockConnection('ContextSelectionAgent', function () {
                                 response: {
                                     result: [
                                         {
+                                            id: 'requestId',
                                             url: 'https://example.com/',
                                             statusCode: 200,
                                             duration: '2.00\xA0s',
+                                            transferSize: '3.0\xA0kB',
                                         },
                                     ],
                                 },
@@ -211,9 +214,11 @@ describeWithMockConnection('ContextSelectionAgent', function () {
             assert.strictEqual(part.functionResponse.name, 'listNetworkRequests');
             assert.deepEqual(part.functionResponse.response.result, [
                 {
+                    id: 'requestId1',
                     url: `${origin}/foo`,
                     statusCode: 200,
                     duration: '1.00\xA0s',
+                    transferSize: '0.0\xA0kB',
                 },
             ]);
         });
@@ -222,6 +227,8 @@ describeWithMockConnection('ContextSelectionAgent', function () {
         it('inspects DOM node', async () => {
             const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
             const onInspectElement = sinon.stub().resolves(node);
+            const sideEffectConfirmationPromise = Promise.withResolvers();
+            sideEffectConfirmationPromise.resolve(true);
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
                 aidaClient: mockAidaClient([
                     [{
@@ -234,6 +241,7 @@ describeWithMockConnection('ContextSelectionAgent', function () {
                     [{ explanation: 'Done' }],
                 ]),
                 onInspectElement,
+                confirmSideEffectForTest: sinon.stub().returns(sideEffectConfirmationPromise)
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const contextChange = responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
@@ -255,7 +263,7 @@ describeWithMockConnection('ContextSelectionAgent', function () {
                             functionCalls: [{
                                     name: 'selectNetworkRequest',
                                     args: {
-                                        url: 'https://example.com/',
+                                        id: 'requestId',
                                     },
                                 }],
                             explanation: '',
@@ -272,7 +280,7 @@ describeWithMockConnection('ContextSelectionAgent', function () {
     });
     describe('selectSourceFile', () => {
         it('selects a source file', async () => {
-            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+            const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
             const project = {
                 id: () => 'test-project',
                 type: () => Workspace.Workspace.projectTypes.Network,
@@ -281,13 +289,15 @@ describeWithMockConnection('ContextSelectionAgent', function () {
             };
             const file = new Workspace.UISourceCode.UISourceCode(project, urlString `https://example.com/script.js`, Common.ResourceType.resourceTypes.Script);
             sinon.stub(workspace, 'projects').returns([project]);
+            // Populate the ID mapping.
+            ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.set(file, 1);
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
                 aidaClient: mockAidaClient([
                     [{
                             functionCalls: [{
                                     name: 'selectSourceFile',
                                     args: {
-                                        name: 'script.js',
+                                        id: 1,
                                     },
                                 }],
                             explanation: '',

@@ -499,12 +499,14 @@ var CSPViolationBreakpointsSidebarPane = class extends CategorizedBreakpointsSid
 var DOMBreakpointsSidebarPane_exports = {};
 __export(DOMBreakpointsSidebarPane_exports, {
   ContextMenuProvider: () => ContextMenuProvider,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   DOMBreakpointsSidebarPane: () => DOMBreakpointsSidebarPane
 });
 import * as Common from "./../../core/common/common.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
+import * as Lit2 from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon from "./../common/common.js";
 import * as Sources2 from "./../sources/sources.js";
@@ -516,40 +518,60 @@ var domBreakpointsSidebarPane_css_default = `/*
  * found in the LICENSE file.
  */
 
-.dom-breakpoints-container {
-  overflow: auto;
-}
+@scope to (devtools-widget > *) {
+  :scope {
+    overflow: auto;
+  }
 
-.breakpoint-list {
-  padding-bottom: 3px;
-}
+  .monospace {
+    font-family: var(--monospace-font-family);
+    font-size: var(--monospace-font-size);
+  }
 
-.breakpoint-list .dom-breakpoint > div {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .dom-breakpoints-container {
+    flex-grow: 1;
+  }
 
-.breakpoint-entry {
-  display: flex;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  padding: 2px 0;
-}
+  .breakpoint-list {
+    padding: 0 0 3px;
+    list-style-type: none;
+    margin: 0;
+  }
 
-.breakpoint-entry:focus-visible {
-  background-color: var(--sys-color-tonal-container);
-}
+  .breakpoint-list .dom-breakpoint > div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.breakpoint-hit {
-  background-color: var(--sys-color-neutral-container);
-  color: var(--sys-color-on-surface);
-}
+  .breakpoint-entry {
+    display: flex;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding: 2px 0;
+  }
 
-.placeholder {
-  display: flex;
-  height: 100%;
-  justify-content: center;
+  .breakpoint-entry:focus-visible {
+    background-color: var(--sys-color-tonal-container);
+  }
+
+  .breakpoint-hit {
+    background-color: var(--sys-color-neutral-container);
+    color: var(--sys-color-on-surface);
+  }
+
+  .placeholder {
+    display: flex;
+    height: 100%;
+    justify-content: center;
+  }
+
+  .gray-info-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
 }
 
 :host-context(.sources.panel) .empty-view-scroller {
@@ -561,15 +583,17 @@ var domBreakpointsSidebarPane_css_default = `/*
 }
 
 @media (forced-colors: active) {
-  .breakpoint-entry:focus-visible,
-  .breakpoint-list .breakpoint-entry:hover {
-    forced-color-adjust: none;
-    background-color: Highlight;
-  }
+  @scope to (devtools-widget > *) {
+    .breakpoint-entry:focus-visible,
+    .breakpoint-list .breakpoint-entry:hover {
+      forced-color-adjust: none;
+      background-color: Highlight;
+    }
 
-  .breakpoint-entry:focus-visible *,
-  .breakpoint-list .breakpoint-entry:hover * {
-    color: HighlightText;
+    .breakpoint-entry:focus-visible *,
+    .breakpoint-list .breakpoint-entry:hover * {
+      color: HighlightText;
+    }
   }
 }
 
@@ -664,30 +688,83 @@ var str_2 = i18n3.i18n.registerUIStrings("panels/browser_debugger/DOMBreakpoints
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
 var DOM_BREAKPOINT_DOCUMENTATION_URL = "https://developer.chrome.com/docs/devtools/javascript/breakpoints#dom";
+var { html: html2, render: render2, Directives: Directives2 } = Lit2;
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  const hasBreakpoints = input.breakpoints.length > 0;
+  render2(html2`
+      <style>${domBreakpointsSidebarPane_css_default}</style>
+      <div class="dom-breakpoints-container" jslog=${VisualLogging3.section("sources.dom-breakpoints").track({ resize: true })}>
+        ${hasBreakpoints ? html2`<ul class="breakpoint-list"
+              aria-label=${i18nString2(UIStrings2.domBreakpointsList)}>
+            ${input.breakpoints.map((item2) => {
+    const { breakpoint } = item2;
+    const checkedStateText = breakpoint.enabled ? i18nString2(UIStrings2.checked) : i18nString2(UIStrings2.unchecked);
+    const linkified = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(breakpoint.node, { preventKeyboardFocus: true, tooltip: void 0 });
+    return html2`
+                <li class=${`breakpoint-entry ${item2.isHighlighted ? "breakpoint-hit" : ""}`}
+                    tabindex=${item2.isFocused ? "0" : "-1"}
+                    @click=${() => input.onBreakpointClick(breakpoint)}
+                    @contextmenu=${(e) => input.onBreakpointContextMenu(breakpoint, e)}
+                    @keydown=${(e) => input.onBreakpointKeyDown(breakpoint, e)}
+                    aria-label=${i18nString2(UIStrings2.sSS, { PH1: item2.label, PH2: linkified.deepTextContent(), PH3: checkedStateText })}
+                    aria-description=${item2.isHighlighted ? i18nString2(UIStrings2.sBreakpointHit, { PH1: checkedStateText }) : checkedStateText}
+                    jslog=${VisualLogging3.domBreakpoint().context(breakpoint.type).track({ keydown: "ArrowUp|ArrowDown|PageUp|PageDown" })}>
+                  <devtools-checkbox
+                    class="checkbox-label"
+                    .checked=${breakpoint.enabled}
+                    @click=${(e) => e.stopPropagation()}
+                    @change=${() => input.onBreakpointCheckboxClick(breakpoint)}
+                    tabindex="-1"
+                    aria-label=${i18nString2(UIStrings2.sS, { PH1: item2.label, PH2: linkified.deepTextContent() })}
+                    aria-description=${Directives2.ifDefined(item2.isHighlighted ? i18nString2(UIStrings2.breakpointHit) : void 0)}
+                    jslog=${VisualLogging3.toggle().track({ click: true })}>
+                  </devtools-checkbox>
+                  <div class="dom-breakpoint">
+                    <code class="monospace" style="display: block;">${linkified}</code>
+                    <div>${item2.label}</div>
+                  </div>
+                </li>`;
+  })}
+          </ul>` : html2`<div class="placeholder">
+            <div class="gray-info-message">${i18nString2(UIStrings2.noBreakpoints)}</div>
+            <devtools-widget .widgetConfig=${UI2.Widget.widgetConfig(UI2.EmptyWidget.EmptyWidget, {
+    header: i18nString2(UIStrings2.noBreakpoints),
+    text: i18nString2(UIStrings2.domBreakpointsDescription),
+    link: DOM_BREAKPOINT_DOCUMENTATION_URL
+  })}></devtools-widget>
+          </div>`}
+      </div>
+    `, target);
+};
 var domBreakpointsSidebarPaneInstance;
 var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Widget.VBox {
-  elementToCheckboxes;
-  #emptyElement;
-  #breakpoints;
-  #list;
-  #highlightedBreakpoint;
-  constructor() {
+  #breakpoints = [];
+  #highlightedBreakpoint = null;
+  #focusedBreakpoint = null;
+  #view;
+  set highlightedBreakpoint(breakpoint) {
+    this.#highlightedBreakpoint = breakpoint;
+    this.requestUpdate();
+  }
+  set focusedBreakpoint(breakpoint) {
+    if (this.#focusedBreakpoint === breakpoint) {
+      return;
+    }
+    this.#focusedBreakpoint = breakpoint;
+    this.#synchronizeFocusedBreakpoint();
+    this.requestUpdate();
+  }
+  #synchronizeFocusedBreakpoint() {
+    if (this.#focusedBreakpoint && !this.#breakpoints.includes(this.#focusedBreakpoint)) {
+      this.#focusedBreakpoint = null;
+    }
+    if (!this.#focusedBreakpoint && this.#breakpoints.length > 0) {
+      this.#focusedBreakpoint = this.#breakpoints[0];
+    }
+  }
+  constructor(view = DEFAULT_VIEW2) {
     super({ useShadowDom: true });
-    this.registerRequiredCSS(domBreakpointsSidebarPane_css_default);
-    this.elementToCheckboxes = /* @__PURE__ */ new WeakMap();
-    this.contentElement.setAttribute("jslog", `${VisualLogging3.section("sources.dom-breakpoints").track({ resize: true })}`);
-    this.contentElement.classList.add("dom-breakpoints-container");
-    this.#emptyElement = this.contentElement.createChild("div", "placeholder");
-    this.#emptyElement.createChild("div", "gray-info-message").textContent = i18nString2(UIStrings2.noBreakpoints);
-    const emptyWidget = new UI2.EmptyWidget.EmptyWidget(UIStrings2.noBreakpoints, i18nString2(UIStrings2.domBreakpointsDescription));
-    emptyWidget.link = DOM_BREAKPOINT_DOCUMENTATION_URL;
-    emptyWidget.show(this.#emptyElement);
-    this.#breakpoints = new UI2.ListModel.ListModel();
-    this.#list = new UI2.ListControl.ListControl(this.#breakpoints, this, UI2.ListControl.ListMode.NonViewport);
-    this.contentElement.appendChild(this.#list.element);
-    this.#list.element.classList.add("breakpoint-list", "hidden");
-    UI2.ARIAUtils.markAsList(this.#list.element);
-    UI2.ARIAUtils.setLabel(this.#list.element, i18nString2(UIStrings2.domBreakpointsList));
+    this.#view = view;
     SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointAdded", this.breakpointAdded, this);
     SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointToggled", this.breakpointToggled, this);
     SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointsRemoved", this.breakpointsRemoved, this);
@@ -697,7 +774,6 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
         this.addBreakpoint(breakpoint);
       }
     }
-    this.#highlightedBreakpoint = null;
     this.update();
   }
   static instance() {
@@ -706,116 +782,65 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     }
     return domBreakpointsSidebarPaneInstance;
   }
-  createElementForItem(item2) {
-    const element = document.createElement("div");
-    element.classList.add("breakpoint-entry");
-    element.setAttribute("jslog", `${VisualLogging3.domBreakpoint().context(item2.type).track({ keydown: "ArrowUp|ArrowDown|PageUp|PageDown" })}`);
-    element.addEventListener("contextmenu", this.contextMenu.bind(this, item2), true);
-    UI2.ARIAUtils.markAsListitem(element);
-    element.tabIndex = -1;
-    const checkbox = UI2.UIUtils.CheckboxLabel.create(
-      /* title */
-      void 0,
-      item2.enabled
-    );
-    checkbox.addEventListener("click", this.checkboxClicked.bind(this, item2), false);
-    checkbox.tabIndex = -1;
-    this.elementToCheckboxes.set(element, checkbox);
-    element.appendChild(checkbox);
-    element.addEventListener("keydown", (event) => {
-      if (event.key === " ") {
-        checkbox.click();
-        event.consume(true);
-      }
-    });
-    const labelElement = document.createElement("div");
-    labelElement.classList.add("dom-breakpoint");
-    element.appendChild(labelElement);
-    const description = document.createElement("div");
-    const breakpointTypeLabel = BreakpointTypeLabels.get(item2.type);
-    description.textContent = breakpointTypeLabel ? breakpointTypeLabel() : null;
-    const breakpointTypeText = breakpointTypeLabel ? breakpointTypeLabel() : "";
-    UI2.ARIAUtils.setLabel(checkbox, breakpointTypeText);
-    checkbox.setAttribute("jslog", `${VisualLogging3.toggle().track({ click: true })}`);
-    const checkedStateText = item2.enabled ? i18nString2(UIStrings2.checked) : i18nString2(UIStrings2.unchecked);
-    const linkifiedNode = document.createElement("monospace");
-    linkifiedNode.style.display = "block";
-    labelElement.appendChild(linkifiedNode);
-    const linkified = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(item2.node, { preventKeyboardFocus: true, tooltip: void 0 });
-    linkifiedNode.appendChild(linkified);
-    UI2.ARIAUtils.setLabel(checkbox, i18nString2(UIStrings2.sS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent() }));
-    UI2.ARIAUtils.setLabel(element, i18nString2(UIStrings2.sSS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent(), PH3: checkedStateText }));
-    labelElement.appendChild(description);
-    if (item2 === this.#highlightedBreakpoint) {
-      element.classList.add("breakpoint-hit");
-      UI2.ARIAUtils.setDescription(element, i18nString2(UIStrings2.sBreakpointHit, { PH1: checkedStateText }));
-      UI2.ARIAUtils.setDescription(checkbox, i18nString2(UIStrings2.breakpointHit));
-    } else {
-      UI2.ARIAUtils.setDescription(element, checkedStateText);
-    }
-    this.#emptyElement.classList.add("hidden");
-    this.#list.element.classList.remove("hidden");
-    return element;
+  performUpdate() {
+    const input = {
+      breakpoints: this.#breakpoints.map((breakpoint) => ({
+        breakpoint,
+        label: BreakpointTypeLabels.get(breakpoint.type)?.() ?? "",
+        isHighlighted: breakpoint === this.#highlightedBreakpoint,
+        isFocused: breakpoint === this.#focusedBreakpoint
+      })),
+      onBreakpointClick: this.onBreakpointClick.bind(this),
+      onBreakpointCheckboxClick: this.onBreakpointCheckboxClick.bind(this),
+      onBreakpointContextMenu: this.onBreakpointContextMenu.bind(this),
+      onBreakpointKeyDown: this.onBreakpointKeyDown.bind(this)
+    };
+    this.#view(input, void 0, this.contentElement);
   }
-  heightForItem(_item) {
-    return 0;
+  onBreakpointClick(breakpoint) {
+    this.focusedBreakpoint = breakpoint;
   }
-  isItemSelectable(_item) {
-    return true;
-  }
-  updateSelectedItemARIA(_fromElement, _toElement) {
-    return true;
-  }
-  selectedItemChanged(_from, _to, fromElement, toElement) {
-    if (fromElement) {
-      fromElement.tabIndex = -1;
-    }
-    if (toElement) {
-      this.setDefaultFocusedElement(toElement);
-      toElement.tabIndex = 0;
-      if (this.hasFocus()) {
-        toElement.focus();
+  onBreakpointKeyDown(breakpoint, event) {
+    const keyboardEvent = event;
+    if (keyboardEvent.key === " ") {
+      this.onBreakpointCheckboxClick(breakpoint);
+      keyboardEvent.consume(true);
+    } else if (keyboardEvent.key === "ArrowUp" || keyboardEvent.key === "ArrowDown") {
+      const index = this.#breakpoints.indexOf(breakpoint);
+      const newIndex = keyboardEvent.key === "ArrowUp" ? index - 1 : index + 1;
+      if (newIndex >= 0 && newIndex < this.#breakpoints.length) {
+        this.focusedBreakpoint = this.#breakpoints[newIndex];
+        void this.updateComplete.then(() => {
+          const entry = this.contentElement.querySelectorAll(".breakpoint-entry")[newIndex];
+          entry.focus();
+        });
+        keyboardEvent.consume(true);
       }
     }
   }
   breakpointAdded(event) {
     this.addBreakpoint(event.data);
   }
-  breakpointToggled(event) {
-    const hadFocus = this.hasFocus();
-    const breakpoint = event.data;
-    this.#list.refreshItem(breakpoint);
-    if (hadFocus) {
-      this.focus();
-    }
+  breakpointToggled(_event) {
+    this.requestUpdate();
   }
   breakpointsRemoved(event) {
-    const hadFocus = this.hasFocus();
     const breakpoints = event.data;
-    let lastIndex = -1;
     for (const breakpoint of breakpoints) {
       const index = this.#breakpoints.indexOf(breakpoint);
       if (index >= 0) {
-        this.#breakpoints.remove(index);
-        lastIndex = index;
+        this.#breakpoints.splice(index, 1);
       }
     }
-    if (this.#breakpoints.length === 0) {
-      this.#emptyElement.classList.remove("hidden");
-      this.setDefaultFocusedElement(this.#emptyElement);
-      this.#list.element.classList.add("hidden");
-    } else if (lastIndex >= 0) {
-      const breakpointToSelect = this.#breakpoints.at(lastIndex);
-      if (breakpointToSelect) {
-        this.#list.selectItem(breakpointToSelect);
-      }
-    }
-    if (hadFocus) {
-      this.focus();
-    }
+    this.#synchronizeFocusedBreakpoint();
+    this.requestUpdate();
   }
   addBreakpoint(breakpoint) {
-    this.#breakpoints.insertWithComparator(breakpoint, (breakpointA, breakpointB) => {
+    if (this.#breakpoints.includes(breakpoint)) {
+      return;
+    }
+    this.#breakpoints.push(breakpoint);
+    this.#breakpoints.sort((breakpointA, breakpointB) => {
       if (breakpointA.type > breakpointB.type) {
         return -1;
       }
@@ -824,11 +849,11 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
       }
       return 0;
     });
-    if (!this.#list.selectedItem() || !this.hasFocus()) {
-      this.#list.selectItem(this.#breakpoints.at(0));
-    }
+    this.#synchronizeFocusedBreakpoint();
+    this.requestUpdate();
   }
-  contextMenu(breakpoint, event) {
+  onBreakpointContextMenu(breakpoint, event) {
+    this.focusedBreakpoint = breakpoint;
     const contextMenu = new UI2.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString2(UIStrings2.revealDomNodeInElementsPanel), () => Common.Revealer.reveal(breakpoint.node), { jslogContext: "reveal-in-elements" });
     contextMenu.defaultSection().appendItem(i18nString2(UIStrings2.removeBreakpoint), () => {
@@ -839,19 +864,16 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     }, { jslogContext: "remove-all-dom-breakpoints" });
     void contextMenu.show();
   }
-  checkboxClicked(breakpoint, event) {
-    breakpoint.domDebuggerModel.toggleDOMBreakpoint(breakpoint, event.target ? event.target.checked : false);
+  onBreakpointCheckboxClick(breakpoint) {
+    this.focusedBreakpoint = breakpoint;
+    breakpoint.domDebuggerModel.toggleDOMBreakpoint(breakpoint, !breakpoint.enabled);
   }
   flavorChanged(_object) {
     this.update();
   }
   update() {
     const details = UI2.Context.Context.instance().flavor(SDK3.DebuggerModel.DebuggerPausedDetails);
-    if (this.#highlightedBreakpoint) {
-      const oldHighlightedBreakpoint = this.#highlightedBreakpoint;
-      this.#highlightedBreakpoint = null;
-      this.#list.refreshItem(oldHighlightedBreakpoint);
-    }
+    this.highlightedBreakpoint = null;
     if (!details?.auxData || details.reason !== "DOM") {
       return;
     }
@@ -865,13 +887,13 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     }
     for (const breakpoint of this.#breakpoints) {
       if (breakpoint.node === data.node && breakpoint.type === data.type) {
-        this.#highlightedBreakpoint = breakpoint;
+        this.highlightedBreakpoint = breakpoint;
+        this.focusedBreakpoint = breakpoint;
       }
     }
     if (this.#highlightedBreakpoint) {
-      this.#list.refreshItem(this.#highlightedBreakpoint);
+      void UI2.ViewManager.ViewManager.instance().showView("sources.dom-breakpoints");
     }
-    void UI2.ViewManager.ViewManager.instance().showView("sources.dom-breakpoints");
   }
 };
 var BreakpointTypeLabels = /* @__PURE__ */ new Map([
@@ -1332,6 +1354,7 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
     listItemElement.setAttribute("jslog", `${VisualLogging6.item().track({
       click: true,
       dblclick: true,
+      resize: true,
       keydown: "ArrowUp|ArrowDown|PageUp|PageDown|Enter|Space"
     })}`);
     return listItemElement;

@@ -622,6 +622,7 @@ export const generatedProperties = [
             "page-margin-safety",
             "page-orientation",
             "paint-order",
+            "path-length",
             "pathname",
             "pattern",
             "perspective",
@@ -3574,6 +3575,12 @@ export const generatedProperties = [
         "name": "paint-order"
     },
     {
+        "keywords": [
+            "none"
+        ],
+        "name": "path-length"
+    },
+    {
         "name": "pathname"
     },
     {
@@ -4890,7 +4897,7 @@ export const generatedProperties = [
         "inherited": false,
         "keywords": [
             "none",
-            "auto"
+            "all"
         ],
         "name": "view-transition-scope"
     },
@@ -6589,6 +6596,11 @@ export const generatedPropertyValues = {
             "markers"
         ]
     },
+    "path-length": {
+        "values": [
+            "none"
+        ]
+    },
     "perspective": {
         "values": [
             "none"
@@ -7266,7 +7278,7 @@ export const generatedPropertyValues = {
     "view-transition-scope": {
         "values": [
             "none",
-            "auto"
+            "all"
         ]
     },
     "visibility": {

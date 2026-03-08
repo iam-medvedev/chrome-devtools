@@ -1152,7 +1152,7 @@ var AiCodeGenerationProvider = class _AiCodeGenerationProvider {
     }
     if (this.#generationTeaser.displayState === PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.GENERATED) {
       update.view.dispatch({ effects: setAiAutoCompleteSuggestion.of(null) });
-      this.#generationTeaser.displayState = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.TRIGGER;
+      this.#generationTeaser.displayState = PanelCommon.AiCodeGenerationTeaser.AiCodeGenerationTeaserDisplayState.DISCOVERY;
       return;
     }
   }
@@ -1599,7 +1599,7 @@ var AiCodeCompletionProvider = class _AiCodeCompletionProvider {
     if (isRepetitive) {
       return null;
     }
-    const suggestionText = this.#trimSuggestionOverlap(suggestionSample.generationString, suffix);
+    const suggestionText = _AiCodeCompletionProvider.trimSuggestionOverlap(suggestionSample.generationString, suffix);
     if (suggestionText.length === 0) {
       return null;
     }
@@ -1626,7 +1626,7 @@ var AiCodeCompletionProvider = class _AiCodeCompletionProvider {
   /**
    * Removes the end of a suggestion if it overlaps with the start of the suffix.
    */
-  #trimSuggestionOverlap(generationString, suffix) {
+  static trimSuggestionOverlap(generationString, suffix) {
     if (!suffix) {
       return generationString;
     }

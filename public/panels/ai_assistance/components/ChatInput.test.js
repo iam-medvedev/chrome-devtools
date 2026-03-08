@@ -190,51 +190,29 @@ describeWithEnvironment('ChatInput', () => {
         });
     });
     describe('view', () => {
-        it('renders correctly when multimodal is enabled', async () => {
-            const target = document.createElement('div');
-            renderElementIntoDOM(target);
-            AiAssistance.ChatInput.DEFAULT_VIEW({
+        class MockContext extends AiAssistanceModel.AiAgent.ConversationContext {
+            getIcon() {
+                return document.createElement('span');
+            }
+            getTitle() {
+                return 'test';
+            }
+            getItem() {
+                return 'test';
+            }
+            getOrigin() {
+                return '';
+            }
+        }
+        function createDefaultViewInput() {
+            return {
                 isLoading: false,
                 isTextInputEmpty: true,
                 blockedByCrossOrigin: false,
                 isTextInputDisabled: false,
                 inputPlaceholder: 'Type a message...',
-                selectedContext: null,
-                inspectElementToggled: false,
-                disclaimerText: 'Disclaimer text',
-                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
-                multimodalInputEnabled: true,
-                uploadImageInputEnabled: true,
-                isReadOnly: false,
-                textAreaRef: { value: undefined },
-                onContextClick: () => { },
-                onInspectElementClick: () => { },
-                onSubmit: () => { },
-                onTextAreaKeyDown: () => { },
-                onCancel: () => { },
-                onNewConversation: () => { },
-                onTextInputChange: () => { },
-                onTakeScreenshot: () => { },
-                onRemoveImageInput: () => { },
-                onImageUpload: () => { },
-                onImagePaste: () => { },
-                onImageDragOver: () => { },
-                onImageDrop: () => { },
-                onContextRemoved: null,
-                onContextAdd: null,
-            }, undefined, target);
-            await assertScreenshot('ai_assistance/chat_input_multimodal_enabled.png');
-        });
-        it('renders correctly when multimodal is disabled', async () => {
-            const target = document.createElement('div');
-            renderElementIntoDOM(target);
-            AiAssistance.ChatInput.DEFAULT_VIEW({
-                isLoading: false,
-                isTextInputEmpty: true,
-                blockedByCrossOrigin: false,
-                isTextInputDisabled: false,
-                inputPlaceholder: 'Type a message...',
-                selectedContext: null,
+                context: null,
+                isContextSelected: false,
                 inspectElementToggled: false,
                 disclaimerText: 'Disclaimer text',
                 conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
@@ -257,8 +235,73 @@ describeWithEnvironment('ChatInput', () => {
                 onImageDrop: () => { },
                 onContextRemoved: null,
                 onContextAdd: null,
+            };
+        }
+        it('renders correctly when multimodal is enabled', async () => {
+            const target = document.createElement('div');
+            renderElementIntoDOM(target);
+            AiAssistance.ChatInput.DEFAULT_VIEW({
+                ...createDefaultViewInput(),
+                multimodalInputEnabled: true,
+                uploadImageInputEnabled: true,
+            }, undefined, target);
+            await assertScreenshot('ai_assistance/chat_input_multimodal_enabled.png');
+        });
+        it('renders correctly when multimodal is disabled', async () => {
+            const target = document.createElement('div');
+            renderElementIntoDOM(target);
+            AiAssistance.ChatInput.DEFAULT_VIEW({
+                ...createDefaultViewInput(),
             }, undefined, target);
             await assertScreenshot('ai_assistance/chat_input_multimodal_disabled.png');
+        });
+        it('shows the context pill and calls onContextClick', async () => {
+            const target = document.createElement('div');
+            renderElementIntoDOM(target);
+            const onContextClick = sinon.stub();
+            const context = new MockContext();
+            AiAssistance.ChatInput.DEFAULT_VIEW({
+                ...createDefaultViewInput(),
+                context,
+                isContextSelected: true,
+                onContextClick,
+            }, undefined, target);
+            const pill = target.querySelector('.title');
+            assert.isNotNull(pill);
+            pill.click();
+            sinon.assert.calledOnce(onContextClick);
+        });
+        it('calls onContextRemoved when the remove button is clicked', async () => {
+            const target = document.createElement('div');
+            renderElementIntoDOM(target);
+            const onContextRemoved = sinon.stub();
+            const context = new MockContext();
+            AiAssistance.ChatInput.DEFAULT_VIEW({
+                ...createDefaultViewInput(),
+                context,
+                isContextSelected: true,
+                onContextRemoved,
+            }, undefined, target);
+            const removeButton = target.querySelector('.remove-context');
+            assert.isNotNull(removeButton);
+            removeButton.click();
+            sinon.assert.calledOnce(onContextRemoved);
+        });
+        it('calls onContextAdd when the add button is clicked', async () => {
+            const target = document.createElement('div');
+            renderElementIntoDOM(target);
+            const onContextAdd = sinon.stub();
+            const context = new MockContext();
+            AiAssistance.ChatInput.DEFAULT_VIEW({
+                ...createDefaultViewInput(),
+                context,
+                isContextSelected: false,
+                onContextAdd,
+            }, undefined, target);
+            const addButton = target.querySelector('.add-context');
+            assert.isNotNull(addButton);
+            addButton.click();
+            sinon.assert.calledOnce(onContextAdd);
         });
     });
 });

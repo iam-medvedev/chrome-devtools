@@ -15,7 +15,6 @@ export var ExperimentName;
     ExperimentName["APCA"] = "apca";
     ExperimentName["FONT_EDITOR"] = "font-editor";
     ExperimentName["FULL_ACCESSIBILITY_TREE"] = "full-accessibility-tree";
-    ExperimentName["CONTRAST_ISSUES"] = "contrast-issues";
     ExperimentName["EXPERIMENTAL_COOKIE_FEATURES"] = "experimental-cookie-features";
     ExperimentName["INSTRUMENTATION_BREAKPOINTS"] = "instrumentation-breakpoints";
     ExperimentName["AUTHORED_DEPLOYED_GROUPING"] = "authored-deployed-grouping";
@@ -24,6 +23,7 @@ export var ExperimentName;
     ExperimentName["TIMELINE_SHOW_POST_MESSAGE_EVENTS"] = "timeline-show-postmessage-events";
     ExperimentName["TIMELINE_DEBUG_MODE"] = "timeline-debug-mode";
     ExperimentName["DURABLE_MESSAGES"] = "durable-messages";
+    ExperimentName["JPEG_XL"] = "jpeg-xl";
     // Adding or removing an entry from this enum?
     // You will need to update:
     // 1. DevToolsExperiments enum in host/UserMetrics.ts
