@@ -62,6 +62,7 @@
     "../../../../../../front_end/panels/application/OriginTrialTreeView.test.ts",
     "../../../../../../front_end/panels/application/PreloadingTreeElement.test.ts",
     "../../../../../../front_end/panels/application/ReportingApiView.test.ts",
+    "../../../../../../front_end/panels/application/ServiceWorkerCacheViews.test.ts",
     "../../../../../../front_end/panels/application/ServiceWorkerUpdateCycleView.test.ts",
     "../../../../../../front_end/panels/application/ServiceWorkersView.test.ts",
     "../../../../../../front_end/panels/application/SharedStorageEventsView.test.ts",

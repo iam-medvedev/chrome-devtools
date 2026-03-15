@@ -26,6 +26,13 @@ export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
     cloneNode(deep: boolean): Node;
     focus(): void;
 }
+export declare class WidgetDirective extends Lit.Directive.Directive {
+    #private;
+    constructor(partInfo: Lit.Directive.PartInfo);
+    update(part: Lit.Directive.Part, [widgetClass, widgetParams]: Parameters<this['render']>): unknown;
+    render<F extends WidgetFactory<Widget>, ParamKeys extends keyof InferWidgetTFromFactory<F>>(widgetClass: F, widgetParams?: Pick<InferWidgetTFromFactory<F>, ParamKeys> & Partial<InferWidgetTFromFactory<F>>): unknown;
+}
+export declare const widget: <F extends WidgetFactory<Widget>, ParamKeys extends keyof InferWidgetTFromFactory<F>>(widgetClass: F, widgetParams?: Pick<InferWidgetTFromFactory<F>, ParamKeys> & Partial<InferWidgetTFromFactory<F>>) => Lit.Directive.DirectiveResult<typeof WidgetDirective>;
 export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Platform.Constructor.Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof Lit.Directives.ref>;
 /**
  * Additional options passed to the `Widget` constructor to configure the
@@ -161,6 +168,9 @@ export declare class Widget {
      *          before proceeding.
      */
     performUpdate(): Promise<void> | void;
+    performUpdate(signal: AbortSignal): Promise<void> | void;
+    addUpdateController(controller: AbortController): void;
+    cancelUpdateController(): void;
     /**
      * Schedules an asynchronous update for this widget.
      *

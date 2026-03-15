@@ -18,7 +18,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { JSONEditor } from './JSONEditor.js';
 import protocolMonitorStyles from './protocolMonitor.css.js';
 const { styleMap } = Directives;
-const { widgetConfig, widgetRef } = UI.Widget;
+const { widget, widgetRef } = UI.Widget;
 const UIStrings = {
     /**
      * @description Text for one or a group of functions
@@ -237,7 +237,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                       </tr>`)}
                   </table>
               </devtools-data-grid>
-              <devtools-widget .widgetConfig=${widgetConfig(InfoWidget, {
+              <devtools-widget ${widget(InfoWidget, {
         request: input.selectedMessage?.params,
         response: input.selectedMessage?.result || input.selectedMessage?.error,
         type: !input.selectedMessage ? undefined :
@@ -284,7 +284,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
             </devtools-toolbar>
           </div>
           <devtools-widget slot="sidebar"
-              .widgetConfig=${widgetConfig(JSONEditor, { metadataByCommand, typesByName, enumsByName })}
+              ${widget(JSONEditor, { metadataByCommand, typesByName, enumsByName })}
               ${widgetRef(JSONEditor, e => { output.editorWidget = e; })}>
           </devtools-widget>
         </devtools-split-view>`, target);
@@ -566,7 +566,7 @@ export class CommandAutocompleteSuggestionProvider {
 }
 const INFO_WIDGET_VIEW = (input, _output, target) => {
     // clang-format off
-    render(html `<devtools-widget .widgetConfig=${widgetConfig(UI.TabbedPane.TabbedPane, {
+    render(widget(UI.TabbedPane.TabbedPane, {
         tabs: [
             {
                 id: 'request',
@@ -586,8 +586,7 @@ const INFO_WIDGET_VIEW = (input, _output, target) => {
                 selected: input.selectedTab === 'response',
             }
         ]
-    })}>
-  </devtools-widget>`, target);
+    }), target);
     // clang-format on
 };
 export class InfoWidget extends UI.Widget.VBox {

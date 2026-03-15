@@ -114,6 +114,8 @@ declare namespace ProtocolProxyApi {
 
     WebAuthn: WebAuthnApi;
 
+    WebMCP: WebMCPApi;
+
     Debugger: DebuggerApi;
 
     HeapProfiler: HeapProfilerApi;
@@ -222,6 +224,8 @@ declare namespace ProtocolProxyApi {
     WebAudio: WebAudioDispatcher;
 
     WebAuthn: WebAuthnDispatcher;
+
+    WebMCP: WebMCPDispatcher;
 
     Debugger: DebuggerDispatcher;
 
@@ -392,12 +396,6 @@ declare namespace ProtocolProxyApi {
      * `issueAdded` event.
      */
     invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
-
-    /**
-     * Runs the contrast check for the target page. Found issues are reported
-     * using Audits.issueAdded event.
-     */
-    invoke_checkContrast(params: Protocol.Audits.CheckContrastRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Runs the form issues check for the target page. Found issues are reported
@@ -4852,6 +4850,27 @@ declare namespace ProtocolProxyApi {
      * Triggered when a credential is used in a webauthn assertion.
      */
     credentialAsserted(params: Protocol.WebAuthn.CredentialAssertedEvent): void;
+
+  }
+
+  export interface WebMCPApi {
+    /**
+     * Enables the WebMCP domain, allowing events to be sent. Enabling the domain will trigger a toolsAdded event for
+     * all currently registered tools.
+     */
+    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
+
+  }
+  export interface WebMCPDispatcher {
+    /**
+     * Event fired when new tools are added.
+     */
+    toolsAdded(params: Protocol.WebMCP.ToolsAddedEvent): void;
+
+    /**
+     * Event fired when tools are removed.
+     */
+    toolsRemoved(params: Protocol.WebMCP.ToolsRemovedEvent): void;
 
   }
 

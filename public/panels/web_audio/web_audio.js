@@ -217,7 +217,7 @@ var webAudio_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./webAudio.css")} */`;
 
 // gen/front_end/panels/web_audio/WebAudioView.js
-var { widgetConfig } = UI.Widget;
+var { widget } = UI.Widget;
 var { bindToAction } = UI.UIUtils;
 var UIStrings = {
   /**
@@ -298,12 +298,11 @@ var DEFAULT_VIEW = (input, _output, target) => {
     <div class="web-audio-content-container vbox flex-auto">
       ${!selectedContext ? html`
         <div class="web-audio-details-container vbox flex-auto">
-          <devtools-widget .widgetConfig=${widgetConfig(UI.EmptyWidget.EmptyWidget, {
+          ${widget(UI.EmptyWidget.EmptyWidget, {
     header: i18nString(UIStrings.noWebAudio),
     text: i18nString(UIStrings.openAPageThatUsesWebAudioApiTo),
     link: WEBAUDIO_EXPLANATION_URL
-  })}>
-          </devtools-widget>
+  })}
         </div>` : html`<div class="web-audio-details-container vbox flex-auto">
           <div class="context-detail-container">
             <div class="context-detail-header">

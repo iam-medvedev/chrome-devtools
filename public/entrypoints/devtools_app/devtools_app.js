@@ -3296,6 +3296,16 @@ Common11.Revealer.registerRevealer({
     return new Timeline.TimelinePanel.InsightRevealer();
   }
 });
+Common11.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.Helpers.RevealableCoreVitals]);
+  },
+  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.CoreVitalsRevealer();
+  }
+});
 
 // gen/front_end/panels/web_audio/web_audio-meta.js
 import * as i18n43 from "./../../core/i18n/i18n.js";

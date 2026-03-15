@@ -90,6 +90,33 @@ describeWithEnvironment('AiConversation', () => {
             imageInput: undefined,
         });
     });
+    it('should update conversation origin when agent returns CONTEXT_CHANGE', async () => {
+        updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
+        const aidaClient = mockAidaClient([
+            [
+                {
+                    explanation: '',
+                    functionCalls: [{
+                            name: 'selectNetworkRequest',
+                            args: { id: 'requestId-0' },
+                        }],
+                },
+            ],
+            [
+                {
+                    explanation: 'Done',
+                },
+            ],
+        ]);
+        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, aidaClient);
+        const networkRequest = createNetworkRequest({ url: Platform.DevToolsPath.urlString `https://example.com/test` });
+        const contentData = new TextUtils.ContentData.ContentData('test content', false, 'text/plain');
+        sinon.stub(networkRequest, 'requestContentData').resolves(contentData);
+        sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requests').returns([networkRequest]);
+        assert.isUndefined(conversation.origin);
+        await Array.fromAsync(conversation.run('test query'));
+        assert.strictEqual(conversation.origin, 'https://example.com');
+    });
     it('should forward history to the new agent when switching agents', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
         function hasFunctionCalls(request) {
@@ -146,6 +173,147 @@ describeWithEnvironment('AiConversation', () => {
         const thirdRequest = aidaClient.doConversation.getCall(2).firstArg;
         assert.isFalse(hasFunctionCalls(thirdRequest));
         assert.lengthOf(thirdRequest.historical_contexts ?? [], 3);
+    });
+    it('filters network requests by security origin', async () => {
+        updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
+        const origin = Platform.DevToolsPath.urlString `https://example.com`;
+        const otherOrigin = Platform.DevToolsPath.urlString `https://other.com`;
+        const target = sinon.createStubInstance(SDK.Target.Target);
+        target.inspectedURL.returns(Platform.DevToolsPath.urlString `${origin}/`);
+        sinon.stub(SDK.TargetManager.TargetManager.instance(), 'primaryPageTarget').returns(target);
+        const sameOriginRequest = SDK.NetworkRequest.NetworkRequest.create('requestId1', Platform.DevToolsPath.urlString `${origin}/foo`, Platform.DevToolsPath.urlString `${origin}/foo`, null, null, null);
+        sameOriginRequest.statusCode = 200;
+        sameOriginRequest.setIssueTime(0, 0);
+        sameOriginRequest.endTime = 1;
+        const crossOriginRequest = SDK.NetworkRequest.NetworkRequest.create('requestId2', Platform.DevToolsPath.urlString `${otherOrigin}/bar`, Platform.DevToolsPath.urlString `${otherOrigin}/bar`, null, null, null);
+        crossOriginRequest.statusCode = 200;
+        crossOriginRequest.setIssueTime(0, 0);
+        crossOriginRequest.endTime = 1;
+        const networkLog = Logs.NetworkLog.NetworkLog.instance();
+        sinon.stub(networkLog, 'requests').returns([sameOriginRequest, crossOriginRequest]);
+        const aidaClient = mockAidaClient([
+            [{
+                    functionCalls: [{
+                            name: 'listNetworkRequests',
+                            args: {},
+                        }],
+                    explanation: '',
+                }],
+            [{ explanation: 'Done' }],
+        ]);
+        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, aidaClient);
+        await Array.fromAsync(conversation.run('test'));
+        const requestToAida = aidaClient.doConversation.getCall(1).firstArg;
+        const part = requestToAida.current_message.parts[0];
+        assert(part && 'functionResponse' in part, 'Expected functionResponse part');
+        assert.strictEqual(part.functionResponse.name, 'listNetworkRequests');
+        assert.deepEqual(part.functionResponse.response.result, [
+            {
+                id: 'requestId1',
+                url: `${origin}/foo`,
+                statusCode: 200,
+                duration: '1.00\xA0s',
+                transferSize: '0.0\xA0kB',
+            },
+        ]);
+    });
+    it('locks the origin when listNetworkRequests is called', async () => {
+        updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
+        const origin = Platform.DevToolsPath.urlString `https://example.com`;
+        const otherOrigin = Platform.DevToolsPath.urlString `https://other.com`;
+        const target = sinon.createStubInstance(SDK.Target.Target);
+        target.inspectedURL.returns(Platform.DevToolsPath.urlString `${origin}/`);
+        sinon.stub(SDK.TargetManager.TargetManager.instance(), 'primaryPageTarget').returns(target);
+        const request1 = SDK.NetworkRequest.NetworkRequest.create('requestId1', Platform.DevToolsPath.urlString `${origin}/foo`, Platform.DevToolsPath.urlString `${origin}/foo`, null, null, null);
+        request1.statusCode = 200;
+        request1.setIssueTime(0, 0);
+        request1.endTime = 1;
+        const networkLog = Logs.NetworkLog.NetworkLog.instance();
+        const requestsStub = sinon.stub(networkLog, 'requests').returns([request1]);
+        const aidaClient = mockAidaClient([
+            [{
+                    functionCalls: [{
+                            name: 'listNetworkRequests',
+                            args: {},
+                        }],
+                    explanation: '',
+                }],
+            [{ explanation: 'Done' }],
+            [{
+                    functionCalls: [{
+                            name: 'listNetworkRequests',
+                            args: {},
+                        }],
+                    explanation: '',
+                }],
+            [{ explanation: 'Done2' }],
+        ]);
+        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, aidaClient);
+        await Array.fromAsync(conversation.run('test'));
+        target.inspectedURL.returns(Platform.DevToolsPath.urlString `${otherOrigin}/`);
+        const request2 = SDK.NetworkRequest.NetworkRequest.create('requestId2', Platform.DevToolsPath.urlString `${otherOrigin}/bar`, Platform.DevToolsPath.urlString `${otherOrigin}/bar`, null, null, null);
+        request2.statusCode = 200;
+        request2.setIssueTime(0, 0);
+        request2.endTime = 1;
+        requestsStub.returns([request2]);
+        await Array.fromAsync(conversation.run('test2'));
+        const requestToAida = aidaClient.doConversation.getCall(3).firstArg;
+        const part = requestToAida.current_message.parts[0];
+        assert(part && 'functionResponse' in part, 'Expected functionResponse part');
+        assert.strictEqual(part.functionResponse.name, 'listNetworkRequests');
+        assert.deepEqual(part.functionResponse.response, {
+            error: 'No requests showing with origin https://example.com. Tell the user to start a new chat',
+            widgets: undefined,
+        });
+    });
+    it('should correctly serialize history by removing non-serializable data', async () => {
+        const conversation = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */);
+        const userQuery = {
+            type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
+            query: 'test query',
+            imageId: 'test-image-id',
+            imageInput: { inlineData: { data: 'base64', mimeType: 'image/png' } },
+        };
+        const contextResponse = {
+            type: "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */,
+            title: 'Context',
+            details: [{ title: 'Detail', text: 'Text' }],
+            widgets: [{ name: 'DOM_TREE', data: { root: {} } }],
+        };
+        const actionResponse = {
+            type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
+            code: 'code',
+            output: 'output',
+            canceled: false,
+            widgets: [{
+                    name: 'COMPUTED_STYLES',
+                    data: {
+                        computedStyles: new Map(),
+                        backendNodeId: 0,
+                        matchedCascade: {},
+                        properties: [],
+                    },
+                }],
+        };
+        const sideEffectResponse = {
+            type: "side-effect" /* AiAssistance.AiAgent.ResponseType.SIDE_EFFECT */,
+            description: 'Side effect',
+            code: 'code',
+            confirm: () => { },
+        };
+        conversation.history.push(userQuery, contextResponse, actionResponse, sideEffectResponse);
+        const serialized = conversation.serialize();
+        assert.lengthOf(serialized.history, 4);
+        // UserQuery should have imageInput removed
+        assert.strictEqual(serialized.history[0].type, "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */);
+        assert.isUndefined(serialized.history[0].imageInput);
+        assert.strictEqual(serialized.history[0].imageId, 'test-image-id');
+        // ContextResponse should have widgets removed
+        assert.strictEqual(serialized.history[1].type, "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
+        assert.isUndefined(serialized.history[1].widgets);
+        // ActionResponse should have widgets removed
+        assert.strictEqual(serialized.history[2].type, "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+        assert.isUndefined(serialized.history[2].widgets);
     });
 });
 //# sourceMappingURL=AiConversation.test.js.map

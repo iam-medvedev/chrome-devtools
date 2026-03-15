@@ -20,7 +20,6 @@ describeWithEnvironment('ChatMessage', () => {
             isLoading: false,
             isReadOnly: false,
             isLastMessage: true,
-            userInfo: {},
             markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
             canShowFeedbackForm: true,
             onSuggestionClick: sinon.stub(),
@@ -36,6 +35,7 @@ describeWithEnvironment('ChatMessage', () => {
         onToggle: () => { },
         isExpanded: false,
         isInlined: false,
+        activeMessage: null,
     };
     it('should show the feedback form when canShowFeedbackForm is true', async () => {
         const [view] = createComponent({
@@ -182,7 +182,6 @@ describeWithEnvironment('ChatMessage', () => {
                 isLoading: false,
                 isReadOnly: false,
                 canShowFeedbackForm: false,
-                userInfo: {},
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 currentRating: undefined,
                 walkthrough: {
@@ -249,6 +248,56 @@ describeWithEnvironment('ChatMessage', () => {
                 }
             });
             assert.isNull(target.querySelector('[data-show-walkthrough]'));
+        });
+        it('makes the walkthrough button "Show thinking" if there are no widgets', async () => {
+            const messageNoWidgets = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'step',
+                        step: {
+                            isLoading: false,
+                            title: 'Investigating XYZ',
+                            code: 'console.log("test")',
+                        },
+                    }],
+                rpcId: 99,
+            };
+            const target = renderView({
+                isLoading: false,
+                message: messageNoWidgets,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: false,
+                }
+            });
+            const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
+            assert.strictEqual(button.innerText, 'Show thinking');
+        });
+        it('makes the walkthrough button "Show agent walkthrough" if there are widgets', async () => {
+            const messageWithWidget = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'step',
+                        step: {
+                            isLoading: false,
+                            title: 'Investigating XYZ',
+                            code: 'console.log("test")',
+                            // Don't need a proper widget for this test
+                            widgets: [{}],
+                        },
+                    }],
+                rpcId: 99,
+            };
+            const target = renderView({
+                isLoading: false,
+                message: messageWithWidget,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: false,
+                }
+            });
+            const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
+            assert.strictEqual(button.innerText, 'Show agent walkthrough');
         });
         it('renders inline walkthrough when inline', () => {
             const target = renderView({
@@ -333,7 +382,6 @@ describeWithEnvironment('ChatMessage', () => {
                 isLoading: false,
                 isReadOnly: false,
                 canShowFeedbackForm: true,
-                userInfo: {},
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 currentRating: undefined,
                 walkthrough: { ...DEFAULT_WALKTHROUGH },
@@ -383,7 +431,6 @@ describeWithEnvironment('ChatMessage', () => {
                 isLoading: false,
                 isReadOnly: false,
                 canShowFeedbackForm: true,
-                userInfo: {},
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 currentRating: undefined,
                 suggestions: ['Fix the issue', 'Explain more'],
@@ -417,9 +464,6 @@ describeWithEnvironment('ChatMessage', () => {
                 isLoading: false,
                 isReadOnly: false,
                 canShowFeedbackForm: false,
-                userInfo: {
-                    accountFullName: 'Test',
-                },
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 currentRating: undefined,
                 walkthrough: { ...DEFAULT_WALKTHROUGH },

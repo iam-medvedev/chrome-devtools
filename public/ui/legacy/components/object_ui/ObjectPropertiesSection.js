@@ -44,7 +44,7 @@ import { JavaScriptREPL } from './JavaScriptREPL.js';
 import objectPropertiesSectionStyles from './objectPropertiesSection.css.js';
 import objectValueStyles from './objectValue.css.js';
 import { RemoteObjectPreviewFormatter, renderNodeTitle } from './RemoteObjectPreviewFormatter.js';
-const { widgetConfig } = UI.Widget;
+const { widget } = UI.Widget;
 const { ref, repeat, ifDefined, classMap } = Directives;
 const UIStrings = {
     /**
@@ -530,18 +530,25 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         return Platform.StringUtilities.naturalOrderComparator(a, b);
     }
     static createNameElement(name, isPrivate) {
+        const element = document.createElement('span');
+        element.classList.add('name');
         if (name === null) {
-            return UI.Fragment.html `<span class="name"></span>`;
+            return element;
         }
         if (/^\s|\s$|^$|\n/.test(name)) {
-            return UI.Fragment.html `<span class="name">"${name.replace(/\n/g, '\u21B5')}"</span>`;
+            element.textContent = `"${name.replace(/\n/g, '\u21B5')}"`;
+            return element;
         }
         if (isPrivate) {
-            return UI.Fragment.html `<span class="name">
-  <span class="private-property-hash">${name[0]}</span>${name.substring(1)}
-  </span>`;
+            const privatePropertyHash = document.createElement('span');
+            privatePropertyHash.classList.add('private-property-hash');
+            privatePropertyHash.textContent = name[0];
+            element.appendChild(privatePropertyHash);
+            element.appendChild(document.createTextNode(name.substring(1)));
+            return element;
         }
-        return UI.Fragment.html `<span class="name">${name}</span>`;
+        element.textContent = name;
+        return element;
     }
     static valueElementForFunctionDescription(description, includePreview, defaultName, className) {
         const contents = (description, defaultName) => {
@@ -660,13 +667,12 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             if (type === 'string' && typeof description === 'string') {
                 const text = JSON.stringify(description);
                 const tooLong = description.length > maxRenderableStringLength;
-                return html `<span class="value object-value-string" title=${ifDefined(tooLong ? undefined : description)}>${tooLong ? html `<devtools-widget .widgetConfig=${widgetConfig(ExpandableTextPropertyValue, { text })}></devtools-widget>` :
-                    text}</span>`;
+                return html `<span class="value object-value-string" title=${ifDefined(tooLong ? undefined : description)}>${tooLong ? widget(ExpandableTextPropertyValue, { text }) : text}</span>`;
             }
             if (type === 'object' && subtype === 'trustedtype') {
                 const text = `${className} '${description}'`;
                 const tooLong = text.length > maxRenderableStringLength;
-                return html `<span class="value object-value-trustedtype" title=${ifDefined(tooLong ? undefined : text)}>${tooLong ? html `<devtools-widget .widgetConfig=${widgetConfig(ExpandableTextPropertyValue, { text })}></devtools-widget>` :
+                return html `<span class="value object-value-trustedtype" title=${ifDefined(tooLong ? undefined : text)}>${tooLong ? widget(ExpandableTextPropertyValue, { text }) :
                     html `${className} <span class=object-value-string title=${description}>${JSON.stringify(description)}</span>`}</span>`;
             }
             if (type === 'function') {
@@ -683,8 +689,11 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
           >${renderNodeTitle(description)}</span>`;
             }
             if (description.length > maxRenderableStringLength) {
-                return html `<span class="value object-value-${subtype || type}" title=${description}><devtools-widget
-          .widgetConfig=${widgetConfig(ExpandableTextPropertyValue, { text: description })}></devtools-widget></span>`;
+                // clang-format off
+                return html `<span class="value object-value-${subtype || type}" title=${description}>
+          ${widget(ExpandableTextPropertyValue, { text: description })}
+        </span>`;
+                // clang-format on
             }
             const hasPreview = value.preview && showPreview;
             return html `<span class="value object-value-${subtype || type}" title=${description}>${hasPreview ? new RemoteObjectPreviewFormatter().renderObjectPreview(value.preview, includeNullOrUndefined) :

@@ -89,7 +89,7 @@ describeWithEnvironment('WalkthroughView', () => {
         await view.updateComplete;
         assert.isFalse(inlineWalkthrough.hasAttribute('open'));
     });
-    it('does not render the details/summary in sidebar mode', async () => {
+    it('renders the titlebar in sidebar mode', async () => {
         const message = {
             entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
             parts: [{
@@ -107,7 +107,7 @@ describeWithEnvironment('WalkthroughView', () => {
             isExpanded: true,
         });
         const title = querySelectorErrorOnMissing(view.contentElement, '.walkthrough-title');
-        assert.strictEqual(title.innerText, 'Investigation steps');
+        assert.strictEqual(title.innerText, 'Agent walkthrough');
     });
 });
 //# sourceMappingURL=WalkthroughView.test.js.map

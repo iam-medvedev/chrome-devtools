@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
+import * as Root from '../root/root.js';
 import * as SDK from './sdk.js';
 class MockResourceTreeModel extends Common.ObjectWrapper.ObjectWrapper {
     targetId;
@@ -65,6 +66,9 @@ describe('FrameManager', () => {
         }
         return dispatchedEvents;
     }
+    function createFrameManager() {
+        return new SDK.FrameManager.FrameManager(new SDK.TargetManager.TargetManager(new Root.DevToolsContext.WritableDevToolsContext()));
+    }
     const frameId = 'frame-id';
     const parentFrameId = 'parent-frame-id';
     const childFrameId = 'child-frame-id';
@@ -72,7 +76,7 @@ describe('FrameManager', () => {
     const parentTargetId = 'parent-frame-id';
     const childTargetId = 'child-frame-id';
     it('collects frames from a ResourceTreeModel', () => {
-        const frameManager = new SDK.FrameManager.FrameManager();
+        const frameManager = createFrameManager();
         const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */]);
         const mockModel = attachMockModel(frameManager, targetId);
         addMockFrame(mockModel, frameId);
@@ -82,7 +86,7 @@ describe('FrameManager', () => {
         assert.strictEqual(frameFromId?.id, frameId);
     });
     it('handles attachment and detachment of frames', () => {
-        const frameManager = new SDK.FrameManager.FrameManager();
+        const frameManager = createFrameManager();
         const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, "FrameRemoved" /* SDK.FrameManager.Events.FRAME_REMOVED */]);
         const mockModel = attachMockModel(frameManager, targetId);
         addMockFrame(mockModel, parentFrameId);
@@ -107,7 +111,7 @@ describe('FrameManager', () => {
         assert.isNull(frameFromId);
     });
     it('handles removal of target', () => {
-        const frameManager = new SDK.FrameManager.FrameManager();
+        const frameManager = createFrameManager();
         const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, "FrameRemoved" /* SDK.FrameManager.Events.FRAME_REMOVED */]);
         const mockModel = attachMockModel(frameManager, targetId);
         addMockFrame(mockModel, parentFrameId);
@@ -133,7 +137,7 @@ describe('FrameManager', () => {
         assert.isNull(frameFromId);
     });
     it('handles a frame transferring to a different target', () => {
-        const frameManager = new SDK.FrameManager.FrameManager();
+        const frameManager = createFrameManager();
         const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, "FrameRemoved" /* SDK.FrameManager.Events.FRAME_REMOVED */]);
         const mockParentModel = attachMockModel(frameManager, parentTargetId);
         addMockFrame(mockParentModel, parentFrameId);
@@ -164,7 +168,7 @@ describe('FrameManager', () => {
         assert.strictEqual(frameFromId?.resourceTreeModel().target().id(), childTargetId);
     });
     it('transfers frame creation stack traces during OOPIF transfer (case 1)', () => {
-        const frameManager = new SDK.FrameManager.FrameManager();
+        const frameManager = createFrameManager();
         const mockParentModel = attachMockModel(frameManager, parentTargetId);
         const mockChildModel = attachMockModel(frameManager, childTargetId);
         const trace = {
@@ -199,7 +203,7 @@ describe('FrameManager', () => {
         assert.strictEqual(creationStackTraceTarget.id(), parentTargetId);
     });
     it('transfers frame creation stack traces during OOPIF transfer (case 2)', () => {
-        const frameManager = new SDK.FrameManager.FrameManager();
+        const frameManager = createFrameManager();
         const mockParentModel = attachMockModel(frameManager, parentTargetId);
         const mockChildModel = attachMockModel(frameManager, childTargetId);
         const trace = {
@@ -235,11 +239,11 @@ describe('FrameManager', () => {
     });
     describe('getOutermostFrame', () => {
         it('returns null when no frames are attached', () => {
-            const frameManager = new SDK.FrameManager.FrameManager();
+            const frameManager = createFrameManager();
             assert.isNull(frameManager.getOutermostFrame());
         });
         it('returns the top main frame', () => {
-            const frameManager = new SDK.FrameManager.FrameManager();
+            const frameManager = createFrameManager();
             const mockModel = attachMockModel(frameManager, targetId);
             addMockFrame(mockModel, frameId);
             assert.strictEqual(frameManager.getOutermostFrame()?.id, frameId);

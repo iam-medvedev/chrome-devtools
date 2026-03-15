@@ -212,52 +212,134 @@ describe('UIUtils', () => {
             await raf();
             sinon.assert.calledOnceWithExactly(interception, onClick);
         });
-        describe('InterceptBindingDirective', () => {
-            const interceptBinding = Lit.Directive.directive(UI.UIUtils.InterceptBindingDirective);
-            it('attaches event handlers to clones', () => {
-                const container = document.createElement('div');
-                const clickHandler = sinon.spy();
-                Lit.render(html `<button @click=${interceptBinding(clickHandler)}></button>`, container);
-                const templateButton = container.firstElementChild;
-                assert.instanceOf(templateButton, HTMLButtonElement);
-                templateButton.click();
-                sinon.assert.calledOnce(clickHandler);
-                const clonedButton = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(templateButton);
-                assert.instanceOf(clonedButton, HTMLButtonElement);
-                clonedButton.click();
-                sinon.assert.calledTwice(clickHandler);
+        class TestLightDOMTemplate extends UI.UIUtils.HTMLElementWithLightDOMTemplate {
+        }
+        customElements.define('test-light-dom-template', TestLightDOMTemplate);
+        it('correctly patches callables inside directives and iterables', async () => {
+            const el = new TestLightDOMTemplate();
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            container.appendChild(el);
+            const items = ['a', 'b'];
+            const clickHandler1 = sinon.spy();
+            const clickHandler2 = sinon.spy();
+            const handlers = [clickHandler1, clickHandler2];
+            const renderFunction = (item, index) => {
+                return html `<button @click=${handlers[index]}>${item}</button>`;
+            };
+            el.template = html `<div>
+        ${Lit.Directives.repeat(items, item => item, renderFunction)}
+      </div>`;
+            await raf();
+            const template = el.querySelector('template');
+            assert.exists(template);
+            const buttons = template.content.querySelectorAll('button');
+            assert.lengthOf(buttons, 2);
+            const clonedButton1 = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(buttons[0]);
+            clonedButton1.click();
+            sinon.assert.calledOnce(clickHandler1);
+            const clonedButton2 = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(buttons[1]);
+            clonedButton2.click();
+            sinon.assert.calledOnce(clickHandler2);
+        });
+        it('correctly patches callables inside a directive returned by a callback', async () => {
+            const el = new TestLightDOMTemplate();
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            container.appendChild(el);
+            const items = ['a'];
+            const clickHandler = sinon.spy();
+            class InnerDirective extends Lit.Directive.Directive {
+                render(renderItem) {
+                    return html `<div>${renderItem()}</div>`;
+                }
+            }
+            const innerDirective = Lit.Directive.directive(InnerDirective);
+            const renderFunction = () => {
+                return innerDirective(() => html `<button @click=${clickHandler}></button>`);
+            };
+            el.template = html `<div>
+        ${Lit.Directives.repeat(items, item => item, renderFunction)}
+      </div>`;
+            await raf();
+            const template = el.querySelector('template');
+            assert.exists(template);
+            const button = template.content.querySelector('button');
+            assert.exists(button);
+            const clonedButton = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(button);
+            clonedButton.click();
+            sinon.assert.calledOnce(clickHandler);
+        });
+        it('does not patch native class constructors', async () => {
+            const el = new TestLightDOMTemplate();
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            container.appendChild(el);
+            class MockWidget {
+            }
+            let instantiatedWidget = null;
+            class WidgetDirective extends Lit.Directive.Directive {
+                render(ctor) {
+                    instantiatedWidget = new ctor();
+                    return Lit.nothing;
+                }
+            }
+            const widget = Lit.Directive.directive(WidgetDirective);
+            // If MockWidget was wrongly wrapped by patchingWrapper, ctor would be a regular function.
+            // Calling `new ctor()` would invoke the wrapper, which calls `fn.apply(this, args)`.
+            // Since fn is a native class constructor, fn.apply throws a TypeError.
+            assert.doesNotThrow(() => {
+                el.template = html `${widget(MockWidget)}`;
             });
-            it('attaches multiple event handlers to the same element', () => {
-                const container = document.createElement('div');
-                const clickHandler = sinon.spy();
-                const mousedownHandler = sinon.spy();
-                Lit.render(html `<button @click=${interceptBinding(clickHandler)} @mousedown=${interceptBinding(mousedownHandler)}></button>`, container);
-                const templateButton = container.firstElementChild;
-                assert.instanceOf(templateButton, HTMLButtonElement);
-                const clonedButton = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(templateButton);
-                assert.instanceOf(clonedButton, HTMLButtonElement);
-                clonedButton.dispatchEvent(new MouseEvent('mousedown'));
-                sinon.assert.notCalled(clickHandler);
-                sinon.assert.calledOnce(mousedownHandler);
-                clonedButton.click();
-                sinon.assert.calledOnce(clickHandler);
-                sinon.assert.calledOnce(mousedownHandler);
-            });
-            it('attaches event handlers to nested elements', () => {
-                const container = document.createElement('div');
-                const buttonClickHandler = sinon.spy();
-                const divClickHandler = sinon.spy();
-                Lit.render(html `<div @click=${interceptBinding(divClickHandler)}><button @click=${interceptBinding(buttonClickHandler)}></button></div>`, container);
-                const templateDiv = container.firstElementChild;
-                assert.instanceOf(templateDiv, HTMLDivElement);
-                const clonedDiv = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(templateDiv);
-                assert.instanceOf(clonedDiv, HTMLDivElement);
-                const clonedButton = clonedDiv.querySelector('button');
-                assert.instanceOf(clonedButton, HTMLButtonElement);
-                clonedButton.click();
-                sinon.assert.calledOnce(buttonClickHandler);
-                sinon.assert.calledOnce(divClickHandler);
-            });
+            await raf();
+            assert.instanceOf(instantiatedWidget, MockWidget);
+        });
+    });
+    describe('InterceptBindingDirective', () => {
+        const interceptBinding = Lit.Directive.directive(UI.UIUtils.InterceptBindingDirective);
+        it('attaches event handlers to clones', () => {
+            const container = document.createElement('div');
+            const clickHandler = sinon.spy();
+            Lit.render(html `<button @click=${interceptBinding(clickHandler)}></button>`, container);
+            const templateButton = container.firstElementChild;
+            assert.instanceOf(templateButton, HTMLButtonElement);
+            templateButton.click();
+            sinon.assert.calledOnce(clickHandler);
+            const clonedButton = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(templateButton);
+            assert.instanceOf(clonedButton, HTMLButtonElement);
+            clonedButton.click();
+            sinon.assert.calledTwice(clickHandler);
+        });
+        it('attaches multiple event handlers to the same element', () => {
+            const container = document.createElement('div');
+            const clickHandler = sinon.spy();
+            const mousedownHandler = sinon.spy();
+            Lit.render(html `<button @click=${interceptBinding(clickHandler)} @mousedown=${interceptBinding(mousedownHandler)}></button>`, container);
+            const templateButton = container.firstElementChild;
+            assert.instanceOf(templateButton, HTMLButtonElement);
+            const clonedButton = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(templateButton);
+            assert.instanceOf(clonedButton, HTMLButtonElement);
+            clonedButton.dispatchEvent(new MouseEvent('mousedown'));
+            sinon.assert.notCalled(clickHandler);
+            sinon.assert.calledOnce(mousedownHandler);
+            clonedButton.click();
+            sinon.assert.calledOnce(clickHandler);
+            sinon.assert.calledOnce(mousedownHandler);
+        });
+        it('attaches event handlers to nested elements', () => {
+            const container = document.createElement('div');
+            const buttonClickHandler = sinon.spy();
+            const divClickHandler = sinon.spy();
+            Lit.render(html `<div @click=${interceptBinding(divClickHandler)}><button @click=${interceptBinding(buttonClickHandler)}></button></div>`, container);
+            const templateDiv = container.firstElementChild;
+            assert.instanceOf(templateDiv, HTMLDivElement);
+            const clonedDiv = UI.UIUtils.HTMLElementWithLightDOMTemplate.cloneNode(templateDiv);
+            assert.instanceOf(clonedDiv, HTMLDivElement);
+            const clonedButton = clonedDiv.querySelector('button');
+            assert.instanceOf(clonedButton, HTMLButtonElement);
+            clonedButton.click();
+            sinon.assert.calledOnce(buttonClickHandler);
+            sinon.assert.calledOnce(divClickHandler);
         });
     });
     describe('animateOn', () => {

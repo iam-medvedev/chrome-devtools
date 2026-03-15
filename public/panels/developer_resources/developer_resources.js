@@ -138,7 +138,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
     if (!filter?.regex) {
       return "";
     }
-    const matches = filter.regex.exec(textContent ?? "");
+    const matches = filter.regex.exec(textContent);
     if (!matches?.length) {
       return "";
     }
@@ -335,7 +335,7 @@ var developerResourcesView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./developerResourcesView.css")} */`;
 
 // gen/front_end/panels/developer_resources/DeveloperResourcesView.js
-var { widgetConfig } = UI2.Widget;
+var { widget } = UI2.Widget;
 var { bindToSetting } = UI2.UIUtils;
 var UIStrings2 = {
   /**
@@ -399,14 +399,12 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
         </devtools-toolbar>
       </div>
       <div class="developer-resource-view-results">
-        <devtools-widget
-          .widgetConfig=${widgetConfig(DeveloperResourcesListView, {
+        ${widget(DeveloperResourcesListView, {
     items: input.items,
     selectedItem: input.selectedItem,
     onSelect: input.onSelect,
     filters: input.filters
-  })}>
-        </devtools-widget>
+  })}
       </div>
       <div class="developer-resource-view-toolbar-summary">
         <div class="developer-resource-view-message">

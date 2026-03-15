@@ -22,6 +22,7 @@ import { ArrayAssignments, assert, deepFreeze, immutableDeepAssign, InsertAssign
 const { html, Decorators, Directives, LitElement } = Lit;
 const { customElement, property, state } = Decorators;
 const { live } = Directives;
+const { widget } = UI.Widget;
 const typeConverters = Object.freeze({
     string: (value) => value.trim(),
     number: (value) => {
@@ -639,13 +640,11 @@ let StepEditor = class StepEditor extends LitElement {
         return html `<div class="attribute" data-attribute="selectors" jslog=${VisualLogging.treeItem('selectors')}>
       <div class="row">
         <div>selectors<span class="separator">:</span></div>
-        <devtools-widget
-          .widgetConfig=${UI.Widget.widgetConfig(SelectorPicker, {
+        ${widget(SelectorPicker, {
             disabled: this.disabled,
             onSelectorPicked: this.#handleSelectorPicked,
             onAttributeRequested: this.#handleAttributeRequested,
         })}
-        ></devtools-widget>
         ${this.#renderDeleteButton('selectors')}
       </div>
       ${this.state.selectors.map((selector, index, selectors) => {

@@ -184,7 +184,7 @@ export default `/*
   }
 
   .code {
-    font-family: monospace;
+    font-family: var(--monospace-font-family);
   }
 
   .learn-more {

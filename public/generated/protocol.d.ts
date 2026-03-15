@@ -958,15 +958,6 @@ export declare namespace Audits {
         isWarning: boolean;
         type: SharedArrayBufferIssueType;
     }
-    interface LowTextContrastIssueDetails {
-        violatingNodeId: DOM.BackendNodeId;
-        violatingNodeSelector: string;
-        contrastRatio: number;
-        thresholdAA: number;
-        thresholdAAA: number;
-        fontSize: string;
-        fontWeight: string;
-    }
     /**
      * Details for a CORS related issue, e.g. a warning or error related to
      * CORS RFC1918 enforcement.
@@ -1497,7 +1488,6 @@ export declare namespace Audits {
         HeavyAdIssue = "HeavyAdIssue",
         ContentSecurityPolicyIssue = "ContentSecurityPolicyIssue",
         SharedArrayBufferIssue = "SharedArrayBufferIssue",
-        LowTextContrastIssue = "LowTextContrastIssue",
         CorsIssue = "CorsIssue",
         AttributionReportingIssue = "AttributionReportingIssue",
         QuirksModeIssue = "QuirksModeIssue",
@@ -1534,7 +1524,6 @@ export declare namespace Audits {
         heavyAdIssueDetails?: HeavyAdIssueDetails;
         contentSecurityPolicyIssueDetails?: ContentSecurityPolicyIssueDetails;
         sharedArrayBufferIssueDetails?: SharedArrayBufferIssueDetails;
-        lowTextContrastIssueDetails?: LowTextContrastIssueDetails;
         corsIssueDetails?: CorsIssueDetails;
         attributionReportingIssueDetails?: AttributionReportingIssueDetails;
         quirksModeIssueDetails?: QuirksModeIssueDetails;
@@ -1615,12 +1604,6 @@ export declare namespace Audits {
          * Size after re-encoding.
          */
         encodedSize: integer;
-    }
-    interface CheckContrastRequest {
-        /**
-         * Whether to report WCAG AAA level issues. Default is false.
-         */
-        reportAAA?: boolean;
     }
     interface CheckFormsIssuesResponse extends ProtocolResponseWithError {
         formIssues: GenericIssueDetails[];
@@ -14179,6 +14162,7 @@ export declare namespace Page {
         BackForwardCacheDisabledForPrerender = "BackForwardCacheDisabledForPrerender",
         UserAgentOverrideDiffers = "UserAgentOverrideDiffers",
         ForegroundCacheLimit = "ForegroundCacheLimit",
+        ForwardCacheDisabled = "ForwardCacheDisabled",
         BrowsingInstanceNotSwapped = "BrowsingInstanceNotSwapped",
         BackForwardCacheDisabledForDelegate = "BackForwardCacheDisabledForDelegate",
         UnloadHandlerExistsInMainFrame = "UnloadHandlerExistsInMainFrame",
@@ -19050,6 +19034,72 @@ export declare namespace WebAuthn {
     interface CredentialAssertedEvent {
         authenticatorId: AuthenticatorId;
         credential: Credential;
+    }
+}
+export declare namespace WebMCP {
+    /**
+     * Tool annotations
+     */
+    interface Annotation {
+        /**
+         * A hint indicating that the tool does not modify any state.
+         */
+        readOnly?: boolean;
+        /**
+         * If the declarative tool was declared with the autosubmit attribute.
+         */
+        autosubmit?: boolean;
+    }
+    /**
+     * Definition of a tool that can be invoked.
+     */
+    interface Tool {
+        /**
+         * Tool name.
+         */
+        name: string;
+        /**
+         * Tool description.
+         */
+        description: string;
+        /**
+         * Schema for the tool's input parameters.
+         */
+        inputSchema?: any;
+        /**
+         * Optional annotations for the tool.
+         */
+        annotations?: Annotation;
+        /**
+         * Frame identifier associated with the tool registration.
+         */
+        frameId: Page.FrameId;
+        /**
+         * Optional node ID for declarative tools.
+         */
+        backendNodeId?: DOM.BackendNodeId;
+        /**
+         * The stack trace at the time of the registration.
+         */
+        stackTrace?: Runtime.StackTrace;
+    }
+    /**
+     * Event fired when new tools are added.
+     */
+    interface ToolsAddedEvent {
+        /**
+         * Array of tools that were added.
+         */
+        tools: Tool[];
+    }
+    /**
+     * Event fired when tools are removed.
+     */
+    interface ToolsRemovedEvent {
+        /**
+         * Array of tools that were removed.
+         */
+        tools: Tool[];
     }
 }
 /**

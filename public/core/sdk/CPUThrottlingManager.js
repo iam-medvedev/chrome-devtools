@@ -51,6 +51,9 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         return throttlingManagerInstance;
     }
+    static removeInstance() {
+        throttlingManagerInstance = undefined;
+    }
     cpuThrottlingRate() {
         return this.#cpuThrottlingOption.rate();
     }

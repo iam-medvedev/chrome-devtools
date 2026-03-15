@@ -33,6 +33,7 @@ import * as Geometry from '../../models/geometry/geometry.js';
 import * as Lit from '../../ui/lit/lit.js';
 import { appendStyle, deepActiveElement } from './DOMUtilities.js';
 import { cloneCustomElement, createShadowRootWithCoreStyles } from './UIUtils.js';
+const { html } = Lit;
 // Remember the original DOM mutation methods here, since we
 // will override them below to sanity check the Widget system.
 const originalAppendChild = Element.prototype.appendChild;
@@ -82,6 +83,7 @@ function enqueueWidgetUpdate(widget) {
     return enqueueIntoNextUpdateQueue(widget);
 }
 function cancelUpdate(widget) {
+    widget.cancelUpdateController();
     if (currentUpdateQueue) {
         const scheduledUpdate = currentUpdateQueue.get(widget);
         if (scheduledUpdate) {
@@ -104,8 +106,14 @@ function runNextUpdate() {
     for (const [widget, { resolve }] of currentUpdateQueue) {
         currentlyProcessed.add(widget);
         void (async () => {
-            await widget.performUpdate();
-            resolve();
+            try {
+                const controller = new AbortController();
+                widget.addUpdateController(controller);
+                await widget.performUpdate(controller.signal);
+            }
+            finally {
+                resolve();
+            }
         })();
     }
     currentUpdateQueue.clear();
@@ -229,6 +237,39 @@ export class WidgetElement extends HTMLElement {
     }
 }
 customElements.define('devtools-widget', WidgetElement);
+export class WidgetDirective extends Lit.Directive.Directive {
+    #partType;
+    constructor(partInfo) {
+        super(partInfo);
+        this.#partType = partInfo.type;
+        if (this.#partType !== Lit.Directive.PartType.CHILD && this.#partType !== Lit.Directive.PartType.ELEMENT) {
+            throw new Error('Widget directive must be used as a child or element directive.');
+        }
+    }
+    update(part, [widgetClass, widgetParams]) {
+        if (this.#partType === Lit.Directive.PartType.ELEMENT) {
+            const element = part.element;
+            if (!(element instanceof WidgetElement)) {
+                throw new Error('Widget directive must be used on a devtools-widget element.');
+            }
+            element.widgetConfig = widgetConfig(widgetClass, widgetParams);
+            return Lit.nothing;
+        }
+        return this.render(widgetClass, widgetParams);
+    }
+    render(widgetClass, widgetParams) {
+        if (this.#partType === Lit.Directive.PartType.ELEMENT) {
+            return Lit.nothing;
+        }
+        // We use `repeat` to force Lit to recreate the `<devtools-widget>` DOM node when the `widgetClass` changes.
+        // If we didn't use `repeat` and used `html` directly, Lit would reuse the same `<devtools-widget>` instance
+        // even if `widgetClass` changed (for example, in a ternary operator `condition ? widget(A) : widget(B)`).
+        // This is because the template string is the same, so Lit reuses the DOM node and only updates `.widgetConfig`,
+        // which does not properly recreate the widget instance.
+        return Lit.Directives.repeat([widgetClass], () => widgetClass, () => html `<devtools-widget .widgetConfig=${widgetConfig(widgetClass, widgetParams)}></devtools-widget>`);
+    }
+}
+export const widget = Lit.Directive.directive(WidgetDirective);
 export function widgetRef(type, callback) {
     return Lit.Directives.ref((e) => {
         if (!(e instanceof HTMLElement)) {
@@ -279,6 +320,7 @@ export class Widget {
     #invalidationsRequested;
     #externallyManaged;
     #updateComplete = UPDATE_COMPLETE;
+    #updateController;
     constructor(elementOrOptions, options) {
         if (elementOrOptions instanceof HTMLElement) {
             this.element = elementOrOptions;
@@ -815,18 +857,13 @@ export class Widget {
         assert(!this.#parentWidget, 'Attempt to mark widget as externally managed after insertion to the DOM');
         this.#externallyManaged = true;
     }
-    /**
-     * Override this method in derived classes to perform the actual view update.
-     *
-     * This is not meant to be called directly, but invoked (indirectly) through
-     * the `requestAnimationFrame` and executed with the animation frame. Instead,
-     * use the `requestUpdate()` method to schedule an asynchronous update.
-     *
-     * @returns can either return nothing or a promise; in that latter case, the
-     *          update logic will await the resolution of the returned promise
-     *          before proceeding.
-     */
-    performUpdate() {
+    performUpdate(_signal) {
+    }
+    addUpdateController(controller) {
+        this.#updateController = controller;
+    }
+    cancelUpdateController() {
+        this.#updateController?.abort();
     }
     /**
      * Schedules an asynchronous update for this widget.
@@ -835,6 +872,7 @@ export class Widget {
      * frame.
      */
     requestUpdate() {
+        this.#updateController?.abort();
         this.#updateComplete = enqueueWidgetUpdate(this);
     }
     /**

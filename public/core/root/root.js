@@ -7,11 +7,11 @@ var __export = (target, all) => {
 // gen/front_end/core/root/DevToolsContext.js
 var DevToolsContext_exports = {};
 __export(DevToolsContext_exports, {
-  DevToolsContext: () => DevToolsContext,
+  WritableDevToolsContext: () => WritableDevToolsContext,
   globalInstance: () => globalInstance,
   setGlobalInstance: () => setGlobalInstance
 });
-var DevToolsContext = class {
+var WritableDevToolsContext = class {
   #instances = /* @__PURE__ */ new Map();
   get(ctor) {
     const instance = this.#instances.get(ctor);
@@ -25,8 +25,7 @@ var DevToolsContext = class {
     return this.#instances.has(ctor);
   }
   /**
-   * @deprecated Should only be used by existing `instance` accessors and the bootstrapper.
-   * Exists on the public interface only for migration purposes for now.
+   * Should only be used by existing `instance` accessors and the bootstrapper.
    */
   set(ctor, instance) {
     this.#instances.set(ctor, instance);
@@ -39,7 +38,7 @@ var DevToolsContext = class {
 var gInstance = null;
 function globalInstance() {
   if (!gInstance) {
-    gInstance = new DevToolsContext();
+    gInstance = new WritableDevToolsContext();
   }
   return gInstance;
 }
@@ -71,7 +70,6 @@ var ExperimentName;
   ExperimentName2["AUTHORED_DEPLOYED_GROUPING"] = "authored-deployed-grouping";
   ExperimentName2["JUST_MY_CODE"] = "just-my-code";
   ExperimentName2["USE_SOURCE_MAP_SCOPES"] = "use-source-map-scopes";
-  ExperimentName2["TIMELINE_SHOW_POST_MESSAGE_EVENTS"] = "timeline-show-postmessage-events";
   ExperimentName2["TIMELINE_DEBUG_MODE"] = "timeline-debug-mode";
   ExperimentName2["DURABLE_MESSAGES"] = "durable-messages";
   ExperimentName2["JPEG_XL"] = "jpeg-xl";

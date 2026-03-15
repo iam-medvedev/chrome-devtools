@@ -457,6 +457,28 @@ describeWithMockConnection('PreloadingAttemptView', () => {
         assert.exists(rules);
         assert.deepEqual(window.getComputedStyle(rules).display, 'none');
     });
+    it('resizes details panel when transitioning from empty to non-empty state', async () => {
+        const emulator = new NavigationEmulator();
+        await emulator.openDevTools();
+        const view = createAttemptView(emulator.primaryTarget);
+        const splitView = view.contentElement.querySelector('devtools-split-view');
+        assert.exists(splitView);
+        await emulator.navigateAndDispatchEvents('');
+        await emulator.addSpecRules(`
+{
+  "prerender":[
+    {
+      "source": "list",
+      "urls": ["/prerendered.html"]
+    }
+  ]
+}
+`);
+        await RenderCoordinator.done();
+        const splitWidget = splitView.getWidget();
+        assert.exists(splitWidget);
+        assert.isAbove(splitWidget.sidebarSize(), 0);
+    });
     it('renders grid and details and hides placeholder', async () => {
         const emulator = new NavigationEmulator();
         await emulator.openDevTools();

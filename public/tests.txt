@@ -152,8 +152,10 @@ models/ai_assistance/ChangeManager.test.js
 models/ai_assistance/ConversationHandler.test.js
 models/ai_assistance/EvaluateAction.test.js
 models/ai_assistance/ExtensionScope.test.js
+models/ai_assistance/agents/AccessibilityAgent.test.js
 models/ai_assistance/agents/AiAgent.test.js
 models/ai_assistance/agents/ContextSelectionAgent.test.js
+models/ai_assistance/agents/ConversationSummaryAgent.test.js
 models/ai_assistance/agents/FileAgent.test.js
 models/ai_assistance/agents/NetworkAgent.test.js
 models/ai_assistance/agents/PatchAgent.test.js
@@ -268,6 +270,7 @@ models/trace/helpers/Trace.test.js
 models/trace/helpers/TreeHelpers.test.js
 models/trace/insights/CLSCulprits.test.js
 models/trace/insights/Cache.test.js
+models/trace/insights/CharacterSet.test.js
 models/trace/insights/Common.test.js
 models/trace/insights/DOMSize.test.js
 models/trace/insights/DocumentLatency.test.js
@@ -337,6 +340,7 @@ panels/application/KeyValueStorageItemsView.test.js
 panels/application/OriginTrialTreeView.test.js
 panels/application/PreloadingTreeElement.test.js
 panels/application/ReportingApiView.test.js
+panels/application/ServiceWorkerCacheViews.test.js
 panels/application/ServiceWorkerUpdateCycleView.test.js
 panels/application/ServiceWorkersView.test.js
 panels/application/SharedStorageEventsView.test.js
@@ -693,7 +697,6 @@ ui/legacy/DOMUtilities.test.js
 ui/legacy/Dialog.test.js
 ui/legacy/DockController.test.js
 ui/legacy/FilterBar.test.js
-ui/legacy/Fragment.test.js
 ui/legacy/Infobar.test.js
 ui/legacy/InspectorView.test.js
 ui/legacy/KeyboardShortcut.test.js

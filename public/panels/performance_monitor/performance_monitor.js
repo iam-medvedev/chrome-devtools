@@ -155,11 +155,11 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/performance_monitor/PerformanceMonitor.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var { widgetConfig } = UI.Widget;
+var { widget } = UI.Widget;
 var { classMap, ref } = Directives;
 var DEFAULT_VIEW = (input, output, target) => {
   render(html`
-    <devtools-widget .widgetConfig=${widgetConfig(ControlPane, {
+    <devtools-widget ${widget(ControlPane, {
     onMetricChanged: input.onMetricChanged,
     chartsInfo: input.chartsInfo,
     metrics: input.metrics

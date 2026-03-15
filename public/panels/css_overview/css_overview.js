@@ -1167,7 +1167,7 @@ var CSSOverviewSidebarPanel = class extends UI2.Widget.VBox {
 
 // gen/front_end/panels/css_overview/CSSOverviewCompletedView.js
 var { styleMap, ref } = Directives2;
-var { widgetConfig } = UI3.Widget;
+var { widget } = UI3.Widget;
 var UIStrings4 = {
   /**
    * @description Label for the summary in the CSS overview report
@@ -1354,7 +1354,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
   render3(html3`
       <style>${cssOverviewCompletedView_css_default}</style>
       <devtools-split-view direction="column" sidebar-position="first" sidebar-initial-size="200">
-        <devtools-widget slot="sidebar" .widgetConfig=${widgetConfig(CSSOverviewSidebarPanel, {
+        <devtools-widget slot="sidebar" ${widget(CSSOverviewSidebarPanel, {
     minimumSize: new Geometry.Size(100, 25),
     items: [
       { name: i18nString4(UIStrings4.overviewSummary), id: "summary" },
@@ -1408,7 +1408,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
               ${renderMediaQueries(input.mediaQueries)}
             </div>
           </div>
-          <devtools-widget slot="sidebar" .widgetConfig=${widgetConfig((e) => {
+          <devtools-widget slot="sidebar" ${widget((e) => {
     const tabbedPane = new UI3.TabbedPane.TabbedPane(e);
     output.closeAllTabs = () => {
       tabbedPane.closeTabs(tabbedPane.tabIds());
@@ -2032,7 +2032,7 @@ __export(CSSOverviewPanel_exports, {
 import * as Host from "./../../core/host/host.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
-import { html as html5, render as render5 } from "./../../ui/lit/lit.js";
+import { render as render5 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/css_overview/CSSOverviewStartView.js
 import "./../../ui/components/panel_feedback/panel_feedback.js";
@@ -2211,16 +2211,13 @@ var CSSOverviewStartView = class extends UI4.Widget.Widget {
 };
 
 // gen/front_end/panels/css_overview/CSSOverviewPanel.js
-var { widgetConfig: widgetConfig2 } = UI5.Widget;
+var { widget: widget2 } = UI5.Widget;
 var DEFAULT_VIEW5 = (input, _output, target) => {
-  render5(input.state === "start" ? html5`
-      <devtools-widget .widgetConfig=${widgetConfig2(CSSOverviewStartView, { onStartCapture: input.onStartCapture })}></devtools-widget>` : input.state === "processing" ? html5`
-      <devtools-widget .widgetConfig=${widgetConfig2(CSSOverviewProcessingView, { onCancel: input.onCancel })}></devtools-widget>` : html5`
-      <devtools-widget .widgetConfig=${widgetConfig2(CSSOverviewCompletedView, {
+  render5(input.state === "start" ? widget2(CSSOverviewStartView, { onStartCapture: input.onStartCapture }) : input.state === "processing" ? widget2(CSSOverviewProcessingView, { onCancel: input.onCancel }) : widget2(CSSOverviewCompletedView, {
     onReset: input.onReset,
     overviewData: input.overviewData,
     target: input.target
-  })}></devtools-widget>`, target);
+  }), target);
 };
 var CSSOverviewPanel = class extends UI5.Panel.Panel {
   #currentUrl;

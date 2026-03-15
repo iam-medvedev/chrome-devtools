@@ -4,7 +4,9 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { getMatchedStylesWithBlankRule, getMatchedStylesWithStylesheet } from '../../testing/StyleHelpers.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -273,6 +275,87 @@ describeWithMockConnection('StylesPropertySection', () => {
         const section2 = new Elements.StylePropertiesSection.PositionTryRuleSection(stylesSidebarPane, matchedStyles, declaration1, 1, positionTryRules[1].active);
         assert.isFalse(section1.propertiesTreeOutline.element.classList.contains('no-affect'));
         assert.isTrue(section2.propertiesTreeOutline.element.classList.contains('no-affect'));
+    });
+    describe('GhostStylePropertyTreeElement', () => {
+        let section;
+        beforeEach(async () => {
+            const matchedStyles = await getMatchedStylesWithBlankRule({ cssModel: new SDK.CSSModel.CSSModel(createTarget()) });
+            section = new Elements.StylePropertiesSection.StylePropertiesSection(new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel), matchedStyles, matchedStyles.nodeStyles()[0], 0, new Map(), new Map(), null);
+        });
+        it('renders ghost elements correctly from suggestion', async () => {
+            section.renderGhostStyleTreeElements('color: red; font-size: 10px;');
+            const ghostElements = section.propertiesTreeOutline.rootElement().children().filter(e => e instanceof Elements.StylePropertyTreeElement.GhostStylePropertyTreeElement);
+            assert.lengthOf(ghostElements, 2);
+            assert.strictEqual(ghostElements[0].property.name, 'color');
+            assert.strictEqual(ghostElements[0].property.value, 'red');
+            assert.strictEqual(ghostElements[1].property.name, 'font-size');
+            assert.strictEqual(ghostElements[1].property.value, '10px');
+        });
+        it('clears ghost elements correctly', async () => {
+            const rootElement = section.propertiesTreeOutline.rootElement();
+            section.renderGhostStyleTreeElements('color: red;');
+            let ghostElements = rootElement.children().filter(e => e instanceof Elements.StylePropertyTreeElement.GhostStylePropertyTreeElement);
+            assert.lengthOf(ghostElements, 1);
+            section.clearGhostStyleTreeElements();
+            ghostElements = rootElement.children().filter(e => e instanceof Elements.StylePropertyTreeElement.GhostStylePropertyTreeElement);
+            assert.lengthOf(ghostElements, 0);
+        });
+    });
+    describe('onCSSModelChanged', () => {
+        let cssModel;
+        let matchedStyles;
+        let container;
+        beforeEach(async () => {
+            cssModel = new SDK.CSSModel.CSSModel(createTarget());
+            matchedStyles = await getMatchedStylesWithBlankRule({ cssModel });
+            container = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+        });
+        function createSection() {
+            return new Elements.StylePropertiesSection.StylePropertiesSection(container, matchedStyles, matchedStyles.nodeStyles()[0], 0, new Map(), new Map(), null);
+        }
+        it('updates internal model and values upon receiving a direct edit event', async () => {
+            const section = createSection();
+            const styleSheetEditedSpy = sinon.spy(section, 'styleSheetEdited');
+            const refreshComputedValuesSpy = sinon.stub(section, 'refreshComputedValues').resolves();
+            const styleSheetId = '0';
+            const edit = new SDK.CSSModel.Edit(styleSheetId, TextUtils.TextRange.TextRange.createFromLocation(0, 0), 'color: red', null);
+            const eventData = { styleSheetId, edit };
+            computedStyleModel.dispatchEventToListeners("CSSModelChanged" /* ComputedStyle.ComputedStyleModel.Events.CSS_MODEL_CHANGED */, eventData);
+            await expectCalled(refreshComputedValuesSpy);
+            sinon.assert.calledWith(styleSheetEditedSpy, edit);
+        });
+        it('updates computed values while the container panel is in an editing state', async () => {
+            container.isEditingStyle = true;
+            const section = createSection();
+            const refreshComputedValuesSpy = sinon.stub(section, 'refreshComputedValues').resolves();
+            const eventData = {
+                styleSheetId: '0',
+            };
+            computedStyleModel.dispatchEventToListeners("CSSModelChanged" /* ComputedStyle.ComputedStyleModel.Events.CSS_MODEL_CHANGED */, eventData);
+            await expectCalled(refreshComputedValuesSpy);
+        });
+        it('updates computed values while a user operation (like a popover) is active in the container', async () => {
+            container.userOperation = true;
+            const section = createSection();
+            const refreshComputedValuesSpy = sinon.stub(section, 'refreshComputedValues').resolves();
+            const eventData = {
+                styleSheetId: '0',
+            };
+            computedStyleModel.dispatchEventToListeners("CSSModelChanged" /* ComputedStyle.ComputedStyleModel.Events.CSS_MODEL_CHANGED */, eventData);
+            await expectCalled(refreshComputedValuesSpy);
+        });
+        it('does not update computed values if not editing and no user operation is active', async () => {
+            container.isEditingStyle = false;
+            container.userOperation = false;
+            const section = createSection();
+            const refreshComputedValuesSpy = sinon.stub(section, 'refreshComputedValues').resolves();
+            const eventData = {
+                styleSheetId: '0',
+            };
+            computedStyleModel.dispatchEventToListeners("CSSModelChanged" /* ComputedStyle.ComputedStyleModel.Events.CSS_MODEL_CHANGED */, eventData);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            sinon.assert.notCalled(refreshComputedValuesSpy);
+        });
     });
 });
 //# sourceMappingURL=StylePropertiesSection.test.js.map

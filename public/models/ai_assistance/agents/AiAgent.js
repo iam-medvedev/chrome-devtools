@@ -93,6 +93,9 @@ export class AiAgent {
     clearFacts() {
         this.#facts.clear();
     }
+    popPendingMultimodalInput() {
+        return undefined;
+    }
     preambleFeatures() {
         return [];
     }
@@ -201,6 +204,9 @@ export class AiAgent {
     parseTextResponse(response) {
         return this.parseTextResponseForSuggestions(response.trim());
     }
+    async finalizeAnswer(answer) {
+        return answer;
+    }
     /**
      * Declare a function that the AI model can call.
      * @param name The name of the function
@@ -221,7 +227,10 @@ export class AiAgent {
     clearDeclaredFunctions() {
         this.#functionDeclarations.clear();
     }
+    async preRun() {
+    }
     async *run(initialQuery, options, multimodalInput) {
+        await this.preRun();
         await options.selected?.refresh();
         if (options.selected) {
             this.context = options.selected;
@@ -290,13 +299,13 @@ export class AiAgent {
                     });
                 }
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceAnswerReceived);
-                yield {
+                yield await this.finalizeAnswer({
                     type: "answer" /* ResponseType.ANSWER */,
                     text: parsedResponse.answer,
                     suggestions: parsedResponse.suggestions,
                     complete: true,
                     rpcId,
-                };
+                });
                 if (!functionCall) {
                     break;
                 }
@@ -322,7 +331,8 @@ export class AiAgent {
                     query = {
                         functionResponse: {
                             name: functionCall.name,
-                            response: result,
+                            // Widgets are not sent back to the LLM
+                            response: { ...result, widgets: undefined },
                         },
                     };
                     request = this.buildRequest(query, Host.AidaClient.Role.ROLE_UNSPECIFIED);

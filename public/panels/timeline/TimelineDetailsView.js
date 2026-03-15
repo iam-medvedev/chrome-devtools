@@ -57,6 +57,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const { widget } = UI.Widget;
 export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     detailsLinkifier;
     tabbedPane;
@@ -115,14 +116,14 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         });
         this.#thirdPartyTree.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node => {
             // Re-dispatch through 3P event to get 3P dimmer.
-            this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node: node.data.node, events: node.data.events ?? undefined });
+            this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node: node.data.node, events: node.data.events });
         });
         this.#thirdPartyTree.addEventListener("BottomUpButtonClicked" /* TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, node => {
             this.selectTab(Tab.BottomUp, node.data, AggregatedTimelineTreeView.GroupBy.ThirdParties);
         });
         this.#thirdPartyTree.addEventListener("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, node => {
             // Re-dispatch through 3P event to get 3P dimmer.
-            this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, { node: node.data.node, events: node.data.events ?? undefined });
+            this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, { node: node.data.node, events: node.data.events });
         });
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
@@ -495,7 +496,7 @@ const SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
         <style>${detailsViewStyles}</style>
         ${Directives.until(renderSelectedEventDetails(input))}
         ${input.selectedRange ? generateRangeSummaryDetails(input) : nothing}
-        <devtools-widget data-related-insight-chips .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.RelatedInsightChips.RelatedInsightChips, {
+        <devtools-widget data-related-insight-chips ${widget(TimelineComponents.RelatedInsightChips.RelatedInsightChips, {
         activeEvent: input.selectedEvent,
         eventToInsightsMap: input.eventToRelatedInsightsMap,
     })}></devtools-widget>
@@ -552,7 +553,7 @@ async function renderSelectedEventDetails(input) {
         Trace.Types.Events.isSyntheticLayoutShiftCluster(selectedEvent)) {
         // clang-format off
         return html `
-      <devtools-widget data-layout-shift-details .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.LayoutShiftDetails.LayoutShiftDetails, {
+      <devtools-widget data-layout-shift-details ${widget(TimelineComponents.LayoutShiftDetails.LayoutShiftDetails, {
             event: selectedEvent,
             parsedTrace: input.parsedTrace,
             isFreshRecording: traceRecordingIsFresh,
@@ -563,7 +564,7 @@ async function renderSelectedEventDetails(input) {
     if (Trace.Types.Events.isSyntheticNetworkRequest(selectedEvent)) {
         // clang-format off
         return html `
-      <devtools-widget data-network-request-details .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.NetworkRequestDetails.NetworkRequestDetails, {
+      <devtools-widget data-network-request-details ${widget(TimelineComponents.NetworkRequestDetails.NetworkRequestDetails, {
             request: selectedEvent,
             entityMapper: input.entityMapper,
             target: input.target,

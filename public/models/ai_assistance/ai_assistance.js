@@ -250,6 +250,16 @@ var AgentProject = class {
   }
 };
 
+// gen/front_end/models/ai_assistance/agents/AccessibilityAgent.js
+var AccessibilityAgent_exports = {};
+__export(AccessibilityAgent_exports, {
+  AccessibilityAgent: () => AccessibilityAgent,
+  Context: () => Context
+});
+import * as Host2 from "./../../core/host/host.js";
+import * as i18n from "./../../core/i18n/i18n.js";
+import * as Root2 from "./../../core/root/root.js";
+
 // gen/front_end/models/ai_assistance/agents/AiAgent.js
 var AiAgent_exports = {};
 __export(AiAgent_exports, {
@@ -331,6 +341,9 @@ var AiAgent = class {
   clearFacts() {
     this.#facts.clear();
   }
+  popPendingMultimodalInput() {
+    return void 0;
+  }
   preambleFeatures() {
     return [];
   }
@@ -354,12 +367,12 @@ var AiAgent = class {
     }
     const enableAidaFunctionCalling = declarations.length;
     const userTier = Host.AidaClient.convertToUserTierEnum(this.userTier);
-    const preamble7 = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
+    const preamble8 = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
     const facts = Array.from(this.#facts);
     const request = {
       client: Host.AidaClient.CLIENT_NAME,
       current_message: currentMessage,
-      preamble: preamble7,
+      preamble: preamble8,
       historical_contexts: history.length ? history : void 0,
       facts: facts.length ? facts : void 0,
       ...enableAidaFunctionCalling ? { function_declarations: declarations } : {},
@@ -431,6 +444,9 @@ var AiAgent = class {
   parseTextResponse(response) {
     return this.parseTextResponseForSuggestions(response.trim());
   }
+  async finalizeAnswer(answer) {
+    return answer;
+  }
   /**
    * Declare a function that the AI model can call.
    * @param name The name of the function
@@ -451,7 +467,10 @@ var AiAgent = class {
   clearDeclaredFunctions() {
     this.#functionDeclarations.clear();
   }
+  async preRun() {
+  }
   async *run(initialQuery, options, multimodalInput) {
+    await this.preRun();
     await options.selected?.refresh();
     if (options.selected) {
       this.context = options.selected;
@@ -516,13 +535,13 @@ var AiAgent = class {
           });
         }
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceAnswerReceived);
-        yield {
+        yield await this.finalizeAnswer({
           type: "answer",
           text: parsedResponse.answer,
           suggestions: parsedResponse.suggestions,
           complete: true,
           rpcId
-        };
+        });
         if (!functionCall) {
           break;
         }
@@ -551,7 +570,8 @@ var AiAgent = class {
           query = {
             functionResponse: {
               name: functionCall.name,
-              response: result
+              // Widgets are not sent back to the LLM
+              response: { ...result, widgets: void 0 }
             }
           };
           request = this.buildRequest(query, Host.AidaClient.Role.ROLE_UNSPECIFIED);
@@ -727,14 +747,96 @@ var AiAgent = class {
   }
 };
 
+// gen/front_end/models/ai_assistance/agents/AccessibilityAgent.js
+var preamble = `You are an accessibility agent.
+
+# Considerations
+* Keep your analysis concise and focused, highlighting only the most critical aspects for a software engineer.
+* Answer questions directly, using the provided links whenever relevant.
+* Always double-check links to make sure they are complete and correct.
+* **CRITICAL** You are an accessibility agent. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, or any other non web-development topics.
+`;
+var UIStringsNotTranslate = {
+  /**
+   * @description Title for thinking step of the accessibility agent.
+   */
+  inspectingAudits: "Inspecting audits"
+};
+var lockedString = i18n.i18n.lockedString;
+var Context = class extends ConversationContext {
+  #lh;
+  constructor(report) {
+    super();
+    this.#lh = report;
+  }
+  #url() {
+    return this.#lh.finalUrl ?? this.#lh.finalDisplayedUrl;
+  }
+  getOrigin() {
+    return new URL(this.#url()).origin;
+  }
+  getItem() {
+    return this.#lh;
+  }
+  getTitle() {
+    return `Lighthouse report: ${this.#url()}`;
+  }
+};
+var AccessibilityAgent = class extends AiAgent {
+  preamble = preamble;
+  clientFeature = Host2.AidaClient.ClientFeature.CHROME_ACCESSIBILITY_AGENT;
+  get userTier() {
+    return Root2.Runtime.hostConfig.devToolsFreestyler?.userTier;
+  }
+  get options() {
+    const temperature = Root2.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.temperature;
+    const modelId = Root2.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.modelId;
+    return {
+      temperature,
+      modelId
+    };
+  }
+  async *handleContextDetails(selectedFile) {
+    if (!selectedFile) {
+      return;
+    }
+    yield {
+      type: "context",
+      title: lockedString(UIStringsNotTranslate.inspectingAudits),
+      details: createContextDetails(selectedFile)
+    };
+  }
+  async enhanceQuery(query, lhr) {
+    const enhancedQuery = lhr ? (
+      // TODO: formatter for LH report.
+      `# Lighthouse Report
+${JSON.stringify(lhr.getItem(), null, 2)}
+
+# User request
+
+`
+    ) : "";
+    return `${enhancedQuery}${query}`;
+  }
+};
+function createContextDetails(_lhr) {
+  return [
+    {
+      title: "Lighthouse report",
+      // TODO(b/491772868);
+      text: ""
+    }
+  ];
+}
+
 // gen/front_end/models/ai_assistance/agents/BreakpointDebuggerAgent.js
 var BreakpointDebuggerAgent_exports = {};
 __export(BreakpointDebuggerAgent_exports, {
   BreakpointContext: () => BreakpointContext,
   BreakpointDebuggerAgent: () => BreakpointDebuggerAgent
 });
-import * as Host2 from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
+import * as Host3 from "./../../core/host/host.js";
+import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Bindings from "./../bindings/bindings.js";
 import * as Breakpoints from "./../breakpoints/breakpoints.js";
@@ -959,8 +1061,8 @@ var REMOVE_OVERLAY_SCRIPT = `
 `;
 
 // gen/front_end/models/ai_assistance/agents/BreakpointDebuggerAgent.js
-var lockedString = i18n.i18n.lockedString;
-var preamble = `You are an expert Root Cause Analysis (RCA) specialist.
+var lockedString2 = i18n3.i18n.lockedString;
+var preamble2 = `You are an expert Root Cause Analysis (RCA) specialist.
 Your sole objective is to find the **root cause** of why an error was thrown or why a bug occurred.
 You must not stop at the surface level. You must dig deep to understand the exact sequence of events and state changes that led to the failure.
 
@@ -1018,11 +1120,11 @@ var BreakpointContext = class extends ConversationContext {
   }
 };
 var BreakpointDebuggerAgent = class extends AiAgent {
-  preamble = preamble;
+  preamble = preamble2;
   // Using file agent as a base for now since it is the closest one logic wise.
   // Since the user tier is forced to TESTERS, it should not mess up the stats.
   // If this code is taken to production, we should create a new client feature.
-  clientFeature = Host2.AidaClient.ClientFeature.CHROME_FILE_AGENT;
+  clientFeature = Host3.AidaClient.ClientFeature.CHROME_FILE_AGENT;
   constructor(opts) {
     super(opts);
     this.declareFunction("getFunctionSource", {
@@ -1378,7 +1480,7 @@ var BreakpointDebuggerAgent = class extends AiAgent {
         if (!options?.approved) {
           return {
             requiresApproval: true,
-            description: lockedString("This code may modify page content. Continue?")
+            description: lockedString2("This code may modify page content. Continue?")
           };
         }
         const targetManager = SDK2.TargetManager.TargetManager.instance();
@@ -1790,11 +1892,9 @@ var ContextSelectionAgent_exports = {};
 __export(ContextSelectionAgent_exports, {
   ContextSelectionAgent: () => ContextSelectionAgent
 });
-import * as Common5 from "./../../core/common/common.js";
-import * as Host7 from "./../../core/host/host.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Root6 from "./../../core/root/root.js";
-import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as Host8 from "./../../core/host/host.js";
+import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as Root7 from "./../../core/root/root.js";
 import * as Logs2 from "./../logs/logs.js";
 import * as NetworkTimeCalculator3 from "./../network_time_calculator/network_time_calculator.js";
 import * as Workspace3 from "./../workspace/workspace.js";
@@ -1805,9 +1905,9 @@ __export(FileAgent_exports, {
   FileAgent: () => FileAgent,
   FileContext: () => FileContext
 });
-import * as Host3 from "./../../core/host/host.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Root2 from "./../../core/root/root.js";
+import * as Host4 from "./../../core/host/host.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as Root3 from "./../../core/root/root.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/FileFormatter.js
 var FileFormatter_exports = {};
@@ -2363,7 +2463,7 @@ ${truncated}
 };
 
 // gen/front_end/models/ai_assistance/agents/FileAgent.js
-var preamble2 = `You are a highly skilled software engineer with expertise in various programming languages and frameworks.
+var preamble3 = `You are a highly skilled software engineer with expertise in various programming languages and frameworks.
 You are provided with the content of a file from the Chrome DevTools Sources panel. To aid your analysis, you've been given the below links to understand the context of the code and its relationship to other files. When answering questions, prioritize providing these links directly.
 * Source-mapped from: If this code is the source for a mapped file, you'll have a link to that generated file.
 * Source map: If this code has an associated source map, you'll have link to the source map.
@@ -2401,13 +2501,13 @@ Relevant Technologies: JavaScript, functions, arithmetic operations.
 External Resources:
 MDN Web Docs: JavaScript Functions: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions
 `;
-var UIStringsNotTranslate = {
+var UIStringsNotTranslate2 = {
   /**
    * @description Title for thinking step of File agent.
    */
   analyzingFile: "Analyzing file"
 };
-var lockedString2 = i18n3.i18n.lockedString;
+var lockedString3 = i18n5.i18n.lockedString;
 var FileContext = class extends ConversationContext {
   #file;
   constructor(file) {
@@ -2428,14 +2528,14 @@ var FileContext = class extends ConversationContext {
   }
 };
 var FileAgent = class extends AiAgent {
-  preamble = preamble2;
-  clientFeature = Host3.AidaClient.ClientFeature.CHROME_FILE_AGENT;
+  preamble = preamble3;
+  clientFeature = Host4.AidaClient.ClientFeature.CHROME_FILE_AGENT;
   get userTier() {
-    return Root2.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.userTier;
+    return Root3.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.userTier;
   }
   get options() {
-    const temperature = Root2.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.temperature;
-    const modelId = Root2.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.modelId;
+    const temperature = Root3.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.temperature;
+    const modelId = Root3.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.modelId;
     return {
       temperature,
       modelId
@@ -2447,7 +2547,7 @@ var FileAgent = class extends AiAgent {
     }
     yield {
       type: "context",
-      title: lockedString2(UIStringsNotTranslate.analyzingFile),
+      title: lockedString3(UIStringsNotTranslate2.analyzingFile),
       details: createContextDetailsForFileAgent(selectedFile)
     };
   }
@@ -2476,10 +2576,10 @@ __export(NetworkAgent_exports, {
   NetworkAgent: () => NetworkAgent,
   RequestContext: () => RequestContext
 });
-import * as Host4 from "./../../core/host/host.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Root3 from "./../../core/root/root.js";
-var preamble3 = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
+import * as Host5 from "./../../core/host/host.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as Root4 from "./../../core/root/root.js";
+var preamble4 = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
 Provide a comprehensive analysis of the network request, focusing on areas crucial for a software engineer. Your analysis should include:
 * Briefly explain the purpose of the request based on the URL, method, and any relevant headers or payload.
@@ -2509,7 +2609,7 @@ Request Status: 200 OK
 
 This request aims to retrieve a list of products matching the search query "laptop" within the "electronics" category. The successful 200 OK status confirms that the server fulfilled the request and returned the relevant data.
 `;
-var UIStringsNotTranslate2 = {
+var UIStringsNotTranslate3 = {
   /**
    * @description Title for thinking step of Network agent.
    */
@@ -2535,7 +2635,7 @@ var UIStringsNotTranslate2 = {
    */
   requestInitiatorChain: "Request initiator chain"
 };
-var lockedString3 = i18n5.i18n.lockedString;
+var lockedString4 = i18n7.i18n.lockedString;
 var RequestContext = class extends ConversationContext {
   #request;
   #calculator;
@@ -2558,14 +2658,14 @@ var RequestContext = class extends ConversationContext {
   }
 };
 var NetworkAgent = class extends AiAgent {
-  preamble = preamble3;
-  clientFeature = Host4.AidaClient.ClientFeature.CHROME_NETWORK_AGENT;
+  preamble = preamble4;
+  clientFeature = Host5.AidaClient.ClientFeature.CHROME_NETWORK_AGENT;
   get userTier() {
-    return Root3.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.userTier;
+    return Root4.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.userTier;
   }
   get options() {
-    const temperature = Root3.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.temperature;
-    const modelId = Root3.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.modelId;
+    const temperature = Root4.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.temperature;
+    const modelId = Root4.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.modelId;
     return {
       temperature,
       modelId
@@ -2577,7 +2677,7 @@ var NetworkAgent = class extends AiAgent {
     }
     yield {
       type: "context",
-      title: lockedString3(UIStringsNotTranslate2.analyzingNetworkData),
+      title: lockedString4(UIStringsNotTranslate3.analyzingNetworkData),
       details: await createContextDetailsForNetworkAgent(selectedNetworkRequest)
     };
   }
@@ -2595,25 +2695,25 @@ async function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
   const request = selectedNetworkRequest.getItem();
   const formatter = new NetworkRequestFormatter(request, selectedNetworkRequest.calculator);
   const requestContextDetail = {
-    title: lockedString3(UIStringsNotTranslate2.request),
-    text: lockedString3(UIStringsNotTranslate2.requestUrl) + ": " + request.url() + "\n\n" + formatter.formatRequestHeaders()
+    title: lockedString4(UIStringsNotTranslate3.request),
+    text: lockedString4(UIStringsNotTranslate3.requestUrl) + ": " + request.url() + "\n\n" + formatter.formatRequestHeaders()
   };
   const responseBody = await formatter.formatResponseBody();
   const responseBodyString = responseBody ? `
 
 ${responseBody}` : "";
   const responseContextDetail = {
-    title: lockedString3(UIStringsNotTranslate2.response),
+    title: lockedString4(UIStringsNotTranslate3.response),
     text: formatter.formatResponseHeaders() + responseBodyString + `
 
 ${formatter.formatStatus()}${formatter.formatFailureReasons()}`
   };
   const timingContextDetail = {
-    title: lockedString3(UIStringsNotTranslate2.timing),
+    title: lockedString4(UIStringsNotTranslate3.timing),
     text: formatter.formatNetworkRequestTiming()
   };
   const initiatorChainContextDetail = {
-    title: lockedString3(UIStringsNotTranslate2.requestInitiatorChain),
+    title: lockedString4(UIStringsNotTranslate3.requestInitiatorChain),
     text: formatter.formatRequestInitiatorChain()
   };
   return [
@@ -2631,10 +2731,10 @@ __export(PerformanceAgent_exports, {
   PerformanceTraceContext: () => PerformanceTraceContext
 });
 import * as Common2 from "./../../core/common/common.js";
-import * as Host5 from "./../../core/host/host.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as Host6 from "./../../core/host/host.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
-import * as Root4 from "./../../core/root/root.js";
+import * as Root5 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Tracing from "./../../services/tracing/tracing.js";
 import * as Annotations3 from "./../annotations/annotations.js";
@@ -4014,6 +4114,10 @@ var PerformanceInsightFormatter = class {
           { title: "Is my site polyfilling modern JavaScript features?" },
           { title: "How can I reduce the amount of legacy JavaScript on my page?" }
         ];
+      case "CharacterSet":
+        return [
+          { title: "How do I declare a character encoding for my page?" }
+        ];
       default:
         throw new Error(`Unknown insight key '${this.#insight.insightKey}'`);
     }
@@ -4592,6 +4696,17 @@ ${requestSummary}`;
    * @param insight The Network Dependency Tree Insight Model to query.
    * @returns a string formatted for sending to Ask AI.
    */
+  formatCharacterSetInsight(insight) {
+    let output = "";
+    if (insight.data) {
+      output += "HTTP Content-Type header charset: " + (insight.data.hasHttpCharset ? "present" : "missing") + ".\n";
+      output += "HTML meta charset disposition: " + (insight.data.metaCharsetDisposition ?? "unknown") + ".\n";
+      if (!insight.data.hasHttpCharset && insight.data.metaCharsetDisposition !== "found-in-first-1024-bytes") {
+        output += "\nThe page does not declare character encoding via HTTP header or a meta charset tag in the first 1024 bytes.\n";
+      }
+    }
+    return output;
+  }
   formatViewportInsight(insight) {
     let output = "";
     output += "The webpage is " + (insight.mobileOptimized ? "already" : "not") + " optimized for mobile viewing.\n";
@@ -4684,6 +4799,9 @@ ${this.#links()}`;
     if (Trace4.Insights.Models.Viewport.isViewportInsight(this.#insight)) {
       return this.formatViewportInsight(this.#insight);
     }
+    if (Trace4.Insights.Models.CharacterSet.isCharacterSetInsight(this.#insight)) {
+      return this.formatCharacterSetInsight(this.#insight);
+    }
     return "";
   }
   estimatedSavings() {
@@ -4755,6 +4873,9 @@ ${this.#links()}`;
       case "LegacyJavaScript":
         links.push("https://web.dev/articles/baseline-and-polyfills");
         links.push("https://philipwalton.com/articles/the-state-of-es5-on-the-web/");
+        break;
+      case "CharacterSet":
+        links.push("https://developer.chrome.com/docs/insights/charset/");
         break;
     }
     return links.map((link) => "- " + link).join("\n");
@@ -4838,6 +4959,8 @@ To pass this insight, ensure your server supports and prioritizes a modern HTTP 
         return `This insight identified legacy JavaScript in your application's modules that may be creating unnecessary code.
 
 Polyfills and transforms enable older browsers to use new JavaScript features. However, many are not necessary for modern browsers. Consider modifying your JavaScript build process to not transpile Baseline features, unless you know you must support older browsers.`;
+      case "CharacterSet":
+        return `This insight checks that the page declares a character encoding, ideally via the Content-Type HTTP response header. A missing or late charset declaration can force the browser to re-parse the document once it finally determines the encoding, delaying first contentful paint. Best practice: include charset=utf-8 in the Content-Type header and add <meta charset="utf-8"> as the very first element inside <head>.`;
     }
   }
 };
@@ -4983,7 +5106,7 @@ var UIStringsNotTranslated = {
    */
   mainThreadActivity: "Investigating main thread activity\u2026"
 };
-var lockedString4 = i18n7.i18n.lockedString;
+var lockedString5 = i18n9.i18n.lockedString;
 var greenDevAdditionalAnnotationsFunction = `
 - CRITICAL: You also have access to functions called addElementAnnotation and addNeworkRequestAnnotation,
 which should be used to highlight elements and network requests (respectively).`;
@@ -5233,14 +5356,14 @@ var PerformanceAgent = class extends AiAgent {
     return buildPreamble();
   }
   get clientFeature() {
-    return Host5.AidaClient.ClientFeature.CHROME_PERFORMANCE_FULL_AGENT;
+    return Host6.AidaClient.ClientFeature.CHROME_PERFORMANCE_FULL_AGENT;
   }
   get userTier() {
-    return Boolean(Root4.Runtime.hostConfig.devToolsGreenDevUi?.enabled) ? "TESTERS" : Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
+    return Boolean(Root5.Runtime.hostConfig.devToolsGreenDevUi?.enabled) ? "TESTERS" : Root5.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
   }
   get options() {
-    const temperature = Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
-    const modelId = Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
+    const temperature = Root5.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
+    const modelId = Root5.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
     return {
       temperature,
       modelId
@@ -5253,15 +5376,27 @@ var PerformanceAgent = class extends AiAgent {
     if (this.#hasShownAnalyzeTraceContext) {
       return;
     }
+    const widgets = [];
+    const primaryInsightSet = context.getItem().primaryInsightSet;
+    if (primaryInsightSet) {
+      widgets.push({
+        name: "CORE_VITALS",
+        data: {
+          parsedTrace: context.getItem().parsedTrace,
+          insightSetKey: primaryInsightSet.id
+        }
+      });
+    }
     yield {
       type: "context",
-      title: lockedString4(UIStringsNotTranslated.analyzingTrace),
+      title: lockedString5(UIStringsNotTranslated.analyzingTrace),
       details: [
         {
           title: "Trace",
           text: this.#formatter?.formatTraceSummary() ?? ""
         }
-      ]
+      ],
+      widgets
     };
     this.#hasShownAnalyzeTraceContext = true;
   }
@@ -5492,6 +5627,7 @@ ${result}`,
   #declareFunctions(context) {
     const focus = context.getItem();
     const { parsedTrace } = focus;
+    const processedNodeIds = /* @__PURE__ */ new Set();
     this.declareFunction("getInsightDetails", {
       description: "Returns detailed information about a specific insight of an insight set. Use this before commenting on any specific issue to get more information.",
       parameters: {
@@ -5514,7 +5650,7 @@ ${result}`,
       },
       displayInfoFromArgs: (params) => {
         return {
-          title: lockedString4(`Investigating insight ${params.insightName}\u2026`),
+          title: lockedString5(`Investigating insight ${params.insightName}\u2026`),
           action: `getInsightDetails('${params.insightSetId}', '${params.insightName}')`
         };
       },
@@ -5531,9 +5667,33 @@ ${result}`,
           return { error: `No insight available. Valid insight names are: ${valid}` };
         }
         const details = new PerformanceInsightFormatter(focus, insight).formatInsight();
+        const widgets = [];
+        if (params.insightName === "LCPDiscovery" || params.insightName === "LCPBreakdown") {
+          const lcpMetric = Trace6.Insights.Common.getLCP(insightSet);
+          const lcpEvent = lcpMetric?.event;
+          if (lcpEvent && Trace6.Types.Events.isAnyLargestContentfulPaintCandidate(lcpEvent)) {
+            const nodeId = lcpEvent.args.data?.nodeId;
+            if (nodeId && !processedNodeIds.has(nodeId)) {
+              const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
+              const domModel = target?.model(SDK3.DOMModel.DOMModel);
+              if (domModel) {
+                const nodeMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([nodeId]));
+                const node = nodeMap?.get(nodeId);
+                if (node) {
+                  const snapshot = await node.takeSnapshot();
+                  widgets.push({
+                    name: "DOM_TREE",
+                    data: { root: snapshot }
+                  });
+                  processedNodeIds.add(nodeId);
+                }
+              }
+            }
+          }
+        }
         const key = `getInsightDetails('${params.insightSetId}', '${params.insightName}')`;
         this.#cacheFunctionResult(focus, key, details);
-        return { result: { details } };
+        return { result: { details }, widgets };
       }
     });
     this.declareFunction("getEventByKey", {
@@ -5552,7 +5712,7 @@ ${result}`,
         required: ["eventKey"]
       },
       displayInfoFromArgs: (params) => {
-        return { title: lockedString4("Looking at trace event\u2026"), action: `getEventByKey('${params.eventKey}')` };
+        return { title: lockedString5("Looking at trace event\u2026"), action: `getEventByKey('${params.eventKey}')` };
       },
       handler: async (params) => {
         debugLog("Function call: getEventByKey", params);
@@ -5599,7 +5759,7 @@ ${result}`,
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString4(UIStringsNotTranslated.mainThreadActivity),
+          title: lockedString5(UIStringsNotTranslated.mainThreadActivity),
           action: `getMainThreadTrackSummary({min: ${args.min}, max: ${args.max}})`
         };
       },
@@ -5620,7 +5780,7 @@ ${result}`,
           };
         }
         const byteCount = Platform2.StringUtilities.countWtf8Bytes(summary);
-        Host5.userMetrics.performanceAIMainThreadActivityResponseSize(byteCount);
+        Host6.userMetrics.performanceAIMainThreadActivityResponseSize(byteCount);
         const key = `getMainThreadTrackSummary({min: ${bounds.min}, max: ${bounds.max}})`;
         this.#cacheFunctionResult(focus, key, summary);
         return { result: { summary } };
@@ -5648,7 +5808,7 @@ ${result}`,
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString4(UIStringsNotTranslated.networkActivitySummary),
+          title: lockedString5(UIStringsNotTranslated.networkActivitySummary),
           action: `getNetworkTrackSummary({min: ${args.min}, max: ${args.max}})`
         };
       },
@@ -5668,7 +5828,7 @@ ${result}`,
           };
         }
         const byteCount = Platform2.StringUtilities.countWtf8Bytes(summary);
-        Host5.userMetrics.performanceAINetworkSummaryResponseSize(byteCount);
+        Host6.userMetrics.performanceAINetworkSummaryResponseSize(byteCount);
         const key = `getNetworkTrackSummary({min: ${bounds.min}, max: ${bounds.max}})`;
         this.#cacheFunctionResult(focus, key, summary);
         return { result: { summary } };
@@ -5690,7 +5850,7 @@ ${result}`,
         required: ["eventKey"]
       },
       displayInfoFromArgs: (args) => {
-        return { title: lockedString4("Looking at call tree\u2026"), action: `getDetailedCallTree('${args.eventKey}')` };
+        return { title: lockedString5("Looking at call tree\u2026"), action: `getDetailedCallTree('${args.eventKey}')` };
       },
       handler: async (args) => {
         debugLog("Function call: getDetailedCallTree");
@@ -5789,7 +5949,7 @@ ${result}`,
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString4("Looking up function code\u2026"),
+          title: lockedString5("Looking up function code\u2026"),
           action: `getFunctionCode('${args.scriptUrl}', ${args.line}, ${args.column})`
         };
       },
@@ -5820,7 +5980,7 @@ ${result}`,
       }
     });
     const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace);
-    const isTraceApp = Root4.Runtime.Runtime.isTraceApp();
+    const isTraceApp = Root5.Runtime.Runtime.isTraceApp();
     this.declareFunction("getResourceContent", {
       description: "Returns the content of the resource with the given url. Only use this for text resource types. This function is helpful for getting script contents in order to further analyze main thread activity and suggest code improvements. When analyzing the main thread activity, always call this function to get more detail. Always call this function when asked to provide specifics about what is happening in the code. Never ask permission to call this function, just do it.",
       parameters: {
@@ -5837,7 +5997,7 @@ ${result}`,
         required: ["url"]
       },
       displayInfoFromArgs: (args) => {
-        return { title: lockedString4("Looking at resource content\u2026"), action: `getResourceContent('${args.url}')` };
+        return { title: lockedString5("Looking at resource content\u2026"), action: `getResourceContent('${args.url}')` };
       },
       handler: async (args) => {
         debugLog("Function call: getResourceContent");
@@ -5881,7 +6041,7 @@ ${result}`,
           required: ["eventKey"]
         },
         displayInfoFromArgs: (params) => {
-          return { title: lockedString4("Selecting event\u2026"), action: `selectEventByKey('${params.eventKey}')` };
+          return { title: lockedString5("Selecting event\u2026"), action: `selectEventByKey('${params.eventKey}')` };
         },
         handler: async (params) => {
           debugLog("Function call: selectEventByKey", params);
@@ -5930,15 +6090,18 @@ ${result}`,
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
 var StylingAgent_exports = {};
 __export(StylingAgent_exports, {
+  AI_ASSISTANCE_FILTER_REGEX: () => AI_ASSISTANCE_FILTER_REGEX,
   NodeContext: () => NodeContext,
   StylingAgent: () => StylingAgent
 });
-import * as Host6 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as Host7 from "./../../core/host/host.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
-import * as Root5 from "./../../core/root/root.js";
+import * as Root6 from "./../../core/root/root.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
+import * as Greendev2 from "./../greendev/greendev.js";
 import * as Annotations4 from "./../annotations/annotations.js";
+import * as Emulation from "./../emulation/emulation.js";
 
 // gen/front_end/models/ai_assistance/ChangeManager.js
 var ChangeManager_exports = {};
@@ -6006,6 +6169,7 @@ var ChangeManager = class {
     if (existingChange) {
       Object.assign(existingChange.styles, stylesKebab);
       existingChange.groupId = change.groupId;
+      existingChange.turnId = change.turnId;
     } else {
       changes.push({
         ...change,
@@ -6019,6 +6183,17 @@ var ChangeManager = class {
   }
   formatChangesForPatching(groupId, includeSourceLocation = false) {
     return Array.from(this.#stylesheetChanges.values()).flatMap((changesPerStylesheet) => changesPerStylesheet.filter((change) => change.groupId === groupId).map((change) => this.#formatChange(change, includeSourceLocation))).filter((change) => change !== "").join("\n\n");
+  }
+  getChangedNodesForGroupId(groupId, turnId) {
+    const nodes = /* @__PURE__ */ new Set();
+    for (const changes of this.#stylesheetChanges.values()) {
+      for (const change of changes) {
+        if (change.groupId === groupId && change.backendNodeId && (turnId === void 0 || change.turnId === turnId)) {
+          nodes.add(change.backendNodeId);
+        }
+      }
+    }
+    return Array.from(nodes);
   }
   #formatChangesForInspectorStylesheet(changes) {
     return changes.map((change) => {
@@ -6383,16 +6558,18 @@ var ExtensionScope = class {
   #listeners = [];
   #changeManager;
   #agentId;
+  #turnId;
   /** Don't use directly use the getter */
   #frameId;
   /** Don't use directly use the getter */
   #target;
   #bindingMutex = new Common4.Mutex.Mutex();
-  constructor(changes, agentId, selectedNode) {
+  constructor(changes, agentId, selectedNode, turnId) {
     this.#changeManager = changes;
     const frameId = selectedNode?.frameId();
     const target = selectedNode?.domModel().target();
     this.#agentId = agentId;
+    this.#turnId = turnId;
     this.#target = target;
     this.#frameId = frameId;
   }
@@ -6563,6 +6740,7 @@ var ExtensionScope = class {
     if (!node) {
       throw new Error("Node is not found");
     }
+    const backendNodeId = node.backendNodeId();
     try {
       const matchedStyles = await cssModel.getMatchedStyles(node.id);
       if (!matchedStyles) {
@@ -6579,12 +6757,14 @@ var ExtensionScope = class {
       return {
         selector,
         simpleSelector: _a2.getSelectorForNode(node),
-        sourceLocation: _a2.getSourceLocation(styleRule)
+        sourceLocation: _a2.getSourceLocation(styleRule),
+        backendNodeId
       };
     } catch {
     }
     return {
-      selector: _a2.getSelectorForNode(node)
+      selector: _a2.getSelectorForNode(node),
+      backendNodeId
     };
   }
   async #bindingCalled(executionContext, event) {
@@ -6608,7 +6788,8 @@ var ExtensionScope = class {
       }
       let context = {
         // TODO: Should this a be a *?
-        selector: ""
+        selector: "",
+        backendNodeId: void 0
       };
       try {
         context = await this.#computeContextFromElement(element.object);
@@ -6621,11 +6802,13 @@ var ExtensionScope = class {
         const sanitizedStyles = await this.sanitizedStyleChanges(context.selector, arg.styles);
         const styleChanges = await this.#changeManager.addChange(cssModel, this.frameId, {
           groupId: this.#agentId,
+          turnId: this.#turnId,
           sourceLocation: context.sourceLocation,
           selector: context.selector,
           simpleSelector: context.simpleSelector,
           className: arg.className,
-          styles: sanitizedStyles
+          styles: sanitizedStyles,
+          backendNodeId: context.backendNodeId
         });
         await this.#simpleEval(executionContext, `freestyler.respond(${id}, ${JSON.stringify(styleChanges)})`);
       } catch (error) {
@@ -6664,7 +6847,7 @@ var ExtensionScope = class {
 _a2 = ExtensionScope;
 
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
-var UIStringsNotTranslate3 = {
+var UIStringsNotTranslate4 = {
   /**
    * @description Title for context details for Freestyler.
    */
@@ -6674,8 +6857,9 @@ var UIStringsNotTranslate3 = {
    */
   dataUsed: "Data used"
 };
-var lockedString5 = i18n9.i18n.lockedString;
-var preamble4 = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
+var lockedString6 = i18n11.i18n.lockedString;
+function getPreamble() {
+  let preamble8 = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
 The user selected a DOM element in the browser's DevTools and sends a query about the page or the selected DOM element.
 First, examine the provided context, then use the functions to gather additional context and resolve the user request.
@@ -6697,6 +6881,44 @@ First, examine the provided context, then use the functions to gather additional
 * **CRITICAL** NEVER output text before a function call. Always do a function call first.
 * **CRITICAL** When answering questions about positioning or layout, ALWAYS inspect \`position\`, \`display\` and ALL related properties.
 * **CRITICAL** You are a CSS/DOM/HTML debugging assistant. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non web-development topics. Answer "Sorry, I can't answer that. I'm best at questions about debugging web pages." to such questions.`;
+  const greenDevEmulationEnabled = Greendev2.Prototypes.instance().isEnabled("emulationCapabilities");
+  if (greenDevEmulationEnabled) {
+    preamble8 += `
+# Emulation and Screenshots
+
+* If asked to verify whether the page is visually broken or if there are display problems with specific devices, use the \`activateDeviceEmulation\` tool. This tool will activate emulation for a specified device and capture a screenshot.
+* **DEVICE SELECTION**: You must choose the most closely related device match from the allowed list.
+    * If the user asks about a specific device (e.g., "iPhone 6"), choose the closest match (e.g., "iPhone 6/7/8").
+    * If the user specifies a generic category (e.g., "Android phone", "iPhone", "Samsung"), choose the device with the highest version number available in that category (e.g., "Pixel 7" or "Samsung Galaxy S20" for Android, "iPhone 14 Pro Max" for iPhone).
+* **VISION DEFICIENCY**: If the user asks about checking for color blindness or vision issues, you can pass an optional \`visionDeficiency\` parameter to \`activateDeviceEmulation\`. Allowed values are: 'blurredVision', 'reducedContrast', 'achromatopsia', 'deuteranopia', 'protanopia', 'tritanopia'.
+* **IMPORTANT**: This is a **TWO-STEP** process.
+* **STEP 1**: Call \`activateDeviceEmulation\`. After calling this tool, YOU MUST STOP and tell the user that the screenshot has been captured and ask them whether they would like you to focus on specific sections of the screenshot or review it all for possible problems.
+* **STEP 2**: The captured screenshot will be automatically attached to the user's **NEXT** query.
+* **CRITICAL**: DO NOT try to investigate/analyze the page state or element visibility automatically. But, after the user has requested to analyze the page, you can prompt the user to select one of the problematic elements if they want to diagnose further.
+* **CRITICAL**: The output of the analysis should only be in json form (no supplemental text) and the json should list the problems found on the device, with a short description of the problem. If identical problems are identified acress multiple devices, feel free to combine sections.
+* **CRITICAL**: ALWAYS escape single and double quotes within the json output strings (' and ").
+*
+* Example (with no duplication):
+
+[
+  {
+    "Problem": "Element not resizing",
+    "Element": "Hero banner",
+    "NodeId": "23",
+    "Details": "The "hero" element is not resizing because... etc etc."
+  }
+]
+
+# Additional notes:
+
+When referring to an element for which you know the nodeId, annotate your output using markdown link syntax:
+- For example, if nodeId is 23: ([link](#node-23))
+- Always prefix the nodeId with the 'node-' prefix when using the markdown syntax.
+- This link will reveal the element in the Elements panel
+- Never mention node or nodeId when referring to the element, and especially not in the link text.`;
+  }
+  return preamble8;
+}
 var promptForScreenshot = `The user has provided you a screenshot of the page (as visible in the viewport) in base64-encoded format. You SHOULD use it while answering user's queries.
 
 * Try to connect the screenshot to actual DOM elements in the page.
@@ -6756,6 +6978,7 @@ async function executeJsCode(functionDeclaration, { throwOnSideEffect, contextNo
 }
 var MAX_OBSERVATION_BYTE_LENGTH = 25e3;
 var OBSERVATION_TIMEOUT = 5e3;
+var AI_ASSISTANCE_FILTER_REGEX = `\\.${AI_ASSISTANCE_CSS_CLASS_NAME}-.*&`;
 var NodeContext = class extends ConversationContext {
   #node;
   constructor(node) {
@@ -6819,24 +7042,25 @@ var NodeContext = class extends ConversationContext {
   }
 };
 var StylingAgent = class _StylingAgent extends AiAgent {
-  preamble = preamble4;
-  clientFeature = Host6.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
+  preamble = getPreamble();
+  clientFeature = Host7.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
   get userTier() {
-    return Root5.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    const greenDevEmulationEnabled = Greendev2.Prototypes.instance().isEnabled("emulationCapabilities");
+    return greenDevEmulationEnabled ? "TESTERS" : Root6.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get executionMode() {
-    return Root5.Runtime.hostConfig.devToolsFreestyler?.executionMode ?? Root5.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
+    return Root6.Runtime.hostConfig.devToolsFreestyler?.executionMode ?? Root6.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
   }
   get options() {
-    const temperature = Root5.Runtime.hostConfig.devToolsFreestyler?.temperature;
-    const modelId = Root5.Runtime.hostConfig.devToolsFreestyler?.modelId;
+    const temperature = Root6.Runtime.hostConfig.devToolsFreestyler?.temperature;
+    const modelId = Root6.Runtime.hostConfig.devToolsFreestyler?.modelId;
     return {
       temperature,
       modelId
     };
   }
   get multimodalInputEnabled() {
-    return Boolean(Root5.Runtime.hostConfig.devToolsFreestyler?.multimodal);
+    return Boolean(Root6.Runtime.hostConfig.devToolsFreestyler?.multimodal);
   }
   preambleFeatures() {
     return ["function_calling"];
@@ -6844,12 +7068,15 @@ var StylingAgent = class _StylingAgent extends AiAgent {
   #execJs;
   #changes;
   #createExtensionScope;
+  #greenDevEmulationScreenshot = null;
+  #greenDevEmulationAxTree = null;
+  #currentTurnId = 0;
   constructor(opts) {
     super(opts);
     this.#changes = opts.changeManager || new ChangeManager();
     this.#execJs = opts.execJs ?? executeJsCode;
     this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
-      return new ExtensionScope(changes, this.sessionId, this.context?.getItem() ?? null);
+      return new ExtensionScope(changes, this.sessionId, this.context?.getItem() ?? null, this.#currentTurnId);
     });
     this.declareFunction("getStyles", {
       description: `Get computed and source styles for one or multiple elements on the inspected page for multiple elements at once by uid.
@@ -6998,6 +7225,30 @@ const data = {
         }
       });
     }
+    this.declareFunction("activateDeviceEmulation", {
+      description: "Sets emulation viewing mode for a specific device and optionally enables vision deficiency emulation.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          deviceName: {
+            type: 1,
+            description: "The name of the device to emulate. Allowed values: Pixel 3 XL, Pixel 7, Samsung Galaxy S8+, Samsung Galaxy S20 Ultra, Surface Pro 7, Surface Duo, Galaxy Z Fold 5, Asus Zenbook Fold, Samsung Galaxy A51/71, Nest Hub Max, Nest Hub, iPhone 4, iPhone 5/SE, iPhone 6/7/8, iPhone SE, iPhone XR, iPhone 12 Pro, iPhone 14 Pro Max, iPad Mini, iPad Air, iPad Pro.",
+            nullable: false
+          },
+          visionDeficiency: {
+            type: 1,
+            description: "Optional vision deficiency to emulate. Allowed values: blurredVision, reducedContrast, achromatopsia, deuteranopia, protanopia, tritanopia.",
+            nullable: true
+          }
+        },
+        required: ["deviceName"]
+      },
+      handler: async (params) => {
+        return await this.activateDeviceEmulation(params.deviceName, params.visionDeficiency);
+      }
+    });
   }
   async generateObservation(action, { throwOnSideEffect }) {
     const functionDeclaration = `async function ($0) {
@@ -7020,7 +7271,7 @@ const data = {
         })
       ]);
       const byteCount = Platform5.StringUtilities.countWtf8Bytes(result);
-      Host6.userMetrics.freestylerEvalResponseSize(byteCount);
+      Host7.userMetrics.freestylerEvalResponseSize(byteCount);
       if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
         throw new Error("Output exceeded the maximum allowed length.");
       }
@@ -7190,7 +7441,7 @@ const data = {
         error: "Error: User denied code execution with side effects."
       };
     }
-    if (this.executionMode === Root5.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
+    if (this.executionMode === Root6.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
       return {
         error: "Error: JavaScript execution is currently disabled."
       };
@@ -7215,7 +7466,7 @@ const data = {
       const result = await this.generateObservation(action, { throwOnSideEffect });
       debugLog(`Action result: ${JSON.stringify(result)}`);
       if (result.sideEffect) {
-        if (this.executionMode === Root5.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
+        if (this.executionMode === Root6.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
           return {
             error: "Error: JavaScript execution that modifies the page is currently disabled."
           };
@@ -7227,7 +7478,7 @@ const data = {
         }
         return {
           requiresApproval: true,
-          description: lockedString5("This code may modify page content. Continue?")
+          description: lockedString6("This code may modify page content. Continue?")
         };
       }
       if (result.canceled) {
@@ -7264,20 +7515,206 @@ const data = {
       result: `Annotation added for element ${elementId}: ${annotationMessage}`
     };
   }
+  async #compressScreenshot(base64Data) {
+    return await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDimension = 2e3;
+        let scale = 1;
+        if (img.width > maxDimension || img.height > maxDimension) {
+          scale = maxDimension / Math.max(img.width, img.height);
+        }
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+        resolve(dataUrl.split(",")[1]);
+      };
+      img.onerror = (e) => reject(new Error("Image load error: " + e));
+      img.src = "data:image/png;base64," + base64Data;
+    });
+  }
+  async activateDeviceEmulation(deviceName, visionDeficiency) {
+    const greenDevEmulationEnabled = Greendev2.Prototypes.instance().isEnabled("emulationCapabilities");
+    if (!greenDevEmulationEnabled) {
+      return { error: `GreenDev emulation capabilities not enabled` };
+    }
+    console.log("activateDeviceEmulation called with device:", deviceName, "visionDeficiency:", visionDeficiency);
+    this.#greenDevEmulationScreenshot = null;
+    this.#greenDevEmulationAxTree = null;
+    const emulatedDevicesList = Emulation.EmulatedDevices.EmulatedDevicesList.instance();
+    const device = emulatedDevicesList.standard().find((d) => d.title === deviceName);
+    if (!device) {
+      return {
+        error: `Could not find device "${deviceName}" in the list of emulated devices.`
+      };
+    }
+    const deviceModeModel = Emulation.DeviceModeModel.DeviceModeModel.instance();
+    const verticalMode = device.modesForOrientation(Emulation.EmulatedDevices.Vertical)[0];
+    if (!verticalMode) {
+      return {
+        error: `Could not find vertical mode for "${deviceName}".`
+      };
+    }
+    deviceModeModel.emulate(Emulation.DeviceModeModel.Type.Device, device, verticalMode);
+    const selectedNode = this.#getSelectedNode();
+    try {
+      if (selectedNode) {
+        const target = selectedNode.domModel().target();
+        const emulationModel = target.model(SDK7.EmulationModel.EmulationModel);
+        if (emulationModel) {
+          let type = "none";
+          if (visionDeficiency && visionDeficiency !== "none") {
+            type = visionDeficiency;
+          }
+          await target.emulationAgent().invoke_setEmulatedVisionDeficiency({ type });
+        }
+      } else {
+        console.error("No selected node context to retrieve EmulationModel.");
+      }
+    } catch {
+      return {
+        error: `Unable to apply vision deficiency "${visionDeficiency}".`
+      };
+    }
+    if (selectedNode) {
+      try {
+        const code = "await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))";
+        await this.#execJs(code, { throwOnSideEffect: false, contextNode: selectedNode });
+      } catch (e) {
+        console.error("Failed to wait for layout settle:", e);
+      }
+    }
+    const orientation = device.orientationByName(Emulation.EmulatedDevices.Vertical);
+    const width = orientation.width;
+    let documentHeight = 2e3;
+    if (selectedNode) {
+      try {
+        const heightJs = "document.body.scrollHeight";
+        const result = await this.#execJs(heightJs, { throwOnSideEffect: false, contextNode: selectedNode });
+        const parsedHeight = Number(result);
+        if (!isNaN(parsedHeight)) {
+          documentHeight = Math.min(parsedHeight, 2e3);
+        }
+      } catch (e) {
+        console.error("Failed to get document height:", e);
+      }
+    }
+    const clip = {
+      x: 0,
+      y: 0,
+      width,
+      height: documentHeight,
+      scale: 1
+    };
+    const screenshot = await deviceModeModel.captureScreenshot(false, clip);
+    if (!screenshot) {
+      return {
+        error: `Emulation for ${deviceName} activated, but failed to capture screenshot.`
+      };
+    }
+    try {
+      this.#greenDevEmulationScreenshot = await this.#compressScreenshot(screenshot);
+    } catch (e) {
+      console.error("Screenshot compression failed, using original", e);
+      this.#greenDevEmulationScreenshot = screenshot;
+    }
+    try {
+      if (selectedNode) {
+        const accessibilityModel = selectedNode.domModel().target().model(SDK7.AccessibilityModel.AccessibilityModel);
+        if (accessibilityModel) {
+          await accessibilityModel.resumeModel();
+          const axResponse = await accessibilityModel.agent.invoke_getFullAXTree({});
+          if (!axResponse.getError()) {
+            this.#greenDevEmulationAxTree = JSON.stringify(axResponse.nodes);
+          } else {
+            console.error("Failed to capture Accessibility Tree:", axResponse.getError());
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Exception capturing Accessibility Tree:", e);
+    }
+    let resultMsg = `Emulation for ${deviceName} activated and screenshot has been captured.`;
+    if (visionDeficiency) {
+      resultMsg += ` Vision deficiency "${visionDeficiency}" was also applied.`;
+    }
+    resultMsg += " Ready for analysis.";
+    return {
+      result: resultMsg
+    };
+  }
+  popPendingMultimodalInput() {
+    const greenDevEmulationEnabled = Greendev2.Prototypes.instance().isEnabled("emulationCapabilities");
+    if (!greenDevEmulationEnabled) {
+      return void 0;
+    }
+    if (this.#greenDevEmulationScreenshot) {
+      const data = this.#greenDevEmulationScreenshot;
+      this.#greenDevEmulationScreenshot = null;
+      return {
+        type: "screenshot",
+        input: {
+          inlineData: {
+            data,
+            mimeType: "image/jpeg"
+          }
+        },
+        id: crypto.randomUUID()
+      };
+    }
+    return void 0;
+  }
   async *handleContextDetails(selectedElement) {
     if (!selectedElement) {
       return;
     }
     yield {
       type: "context",
-      title: lockedString5(UIStringsNotTranslate3.analyzingThePrompt),
+      title: lockedString6(UIStringsNotTranslate4.analyzingThePrompt),
       details: [{
-        title: lockedString5(UIStringsNotTranslate3.dataUsed),
+        title: lockedString6(UIStringsNotTranslate4.dataUsed),
         text: await _StylingAgent.describeElement(selectedElement.getItem())
       }]
     };
   }
+  async preRun() {
+    this.#currentTurnId++;
+  }
+  async finalizeAnswer(answer) {
+    if (!Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
+      return answer;
+    }
+    const changedNodeIds = this.#changes.getChangedNodesForGroupId(this.sessionId, this.#currentTurnId);
+    if (changedNodeIds.length === 0) {
+      return answer;
+    }
+    answer.widgets = [
+      ...answer.widgets ?? [],
+      ...changedNodeIds.map((id) => ({
+        name: "STYLE_PROPERTIES",
+        data: {
+          backendNodeId: id,
+          selector: AI_ASSISTANCE_FILTER_REGEX
+        }
+      }))
+    ];
+    return answer;
+  }
   async enhanceQuery(query, selectedElement, multimodalInputType) {
+    let multimodalInputEnhancementQuery = this.multimodalInputEnabled && multimodalInputType ? MULTIMODAL_ENHANCEMENT_PROMPTS[multimodalInputType] : "";
+    if (this.#greenDevEmulationAxTree) {
+      multimodalInputEnhancementQuery += "\n# Accessibility Tree\n\n" + this.#greenDevEmulationAxTree;
+      this.#greenDevEmulationAxTree = null;
+    }
     const elementEnchancementQuery = selectedElement ? `# Inspected element
 
 ${await _StylingAgent.describeElement(selectedElement.getItem())}
@@ -7285,13 +7722,12 @@ ${await _StylingAgent.describeElement(selectedElement.getItem())}
 # User request
 
 ` : "";
-    const multimodalInputEnhancementQuery = this.multimodalInputEnabled && multimodalInputType ? MULTIMODAL_ENHANCEMENT_PROMPTS[multimodalInputType] : "";
     return `${multimodalInputEnhancementQuery}${elementEnchancementQuery}QUERY: ${query}`;
   }
 };
 
 // gen/front_end/models/ai_assistance/agents/ContextSelectionAgent.js
-var lockedString6 = i18n11.i18n.lockedString;
+var lockedString7 = i18n13.i18n.lockedString;
 var preamble5 = `
 You are a Web Development Assistant integrated into Chrome DevTools. Your tone is educational, supportive, and technically precise.
 You aim to help developers of all levels, prioritizing teaching web concepts as the primary entry point for any solution.
@@ -7321,13 +7757,13 @@ You aim to help developers of all levels, prioritizing teaching web concepts as 
 `;
 var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
   preamble = preamble5;
-  clientFeature = Host7.AidaClient.ClientFeature.CHROME_FILE_AGENT;
+  clientFeature = Host8.AidaClient.ClientFeature.CHROME_CONTEXT_SELECTION_AGENT;
   get userTier() {
-    return Root6.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root7.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get options() {
-    const temperature = Root6.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.temperature;
-    const modelId = Root6.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.modelId;
+    const temperature = Root7.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.temperature;
+    const modelId = Root7.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.modelId;
     return {
       temperature,
       modelId
@@ -7336,11 +7772,13 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
   #performanceRecordAndReload;
   #onInspectElement;
   #networkTimeCalculator;
+  #allowedOrigin;
   constructor(opts) {
     super(opts);
     this.#performanceRecordAndReload = opts.performanceRecordAndReload;
     this.#onInspectElement = opts.onInspectElement;
     this.#networkTimeCalculator = opts.networkTimeCalculator;
+    this.#allowedOrigin = opts.allowedOrigin ?? (() => void 0);
     this.declareFunction("listNetworkRequests", {
       description: `Gives a list of network requests including URL, status code, and duration.`,
       parameters: {
@@ -7352,30 +7790,30 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString6("Listing network requests\u2026"),
+          title: lockedString7("Listing network requests\u2026"),
           action: "listNetworkRequest()"
         };
       },
       handler: async () => {
         const requests = [];
-        const target = SDK8.TargetManager.TargetManager.instance().primaryPageTarget();
-        const inspectedURL = target?.inspectedURL();
-        const mainSecurityOrigin = inspectedURL ? new Common5.ParsedURL.ParsedURL(inspectedURL).securityOrigin() : null;
+        const origin = this.#allowedOrigin();
+        let hasCrossOriginRequest = false;
         for (const request of Logs2.NetworkLog.NetworkLog.instance().requests()) {
-          if (mainSecurityOrigin && request.securityOrigin() !== mainSecurityOrigin) {
+          if (origin && request.securityOrigin() !== origin) {
+            hasCrossOriginRequest = true;
             continue;
           }
           requests.push({
             id: request.requestId(),
             url: request.url(),
             statusCode: request.statusCode,
-            duration: i18n11.TimeUtilities.secondsToString(request.duration),
-            transferSize: i18n11.ByteUtilities.formatBytesToKb(request.transferSize)
+            duration: i18n13.TimeUtilities.secondsToString(request.duration),
+            transferSize: i18n13.ByteUtilities.formatBytesToKb(request.transferSize)
           });
         }
         if (requests.length === 0) {
           return {
-            error: "No requests recorded by DevTools"
+            error: hasCrossOriginRequest ? `No requests showing with origin ${origin}. Tell the user to start a new chat` : "No requests recorded by DevTools"
           };
         }
         return {
@@ -7400,7 +7838,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString6("Getting network request\u2026"),
+          title: lockedString7("Getting network request\u2026"),
           action: `selectNetworkRequest(${args.id})`
         };
       },
@@ -7431,7 +7869,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString6("Listing source requests\u2026"),
+          title: lockedString7("Listing source requests\u2026"),
           action: "listSourceFiles()"
         };
       },
@@ -7465,7 +7903,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString6("Getting source file\u2026"),
+          title: lockedString7("Getting source file\u2026"),
           action: `selectSourceFile(${args.id})`
         };
       },
@@ -7521,7 +7959,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString6("Select an element on the page or in the Elements panel")
+          title: lockedString7("Select an element on the page or in the Elements panel")
         };
       },
       handler: async (_params, options) => {
@@ -7592,15 +8030,99 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
   }
 };
 
+// gen/front_end/models/ai_assistance/agents/ConversationSummaryAgent.js
+var ConversationSummaryAgent_exports = {};
+__export(ConversationSummaryAgent_exports, {
+  ConversationSummaryAgent: () => ConversationSummaryAgent,
+  ConversationSummaryContext: () => ConversationSummaryContext
+});
+import * as Host9 from "./../../core/host/host.js";
+import * as Root8 from "./../../core/root/root.js";
+var preamble6 = `You are an expert technical assistant specializing in summarizing debugging conversations from Chrome DevTools.
+You will receive a markdown-formatted transcript of a conversation between a user and a DevTools AI assistant.
+Your goal is to produce a succinct, structured summary that a local AI agent in the user's IDE can use to apply code fixes.
+
+Focus on extracting:
+1. **Core Issue:** The primary problem or question the user was investigating.
+2. **Diagnostic Findings:** Key technical details discovered (e.g., specific functions, bottlenecks, error messages, URLs, or CSS properties).
+3. **Proposed Solution:** The specific changes or optimizations recommended by the DevTools assistant.
+4. **Actionable Steps:** A clear, step-by-step list of instructions for the IDE agent to implement the fix.
+
+Maintain a professional, technical, and extremely concise tone. Avoid conversational filler or introductory/concluding remarks.
+The output must be structured markdown.`;
+var ConversationSummaryContext = class extends ConversationContext {
+  #conversation;
+  constructor(conversation) {
+    super();
+    this.#conversation = conversation;
+  }
+  getOrigin() {
+    return "devtools://ai-assistance";
+  }
+  getItem() {
+    return this.#conversation;
+  }
+  getTitle() {
+    return "Conversation";
+  }
+};
+var ConversationSummaryAgent = class extends AiAgent {
+  preamble = preamble6;
+  get clientFeature() {
+    return Host9.AidaClient.ClientFeature.CHROME_CONVERSATION_SUMMARY_AGENT;
+  }
+  get userTier() {
+    return Root8.Runtime.hostConfig.devToolsFreestyler?.userTier;
+  }
+  get options() {
+    const temperature = Root8.Runtime.hostConfig.devToolsFreestyler?.temperature;
+    const modelId = Root8.Runtime.hostConfig.devToolsFreestyler?.modelId;
+    return {
+      temperature,
+      modelId
+    };
+  }
+  async *handleContextDetails(context) {
+    if (!context) {
+      return;
+    }
+    yield {
+      type: "context",
+      title: "Summarizing conversation",
+      details: [
+        {
+          title: "Conversation transcript",
+          text: context.getItem()
+        }
+      ]
+    };
+  }
+  async enhanceQuery(query, context) {
+    const conversation = context ? context.getItem() : query;
+    return `Summarize the following conversation:
+
+${conversation}`;
+  }
+  async summarizeConversation(conversation) {
+    const context = new ConversationSummaryContext(conversation);
+    const response = await Array.fromAsync(this.run("", { selected: context }));
+    const lastResponse = response.at(-1);
+    if (lastResponse && lastResponse.type === "answer" && lastResponse.complete === true) {
+      return lastResponse.text.trim();
+    }
+    throw new Error("Failed to summarize conversation");
+  }
+};
+
 // gen/front_end/models/ai_assistance/agents/PatchAgent.js
 var PatchAgent_exports = {};
 __export(PatchAgent_exports, {
   FileUpdateAgent: () => FileUpdateAgent,
   PatchAgent: () => PatchAgent
 });
-import * as Host8 from "./../../core/host/host.js";
-import * as Root7 from "./../../core/root/root.js";
-var preamble6 = `You are a highly skilled software engineer with expertise in web development.
+import * as Host10 from "./../../core/host/host.js";
+import * as Root9 from "./../../core/root/root.js";
+var preamble7 = `You are a highly skilled software engineer with expertise in web development.
 The user asks you to apply changes to a source code folder.
 
 # Considerations
@@ -7636,15 +8158,15 @@ var PatchAgent = class extends AiAgent {
   async *handleContextDetails(_select) {
     return;
   }
-  preamble = preamble6;
-  clientFeature = Host8.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
+  preamble = preamble7;
+  clientFeature = Host10.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
-    return Root7.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root9.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get options() {
     return {
-      temperature: Root7.Runtime.hostConfig.devToolsFreestyler?.temperature,
-      modelId: Root7.Runtime.hostConfig.devToolsFreestyler?.modelId
+      temperature: Root9.Runtime.hostConfig.devToolsFreestyler?.temperature,
+      modelId: Root9.Runtime.hostConfig.devToolsFreestyler?.modelId
     };
   }
   get agentProject() {
@@ -7818,15 +8340,15 @@ var FileUpdateAgent = class extends AiAgent {
   async *handleContextDetails(_select) {
     return;
   }
-  preamble = preamble6;
-  clientFeature = Host8.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
+  preamble = preamble7;
+  clientFeature = Host10.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
-    return Root7.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root9.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get options() {
     return {
-      temperature: Root7.Runtime.hostConfig.devToolsFreestyler?.temperature,
-      modelId: Root7.Runtime.hostConfig.devToolsFreestyler?.modelId
+      temperature: Root9.Runtime.hostConfig.devToolsFreestyler?.temperature,
+      modelId: Root9.Runtime.hostConfig.devToolsFreestyler?.modelId
     };
   }
 };
@@ -7836,16 +8358,16 @@ var PerformanceAnnotationsAgent_exports = {};
 __export(PerformanceAnnotationsAgent_exports, {
   PerformanceAnnotationsAgent: () => PerformanceAnnotationsAgent
 });
-import * as Host9 from "./../../core/host/host.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Root8 from "./../../core/root/root.js";
+import * as Host11 from "./../../core/host/host.js";
+import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as Root10 from "./../../core/root/root.js";
 var UIStringsNotTranslated2 = {
   analyzingCallTree: "Analyzing call tree"
   /**
    * @description Shown when the agent is investigating network activity
    */
 };
-var lockedString7 = i18n13.i18n.lockedString;
+var lockedString8 = i18n15.i18n.lockedString;
 var callTreePreamble = `You are an expert performance analyst embedded within Chrome DevTools.
 You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
 You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
@@ -7910,14 +8432,14 @@ Consider optimizing the position calculation logic or reducing the frequency of 
 var PerformanceAnnotationsAgent = class extends AiAgent {
   preamble = callTreePreamble;
   get clientFeature() {
-    return Host9.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
+    return Host11.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
   }
   get userTier() {
-    return Root8.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
+    return Root10.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
   }
   get options() {
-    const temperature = Root8.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
-    const modelId = Root8.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
+    const temperature = Root10.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
+    const modelId = Root10.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
     return {
       temperature,
       modelId
@@ -7934,7 +8456,7 @@ var PerformanceAnnotationsAgent = class extends AiAgent {
     const callTree = focus.callTree;
     yield {
       type: "context",
-      title: lockedString7(UIStringsNotTranslated2.analyzingCallTree),
+      title: lockedString8(UIStringsNotTranslated2.analyzingCallTree),
       details: [
         {
           title: "Selected call tree",
@@ -7995,30 +8517,29 @@ __export(AiConversation_exports, {
   NOT_FOUND_IMAGE_DATA: () => NOT_FOUND_IMAGE_DATA,
   generateContextDetailsMarkdown: () => generateContextDetailsMarkdown
 });
-import * as Host10 from "./../../core/host/host.js";
-import * as Root9 from "./../../core/root/root.js";
-import * as SDK9 from "./../../core/sdk/sdk.js";
-import * as Trace7 from "./../trace/trace.js";
-import * as Greendev2 from "./../greendev/greendev.js";
-import * as NetworkTimeCalculator4 from "./../network_time_calculator/network_time_calculator.js";
+import * as Common6 from "./../../core/common/common.js";
+import * as Host12 from "./../../core/host/host.js";
+import * as Root11 from "./../../core/root/root.js";
+import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as Greendev3 from "./../greendev/greendev.js";
 
 // gen/front_end/models/ai_assistance/AiHistoryStorage.js
 var AiHistoryStorage_exports = {};
 __export(AiHistoryStorage_exports, {
   AiHistoryStorage: () => AiHistoryStorage
 });
-import * as Common6 from "./../../core/common/common.js";
+import * as Common5 from "./../../core/common/common.js";
 var instance = null;
 var DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
-var AiHistoryStorage = class _AiHistoryStorage extends Common6.ObjectWrapper.ObjectWrapper {
+var AiHistoryStorage = class _AiHistoryStorage extends Common5.ObjectWrapper.ObjectWrapper {
   #historySetting;
   #imageHistorySettings;
-  #mutex = new Common6.Mutex.Mutex();
+  #mutex = new Common5.Mutex.Mutex();
   #maxStorageSize;
   constructor(maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
     super();
-    this.#historySetting = Common6.Settings.Settings.instance().createSetting("ai-assistance-history-entries", []);
-    this.#imageHistorySettings = Common6.Settings.Settings.instance().createSetting("ai-assistance-history-images", []);
+    this.#historySetting = Common5.Settings.Settings.instance().createSetting("ai-assistance-history-entries", []);
+    this.#imageHistorySettings = Common5.Settings.Settings.instance().createSetting("ai-assistance-history-images", []);
     this.#maxStorageSize = maxStorageSize;
   }
   clearForTest() {
@@ -8152,7 +8673,7 @@ var AiConversation = class _AiConversation {
   #performanceRecordAndReload;
   #onInspectElement;
   #networkTimeCalculator;
-  constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, aidaClient = new Host10.AidaClient.AidaClient(), changeManager, isExternal = false, performanceRecordAndReload, onInspectElement, networkTimeCalculator) {
+  constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, aidaClient = new Host12.AidaClient.AidaClient(), changeManager, isExternal = false, performanceRecordAndReload, onInspectElement, networkTimeCalculator) {
     this.#changeManager = changeManager;
     this.#aidaClient = aidaClient;
     this.#performanceRecordAndReload = performanceRecordAndReload;
@@ -8226,6 +8747,10 @@ var AiConversation = class _AiConversation {
   }
   get selectedContext() {
     return this.#contexts.at(0);
+  }
+  getPendingMultimodalInput() {
+    const greenDevEmulationEnabled = Greendev3.Prototypes.instance().isEnabled("emulationCapabilities");
+    return greenDevEmulationEnabled ? this.#agent.popPendingMultimodalInput() : void 0;
   }
   #reconstructHistory(historyWithoutImages) {
     const imageHistory = AiHistoryStorage.instance().getImageHistory();
@@ -8327,16 +8852,23 @@ ${item.text.trim()}`);
     return {
       id: this.id,
       history: this.history.map((item) => {
-        if (item.type === "context-change") {
-          return null;
+        switch (item.type) {
+          case "context-change": {
+            return null;
+          }
+          case "user-query": {
+            return { ...item, imageInput: void 0 };
+          }
+          case "side-effect": {
+            return { ...item, confirm: void 0 };
+          }
+          case "context":
+          case "action": {
+            return { ...item, widgets: void 0 };
+          }
+          default:
+            return item;
         }
-        if (item.type === "user-query") {
-          return { ...item, imageInput: void 0 };
-        }
-        if (item.type === "side-effect") {
-          return { ...item, confirm: void 0 };
-        }
-        return item;
       }).filter((history) => !!history),
       type: this.#type,
       isExternal: this.#isExternal
@@ -8361,6 +8893,7 @@ ${item.text.trim()}`);
       performanceRecordAndReload: this.#performanceRecordAndReload,
       onInspectElement: this.#onInspectElement,
       networkTimeCalculator: this.#networkTimeCalculator,
+      allowedOrigin: this.allowedOrigin,
       history
     };
     switch (type) {
@@ -8381,7 +8914,7 @@ ${item.text.trim()}`);
         break;
       }
       case "breakpoint": {
-        const breakpointAgentEnabled = Greendev2.Prototypes.instance().isEnabled("breakpointDebuggerAgent");
+        const breakpointAgentEnabled = Greendev3.Prototypes.instance().isEnabled("breakpointDebuggerAgent");
         if (breakpointAgentEnabled) {
           this.#agent = new BreakpointDebuggerAgent(options);
         }
@@ -8390,72 +8923,6 @@ ${item.text.trim()}`);
       case "none": {
         this.#agent = new ContextSelectionAgent(options);
         break;
-      }
-    }
-  }
-  #factsCache = /* @__PURE__ */ new Map();
-  async #createFactsForExtraContext(contexts) {
-    for (const context of contexts) {
-      const cached = this.#factsCache.get(context);
-      if (cached) {
-        this.#agent.addFact(cached);
-        continue;
-      }
-      if (context instanceof SDK9.DOMModel.DOMNode) {
-        const desc = await StylingAgent.describeElement(context);
-        const fact = {
-          text: `Relevant HTML element:
-${desc}`,
-          metadata: {
-            source: "devtools-floaty",
-            score: 1
-          }
-        };
-        this.#factsCache.set(context, fact);
-        this.#agent.addFact(fact);
-      } else if (context instanceof SDK9.NetworkRequest.NetworkRequest) {
-        const calculator = new NetworkTimeCalculator4.NetworkTransferTimeCalculator();
-        calculator.updateBoundaries(context);
-        const formatter = new NetworkRequestFormatter(context, calculator);
-        const desc = await formatter.formatNetworkRequest();
-        const fact = {
-          text: `Relevant network request:
-${desc}`,
-          metadata: {
-            source: "devtools-floaty",
-            score: 1
-          }
-        };
-        this.#factsCache.set(context, fact);
-        this.#agent.addFact(fact);
-      } else if ("insight" in context) {
-        const focus = AgentFocus.fromInsight(context.trace, context.insight);
-        const formatter = new PerformanceInsightFormatter(focus, context.insight);
-        const text = `Relevant Performance Insight:
-${formatter.formatInsight()}`;
-        const fact = {
-          text,
-          metadata: {
-            source: "devtools-floaty",
-            score: 1
-          }
-        };
-        this.#factsCache.set(context, fact);
-        this.#agent.addFact(fact);
-      } else {
-        const time = Trace7.Types.Timing.Micro(context.event.ts - context.traceStartTime);
-        const desc = `Trace event: ${context.event.name}
-Time: ${micros(time)}`;
-        const fact = {
-          text: `Relevant trace event:
-${desc}`,
-          metadata: {
-            source: "devtools-floaty",
-            score: 1
-          }
-        };
-        this.#factsCache.set(context, fact);
-        this.#agent.addFact(fact);
       }
     }
   }
@@ -8471,13 +8938,6 @@ ${desc}`,
     };
     void this.addHistoryItem(userQuery);
     yield userQuery;
-    if (options.extraContext) {
-      await this.#createFactsForExtraContext(options.extraContext);
-    }
-    this.#setOriginIfEmpty(this.selectedContext?.getOrigin());
-    if (this.isBlockedByOrigin) {
-      throw new Error("Cross-origin context data should not be included");
-    }
     yield* this.#runAgent(initialQuery, options);
   }
   #getQueryAfterSelection(initialQuery, selection) {
@@ -8485,6 +8945,14 @@ ${desc}`,
 Original user query: ${initialQuery}`;
   }
   async *#runAgent(initialQuery, options = {}) {
+    this.#setOriginIfEmpty(this.selectedContext?.getOrigin());
+    if (this.isBlockedByOrigin) {
+      yield {
+        type: "error",
+        error: "cross-origin"
+      };
+      return;
+    }
     function shouldAddToHistory(data) {
       if (data.type === "context-change") {
         return false;
@@ -8523,12 +8991,21 @@ Original user query: ${initialQuery}`;
   get type() {
     return this.#type;
   }
+  allowedOrigin = () => {
+    if (this.#origin) {
+      return this.#origin;
+    }
+    const target = SDK8.TargetManager.TargetManager.instance().primaryPageTarget();
+    const inspectedURL = target?.inspectedURL();
+    this.#origin = inspectedURL ? new Common6.ParsedURL.ParsedURL(inspectedURL).securityOrigin() : void 0;
+    return this.#origin;
+  };
 };
 function isAiAssistanceServerSideLoggingEnabled() {
-  return !Root9.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+  return !Root11.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
 function isAiAssistanceContextSelectionAgentEnabled() {
-  return Boolean(Root9.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
+  return Boolean(Root11.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
 }
 
 // gen/front_end/models/ai_assistance/AiUtils.js
@@ -8539,9 +9016,9 @@ __export(AiUtils_exports, {
   isGeminiBranding: () => isGeminiBranding
 });
 import * as Common7 from "./../../core/common/common.js";
-import * as Host11 from "./../../core/host/host.js";
-import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as Root10 from "./../../core/root/root.js";
+import * as Host13 from "./../../core/host/host.js";
+import * as i18n17 from "./../../core/i18n/i18n.js";
+import * as Root12 from "./../../core/root/root.js";
 var UIStrings = {
   /**
    * @description Message shown to the user if the age check is not successful.
@@ -8560,11 +9037,11 @@ var UIStrings = {
    */
   notAvailableInIncognitoMode: "AI assistance is not available in Incognito mode or Guest mode."
 };
-var str_ = i18n15.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
-var i18nString = i18n15.i18n.getLocalizedString.bind(void 0, str_);
+var str_ = i18n17.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
+var i18nString = i18n17.i18n.getLocalizedString.bind(void 0, str_);
 function getDisabledReasons(aidaAvailability) {
   const reasons = [];
-  if (Root10.Runtime.hostConfig.isOffTheRecord) {
+  if (Root12.Runtime.hostConfig.isOffTheRecord) {
     reasons.push(i18nString(UIStrings.notAvailableInIncognitoMode));
   }
   switch (aidaAvailability) {
@@ -8576,7 +9053,7 @@ function getDisabledReasons(aidaAvailability) {
     case "no-internet":
       reasons.push(i18nString(UIStrings.offline));
     case "available": {
-      if (Root10.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
+      if (Root12.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
         reasons.push(i18nString(UIStrings.ageRestricted));
       }
     }
@@ -8585,7 +9062,7 @@ function getDisabledReasons(aidaAvailability) {
   return reasons;
 }
 function isGeminiBranding() {
-  return !!Root10.Runtime.hostConfig.devToolsGeminiRebranding?.enabled;
+  return !!Root12.Runtime.hostConfig.devToolsGeminiRebranding?.enabled;
 }
 function getIconName() {
   return isGeminiBranding() ? "spark" : "smart-assistant";
@@ -8597,8 +9074,8 @@ __export(BuiltInAi_exports, {
   BuiltInAi: () => BuiltInAi
 });
 import * as Common8 from "./../../core/common/common.js";
-import * as Host12 from "./../../core/host/host.js";
-import * as Root11 from "./../../core/root/root.js";
+import * as Host14 from "./../../core/host/host.js";
+import * as Root13 from "./../../core/root/root.js";
 var builtInAiInstance;
 var BuiltInAi = class _BuiltInAi extends Common8.ObjectWrapper.ObjectWrapper {
   #availability = null;
@@ -8619,7 +9096,7 @@ var BuiltInAi = class _BuiltInAi extends Common8.ObjectWrapper.ObjectWrapper {
     this.initDoneForTesting = this.getLanguageModelAvailability().then(() => this.#sendAvailabilityMetrics()).then(() => this.initialize());
   }
   async getLanguageModelAvailability() {
-    if (!Root11.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.enabled) {
+    if (!Root13.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.enabled) {
       this.#availability = "disabled";
       return this.#availability;
     }
@@ -8643,7 +9120,7 @@ var BuiltInAi = class _BuiltInAi extends Common8.ObjectWrapper.ObjectWrapper {
     return this.#availability === "downloading";
   }
   isEventuallyAvailable() {
-    if (!this.#hasGpu && !Boolean(Root11.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu)) {
+    if (!this.#hasGpu && !Boolean(Root13.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu)) {
       return false;
     }
     return this.#availability === "available" || this.#availability === "downloading" || this.#availability === "downloadable";
@@ -8656,7 +9133,7 @@ var BuiltInAi = class _BuiltInAi extends Common8.ObjectWrapper.ObjectWrapper {
     return this.#downloadProgress;
   }
   startDownloadingModel() {
-    if (!Root11.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
+    if (!Root13.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
       return;
     }
     if (this.#availability !== "downloadable") {
@@ -8691,7 +9168,7 @@ var BuiltInAi = class _BuiltInAi extends Common8.ObjectWrapper.ObjectWrapper {
     return Boolean(this.#consoleInsightsSession);
   }
   async initialize() {
-    if (!Root11.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
+    if (!Root13.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
       return;
     }
     if (this.#availability !== "available" && this.#availability !== "downloading") {
@@ -8778,31 +9255,31 @@ Your instructions are as follows:
     if (this.#hasGpu) {
       switch (this.#availability) {
         case "unavailable":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             0
             /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_HAS_GPU */
           );
           break;
         case "downloadable":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             1
             /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_HAS_GPU */
           );
           break;
         case "downloading":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             2
             /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_HAS_GPU */
           );
           break;
         case "available":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             3
             /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_HAS_GPU */
           );
           break;
         case "disabled":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             4
             /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_HAS_GPU */
           );
@@ -8811,31 +9288,31 @@ Your instructions are as follows:
     } else {
       switch (this.#availability) {
         case "unavailable":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             5
             /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_NO_GPU */
           );
           break;
         case "downloadable":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             6
             /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_NO_GPU */
           );
           break;
         case "downloading":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             7
             /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_NO_GPU */
           );
           break;
         case "available":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             8
             /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_NO_GPU */
           );
           break;
         case "disabled":
-          Host12.userMetrics.builtInAiAvailability(
+          Host14.userMetrics.builtInAiAvailability(
             9
             /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_NO_GPU */
           );
@@ -8851,21 +9328,21 @@ __export(ConversationHandler_exports, {
   ConversationHandler: () => ConversationHandler
 });
 import * as Common9 from "./../../core/common/common.js";
-import * as Host13 from "./../../core/host/host.js";
-import * as i18n17 from "./../../core/i18n/i18n.js";
+import * as Host15 from "./../../core/host/host.js";
+import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
-import * as Root12 from "./../../core/root/root.js";
-import * as SDK10 from "./../../core/sdk/sdk.js";
-import * as NetworkTimeCalculator5 from "./../network_time_calculator/network_time_calculator.js";
-var UIStringsNotTranslate4 = {
+import * as Root14 from "./../../core/root/root.js";
+import * as SDK9 from "./../../core/sdk/sdk.js";
+import * as NetworkTimeCalculator4 from "./../network_time_calculator/network_time_calculator.js";
+var UIStringsNotTranslate5 = {
   /**
    * @description Error message shown when AI assistance is not enabled in DevTools settings.
    */
   enableInSettings: "For AI features to be available, you need to enable AI assistance in DevTools settings."
 };
-var lockedString8 = i18n17.i18n.lockedString;
+var lockedString9 = i18n19.i18n.lockedString;
 function isAiAssistanceServerSideLoggingEnabled2() {
-  return !Root12.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+  return !Root14.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
 async function inspectElementBySelector(selector) {
   const whitespaceTrimmedQuery = selector.trim();
@@ -8873,7 +9350,7 @@ async function inspectElementBySelector(selector) {
     return null;
   }
   const showUAShadowDOM = Common9.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
-  const domModels = SDK10.TargetManager.TargetManager.instance().models(SDK10.DOMModel.DOMModel, { scoped: true });
+  const domModels = SDK9.TargetManager.TargetManager.instance().models(SDK9.DOMModel.DOMModel, { scoped: true });
   const performSearchPromises = domModels.map((domModel) => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
   const resultCounts = await Promise.all(performSearchPromises);
   const index = resultCounts.findIndex((value) => value > 0);
@@ -8883,7 +9360,7 @@ async function inspectElementBySelector(selector) {
   return null;
 }
 async function inspectNetworkRequestByUrl(selector) {
-  const networkManagers = SDK10.TargetManager.TargetManager.instance().models(SDK10.NetworkManager.NetworkManager, { scoped: true });
+  const networkManagers = SDK9.TargetManager.TargetManager.instance().models(SDK9.NetworkManager.NetworkManager, { scoped: true });
   const results = networkManagers.map((networkManager) => {
     let request2 = networkManager.requestForURL(Platform6.DevToolsPath.urlString`${selector}`);
     if (!request2 && selector.at(-1) === "/") {
@@ -8909,8 +9386,8 @@ var ConversationHandler = class _ConversationHandler extends Common9.ObjectWrapp
   }
   static instance(opts) {
     if (opts?.forceNew || conversationHandlerInstance === void 0) {
-      const aidaClient = opts?.aidaClient ?? new Host13.AidaClient.AidaClient();
-      conversationHandlerInstance = new _ConversationHandler(aidaClient, opts?.aidaAvailability ?? void 0);
+      const aidaClient = opts?.aidaClient ?? new Host15.AidaClient.AidaClient();
+      conversationHandlerInstance = new _ConversationHandler(aidaClient, opts?.aidaAvailability);
     }
     return conversationHandlerInstance;
   }
@@ -8929,7 +9406,7 @@ var ConversationHandler = class _ConversationHandler extends Common9.ObjectWrapp
   }
   async #getDisabledReasons() {
     if (this.#aidaAvailability === void 0) {
-      this.#aidaAvailability = await Host13.AidaClient.AidaClient.checkAccessPreconditions();
+      this.#aidaAvailability = await Host15.AidaClient.AidaClient.checkAccessPreconditions();
     }
     return getDisabledReasons(this.#aidaAvailability);
   }
@@ -8953,7 +9430,7 @@ var ConversationHandler = class _ConversationHandler extends Common9.ObjectWrapp
       const disabledReasons = await this.#getDisabledReasons();
       const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
       if (!aiAssistanceSetting) {
-        disabledReasons.push(lockedString8(UIStringsNotTranslate4.enableInSettings));
+        disabledReasons.push(lockedString9(UIStringsNotTranslate5.enableInSettings));
       }
       if (disabledReasons.length > 0) {
         return this.#generateErrorResponse(disabledReasons.join(" "));
@@ -9054,7 +9531,7 @@ var ConversationHandler = class _ConversationHandler extends Common9.ObjectWrapp
     if (!request) {
       return this.#generateErrorResponse(`Can't find request with the given selector ${requestUrl}`);
     }
-    const calculator = new NetworkTimeCalculator5.NetworkTransferTimeCalculator();
+    const calculator = new NetworkTimeCalculator4.NetworkTransferTimeCalculator();
     calculator.updateBoundaries(request);
     return this.#createAndDoExternalConversation({
       conversationType: "drjones-network-request",
@@ -9068,6 +9545,7 @@ export {
   AICallTree_exports as AICallTree,
   AIContext_exports as AIContext,
   AIQueries_exports as AIQueries,
+  AccessibilityAgent_exports as AccessibilityAgent,
   AgentProject_exports as AgentProject,
   AiAgent_exports as AiAgent,
   AiConversation_exports as AiConversation,
@@ -9078,6 +9556,7 @@ export {
   ChangeManager_exports as ChangeManager,
   ContextSelectionAgent_exports as ContextSelectionAgent,
   ConversationHandler_exports as ConversationHandler,
+  ConversationSummaryAgent_exports as ConversationSummaryAgent,
   debug_exports as Debug,
   EvaluateAction_exports as EvaluateAction,
   ExtensionScope_exports as ExtensionScope,

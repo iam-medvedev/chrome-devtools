@@ -583,6 +583,7 @@ var UIStrings3 = {
 var str_3 = i18n5.i18n.registerUIStrings("panels/changes/ChangesView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var { render: render3, html: html3 } = Lit3;
+var { widget } = UI3.Widget;
 var DEFAULT_VIEW3 = (input, _output, target) => {
   const onSidebar = (sidebar) => {
     sidebar.addEventListener("SelectedUISourceCodeChanged", () => input.onSelect(sidebar.selectedUISourceCode()));
@@ -596,32 +597,28 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
         <div class=vbox slot="main">
           <devtools-widget
             ?hidden=${input.workspaceDiff.modifiedUISourceCodes().length > 0}
-            .widgetConfig=${UI3.Widget.widgetConfig(UI3.EmptyWidget.EmptyWidget, {
+            ${widget(UI3.EmptyWidget.EmptyWidget, {
       header: i18nString3(UIStrings3.noChanges),
       text: i18nString3(UIStrings3.changesViewDescription),
       link: CHANGES_VIEW_URL
     })}>
           </devtools-widget>
           <div class=diff-container role=tabpanel ?hidden=${input.workspaceDiff.modifiedUISourceCodes().length === 0}>
-            <devtools-widget .widgetConfig=${UI3.Widget.widgetConfig(CombinedDiffView, {
+            ${widget(CombinedDiffView, {
       selectedFileUrl: input.selectedSourceCode?.url(),
       workspaceDiff: input.workspaceDiff
-    })}></devtools-widget>
+    })}
           </div>
           ${hasCopyToPrompt ? html3`
             <devtools-widget class="copy-to-prompt"
-              .widgetConfig=${UI3.Widget.widgetConfig(PanelsCommon.CopyChangesToPrompt, {
+              ${widget(PanelsCommon.CopyChangesToPrompt, {
       workspaceDiff: input.workspaceDiff,
       patchAgentCSSChange: null
     })}
             ></devtools-widget>
           ` : Lit3.nothing}
         </div>
-        <devtools-widget
-          slot="sidebar"
-          .widgetConfig=${UI3.Widget.widgetConfig(ChangesSidebar, {
-      workspaceDiff: input.workspaceDiff
-    })}
+        <devtools-widget slot="sidebar" ${widget(ChangesSidebar, { workspaceDiff: input.workspaceDiff })}
           ${UI3.Widget.widgetRef(ChangesSidebar, onSidebar)}>
         </devtools-widget>
       </devtools-split-view>`,

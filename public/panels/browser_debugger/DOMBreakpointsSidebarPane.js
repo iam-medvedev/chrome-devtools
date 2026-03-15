@@ -99,6 +99,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 const DOM_BREAKPOINT_DOCUMENTATION_URL = 'https://developer.chrome.com/docs/devtools/javascript/breakpoints#dom';
 const { html, render, Directives } = Lit;
+const { widget } = UI.Widget;
 export const DEFAULT_VIEW = (input, _output, target) => {
     const hasBreakpoints = input.breakpoints.length > 0;
     // clang-format off
@@ -138,11 +139,11 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     })}
           </ul>` : html `<div class="placeholder">
             <div class="gray-info-message">${i18nString(UIStrings.noBreakpoints)}</div>
-            <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(UI.EmptyWidget.EmptyWidget, {
+            ${widget(UI.EmptyWidget.EmptyWidget, {
         header: i18nString(UIStrings.noBreakpoints),
         text: i18nString(UIStrings.domBreakpointsDescription),
         link: DOM_BREAKPOINT_DOCUMENTATION_URL,
-    })}></devtools-widget>
+    })}
           </div>`}
       </div>
     `, target);

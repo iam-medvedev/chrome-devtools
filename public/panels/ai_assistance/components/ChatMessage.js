@@ -18,10 +18,13 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Elements from '../../elements/elements.js';
+import * as TimelineComponents from '../../timeline/components/components.js';
+import * as TimelineUtils from '../../timeline/utils/utils.js';
 import chatMessageStyles from './chatMessage.css.js';
 import { walkthroughTitle, WalkthroughView } from './WalkthroughView.js';
 const { html, Directives: { ref, ifDefined } } = Lit;
 const lockedString = i18n.i18n.lockedString;
+const { widget } = UI.Widget;
 const REPORT_URL = 'https://crbug.com/364805393';
 const SCROLL_ROUNDING_OFFSET = 1;
 /*
@@ -85,6 +88,10 @@ const UIStringsNotTranslate = {
      */
     maxStepsError: 'Seems like I am stuck with the investigation. It would be better if you start over.',
     /**
+     * @description The error message when the LLM selects context from a different origin.
+     */
+    crossOriginError: 'I have selected the new context but you will have to start a new chat.',
+    /**
      * @description Displayed when the user stop the response
      */
     stoppedResponse: 'You stopped this response',
@@ -104,10 +111,6 @@ const UIStringsNotTranslate = {
      * @description Gemini (do not translate)
      */
     gemini: 'Gemini',
-    /**
-     * @description The fallback text when we can't find the user full name
-     */
-    you: 'You',
     /**
      * @description The fallback text when a step has no title yet
      */
@@ -141,10 +144,6 @@ const UIStringsNotTranslate = {
      */
     imageInputSentToTheModel: 'Image input sent to the model',
     /**
-     * @description Alt text for the account avatar.
-     */
-    accountAvatar: 'Account avatar',
-    /**
      * @description Title for the link which wraps the image input rendered in chat messages.
      */
     openImageInNewTab: 'Open image in a new tab',
@@ -164,13 +163,6 @@ const UIStringsNotTranslate = {
 export const DEFAULT_VIEW = (input, output, target) => {
     const message = input.message;
     if (message.entity === "user" /* ChatMessageEntity.USER */) {
-        const givenName = AiAssistanceModel.AiUtils.isGeminiBranding() ? input.userInfo.accountGivenName : '';
-        const name = givenName || input.userInfo.accountFullName || lockedString(UIStringsNotTranslate.you);
-        const image = input.userInfo.accountImage ?
-            html `<img src="data:image/png;base64, ${input.userInfo.accountImage}" alt=${UIStringsNotTranslate.accountAvatar} />` :
-            html `<devtools-icon
-          name="profile"
-        ></devtools-icon>`;
         const imageInput = message.imageInput && 'inlineData' in message.imageInput ?
             renderImageChatMessage(message.imageInput.inlineData) :
             Lit.nothing;
@@ -182,12 +174,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
         class="chat-message query ${input.isLastMessage ? 'is-last-message' : ''}"
         jslog=${VisualLogging.section('question')}
       >
-        <div class="message-info">
-          ${image}
-          <div class="message-name">
-            <h2>${name}</h2>
-          </div>
-        </div>
         ${imageInput}
         <div class="message-content">${renderTextAsMarkdown(message.text, input.markdownRenderer)}</div>
       </section>
@@ -217,6 +203,9 @@ export const DEFAULT_VIEW = (input, output, target) => {
         const isLastPart = index === message.parts.length - 1;
         if (part.type === 'answer') {
             return html `<p>${renderTextAsMarkdown(part.text, input.markdownRenderer, { animate: !input.isReadOnly && input.isLoading && isLastPart && input.isLastMessage })}</p>`;
+        }
+        if (part.type === 'widget') {
+            return html `${Lit.Directives.until(renderWidgets(part.widgets, { wrapperClass: 'main-widgets-wrapper' }))}`;
         }
         if (!aiAssistanceV2 && part.type === 'step') {
             return renderStep({
@@ -326,13 +315,16 @@ function renderStepDetails({ step, markdownRenderer, isLast, }) {
   </div>`;
     // clang-format on
 }
-function renderWalkthroughSidebarButton(input, lastStep) {
+function renderWalkthroughSidebarButton(input, steps) {
     const { message, walkthrough } = input;
-    if (walkthrough.isInlined) {
+    const lastStep = steps.at(-1);
+    if (walkthrough.isInlined || !lastStep) {
         return Lit.nothing;
     }
+    const hasOneStepWithWidget = steps.some(step => step.widgets?.length);
     const title = walkthroughTitle({
         isLoading: input.isLoading,
+        hasWidgets: hasOneStepWithWidget,
         lastStep,
     });
     // clang-format off
@@ -346,7 +338,7 @@ function renderWalkthroughSidebarButton(input, lastStep) {
         .jslogContext=${walkthrough.isExpanded ? 'ai-hide-walkthrough-sidebar' : 'ai-show-walkthrough-sidebar'}
         data-show-walkthrough
         @click=${() => {
-        if (walkthrough.isExpanded) {
+        if (walkthrough.activeMessage === input.message && walkthrough.isExpanded) {
             walkthrough.onToggle(false);
         }
         else {
@@ -376,7 +368,7 @@ function renderWalkthroughUI(input, steps) {
     const sideEffectSteps = steps.filter(s => s.requestApproval);
     // If the walkthrough is in the sidebar, we render a button into the
     // ChatView to open it.
-    const openWalkThroughSidebarButton = !input.walkthrough.isInlined ? renderWalkthroughSidebarButton(input, lastStep) : Lit.nothing;
+    const openWalkThroughSidebarButton = !input.walkthrough.isInlined ? renderWalkthroughSidebarButton(input, steps) : Lit.nothing;
     // If there are side-effect steps, and the walkthrough is not open, we render
     // those inline so that the user can see them and approve them.
     // Note: this is a temporary approach and needs more UX discussion; b/487921578
@@ -393,18 +385,20 @@ function renderWalkthroughUI(input, steps) {
     // clang-format on
     // If the walkthrough is inlined (narrow width screens), render it here.
     // Note that we force it open if there is a side-effect.
+    const isExpanded = (input.walkthrough.isExpanded && input.walkthrough.activeMessage === input.message) ||
+        steps.some(s => s.requestApproval);
     // clang-format off
     const walkthroughInline = input.walkthrough.isInlined ? html `
     <div class="walkthrough-container">
-      <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(WalkthroughView, {
+      ${widget(WalkthroughView, {
         message: input.message,
         isLoading: input.isLoading && input.isLastMessage,
         markdownRenderer: input.markdownRenderer,
         isInlined: true,
-        isExpanded: input.isLastMessage &&
-            (input.walkthrough.isExpanded || steps.some(step => Boolean(step.requestApproval))),
+        isExpanded,
         onToggle: input.walkthrough.onToggle,
-    })}></devtools-widget>
+        onOpen: input.walkthrough.onOpen,
+    })}
     </div>
   ` : Lit.nothing;
     return html `
@@ -438,7 +432,6 @@ function renderStepBadge({ step, isLoading, isLast }) {
     ></devtools-icon>`;
 }
 export function renderStep({ step, isLoading, markdownRenderer, isLast }) {
-    const shouldRenderWidgets = Boolean(step.widgets?.length && Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
     const stepClasses = Lit.Directives.classMap({
         step: true,
         empty: !step.thought && !step.code && !step.contextDetails && !step.requestApproval,
@@ -462,37 +455,69 @@ export function renderStep({ step, isLoading, markdownRenderer, isLast }) {
       </summary>
       ${renderStepDetails({ step, markdownRenderer, isLast })}
     </details>
-    ${shouldRenderWidgets ? html `
-      <div class="step-widgets-wrapper">
-        ${Lit.Directives.until(renderStepWidgets(step))}
-      </div>` : Lit.nothing}`;
+    ${Lit.Directives.until(renderWidgets(step.widgets, { wrapperClass: 'step-widgets-wrapper' }))}
+    `;
     // clang-format on
 }
-async function makeComputedStyleWidget(widgetData) {
+const nodeCache = new Map();
+async function resolveNode(backendNodeId) {
+    const cachedNode = nodeCache.get(backendNodeId);
+    if (cachedNode) {
+        return cachedNode;
+    }
     const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!target) {
         return null;
     }
-    const node = new SDK.DOMModel.DeferredDOMNode(target, widgetData.data.backendNodeId);
+    const node = new SDK.DOMModel.DeferredDOMNode(target, backendNodeId);
     const resolved = await node.resolvePromise();
-    if (!resolved) {
+    if (resolved) {
+        nodeCache.set(backendNodeId, resolved);
+    }
+    return resolved;
+}
+async function makeComputedStyleWidget(widgetData) {
+    const domNodeForId = await resolveNode(widgetData.data.backendNodeId);
+    if (!domNodeForId) {
         return null;
     }
-    const model = new ComputedStyle.ComputedStyleModel.ComputedStyleModel(resolved);
-    const styles = new ComputedStyle.ComputedStyleModel.ComputedStyle(resolved, widgetData.data.computedStyles);
-    const widgetConfig = UI.Widget.widgetConfig(Elements.ComputedStyleWidget.ComputedStyleWidget, {
+    const styles = new ComputedStyle.ComputedStyleModel.ComputedStyle(domNodeForId, widgetData.data.computedStyles);
+    // clang-format off
+    const renderedWidget = html `<devtools-widget
+      class="computed-styles-widget" ${widget(Elements.ComputedStyleWidget.ComputedStyleWidget, {
         nodeStyle: styles,
         matchedStyles: widgetData.data.matchedCascade,
         // This disables showing the nested traces and detailed information in the widget.
         propertyTraces: null,
-        computedStyleModel: model,
         allowUserControl: false,
         filterText: new RegExp(widgetData.data.properties.join('|'), 'i')
-    });
-    // clang-format off
-    const widget = html `<devtools-widget class="computed-styles-widget" .widgetConfig=${widgetConfig}></devtools-widget>`;
+    })}></devtools-widget>`;
     // clang-format on
-    return { renderedWidget: widget, revealable: new Elements.ElementsPanel.NodeComputedStyles(resolved) };
+    return { renderedWidget, revealable: new Elements.ElementsPanel.NodeComputedStyles(domNodeForId) };
+}
+async function makeCoreVitalsWidget(widgetData) {
+    // clang-format off
+    const renderedWidget = html `<devtools-widget
+      class="core-vitals-widget" ${widget(TimelineComponents.CWVMetrics.CWVMetrics, { data: widgetData.data })}>
+  </devtools-widget>`;
+    // clang-format on
+    return { renderedWidget, revealable: new TimelineUtils.Helpers.RevealableCoreVitals(widgetData.data.insightSetKey) };
+}
+async function makeStylePropertiesWidget(widgetData) {
+    const domNodeForId = await resolveNode(widgetData.data.backendNodeId);
+    if (!domNodeForId) {
+        return null;
+    }
+    // clang-format off
+    const renderedWidget = html `<devtools-widget
+      class="styling-preview-widget"
+      ${widget(Elements.StandaloneStylesContainer.StandaloneStylesContainer, {
+        domNode: domNodeForId,
+        filter: widgetData.data.selector ? new RegExp(widgetData.data.selector) : null,
+    })}>
+  </devtools-widget>`;
+    // clang-format on
+    return { renderedWidget, revealable: domNodeForId };
 }
 function renderWidgetResponse(response) {
     if (response === null) {
@@ -506,47 +531,85 @@ function renderWidgetResponse(response) {
     }
     // clang-format off
     return html `
-    <div class="widget-content-container">
-      ${response.renderedWidget}
-    </div>
-    <div class="widget-reveal-container">
-      <devtools-button class="widget-reveal"
-        .iconName=${'tab-move'}
-        .variant=${"text" /* Buttons.Button.Variant.TEXT */}
-        @click=${onReveal}
-      >${lockedString(UIStringsNotTranslate.reveal)}</devtools-button>
+    <div class="widget-and-revealer-container">
+      <div class="widget-content-container">
+        ${response.renderedWidget}
+      </div>
+      <div class="widget-reveal-container">
+        <devtools-button class="widget-reveal"
+          .iconName=${'tab-move'}
+          .variant=${"text" /* Buttons.Button.Variant.TEXT */}
+          @click=${onReveal}
+        >${lockedString(UIStringsNotTranslate.reveal)}</devtools-button>
+      </div>
     </div>
     `;
     // clang-format on
 }
+async function makeDomTreeWidget(widgetData) {
+    const root = widgetData.data.root;
+    if (!(root instanceof SDK.DOMModel.DOMNodeSnapshot)) {
+        return null;
+    }
+    const widgetConfig = UI.Widget.widgetConfig(Elements.ElementsTreeOutline.DOMTreeWidget, {
+        maxTreeDepth: 2,
+        enableContextMenu: false,
+        showComments: false,
+        showAIButton: false,
+        disableEdits: true,
+        expandRoot: true,
+        rootDOMNode: root,
+        visibleWidth: 400,
+        wrap: true,
+    });
+    // clang-format off
+    const widget = html `<devtools-widget class="dom-tree-widget" .widgetConfig=${widgetConfig}></devtools-widget>`;
+    // clang-format on
+    return {
+        renderedWidget: widget,
+        revealable: new SDK.DOMModel.DeferredDOMNode(root.domModel().target(), root.backendNodeId()),
+    };
+}
 /**
- * Renders AI-defined UI widgets within a step.
- * When a ModelChatMessage contains a WidgetPart, the ChatMessage component
- * iterates through the `step.widgets` array. For each widget, it determines
- * the appropriate rendering logic based on the `widgetData.name`.
+ * Renders AI-defined UI widgets.
+ * When a ModelChatMessage contains a WidgetPart, or a Step has widgets,
+ * the ChatMessage component iterates through the \`widgets\` array.
+ * For each widget, it determines the appropriate rendering logic based on
+ * the \`widgetData.name\`.
  *
- * Currently, only 'COMPUTED_STYLES' widgets are supported. For these, the
- * `makeComputedStyleWidget` function is called to construct the necessary
- * data and configuration for the `Elements.ComputedStyleWidget.ComputedStyleWidget`
- * component. The widget is then rendered using the `<devtools-widget>`
- * custom element, which dynamically instantiates and displays the specified
- * UI.Widget subclass with the provided configuration.
+ * Currently, 'COMPUTED_STYLES', 'CORE_VITALS' and 'STYLE_PROPERTIES' widgets are supported.
+ * For these, the corresponding \`make...Widget\` functions are called to construct the necessary
+ * data and configuration for the UI components. The widget is then rendered using the
+ * \`<devtools-widget>\` custom element, which dynamically instantiates and displays the
+ * specified UI.Widget subclass with the provided configuration.
  *
  * This allows for a flexible and extensible system where new widget types
  * can be added to the AI responses and rendered in DevTools by adding
- * corresponding `make...Widget` functions and handling them here.
+ * corresponding \`make...Widget\` functions and handling them here.
  */
-async function renderStepWidgets(step) {
-    if (!step.widgets || step.widgets.length === 0) {
+async function renderWidgets(widgets, options = {}) {
+    if (!Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled || !widgets || widgets.length === 0) {
         return Lit.nothing;
     }
-    const ui = await Promise.all(step.widgets.map(async (widgetData) => {
+    const ui = await Promise.all(widgets.map(async (widgetData) => {
+        let response = null;
         if (widgetData.name === 'COMPUTED_STYLES') {
-            const response = await makeComputedStyleWidget(widgetData);
-            return renderWidgetResponse(response);
+            response = await makeComputedStyleWidget(widgetData);
         }
-        return Lit.nothing;
+        else if (widgetData.name === 'CORE_VITALS') {
+            response = await makeCoreVitalsWidget(widgetData);
+        }
+        else if (widgetData.name === 'STYLE_PROPERTIES') {
+            response = await makeStylePropertiesWidget(widgetData);
+        }
+        else if (widgetData.name === 'DOM_TREE') {
+            response = await makeDomTreeWidget(widgetData);
+        }
+        return renderWidgetResponse(response);
     }));
+    if (options.wrapperClass) {
+        return html `<div class=${options.wrapperClass}>${ui}</div>`;
+    }
     return html `${ui}`;
 }
 function renderSideEffectConfirmationUi(step) {
@@ -589,6 +652,9 @@ function renderError(message) {
                 break;
             case "max-steps" /* AiAssistanceModel.AiAgent.ErrorType.MAX_STEPS */:
                 errorMessage = UIStringsNotTranslate.maxStepsError;
+                break;
+            case "cross-origin" /* AiAssistanceModel.AiAgent.ErrorType.CROSS_ORIGIN */:
+                errorMessage = UIStringsNotTranslate.crossOriginError;
                 break;
             case "abort" /* AiAssistanceModel.AiAgent.ErrorType.ABORT */:
                 return html `<p class="aborted" jslog=${VisualLogging.section('aborted')}>${lockedString(UIStringsNotTranslate.stoppedResponse)}</p>`;
@@ -760,7 +826,6 @@ export class ChatMessage extends UI.Widget.Widget {
     isReadOnly = false;
     canShowFeedbackForm = false;
     isLastMessage = false;
-    userInfo = {};
     markdownRenderer;
     onSuggestionClick = () => { };
     onFeedbackSubmit = () => { };
@@ -770,6 +835,7 @@ export class ChatMessage extends UI.Widget.Widget {
         onToggle: () => { },
         isInlined: false,
         isExpanded: false,
+        activeMessage: null,
     };
     #suggestionsResizeObserver = new ResizeObserver(() => this.#handleSuggestionsScrollOrResize());
     #suggestionsEvaluateLayoutThrottler = new Common.Throttler.Throttler(50);
@@ -797,7 +863,6 @@ export class ChatMessage extends UI.Widget.Widget {
             isLoading: this.isLoading,
             isReadOnly: this.isReadOnly,
             canShowFeedbackForm: this.canShowFeedbackForm,
-            userInfo: this.userInfo,
             markdownRenderer: this.markdownRenderer,
             isLastMessage: this.isLastMessage,
             onSuggestionClick: this.onSuggestionClick,

@@ -1,7 +1,7 @@
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Trace from '../../models/trace/trace.js';
-import * as NetworkTimeCalculator from '../network_time_calculator/network_time_calculator.js';
+import type * as Trace from '../../models/trace/trace.js';
+import type * as NetworkTimeCalculator from '../network_time_calculator/network_time_calculator.js';
 import { type ContextDetail, type ConversationContext, type MultimodalInput, type ResponseData } from './agents/AiAgent.js';
 import { ConversationType, type SerializedConversation } from './AiHistoryStorage.js';
 import type { ChangeManager } from './ChangeManager.js';
@@ -18,13 +18,13 @@ export declare class AiConversation {
     get isEmpty(): boolean;
     setContext(updateContext: ConversationContext<unknown> | null): void;
     get selectedContext(): ConversationContext<unknown> | undefined;
+    getPendingMultimodalInput(): MultimodalInput | undefined;
     getConversationMarkdown(): string;
     archiveConversation(): void;
     addHistoryItem(item: ResponseData): Promise<void>;
     serialize(): SerializedConversation;
     run(initialQuery: string, options?: {
         signal?: AbortSignal;
-        extraContext?: ExtraContext[];
         multimodalInput?: MultimodalInput;
     }): AsyncGenerator<ResponseData, void, void>;
     /**
@@ -35,12 +35,5 @@ export declare class AiConversation {
     get isBlockedByOrigin(): boolean;
     get origin(): string | undefined;
     get type(): ConversationType;
+    allowedOrigin: () => string | undefined;
 }
-type ExtraContext = SDK.DOMModel.DOMNode | SDK.NetworkRequest.NetworkRequest | {
-    event: Trace.Types.Events.Event;
-    traceStartTime: Trace.Types.Timing.Micro;
-} | {
-    insight: Trace.Insights.Types.InsightModel;
-    trace: Trace.TraceModel.ParsedTrace;
-};
-export {};

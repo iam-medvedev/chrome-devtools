@@ -34,7 +34,12 @@ describeWithMockConnection('DeviceModeToolbar', () => {
     beforeEach(() => {
         sinon.stub(Common.Settings.Settings, 'instance').returns({
             createSetting: (_name, defaultValue) => createFakeSetting(defaultValue),
-            moduleSetting: (_name) => createFakeSetting(false),
+            moduleSetting: (name) => {
+                if (name === 'custom-network-conditions') {
+                    return createFakeSetting([]);
+                }
+                return createFakeSetting(false);
+            },
             createLocalSetting: (_name, defaultValue) => createFakeSetting(defaultValue),
         });
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });

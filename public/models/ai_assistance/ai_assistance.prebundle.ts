@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 import * as AgentProject from './AgentProject.js';
+import * as AccessibilityAgent from './agents/AccessibilityAgent.js';
 import * as AiAgent from './agents/AiAgent.js';
 import * as BreakpointDebuggerAgent from './agents/BreakpointDebuggerAgent.js';
 import * as ContextSelectionAgent from './agents/ContextSelectionAgent.js';
+import * as ConversationSummaryAgent from './agents/ConversationSummaryAgent.js';
 import * as FileAgent from './agents/FileAgent.js';
 import * as NetworkAgent from './agents/NetworkAgent.js';
 import * as PatchAgent from './agents/PatchAgent.js';
@@ -32,6 +34,7 @@ import * as AIContext from './performance/AIContext.js';
 import * as AIQueries from './performance/AIQueries.js';
 
 export {
+  AccessibilityAgent,
   AgentProject,
   AiAgent,
   AICallTree,
@@ -45,6 +48,7 @@ export {
   ChangeManager,
   ContextSelectionAgent,
   ConversationHandler,
+  ConversationSummaryAgent,
   Debug,
   EvaluateAction,
   ExtensionScope,

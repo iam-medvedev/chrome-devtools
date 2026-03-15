@@ -742,7 +742,7 @@ __export(ContextMenu_exports, {
 import * as Host6 from "./../../core/host/host.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as Buttons4 from "./../components/buttons/buttons.js";
-import { html, render as render2 } from "./../lit/lit.js";
+import { html as html2, render as render2 } from "./../lit/lit.js";
 import * as VisualLogging9 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/ShortcutRegistry.js
@@ -2305,8 +2305,10 @@ __export(Widget_exports, {
   VBoxWithResizeCallback: () => VBoxWithResizeCallback,
   Widget: () => Widget,
   WidgetConfig: () => WidgetConfig,
+  WidgetDirective: () => WidgetDirective,
   WidgetElement: () => WidgetElement,
   WidgetFocusRestorer: () => WidgetFocusRestorer,
+  widget: () => widget,
   widgetConfig: () => widgetConfig,
   widgetRef: () => widgetRef
 });
@@ -2429,6 +2431,7 @@ function appendStyle(node, ...styles) {
 }
 
 // gen/front_end/ui/legacy/Widget.js
+var { html } = Lit;
 var originalAppendChild = Element.prototype.appendChild;
 var originalInsertBefore = Element.prototype.insertBefore;
 var originalRemoveChild = Element.prototype.removeChild;
@@ -2454,39 +2457,40 @@ var currentlyProcessed = /* @__PURE__ */ new Set();
 var nextUpdateQueue = /* @__PURE__ */ new Map();
 var pendingAnimationFrame = null;
 var overallUpdatePromise = null;
-function enqueueIntoNextUpdateQueue(widget) {
-  const scheduledUpdate = nextUpdateQueue.get(widget) ?? Promise.withResolvers();
-  nextUpdateQueue.delete(widget);
-  nextUpdateQueue.set(widget, scheduledUpdate);
+function enqueueIntoNextUpdateQueue(widget2) {
+  const scheduledUpdate = nextUpdateQueue.get(widget2) ?? Promise.withResolvers();
+  nextUpdateQueue.delete(widget2);
+  nextUpdateQueue.set(widget2, scheduledUpdate);
   if (pendingAnimationFrame === null) {
     pendingAnimationFrame = requestAnimationFrame(runNextUpdate);
   }
   return scheduledUpdate.promise;
 }
-function enqueueWidgetUpdate(widget) {
+function enqueueWidgetUpdate(widget2) {
   if (currentUpdateQueue) {
-    if (currentlyProcessed.has(widget)) {
-      return enqueueIntoNextUpdateQueue(widget);
+    if (currentlyProcessed.has(widget2)) {
+      return enqueueIntoNextUpdateQueue(widget2);
     }
-    const scheduledUpdate = currentUpdateQueue.get(widget) ?? Promise.withResolvers();
-    currentUpdateQueue.delete(widget);
-    currentUpdateQueue.set(widget, scheduledUpdate);
+    const scheduledUpdate = currentUpdateQueue.get(widget2) ?? Promise.withResolvers();
+    currentUpdateQueue.delete(widget2);
+    currentUpdateQueue.set(widget2, scheduledUpdate);
     return scheduledUpdate.promise;
   }
-  return enqueueIntoNextUpdateQueue(widget);
+  return enqueueIntoNextUpdateQueue(widget2);
 }
-function cancelUpdate(widget) {
+function cancelUpdate(widget2) {
+  widget2.cancelUpdateController();
   if (currentUpdateQueue) {
-    const scheduledUpdate2 = currentUpdateQueue.get(widget);
+    const scheduledUpdate2 = currentUpdateQueue.get(widget2);
     if (scheduledUpdate2) {
       scheduledUpdate2.resolve();
-      currentUpdateQueue.delete(widget);
+      currentUpdateQueue.delete(widget2);
     }
   }
-  const scheduledUpdate = nextUpdateQueue.get(widget);
+  const scheduledUpdate = nextUpdateQueue.get(widget2);
   if (scheduledUpdate) {
     scheduledUpdate.resolve();
-    nextUpdateQueue.delete(widget);
+    nextUpdateQueue.delete(widget2);
   }
 }
 function runNextUpdate() {
@@ -2495,11 +2499,16 @@ function runNextUpdate() {
     currentUpdateQueue = nextUpdateQueue;
     nextUpdateQueue = /* @__PURE__ */ new Map();
   }
-  for (const [widget, { resolve }] of currentUpdateQueue) {
-    currentlyProcessed.add(widget);
+  for (const [widget2, { resolve }] of currentUpdateQueue) {
+    currentlyProcessed.add(widget2);
     void (async () => {
-      await widget.performUpdate();
-      resolve();
+      try {
+        const controller = new AbortController();
+        widget2.addUpdateController(controller);
+        await widget2.performUpdate(controller.signal);
+      } finally {
+        resolve();
+      }
     })();
   }
   currentUpdateQueue.clear();
@@ -2520,12 +2529,12 @@ var WidgetElement = class extends HTMLElement {
   #widgetClass;
   #widgetParams;
   createWidget() {
-    const widget = this.#instantiateWidget();
+    const widget2 = this.#instantiateWidget();
     if (this.#widgetParams) {
-      Object.assign(widget, this.#widgetParams);
+      Object.assign(widget2, this.#widgetParams);
     }
-    widget.requestUpdate();
-    return widget;
+    widget2.requestUpdate();
+    return widget2;
   }
   #instantiateWidget() {
     if (!this.#widgetClass) {
@@ -2539,8 +2548,8 @@ var WidgetElement = class extends HTMLElement {
     return factory(this);
   }
   set widgetConfig(config) {
-    const widget = Widget.get(this);
-    if (widget) {
+    const widget2 = Widget.get(this);
+    if (widget2) {
       let needsUpdate = false;
       for (const key in config.widgetParams) {
         if (config.widgetParams.hasOwnProperty(key) && config.widgetParams[key] !== this.#widgetParams?.[key]) {
@@ -2548,8 +2557,8 @@ var WidgetElement = class extends HTMLElement {
         }
       }
       if (needsUpdate) {
-        Object.assign(widget, config.widgetParams);
-        widget.requestUpdate();
+        Object.assign(widget2, config.widgetParams);
+        widget2.requestUpdate();
       }
     }
     this.#widgetClass = config.widgetClass;
@@ -2559,11 +2568,11 @@ var WidgetElement = class extends HTMLElement {
     return Widget.get(this);
   }
   connectedCallback() {
-    const widget = Widget.getOrCreateWidget(this);
-    if (!widget.element.parentElement) {
-      widget.markAsRoot();
+    const widget2 = Widget.getOrCreateWidget(this);
+    if (!widget2.element.parentElement) {
+      widget2.markAsRoot();
     }
-    widget.show(
+    widget2.show(
       this.parentElement,
       void 0,
       /* suppressOrphanWidgetError= */
@@ -2571,10 +2580,10 @@ var WidgetElement = class extends HTMLElement {
     );
   }
   disconnectedCallback() {
-    const widget = Widget.get(this);
-    if (widget) {
-      widget.setHideOnDetach();
-      widget.detach();
+    const widget2 = Widget.get(this);
+    if (widget2) {
+      widget2.setHideOnDetach();
+      widget2.detach();
     }
   }
   appendChild(child) {
@@ -2620,23 +2629,51 @@ var WidgetElement = class extends HTMLElement {
     return clone;
   }
   focus() {
-    const widget = Widget.get(this);
-    if (widget) {
-      widget.focus();
+    const widget2 = Widget.get(this);
+    if (widget2) {
+      widget2.focus();
     }
   }
 };
 customElements.define("devtools-widget", WidgetElement);
+var WidgetDirective = class extends Lit.Directive.Directive {
+  #partType;
+  constructor(partInfo) {
+    super(partInfo);
+    this.#partType = partInfo.type;
+    if (this.#partType !== Lit.Directive.PartType.CHILD && this.#partType !== Lit.Directive.PartType.ELEMENT) {
+      throw new Error("Widget directive must be used as a child or element directive.");
+    }
+  }
+  update(part, [widgetClass, widgetParams]) {
+    if (this.#partType === Lit.Directive.PartType.ELEMENT) {
+      const element = part.element;
+      if (!(element instanceof WidgetElement)) {
+        throw new Error("Widget directive must be used on a devtools-widget element.");
+      }
+      element.widgetConfig = widgetConfig(widgetClass, widgetParams);
+      return Lit.nothing;
+    }
+    return this.render(widgetClass, widgetParams);
+  }
+  render(widgetClass, widgetParams) {
+    if (this.#partType === Lit.Directive.PartType.ELEMENT) {
+      return Lit.nothing;
+    }
+    return Lit.Directives.repeat([widgetClass], () => widgetClass, () => html`<devtools-widget .widgetConfig=${widgetConfig(widgetClass, widgetParams)}></devtools-widget>`);
+  }
+};
+var widget = Lit.Directive.directive(WidgetDirective);
 function widgetRef(type, callback) {
   return Lit.Directives.ref((e) => {
     if (!(e instanceof HTMLElement)) {
       return;
     }
-    const widget = Widget.getOrCreateWidget(e);
-    if (!(widget instanceof type)) {
+    const widget2 = Widget.getOrCreateWidget(e);
+    if (!(widget2 instanceof type)) {
       throw new Error(`Expected an element with a widget of type ${type.name} but got ${e?.constructor?.name}`);
     }
-    callback(widget);
+    callback(widget2);
   });
 }
 var widgetCounterMap = /* @__PURE__ */ new WeakMap();
@@ -2674,6 +2711,7 @@ var Widget = class _Widget {
   #invalidationsRequested;
   #externallyManaged;
   #updateComplete = UPDATE_COMPLETE;
+  #updateController;
   constructor(elementOrOptions, options) {
     if (elementOrOptions instanceof HTMLElement) {
       this.element = elementOrOptions;
@@ -2724,9 +2762,9 @@ var Widget = class _Widget {
     return overallUpdatePromise.promise;
   }
   static getOrCreateWidget(element) {
-    const widget = _Widget.get(element);
-    if (widget) {
-      return widget;
+    const widget2 = _Widget.get(element);
+    if (widget2) {
+      return widget2;
     }
     if (element instanceof WidgetElement) {
       return element.createWidget();
@@ -3065,12 +3103,12 @@ var Widget = class _Widget {
     return autofocusElements.filter((autofocusElement) => {
       let widgetElement = autofocusElement;
       while (widgetElement) {
-        const widget = _Widget.get(widgetElement);
-        if (widget) {
-          if (widgetElement === autofocusElement && widget.#parentWidget === this && widget.#visible) {
+        const widget2 = _Widget.get(widgetElement);
+        if (widget2) {
+          if (widgetElement === autofocusElement && widget2.#parentWidget === this && widget2.#visible) {
             return true;
           }
-          return widget === this;
+          return widget2 === this;
         }
         widgetElement = widgetElement.parentElementOrShadowHost();
       }
@@ -3090,9 +3128,9 @@ var Widget = class _Widget {
     }
     const autofocusElement = this.getDefaultFocusedElement();
     if (autofocusElement) {
-      const widget = _Widget.get(autofocusElement);
-      if (widget && widget !== this) {
-        widget.focus();
+      const widget2 = _Widget.get(autofocusElement);
+      if (widget2 && widget2 !== this) {
+        widget2.focus();
       } else if (autofocusElement === this.element && autofocusElement instanceof WidgetElement) {
         HTMLElement.prototype.focus.call(autofocusElement);
       } else {
@@ -3180,18 +3218,13 @@ var Widget = class _Widget {
     assert(!this.#parentWidget, "Attempt to mark widget as externally managed after insertion to the DOM");
     this.#externallyManaged = true;
   }
-  /**
-   * Override this method in derived classes to perform the actual view update.
-   *
-   * This is not meant to be called directly, but invoked (indirectly) through
-   * the `requestAnimationFrame` and executed with the animation frame. Instead,
-   * use the `requestUpdate()` method to schedule an asynchronous update.
-   *
-   * @returns can either return nothing or a promise; in that latter case, the
-   *          update logic will await the resolution of the returned promise
-   *          before proceeding.
-   */
-  performUpdate() {
+  performUpdate(_signal) {
+  }
+  addUpdateController(controller) {
+    this.#updateController = controller;
+  }
+  cancelUpdateController() {
+    this.#updateController?.abort();
   }
   /**
    * Schedules an asynchronous update for this widget.
@@ -3200,6 +3233,7 @@ var Widget = class _Widget {
    * frame.
    */
   requestUpdate() {
+    this.#updateController?.abort();
     this.#updateComplete = enqueueWidgetUpdate(this);
   }
   /**
@@ -3275,10 +3309,10 @@ var VBoxWithResizeCallback = class extends VBox {
 var WidgetFocusRestorer = class {
   widget;
   previous;
-  constructor(widget) {
-    this.widget = widget;
-    this.previous = deepActiveElement(widget.element.ownerDocument);
-    widget.focus();
+  constructor(widget2) {
+    this.widget = widget2;
+    this.previous = deepActiveElement(widget2.element.ownerDocument);
+    widget2.focus();
   }
   restore() {
     if (!this.widget) {
@@ -3413,18 +3447,18 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
     mainSlot.name = "main";
     mainSlot.addEventListener("slotchange", (_) => {
       const assignedNode = mainSlot.assignedNodes()[0];
-      const widget = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
-      if (widget && widget !== this.#mainWidget) {
-        this.setMainWidget(widget);
+      const widget2 = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
+      if (widget2 && widget2 !== this.#mainWidget) {
+        this.setMainWidget(widget2);
       }
     });
     const sidebarSlot = this.#sidebarElement.createChild("slot");
     sidebarSlot.name = "sidebar";
     sidebarSlot.addEventListener("slotchange", (_) => {
       const assignedNode = sidebarSlot.assignedNodes()[0];
-      const widget = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
-      if (widget && widget !== this.#sidebarWidget) {
-        this.setSidebarWidget(widget);
+      const widget2 = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
+      if (widget2 && widget2 !== this.#sidebarWidget) {
+        this.setSidebarWidget(widget2);
       }
     });
     this.#resizerElement = this.contentElement.createChild("div", "shadow-split-widget-resizer");
@@ -3482,36 +3516,36 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
     this.#sidebarElement.style.removeProperty("height");
     this.#setSidebarSizeDIP(this.#preferredSidebarSizeDIP(), Boolean(animate));
   }
-  setMainWidget(widget) {
-    if (this.#mainWidget === widget) {
+  setMainWidget(widget2) {
+    if (this.#mainWidget === widget2) {
       return;
     }
     this.suspendInvalidations();
     if (this.#mainWidget) {
       this.#mainWidget.detach();
     }
-    this.#mainWidget = widget;
-    if (widget) {
-      widget.element.slot = "main";
+    this.#mainWidget = widget2;
+    if (widget2) {
+      widget2.element.slot = "main";
       if (this.#showMode === "OnlyMain" || this.#showMode === "Both") {
-        widget.show(this.element);
+        widget2.show(this.element);
       }
     }
     this.resumeInvalidations();
   }
-  setSidebarWidget(widget) {
-    if (this.#sidebarWidget === widget) {
+  setSidebarWidget(widget2) {
+    if (this.#sidebarWidget === widget2) {
       return;
     }
     this.suspendInvalidations();
     if (this.#sidebarWidget) {
       this.#sidebarWidget.detach();
     }
-    this.#sidebarWidget = widget;
-    if (widget) {
-      widget.element.slot = "sidebar";
+    this.#sidebarWidget = widget2;
+    if (widget2) {
+      widget2.element.slot = "sidebar";
       if (this.#showMode === "OnlySidebar" || this.#showMode === "Both") {
-        widget.show(this.element);
+        widget2.show(this.element);
       }
     }
     this.resumeInvalidations();
@@ -3525,14 +3559,14 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
   sidebarElement() {
     return this.#sidebarElement;
   }
-  childWasDetached(widget) {
+  childWasDetached(widget2) {
     if (this.#detaching) {
       return;
     }
-    if (this.#mainWidget === widget) {
+    if (this.#mainWidget === widget2) {
       this.#mainWidget = null;
     }
-    if (this.#sidebarWidget === widget) {
+    if (this.#sidebarWidget === widget2) {
       this.#sidebarWidget = null;
     }
     this.invalidateConstraints();
@@ -4075,7 +4109,7 @@ var SplitWidgetElement = class extends WidgetElement {
     const sidebarSize = parseInt(this.getAttribute("sidebar-initial-size") || "", 10);
     const defaultSidebarWidth = !isNaN(sidebarSize) ? sidebarSize : void 0;
     const defaultSidebarHeight = !isNaN(sidebarSize) ? sidebarSize : void 0;
-    const widget = new SplitWidget(
+    const widget2 = new SplitWidget(
       vertical,
       secondIsSidebar,
       settingName,
@@ -4086,35 +4120,35 @@ var SplitWidgetElement = class extends WidgetElement {
       this
     );
     if (this.getAttribute("sidebar-initial-size") === "minimized") {
-      widget.setSidebarMinimized(true);
+      widget2.setSidebarMinimized(true);
     }
     if (autoAdjustOrientation) {
-      widget.setAutoAdjustOrientation(true);
+      widget2.setAutoAdjustOrientation(true);
     }
     const sidebarHidden = this.getAttribute("sidebar-visibility") === "hidden";
     if (sidebarHidden) {
-      widget.hideSidebar();
+      widget2.hideSidebar();
     }
-    widget.addEventListener("ShowModeChanged", () => {
-      this.dispatchEvent(new CustomEvent("change", { detail: widget.showMode() }));
+    widget2.addEventListener("ShowModeChanged", () => {
+      this.dispatchEvent(new CustomEvent("change", { detail: widget2.showMode() }));
     });
-    return widget;
+    return widget2;
   }
   attributeChangedCallback(name, _oldValue, newValue) {
-    const widget = Widget.get(this);
-    if (!widget) {
+    const widget2 = Widget.get(this);
+    if (!widget2) {
       return;
     }
     if (name === "direction") {
-      widget.setVertical(newValue === "column");
-      widget.setAutoAdjustOrientation(newValue === "auto");
+      widget2.setVertical(newValue === "column");
+      widget2.setAutoAdjustOrientation(newValue === "auto");
     } else if (name === "sidebar-position") {
-      widget.setSecondIsSidebar(newValue === "second");
+      widget2.setSecondIsSidebar(newValue === "second");
     } else if (name === "sidebar-visibility") {
       if (newValue === "hidden") {
-        widget.hideSidebar();
+        widget2.hideSidebar();
       } else {
-        widget.showBoth();
+        widget2.showBoth();
       }
     }
   }
@@ -6318,8 +6352,8 @@ var PreRegisteredView = class {
     if (this.widgetPromise === null) {
       return;
     }
-    const widget = await this.widgetPromise;
-    await widget.ownerViewDisposed();
+    const widget2 = await this.widgetPromise;
+    await widget2.ownerViewDisposed();
   }
   experiment() {
     return this.viewRegistration.experiment;
@@ -6554,13 +6588,13 @@ var ContainerWidget = class extends VBox {
         this.element.insertBefore(toolbarElement, this.element.firstChild);
       }
     }));
-    promises.push(this.view.widget().then((widget) => {
+    promises.push(this.view.widget().then((widget2) => {
       const shouldFocus = this.element.hasFocus();
       this.setDefaultFocusedElement(null);
-      widgetForView.set(this.view, widget);
-      widget.show(this.element);
+      widgetForView.set(this.view, widget2);
+      widget2.show(this.element);
       if (shouldFocus) {
-        widget.focus();
+        widget2.focus();
       }
     }));
     this.materializePromise = Promise.all(promises).then(() => {
@@ -6570,9 +6604,9 @@ var ContainerWidget = class extends VBox {
   wasShown() {
     super.wasShown();
     void this.materialize().then(() => {
-      const widget = widgetForView.get(this.view);
-      if (widget) {
-        widget.show(this.element);
+      const widget2 = widgetForView.get(this.view);
+      if (widget2) {
+        widget2.show(this.element);
         this.wasShownForTest();
       }
     });
@@ -6632,10 +6666,10 @@ var ExpandableContainerWidget = class extends VBox {
         this.titleElement.appendChild(toolbarElement);
       }
     }));
-    promises.push(this.view.widget().then((widget) => {
-      this.widget = widget;
-      widgetForView.set(this.view, widget);
-      widget.show(this.element);
+    promises.push(this.view.widget().then((widget2) => {
+      this.widget = widget2;
+      widgetForView.set(this.view, widget2);
+      widget2.show(this.element);
     }));
     this.materializePromise = Promise.all(promises).then(() => {
     });
@@ -6698,10 +6732,10 @@ var Location = class {
   manager;
   revealCallback;
   #widget;
-  constructor(manager, widget, revealCallback) {
+  constructor(manager, widget2, revealCallback) {
     this.manager = manager;
     this.revealCallback = revealCallback;
-    this.#widget = widget;
+    this.#widget = widget2;
   }
   widget() {
     return this.#widget;
@@ -6893,8 +6927,8 @@ var TabbedLocation = class _TabbedLocation extends Location {
     if (!omitFocus) {
       this.#tabbedPane.focus();
     }
-    const widget = this.#tabbedPane.tabView(view.viewId());
-    await widget.materialize();
+    const widget2 = this.#tabbedPane.tabView(view.viewId());
+    await widget2.materialize();
   }
   removeView(view) {
     if (!this.#tabbedPane.hasTab(view.viewId())) {
@@ -9249,7 +9283,7 @@ var MenuButton = class extends HTMLElement {
     if (!this.iconName) {
       throw new Error("<devtools-menu-button> expects an icon.");
     }
-    render2(html`
+    render2(html2`
         <devtools-button .disabled=${this.disabled}
                          .iconName=${this.iconName}
                          .variant=${"icon"}
@@ -11695,7 +11729,7 @@ var ToolbarText = class extends ToolbarItem {
     this.setText(text);
   }
   text() {
-    return this.element.textContent ?? "";
+    return this.element.textContent;
   }
   setText(text) {
     this.element.textContent = text;
@@ -15274,14 +15308,14 @@ function updateWidgetfocusWidgetForNode(node) {
   if (!node) {
     return;
   }
-  let widget = Widget.get(node);
-  while (widget?.parentWidget()) {
-    const parentWidget = widget.parentWidget();
+  let widget2 = Widget.get(node);
+  while (widget2?.parentWidget()) {
+    const parentWidget = widget2.parentWidget();
     if (!parentWidget) {
       break;
     }
-    parentWidget.setDefaultFocusedChild(widget);
-    widget = parentWidget;
+    parentWidget.setDefaultFocusedChild(widget2);
+    widget2 = parentWidget;
   }
 }
 function focusChanged(event) {
@@ -15530,10 +15564,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
     const patchingWrapper = (fn) => {
       return function(...args) {
         const result = fn.apply(this, args);
-        if (isLitTemplate(result)) {
-          _HTMLElementWithLightDOMTemplate.patchLitTemplate(result);
-        }
-        return result;
+        return patchValue(result);
       };
     };
     if (template === Lit2.nothing) {
@@ -15547,7 +15578,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
       return Boolean(typeof value === "object" && value && "_$litDirective$" in value && "values" in value);
     }
     function isCallable(value) {
-      return typeof value === "function";
+      return typeof value === "function" && Object.getOwnPropertyDescriptor(value, "prototype")?.writable !== false;
     }
     function patchValue(value) {
       if (isCallable(value)) {
@@ -16663,7 +16694,7 @@ __export(EmptyWidget_exports, {
 });
 import "./../kit/kit.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
-import { Directives as Directives3, html as html2, render as render4 } from "./../lit/lit.js";
+import { Directives as Directives3, html as html3, render as render4 } from "./../lit/lit.js";
 import * as VisualLogging16 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/emptyWidget.css.js
@@ -16690,7 +16721,7 @@ var str_12 = i18n23.i18n.registerUIStrings("ui/legacy/EmptyWidget.ts", UIStrings
 var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
 var { ref } = Directives3;
 var DEFAULT_VIEW = (input, output, target) => {
-  render4(html2`
+  render4(html3`
     <style>${inspectorCommon_css_default}</style>
     <style>${emptyWidget_css_default}</style>
     <div class="empty-state" jslog=${VisualLogging16.section("empty-view")}
@@ -16700,7 +16731,7 @@ var DEFAULT_VIEW = (input, output, target) => {
       <div class="empty-state-header">${input.header}</div>
       <div class="empty-state-description">
         <span>${input.text}</span>
-        ${input.link ? html2`<devtools-link href=${input.link} jslogContext=${"learn-more"}>${i18nString12(UIStrings12.learnMore)}</devtools-link>` : ""}
+        ${input.link ? html3`<devtools-link href=${input.link} jslogContext=${"learn-more"}>${i18nString12(UIStrings12.learnMore)}</devtools-link>` : ""}
       </div>
       ${input.extraElements}
     </div>`, target);
@@ -17454,195 +17485,6 @@ var ForwardedInputEventHandler = class {
   }
 };
 new ForwardedInputEventHandler();
-
-// gen/front_end/ui/legacy/Fragment.js
-var Fragment_exports = {};
-__export(Fragment_exports, {
-  Fragment: () => Fragment,
-  attributeMarker: () => attributeMarker,
-  html: () => html3,
-  textMarker: () => textMarker
-});
-function getNodeData(node) {
-  return node.data;
-}
-function setNodeData(node, value) {
-  node.data = value;
-}
-var Fragment = class _Fragment {
-  #element;
-  elementsById = /* @__PURE__ */ new Map();
-  constructor(element) {
-    this.#element = element;
-  }
-  element() {
-    return this.#element;
-  }
-  $(elementId) {
-    return this.elementsById.get(elementId);
-  }
-  static build(strings, ...values) {
-    return _Fragment.render(_Fragment.template(strings), values);
-  }
-  static cached(strings, ...values) {
-    let template = templateCache.get(strings);
-    if (!template) {
-      template = _Fragment.template(strings);
-      templateCache.set(strings, template);
-    }
-    return _Fragment.render(template, values);
-  }
-  static template(strings) {
-    let html7 = "";
-    let insideText = true;
-    for (let i = 0; i < strings.length - 1; i++) {
-      html7 += strings[i];
-      const close5 = strings[i].lastIndexOf(">");
-      const open = strings[i].indexOf("<", close5 + 1);
-      if (close5 !== -1 && open === -1) {
-        insideText = true;
-      } else if (open !== -1) {
-        insideText = false;
-      }
-      html7 += insideText ? textMarker : attributeMarker(i);
-    }
-    html7 += strings[strings.length - 1];
-    const template = document.createElement("template");
-    template.innerHTML = html7;
-    const walker = template.ownerDocument.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, null);
-    let valueIndex = 0;
-    const emptyTextNodes = [];
-    const binds = [];
-    const nodesToMark = [];
-    while (walker.nextNode()) {
-      const node = walker.currentNode;
-      if (node.nodeType === Node.ELEMENT_NODE && node.hasAttributes()) {
-        if (node.hasAttribute("$")) {
-          nodesToMark.push(node);
-          binds.push({ elementId: node.getAttribute("$") || "" });
-          node.removeAttribute("$");
-        }
-        const attributesToRemove = [];
-        for (let i = 0; i < node.attributes.length; i++) {
-          const name = node.attributes[i].name;
-          if (!attributeMarkerRegex.test(name) && !attributeMarkerRegex.test(node.attributes[i].value)) {
-            continue;
-          }
-          attributesToRemove.push(name);
-          nodesToMark.push(node);
-          const attr = {
-            index: valueIndex,
-            names: name.split(attributeMarkerRegex),
-            values: node.attributes[i].value.split(attributeMarkerRegex)
-          };
-          valueIndex += attr.names.length - 1;
-          valueIndex += attr.values.length - 1;
-          const bind = {
-            attr
-          };
-          binds.push(bind);
-        }
-        for (let i = 0; i < attributesToRemove.length; i++) {
-          node.removeAttribute(attributesToRemove[i]);
-        }
-      }
-      if (node.nodeType === Node.TEXT_NODE && getNodeData(node).indexOf(textMarker) !== -1) {
-        const texts = getNodeData(node).split(textMarkerRegex);
-        setNodeData(node, texts[texts.length - 1]);
-        const parentNode = node.parentNode;
-        for (let i = 0; i < texts.length - 1; i++) {
-          if (texts[i]) {
-            parentNode.insertBefore(document.createTextNode(texts[i]), node);
-          }
-          const nodeToReplace = document.createElement("span");
-          nodesToMark.push(nodeToReplace);
-          binds.push({ replaceNodeIndex: valueIndex++ });
-          parentNode.insertBefore(nodeToReplace, node);
-        }
-      }
-      if (node.nodeType === Node.TEXT_NODE && (!node.previousSibling || node.previousSibling.nodeType === Node.ELEMENT_NODE) && (!node.nextSibling || node.nextSibling.nodeType === Node.ELEMENT_NODE) && /^\s*$/.test(getNodeData(node))) {
-        emptyTextNodes.push(node);
-      }
-    }
-    for (let i = 0; i < nodesToMark.length; i++) {
-      nodesToMark[i].classList.add(generateClassName(i));
-    }
-    for (const emptyTextNode of emptyTextNodes) {
-      emptyTextNode.remove();
-    }
-    return { template, binds };
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static render(template, values) {
-    const content = template.template.ownerDocument.importNode(template.template.content, true);
-    const resultElement = content.firstChild === content.lastChild ? content.firstChild : content;
-    const result = new _Fragment(resultElement);
-    const boundElements = [];
-    for (let i = 0; i < template.binds.length; i++) {
-      const className = generateClassName(i);
-      const element = content.querySelector("." + className);
-      element.classList.remove(className);
-      boundElements.push(element);
-    }
-    for (let bindIndex = 0; bindIndex < template.binds.length; bindIndex++) {
-      const bind = template.binds[bindIndex];
-      const element = boundElements[bindIndex];
-      if (bind.elementId !== void 0) {
-        result.elementsById.set(bind.elementId, element);
-      } else if (bind.replaceNodeIndex !== void 0) {
-        const value = values[bind.replaceNodeIndex];
-        element.parentNode.replaceChild(this.nodeForValue(value), element);
-      } else if (bind.attr !== void 0) {
-        if (bind.attr.names.length === 2 && bind.attr.values.length === 1 && typeof values[bind.attr.index] === "function") {
-          values[bind.attr.index].call(null, element);
-        } else {
-          let name = bind.attr.names[0];
-          for (let i = 1; i < bind.attr.names.length; i++) {
-            name += values[bind.attr.index + i - 1];
-            name += bind.attr.names[i];
-          }
-          if (name) {
-            let value = bind.attr.values[0];
-            for (let i = 1; i < bind.attr.values.length; i++) {
-              value += values[bind.attr.index + bind.attr.names.length - 1 + i - 1];
-              value += bind.attr.values[i];
-            }
-            element.setAttribute(name, value);
-          }
-        }
-      } else {
-        throw new Error("Unexpected bind");
-      }
-    }
-    return result;
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static nodeForValue(value) {
-    if (value instanceof Node) {
-      return value;
-    }
-    if (value instanceof _Fragment) {
-      return value.#element;
-    }
-    if (Array.isArray(value)) {
-      const node = document.createDocumentFragment();
-      for (const v of value) {
-        node.appendChild(this.nodeForValue(v));
-      }
-      return node;
-    }
-    return document.createTextNode(String(value));
-  }
-};
-var textMarker = "{{template-text}}";
-var textMarkerRegex = /{{template-text}}/;
-var attributeMarker = (index) => "template-attribute" + index;
-var attributeMarkerRegex = /template-attribute\d+/;
-var generateClassName = (index) => "template-class-" + index;
-var templateCache = /* @__PURE__ */ new Map();
-var html3 = (strings, ...vararg) => {
-  return Fragment.cached(strings, ...vararg).element();
-};
 
 // gen/front_end/ui/legacy/InplaceEditor.js
 var InplaceEditor_exports = {};
@@ -18869,7 +18711,7 @@ var ProgressIndicator = class extends HTMLElement {
     this.#labelElement.textContent = title;
   }
   get title() {
-    return this.#labelElement.textContent ?? "";
+    return this.#labelElement.textContent;
   }
   set totalWork(totalWork) {
     this.#progressElement.max = totalWork;
@@ -22569,7 +22411,6 @@ export {
   FilterBar_exports as FilterBar,
   FilterSuggestionBuilder_exports as FilterSuggestionBuilder,
   ForwardedInputEventHandler_exports as ForwardedInputEventHandler,
-  Fragment_exports as Fragment,
   GlassPane_exports as GlassPane,
   Infobar_exports as Infobar,
   InplaceEditor_exports as InplaceEditor,

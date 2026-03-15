@@ -14,7 +14,7 @@ import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import webauthnPaneStyles from './webauthnPane.css.js';
 const { render, html, Directives: { ref, repeat, classMap } } = Lit;
-const { widgetConfig } = UI.Widget;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Label for button that allows user to download the private key related to a credential.
@@ -225,7 +225,7 @@ function renderToolbar(enabled, onToggle) {
 function renderLearnMoreView() {
     // clang-format off
     return html `
-    <devtools-widget class="learn-more" .widgetConfig=${widgetConfig(UI.EmptyWidget.EmptyWidget, {
+    <devtools-widget class="learn-more" ${widget(UI.EmptyWidget.EmptyWidget, {
         header: i18nString(UIStrings.noAuthenticator),
         text: i18nString(UIStrings.useWebauthnForPhishingresistant),
         link: WEB_AUTHN_EXPLANATION_URL
