@@ -133,7 +133,7 @@ var GreenDevPanel_css_default = `/* eslint-disable color-named, no-duplicate-sel
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid #eee;
-  font-family: monospace;
+  font-family: var(--monospace-font-family);
 }
 
 .thought, .action {
@@ -185,7 +185,7 @@ var GreenDevPanel_css_default = `/* eslint-disable color-named, no-duplicate-sel
 
 .green-dev-floaty-dialog-node-description {
   font-size: 11px;
-  font-family: monospace;
+  font-family: var(--monospace-font-family);
   color: #0b57d0;
   background-color: #d3e3fd;
   padding: 2px 8px;

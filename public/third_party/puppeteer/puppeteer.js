@@ -2599,7 +2599,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.38.0";
+var packageVersion = "24.39.1";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -16430,6 +16430,11 @@ var CdpPage = class _CdpPage extends Page {
     const devtoolsPage = await browser._createDevToolsPage(pageTargetId);
     return devtoolsPage;
   }
+  async hasDevTools() {
+    const browser = this.browser();
+    const targetId = await browser._hasDevToolsTarget(this.target()._targetId);
+    return Boolean(targetId);
+  }
   async waitForFileChooser(options = {}) {
     const needsEnable = this.#fileChooserDeferreds.size === 0;
     const { timeout: timeout2 = this._timeoutSettings.timeout() } = options;
@@ -17918,6 +17923,12 @@ var CdpBrowser = class _CdpBrowser extends Browser {
       throw new Error(`Failed to create a DevTools Page for target (id = ${pageTargetId})`);
     }
     return page;
+  }
+  async _hasDevToolsTarget(pageTargetId) {
+    const response = await this.#connection.send("Target.getDevToolsTarget", {
+      targetId: pageTargetId
+    });
+    return response.targetId;
   }
   async installExtension(path) {
     const { id } = await this.#connection.send("Extensions.loadUnpacked", { path });

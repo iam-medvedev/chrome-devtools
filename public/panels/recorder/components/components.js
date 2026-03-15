@@ -2169,6 +2169,7 @@ var __decorate = function(decorators, target, key2, desc) {
 var { html: html7, Decorators, Directives, LitElement } = Lit7;
 var { customElement, property, state } = Decorators;
 var { live } = Directives;
+var { widget } = UI6.Widget;
 var typeConverters = Object.freeze({
   string: (value2) => value2.trim(),
   number: (value2) => {
@@ -2758,13 +2759,11 @@ var StepEditor = class StepEditor2 extends LitElement {
     return html7`<div class="attribute" data-attribute="selectors" jslog=${VisualLogging6.treeItem("selectors")}>
       <div class="row">
         <div>selectors<span class="separator">:</span></div>
-        <devtools-widget
-          .widgetConfig=${UI6.Widget.widgetConfig(SelectorPicker, {
+        ${widget(SelectorPicker, {
       disabled: this.disabled,
       onSelectorPicked: this.#handleSelectorPicked,
       onAttributeRequested: this.#handleAttributeRequested
     })}
-        ></devtools-widget>
         ${this.#renderDeleteButton("selectors")}
       </div>
       ${this.state.selectors.map((selector, index, selectors) => {
@@ -3092,18 +3091,18 @@ var stepView_css_default = `/*
 .title-container {
   /* Vertically center items with min-width: 0; */
   min-width: 0;
-  font-size: 13px;
-  line-height: 16px;
-  letter-spacing: 0.03em;
+  font-size: var(--sys-size-7);
   display: flex;
   flex-direction: row;
-  gap: 3px;
-  outline-offset: 3px;
+  gap: var(--sys-size-2);
+  outline-offset: var(--sys-size-2);
+  flex-grow: 1;
+  align-items: center;
 }
 
 .action {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .title {
@@ -3137,7 +3136,7 @@ var stepView_css_default = `/*
   cy: 8px;
 }
 
-.is-start-of-group .circle-icon {
+.is-start-of-group:not(:first-of-type) .circle-icon {
   r: 7px;
   fill: var(--sys-color-cdt-base-container);
   stroke: var(--sys-color-primary);
@@ -3222,7 +3221,7 @@ var stepView_css_default = `/*
   height: 14px;
   transition: 200ms;
   position: absolute;
-  top: 18px;
+  top: 14px;
   left: 24px;
   transform: rotate(-90deg);
   color: var(--sys-color-on-surface);
@@ -3262,17 +3261,17 @@ devtools-recorder-step-editor:hover {
 }
 
 devtools-recorder-step-editor.is-selected {
-  background-color: color-mix(in srgb, var(--sys-color-tonal-container), var(--sys-color-cdt-base-container) 50%);
+  background-color: color-mix(
+    in srgb,
+    var(--sys-color-tonal-container),
+    var(--sys-color-cdt-base-container) 50%
+  );
   border: 1px solid var(--sys-color-tonal-outline);
 }
 
 .summary {
   display: flex;
   flex-flow: row nowrap;
-}
-
-.filler {
-  flex-grow: 1;
 }
 
 .subtitle {
@@ -3352,7 +3351,7 @@ var timelineSection_css_default = `/*
 
 .timeline-section {
   position: relative;
-  padding: 16px 0 0 40px;
+  padding: 8px 0 8px 40px;
   margin-left: 8px;
 
   --override-color-recording-successful-text: #36a854;
@@ -3391,12 +3390,12 @@ var timelineSection_css_default = `/*
   z-index: 4;
 }
 
-.is-start-of-group {
-  padding-top: 28px;
+.is-start-of-group:not(:first-of-type) {
+  padding-top: 16px;
 }
 
 .is-end-of-group {
-  padding-bottom: 24px;
+  padding-bottom: 16px;
 }
 
 .icon {
@@ -3412,7 +3411,7 @@ var timelineSection_css_default = `/*
   display: block;
   transform: translateX(-50%);
   top: 18px;
-  height: calc(100% + 8px);
+  height: 100%;
   z-index: 1; /* We want this to be below of \\'.overlay\\' for stopped case */
 }
 
@@ -3425,8 +3424,7 @@ var timelineSection_css_default = `/*
 }
 
 .is-first-section .bar {
-  top: 32px;
-  height: calc(100% - 8px);
+  height: 100%;
   display: none;
 }
 
@@ -3547,6 +3545,7 @@ var TimelineSection = class extends UI7.Widget.Widget {
 
 // gen/front_end/panels/recorder/components/StepView.js
 var { html: html9 } = Lit9;
+var { widget: widget2 } = UI8.Widget;
 var UIStrings7 = {
   /**
    * @description Title for the step type that configures the viewport
@@ -3797,7 +3796,6 @@ function renderStepActions(input) {
   }}
       jslog=${VisualLogging7.dropDown("step-actions").track({ click: true })}
       .iconName=${"dots-vertical"}
-      }
     ></devtools-menu-button>
   `;
 }
@@ -3826,7 +3824,7 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
   Lit9.render(html9`
     <style>${stepView_css_default}</style>
     <div>
-      <devtools-widget .widgetConfig=${UI8.Widget.widgetConfig(TimelineSection, {
+      <devtools-widget ${widget2(TimelineSection, {
     isFirstSection: input.isFirstSection,
     isLastSection: input.isLastSection,
     isStartOfGroup: input.isStartOfGroup,
@@ -3881,7 +3879,6 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
               <div class="subtitle" title=${subtitle}>${subtitle}</div>
             </div>
           </div>
-          <div class="filler"></div>
           ${renderStepActions(input)}
         </div>
         <div class="details">
@@ -4236,6 +4233,7 @@ var StepView = class extends UI8.Widget.Widget {
 
 // gen/front_end/panels/recorder/components/RecordingView.js
 var { html: html10 } = Lit10;
+var { widget: widget3 } = UI9.Widget;
 var UIStrings8 = {
   /**
    * @description Depicts that the recording was done on a mobile device (e.g., a smartphone or tablet).
@@ -4582,15 +4580,12 @@ function renderReplayOrAbortButton(input) {
   if (!input.recorderSettings) {
     return Lit10.nothing;
   }
-  return html10`<devtools-widget
-        .widgetConfig=${UI9.Widget.widgetConfig(ReplaySection, {
+  return html10`${widget3(ReplaySection, {
     settings: input.recorderSettings,
     replayExtensions: input.replayExtensions,
     onStartReplay: input.onTogglePlaying,
     disabled: input.replayState.isPlaying
-  })}
-        >
-      </devtools-widget>`;
+  })}`;
 }
 function renderSections(input) {
   return html10`
@@ -4622,8 +4617,7 @@ function renderSections(input) {
               </div>
               <div class="content">
                 <div class="steps">
-                  <devtools-widget
-                    .widgetConfig=${UI9.Widget.widgetConfig(StepView, {
+                  ${widget3(StepView, {
     section: section4,
     state: input.getSectionState(section4),
     isStartOfGroup: true,
@@ -4640,8 +4634,6 @@ function renderSections(input) {
     onStepClick: input.onStepClick,
     onStepHover: input.onStepHover
   })}
-                  >
-                  </devtools-widget>
                   ${section4.steps.map((step) => {
     const stepIndex = input.recording.steps.indexOf(step);
     return html10`

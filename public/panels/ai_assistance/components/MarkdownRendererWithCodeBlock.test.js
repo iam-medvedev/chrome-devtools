@@ -65,6 +65,8 @@ color: red;
                 const el = renderToElem('[text](#req-unknown)');
                 const link = el.querySelector('devtools-link');
                 assert.notExists(link);
+                assert(el.textContent.includes('text'));
+                assert.isFalse(el.textContent.includes('#req-unknown'));
             });
             it('works for sources', () => {
                 Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });

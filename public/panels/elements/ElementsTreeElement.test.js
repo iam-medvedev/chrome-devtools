@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as UI from '../../../front_end/ui/legacy/legacy.js';
+import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -577,6 +579,160 @@ describeWithMockConnection('ElementsTreeElement highlighting', () => {
         assert.isFalse(textNodeTreeElement.isEditing());
         sinon.assert.calledOnce(setNodeValueSpy);
         sinon.assert.calledWith(setNodeValueSpy, 'New Text');
+    });
+});
+describeWithMockConnection('ElementsTreeElement in Snapshot Mode', () => {
+    let target;
+    let domModel;
+    let treeOutline;
+    let node;
+    let treeElement;
+    beforeEach(() => {
+        target = createTarget();
+        domModel = target.model(SDK.DOMModel.DOMModel);
+        node = new SDK.DOMModel.DOMNode(domModel);
+        node.id = 1;
+        sinon.stub(node, 'nodeType').returns(Node.ELEMENT_NODE);
+        sinon.stub(node, 'nodeNameInCorrectCase').returns('div');
+        sinon.stub(node, 'nodeName').returns('DIV');
+        sinon.stub(node, 'isAdRelatedNode').returns(true);
+        sinon.stub(node, 'isMediaNode').returns(true);
+        treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+        /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ false, /* maxTreeDepth */ 2, 
+        /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true);
+        treeOutline.wireToDOMModel(domModel);
+        treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(node);
+        treeElement.treeOutline = treeOutline;
+    });
+    it('Ask AI button is not present', async () => {
+        const parentNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
+            nodeId: 2,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [{
+                    nodeId: 1,
+                    backendNodeId: 1,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'DIV',
+                    localName: 'div',
+                    nodeValue: '',
+                    childNodeCount: 0,
+                    attributes: [],
+                }],
+            attributes: [],
+        });
+        const snapshot = await parentNode.takeSnapshot();
+        const nodeSnapshot = snapshot.children()?.[0];
+        assert.exists(nodeSnapshot);
+        treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
+        /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ false, /* maxTreeDepth */ 2, 
+        /* enableContextMenu */ false, /* showComments */ false, /* showAIButton */ false, /* disableEdits */ true);
+        treeOutline.wireToDOMModel(domModel);
+        treeElement = new Elements.ElementsTreeElement.ElementsTreeElement(nodeSnapshot);
+        treeElement.treeOutline = treeOutline;
+        treeElement.hovered = true;
+        treeElement.select();
+        // Mock the action availability
+        const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
+        sinon.stub(actionRegistry, 'hasAction').withArgs('freestyler.elements-floating-button').returns(true);
+        sinon.stub(actionRegistry, 'getAction').withArgs('freestyler.elements-floating-button').returns({
+            title: () => 'Ask AI',
+            execute: () => { },
+        });
+        treeElement.performUpdate();
+        const aiButton = treeElement.listItemElement.querySelector('devtools-floating-button');
+        assert.isNull(aiButton, 'Ask AI button should not be present in snapshot mode');
+    });
+    describe('Adorners', () => {
+        let cssModel;
+        beforeEach(() => {
+            cssModel = target.model(SDK.CSSModel.CSSModel);
+            assert.exists(cssModel);
+            // Mocks for various adorners
+            sinon.stub(cssModel, 'getLayoutPropertiesFromComputedStyle').resolves({
+                containerType: 'inline-size',
+                isFlex: true,
+                isGrid: true,
+                isGridLanes: true,
+                hasScroll: true,
+                isSubgrid: true,
+            });
+            sinon.stub(node, 'attributes').returns([{ name: 'popover', value: '' }]);
+            sinon.stub(node, 'topLayerIndex').returns(1);
+            sinon.stub(node, 'affectedByStartingStyles').returns(true);
+            const slot = {
+                deferredNode: {
+                    resolve: (callback) => {
+                        callback(node);
+                    },
+                    resolvePromise: () => Promise.resolve(node),
+                    backendNodeId: () => 1,
+                    highlight: () => { },
+                },
+            };
+            sinon.stub(node, 'hasAssignedSlot').returns(true);
+            sinon.stub(node, 'assignedSlot').value(slot);
+        });
+        it('media adorner click is no-op', () => {
+            treeElement.updateAdorners();
+            treeElement.performUpdate();
+            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            const mediaAdorner = Array.from(adorners).find(a => a.name === 'media');
+            assert.exists(mediaAdorner);
+            const viewManager = UI.ViewManager.ViewManager.instance();
+            const showViewSpy = sinon.spy(viewManager, 'showView');
+            mediaAdorner.dispatchEvent(new Event('click'));
+            sinon.assert.notCalled(showViewSpy);
+        });
+        it('popover adorner click is no-op', () => {
+            // Force allow popover for test
+            const originalDevToolsAllowPopoverForcing = Root.Runtime.hostConfig.devToolsAllowPopoverForcing;
+            Root.Runtime.hostConfig.devToolsAllowPopoverForcing = { enabled: true };
+            treeElement.updateAdorners();
+            treeElement.performUpdate();
+            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            const popoverAdorner = Array.from(adorners).find(a => a.name === 'popover');
+            assert.exists(popoverAdorner);
+            const agentSpy = sinon.spy(domModel.agent, 'invoke_forceShowPopover');
+            popoverAdorner.dispatchEvent(new Event('click'));
+            sinon.assert.notCalled(agentSpy);
+            // Restore
+            Root.Runtime.hostConfig.devToolsAllowPopoverForcing = originalDevToolsAllowPopoverForcing;
+        });
+        it('top-layer adorner click is no-op', () => {
+            treeElement.updateAdorners();
+            treeElement.performUpdate();
+            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            const topLayerAdorner = Array.from(adorners).find(a => a.name === 'top-layer');
+            assert.exists(topLayerAdorner);
+            const revealSpy = sinon.spy(treeElement.treeOutline, 'revealInTopLayer');
+            topLayerAdorner.dispatchEvent(new Event('click'));
+            sinon.assert.notCalled(revealSpy);
+        });
+        it('starting-style adorner click is no-op', () => {
+            treeElement.updateAdorners();
+            treeElement.performUpdate();
+            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            const startingStyleAdorner = Array.from(adorners).find(a => a.name === 'starting-style');
+            assert.exists(startingStyleAdorner);
+            const forceStartingStyleSpy = sinon.spy(cssModel, 'forceStartingStyle');
+            startingStyleAdorner.dispatchEvent(new Event('click'));
+            sinon.assert.notCalled(forceStartingStyleSpy);
+        });
+        it('slot adorner click works', () => {
+            treeElement.updateAdorners();
+            treeElement.performUpdate();
+            const adorners = treeElement.listItemElement.querySelectorAll('devtools-adorner');
+            const slotAdorner = Array.from(adorners).find(a => a.name === 'slot');
+            assert.exists(slotAdorner);
+            const revealSpy = sinon.spy(Common.Revealer.RevealerRegistry.instance(), 'reveal');
+            slotAdorner.dispatchEvent(new Event('click'));
+            sinon.assert.called(revealSpy);
+        });
     });
 });
 //# sourceMappingURL=ElementsTreeElement.test.js.map

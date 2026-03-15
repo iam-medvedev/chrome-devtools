@@ -38,7 +38,7 @@ describeWithEnvironment('ViewRegistration', () => {
                 return new MockView();
             },
         });
-        UI.ViewManager.ViewManager.instance({ forceNew: true, universe: { context: new Root.DevToolsContext.DevToolsContext() } });
+        UI.ViewManager.ViewManager.instance({ forceNew: true, universe: { context: new Root.DevToolsContext.WritableDevToolsContext() } });
     });
     it('retrieves a registered view', async () => {
         const preRegisteredView = UI.ViewManager.ViewManager.instance().view(viewId);

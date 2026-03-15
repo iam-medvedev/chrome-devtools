@@ -5925,6 +5925,16 @@ Common12.Revealer.registerRevealer({
     return new Timeline.TimelinePanel.InsightRevealer();
   }
 });
+Common12.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes3((Timeline) => [Timeline.Utils.Helpers.RevealableCoreVitals]);
+  },
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.CoreVitalsRevealer();
+  }
+});
 
 // gen/front_end/panels/ai_assistance/ai_assistance-meta.js
 import * as Common13 from "./../../core/common/common.js";

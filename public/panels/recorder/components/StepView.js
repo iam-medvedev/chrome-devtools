@@ -13,6 +13,7 @@ import * as Models from '../models/models.js';
 import stepViewStyles from './stepView.css.js';
 import { TimelineSection } from './TimelineSection.js';
 const { html } = Lit;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Title for the step type that configures the viewport
@@ -264,7 +265,6 @@ function renderStepActions(input) {
     }}
       jslog=${VisualLogging.dropDown('step-actions').track({ click: true })}
       .iconName=${'dots-vertical'}
-      }
     ></devtools-menu-button>
   `;
     // clang-format on
@@ -295,7 +295,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     Lit.render(html `
     <style>${stepViewStyles}</style>
     <div>
-      <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(TimelineSection, {
+      <devtools-widget ${widget(TimelineSection, {
         isFirstSection: input.isFirstSection,
         isLastSection: input.isLastSection,
         isStartOfGroup: input.isStartOfGroup,
@@ -352,7 +352,6 @@ export const DEFAULT_VIEW = (input, _output, target) => {
               <div class="subtitle" title=${subtitle}>${subtitle}</div>
             </div>
           </div>
-          <div class="filler"></div>
           ${renderStepActions(input)}
         </div>
         <div class="details">

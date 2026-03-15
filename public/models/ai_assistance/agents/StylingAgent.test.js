@@ -354,6 +354,7 @@ describeWithEnvironment('StylingAgent', function () {
                     name: 'executeJavaScript',
                     response: {
                         result: 'test data',
+                        widgets: undefined,
                     }
                 }
             }, 'Unexpected input in the follow-up request');
@@ -588,6 +589,40 @@ describeWithEnvironment('StylingAgent', function () {
                 assert.strictEqual(actionStep.output, 'Error: JavaScript execution that modifies the page is currently disabled.');
                 assert.lengthOf(execJs.getCalls(), 1);
             });
+        });
+    });
+    describe('finalizeAnswer', () => {
+        it('yields STYLE_PROPERTIES widget for nodes touched in the current turn', async () => {
+            updateHostConfig({
+                devToolsAiAssistanceV2: {
+                    enabled: true,
+                },
+            });
+            const changeManager = new AiAssistance.ChangeManager.ChangeManager();
+            // Stub ChangeManager to return a node only for Turn 1
+            const stub = sinon.stub(changeManager, 'getChangedNodesForGroupId');
+            stub.withArgs(sinon.match.any, 1).returns([1]);
+            stub.withArgs(sinon.match.any, 2).returns([2]);
+            const agent = new StylingAgent.StylingAgent({
+                aidaClient: mockAidaClient([[{ explanation: 'answer' }], [{ explanation: 'answer2' }]]),
+                changeManager,
+            });
+            // Execute Turn 1
+            const responses1 = await Array.fromAsync(agent.run('test 1', { selected: new AiAssistance.StylingAgent.NodeContext(element) }));
+            const answer1 = responses1.find(r => r.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
+            assert.exists(answer1.widgets);
+            assert.lengthOf(answer1.widgets, 1);
+            assert.strictEqual(answer1.widgets[0].name, 'STYLE_PROPERTIES');
+            const widgetData = answer1.widgets[0].data;
+            assert.strictEqual(widgetData.backendNodeId, 1);
+            assert.strictEqual(widgetData.selector, AiAssistance.StylingAgent.AI_ASSISTANCE_FILTER_REGEX);
+            // Execute Turn 2
+            const responses2 = await Array.fromAsync(agent.run('test 2', { selected: new AiAssistance.StylingAgent.NodeContext(element) }));
+            const answer2 = responses2.find(r => r.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
+            assert.exists(answer2.widgets);
+            assert.lengthOf(answer2.widgets, 1);
+            const widgetData2 = answer2.widgets[0].data;
+            assert.strictEqual(widgetData2.backendNodeId, 2);
         });
     });
 });

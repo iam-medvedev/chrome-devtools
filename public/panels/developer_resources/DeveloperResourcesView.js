@@ -10,7 +10,7 @@ import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { DeveloperResourcesListView } from './DeveloperResourcesListView.js';
 import developerResourcesViewStyles from './developerResourcesView.css.js';
-const { widgetConfig } = UI.Widget;
+const { widget } = UI.Widget;
 const { bindToSetting } = UI.UIUtils;
 const UIStrings = {
     /**
@@ -75,14 +75,12 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         </devtools-toolbar>
       </div>
       <div class="developer-resource-view-results">
-        <devtools-widget
-          .widgetConfig=${widgetConfig(DeveloperResourcesListView, {
+        ${widget(DeveloperResourcesListView, {
         items: input.items,
         selectedItem: input.selectedItem,
         onSelect: input.onSelect,
         filters: input.filters
-    })}>
-        </devtools-widget>
+    })}
       </div>
       <div class="developer-resource-view-toolbar-summary">
         <div class="developer-resource-view-message">

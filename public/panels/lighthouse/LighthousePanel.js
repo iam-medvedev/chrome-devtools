@@ -7,7 +7,7 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { Events, LighthouseController, } from './LighthouseController.js';
+import { Events, LighthouseController } from './LighthouseController.js';
 import lighthousePanelStyles from './lighthousePanel.css.js';
 import { ProtocolService } from './LighthouseProtocolService.js';
 import { LighthouseReportRenderer } from './LighthouseReportRenderer.js';
@@ -48,6 +48,12 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/lighthouse/LighthousePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let lighthousePanelInstace;
+export class ActiveLighthouseReport {
+    report;
+    constructor(report) {
+        this.report = report;
+    }
+}
 export class LighthousePanel extends UI.Panel.Panel {
     controller;
     startView;
@@ -56,7 +62,6 @@ export class LighthousePanel extends UI.Panel.Panel {
     warningText;
     unauditableExplanation;
     cachedRenderedReports;
-    dropTarget;
     auditResultsElement;
     clearButton;
     newButton;
@@ -74,7 +79,7 @@ export class LighthousePanel extends UI.Panel.Panel {
         this.warningText = null;
         this.unauditableExplanation = null;
         this.cachedRenderedReports = new Map();
-        this.dropTarget = new UI.DropTarget.DropTarget(this.contentElement, [UI.DropTarget.Type.File], i18nString(UIStrings.dropLighthouseJsonHere), this.handleDrop.bind(this));
+        new UI.DropTarget.DropTarget(this.contentElement, [UI.DropTarget.Type.File], i18nString(UIStrings.dropLighthouseJsonHere), this.handleDrop.bind(this));
         this.controller.addEventListener(Events.PageAuditabilityChanged, this.refreshStartAuditUI.bind(this));
         this.controller.addEventListener(Events.PageWarningsChanged, this.refreshWarningsUI.bind(this));
         this.controller.addEventListener(Events.AuditProgressChanged, this.refreshStatusUI.bind(this));
@@ -83,6 +88,7 @@ export class LighthousePanel extends UI.Panel.Panel {
         this.auditResultsElement.addEventListener('keydown', this.onKeyDown.bind(this));
         this.renderStartView();
         this.controller.recomputePageAuditability();
+        UI.Context.Context.instance().setFlavor(ActiveLighthouseReport, null);
     }
     static instance(opts) {
         if (!lighthousePanelInstace || opts?.forceNew) {
@@ -116,15 +122,19 @@ export class LighthousePanel extends UI.Panel.Panel {
             this.handleError(err);
         }
     }
-    async handleCompleteRun() {
+    async handleCompleteRun(overrides) {
         try {
-            await this.controller.startLighthouse();
+            await this.controller.startLighthouse(overrides);
             this.renderStatusView();
             const { lhr, artifacts } = await this.controller.collectLighthouseResults();
             this.buildReportUI(lhr, artifacts);
+            UI.Context.Context.instance().setFlavor(ActiveLighthouseReport, new ActiveLighthouseReport(lhr));
+            return { report: lhr };
         }
         catch (err) {
             this.handleError(err);
+            UI.Context.Context.instance().setFlavor(ActiveLighthouseReport, null);
+            return { report: null };
         }
     }
     async handleRunCancel() {
@@ -302,6 +312,12 @@ export class LighthousePanel extends UI.Panel.Panel {
         if (event.key === 'Escape' && this.auditResultsElement.querySelector('.lh-tools__button.lh-active')) {
             event.handled = true;
         }
+    }
+    static async executeLighthouseRecording(overrides) {
+        const panel = LighthousePanel.instance();
+        await UI.ViewManager.ViewManager.instance().showView('lighthouse');
+        const { report } = await panel.handleCompleteRun(overrides);
+        return report;
     }
 }
 //# sourceMappingURL=LighthousePanel.js.map

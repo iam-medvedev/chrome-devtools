@@ -204,7 +204,7 @@ var webauthnPane_css_default = `/*
   }
 
   .code {
-    font-family: monospace;
+    font-family: var(--monospace-font-family);
   }
 
   .learn-more {
@@ -225,7 +225,7 @@ var webauthnPane_css_default = `/*
 
 // gen/front_end/panels/webauthn/WebauthnPane.js
 var { render, html, Directives: { ref, repeat, classMap } } = Lit;
-var { widgetConfig } = UI.Widget;
+var { widget } = UI.Widget;
 var UIStrings = {
   /**
    * @description Label for button that allows user to download the private key related to a credential.
@@ -428,7 +428,7 @@ function renderToolbar(enabled, onToggle) {
 }
 function renderLearnMoreView() {
   return html`
-    <devtools-widget class="learn-more" .widgetConfig=${widgetConfig(UI.EmptyWidget.EmptyWidget, {
+    <devtools-widget class="learn-more" ${widget(UI.EmptyWidget.EmptyWidget, {
     header: i18nString(UIStrings.noAuthenticator),
     text: i18nString(UIStrings.useWebauthnForPhishingresistant),
     link: WEB_AUTHN_EXPLANATION_URL

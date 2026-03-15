@@ -3,6 +3,7 @@ import * as Host from '../../core/host/host.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as LighthouseModel from '../../models/lighthouse/lighthouse.js';
+import type { RunOverrides } from './LighthousePanel.js';
 import type { LighthouseRun as LighthouseRunType, ProtocolService } from './LighthouseProtocolService.js';
 export declare class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SDK.TargetManager.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
     private readonly protocolService;
@@ -25,13 +26,18 @@ export declare class LighthouseController extends Common.ObjectWrapper.ObjectWra
         formFactor: (string | undefined);
         mode: string;
     };
-    getCategoryIDs(): string[];
+    getCategoryIDs(): CategoryId[];
     getInspectedURL(options?: {
         force: boolean;
     }): Promise<Platform.DevToolsPath.UrlString>;
     recomputePageAuditability(): void;
     private recordMetrics;
-    startLighthouse(): Promise<void>;
+    /**
+     * Starts a LH run. By default it will use the categories based on what the
+     * user has selected in the UI, but these can be overridden by passing in the
+     * category IDs, in which case these take priority.
+     */
+    startLighthouse(overrides?: RunOverrides): Promise<void>;
     collectLighthouseResults(): Promise<LighthouseModel.ReporterTypes.RunnerResult>;
     cancelLighthouse(): Promise<void>;
 }
@@ -57,9 +63,10 @@ export interface EventTypes {
     [Events.PageWarningsChanged]: PageWarningsChangedEvent;
     [Events.AuditProgressChanged]: AuditProgressChangedEvent;
 }
+export type CategoryId = 'performance' | 'accessibility' | 'best-practices' | 'seo';
 export interface Preset {
     setting: Common.Settings.Setting<boolean>;
-    configID: string;
+    configID: CategoryId;
     title: () => Common.UIString.LocalizedString;
     description: () => Common.UIString.LocalizedString;
     supportedModes: string[];

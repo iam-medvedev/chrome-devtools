@@ -888,6 +888,9 @@ var ClientFeature;
   ClientFeature2[ClientFeature2["CHROME_FILE_AGENT"] = 9] = "CHROME_FILE_AGENT";
   ClientFeature2[ClientFeature2["CHROME_PATCH_AGENT"] = 12] = "CHROME_PATCH_AGENT";
   ClientFeature2[ClientFeature2["CHROME_PERFORMANCE_FULL_AGENT"] = 24] = "CHROME_PERFORMANCE_FULL_AGENT";
+  ClientFeature2[ClientFeature2["CHROME_CONTEXT_SELECTION_AGENT"] = 25] = "CHROME_CONTEXT_SELECTION_AGENT";
+  ClientFeature2[ClientFeature2["CHROME_ACCESSIBILITY_AGENT"] = 26] = "CHROME_ACCESSIBILITY_AGENT";
+  ClientFeature2[ClientFeature2["CHROME_CONVERSATION_SUMMARY_AGENT"] = 27] = "CHROME_CONVERSATION_SUMMARY_AGENT";
 })(ClientFeature || (ClientFeature = {}));
 var UserTier;
 (function(UserTier2) {
@@ -1814,6 +1817,14 @@ var UserMetrics = class {
   consoleInsightShortTeaserGenerated(timeInMilliseconds) {
     InspectorFrontendHostInstance.recordPerformanceHistogram("DevTools.Insights.ShortTeaserGenerationTime", timeInMilliseconds);
   }
+  extensionEvalTarget(target) {
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+      "DevTools.ExtensionEvalTarget",
+      target,
+      3
+      /* ExtensionEvalTarget.MAX_VALUE */
+    );
+  }
 };
 var Action;
 (function(Action2) {
@@ -2272,7 +2283,6 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["authored-deployed-grouping"] = 63] = "authored-deployed-grouping";
   DevtoolsExperiments2[DevtoolsExperiments2["just-my-code"] = 65] = "just-my-code";
   DevtoolsExperiments2[DevtoolsExperiments2["use-source-map-scopes"] = 76] = "use-source-map-scopes";
-  DevtoolsExperiments2[DevtoolsExperiments2["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";
   DevtoolsExperiments2[DevtoolsExperiments2["durable-messages"] = 110] = "durable-messages";
   DevtoolsExperiments2[DevtoolsExperiments2["jpeg-xl"] = 111] = "jpeg-xl";

@@ -1832,6 +1832,30 @@
   "models/trace/insights/Cache.ts | title": {
     "message": "Use efficient cache lifetimes"
   },
+  "models/trace/insights/CharacterSet.ts | description": {
+    "message": "A character encoding declaration is required. It can be done with a meta charset tag in the first 1024 bytes of the HTML or in the Content-Type HTTP response header. [Learn more about declaring the character encoding](https://developer.chrome.com/docs/insights/charset/)."
+  },
+  "models/trace/insights/CharacterSet.ts | failedHttpHeader": {
+    "message": "Does not declare charset in HTTP header"
+  },
+  "models/trace/insights/CharacterSet.ts | failedMetaCharsetLate": {
+    "message": "Declares charset using a meta tag after the first 1024 bytes"
+  },
+  "models/trace/insights/CharacterSet.ts | failedMetaCharsetMissing": {
+    "message": "Does not declare charset using a meta tag"
+  },
+  "models/trace/insights/CharacterSet.ts | failedMetaCharsetUnknown": {
+    "message": "Could not determine meta charset declaration from trace"
+  },
+  "models/trace/insights/CharacterSet.ts | passingHttpHeader": {
+    "message": "Declares charset in HTTP header"
+  },
+  "models/trace/insights/CharacterSet.ts | passingMetaCharsetEarly": {
+    "message": "Declares charset using a meta tag in the first 1024 bytes"
+  },
+  "models/trace/insights/CharacterSet.ts | title": {
+    "message": "Declare a character encoding"
+  },
   "models/trace/insights/CLSCulprits.ts | animation": {
     "message": "Animation"
   },
@@ -3179,11 +3203,14 @@
   "panels/ai_assistance/components/WalkthroughView.ts | close": {
     "message": "Close"
   },
+  "panels/ai_assistance/components/WalkthroughView.ts | showAgentWalkthrough": {
+    "message": "Show agent walkthrough"
+  },
   "panels/ai_assistance/components/WalkthroughView.ts | showThinking": {
     "message": "Show thinking"
   },
   "panels/ai_assistance/components/WalkthroughView.ts | title": {
-    "message": "Investigation steps"
+    "message": "Agent walkthrough"
   },
   "panels/animation/animation-meta.ts | animations": {
     "message": "Animations"
@@ -8024,6 +8051,9 @@
   "panels/elements/ShortcutTreeElement.ts | reveal": {
     "message": "reveal"
   },
+  "panels/elements/StylePropertiesSection.ts | collapseExpandedRule": {
+    "message": "Collapse expanded rule"
+  },
   "panels/elements/StylePropertiesSection.ts | constructedStylesheet": {
     "message": "constructed stylesheet"
   },
@@ -8038,6 +8068,9 @@
   },
   "panels/elements/StylePropertiesSection.ts | cssSelector": {
     "message": "CSS selector"
+  },
+  "panels/elements/StylePropertiesSection.ts | expandCollapsedRule": {
+    "message": "Expand collapsed rule"
   },
   "panels/elements/StylePropertiesSection.ts | injectedStylesheet": {
     "message": "injected stylesheet"
@@ -8219,9 +8252,6 @@
   "panels/emulation/DeviceModeToolbar.ts | moreOptions": {
     "message": "More options"
   },
-  "panels/emulation/DeviceModeToolbar.ts | none": {
-    "message": "None"
-  },
   "panels/emulation/DeviceModeToolbar.ts | portrait": {
     "message": "Portrait"
   },
@@ -8254,6 +8284,9 @@
   },
   "panels/emulation/DeviceModeToolbar.ts | showRulers": {
     "message": "Show rulers"
+  },
+  "panels/emulation/DeviceModeToolbar.ts | throttling": {
+    "message": "Throttling"
   },
   "panels/emulation/DeviceModeToolbar.ts | toggleDualscreenMode": {
     "message": "Toggle dual-screen mode"
@@ -14981,6 +15014,30 @@
   "panels/timeline/components/CPUThrottlingSelector.ts | recommendedThrottlingReason": {
     "message": "Consider changing setting to simulate real user environments"
   },
+  "panels/timeline/components/CWVMetrics.ts | dismissTitle": {
+    "message": "Dismiss"
+  },
+  "panels/timeline/components/CWVMetrics.ts | fieldMismatchNotice": {
+    "message": "There are many reasons why local and field metrics [may not match](https://web.dev/articles/lab-and-field-data-differences). Adjust [throttling settings and device emulation](https://developer.chrome.com/docs/devtools/device-mode) to analyze traces more similar to the average user's environment."
+  },
+  "panels/timeline/components/CWVMetrics.ts | fieldMismatchTitle": {
+    "message": "Field & local metrics mismatch"
+  },
+  "panels/timeline/components/CWVMetrics.ts | fieldScoreLabel": {
+    "message": "Field ({PH1})"
+  },
+  "panels/timeline/components/CWVMetrics.ts | metricScore": {
+    "message": "{PH1}: {PH2} {PH3} score"
+  },
+  "panels/timeline/components/CWVMetrics.ts | metricScoreUnavailable": {
+    "message": "{PH1}: unavailable"
+  },
+  "panels/timeline/components/CWVMetrics.ts | originOption": {
+    "message": "Origin"
+  },
+  "panels/timeline/components/CWVMetrics.ts | urlOption": {
+    "message": "URL"
+  },
   "panels/timeline/components/DetailsView.ts | forcedReflow": {
     "message": "Forced reflow"
   },
@@ -15674,32 +15731,8 @@
   "panels/timeline/components/SidebarAnnotationsTab.ts | timeRangeTutorialTitle": {
     "message": "Define a time range"
   },
-  "panels/timeline/components/SidebarSingleInsightSet.ts | dismissTitle": {
-    "message": "Dismiss"
-  },
-  "panels/timeline/components/SidebarSingleInsightSet.ts | fieldMismatchNotice": {
-    "message": "There are many reasons why local and field metrics [may not match](https://web.dev/articles/lab-and-field-data-differences). Adjust [throttling settings and device emulation](https://developer.chrome.com/docs/devtools/device-mode) to analyze traces more similar to the average user's environment."
-  },
-  "panels/timeline/components/SidebarSingleInsightSet.ts | fieldMismatchTitle": {
-    "message": "Field & local metrics mismatch"
-  },
-  "panels/timeline/components/SidebarSingleInsightSet.ts | fieldScoreLabel": {
-    "message": "Field ({PH1})"
-  },
-  "panels/timeline/components/SidebarSingleInsightSet.ts | metricScore": {
-    "message": "{PH1}: {PH2} {PH3} score"
-  },
-  "panels/timeline/components/SidebarSingleInsightSet.ts | metricScoreUnavailable": {
-    "message": "{PH1}: unavailable"
-  },
-  "panels/timeline/components/SidebarSingleInsightSet.ts | originOption": {
-    "message": "Origin"
-  },
   "panels/timeline/components/SidebarSingleInsightSet.ts | passedInsights": {
     "message": "Passed insights ({PH1})"
-  },
-  "panels/timeline/components/SidebarSingleInsightSet.ts | urlOption": {
-    "message": "URL"
   },
   "panels/timeline/components/TimelineSummary.ts | rangeSS": {
     "message": "Range:  {PH1} – {PH2}"

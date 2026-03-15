@@ -47,6 +47,7 @@ export declare class UserMetrics {
     consoleInsightTeaserAbortedBeforeFirstCharacter(timeInMilliseconds: number): void;
     consoleInsightLongTeaserGenerated(timeInMilliseconds: number): void;
     consoleInsightShortTeaserGenerated(timeInMilliseconds: number): void;
+    extensionEvalTarget(target: ExtensionEvalTarget): void;
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that
@@ -528,7 +529,6 @@ export declare enum DevtoolsExperiments {
     'authored-deployed-grouping' = 63,
     'just-my-code' = 65,
     'use-source-map-scopes' = 76,
-    'timeline-show-postmessage-events' = 86,
     'timeline-debug-mode' = 93,
     'durable-messages' = 110,
     'jpeg-xl' = 111,
@@ -929,4 +929,10 @@ export declare const enum BuiltInAiAvailability {
     AVAILABLE_NO_GPU = 8,
     DISABLED_NO_GPU = 9,
     MAX_VALUE = 10
+}
+export declare const enum ExtensionEvalTarget {
+    WEB_PAGE = 0,
+    SAME_EXTENSION = 1,
+    OTHER_EXTENSION = 2,
+    MAX_VALUE = 3
 }

@@ -46,6 +46,7 @@
   "files": [
     "../../../../../../../front_end/models/trace/insights/CLSCulprits.test.ts",
     "../../../../../../../front_end/models/trace/insights/Cache.test.ts",
+    "../../../../../../../front_end/models/trace/insights/CharacterSet.test.ts",
     "../../../../../../../front_end/models/trace/insights/Common.test.ts",
     "../../../../../../../front_end/models/trace/insights/DOMSize.test.ts",
     "../../../../../../../front_end/models/trace/insights/DocumentLatency.test.ts",

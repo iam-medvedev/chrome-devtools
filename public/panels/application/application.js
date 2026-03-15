@@ -257,7 +257,7 @@ devtools-report .report-section {
 import * as ApplicationComponents from "./components/components.js";
 var { styleMap, classMap, ref } = Directives;
 var { linkifyURL } = Components.Linkifier.Linkifier;
-var { widgetConfig } = UI2.Widget;
+var { widget } = UI2.Widget;
 var UIStrings = {
   /**
    * @description Text in App Manifest View of the Application panel
@@ -771,7 +771,7 @@ function renderPresentation(presentationData, output) {
 function renderProtocolHandlers(data, output) {
   return html`${renderSectionHeader(i18nString(UIStrings.protocolHandlers), output)}
     <div class="report-row">
-      <devtools-widget .widgetConfig=${widgetConfig(ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView, { protocolHandlers: data.protocolHandlers, manifestLink: data.manifestLink })}
+      <devtools-widget ${widget(ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView, { protocolHandlers: data.protocolHandlers, manifestLink: data.manifestLink })}
         ${ref(setFocusOnSection(i18nString(UIStrings.protocolHandlers), output))}>
       </devtools-widget>
     </div>
@@ -1038,12 +1038,11 @@ var DEFAULT_VIEW = (input, output, target) => {
   render(html`
     <style>${appManifestView_css_default}</style>
     <style>${UI2.inspectorCommonStyles}</style>
-    ${isEmpty ? html`
-    <devtools-widget .widgetConfig=${widgetConfig(UI2.EmptyWidget.EmptyWidget, {
+    ${isEmpty ? widget(UI2.EmptyWidget.EmptyWidget, {
     header: i18nString(UIStrings.noManifestDetected),
     text: i18nString(UIStrings.manifestDescription),
     link: "https://web.dev/add-manifest/"
-  })}></devtools-widget>` : html`
+  }) : html`
     <devtools-report .data=${{ reportTitle: i18nString(UIStrings.appManifest), reportUrl: url }}>
       ${renderErrors(warnings, errors, imageErrors, output)}
       ${installabilityErrors?.length ? renderInstallability(installabilityErrors) : nothing}
@@ -3294,7 +3293,7 @@ var originTrialTreeView_css_default = `/*
 
 // gen/front_end/panels/application/OriginTrialTreeView.js
 var { classMap: classMap2 } = Directives2;
-var { widgetConfig: widgetConfig2 } = UI5.Widget;
+var { widget: widget2 } = UI5.Widget;
 var UIStrings6 = {
   /**
    * @description Label for the 'origin' field in a parsed Origin Trial Token.
@@ -3382,8 +3381,7 @@ function renderTokenNode(token) {
 function renderTokenDetails(token) {
   return html2`
     <li role="treeitem">
-      <devtools-widget .widgetConfig=${widgetConfig2(OriginTrialTokenRows, { data: token })}>
-      </devtools-widget>
+      ${widget2(OriginTrialTokenRows, { data: token })}
     </li>`;
 }
 function renderTokenDetailsNodes(token) {
@@ -3537,7 +3535,7 @@ var OriginTrialTreeView = class extends UI5.Widget.Widget {
 };
 
 // gen/front_end/panels/application/FrameDetailsView.js
-var { widgetConfig: widgetConfig3 } = UI6.Widget;
+var { widget: widget3 } = UI6.Widget;
 var UIStrings7 = {
   /**
    * @description Section header in the Frame Details view
@@ -3771,12 +3769,10 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
       ${renderIsolationSection(input)}
       ${renderApiAvailabilitySection(input.frame)}
       ${renderOriginTrial(input.trials)}
-      ${input.permissionsPolicies ? html3`
-          <devtools-widget .widgetConfig=${widgetConfig3(ApplicationComponents4.PermissionsPolicySection.PermissionsPolicySection, {
+      ${input.permissionsPolicies ? widget3(ApplicationComponents4.PermissionsPolicySection.PermissionsPolicySection, {
     policies: input.permissionsPolicies,
     showDetails: false
-  })}>
-          </devtools-widget>` : nothing3}
+  }) : nothing3}
       ${input.protocolMonitorExperimentEnabled ? renderAdditionalInfoSection(input.frame) : nothing3}
     </devtools-report>
   `, target);
@@ -3799,7 +3795,7 @@ function renderOriginTrial(trials) {
         </devtools-link>
       </span>
     </devtools-report-section>
-    <devtools-widget class="span-cols" .widgetConfig=${widgetConfig3(OriginTrialTreeView, { data })}>
+    <devtools-widget class="span-cols" ${widget3(OriginTrialTreeView, { data })}>
     </devtools-widget>
     <devtools-report-divider></devtools-report-divider>`;
 }
@@ -3880,10 +3876,7 @@ function renderOwnerElement(linkTargetDOMNode) {
         <devtools-report-key>${i18nString7(UIStrings7.ownerElement)}</devtools-report-key>
         <devtools-report-value class="without-min-width">
           <div class="inline-items">
-            <devtools-widget .widgetConfig=${widgetConfig3(PanelCommon.DOMLinkifier.DOMNodeLink, {
-      node: linkTargetDOMNode
-    })}>
-            </devtools-widget>
+            ${widget3(PanelCommon.DOMLinkifier.DOMNodeLink, { node: linkTargetDOMNode })}
           </div>
         </devtools-report-value>
       `;
@@ -3895,8 +3888,7 @@ function maybeRenderCreationStacktrace(stackTrace) {
     return html3`
         <devtools-report-key title=${i18nString7(UIStrings7.creationStackTraceExplanation)}>${i18nString7(UIStrings7.creationStackTrace)}</devtools-report-key>
         <devtools-report-value jslog=${VisualLogging3.section("frame-creation-stack-trace")}>
-          <devtools-widget .widgetConfig=${UI6.Widget.widgetConfig(Components2.JSPresentationUtils.StackTracePreviewContent, { stackTrace, options: { expandable: true } })}>
-          </devtools-widget>
+          ${widget3(Components2.JSPresentationUtils.StackTracePreviewContent, { stackTrace, options: { expandable: true } })}
         </devtools-report-value>
       `;
   }
@@ -3945,12 +3937,7 @@ function maybeRenderCreatorAdScriptAncestry(adFrameType, target, adScriptAncestr
   }
   const rows = adScriptAncestry.ancestryChain.map((adScriptId) => {
     return html3`<div>
-      <devtools-widget .widgetConfig=${widgetConfig3(Components2.Linkifier.ScriptLocationLink, {
-      target,
-      scriptId: adScriptId.scriptId,
-      options: { jslogContext: "ad-script" }
-    })}>
-      </devtools-widget>
+      ${widget3(Components2.Linkifier.ScriptLocationLink, { target, scriptId: adScriptId.scriptId, options: { jslogContext: "ad-script" } })}
     </div>`;
   });
   const shouldRenderFilterlistRule = adScriptAncestry.rootScriptFilterlistRule !== void 0;
@@ -4451,7 +4438,7 @@ var IndexedDBModel = class _IndexedDBModel extends SDK8.SDKModel.SDKModel {
       return;
     }
     for (const [storageBucketName] of this.databaseNamesByStorageKeyAndBucket.get(storageKey) || []) {
-      const storageBucket = this.storageBucketModel?.getBucketByName(storageKey, storageBucketName ?? void 0)?.bucket;
+      const storageBucket = this.storageBucketModel?.getBucketByName(storageKey, storageBucketName)?.bucket;
       if (storageBucket) {
         this.removeStorageBucket(storageBucket);
       }
@@ -4473,7 +4460,7 @@ var IndexedDBModel = class _IndexedDBModel extends SDK8.SDKModel.SDKModel {
     for (const [storageKey] of this.databaseNamesByStorageKeyAndBucket) {
       const storageBucketNames = this.databaseNamesByStorageKeyAndBucket.get(storageKey)?.keys() || [];
       for (const storageBucketName of storageBucketNames) {
-        const storageBucket = this.storageBucketModel?.getBucketByName(storageKey, storageBucketName ?? void 0)?.bucket;
+        const storageBucket = this.storageBucketModel?.getBucketByName(storageKey, storageBucketName)?.bucket;
         if (storageBucket) {
           await this.loadDatabaseNamesByStorageBucket(storageBucket);
         }
@@ -6595,6 +6582,7 @@ var preloadingViewDropDown_css_default = `/*
 
 // gen/front_end/panels/application/preloading/PreloadingView.js
 var { createRef, ref: ref2 } = Directives3;
+var { widget: widget4 } = UI10.Widget;
 var UIStrings13 = {
   /**
    * @description DropDown title for filtering preloading attempts by rule set
@@ -6784,7 +6772,7 @@ var PreloadingRuleSetView = class extends UI10.Widget.VBox {
           <div slot="main" ${ref2(this.ruleSetGridContainerRef)}>
           </div>
           <div slot="sidebar" jslog=${VisualLogging6.section("rule-set-details")}>
-            <devtools-widget .widgetConfig=${UI10.Widget.widgetConfig(PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView, {
+            <devtools-widget ${widget4(PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView, {
       ruleSet: this.getRuleSet(),
       shouldPrettyPrint: this.shouldPrettyPrint
     })} ${ref2(this.ruleSetDetailsRef)}></devtools-widget>
@@ -6821,10 +6809,10 @@ var PreloadingRuleSetView = class extends UI10.Widget.VBox {
   }
   updateRuleSetDetails() {
     const ruleSet = this.getRuleSet();
-    const widget = this.ruleSetDetailsRef.value?.getWidget();
-    if (widget) {
-      widget.shouldPrettyPrint = this.shouldPrettyPrint;
-      widget.ruleSet = ruleSet;
+    const widget8 = this.ruleSetDetailsRef.value?.getWidget();
+    if (widget8) {
+      widget8.shouldPrettyPrint = this.shouldPrettyPrint;
+      widget8.ruleSet = ruleSet;
     }
     if (ruleSet === null) {
       this.hsplit.setAttribute("sidebar-visibility", "hidden");
@@ -6922,6 +6910,7 @@ var PreloadingAttemptView = class extends UI10.Widget.VBox {
   preloadingDetails = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
   ruleSetSelector;
   textFilterUI;
+  hsplit;
   clearButton;
   constructor(model) {
     super({
@@ -6977,7 +6966,9 @@ var PreloadingAttemptView = class extends UI10.Widget.VBox {
             >${i18nString13(UIStrings13.learnMore)}</devtools-link>
           </div>
         </div>
-        <devtools-split-view sidebar-position="second">
+        <devtools-split-view sidebar-position="second" ${UI10.Widget.widgetRef(UI10.SplitWidget.SplitWidget, (w) => {
+      this.hsplit = w;
+    })}>
           <div slot="main" class="overflow-auto" style="height: 100%">
             ${preloadingGridContainer}
           </div>
@@ -7045,7 +7036,12 @@ var PreloadingAttemptView = class extends UI10.Widget.VBox {
     const filteredRows = applyFilterText(this.textFilterUI.valueWithoutSuggestion(), rows);
     this.preloadingGrid.rows = filteredRows;
     this.preloadingGrid.pageURL = pageURL();
-    this.contentElement.classList.toggle("empty", rows.length === 0);
+    const wasEmpty = this.contentElement.classList.contains("empty");
+    const isEmpty = rows.length === 0;
+    this.contentElement.classList.toggle("empty", isEmpty);
+    if (wasEmpty && !isEmpty) {
+      this.hsplit?.doLayout();
+    }
     this.updatePreloadingDetails();
   }
   onPreloadingGridCellFocused({ rowId }) {
@@ -7382,7 +7378,7 @@ import * as UI11 from "./../../ui/legacy/legacy.js";
 import { html as html6, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents7 from "./components/components.js";
-var { widgetConfig: widgetConfig4 } = UI11.Widget;
+var { widget: widget5 } = UI11.Widget;
 var UIStrings15 = {
   /**
    * @description Placeholder text that shows if no report or endpoint was detected.
@@ -7420,42 +7416,36 @@ var DEFAULT_VIEW4 = (input, output, target) => {
         ${input.hasReports ? html6`
           <devtools-split-view slot="main" sidebar-position="second" sidebar-initial-size="150">
             <div slot="main">
-              <devtools-widget .widgetConfig=${widgetConfig4(ApplicationComponents7.ReportsGrid.ReportsGrid, {
+              ${widget5(ApplicationComponents7.ReportsGrid.ReportsGrid, {
       reports: input.reports,
       onReportSelected: input.onReportSelected
-    })}></devtools-widget>
+    })}
             </div>
             <div slot="sidebar" class="vbox" jslog=${VisualLogging7.pane("preview").track({ resize: true })}>
-              ${input.focusedReport ? html6`
-                <devtools-widget .widgetConfig=${widgetConfig4(SourceFrame2.JSONView.SearchableJsonView, {
-      jsonObject: input.focusedReport.body
-    })}></devtools-widget>
-              ` : html6`
-                <devtools-widget .widgetConfig=${widgetConfig4(UI11.EmptyWidget.EmptyWidget, {
+              ${input.focusedReport ? widget5(SourceFrame2.JSONView.SearchableJsonView, { jsonObject: input.focusedReport.body }) : widget5(UI11.EmptyWidget.EmptyWidget, {
       header: i18nString15(UIStrings15.noReportSelected),
       text: i18nString15(UIStrings15.clickToDisplayBody)
-    })}></devtools-widget>
-              `}
+    })}
             </div>
           </devtools-split-view>
         ` : html6`
           <div slot="main">
-            <devtools-widget .widgetConfig=${widgetConfig4(ApplicationComponents7.ReportsGrid.ReportsGrid, {
+            ${widget5(ApplicationComponents7.ReportsGrid.ReportsGrid, {
       reports: input.reports,
       onReportSelected: input.onReportSelected
-    })}></devtools-widget>
+    })}
           </div>
         `}
         <div slot="sidebar">
-          <devtools-widget .widgetConfig=${widgetConfig4(ApplicationComponents7.EndpointsGrid.EndpointsGrid, {
+          ${widget5(ApplicationComponents7.EndpointsGrid.EndpointsGrid, {
       endpoints: input.endpoints
-    })}></devtools-widget>
+    })}
         </div>
       </devtools-split-view>
     `, target);
   } else {
     render5(html6`
-      <devtools-widget .widgetConfig=${widgetConfig4(UI11.EmptyWidget.EmptyWidget, {
+      <devtools-widget ${widget5(UI11.EmptyWidget.EmptyWidget, {
       header: i18nString15(UIStrings15.noReportOrEndpoint),
       text: i18nString15(UIStrings15.reportingApiDescription),
       link: REPORTING_API_EXPLANATION_URL
@@ -7864,7 +7854,7 @@ var ServiceWorkerCacheView = class extends UI12.View.SimpleView {
     this.dataGrid = this.createDataGrid();
     const dataGridWidget = this.dataGrid.asWidget();
     this.splitWidget.setSidebarWidget(dataGridWidget);
-    dataGridWidget.setMinimumSize(0, 250);
+    dataGridWidget.setMinimumSize(0, 100);
   }
   wasShown() {
     super.wasShown();
@@ -8396,6 +8386,7 @@ import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as SDK19 from "./../../core/sdk/sdk.js";
 import * as NetworkForward2 from "./../network/forward/forward.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
+import { Link } from "./../../ui/kit/kit.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
@@ -9186,13 +9177,7 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
     othersView.show(othersDiv);
     const othersSection = othersView.appendSection(i18nString20(UIStrings20.serviceWorkersFromOtherOrigins));
     const othersSectionRow = othersSection.appendRow();
-    const seeOthers = UI15.Fragment.html`<a class="devtools-link" role="link" tabindex="0" href="chrome://serviceworker-internals" target="_blank" style="display: inline; cursor: pointer;">${i18nString20(UIStrings20.seeAllRegistrations)}</a>`;
-    seeOthers.setAttribute("jslog", `${VisualLogging10.link("view-all").track({ click: true })}`);
-    self.onInvokeElement(seeOthers, (event) => {
-      const rootTarget = SDK19.TargetManager.TargetManager.instance().rootTarget();
-      rootTarget && void rootTarget.targetAgent().invoke_createTarget({ url: "chrome://serviceworker-internals?devtools" });
-      event.consume(true);
-    });
+    const seeOthers = Link.create("chrome://serviceworker-internals", i18nString20(UIStrings20.seeAllRegistrations), void 0, "view-all");
     othersSectionRow.appendChild(seeOthers);
     this.toolbar.appendToolbarItem(MobileThrottling.ThrottlingManager.throttlingManager().createOfflineToolbarCheckbox());
     const updateOnReloadSetting = Common11.Settings.Settings.instance().createSetting("service-worker-update-on-reload", false);
@@ -10245,7 +10230,7 @@ var StorageItemsToolbar = class extends Common14.ObjectWrapper.eventMixin(UI17.W
 // gen/front_end/panels/application/KeyValueStorageItemsView.js
 var { ARIAUtils: ARIAUtils8 } = UI18;
 var { EmptyWidget: EmptyWidget8 } = UI18.EmptyWidget;
-var { VBox, widgetConfig: widgetConfig5 } = UI18.Widget;
+var { VBox, widgetConfig } = UI18.Widget;
 var { Size } = Geometry;
 var { repeat } = LitDirectives;
 var UIStrings24 = {
@@ -10291,7 +10276,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
         render7(
           html8`
             <devtools-widget
-              .widgetConfig=${widgetConfig5(StorageItemsToolbar, { metadataView })}
+              .widgetConfig=${widgetConfig(StorageItemsToolbar, { metadataView })}
               class=flex-none
               ${UI18.Widget.widgetRef(StorageItemsToolbar, (view2) => {
             output.toolbar = view2;
@@ -10300,7 +10285,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
             <devtools-split-view sidebar-position="second" name="${id}-split-view-state">
                <devtools-widget
                   slot="main"
-                  .widgetConfig=${widgetConfig5(VBox, { minimumSize: new Size(0, 50) })}>
+                  .widgetConfig=${widgetConfig(VBox, { minimumSize: new Size(0, 50) })}>
                 <devtools-data-grid
                   .name=${`${id}-datagrid-with-preview`}
                   striped
@@ -10334,7 +10319,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
               </devtools-widget>
               <devtools-widget
                   slot="sidebar"
-                  .widgetConfig=${widgetConfig5(VBox, { minimumSize: new Size(0, 50) })}
+                  .widgetConfig=${widgetConfig(VBox, { minimumSize: new Size(0, 50) })}
                   jslog=${VisualLogging13.pane("preview").track({ resize: true })}>
                ${input.preview?.element}
               </devtools-widget>
@@ -10852,7 +10837,7 @@ import * as i18n53 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as SDK23 from "./../../core/sdk/sdk.js";
 import * as uiI18n from "./../../ui/i18n/i18n.js";
-import { Icon, Link } from "./../../ui/kit/kit.js";
+import { Icon, Link as Link2 } from "./../../ui/kit/kit.js";
 import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
@@ -11129,7 +11114,7 @@ var StorageView = class _StorageView extends UI21.Widget.VBox {
     this.quotaRow = quota.appendSelectableRow();
     this.quotaRow.classList.add("quota-usage-row");
     const learnMoreRow = quota.appendRow();
-    const learnMore = Link.create("https://developer.chrome.com/docs/devtools/progressive-web-apps#opaque-responses", i18nString27(UIStrings27.learnMore), void 0, "learn-more");
+    const learnMore = Link2.create("https://developer.chrome.com/docs/devtools/progressive-web-apps#opaque-responses", i18nString27(UIStrings27.learnMore), void 0, "learn-more");
     learnMoreRow.appendChild(learnMore);
     this.quotaUsage = null;
     this.pieChart = new PerfUI.PieChart.PieChart();
@@ -13619,6 +13604,7 @@ var UIStrings30 = {
 var str_30 = i18n59.i18n.registerUIStrings("panels/application/CookieItemsView.ts", UIStrings30);
 var i18nString30 = i18n59.i18n.getLocalizedString.bind(void 0, str_30);
 var { Size: Size2 } = Geometry2;
+var { widget: widget6 } = UI23.Widget;
 var DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW = (input, output, target) => {
   const cookieValue = input.cookie ? input.showDecoded ? decodeURIComponent(input.cookie.value()) : input.cookie.value() : "";
   function handleDblClickOnCookieValue(event) {
@@ -13686,10 +13672,8 @@ var CookiePreviewWidget = class extends UI23.Widget.VBox {
 var DEFAULT_VIEW6 = (input, output, target) => {
   render8(
     html9`<style>${cookieItemsView_css_default}</style>
-    <devtools-widget class="storage-view"
-      .widgetConfig=${UI23.Widget.widgetConfig(UI23.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
-      <devtools-widget
-        .widgetConfig=${UI23.Widget.widgetConfig(StorageItemsToolbar, {
+    <devtools-widget class="storage-view" ${widget6(UI23.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
+      <devtools-widget ${widget6(StorageItemsToolbar, {
       onDeleteSelectedCallback: input.onDeleteSelectedItems,
       onDeleteAllCallback: input.onDeleteAllItems,
       onRefreshCallback: input.onRefreshItems
@@ -13700,10 +13684,8 @@ var DEFAULT_VIEW6 = (input, output, target) => {
     })}
       ></devtools-widget>
       <devtools-split-view sidebar-position="second" name="cookie-items-split-view-state">
-        <devtools-widget
-                  slot="main"
-                  .widgetConfig=${UI23.Widget.widgetConfig(UI23.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
-          <devtools-widget slot="main" .widgetConfig=${UI23.Widget.widgetConfig(CookieTable.CookiesTable.CookiesTable, {
+        <devtools-widget slot="main" ${widget6(UI23.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
+          <devtools-widget slot="main" ${widget6(CookieTable.CookiesTable.CookiesTable, {
       cookieDomain: input.cookieDomain,
       cookiesData: input.cookiesData,
       saveCallback: input.onSaveCookie,
@@ -13714,13 +13696,10 @@ var DEFAULT_VIEW6 = (input, output, target) => {
     })}
           ></devtools-widget>
         </devtools-widget>
-        <devtools-widget
-          slot="sidebar"
-          .widgetConfig=${UI23.Widget.widgetConfig(UI23.Widget.VBox, { minimumSize: new Size2(0, 50) })}
+        <devtools-widget slot="sidebar" ${widget6(UI23.Widget.VBox, { minimumSize: new Size2(0, 50) })}
           jslog=${VisualLogging16.pane("preview").track({ resize: true })}>
-          ${input.selectedCookie ? html9`<devtools-widget .widgetConfig=${UI23.Widget.widgetConfig(CookiePreviewWidget, {
-      cookie: input.selectedCookie
-    })}></devtools-widget>` : html9`<devtools-widget .widgetConfig=${UI23.Widget.widgetConfig(UI23.EmptyWidget.EmptyWidget, {
+          ${input.selectedCookie ? html9`<devtools-widget ${widget6(CookiePreviewWidget, { cookie: input.selectedCookie })}>
+                 </devtools-widget>` : html9`<devtools-widget ${widget6(UI23.EmptyWidget.EmptyWidget, {
       header: i18nString30(UIStrings30.noCookieSelected),
       text: i18nString30(UIStrings30.selectACookieToPreviewItsValue)
     })}></devtools-widget>`}
@@ -13919,7 +13898,7 @@ var deviceBoundSessionsView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./deviceBoundSessionsView.css")} */`;
 
 // gen/front_end/panels/application/DeviceBoundSessionsView.js
-var { widgetConfig: widgetConfig6 } = UI24.Widget;
+var { widget: widget7 } = UI24.Widget;
 var UIStrings31 = {
   /**
    *@description Label for a site, e.g. https://example.com/.
@@ -14461,10 +14440,7 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
       <style>${UI24.inspectorCommonStyles}</style>
       <style>${deviceBoundSessionsView_css_default}</style>
       ${toolbarHtml}
-      <devtools-widget .widgetConfig=${widgetConfig6(UI24.EmptyWidget.EmptyWidget, {
-      header: defaultTitle,
-      text: defaultDescription
-    })} jslog=${VisualLogging17.pane("device-bound-sessions-empty")}></devtools-widget>
+      <devtools-widget ${widget7(UI24.EmptyWidget.EmptyWidget, { header: defaultTitle, text: defaultDescription })} jslog=${VisualLogging17.pane("device-bound-sessions-empty")}></devtools-widget>
     `, target);
     return;
   }
@@ -14587,25 +14563,21 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
       return nothing6;
     }
     return html10`${failedRequest.requestUrl && html10`
-        <devtools-report-key>${i18nString31(UIStrings31.failedRequestUrl)}</devtools-report-key>
-        <devtools-report-value>${failedRequest.requestUrl}</devtools-report-value>
-      `}
-      ${failedRequest.netError && html10`
-        <devtools-report-key>${i18nString31(UIStrings31.failedRequestNetError)}</devtools-report-key>
-        <devtools-report-value>${failedRequest.netError}</devtools-report-value>
-      `}
-      ${failedRequest.responseError !== void 0 ? html10`
-        <devtools-report-key>${i18nString31(UIStrings31.failedRequestResponseCode)}</devtools-report-key>
-        <devtools-report-value>${failedRequest.responseError}</devtools-report-value>
-      ` : nothing6}
-      ${failedRequest.responseErrorBody && html10`
-        <devtools-report-key>${i18nString31(UIStrings31.failedRequestResponseBody)}</devtools-report-key>
-        <devtools-report-value>
-          <devtools-widget .widgetConfig=${UI24.Widget.widgetConfig(SourceFrame6.JSONView.SearchableJsonView, {
+          <devtools-report-key>${i18nString31(UIStrings31.failedRequestUrl)}</devtools-report-key>
+          <devtools-report-value>${failedRequest.requestUrl}</devtools-report-value>`}
+        ${failedRequest.netError && html10`
+          <devtools-report-key>${i18nString31(UIStrings31.failedRequestNetError)}</devtools-report-key>
+          <devtools-report-value>${failedRequest.netError}</devtools-report-value>`}
+        ${failedRequest.responseError !== void 0 ? html10`
+          <devtools-report-key>${i18nString31(UIStrings31.failedRequestResponseCode)}</devtools-report-key>
+          <devtools-report-value>${failedRequest.responseError}</devtools-report-value>` : nothing6}
+        ${failedRequest.responseErrorBody && html10`
+          <devtools-report-key>${i18nString31(UIStrings31.failedRequestResponseBody)}</devtools-report-key>
+          <devtools-report-value>
+            ${widget7(SourceFrame6.JSONView.SearchableJsonView, {
       jsonObject: tryParseJson(failedRequest.responseErrorBody)
-    })}></devtools-widget>
-        </devtools-report-value>
-      `}`;
+    })}
+          </devtools-report-value>`}`;
   };
   const creationEventDetails = selectedEvent?.creationEventDetails && html10`
           <devtools-report-key>${i18nString31(UIStrings31.fetchResult)}</devtools-report-key>

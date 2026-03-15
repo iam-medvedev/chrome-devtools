@@ -80,7 +80,7 @@ export async function createUISourceCode(options) {
                 url,
                 mimeType: options?.mimeType ?? 'application/javascript',
                 resourceType: options?.resourceType ?? Common.ResourceType.resourceTypes.Script,
-                content: options?.content ?? undefined,
+                content: options?.content,
             },
         ],
         target: createTarget(),
@@ -148,7 +148,6 @@ export async function createAiAssistancePanel(options) {
     const panel = new AiAssistancePanel.AiAssistancePanel(view, {
         aidaClient,
         aidaAvailability: aidaAvailabilityForStub,
-        syncInfo: options?.syncInfo ?? { isSyncActive: true },
     });
     panels.push(panel);
     // In many of the tests we create other panels to allow the right contexts to

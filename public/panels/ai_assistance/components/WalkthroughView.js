@@ -19,17 +19,26 @@ const UIStrings = {
     /**
      * @description Title for the walkthrough view.
      */
-    title: 'Investigation steps',
+    title: 'Agent walkthrough',
     /**
-     * @description Title for the button that shows the thinking process (walkthrough).
+     * @description Title for the button that shows the walkthrough when there are no widgets in the walkthrough.
      */
     showThinking: 'Show thinking',
+    /**
+     * @description Title for the button that shows the walkthrough when there are widgets in the walkthrough.
+     */
+    showAgentWalkthrough: 'Show agent walkthrough',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/ai_assistance/components/WalkthroughView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function walkthroughTitle(input) {
-    const title = input.isLoading ? titleForStep(input.lastStep) : lockedString(UIStrings.showThinking);
-    return title;
+    if (input.isLoading) {
+        return titleForStep(input.lastStep);
+    }
+    if (input.hasWidgets) {
+        return lockedString(UIStrings.showAgentWalkthrough);
+    }
+    return lockedString(UIStrings.showThinking);
 }
 function renderInlineWalkthrough(input, stepsOutput, steps) {
     const lastStep = steps.at(-1);
@@ -39,12 +48,13 @@ function renderInlineWalkthrough(input, stepsOutput, steps) {
     function onToggle(event) {
         input.onToggle(event.target.open);
     }
+    const hasWidgets = steps.some(s => s.widgets?.length);
     // clang-format off
     return html `
     <details class="walkthrough-inline" ?open=${input.isExpanded} @toggle=${onToggle}>
       <summary>
         ${input.isLoading ? html `<devtools-spinner></devtools-spinner>` : Lit.nothing}
-        ${walkthroughTitle({ isLoading: input.isLoading, lastStep, })}
+        ${walkthroughTitle({ isLoading: input.isLoading, lastStep, hasWidgets })}
         <devtools-icon name="chevron-down"></devtools-icon>
       </summary>
       ${stepsOutput}
@@ -64,7 +74,7 @@ function renderSidebarWalkthrough(input, stepsOutput, stepsCount) {
          <devtools-button
           .data=${{
         variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
-        iconName: 'right-panel-open',
+        iconName: 'cross',
         title: i18nString(UIStrings.close),
         jslogContext: 'close-walkthrough',
     }}
@@ -87,13 +97,16 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     const stepsOutput = steps.length > 0 ? html `
     <div class="steps-container">
       ${steps.map((step, index) => html `
-        <div class="step-wrapper">
-          ${renderStep({
+        <div class="walkthrough-step">
+          <span class="step-number">${index + 1}</span>
+          <div class="step-wrapper">
+            ${renderStep({
         step,
         isLoading: input.isLoading,
         markdownRenderer: input.markdownRenderer,
         isLast: index === steps.length - 1
     })}
+          </div>
         </div>
       `)}
     </div>
@@ -116,6 +129,7 @@ export class WalkthroughView extends UI.Widget.Widget {
     #isLoading = false;
     #markdownRenderer = null;
     #onToggle = () => { };
+    #onOpen = () => { };
     #isInlined = false;
     #isExpanded = false;
     constructor(element, view = DEFAULT_VIEW) {
@@ -138,6 +152,13 @@ export class WalkthroughView extends UI.Widget.Widget {
     }
     get message() {
         return this.#message;
+    }
+    get onOpen() {
+        return this.#onOpen;
+    }
+    set onOpen(onOpen) {
+        this.#onOpen = onOpen;
+        this.requestUpdate();
     }
     set message(message) {
         this.#message = message;
@@ -163,6 +184,7 @@ export class WalkthroughView extends UI.Widget.Widget {
             isLoading: this.#isLoading,
             markdownRenderer: this.#markdownRenderer,
             onToggle: this.#onToggle,
+            onOpen: this.#onOpen,
             isInlined: this.#isInlined,
             isExpanded: this.#isExpanded,
             message: this.#message,

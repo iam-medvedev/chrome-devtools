@@ -31,7 +31,6 @@ describeWithEnvironment('ChatView', () => {
             isContextSelected: true,
             isLoading: false,
             canShowFeedbackForm: false,
-            userInfo: {},
             blockedByCrossOrigin: false,
             isReadOnly: false,
             isTextInputDisabled: false,

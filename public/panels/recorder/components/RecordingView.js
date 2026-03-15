@@ -22,6 +22,7 @@ import recordingViewStyles from './recordingView.css.js';
 import { ReplaySection } from './ReplaySection.js';
 import { StepView, } from './StepView.js';
 const { html } = Lit;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Depicts that the recording was done on a mobile device (e.g., a smartphone or tablet).
@@ -411,15 +412,12 @@ function renderReplayOrAbortButton(input) {
         return Lit.nothing;
     }
     // clang-format off
-    return html `<devtools-widget
-        .widgetConfig=${UI.Widget.widgetConfig(ReplaySection, {
+    return html `${widget(ReplaySection, {
         settings: input.recorderSettings,
         replayExtensions: input.replayExtensions,
         onStartReplay: input.onTogglePlaying,
         disabled: input.replayState.isPlaying,
-    })}
-        >
-      </devtools-widget>`;
+    })}`;
     // clang-format on
 }
 function renderSections(input) {
@@ -448,8 +446,7 @@ function renderSections(input) {
               </div>
               <div class="content">
                 <div class="steps">
-                  <devtools-widget
-                    .widgetConfig=${UI.Widget.widgetConfig(StepView, {
+                  ${widget(StepView, {
         section,
         state: input.getSectionState(section),
         isStartOfGroup: true,
@@ -469,8 +466,6 @@ function renderSections(input) {
         onStepClick: input.onStepClick,
         onStepHover: input.onStepHover,
     })}
-                  >
-                  </devtools-widget>
                   ${section.steps.map(step => {
         const stepIndex = input.recording.steps.indexOf(step);
         return html `

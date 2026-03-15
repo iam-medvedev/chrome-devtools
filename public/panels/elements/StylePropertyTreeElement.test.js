@@ -1463,6 +1463,19 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             }
         });
     });
+    describe('ContrastColorRenderer', () => {
+        it('renders contrast-color() with two color swatches', async () => {
+            const blackContrast = 'contrast-color(black)';
+            const stylePropertyTreeElement = getTreeElement('color', blackContrast);
+            stylePropertyTreeElement.updateTitle();
+            const swatches = stylePropertyTreeElement.valueElement?.querySelectorAll('devtools-color-swatch');
+            assert.exists(swatches);
+            assert.lengthOf(swatches, 2);
+            assert.strictEqual(swatches[0].getText(), 'rgb(255, 255, 255)');
+            assert.strictEqual(swatches[0].nextElementSibling?.textContent, 'contrast-color(black)');
+            assert.strictEqual(swatches[1].nextElementSibling?.textContent, 'black');
+        });
+    });
     describe('LinearGradientRenderer', () => {
         it('correctly connects to an angle match', () => {
             const stylePropertyTreeElement = getTreeElement('background', 'linear-gradient(45deg, red, var(--blue))');
@@ -1708,7 +1721,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.updateTitle();
             const args = stylePropertyTreeElement.valueElement?.querySelectorAll('span')
                 .values()
-                .filter(span => ['a', 'b', 'c'].includes(span.textContent ?? ''))
+                .filter(span => ['a', 'b', 'c'].includes(span.textContent))
                 .toArray();
             assert.exists(args);
             assert.lengthOf(args, 4);

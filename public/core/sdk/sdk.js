@@ -9453,7 +9453,7 @@ __export(CookieModel_exports, {
 });
 import * as Common25 from "./../common/common.js";
 import * as Platform16 from "./../platform/platform.js";
-import * as Root10 from "./../root/root.js";
+import * as Root11 from "./../root/root.js";
 
 // gen/front_end/core/sdk/Cookie.js
 var Cookie_exports = {};
@@ -12522,17 +12522,19 @@ __export(DOMModel_exports, {
   ARIA_ATTRIBUTES: () => ARIA_ATTRIBUTES,
   AdoptedStyleSheet: () => AdoptedStyleSheet,
   DOMDocument: () => DOMDocument,
+  DOMDocumentSnapshot: () => DOMDocumentSnapshot,
   DOMModel: () => DOMModel,
   DOMModelUndoStack: () => DOMModelUndoStack,
   DOMNode: () => DOMNode,
   DOMNodeEvents: () => DOMNodeEvents,
   DOMNodeShortcut: () => DOMNodeShortcut,
+  DOMNodeSnapshot: () => DOMNodeSnapshot,
   DeferredDOMNode: () => DeferredDOMNode,
   Events: () => Events8
 });
 import * as Common21 from "./../common/common.js";
 import * as Platform13 from "./../platform/platform.js";
-import * as Root9 from "./../root/root.js";
+import * as Root10 from "./../root/root.js";
 
 // gen/front_end/core/sdk/CSSModel.js
 var CSSModel_exports = {};
@@ -12650,6 +12652,8 @@ __export(CSSPropertyParserMatchers_exports, {
   ColorMatcher: () => ColorMatcher,
   ColorMixMatch: () => ColorMixMatch,
   ColorMixMatcher: () => ColorMixMatcher,
+  ContrastColorMatch: () => ContrastColorMatch,
+  ContrastColorMatcher: () => ContrastColorMatcher,
   CustomFunctionMatch: () => CustomFunctionMatch,
   CustomFunctionMatcher: () => CustomFunctionMatcher,
   EnvFunctionMatch: () => EnvFunctionMatch,
@@ -13026,6 +13030,35 @@ var ColorMixMatcher = class extends matcherBase(ColorMixMatch) {
       return null;
     }
     return new ColorMixMatch(matching.ast.text(node), node, args[0], args[1], args[2]);
+  }
+};
+var ContrastColorMatch = class {
+  text;
+  node;
+  color;
+  constructor(text, node, color) {
+    this.text = text;
+    this.node = node;
+    this.color = color;
+  }
+};
+var ContrastColorMatcher = class extends matcherBase(ContrastColorMatch) {
+  // clang-format on
+  accepts(propertyName) {
+    return cssMetadata().isColorAwareProperty(propertyName);
+  }
+  matches(node, matching) {
+    if (node.name !== "CallExpression" || matching.ast.text(node.getChild("Callee")) !== "contrast-color") {
+      return null;
+    }
+    if (matching.getComputedText(node) === "") {
+      return null;
+    }
+    const args = ASTUtils.callArgs(node);
+    if (args.length !== 1) {
+      return null;
+    }
+    return new ContrastColorMatch(matching.ast.text(node), node, args[0]);
   }
 };
 var URLMatch = class {
@@ -16534,6 +16567,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       new VariableMatcher(this, style),
       new ColorMatcher(() => computedStyles?.get("color") ?? null),
       new ColorMixMatcher(),
+      new ContrastColorMatcher(),
       new URLMatcher(),
       new AngleMatcher(),
       new LinkableNameMatcher(),
@@ -18576,6 +18610,26 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
     const eligibleForLoadFromTarget = this.getLoadThroughTargetSetting().get() && parsedURL && parsedURL.scheme !== "file" && parsedURL.scheme !== "data" && parsedURL.scheme !== "devtools" && initiator.target;
     Host2.userMetrics.developerResourceScheme(this.getDeveloperResourceScheme(parsedURL));
     if (eligibleForLoadFromTarget) {
+      let mustEnforceCSP = false;
+      const isHttp = parsedURL.scheme === "http" || parsedURL.scheme === "https";
+      if (isHttp && initiator.target) {
+        const networkManager = initiator.target.model(NetworkManager);
+        if (networkManager) {
+          let status = await networkManager.getSecurityIsolationStatus(initiator.frameId);
+          if (!status && initiator.frameId) {
+            status = await networkManager.getSecurityIsolationStatus(null);
+          }
+          if (status?.csp) {
+            for (const csp of status.csp) {
+              const directives = csp.effectiveDirectives;
+              if (directives.includes("connect-src") || directives.includes("default-src")) {
+                mustEnforceCSP = true;
+                break;
+              }
+            }
+          }
+        }
+      }
       try {
         Host2.userMetrics.developerResourceLoaded(
           0
@@ -18589,7 +18643,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common10.ObjectWrappe
             2
             /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_FAILURE */
           );
-          if (e.message.includes("CSP violation")) {
+          if (mustEnforceCSP || e.message.includes("CSP violation")) {
             return {
               success: false,
               content: "",
@@ -19329,7 +19383,7 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
    * Returns the authored function name of the function containing the provided generated position.
    */
   findOriginalFunctionName(position) {
-    const originalInnerMostScope = this.findOriginalFunctionScope(position)?.scope ?? void 0;
+    const originalInnerMostScope = this.findOriginalFunctionScope(position)?.scope;
     return this.#findFunctionNameInOriginalScopeChain(originalInnerMostScope);
   }
   /**
@@ -21180,7 +21234,7 @@ __export(FrameManager_exports, {
   FrameManager: () => FrameManager
 });
 import * as Common14 from "./../common/common.js";
-var frameManagerInstance = null;
+import * as Root7 from "./../root/root.js";
 var FrameManager = class _FrameManager extends Common14.ObjectWrapper.ObjectWrapper {
   #eventListeners = /* @__PURE__ */ new WeakMap();
   // Maps frameIds to #frames and a count of how many ResourceTreeModels contain this frame.
@@ -21191,18 +21245,18 @@ var FrameManager = class _FrameManager extends Common14.ObjectWrapper.ObjectWrap
   #outermostFrame = null;
   #transferringFramesDataCache = /* @__PURE__ */ new Map();
   #awaitedFrames = /* @__PURE__ */ new Map();
-  constructor() {
+  constructor(targetManager) {
     super();
-    TargetManager.instance().observeModels(ResourceTreeModel, this);
+    targetManager.observeModels(ResourceTreeModel, this);
   }
   static instance({ forceNew } = { forceNew: false }) {
-    if (!frameManagerInstance || forceNew) {
-      frameManagerInstance = new _FrameManager();
+    if (!Root7.DevToolsContext.globalInstance().has(_FrameManager) || forceNew) {
+      Root7.DevToolsContext.globalInstance().set(_FrameManager, new _FrameManager(TargetManager.instance()));
     }
-    return frameManagerInstance;
+    return Root7.DevToolsContext.globalInstance().get(_FrameManager);
   }
   static removeInstance() {
-    frameManagerInstance = null;
+    Root7.DevToolsContext.globalInstance().delete(_FrameManager);
   }
   modelAdded(resourceTreeModel) {
     const addListener = resourceTreeModel.addEventListener(Events3.FrameAdded, this.frameAdded, this);
@@ -21360,7 +21414,7 @@ __export(OverlayModel_exports, {
 });
 import * as Common20 from "./../common/common.js";
 import * as i18n13 from "./../i18n/i18n.js";
-import * as Root8 from "./../root/root.js";
+import * as Root9 from "./../root/root.js";
 
 // gen/front_end/core/sdk/DebuggerModel.js
 var DebuggerModel_exports = {};
@@ -21380,7 +21434,7 @@ __export(DebuggerModel_exports, {
 });
 import * as Common17 from "./../common/common.js";
 import * as i18n11 from "./../i18n/i18n.js";
-import * as Root7 from "./../root/root.js";
+import * as Root8 from "./../root/root.js";
 
 // gen/front_end/core/sdk/RuntimeModel.js
 var RuntimeModel_exports = {};
@@ -22624,11 +22678,11 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       return;
     }
     this.#debuggerEnabled = true;
-    const isRemoteFrontend = Root7.Runtime.Runtime.queryParam("remoteFrontend") || Root7.Runtime.Runtime.queryParam("ws");
+    const isRemoteFrontend = Root8.Runtime.Runtime.queryParam("remoteFrontend") || Root8.Runtime.Runtime.queryParam("ws");
     const maxScriptsCacheSize = isRemoteFrontend ? 1e7 : 1e8;
     const enablePromise = this.agent.invoke_enable({ maxScriptsCacheSize });
     let instrumentationPromise;
-    if (Root7.Runtime.experiments.isEnabled(Root7.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS)) {
+    if (Root8.Runtime.experiments.isEnabled(Root8.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS)) {
       instrumentationPromise = this.agent.invoke_setInstrumentationBreakpoint({
         instrumentation: "beforeScriptExecution"
       });
@@ -22643,7 +22697,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     this.registerDebugger(enableResult);
   }
   async syncDebuggerId() {
-    const isRemoteFrontend = Root7.Runtime.Runtime.queryParam("remoteFrontend") || Root7.Runtime.Runtime.queryParam("ws");
+    const isRemoteFrontend = Root8.Runtime.Runtime.queryParam("remoteFrontend") || Root8.Runtime.Runtime.queryParam("ws");
     const maxScriptsCacheSize = isRemoteFrontend ? 1e7 : 1e8;
     const enablePromise = this.agent.invoke_enable({ maxScriptsCacheSize });
     void enablePromise.then(this.registerDebugger.bind(this));
@@ -24424,7 +24478,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
       gridHighlightConfig: {},
       flexContainerHighlightConfig: {},
       flexItemHighlightConfig: {},
-      contrastAlgorithm: Root8.Runtime.experiments.isEnabled(Root8.ExperimentNames.ExperimentName.APCA) ? "apca" : "aa"
+      contrastAlgorithm: Root9.Runtime.experiments.isEnabled(Root9.ExperimentNames.ExperimentName.APCA) ? "apca" : "aa"
     };
     if (mode === "all" || mode === "content") {
       highlightConfig.contentColor = Common20.Color.PageHighlight.Content.toProtocolRGBA();
@@ -25822,6 +25876,102 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
     }
     return this.domModel().nodeForId(response.nodeId);
   }
+  async takeSnapshot(ownerDocumentSnapshot) {
+    const snapshot = this instanceof DOMDocument ? new DOMDocumentSnapshot(this.domModel(), {
+      nodeId: this.id,
+      backendNodeId: this.backendNodeId(),
+      nodeType: this.nodeType(),
+      nodeName: this.nodeName(),
+      localName: this.localName(),
+      nodeValue: this.nodeValueInternal
+    }) : new DOMNodeSnapshot(this.domModel());
+    snapshot.id = this.id;
+    snapshot.#backendNodeId = this.#backendNodeId;
+    snapshot.#frameOwnerFrameId = this.#frameOwnerFrameId;
+    snapshot.#nodeType = this.#nodeType;
+    snapshot.#nodeName = this.#nodeName;
+    snapshot.#localName = this.#localName;
+    snapshot.nodeValueInternal = this.nodeValueInternal;
+    snapshot.#pseudoType = this.#pseudoType;
+    snapshot.#pseudoIdentifier = this.#pseudoIdentifier;
+    snapshot.#shadowRootType = this.#shadowRootType;
+    snapshot.#xmlVersion = this.#xmlVersion;
+    snapshot.#isSVGNode = this.#isSVGNode;
+    snapshot.#isScrollable = this.#isScrollable;
+    snapshot.#affectedByStartingStyles = this.#affectedByStartingStyles;
+    snapshot.ownerDocument = ownerDocumentSnapshot || (snapshot instanceof DOMDocument ? snapshot : this.ownerDocument);
+    snapshot.#isInShadowTree = this.#isInShadowTree;
+    snapshot.childNodeCountInternal = this.childNodeCountInternal;
+    if (snapshot instanceof DOMDocument && this instanceof DOMDocument) {
+      snapshot.documentURL = this.documentURL;
+      snapshot.baseURL = this.baseURL;
+    }
+    if (!this.childrenInternal && this.childNodeCountInternal > 0) {
+      await this.getSubtree(1, false);
+    }
+    for (const [name, attr] of this.#attributes) {
+      snapshot.#attributes.set(name, { name: attr.name, value: attr.value, _node: snapshot });
+    }
+    if (this.childrenInternal) {
+      snapshot.childrenInternal = [];
+      for (const child of this.childrenInternal) {
+        const childSnapshot = await child.takeSnapshot(snapshot.ownerDocument || void 0);
+        childSnapshot.parentNode = snapshot;
+        childSnapshot.ownerDocument = snapshot instanceof DOMDocument ? snapshot : snapshot.ownerDocument;
+        snapshot.childrenInternal.push(childSnapshot);
+        if (childSnapshot.ownerDocument instanceof DOMDocument) {
+          if (childSnapshot.nodeName() === "HTML" && !childSnapshot.ownerDocument.documentElement) {
+            childSnapshot.ownerDocument.documentElement = childSnapshot;
+          }
+          if (childSnapshot.nodeName() === "BODY" && !childSnapshot.ownerDocument.body) {
+            childSnapshot.ownerDocument.body = childSnapshot;
+          }
+        }
+      }
+    }
+    for (const root of this.shadowRootsInternal) {
+      const rootSnapshot = await root.takeSnapshot(snapshot.ownerDocument || void 0);
+      rootSnapshot.parentNode = snapshot;
+      rootSnapshot.ownerDocument = snapshot.ownerDocument;
+      snapshot.shadowRootsInternal.push(rootSnapshot);
+    }
+    if (this.templateContentInternal) {
+      const templateSnapshot = await this.templateContentInternal.takeSnapshot(snapshot.ownerDocument || void 0);
+      templateSnapshot.parentNode = snapshot;
+      templateSnapshot.ownerDocument = snapshot.ownerDocument;
+      snapshot.templateContentInternal = templateSnapshot;
+    }
+    if (this.contentDocumentInternal) {
+      const contentDocSnapshot = await this.contentDocumentInternal.takeSnapshot();
+      contentDocSnapshot.parentNode = snapshot;
+      snapshot.contentDocumentInternal = contentDocSnapshot;
+    }
+    if (this.#importedDocument) {
+      const importedDocSnapshot = await this.#importedDocument.takeSnapshot(snapshot.ownerDocument || void 0);
+      importedDocSnapshot.parentNode = snapshot;
+      importedDocSnapshot.ownerDocument = snapshot.ownerDocument;
+      snapshot.#importedDocument = importedDocSnapshot;
+    }
+    for (const [pseudoType, nodes] of this.#pseudoElements) {
+      const snapshots = [];
+      for (const node of nodes) {
+        const pseudoSnapshot = await node.takeSnapshot(snapshot.ownerDocument || void 0);
+        pseudoSnapshot.parentNode = snapshot;
+        pseudoSnapshot.ownerDocument = snapshot.ownerDocument;
+        snapshots.push(pseudoSnapshot);
+      }
+      snapshot.#pseudoElements.set(pseudoType, snapshots);
+    }
+    if (this.#distributedNodes) {
+      snapshot.#distributedNodes = [...this.#distributedNodes];
+    }
+    snapshot.assignedSlot = this.assignedSlot;
+    snapshot.#retainedNodes = this.#retainedNodes;
+    if (this.#adoptedStyleSheets.length) {
+      snapshot.setAdoptedStyleSheets(this.#adoptedStyleSheets.map((sheet) => sheet.id));
+    }
+    return snapshot;
+  }
   classNames() {
     const classes = this.getAttribute("class");
     return classes ? classes.split(/\s+/) : [];
@@ -25923,7 +26073,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     if (!target.suspended()) {
       void this.agent.invoke_enable({});
     }
-    if (Root9.Runtime.experiments.isEnabled(Root9.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS)) {
+    if (Root10.Runtime.experiments.isEnabled(Root10.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS)) {
       void this.agent.invoke_setNodeStackTracesEnabled({ enable: true });
     }
   }
@@ -26598,6 +26748,60 @@ var DOMModelUndoStack = class _DOMModelUndoStack {
   }
 };
 SDKModel.register(DOMModel, { capabilities: 2, autostart: true });
+var DOMNodeSnapshot = class extends DOMNode {
+  init(_doc, _isInShadowTree, _payload, _retainedNodes) {
+  }
+  setNodeName(_name, _callback) {
+  }
+  setNodeValue(_value, _callback) {
+  }
+  setAttribute(_name, _text, _callback) {
+  }
+  setAttributeValue(_name, _value, _callback) {
+  }
+  removeAttribute(_name) {
+    return Promise.resolve();
+  }
+  setOuterHTML(_html, _callback) {
+  }
+  removeNode(_callback) {
+    return Promise.resolve();
+  }
+  copyTo(_targetNode, _anchorNode, _callback) {
+  }
+  moveTo(_targetNode, _anchorNode, _callback) {
+  }
+  setAsInspectedNode() {
+    return Promise.resolve();
+  }
+};
+var DOMDocumentSnapshot = class extends DOMDocument {
+  init(_doc, _isInShadowTree, _payload, _retainedNodes) {
+  }
+  setNodeName(_name, _callback) {
+  }
+  setNodeValue(_value, _callback) {
+  }
+  setAttribute(_name, _text, _callback) {
+  }
+  setAttributeValue(_name, _value, _callback) {
+  }
+  removeAttribute(_name) {
+    return Promise.resolve();
+  }
+  setOuterHTML(_html, _callback) {
+  }
+  removeNode(_callback) {
+    return Promise.resolve();
+  }
+  copyTo(_targetNode, _anchorNode, _callback) {
+  }
+  moveTo(_targetNode, _anchorNode, _callback) {
+  }
+  setAsInspectedNode() {
+    return Promise.resolve();
+  }
+};
 
 // gen/front_end/core/sdk/Resource.js
 var Resource_exports = {};
@@ -27842,7 +28046,7 @@ var CookieModel = class extends SDKModel {
     if (cookie.expires()) {
       expires = Math.floor(Date.parse(`${cookie.expires()}`) / 1e3);
     }
-    const enabled = Root10.Runtime.experiments.isEnabled(Root10.ExperimentNames.ExperimentName.EXPERIMENTAL_COOKIE_FEATURES);
+    const enabled = Root11.Runtime.experiments.isEnabled(Root11.ExperimentNames.ExperimentName.EXPERIMENTAL_COOKIE_FEATURES);
     const preserveUnset = (scheme) => scheme === "Unset" ? scheme : void 0;
     const protocolCookie = {
       name: cookie.name(),
@@ -31656,7 +31860,7 @@ import * as i18n29 from "./../i18n/i18n.js";
 import * as Common34 from "./../common/common.js";
 import * as Host7 from "./../host/host.js";
 import * as ProtocolClient3 from "./../protocol_client/protocol_client.js";
-import * as Root12 from "./../root/root.js";
+import * as Root13 from "./../root/root.js";
 
 // gen/front_end/core/sdk/RehydratingConnection.js
 var RehydratingConnection_exports = {};
@@ -31667,7 +31871,7 @@ __export(RehydratingConnection_exports, {
 import * as Common33 from "./../common/common.js";
 import * as i18n27 from "./../i18n/i18n.js";
 import * as ProtocolClient2 from "./../protocol_client/protocol_client.js";
-import * as Root11 from "./../root/root.js";
+import * as Root12 from "./../root/root.js";
 
 // gen/front_end/core/sdk/EnhancedTracesParser.js
 var EnhancedTracesParser_exports = {};
@@ -32067,9 +32271,9 @@ var RehydratingConnectionTransport = class {
   }
   /** Returns true if found a trace URL. */
   #maybeHandleLoadingFromUrl() {
-    let traceUrl = Root11.Runtime.Runtime.queryParam("traceURL");
+    let traceUrl = Root12.Runtime.Runtime.queryParam("traceURL");
     if (!traceUrl) {
-      const timelineUrl = Root11.Runtime.Runtime.queryParam("loadTimelineFromURL");
+      const timelineUrl = Root12.Runtime.Runtime.queryParam("loadTimelineFromURL");
       if (timelineUrl) {
         traceUrl = decodeURIComponent(timelineUrl);
       }
@@ -32602,11 +32806,11 @@ async function initMainConnection(createRootTarget, onConnectionLost) {
   Host7.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
 }
 function createMainTransport(onConnectionLost) {
-  if (Root12.Runtime.Runtime.isTraceApp()) {
+  if (Root13.Runtime.Runtime.isTraceApp()) {
     return new RehydratingConnectionTransport(onConnectionLost);
   }
-  const wsParam = Root12.Runtime.Runtime.queryParam("ws");
-  const wssParam = Root12.Runtime.Runtime.queryParam("wss");
+  const wsParam = Root13.Runtime.Runtime.queryParam("ws");
+  const wssParam = Root13.Runtime.Runtime.queryParam("wss");
   if (wsParam || wssParam) {
     const ws = wsParam ? `ws://${wsParam}` : `wss://${wssParam}`;
     return new WebSocketTransport(ws, onConnectionLost);
@@ -33948,6 +34152,9 @@ var CPUThrottlingManager = class _CPUThrottlingManager extends Common37.ObjectWr
       throttlingManagerInstance = new _CPUThrottlingManager();
     }
     return throttlingManagerInstance;
+  }
+  static removeInstance() {
+    throttlingManagerInstance = void 0;
   }
   cpuThrottlingRate() {
     return this.#cpuThrottlingOption.rate();

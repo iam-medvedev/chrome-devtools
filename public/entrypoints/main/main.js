@@ -720,7 +720,6 @@ var MainImpl = class {
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.EXPERIMENTAL_COOKIE_FEATURES, "Experimental cookie features");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.AUTHORED_DEPLOYED_GROUPING, "Group sources into authored and deployed trees", "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.JUST_MY_CODE, "Hide ignore-listed code in Sources tree view");
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS, "Performance panel: show postMessage dispatch and handling flows");
     Root2.Runtime.experiments.registerHostExperiment({
       name: Root2.ExperimentNames.ExperimentName.DURABLE_MESSAGES,
       title: "Durable Messages",
@@ -777,7 +776,6 @@ var MainImpl = class {
     UI2.ContextMenu.ContextMenu.installHandler(document);
     UI2.ViewManager.ViewManager.instance({ forceNew: true, universe: this.#universe });
     Logs.NetworkLog.NetworkLog.instance();
-    SDK2.FrameManager.FrameManager.instance();
     Logs.LogManager.LogManager.instance();
     IssuesManager.IssuesManager.IssuesManager.instance({
       forceNew: true,

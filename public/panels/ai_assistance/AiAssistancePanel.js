@@ -29,9 +29,11 @@ import { DisabledWidget } from './components/DisabledWidget.js';
 import { ExploreWidget } from './components/ExploreWidget.js';
 import { MarkdownRendererWithCodeBlock } from './components/MarkdownRendererWithCodeBlock.js';
 import { PerformanceAgentMarkdownRenderer } from './components/PerformanceAgentMarkdownRenderer.js';
+import { StylingAgentMarkdownRenderer } from './components/StylingAgentMarkdownRenderer.js';
 import { WalkthroughView, } from './components/WalkthroughView.js';
 import { isAiAssistancePatchingEnabled } from './PatchWidget.js';
 const { html } = Lit;
+const { widget } = UI.Widget;
 const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
 const AI_ASSISTANCE_HELP = 'https://developer.chrome.com/docs/devtools/ai-assistance';
 const WALKTHROUGH_SIDEBAR_BREAKPOINT = 700;
@@ -200,6 +202,9 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const lockedString = i18n.i18n.lockedString;
 function selectedElementFilter(maybeNode) {
     if (maybeNode) {
+        if (Greendev.Prototypes.instance().isEnabled('emulationCapabilities')) {
+            return maybeNode;
+        }
         return maybeNode.nodeType() === Node.ELEMENT_NODE ? maybeNode : null;
     }
     return null;
@@ -220,7 +225,12 @@ async function getEmptyStateSuggestions(conversation) {
             return [
                 { title: 'What can you help me with?', jslogContext: 'styling-default' },
                 { title: 'Why isn’t this element visible?', jslogContext: 'styling-default' },
-                { title: 'How do I center this element?', jslogContext: 'styling-default' },
+                {
+                    title: Greendev.Prototypes.instance().isEnabled('emulationCapabilities') ?
+                        'Are there display issues on this page for people using an Android phone?' :
+                        'How do I center this element?',
+                    jslogContext: 'styling-default'
+                },
             ];
         case "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */:
             return [
@@ -268,6 +278,14 @@ function getMarkdownRenderer(conversation) {
     else if (conversation?.type === "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */) {
         // Handle historical conversations (can't linkify anything).
         return new PerformanceAgentMarkdownRenderer();
+    }
+    else if (Greendev.Prototypes.instance().isEnabled('emulationCapabilities') &&
+        conversation?.type === "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */ &&
+        SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK.DOMModel.DOMModel)) {
+        const domModel = SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK.DOMModel.DOMModel);
+        const resourceTreeModel = domModel?.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
+        const mainFrameId = resourceTreeModel?.mainFrame?.id;
+        return new StylingAgentMarkdownRenderer(mainFrameId);
     }
     return new MarkdownRendererWithCodeBlock();
 }
@@ -356,15 +374,11 @@ function defaultView(input, output, target) {
         ></devtools-ai-chat-view>`;
             }
             case "explore-view" /* ViewState.EXPLORE_VIEW */:
-                return html `<devtools-widget
-          class="fill-panel"
-          .widgetConfig=${UI.Widget.widgetConfig(ExploreWidget)}
-        ></devtools-widget>`;
+                return html `<devtools-widget class="fill-panel" ${widget(ExploreWidget)}>
+                    </devtools-widget>`;
             case "disabled-view" /* ViewState.DISABLED_VIEW */:
-                return html `<devtools-widget
-          class="fill-panel"
-          .widgetConfig=${UI.Widget.widgetConfig(DisabledWidget, input.props)}
-        ></devtools-widget>`;
+                return html `<devtools-widget class="fill-panel" ${widget(DisabledWidget, input.props)}>
+                    </devtools-widget>`;
         }
     }
     if (Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled ||
@@ -397,7 +411,7 @@ function defaultView(input, output, target) {
           </div>
           <div slot="sidebar" class="sidebar-view">
             ${shouldShowWalkthrough ? html `
-              <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(WalkthroughView, {
+              <devtools-widget ${widget(WalkthroughView, {
             message: input.props.walkthrough.activeMessage,
             isLoading: input.props.isLoading && walkthroughIsForLastMessage,
             markdownRenderer: input.props.markdownRenderer,
@@ -471,8 +485,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #isLoading = false;
     // Stores the availability status of the `AidaClient` and the reason for unavailability, if any.
     #aidaAvailability;
-    // Info of the currently logged in user.
-    #userInfo;
     #timelinePanelInstance = null;
     #runAbortController = new AbortController();
     #walkthrough = {
@@ -480,18 +492,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         isExpanded: false,
         activeMessage: null,
     };
-    constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
+    constructor(view = defaultView, { aidaClient, aidaAvailability }) {
         super(AiAssistancePanel.panelName);
         this.view = view;
         this.registerRequiredCSS(aiAssistancePanelStyles);
         this.#aiAssistanceEnabledSetting = this.#getAiAssistanceEnabledSetting();
         this.#aidaClient = aidaClient;
         this.#aidaAvailability = aidaAvailability;
-        this.#userInfo = {
-            accountImage: syncInfo.accountImage,
-            accountFullName: syncInfo.accountFullName,
-            accountGivenName: syncInfo.accountGivenName,
-        };
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-element-search')) {
             this.#toggleSearchElementAction =
                 UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
@@ -558,7 +565,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     isReadOnly: this.#conversation.isReadOnly ?? false,
                     changeSummary: this.#getChangeSummary(),
                     inspectElementToggled: this.#toggleSearchElementAction?.toggled() ?? false,
-                    userInfo: this.#userInfo,
                     canShowFeedbackForm: this.#serverSideLoggingEnabled,
                     multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() &&
                         this.#conversation.type === "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
@@ -608,6 +614,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (isNarrow === this.#walkthrough.isInlined) {
             return;
         }
+        // If the UI changed, we reset the visibility of the AI Walkthrough.
+        this.#clearWalkthrough();
         this.#walkthrough.isInlined = isNarrow;
         this.requestUpdate();
     }
@@ -632,9 +640,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const { forceNew } = opts;
         if (!panelInstance || forceNew) {
             const aidaClient = new Host.AidaClient.AidaClient();
-            const syncInfoPromise = new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve));
-            const [aidaAvailability, syncInfo] = await Promise.all([Host.AidaClient.AidaClient.checkAccessPreconditions(), syncInfoPromise]);
-            panelInstance = new AiAssistancePanel(defaultView, { aidaClient, aidaAvailability, syncInfo });
+            const aidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+            panelInstance = new AiAssistancePanel(defaultView, { aidaClient, aidaAvailability });
         }
         return panelInstance;
     }
@@ -815,12 +822,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
         if (currentAidaAvailability !== this.#aidaAvailability) {
             this.#aidaAvailability = currentAidaAvailability;
-            const syncInfo = await new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve));
-            this.#userInfo = {
-                accountImage: syncInfo.accountImage,
-                accountFullName: syncInfo.accountFullName,
-                accountGivenName: syncInfo.accountGivenName,
-            };
             this.requestUpdate();
         }
     };
@@ -1293,12 +1294,19 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (this.#conversation.isEmpty) {
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.STARTED_AI_CONVERSATION);
         }
-        const multimodalInput = isAiAssistanceMultimodalInputEnabled() && imageInput && multimodalInputType ? {
-            input: imageInput,
-            id: crypto.randomUUID(),
-            type: multimodalInputType,
-        } :
-            undefined;
+        const greenDevEmulationEnabled = Greendev.Prototypes.instance().isEnabled('emulationCapabilities');
+        let multimodalInput;
+        const pendingInput = this.#conversation.getPendingMultimodalInput();
+        if (greenDevEmulationEnabled && pendingInput) {
+            multimodalInput = pendingInput;
+        }
+        else if (isAiAssistanceMultimodalInputEnabled() && imageInput && multimodalInputType) {
+            multimodalInput = {
+                input: imageInput,
+                id: crypto.randomUUID(),
+                type: multimodalInputType,
+            };
+        }
         void VisualLogging.logFunctionCall(`start-conversation-${this.#conversation.type}`, 'ui');
         await this.#doConversation(this.#conversation.run(text, {
             signal,
@@ -1343,8 +1351,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                             parts: [],
                         };
                         this.#messages.push(systemMessage);
-                        if (Greendev.Prototypes.instance().isEnabled('breakpointDebuggerAgent') &&
-                            this.#conversation?.type === "breakpoint" /* AiAssistanceModel.AiHistoryStorage.ConversationType.BREAKPOINT */) {
+                        // If the walkthrough is currently expanded in the sidebar, we want to
+                        // automatically swap it to the newly created message's walkthrough.
+                        // This ensures that when a user asks a new question, the sidebar updates
+                        // immediately to show the "loading" state of the new walkthrough.
+                        const isSidebarWalkthroughOpen = this.#walkthrough.isExpanded && !this.#walkthrough.isInlined;
+                        if (isSidebarWalkthroughOpen ||
+                            (Greendev.Prototypes.instance().isEnabled('breakpointDebuggerAgent') &&
+                                this.#conversation?.type === "breakpoint" /* AiAssistanceModel.AiHistoryStorage.ConversationType.BREAKPOINT */)) {
                             this.#openWalkthrough(systemMessage);
                         }
                         break;
@@ -1359,6 +1373,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     case "context" /* AiAssistanceModel.AiAgent.ResponseType.CONTEXT */: {
                         step.title = data.title;
                         step.contextDetails = data.details;
+                        step.widgets = data.widgets;
                         step.isLoading = false;
                         commitStep();
                         break;
@@ -1429,6 +1444,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                                 newPart.suggestions = data.suggestions;
                             }
                             systemMessage.parts.push(newPart);
+                        }
+                        if (data.widgets && Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
+                            systemMessage.parts.push({
+                                type: 'widget',
+                                widgets: data.widgets,
+                            });
                         }
                         // When there is an answer without any thinking steps, we don't want to show the thinking step.
                         // TODO(crbug.com/463323934): Remove specially handling this case.
@@ -1518,7 +1539,7 @@ export function getResponseMarkdown(message) {
         if (part.type === 'answer') {
             contentParts.push(`### Answer\n\n${part.text}`);
         }
-        else {
+        else if (part.type === 'step') {
             const step = part.step;
             if (step.title) {
                 contentParts.push(`### ${step.title}`);

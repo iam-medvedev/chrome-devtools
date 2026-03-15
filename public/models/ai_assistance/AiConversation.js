@@ -1,12 +1,11 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Trace from '../../models/trace/trace.js';
 import * as Greendev from '../greendev/greendev.js';
-import * as NetworkTimeCalculator from '../network_time_calculator/network_time_calculator.js';
 import { BreakpointDebuggerAgent } from './agents/BreakpointDebuggerAgent.js';
 import { ContextSelectionAgent } from './agents/ContextSelectionAgent.js';
 import { FileAgent, FileContext } from './agents/FileAgent.js';
@@ -14,10 +13,6 @@ import { NetworkAgent, RequestContext } from './agents/NetworkAgent.js';
 import { PerformanceAgent, PerformanceTraceContext } from './agents/PerformanceAgent.js';
 import { NodeContext, StylingAgent } from './agents/StylingAgent.js';
 import { AiHistoryStorage } from './AiHistoryStorage.js';
-import { NetworkRequestFormatter } from './data_formatters/NetworkRequestFormatter.js';
-import { PerformanceInsightFormatter } from './data_formatters/PerformanceInsightFormatter.js';
-import { micros } from './data_formatters/UnitFormatters.js';
-import { AgentFocus } from './performance/AIContext.js';
 export const NOT_FOUND_IMAGE_DATA = '';
 const MAX_TITLE_LENGTH = 80;
 export function generateContextDetailsMarkdown(details) {
@@ -114,6 +109,10 @@ export class AiConversation {
     get selectedContext() {
         return this.#contexts.at(0);
     }
+    getPendingMultimodalInput() {
+        const greenDevEmulationEnabled = Greendev.Prototypes.instance().isEnabled('emulationCapabilities');
+        return greenDevEmulationEnabled ? this.#agent.popPendingMultimodalInput() : undefined;
+    }
     #reconstructHistory(historyWithoutImages) {
         const imageHistory = AiHistoryStorage.instance().getImageHistory();
         if (imageHistory && imageHistory.length > 0) {
@@ -206,17 +205,23 @@ export class AiConversation {
             id: this.id,
             history: this.history
                 .map(item => {
-                if (item.type === "context-change" /* ResponseType.CONTEXT_CHANGE */) {
-                    return null;
+                switch (item.type) {
+                    case "context-change" /* ResponseType.CONTEXT_CHANGE */: {
+                        return null;
+                    }
+                    case "user-query" /* ResponseType.USER_QUERY */: {
+                        return { ...item, imageInput: undefined };
+                    }
+                    case "side-effect" /* ResponseType.SIDE_EFFECT */: {
+                        return { ...item, confirm: undefined };
+                    }
+                    case "context" /* ResponseType.CONTEXT */:
+                    case "action" /* ResponseType.ACTION */: {
+                        return { ...item, widgets: undefined };
+                    }
+                    default:
+                        return item;
                 }
-                if (item.type === "user-query" /* ResponseType.USER_QUERY */) {
-                    return { ...item, imageInput: undefined };
-                }
-                // Remove the `confirm()`-function because `structuredClone()` throws on functions
-                if (item.type === "side-effect" /* ResponseType.SIDE_EFFECT */) {
-                    return { ...item, confirm: undefined };
-                }
-                return item;
             })
                 .filter(history => !!history),
             type: this.#type,
@@ -246,6 +251,7 @@ export class AiConversation {
             performanceRecordAndReload: this.#performanceRecordAndReload,
             onInspectElement: this.#onInspectElement,
             networkTimeCalculator: this.#networkTimeCalculator,
+            allowedOrigin: this.allowedOrigin,
             history,
         };
         switch (type) {
@@ -278,72 +284,6 @@ export class AiConversation {
             }
         }
     }
-    #factsCache = new Map();
-    async #createFactsForExtraContext(contexts) {
-        for (const context of contexts) {
-            const cached = this.#factsCache.get(context);
-            if (cached) {
-                this.#agent.addFact(cached);
-                continue;
-            }
-            if (context instanceof SDK.DOMModel.DOMNode) {
-                const desc = await StylingAgent.describeElement(context);
-                const fact = {
-                    text: `Relevant HTML element:\n${desc}`,
-                    metadata: {
-                        source: 'devtools-floaty',
-                        score: 1,
-                    }
-                };
-                this.#factsCache.set(context, fact);
-                this.#agent.addFact(fact);
-            }
-            else if (context instanceof SDK.NetworkRequest.NetworkRequest) {
-                const calculator = new NetworkTimeCalculator.NetworkTransferTimeCalculator();
-                calculator.updateBoundaries(context);
-                const formatter = new NetworkRequestFormatter(context, calculator);
-                const desc = await formatter.formatNetworkRequest();
-                const fact = {
-                    text: `Relevant network request:\n${desc}`,
-                    metadata: {
-                        source: 'devtools-floaty',
-                        score: 1,
-                    }
-                };
-                this.#factsCache.set(context, fact);
-                this.#agent.addFact(fact);
-            }
-            else if ('insight' in context) {
-                const focus = AgentFocus.fromInsight(context.trace, context.insight);
-                const formatter = new PerformanceInsightFormatter(focus, context.insight);
-                const text = `Relevant Performance Insight:\n${formatter.formatInsight()}`;
-                const fact = {
-                    text,
-                    metadata: {
-                        source: 'devtools-floaty',
-                        score: 1,
-                    }
-                };
-                this.#factsCache.set(context, fact);
-                this.#agent.addFact(fact);
-            }
-            else {
-                // Must be a trace event
-                const time = Trace.Types.Timing.Micro(context.event.ts - context.traceStartTime);
-                const desc = `Trace event: ${context.event.name}
-Time: ${micros(time)}`;
-                const fact = {
-                    text: `Relevant trace event:\n${desc}`,
-                    metadata: {
-                        source: 'devtools-floaty',
-                        score: 1,
-                    }
-                };
-                this.#factsCache.set(context, fact);
-                this.#agent.addFact(fact);
-            }
-        }
-    }
     async *run(initialQuery, options = {}) {
         if (this.isBlockedByOrigin) {
             // This error should not be reached. If it happens, some
@@ -358,19 +298,20 @@ Time: ${micros(time)}`;
         };
         void this.addHistoryItem(userQuery);
         yield userQuery;
-        if (options.extraContext) {
-            await this.#createFactsForExtraContext(options.extraContext);
-        }
-        this.#setOriginIfEmpty(this.selectedContext?.getOrigin());
-        if (this.isBlockedByOrigin) {
-            throw new Error('Cross-origin context data should not be included');
-        }
         yield* this.#runAgent(initialQuery, options);
     }
     #getQueryAfterSelection(initialQuery, selection) {
         return `${selection}\nOriginal user query: ${initialQuery}`;
     }
     async *#runAgent(initialQuery, options = {}) {
+        this.#setOriginIfEmpty(this.selectedContext?.getOrigin());
+        if (this.isBlockedByOrigin) {
+            yield {
+                type: "error" /* ResponseType.ERROR */,
+                error: "cross-origin" /* ErrorType.CROSS_ORIGIN */,
+            };
+            return;
+        }
         function shouldAddToHistory(data) {
             if (data.type === "context-change" /* ResponseType.CONTEXT_CHANGE */) {
                 return false;
@@ -415,6 +356,15 @@ Time: ${micros(time)}`;
     get type() {
         return this.#type;
     }
+    allowedOrigin = () => {
+        if (this.#origin) {
+            return this.#origin;
+        }
+        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        const inspectedURL = target?.inspectedURL();
+        this.#origin = inspectedURL ? new Common.ParsedURL.ParsedURL(inspectedURL).securityOrigin() : undefined;
+        return this.#origin;
+    };
 }
 function isAiAssistanceServerSideLoggingEnabled() {
     return !Root.Runtime.hostConfig.aidaAvailability?.disallowLogging;

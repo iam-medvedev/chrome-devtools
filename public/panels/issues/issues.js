@@ -282,6 +282,7 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/issues/AffectedSelectivePermissionsInterventionView.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var { widget } = UI2.Widget;
 var AffectedSelectivePermissionsInterventionView = class extends AffectedResourcesView {
   #linkifier = new Components2.Linkifier.Linkifier();
   getResourceNameWithCount(count) {
@@ -323,13 +324,10 @@ var AffectedSelectivePermissionsInterventionView = class extends AffectedResourc
   async #resolveStackTrace(stackTrace, issuesModel) {
     const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
     const stackTraceTranslated = await debuggerWorkspaceBinding.createStackTraceFromProtocolRuntime(stackTrace, issuesModel.target());
-    return html`
-      <devtools-widget .widgetConfig=${UI2.Widget.widgetConfig(Components2.JSPresentationUtils.StackTracePreviewContent, {
+    return html`${widget(Components2.JSPresentationUtils.StackTracePreviewContent, {
       stackTrace: stackTraceTranslated,
       options: { expandable: true }
-    })}>
-      </devtools-widget>
-    `;
+    })}`;
   }
   update() {
     this.requestResolver.clear();
@@ -343,7 +341,7 @@ var IssueRevealer_exports = {};
 __export(IssueRevealer_exports, {
   IssueRevealer: () => IssueRevealer
 });
-import * as UI8 from "./../../ui/legacy/legacy.js";
+import * as UI7 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/issues/IssuesPane.js
 var IssuesPane_exports = {};
@@ -357,7 +355,7 @@ import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as IssuesManager12 from "./../../models/issues_manager/issues_manager.js";
 import * as IssueCounter5 from "./../../ui/components/issue_counter/issue_counter.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/issues/HiddenIssuesRow.js
@@ -1066,8 +1064,8 @@ import * as Adorners2 from "./../../ui/components/adorners/adorners.js";
 import * as IssueCounter3 from "./../../ui/components/issue_counter/issue_counter.js";
 import * as MarkdownView from "./../../ui/components/markdown_view/markdown_view.js";
 import { Icon as Icon3 } from "./../../ui/kit/kit.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
-import { html as html3, render as render3 } from "./../../ui/lit/lit.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
+import { html as html4, render as render4 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/issues/AffectedBlockedByResponseView.js
 import * as Host2 from "./../../core/host/host.js";
@@ -1817,7 +1815,7 @@ var AffectedPartitioningBlobURLView = class extends AffectedResourcesView {
 
 // gen/front_end/panels/issues/AffectedPermissionElementsView.js
 import * as i18n27 from "./../../core/i18n/i18n.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
+import { html as html3, render as render3 } from "./../../ui/lit/lit.js";
 var UIStrings14 = {
   /**
    * @description Noun for singular or plural number of affected element resource indication in issue view.
@@ -1836,16 +1834,16 @@ var AffectedPermissionElementsView = class extends AffectedElementsView {
   }
   async #appendAffectedElements(issues) {
     let count = 0;
+    const templates = [];
     for (const issue of issues) {
       for (const element of issue.elements()) {
-        const rowElement = UI5.Fragment.html`
-    <tr>
-      ${await this.createElementCell(element, this.issue.getCategory())}
-    </tr>`;
-        this.affectedResources.appendChild(rowElement);
         count++;
+        templates.push(html3`<tr>
+          ${await this.createElementCell(element, this.issue.getCategory())}
+        </tr>`);
       }
     }
+    render3(html3`${templates}`, this.affectedResources);
     this.updateAffectedResourceCount(count);
   }
 };
@@ -2841,7 +2839,7 @@ var AffectedMixedContentView = class _AffectedMixedContentView extends AffectedR
     this.#appendAffectedMixedContentDetails(this.issue.getMixedContentIssues());
   }
 };
-var IssueView = class _IssueView extends UI6.TreeOutline.TreeElement {
+var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
   #issue;
   #description;
   toggleOnClick;
@@ -2945,8 +2943,8 @@ var IssueView = class _IssueView extends UI6.TreeOutline.TreeElement {
   #updateAffectedResourcesPositionAndSize(visibleAffectedResource) {
     for (let i = 0; i < visibleAffectedResource.length; i++) {
       const element = visibleAffectedResource[i].listItemElement;
-      UI6.ARIAUtils.setPositionInSet(element, i + 1);
-      UI6.ARIAUtils.setSetSize(element, visibleAffectedResource.length);
+      UI5.ARIAUtils.setPositionInSet(element, i + 1);
+      UI5.ARIAUtils.setSetSize(element, visibleAffectedResource.length);
     }
   }
   #appendHeader() {
@@ -3017,7 +3015,7 @@ var IssueView = class _IssueView extends UI6.TreeOutline.TreeElement {
     this.affectedResources.hidden = noResources;
   }
   #createAffectedResources() {
-    const wrapper = new UI6.TreeOutline.TreeElement();
+    const wrapper = new UI5.TreeOutline.TreeElement();
     wrapper.setCollapsible(false);
     wrapper.setExpandable(true);
     wrapper.expand();
@@ -3025,34 +3023,34 @@ var IssueView = class _IssueView extends UI6.TreeOutline.TreeElement {
     wrapper.listItemElement.classList.add("affected-resources-label");
     wrapper.listItemElement.textContent = i18nString21(UIStrings21.affectedResources);
     wrapper.childrenListElement.classList.add("affected-resources");
-    UI6.ARIAUtils.setPositionInSet(wrapper.listItemElement, 2);
-    UI6.ARIAUtils.setSetSize(wrapper.listItemElement, this.#description.links.length === 0 ? 2 : 3);
+    UI5.ARIAUtils.setPositionInSet(wrapper.listItemElement, 2);
+    UI5.ARIAUtils.setSetSize(wrapper.listItemElement, this.#description.links.length === 0 ? 2 : 3);
     return wrapper;
   }
   #createBody() {
-    const messageElement = new UI6.TreeOutline.TreeElement();
+    const messageElement = new UI5.TreeOutline.TreeElement();
     messageElement.setCollapsible(false);
     messageElement.selectable = false;
     const markdownComponent = new MarkdownView.MarkdownView.MarkdownView();
     markdownComponent.data = { tokens: this.#description.markdown };
     messageElement.listItemElement.appendChild(markdownComponent);
-    UI6.ARIAUtils.setPositionInSet(messageElement.listItemElement, 1);
-    UI6.ARIAUtils.setSetSize(messageElement.listItemElement, this.#description.links.length === 0 ? 2 : 3);
+    UI5.ARIAUtils.setPositionInSet(messageElement.listItemElement, 1);
+    UI5.ARIAUtils.setSetSize(messageElement.listItemElement, this.#description.links.length === 0 ? 2 : 3);
     this.appendChild(messageElement);
   }
   #createReadMoreLinks() {
     if (this.#description.links.length === 0) {
       return;
     }
-    const linkWrapper = new UI6.TreeOutline.TreeElement();
+    const linkWrapper = new UI5.TreeOutline.TreeElement();
     linkWrapper.setCollapsible(false);
     linkWrapper.listItemElement.classList.add("link-wrapper");
-    UI6.ARIAUtils.setPositionInSet(linkWrapper.listItemElement, 3);
-    UI6.ARIAUtils.setSetSize(linkWrapper.listItemElement, 3);
+    UI5.ARIAUtils.setPositionInSet(linkWrapper.listItemElement, 3);
+    UI5.ARIAUtils.setSetSize(linkWrapper.listItemElement, 3);
     const linkList = linkWrapper.listItemElement.createChild("ul", "link-list");
     for (const description of this.#description.links) {
       const linkListItem = linkList.createChild("li");
-      render3(html3`<devtools-link class="link devtools-link" href=${description.link} jslogcontext="learn-more">${i18nString21(UIStrings21.learnMoreS, { PH1: description.linkTitle })}</devtools-link>`, linkListItem);
+      render4(html4`<devtools-link class="link devtools-link" href=${description.link} jslogcontext="learn-more">${i18nString21(UIStrings21.learnMoreS, { PH1: description.linkTitle })}</devtools-link>`, linkListItem);
     }
     this.appendChild(linkWrapper);
   }
@@ -3185,7 +3183,7 @@ var UIStrings22 = {
 var str_22 = i18n43.i18n.registerUIStrings("panels/issues/IssuesPane.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
 var ISSUES_PANEL_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/issues";
-var IssueCategoryView = class extends UI7.TreeOutline.TreeElement {
+var IssueCategoryView = class extends UI6.TreeOutline.TreeElement {
   #category;
   constructor(category) {
     super(void 0, void 0, Platform5.StringUtilities.toKebabCase(category));
@@ -3240,7 +3238,7 @@ var IssueCategoryView = class extends UI7.TreeOutline.TreeElement {
 function getGroupIssuesByCategorySetting() {
   return Common6.Settings.Settings.instance().createSetting("group-issues-by-category", false);
 }
-var IssuesPane = class extends UI7.Widget.VBox {
+var IssuesPane = class extends UI6.Widget.VBox {
   #categoryViews;
   #issueViews;
   #kindViews;
@@ -3263,14 +3261,14 @@ var IssuesPane = class extends UI7.Widget.VBox {
     this.#issueViews = /* @__PURE__ */ new Map();
     this.#showThirdPartyCheckbox = null;
     this.#createToolbars();
-    this.#issuesTree = new UI7.TreeOutline.TreeOutlineInShadow();
+    this.#issuesTree = new UI6.TreeOutline.TreeOutlineInShadow();
     this.#issuesTree.setShowSelectionOnKeyboardFocus(true);
     this.#issuesTree.contentElement.classList.add("issues");
     this.#issuesTree.registerRequiredCSS(issuesTree_css_default);
     this.contentElement.appendChild(this.#issuesTree.element);
     this.#hiddenIssuesRow = new HiddenIssuesRow();
     this.#issuesTree.appendChild(this.#hiddenIssuesRow);
-    this.#noIssuesMessageDiv = new UI7.EmptyWidget.EmptyWidget("", i18nString22(UIStrings22.issuesPanelDescription));
+    this.#noIssuesMessageDiv = new UI6.EmptyWidget.EmptyWidget("", i18nString22(UIStrings22.issuesPanelDescription));
     this.#noIssuesMessageDiv.link = ISSUES_PANEL_EXPLANATION_URL;
     this.#noIssuesMessageDiv.show(this.contentElement);
     this.#issuesManager = IssuesManager12.IssuesManager.IssuesManager.instance();
@@ -3293,21 +3291,21 @@ var IssuesPane = class extends UI7.Widget.VBox {
     const rightToolbar = toolbarContainer.createChild("devtools-toolbar", "issues-toolbar-right");
     rightToolbar.role = "presentation";
     const groupByCategorySetting = getGroupIssuesByCategorySetting();
-    const groupByCategoryCheckbox = new UI7.Toolbar.ToolbarSettingCheckbox(groupByCategorySetting, i18nString22(UIStrings22.groupDisplayedIssuesUnder), i18nString22(UIStrings22.groupByCategory));
+    const groupByCategoryCheckbox = new UI6.Toolbar.ToolbarSettingCheckbox(groupByCategorySetting, i18nString22(UIStrings22.groupDisplayedIssuesUnder), i18nString22(UIStrings22.groupByCategory));
     groupByCategoryCheckbox.setVisible(false);
     rightToolbar.appendToolbarItem(groupByCategoryCheckbox);
     groupByCategorySetting.addChangeListener(() => {
       this.#fullUpdate(true);
     });
     const groupByKindSetting = getGroupIssuesByKindSetting();
-    const groupByKindSettingCheckbox = new UI7.Toolbar.ToolbarSettingCheckbox(groupByKindSetting, i18nString22(UIStrings22.groupDisplayedIssuesUnderKind), i18nString22(UIStrings22.groupByKind));
+    const groupByKindSettingCheckbox = new UI6.Toolbar.ToolbarSettingCheckbox(groupByKindSetting, i18nString22(UIStrings22.groupDisplayedIssuesUnderKind), i18nString22(UIStrings22.groupByKind));
     rightToolbar.appendToolbarItem(groupByKindSettingCheckbox);
     groupByKindSetting.addChangeListener(() => {
       this.#fullUpdate(true);
     });
     groupByKindSettingCheckbox.setVisible(true);
     const thirdPartySetting = IssuesManager12.Issue.getShowThirdPartyIssuesSetting();
-    this.#showThirdPartyCheckbox = new UI7.Toolbar.ToolbarSettingCheckbox(thirdPartySetting, i18nString22(UIStrings22.includeCookieIssuesCausedBy), i18nString22(UIStrings22.includeThirdpartyCookieIssues));
+    this.#showThirdPartyCheckbox = new UI6.Toolbar.ToolbarSettingCheckbox(thirdPartySetting, i18nString22(UIStrings22.includeCookieIssuesCausedBy), i18nString22(UIStrings22.includeThirdpartyCookieIssues));
     rightToolbar.appendToolbarItem(this.#showThirdPartyCheckbox);
     rightToolbar.appendSeparator();
     const issueCounter = new IssueCounter5.IssueCounter.IssueCounter();
@@ -3324,7 +3322,7 @@ var IssuesPane = class extends UI7.Widget.VBox {
     };
     issueCounter.id = "console-issues-counter";
     issueCounter.setAttribute("jslog", `${VisualLogging5.counter("issues")}`);
-    const issuesToolbarItem = new UI7.Toolbar.ToolbarItem(issueCounter);
+    const issuesToolbarItem = new UI6.Toolbar.ToolbarItem(issueCounter);
     rightToolbar.appendToolbarItem(issuesToolbarItem);
     return { toolbarContainer };
   }
@@ -3351,7 +3349,7 @@ var IssuesPane = class extends UI7.Widget.VBox {
     } else {
       issueView.setIssue(issue);
       const newParent = this.#getIssueViewParent(issue);
-      if (issueView.parent !== newParent && !(newParent instanceof UI7.TreeOutline.TreeOutline && issueView.parent === newParent.rootElement())) {
+      if (issueView.parent !== newParent && !(newParent instanceof UI6.TreeOutline.TreeOutline && issueView.parent === newParent.rootElement())) {
         issueView.parent?.removeChild(issueView);
         this.appendIssueViewToParent(issueView, newParent);
       }
@@ -3373,7 +3371,7 @@ var IssuesPane = class extends UI7.Widget.VBox {
       console.error("The issues tree should only contain IssueView objects as direct children");
       return 0;
     });
-    if (parent instanceof UI7.TreeOutline.TreeElement) {
+    if (parent instanceof UI6.TreeOutline.TreeElement) {
       this.#updateItemPositionAndSize(parent);
     }
   }
@@ -3383,8 +3381,8 @@ var IssuesPane = class extends UI7.Widget.VBox {
     for (let i = 0; i < childNodes.length; i++) {
       const node = childNodes[i];
       if (node.classList.contains("issue")) {
-        UI7.ARIAUtils.setPositionInSet(node, ++treeItemCount);
-        UI7.ARIAUtils.setSetSize(node, childNodes.length / 2);
+        UI6.ARIAUtils.setPositionInSet(node, ++treeItemCount);
+        UI6.ARIAUtils.setSetSize(node, childNodes.length / 2);
       }
     }
   }
@@ -3506,8 +3504,8 @@ var IssuesPane = class extends UI7.Widget.VBox {
 // gen/front_end/panels/issues/IssueRevealer.js
 var IssueRevealer = class {
   async reveal(issue) {
-    await UI8.ViewManager.ViewManager.instance().showView("issues-pane");
-    const view = UI8.ViewManager.ViewManager.instance().view("issues-pane");
+    await UI7.ViewManager.ViewManager.instance().showView("issues-pane");
+    const view = UI7.ViewManager.ViewManager.instance().view("issues-pane");
     if (view) {
       const issuesPane = await view.widget();
       if (issuesPane instanceof IssuesPane) {

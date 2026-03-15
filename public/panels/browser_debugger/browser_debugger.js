@@ -689,6 +689,7 @@ var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
 var DOM_BREAKPOINT_DOCUMENTATION_URL = "https://developer.chrome.com/docs/devtools/javascript/breakpoints#dom";
 var { html: html2, render: render2, Directives: Directives2 } = Lit2;
+var { widget } = UI2.Widget;
 var DEFAULT_VIEW2 = (input, _output, target) => {
   const hasBreakpoints = input.breakpoints.length > 0;
   render2(html2`
@@ -727,11 +728,11 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
   })}
           </ul>` : html2`<div class="placeholder">
             <div class="gray-info-message">${i18nString2(UIStrings2.noBreakpoints)}</div>
-            <devtools-widget .widgetConfig=${UI2.Widget.widgetConfig(UI2.EmptyWidget.EmptyWidget, {
+            ${widget(UI2.EmptyWidget.EmptyWidget, {
     header: i18nString2(UIStrings2.noBreakpoints),
     text: i18nString2(UIStrings2.domBreakpointsDescription),
     link: DOM_BREAKPOINT_DOCUMENTATION_URL
-  })}></devtools-widget>
+  })}
           </div>`}
       </div>
     `, target);

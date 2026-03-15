@@ -341,4 +341,14 @@ Common.Revealer.registerRevealer({
     return new Timeline.TimelinePanel.InsightRevealer();
   }
 });
+Common.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.Utils.Helpers.RevealableCoreVitals]);
+  },
+  destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.CoreVitalsRevealer();
+  }
+});
 //# sourceMappingURL=timeline-meta.js.map

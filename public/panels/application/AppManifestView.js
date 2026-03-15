@@ -17,7 +17,7 @@ import appManifestViewStyles from './appManifestView.css.js';
 import * as ApplicationComponents from './components/components.js';
 const { styleMap, classMap, ref } = Directives;
 const { linkifyURL } = Components.Linkifier.Linkifier;
-const { widgetConfig } = UI.Widget;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Text in App Manifest View of the Application panel
@@ -544,7 +544,7 @@ function renderProtocolHandlers(data, output) {
     // clang-format off
     return html `${renderSectionHeader(i18nString(UIStrings.protocolHandlers), output)}
     <div class="report-row">
-      <devtools-widget .widgetConfig=${widgetConfig(ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView, { protocolHandlers: data.protocolHandlers, manifestLink: data.manifestLink })}
+      <devtools-widget ${widget(ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView, { protocolHandlers: data.protocolHandlers, manifestLink: data.manifestLink })}
         ${ref(setFocusOnSection(i18nString(UIStrings.protocolHandlers), output))}>
       </devtools-widget>
     </div>
@@ -841,12 +841,11 @@ export const DEFAULT_VIEW = (input, output, target) => {
     render(html `
     <style>${appManifestViewStyles}</style>
     <style>${UI.inspectorCommonStyles}</style>
-    ${isEmpty ? html `
-    <devtools-widget .widgetConfig=${widgetConfig(UI.EmptyWidget.EmptyWidget, {
+    ${isEmpty ? widget(UI.EmptyWidget.EmptyWidget, {
         header: i18nString(UIStrings.noManifestDetected),
         text: i18nString(UIStrings.manifestDescription),
         link: 'https://web.dev/add-manifest/'
-    })}></devtools-widget>` : html `
+    }) : html `
     <devtools-report .data=${{ reportTitle: i18nString(UIStrings.appManifest), reportUrl: url }}>
       ${renderErrors(warnings, errors, imageErrors, output)}
       ${installabilityErrors?.length ? renderInstallability(installabilityErrors) : nothing}

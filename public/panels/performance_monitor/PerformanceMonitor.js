@@ -55,12 +55,12 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/performance_monitor/PerformanceMonitor.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { widgetConfig } = UI.Widget;
+const { widget } = UI.Widget;
 const { classMap, ref } = Directives;
 const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     render(html `
-    <devtools-widget .widgetConfig=${widgetConfig(ControlPane, {
+    <devtools-widget ${widget(ControlPane, {
         onMetricChanged: input.onMetricChanged,
         chartsInfo: input.chartsInfo,
         metrics: input.metrics

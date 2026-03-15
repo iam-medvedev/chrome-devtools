@@ -34,7 +34,11 @@ export interface StepPart {
     type: 'step';
     step: Step;
 }
-export type ModelMessagePart = AnswerPart | StepPart;
+export interface WidgetPart {
+    type: 'widget';
+    widgets: AiWidget[];
+}
+export type ModelMessagePart = AnswerPart | StepPart | WidgetPart;
 export interface UserChatMessage {
     entity: ChatMessageEntity.USER;
     text: string;
@@ -83,7 +87,6 @@ export interface MessageInput {
     isReadOnly: boolean;
     isLastMessage: boolean;
     canShowFeedbackForm: boolean;
-    userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName' | 'accountGivenName'>;
     markdownRenderer: MarkdownLitRenderer;
     onSuggestionClick: (suggestion: string) => void;
     onFeedbackSubmit: (rpcId: Host.AidaClient.RpcGlobalId, rate: Host.AidaClient.Rating, feedback?: string) => void;
@@ -93,6 +96,7 @@ export interface MessageInput {
         isExpanded: boolean;
         onToggle: (isOpen: boolean) => void;
         isInlined: boolean;
+        activeMessage: ModelChatMessage | null;
     };
 }
 export declare const DEFAULT_VIEW: (input: ChatMessageViewInput, output: ViewOutput, target: HTMLElement) => void;
@@ -111,7 +115,6 @@ export declare class ChatMessage extends UI.Widget.Widget {
     isReadOnly: boolean;
     canShowFeedbackForm: boolean;
     isLastMessage: boolean;
-    userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName' | 'accountGivenName'>;
     markdownRenderer: MarkdownLitRenderer;
     onSuggestionClick: (suggestion: string) => void;
     onFeedbackSubmit: (rpcId: Host.AidaClient.RpcGlobalId, rate: Host.AidaClient.Rating, feedback?: string) => void;

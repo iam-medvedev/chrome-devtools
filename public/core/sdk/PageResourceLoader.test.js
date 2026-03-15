@@ -5,10 +5,10 @@ import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
-import { createSettingsForTest, setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 const initiator = {
@@ -18,9 +18,8 @@ const initiator = {
 };
 /** Creates a PageResourceLoader, TargetManager and Settings instance without installing them as globals */
 function setup({ loadOverride, maxConcurrentLoads } = {}) {
-    const targetManager = new SDK.TargetManager.TargetManager(new Root.DevToolsContext.DevToolsContext());
-    const settings = createSettingsForTest();
-    const loader = new SDK.PageResourceLoader.PageResourceLoader(targetManager, settings, { currentUserAgent: () => '' }, loadOverride ?? null, maxConcurrentLoads);
+    const universe = new TestUniverse({ pageResourceLoaderOptions: { loadOverride: loadOverride ?? null, maxConcurrentLoads } });
+    const { pageResourceLoader: loader, settings, targetManager } = universe;
     return { loader, settings, targetManager };
 }
 describe('PageResourceLoader', () => {
@@ -40,6 +39,7 @@ describe('PageResourceLoader', () => {
         loads.length = 0;
     });
     setupLocaleHooks();
+    setupSettingsHooks();
     it('registers extension loads', async () => {
         const { loader } = setup({ loadOverride: load });
         const initiator = {
@@ -189,6 +189,7 @@ describe('PageResourceLoader', () => {
 });
 describe('PageResourceLoader', () => {
     setupRuntimeHooks();
+    setupSettingsHooks();
     describe('loadResource', () => {
         const stream = 'STREAM_ID';
         const initiatorUrl = urlString `htp://example.com`;
@@ -225,6 +226,80 @@ describe('PageResourceLoader', () => {
                 assert.deepEqual(content, 'foo');
             });
         }
+    });
+    describe('loadResource with CSP', () => {
+        it('does not fall back to host bindings if frame has restrictive CSP', async () => {
+            const { loader, settings, targetManager } = setup();
+            settings.moduleSetting('cache-disabled').set(false);
+            const connection = new MockCDPConnection();
+            connection.setHandler('Network.getSecurityIsolationStatus', () => {
+                return {
+                    result: {
+                        status: {
+                            csp: [{
+                                    effectiveDirectives: 'connect-src \'none\'',
+                                    isEnforced: true,
+                                    source: 'HTTP',
+                                }],
+                        },
+                    },
+                };
+            });
+            connection.setHandler('Network.loadNetworkResource', () => {
+                return {
+                    error: {
+                        code: -32000,
+                        message: 'Frame not found',
+                    },
+                };
+            });
+            const target = createTarget({ connection, targetManager });
+            const initiator = { target, frameId: '123', initiatorUrl: urlString `https://example.com` };
+            const url = urlString `https://example.com/source.map`;
+            const loadHostBindingsStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'loadNetworkResource');
+            try {
+                await loader.loadResource(url, initiator);
+                assert.fail('Expected loadResource to throw');
+            }
+            catch (e) {
+                assert.strictEqual(e.message, 'Frame not found');
+            }
+            // Verify fallback was NOT called
+            sinon.assert.notCalled(loadHostBindingsStub);
+        });
+        it('falls back to host bindings if frame has no restrictive CSP', async () => {
+            const { loader, settings, targetManager } = setup();
+            settings.moduleSetting('cache-disabled').set(false);
+            const connection = new MockCDPConnection();
+            connection.setHandler('Network.getSecurityIsolationStatus', () => {
+                return {
+                    result: {
+                        status: {
+                            csp: [],
+                        },
+                    },
+                };
+            });
+            connection.setHandler('Network.loadNetworkResource', () => {
+                return {
+                    error: {
+                        code: -32000,
+                        message: 'Frame not found',
+                    },
+                };
+            });
+            const target = createTarget({ connection, targetManager });
+            const initiator = { target, frameId: '123', initiatorUrl: urlString `https://example.com` };
+            const url = urlString `https://example.com/source.map`;
+            const loadHostBindingsStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'loadNetworkResource')
+                .callsFake((_url, _headers, streamId, callback) => {
+                Host.ResourceLoader.streamWrite(streamId, 'fallback content');
+                callback({ statusCode: 200 });
+            });
+            const result = await loader.loadResource(url, initiator);
+            assert.strictEqual(result.content, 'fallback content');
+            sinon.assert.calledOnce(loadHostBindingsStub);
+        });
     });
 });
 describe('PageResourceLoader', () => {

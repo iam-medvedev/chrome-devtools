@@ -18,7 +18,7 @@ export default `/*
 
 .timeline-section {
   position: relative;
-  padding: 16px 0 0 40px;
+  padding: 8px 0 8px 40px;
   margin-left: 8px;
 
   --override-color-recording-successful-text: #36a854;
@@ -57,12 +57,12 @@ export default `/*
   z-index: 4;
 }
 
-.is-start-of-group {
-  padding-top: 28px;
+.is-start-of-group:not(:first-of-type) {
+  padding-top: 16px;
 }
 
 .is-end-of-group {
-  padding-bottom: 24px;
+  padding-bottom: 16px;
 }
 
 .icon {
@@ -78,7 +78,7 @@ export default `/*
   display: block;
   transform: translateX(-50%);
   top: 18px;
-  height: calc(100% + 8px);
+  height: 100%;
   z-index: 1; /* We want this to be below of \\'.overlay\\' for stopped case */
 }
 
@@ -91,8 +91,7 @@ export default `/*
 }
 
 .is-first-section .bar {
-  top: 32px;
-  height: calc(100% - 8px);
+  height: 100%;
   display: none;
 }
 

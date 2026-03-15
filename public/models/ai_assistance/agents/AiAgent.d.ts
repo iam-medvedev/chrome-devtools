@@ -1,6 +1,7 @@
 import * as Host from '../../../core/host/host.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
+import type * as Trace from '../../trace/trace.js';
 export declare const enum ResponseType {
     CONTEXT = "context",
     TITLE = "title",
@@ -18,7 +19,8 @@ export declare const enum ErrorType {
     UNKNOWN = "unknown",
     ABORT = "abort",
     MAX_STEPS = "max-steps",
-    BLOCK = "block"
+    BLOCK = "block",
+    CROSS_ORIGIN = "cross-origin"
 }
 export declare const enum MultimodalInputType {
     SCREENSHOT = "screenshot",
@@ -35,6 +37,7 @@ export interface AnswerResponse {
     complete: boolean;
     rpcId?: Host.AidaClient.RpcGlobalId;
     suggestions?: [string, ...string[]];
+    widgets?: AiWidget[];
 }
 export interface SuggestionsResponse {
     type: ResponseType.SUGGESTIONS;
@@ -53,6 +56,7 @@ export interface ContextResponse {
     type: ResponseType.CONTEXT;
     title: string;
     details: [ContextDetail, ...ContextDetail[]];
+    widgets?: AiWidget[];
 }
 export interface TitleResponse {
     type: ResponseType.TITLE;
@@ -115,6 +119,7 @@ export interface AgentOptions {
     confirmSideEffectForTest?: typeof Promise.withResolvers;
     onInspectElement?: () => Promise<SDK.DOMModel.DOMNode | null>;
     history?: Host.AidaClient.Content[];
+    allowedOrigin?: () => string | undefined;
 }
 export interface ParsedAnswer {
     answer: string;
@@ -168,7 +173,27 @@ export interface ComputedStyleAiWidget {
         properties: string[];
     };
 }
-export type AiWidget = ComputedStyleAiWidget;
+export interface CoreVitalsAiWidget {
+    name: 'CORE_VITALS';
+    data: {
+        insightSetKey: string;
+        parsedTrace: Trace.TraceModel.ParsedTrace;
+    };
+}
+export interface StylePropertiesAiWidget {
+    name: 'STYLE_PROPERTIES';
+    data: {
+        backendNodeId: Protocol.DOM.BackendNodeId;
+        selector?: string;
+    };
+}
+export interface DomTreeAiWidget {
+    name: 'DOM_TREE';
+    data: {
+        root: SDK.DOMModel.DOMNodeSnapshot;
+    };
+}
+export type AiWidget = ComputedStyleAiWidget | CoreVitalsAiWidget | StylePropertiesAiWidget | DomTreeAiWidget;
 export type FunctionCallHandlerResult<Result> = {
     requiresApproval: true;
     /**
@@ -261,6 +286,7 @@ export declare abstract class AiAgent<T> {
     addFact(fact: Host.AidaClient.RequestFact): ReadonlySet<Host.AidaClient.RequestFact>;
     removeFact(fact: Host.AidaClient.RequestFact): boolean;
     clearFacts(): void;
+    popPendingMultimodalInput(): MultimodalInput | undefined;
     preambleFeatures(): string[];
     buildRequest(part: Host.AidaClient.Part | Host.AidaClient.Part[], role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.DoConversationRequest;
     get sessionId(): string;
@@ -277,6 +303,7 @@ export declare abstract class AiAgent<T> {
      * though/action/title/answer/suggestions component.
      */
     parseTextResponse(response: string): ParsedResponse;
+    protected finalizeAnswer(answer: AnswerResponse): Promise<AnswerResponse>;
     /**
      * Declare a function that the AI model can call.
      * @param name The name of the function
@@ -290,6 +317,7 @@ export declare abstract class AiAgent<T> {
      */
     protected declareFunction<Args extends Record<string, unknown>, ReturnType = unknown>(name: string, declaration: FunctionDeclaration<Args, ReturnType>): void;
     protected clearDeclaredFunctions(): void;
+    protected preRun(): Promise<void>;
     run(initialQuery: string, options: {
         selected: ConversationContext<T> | null;
         signal?: AbortSignal;

@@ -2050,6 +2050,52 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const msg2Steps = nextInput.props.walkthrough.activeMessage?.parts.filter(p => p.type === 'step').map(p => p.step) ?? [];
             assert.strictEqual(msg2Steps.at(0)?.thought, 'step 2');
         });
+        it('should automatically swap the walkthrough to the new message if the walkthrough is already expanded in the sidebar', async () => {
+            const runStub = sinon.stub(AiAssistanceModel.StylingAgent.StylingAgent.prototype, 'run');
+            runStub.callsFake(async function* (initialQuery) {
+                yield {
+                    type: "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */,
+                    query: initialQuery,
+                };
+                yield {
+                    type: "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */,
+                    text: 'answer',
+                    complete: true,
+                };
+            });
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('freestyler.elements-floating-button');
+            // 1. Send first message and open walkthrough
+            let nextInput = await view.nextInput;
+            if (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
+                nextInput.props.onTextSubmit('test 1');
+            }
+            // Wait for it to finish loading
+            nextInput = await view.nextInput; // User message
+            while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
+                nextInput = await view.nextInput;
+            }
+            // Open walkthrough
+            if (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
+                const msg1 = nextInput.props.messages.at(-1);
+                nextInput.props.walkthrough.onOpen(msg1);
+            }
+            nextInput = await view.nextInput;
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assert.isTrue(nextInput.walkthrough.isExpanded);
+            // 2. Send second message
+            nextInput.props.onTextSubmit('test 2');
+            // The USER_QUERY response should trigger the walkthrough swap
+            nextInput = await view.nextInput; // User message
+            // Verify that after the user message is added, the walkthrough.activeMessage
+            // has been updated to the second model message.
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            const modelMessages = nextInput.props.messages.filter(m => m.entity === "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */);
+            const msg2 = modelMessages.at(-1);
+            // Verify the walkthrough is still expanded and the active message is the second message
+            assert.strictEqual(nextInput.props.walkthrough.activeMessage, msg2);
+            assert.isTrue(nextInput.walkthrough.isExpanded);
+        });
     });
 });
 describeWithEnvironment('AiAssistancePanel.ActionDelegate', () => {

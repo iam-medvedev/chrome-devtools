@@ -537,7 +537,12 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
                 break;
         }
     }
-    async startLighthouse() {
+    /**
+     * Starts a LH run. By default it will use the categories based on what the
+     * user has selected in the UI, but these can be overridden by passing in the
+     * category IDs, in which case these take priority.
+     */
+    async startLighthouse(overrides) {
         if (this.lastAction) {
             await this.lastAction;
         }
@@ -547,7 +552,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
                 this.currentLighthouseRun = undefined;
             }
             const inspectedURL = await this.getInspectedURL({ force: true });
-            const categoryIDs = this.getCategoryIDs();
+            const categoryIDs = overrides?.categoryIds ?? this.getCategoryIDs();
             const flags = this.getFlags();
             this.recordMetrics(flags, categoryIDs);
             this.currentLighthouseRun = new LighthouseRun(this, this.protocolService, inspectedURL, categoryIDs, flags);

@@ -736,7 +736,12 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
         break;
     }
   }
-  async startLighthouse() {
+  /**
+   * Starts a LH run. By default it will use the categories based on what the
+   * user has selected in the UI, but these can be overridden by passing in the
+   * category IDs, in which case these take priority.
+   */
+  async startLighthouse(overrides) {
     if (this.lastAction) {
       await this.lastAction;
     }
@@ -746,7 +751,7 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
         this.currentLighthouseRun = void 0;
       }
       const inspectedURL = await this.getInspectedURL({ force: true });
-      const categoryIDs = this.getCategoryIDs();
+      const categoryIDs = overrides?.categoryIds ?? this.getCategoryIDs();
       const flags = this.getFlags();
       this.recordMetrics(flags, categoryIDs);
       this.currentLighthouseRun = new LighthouseRun(this, this.protocolService, inspectedURL, categoryIDs, flags);
@@ -960,6 +965,7 @@ var Events;
 // gen/front_end/panels/lighthouse/LighthousePanel.js
 var LighthousePanel_exports = {};
 __export(LighthousePanel_exports, {
+  ActiveLighthouseReport: () => ActiveLighthouseReport,
   LighthousePanel: () => LighthousePanel
 });
 import "./../../ui/legacy/legacy.js";
@@ -2841,6 +2847,12 @@ var UIStrings6 = {
 var str_6 = i18n12.i18n.registerUIStrings("panels/lighthouse/LighthousePanel.ts", UIStrings6);
 var i18nString6 = i18n12.i18n.getLocalizedString.bind(void 0, str_6);
 var lighthousePanelInstace;
+var ActiveLighthouseReport = class {
+  report;
+  constructor(report) {
+    this.report = report;
+  }
+};
 var LighthousePanel = class _LighthousePanel extends UI7.Panel.Panel {
   controller;
   startView;
@@ -2849,7 +2861,6 @@ var LighthousePanel = class _LighthousePanel extends UI7.Panel.Panel {
   warningText;
   unauditableExplanation;
   cachedRenderedReports;
-  dropTarget;
   auditResultsElement;
   clearButton;
   newButton;
@@ -2867,7 +2878,7 @@ var LighthousePanel = class _LighthousePanel extends UI7.Panel.Panel {
     this.warningText = null;
     this.unauditableExplanation = null;
     this.cachedRenderedReports = /* @__PURE__ */ new Map();
-    this.dropTarget = new UI7.DropTarget.DropTarget(this.contentElement, [UI7.DropTarget.Type.File], i18nString6(UIStrings6.dropLighthouseJsonHere), this.handleDrop.bind(this));
+    new UI7.DropTarget.DropTarget(this.contentElement, [UI7.DropTarget.Type.File], i18nString6(UIStrings6.dropLighthouseJsonHere), this.handleDrop.bind(this));
     this.controller.addEventListener(Events.PageAuditabilityChanged, this.refreshStartAuditUI.bind(this));
     this.controller.addEventListener(Events.PageWarningsChanged, this.refreshWarningsUI.bind(this));
     this.controller.addEventListener(Events.AuditProgressChanged, this.refreshStatusUI.bind(this));
@@ -2876,6 +2887,7 @@ var LighthousePanel = class _LighthousePanel extends UI7.Panel.Panel {
     this.auditResultsElement.addEventListener("keydown", this.onKeyDown.bind(this));
     this.renderStartView();
     this.controller.recomputePageAuditability();
+    UI7.Context.Context.instance().setFlavor(ActiveLighthouseReport, null);
   }
   static instance(opts) {
     if (!lighthousePanelInstace || opts?.forceNew) {
@@ -2907,14 +2919,18 @@ var LighthousePanel = class _LighthousePanel extends UI7.Panel.Panel {
       this.handleError(err);
     }
   }
-  async handleCompleteRun() {
+  async handleCompleteRun(overrides) {
     try {
-      await this.controller.startLighthouse();
+      await this.controller.startLighthouse(overrides);
       this.renderStatusView();
       const { lhr, artifacts } = await this.controller.collectLighthouseResults();
       this.buildReportUI(lhr, artifacts);
+      UI7.Context.Context.instance().setFlavor(ActiveLighthouseReport, new ActiveLighthouseReport(lhr));
+      return { report: lhr };
     } catch (err) {
       this.handleError(err);
+      UI7.Context.Context.instance().setFlavor(ActiveLighthouseReport, null);
+      return { report: null };
     }
   }
   async handleRunCancel() {
@@ -3092,6 +3108,12 @@ var LighthousePanel = class _LighthousePanel extends UI7.Panel.Panel {
     if (event.key === "Escape" && this.auditResultsElement.querySelector(".lh-tools__button.lh-active")) {
       event.handled = true;
     }
+  }
+  static async executeLighthouseRecording(overrides) {
+    const panel = _LighthousePanel.instance();
+    await UI7.ViewManager.ViewManager.instance().showView("lighthouse");
+    const { report } = await panel.handleCompleteRun(overrides);
+    return report;
   }
 };
 export {
