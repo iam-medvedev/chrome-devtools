@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-imperative-dom-api */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 /*
  * Copyright (C) 2013 Google Inc. All rights reserved.
  * Copyright (C) 2012 Intel Inc. All rights reserved.
@@ -61,7 +62,6 @@ import * as TimelineComponents from './components/components.js';
 import * as Extensions from './extensions/extensions.js';
 import { ModificationsManager } from './ModificationsManager.js';
 import { targetForEvent } from './TargetForEvent.js';
-import * as ThirdPartyTreeView from './ThirdPartyTreeView.js';
 import { TimelinePanel } from './TimelinePanel.js';
 import { selectionFromEvent } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
@@ -455,10 +455,6 @@ const UIStrings = {
      */
     priority: 'Priority',
     /**
-     * @description Label for third party table.
-     */
-    thirdPartyTable: '1st / 3rd party table',
-    /**
      * @description Label for the a source URL.
      */
     source: 'Source',
@@ -782,7 +778,6 @@ export class TimelineUIUtils {
                 break;
         }
         const div = document.createElement('div');
-        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
         render(html `<devtools-link href=${link}>${i18nString(UIStrings.learnMore)}</devtools-link> about ${name}.`, div);
         return div;
     }
@@ -1331,7 +1326,8 @@ export class TimelineUIUtils {
         const relatedNodes = relatedNodesMap?.values() || [];
         for (const relatedNode of relatedNodes) {
             if (relatedNode) {
-                const nodeSpan = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(relatedNode);
+                const nodeSpan = document.createElement('span');
+                render(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(relatedNode), nodeSpan);
                 contentHelper.appendElementRow(relatedNodeLabel || i18nString(UIStrings.relatedNode), nodeSpan);
             }
         }
@@ -1364,106 +1360,6 @@ export class TimelineUIUtils {
             contentHelper.appendElementRow('', pieChart);
         }
         return contentHelper.fragment;
-    }
-    static statsForTimeRange(events, startTime, endTime) {
-        if (!events.length) {
-            return { idle: endTime - startTime };
-        }
-        buildRangeStatsCacheIfNeeded(events);
-        const aggregatedStats = subtractStats(aggregatedStatsAtTime(endTime), aggregatedStatsAtTime(startTime));
-        const aggregatedTotal = Object.values(aggregatedStats).reduce((a, b) => a + b, 0);
-        aggregatedStats['idle'] = Math.max(0, endTime - startTime - aggregatedTotal);
-        return aggregatedStats;
-        function aggregatedStatsAtTime(time) {
-            const stats = {};
-            // @ts-expect-error TODO(crbug.com/1011811): Remove symbol usage.
-            const cache = events[categoryBreakdownCacheSymbol];
-            for (const category in cache) {
-                const categoryCache = cache[category];
-                const index = Platform.ArrayUtilities.upperBound(categoryCache.time, time, Platform.ArrayUtilities.DEFAULT_COMPARATOR);
-                let value;
-                if (index === 0) {
-                    value = 0;
-                }
-                else if (index === categoryCache.time.length) {
-                    value = categoryCache.value[categoryCache.value.length - 1];
-                }
-                else {
-                    const t0 = categoryCache.time[index - 1];
-                    const t1 = categoryCache.time[index];
-                    const v0 = categoryCache.value[index - 1];
-                    const v1 = categoryCache.value[index];
-                    value = v0 + (v1 - v0) * (time - t0) / (t1 - t0);
-                }
-                stats[category] = value;
-            }
-            return stats;
-        }
-        function subtractStats(a, b) {
-            const result = Object.assign({}, a);
-            for (const key in b) {
-                result[key] -= b[key];
-            }
-            return result;
-        }
-        function buildRangeStatsCacheIfNeeded(events) {
-            // @ts-expect-error TODO(crbug.com/1011811): Remove symbol usage.
-            if (events[categoryBreakdownCacheSymbol]) {
-                return;
-            }
-            // aggregatedStats is a map by categories. For each category there's an array
-            // containing sorted time points which records accumulated value of the category.
-            const aggregatedStats = {};
-            const categoryStack = [];
-            let lastTime = 0;
-            Trace.Helpers.Trace.forEachEvent(events, {
-                onStartEvent,
-                onEndEvent,
-            });
-            function updateCategory(category, time) {
-                let statsArrays = aggregatedStats[category];
-                if (!statsArrays) {
-                    statsArrays = { time: [], value: [] };
-                    aggregatedStats[category] = statsArrays;
-                }
-                if (statsArrays.time.length && statsArrays.time[statsArrays.time.length - 1] === time || lastTime > time) {
-                    return;
-                }
-                const lastValue = statsArrays.value.length > 0 ? statsArrays.value[statsArrays.value.length - 1] : 0;
-                statsArrays.value.push(lastValue + time - lastTime);
-                statsArrays.time.push(time);
-            }
-            function categoryChange(from, to, time) {
-                if (from) {
-                    updateCategory(from, time);
-                }
-                lastTime = time;
-                if (to) {
-                    updateCategory(to, time);
-                }
-            }
-            function onStartEvent(e) {
-                const { startTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(e);
-                const category = Trace.Styles.getEventStyle(e.name)?.category.name ||
-                    Trace.Styles.getCategoryStyles().other.name;
-                const parentCategory = categoryStack.length ? categoryStack[categoryStack.length - 1] : null;
-                if (category !== parentCategory) {
-                    categoryChange(parentCategory || null, category, startTime);
-                }
-                categoryStack.push(category);
-            }
-            function onEndEvent(e) {
-                const { endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(e);
-                const category = categoryStack.pop();
-                const parentCategory = categoryStack.length ? categoryStack[categoryStack.length - 1] : null;
-                if (category !== parentCategory) {
-                    categoryChange(category || null, parentCategory || null, endTime || 0);
-                }
-            }
-            const obj = events;
-            // @ts-expect-error TODO(crbug.com/1011811): Remove symbol usage.
-            obj[categoryBreakdownCacheSymbol] = aggregatedStats;
-        }
     }
     static renderEventJson(event, contentHelper) {
         contentHelper.addSection(i18nString(UIStrings.traceEvent));
@@ -1623,7 +1519,7 @@ export class TimelineUIUtils {
                 null;
             if (node) {
                 const nodeSpan = document.createElement('span');
-                nodeSpan.appendChild(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node));
+                render(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node), nodeSpan);
                 return nodeSpan;
             }
             if (invalidation.args.data.nodeName) {
@@ -1819,48 +1715,6 @@ export class TimelineUIUtils {
         };
         const pieChartContainer = element.createChild('div', 'vbox');
         pieChartContainer.appendChild(pieChart);
-        return element;
-    }
-    // Generates a Summary component given a aggregated stats for categories.
-    static generateSummaryDetails(aggregatedStats, rangeStart, rangeEnd, selectedEvents, thirdPartyTree) {
-        const element = document.createElement('div');
-        element.classList.add('timeline-details-range-summary', 'hbox');
-        // First, the category bar chart.
-        let total = 0;
-        let categories = [];
-        // Calculate total of all categories.
-        for (const categoryName in aggregatedStats) {
-            total += aggregatedStats[categoryName];
-        }
-        // Get stats values from categories.
-        for (const categoryName in Trace.Styles.getCategoryStyles()) {
-            const category = Trace.Styles.getCategoryStyles()[categoryName];
-            if (category.name === Trace.Styles.EventCategory.IDLE) {
-                continue;
-            }
-            const value = aggregatedStats[category.name];
-            if (!value) {
-                continue;
-            }
-            const title = category.title;
-            const color = category.getCSSValue();
-            categories.push({ value, color, title });
-        }
-        // Keeps the most useful categories on top.
-        categories = categories.sort((a, b) => b.value - a.value);
-        const start = Trace.Types.Timing.Milli(rangeStart);
-        const end = Trace.Types.Timing.Milli(rangeEnd);
-        const categorySummaryTable = new TimelineComponents.TimelineSummary.CategorySummary();
-        categorySummaryTable.rangeStart = start;
-        categorySummaryTable.rangeEnd = end;
-        categorySummaryTable.total = total;
-        categorySummaryTable.categories = categories;
-        element.append(categorySummaryTable.contentElement);
-        // Add the 3p datagrid
-        const treeView = new ThirdPartyTreeView.ThirdPartyTreeElement();
-        treeView.treeView = thirdPartyTree;
-        UI.ARIAUtils.setLabel(treeView, i18nString(UIStrings.thirdPartyTable));
-        element.append(treeView);
         return element;
     }
     static generateDetailsContentForFrame(frame, filmStrip, filmStripFrame) {

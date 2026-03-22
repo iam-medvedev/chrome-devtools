@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
+import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as TextUtils from '../text_utils/text_utils.js';
-import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('ResourceScriptMapping', () => {
+describe('ResourceScriptMapping', () => {
+    setupRuntimeHooks();
+    setupSettingsHooks();
     const url = urlString `http://localhost/example.js`;
     let target;
     let backend;
@@ -23,20 +24,9 @@ describeWithMockConnection('ResourceScriptMapping', () => {
   debugger;
   console.log("There!");`;
     beforeEach(() => {
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
-        backend = new MockProtocolBackend();
-        target = createTarget();
-        resourceScriptMapping = new Bindings.ResourceScriptMapping.ResourceScriptMapping(target.model(SDK.DebuggerModel.DebuggerModel), workspace, debuggerWorkspaceBinding);
+        backend = new MockDebuggerBackend();
+        target = backend.createTarget();
+        resourceScriptMapping = new Bindings.ResourceScriptMapping.ResourceScriptMapping(target.model(SDK.DebuggerModel.DebuggerModel), backend.universe.workspace, backend.universe.debuggerWorkspaceBinding);
     });
     describe('uiLocationRangeToRawLocationRanges', () => {
         it('maps UI location ranges on first line in scripts without sourceURL', async () => {

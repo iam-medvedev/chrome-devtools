@@ -1076,6 +1076,7 @@ __export(RecordingStorage_exports, {
   RecordingStorage: () => RecordingStorage
 });
 import * as Common4 from "./../../../core/common/common.js";
+import * as Platform2 from "./../../../core/platform/platform.js";
 var instance = null;
 var UUIDGenerator = class {
   next() {
@@ -1096,28 +1097,21 @@ var RecordingStorage = class _RecordingStorage {
   setIdGeneratorForTest(idGenerator) {
     this.#idGenerator = idGenerator;
   }
-  async saveRecording(flow) {
+  async upsertRecording(flow, storageName) {
     const release = await this.#mutex.acquire();
     try {
       const recordings = await this.#recordingsSetting.forceGet();
-      const storageName = this.#idGenerator.next();
-      const recording = { storageName, flow };
-      recordings.push(recording);
-      this.#recordingsSetting.set(recordings);
-      return recording;
-    } finally {
-      release();
-    }
-  }
-  async updateRecording(storageName, flow) {
-    const release = await this.#mutex.acquire();
-    try {
-      const recordings = await this.#recordingsSetting.forceGet();
-      const recording = recordings.find((recording2) => recording2.storageName === storageName);
-      if (!recording) {
-        throw new Error("No recording is found during updateRecording");
+      flow.title = Platform2.StringUtilities.trimEndWithMaxLength(flow.title, 300);
+      let recording = recordings.find((recording2) => recording2.storageName === storageName);
+      if (recording) {
+        recording.flow = flow;
+      } else {
+        recording = {
+          storageName: this.#idGenerator.next(),
+          flow
+        };
+        recordings.push(recording);
       }
-      recording.flow = flow;
       this.#recordingsSetting.set(recordings);
       return recording;
     } finally {

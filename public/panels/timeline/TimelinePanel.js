@@ -633,8 +633,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const config = Trace.Types.Configuration.defaults();
         config.showAllEvents =
             Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.TIMELINE_SHOW_ALL_EVENTS);
-        config.includeRuntimeCallStats =
-            Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.TIMELINE_V8_RUNTIME_CALL_STATS);
         config.debugMode = Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.TIMELINE_DEBUG_MODE);
         const traceEngineModel = Trace.TraceModel.Model.createWithAllHandlers(config);
         traceEngineModel.addEventListener(Trace.TraceModel.ModelUpdateEvent.eventName, e => {
@@ -836,9 +834,13 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             if (!focus) {
                 throw new Error('could not create performance agent focus');
             }
-            const conversation = new AiAssistanceModel.AiConversation.AiConversation("drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */, [], undefined, 
-            /* isReadOnly */ true, conversationHandler.aidaClient, undefined, 
-            /* isExternal */ true);
+            const conversation = new AiAssistanceModel.AiConversation.AiConversation({
+                type: "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */,
+                data: [],
+                isReadOnly: true,
+                aidaClient: conversationHandler.aidaClient,
+                isExternal: true,
+            });
             const selected = new AiAssistanceModel.PerformanceAgent.PerformanceTraceContext(focus);
             selected.external = true;
             this.#externalAIConversationData = {
@@ -1393,6 +1395,20 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 });
             }
         }
+    }
+    revealParsedTrace(revealable) {
+        const index = this.model.indexForTrace(revealable.parsedTrace);
+        if (index === -1) {
+            return;
+        }
+        if (this.#activeTraceIndex() === index) {
+            // Already viewing this trace.
+            return;
+        }
+        this.#changeView({
+            mode: 'VIEWING_TRACE',
+            traceIndex: index,
+        });
     }
     navigateHistory(direction) {
         const recordingData = this.#historyManager.navigate(direction);
@@ -2710,6 +2726,18 @@ export class TraceRevealer {
     async reveal(trace) {
         await UI.ViewManager.ViewManager.instance().showView('timeline');
         TimelinePanel.instance().loadFromTraceFile(trace);
+    }
+}
+export class ParsedTraceRevealer {
+    async reveal(traceRevealer) {
+        await UI.ViewManager.ViewManager.instance().showView('timeline');
+        TimelinePanel.instance().revealParsedTrace(traceRevealer);
+    }
+}
+export class ParsedTraceRevealable {
+    parsedTrace;
+    constructor(parsedTrace) {
+        this.parsedTrace = parsedTrace;
     }
 }
 export class EventRevealer {

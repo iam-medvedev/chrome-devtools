@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable @devtools/no-imperative-dom-api */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 /*
  * Copyright (C) 2007 Apple Inc.  All rights reserved.
  * Copyright (C) 2009 Joseph Pecoraro
@@ -41,11 +42,13 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import { createIcon, Icon } from '../../ui/kit/kit.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as PanelsCommon from '../common/common.js';
 import * as ElementsComponents from './components/components.js';
@@ -1257,10 +1260,8 @@ export class SectionBlock {
         const pseudoArgumentString = pseudoArgument ? `(${pseudoArgument})` : '';
         const pseudoTypeString = `${pseudoType}${pseudoArgumentString}`;
         UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFromSPseudoOf, { PH1: pseudoTypeString }));
-        const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
-            preventKeyboardFocus: true,
-        });
-        separatorElement.appendChild(link);
+        const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, { preventKeyboardFocus: true });
+        render(link, separatorElement);
         return new SectionBlock(separatorElement);
     }
     static createRegisteredPropertiesBlock(expandedByDefault) {
@@ -1306,7 +1307,7 @@ export class SectionBlock {
         const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
             preventKeyboardFocus: true,
         });
-        separatorElement.appendChild(link);
+        render(link, separatorElement);
         return new SectionBlock(separatorElement);
     }
     static createLayerBlock(rule) {
@@ -1486,6 +1487,9 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
             case 'ArrowDown':
             case 'PageUp':
             case 'PageDown':
+                if (this.aiCodeCompletionProvider && this.treeElement.section().activeAiSuggestion) {
+                    this.setAiAutoCompletion(null);
+                }
                 if (!this.isSuggestBoxVisible() && this.handleNameOrValueUpDown(keyboardEvent)) {
                     keyboardEvent.preventDefault();
                     return;
@@ -1499,6 +1503,11 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
                 this.tabKeyPressed();
                 keyboardEvent.preventDefault();
                 return;
+            case 'Escape':
+                if (this.#handleEscape(keyboardEvent)) {
+                    return;
+                }
+                break;
             case ' ':
                 if (this.isEditingName) {
                     // Since property names cannot contain a space
@@ -1518,6 +1527,9 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         super.onMouseWheel(event);
     }
     tabKeyPressed() {
+        if (this.aiCodeCompletionProvider) {
+            return this.acceptCodeComplete();
+        }
         this.acceptAutoComplete();
         // Always tab to the next field.
         return false;
@@ -1525,8 +1537,23 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
     onInput(event) {
         super.onInput(event);
         if (this.aiCodeCompletionProvider) {
+            this.#updateAiCodeSuggestion();
             this.#debouncedTriggerAiCodeCompletion();
         }
+    }
+    #handleEscape(keyboardEvent) {
+        if (!this.aiCodeCompletionProvider || !this.treeElement.section().activeAiSuggestion) {
+            return false;
+        }
+        keyboardEvent.preventDefault();
+        if (this.isSuggestBoxVisible()) {
+            this.suggestBox?.hide();
+            // Required for ensuring the suggestion is not cleared.
+            keyboardEvent.consume(true);
+            return true;
+        }
+        this.setAiAutoCompletion(null);
+        return false;
     }
     handleNameOrValueUpDown(event) {
         function finishHandler(_originalValue, _replacementString) {
@@ -1718,6 +1745,33 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
             return subtitleElement;
         }
     }
+    #updateAiCodeSuggestion() {
+        const activeAiSuggestion = this.treeElement.section().activeAiSuggestion;
+        if (!activeAiSuggestion) {
+            return;
+        }
+        const userInput = this.text();
+        const selection = this.element().getComponentSelection();
+        if (!selection || selection.rangeCount === 0) {
+            return;
+        }
+        const range = selection.getRangeAt(0);
+        const cursorOffset = range.endOffset;
+        const currentAiSuggestedText = this.#getAiSuggestionForCurrentPrompt();
+        if (!currentAiSuggestedText?.startsWith(userInput) || cursorOffset < activeAiSuggestion.cursorPosition) {
+            this.setAiAutoCompletion(null);
+            return;
+        }
+        const hint = this.getCompletionHint();
+        if (!hint) {
+            return;
+        }
+        const textWithTopSuggestion = userInput + hint;
+        if (textWithTopSuggestion && !currentAiSuggestedText.startsWith(textWithTopSuggestion)) {
+            this.setAiAutoCompletion(null);
+            return;
+        }
+    }
     async triggerAiCodeCompletion() {
         const selection = this.element().getComponentSelection();
         if (!this.aiCodeCompletionProvider || !selection || selection.rangeCount === 0) {
@@ -1737,33 +1791,49 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
     }
     setAiAutoCompletion(args) {
         if (!args) {
-            this.treeElement.section().clearGhostStyleTreeElements();
+            this.treeElement.section().activeAiSuggestion = undefined;
             return;
         }
-        this.showAiGhostText(args?.text);
+        this.treeElement.section().activeAiSuggestion = {
+            text: args.text,
+            properties: this.#getAiSuggestedProperties(args.text),
+            cursorPosition: args.from,
+            clearCachedRequest: args.clearCachedRequest,
+            cssProperty: this.treeElement.property,
+        };
         const latency = performance.now() - args.startTime;
         if (args.rpcGlobalId) {
             args.onImpression(args.rpcGlobalId, latency, args.sampleId);
         }
     }
-    showAiGhostText(text) {
-        const [currentLine, ...nextLinesList] = text.split(';');
-        const nextLines = nextLinesList.join(';').trim();
-        if (this.isEditingName && currentLine.includes(':')) {
-            const [namePart, valuePart] = currentLine.split(':').map(s => s.trim());
-            this.applySuggestion({ text: this.text() + namePart }, true);
-            this.treeElement.showGhostTextInValue(valuePart);
-        }
-        else {
-            // Only has ghost text for one field - name part or value part
-            this.applySuggestion({ text: this.text() + currentLine }, true);
-        }
-        if (nextLines) {
-            this.treeElement.section().renderGhostStyleTreeElements(nextLines);
-        }
-        else {
-            this.treeElement.section().clearGhostStyleTreeElements();
-        }
+    #getAiSuggestedProperties(suggestionText) {
+        const cssParser = CodeMirror.css.cssLanguage.parser.configure({ top: 'Styles' });
+        const parsed = cssParser.parse(suggestionText);
+        const properties = [];
+        parsed.iterate({
+            enter: node => {
+                if (node.name === 'Declaration') {
+                    let name = '';
+                    let value = '';
+                    const cursor = node.node.cursor();
+                    if (cursor.firstChild()) {
+                        do {
+                            if (cursor.name === ':') {
+                                name = suggestionText.slice(node.from, cursor.from);
+                                value = suggestionText.slice(cursor.to + 1, node.to);
+                            }
+                        } while (cursor.nextSibling());
+                    }
+                    if (name && value) {
+                        properties.push({
+                            name: name.trim(),
+                            value: value.trim(),
+                        });
+                    }
+                }
+            }
+        });
+        return properties;
     }
     /**
      * Extracts the remaining portion of the suggestion text that follows the
@@ -1786,6 +1856,48 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
             }
         }
         return completionHint;
+    }
+    acceptCodeComplete() {
+        if (this.isSuggestBoxVisible()) {
+            // accept the suggestion from the traditional autocomplete menu
+            this.acceptAutoComplete();
+            const textAfterAccept = this.text();
+            if (!this.treeElement.section().activeAiSuggestion?.properties.length) {
+                this.setAiAutoCompletion(null);
+                // Tab to the next field as suggestion is no longer valid
+                return false;
+            }
+            const suggestionForCurrentPrompt = this.#getAiSuggestionForCurrentPrompt();
+            if (!suggestionForCurrentPrompt?.startsWith(textAfterAccept)) {
+                this.setAiAutoCompletion(null);
+                // Tab to the next field as suggestion is no longer valid
+                return false;
+            }
+            if (suggestionForCurrentPrompt !== textAfterAccept) {
+                // Re-apply the ghost text for the remainder
+                this.applySuggestion({ text: suggestionForCurrentPrompt }, true);
+            }
+            return true;
+        }
+        if (!this.treeElement.section().activeAiSuggestion) {
+            // Tab to the next field.
+            return false;
+        }
+        void this.commitAiSuggestion();
+        return true;
+    }
+    async commitAiSuggestion() {
+        await this.treeElement.section().commitActiveAiSuggestion();
+        // Clear state and return
+        this.setAiAutoCompletion(null);
+    }
+    #getAiSuggestionForCurrentPrompt() {
+        const suggestionForCurrentElement = this.treeElement.section().activeAiSuggestion?.properties[0];
+        if (!suggestionForCurrentElement) {
+            return;
+        }
+        const suggestionForCurrentPrompt = this.isEditingName ? suggestionForCurrentElement.name : suggestionForCurrentElement.value;
+        return suggestionForCurrentPrompt;
     }
 }
 export function unescapeCssString(input) {

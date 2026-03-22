@@ -4,7 +4,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
-import * as ThirdPartyTreeView from './ThirdPartyTreeView.js';
 /** Look for scheme:// plus text and exclude any punctuation at the end. **/
 export declare const URL_REGEX: RegExp;
 interface LinkifyLocationOptions {
@@ -48,7 +47,6 @@ export declare class TimelineUIUtils {
      */
     static parseStringForLinks(rawString: string): DocumentFragment;
     static buildTraceEventDetails(parsedTrace: Trace.TraceModel.ParsedTrace, event: Trace.Types.Events.Event, linkifier: LegacyComponents.Linkifier.Linkifier, canShowPieChart: boolean, entityMapper: Trace.EntityMapper.EntityMapper | null): Promise<DocumentFragment>;
-    static statsForTimeRange(events: Trace.Types.Events.Event[], startTime: Trace.Types.Timing.Milli, endTime: Trace.Types.Timing.Milli): TimeRangeCategoryStats;
     private static renderEventJson;
     private static renderObjectJson;
     static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | Trace.Types.Events.CallFrame[]): Protocol.Runtime.StackTrace;
@@ -64,7 +62,6 @@ export declare class TimelineUIUtils {
     static visibleEventsFilter(): Trace.Extras.TraceFilter.TraceFilter;
     static categories(): Trace.Styles.CategoryPalette;
     static generatePieChart(aggregatedStats: TimeRangeCategoryStats, selfCategory?: Trace.Styles.TimelineCategory, selfTime?: Trace.Types.Timing.Micro): Element;
-    static generateSummaryDetails(aggregatedStats: Record<string, number>, rangeStart: number, rangeEnd: number, selectedEvents: Trace.Types.Events.Event[], thirdPartyTree: ThirdPartyTreeView.ThirdPartyTreeViewWidget): Element;
     static generateDetailsContentForFrame(frame: Trace.Types.Events.LegacyTimelineFrame, filmStrip: Trace.Extras.FilmStrip.Data | null, filmStripFrame: Trace.Extras.FilmStrip.Frame | null): DocumentFragment;
     static frameDuration(frame: Trace.Types.Events.LegacyTimelineFrame): Element;
     static quadWidth(quad: number[]): number;

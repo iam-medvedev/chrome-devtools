@@ -603,11 +603,6 @@ var InspectorFrontendHostStub = class {
       devToolsVeLogging: {
         enabled: true
       },
-      thirdPartyCookieControls: {
-        thirdPartyCookieMetadataEnabled: true,
-        thirdPartyCookieHeuristicsEnabled: true,
-        managedBlockThirdPartyCookies: "Unset"
-      },
       devToolsFlexibleLayout: {
         verticalDrawerEnabled: true
       }
@@ -922,6 +917,7 @@ var UseCase;
 (function(UseCase2) {
   UseCase2[UseCase2["USE_CASE_UNSPECIFIED"] = 0] = "USE_CASE_UNSPECIFIED";
   UseCase2[UseCase2["CODE_GENERATION"] = 1] = "CODE_GENERATION";
+  UseCase2[UseCase2["CODE_TRANSFORMATION"] = 2] = "CODE_TRANSFORMATION";
 })(UseCase || (UseCase = {}));
 var RecitationAction;
 (function(RecitationAction2) {
@@ -1265,6 +1261,472 @@ var HostConfigTracker = class _HostConfigTracker extends Common4.ObjectWrapper.O
   }
 };
 
+// gen/front_end/core/host/AidaGcaTranslation.js
+var AidaGcaTranslation_exports = {};
+__export(AidaGcaTranslation_exports, {
+  aidaCompletionRequestToGcaRequest: () => aidaCompletionRequestToGcaRequest,
+  aidaDoConversationRequestToGcaRequest: () => aidaDoConversationRequestToGcaRequest,
+  aidaEventToGcaTelemetryRequest: () => aidaEventToGcaTelemetryRequest,
+  aidaGenerateCodeRequestToGcaRequest: () => aidaGenerateCodeRequestToGcaRequest,
+  gcaResponseToAidaCompletionResponse: () => gcaResponseToAidaCompletionResponse,
+  gcaResponseToAidaDoConversationResponse: () => gcaResponseToAidaDoConversationResponse,
+  gcaResponseToAidaGenerateCodeResponse: () => gcaResponseToAidaGenerateCodeResponse
+});
+
+// gen/front_end/core/host/GcaTypes.js
+var GcaTypes_exports = {};
+__export(GcaTypes_exports, {
+  BlockReason: () => BlockReason,
+  FinishReason: () => FinishReason,
+  HarmBlockMethod: () => HarmBlockMethod,
+  HarmBlockThreshold: () => HarmBlockThreshold,
+  HarmCategory: () => HarmCategory,
+  HarmProbability: () => HarmProbability,
+  InclusionReason: () => InclusionReason,
+  InteractionType: () => InteractionType,
+  Language: () => Language,
+  Method: () => Method,
+  Mode: () => Mode,
+  Outcome: () => Outcome,
+  SuggestionStatus: () => SuggestionStatus,
+  Type: () => Type
+});
+var Type;
+(function(Type2) {
+  Type2[Type2["TYPE_UNSPECIFIED"] = 0] = "TYPE_UNSPECIFIED";
+  Type2[Type2["STRING"] = 1] = "STRING";
+  Type2[Type2["NUMBER"] = 2] = "NUMBER";
+  Type2[Type2["INTEGER"] = 3] = "INTEGER";
+  Type2[Type2["BOOLEAN"] = 4] = "BOOLEAN";
+  Type2[Type2["ARRAY"] = 5] = "ARRAY";
+  Type2[Type2["OBJECT"] = 6] = "OBJECT";
+  Type2[Type2["NULL"] = 7] = "NULL";
+})(Type || (Type = {}));
+var HarmCategory;
+(function(HarmCategory2) {
+  HarmCategory2[HarmCategory2["HARM_CATEGORY_UNSPECIFIED"] = 0] = "HARM_CATEGORY_UNSPECIFIED";
+  HarmCategory2[HarmCategory2["HARM_CATEGORY_HARASSMENT"] = 7] = "HARM_CATEGORY_HARASSMENT";
+  HarmCategory2[HarmCategory2["HARM_CATEGORY_HATE_SPEECH"] = 8] = "HARM_CATEGORY_HATE_SPEECH";
+  HarmCategory2[HarmCategory2["HARM_CATEGORY_SEXUALLY_EXPLICIT"] = 9] = "HARM_CATEGORY_SEXUALLY_EXPLICIT";
+  HarmCategory2[HarmCategory2["HARM_CATEGORY_DANGEROUS_CONTENT"] = 10] = "HARM_CATEGORY_DANGEROUS_CONTENT";
+})(HarmCategory || (HarmCategory = {}));
+var HarmProbability;
+(function(HarmProbability2) {
+  HarmProbability2[HarmProbability2["HARM_PROBABILITY_UNSPECIFIED"] = 0] = "HARM_PROBABILITY_UNSPECIFIED";
+  HarmProbability2[HarmProbability2["NEGLIGIBLE"] = 1] = "NEGLIGIBLE";
+  HarmProbability2[HarmProbability2["LOW"] = 2] = "LOW";
+  HarmProbability2[HarmProbability2["MEDIUM"] = 3] = "MEDIUM";
+  HarmProbability2[HarmProbability2["HIGH"] = 4] = "HIGH";
+})(HarmProbability || (HarmProbability = {}));
+var HarmBlockThreshold;
+(function(HarmBlockThreshold2) {
+  HarmBlockThreshold2[HarmBlockThreshold2["HARM_BLOCK_THRESHOLD_UNSPECIFIED"] = 0] = "HARM_BLOCK_THRESHOLD_UNSPECIFIED";
+  HarmBlockThreshold2[HarmBlockThreshold2["BLOCK_LOW_AND_ABOVE"] = 1] = "BLOCK_LOW_AND_ABOVE";
+  HarmBlockThreshold2[HarmBlockThreshold2["BLOCK_MEDIUM_AND_ABOVE"] = 2] = "BLOCK_MEDIUM_AND_ABOVE";
+  HarmBlockThreshold2[HarmBlockThreshold2["BLOCK_ONLY_HIGH"] = 3] = "BLOCK_ONLY_HIGH";
+  HarmBlockThreshold2[HarmBlockThreshold2["BLOCK_NONE"] = 4] = "BLOCK_NONE";
+  HarmBlockThreshold2[HarmBlockThreshold2["OFF"] = 5] = "OFF";
+})(HarmBlockThreshold || (HarmBlockThreshold = {}));
+var HarmBlockMethod;
+(function(HarmBlockMethod2) {
+  HarmBlockMethod2[HarmBlockMethod2["HARM_BLOCK_METHOD_UNSPECIFIED"] = 0] = "HARM_BLOCK_METHOD_UNSPECIFIED";
+  HarmBlockMethod2[HarmBlockMethod2["SEVERITY"] = 1] = "SEVERITY";
+  HarmBlockMethod2[HarmBlockMethod2["PROBABILITY"] = 2] = "PROBABILITY";
+})(HarmBlockMethod || (HarmBlockMethod = {}));
+var FinishReason;
+(function(FinishReason2) {
+  FinishReason2[FinishReason2["FINISH_REASON_UNSPECIFIED"] = 0] = "FINISH_REASON_UNSPECIFIED";
+  FinishReason2[FinishReason2["STOP"] = 1] = "STOP";
+  FinishReason2[FinishReason2["MAX_TOKENS"] = 2] = "MAX_TOKENS";
+  FinishReason2[FinishReason2["SAFETY"] = 3] = "SAFETY";
+  FinishReason2[FinishReason2["RECITATION"] = 4] = "RECITATION";
+  FinishReason2[FinishReason2["OTHER"] = 5] = "OTHER";
+  FinishReason2[FinishReason2["BLOCKLIST"] = 6] = "BLOCKLIST";
+  FinishReason2[FinishReason2["PROHIBITED_CONTENT"] = 7] = "PROHIBITED_CONTENT";
+  FinishReason2[FinishReason2["SPII"] = 8] = "SPII";
+  FinishReason2[FinishReason2["MALFORMED_FUNCTION_CALL"] = 9] = "MALFORMED_FUNCTION_CALL";
+  FinishReason2[FinishReason2["IMAGE_SAFETY"] = 10] = "IMAGE_SAFETY";
+  FinishReason2[FinishReason2["IMAGE_PROHIBITED_CONTENT"] = 11] = "IMAGE_PROHIBITED_CONTENT";
+  FinishReason2[FinishReason2["IMAGE_RECITATION"] = 12] = "IMAGE_RECITATION";
+  FinishReason2[FinishReason2["IMAGE_OTHER"] = 13] = "IMAGE_OTHER";
+  FinishReason2[FinishReason2["UNEXPECTED_TOOL_CALL"] = 14] = "UNEXPECTED_TOOL_CALL";
+  FinishReason2[FinishReason2["NO_IMAGE"] = 15] = "NO_IMAGE";
+})(FinishReason || (FinishReason = {}));
+var Method;
+(function(Method2) {
+  Method2[Method2["METHOD_UNSPECIFIED"] = 0] = "METHOD_UNSPECIFIED";
+  Method2[Method2["GENERATE_CODE"] = 1] = "GENERATE_CODE";
+  Method2[Method2["COMPLETE_CODE"] = 2] = "COMPLETE_CODE";
+  Method2[Method2["TRANSFORM_CODE"] = 3] = "TRANSFORM_CODE";
+  Method2[Method2["CHAT"] = 4] = "CHAT";
+})(Method || (Method = {}));
+var SuggestionStatus;
+(function(SuggestionStatus2) {
+  SuggestionStatus2[SuggestionStatus2["STATUS_UNSPECIFIED"] = 0] = "STATUS_UNSPECIFIED";
+  SuggestionStatus2[SuggestionStatus2["NO_ERROR"] = 1] = "NO_ERROR";
+  SuggestionStatus2[SuggestionStatus2["ERROR"] = 2] = "ERROR";
+  SuggestionStatus2[SuggestionStatus2["CANCELLED"] = 3] = "CANCELLED";
+  SuggestionStatus2[SuggestionStatus2["EMPTY"] = 4] = "EMPTY";
+})(SuggestionStatus || (SuggestionStatus = {}));
+var InteractionType;
+(function(InteractionType2) {
+  InteractionType2[InteractionType2["INTERACTION_TYPE_UNSPECIFIED"] = 0] = "INTERACTION_TYPE_UNSPECIFIED";
+  InteractionType2[InteractionType2["THUMBS_UP"] = 1] = "THUMBS_UP";
+  InteractionType2[InteractionType2["THUMBS_DOWN"] = 2] = "THUMBS_DOWN";
+  InteractionType2[InteractionType2["ACCEPT"] = 3] = "ACCEPT";
+  InteractionType2[InteractionType2["ACCEPT_PARTIALLY"] = 4] = "ACCEPT_PARTIALLY";
+  InteractionType2[InteractionType2["REJECT"] = 5] = "REJECT";
+  InteractionType2[InteractionType2["COPY"] = 6] = "COPY";
+})(InteractionType || (InteractionType = {}));
+var InclusionReason;
+(function(InclusionReason2) {
+  InclusionReason2[InclusionReason2["INCLUSION_REASON_UNSPECIFIED"] = 0] = "INCLUSION_REASON_UNSPECIFIED";
+  InclusionReason2[InclusionReason2["ACTIVE"] = 1] = "ACTIVE";
+  InclusionReason2[InclusionReason2["OPEN"] = 2] = "OPEN";
+  InclusionReason2[InclusionReason2["RECENTLY_CLOSED"] = 3] = "RECENTLY_CLOSED";
+  InclusionReason2[InclusionReason2["RECENTLY_EDITED"] = 4] = "RECENTLY_EDITED";
+  InclusionReason2[InclusionReason2["COLOCATED"] = 5] = "COLOCATED";
+  InclusionReason2[InclusionReason2["RELATED"] = 6] = "RELATED";
+  InclusionReason2[InclusionReason2["USER_SELECTED"] = 7] = "USER_SELECTED";
+})(InclusionReason || (InclusionReason = {}));
+var BlockReason;
+(function(BlockReason2) {
+  BlockReason2[BlockReason2["BLOCKED_REASON_UNSPECIFIED"] = 0] = "BLOCKED_REASON_UNSPECIFIED";
+  BlockReason2[BlockReason2["SAFETY"] = 1] = "SAFETY";
+  BlockReason2[BlockReason2["OTHER"] = 2] = "OTHER";
+  BlockReason2[BlockReason2["BLOCKLIST"] = 3] = "BLOCKLIST";
+  BlockReason2[BlockReason2["PROHIBITED_CONTENT"] = 4] = "PROHIBITED_CONTENT";
+  BlockReason2[BlockReason2["IMAGE_SAFETY"] = 5] = "IMAGE_SAFETY";
+})(BlockReason || (BlockReason = {}));
+var Language;
+(function(Language3) {
+  Language3[Language3["LANGUAGE_UNSPECIFIED"] = 0] = "LANGUAGE_UNSPECIFIED";
+  Language3[Language3["PYTHON"] = 1] = "PYTHON";
+})(Language || (Language = {}));
+var Outcome;
+(function(Outcome2) {
+  Outcome2[Outcome2["OUTCOME_UNSPECIFIED"] = 0] = "OUTCOME_UNSPECIFIED";
+  Outcome2[Outcome2["OUTCOME_OK"] = 1] = "OUTCOME_OK";
+  Outcome2[Outcome2["OUTCOME_FAILED"] = 2] = "OUTCOME_FAILED";
+  Outcome2[Outcome2["OUTCOME_DEADLINE_EXCEEDED"] = 3] = "OUTCOME_DEADLINE_EXCEEDED";
+})(Outcome || (Outcome = {}));
+var Mode;
+(function(Mode2) {
+  Mode2[Mode2["MODE_UNSPECIFIED"] = 0] = "MODE_UNSPECIFIED";
+  Mode2[Mode2["AUTO"] = 1] = "AUTO";
+  Mode2[Mode2["ANY"] = 2] = "ANY";
+  Mode2[Mode2["NONE"] = 3] = "NONE";
+})(Mode || (Mode = {}));
+
+// gen/front_end/core/host/AidaGcaTranslation.js
+function createBaseGcaRequest(request, contents) {
+  const gcaRequest = { contents };
+  mapCommonAidaRequestFields(request, gcaRequest);
+  buildLabels(request, gcaRequest);
+  if ("preamble" in request && request.preamble) {
+    gcaRequest.system_instruction = {
+      role: "user",
+      parts: [{ text: request.preamble }]
+    };
+  }
+  return gcaRequest;
+}
+function aidaDoConversationRequestToGcaRequest(request) {
+  const contents = [];
+  if (request.historical_contexts) {
+    contents.push(...request.historical_contexts.map(convertAidaContentToGcaContent));
+  }
+  contents.push(convertAidaContentToGcaContent(request.current_message));
+  const gcaRequest = createBaseGcaRequest(request, contents);
+  if (request.function_declarations) {
+    gcaRequest.tools = [{
+      function_declarations: request.function_declarations.map((fd) => ({
+        name: fd.name,
+        description: fd.description,
+        parameters: convertAidaParamToGcaSchema(fd.parameters)
+      }))
+    }];
+  }
+  return gcaRequest;
+}
+function mapCommonAidaRequestFields(aidaRequest, gcaRequest) {
+  if (aidaRequest.options?.model_id) {
+    gcaRequest.model = aidaRequest.options.model_id;
+  }
+  if (aidaRequest.metadata.string_session_id) {
+    gcaRequest.session_id = aidaRequest.metadata.string_session_id;
+  }
+  if (aidaRequest.options?.temperature !== void 0) {
+    gcaRequest.generation_config = {
+      ...gcaRequest.generation_config,
+      temperature: aidaRequest.options.temperature
+    };
+  }
+}
+function gcaResponseToAidaDoConversationResponse(response) {
+  const candidate = response.candidates[0];
+  const functionCalls = [];
+  if (candidate?.content?.parts) {
+    for (const part of candidate.content.parts) {
+      if (part.function_call) {
+        functionCalls.push({
+          name: part.function_call.name,
+          args: part.function_call.args || {}
+        });
+      }
+    }
+  }
+  return {
+    explanation: extractTextFromGcaParts(candidate?.content?.parts),
+    metadata: {
+      rpcGlobalId: response.response_id
+    },
+    functionCalls: functionCalls.length > 0 ? functionCalls : void 0,
+    completed: true
+  };
+}
+function extractTextFromGcaParts(parts) {
+  if (!parts) {
+    return "";
+  }
+  return parts.map((p) => p.text || "").join("");
+}
+function aidaEventToGcaTelemetryRequest(clientEvent) {
+  const feedbackMetrics = [];
+  const responseId = String(clientEvent.corresponding_aida_rpc_global_id);
+  const eventTime = (/* @__PURE__ */ new Date()).toISOString();
+  if (clientEvent.do_conversation_client_event) {
+    const feedback = clientEvent.do_conversation_client_event.user_feedback;
+    if (feedback.sentiment) {
+      let interaction = InteractionType.INTERACTION_TYPE_UNSPECIFIED;
+      if (feedback.sentiment === "POSITIVE") {
+        interaction = InteractionType.THUMBS_UP;
+      } else if (feedback.sentiment === "NEGATIVE") {
+        interaction = InteractionType.THUMBS_DOWN;
+      }
+      feedbackMetrics.push({
+        event_time: eventTime,
+        response_id: responseId,
+        suggestion_interaction: { interaction }
+      });
+    }
+  }
+  feedbackMetrics.push(...convertCodeTelemetry(clientEvent.complete_code_client_event, Method.COMPLETE_CODE, responseId, eventTime));
+  feedbackMetrics.push(...convertCodeTelemetry(clientEvent.generate_code_client_event, Method.GENERATE_CODE, responseId, eventTime));
+  return { feedback_metrics: feedbackMetrics };
+}
+function convertCodeTelemetry(event, method, responseId, eventTime) {
+  if (!event) {
+    return [];
+  }
+  if ("user_impression" in event && event.user_impression) {
+    const impression = event.user_impression;
+    return [{
+      event_time: eventTime,
+      response_id: responseId,
+      suggestion_offered: {
+        method,
+        status: SuggestionStatus.NO_ERROR,
+        response_latency: `${impression.latency.duration.seconds + impression.latency.duration.nanos / 1e9}s`
+      }
+    }];
+  }
+  if ("user_acceptance" in event && event.user_acceptance) {
+    const acceptance = event.user_acceptance;
+    return [{
+      event_time: eventTime,
+      response_id: responseId,
+      suggestion_interaction: {
+        interaction: InteractionType.ACCEPT,
+        candidate_index: acceptance.sample.sample_id
+      }
+    }];
+  }
+  return [];
+}
+function aidaCompletionRequestToGcaRequest(request) {
+  const contents = [
+    {
+      role: "user",
+      parts: [{ text: request.prefix + (request.suffix || "") }]
+    }
+  ];
+  const gcaRequest = createBaseGcaRequest(request, contents);
+  if (request.options?.stop_sequences) {
+    gcaRequest.generation_config = {
+      ...gcaRequest.generation_config,
+      stop_sequences: request.options.stop_sequences
+    };
+  }
+  if (request.additional_files) {
+    gcaRequest.aicode = {
+      experience: "completion",
+      files: request.additional_files.map((f) => ({
+        file_uri: f.path,
+        inclusion_reason: [AidaReasonToGcaInclusionReason[f.included_reason]]
+      }))
+    };
+  }
+  return gcaRequest;
+}
+function buildLabels(request, gcaRequest) {
+  const labels = {};
+  if (request.client) {
+    labels["client"] = request.client;
+  }
+  if ("functionality_type" in request && request.functionality_type !== void 0) {
+    labels["functionality_type"] = FunctionalityType[request.functionality_type];
+  }
+  if ("client_feature" in request && request.client_feature !== void 0) {
+    labels["client_feature"] = ClientFeature[request.client_feature];
+  }
+  if ("last_user_action" in request && request.last_user_action !== void 0) {
+    labels["last_user_action"] = EditType[request.last_user_action];
+  }
+  if ("use_case" in request && request.use_case !== void 0) {
+    labels["use_case"] = UseCase[request.use_case];
+  }
+  const options = request.options;
+  if (options?.inference_language) {
+    labels["inference_language"] = options.inference_language;
+  }
+  if (options?.expect_code_output !== void 0) {
+    labels["expect_code_output"] = String(options.expect_code_output);
+  }
+  if (Object.keys(labels).length > 0) {
+    gcaRequest.labels = labels;
+  }
+}
+var AidaReasonToGcaInclusionReason = {
+  [Reason.UNKNOWN]: InclusionReason.INCLUSION_REASON_UNSPECIFIED,
+  [Reason.CURRENTLY_OPEN]: InclusionReason.OPEN,
+  // Intentional mapping due to type mismatch
+  // TODO(liviurau): find a way to validate this mapping
+  [Reason.RECENTLY_OPENED]: InclusionReason.RECENTLY_CLOSED,
+  [Reason.RECENTLY_EDITED]: InclusionReason.RECENTLY_EDITED,
+  [Reason.COLOCATED]: InclusionReason.COLOCATED,
+  [Reason.RELATED_FILE]: InclusionReason.RELATED
+};
+function gcaResponseToAidaCompletionResponse(response) {
+  const { samples, metadata } = gcaResponseToAidaSamplesAndMetadata(response);
+  return {
+    generatedSamples: samples,
+    metadata
+  };
+}
+function gcaResponseToAidaSamplesAndMetadata(response) {
+  return {
+    samples: response.candidates.map(gcaCandidateToAidaGenerationSample),
+    metadata: {
+      rpcGlobalId: response.response_id
+    }
+  };
+}
+function aidaGenerateCodeRequestToGcaRequest(request) {
+  const gcaRequest = createBaseGcaRequest(request, [convertAidaContentToGcaContent(request.current_message)]);
+  if (request.context_files) {
+    gcaRequest.aicode = {
+      experience: "generate_code",
+      files: request.context_files.map((f) => ({
+        file_uri: f.path,
+        programming_language: f.programming_language
+      }))
+    };
+  }
+  return gcaRequest;
+}
+function gcaResponseToAidaGenerateCodeResponse(response) {
+  return gcaResponseToAidaSamplesAndMetadata(response);
+}
+function gcaCandidateToAidaGenerationSample(candidate) {
+  const generationSample = {
+    generationString: extractTextFromGcaParts(candidate.content?.parts),
+    score: 0,
+    sampleId: candidate.index
+  };
+  if (candidate.citation_metadata) {
+    generationSample.attributionMetadata = {
+      attributionAction: RecitationAction.CITE,
+      citations: candidate.citation_metadata.citations.map((c) => ({
+        startIndex: c.start_index,
+        endIndex: c.end_index,
+        uri: c.uri
+      }))
+    };
+  }
+  return generationSample;
+}
+function convertAidaContentToGcaContent(content) {
+  let role = "user";
+  if (content.role === Role.MODEL) {
+    role = "model";
+  }
+  return {
+    role,
+    parts: content.parts.map(convertAidaPartToGcaPart)
+  };
+}
+function convertAidaPartToGcaPart(part) {
+  if ("text" in part) {
+    return { text: part.text };
+  }
+  if ("functionCall" in part) {
+    return {
+      function_call: {
+        name: part.functionCall.name,
+        args: part.functionCall.args
+      }
+    };
+  }
+  if ("functionResponse" in part) {
+    const fResponse = {};
+    if ("result" in part.functionResponse.response) {
+      fResponse.output = part.functionResponse.response["result"];
+    } else if ("output" in part.functionResponse.response) {
+      fResponse.output = part.functionResponse.response["output"];
+    } else if (!("error" in part.functionResponse.response)) {
+      fResponse.output = part.functionResponse.response;
+    }
+    if ("error" in part.functionResponse.response) {
+      fResponse.error = part.functionResponse.response["error"];
+    }
+    return {
+      function_response: {
+        name: part.functionResponse.name,
+        response: fResponse
+      }
+    };
+  }
+  if ("inlineData" in part) {
+    return {
+      inline_data: {
+        mime_type: part.inlineData.mimeType,
+        data: part.inlineData.data
+      }
+    };
+  }
+  return {};
+}
+function convertAidaParamToGcaSchema(param) {
+  const schema = {
+    type: param.type,
+    description: param.description
+  };
+  if (param.nullable) {
+    schema.nullable = param.nullable;
+  }
+  if (param.type === 5 && param.items) {
+    schema.items = convertAidaParamToGcaSchema(param.items);
+  } else if (param.type === 6 && param.properties) {
+    schema.properties = {};
+    for (const [key, value] of Object.entries(param.properties)) {
+      schema.properties[key] = convertAidaParamToGcaSchema(value);
+    }
+    schema.required = param.required.map((r) => r.toString());
+  }
+  return schema;
+}
+
 // gen/front_end/core/host/GdpClient.js
 var GdpClient_exports = {};
 __export(GdpClient_exports, {
@@ -1535,7 +1997,7 @@ __export(UserMetrics_exports, {
   IssueResourceOpened: () => IssueResourceOpened,
   KeybindSetSettings: () => KeybindSetSettings,
   KeyboardShortcutAction: () => KeyboardShortcutAction,
-  Language: () => Language,
+  Language: () => Language2,
   ManifestSectionCodes: () => ManifestSectionCodes,
   MediaTypes: () => MediaTypes,
   PanelCodes: () => PanelCodes,
@@ -1691,11 +2153,11 @@ var UserMetrics = class {
     );
   }
   language(language) {
-    const languageCode = Language[language];
+    const languageCode = Language2[language];
     if (languageCode === void 0) {
       return;
     }
-    InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.Language", languageCode, Language.MAX_VALUE);
+    InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.Language", languageCode, Language2.MAX_VALUE);
   }
   syncSetting(devtoolsSyncSettingEnabled) {
     InspectorFrontendHostInstance.getSyncInformation((syncInfo) => {
@@ -2274,14 +2736,11 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["show-option-to-expose-internals-in-heap-snapshot"] = 18] = "show-option-to-expose-internals-in-heap-snapshot";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-invalidation-tracking"] = 26] = "timeline-invalidation-tracking";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-show-all-events"] = 27] = "timeline-show-all-events";
-  DevtoolsExperiments2[DevtoolsExperiments2["timeline-v8-runtime-call-stats"] = 28] = "timeline-v8-runtime-call-stats";
   DevtoolsExperiments2[DevtoolsExperiments2["apca"] = 39] = "apca";
   DevtoolsExperiments2[DevtoolsExperiments2["font-editor"] = 41] = "font-editor";
   DevtoolsExperiments2[DevtoolsExperiments2["full-accessibility-tree"] = 42] = "full-accessibility-tree";
   DevtoolsExperiments2[DevtoolsExperiments2["experimental-cookie-features"] = 45] = "experimental-cookie-features";
   DevtoolsExperiments2[DevtoolsExperiments2["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
-  DevtoolsExperiments2[DevtoolsExperiments2["authored-deployed-grouping"] = 63] = "authored-deployed-grouping";
-  DevtoolsExperiments2[DevtoolsExperiments2["just-my-code"] = 65] = "just-my-code";
   DevtoolsExperiments2[DevtoolsExperiments2["use-source-map-scopes"] = 76] = "use-source-map-scopes";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";
   DevtoolsExperiments2[DevtoolsExperiments2["durable-messages"] = 110] = "durable-messages";
@@ -2421,92 +2880,92 @@ var IssueCreated;
   IssueCreated2[IssueCreated2["CorsIssue::InvalidLocalNetworkAccess"] = 114] = "CorsIssue::InvalidLocalNetworkAccess";
   IssueCreated2[IssueCreated2["MAX_VALUE"] = 115] = "MAX_VALUE";
 })(IssueCreated || (IssueCreated = {}));
-var Language;
-(function(Language2) {
-  Language2[Language2["af"] = 1] = "af";
-  Language2[Language2["am"] = 2] = "am";
-  Language2[Language2["ar"] = 3] = "ar";
-  Language2[Language2["as"] = 4] = "as";
-  Language2[Language2["az"] = 5] = "az";
-  Language2[Language2["be"] = 6] = "be";
-  Language2[Language2["bg"] = 7] = "bg";
-  Language2[Language2["bn"] = 8] = "bn";
-  Language2[Language2["bs"] = 9] = "bs";
-  Language2[Language2["ca"] = 10] = "ca";
-  Language2[Language2["cs"] = 11] = "cs";
-  Language2[Language2["cy"] = 12] = "cy";
-  Language2[Language2["da"] = 13] = "da";
-  Language2[Language2["de"] = 14] = "de";
-  Language2[Language2["el"] = 15] = "el";
-  Language2[Language2["en-GB"] = 16] = "en-GB";
-  Language2[Language2["en-US"] = 17] = "en-US";
-  Language2[Language2["es-419"] = 18] = "es-419";
-  Language2[Language2["es"] = 19] = "es";
-  Language2[Language2["et"] = 20] = "et";
-  Language2[Language2["eu"] = 21] = "eu";
-  Language2[Language2["fa"] = 22] = "fa";
-  Language2[Language2["fi"] = 23] = "fi";
-  Language2[Language2["fil"] = 24] = "fil";
-  Language2[Language2["fr-CA"] = 25] = "fr-CA";
-  Language2[Language2["fr"] = 26] = "fr";
-  Language2[Language2["gl"] = 27] = "gl";
-  Language2[Language2["gu"] = 28] = "gu";
-  Language2[Language2["he"] = 29] = "he";
-  Language2[Language2["hi"] = 30] = "hi";
-  Language2[Language2["hr"] = 31] = "hr";
-  Language2[Language2["hu"] = 32] = "hu";
-  Language2[Language2["hy"] = 33] = "hy";
-  Language2[Language2["id"] = 34] = "id";
-  Language2[Language2["is"] = 35] = "is";
-  Language2[Language2["it"] = 36] = "it";
-  Language2[Language2["ja"] = 37] = "ja";
-  Language2[Language2["ka"] = 38] = "ka";
-  Language2[Language2["kk"] = 39] = "kk";
-  Language2[Language2["km"] = 40] = "km";
-  Language2[Language2["kn"] = 41] = "kn";
-  Language2[Language2["ko"] = 42] = "ko";
-  Language2[Language2["ky"] = 43] = "ky";
-  Language2[Language2["lo"] = 44] = "lo";
-  Language2[Language2["lt"] = 45] = "lt";
-  Language2[Language2["lv"] = 46] = "lv";
-  Language2[Language2["mk"] = 47] = "mk";
-  Language2[Language2["ml"] = 48] = "ml";
-  Language2[Language2["mn"] = 49] = "mn";
-  Language2[Language2["mr"] = 50] = "mr";
-  Language2[Language2["ms"] = 51] = "ms";
-  Language2[Language2["my"] = 52] = "my";
-  Language2[Language2["ne"] = 53] = "ne";
-  Language2[Language2["nl"] = 54] = "nl";
-  Language2[Language2["no"] = 55] = "no";
-  Language2[Language2["or"] = 56] = "or";
-  Language2[Language2["pa"] = 57] = "pa";
-  Language2[Language2["pl"] = 58] = "pl";
-  Language2[Language2["pt-PT"] = 59] = "pt-PT";
-  Language2[Language2["pt"] = 60] = "pt";
-  Language2[Language2["ro"] = 61] = "ro";
-  Language2[Language2["ru"] = 62] = "ru";
-  Language2[Language2["si"] = 63] = "si";
-  Language2[Language2["sk"] = 64] = "sk";
-  Language2[Language2["sl"] = 65] = "sl";
-  Language2[Language2["sq"] = 66] = "sq";
-  Language2[Language2["sr-Latn"] = 67] = "sr-Latn";
-  Language2[Language2["sr"] = 68] = "sr";
-  Language2[Language2["sv"] = 69] = "sv";
-  Language2[Language2["sw"] = 70] = "sw";
-  Language2[Language2["ta"] = 71] = "ta";
-  Language2[Language2["te"] = 72] = "te";
-  Language2[Language2["th"] = 73] = "th";
-  Language2[Language2["tr"] = 74] = "tr";
-  Language2[Language2["uk"] = 75] = "uk";
-  Language2[Language2["ur"] = 76] = "ur";
-  Language2[Language2["uz"] = 77] = "uz";
-  Language2[Language2["vi"] = 78] = "vi";
-  Language2[Language2["zh"] = 79] = "zh";
-  Language2[Language2["zh-HK"] = 80] = "zh-HK";
-  Language2[Language2["zh-TW"] = 81] = "zh-TW";
-  Language2[Language2["zu"] = 82] = "zu";
-  Language2[Language2["MAX_VALUE"] = 83] = "MAX_VALUE";
-})(Language || (Language = {}));
+var Language2;
+(function(Language3) {
+  Language3[Language3["af"] = 1] = "af";
+  Language3[Language3["am"] = 2] = "am";
+  Language3[Language3["ar"] = 3] = "ar";
+  Language3[Language3["as"] = 4] = "as";
+  Language3[Language3["az"] = 5] = "az";
+  Language3[Language3["be"] = 6] = "be";
+  Language3[Language3["bg"] = 7] = "bg";
+  Language3[Language3["bn"] = 8] = "bn";
+  Language3[Language3["bs"] = 9] = "bs";
+  Language3[Language3["ca"] = 10] = "ca";
+  Language3[Language3["cs"] = 11] = "cs";
+  Language3[Language3["cy"] = 12] = "cy";
+  Language3[Language3["da"] = 13] = "da";
+  Language3[Language3["de"] = 14] = "de";
+  Language3[Language3["el"] = 15] = "el";
+  Language3[Language3["en-GB"] = 16] = "en-GB";
+  Language3[Language3["en-US"] = 17] = "en-US";
+  Language3[Language3["es-419"] = 18] = "es-419";
+  Language3[Language3["es"] = 19] = "es";
+  Language3[Language3["et"] = 20] = "et";
+  Language3[Language3["eu"] = 21] = "eu";
+  Language3[Language3["fa"] = 22] = "fa";
+  Language3[Language3["fi"] = 23] = "fi";
+  Language3[Language3["fil"] = 24] = "fil";
+  Language3[Language3["fr-CA"] = 25] = "fr-CA";
+  Language3[Language3["fr"] = 26] = "fr";
+  Language3[Language3["gl"] = 27] = "gl";
+  Language3[Language3["gu"] = 28] = "gu";
+  Language3[Language3["he"] = 29] = "he";
+  Language3[Language3["hi"] = 30] = "hi";
+  Language3[Language3["hr"] = 31] = "hr";
+  Language3[Language3["hu"] = 32] = "hu";
+  Language3[Language3["hy"] = 33] = "hy";
+  Language3[Language3["id"] = 34] = "id";
+  Language3[Language3["is"] = 35] = "is";
+  Language3[Language3["it"] = 36] = "it";
+  Language3[Language3["ja"] = 37] = "ja";
+  Language3[Language3["ka"] = 38] = "ka";
+  Language3[Language3["kk"] = 39] = "kk";
+  Language3[Language3["km"] = 40] = "km";
+  Language3[Language3["kn"] = 41] = "kn";
+  Language3[Language3["ko"] = 42] = "ko";
+  Language3[Language3["ky"] = 43] = "ky";
+  Language3[Language3["lo"] = 44] = "lo";
+  Language3[Language3["lt"] = 45] = "lt";
+  Language3[Language3["lv"] = 46] = "lv";
+  Language3[Language3["mk"] = 47] = "mk";
+  Language3[Language3["ml"] = 48] = "ml";
+  Language3[Language3["mn"] = 49] = "mn";
+  Language3[Language3["mr"] = 50] = "mr";
+  Language3[Language3["ms"] = 51] = "ms";
+  Language3[Language3["my"] = 52] = "my";
+  Language3[Language3["ne"] = 53] = "ne";
+  Language3[Language3["nl"] = 54] = "nl";
+  Language3[Language3["no"] = 55] = "no";
+  Language3[Language3["or"] = 56] = "or";
+  Language3[Language3["pa"] = 57] = "pa";
+  Language3[Language3["pl"] = 58] = "pl";
+  Language3[Language3["pt-PT"] = 59] = "pt-PT";
+  Language3[Language3["pt"] = 60] = "pt";
+  Language3[Language3["ro"] = 61] = "ro";
+  Language3[Language3["ru"] = 62] = "ru";
+  Language3[Language3["si"] = 63] = "si";
+  Language3[Language3["sk"] = 64] = "sk";
+  Language3[Language3["sl"] = 65] = "sl";
+  Language3[Language3["sq"] = 66] = "sq";
+  Language3[Language3["sr-Latn"] = 67] = "sr-Latn";
+  Language3[Language3["sr"] = 68] = "sr";
+  Language3[Language3["sv"] = 69] = "sv";
+  Language3[Language3["sw"] = 70] = "sw";
+  Language3[Language3["ta"] = 71] = "ta";
+  Language3[Language3["te"] = 72] = "te";
+  Language3[Language3["th"] = 73] = "th";
+  Language3[Language3["tr"] = 74] = "tr";
+  Language3[Language3["uk"] = 75] = "uk";
+  Language3[Language3["ur"] = 76] = "ur";
+  Language3[Language3["uz"] = 77] = "uz";
+  Language3[Language3["vi"] = 78] = "vi";
+  Language3[Language3["zh"] = 79] = "zh";
+  Language3[Language3["zh-HK"] = 80] = "zh-HK";
+  Language3[Language3["zh-TW"] = 81] = "zh-TW";
+  Language3[Language3["zu"] = 82] = "zu";
+  Language3[Language3["MAX_VALUE"] = 83] = "MAX_VALUE";
+})(Language2 || (Language2 = {}));
 var ManifestSectionCodes;
 (function(ManifestSectionCodes2) {
   ManifestSectionCodes2[ManifestSectionCodes2["OtherSection"] = 0] = "OtherSection";
@@ -2522,7 +2981,9 @@ var ManifestSectionCodes;
 var userMetrics = new UserMetrics();
 export {
   AidaClient_exports as AidaClient,
+  AidaGcaTranslation_exports as AidaGcaTranslation,
   DispatchHttpRequestClient_exports as DispatchHttpRequestClient,
+  GcaTypes_exports as GcaTypes,
   GdpClient_exports as GdpClient,
   InspectorFrontendHost_exports as InspectorFrontendHost,
   InspectorFrontendHostAPI_exports as InspectorFrontendHostAPI,

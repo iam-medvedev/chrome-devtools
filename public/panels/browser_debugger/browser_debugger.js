@@ -701,13 +701,14 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     const { breakpoint } = item2;
     const checkedStateText = breakpoint.enabled ? i18nString2(UIStrings2.checked) : i18nString2(UIStrings2.unchecked);
     const linkified = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(breakpoint.node, { preventKeyboardFocus: true, tooltip: void 0 });
+    const linkifiedText = breakpoint.node.simpleSelector();
     return html2`
                 <li class=${`breakpoint-entry ${item2.isHighlighted ? "breakpoint-hit" : ""}`}
                     tabindex=${item2.isFocused ? "0" : "-1"}
                     @click=${() => input.onBreakpointClick(breakpoint)}
                     @contextmenu=${(e) => input.onBreakpointContextMenu(breakpoint, e)}
                     @keydown=${(e) => input.onBreakpointKeyDown(breakpoint, e)}
-                    aria-label=${i18nString2(UIStrings2.sSS, { PH1: item2.label, PH2: linkified.deepTextContent(), PH3: checkedStateText })}
+                    aria-label=${i18nString2(UIStrings2.sSS, { PH1: item2.label, PH2: linkifiedText, PH3: checkedStateText })}
                     aria-description=${item2.isHighlighted ? i18nString2(UIStrings2.sBreakpointHit, { PH1: checkedStateText }) : checkedStateText}
                     jslog=${VisualLogging3.domBreakpoint().context(breakpoint.type).track({ keydown: "ArrowUp|ArrowDown|PageUp|PageDown" })}>
                   <devtools-checkbox
@@ -716,7 +717,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
                     @click=${(e) => e.stopPropagation()}
                     @change=${() => input.onBreakpointCheckboxClick(breakpoint)}
                     tabindex="-1"
-                    aria-label=${i18nString2(UIStrings2.sS, { PH1: item2.label, PH2: linkified.deepTextContent() })}
+                    aria-label=${i18nString2(UIStrings2.sS, { PH1: item2.label, PH2: linkifiedText })}
                     aria-description=${Directives2.ifDefined(item2.isHighlighted ? i18nString2(UIStrings2.breakpointHit) : void 0)}
                     jslog=${VisualLogging3.toggle().track({ click: true })}>
                   </devtools-checkbox>

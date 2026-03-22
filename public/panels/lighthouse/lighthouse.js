@@ -226,8 +226,8 @@ var LighthouseController_exports = {};
 __export(LighthouseController_exports, {
   Events: () => Events,
   LighthouseController: () => LighthouseController,
-  Presets: () => Presets,
-  RuntimeSettings: () => RuntimeSettings
+  getPresets: () => getPresets,
+  getRuntimeSettings: () => getRuntimeSettings
 });
 import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
@@ -401,16 +401,18 @@ var LighthouseRun = class {
   inspectedURL;
   categoryIDs;
   flags;
+  isAIControlled;
   emulationStateBefore;
   protocolService;
   #isRunning;
   #cancelPromise = null;
-  constructor(controller, protocolService, inspectedURL, categoryIDs, flags) {
+  constructor(controller, protocolService, inspectedURL, categoryIDs, flags, isAIControlled) {
     this.controller = controller;
     this.protocolService = protocolService;
     this.inspectedURL = inspectedURL;
     this.categoryIDs = categoryIDs;
     this.flags = flags;
+    this.isAIControlled = isAIControlled;
     this.#isRunning = false;
   }
   isRunning() {
@@ -528,10 +530,10 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
     super();
     this.protocolService = protocolService;
     protocolService.registerStatusCallback((message) => this.dispatchEventToListeners(Events.AuditProgressChanged, { message }));
-    for (const preset of Presets) {
+    for (const preset of getPresets()) {
       preset.setting.addChangeListener(this.recomputePageAuditability.bind(this));
     }
-    for (const runtimeSetting of RuntimeSettings) {
+    for (const runtimeSetting of getRuntimeSettings()) {
       runtimeSetting.setting.addChangeListener(this.recomputePageAuditability.bind(this));
     }
     const javaScriptDisabledSetting = Common.Settings.Settings.instance().moduleSetting("java-script-disabled");
@@ -583,7 +585,7 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
     return false;
   }
   hasAtLeastOneCategory() {
-    return Presets.some((preset) => preset.setting.get());
+    return getPresets().some((preset) => preset.setting.get());
   }
   unauditablePageMessage() {
     if (!this.manager || this.getFlags().mode !== "navigation") {
@@ -608,7 +610,7 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
     return Common.Settings.Settings.instance().moduleSetting("java-script-disabled").get();
   }
   async hasImportantResourcesNotCleared() {
-    const clearStorageSetting = RuntimeSettings.find((runtimeSetting) => runtimeSetting.setting.name === "lighthouse.clear-storage");
+    const clearStorageSetting = getRuntimeSettings().find((runtimeSetting) => runtimeSetting.setting.name === "lighthouse.clear-storage");
     if (clearStorageSetting && !clearStorageSetting.setting.get()) {
       return "";
     }
@@ -655,12 +657,13 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
     return {
       inspectedURL: this.currentLighthouseRun.inspectedURL,
       categoryIDs: this.currentLighthouseRun.categoryIDs,
-      flags: this.currentLighthouseRun.flags
+      flags: this.currentLighthouseRun.flags,
+      isAIControlled: this.currentLighthouseRun.isAIControlled
     };
   }
   getFlags() {
     const flags = {};
-    for (const runtimeSetting of RuntimeSettings) {
+    for (const runtimeSetting of getRuntimeSettings()) {
       runtimeSetting.setFlags(flags, runtimeSetting.setting.get());
     }
     return flags;
@@ -668,7 +671,7 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
   getCategoryIDs() {
     const { mode } = this.getFlags();
     const categoryIDs = [];
-    for (const preset of Presets) {
+    for (const preset of getPresets()) {
       if (mode && !preset.supportedModes.includes(mode)) {
         continue;
       }
@@ -709,7 +712,7 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
   }
   recordMetrics(flags, categoryIds) {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.LighthouseStarted);
-    for (const preset of Presets) {
+    for (const preset of getPresets()) {
       if (!categoryIds.includes(preset.configID)) {
         continue;
       }
@@ -754,7 +757,7 @@ var LighthouseController = class extends Common.ObjectWrapper.ObjectWrapper {
       const categoryIDs = overrides?.categoryIds ?? this.getCategoryIDs();
       const flags = this.getFlags();
       this.recordMetrics(flags, categoryIDs);
-      this.currentLighthouseRun = new LighthouseRun(this, this.protocolService, inspectedURL, categoryIDs, flags);
+      this.currentLighthouseRun = new LighthouseRun(this, this.protocolService, inspectedURL, categoryIDs, flags, Boolean(overrides?.isAIControlled));
       await this.currentLighthouseRun.start();
       resolve();
     });
@@ -788,173 +791,185 @@ var STORAGE_TYPE_NAMES = /* @__PURE__ */ new Map([
   ["indexeddb", i18nLazyString(UIStrings.indexeddb)],
   ["websql", i18nLazyString(UIStrings.webSql)]
 ]);
-var Presets = [
-  // configID maps to Lighthouse's Object.keys(config.categories)[0] value
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-      "lighthouse.cat-perf",
-      true,
-      "Synced"
-      /* Common.Settings.SettingStorageType.SYNCED */
-    ),
-    configID: "performance",
-    title: i18nLazyString(UIStrings.performance),
-    description: i18nLazyString(UIStrings.howLongDoesThisAppTakeToShow),
-    supportedModes: ["navigation", "timespan", "snapshot"],
-    userMetric: 0
-  },
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-      "lighthouse.cat-a11y",
-      true,
-      "Synced"
-      /* Common.Settings.SettingStorageType.SYNCED */
-    ),
-    configID: "accessibility",
-    title: i18nLazyString(UIStrings.accessibility),
-    description: i18nLazyString(UIStrings.isThisPageUsableByPeopleWith),
-    supportedModes: ["navigation", "snapshot"],
-    userMetric: 1
-  },
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-      "lighthouse.cat-best-practices",
-      true,
-      "Synced"
-      /* Common.Settings.SettingStorageType.SYNCED */
-    ),
-    configID: "best-practices",
-    title: i18nLazyString(UIStrings.bestPractices),
-    description: i18nLazyString(UIStrings.doesThisPageFollowBestPractices),
-    supportedModes: ["navigation", "timespan", "snapshot"],
-    userMetric: 2
-  },
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-      "lighthouse.cat-seo",
-      true,
-      "Synced"
-      /* Common.Settings.SettingStorageType.SYNCED */
-    ),
-    configID: "seo",
-    title: i18nLazyString(UIStrings.seo),
-    description: i18nLazyString(UIStrings.isThisPageOptimizedForSearch),
-    supportedModes: ["navigation", "snapshot"],
-    userMetric: 3
+var presets = null;
+function getPresets() {
+  if (!presets) {
+    presets = [
+      // configID maps to Lighthouse's Object.keys(config.categories)[0] value
+      {
+        setting: Common.Settings.Settings.instance().createSetting(
+          "lighthouse.cat-perf",
+          true,
+          "Synced"
+          /* Common.Settings.SettingStorageType.SYNCED */
+        ),
+        configID: "performance",
+        title: i18nLazyString(UIStrings.performance),
+        description: i18nLazyString(UIStrings.howLongDoesThisAppTakeToShow),
+        supportedModes: ["navigation", "timespan", "snapshot"],
+        userMetric: 0
+      },
+      {
+        setting: Common.Settings.Settings.instance().createSetting(
+          "lighthouse.cat-a11y",
+          true,
+          "Synced"
+          /* Common.Settings.SettingStorageType.SYNCED */
+        ),
+        configID: "accessibility",
+        title: i18nLazyString(UIStrings.accessibility),
+        description: i18nLazyString(UIStrings.isThisPageUsableByPeopleWith),
+        supportedModes: ["navigation", "snapshot"],
+        userMetric: 1
+      },
+      {
+        setting: Common.Settings.Settings.instance().createSetting(
+          "lighthouse.cat-best-practices",
+          true,
+          "Synced"
+          /* Common.Settings.SettingStorageType.SYNCED */
+        ),
+        configID: "best-practices",
+        title: i18nLazyString(UIStrings.bestPractices),
+        description: i18nLazyString(UIStrings.doesThisPageFollowBestPractices),
+        supportedModes: ["navigation", "timespan", "snapshot"],
+        userMetric: 2
+      },
+      {
+        setting: Common.Settings.Settings.instance().createSetting(
+          "lighthouse.cat-seo",
+          true,
+          "Synced"
+          /* Common.Settings.SettingStorageType.SYNCED */
+        ),
+        configID: "seo",
+        title: i18nLazyString(UIStrings.seo),
+        description: i18nLazyString(UIStrings.isThisPageOptimizedForSearch),
+        supportedModes: ["navigation", "snapshot"],
+        userMetric: 3
+      }
+    ];
   }
-];
-var RuntimeSettings = [
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-      "lighthouse.device-type",
-      "mobile",
-      "Synced"
-      /* Common.Settings.SettingStorageType.SYNCED */
-    ),
-    title: i18nLazyString(UIStrings.applyMobileEmulation),
-    description: i18nLazyString(UIStrings.applyMobileEmulationDuring),
-    setFlags: (flags, value) => {
-      flags.formFactor = value;
-    },
-    options: [
+  return presets;
+}
+var runtimeSettings = null;
+function getRuntimeSettings() {
+  if (!runtimeSettings) {
+    runtimeSettings = [
       {
-        label: i18nLazyString(UIStrings.mobile),
-        tooltip: i18nLazyString(UIStrings.applyMobileEmulationDuring),
-        value: "mobile"
+        setting: Common.Settings.Settings.instance().createSetting(
+          "lighthouse.device-type",
+          "mobile",
+          "Synced"
+          /* Common.Settings.SettingStorageType.SYNCED */
+        ),
+        title: i18nLazyString(UIStrings.applyMobileEmulation),
+        description: i18nLazyString(UIStrings.applyMobileEmulationDuring),
+        setFlags: (flags, value) => {
+          flags.formFactor = value;
+        },
+        options: [
+          {
+            label: i18nLazyString(UIStrings.mobile),
+            tooltip: i18nLazyString(UIStrings.applyMobileEmulationDuring),
+            value: "mobile"
+          },
+          {
+            label: i18nLazyString(UIStrings.desktop),
+            tooltip: i18nLazyString(UIStrings.applyDesktopEmulationDuring),
+            value: "desktop"
+          }
+        ]
       },
       {
-        label: i18nLazyString(UIStrings.desktop),
-        tooltip: i18nLazyString(UIStrings.applyDesktopEmulationDuring),
-        value: "desktop"
-      }
-    ]
-  },
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-      "lighthouse.mode",
-      "navigation",
-      "Synced"
-      /* Common.Settings.SettingStorageType.SYNCED */
-    ),
-    title: i18nLazyString(UIStrings.lighthouseMode),
-    description: i18nLazyString(UIStrings.runLighthouseInMode),
-    setFlags: (flags, value) => {
-      flags.mode = value;
-    },
-    options: [
-      {
-        label: i18nLazyString(UIStrings.navigation),
-        tooltip: i18nLazyString(UIStrings.navigationTooltip),
-        value: "navigation"
+        setting: Common.Settings.Settings.instance().createSetting(
+          "lighthouse.mode",
+          "navigation",
+          "Synced"
+          /* Common.Settings.SettingStorageType.SYNCED */
+        ),
+        title: i18nLazyString(UIStrings.lighthouseMode),
+        description: i18nLazyString(UIStrings.runLighthouseInMode),
+        setFlags: (flags, value) => {
+          flags.mode = value;
+        },
+        options: [
+          {
+            label: i18nLazyString(UIStrings.navigation),
+            tooltip: i18nLazyString(UIStrings.navigationTooltip),
+            value: "navigation"
+          },
+          {
+            label: i18nLazyString(UIStrings.timespan),
+            tooltip: i18nLazyString(UIStrings.timespanTooltip),
+            value: "timespan"
+          },
+          {
+            label: i18nLazyString(UIStrings.snapshot),
+            tooltip: i18nLazyString(UIStrings.snapshotTooltip),
+            value: "snapshot"
+          }
+        ],
+        learnMore: "https://github.com/GoogleChrome/lighthouse/blob/HEAD/docs/user-flows.md"
       },
       {
-        label: i18nLazyString(UIStrings.timespan),
-        tooltip: i18nLazyString(UIStrings.timespanTooltip),
-        value: "timespan"
+        // This setting is disabled, but we keep it around to show in the UI.
+        setting: Common.Settings.Settings.instance().createSetting(
+          "lighthouse.throttling",
+          "simulate",
+          "Synced"
+          /* Common.Settings.SettingStorageType.SYNCED */
+        ),
+        title: i18nLazyString(UIStrings.throttlingMethod),
+        // We will disable this when we have a Lantern trace viewer within DevTools.
+        learnMore: "https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-lighthouse-panel-throttling",
+        description: i18nLazyString(UIStrings.simulateASlowerPageLoadBasedOn),
+        setFlags: (flags, value) => {
+          if (typeof value === "string") {
+            flags.throttlingMethod = value;
+          } else {
+            flags.throttlingMethod = value ? "simulate" : "devtools";
+          }
+        },
+        options: [
+          { label: i18nLazyString(UIStrings.simulatedThrottling), value: "simulate" },
+          { label: i18nLazyString(UIStrings.devtoolsThrottling), value: "devtools" }
+        ]
       },
       {
-        label: i18nLazyString(UIStrings.snapshot),
-        tooltip: i18nLazyString(UIStrings.snapshotTooltip),
-        value: "snapshot"
+        setting: Common.Settings.Settings.instance().createSetting(
+          "lighthouse.clear-storage",
+          true,
+          "Synced"
+          /* Common.Settings.SettingStorageType.SYNCED */
+        ),
+        title: i18nLazyString(UIStrings.clearStorage),
+        description: i18nLazyString(UIStrings.resetStorageLocalstorage),
+        setFlags: (flags, value) => {
+          flags.disableStorageReset = !value;
+        }
+      },
+      {
+        setting: Common.Settings.Settings.instance().createSetting(
+          "lighthouse.enable-sampling",
+          false,
+          "Synced"
+          /* Common.Settings.SettingStorageType.SYNCED */
+        ),
+        title: i18nLazyString(UIStrings.enableSampling),
+        description: i18nLazyString(UIStrings.enableJavaScriptSampling),
+        setFlags: (flags, value) => {
+          if (value) {
+            flags.additionalTraceCategories = "disabled-by-default-v8.cpu_profiler";
+          } else {
+            flags.additionalTraceCategories = "";
+          }
+        }
       }
-    ],
-    learnMore: "https://github.com/GoogleChrome/lighthouse/blob/HEAD/docs/user-flows.md"
-  },
-  {
-    // This setting is disabled, but we keep it around to show in the UI.
-    setting: Common.Settings.Settings.instance().createSetting(
-      "lighthouse.throttling",
-      "simulate",
-      "Synced"
-      /* Common.Settings.SettingStorageType.SYNCED */
-    ),
-    title: i18nLazyString(UIStrings.throttlingMethod),
-    // We will disable this when we have a Lantern trace viewer within DevTools.
-    learnMore: "https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-lighthouse-panel-throttling",
-    description: i18nLazyString(UIStrings.simulateASlowerPageLoadBasedOn),
-    setFlags: (flags, value) => {
-      if (typeof value === "string") {
-        flags.throttlingMethod = value;
-      } else {
-        flags.throttlingMethod = value ? "simulate" : "devtools";
-      }
-    },
-    options: [
-      { label: i18nLazyString(UIStrings.simulatedThrottling), value: "simulate" },
-      { label: i18nLazyString(UIStrings.devtoolsThrottling), value: "devtools" }
-    ]
-  },
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-      "lighthouse.clear-storage",
-      true,
-      "Synced"
-      /* Common.Settings.SettingStorageType.SYNCED */
-    ),
-    title: i18nLazyString(UIStrings.clearStorage),
-    description: i18nLazyString(UIStrings.resetStorageLocalstorage),
-    setFlags: (flags, value) => {
-      flags.disableStorageReset = !value;
-    }
-  },
-  {
-    setting: Common.Settings.Settings.instance().createSetting(
-      "lighthouse.enable-sampling",
-      false,
-      "Synced"
-      /* Common.Settings.SettingStorageType.SYNCED */
-    ),
-    title: i18nLazyString(UIStrings.enableSampling),
-    description: i18nLazyString(UIStrings.enableJavaScriptSampling),
-    setFlags: (flags, value) => {
-      if (value) {
-        flags.additionalTraceCategories = "disabled-by-default-v8.cpu_profiler";
-      } else {
-        flags.additionalTraceCategories = "";
-      }
-    }
+    ];
   }
-];
+  return runtimeSettings;
+}
 var Events;
 (function(Events2) {
   Events2["PageAuditabilityChanged"] = "PageAuditabilityChanged";
@@ -1293,6 +1308,7 @@ import * as LighthouseReport from "./../../third_party/lighthouse/report/report.
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
+import { html, nothing, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon from "./../common/common.js";
 var MaxLengthForLinks = 40;
@@ -1404,10 +1420,7 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
       UI.Tooltip.Tooltip.install(origHTMLElement, "");
       const screenshotElement = origHTMLElement.querySelector(".lh-element-screenshot");
       origHTMLElement.textContent = "";
-      if (screenshotElement) {
-        origHTMLElement.append(screenshotElement);
-      }
-      origHTMLElement.appendChild(element);
+      render(html`${screenshotElement ?? nothing}${element}`, origHTMLElement);
     }
   }
   static async linkifySourceLocationDetails(el) {
@@ -1420,7 +1433,7 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
       const url = detailsItem.sourceUrl;
       const line = Number(detailsItem.sourceLine);
       const column = Number(detailsItem.sourceColumn);
-      const element = await Components.Linkifier.Linkifier.linkifyURL(url, {
+      const element = Components.Linkifier.Linkifier.linkifyURL(url, {
         lineNumber: line,
         columnNumber: column,
         showColumnNumber: false,
@@ -1587,7 +1600,7 @@ import * as i18n6 from "./../../core/i18n/i18n.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import { Link } from "./../../ui/kit/kit.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html2, render as render2 } from "./../../ui/lit/lit.js";
+import { Directives as Directives2, html as html3, render as render3 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/lighthouse/lighthouseStartView.css.js
 var lighthouseStartView_css_default = `/*
@@ -1761,7 +1774,7 @@ __export(RadioSetting_exports, {
   RadioSetting: () => RadioSetting
 });
 import * as UI3 from "./../../ui/legacy/legacy.js";
-import { Directives, html, render } from "./../../ui/lit/lit.js";
+import { Directives, html as html2, render as render2 } from "./../../ui/lit/lit.js";
 var { ifDefined } = Directives;
 var RadioSetting = class {
   setting;
@@ -1777,10 +1790,10 @@ var RadioSetting = class {
     UI3.ARIAUtils.setDescription(this.element, description);
     UI3.ARIAUtils.markAsRadioGroup(this.element);
     this.radioElements = [];
-    render(html`
+    render2(html2`
         ${this.options.map((option) => {
       const tooltip = option.tooltip?.() || description;
-      return html`
+      return html2`
             <label class="lighthouse-radio">
               <input
                 type="radio"
@@ -1868,7 +1881,7 @@ var UIStrings3 = {
 var str_3 = i18n6.i18n.registerUIStrings("panels/lighthouse/LighthouseStartView.ts", UIStrings3);
 var i18nString3 = i18n6.i18n.getLocalizedString.bind(void 0, str_3);
 var renderStartView = (_input, output, target) => {
-  render2(html2`
+  render3(html3`
       <form class="lighthouse-start-view">
         <header class="hbox">
           <div class="lighthouse-logo"></div>
@@ -1942,7 +1955,7 @@ var StartView = class extends UI4.Widget.Widget {
     this.render();
   }
   populateRuntimeSettingAsRadio(settingName, label, parentElement) {
-    const runtimeSetting = RuntimeSettings.find((item2) => item2.setting.name === settingName);
+    const runtimeSetting = getRuntimeSettings().find((item2) => item2.setting.name === settingName);
     if (!runtimeSetting?.options) {
       throw new Error(`${settingName} is not a setting with options`);
     }
@@ -1959,7 +1972,7 @@ var StartView = class extends UI4.Widget.Widget {
     UI4.ARIAUtils.setLabel(control.element, label);
   }
   populateRuntimeSettingAsToolbarCheckbox(settingName, toolbar2) {
-    const runtimeSetting = RuntimeSettings.find((item2) => item2.setting.name === settingName);
+    const runtimeSetting = getRuntimeSettings().find((item2) => item2.setting.name === settingName);
     if (!runtimeSetting?.title) {
       throw new Error(`${settingName} is not a setting with a title`);
     }
@@ -1973,7 +1986,7 @@ var StartView = class extends UI4.Widget.Widget {
     }
   }
   populateRuntimeSettingAsToolbarDropdown(settingName, toolbar2) {
-    const runtimeSetting = RuntimeSettings.find((item2) => item2.setting.name === settingName);
+    const runtimeSetting = getRuntimeSettings().find((item2) => item2.setting.name === settingName);
     if (!runtimeSetting?.title) {
       throw new Error(`${settingName} is not a setting with a title`);
     }
@@ -1993,7 +2006,7 @@ var StartView = class extends UI4.Widget.Widget {
   populateFormControls(deviceTypeFormElements, categoryFormElements, mode) {
     this.populateRuntimeSettingAsRadio("lighthouse.device-type", i18nString3(UIStrings3.device), deviceTypeFormElements);
     this.checkboxes = [];
-    for (const preset of Presets) {
+    for (const preset of getPresets()) {
       preset.setting.setTitle(preset.title());
       const checkbox = new UI4.Toolbar.ToolbarSettingCheckbox(preset.setting, preset.description());
       const row = categoryFormElements.createChild("div", "vbox lighthouse-launcher-row");
@@ -2260,7 +2273,7 @@ var lighthouseDialog_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./lighthouseDialog.css")} */`;
 
 // gen/front_end/panels/lighthouse/LighthouseStatusView.js
-var { html: html3 } = Lit;
+var { html: html4 } = Lit;
 var UIStrings4 = {
   /**
    * @description Text to cancel something
@@ -2279,6 +2292,15 @@ var UIStrings4 = {
    * @description Status text in Lighthouse splash screen while an audit is being performed
    */
   auditingYourWebPage: "Auditing your web page",
+  /**
+   * @description Status text in Lighthouse splash screen while an AI assistant is performing an audit
+   * @example {github.com} PH1
+   */
+  aiAuditingS: "AI assistance is auditing {PH1}",
+  /**
+   * @description Status text in Lighthouse splash screen while an AI assistant is performing an audit
+   */
+  aiAuditingYourWebPage: "AI assistance is auditing your web page",
   /**
    * @description Status text in Lighthouse splash screen while an audit is being performed, and cancellation to take effect
    */
@@ -2398,12 +2420,12 @@ Chrome Version: ${chromeVersion[1]}
 Stack Trace: ${err.stack}
 \`\`\`
 `;
-    return html3`
+    return html4`
       <p>${i18nString4(UIStrings4.ifThisIssueIsReproduciblePlease)}</p>
       <code class="monospace">${issueBody.trim()}</code>
     `;
   };
-  Lit.render(html3`
+  Lit.render(html4`
     <div class="lighthouse-view vbox">
       <span class="header">${statusHeader}</span>
       <div class="lighthouse-status vbox">
@@ -2418,9 +2440,9 @@ Stack Trace: ${err.stack}
           ></div>
         </div>
         <div class="lighthouse-status-text" role="status">
-          ${bugReport ? html3`
+          ${bugReport ? html4`
             <p>${i18nString4(UIStrings4.ahSorryWeRanIntoAnError)}</p>
-            ${bugReport.knownBugPattern ? html3`
+            ${bugReport.knownBugPattern ? html4`
               <p>${i18nString4(UIStrings4.tryToNavigateToTheUrlInAFresh)}</p>
             ` : renderBugReportBody(bugReport.error, bugReport.auditURL)}
           ` : statusText}
@@ -2451,6 +2473,7 @@ var StatusView = class {
   progressBarClass;
   progressBarValue;
   cancelButtonVisible;
+  isAIControlled;
   bugReport;
   constructor(panel) {
     this.panel = panel;
@@ -2468,6 +2491,7 @@ var StatusView = class {
     this.progressBarClass = "";
     this.progressBarValue = 0;
     this.cancelButtonVisible = true;
+    this.isAIControlled = false;
     this.bugReport = null;
     this.render();
   }
@@ -2506,12 +2530,18 @@ var StatusView = class {
   show(dialogRenderElement) {
     this.reset();
     this.updateStatus(i18nString4(UIStrings4.loading));
-    const parsedURL = Common4.ParsedURL.ParsedURL.fromString(this.inspectedURL);
-    const pageHost = parsedURL?.host;
-    const statusHeader = pageHost ? i18nString4(UIStrings4.auditingS, { PH1: pageHost }) : i18nString4(UIStrings4.auditingYourWebPage);
+    const statusHeader = this.getStatusHeader();
     this.renderStatusHeader(statusHeader);
     this.dialog.show(dialogRenderElement);
     this.render();
+  }
+  getStatusHeader() {
+    const parsedURL = Common4.ParsedURL.ParsedURL.fromString(this.inspectedURL);
+    const pageHost = parsedURL?.host;
+    if (this.isAIControlled) {
+      return pageHost ? i18nString4(UIStrings4.aiAuditingS, { PH1: pageHost }) : i18nString4(UIStrings4.aiAuditingYourWebPage);
+    }
+    return pageHost ? i18nString4(UIStrings4.auditingS, { PH1: pageHost }) : i18nString4(UIStrings4.auditingYourWebPage);
   }
   renderStatusHeader(statusHeader) {
     this.statusHeader = `${statusHeader}\u2026`;
@@ -2521,6 +2551,9 @@ var StatusView = class {
     if (this.dialog.isShowing()) {
       this.dialog.hide();
     }
+  }
+  setAIControlled(isAIControlled) {
+    this.isAIControlled = isAIControlled;
   }
   setInspectedURL(url = "") {
     this.inspectedURL = url;
@@ -2556,8 +2589,8 @@ var StatusView = class {
     if (phase.message()) {
       return phase.message();
     }
-    const deviceTypeSetting = RuntimeSettings.find((item2) => item2.setting.name === "lighthouse.device-type");
-    const throttleSetting = RuntimeSettings.find((item2) => item2.setting.name === "lighthouse.throttling");
+    const deviceTypeSetting = getRuntimeSettings().find((item2) => item2.setting.name === "lighthouse.device-type");
+    const throttleSetting = getRuntimeSettings().find((item2) => item2.setting.name === "lighthouse.throttling");
     const deviceType = deviceTypeSetting ? deviceTypeSetting.setting.get() : "";
     const throttling = throttleSetting ? throttleSetting.setting.get() : "";
     const match = LoadingMessages.find((item2) => {
@@ -2700,7 +2733,7 @@ import * as i18n10 from "./../../core/i18n/i18n.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives4, html as html4, render as render4 } from "./../../ui/lit/lit.js";
+import { Directives as Directives4, html as html5, render as render5 } from "./../../ui/lit/lit.js";
 var UIStrings5 = {
   /**
    * @description Header indicating that a Lighthouse timespan is starting. "Timespan" is a Lighthouse mode that analyzes user interactions over a period of time.
@@ -2726,7 +2759,7 @@ var UIStrings5 = {
 var str_5 = i18n10.i18n.registerUIStrings("panels/lighthouse/LighthouseTimespanView.ts", UIStrings5);
 var i18nString5 = i18n10.i18n.getLocalizedString.bind(void 0, str_5);
 var renderTimespanView = (input, output, target) => {
-  render4(html4`
+  render5(html5`
       <div class="lighthouse-view vbox">
         <span
           ${Directives4.ref((e) => {
@@ -3030,9 +3063,10 @@ var LighthousePanel = class _LighthousePanel extends UI7.Panel.Panel {
     this.setDefaultFocusedChild(this.startView);
   }
   renderStatusView() {
-    const inspectedURL = this.controller.getCurrentRun()?.inspectedURL;
+    const currentRun = this.controller.getCurrentRun();
     this.contentElement.classList.toggle("in-progress", true);
-    this.statusView.setInspectedURL(inspectedURL);
+    this.statusView.setInspectedURL(currentRun?.inspectedURL);
+    this.statusView.setAIControlled(Boolean(currentRun?.isAIControlled));
     this.statusView.show(this.contentElement);
   }
   beforePrint() {

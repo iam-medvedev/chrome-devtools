@@ -6601,6 +6601,30 @@ export const NativeFunctions = [
         signatures: [["html", "?options"]]
     },
     {
+        name: "streamBeforeHTMLUnsafe",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamBeforeHTML",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamAfterHTMLUnsafe",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamAfterHTML",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamReplaceWithHTMLUnsafe",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamReplaceWithHTML",
+        signatures: [["?options"]]
+    },
+    {
         name: "Comment",
         signatures: [["?data"]]
     },
@@ -6649,11 +6673,19 @@ export const NativeFunctions = [
         signatures: [["?options"]]
     },
     {
+        name: "streamPrependHTMLUnsafe",
+        signatures: [["?options"]]
+    },
+    {
         name: "streamAppendHTML",
         signatures: [["?options"]]
     },
     {
         name: "streamHTML",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamPrependHTML",
         signatures: [["?options"]]
     },
     {
@@ -6868,6 +6900,10 @@ export const NativeFunctions = [
     },
     {
         name: "MouseEvent",
+        signatures: [["type", "?eventInitDict"]]
+    },
+    {
+        name: "PageHideEvent",
         signatures: [["type", "?eventInitDict"]]
     },
     {
@@ -7778,6 +7814,22 @@ export const NativeFunctions = [
         signatures: [["options"]]
     },
     {
+        name: "encapsulateKey",
+        signatures: [["encapsulationAlgorithm", "encapsulationKey", "sharedKeyAlgorithm", "extractable", "keyUsages"]]
+    },
+    {
+        name: "encapsulateBits",
+        signatures: [["encapsulationAlgorithm", "encapsulationKey"]]
+    },
+    {
+        name: "decapsulateKey",
+        signatures: [["decapsulationAlgorithm", "decapsulationKey", "ciphertext", "sharedKeyAlgorithm", "extractable", "keyUsages"]]
+    },
+    {
+        name: "decapsulateBits",
+        signatures: [["decapsulationAlgorithm", "decapsulationKey", "ciphertext"]]
+    },
+    {
         name: "registerPaint",
         signatures: [["name", "paintCtor"]]
     },
@@ -8064,6 +8116,10 @@ export const NativeFunctions = [
     {
         name: "OverconstrainedError",
         signatures: [["constraint", "?message"]]
+    },
+    {
+        name: "setConstraints",
+        signatures: [["constraints"]]
     },
     {
         name: "createContext",
@@ -8782,6 +8838,14 @@ export const NativeFunctions = [
     {
         name: "SpeechSynthesisUtterance",
         signatures: [["?text"]]
+    },
+    {
+        name: "addWords",
+        signatures: [["words"]]
+    },
+    {
+        name: "removeWords",
+        signatures: [["words"]]
     },
     {
         name: "requestStorageAccessFor",

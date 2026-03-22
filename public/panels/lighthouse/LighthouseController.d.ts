@@ -1,9 +1,7 @@
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as LighthouseModel from '../../models/lighthouse/lighthouse.js';
-import type { RunOverrides } from './LighthousePanel.js';
 import type { LighthouseRun as LighthouseRunType, ProtocolService } from './LighthouseProtocolService.js';
 export declare class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SDK.TargetManager.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
     private readonly protocolService;
@@ -26,7 +24,7 @@ export declare class LighthouseController extends Common.ObjectWrapper.ObjectWra
         formFactor: (string | undefined);
         mode: string;
     };
-    getCategoryIDs(): CategoryId[];
+    getCategoryIDs(): LighthouseModel.RunTypes.CategoryId[];
     getInspectedURL(options?: {
         force: boolean;
     }): Promise<Platform.DevToolsPath.UrlString>;
@@ -37,13 +35,12 @@ export declare class LighthouseController extends Common.ObjectWrapper.ObjectWra
      * user has selected in the UI, but these can be overridden by passing in the
      * category IDs, in which case these take priority.
      */
-    startLighthouse(overrides?: RunOverrides): Promise<void>;
+    startLighthouse(overrides?: LighthouseModel.RunTypes.RunOverrides): Promise<void>;
     collectLighthouseResults(): Promise<LighthouseModel.ReporterTypes.RunnerResult>;
     cancelLighthouse(): Promise<void>;
 }
-export declare const Presets: Preset[];
-export type Flags = Record<string, string | boolean>;
-export declare const RuntimeSettings: RuntimeSetting[];
+export declare function getPresets(): LighthouseModel.RunTypes.Preset[];
+export declare function getRuntimeSettings(): LighthouseModel.RunTypes.RuntimeSetting[];
 export declare enum Events {
     PageAuditabilityChanged = "PageAuditabilityChanged",
     PageWarningsChanged = "PageWarningsChanged",
@@ -62,25 +59,4 @@ export interface EventTypes {
     [Events.PageAuditabilityChanged]: PageAuditabilityChangedEvent;
     [Events.PageWarningsChanged]: PageWarningsChangedEvent;
     [Events.AuditProgressChanged]: AuditProgressChangedEvent;
-}
-export type CategoryId = 'performance' | 'accessibility' | 'best-practices' | 'seo';
-export interface Preset {
-    setting: Common.Settings.Setting<boolean>;
-    configID: CategoryId;
-    title: () => Common.UIString.LocalizedString;
-    description: () => Common.UIString.LocalizedString;
-    supportedModes: string[];
-    userMetric: Host.UserMetrics.LighthouseCategoryUsed;
-}
-export interface RuntimeSetting {
-    setting: Common.Settings.Setting<string | boolean>;
-    description: () => Common.UIString.LocalizedString;
-    setFlags: (flags: Flags, value: string | boolean) => void;
-    options?: Array<{
-        label: () => Common.UIString.LocalizedString;
-        value: string;
-        tooltip?: () => Common.UIString.LocalizedString;
-    }>;
-    title?: () => Common.UIString.LocalizedString;
-    learnMore?: Platform.DevToolsPath.UrlString;
 }

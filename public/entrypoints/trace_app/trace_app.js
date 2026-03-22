@@ -4737,6 +4737,11 @@ Common10.Settings.registerSettingExtension({
   defaultValue: false
 });
 Common10.Settings.registerSettingExtension({
+  settingName: "navigator-just-my-code",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common10.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString11(UIStrings11.searchInAnonymousAndContent),
@@ -5903,6 +5908,16 @@ Common12.Revealer.registerRevealer({
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.TraceRevealer();
+  }
+});
+Common12.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes3((Timeline) => [Timeline.TimelinePanel.ParsedTraceRevealable]);
+  },
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ParsedTraceRevealer();
   }
 });
 Common12.Revealer.registerRevealer({

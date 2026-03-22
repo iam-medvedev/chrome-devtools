@@ -1,6 +1,8 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Clang-formatter and EsLint have a mismatch due to the naming of `puppeteer-replay`
+/* eslint-disable import/order */
 import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as PuppeteerService from '../../../services/puppeteer/puppeteer.js';

@@ -366,6 +366,7 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/recorder/RecorderController.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var { widget } = UI.Widget;
 var GET_EXTENSIONS_MENU_ITEM = "get-extensions-link";
 var GET_EXTENSIONS_URL = "https://goo.gle/recorder-extension-list";
 var RECORDER_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/recorder";
@@ -392,6 +393,14 @@ var CONVERTER_ID_TO_METRIC = {
     /* Models.ConverterIds.ConverterIds.LIGHTHOUSE */
   ]: 5
 };
+function verifyFlowSize(flow) {
+  if (flow.steps.length > 4096) {
+    throw new Error("Recording with steps over 4096 is not allowed");
+  }
+  if (flow.title.length > 300) {
+    throw new Error("Recording with title over 300 characters is not allowed");
+  }
+}
 var RecorderController = class RecorderController2 extends LitElement {
   #storage = Models.RecordingStorage.RecordingStorage.instance();
   #screenshotStorage = Models.ScreenshotStorage.ScreenshotStorage.instance();
@@ -499,11 +508,12 @@ var RecorderController = class RecorderController2 extends LitElement {
     let flow;
     try {
       flow = Models.SchemaUtils.parse(JSON.parse(outputStream.data()));
+      verifyFlowSize(flow);
     } catch (error) {
       this.importError = error;
       return;
     }
-    this.#setCurrentRecording(await this.#storage.saveRecording(flow));
+    this.#setCurrentRecording(await this.#storage.upsertRecording(flow));
     this.#setCurrentPage(
       "RecordingPage"
       /* Pages.RECORDING_PAGE */
@@ -773,7 +783,7 @@ var RecorderController = class RecorderController2 extends LitElement {
   }
   async #onSetRecording(event) {
     const json = JSON.parse(event.detail);
-    this.#setCurrentRecording(await this.#storage.saveRecording(Models.SchemaUtils.parse(json)));
+    this.#setCurrentRecording(await this.#storage.upsertRecording(Models.SchemaUtils.parse(json)));
     this.#setCurrentPage(
       "RecordingPage"
       /* Pages.RECORDING_PAGE */
@@ -795,7 +805,7 @@ var RecorderController = class RecorderController2 extends LitElement {
         steps: this.currentRecording.flow.steps.map((step) => step === event.currentStep ? event.newStep : step)
       }
     };
-    this.#setCurrentRecording(await this.#storage.updateRecording(recording.storageName, recording.flow), { keepBreakpoints: true, updateSession: true });
+    this.#setCurrentRecording(await this.#storage.upsertRecording(recording.flow, recording.storageName), { keepBreakpoints: true, updateSession: true });
   }
   async #handleStepAdded(event) {
     if (!this.currentRecording) {
@@ -842,14 +852,14 @@ var RecorderController = class RecorderController2 extends LitElement {
       }
       return breakpointIndex + 1;
     }));
-    this.#setCurrentRecording(await this.#storage.updateRecording(recording.storageName, recording.flow), { keepBreakpoints: true, updateSession: true });
+    this.#setCurrentRecording(await this.#storage.upsertRecording(recording.flow, recording.storageName), { keepBreakpoints: true, updateSession: true });
   }
   async #handleRecordingTitleChanged(title) {
     if (!this.currentRecording) {
       throw new Error("Current recording expected to be defined.");
     }
     const flow = { ...this.currentRecording.flow, title };
-    this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, flow));
+    this.#setCurrentRecording(await this.#storage.upsertRecording(flow, this.currentRecording.storageName));
   }
   async #handleStepRemoved(event) {
     if (!this.currentRecording) {
@@ -868,7 +878,7 @@ var RecorderController = class RecorderController2 extends LitElement {
       }
       return breakpointIndex - 1;
     }).filter((index) => index >= 0));
-    this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, flow), { keepBreakpoints: true, updateSession: true });
+    this.#setCurrentRecording(await this.#storage.upsertRecording(flow, this.currentRecording.storageName), { keepBreakpoints: true, updateSession: true });
   }
   async #onNetworkConditionsChanged(data) {
     if (!this.currentRecording) {
@@ -896,14 +906,14 @@ var RecorderController = class RecorderController2 extends LitElement {
       step.upload = data.upload;
       step.latency = data.latency;
     }
-    this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, this.currentRecording.flow));
+    this.#setCurrentRecording(await this.#storage.upsertRecording(this.currentRecording.flow, this.currentRecording.storageName));
   }
   async #onTimeoutChanged(timeout) {
     if (!this.currentRecording) {
       throw new Error("Current recording expected to be defined.");
     }
     this.currentRecording.flow.timeout = timeout;
-    this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, this.currentRecording.flow));
+    this.#setCurrentRecording(await this.#storage.upsertRecording(this.currentRecording.flow, this.currentRecording.storageName));
   }
   async #onDeleteRecording(event) {
     event.stopPropagation();
@@ -954,7 +964,7 @@ var RecorderController = class RecorderController2 extends LitElement {
       selectorAttribute: data.selectorAttribute,
       selectorTypesToRecord: data.selectorTypesToRecord.length ? data.selectorTypesToRecord : Object.values(Models.Schema.SelectorType)
     });
-    this.#setCurrentRecording(await this.#storage.saveRecording(this.currentRecordingSession.cloneUserFlow()));
+    this.#setCurrentRecording(await this.#storage.upsertRecording(this.currentRecordingSession.cloneUserFlow()));
     let previousSectionIndex = -1;
     let screenshotPromise;
     const takeScreenshot = async (currentRecording) => {
@@ -978,7 +988,7 @@ var RecorderController = class RecorderController2 extends LitElement {
       if (!this.currentRecording) {
         throw new Error("No current recording found");
       }
-      this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, data2));
+      this.#setCurrentRecording(await this.#storage.upsertRecording(data2, this.currentRecording.storageName));
       this.#recordingView?.scrollToBottom();
       await takeScreenshot(this.currentRecording);
     });
@@ -990,7 +1000,7 @@ var RecorderController = class RecorderController2 extends LitElement {
         "chrome-recorder.start-recording"
         /* Actions.RecorderActions.START_RECORDING */
       );
-      this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, data2));
+      this.#setCurrentRecording(await this.#storage.upsertRecording(data2, this.currentRecording.storageName));
       await this.#onRecordingFinished();
     });
     await this.currentRecordingSession.start();
@@ -1090,7 +1100,7 @@ var RecorderController = class RecorderController2 extends LitElement {
     }
     const flow = this.currentRecordingSession.cloneUserFlow();
     flow.steps.push({ type: "waitForElement", selectors: [[".cls"]] });
-    this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, flow), { keepBreakpoints: true, updateSession: true });
+    this.#setCurrentRecording(await this.#storage.upsertRecording(flow, this.currentRecording.storageName), { keepBreakpoints: true, updateSession: true });
     await this.updateComplete;
     await this.#recordingView?.updateComplete;
     this.#recordingView?.contentElement?.querySelector(".section:last-child .step-view-widget:last-of-type")?.shadowRoot?.querySelector(".action")?.click();
@@ -1244,7 +1254,7 @@ var RecorderController = class RecorderController2 extends LitElement {
     const recordings = this.#storage.getRecordings();
     return html`
       <devtools-widget
-        .widgetConfig=${UI.Widget.widgetConfig(Components.RecordingListView.RecordingListView, {
+        ${widget(Components.RecordingListView.RecordingListView, {
       recordings: recordings.map((recording) => ({
         storageName: recording.storageName,
         name: recording.flow.title
@@ -1279,7 +1289,7 @@ var RecorderController = class RecorderController2 extends LitElement {
     return html`
       <devtools-widget
           class="recording-view"
-          .widgetConfig=${UI.Widget.widgetConfig(Components.RecordingView.RecordingView, {
+          ${widget(Components.RecordingView.RecordingView, {
       recording: this.currentRecording?.flow ?? { title: "", steps: [] },
       replayState: this.#replayState,
       isRecording: this.isRecording,
@@ -1313,8 +1323,8 @@ var RecorderController = class RecorderController2 extends LitElement {
           @addbreakpoint=${this.#onAddBreakpoint.bind(this)}
           @removebreakpoint=${this.#onRemoveBreakpoint.bind(this)}
           @recorderextensionviewclosed=${this.#onExtensionViewClosed.bind(this)}
-          ${UI.Widget.widgetRef(Components.RecordingView.RecordingView, (widget) => {
-      this.#recordingView = widget;
+          ${UI.Widget.widgetRef(Components.RecordingView.RecordingView, (widget2) => {
+      this.#recordingView = widget2;
     })}
         ></devtools-widget>
     `;
@@ -1323,13 +1333,13 @@ var RecorderController = class RecorderController2 extends LitElement {
     return html`
       <devtools-widget
         class="recording-view"
-        .widgetConfig=${UI.Widget.widgetConfig(Components.CreateRecordingView.CreateRecordingView, {
+        ${widget(Components.CreateRecordingView.CreateRecordingView, {
       recorderSettings: this.#recorderSettings,
       onRecordingStarted: this.#onRecordingStarted.bind(this),
       onRecordingCancelled: this.onRecordingCancelled.bind(this)
     })}
-        ${UI.Widget.widgetRef(Components.CreateRecordingView.CreateRecordingView, (widget) => {
-      this.#createRecordingView = widget;
+        ${UI.Widget.widgetRef(Components.CreateRecordingView.CreateRecordingView, (widget2) => {
+      this.#createRecordingView = widget2;
     })}
       ></devtools-widget>
     `;
@@ -1607,8 +1617,8 @@ var ActionDelegate = class {
       await UI2.ViewManager.ViewManager.instance().showView(RecorderPanel.panelName);
       const view = UI2.ViewManager.ViewManager.instance().view(RecorderPanel.panelName);
       if (view) {
-        const widget = await view.widget();
-        widget.handleActions(actionId);
+        const widget2 = await view.widget();
+        widget2.handleActions(actionId);
       }
     })();
     return true;

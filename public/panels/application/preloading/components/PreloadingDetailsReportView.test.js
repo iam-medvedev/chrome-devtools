@@ -431,6 +431,66 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             ['Rule set', 'example.com/'],
         ]);
     });
+    it('renders prerender details with status code for non-2xx', async () => {
+        const url = urlString `https://example.com/prerendered.html`;
+        const fakeRequest = { statusCode: 404 };
+        const fakeNetworkManager = { requestForLoaderId: () => fakeRequest };
+        const fakeFrame = {
+            loaderId: 'loaderId',
+            resourceTreeModel: () => ({
+                target: () => ({
+                    model: () => fakeNetworkManager,
+                }),
+            }),
+        };
+        sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'frames').returns([fakeFrame]);
+        const data = {
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([{
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                    prerenderStatus: "NavigationBadHttpStatus" /* Protocol.Preload.PrerenderFinalStatus.NavigationBadHttpStatus */,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                }]),
+            ruleSets: [
+                {
+                    id: 'ruleSetId',
+                    loaderId: 'loaderId',
+                    sourceText: `
+{
+  "prerender": [
+    {
+      "source": "list",
+      "urls": ["/prerendered.html"]
+    }
+  ]
+}
+`,
+                },
+            ],
+            pageURL: urlString `https://example.com/`,
+        };
+        const component = await renderPreloadingDetailsReportView(data);
+        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
+        const values = getCleanTextContentFromElements(report, 'devtools-report-value');
+        assert.deepEqual(zip2(keys, values), [
+            ['URL', url],
+            ['Action', 'Prerender'],
+            ['Status', 'Speculative load failed.'],
+            ['Failure reason', 'The prerendering navigation failed because of a non-2xx HTTP response status code (404).'],
+            ['Rule set', 'example.com/'],
+        ]);
+    });
     it('renders prefetch details with out-of-document Speculation Rules', async () => {
         const fakeRequestResolver = {
             waitFor: (_requestId) => {

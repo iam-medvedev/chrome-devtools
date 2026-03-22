@@ -1593,6 +1593,16 @@ Common6.Revealer.registerRevealer({
 });
 Common6.Revealer.registerRevealer({
   contextTypes() {
+    return maybeRetrieveContextTypes4((Timeline) => [Timeline.TimelinePanel.ParsedTraceRevealable]);
+  },
+  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ParsedTraceRevealer();
+  }
+});
+Common6.Revealer.registerRevealer({
+  contextTypes() {
     return [SDK5.TraceObject.RevealableEvent];
   },
   destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,

@@ -55,6 +55,7 @@ entrypoints/formatter_worker/JavaScriptFormatter.test.js
 entrypoints/formatter_worker/ScopeParser.test.js
 entrypoints/formatter_worker/Substitute.test.js
 foundation/Universe.test.js
+models/ai_assistance/data_formatters/LighthouseFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
 models/crux-manager/CrUXManager.test.js
@@ -76,6 +77,7 @@ models/issues_manager/SRIMessageSignatureIssue.test.js
 models/issues_manager/SharedDictionaryIssue.test.js
 models/issues_manager/StylesheetLoadingIssue.test.js
 models/issues_manager/UnencodedDigestIssue.test.js
+models/stack_trace/ErrorStackParser.test.js
 models/stack_trace/StackTrace.test.js
 models/stack_trace/StackTraceImpl.test.js
 models/stack_trace/StackTraceModel.test.js
@@ -83,6 +85,7 @@ models/stack_trace/Trie.test.js
 core/common/Base64.browser.test.js
 core/dom_extension/DOMExtension.test.js
 core/host/AidaClient.test.js
+core/host/AidaGcaTranslation.test.js
 core/host/DispatchHttpRequestClient.test.js
 core/host/GdpClient.test.js
 core/i18n/i18nImpl.test.js
@@ -198,7 +201,6 @@ models/issues_manager/CheckFormsIssuesTrigger.test.js
 models/issues_manager/IssuesManager.test.js
 models/issues_manager/SelectivePermissionsInterventionIssue.test.js
 models/javascript_metadata/JavaScriptMetadata.test.js
-models/live-metrics/LiveMetrics.test.js
 models/logs/NetworkLog.test.js
 models/logs/RequestResolver.test.js
 models/persistence/AutomaticFileSystemManager.test.js
@@ -312,6 +314,7 @@ models/workspace_diff/WorkspaceDiff.test.js
 panels/accessibility/ARIAAttributesView.test.js
 panels/accessibility/AccessibilitySidebarView.test.js
 panels/ai_assistance/AiAssistancePanel.test.js
+panels/ai_assistance/ExportConversation.test.js
 panels/ai_assistance/PatchWidget.test.js
 panels/ai_assistance/SelectWorkspaceDialog.test.js
 panels/ai_assistance/components/ChatInput.test.js
@@ -319,6 +322,7 @@ panels/ai_assistance/components/ChatMessage.test.js
 panels/ai_assistance/components/ChatView.test.js
 panels/ai_assistance/components/DisabledWidget.test.js
 panels/ai_assistance/components/ExploreWidget.test.js
+panels/ai_assistance/components/ExportForAgentsDialog.test.js
 panels/ai_assistance/components/MarkdownRendererWithCodeBlock.test.js
 panels/ai_assistance/components/WalkthroughView.test.js
 panels/animation/AnimationTimeline.test.js
@@ -382,6 +386,7 @@ panels/common/AiCodeCompletionTeaser.test.js
 panels/common/AiCodeGenerationTeaser.test.js
 panels/common/BadgeNotification.test.js
 panels/common/DOMLinkifier.test.js
+panels/common/ExtensionPanel.test.js
 panels/common/ExtensionServer.test.js
 panels/common/GdpSignUpDialog.test.js
 panels/console/ConsoleContextSelector.test.js
@@ -392,7 +397,6 @@ panels/console/ConsoleSidebar.test.js
 panels/console/ConsoleView.test.js
 panels/console/ConsoleViewMessage.test.js
 panels/console/ConsoleViewport.test.js
-panels/console/ErrorStackParser.test.js
 panels/console/PromptBuilder.test.js
 panels/console_counters/console_counters.test.js
 panels/coverage/CoverageDecorationManager.test.js
@@ -456,6 +460,7 @@ panels/lighthouse/LighthousePanel.test.js
 panels/lighthouse/LighthouseProtocolService.test.js
 panels/lighthouse/LighthouseReportRenderer.test.js
 panels/lighthouse/LighthouseStartView.test.js
+panels/lighthouse/LighthouseStatusView.test.js
 panels/lighthouse/LighthouseTimespanView.test.js
 panels/lighthouse/RadioSetting.test.js
 panels/linear_memory_inspector/LinearMemoryInspectorController.test.js
@@ -526,6 +531,7 @@ panels/search/SearchResultsPane.test.js
 panels/search/SearchView.test.js
 panels/security/SecurityModel.test.js
 panels/security/SecurityPanel.test.js
+panels/sensors/SensorsView.test.js
 panels/settings/AISettingsTab.test.js
 panels/settings/EditFileSystemView.test.js
 panels/settings/WorkspaceSettingsTab.test.js
@@ -555,6 +561,7 @@ panels/sources/SourcesView.test.js
 panels/sources/TabbedEditorContainer.test.js
 panels/sources/ThreadsSidebarPane.test.js
 panels/sources/UISourceCodeFrame.test.js
+panels/sources/WatchExpressionsSidebarPane.test.js
 panels/sources/components/HeadersView.test.js
 panels/timeline/AnnotationHelpers.test.js
 panels/timeline/Breadcrumbs.test.js
@@ -599,6 +606,7 @@ panels/timeline/components/Sidebar.test.js
 panels/timeline/components/SidebarAnnotationsTab.test.js
 panels/timeline/components/SidebarInsightsTab.test.js
 panels/timeline/components/SidebarSingleInsightSet.test.js
+panels/timeline/components/TimelineRangeSummaryView.test.js
 panels/timeline/components/TimelineSummary.test.js
 panels/timeline/components/Utils.test.js
 panels/timeline/components/insights/BaseInsightComponent.test.js
@@ -731,7 +739,9 @@ ui/legacy/components/inline_editor/ColorSwatch.test.js
 ui/legacy/components/inline_editor/FontEditorUnitConverter.test.js
 ui/legacy/components/inline_editor/FontEditorUtils.test.js
 ui/legacy/components/inline_editor/LinkSwatch.test.js
+ui/legacy/components/object_ui/CustomPreviewComponent.test.js
 ui/legacy/components/object_ui/JavaScriptREPL.test.js
+ui/legacy/components/object_ui/ObjectPopoverHelper.test.js
 ui/legacy/components/object_ui/ObjectPropertiesSection.test.js
 ui/legacy/components/perf_ui/ChartViewport.test.js
 ui/legacy/components/perf_ui/FilmStripView.test.js
@@ -743,6 +753,7 @@ ui/legacy/components/perf_ui/TimelineOverviewCalculator.test.js
 ui/legacy/components/quick_open/CommandMenu.test.js
 ui/legacy/components/quick_open/FilteredListWidget.test.js
 ui/legacy/components/source_frame/BinaryResourceViewFactory.test.js
+ui/legacy/components/source_frame/JSONView.test.js
 ui/legacy/components/source_frame/ResourceSourceFrame.test.js
 ui/legacy/components/source_frame/SourceFrame.test.js
 ui/legacy/components/source_frame/StreamingContentHexView.test.js

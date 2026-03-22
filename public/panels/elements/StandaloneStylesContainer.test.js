@@ -6,6 +6,7 @@ import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { assertScreenshot, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { createTarget, } from '../../testing/EnvironmentHelpers.js';
+import { spyCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { getMatchedStyles, getMatchedStylesWithProperties, ruleMatch, } from '../../testing/StyleHelpers.js';
 import * as Elements from './elements.js';
@@ -159,6 +160,12 @@ describeWithMockConnection('StandaloneStylesContainer', () => {
         container.filter = null;
         await container.updateComplete;
         assert.lengthOf(container.contentElement.querySelectorAll('.styles-section'), 2);
+    });
+    it('should refresh all sections when computed styles change', async () => {
+        const { container } = await setupContainer([{ name: 'color', value: 'red' }]);
+        const updatePromise = spyCall(container, 'performUpdate');
+        container.computedStyleModel().dispatchEventToListeners("ComputedStyleChanged" /* ComputedStyle.ComputedStyleModel.Events.COMPUTED_STYLE_CHANGED */);
+        await updatePromise;
     });
 });
 //# sourceMappingURL=StandaloneStylesContainer.test.js.map

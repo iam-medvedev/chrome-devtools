@@ -6,6 +6,7 @@ import '../../../ui/kit/kit.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
@@ -19,7 +20,10 @@ import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Elements from '../../elements/elements.js';
 import * as TimelineComponents from '../../timeline/components/components.js';
+import * as TimelineInsights from '../../timeline/components/insights/insights.js';
+import * as Timeline from '../../timeline/timeline.js';
 import * as TimelineUtils from '../../timeline/utils/utils.js';
+import { PanelUtils } from '../../utils/utils.js';
 import chatMessageStyles from './chatMessage.css.js';
 import { walkthroughTitle, WalkthroughView } from './WalkthroughView.js';
 const { html, Directives: { ref, ifDefined } } = Lit;
@@ -158,7 +162,11 @@ const UIStringsNotTranslate = {
     /**
      * @description Title for the button that takes the user into other DevTools panels to reveal items the AI references.
      */
-    reveal: 'Reveal'
+    reveal: 'Reveal',
+    /**
+     * @description Title used for revealing the performance trace.
+     */
+    revealTrace: 'Reveal trace'
 };
 export const DEFAULT_VIEW = (input, output, target) => {
     const message = input.message;
@@ -356,8 +364,8 @@ function renderWalkthroughSidebarButton(input, steps) {
 /**
  * Responsible for rendering the AI Walkthrough UI. This can take different
  * shapes and involve different parts depending on if the walkthrough is
- * inlined, expanded, or if we have side-effect steps that need the user to
- * view them.
+ * inlined, expanded, or if we have side-effect steps. In cases where the
+ * walkthrough is closed, side-effect steps are rendered inline in the chat.
  */
 function renderWalkthroughUI(input, steps) {
     const lastStep = steps.at(-1);
@@ -369,11 +377,16 @@ function renderWalkthroughUI(input, steps) {
     // If the walkthrough is in the sidebar, we render a button into the
     // ChatView to open it.
     const openWalkThroughSidebarButton = !input.walkthrough.isInlined ? renderWalkthroughSidebarButton(input, steps) : Lit.nothing;
-    // If there are side-effect steps, and the walkthrough is not open, we render
-    // those inline so that the user can see them and approve them.
-    // Note: this is a temporary approach and needs more UX discussion; b/487921578
+    // A message's walkthrough is considered expanded if the walkthrough is
+    // open and it is specifically targeting this message. This is necessary
+    // because the walkthrough state is shared across all messages in the chat.
+    const isExpanded = (input.walkthrough.isExpanded && input.walkthrough.activeMessage === input.message);
+    // When a side-effect step is present, it's shown in the main chat UI if the
+    // walkthrough is closed, allowing the user to approve it without opening
+    // the walkthrough. If the walkthrough is already open, the side-effect
+    // step is displayed within the walkthrough instead.
     // clang-format off
-    const sideEffectStepsUI = !input.walkthrough.isInlined && !input.walkthrough.isExpanded && sideEffectSteps.length > 0 ? sideEffectSteps.map(step => html `
+    const sideEffectStepsUI = !isExpanded && sideEffectSteps.length > 0 ? sideEffectSteps.map(step => html `
     <div class="side-effect-container">
       ${renderStep({
         step,
@@ -383,10 +396,6 @@ function renderWalkthroughUI(input, steps) {
     })}
     </div> `) : Lit.nothing;
     // clang-format on
-    // If the walkthrough is inlined (narrow width screens), render it here.
-    // Note that we force it open if there is a side-effect.
-    const isExpanded = (input.walkthrough.isExpanded && input.walkthrough.activeMessage === input.message) ||
-        steps.some(s => s.requestApproval);
     // clang-format off
     const walkthroughInline = input.walkthrough.isInlined ? html `
     <div class="walkthrough-container">
@@ -403,8 +412,8 @@ function renderWalkthroughUI(input, steps) {
   ` : Lit.nothing;
     return html `
     ${openWalkThroughSidebarButton}
-    ${sideEffectStepsUI}
     ${walkthroughInline}
+    ${sideEffectStepsUI}
   `;
     // clang-format on
 }
@@ -519,6 +528,21 @@ async function makeStylePropertiesWidget(widgetData) {
     // clang-format on
     return { renderedWidget, revealable: domNodeForId };
 }
+async function makeLcpBreakdownWidget(widgetData) {
+    const insight = widgetData.data.lcpData;
+    if (!insight) {
+        return null;
+    }
+    // clang-format off
+    const renderedWidget = html `<devtools-widget
+    class="lcp-breakdown-widget"
+    ${widget(TimelineInsights.LCPBreakdown.LCPBreakdown, {
+        model: insight,
+        minimal: true,
+    })}></devtools-widget>`;
+    // clang-format on
+    return { renderedWidget, revealable: new TimelineUtils.Helpers.RevealableInsight(insight) };
+}
 function renderWidgetResponse(response) {
     if (response === null) {
         return Lit.nothing;
@@ -529,29 +553,67 @@ function renderWidgetResponse(response) {
         }
         void Common.Revealer.reveal(response?.revealable);
     }
+    const classes = Lit.Directives.classMap({
+        'widget-and-revealer-container': true,
+        'revealer-only': response.renderedWidget === null,
+    });
     // clang-format off
     return html `
-    <div class="widget-and-revealer-container">
-      <div class="widget-content-container">
-        ${response.renderedWidget}
-      </div>
+    <div class=${classes}>
+      ${response.renderedWidget ? html `
+        <div class="widget-content-container">
+          ${response.renderedWidget}
+        </div>` : Lit.nothing}
       <div class="widget-reveal-container">
         <devtools-button class="widget-reveal"
           .iconName=${'tab-move'}
           .variant=${"text" /* Buttons.Button.Variant.TEXT */}
           @click=${onReveal}
-        >${lockedString(UIStringsNotTranslate.reveal)}</devtools-button>
+        >${response.customRevealTitle ?? lockedString(UIStringsNotTranslate.reveal)}</devtools-button>
       </div>
     </div>
     `;
     // clang-format on
+}
+async function makePerformanceTraceWidget(widgetData) {
+    return {
+        renderedWidget: null,
+        revealable: new Timeline.TimelinePanel.ParsedTraceRevealable(widgetData.data.parsedTrace),
+        customRevealTitle: lockedString(UIStringsNotTranslate.revealTrace),
+    };
+}
+function renderNetworkRequestPreview(networkRequest) {
+    const filename = networkRequest.url.split('/').pop() || networkRequest.url;
+    const size = i18n.ByteUtilities.bytesToString(networkRequest.size);
+    const resourceType = Common.ResourceType.resourceTypes[networkRequest.resourceType];
+    const { iconName, color } = PanelUtils.iconDataForResourceType(resourceType);
+    return html `
+    <div class="network-request-preview">
+      <div class="network-request-header">
+        <div class="network-request-icon">
+          ${resourceType.isImage() ? html `<img src=${networkRequest.imageUrl ?? networkRequest.url} alt=${filename} />` :
+        html `<devtools-icon name=${iconName} style=${Lit.Directives.styleMap({
+            color: color ?? ''
+        })}></devtools-icon>`}
+        </div>
+        <div class="network-request-details">
+          <div class="network-request-name" title=${networkRequest.url}>${filename}</div>
+          <div class="network-request-size">${size}</div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 async function makeDomTreeWidget(widgetData) {
     const root = widgetData.data.root;
     if (!(root instanceof SDK.DOMModel.DOMNodeSnapshot)) {
         return null;
     }
-    const widgetConfig = UI.Widget.widgetConfig(Elements.ElementsTreeOutline.DOMTreeWidget, {
+    const networkRequest = widgetData.data.networkRequest;
+    // clang-format off
+    const renderedWidget = html `
+    ${networkRequest ? renderNetworkRequestPreview(networkRequest) : Lit.nothing}
+    <devtools-widget class="dom-tree-widget" ${widget(Elements.ElementsTreeOutline.DOMTreeWidget, {
         maxTreeDepth: 2,
         enableContextMenu: false,
         showComments: false,
@@ -561,12 +623,11 @@ async function makeDomTreeWidget(widgetData) {
         rootDOMNode: root,
         visibleWidth: 400,
         wrap: true,
-    });
-    // clang-format off
-    const widget = html `<devtools-widget class="dom-tree-widget" .widgetConfig=${widgetConfig}></devtools-widget>`;
+    })}></devtools-widget>
+  `;
     // clang-format on
     return {
-        renderedWidget: widget,
+        renderedWidget,
         revealable: new SDK.DOMModel.DeferredDOMNode(root.domModel().target(), root.backendNodeId()),
     };
 }
@@ -593,17 +654,27 @@ async function renderWidgets(widgets, options = {}) {
     }
     const ui = await Promise.all(widgets.map(async (widgetData) => {
         let response = null;
-        if (widgetData.name === 'COMPUTED_STYLES') {
-            response = await makeComputedStyleWidget(widgetData);
-        }
-        else if (widgetData.name === 'CORE_VITALS') {
-            response = await makeCoreVitalsWidget(widgetData);
-        }
-        else if (widgetData.name === 'STYLE_PROPERTIES') {
-            response = await makeStylePropertiesWidget(widgetData);
-        }
-        else if (widgetData.name === 'DOM_TREE') {
-            response = await makeDomTreeWidget(widgetData);
+        switch (widgetData.name) {
+            case 'COMPUTED_STYLES':
+                response = await makeComputedStyleWidget(widgetData);
+                break;
+            case 'CORE_VITALS':
+                response = await makeCoreVitalsWidget(widgetData);
+                break;
+            case 'STYLE_PROPERTIES':
+                response = await makeStylePropertiesWidget(widgetData);
+                break;
+            case 'DOM_TREE':
+                response = await makeDomTreeWidget(widgetData);
+                break;
+            case 'PERFORMANCE_TRACE':
+                response = await makePerformanceTraceWidget(widgetData);
+                break;
+            case 'LCP_BREAKDOWN':
+                response = await makeLcpBreakdownWidget(widgetData);
+                break;
+            default:
+                Platform.assertNever(widgetData, 'Unknown AiWidget name');
         }
         return renderWidgetResponse(response);
     }));

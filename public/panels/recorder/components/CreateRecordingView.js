@@ -91,6 +91,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/components/CreateRecordingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const { widget } = UI.Widget;
 export const DEFAULT_VIEW = (input, output, target) => {
     const { name, selectorAttribute, selectorTypes, error, onUpdate, onRecordingStarted, onRecordingCancelled, onErrorReset } = input;
     const nameInputRef = createRef();
@@ -211,7 +212,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         <div class="controls">
           <devtools-widget
             class="control-button"
-            .widgetConfig=${UI.Widget.widgetConfig(ControlButton, {
+            ${widget(ControlButton, {
         label: i18nString(UIStrings.startRecording),
         shape: 'circle',
         onClick: onRecordingStarted,

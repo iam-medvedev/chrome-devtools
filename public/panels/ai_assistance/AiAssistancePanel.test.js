@@ -1713,11 +1713,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
         });
         it('should announce the context title from the agent as status', async () => {
             const stubbedResponses = (async function* () {
-                yield {
-                    type: "context" /* AiAssistanceModel.AiAgent.ResponseType.CONTEXT */,
-                    title: 'context-title',
-                    details: [{ title: 'mock', text: 'mock' }]
-                };
+                yield { type: "context" /* AiAssistanceModel.AiAgent.ResponseType.CONTEXT */, details: [{ title: 'mock', text: 'mock' }] };
             })();
             sinon.stub(AiAssistanceModel.StylingAgent.StylingAgent.prototype, 'run').returns(stubbedResponses);
             const { panel, view } = await createAiAssistancePanel();
@@ -1727,7 +1723,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             nextInput.props.onTextSubmit('test');
             nextInput = await view.nextInput;
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            assert.isTrue(liveAnnouncerStatusStub.calledWith('context-title'), 'Expected live announcer status to be called with the context title');
+            assert.isTrue(liveAnnouncerStatusStub.calledWith('Analyzing data'), 'Expected live announcer status to be called with the context title');
         });
         it('should announce answer loading when answer starts streaming as status', async () => {
             const stubbedResponses = (async function* () {
@@ -2168,30 +2164,6 @@ describeWithEnvironment('AiAssistancePanel.ActionDelegate', () => {
             sinon.assert.calledOnce(fileManager.close);
             const [fileName] = fileManager.save.getCall(0).args;
             assert.strictEqual(fileName, 'devtools_test_question.md');
-        });
-        it('should truncate a long file name when exporting', async () => {
-            const fileManager = stubFileManager();
-            const { panel, view } = await createAiAssistancePanel({
-                aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
-            });
-            void panel.handleAction('freestyler.elements-floating-button');
-            const longTitle = 'this is a very long title that should be truncated when exporting the conversation to a file';
-            let nextInput = await view.nextInput;
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            nextInput.props.onTextSubmit(longTitle);
-            nextInput = await view.nextInput;
-            view.input.onExportConversationClick();
-            await Promise.resolve();
-            sinon.assert.calledOnce(fileManager.save);
-            sinon.assert.calledOnce(fileManager.close);
-            const [fileName] = fileManager.save.getCall(0).args;
-            const expectedSnakeCase = 'this_is_a_very_long_title_that_should_be_truncated_when_exporting_the_conversation_to_a_file';
-            const prefix = 'devtools_';
-            const suffix = '.md';
-            const maxTitleLength = 64 - prefix.length - suffix.length;
-            const expectedFileName = `${prefix}${expectedSnakeCase.substring(0, maxTitleLength)}${suffix}`;
-            assert.strictEqual(fileName, expectedFileName);
-            assert.isAtMost(fileName.length, 64);
         });
     });
 });

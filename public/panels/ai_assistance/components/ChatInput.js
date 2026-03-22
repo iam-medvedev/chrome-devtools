@@ -15,6 +15,7 @@ import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import chatInputStyles from './chatInput.css.js';
 const { html, Directives: { createRef, ref } } = Lit;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Label added to the text input to describe the context for screen readers. Not shown visibly on screen.
@@ -268,7 +269,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                     html `
                               <devtools-widget
                                 class="title"
-                                .widgetConfig=${UI.Widget.widgetConfig(PanelsCommon.DOMLinkifier.DOMNodeLink, {
+                                ${widget(PanelsCommon.DOMLinkifier.DOMNodeLink, {
                         node: input.context.getItem(),
                         options: {
                             disabled: !input.isContextSelected,
@@ -282,10 +283,12 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                         PanelUtils.PanelUtils.getIconForNetworkRequest(input.context.getItem()) :
                         input.context instanceof AiAssistanceModel.FileAgent.FileContext ?
                             PanelUtils.PanelUtils.getIconForSourceFile(input.context.getItem()) :
-                            input.context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext ?
-                                html `<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` :
-                                Lit.nothing}
-                            <span 
+                            input.context instanceof AiAssistanceModel.AccessibilityAgent.AccessibilityContext ?
+                                html `<devtools-icon class="icon" name="performance" title="Lighthouse"></devtools-icon>` :
+                                input.context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext ?
+                                    html `<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` :
+                                    Lit.nothing}
+                            <span
                               role="button"
                               class="title"
                               tabindex="0"

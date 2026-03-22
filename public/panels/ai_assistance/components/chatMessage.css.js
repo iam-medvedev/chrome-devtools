@@ -371,11 +371,14 @@ export default `/*
   }
 
   .step-widgets-wrapper {
-    width: fit-content;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--sys-size-5);
+  }
+
+  .widget-and-revealer-container {
+    width: 100%;
   }
 
   .widget-reveal-container {
@@ -383,6 +386,11 @@ export default `/*
     border-bottom-right-radius: var(--sys-shape-corner-medium);
     border-bottom-left-radius: var(--sys-shape-corner-medium);
     padding: 0 var(--sys-size-4) var(--sys-size-4) 0;
+  }
+
+  .revealer-only .widget-reveal-container {
+    background: none;
+    border-radius: unset;
   }
 
   .widget-content-container {
@@ -393,6 +401,62 @@ export default `/*
     background-color: var(--sys-color-surface3);
 
     --override-computed-style-property-white-space: normal;
+  }
+
+  .network-request-preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-4);
+    margin-bottom: var(--sys-size-5);
+    padding-bottom: var(--sys-size-5);
+    border-bottom: 1px solid var(--sys-color-divider);
+
+    .network-request-header {
+      display: flex;
+      align-items: center;
+      gap: var(--sys-size-5);
+
+      .network-request-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--sys-color-surface1);
+        border-radius: var(--sys-shape-corner-small);
+        border: 1px solid var(--sys-color-divider);
+        overflow: hidden;
+
+        img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+        }
+
+        devtools-icon {
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      .network-request-details {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+        .network-request-name {
+          font: var(--sys-typescale-body4-bold);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .network-request-size {
+          font: var(--sys-typescale-body4-regular);
+          color: var(--sys-color-on-surface-subtle);
+        }
+      }
+    }
   }
 }
 

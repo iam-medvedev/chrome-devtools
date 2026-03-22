@@ -7,7 +7,7 @@ import * as Geometry from '../../models/geometry/geometry.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
-import { RuntimeSettings } from './LighthouseController.js';
+import { getRuntimeSettings } from './LighthouseController.js';
 import lighthouseDialogStyles from './lighthouseDialog.css.js';
 const { html } = Lit;
 const UIStrings = {
@@ -28,6 +28,15 @@ const UIStrings = {
      * @description Status text in Lighthouse splash screen while an audit is being performed
      */
     auditingYourWebPage: 'Auditing your web page',
+    /**
+     * @description Status text in Lighthouse splash screen while an AI assistant is performing an audit
+     * @example {github.com} PH1
+     */
+    aiAuditingS: 'AI assistance is auditing {PH1}',
+    /**
+     * @description Status text in Lighthouse splash screen while an AI assistant is performing an audit
+     */
+    aiAuditingYourWebPage: 'AI assistance is auditing your web page',
     /**
      * @description Status text in Lighthouse splash screen while an audit is being performed, and cancellation to take effect
      */
@@ -204,6 +213,7 @@ export class StatusView {
     progressBarClass;
     progressBarValue;
     cancelButtonVisible;
+    isAIControlled;
     bugReport;
     constructor(panel) {
         this.panel = panel;
@@ -221,6 +231,7 @@ export class StatusView {
         this.progressBarClass = '';
         this.progressBarValue = 0;
         this.cancelButtonVisible = true;
+        this.isAIControlled = false;
         this.bugReport = null;
         this.render();
     }
@@ -257,12 +268,19 @@ export class StatusView {
     show(dialogRenderElement) {
         this.reset();
         this.updateStatus(i18nString(UIStrings.loading));
-        const parsedURL = Common.ParsedURL.ParsedURL.fromString(this.inspectedURL);
-        const pageHost = parsedURL?.host;
-        const statusHeader = pageHost ? i18nString(UIStrings.auditingS, { PH1: pageHost }) : i18nString(UIStrings.auditingYourWebPage);
+        const statusHeader = this.getStatusHeader();
         this.renderStatusHeader(statusHeader);
         this.dialog.show(dialogRenderElement);
         this.render();
+    }
+    getStatusHeader() {
+        const parsedURL = Common.ParsedURL.ParsedURL.fromString(this.inspectedURL);
+        const pageHost = parsedURL?.host;
+        if (this.isAIControlled) {
+            return pageHost ? i18nString(UIStrings.aiAuditingS, { PH1: pageHost }) :
+                i18nString(UIStrings.aiAuditingYourWebPage);
+        }
+        return pageHost ? i18nString(UIStrings.auditingS, { PH1: pageHost }) : i18nString(UIStrings.auditingYourWebPage);
     }
     renderStatusHeader(statusHeader) {
         this.statusHeader = `${statusHeader}…`;
@@ -272,6 +290,9 @@ export class StatusView {
         if (this.dialog.isShowing()) {
             this.dialog.hide();
         }
+    }
+    setAIControlled(isAIControlled) {
+        this.isAIControlled = isAIControlled;
     }
     setInspectedURL(url = '') {
         this.inspectedURL = url;
@@ -308,8 +329,8 @@ export class StatusView {
         if (phase.message()) {
             return phase.message();
         }
-        const deviceTypeSetting = RuntimeSettings.find(item => item.setting.name === 'lighthouse.device-type');
-        const throttleSetting = RuntimeSettings.find(item => item.setting.name === 'lighthouse.throttling');
+        const deviceTypeSetting = getRuntimeSettings().find(item => item.setting.name === 'lighthouse.device-type');
+        const throttleSetting = getRuntimeSettings().find(item => item.setting.name === 'lighthouse.throttling');
         const deviceType = deviceTypeSetting ? deviceTypeSetting.setting.get() : '';
         const throttling = throttleSetting ? throttleSetting.setting.get() : '';
         const match = LoadingMessages.find(item => {

@@ -4,6 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { render } from '../../ui/lit/lit.js';
 import * as PanelsCommon from './common.js';
 describeWithEnvironment('DOMLinkifier', () => {
     describe('linking view transition pseudo nodes', () => {
@@ -22,17 +23,20 @@ describeWithEnvironment('DOMLinkifier', () => {
         });
         it('includes pseudo identifier in the label', async () => {
             const domLinkifier = PanelsCommon.DOMLinkifier.Linkifier.instance({ forceNew: true });
-            const el = domLinkifier.linkify(viewTransitionNode);
-            renderElementIntoDOM(el);
+            const container = document.createElement('div');
+            render(domLinkifier.linkify(viewTransitionNode), container);
+            renderElementIntoDOM(container);
             await raf();
-            const pseudoLabel = el.shadowRoot?.querySelector('.node-label-pseudo')?.textContent;
-            assert.strictEqual(pseudoLabel, '::view-transition-group(root)');
+            const el = container.firstElementChild;
+            assert.strictEqual(el.deepInnerText(), '::view-transition-group(root)');
         });
         it('does not include ancestor name for a view transition pseudo', async () => {
             const domLinkifier = PanelsCommon.DOMLinkifier.Linkifier.instance({ forceNew: true });
-            const el = domLinkifier.linkify(viewTransitionNode);
-            renderElementIntoDOM(el);
+            const container = document.createElement('div');
+            render(domLinkifier.linkify(viewTransitionNode), container);
+            renderElementIntoDOM(container);
             await raf();
+            const el = container.firstElementChild;
             const nodeLabel = el.shadowRoot?.querySelector('.node-label-name');
             assert.isNull(nodeLabel);
         });
@@ -42,12 +46,14 @@ describeWithEnvironment('DOMLinkifier', () => {
         const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
             nodeType: Node.ELEMENT_NODE,
         });
-        const el = domLinkifier.linkify(node, {
+        const container = document.createElement('div');
+        render(domLinkifier.linkify(node, {
             textContent: 'sample content',
-        });
-        renderElementIntoDOM(el);
+        }), container);
+        renderElementIntoDOM(container);
         await raf();
-        assert.strictEqual(el.shadowRoot?.querySelector('button')?.textContent, 'sample content');
+        const el = container.firstElementChild;
+        assert.strictEqual(el.deepInnerText(), 'sample content');
     });
 });
 //# sourceMappingURL=DOMLinkifier.test.js.map

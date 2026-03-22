@@ -22,6 +22,7 @@ import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
+import { render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon from "./../common/common.js";
 
@@ -1471,9 +1472,9 @@ var AXRelatedNodeElement = class {
         if (!node) {
           return;
         }
-        valueElement.appendChild(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
+        render(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
           preventKeyboardFocus: true
-        }));
+        }), valueElement);
       });
     } else if (this.idref) {
       element.classList.add("invalid");
@@ -4313,7 +4314,8 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/accessibility/ARIAAttributesView.ts", UIStrings3);
 var i18nString2 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
-var { render, html } = Lit;
+var { render: render2, html } = Lit;
+var { widget } = UI3.Widget;
 var DEFAULT_VIEW = (input, output, target) => {
   const MAX_CONTENT_LENGTH = 1e4;
   const onStartEditing = (attribute, e) => {
@@ -4329,12 +4331,12 @@ var DEFAULT_VIEW = (input, output, target) => {
       ${values.map((value) => html`<option>${value}</option>`)}
     </datalist>`;
   };
-  render(
+  render2(
     // clang-format off
     input.attributes.length === 0 ? html`
           <style>${accessibilityProperties_css_default}</style>
           <devtools-widget
-            .widgetConfig=${UI3.Widget.widgetConfig(UI3.EmptyWidget.EmptyWidget, { text: i18nString2(UIStrings3.noAriaAttributes) })}
+            ${widget(UI3.EmptyWidget.EmptyWidget, { text: i18nString2(UIStrings3.noAriaAttributes) })}
             class="gray-info-message info-message-overflow"></devtools-widget>` : html`<devtools-tree
            hide-overflow
            .template=${html`
@@ -5151,7 +5153,7 @@ var RoleStyles = {
 // gen/front_end/panels/accessibility/SourceOrderView.js
 import "./../../ui/legacy/legacy.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
-import { html as html2, nothing as nothing2, render as render2 } from "./../../ui/lit/lit.js";
+import { html as html2, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
@@ -5183,7 +5185,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     input.onShowSourceOrderChanged(checkbox.checked);
     event.consume();
   }
-  render2(html2`
+  render3(html2`
     ${input.showSourceOrder === void 0 ? html2`
         <div class="gray-info-message info-message-overflow">
           ${i18nString4(UIStrings5.noSourceOrderInformation)}

@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TestPlugin } from '../../testing/LanguagePluginHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
+import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { protocolCallFrame, stringifyFrame } from '../../testing/StackTraceHelpers.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as StackTrace from '../stack_trace/stack_trace.js';
@@ -39,7 +38,7 @@ describe('ExtensionRemoteObject', () => {
     });
 });
 describe('DebuggerLanguagePluginManager', () => {
-    describeWithMockConnection('getFunctionInfo', () => {
+    describeWithEnvironment('getFunctionInfo', () => {
         let target;
         let pluginManager;
         let debuggerWorkspaceBinding;
@@ -126,10 +125,10 @@ describe('DebuggerLanguagePluginManager', () => {
             sinon.assert.calledWith(updateLocationsSpy, script);
         });
     });
-    describeWithMockConnection('translateRawFramesStep', () => {
+    describeWithEnvironment('translateRawFramesStep', () => {
         function setup() {
-            const target = createTarget();
-            const backend = new MockProtocolBackend();
+            const backend = new MockDebuggerBackend();
+            const target = backend.createTarget();
             const debuggerWorkspaceBinding = sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
             const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
             const pluginManager = new Bindings.DebuggerLanguagePlugins.DebuggerLanguagePluginManager(target.targetManager(), workspace, debuggerWorkspaceBinding);

@@ -7,8 +7,7 @@ export declare class RecordingStorage {
     constructor();
     clearForTest(): void;
     setIdGeneratorForTest(idGenerator: IdGenerator): void;
-    saveRecording(flow: UserFlow): Promise<StoredRecording>;
-    updateRecording(storageName: string, flow: UserFlow): Promise<StoredRecording>;
+    upsertRecording(flow: UserFlow, storageName?: string): Promise<StoredRecording>;
     deleteRecording(storageName: string): Promise<void>;
     getRecording(storageName: string): StoredRecording | undefined;
     getRecordings(): StoredRecording[];

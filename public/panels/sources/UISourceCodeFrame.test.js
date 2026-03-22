@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -32,6 +33,7 @@ describeWithMockConnection('UISourceCodeFrame', () => {
                 targetManager: SDK.TargetManager.TargetManager.instance(),
                 workspace,
                 debuggerWorkspaceBinding,
+                settings: Common.Settings.Settings.instance(),
             });
             const persistence = Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
             Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
