@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Greendev from '../greendev/greendev.js';
+import { AccessibilityAgent, AccessibilityContext } from './agents/AccessibilityAgent.js';
 import { BreakpointDebuggerAgent } from './agents/BreakpointDebuggerAgent.js';
 import { ContextSelectionAgent } from './agents/ContextSelectionAgent.js';
 import { FileAgent, FileContext } from './agents/FileAgent.js';
@@ -14,6 +16,7 @@ import { PerformanceAgent, PerformanceTraceContext } from './agents/PerformanceA
 import { NodeContext, StylingAgent } from './agents/StylingAgent.js';
 import { AiHistoryStorage } from './AiHistoryStorage.js';
 export const NOT_FOUND_IMAGE_DATA = '';
+export const CONTEXT_TITLE = 'Analyzing data';
 const MAX_TITLE_LENGTH = 80;
 export function generateContextDetailsMarkdown(details) {
     const detailsMarkdown = [];
@@ -31,7 +34,13 @@ export class AiConversation {
             }
             return entry;
         });
-        return new AiConversation(serializedConversation.type, history, serializedConversation.id, true, undefined, undefined, serializedConversation.isExternal, undefined, undefined);
+        return new AiConversation({
+            type: serializedConversation.type,
+            data: history,
+            id: serializedConversation.id,
+            isReadOnly: true,
+            isExternal: serializedConversation.isExternal,
+        });
     }
     id;
     // Handled in #updateAgent
@@ -46,14 +55,17 @@ export class AiConversation {
     #origin;
     #contexts = [];
     #performanceRecordAndReload;
+    #lighthouseRecording;
     #onInspectElement;
     #networkTimeCalculator;
-    constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, aidaClient = new Host.AidaClient.AidaClient(), changeManager, isExternal = false, performanceRecordAndReload, onInspectElement, networkTimeCalculator) {
+    constructor(options) {
+        const { type, data = [], id = crypto.randomUUID(), isReadOnly = true, aidaClient = new Host.AidaClient.AidaClient(), changeManager, isExternal = false, performanceRecordAndReload, onInspectElement, networkTimeCalculator, lighthouseRecording, } = options;
         this.#changeManager = changeManager;
         this.#aidaClient = aidaClient;
         this.#performanceRecordAndReload = performanceRecordAndReload;
         this.#onInspectElement = onInspectElement;
         this.#networkTimeCalculator = networkTimeCalculator;
+        this.#lighthouseRecording = lighthouseRecording;
         this.id = id;
         this.#isReadOnly = isReadOnly;
         this.#isExternal = isExternal;
@@ -104,6 +116,9 @@ export class AiConversation {
             else if (updateContext instanceof PerformanceTraceContext) {
                 this.#updateAgent("drjones-performance-full" /* ConversationType.PERFORMANCE */);
             }
+            else if (updateContext instanceof AccessibilityContext) {
+                this.#updateAgent("accessibility" /* ConversationType.ACCESSIBILITY */);
+            }
         }
     }
     get selectedContext() {
@@ -148,7 +163,7 @@ export class AiConversation {
                     break;
                 }
                 case "context" /* ResponseType.CONTEXT */: {
-                    contentParts.push(`### ${item.title}`);
+                    contentParts.push(`### ${CONTEXT_TITLE}`);
                     if (item.details && item.details.length > 0) {
                         contentParts.push(generateContextDetailsMarkdown(item.details));
                     }
@@ -249,6 +264,7 @@ export class AiConversation {
             sessionId: this.id,
             changeManager: this.#changeManager,
             performanceRecordAndReload: this.#performanceRecordAndReload,
+            lighthouseRecording: this.#lighthouseRecording,
             onInspectElement: this.#onInspectElement,
             networkTimeCalculator: this.#networkTimeCalculator,
             allowedOrigin: this.allowedOrigin,
@@ -278,10 +294,16 @@ export class AiConversation {
                 }
                 break;
             }
+            case "accessibility" /* ConversationType.ACCESSIBILITY */: {
+                this.#agent = new AccessibilityAgent(options);
+                break;
+            }
             case "none" /* ConversationType.NONE */: {
                 this.#agent = new ContextSelectionAgent(options);
                 break;
             }
+            default:
+                Platform.assertNever(type, 'Unknown conversation type');
         }
     }
     async *run(initialQuery, options = {}) {

@@ -354,6 +354,7 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/recorder/components/CreateRecordingView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var { widget } = UI2.Widget;
 var DEFAULT_VIEW2 = (input, output, target) => {
   const { name, selectorAttribute, selectorTypes, error, onUpdate, onRecordingStarted, onRecordingCancelled, onErrorReset } = input;
   const nameInputRef = createRef();
@@ -472,7 +473,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
         <div class="controls">
           <devtools-widget
             class="control-button"
-            .widgetConfig=${UI2.Widget.widgetConfig(ControlButton, {
+            ${widget(ControlButton, {
     label: i18nString(UIStrings.startRecording),
     shape: "circle",
     onClick: onRecordingStarted
@@ -2169,7 +2170,7 @@ var __decorate = function(decorators, target, key2, desc) {
 var { html: html7, Decorators, Directives, LitElement } = Lit7;
 var { customElement, property, state } = Decorators;
 var { live } = Directives;
-var { widget } = UI6.Widget;
+var { widget: widget2 } = UI6.Widget;
 var typeConverters = Object.freeze({
   string: (value2) => value2.trim(),
   number: (value2) => {
@@ -2759,7 +2760,7 @@ var StepEditor = class StepEditor2 extends LitElement {
     return html7`<div class="attribute" data-attribute="selectors" jslog=${VisualLogging6.treeItem("selectors")}>
       <div class="row">
         <div>selectors<span class="separator">:</span></div>
-        ${widget(SelectorPicker, {
+        ${widget2(SelectorPicker, {
       disabled: this.disabled,
       onSelectorPicked: this.#handleSelectorPicked,
       onAttributeRequested: this.#handleAttributeRequested
@@ -3545,7 +3546,7 @@ var TimelineSection = class extends UI7.Widget.Widget {
 
 // gen/front_end/panels/recorder/components/StepView.js
 var { html: html9 } = Lit9;
-var { widget: widget2 } = UI8.Widget;
+var { widget: widget3 } = UI8.Widget;
 var UIStrings7 = {
   /**
    * @description Title for the step type that configures the viewport
@@ -3824,7 +3825,7 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
   Lit9.render(html9`
     <style>${stepView_css_default}</style>
     <div>
-      <devtools-widget ${widget2(TimelineSection, {
+      <devtools-widget ${widget3(TimelineSection, {
     isFirstSection: input.isFirstSection,
     isLastSection: input.isLastSection,
     isStartOfGroup: input.isStartOfGroup,
@@ -4233,7 +4234,7 @@ var StepView = class extends UI8.Widget.Widget {
 
 // gen/front_end/panels/recorder/components/RecordingView.js
 var { html: html10 } = Lit10;
-var { widget: widget3 } = UI9.Widget;
+var { widget: widget4 } = UI9.Widget;
 var UIStrings8 = {
   /**
    * @description Depicts that the recording was done on a mobile device (e.g., a smartphone or tablet).
@@ -4580,7 +4581,7 @@ function renderReplayOrAbortButton(input) {
   if (!input.recorderSettings) {
     return Lit10.nothing;
   }
-  return html10`${widget3(ReplaySection, {
+  return html10`${widget4(ReplaySection, {
     settings: input.recorderSettings,
     replayExtensions: input.replayExtensions,
     onStartReplay: input.onTogglePlaying,
@@ -4617,7 +4618,7 @@ function renderSections(input) {
               </div>
               <div class="content">
                 <div class="steps">
-                  ${widget3(StepView, {
+                  ${widget4(StepView, {
     section: section4,
     state: input.getSectionState(section4),
     isStartOfGroup: true,
@@ -4639,7 +4640,7 @@ function renderSections(input) {
     return html10`
                       <devtools-widget
                       @copystep=${input.onCopyStep}
-                      .widgetConfig=${UI9.Widget.widgetConfig(StepView, {
+                      ${widget4(StepView, {
       step,
       state: input.getStepState(step),
       error: input.currentStep === step ? input.currentError ?? void 0 : void 0,
@@ -4701,6 +4702,7 @@ function renderHeader(input) {
   })}
                 .value=${Lit10.Directives.live(title)}
                 .disabled=${!isTitleEditable}
+                maxlength="300"
                 >
           <div class="title-button-bar">
             <devtools-button
@@ -4762,7 +4764,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
           <div class="controls">
             <devtools-widget
               class="control-button"
-              .widgetConfig=${UI9.Widget.widgetConfig(ControlButton, {
+              ${widget4(ControlButton, {
     label: footerButtonTitle,
     shape: "square",
     disabled: input.recordingTogglingInProgress,

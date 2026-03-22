@@ -411,7 +411,7 @@ var GlobalAiButtonToolbarProvider = class _GlobalAiButtonToolbarProvider {
   #widgetElement;
   constructor() {
     this.#widgetElement = document.createElement("devtools-widget");
-    this.#widgetElement.widgetConfig = UI.Widget.widgetConfig(GlobalAiButton);
+    new GlobalAiButton(this.#widgetElement);
     this.#toolbarItem = new UI.Toolbar.ToolbarItemWithCompactLayout(this.#widgetElement);
     this.#toolbarItem.setVisible(false);
   }
@@ -710,7 +710,6 @@ var MainImpl = class {
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.SHOW_OPTION_TO_EXPOSE_INTERNALS_IN_HEAP_SNAPSHOT, "Show option to expose internals in heap snapshots");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_INVALIDATION_TRACKING, "Performance panel: invalidation tracking");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_SHOW_ALL_EVENTS, "Performance panel: show all events");
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_V8_RUNTIME_CALL_STATS, "Performance panel: V8 runtime call stats");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_DEBUG_MODE, "Performance panel: debug mode (trace event details, etc)");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, "Instrumentation breakpoints");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, "Use scope information from source maps");
@@ -718,8 +717,6 @@ var MainImpl = class {
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE, "Full accessibility tree view in the Elements panel", "https://developer.chrome.com/blog/new-in-devtools-90/#accessibility-tree", "https://g.co/devtools/a11y-tree-feedback");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.FONT_EDITOR, "New font editor in the Styles tab", "https://developer.chrome.com/blog/new-in-devtools-89/#font");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.EXPERIMENTAL_COOKIE_FEATURES, "Experimental cookie features");
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.AUTHORED_DEPLOYED_GROUPING, "Group sources into authored and deployed trees", "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.JUST_MY_CODE, "Hide ignore-listed code in Sources tree view");
     Root2.Runtime.experiments.registerHostExperiment({
       name: Root2.ExperimentNames.ExperimentName.DURABLE_MESSAGES,
       title: "Durable Messages",
@@ -799,7 +796,8 @@ var MainImpl = class {
       forceNew: true,
       workspace: Workspace.Workspace.WorkspaceImpl.instance(),
       targetManager,
-      debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+      debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
+      settings: Common2.Settings.Settings.instance()
     });
     self.Extensions.extensionServer = PanelCommon.ExtensionServer.ExtensionServer.instance({ forceNew: true });
     new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, Workspace.Workspace.WorkspaceImpl.instance());

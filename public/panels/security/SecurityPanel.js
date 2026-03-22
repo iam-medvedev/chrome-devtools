@@ -17,7 +17,7 @@ import { ShowOriginEvent } from './OriginTreeElement.js';
 import originViewStyles from './originView.css.js';
 import { Events, SecurityModel, securityStateCompare, SecurityStyleExplanation, SummaryMessages, } from './SecurityModel.js';
 import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
-const { widgetConfig } = UI.Widget;
+const { widget, widgetRef } = UI.Widget;
 const UIStrings = {
     /**
      * @description Summary div text content in Security Panel of the Security panel
@@ -499,8 +499,8 @@ const DEFAULT_VIEW = (input, output, target) => {
       ${UI.Widget.widgetRef(UI.SplitWidget.SplitWidget, e => { output.splitWidget = e; })}>
       <devtools-widget
         slot="sidebar"
-        .widgetConfig=${widgetConfig(SecurityPanelSidebar)}
-        ${UI.Widget.widgetRef(SecurityPanelSidebar, e => { output.sidebar = e; })}>
+        ${widget(SecurityPanelSidebar)}
+        ${widgetRef(SecurityPanelSidebar, e => { output.sidebar = e; })}>
       </devtools-widget>
   </devtools-split-view>`, target);
     // clang-format on

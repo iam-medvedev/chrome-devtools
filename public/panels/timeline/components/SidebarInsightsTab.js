@@ -10,7 +10,7 @@ import * as Insights from './insights/insights.js';
 import sidebarInsightsTabStyles from './sidebarInsightsTab.css.js';
 import { SidebarSingleInsightSet } from './SidebarSingleInsightSet.js';
 const { html } = Lit;
-const { widgetConfig } = UI.Widget;
+const { widget } = UI.Widget;
 export const DEFAULT_VIEW = (input, output, target) => {
     const { parsedTrace, labels, activeInsightSet, activeInsight, selectedCategory, onInsightSetToggled, onInsightSetHovered, onInsightSetUnhovered, onZoomClick, } = input;
     const insights = parsedTrace.insights;
@@ -34,7 +34,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         const contents = html `
           <devtools-widget
             data-insight-set-key=${id}
-            .widgetConfig=${widgetConfig(SidebarSingleInsightSet, { data })}
+            ${widget(SidebarSingleInsightSet, { data })}
           ></devtools-widget>
         `;
         if (hasMultipleInsightSets) {
@@ -100,6 +100,7 @@ function renderDropdownIcon(insightSetToggled) {
 export class SidebarInsightsTab extends UI.Widget.Widget {
     static createWidgetElement() {
         const widgetElement = document.createElement('devtools-widget');
+        new SidebarInsightsTab(widgetElement);
         return widgetElement;
     }
     #view;
@@ -180,7 +181,7 @@ export class SidebarInsightsTab extends UI.Widget.Widget {
         }
         // Find the right set for this insight via the set key.
         const set = this.element.shadowRoot?.querySelector(`[data-insight-set-key="${this.#activeInsight.insightSetKey}"]`);
-        set?.getWidget()?.highlightActiveInsight();
+        void set?.getWidget()?.highlightActiveInsight();
     }
     performUpdate() {
         if (!this.#parsedTrace?.insights) {

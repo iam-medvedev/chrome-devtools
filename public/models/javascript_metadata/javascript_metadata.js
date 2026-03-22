@@ -6607,6 +6607,30 @@ var NativeFunctions = [
     signatures: [["html", "?options"]]
   },
   {
+    name: "streamBeforeHTMLUnsafe",
+    signatures: [["?options"]]
+  },
+  {
+    name: "streamBeforeHTML",
+    signatures: [["?options"]]
+  },
+  {
+    name: "streamAfterHTMLUnsafe",
+    signatures: [["?options"]]
+  },
+  {
+    name: "streamAfterHTML",
+    signatures: [["?options"]]
+  },
+  {
+    name: "streamReplaceWithHTMLUnsafe",
+    signatures: [["?options"]]
+  },
+  {
+    name: "streamReplaceWithHTML",
+    signatures: [["?options"]]
+  },
+  {
     name: "Comment",
     signatures: [["?data"]]
   },
@@ -6655,11 +6679,19 @@ var NativeFunctions = [
     signatures: [["?options"]]
   },
   {
+    name: "streamPrependHTMLUnsafe",
+    signatures: [["?options"]]
+  },
+  {
     name: "streamAppendHTML",
     signatures: [["?options"]]
   },
   {
     name: "streamHTML",
+    signatures: [["?options"]]
+  },
+  {
+    name: "streamPrependHTML",
     signatures: [["?options"]]
   },
   {
@@ -6874,6 +6906,10 @@ var NativeFunctions = [
   },
   {
     name: "MouseEvent",
+    signatures: [["type", "?eventInitDict"]]
+  },
+  {
+    name: "PageHideEvent",
     signatures: [["type", "?eventInitDict"]]
   },
   {
@@ -7784,6 +7820,22 @@ var NativeFunctions = [
     signatures: [["options"]]
   },
   {
+    name: "encapsulateKey",
+    signatures: [["encapsulationAlgorithm", "encapsulationKey", "sharedKeyAlgorithm", "extractable", "keyUsages"]]
+  },
+  {
+    name: "encapsulateBits",
+    signatures: [["encapsulationAlgorithm", "encapsulationKey"]]
+  },
+  {
+    name: "decapsulateKey",
+    signatures: [["decapsulationAlgorithm", "decapsulationKey", "ciphertext", "sharedKeyAlgorithm", "extractable", "keyUsages"]]
+  },
+  {
+    name: "decapsulateBits",
+    signatures: [["decapsulationAlgorithm", "decapsulationKey", "ciphertext"]]
+  },
+  {
     name: "registerPaint",
     signatures: [["name", "paintCtor"]]
   },
@@ -8070,6 +8122,10 @@ var NativeFunctions = [
   {
     name: "OverconstrainedError",
     signatures: [["constraint", "?message"]]
+  },
+  {
+    name: "setConstraints",
+    signatures: [["constraints"]]
   },
   {
     name: "createContext",
@@ -8788,6 +8844,14 @@ var NativeFunctions = [
   {
     name: "SpeechSynthesisUtterance",
     signatures: [["?text"]]
+  },
+  {
+    name: "addWords",
+    signatures: [["words"]]
+  },
+  {
+    name: "removeWords",
+    signatures: [["words"]]
   },
   {
     name: "requestStorageAccessFor",

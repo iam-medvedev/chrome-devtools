@@ -254,11 +254,169 @@ var AgentProject = class {
 var AccessibilityAgent_exports = {};
 __export(AccessibilityAgent_exports, {
   AccessibilityAgent: () => AccessibilityAgent,
-  Context: () => Context
+  AccessibilityContext: () => AccessibilityContext
 });
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
+import * as SDK from "./../../core/sdk/sdk.js";
+
+// gen/front_end/models/ai_assistance/data_formatters/LighthouseFormatter.js
+var LighthouseFormatter_exports = {};
+__export(LighthouseFormatter_exports, {
+  LighthouseFormatter: () => LighthouseFormatter
+});
+var LighthouseFormatter = class {
+  /**
+   * Returns an overall summary and high-level overview of the Lighthouse report.
+   */
+  summary(report) {
+    const lines = [];
+    lines.push("# Lighthouse Report Summary");
+    lines.push(`URL: ${report.finalDisplayedUrl}`);
+    lines.push(`Fetch Time: ${report.fetchTime}`);
+    lines.push(`Lighthouse Version: ${report.lighthouseVersion}`);
+    lines.push("");
+    lines.push("## Category Scores");
+    for (const category of Object.values(report.categories)) {
+      const score = category.score !== null ? Math.round(category.score * 100) : "n/a";
+      lines.push(`- ${category.title}: ${score}`);
+    }
+    return lines.join("\n");
+  }
+  /**
+   * Returns a markdown list of all audits in a given category.
+   * Highlight failing audits (score < 90).
+   */
+  audits(report, categoryId) {
+    const category = report.categories[categoryId];
+    if (!category) {
+      return `Category "${categoryId}" not found.`;
+    }
+    const lines = [];
+    lines.push(`# Audits for ${category.title}`);
+    if (category.description) {
+      lines.push(`${category.description.replace(/\n/g, " ")}`);
+    }
+    lines.push("");
+    const failingAudits = category.auditRefs.filter((ref) => {
+      const audit = report.audits[ref.id];
+      return audit && audit.score !== null && audit.score < 0.9;
+    });
+    if (failingAudits.length === 0) {
+      lines.push("All audits in this category passed (score >= 90).");
+      return lines.join("\n");
+    }
+    lines.push("The following audits in this category have a score below 90 and may need attention:");
+    for (const ref of failingAudits) {
+      const audit = report.audits[ref.id];
+      if (!audit) {
+        continue;
+      }
+      const score = audit.score !== null ? Math.round(audit.score * 100) : "n/a";
+      let line = `- **${audit.title}**: ${score}`;
+      if (audit.displayValue) {
+        line += ` (${audit.displayValue})`;
+      }
+      lines.push(line);
+      lines.push(`  * ${audit.description.replace(/\n/g, " ")}`);
+      if (audit.details) {
+        const formattedDetails = this.#formatDetails(audit.details);
+        if (formattedDetails) {
+          lines.push("");
+          lines.push(formattedDetails.split("\n").map((l) => `    ${l}`).join("\n"));
+        }
+      }
+    }
+    return lines.join("\n");
+  }
+  #formatDetails(details) {
+    switch (details.type) {
+      case "table": {
+        const lines = [];
+        if (details.summary) {
+          const summaryParts = [];
+          if (details.summary.wastedMs) {
+            summaryParts.push(`Wasted time: ${details.summary.wastedMs}ms`);
+          }
+          if (details.summary.wastedBytes) {
+            summaryParts.push(`Wasted bytes: ${details.summary.wastedBytes}`);
+          }
+          if (summaryParts.length > 0) {
+            lines.push(summaryParts.join("\n"));
+          }
+        }
+        lines.push(this.#formatTable(details.headings, details.items));
+        return lines.join("\n");
+      }
+      case "opportunity": {
+        const lines = [];
+        const summaryParts = [];
+        if (details.overallSavingsMs) {
+          summaryParts.push(`Potential savings: ${details.overallSavingsMs}ms`);
+        }
+        if (details.overallSavingsBytes) {
+          summaryParts.push(`Potential savings: ${details.overallSavingsBytes} bytes`);
+        }
+        if (summaryParts.length > 0) {
+          lines.push(summaryParts.join(", "));
+        }
+        lines.push(this.#formatTable(details.headings, details.items));
+        return lines.join("\n");
+      }
+      default:
+        return "";
+    }
+  }
+  #formatTable(headings, items) {
+    const lines = [];
+    lines.push(`| ${headings.map((h) => h.label).join(" | ")} |`);
+    for (const item of items) {
+      const row = headings.map((h) => this.#formatTableValue(item[h.key]));
+      lines.push(`| ${row.join(" | ")} |`);
+    }
+    return lines.join("\n");
+  }
+  #formatTableValue(value) {
+    if (value === void 0 || value === null) {
+      return "";
+    }
+    if (typeof value === "string" || typeof value === "number") {
+      return String(value);
+    }
+    if (typeof value === "object" && "type" in value) {
+      switch (value.type) {
+        case "node": {
+          let label = value.nodeLabel || value.selector || value.snippet || "(node)";
+          if (value.selector) {
+            label += ` (selector: ${value.selector})`;
+          }
+          if (value.path) {
+            label += ` (path: ${value.path})`;
+          }
+          if (value.explanation) {
+            label += ` (explanation: ${value.explanation.replace(/\n/g, " ")})`;
+          }
+          return label;
+        }
+        case "source-location": {
+          const parts = [];
+          if (value.url) {
+            parts.push(value.url);
+          }
+          if (value.line) {
+            parts.push(String(value.line));
+          }
+          if (value.column) {
+            parts.push(String(value.column));
+          }
+          return parts.join(":");
+        }
+      }
+    }
+    return "";
+  }
+};
 
 // gen/front_end/models/ai_assistance/agents/AiAgent.js
 var AiAgent_exports = {};
@@ -563,7 +721,8 @@ var AiAgent = class {
             yield {
               type: "context-change",
               description: result.description,
-              context: result.context
+              context: result.context,
+              widgets: result.widgets
             };
             return;
           }
@@ -748,22 +907,31 @@ var AiAgent = class {
 };
 
 // gen/front_end/models/ai_assistance/agents/AccessibilityAgent.js
-var preamble = `You are an accessibility agent.
+var preamble = `You are an accessibility expert agent integrated into Chrome DevTools.
+Your role is to help users understand and fix accessibility issues found in Lighthouse reports.
 
-# Considerations
-* Keep your analysis concise and focused, highlighting only the most critical aspects for a software engineer.
-* Answer questions directly, using the provided links whenever relevant.
-* Always double-check links to make sure they are complete and correct.
-* **CRITICAL** You are an accessibility agent. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, or any other non web-development topics.
+# Style Guidelines
+* **Concise and Direct**: Use short sentences and bullet points. Avoid paragraphs and long explanations.
+* **Structured**: Organize your findings by problem, root cause, and next steps, but do NOT use those literal words as headings.
+* **No Internal Identifiers**: NEVER show Lighthouse paths (e.g., "1,HTML,1,BODY...") to the user. Refer to elements by their tag name, classes, or IDs.
+* **Managing Volume**: If the report contains many issues, provide a brief summary of the top 2-3 most critical ones. Tell the user that there are more issues and invite them to ask for more details or to explore a specific area.
+
+# Workflow
+1. **Identify**: Find the most critical accessibility issues in the Lighthouse report.
+2. **Investigate**: For any element identified as failing, you **MUST** call \`getStyles\` or \`getElementAccessibilityDetails\` first to confirm its current state and gather details.
+3. **Analyze**: Use the live data from your tools to determine the exact root cause.
+4. **Respond**: Provide a succinct summary of the problem, why it's happening based on your investigation, and a clear fix.
+
+# Capabilities
+* \`getLighthouseAudits\`: Get detailed audit data.
+* \`getStyles\`: Get computed styles for an element by its path.
+* \`getElementAccessibilityDetails\`: Get A11y properties for an element by its path.
+
+# Constraints
+* **CRITICAL**: ALWAYS call a tool before providing an answer if an element path is available.
+* **CRITICAL**: You are an accessibility agent. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, or any other non web-development topics.
 `;
-var UIStringsNotTranslate = {
-  /**
-   * @description Title for thinking step of the accessibility agent.
-   */
-  inspectingAudits: "Inspecting audits"
-};
-var lockedString = i18n.i18n.lockedString;
-var Context = class extends ConversationContext {
+var AccessibilityContext = class extends ConversationContext {
   #lh;
   constructor(report) {
     super();
@@ -796,38 +964,207 @@ var AccessibilityAgent = class extends AiAgent {
       modelId
     };
   }
-  async *handleContextDetails(selectedFile) {
-    if (!selectedFile) {
+  async *handleContextDetails(lhr) {
+    if (!lhr) {
       return;
     }
     yield {
       type: "context",
-      title: lockedString(UIStringsNotTranslate.inspectingAudits),
-      details: createContextDetails(selectedFile)
+      details: this.#createContextDetails(lhr)
     };
   }
+  async #resolvePathToNode(path) {
+    const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!target) {
+      return null;
+    }
+    const domModel = target.model(SDK.DOMModel.DOMModel);
+    if (!domModel) {
+      return null;
+    }
+    const nodeId = await domModel.pushNodeByPathToFrontend(path);
+    if (!nodeId) {
+      return null;
+    }
+    return domModel.nodeForId(nodeId);
+  }
+  #declareFunctions() {
+    this.declareFunction("getLighthouseAudits", {
+      description: "Returns the audits for a specific Lighthouse category. Use this to get more information about the performance, accessibility, best-practices, or seo audits.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          categoryId: {
+            type: 1,
+            description: 'The category of audits to retrieve. Valid values are "performance", "accessibility", "best-practices", "seo".',
+            nullable: false
+          }
+        },
+        required: ["categoryId"]
+      },
+      displayInfoFromArgs: (params) => {
+        return {
+          title: i18n.i18n.lockedString(`Getting Lighthouse audits for ${params.categoryId}\u2026`),
+          action: `getLighthouseAudits('${params.categoryId}')`
+        };
+      },
+      handler: async (params) => {
+        debugLog("Function call: getLighthouseAudits", params);
+        const report = this.context?.getItem();
+        if (!report) {
+          return { error: "No Lighthouse report available." };
+        }
+        const audits = new LighthouseFormatter().audits(report, params.categoryId);
+        return { result: { audits } };
+      }
+    });
+    this.declareFunction("getStyles", {
+      description: "Get computed styles for an element on the inspected page by its Lighthouse path.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          explanation: {
+            type: 1,
+            description: "Explain why you want to get styles.",
+            nullable: false
+          },
+          path: {
+            type: 1,
+            description: 'The Lighthouse path of the element (e.g., "1,HTML,1,BODY,2,DIV"). Find this in the report data.',
+            nullable: false
+          },
+          styleProperties: {
+            type: 5,
+            description: "One or more CSS style property names to fetch.",
+            nullable: false,
+            items: {
+              type: 1,
+              description: "A CSS style property name to retrieve. For example, 'background-color'."
+            }
+          }
+        },
+        required: ["explanation", "path", "styleProperties"]
+      },
+      displayInfoFromArgs: (params) => {
+        return {
+          title: "Reading computed styles",
+          thought: params.explanation,
+          action: `getStyles('${params.path}', ${JSON.stringify(params.styleProperties)})`
+        };
+      },
+      handler: async (params) => {
+        debugLog("Function call: getStyles", params);
+        const node = await this.#resolvePathToNode(params.path);
+        if (!node) {
+          return { error: `Could not find the element with path: ${params.path}` };
+        }
+        const styles = await node.domModel().cssModel().getComputedStyle(node.id);
+        if (!styles) {
+          return { error: "Could not get computed styles." };
+        }
+        const result = {};
+        for (const prop of params.styleProperties) {
+          result[prop] = styles.get(prop);
+        }
+        return { result: JSON.stringify(result, null, 2) };
+      }
+    });
+    this.declareFunction("getElementAccessibilityDetails", {
+      description: "Get detailed accessibility information for an element on the inspected page by its Lighthouse path.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          explanation: {
+            type: 1,
+            description: "Explain why you want to get accessibility details.",
+            nullable: false
+          },
+          path: {
+            type: 1,
+            description: 'The Lighthouse path of the element (e.g., "1,HTML,1,BODY,2,DIV"). Find this in the report data.',
+            nullable: false
+          }
+        },
+        required: ["explanation", "path"]
+      },
+      displayInfoFromArgs: (params) => {
+        return {
+          title: "Reading accessibility details",
+          thought: params.explanation,
+          action: `getElementAccessibilityDetails('${params.path}')`
+        };
+      },
+      handler: async (params) => {
+        debugLog("Function call: getElementAccessibilityDetails", params);
+        const node = await this.#resolvePathToNode(params.path);
+        if (!node) {
+          return { error: `Could not find the element with path: ${params.path}` };
+        }
+        const accessibilityModel = node.domModel().target().model(SDK.AccessibilityModel.AccessibilityModel);
+        if (!accessibilityModel) {
+          return { error: "Accessibility model not found." };
+        }
+        await accessibilityModel.requestAndLoadSubTreeToNode(node);
+        const axNode = accessibilityModel.axNodeForDOMNode(node);
+        if (!axNode) {
+          return { error: "Could not find accessibility node for the element." };
+        }
+        const result = {
+          role: axNode.role()?.value,
+          name: axNode.name()?.value,
+          nameSource: axNode.name()?.sources?.[0]?.type,
+          properties: {
+            focusable: node.getAttribute("tabindex") !== void 0 || axNode.role()?.value === "button" || axNode.role()?.value === "link",
+            hidden: axNode.ignored()
+          },
+          ariaAttributes: node.attributes().filter((attr) => attr.name.startsWith("aria-") || attr.name === "role").reduce((acc, attr) => {
+            acc[attr.name] = attr.value;
+            return acc;
+          }, {}),
+          isIgnored: axNode.ignored(),
+          ignoredReasons: axNode.ignoredReasons()
+        };
+        return { result: JSON.stringify(result, null, 2) };
+      }
+    });
+  }
+  /**
+   * This is the initial payload we send at the start of a conversation.
+   * Because the agent is focused on Accessibility, we include the
+   * Accessibility Audits summary in the payload to avoid an extra round step of
+   * the AI querying them.
+   */
+  #getInitialPayload(context) {
+    const report = context.getItem();
+    const formatter = new LighthouseFormatter();
+    return `# Lighthouse Report:
+${formatter.summary(report)}
+${formatter.audits(report, "accessibility")}
+`;
+  }
   async enhanceQuery(query, lhr) {
-    const enhancedQuery = lhr ? (
-      // TODO: formatter for LH report.
-      `# Lighthouse Report
-${JSON.stringify(lhr.getItem(), null, 2)}
+    this.clearDeclaredFunctions();
+    if (lhr) {
+      this.#declareFunctions();
+    }
+    const enhancedQuery = lhr ? `${this.#getInitialPayload(lhr)}
+# User request:
 
-# User request
-
-`
-    ) : "";
+` : "";
     return `${enhancedQuery}${query}`;
   }
+  #createContextDetails(lhr) {
+    return [
+      { title: "Lighthouse report", text: this.#getInitialPayload(lhr) }
+    ];
+  }
 };
-function createContextDetails(_lhr) {
-  return [
-    {
-      title: "Lighthouse report",
-      // TODO(b/491772868);
-      text: ""
-    }
-  ];
-}
 
 // gen/front_end/models/ai_assistance/agents/BreakpointDebuggerAgent.js
 var BreakpointDebuggerAgent_exports = {};
@@ -837,7 +1174,7 @@ __export(BreakpointDebuggerAgent_exports, {
 });
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings from "./../bindings/bindings.js";
 import * as Breakpoints from "./../breakpoints/breakpoints.js";
 
@@ -992,16 +1329,16 @@ import * as TextUtils3 from "./../text_utils/text_utils.js";
 import * as Workspace from "./../workspace/workspace.js";
 
 // gen/front_end/models/ai_assistance/agents/BreakpointDebuggerAgentOverlay.js
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 async function injectOverlay() {
-  const targetManager = SDK.TargetManager.TargetManager.instance();
+  const targetManager = SDK2.TargetManager.TargetManager.instance();
   const primaryTarget = targetManager.primaryPageTarget();
   await primaryTarget?.runtimeAgent().invoke_evaluate({
     expression: WAIT_FOR_USER_ACTION_OVERLAY_SCRIPT
   });
 }
 async function removeOverlay() {
-  const targetManager = SDK.TargetManager.TargetManager.instance();
+  const targetManager = SDK2.TargetManager.TargetManager.instance();
   const primaryTarget = targetManager.primaryPageTarget();
   await primaryTarget?.runtimeAgent().invoke_evaluate({
     expression: REMOVE_OVERLAY_SCRIPT
@@ -1061,7 +1398,7 @@ var REMOVE_OVERLAY_SCRIPT = `
 `;
 
 // gen/front_end/models/ai_assistance/agents/BreakpointDebuggerAgent.js
-var lockedString2 = i18n3.i18n.lockedString;
+var lockedString = i18n3.i18n.lockedString;
 var preamble2 = `You are an expert Root Cause Analysis (RCA) specialist.
 Your sole objective is to find the **root cause** of why an error was thrown or why a bug occurred.
 You must not stop at the surface level. You must dig deep to understand the exact sequence of events and state changes that led to the failure.
@@ -1343,8 +1680,8 @@ var BreakpointDebuggerAgent = class extends AiAgent {
         };
       },
       handler: async () => {
-        const targetManager = SDK2.TargetManager.TargetManager.instance();
-        const debuggerModel = targetManager.models(SDK2.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
+        const targetManager = SDK3.TargetManager.TargetManager.instance();
+        const debuggerModel = targetManager.models(SDK3.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
         if (debuggerModel) {
           debuggerModel.resume();
         }
@@ -1480,11 +1817,11 @@ var BreakpointDebuggerAgent = class extends AiAgent {
         if (!options?.approved) {
           return {
             requiresApproval: true,
-            description: lockedString2("This code may modify page content. Continue?")
+            description: lockedString("This code may modify page content. Continue?")
           };
         }
-        const targetManager = SDK2.TargetManager.TargetManager.instance();
-        const debuggerModel = targetManager.models(SDK2.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
+        const targetManager = SDK3.TargetManager.TargetManager.instance();
+        const debuggerModel = targetManager.models(SDK3.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
         if (!debuggerModel) {
           return { error: "Execution is not paused." };
         }
@@ -1587,13 +1924,12 @@ var BreakpointDebuggerAgent = class extends AiAgent {
     }
     yield {
       type: "context",
-      title: "Analyzing breakpoint location",
       details: [{ title: "Location", text: selectedBreakpoint.getTitle() }]
     };
   }
   async #getCallStack() {
-    const targetManager = SDK2.TargetManager.TargetManager.instance();
-    const debuggerModel = targetManager.models(SDK2.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
+    const targetManager = SDK3.TargetManager.TargetManager.instance();
+    const debuggerModel = targetManager.models(SDK3.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
     if (!debuggerModel) {
       return {
         error: "Execution is not paused. I cannot access runtime variables or the call stack. I am currently in STATIC MODE. I must set a breakpoint and use waitForUserActionToTriggerBreakpoint to enter RUNTIME MODE."
@@ -1615,8 +1951,8 @@ var BreakpointDebuggerAgent = class extends AiAgent {
     return { result: { callFrames } };
   }
   async #getScopeVariables() {
-    const targetManager = SDK2.TargetManager.TargetManager.instance();
-    const debuggerModel = targetManager.models(SDK2.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
+    const targetManager = SDK3.TargetManager.TargetManager.instance();
+    const debuggerModel = targetManager.models(SDK3.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
     if (!debuggerModel) {
       return {
         error: "Execution is not paused. I cannot access runtime variables or the call stack. I am currently in STATIC MODE. I must set a breakpoint and use waitForUserActionToTriggerBreakpoint to enter RUNTIME MODE."
@@ -1713,8 +2049,8 @@ var BreakpointDebuggerAgent = class extends AiAgent {
         actualLineNumber = resolvedState[0].lineNumber + 1;
       }
     }
-    const targetManager = SDK2.TargetManager.TargetManager.instance();
-    const debuggerModel = targetManager.models(SDK2.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
+    const targetManager = SDK3.TargetManager.TargetManager.instance();
+    const debuggerModel = targetManager.models(SDK3.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
     let warning = "";
     if (debuggerModel) {
       const details = debuggerModel.debuggerPausedDetails();
@@ -1753,16 +2089,16 @@ var BreakpointDebuggerAgent = class extends AiAgent {
     return { result: { status: `Breakpoint removed at ${args.url}:${args.lineNumber}.` } };
   }
   async #debuggerAction(action) {
-    const targetManager = SDK2.TargetManager.TargetManager.instance();
-    const debuggerModel = targetManager.models(SDK2.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
+    const targetManager = SDK3.TargetManager.TargetManager.instance();
+    const debuggerModel = targetManager.models(SDK3.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
     if (!debuggerModel) {
       return { error: "Execution is not paused. I cannot step or resume in STATIC MODE." };
     }
     return await this.#waitForNextPause(() => action(debuggerModel), 3e3);
   }
   async #waitForUserActionToTriggerBreakpoint() {
-    const targetManager = SDK2.TargetManager.TargetManager.instance();
-    const debuggerModels = targetManager.models(SDK2.DebuggerModel.DebuggerModel);
+    const targetManager = SDK3.TargetManager.TargetManager.instance();
+    const debuggerModels = targetManager.models(SDK3.DebuggerModel.DebuggerModel);
     if (debuggerModels.length === 0) {
       return { error: "No debugger attached" };
     }
@@ -1787,11 +2123,11 @@ var BreakpointDebuggerAgent = class extends AiAgent {
    */
   async #waitForNextPause(triggerAction = () => {
   }, timeoutMs) {
-    const targetManager = SDK2.TargetManager.TargetManager.instance();
+    const targetManager = SDK3.TargetManager.TargetManager.instance();
     return await new Promise((resolve) => {
       let timeoutId;
       const listener = async (event) => {
-        targetManager.removeModelListener(SDK2.DebuggerModel.DebuggerModel, SDK2.DebuggerModel.Events.DebuggerPaused, listener);
+        targetManager.removeModelListener(SDK3.DebuggerModel.DebuggerModel, SDK3.DebuggerModel.Events.DebuggerPaused, listener);
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
@@ -1810,10 +2146,10 @@ var BreakpointDebuggerAgent = class extends AiAgent {
         }
         resolve({ result: { status: `Paused at ${location}` } });
       };
-      targetManager.addModelListener(SDK2.DebuggerModel.DebuggerModel, SDK2.DebuggerModel.Events.DebuggerPaused, listener);
+      targetManager.addModelListener(SDK3.DebuggerModel.DebuggerModel, SDK3.DebuggerModel.Events.DebuggerPaused, listener);
       if (timeoutMs !== void 0) {
         timeoutId = setTimeout(() => {
-          targetManager.removeModelListener(SDK2.DebuggerModel.DebuggerModel, SDK2.DebuggerModel.Events.DebuggerPaused, listener);
+          targetManager.removeModelListener(SDK3.DebuggerModel.DebuggerModel, SDK3.DebuggerModel.Events.DebuggerPaused, listener);
           resolve({
             result: {
               status: "Execution resumed but did not pause again. There is nothing to step into or the execution finished."
@@ -1825,8 +2161,8 @@ var BreakpointDebuggerAgent = class extends AiAgent {
     });
   }
   async #getExecutionLocation() {
-    const targetManager = SDK2.TargetManager.TargetManager.instance();
-    const debuggerModel = targetManager.models(SDK2.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
+    const targetManager = SDK3.TargetManager.TargetManager.instance();
+    const debuggerModel = targetManager.models(SDK3.DebuggerModel.DebuggerModel).find((m) => m.isPaused());
     if (!debuggerModel) {
       return { error: "Execution is not paused. I cannot determine execution location in STATIC MODE." };
     }
@@ -1876,8 +2212,8 @@ ${query}`;
       for (const bp of allBreakpoints) {
         await bp.breakpoint.remove(false);
       }
-      const targetManager = SDK2.TargetManager.TargetManager.instance();
-      const debuggerModels = targetManager.models(SDK2.DebuggerModel.DebuggerModel);
+      const targetManager = SDK3.TargetManager.TargetManager.instance();
+      const debuggerModels = targetManager.models(SDK3.DebuggerModel.DebuggerModel);
       for (const model of debuggerModels) {
         if (model.isPaused()) {
           model.resume();
@@ -1893,9 +2229,9 @@ __export(ContextSelectionAgent_exports, {
   ContextSelectionAgent: () => ContextSelectionAgent
 });
 import * as Host8 from "./../../core/host/host.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Root7 from "./../../core/root/root.js";
-import * as Logs2 from "./../logs/logs.js";
+import * as Logs3 from "./../logs/logs.js";
 import * as NetworkTimeCalculator3 from "./../network_time_calculator/network_time_calculator.js";
 import * as Workspace3 from "./../workspace/workspace.js";
 
@@ -1906,7 +2242,6 @@ __export(FileAgent_exports, {
   FileContext: () => FileContext
 });
 import * as Host4 from "./../../core/host/host.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/FileFormatter.js
@@ -2501,13 +2836,6 @@ Relevant Technologies: JavaScript, functions, arithmetic operations.
 External Resources:
 MDN Web Docs: JavaScript Functions: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions
 `;
-var UIStringsNotTranslate2 = {
-  /**
-   * @description Title for thinking step of File agent.
-   */
-  analyzingFile: "Analyzing file"
-};
-var lockedString3 = i18n5.i18n.lockedString;
 var FileContext = class extends ConversationContext {
   #file;
   constructor(file) {
@@ -2547,7 +2875,6 @@ var FileAgent = class extends AiAgent {
     }
     yield {
       type: "context",
-      title: lockedString3(UIStringsNotTranslate2.analyzingFile),
       details: createContextDetailsForFileAgent(selectedFile)
     };
   }
@@ -2577,7 +2904,7 @@ __export(NetworkAgent_exports, {
   RequestContext: () => RequestContext
 });
 import * as Host5 from "./../../core/host/host.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root4 from "./../../core/root/root.js";
 var preamble4 = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
@@ -2609,11 +2936,7 @@ Request Status: 200 OK
 
 This request aims to retrieve a list of products matching the search query "laptop" within the "electronics" category. The successful 200 OK status confirms that the server fulfilled the request and returned the relevant data.
 `;
-var UIStringsNotTranslate3 = {
-  /**
-   * @description Title for thinking step of Network agent.
-   */
-  analyzingNetworkData: "Analyzing network data",
+var UIStringsNotTranslate = {
   /**
    * @description Heading text for the block that shows the network request details.
    */
@@ -2635,7 +2958,7 @@ var UIStringsNotTranslate3 = {
    */
   requestInitiatorChain: "Request initiator chain"
 };
-var lockedString4 = i18n7.i18n.lockedString;
+var lockedString2 = i18n5.i18n.lockedString;
 var RequestContext = class extends ConversationContext {
   #request;
   #calculator;
@@ -2677,7 +3000,6 @@ var NetworkAgent = class extends AiAgent {
     }
     yield {
       type: "context",
-      title: lockedString4(UIStringsNotTranslate3.analyzingNetworkData),
       details: await createContextDetailsForNetworkAgent(selectedNetworkRequest)
     };
   }
@@ -2695,25 +3017,25 @@ async function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
   const request = selectedNetworkRequest.getItem();
   const formatter = new NetworkRequestFormatter(request, selectedNetworkRequest.calculator);
   const requestContextDetail = {
-    title: lockedString4(UIStringsNotTranslate3.request),
-    text: lockedString4(UIStringsNotTranslate3.requestUrl) + ": " + request.url() + "\n\n" + formatter.formatRequestHeaders()
+    title: lockedString2(UIStringsNotTranslate.request),
+    text: lockedString2(UIStringsNotTranslate.requestUrl) + ": " + request.url() + "\n\n" + formatter.formatRequestHeaders()
   };
   const responseBody = await formatter.formatResponseBody();
   const responseBodyString = responseBody ? `
 
 ${responseBody}` : "";
   const responseContextDetail = {
-    title: lockedString4(UIStringsNotTranslate3.response),
+    title: lockedString2(UIStringsNotTranslate.response),
     text: formatter.formatResponseHeaders() + responseBodyString + `
 
 ${formatter.formatStatus()}${formatter.formatFailureReasons()}`
   };
   const timingContextDetail = {
-    title: lockedString4(UIStringsNotTranslate3.timing),
+    title: lockedString2(UIStringsNotTranslate.timing),
     text: formatter.formatNetworkRequestTiming()
   };
   const initiatorChainContextDetail = {
-    title: lockedString4(UIStringsNotTranslate3.requestInitiatorChain),
+    title: lockedString2(UIStringsNotTranslate.requestInitiatorChain),
     text: formatter.formatRequestInitiatorChain()
   };
   return [
@@ -2732,13 +3054,15 @@ __export(PerformanceAgent_exports, {
 });
 import * as Common2 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as Root5 from "./../../core/root/root.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as Tracing from "./../../services/tracing/tracing.js";
 import * as Annotations3 from "./../annotations/annotations.js";
+import * as Logs2 from "./../logs/logs.js";
 import * as SourceMapScopes2 from "./../source_map_scopes/source_map_scopes.js";
+import * as TextUtils5 from "./../text_utils/text_utils.js";
 import * as Trace6 from "./../trace/trace.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.js
@@ -5094,10 +5418,6 @@ function getPerformanceAgentFocusFromModel(model) {
 // gen/front_end/models/ai_assistance/agents/PerformanceAgent.js
 var UIStringsNotTranslated = {
   /**
-   *@description Shown when the agent is investigating a trace
-   */
-  analyzingTrace: "Analyzing trace",
-  /**
    * @description Shown when the agent is investigating network activity
    */
   networkActivitySummary: "Investigating network activity\u2026",
@@ -5106,7 +5426,7 @@ var UIStringsNotTranslated = {
    */
   mainThreadActivity: "Investigating main thread activity\u2026"
 };
-var lockedString5 = i18n9.i18n.lockedString;
+var lockedString3 = i18n7.i18n.lockedString;
 var greenDevAdditionalAnnotationsFunction = `
 - CRITICAL: You also have access to functions called addElementAnnotation and addNeworkRequestAnnotation,
 which should be used to highlight elements and network requests (respectively).`;
@@ -5322,7 +5642,6 @@ var PerformanceAgent = class extends AiAgent {
   #formatter = null;
   #lastEventForEnhancedQuery;
   #lastInsightForEnhancedQuery;
-  #hasShownAnalyzeTraceContext = false;
   /**
    * Cache of all function calls made by the agent. This allows us to include (as a
    * fact) every function call to conversation requests, allowing the AI to access
@@ -5352,6 +5671,29 @@ var PerformanceAgent = class extends AiAgent {
     metadata: { source: "devtools", score: ScorePriority.CRITICAL }
   };
   #traceFacts = [];
+  /**
+   * These facts do not contain page data, they are static instructions to the
+   * LLM, so we don't need to add them to the disclosure.
+   */
+  #factsToNeverDisclose = /* @__PURE__ */ new Set([
+    this.#callFrameDataDescriptionFact,
+    this.#networkDataDescriptionFact,
+    this.#freshTraceExtraPreambleFact,
+    this.#notExternalExtraPreambleFact
+  ]);
+  /**
+   * When we enhance the query with additional information, we need to know it
+   * so we can show it in the disclosure UI. This is cleared and then populated
+   * on each prompt.
+   */
+  #additionalSelectionsForQuery = [];
+  /**
+   * The CWV widget is shown when we analyze the trace summary, but we don't
+   * want to show it on every single "Analyzing data..." pill, as we show one
+   * after every prompt. So we make sure for a given Insight Set (which is based on navigation)
+   * we only show it once.
+   */
+  #hasShownWidgetForInsightSet = /* @__PURE__ */ new WeakSet();
   get preamble() {
     return buildPreamble();
   }
@@ -5373,12 +5715,17 @@ var PerformanceAgent = class extends AiAgent {
     if (!context) {
       return;
     }
-    if (this.#hasShownAnalyzeTraceContext) {
-      return;
+    const contextDisclosure = [];
+    for (const fact of this.currentFacts()) {
+      if (this.#factsToNeverDisclose.has(fact)) {
+        continue;
+      }
+      contextDisclosure.push(fact.text);
     }
+    contextDisclosure.push(...this.#additionalSelectionsForQuery);
     const widgets = [];
     const primaryInsightSet = context.getItem().primaryInsightSet;
-    if (primaryInsightSet) {
+    if (primaryInsightSet && !this.#hasShownWidgetForInsightSet.has(primaryInsightSet)) {
       widgets.push({
         name: "CORE_VITALS",
         data: {
@@ -5386,19 +5733,18 @@ var PerformanceAgent = class extends AiAgent {
           insightSetKey: primaryInsightSet.id
         }
       });
+      this.#hasShownWidgetForInsightSet.add(primaryInsightSet);
     }
     yield {
       type: "context",
-      title: lockedString5(UIStringsNotTranslated.analyzingTrace),
       details: [
         {
-          title: "Trace",
-          text: this.#formatter?.formatTraceSummary() ?? ""
+          title: "Trace details",
+          text: contextDisclosure.join("\n")
         }
       ],
       widgets
     };
-    this.#hasShownAnalyzeTraceContext = true;
   }
   #callTreeContextSet = /* @__PURE__ */ new WeakSet();
   #isFunctionResponseTooLarge(response) {
@@ -5495,6 +5841,7 @@ ${contextString}
 `);
       }
     }
+    this.#additionalSelectionsForQuery = selected;
     if (!selected.length) {
       return query;
     }
@@ -5587,7 +5934,7 @@ ${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
     this.addFact(this.#callFrameDataDescriptionFact);
     this.addFact(this.#networkDataDescriptionFact);
     if (!this.#traceFacts.length) {
-      const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
+      const target = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();
       if (!target) {
         throw new Error("missing target");
       }
@@ -5650,7 +5997,7 @@ ${result}`,
       },
       displayInfoFromArgs: (params) => {
         return {
-          title: lockedString5(`Investigating insight ${params.insightName}\u2026`),
+          title: lockedString3(`Investigating insight ${params.insightName}\u2026`),
           action: `getInsightDetails('${params.insightSetId}', '${params.insightName}')`
         };
       },
@@ -5668,27 +6015,49 @@ ${result}`,
         }
         const details = new PerformanceInsightFormatter(focus, insight).formatInsight();
         const widgets = [];
-        if (params.insightName === "LCPDiscovery" || params.insightName === "LCPBreakdown") {
+        if (Trace6.Insights.Models.LCPDiscovery.isLCPDiscoveryInsight(insight) || Trace6.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(insight)) {
           const lcpMetric = Trace6.Insights.Common.getLCP(insightSet);
           const lcpEvent = lcpMetric?.event;
           if (lcpEvent && Trace6.Types.Events.isAnyLargestContentfulPaintCandidate(lcpEvent)) {
             const nodeId = lcpEvent.args.data?.nodeId;
             if (nodeId && !processedNodeIds.has(nodeId)) {
-              const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
-              const domModel = target?.model(SDK3.DOMModel.DOMModel);
+              const target = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();
+              const domModel = target?.model(SDK4.DOMModel.DOMModel);
               if (domModel) {
                 const nodeMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([nodeId]));
                 const node = nodeMap?.get(nodeId);
                 if (node) {
                   const snapshot = await node.takeSnapshot();
+                  let networkRequest;
+                  const lcpSyntheticRequest = insight.lcpRequest;
+                  if (lcpSyntheticRequest) {
+                    networkRequest = {
+                      url: lcpSyntheticRequest.args.data.url,
+                      size: lcpSyntheticRequest.args.data.decodedBodyLength ?? lcpSyntheticRequest.args.data.encodedDataLength ?? 0,
+                      resourceType: lcpSyntheticRequest.args.data.resourceType,
+                      mimeType: lcpSyntheticRequest.args.data.mimeType ?? "",
+                      imageUrl: await this.#getNetworkRequestImageData(lcpSyntheticRequest)
+                    };
+                  }
                   widgets.push({
                     name: "DOM_TREE",
-                    data: { root: snapshot }
+                    data: {
+                      root: snapshot,
+                      networkRequest
+                    }
                   });
                   processedNodeIds.add(nodeId);
                 }
               }
             }
+          }
+          if (params.insightName === "LCPBreakdown") {
+            widgets.push({
+              name: "LCP_BREAKDOWN",
+              data: {
+                lcpData: insight
+              }
+            });
           }
         }
         const key = `getInsightDetails('${params.insightSetId}', '${params.insightName}')`;
@@ -5712,7 +6081,7 @@ ${result}`,
         required: ["eventKey"]
       },
       displayInfoFromArgs: (params) => {
-        return { title: lockedString5("Looking at trace event\u2026"), action: `getEventByKey('${params.eventKey}')` };
+        return { title: lockedString3("Looking at trace event\u2026"), action: `getEventByKey('${params.eventKey}')` };
       },
       handler: async (params) => {
         debugLog("Function call: getEventByKey", params);
@@ -5759,7 +6128,7 @@ ${result}`,
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString5(UIStringsNotTranslated.mainThreadActivity),
+          title: lockedString3(UIStringsNotTranslated.mainThreadActivity),
           action: `getMainThreadTrackSummary({min: ${args.min}, max: ${args.max}})`
         };
       },
@@ -5808,7 +6177,7 @@ ${result}`,
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString5(UIStringsNotTranslated.networkActivitySummary),
+          title: lockedString3(UIStringsNotTranslated.networkActivitySummary),
           action: `getNetworkTrackSummary({min: ${args.min}, max: ${args.max}})`
         };
       },
@@ -5850,7 +6219,7 @@ ${result}`,
         required: ["eventKey"]
       },
       displayInfoFromArgs: (args) => {
-        return { title: lockedString5("Looking at call tree\u2026"), action: `getDetailedCallTree('${args.eventKey}')` };
+        return { title: lockedString3("Looking at call tree\u2026"), action: `getDetailedCallTree('${args.eventKey}')` };
       },
       handler: async (args) => {
         debugLog("Function call: getDetailedCallTree");
@@ -5949,7 +6318,7 @@ ${result}`,
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString5("Looking up function code\u2026"),
+          title: lockedString3("Looking up function code\u2026"),
           action: `getFunctionCode('${args.scriptUrl}', ${args.line}, ${args.column})`
         };
       },
@@ -5964,7 +6333,7 @@ ${result}`,
         if (!this.#formatter) {
           throw new Error("missing formatter");
         }
-        const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
+        const target = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();
         if (!target) {
           throw new Error("missing target");
         }
@@ -5997,7 +6366,7 @@ ${result}`,
         required: ["url"]
       },
       displayInfoFromArgs: (args) => {
-        return { title: lockedString5("Looking at resource content\u2026"), action: `getResourceContent('${args.url}')` };
+        return { title: lockedString3("Looking at resource content\u2026"), action: `getResourceContent('${args.url}')` };
       },
       handler: async (args) => {
         debugLog("Function call: getResourceContent");
@@ -6007,7 +6376,7 @@ ${result}`,
         if (script?.content !== void 0) {
           content = script.content;
         } else if (isFresh || isTraceApp) {
-          const resource = SDK3.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+          const resource = SDK4.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
           if (!resource) {
             return { error: "Resource not found" };
           }
@@ -6041,7 +6410,7 @@ ${result}`,
           required: ["eventKey"]
         },
         displayInfoFromArgs: (params) => {
-          return { title: lockedString5("Selecting event\u2026"), action: `selectEventByKey('${params.eventKey}')` };
+          return { title: lockedString3("Selecting event\u2026"), action: `selectEventByKey('${params.eventKey}')` };
         },
         handler: async (params) => {
           debugLog("Function call: selectEventByKey", params);
@@ -6049,7 +6418,7 @@ ${result}`,
           if (!event) {
             return { error: "Invalid eventKey" };
           }
-          const revealable = new SDK3.TraceObject.RevealableEvent(event);
+          const revealable = new SDK4.TraceObject.RevealableEvent(event);
           await Common2.Revealer.reveal(revealable);
           return { result: { success: true } };
         }
@@ -6085,6 +6454,23 @@ ${result}`,
     Annotations3.AnnotationRepository.instance().addNetworkRequestAnnotation(annotationMessage, requestId);
     return { result: { success: true } };
   }
+  async #getNetworkRequestImageData(lcpRequest) {
+    const target = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();
+    const networkManager = target?.model(SDK4.NetworkManager.NetworkManager);
+    if (!target || !networkManager) {
+      return void 0;
+    }
+    const networkLog = Logs2.NetworkLog.NetworkLog.instance();
+    const requestId = lcpRequest.args.data.requestId;
+    const sdkRequest = networkLog.requestByManagerAndId(networkManager, requestId);
+    if (sdkRequest?.contentType().isImage()) {
+      const contentData = await sdkRequest.requestContentData();
+      if (!TextUtils5.ContentData.ContentData.isError(contentData)) {
+        return contentData.asDataUrl() ?? void 0;
+      }
+    }
+    return void 0;
+  }
 };
 
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
@@ -6095,10 +6481,10 @@ __export(StylingAgent_exports, {
   StylingAgent: () => StylingAgent
 });
 import * as Host7 from "./../../core/host/host.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Root6 from "./../../core/root/root.js";
-import * as SDK7 from "./../../core/sdk/sdk.js";
+import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as Greendev2 from "./../greendev/greendev.js";
 import * as Annotations4 from "./../annotations/annotations.js";
 import * as Emulation from "./../emulation/emulation.js";
@@ -6110,7 +6496,7 @@ __export(ChangeManager_exports, {
 });
 import * as Common3 from "./../../core/common/common.js";
 import * as Platform3 from "./../../core/platform/platform.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as SDK5 from "./../../core/sdk/sdk.js";
 function formatStyles(styles, indent = 2) {
   const lines = Object.entries(styles).map(([key, value]) => `${" ".repeat(indent)}${key}: ${value};`);
   return lines.join("\n");
@@ -6121,7 +6507,7 @@ var ChangeManager = class {
   #stylesheetChanges = /* @__PURE__ */ new Map();
   #backupStylesheetChanges = /* @__PURE__ */ new Map();
   constructor() {
-    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.ResourceTreeModel.ResourceTreeModel, SDK4.ResourceTreeModel.Events.PrimaryPageChanged, this.clear, this);
+    SDK5.TargetManager.TargetManager.instance().addModelListener(SDK5.ResourceTreeModel.ResourceTreeModel, SDK5.ResourceTreeModel.Events.PrimaryPageChanged, this.clear, this);
   }
   async stashChanges() {
     for (const [cssModel, stylesheetMap] of this.#cssModelToStylesheetId.entries()) {
@@ -6218,7 +6604,7 @@ ${formatStyles(change.styles)}
       if (!frameToStylesheet) {
         frameToStylesheet = /* @__PURE__ */ new Map();
         this.#cssModelToStylesheetId.set(cssModel, frameToStylesheet);
-        cssModel.addEventListener(SDK4.CSSModel.Events.ModelDisposed, this.#onCssModelDisposed, this);
+        cssModel.addEventListener(SDK5.CSSModel.Events.ModelDisposed, this.#onCssModelDisposed, this);
       }
       let stylesheetId = frameToStylesheet.get(frameId);
       if (!stylesheetId) {
@@ -6239,7 +6625,7 @@ ${formatStyles(change.styles)}
   async #onCssModelDisposed(event) {
     return await this.#stylesheetMutex.run(async () => {
       const cssModel = event.data;
-      cssModel.removeEventListener(SDK4.CSSModel.Events.ModelDisposed, this.#onCssModelDisposed, this);
+      cssModel.removeEventListener(SDK5.CSSModel.Events.ModelDisposed, this.#onCssModelDisposed, this);
       const stylesheetIds = Array.from(this.#cssModelToStylesheetId.get(cssModel)?.values() ?? []);
       const results = await Promise.allSettled(stylesheetIds.map(async (id) => {
         this.#stylesheetChanges.delete(id);
@@ -6265,7 +6651,7 @@ __export(EvaluateAction_exports, {
   stringifyObjectOnThePage: () => stringifyObjectOnThePage,
   stringifyRemoteObject: () => stringifyRemoteObject
 });
-import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as SDK6 from "./../../core/sdk/sdk.js";
 
 // gen/front_end/models/ai_assistance/injected.js
 var injected_exports = {};
@@ -6484,7 +6870,7 @@ var EvaluateAction = class _EvaluateAction {
       }
       if (response.exceptionDetails) {
         const exceptionDescription = response.exceptionDetails.exception?.description;
-        if (SDK5.RuntimeModel.RuntimeModel.isSideEffectFailure(response)) {
+        if (SDK6.RuntimeModel.RuntimeModel.isSideEffectFailure(response)) {
           throw new SideEffectError(exceptionDescription);
         }
         return formatError(exceptionDescription ?? "JS exception");
@@ -6551,7 +6937,7 @@ __export(ExtensionScope_exports, {
 });
 import * as Common4 from "./../../core/common/common.js";
 import * as Platform4 from "./../../core/platform/platform.js";
-import * as SDK6 from "./../../core/sdk/sdk.js";
+import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as Bindings3 from "./../bindings/bindings.js";
 var _a2;
 var ExtensionScope = class {
@@ -6583,14 +6969,14 @@ var ExtensionScope = class {
     if (this.#frameId) {
       return this.#frameId;
     }
-    const resourceTreeModel = this.target.model(SDK6.ResourceTreeModel.ResourceTreeModel);
+    const resourceTreeModel = this.target.model(SDK7.ResourceTreeModel.ResourceTreeModel);
     if (!resourceTreeModel?.mainFrame) {
       throw new Error("Main frame is not found for executing code");
     }
     return resourceTreeModel.mainFrame.id;
   }
   async install() {
-    const runtimeModel = this.target.model(SDK6.RuntimeModel.RuntimeModel);
+    const runtimeModel = this.target.model(SDK7.RuntimeModel.RuntimeModel);
     const pageAgent = this.target.pageAgent();
     const { executionContextId } = await pageAgent.invoke_createIsolatedWorld({ frameId: this.frameId, worldName: FREESTYLER_WORLD_NAME });
     const isolatedWorldContext = runtimeModel?.executionContext(executionContextId);
@@ -6598,7 +6984,7 @@ var ExtensionScope = class {
       throw new Error("Execution context is not found for executing code");
     }
     const handler = this.#bindingCalled.bind(this, isolatedWorldContext);
-    runtimeModel?.addEventListener(SDK6.RuntimeModel.Events.BindingCalled, handler);
+    runtimeModel?.addEventListener(SDK7.RuntimeModel.Events.BindingCalled, handler);
     this.#listeners.push(handler);
     await this.target.runtimeAgent().invoke_addBinding({
       name: FREESTYLER_BINDING_NAME,
@@ -6608,9 +6994,9 @@ var ExtensionScope = class {
     await this.#simpleEval(isolatedWorldContext, injectedFunctions);
   }
   async uninstall() {
-    const runtimeModel = this.target.model(SDK6.RuntimeModel.RuntimeModel);
+    const runtimeModel = this.target.model(SDK7.RuntimeModel.RuntimeModel);
     for (const handler of this.#listeners) {
-      runtimeModel?.removeEventListener(SDK6.RuntimeModel.Events.BindingCalled, handler);
+      runtimeModel?.removeEventListener(SDK7.RuntimeModel.Events.BindingCalled, handler);
     }
     this.#listeners = [];
     await this.target.runtimeAgent().invoke_removeBinding({
@@ -6655,7 +7041,7 @@ var ExtensionScope = class {
       if (rule?.origin === "user-agent") {
         break;
       }
-      if (rule instanceof SDK6.CSSRule.CSSStyleRule) {
+      if (rule instanceof SDK7.CSSRule.CSSStyleRule) {
         if (rule.nestingSelectors?.at(0)?.includes(AI_ASSISTANCE_CSS_CLASS_NAME) || rule.selectors.every((selector) => selector.text.includes(AI_ASSISTANCE_CSS_CLASS_NAME))) {
           continue;
         }
@@ -6715,7 +7101,7 @@ var ExtensionScope = class {
     }
     const lineNumber = styleSheetHeader.lineNumberInSource(range.startLine);
     const columnNumber = styleSheetHeader.columnNumberInSource(range.startLine, range.startColumn);
-    const location = new SDK6.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
+    const location = new SDK7.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
     const uiLocation = Bindings3.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().rawLocationToUILocation(location);
     return uiLocation?.linkText(
       /* skipTrim= */
@@ -6728,11 +7114,11 @@ var ExtensionScope = class {
     if (!remoteObject.objectId) {
       throw new Error("DOMModel is not found");
     }
-    const cssModel = this.target.model(SDK6.CSSModel.CSSModel);
+    const cssModel = this.target.model(SDK7.CSSModel.CSSModel);
     if (!cssModel) {
       throw new Error("CSSModel is not found");
     }
-    const domModel = this.target.model(SDK6.DOMModel.DOMModel);
+    const domModel = this.target.model(SDK7.DOMModel.DOMModel);
     if (!domModel) {
       throw new Error("DOMModel is not found");
     }
@@ -6773,7 +7159,7 @@ var ExtensionScope = class {
       return;
     }
     await this.#bindingMutex.run(async () => {
-      const cssModel = this.target.model(SDK6.CSSModel.CSSModel);
+      const cssModel = this.target.model(SDK7.CSSModel.CSSModel);
       if (!cssModel) {
         throw new Error("CSSModel is not found");
       }
@@ -6847,17 +7233,13 @@ var ExtensionScope = class {
 _a2 = ExtensionScope;
 
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
-var UIStringsNotTranslate4 = {
-  /**
-   * @description Title for context details for Freestyler.
-   */
-  analyzingThePrompt: "Analyzing the prompt",
+var UIStringsNotTranslate2 = {
   /**
    * @description Heading text for context details of Freestyler agent.
    */
   dataUsed: "Data used"
 };
-var lockedString6 = i18n11.i18n.lockedString;
+var lockedString4 = i18n9.i18n.lockedString;
 function getPreamble() {
   let preamble8 = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
@@ -6955,12 +7337,12 @@ async function executeJsCode(functionDeclaration, { throwOnSideEffect, contextNo
   if (!target) {
     throw new Error("Target is not found for executing code");
   }
-  const resourceTreeModel = target.model(SDK7.ResourceTreeModel.ResourceTreeModel);
+  const resourceTreeModel = target.model(SDK8.ResourceTreeModel.ResourceTreeModel);
   const frameId = contextNode.frameId() ?? resourceTreeModel?.mainFrame?.id;
   if (!frameId) {
     throw new Error("Main frame is not found for executing code");
   }
-  const runtimeModel = target.model(SDK7.RuntimeModel.RuntimeModel);
+  const runtimeModel = target.model(SDK8.RuntimeModel.RuntimeModel);
   const pageAgent = target.pageAgent();
   const { executionContextId } = await pageAgent.invoke_createIsolatedWorld({ frameId, worldName: FREESTYLER_WORLD_NAME });
   const executionContext = runtimeModel?.executionContext(executionContextId);
@@ -7392,7 +7774,7 @@ const data = {
       if (!selectedNode) {
         return { error: "Error: Could not find the currently selected element." };
       }
-      const node = new SDK7.DOMModel.DeferredDOMNode(selectedNode.domModel().target(), Number(uid));
+      const node = new SDK8.DOMModel.DeferredDOMNode(selectedNode.domModel().target(), Number(uid));
       const resolved = await node.resolvePromise();
       if (!resolved) {
         return { error: "Error: Could not find the element with uid=" + uid };
@@ -7451,7 +7833,7 @@ const data = {
       return { error: "Error: no selected node found." };
     }
     const target = selectedNode.domModel().target();
-    if (target.model(SDK7.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
+    if (target.model(SDK8.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
       return {
         error: "Error: Cannot evaluate JavaScript because the execution is paused on a breakpoint."
       };
@@ -7478,7 +7860,7 @@ const data = {
         }
         return {
           requiresApproval: true,
-          description: lockedString6("This code may modify page content. Continue?")
+          description: lockedString4("This code may modify page content. Continue?")
         };
       }
       if (result.canceled) {
@@ -7569,7 +7951,7 @@ const data = {
     try {
       if (selectedNode) {
         const target = selectedNode.domModel().target();
-        const emulationModel = target.model(SDK7.EmulationModel.EmulationModel);
+        const emulationModel = target.model(SDK8.EmulationModel.EmulationModel);
         if (emulationModel) {
           let type = "none";
           if (visionDeficiency && visionDeficiency !== "none") {
@@ -7629,7 +8011,7 @@ const data = {
     }
     try {
       if (selectedNode) {
-        const accessibilityModel = selectedNode.domModel().target().model(SDK7.AccessibilityModel.AccessibilityModel);
+        const accessibilityModel = selectedNode.domModel().target().model(SDK8.AccessibilityModel.AccessibilityModel);
         if (accessibilityModel) {
           await accessibilityModel.resumeModel();
           const axResponse = await accessibilityModel.agent.invoke_getFullAXTree({});
@@ -7679,9 +8061,8 @@ const data = {
     }
     yield {
       type: "context",
-      title: lockedString6(UIStringsNotTranslate4.analyzingThePrompt),
       details: [{
-        title: lockedString6(UIStringsNotTranslate4.dataUsed),
+        title: lockedString4(UIStringsNotTranslate2.dataUsed),
         text: await _StylingAgent.describeElement(selectedElement.getItem())
       }]
     };
@@ -7727,7 +8108,7 @@ ${await _StylingAgent.describeElement(selectedElement.getItem())}
 };
 
 // gen/front_end/models/ai_assistance/agents/ContextSelectionAgent.js
-var lockedString7 = i18n13.i18n.lockedString;
+var lockedString5 = i18n11.i18n.lockedString;
 var preamble5 = `
 You are a Web Development Assistant integrated into Chrome DevTools. Your tone is educational, supportive, and technically precise.
 You aim to help developers of all levels, prioritizing teaching web concepts as the primary entry point for any solution.
@@ -7772,10 +8153,12 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
   #performanceRecordAndReload;
   #onInspectElement;
   #networkTimeCalculator;
+  #lighthouseRecording;
   #allowedOrigin;
   constructor(opts) {
     super(opts);
     this.#performanceRecordAndReload = opts.performanceRecordAndReload;
+    this.#lighthouseRecording = opts.lighthouseRecording;
     this.#onInspectElement = opts.onInspectElement;
     this.#networkTimeCalculator = opts.networkTimeCalculator;
     this.#allowedOrigin = opts.allowedOrigin ?? (() => void 0);
@@ -7790,7 +8173,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString7("Listing network requests\u2026"),
+          title: lockedString5("Listing network requests\u2026"),
           action: "listNetworkRequest()"
         };
       },
@@ -7798,7 +8181,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
         const requests = [];
         const origin = this.#allowedOrigin();
         let hasCrossOriginRequest = false;
-        for (const request of Logs2.NetworkLog.NetworkLog.instance().requests()) {
+        for (const request of Logs3.NetworkLog.NetworkLog.instance().requests()) {
           if (origin && request.securityOrigin() !== origin) {
             hasCrossOriginRequest = true;
             continue;
@@ -7807,8 +8190,8 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
             id: request.requestId(),
             url: request.url(),
             statusCode: request.statusCode,
-            duration: i18n13.TimeUtilities.secondsToString(request.duration),
-            transferSize: i18n13.ByteUtilities.formatBytesToKb(request.transferSize)
+            duration: i18n11.TimeUtilities.secondsToString(request.duration),
+            transferSize: i18n11.ByteUtilities.formatBytesToKb(request.transferSize)
           });
         }
         if (requests.length === 0) {
@@ -7838,12 +8221,12 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString7("Getting network request\u2026"),
+          title: lockedString5("Getting network request\u2026"),
           action: `selectNetworkRequest(${args.id})`
         };
       },
       handler: async ({ id }) => {
-        const request = Logs2.NetworkLog.NetworkLog.instance().requests().find((req) => {
+        const request = Logs3.NetworkLog.NetworkLog.instance().requests().find((req) => {
           return req.requestId() === id;
         });
         if (request) {
@@ -7869,7 +8252,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString7("Listing source requests\u2026"),
+          title: lockedString5("Listing source requests\u2026"),
           action: "listSourceFiles()"
         };
       },
@@ -7903,7 +8286,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: (args) => {
         return {
-          title: lockedString7("Getting source file\u2026"),
+          title: lockedString5("Getting source file\u2026"),
           action: `selectSourceFile(${args.id})`
         };
       },
@@ -7944,7 +8327,39 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
         const result = await this.#performanceRecordAndReload();
         return {
           context: PerformanceTraceContext.fromParsedTrace(result),
-          description: "User recorded a performance trace"
+          description: "User recorded a performance trace",
+          widgets: [{ name: "PERFORMANCE_TRACE", data: { parsedTrace: result } }]
+        };
+      }
+    });
+    this.declareFunction("runLighthouseAudits", {
+      description: "Records a Lighthouse audit on the current page, to help debug accessibility issues.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: true,
+        required: [],
+        properties: {}
+      },
+      displayInfoFromArgs: () => {
+        return {
+          title: "Auditing your page with Lighthouse\u2026",
+          action: "runLighthouseAudits()"
+        };
+      },
+      handler: async () => {
+        if (!this.#lighthouseRecording) {
+          return {
+            error: "Lighthouse report is not available."
+          };
+        }
+        const result = await this.#lighthouseRecording();
+        if (!result) {
+          return { error: "Failed to generate Lighthouse report." };
+        }
+        return {
+          context: new AccessibilityContext(result),
+          description: "User has selected a Lighthouse report"
         };
       }
     });
@@ -7959,7 +8374,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString7("Select an element on the page or in the Elements panel")
+          title: lockedString5("Select an element on the page or in the Elements panel")
         };
       },
       handler: async (_params, options) => {
@@ -8038,18 +8453,61 @@ __export(ConversationSummaryAgent_exports, {
 });
 import * as Host9 from "./../../core/host/host.js";
 import * as Root8 from "./../../core/root/root.js";
-var preamble6 = `You are an expert technical assistant specializing in summarizing debugging conversations from Chrome DevTools.
-You will receive a markdown-formatted transcript of a conversation between a user and a DevTools AI assistant.
-Your goal is to produce a succinct, structured summary that a local AI agent in the user's IDE can use to apply code fixes.
+var preamble6 = `### Role
+You are a Performance Expert. Your task is to extract a diagnostic narrative from raw DevTools logs and present it as a self-contained, actionable Markdown summary. You provide high-density technical analysis without conversational fluff.
 
-Focus on extracting:
-1. **Core Issue:** The primary problem or question the user was investigating.
-2. **Diagnostic Findings:** Key technical details discovered (e.g., specific functions, bottlenecks, error messages, URLs, or CSS properties).
-3. **Proposed Solution:** The specific changes or optimizations recommended by the DevTools assistant.
-4. **Actionable Steps:** A clear, step-by-step list of instructions for the IDE agent to implement the fix.
+### Critical Constraints
+- **Persona:** Do not mention that you are an AI or refer to yourself in the third person.
+- **Domain Scope:** Do not provide answers on non-web-development topics (e.g., legal, financial, medical, or personal advice).
+- **Sensitive Topics:** If the conversation history touches on sensitive topics (religion, race, politics, sexuality, gender, etc.), respond only with: "My expertise is limited to website performance analysis. I cannot provide information on that topic."
+- **Data Portability:** The recipient of this summary does NOT have access to the raw logs.
+    - **No UIDs/Internal IDs:** Never refer to elements by internal IDs (e.g., \`uid=123\`).
+    - **Standard Selectors:** Identify elements using HTML tags, classes, or IDs (e.g., \`button.submit-form\`).
+    - **No Metadata:** Remove internal constants like \`NAVIGATION_0\` or \`INSIGHT_0\`.
+- **No Process Narration:** Do not describe internal "thinking" or API calls. Skip phrases like "The agent investigated..." or "The user then asked...". Jump straight to the findings.
 
-Maintain a professional, technical, and extremely concise tone. Avoid conversational filler or introductory/concluding remarks.
-The output must be structured markdown.`;
+### Objectives
+1. **Identify Intent:** Define the core technical goal of the session.
+2. **Value-Only Diagnostics:** List only the technical data points discovered. Omit steps that didn't yield a result.
+3. **Focus on Code Intent:** When code is executed in the logs, summarize the **purpose** and the **result**. Do not include the raw JavaScript unless it is a specific fix for the user to implement.
+4. **Actionable Recommendations:** Provide specific code/strategy fixes based on the findings.
+
+### Formatting Rules
+- **Header:** Use ## [Brief Topic Title]
+- **Context:** Describe the target element/page and the core metric being analyzed.
+- **Diagnostics:** A bulleted list of technical findings.
+- **Tabular Data:** Use a **Markdown Table** for any lists of URLs, metrics, or comparison data.
+- **Code Fixes:** Use fenced code blocks for suggested CSS/JS optimizations.
+
+---
+
+### Example (Few-Shot)
+
+**User Input:** "The agent analyzed the page and found three render-blocking CSS files: app.css (36ms) and fonts.css (80ms). It also checked UID 456 which is a div.hero."
+
+**Desired Agent Output:**
+## Performance Analysis: web.dev Home
+
+**Context**
+Analysis of the web.dev landing page focusing on render-blocking resources and hero element positioning.
+
+**Diagnostics**
+The following resources were identified as render-blocking:
+
+| Resource URL | Load Duration |
+| :--- | :--- |
+| \`app.css\` | 36 ms |
+| \`fonts.css\` | 80 ms |
+
+**Actionable Findings**
+* **Hero Element:** The \`div.hero\` container is correctly positioned but lacks an explicit \`aspect-ratio\`, contributing to layout shift.
+* **Optimization:** Inline critical CSS from \`app.css\` to improve First Contentful Paint.
+
+---
+
+### Tone & Style
+- Professional, objective, and dense.
+- Past tense for actions; Present tense for technical facts.`;
 var ConversationSummaryContext = class extends ConversationContext {
   #conversation;
   constructor(conversation) {
@@ -8088,7 +8546,6 @@ var ConversationSummaryAgent = class extends AiAgent {
     }
     yield {
       type: "context",
-      title: "Summarizing conversation",
       details: [
         {
           title: "Conversation transcript",
@@ -8359,15 +8816,7 @@ __export(PerformanceAnnotationsAgent_exports, {
   PerformanceAnnotationsAgent: () => PerformanceAnnotationsAgent
 });
 import * as Host11 from "./../../core/host/host.js";
-import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as Root10 from "./../../core/root/root.js";
-var UIStringsNotTranslated2 = {
-  analyzingCallTree: "Analyzing call tree"
-  /**
-   * @description Shown when the agent is investigating network activity
-   */
-};
-var lockedString8 = i18n15.i18n.lockedString;
 var callTreePreamble = `You are an expert performance analyst embedded within Chrome DevTools.
 You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
 You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
@@ -8456,7 +8905,6 @@ var PerformanceAnnotationsAgent = class extends AiAgent {
     const callTree = focus.callTree;
     yield {
       type: "context",
-      title: lockedString8(UIStringsNotTranslated2.analyzingCallTree),
       details: [
         {
           title: "Selected call tree",
@@ -8514,13 +8962,15 @@ Generate a concise label (max 60 chars, single line) describing the *user-visibl
 var AiConversation_exports = {};
 __export(AiConversation_exports, {
   AiConversation: () => AiConversation,
+  CONTEXT_TITLE: () => CONTEXT_TITLE,
   NOT_FOUND_IMAGE_DATA: () => NOT_FOUND_IMAGE_DATA,
   generateContextDetailsMarkdown: () => generateContextDetailsMarkdown
 });
 import * as Common6 from "./../../core/common/common.js";
 import * as Host12 from "./../../core/host/host.js";
+import * as Platform6 from "./../../core/platform/platform.js";
 import * as Root11 from "./../../core/root/root.js";
-import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as SDK9 from "./../../core/sdk/sdk.js";
 import * as Greendev3 from "./../greendev/greendev.js";
 
 // gen/front_end/models/ai_assistance/AiHistoryStorage.js
@@ -8635,6 +9085,7 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common5.ObjectWrapper.Obj
 
 // gen/front_end/models/ai_assistance/AiConversation.js
 var NOT_FOUND_IMAGE_DATA = "";
+var CONTEXT_TITLE = "Analyzing data";
 var MAX_TITLE_LENGTH = 80;
 function generateContextDetailsMarkdown(details) {
   const detailsMarkdown = [];
@@ -8656,7 +9107,13 @@ var AiConversation = class _AiConversation {
       }
       return entry;
     });
-    return new _AiConversation(serializedConversation.type, history, serializedConversation.id, true, void 0, void 0, serializedConversation.isExternal, void 0, void 0);
+    return new _AiConversation({
+      type: serializedConversation.type,
+      data: history,
+      id: serializedConversation.id,
+      isReadOnly: true,
+      isExternal: serializedConversation.isExternal
+    });
   }
   id;
   // Handled in #updateAgent
@@ -8671,14 +9128,17 @@ var AiConversation = class _AiConversation {
   #origin;
   #contexts = [];
   #performanceRecordAndReload;
+  #lighthouseRecording;
   #onInspectElement;
   #networkTimeCalculator;
-  constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, aidaClient = new Host12.AidaClient.AidaClient(), changeManager, isExternal = false, performanceRecordAndReload, onInspectElement, networkTimeCalculator) {
+  constructor(options) {
+    const { type, data = [], id = crypto.randomUUID(), isReadOnly = true, aidaClient = new Host12.AidaClient.AidaClient(), changeManager, isExternal = false, performanceRecordAndReload, onInspectElement, networkTimeCalculator, lighthouseRecording } = options;
     this.#changeManager = changeManager;
     this.#aidaClient = aidaClient;
     this.#performanceRecordAndReload = performanceRecordAndReload;
     this.#onInspectElement = onInspectElement;
     this.#networkTimeCalculator = networkTimeCalculator;
+    this.#lighthouseRecording = lighthouseRecording;
     this.id = id;
     this.#isReadOnly = isReadOnly;
     this.#isExternal = isExternal;
@@ -8742,6 +9202,11 @@ var AiConversation = class _AiConversation {
           "drjones-performance-full"
           /* ConversationType.PERFORMANCE */
         );
+      } else if (updateContext instanceof AccessibilityContext) {
+        this.#updateAgent(
+          "accessibility"
+          /* ConversationType.ACCESSIBILITY */
+        );
       }
     }
   }
@@ -8789,7 +9254,7 @@ ${item.query}`);
           break;
         }
         case "context": {
-          contentParts.push(`### ${item.title}`);
+          contentParts.push(`### ${CONTEXT_TITLE}`);
           if (item.details && item.details.length > 0) {
             contentParts.push(generateContextDetailsMarkdown(item.details));
           }
@@ -8891,6 +9356,7 @@ ${item.text.trim()}`);
       sessionId: this.id,
       changeManager: this.#changeManager,
       performanceRecordAndReload: this.#performanceRecordAndReload,
+      lighthouseRecording: this.#lighthouseRecording,
       onInspectElement: this.#onInspectElement,
       networkTimeCalculator: this.#networkTimeCalculator,
       allowedOrigin: this.allowedOrigin,
@@ -8920,10 +9386,16 @@ ${item.text.trim()}`);
         }
         break;
       }
+      case "accessibility": {
+        this.#agent = new AccessibilityAgent(options);
+        break;
+      }
       case "none": {
         this.#agent = new ContextSelectionAgent(options);
         break;
       }
+      default:
+        Platform6.assertNever(type, "Unknown conversation type");
     }
   }
   async *run(initialQuery, options = {}) {
@@ -8995,7 +9467,7 @@ Original user query: ${initialQuery}`;
     if (this.#origin) {
       return this.#origin;
     }
-    const target = SDK8.TargetManager.TargetManager.instance().primaryPageTarget();
+    const target = SDK9.TargetManager.TargetManager.instance().primaryPageTarget();
     const inspectedURL = target?.inspectedURL();
     this.#origin = inspectedURL ? new Common6.ParsedURL.ParsedURL(inspectedURL).securityOrigin() : void 0;
     return this.#origin;
@@ -9017,7 +9489,7 @@ __export(AiUtils_exports, {
 });
 import * as Common7 from "./../../core/common/common.js";
 import * as Host13 from "./../../core/host/host.js";
-import * as i18n17 from "./../../core/i18n/i18n.js";
+import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Root12 from "./../../core/root/root.js";
 var UIStrings = {
   /**
@@ -9037,8 +9509,8 @@ var UIStrings = {
    */
   notAvailableInIncognitoMode: "AI assistance is not available in Incognito mode or Guest mode."
 };
-var str_ = i18n17.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
-var i18nString = i18n17.i18n.getLocalizedString.bind(void 0, str_);
+var str_ = i18n13.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
+var i18nString = i18n13.i18n.getLocalizedString.bind(void 0, str_);
 function getDisabledReasons(aidaAvailability) {
   const reasons = [];
   if (Root12.Runtime.hostConfig.isOffTheRecord) {
@@ -9329,18 +9801,18 @@ __export(ConversationHandler_exports, {
 });
 import * as Common9 from "./../../core/common/common.js";
 import * as Host15 from "./../../core/host/host.js";
-import * as i18n19 from "./../../core/i18n/i18n.js";
-import * as Platform6 from "./../../core/platform/platform.js";
+import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as Platform7 from "./../../core/platform/platform.js";
 import * as Root14 from "./../../core/root/root.js";
-import * as SDK9 from "./../../core/sdk/sdk.js";
+import * as SDK10 from "./../../core/sdk/sdk.js";
 import * as NetworkTimeCalculator4 from "./../network_time_calculator/network_time_calculator.js";
-var UIStringsNotTranslate5 = {
+var UIStringsNotTranslate3 = {
   /**
    * @description Error message shown when AI assistance is not enabled in DevTools settings.
    */
   enableInSettings: "For AI features to be available, you need to enable AI assistance in DevTools settings."
 };
-var lockedString9 = i18n19.i18n.lockedString;
+var lockedString6 = i18n15.i18n.lockedString;
 function isAiAssistanceServerSideLoggingEnabled2() {
   return !Root14.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
@@ -9350,7 +9822,7 @@ async function inspectElementBySelector(selector) {
     return null;
   }
   const showUAShadowDOM = Common9.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
-  const domModels = SDK9.TargetManager.TargetManager.instance().models(SDK9.DOMModel.DOMModel, { scoped: true });
+  const domModels = SDK10.TargetManager.TargetManager.instance().models(SDK10.DOMModel.DOMModel, { scoped: true });
   const performSearchPromises = domModels.map((domModel) => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
   const resultCounts = await Promise.all(performSearchPromises);
   const index = resultCounts.findIndex((value) => value > 0);
@@ -9360,13 +9832,13 @@ async function inspectElementBySelector(selector) {
   return null;
 }
 async function inspectNetworkRequestByUrl(selector) {
-  const networkManagers = SDK9.TargetManager.TargetManager.instance().models(SDK9.NetworkManager.NetworkManager, { scoped: true });
+  const networkManagers = SDK10.TargetManager.TargetManager.instance().models(SDK10.NetworkManager.NetworkManager, { scoped: true });
   const results = networkManagers.map((networkManager) => {
-    let request2 = networkManager.requestForURL(Platform6.DevToolsPath.urlString`${selector}`);
+    let request2 = networkManager.requestForURL(Platform7.DevToolsPath.urlString`${selector}`);
     if (!request2 && selector.at(-1) === "/") {
-      request2 = networkManager.requestForURL(Platform6.DevToolsPath.urlString`${selector.slice(0, -1)}`);
+      request2 = networkManager.requestForURL(Platform7.DevToolsPath.urlString`${selector.slice(0, -1)}`);
     } else if (!request2 && selector.at(-1) !== "/") {
-      request2 = networkManager.requestForURL(Platform6.DevToolsPath.urlString`${selector}/`);
+      request2 = networkManager.requestForURL(Platform7.DevToolsPath.urlString`${selector}/`);
     }
     return request2;
   }).filter((req) => !!req);
@@ -9430,7 +9902,7 @@ var ConversationHandler = class _ConversationHandler extends Common9.ObjectWrapp
       const disabledReasons = await this.#getDisabledReasons();
       const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
       if (!aiAssistanceSetting) {
-        disabledReasons.push(lockedString9(UIStringsNotTranslate5.enableInSettings));
+        disabledReasons.push(lockedString6(UIStringsNotTranslate3.enableInSettings));
       }
       if (disabledReasons.length > 0) {
         return this.#generateErrorResponse(disabledReasons.join(" "));
@@ -9454,17 +9926,14 @@ var ConversationHandler = class _ConversationHandler extends Common9.ObjectWrapp
   }
   async *#createAndDoExternalConversation(opts) {
     const { conversationType, aiAgent, prompt, selected } = opts;
-    const conversation = new AiConversation(
-      conversationType,
-      [],
-      aiAgent.sessionId,
-      /* isReadOnly */
-      true,
-      this.#aidaClient,
-      void 0,
-      /* isExternal */
-      true
-    );
+    const conversation = new AiConversation({
+      type: conversationType,
+      data: [],
+      id: aiAgent.sessionId,
+      isReadOnly: true,
+      aidaClient: this.#aidaClient,
+      isExternal: true
+    });
     return yield* this.#doExternalConversation({ conversation, prompt, selected });
   }
   async *#doExternalConversation(opts) {
@@ -9476,10 +9945,16 @@ var ConversationHandler = class _ConversationHandler extends Common9.ObjectWrapp
       if (data.type !== "answer" || data.complete) {
         devToolsLogs.push(data);
       }
-      if (data.type === "context" || data.type === "title") {
+      if (data.type === "title") {
         yield {
           type: "notification",
           message: data.title
+        };
+      }
+      if (data.type === "context") {
+        yield {
+          type: "notification",
+          message: CONTEXT_TITLE
         };
       }
       if (data.type === "side-effect") {
@@ -9563,6 +10038,7 @@ export {
   FileAgent_exports as FileAgent,
   FileFormatter_exports as FileFormatter,
   injected_exports as Injected,
+  LighthouseFormatter_exports as LighthouseFormatter,
   NetworkAgent_exports as NetworkAgent,
   NetworkRequestFormatter_exports as NetworkRequestFormatter,
   PatchAgent_exports as PatchAgent,

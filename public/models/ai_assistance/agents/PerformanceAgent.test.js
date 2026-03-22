@@ -8,13 +8,30 @@ import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { createTarget, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { allThreadEntriesInTrace } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Trace from '../../trace/trace.js';
 import * as Workspace from '../../workspace/workspace.js';
 import { AICallTree, PerformanceAgent, PerformanceTraceFormatter, } from '../ai_assistance.js';
-describeWithMockConnection('PerformanceAgent', () => {
+/**
+ * Widget data can be huge (e.g. an entire perf trace) and if we snapshot or
+ * try to assert on these, it is not useful and also can crash Karma etc with
+ * the size of the output.
+ */
+function deleteAllWidgetData(responses) {
+    for (const response of responses) {
+        if ('widgets' in response) {
+            response.widgets?.forEach(w => {
+                // @ts-expect-error
+                delete w.data;
+            });
+        }
+    }
+}
+describeWithMockConnection('PerformanceAgent', function () {
+    const snapshotTester = new SnapshotTester(this, import.meta);
     function mockHostConfig(modelId, temperature) {
         updateHostConfig({
             devToolsAiAssistancePerformanceAgent: {
@@ -93,155 +110,126 @@ describeWithMockConnection('PerformanceAgent', () => {
             restoreUserAgentForTesting();
         });
     });
-});
-describeWithMockConnection('PerformanceAgent – call tree focus', () => {
-    beforeEach(() => {
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
-        createTarget();
-    });
-    describe('run', function () {
-        it('generates an answer', async function () {
-            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-outermost-frames.json.gz');
-            // A basic Layout.
-            const layoutEvt = allThreadEntriesInTrace(parsedTrace).find(event => event.ts === 465457096322);
-            assert.exists(layoutEvt);
-            const aiCallTree = AICallTree.AICallTree.fromEvent(layoutEvt, parsedTrace);
-            assert.exists(aiCallTree);
-            const agent = new PerformanceAgent.PerformanceAgent({
-                aidaClient: mockAidaClient([[{
-                            explanation: 'This is the answer',
-                            metadata: {
-                                rpcGlobalId: 123,
-                            },
-                        }]]),
+    describe('PerformanceAgent – call tree focus', function () {
+        beforeEach(() => {
+            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+            const targetManager = SDK.TargetManager.TargetManager.instance();
+            const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+            Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+                forceNew: true,
+                resourceMapping,
+                targetManager,
+                ignoreListManager,
+                workspace,
             });
-            const context = PerformanceAgent.PerformanceTraceContext.fromCallTree(aiCallTree);
-            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-            const expectedData = new PerformanceTraceFormatter.PerformanceTraceFormatter(context.getItem()).formatTraceSummary();
-            assert.deepEqual(responses, [
-                {
-                    type: "context" /* AiAgent.ResponseType.CONTEXT */,
-                    title: 'Analyzing trace',
-                    details: [
-                        { title: 'Trace', text: expectedData },
-                    ],
-                    widgets: [
-                        {
-                            name: 'CORE_VITALS',
-                            data: {
-                                parsedTrace,
-                                insightSetKey: 'NAVIGATION_0',
-                            },
-                        },
-                    ],
-                },
-                {
-                    type: "querying" /* AiAgent.ResponseType.QUERYING */,
-                },
-                {
-                    type: "answer" /* AiAgent.ResponseType.ANSWER */,
-                    text: 'This is the answer',
-                    complete: true,
-                    suggestions: undefined,
-                    rpcId: 123,
-                },
-            ]);
-            assert.deepEqual(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts, [
-                {
-                    role: 1,
-                    parts: [{ text: `User selected the following call tree:\n\n${aiCallTree.serialize()}\n\n# User query\n\ntest` }],
-                },
-                {
-                    role: 2,
-                    parts: [{ text: 'This is the answer' }],
-                },
-            ]);
+            createTarget();
         });
-    });
-    describe('enhanceQuery', () => {
-        it('does not send the serialized calltree again if it is a followup chat about the same calltree', async () => {
-            const agent = new PerformanceAgent.PerformanceAgent({
-                aidaClient: {},
+        describe('run', function () {
+            it('generates an answer', async function () {
+                const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-outermost-frames.json.gz');
+                // A basic Layout.
+                const layoutEvt = allThreadEntriesInTrace(parsedTrace).find(event => event.ts === 465457096322);
+                assert.exists(layoutEvt);
+                const aiCallTree = AICallTree.AICallTree.fromEvent(layoutEvt, parsedTrace);
+                assert.exists(aiCallTree);
+                const agent = new PerformanceAgent.PerformanceAgent({
+                    aidaClient: mockAidaClient([[{
+                                explanation: 'This is the answer',
+                                metadata: {
+                                    rpcGlobalId: 123,
+                                },
+                            }]]),
+                });
+                const context = PerformanceAgent.PerformanceTraceContext.fromCallTree(aiCallTree);
+                const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+                deleteAllWidgetData(responses);
+                snapshotTester.assert(this, JSON.stringify(responses, null, 2));
+                assert.deepEqual(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts, [
+                    {
+                        role: 1,
+                        parts: [{ text: `User selected the following call tree:\n\n${aiCallTree.serialize()}\n\n# User query\n\ntest` }],
+                    },
+                    {
+                        role: 2,
+                        parts: [{ text: 'This is the answer' }],
+                    },
+                ]);
             });
-            const mockAiCallTree = {
-                serialize: () => 'Mock call tree',
-                parsedTrace: FAKE_PARSED_TRACE,
-                rootNode: { event: { ts: 0, dur: 0 } },
-            };
-            const context1 = PerformanceAgent.PerformanceTraceContext.fromCallTree(mockAiCallTree);
-            const context2 = PerformanceAgent.PerformanceTraceContext.fromCallTree(mockAiCallTree);
-            const context3 = PerformanceAgent.PerformanceTraceContext.fromCallTree(mockAiCallTree);
-            const enhancedQuery1 = await agent.enhanceQuery('What is this?', context1);
-            assert.strictEqual(enhancedQuery1, 'User selected the following call tree:\n\nMock call tree\n\n# User query\n\nWhat is this?');
-            const query2 = 'But what about this follow-up question?';
-            const enhancedQuery2 = await agent.enhanceQuery(query2, context2);
-            assert.strictEqual(enhancedQuery2, query2);
-            assert.isFalse(enhancedQuery2.includes(mockAiCallTree.serialize()));
-            // Just making sure any subsequent chat doesnt include it either.
-            const query3 = 'And this 3rd question?';
-            const enhancedQuery3 = await agent.enhanceQuery(query3, context3);
-            assert.strictEqual(enhancedQuery3, query3);
-            assert.isFalse(enhancedQuery3.includes(mockAiCallTree.serialize()));
+        });
+        describe('enhanceQuery', () => {
+            it('does not send the serialized calltree again if it is a followup chat about the same calltree', async () => {
+                const agent = new PerformanceAgent.PerformanceAgent({
+                    aidaClient: {},
+                });
+                const mockAiCallTree = {
+                    serialize: () => 'Mock call tree',
+                    parsedTrace: FAKE_PARSED_TRACE,
+                    rootNode: { event: { ts: 0, dur: 0 } },
+                };
+                const context1 = PerformanceAgent.PerformanceTraceContext.fromCallTree(mockAiCallTree);
+                const context2 = PerformanceAgent.PerformanceTraceContext.fromCallTree(mockAiCallTree);
+                const context3 = PerformanceAgent.PerformanceTraceContext.fromCallTree(mockAiCallTree);
+                const enhancedQuery1 = await agent.enhanceQuery('What is this?', context1);
+                assert.strictEqual(enhancedQuery1, 'User selected the following call tree:\n\nMock call tree\n\n# User query\n\nWhat is this?');
+                const query2 = 'But what about this follow-up question?';
+                const enhancedQuery2 = await agent.enhanceQuery(query2, context2);
+                assert.strictEqual(enhancedQuery2, query2);
+                assert.isFalse(enhancedQuery2.includes(mockAiCallTree.serialize()));
+                // Just making sure any subsequent chat doesnt include it either.
+                const query3 = 'And this 3rd question?';
+                const enhancedQuery3 = await agent.enhanceQuery(query3, context3);
+                assert.strictEqual(enhancedQuery3, query3);
+                assert.isFalse(enhancedQuery3.includes(mockAiCallTree.serialize()));
+            });
         });
     });
-});
-const FAKE_LCP_MODEL = {
-    insightKey: "LCPBreakdown" /* Trace.Insights.Types.InsightKeys.LCP_BREAKDOWN */,
-    strings: {},
-    title: 'LCP breakdown',
-    description: 'some description',
-    docs: '',
-    category: Trace.Insights.Types.InsightCategory.ALL,
-    state: 'fail',
-    frameId: '123',
-};
-const FAKE_INP_MODEL = {
-    insightKey: "INPBreakdown" /* Trace.Insights.Types.InsightKeys.INP_BREAKDOWN */,
-    strings: {},
-    title: 'INP breakdown',
-    description: 'some description',
-    docs: '',
-    category: Trace.Insights.Types.InsightCategory.ALL,
-    state: 'fail',
-    frameId: '123',
-};
-const FAKE_HANDLER_DATA = {
-    Meta: { traceBounds: { min: 0, max: 10 }, mainFrameURL: 'https://www.example.com' },
-};
-const FAKE_INSIGHTS = new Map([
-    [
-        '', {
-            model: {
-                LCPBreakdown: FAKE_LCP_MODEL,
-                INPBreakdown: FAKE_INP_MODEL,
-            },
-            bounds: { min: 0, max: 0, range: 0 },
-        }
-    ],
-]);
-const FAKE_METADATA = {};
-const FAKE_PARSED_TRACE = {
-    data: FAKE_HANDLER_DATA,
-    insights: FAKE_INSIGHTS,
-    metadata: FAKE_METADATA,
-};
-function createAgentForConversation(opts = {}) {
-    const agent = new PerformanceAgent.PerformanceAgent({ aidaClient: opts.aidaClient ?? mockAidaClient() });
-    const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(FAKE_PARSED_TRACE);
-    agent.run('', { selected: context });
-    return agent;
-}
-describeWithMockConnection('PerformanceAgent', () => {
+    const FAKE_LCP_MODEL = {
+        insightKey: "LCPBreakdown" /* Trace.Insights.Types.InsightKeys.LCP_BREAKDOWN */,
+        strings: {},
+        title: 'LCP breakdown',
+        description: 'some description',
+        docs: '',
+        category: Trace.Insights.Types.InsightCategory.ALL,
+        state: 'fail',
+        frameId: '123',
+    };
+    const FAKE_INP_MODEL = {
+        insightKey: "INPBreakdown" /* Trace.Insights.Types.InsightKeys.INP_BREAKDOWN */,
+        strings: {},
+        title: 'INP breakdown',
+        description: 'some description',
+        docs: '',
+        category: Trace.Insights.Types.InsightCategory.ALL,
+        state: 'fail',
+        frameId: '123',
+    };
+    const FAKE_HANDLER_DATA = {
+        Meta: { traceBounds: { min: 0, max: 10 }, mainFrameURL: 'https://www.example.com' },
+    };
+    const FAKE_INSIGHTS = new Map([
+        [
+            '', {
+                model: {
+                    LCPBreakdown: FAKE_LCP_MODEL,
+                    INPBreakdown: FAKE_INP_MODEL,
+                },
+                bounds: { min: 0, max: 0, range: 0 },
+            }
+        ],
+    ]);
+    const FAKE_METADATA = {};
+    const FAKE_PARSED_TRACE = {
+        data: FAKE_HANDLER_DATA,
+        insights: FAKE_INSIGHTS,
+        metadata: FAKE_METADATA,
+    };
+    function createAgentForConversation(opts = {}) {
+        const agent = new PerformanceAgent.PerformanceAgent({ aidaClient: opts.aidaClient ?? mockAidaClient() });
+        const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(FAKE_PARSED_TRACE);
+        agent.run('', { selected: context });
+        return agent;
+    }
     beforeEach(() => {
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();
@@ -317,36 +305,9 @@ code
                             }
                         }]])
             });
-            const expectedDetailText = new PerformanceTraceFormatter.PerformanceTraceFormatter(context.getItem()).formatTraceSummary();
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-            assert.deepEqual(responses, [
-                {
-                    type: "context" /* AiAgent.ResponseType.CONTEXT */,
-                    title: 'Analyzing trace',
-                    details: [
-                        { title: 'Trace', text: expectedDetailText },
-                    ],
-                    widgets: [
-                        {
-                            name: 'CORE_VITALS',
-                            data: {
-                                parsedTrace,
-                                insightSetKey: 'NAVIGATION_0',
-                            },
-                        },
-                    ],
-                },
-                {
-                    type: "querying" /* AiAgent.ResponseType.QUERYING */,
-                },
-                {
-                    type: "answer" /* AiAgent.ResponseType.ANSWER */,
-                    text: 'This is the answer',
-                    complete: true,
-                    suggestions: undefined,
-                    rpcId: 123,
-                },
-            ]);
+            deleteAllWidgetData(responses);
+            snapshotTester.assert(this, JSON.stringify(responses, null, 2));
         });
     });
     describe('enhanceQuery', () => {
@@ -622,6 +583,43 @@ code
             // It should show the widget again because it's a new response.
             assert.exists(secondActions[0].widgets);
             assert.lengthOf(secondActions[0].widgets, 1);
+        });
+        it('yields an LCP_BREAKDOWN widget when getInsightDetails is called for LCPBreakdown', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+            assert.isOk(parsedTrace.insights);
+            const [nav] = parsedTrace.data.Meta.mainFrameNavigations;
+            const lcpDiscovery = getInsightOrError('LCPDiscovery', parsedTrace.insights, nav);
+            const insightSetId = [...parsedTrace.insights.keys()][0];
+            const insightSet = parsedTrace.insights.get(insightSetId);
+            // Mock the LCPBreakdown insight
+            insightSet.model.LCPBreakdown = {
+                insightKey: 'LCPBreakdown',
+                state: 'fail',
+                lcpMs: 1000,
+                lcpEvent: {
+                    name: 'largestContentfulPaint::Candidate',
+                    args: { data: { nodeId: 4 } },
+                },
+            };
+            const context = PerformanceAgent.PerformanceTraceContext.fromInsight(parsedTrace, lcpDiscovery);
+            const agent = createAgentForConversation({
+                aidaClient: mockAidaClient([
+                    [{
+                            explanation: '',
+                            functionCalls: [
+                                { name: 'getInsightDetails', args: { insightSetId: insightSet.id, insightName: 'LCPBreakdown' } },
+                            ]
+                        }],
+                    [{ explanation: 'done' }]
+                ])
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+            const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.lengthOf(actions, 1);
+            assert.exists(actions[0].widgets);
+            const lcpWidget = actions[0].widgets?.find(w => w.name === 'LCP_BREAKDOWN');
+            assert.exists(lcpWidget);
+            assert.strictEqual(lcpWidget?.data.lcpData, insightSet.model.LCPBreakdown);
         });
     });
 });

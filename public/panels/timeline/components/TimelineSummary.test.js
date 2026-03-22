@@ -7,7 +7,7 @@ import * as TimelineComponents from './components.js';
 describeWithMockConnection('TimelineSummary', () => {
     async function setupWidget() {
         const view = createViewFunctionStub(TimelineComponents.TimelineSummary.CategorySummary);
-        const widget = new TimelineComponents.TimelineSummary.CategorySummary(view);
+        const widget = new TimelineComponents.TimelineSummary.CategorySummary(undefined, view);
         await view.nextInput;
         return { widget, view };
     }
@@ -20,10 +20,12 @@ describeWithMockConnection('TimelineSummary', () => {
             { title: 'Rendering', value: 0, color: 'black' },
         ];
         const { widget, view } = await setupWidget();
-        widget.rangeStart = 0;
-        widget.rangeEnd = 110;
-        widget.total = 110;
-        widget.categories = categories;
+        widget.data = {
+            rangeStart: 0,
+            rangeEnd: 110,
+            total: 110,
+            categories,
+        };
         await view.nextInput;
         assert.deepEqual(view.input.categories, categories);
         assert.deepEqual(view.input.total, 110);
@@ -33,10 +35,12 @@ describeWithMockConnection('TimelineSummary', () => {
     it('no categories should just render Total', async function () {
         const categories = [];
         const { widget, view } = await setupWidget();
-        widget.rangeStart = 0;
-        widget.rangeEnd = 110;
-        widget.total = 110;
-        widget.categories = categories;
+        widget.data = {
+            rangeStart: 0,
+            rangeEnd: 110,
+            total: 110,
+            categories,
+        };
         await view.nextInput;
         assert.deepEqual(view.input.categories, []);
         assert.deepEqual(view.input.total, 110);

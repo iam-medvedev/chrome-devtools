@@ -1,7 +1,7 @@
 import '../../ui/legacy/legacy.js';
 import type * as LighthouseModel from '../../models/lighthouse/lighthouse.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type CategoryId, Events, LighthouseController } from './LighthouseController.js';
+import { Events, LighthouseController } from './LighthouseController.js';
 import { ProtocolService } from './LighthouseProtocolService.js';
 export declare class ActiveLighthouseReport {
     report: LighthouseModel.ReporterTypes.ReportJSON;
@@ -31,7 +31,7 @@ export declare class LighthousePanel extends UI.Panel.Panel {
     static getEvents(): typeof Events;
     handleTimespanStart(): Promise<void>;
     handleTimespanEnd(): Promise<void>;
-    handleCompleteRun(overrides?: RunOverrides): Promise<{
+    handleCompleteRun(overrides?: LighthouseModel.RunTypes.RunOverrides): Promise<{
         report: LighthouseModel.ReporterTypes.ReportJSON | null;
     }>;
     handleRunCancel(): Promise<void>;
@@ -54,8 +54,5 @@ export declare class LighthousePanel extends UI.Panel.Panel {
     private loadedFromFile;
     elementsToRestoreScrollPositionsFor(): Element[];
     private onKeyDown;
-    static executeLighthouseRecording(overrides?: RunOverrides): Promise<LighthouseModel.ReporterTypes.ReportJSON | null>;
-}
-export interface RunOverrides {
-    categoryIds: CategoryId[];
+    static executeLighthouseRecording(overrides?: LighthouseModel.RunTypes.RunOverrides): Promise<LighthouseModel.ReporterTypes.ReportJSON | null>;
 }

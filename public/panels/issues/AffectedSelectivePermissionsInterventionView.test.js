@@ -36,7 +36,7 @@ describeWithEnvironment('AffectedSelectivePermissionsInterventionView', () => {
             ],
         },
         adAncestry: {
-            adAncestryChain: [
+            ancestryChain: [
                 {
                     scriptId: '2',
                     debuggerId: '123',
@@ -72,7 +72,7 @@ describeWithEnvironment('AffectedSelectivePermissionsInterventionView', () => {
         const issueDetailsMinimal = {
             apiName: 'geolocation',
             adAncestry: {
-                adAncestryChain: [],
+                ancestryChain: [],
             },
         };
         const issue = createProtocolIssueWithDetails(issueDetailsMinimal);
@@ -102,7 +102,7 @@ describeWithEnvironment('AffectedSelectivePermissionsInterventionView', () => {
                 callFrames: [],
             },
             adAncestry: {
-                adAncestryChain: [],
+                ancestryChain: [],
             },
         };
         const issue = createProtocolIssueWithDetails(issueDetailsWithEmptyStack);

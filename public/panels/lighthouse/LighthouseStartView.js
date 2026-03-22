@@ -8,7 +8,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import { Link } from '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, render } from '../../ui/lit/lit.js';
-import { Presets, RuntimeSettings } from './LighthouseController.js';
+import { getPresets, getRuntimeSettings } from './LighthouseController.js';
 import lighthouseStartViewStyles from './lighthouseStartView.css.js';
 import { RadioSetting } from './RadioSetting.js';
 const UIStrings = {
@@ -124,7 +124,7 @@ export class StartView extends UI.Widget.Widget {
         this.render();
     }
     populateRuntimeSettingAsRadio(settingName, label, parentElement) {
-        const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
+        const runtimeSetting = getRuntimeSettings().find(item => item.setting.name === settingName);
         if (!runtimeSetting?.options) {
             throw new Error(`${settingName} is not a setting with options`);
         }
@@ -141,7 +141,7 @@ export class StartView extends UI.Widget.Widget {
         UI.ARIAUtils.setLabel(control.element, label);
     }
     populateRuntimeSettingAsToolbarCheckbox(settingName, toolbar) {
-        const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
+        const runtimeSetting = getRuntimeSettings().find(item => item.setting.name === settingName);
         if (!runtimeSetting?.title) {
             throw new Error(`${settingName} is not a setting with a title`);
         }
@@ -155,7 +155,7 @@ export class StartView extends UI.Widget.Widget {
         }
     }
     populateRuntimeSettingAsToolbarDropdown(settingName, toolbar) {
-        const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
+        const runtimeSetting = getRuntimeSettings().find(item => item.setting.name === settingName);
         if (!runtimeSetting?.title) {
             throw new Error(`${settingName} is not a setting with a title`);
         }
@@ -177,7 +177,7 @@ export class StartView extends UI.Widget.Widget {
         this.populateRuntimeSettingAsRadio('lighthouse.device-type', i18nString(UIStrings.device), deviceTypeFormElements);
         // Populate the categories
         this.checkboxes = [];
-        for (const preset of Presets) {
+        for (const preset of getPresets()) {
             preset.setting.setTitle(preset.title());
             const checkbox = new UI.Toolbar.ToolbarSettingCheckbox(preset.setting, preset.description());
             const row = categoryFormElements.createChild('div', 'vbox lighthouse-launcher-row');

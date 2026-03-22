@@ -186,7 +186,10 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             firstProperty: 'firstValue',
             secondProperty: 'secondValue',
         });
-        const objectTree = new ObjectUI.ObjectPropertiesSection.ObjectTree(object, 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */);
+        const objectTree = new ObjectUI.ObjectPropertiesSection.ObjectTree(object, {
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+            readOnly: true,
+        });
         const viewFunction = createViewFunctionStub(Elements.PropertiesWidget.PropertiesWidget);
         new Elements.PropertiesWidget.PropertiesWidget(viewFunction);
         const { treeOutline } = await viewFunction.nextInput;
@@ -196,6 +199,13 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
         ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.populateWithProperties(treeOutline.rootElement(), await objectTree.populateChildrenIfNeeded(), true, true);
         return { container, treeOutline, objectTree };
     }
+    it('creates a read-only tree outline', async () => {
+        const { treeOutline, objectTree } = await setUpView();
+        ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.populateWithProperties(treeOutline.rootElement(), await objectTree.populateChildrenIfNeeded(), true, true);
+        const child = treeOutline.rootElement().childAt(0);
+        assert.instanceOf(child, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
+        assert.isFalse(child.editable);
+    });
     it('renders the view without filter', async () => {
         const { container, treeOutline, objectTree } = await setUpView();
         Elements.PropertiesWidget.DEFAULT_VIEW({

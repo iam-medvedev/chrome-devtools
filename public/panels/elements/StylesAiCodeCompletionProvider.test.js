@@ -122,7 +122,7 @@ describeWithEnvironment('StylesAiCodeCompletionProvider', () => {
         sinon.assert.calledOnce(setAiAutoCompletionSpy);
         const completionArgs = (setAiAutoCompletionSpy).firstCall.args[0];
         assert.isNotNull(completionArgs);
-        assert.strictEqual(completionArgs.text, 'suggestion');
+        assert.strictEqual(completionArgs.text, 'color: blsuggestion');
     });
 });
 //# sourceMappingURL=StylesAiCodeCompletionProvider.test.js.map

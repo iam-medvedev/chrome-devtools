@@ -50,6 +50,7 @@
     "../../../../../../front_end/panels/common/AiCodeGenerationTeaser.test.ts",
     "../../../../../../front_end/panels/common/BadgeNotification.test.ts",
     "../../../../../../front_end/panels/common/DOMLinkifier.test.ts",
+    "../../../../../../front_end/panels/common/ExtensionPanel.test.ts",
     "../../../../../../front_end/panels/common/ExtensionServer.test.ts",
     "../../../../../../front_end/panels/common/GdpSignUpDialog.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
@@ -61,7 +62,13 @@
       "path": "./bundle-tsconfig.json"
     },
     {
+      "path": "../../core/platform/bundle-tsconfig.json"
+    },
+    {
       "path": "../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/bundle-tsconfig.json"
     }
   ]
 }

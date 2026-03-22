@@ -531,17 +531,21 @@ class SummaryView extends UI.Widget.Widget {
     }
 }
 function generateRangeSummaryDetails(input) {
-    const { parsedTrace, selectedRange } = input;
-    if (!selectedRange || !parsedTrace) {
-        return nothing;
-    }
-    const minBoundsMilli = Trace.Helpers.Timing.microToMilli(parsedTrace.data.Meta.traceBounds.min);
-    const { events, startTime, endTime, thirdPartyTree } = selectedRange;
-    const aggregatedStats = TimelineUIUtils.statsForTimeRange(events, startTime, endTime);
-    const startOffset = startTime - minBoundsMilli;
-    const endOffset = endTime - minBoundsMilli;
-    const summaryDetailElem = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, events, thirdPartyTree);
-    return html `${summaryDetailElem}`;
+    // clang-format off
+    return html `
+    <devtools-widget
+      ${widget(TimelineComponents.TimelineRangeSummaryView.TimelineRangeSummaryView, {
+        data: {
+            parsedTrace: input.parsedTrace,
+            events: input.selectedRange?.events,
+            startTime: input.selectedRange?.startTime,
+            endTime: input.selectedRange?.endTime,
+            thirdPartyTreeTemplate: input.selectedRange?.thirdPartyTree ? html `<devtools-performance-third-party-tree-view
+            .treeView=${input.selectedRange?.thirdPartyTree}></devtools-performance-third-party-tree-view>` : nothing,
+        },
+    })}
+    ></devtools-widget>`;
+    // clang-format on
 }
 async function renderSelectedEventDetails(input) {
     const { selectedEvent, parsedTrace, linkifier } = input;

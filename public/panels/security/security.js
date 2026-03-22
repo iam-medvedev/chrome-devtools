@@ -988,7 +988,7 @@ var SecurityPanelSidebar = class extends UI2.Widget.VBox {
 };
 
 // gen/front_end/panels/security/SecurityPanel.js
-var { widgetConfig } = UI3.Widget;
+var { widget, widgetRef } = UI3.Widget;
 var UIStrings3 = {
   /**
    * @description Summary div text content in Security Panel of the Security panel
@@ -1473,8 +1473,8 @@ var DEFAULT_VIEW = (input, output, target) => {
   })}>
       <devtools-widget
         slot="sidebar"
-        .widgetConfig=${widgetConfig(SecurityPanelSidebar)}
-        ${UI3.Widget.widgetRef(SecurityPanelSidebar, (e) => {
+        ${widget(SecurityPanelSidebar)}
+        ${widgetRef(SecurityPanelSidebar, (e) => {
     output.sidebar = e;
   })}>
       </devtools-widget>

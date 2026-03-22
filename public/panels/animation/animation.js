@@ -1576,11 +1576,12 @@ var NodeUI = class {
     }
     this.#node = node;
     this.nodeChanged();
-    const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node);
-    link.addEventListener("click", () => {
-      Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimatedNodeDescriptionClicked);
+    const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
+      onClick: () => {
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimatedNodeDescriptionClicked);
+      }
     });
-    this.#description.appendChild(link);
+    render(link, this.#description, { host: this });
     if (!node.ownerDocument) {
       this.nodeRemoved();
     }

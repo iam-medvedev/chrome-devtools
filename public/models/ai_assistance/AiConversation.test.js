@@ -28,14 +28,14 @@ describeWithEnvironment('AiConversation', () => {
     });
     it('should be able to switch agent type based on context', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
-        const conversation = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */);
+        const conversation = new AiAssistance.AiConversation.AiConversation({ type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */ });
         const networkRequest = new AiAssistance.NetworkAgent.RequestContext(createNetworkRequest(), new NetworkTimeCalculator.NetworkTransferTimeCalculator());
         conversation.setContext(networkRequest);
         assert(conversation.type === "drjones-network-request" /* AiAssistance.AiHistoryStorage.ConversationType.NETWORK */);
     });
     it('should be able to switch agent type when context is removed', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
-        const conversation = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */);
+        const conversation = new AiAssistance.AiConversation.AiConversation({ type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */ });
         conversation.setContext(null);
         assert(conversation.type === "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */);
     });
@@ -50,26 +50,38 @@ describeWithEnvironment('AiConversation', () => {
         };
         const file = new Workspace.UISourceCode.UISourceCode(project, Platform.DevToolsPath.urlString `https://example.com/script.js`, Common.ResourceType.resourceTypes.Script);
         sinon.stub(workspace, 'projects').returns([project]);
-        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, mockAidaClient([
-            [{
-                    functionCalls: [{
-                            name: 'selectSourceFile',
-                            args: {
-                                id: 1,
-                            },
-                        }],
-                    explanation: '',
-                }],
-            [{ explanation: 'Done' }],
-        ]));
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            data: [],
+            id: 'test-id',
+            isReadOnly: false,
+            aidaClient: mockAidaClient([
+                [{
+                        functionCalls: [{
+                                name: 'selectSourceFile',
+                                args: {
+                                    id: 1,
+                                },
+                            }],
+                        explanation: '',
+                    }],
+                [{ explanation: 'Done' }],
+            ]),
+        });
         await Array.fromAsync(conversation.run('test'));
         assert.exists(conversation.selectedContext);
         assert.instanceOf(conversation.selectedContext, AiAssistance.FileAgent.FileContext);
     });
     it('should yield UserQuery when run is called', async () => {
-        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, mockAidaClient([
-            [{ explanation: 'Answer' }],
-        ]));
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            data: [],
+            id: 'test-id',
+            isReadOnly: false,
+            aidaClient: mockAidaClient([
+                [{ explanation: 'Answer' }],
+            ]),
+        });
         const result = await Array.fromAsync(conversation.run('test query'));
         assert.deepEqual(result[0], {
             type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
@@ -79,9 +91,15 @@ describeWithEnvironment('AiConversation', () => {
         });
     });
     it('should add UserQuery to history when run is called', async () => {
-        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, mockAidaClient([
-            [{ explanation: 'Answer' }],
-        ]));
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            data: [],
+            id: 'test-id',
+            isReadOnly: false,
+            aidaClient: mockAidaClient([
+                [{ explanation: 'Answer' }],
+            ]),
+        });
         await Array.fromAsync(conversation.run('test query'));
         assert.deepEqual(conversation.history[0], {
             type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
@@ -108,7 +126,13 @@ describeWithEnvironment('AiConversation', () => {
                 },
             ],
         ]);
-        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, aidaClient);
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            data: [],
+            id: 'test-id',
+            isReadOnly: false,
+            aidaClient,
+        });
         const networkRequest = createNetworkRequest({ url: Platform.DevToolsPath.urlString `https://example.com/test` });
         const contentData = new TextUtils.ContentData.ContentData('test content', false, 'text/plain');
         sinon.stub(networkRequest, 'requestContentData').resolves(contentData);
@@ -151,7 +175,13 @@ describeWithEnvironment('AiConversation', () => {
                 },
             ]
         ]);
-        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, aidaClient);
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            data: [],
+            id: 'test-id',
+            isReadOnly: false,
+            aidaClient,
+        });
         const networkRequest = createNetworkRequest({ url: Platform.DevToolsPath.urlString `https://example.com` });
         sinon.stub(networkRequest, 'requestContentData')
             .resolves(new TextUtils.ContentData.ContentData('test content', false, 'text/plain'));
@@ -201,7 +231,13 @@ describeWithEnvironment('AiConversation', () => {
                 }],
             [{ explanation: 'Done' }],
         ]);
-        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, aidaClient);
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            data: [],
+            id: 'test-id',
+            isReadOnly: false,
+            aidaClient,
+        });
         await Array.fromAsync(conversation.run('test'));
         const requestToAida = aidaClient.doConversation.getCall(1).firstArg;
         const part = requestToAida.current_message.parts[0];
@@ -248,7 +284,13 @@ describeWithEnvironment('AiConversation', () => {
                 }],
             [{ explanation: 'Done2' }],
         ]);
-        const conversation = new AiAssistance.AiConversation.AiConversation("none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */, [], 'test-id', false, aidaClient);
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            data: [],
+            id: 'test-id',
+            isReadOnly: false,
+            aidaClient,
+        });
         await Array.fromAsync(conversation.run('test'));
         target.inspectedURL.returns(Platform.DevToolsPath.urlString `${otherOrigin}/`);
         const request2 = SDK.NetworkRequest.NetworkRequest.create('requestId2', Platform.DevToolsPath.urlString `${otherOrigin}/bar`, Platform.DevToolsPath.urlString `${otherOrigin}/bar`, null, null, null);
@@ -267,7 +309,7 @@ describeWithEnvironment('AiConversation', () => {
         });
     });
     it('should correctly serialize history by removing non-serializable data', async () => {
-        const conversation = new AiAssistance.AiConversation.AiConversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */);
+        const conversation = new AiAssistance.AiConversation.AiConversation({ type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */ });
         const userQuery = {
             type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
             query: 'test query',
@@ -276,7 +318,6 @@ describeWithEnvironment('AiConversation', () => {
         };
         const contextResponse = {
             type: "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */,
-            title: 'Context',
             details: [{ title: 'Detail', text: 'Text' }],
             widgets: [{ name: 'DOM_TREE', data: { root: {} } }],
         };

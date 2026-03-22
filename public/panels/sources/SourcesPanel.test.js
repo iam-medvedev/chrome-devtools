@@ -25,6 +25,7 @@ describeWithEnvironment('SourcesPanel', () => {
             targetManager: SDK.TargetManager.TargetManager.instance(),
             workspace,
             debuggerWorkspaceBinding,
+            settings: Common.Settings.Settings.instance(),
         });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
         const networkPersistenceManager = sinon.createStubInstance(Persistence.NetworkPersistenceManager.NetworkPersistenceManager);

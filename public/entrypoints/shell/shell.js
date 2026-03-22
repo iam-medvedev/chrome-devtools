@@ -1445,6 +1445,11 @@ Common.Settings.registerSettingExtension({
   defaultValue: false
 });
 Common.Settings.registerSettingExtension({
+  settingName: "navigator-just-my-code",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common.Settings.registerSettingExtension({
   category: "SOURCES",
   storageType: "Synced",
   title: i18nLazyString(UIStrings.searchInAnonymousAndContent),
@@ -5834,6 +5839,7 @@ var actions = [
   {
     actionId: "explain.console-message.hover",
     title: i18nLazyString16(UIStrings16.explainThisMessage),
+    configurableBindings: false,
     contextTypes() {
       return [Console2.ConsoleViewMessage.ConsoleViewMessage];
     }
@@ -5841,6 +5847,7 @@ var actions = [
   {
     actionId: "explain.console-message.teaser",
     title: i18nLazyString16(UIStrings16.explainThisMessage),
+    configurableBindings: false,
     contextTypes() {
       return [];
     }
@@ -5848,6 +5855,7 @@ var actions = [
   {
     actionId: "explain.console-message.context.error",
     title: i18nLazyString16(UIStrings16.explainThisError),
+    configurableBindings: false,
     contextTypes() {
       return [];
     }
@@ -5855,6 +5863,7 @@ var actions = [
   {
     actionId: "explain.console-message.context.warning",
     title: i18nLazyString16(UIStrings16.explainThisWarning),
+    configurableBindings: false,
     contextTypes() {
       return [];
     }
@@ -5862,6 +5871,7 @@ var actions = [
   {
     actionId: "explain.console-message.context.other",
     title: i18nLazyString16(UIStrings16.explainThisMessage),
+    configurableBindings: false,
     contextTypes() {
       return [];
     }

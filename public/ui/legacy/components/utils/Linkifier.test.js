@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
@@ -41,7 +42,7 @@ describeWithMockConnection('Linkifier', () => {
             ignoreListManager,
             workspace,
         });
-        Breakpoints.BreakpointManager.BreakpointManager.instance({ forceNew, targetManager, workspace, debuggerWorkspaceBinding });
+        Breakpoints.BreakpointManager.BreakpointManager.instance({ forceNew, targetManager, workspace, debuggerWorkspaceBinding, settings: Common.Settings.Settings.instance() });
         const backend = new MockProtocolBackend();
         return { target, linkifier, backend };
     }

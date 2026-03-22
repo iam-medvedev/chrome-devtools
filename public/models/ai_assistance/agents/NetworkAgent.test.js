@@ -115,7 +115,6 @@ describeWithMockConnection('NetworkAgent', () => {
             assert.deepEqual(responses, [
                 {
                     type: "context" /* AiAgent.ResponseType.CONTEXT */,
-                    title: 'Analyzing network data',
                     details: [
                         {
                             title: 'Request',

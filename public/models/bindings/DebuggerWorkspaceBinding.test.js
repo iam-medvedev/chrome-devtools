@@ -62,8 +62,8 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
         const script = (await loadBasicSourceMapExample(target)).script;
         const sourceMap = await debuggerModel.sourceMapManager().sourceMapForClientPromise(script);
         assert.exists(sourceMap);
-        const url = sourceMap.url();
-        assert.strictEqual(url, 'file://gen.js.map/');
+        await sourceMap.waitForScopeInfo();
+        assert.strictEqual(sourceMap.url(), 'file://gen.js.map/');
         const uiSourceCodeForSourceMap = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(sourceMap.sourceURLs()[0]);
         assert.exists(uiSourceCodeForSourceMap);
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().setFunctionRanges(uiSourceCodeForSourceMap, validFunctionRanges);

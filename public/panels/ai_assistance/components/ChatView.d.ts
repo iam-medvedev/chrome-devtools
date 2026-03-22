@@ -22,6 +22,8 @@ export interface Props {
     onCopyResponseClick: (message: ModelChatMessage) => void;
     onContextRemoved: (() => void) | null;
     onContextAdd: (() => void) | null;
+    conversationMarkdown: string;
+    onExportConversation: (() => void) | null;
     changeManager: AiAssistanceModel.ChangeManager.ChangeManager;
     inspectElementToggled: boolean;
     messages: Message[];
@@ -40,6 +42,7 @@ export interface Props {
     disclaimerText: Platform.UIString.LocalizedString;
     uploadImageInputEnabled?: boolean;
     markdownRenderer: MarkdownLitRenderer;
+    generateConversationSummary: (markdown: string) => Promise<string>;
     walkthrough: {
         onOpen: (message: ModelChatMessage) => void;
         onToggle: (isOpen: boolean) => void;
@@ -52,6 +55,7 @@ interface ChatWidgetInput extends Props {
     handleScroll: (ev: Event) => void;
     handleSuggestionClick: (title: string) => void;
     handleMessageContainerRef: (el: Element | undefined) => void;
+    exportForAgentsClick: () => void;
 }
 /**
  * ChatView is a web component for historical reasons and generally should not

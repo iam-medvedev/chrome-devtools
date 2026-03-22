@@ -471,7 +471,7 @@ function renderSections(input) {
         return html `
                       <devtools-widget
                       @copystep=${input.onCopyStep}
-                      .widgetConfig=${UI.Widget.widgetConfig(StepView, {
+                      ${widget(StepView, {
             step,
             state: input.getStepState(step),
             error: input.currentStep === step ? (input.currentError ?? undefined) : undefined,
@@ -537,6 +537,7 @@ function renderHeader(input) {
     })}
                 .value=${Lit.Directives.live(title)}
                 .disabled=${!isTitleEditable}
+                maxlength="300"
                 >
           <div class="title-button-bar">
             <devtools-button
@@ -606,7 +607,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
           <div class="controls">
             <devtools-widget
               class="control-button"
-              .widgetConfig=${UI.Widget.widgetConfig(ControlButton, {
+              ${widget(ControlButton, {
         label: footerButtonTitle,
         shape: 'square',
         disabled: input.recordingTogglingInProgress,

@@ -1423,42 +1423,6 @@ export declare namespace Audits {
         disableReason?: string;
     }
     /**
-     * Metadata about the ad script that was on the stack that caused the current
-     * script in the `AdAncestry` to be considered ad related.
-     */
-    interface AdScriptIdentifier {
-        /**
-         * The script's v8 identifier.
-         */
-        scriptId: Runtime.ScriptId;
-        /**
-         * v8's debugging id for the v8::Context.
-         */
-        debuggerId: Runtime.UniqueDebuggerId;
-        /**
-         * The script's url (or generated name based on id if inline script).
-         */
-        name: string;
-    }
-    /**
-     * Providence about how an ad script was determined to be such. It is an ad
-     * because its url matched a filterlist rule, or because some other ad script
-     * was on the stack when this script was loaded.
-     */
-    interface AdAncestry {
-        /**
-         * The ad-script in the stack when the offending script was loaded. This is
-         * recursive down to the root script that was tagged due to the filterlist
-         * rule.
-         */
-        adAncestryChain: AdScriptIdentifier[];
-        /**
-         * The filterlist rule that caused the root (last) script in
-         * `adAncestry` to be ad-tagged.
-         */
-        rootScriptFilterlistRule?: string;
-    }
-    /**
      * The issue warns about blocked calls to privacy sensitive APIs via the
      * Selective Permissions Intervention.
      */
@@ -1470,7 +1434,7 @@ export declare namespace Audits {
         /**
          * Why the ad script using the API is considered an ad.
          */
-        adAncestry: AdAncestry;
+        adAncestry: Network.AdAncestry;
         /**
          * The stack trace at the time of the intervention.
          */
@@ -3483,6 +3447,10 @@ export declare namespace CSS {
          * Function body.
          */
         children: CSSFunctionNode[];
+        /**
+         * The BackendNodeId of the DOM node that constitutes the origin tree scope of this rule.
+         */
+        originTreeScopeNodeId?: DOM.BackendNodeId;
     }
     /**
      * CSS keyframe rule representation.
@@ -4257,6 +4225,7 @@ export declare namespace DOM {
         Checkmark = "checkmark",
         Before = "before",
         After = "after",
+        ExpandIcon = "expand-icon",
         PickerIcon = "picker-icon",
         InterestHint = "interest-hint",
         Marker = "marker",
@@ -4464,7 +4433,7 @@ export declare namespace DOM {
         isScrollable?: boolean;
         affectedByStartingStyles?: boolean;
         adoptedStyleSheets?: StyleSheetId[];
-        isAdRelated?: boolean;
+        adProvenance?: Network.AdProvenance;
     }
     /**
      * A structure to hold the top-level node of a detached tree and an array of its retained descendants.
@@ -5434,9 +5403,9 @@ export declare namespace DOM {
          */
         nodeId: DOM.NodeId;
         /**
-         * If the node is ad related.
+         * The provenance of the ad related node, if it is ad related.
          */
-        isAdRelated: boolean;
+        adProvenance?: Network.AdProvenance;
     }
     /**
      * Fired when a node's starting styles changes.
@@ -10655,6 +10624,62 @@ export declare namespace Network {
         initiatorIPAddressSpace: IPAddressSpace;
         localNetworkAccessRequestPolicy: LocalNetworkAccessRequestPolicy;
     }
+    /**
+     * Identifies the script on the stack that caused a resource or element to be
+     * labeled as an ad. For resources, this indicates the context that triggered
+     * the fetch. For elements, this indicates the context that caused the element
+     * to be appended to the DOM.
+     */
+    interface AdScriptIdentifier {
+        /**
+         * The script's V8 identifier.
+         */
+        scriptId: Runtime.ScriptId;
+        /**
+         * V8's debugging ID for the v8::Context.
+         */
+        debuggerId: Runtime.UniqueDebuggerId;
+        /**
+         * The script's url (or generated name based on id if inline script).
+         */
+        name: string;
+    }
+    /**
+     * Encapsulates the script ancestry and the root script filter list rule that
+     * caused the resource or element to be labeled as an ad.
+     */
+    interface AdAncestry {
+        /**
+         * A chain of `AdScriptIdentifier`s representing the ancestry of an ad
+         * script that led to the creation of a resource or element. The chain is
+         * ordered from the script itself (lowest level) up to its root ancestor
+         * that was flagged by a filter list.
+         */
+        ancestryChain: AdScriptIdentifier[];
+        /**
+         * The filter list rule that caused the root (last) script in
+         * `ancestryChain` to be tagged as an ad.
+         */
+        rootScriptFilterlistRule?: string;
+    }
+    /**
+     * Represents the provenance of an ad resource or element. Only one of
+     * `filterlistRule` or `adScriptAncestry` can be set. If `filterlistRule`
+     * is provided, the resource URL directly matches a filter list rule. If
+     * `adScriptAncestry` is provided, an ad script initiated the resource fetch or
+     * appended the element to the DOM. If neither is provided, the entity is
+     * known to be an ad, but provenance tracking information is unavailable.
+     */
+    interface AdProvenance {
+        /**
+         * The filterlist rule that matched, if any.
+         */
+        filterlistRule?: string;
+        /**
+         * The script ancestry that created the ad, if any.
+         */
+        adScriptAncestry?: AdAncestry;
+    }
     const enum CrossOriginOpenerPolicyValue {
         SameOrigin = "SameOrigin",
         SameOriginAllowPopups = "SameOriginAllowPopups",
@@ -13276,41 +13301,6 @@ export declare namespace Page {
         explanations?: AdFrameExplanation[];
     }
     /**
-     * Identifies the script which caused a script or frame to be labelled as an
-     * ad.
-     */
-    interface AdScriptId {
-        /**
-         * Script Id of the script which caused a script or frame to be labelled as
-         * an ad.
-         */
-        scriptId: Runtime.ScriptId;
-        /**
-         * Id of scriptId's debugger.
-         */
-        debuggerId: Runtime.UniqueDebuggerId;
-    }
-    /**
-     * Encapsulates the script ancestry and the root script filterlist rule that
-     * caused the frame to be labelled as an ad. Only created when `ancestryChain`
-     * is not empty.
-     */
-    interface AdScriptAncestry {
-        /**
-         * A chain of `AdScriptId`s representing the ancestry of an ad script that
-         * led to the creation of a frame. The chain is ordered from the script
-         * itself (lower level) up to its root ancestor that was flagged by
-         * filterlist.
-         */
-        ancestryChain: AdScriptId[];
-        /**
-         * The filterlist rule that caused the root (last) script in
-         * `ancestryChain` to be ad-tagged. Only populated if the rule is
-         * available.
-         */
-        rootScriptFilterlistRule?: string;
-    }
-    /**
      * Indicates whether the frame is a secure context and why it is the case.
      */
     const enum SecureContextType {
@@ -14498,7 +14488,7 @@ export declare namespace Page {
          * stack) to more distant ancestors (that created the immediately preceding
          * script). Only sent if frame is labelled as an ad and ids are available.
          */
-        adScriptAncestry?: AdScriptAncestry;
+        adScriptAncestry?: Network.AdAncestry;
     }
     interface GetFrameTreeResponse extends ProtocolResponseWithError {
         /**
@@ -18807,7 +18797,8 @@ export declare namespace WebAuthn {
     }
     const enum Ctap2Version {
         Ctap2_0 = "ctap2_0",
-        Ctap2_1 = "ctap2_1"
+        Ctap2_1 = "ctap2_1",
+        Ctap2_2 = "ctap2_2"
     }
     const enum AuthenticatorTransport {
         Usb = "usb",
@@ -18855,6 +18846,18 @@ export declare namespace WebAuthn {
          * Defaults to false.
          */
         hasPrf?: boolean;
+        /**
+         * If set to true, the authenticator will support the hmac-secret extension.
+         * https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-hmac-secret-extension
+         * Defaults to false.
+         */
+        hasHmacSecret?: boolean;
+        /**
+         * If set to true, the authenticator will support the hmac-secret-mc extension.
+         * https://fidoalliance.org/specs/fido-v2.2-rd-20241003/fido-client-to-authenticator-protocol-v2.2-rd-20241003.html#sctn-hmac-secret-make-cred-extension
+         * Defaults to false.
+         */
+        hasHmacSecretMc?: boolean;
         /**
          * If set to true, tests of user presence will succeed immediately.
          * Otherwise, they will not be resolved. Defaults to true.
