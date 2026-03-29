@@ -1,7 +1,6 @@
 // Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import { CategorizedBreakpoint } from './CategorizedBreakpoint.js';
 import { DOMModel, Events as DOMModelEvents } from './DOMModel.js';
@@ -24,7 +23,7 @@ export class DOMDebuggerModel extends SDKModel {
         this.#domModel.addEventListener(DOMModelEvents.DocumentUpdated, this.documentUpdated, this);
         this.#domModel.addEventListener(DOMModelEvents.NodeRemoved, this.nodeRemoved, this);
         this.#domBreakpoints = [];
-        this.#domBreakpointsSetting = Common.Settings.Settings.instance().createLocalSetting('dom-breakpoints', []);
+        this.#domBreakpointsSetting = this.target().targetManager().settings.createLocalSetting('dom-breakpoints', []);
         if (this.#domModel.existingDocument()) {
             void this.documentUpdated();
         }
@@ -361,16 +360,18 @@ export class CSPViolationBreakpoint extends CategorizedBreakpoint {
 }
 export class DOMEventListenerBreakpoint extends CategorizedBreakpoint {
     eventTargetNames;
-    constructor(eventName, eventTargetNames, category) {
+    #targetManager;
+    constructor(eventName, eventTargetNames, category, targetManager) {
         super(category, eventName);
         this.eventTargetNames = eventTargetNames;
+        this.#targetManager = targetManager;
     }
     setEnabled(enabled) {
         if (this.enabled() === enabled) {
             return;
         }
         super.setEnabled(enabled);
-        for (const model of TargetManager.instance().models(DOMDebuggerModel)) {
+        for (const model of this.#targetManager.models(DOMDebuggerModel)) {
             this.updateOnModel(model);
         }
     }
@@ -392,8 +393,10 @@ export class DOMDebuggerManager {
     #xhrBreakpoints = new Map();
     #cspViolationsToBreakOn = [];
     #eventListenerBreakpoints = [];
-    constructor() {
-        this.#xhrBreakpointsSetting = Common.Settings.Settings.instance().createLocalSetting('xhr-breakpoints', []);
+    #targetManager;
+    constructor(targetManager = TargetManager.instance()) {
+        this.#targetManager = targetManager;
+        this.#xhrBreakpointsSetting = this.#targetManager.settings.createLocalSetting('xhr-breakpoints', []);
         for (const breakpoint of this.#xhrBreakpointsSetting.get()) {
             this.#xhrBreakpoints.set(breakpoint.url, breakpoint.enabled);
         }
@@ -487,12 +490,12 @@ export class DOMDebuggerManager {
         this.createEventListenerBreakpoints("touch" /* Category.TOUCH */, ['touchstart', 'touchmove', 'touchend', 'touchcancel'], ['*']);
         this.createEventListenerBreakpoints("worker" /* Category.WORKER */, ['message', 'messageerror'], ['*']);
         this.createEventListenerBreakpoints("xhr" /* Category.XHR */, ['readystatechange', 'load', 'loadstart', 'loadend', 'abort', 'error', 'progress', 'timeout'], ['xmlhttprequest', 'xmlhttprequestupload']);
-        TargetManager.instance().observeModels(DOMDebuggerModel, this);
+        this.#targetManager.observeModels(DOMDebuggerModel, this);
     }
     static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
+        const { forceNew, targetManager } = opts;
         if (!domDebuggerManagerInstance || forceNew) {
-            domDebuggerManagerInstance = new DOMDebuggerManager();
+            domDebuggerManagerInstance = new DOMDebuggerManager(targetManager);
         }
         return domDebuggerManagerInstance;
     }
@@ -501,7 +504,7 @@ export class DOMDebuggerManager {
     }
     createEventListenerBreakpoints(category, eventNames, eventTargetNames) {
         for (const eventName of eventNames) {
-            this.#eventListenerBreakpoints.push(new DOMEventListenerBreakpoint(eventName, eventTargetNames, category));
+            this.#eventListenerBreakpoints.push(new DOMEventListenerBreakpoint(eventName, eventTargetNames, category, this.#targetManager));
         }
     }
     resolveEventListenerBreakpoint({ eventName, targetName }) {
@@ -529,7 +532,7 @@ export class DOMDebuggerManager {
     }
     updateCSPViolationBreakpoints() {
         const violationTypes = this.#cspViolationsToBreakOn.filter(v => v.enabled()).map(v => v.type());
-        for (const model of TargetManager.instance().models(DOMDebuggerModel)) {
+        for (const model of this.#targetManager.models(DOMDebuggerModel)) {
             this.updateCSPViolationBreakpointsForModel(model, violationTypes);
         }
     }
@@ -549,7 +552,7 @@ export class DOMDebuggerManager {
     addXHRBreakpoint(url, enabled) {
         this.#xhrBreakpoints.set(url, enabled);
         if (enabled) {
-            for (const model of TargetManager.instance().models(DOMDebuggerModel)) {
+            for (const model of this.#targetManager.models(DOMDebuggerModel)) {
                 void model.agent.invoke_setXHRBreakpoint({ url });
             }
         }
@@ -559,7 +562,7 @@ export class DOMDebuggerManager {
         const enabled = this.#xhrBreakpoints.get(url);
         this.#xhrBreakpoints.delete(url);
         if (enabled) {
-            for (const model of TargetManager.instance().models(DOMDebuggerModel)) {
+            for (const model of this.#targetManager.models(DOMDebuggerModel)) {
                 void model.agent.invoke_removeXHRBreakpoint({ url });
             }
         }
@@ -567,7 +570,7 @@ export class DOMDebuggerManager {
     }
     toggleXHRBreakpoint(url, enabled) {
         this.#xhrBreakpoints.set(url, enabled);
-        for (const model of TargetManager.instance().models(DOMDebuggerModel)) {
+        for (const model of this.#targetManager.models(DOMDebuggerModel)) {
             if (enabled) {
                 void model.agent.invoke_setXHRBreakpoint({ url });
             }

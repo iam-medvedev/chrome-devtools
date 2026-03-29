@@ -109,7 +109,7 @@ describeWithEnvironment('WalkthroughView', () => {
         const title = querySelectorErrorOnMissing(view.contentElement, '.walkthrough-title');
         assert.strictEqual(title.innerText, 'Agent walkthrough');
     });
-    it('calls scrollIntoView on the last step', async () => {
+    it('calls scrollIntoView on the last step when it is loading', async () => {
         const message = {
             entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
             parts: [
@@ -131,6 +131,7 @@ describeWithEnvironment('WalkthroughView', () => {
         const view = new WalkthroughView();
         renderElementIntoDOM(view);
         view.markdownRenderer = new AiAssistance.MarkdownRendererWithCodeBlock();
+        view.isLoading = true;
         const scrollIntoViewSpy = sinon.spy(HTMLElement.prototype, 'scrollIntoView');
         view.message = message;
         view.performUpdate();
@@ -145,30 +146,65 @@ describeWithEnvironment('WalkthroughView', () => {
         sinon.assert.calledOn(scrollIntoViewSpy, lastStep);
         scrollIntoViewSpy.restore();
     });
-    it('calls scrollIntoView when the widget is resized', async () => {
+    it('does not call scrollIntoView on the last step when it is not loading', async () => {
         const message = {
             entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-            parts: [{
-                    type: 'step',
-                    step: {
-                        isLoading: false,
-                        title: 'Step 1',
-                    }
-                }],
+            parts: [
+                { type: 'step', step: { isLoading: false, title: 'Step 1', widgets: [] } },
+            ],
         };
         const view = new WalkthroughView();
         renderElementIntoDOM(view);
         view.markdownRenderer = new AiAssistance.MarkdownRendererWithCodeBlock();
+        view.isLoading = false;
         const scrollIntoViewSpy = sinon.spy(HTMLElement.prototype, 'scrollIntoView');
         view.message = message;
         view.performUpdate();
         await view.updateComplete;
-        // Trigger resize
-        view.onResize();
         // We need to wait for the requestAnimationFrame in scrollToBottom
         await new Promise(resolve => window.requestAnimationFrame(resolve));
-        sinon.assert.calledWithMatch(scrollIntoViewSpy, { behavior: 'smooth', block: 'end' });
+        // Verify it was NOT called
+        sinon.assert.notCalled(scrollIntoViewSpy);
         scrollIntoViewSpy.restore();
+    });
+    describe('walkthrough titles', () => {
+        it('returns the correct walkthrough title when not loading', () => {
+            const lastStep = { isLoading: false, title: 'Step 1' };
+            assert.strictEqual(AiAssistance.WalkthroughView.walkthroughTitle({
+                isLoading: false,
+                hasWidgets: false,
+                lastStep,
+            }), 'Show thinking');
+            assert.strictEqual(AiAssistance.WalkthroughView.walkthroughTitle({
+                isLoading: false,
+                hasWidgets: true,
+                lastStep,
+            }), 'Show agent walkthrough');
+        });
+        it('returns the step title when loading', () => {
+            const lastStep = { isLoading: true, title: 'Investigating...' };
+            assert.strictEqual(AiAssistance.WalkthroughView.walkthroughTitle({
+                isLoading: true,
+                hasWidgets: false,
+                lastStep,
+            }), 'Investigating...');
+        });
+        it('returns the correct walkthrough close title', () => {
+            assert.strictEqual(AiAssistance.WalkthroughView.walkthroughCloseTitle({
+                hasWidgets: false,
+            }), 'Hide thinking');
+            assert.strictEqual(AiAssistance.WalkthroughView.walkthroughCloseTitle({
+                hasWidgets: true,
+            }), 'Hide agent walkthrough');
+            assert.strictEqual(AiAssistance.WalkthroughView.walkthroughCloseTitle({
+                hasWidgets: false,
+                isInlined: true,
+            }), 'Agent walkthrough');
+            assert.strictEqual(AiAssistance.WalkthroughView.walkthroughCloseTitle({
+                hasWidgets: true,
+                isInlined: true,
+            }), 'Agent walkthrough');
+        });
     });
 });
 //# sourceMappingURL=WalkthroughView.test.js.map

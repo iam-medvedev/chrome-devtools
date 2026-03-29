@@ -1,0 +1,92 @@
+// Copyright 2026 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+import { createTarget, describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import * as SDK from './sdk.js';
+function createTool(name, frameId) {
+    return {
+        name,
+        description: `Description for ${name}`,
+        inputSchema: { type: 'object' },
+        frameId,
+    };
+}
+describeWithEnvironment('WebMCPModel', () => {
+    let target;
+    let webMCPModel;
+    beforeEach(() => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        target = createTarget();
+        const model = target.model(SDK.WebMCPModel.WebMCPModel);
+        assert.isNotNull(model);
+        webMCPModel = model;
+    });
+    it('initially has no tools', () => {
+        assert.isEmpty([...webMCPModel.tools]);
+    });
+    it('updates tools and dispatches event on toolsAdded', async () => {
+        const toolsAddedPromise = webMCPModel.once("ToolsAdded" /* SDK.WebMCPModel.Events.TOOLS_ADDED */);
+        const tool = createTool('test-tool', 'frame-1');
+        webMCPModel.onToolsAdded([tool]);
+        // Check state
+        const tools = [...webMCPModel.tools];
+        assert.lengthOf(tools, 1);
+        assert.deepEqual(tools[0], tool);
+        // Check event
+        const eventTools = await toolsAddedPromise;
+        assert.deepEqual(eventTools, [tool]);
+    });
+    it('updates tools and dispatches event on toolsRemoved', async () => {
+        const tool1 = createTool('test-tool-1', 'frame-1');
+        const tool2 = createTool('test-tool-2', 'frame-1');
+        webMCPModel.onToolsAdded([tool1, tool2]);
+        assert.lengthOf([...webMCPModel.tools], 2);
+        const toolsRemovedPromise = webMCPModel.once("ToolsRemoved" /* SDK.WebMCPModel.Events.TOOLS_REMOVED */);
+        webMCPModel.onToolsRemoved([tool1]);
+        // Check state
+        const tools = [...webMCPModel.tools];
+        assert.lengthOf(tools, 1);
+        assert.deepEqual(tools[0], tool2);
+        // Check event
+        const eventTools = await toolsRemovedPromise;
+        assert.deepEqual(eventTools, [tool1]);
+    });
+    it('cleans up tools when the corresponding execution context is destroyed', async () => {
+        const tool1 = createTool('test-tool', 'frame-1');
+        const tool2 = createTool('test-tool', 'frame-2');
+        webMCPModel.onToolsAdded([tool1, tool2]);
+        assert.lengthOf([...webMCPModel.tools], 2);
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        assert.isNotNull(runtimeModel);
+        const toolsRemovedPromise = webMCPModel.once("ToolsRemoved" /* SDK.WebMCPModel.Events.TOOLS_REMOVED */);
+        const executionContext = {
+            isDefault: true,
+            frameId: 'frame-1',
+        };
+        runtimeModel.dispatchEventToListeners(SDK.RuntimeModel.Events.ExecutionContextDestroyed, executionContext);
+        // Check state - should only have tool2
+        const tools = [...webMCPModel.tools];
+        assert.lengthOf(tools, 1);
+        assert.deepEqual(tools[0], tool2);
+        // Check event
+        const eventTools = await toolsRemovedPromise;
+        assert.deepEqual(eventTools, [tool1]);
+    });
+    it('clears the call log when clearCalls is called', async () => {
+        const tool = createTool('test-tool', 'frame-1');
+        webMCPModel.onToolsAdded([tool]);
+        const toolInvokedPromise = webMCPModel.once("ToolInvoked" /* SDK.WebMCPModel.Events.TOOL_INVOKED */);
+        const invokedEvent = {
+            toolName: 'test-tool',
+            frameId: 'frame-1',
+            invocationId: '1',
+            input: 'test input',
+        };
+        webMCPModel.toolInvoked(invokedEvent);
+        await toolInvokedPromise;
+        assert.lengthOf(webMCPModel.toolCalls, 1);
+        webMCPModel.clearCalls();
+        assert.isEmpty(webMCPModel.toolCalls);
+    });
+});
+//# sourceMappingURL=WebMCPModel.test.js.map

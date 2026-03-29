@@ -93,6 +93,18 @@ const UIStrings = {
      */
     supportsLargeBlob: 'Supports large blob',
     /**
+     * @description Label for checkbox that toggles hmac-secret support on virtual authenticators. hmac-secret is the CTAP 2 extension
+     * that computes HMAC outputs using a credential secret and caller-provided salts, enabling the WebAuthn PRF extension.
+     * See https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-hmac-secret-extension
+     */
+    supportsHmacSecret: 'Supports hmac-secret',
+    /**
+     * @description Label for checkbox that toggles hmac-secret-mc support on virtual authenticators. hmac-secret-mc is a CTAP 2.2
+     * extension that allows retrieving HMAC secret outputs during credential creation without a separate assertion step.
+     * See https://fidoalliance.org/specs/fido-v2.2-rd-20241003/fido-client-to-authenticator-protocol-v2.2-rd-20241003.html#sctn-hmac-secret-make-cred-extension
+     */
+    supportsHmacSecretMc: 'Supports hmac-secret-mc',
+    /**
      * @description Text to add something
      */
     add: 'Add',
@@ -307,6 +319,30 @@ function renderNewAuthenticatorSection(options, internalTransportAvailable, onUp
               .disabled=${!options.hasResidentKey || !isCtap2}>
         </div>
         <div class="authenticator-option">
+          <label for="hmac-secret" class="authenticator-option-label">
+            ${i18nString(UIStrings.supportsHmacSecret)}
+          </label>
+          <input id="hmac-secret" class="authenticator-option-checkbox" type="checkbox"
+              jslog=${VisualLogging.toggle('hmac-secret').track({ change: true })}
+              @change=${(e) => onUpdate({ hasHmacSecret: e.target.checked })}
+              .checked=${Boolean((options.hasHmacSecret || options.hasHmacSecretMc) && isCtap2)}
+              .disabled=${!isCtap2 || Boolean(options.hasHmacSecretMc)}>
+        </div>
+        <div class="authenticator-option">
+          <label for="hmac-secret-mc" class="authenticator-option-label">
+            ${i18nString(UIStrings.supportsHmacSecretMc)}
+          </label>
+          <input id="hmac-secret-mc" class="authenticator-option-checkbox" type="checkbox"
+              jslog=${VisualLogging.toggle('hmac-secret-mc').track({ change: true })}
+              @change=${(e) => {
+        onUpdate(e.target.checked
+            ? { hasHmacSecretMc: true, hasHmacSecret: true }
+            : { hasHmacSecretMc: false });
+    }}
+              .checked=${Boolean(options.hasHmacSecretMc && isCtap2)}
+              .disabled=${!isCtap2}>
+        </div>
+        <div class="authenticator-option">
           <div class="authenticator-option-label"></div>
           <devtools-button @click=${onAdd}
               id="add-authenticator"
@@ -422,6 +458,22 @@ function renderAuthenticatorFields(authenticatorId, options) {
         </label>
         <div class="authenticator-field-value">
           ${options.hasUserVerification ? i18nString(UIStrings.yes) : i18nString(UIStrings.no)}
+        </div>
+      </div>
+      <div class="authenticator-field">
+        <label class="authenticator-option-label">
+          ${i18nString(UIStrings.supportsHmacSecret)}
+        </label>
+        <div class="authenticator-field-value">
+          ${options.hasHmacSecret ? i18nString(UIStrings.yes) : i18nString(UIStrings.no)}
+        </div>
+      </div>
+      <div class="authenticator-field">
+        <label class="authenticator-option-label">
+          ${i18nString(UIStrings.supportsHmacSecretMc)}
+        </label>
+        <div class="authenticator-field-value">
+          ${options.hasHmacSecretMc ? i18nString(UIStrings.yes) : i18nString(UIStrings.no)}
         </div>
       </div>
     </div>`;

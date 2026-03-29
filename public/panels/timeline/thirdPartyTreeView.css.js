@@ -9,7 +9,7 @@ export default `/*
  * found in the LICENSE file.
  */
 
-devtools-performance-third-party-tree-view {
+:host {
   .background-bar-container {
     /* Dont need the bars in 3p table */
     display: none;
@@ -88,6 +88,12 @@ devtools-performance-third-party-tree-view {
     min-width: 350px; /* Lower than this, there's not enough room for the entity name */
     padding: 0 0 0 var(--sys-size-6);
     border-left: var(--sys-size-1) solid var(--sys-color-divider);
+  }
+
+  .has-max-rows {
+    /* 21px for header + max-rows * 22px rows */
+    max-height: calc(21px + (var(--max-rows) * 22px));
+    padding: var(--sys-size-3);
   }
 
   /* While timeline treeview name-container uses flexbox to layout, it's overkill for this table's purposes.

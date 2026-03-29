@@ -106,7 +106,7 @@ export class ConsoleModel extends SDKModel {
             generatePreview: true,
             replMode: true,
             allowUnsafeEvalBlockedByCSP: false,
-        }, Common.Settings.Settings.instance().moduleSetting('console-user-activation-eval').get(), 
+        }, this.target().targetManager().settings.moduleSetting('console-user-activation-eval').get(), 
         /* awaitPromise */ false);
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConsoleEvaluated);
         if ('error' in result) {
@@ -220,13 +220,15 @@ export class ConsoleModel extends SDKModel {
         this.addMessage(consoleMessage);
     }
     clearIfNecessary() {
-        if (!Common.Settings.Settings.instance().moduleSetting('preserve-console-log').get()) {
+        const settings = this.target().targetManager().settings;
+        if (!settings.moduleSetting('preserve-console-log').get()) {
             this.clear();
         }
         ++this.#pageLoadSequenceNumber;
     }
     primaryPageChanged(event) {
-        if (Common.Settings.Settings.instance().moduleSetting('preserve-console-log').get()) {
+        const settings = this.target().targetManager().settings;
+        if (settings.moduleSetting('preserve-console-log').get()) {
             const { frame } = event.data;
             if (frame.backForwardCacheDetails.restoredFromCache) {
                 Common.Console.Console.instance().log(i18nString(UIStrings.bfcacheNavigation, { PH1: frame.url }));
@@ -273,24 +275,24 @@ export class ConsoleModel extends SDKModel {
         return this.#messages;
     }
     // messages[] are not ordered by timestamp.
-    static allMessagesUnordered() {
+    static allMessagesUnordered(targetManager = TargetManager.instance()) {
         const messages = [];
-        for (const target of TargetManager.instance().targets()) {
+        for (const target of targetManager.targets()) {
             const targetMessages = target.model(ConsoleModel)?.messages() || [];
             messages.push(...targetMessages);
         }
         return messages;
     }
-    static requestClearMessages() {
-        for (const logModel of TargetManager.instance().models(LogModel)) {
+    static requestClearMessages(targetManager = TargetManager.instance()) {
+        for (const logModel of targetManager.models(LogModel)) {
             logModel.requestClear();
         }
-        for (const runtimeModel of TargetManager.instance().models(RuntimeModel)) {
+        for (const runtimeModel of targetManager.models(RuntimeModel)) {
             runtimeModel.discardConsoleEntries();
             // Runtime.discardConsoleEntries implies Runtime.releaseObjectGroup('console').
             runtimeModel.releaseObjectGroup('live-expression');
         }
-        for (const target of TargetManager.instance().targets()) {
+        for (const target of targetManager.targets()) {
             target.model(ConsoleModel)?.clear();
         }
     }
@@ -306,9 +308,9 @@ export class ConsoleModel extends SDKModel {
     errors() {
         return this.#errors;
     }
-    static allErrors() {
+    static allErrors(targetManager = TargetManager.instance()) {
         let errors = 0;
-        for (const target of TargetManager.instance().targets()) {
+        for (const target of targetManager.targets()) {
             errors += target.model(ConsoleModel)?.errors() || 0;
         }
         return errors;
@@ -316,9 +318,9 @@ export class ConsoleModel extends SDKModel {
     warnings() {
         return this.#warnings;
     }
-    static allWarnings() {
+    static allWarnings(targetManager = TargetManager.instance()) {
         let warnings = 0;
-        for (const target of TargetManager.instance().targets()) {
+        for (const target of targetManager.targets()) {
             warnings += target.model(ConsoleModel)?.warnings() || 0;
         }
         return warnings;

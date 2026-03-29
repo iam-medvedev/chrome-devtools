@@ -2105,8 +2105,11 @@
   "models/trace/insights/LCPDiscovery.ts | fetchPriorityShouldBeApplied": {
     "message": "fetchpriority=high should be applied"
   },
+  "models/trace/insights/LCPDiscovery.ts | fetchPriorityShouldBeAppliedToImagePreload": {
+    "message": "fetchpriority=high should be applied to the image preload request"
+  },
   "models/trace/insights/LCPDiscovery.ts | lazyLoadNotApplied": {
-    "message": "lazy load not applied"
+    "message": "LCP resources should not use loading=lazy"
   },
   "models/trace/insights/LCPDiscovery.ts | lcpLoadDelay": {
     "message": "LCP image loaded {PH1} after earliest start point."
@@ -3222,7 +3225,7 @@
     "message": "This is an experimental AI feature and won’t always get it right. Double check this text before pasting into another tool."
   },
   "panels/ai_assistance/components/ExportForAgentsDialog.ts | exportForAgents": {
-    "message": "Export for agents"
+    "message": "Copy for your coding agent"
   },
   "panels/ai_assistance/components/ExportForAgentsDialog.ts | generatingSummary": {
     "message": "Generating summary…"
@@ -3232,6 +3235,12 @@
   },
   "panels/ai_assistance/components/WalkthroughView.ts | close": {
     "message": "Close"
+  },
+  "panels/ai_assistance/components/WalkthroughView.ts | hideAgentWalkthrough": {
+    "message": "Hide agent walkthrough"
+  },
+  "panels/ai_assistance/components/WalkthroughView.ts | hideThinking": {
+    "message": "Hide thinking"
   },
   "panels/ai_assistance/components/WalkthroughView.ts | showAgentWalkthrough": {
     "message": "Show agent walkthrough"
@@ -6203,6 +6212,69 @@
   "panels/application/TrustTokensTreeElement.ts | trustTokens": {
     "message": "Private state tokens"
   },
+  "panels/application/WebMCPView.ts | canceled": {
+    "message": "Canceled"
+  },
+  "panels/application/WebMCPView.ts | clearFilters": {
+    "message": "Clear filters"
+  },
+  "panels/application/WebMCPView.ts | clearLog": {
+    "message": "Clear log"
+  },
+  "panels/application/WebMCPView.ts | declarative": {
+    "message": "Declarative"
+  },
+  "panels/application/WebMCPView.ts | error": {
+    "message": "Error"
+  },
+  "panels/application/WebMCPView.ts | filter": {
+    "message": "Filter"
+  },
+  "panels/application/WebMCPView.ts | imperative": {
+    "message": "Imperative"
+  },
+  "panels/application/WebMCPView.ts | inProgress": {
+    "message": "In Progress"
+  },
+  "panels/application/WebMCPView.ts | input": {
+    "message": "Input"
+  },
+  "panels/application/WebMCPView.ts | name": {
+    "message": "Name"
+  },
+  "panels/application/WebMCPView.ts | noCallsPlaceholder": {
+    "message": "Start interacting with your WebMCP agent to see real-time tool calls and executions here."
+  },
+  "panels/application/WebMCPView.ts | noCallsPlaceholderTitle": {
+    "message": "Tool Activity"
+  },
+  "panels/application/WebMCPView.ts | noToolsPlaceholder": {
+    "message": "Registered WebMCP tools for this page will appear here. No tools have been registered or detected yet."
+  },
+  "panels/application/WebMCPView.ts | noToolsPlaceholderTitle": {
+    "message": "Available WebMCP Tools"
+  },
+  "panels/application/WebMCPView.ts | output": {
+    "message": "Output"
+  },
+  "panels/application/WebMCPView.ts | pending": {
+    "message": "In Progress"
+  },
+  "panels/application/WebMCPView.ts | status": {
+    "message": "Status"
+  },
+  "panels/application/WebMCPView.ts | statusTypes": {
+    "message": "Status types"
+  },
+  "panels/application/WebMCPView.ts | success": {
+    "message": "Success"
+  },
+  "panels/application/WebMCPView.ts | toolRegistry": {
+    "message": "Available Tools"
+  },
+  "panels/application/WebMCPView.ts | toolTypes": {
+    "message": "Tool types"
+  },
   "panels/autofill/autofill-meta.ts | autofill": {
     "message": "Autofill"
   },
@@ -7811,6 +7883,9 @@
   "panels/elements/ElementsTreeElement.ts | copyXpath": {
     "message": "Copy XPath"
   },
+  "panels/elements/ElementsTreeElement.ts | creatorAdScriptAncestry": {
+    "message": "Creator ad script ancestry"
+  },
   "panels/elements/ElementsTreeElement.ts | cut": {
     "message": "Cut"
   },
@@ -7898,6 +7973,9 @@
   "panels/elements/ElementsTreeElement.ts | explainSubgrids": {
     "message": "Explain subgrids"
   },
+  "panels/elements/ElementsTreeElement.ts | filterListRule": {
+    "message": "Filter list rule"
+  },
   "panels/elements/ElementsTreeElement.ts | findGridDefinition": {
     "message": "Find grid definition"
   },
@@ -7913,6 +7991,9 @@
   "panels/elements/ElementsTreeElement.ts | hideElement": {
     "message": "Hide element"
   },
+  "panels/elements/ElementsTreeElement.ts | noProvenanceAvailable": {
+    "message": "No provenance data is available"
+  },
   "panels/elements/ElementsTreeElement.ts | openMediaPanel": {
     "message": "Jump to Media panel"
   },
@@ -7924,6 +8005,9 @@
   },
   "panels/elements/ElementsTreeElement.ts | reveal": {
     "message": "reveal"
+  },
+  "panels/elements/ElementsTreeElement.ts | rootScriptFilterListRule": {
+    "message": "Root script filter list rule"
   },
   "panels/elements/ElementsTreeElement.ts | scrollIntoView": {
     "message": "Scroll into view"
@@ -7949,8 +8033,8 @@
   "panels/elements/ElementsTreeElement.ts | styleScrollbars": {
     "message": "Style scrollbars"
   },
-  "panels/elements/ElementsTreeElement.ts | thisFrameWasIdentifiedAsAnAd": {
-    "message": "This frame was identified as an ad frame"
+  "panels/elements/ElementsTreeElement.ts | thisElementWasIdentifiedAsAnAd": {
+    "message": "This element was identified as an ad"
   },
   "panels/elements/ElementsTreeElement.ts | useSInTheConsoleToReferToThis": {
     "message": "Use {PH1} in the console to refer to this element."
@@ -7966,6 +8050,9 @@
   },
   "panels/elements/ElementsTreeOutline.ts | pageDom": {
     "message": "Page DOM"
+  },
+  "panels/elements/ElementsTreeOutline.ts | showAllLines": {
+    "message": "Show all ({PH1} lines)"
   },
   "panels/elements/ElementsTreeOutline.ts | showAllNodesDMore": {
     "message": "Show all nodes ({PH1} more)"
@@ -16964,6 +17051,12 @@
   "panels/webauthn/WebauthnPane.ts | signCount": {
     "message": "Signature Count"
   },
+  "panels/webauthn/WebauthnPane.ts | supportsHmacSecret": {
+    "message": "Supports hmac-secret"
+  },
+  "panels/webauthn/WebauthnPane.ts | supportsHmacSecretMc": {
+    "message": "Supports hmac-secret-mc"
+  },
   "panels/webauthn/WebauthnPane.ts | supportsLargeBlob": {
     "message": "Supports large blob"
   },
@@ -17054,10 +17147,10 @@
   "ui/components/issue_counter/IssueLinkIcon.ts | issueUnavailable": {
     "message": "Issue unavailable at this time"
   },
-  "ui/components/list/List.ts | edit": {
+  "ui/components/lists/List.ts | edit": {
     "message": "Edit"
   },
-  "ui/components/list/List.ts | remove": {
+  "ui/components/lists/List.ts | remove": {
     "message": "Remove"
   },
   "ui/components/markdown_view/CodeBlock.ts | code": {
@@ -17588,6 +17681,9 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} selected"
   },
+  "ui/legacy/components/perf_ui/GCActionDelegate.ts | garbageCollectionCompleted": {
+    "message": "Garbage collection completed"
+  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "High"
   },
@@ -17882,11 +17978,17 @@
   "ui/legacy/Infobar.ts | dontShowAgain": {
     "message": "Don't show again"
   },
+  "ui/legacy/InspectorDrawerView.ts | closeDrawer": {
+    "message": "Close drawer"
+  },
+  "ui/legacy/InspectorDrawerView.ts | moreTools": {
+    "message": "More Tools"
+  },
+  "ui/legacy/InspectorDrawerView.ts | toggleDrawerOrientation": {
+    "message": "Toggle drawer orientation"
+  },
   "ui/legacy/InspectorView.ts | areYouSureYouWantToRestartChrome": {
     "message": "Are you sure you want to restart Chrome?"
-  },
-  "ui/legacy/InspectorView.ts | closeDrawer": {
-    "message": "Close drawer"
   },
   "ui/legacy/InspectorView.ts | devToolsLanguageMissmatch": {
     "message": "DevTools is now available in {PH1}"
@@ -17902,9 +18004,6 @@
   },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "Main toolbar"
-  },
-  "ui/legacy/InspectorView.ts | moreTools": {
-    "message": "More Tools"
   },
   "ui/legacy/InspectorView.ts | moveToDrawer": {
     "message": "Move to drawer"
@@ -17935,9 +18034,6 @@
   },
   "ui/legacy/InspectorView.ts | setToSpecificLanguage": {
     "message": "Switch DevTools to {PH1}"
-  },
-  "ui/legacy/InspectorView.ts | toggleDrawerOrientation": {
-    "message": "Toggle drawer orientation"
   },
   "ui/legacy/ListWidget.ts | addString": {
     "message": "Add"

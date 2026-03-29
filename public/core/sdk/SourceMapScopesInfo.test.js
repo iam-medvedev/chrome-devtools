@@ -741,6 +741,22 @@ describe('SourceMapScopesInfo', () => {
             assert.strictEqual(wrapper.scope.name, 'wrapper');
             assert.isEmpty(wrapper.scope.children);
         });
+        it('does not throw RangeError for deep nesting in createFromAst', () => {
+            const depth = 5000;
+            const root = new Formatter.ScopeParser.Scope(0, depth * 2, null, 1 /* BLOCK */);
+            let current = root;
+            for (let i = 1; i < depth; i++) {
+                current = new Formatter.ScopeParser.Scope(i, depth * 2 - i, current, 1 /* BLOCK */);
+            }
+            const mappings = [];
+            for (let i = 0; i < depth; i++) {
+                mappings.push(`0:${i} => original.js:${i}:0`);
+            }
+            const sourceMapJSON = encodeSourceMap(mappings);
+            const sourceMap = new SDK.SourceMap.SourceMap(urlString `compiled.js`, urlString `compiled.js.map`, sourceMapJSON);
+            const info = SourceMapScopesInfo.createFromAst(sourceMap, root, new TextUtils.Text.Text(' '.repeat(depth * 2)));
+            assert.isOk(info);
+        });
     });
     describe('isOutlinedFrame', () => {
         it('returns false for a global scope', () => {

@@ -3316,6 +3316,26 @@ Common11.Revealer.registerRevealer({
     return new Timeline.TimelinePanel.CoreVitalsRevealer();
   }
 });
+Common11.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.Helpers.RevealableTimeRange]);
+  },
+  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.TimeRangeRevealer();
+  }
+});
+Common11.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.Helpers.RevealableBottomUpProfile]);
+  },
+  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.BottomUpProfileRevealer();
+  }
+});
 
 // gen/front_end/panels/web_audio/web_audio-meta.js
 import * as i18n43 from "./../../core/i18n/i18n.js";

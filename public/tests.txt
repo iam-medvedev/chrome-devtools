@@ -25,6 +25,7 @@ core/common/StringOutputStream.test.js
 core/common/TextDictionary.test.js
 core/common/Throttler.test.js
 core/common/Trie.test.js
+core/common/VersionController.test.js
 core/i18n/ByteUtilities.test.js
 core/i18n/DevToolsLocale.test.js
 core/i18n/NumberFormatter.test.js
@@ -87,6 +88,7 @@ core/dom_extension/DOMExtension.test.js
 core/host/AidaClient.test.js
 core/host/AidaGcaTranslation.test.js
 core/host/DispatchHttpRequestClient.test.js
+core/host/GcaClient.test.js
 core/host/GdpClient.test.js
 core/i18n/i18nImpl.test.js
 core/root/Runtime.browser.test.js
@@ -136,6 +138,7 @@ core/sdk/SourceMapScopesInfo.test.js
 core/sdk/StorageBucketsModel.test.js
 core/sdk/StorageKeyManager.test.js
 core/sdk/TraceObject.test.js
+core/sdk/WebMCPModel.test.js
 entrypoints/heap_snapshot_worker/heap_snapshot_worker.test.js
 entrypoints/inspector_main/InspectorMain.test.js
 entrypoints/inspector_main/OutermostTargetSelector.test.js
@@ -354,6 +357,7 @@ panels/application/SharedStorageModel.test.js
 panels/application/SharedStorageTreeElement.test.js
 panels/application/StorageBucketsTreeElement.test.js
 panels/application/StorageView.test.js
+panels/application/WebMCPView.test.js
 panels/application/preloading/PreloadingView.test.js
 panels/application/components/BackForwardCacheView.test.js
 panels/application/components/BounceTrackingMitigationsView.test.js
@@ -389,6 +393,7 @@ panels/common/DOMLinkifier.test.js
 panels/common/ExtensionPanel.test.js
 panels/common/ExtensionServer.test.js
 panels/common/GdpSignUpDialog.test.js
+panels/common/ThrottlingUtils.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
 panels/console/ConsoleInsightTeaser.test.js
@@ -664,7 +669,7 @@ ui/components/icon_button/IconButton.test.js
 ui/components/issue_counter/IssueCounter.test.js
 ui/components/issue_counter/IssueLinkIcon.test.js
 ui/components/linkifier/LinkifierImpl.test.js
-ui/components/list/List.test.js
+ui/components/lists/List.test.js
 ui/components/markdown_view/CodeBlock.test.js
 ui/components/markdown_view/MarkdownImage.test.js
 ui/components/markdown_view/MarkdownView.test.js
@@ -706,6 +711,7 @@ ui/legacy/Dialog.test.js
 ui/legacy/DockController.test.js
 ui/legacy/FilterBar.test.js
 ui/legacy/Infobar.test.js
+ui/legacy/InspectorDrawerView.test.js
 ui/legacy/InspectorView.test.js
 ui/legacy/KeyboardShortcut.test.js
 ui/legacy/ListModel.test.js

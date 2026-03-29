@@ -1088,7 +1088,6 @@ var recordingView_css_default = `/*
 
   .sections {
     min-height: 0;
-    overflow: hidden;
     background-color: var(--sys-color-cdt-base-container);
     z-index: 0;
     position: relative;
@@ -1416,11 +1415,6 @@ var recordingView_css_default = `/*
 
   [slot='sidebar'] .section-toolbar {
     border-bottom: 1px solid var(--sys-color-divider);
-  }
-
-  .show-code {
-    margin-right: 14px;
-    margin-top: 8px;
   }
 
   devtools-recorder-extension-view {

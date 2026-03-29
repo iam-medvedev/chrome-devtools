@@ -5950,6 +5950,26 @@ Common12.Revealer.registerRevealer({
     return new Timeline.TimelinePanel.CoreVitalsRevealer();
   }
 });
+Common12.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes3((Timeline) => [Timeline.Utils.Helpers.RevealableTimeRange]);
+  },
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.TimeRangeRevealer();
+  }
+});
+Common12.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes3((Timeline) => [Timeline.Utils.Helpers.RevealableBottomUpProfile]);
+  },
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.BottomUpProfileRevealer();
+  }
+});
 
 // gen/front_end/panels/ai_assistance/ai_assistance-meta.js
 import * as Common13 from "./../../core/common/common.js";

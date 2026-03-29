@@ -10,7 +10,7 @@ import * as Common6 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
-import * as Root7 from "./../../core/root/root.js";
+import * as Root6 from "./../../core/root/root.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel6 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Annotations from "./../../models/annotations/annotations.js";
@@ -80,7 +80,6 @@ var aiAssistancePanel_css_default = `/*
 import "./../../ui/components/spinners/spinners.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Root4 from "./../../core/root/root.js";
 import * as AiAssistanceModel4 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Buttons7 from "./../../ui/components/buttons/buttons.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
@@ -2224,6 +2223,8 @@ import * as Root3 from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
 import * as ComputedStyle from "./../../models/computed_style/computed_style.js";
+import * as Trace from "./../../models/trace/trace.js";
+import * as PanelsCommon2 from "./../common/common.js";
 import * as Marked from "./../../third_party/marked/marked.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as Input3 from "./../../ui/components/input/input.js";
@@ -2250,10 +2251,14 @@ var chatMessage_css_default = `/*
     font-family: var(--default-font-family);
     width: 100%;
     display: flex;
-    gap: var(--sys-size-8);
     justify-content: space-between;
     align-items: center;
     margin-block: calc(-1 * var(--sys-size-3));
+
+    &.not-v2 {
+      /* Can be removed when AIv2 ships */
+      gap: var(--sys-size-8);
+    }
 
     .action-buttons {
       display: flex;
@@ -2360,6 +2365,12 @@ var chatMessage_css_default = `/*
     }
   }
 
+  .user-query-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
   .chat-message {
     user-select: text;
     cursor: initial;
@@ -2372,6 +2383,38 @@ var chatMessage_css_default = `/*
     word-break: normal;
     overflow-wrap: anywhere;
     border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+
+
+    &.query.ai-v2 {
+      width: fit-content;
+      max-width: 80%;
+      text-align: left;
+      padding: var(--sys-size-4) var(--sys-size-6);
+      font: var(--sys-typescale-body4-regular);
+      /* top left - top right - bottom right - bottom left */
+      border-radius: var(--sys-shape-corner-medium) var(--sys-shape-corner-extra-small) var(--sys-shape-corner-medium) var(--sys-shape-corner-medium);
+      background-color: var(--sys-color-surface5);
+      color: var(--sys-color-on-surface);
+
+      &.is-first-message {
+        /* So the first message doesn't bump right against the top
+         * toolbar */
+        margin-top: var(--sys-size-6);
+      }
+    }
+
+    &.ai-v2 {
+      border-bottom: none;
+    }
+
+    &.ai-v2 .answer-body-wrapper {
+      @container(min-width: 700px) {
+        /* Purposefully not using design system variables, this is a
+         * specific size to indent the content in and align it with the
+         * walkthrough CTA. */
+        padding-left: 35px;
+      }
+    }
 
     &.is-last-message {
       border-bottom: 0;
@@ -2585,8 +2628,19 @@ var chatMessage_css_default = `/*
 
   .walkthrough-toggle-container {
     display: flex;
-    gap: var(--sys-size-4);
+    gap: var(--sys-size-2);
     align-items: center;
+
+    &.has-widgets {
+      gap: var(--sys-size-6);
+    }
+
+    .chevron {
+      color: var(--sys-color-primary);
+      width: var(--sys-size-8);
+      height: var(--sys-size-8);
+      margin-left: var(--sys-size-2);
+    }
   }
 
 
@@ -2613,14 +2667,50 @@ var chatMessage_css_default = `/*
     gap: var(--sys-size-5);
   }
 
+  .widget-header {
+    display: flex;
+    justify-content: space-between;
+    height: var(--sys-size-11);
+    align-items: center;
+    background: var(--sys-color-surface5);
+    padding: var(--sys-size-2) var(--sys-size-4);
+    border-top-left-radius: var(--sys-shape-corner-small);
+    border-top-right-radius: var(--sys-shape-corner-small);
+
+    .widget-name {
+      font: var(--sys-typescale-body4-regular);
+    }
+
+    .widget-reveal-container {
+      padding: 0;
+      background: none;
+      border-radius: 0;
+    }
+  }
+
+  .widget-reveal-button {
+    display: flex;
+    align-items: center;
+
+    devtools-icon {
+      margin-left: var(--sys-size-3);
+      color: var(--sys-color-primary);
+      width: var(--sys-size-8);
+      height: var(--sys-size-8);
+    }
+
+  }
+
   .widget-and-revealer-container {
     width: 100%;
+    min-width: var(--sys-size-30);
+    max-width: var(--sys-size-33);
   }
 
   .widget-reveal-container {
     background: var(--sys-color-surface5);
-    border-bottom-right-radius: var(--sys-shape-corner-medium);
-    border-bottom-left-radius: var(--sys-shape-corner-medium);
+    border-bottom-right-radius: var(--sys-shape-corner-small);
+    border-bottom-left-radius: var(--sys-shape-corner-small);
     padding: 0 var(--sys-size-4) var(--sys-size-4) 0;
   }
 
@@ -2630,13 +2720,25 @@ var chatMessage_css_default = `/*
   }
 
   .widget-content-container {
-    padding: var(--sys-size-4);
+    padding: var(--sys-size-4) var(--sys-size-5);
     border-top-left-radius: var(--sys-shape-corner-medium);
     border-top-right-radius: var(--sys-shape-corner-medium);
     overflow-x: auto;
     background-color: var(--sys-color-surface3);
 
     --override-computed-style-property-white-space: normal;
+
+    /* When header is present, content follows it and shouldn't have top radii */
+    .widget-header+& {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    /* When header is present, content is the last child and needs bottom radii */
+    .widget-header+&:last-child {
+      border-bottom-left-radius: var(--sys-shape-corner-medium);
+      border-bottom-right-radius: var(--sys-shape-corner-medium);
+    }
   }
 
   .network-request-preview {
@@ -2703,6 +2805,7 @@ var WalkthroughView_exports = {};
 __export(WalkthroughView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW3,
   WalkthroughView: () => WalkthroughView,
+  walkthroughCloseTitle: () => walkthroughCloseTitle,
   walkthroughTitle: () => walkthroughTitle
 });
 import * as i18n7 from "./../../core/i18n/i18n.js";
@@ -2814,25 +2917,45 @@ var walkthroughView_css_default = `/*
   .walkthrough-inline {
     border-radius: var(--sys-size-5);
     overflow: hidden;
-    background-color: var(--sys-color-surface1);
+    background-color: var(--sys-color-surface2);
     width: fit-content;
 
     &[open] {
       width: auto;
+      background-color: var(--sys-color-surface1);
     }
   }
 
   .walkthrough-inline > summary {
     display: flex;
     align-items: center;
-    padding: var(--sys-size-4) var(--sys-size-6);
+    padding: 0 var(--sys-size-6);
     cursor: pointer;
     background-color: transparent;
+    /* The same height as a DevTools Button */
+    height: var(--sys-size-11);
     font: var(--sys-typescale-body4-regular);
+    font-weight:var(--ref-typeface-weight-medium);
     user-select: none;
     list-style: none; /* Hide default triangle */
     justify-content: flex-start;
     gap: var(--sys-size-4);
+    color: var(--sys-color-primary);
+
+    devtools-icon {
+      color: var(--sys-color-primary);
+    }
+
+    /* Align the summary to look like the tonal button */
+    &[data-has-widgets] {
+      background: var(--sys-color-tonal-container);
+      color: var(--sys-color-on-tonal-container);
+      border-radius: var(--sys-shape-corner-full);
+
+      devtools-icon {
+        color: var(--sys-color-on-tonal-container);
+      }
+    }
   }
 
   .walkthrough-inline > summary::-webkit-details-marker {
@@ -2845,8 +2968,6 @@ var walkthroughView_css_default = `/*
 
   .walkthrough-inline .steps-container {
     padding: var(--sys-size-6);
-    max-height: 300px; /* Limit height for inline view */
-    overflow-y: auto;
     border-top: 1px solid var(--sys-color-divider);
     background-color: transparent;
   }
@@ -2855,10 +2976,22 @@ var walkthroughView_css_default = `/*
     width: var(--sys-size-8);
     height: var(--sys-size-8);
     transition: transform 0.2s;
+    margin-left: auto;
+  }
+
+  .walkthrough-inline[open] > summary {
+    border-radius: var(--sys-shape-corner-medium-small);
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    background: var(--sys-color-surface5);
+  }
+
+  .walkthrough-inline .step {
+    background-color: var(--sys-color-surface5);
   }
 
   .walkthrough-inline[open] > summary > devtools-icon {
-    transform: rotate(180deg);
+    transform: rotate(270deg);
   }
 }
 
@@ -2885,7 +3018,15 @@ var UIStrings2 = {
   /**
    * @description Title for the button that shows the walkthrough when there are widgets in the walkthrough.
    */
-  showAgentWalkthrough: "Show agent walkthrough"
+  showAgentWalkthrough: "Show agent walkthrough",
+  /**
+   * @description Title for the button that hides the walkthrough when there are no widgets in the walkthrough.
+   */
+  hideThinking: "Hide thinking",
+  /**
+   * @description Title for the button that hides the walkthrough when there are widgets in the walkthrough.
+   */
+  hideAgentWalkthrough: "Hide agent walkthrough"
 };
 var str_2 = i18n7.i18n.registerUIStrings("panels/ai_assistance/components/WalkthroughView.ts", UIStrings2);
 var i18nString2 = i18n7.i18n.getLocalizedString.bind(void 0, str_2);
@@ -2898,6 +3039,15 @@ function walkthroughTitle(input) {
   }
   return lockedString4(UIStrings2.showThinking);
 }
+function walkthroughCloseTitle(input) {
+  if (input.isInlined) {
+    return i18nString2(UIStrings2.title);
+  }
+  if (input.hasWidgets) {
+    return lockedString4(UIStrings2.hideAgentWalkthrough);
+  }
+  return lockedString4(UIStrings2.hideThinking);
+}
 function renderInlineWalkthrough(input, stepsOutput, steps) {
   const lastStep = steps.at(-1);
   if (!input.isInlined || !lastStep) {
@@ -2905,19 +3055,22 @@ function renderInlineWalkthrough(input, stepsOutput, steps) {
   }
   function onToggle(event) {
     const isOpen = event.target.open;
-    if (isOpen && input.message) {
+    if (!input.message) {
+      return;
+    }
+    if (isOpen) {
       input.onOpen(input.message);
     } else {
-      input.onToggle(isOpen);
+      input.onToggle(isOpen, input.message);
     }
   }
   const hasWidgets = steps.some((s) => s.widgets?.length);
   return html4`
     <details class="walkthrough-inline" ?open=${input.isExpanded} @toggle=${onToggle}>
-      <summary>
+      <summary ?data-has-widgets=${!input.isLoading && hasWidgets}>
         ${input.isLoading ? html4`<devtools-spinner></devtools-spinner>` : Lit2.nothing}
-        ${walkthroughTitle({ isLoading: input.isLoading, lastStep, hasWidgets })}
-        <devtools-icon name="chevron-down"></devtools-icon>
+        ${input.isExpanded ? walkthroughCloseTitle({ hasWidgets, isInlined: true }) : walkthroughTitle({ isLoading: input.isLoading, lastStep, hasWidgets })}
+        <devtools-icon name="chevron-right"></devtools-icon>
       </summary>
       ${stepsOutput}
     </details>
@@ -2938,7 +3091,11 @@ function renderSidebarWalkthrough(input, stepsOutput, stepsCount) {
     title: i18nString2(UIStrings2.close),
     jslogContext: "close-walkthrough"
   }}
-          @click=${() => input.onToggle(false)}
+          @click=${() => {
+    if (input.message) {
+      input.onToggle(false, input.message);
+    }
+  }}
         ></devtools-button>
       </div>
       ${stepsOutput}
@@ -2986,8 +3143,6 @@ var DEFAULT_VIEW3 = (input, output, target) => {
 var WalkthroughView = class extends UI4.Widget.Widget {
   #view;
   #message = null;
-  // TODO(b/487921187): fix loading state - also unsure if we need this vs
-  // looking at the loading state in the message's steps.
   #isLoading = false;
   #markdownRenderer = null;
   #onToggle = () => {
@@ -3000,6 +3155,7 @@ var WalkthroughView = class extends UI4.Widget.Widget {
   #isProgrammaticScroll = false;
   #output = {};
   #stepsContainerResizeObserver = new ResizeObserver(() => this.#handleStepsContainerResize());
+  #lastStepsContainerWidth = 0;
   constructor(element, view = DEFAULT_VIEW3) {
     super(element);
     this.#view = view;
@@ -3017,11 +3173,13 @@ var WalkthroughView = class extends UI4.Widget.Widget {
       this.#stepsContainerResizeObserver.observe(this.#output.stepsContainer);
     }
   }
-  onResize() {
-    this.#handleStepsContainerResize();
-  }
   #handleStepsContainerResize() {
-    if (!this.#pinScrollToBottom) {
+    const width = this.#output.stepsContainer?.offsetWidth ?? 0;
+    if (width !== this.#lastStepsContainerWidth) {
+      this.#lastStepsContainerWidth = width;
+      return;
+    }
+    if (!this.#pinScrollToBottom || !this.#isLoading) {
       return;
     }
     this.scrollToBottom();
@@ -3109,7 +3267,7 @@ var WalkthroughView = class extends UI4.Widget.Widget {
       handleScroll: this.#handleScroll
     }, this.#output, this.contentElement);
     this.#registerResizeObservers();
-    if (this.#pinScrollToBottom) {
+    if (this.#pinScrollToBottom && this.#isLoading) {
       this.scrollToBottom();
     }
   }
@@ -3243,53 +3401,90 @@ var UIStringsNotTranslate4 = {
    */
   imageUnavailable: "Image unavailable",
   /**
-   * @description Title for the button that shows the thinking process (walkthrough).
-   */
-  showThinking: "Show thinking",
-  /**
    * @description Title for the button that takes the user into other DevTools panels to reveal items the AI references.
    */
   reveal: "Reveal",
   /**
    * @description Title used for revealing the performance trace.
    */
-  revealTrace: "Reveal trace"
+  revealTrace: "Reveal trace",
+  /**
+   * @description Title for the core web vitals widget.
+   */
+  coreVitals: "Core Web Vitals",
+  /**
+   * @description Title for the LCP breakdown widget.
+   */
+  lcpBreakdown: "LCP breakdown",
+  /**
+   * @description Title for the LCP element widget.
+   */
+  lcpElement: "LCP element",
+  /**
+   * @description Title for the performance summary widget.
+   */
+  performanceSummary: "Performance summary",
+  /**
+   * @description The title of the button that allows exporting the conversation for agents.
+   */
+  exportForAgents: "Copy for your coding agent",
+  /**
+   * @description Title for the bottom up thread activity widget.
+   */
+  bottomUpTree: "Bottom-up thread activity"
 };
 var DEFAULT_VIEW4 = (input, output, target) => {
+  const hasAiV2 = Boolean(Root3.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
   const message = input.message;
   if (message.entity === "user") {
     const imageInput = message.imageInput && "inlineData" in message.imageInput ? renderImageChatMessage(message.imageInput.inlineData) : Lit3.nothing;
+    const messageClasses2 = Lit3.Directives.classMap({
+      "chat-message": true,
+      query: true,
+      "is-last-message": input.isLastMessage,
+      "is-first-message": input.isFirstMessage,
+      "ai-v2": hasAiV2
+    });
+    const userQueryWrapperClasses = Lit3.Directives.classMap({
+      // Don't need to style at all unless we are on the V2 flag.
+      // Once we ship this can be removed entirely.
+      "user-query-wrapper": hasAiV2
+    });
     Lit3.render(html5`
       <style>${Input3.textInputStyles}</style>
       <style>${chatMessage_css_default}</style>
-      <section
-        class="chat-message query ${input.isLastMessage ? "is-last-message" : ""}"
-        jslog=${VisualLogging3.section("question")}
-      >
-        ${imageInput}
-        <div class="message-content">${renderTextAsMarkdown(message.text, input.markdownRenderer)}</div>
-      </section>
+      <div class=${userQueryWrapperClasses}>
+        <section class=${messageClasses2} jslog=${VisualLogging3.section("question")}>
+          ${imageInput}
+          <div class="message-content">${renderTextAsMarkdown(message.text, input.markdownRenderer)}</div>
+        </section>
+      </div>
     `, target);
     return;
   }
   const steps = message.parts.filter((part) => part.type === "step").map((part) => part.step);
   const icon = AiAssistanceModel3.AiUtils.getIconName();
-  const aiAssistanceV2 = Root3.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled;
+  const messageClasses = Lit3.Directives.classMap({
+    "chat-message": true,
+    answer: true,
+    "is-last-message": input.isLastMessage,
+    "is-first-message": input.isFirstMessage,
+    "ai-v2": hasAiV2
+  });
   Lit3.render(html5`
     <style>${Input3.textInputStyles}</style>
     <style>${chatMessage_css_default}</style>
-    <section
-      class="chat-message answer ${input.isLastMessage ? "is-last-message" : ""}"
-      jslog=${VisualLogging3.section("answer")}
-    >
-      <div class="message-info">
-        <devtools-icon name=${icon}></devtools-icon>
-        <div class="message-name">
-          <h2>${AiAssistanceModel3.AiUtils.isGeminiBranding() ? lockedString5(UIStringsNotTranslate4.gemini) : lockedString5(UIStringsNotTranslate4.ai)}</h2>
-        </div>
-      </div>
-      ${aiAssistanceV2 ? renderWalkthroughUI(input, steps) : Lit3.nothing}
-      ${Lit3.Directives.repeat(message.parts, (_, index) => index, (part, index) => {
+    <section class=${messageClasses} jslog=${VisualLogging3.section("answer")}>
+      ${hasAiV2 ? Lit3.nothing : html5`
+        <div class="message-info">
+          <devtools-icon name=${icon}></devtools-icon>
+          <div class="message-name">
+            <h2>${AiAssistanceModel3.AiUtils.isGeminiBranding() ? lockedString5(UIStringsNotTranslate4.gemini) : lockedString5(UIStringsNotTranslate4.ai)}</h2>
+          </div>
+        </div>`}
+      ${hasAiV2 ? renderWalkthroughUI(input, steps) : Lit3.nothing}
+      <div class="answer-body-wrapper">
+        ${Lit3.Directives.repeat(message.parts, (_, index) => index, (part, index) => {
     const isLastPart = index === message.parts.length - 1;
     if (part.type === "answer") {
       return html5`<p>${renderTextAsMarkdown(part.text, input.markdownRenderer, { animate: !input.isReadOnly && input.isLoading && isLastPart && input.isLastMessage })}</p>`;
@@ -3297,7 +3492,7 @@ var DEFAULT_VIEW4 = (input, output, target) => {
     if (part.type === "widget") {
       return html5`${Lit3.Directives.until(renderWidgets(part.widgets, { wrapperClass: "main-widgets-wrapper" }))}`;
     }
-    if (!aiAssistanceV2 && part.type === "step") {
+    if (!hasAiV2 && part.type === "step") {
       return renderStep({
         step: part.step,
         isLoading: input.isLoading,
@@ -3307,8 +3502,9 @@ var DEFAULT_VIEW4 = (input, output, target) => {
     }
     return Lit3.nothing;
   })}
-      ${renderError(message)}
-      ${input.showActions ? renderActions(input, output) : Lit3.nothing}
+        ${renderError(message)}
+        ${input.showActions ? renderActions(input, output) : Lit3.nothing}
+      </div>
     </section>
   `, target);
 };
@@ -3387,28 +3583,33 @@ function renderWalkthroughSidebarButton(input, steps) {
     return Lit3.nothing;
   }
   const hasOneStepWithWidget = steps.some((step) => step.widgets?.length);
-  const title = walkthroughTitle({
+  const isExpanded = walkthrough.isExpanded && input.message === input.walkthrough.activeSidebarMessage;
+  const title = isExpanded ? walkthroughCloseTitle({ hasWidgets: hasOneStepWithWidget }) : walkthroughTitle({
     isLoading: input.isLoading,
     hasWidgets: hasOneStepWithWidget,
     lastStep
   });
+  const variant = hasOneStepWithWidget && !input.isLoading ? "tonal" : "text";
+  const icon = AiAssistanceModel3.AiUtils.getIconName();
   return html5`
-    <div class="walkthrough-toggle-container">
-      ${input.isLoading ? html5`<devtools-spinner></devtools-spinner>` : Lit3.nothing}
+    <div class="walkthrough-toggle-container ${hasOneStepWithWidget ? "has-widgets" : ""}">
+      ${input.isLoading ? html5`<devtools-spinner></devtools-spinner>` : html5`<devtools-icon name=${icon}></devtools-icon>`}
       <devtools-button
-        .variant=${"outlined"}
+        .variant=${variant}
         .size=${"SMALL"}
-        .title=${lastStep.isLoading ? titleForStep(lastStep) : lockedString5(UIStringsNotTranslate4.showThinking)}
+        .title=${lastStep.isLoading ? titleForStep(lastStep) : title}
         .jslogContext=${walkthrough.isExpanded ? "ai-hide-walkthrough-sidebar" : "ai-show-walkthrough-sidebar"}
         data-show-walkthrough
         @click=${() => {
-    if (walkthrough.activeMessage === input.message && walkthrough.isExpanded) {
-      walkthrough.onToggle(false);
+    if (walkthrough.activeSidebarMessage === input.message && walkthrough.isExpanded) {
+      walkthrough.onToggle(false, message);
     } else {
       walkthrough.onOpen(message);
     }
   }}
-      >${title}</devtools-button>
+>
+        ${title}<devtools-icon class="chevron" .name=${isExpanded ? "cross" : "chevron-right"}></devtools-icon>
+      </devtools-button>
     </div>
   `;
 }
@@ -3419,7 +3620,7 @@ function renderWalkthroughUI(input, steps) {
   }
   const sideEffectSteps = steps.filter((s) => s.requestApproval);
   const openWalkThroughSidebarButton = !input.walkthrough.isInlined ? renderWalkthroughSidebarButton(input, steps) : Lit3.nothing;
-  const isExpanded = input.walkthrough.isExpanded && input.walkthrough.activeMessage === input.message;
+  const isExpanded = input.walkthrough.isInlined ? input.walkthrough.inlineExpandedMessages.includes(input.message) : input.walkthrough.isExpanded && input.walkthrough.activeSidebarMessage === input.message;
   const sideEffectStepsUI = !isExpanded && sideEffectSteps.length > 0 ? sideEffectSteps.map((step) => html5`
     <div class="side-effect-container">
       ${renderStep({
@@ -3526,15 +3727,27 @@ async function makeComputedStyleWidget(widgetData) {
     // This disables showing the nested traces and detailed information in the widget.
     propertyTraces: null,
     allowUserControl: false,
-    filterText: new RegExp(widgetData.data.properties.join("|"), "i")
+    filterText: new RegExp(widgetData.data.properties.join("|"), "i"),
+    enableNarrowViewResizing: false
   })}></devtools-widget>`;
-  return { renderedWidget, revealable: new Elements.ElementsPanel.NodeComputedStyles(domNodeForId) };
+  return {
+    renderedWidget,
+    revealable: new Elements.ElementsPanel.NodeComputedStyles(domNodeForId),
+    title: html5`<devtools-widget
+      ${widget3(PanelsCommon2.DOMLinkifier.DOMNodeLink, {
+      node: domNodeForId
+    })}
+    ></devtools-widget>`
+  };
 }
-async function makeCoreVitalsWidget(widgetData) {
-  const renderedWidget = html5`<devtools-widget
-      class="core-vitals-widget" ${widget3(TimelineComponents.CWVMetrics.CWVMetrics, { data: widgetData.data })}>
+async function makeCoreWebVitalsWidget(widgetData) {
+  const renderedWidget = html5`<devtools-widget class="core-vitals-widget" ${widget3(TimelineComponents.CWVMetrics.CWVMetrics, { data: widgetData.data, skipBottomBorder: true })}>
   </devtools-widget>`;
-  return { renderedWidget, revealable: new TimelineUtils.Helpers.RevealableCoreVitals(widgetData.data.insightSetKey) };
+  return {
+    renderedWidget,
+    revealable: new TimelineUtils.Helpers.RevealableCoreVitals(widgetData.data.insightSetKey),
+    title: lockedString5(UIStringsNotTranslate4.coreVitals)
+  };
 }
 async function makeStylePropertiesWidget(widgetData) {
   const domNodeForId = await resolveNode(widgetData.data.backendNodeId);
@@ -3548,7 +3761,15 @@ async function makeStylePropertiesWidget(widgetData) {
     filter: widgetData.data.selector ? new RegExp(widgetData.data.selector) : null
   })}>
   </devtools-widget>`;
-  return { renderedWidget, revealable: domNodeForId };
+  return {
+    renderedWidget,
+    revealable: domNodeForId,
+    title: html5`<devtools-widget
+      ${widget3(PanelsCommon2.DOMLinkifier.DOMNodeLink, {
+      node: domNodeForId
+    })}
+    ></devtools-widget>`
+  };
 }
 async function makeLcpBreakdownWidget(widgetData) {
   const insight = widgetData.data.lcpData;
@@ -3561,7 +3782,34 @@ async function makeLcpBreakdownWidget(widgetData) {
     model: insight,
     minimal: true
   })}></devtools-widget>`;
-  return { renderedWidget, revealable: new TimelineUtils.Helpers.RevealableInsight(insight) };
+  return {
+    renderedWidget,
+    revealable: new TimelineUtils.Helpers.RevealableInsight(insight),
+    title: lockedString5(UIStringsNotTranslate4.lcpBreakdown)
+  };
+}
+async function makeBottomUpTimelineTreeWidget(widgetData) {
+  const bottomUpRootNode = AiAssistanceModel3.AIQueries.AIQueries.mainThreadActivityBottomUp(widgetData.data.bounds, widgetData.data.parsedTrace);
+  if (!bottomUpRootNode) {
+    return null;
+  }
+  const events = bottomUpRootNode.events;
+  const startTime = Trace.Helpers.Timing.microToMilli(widgetData.data.bounds.min);
+  const endTime = Trace.Helpers.Timing.microToMilli(widgetData.data.bounds.max);
+  const renderedWidget = html5`<devtools-widget
+      class="bottom-up-timeline-tree-widget"
+      ${widget3(Timeline.TimelineTreeView.BottomUpTimelineTreeView, {
+    selectedEvents: events,
+    parsedTrace: widgetData.data.parsedTrace,
+    startTime,
+    endTime,
+    compactMode: true
+  })}></devtools-widget>`;
+  return {
+    renderedWidget,
+    revealable: new TimelineUtils.Helpers.RevealableBottomUpProfile(widgetData.data.bounds),
+    title: lockedString5(UIStringsNotTranslate4.bottomUpTree)
+  };
 }
 function renderWidgetResponse(response) {
   if (response === null) {
@@ -3577,25 +3825,41 @@ function renderWidgetResponse(response) {
     "widget-and-revealer-container": true,
     "revealer-only": response.renderedWidget === null
   });
+  const revealButton = html5`
+    <devtools-button class="widget-reveal-button"
+      .variant=${"text"}
+      @click=${onReveal}
+    >
+      ${response.customRevealTitle ?? lockedString5(UIStringsNotTranslate4.reveal)}
+      <devtools-icon name='tab-move'></devtools-icon>
+    </devtools-button>
+  `;
   return html5`
     <div class=${classes}>
+      ${response.title ? html5`
+        <div class="widget-header">
+          <div class="widget-name">${response.title}</div>
+          <div class="widget-reveal-container">
+            ${revealButton}
+          </div>
+        </div>
+      ` : Lit3.nothing}
       ${response.renderedWidget ? html5`
         <div class="widget-content-container">
           ${response.renderedWidget}
         </div>` : Lit3.nothing}
-      <div class="widget-reveal-container">
-        <devtools-button class="widget-reveal"
-          .iconName=${"tab-move"}
-          .variant=${"text"}
-          @click=${onReveal}
-        >${response.customRevealTitle ?? lockedString5(UIStringsNotTranslate4.reveal)}</devtools-button>
-      </div>
+      ${!response.title ? html5`
+        <div class="widget-reveal-container">
+          ${revealButton}
+        </div>
+      ` : Lit3.nothing}
     </div>
     `;
 }
 async function makePerformanceTraceWidget(widgetData) {
   return {
     renderedWidget: null,
+    title: null,
     revealable: new Timeline.TimelinePanel.ParsedTraceRevealable(widgetData.data.parsedTrace),
     customRevealTitle: lockedString5(UIStringsNotTranslate4.revealTrace)
   };
@@ -3638,12 +3902,14 @@ async function makeDomTreeWidget(widgetData) {
     expandRoot: true,
     rootDOMNode: root,
     visibleWidth: 400,
-    wrap: true
+    wrap: true,
+    maxRows: 10
   })}></devtools-widget>
   `;
   return {
     renderedWidget,
-    revealable: new SDK2.DOMModel.DeferredDOMNode(root.domModel().target(), root.backendNodeId())
+    revealable: new SDK2.DOMModel.DeferredDOMNode(root.domModel().target(), root.backendNodeId()),
+    title: lockedString5(UIStringsNotTranslate4.lcpElement)
   };
 }
 async function renderWidgets(widgets, options = {}) {
@@ -3657,7 +3923,7 @@ async function renderWidgets(widgets, options = {}) {
         response = await makeComputedStyleWidget(widgetData);
         break;
       case "CORE_VITALS":
-        response = await makeCoreVitalsWidget(widgetData);
+        response = await makeCoreWebVitalsWidget(widgetData);
         break;
       case "STYLE_PROPERTIES":
         response = await makeStylePropertiesWidget(widgetData);
@@ -3670,6 +3936,12 @@ async function renderWidgets(widgets, options = {}) {
         break;
       case "LCP_BREAKDOWN":
         response = await makeLcpBreakdownWidget(widgetData);
+        break;
+      case "TIMELINE_RANGE_SUMMARY":
+        response = await makeTimelineRangeSummaryWidget(widgetData);
+        break;
+      case "BOTTOM_UP_TREE":
+        response = await makeBottomUpTimelineTreeWidget(widgetData);
         break;
       default:
         Platform4.assertNever(widgetData, "Unknown AiWidget name");
@@ -3745,8 +4017,13 @@ function renderImageChatMessage(inlineData) {
     </devtools-link>`;
 }
 function renderActions(input, output) {
+  const aiAssistanceV2 = Root3.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled;
+  const rowClasses = Lit3.Directives.classMap({
+    "ai-assistance-feedback-row": true,
+    "not-v2": !aiAssistanceV2
+  });
   return html5`
-    <div class="ai-assistance-feedback-row">
+    <div class=${rowClasses}>
       <div class="action-buttons">
         ${input.showRateButtons ? html5`
           <devtools-button
@@ -3793,7 +4070,8 @@ function renderActions(input, output) {
   }}
           @click=${input.onReportClick}
         ></devtools-button>
-        <div class="vertical-separator"></div>
+        ${aiAssistanceV2 ? Lit3.nothing : html5`
+          <div class="vertical-separator"></div>
           <devtools-button
             .data=${{
     variant: "icon",
@@ -3804,6 +4082,18 @@ function renderActions(input, output) {
   }}
             aria-label=${lockedString5(UIStringsNotTranslate4.copyResponse)}
             @click=${input.onCopyResponseClick}></devtools-button>
+        `}
+        ${input.onExportClick && aiAssistanceV2 && input.isLastMessage ? html5`
+        <div class="vertical-separator"></div>
+          <devtools-button
+            class="export-for-agents-button"
+            .jslogContext=${"ai-export-for-agents"}
+            .variant=${"outlined"}
+            .iconName=${"copy"}
+            @click=${input.onExportClick}
+          >${lockedString5(UIStringsNotTranslate4.exportForAgents)}</devtools-button>
+          <div class="vertical-separator"></div>
+        ` : Lit3.nothing}
       </div>
       ${input.suggestions ? html5`<div class="suggestions-container">
         <div class="scroll-button-container left hidden" ${ref3((element) => {
@@ -3899,12 +4189,15 @@ var ChatMessage = class extends UI5.Widget.Widget {
   isReadOnly = false;
   canShowFeedbackForm = false;
   isLastMessage = false;
+  isFirstMessage = false;
   markdownRenderer;
   onSuggestionClick = () => {
   };
   onFeedbackSubmit = () => {
   };
   onCopyResponseClick = () => {
+  };
+  onExportClick = () => {
   };
   walkthrough = {
     onOpen: () => {
@@ -3913,16 +4206,18 @@ var ChatMessage = class extends UI5.Widget.Widget {
     },
     isInlined: false,
     isExpanded: false,
-    activeMessage: null
+    activeSidebarMessage: null,
+    inlineExpandedMessages: []
   };
   #suggestionsResizeObserver = new ResizeObserver(() => this.#handleSuggestionsScrollOrResize());
-  #suggestionsEvaluateLayoutThrottler = new Common3.Throttler.Throttler(50);
+  #suggestionsEvaluateLayoutThrottler = new Common3.Throttler.Throttler(100);
   #feedbackValue = "";
   #currentRating;
   #isShowingFeedbackForm = false;
   #isSubmitButtonDisabled = true;
   #view;
   #viewOutput = {};
+  #isObservingSuggestions = false;
   constructor(element, view) {
     super(element);
     this.#view = view ?? DEFAULT_VIEW4;
@@ -3931,9 +4226,6 @@ var ChatMessage = class extends UI5.Widget.Widget {
     super.wasShown();
     void this.performUpdate();
     this.#evaluateSuggestionsLayout();
-    if (this.#viewOutput.suggestionsScrollContainer) {
-      this.#suggestionsResizeObserver.observe(this.#viewOutput.suggestionsScrollContainer);
-    }
   }
   performUpdate() {
     this.#view({
@@ -3943,6 +4235,7 @@ var ChatMessage = class extends UI5.Widget.Widget {
       canShowFeedbackForm: this.canShowFeedbackForm,
       markdownRenderer: this.markdownRenderer,
       isLastMessage: this.isLastMessage,
+      isFirstMessage: this.isFirstMessage,
       onSuggestionClick: this.onSuggestionClick,
       onRatingClick: this.#handleRateClick.bind(this),
       onReportClick: () => UIHelpers.openInNewTab(REPORT_URL),
@@ -3951,6 +4244,7 @@ var ChatMessage = class extends UI5.Widget.Widget {
           this.onCopyResponseClick(this.message);
         }
       },
+      onExportClick: this.onExportClick,
       scrollSuggestionsScrollContainer: this.#scrollSuggestionsScrollContainer.bind(this),
       onSuggestionsScrollOrResize: this.#handleSuggestionsScrollOrResize.bind(this),
       onSubmit: this.#handleSubmit.bind(this),
@@ -3966,6 +4260,10 @@ var ChatMessage = class extends UI5.Widget.Widget {
       onFeedbackSubmit: this.onFeedbackSubmit,
       walkthrough: this.walkthrough
     }, this.#viewOutput, this.contentElement);
+    if (this.#viewOutput.suggestionsScrollContainer && !this.#isObservingSuggestions) {
+      this.#suggestionsResizeObserver.observe(this.#viewOutput.suggestionsScrollContainer);
+      this.#isObservingSuggestions = true;
+    }
   }
   #handleInputChange(value) {
     this.#feedbackValue = value;
@@ -3990,6 +4288,7 @@ var ChatMessage = class extends UI5.Widget.Widget {
   willHide() {
     super.willHide();
     this.#suggestionsResizeObserver.disconnect();
+    this.#isObservingSuggestions = false;
   }
   #handleSuggestionsScrollOrResize() {
     void this.#suggestionsEvaluateLayoutThrottler.schedule(() => {
@@ -4049,6 +4348,50 @@ var ChatMessage = class extends UI5.Widget.Widget {
     void this.performUpdate();
   }
 };
+async function makeTimelineRangeSummaryWidget(widgetData) {
+  const { bounds, parsedTrace, track } = widgetData.data;
+  let events = [];
+  if (track === "main") {
+    const flameChartView = Timeline.TimelinePanel.TimelinePanel.instance().getFlameChart();
+    const mainDataProvider = flameChartView.getMainDataProvider();
+    const mainTrack = mainDataProvider.timelineData().groups.find((group) => group.name.startsWith("Main \u2014 "));
+    if (mainTrack) {
+      events = mainDataProvider.groupTreeEvents(mainTrack) ?? [];
+    }
+  }
+  const eventsArray = Array.from(events);
+  eventsArray.sort((a, b) => a.ts - b.ts);
+  const thirdPartyTree = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
+  const mapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
+  thirdPartyTree.model = { selectedEvents: eventsArray, parsedTrace, entityMapper: mapper };
+  thirdPartyTree.activeSelection = Timeline.TimelineSelection.selectionFromRangeMicroSeconds(bounds.min, bounds.max);
+  thirdPartyTree.refreshTree(true);
+  const template = html5`
+    <devtools-widget
+      ${widget3(TimelineComponents.TimelineRangeSummaryView.TimelineRangeSummaryView, {
+    data: {
+      parsedTrace,
+      events,
+      startTime: Trace.Helpers.Timing.microToMilli(bounds.min),
+      endTime: Trace.Helpers.Timing.microToMilli(bounds.max),
+      thirdPartyTreeTemplate: html5`${widget3(Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget, {
+        maxRows: 10,
+        model: {
+          selectedEvents: thirdPartyTree.selectedEvents ?? null,
+          parsedTrace,
+          entityMapper: thirdPartyTree.entityMapper()
+        },
+        activeSelection: { bounds }
+      })}`
+    }
+  })}
+    ></devtools-widget>`;
+  return {
+    renderedWidget: template,
+    revealable: new TimelineUtils.Helpers.RevealableTimeRange(bounds),
+    title: lockedString5(UIStringsNotTranslate4.performanceSummary)
+  };
+}
 
 // gen/front_end/panels/ai_assistance/components/chatView.css.js
 var chatView_css_default = `/*
@@ -4465,14 +4808,6 @@ main {
   }
 }
 
-.export-for-agents-button {
-  /* Bottom margin to ensure it's not right up against the chat box when
-   * the conversation requires a scrollbar */
-  margin: 0 auto var(--sys-size-8) auto;
-  display: block;
-
-}
-
 /*# sourceURL=${import.meta.resolve("././components/chatView.css")} */`;
 
 // gen/front_end/panels/ai_assistance/components/ExportForAgentsDialog.js
@@ -4580,7 +4915,7 @@ var UIStrings3 = {
   /**
    * @description Title for the export for agents dialog.
    */
-  exportForAgents: "Export for agents",
+  exportForAgents: "Copy for your coding agent",
   /**
    * @description Button text for copying to clipboard.
    */
@@ -4776,8 +5111,6 @@ var DEFAULT_VIEW6 = (input, output, target) => {
     "chat-input-widget": true,
     sticky: !input.isReadOnly
   });
-  const hasAiV2Flag = Boolean(Root4.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
-  const shouldShowExportToAgent = !input.isLoading && input.messages.length > 0 && hasAiV2Flag;
   render7(html7`
       <style>${chatView_css_default}</style>
       <div class=${chatUiClasses}>
@@ -4793,22 +5126,15 @@ var DEFAULT_VIEW6 = (input, output, target) => {
     canShowFeedbackForm: input.canShowFeedbackForm,
     markdownRenderer: input.markdownRenderer,
     isLastMessage: input.messages.at(-1) === message,
+    isFirstMessage: input.messages.at(0) === message,
     onSuggestionClick: input.handleSuggestionClick,
     onFeedbackSubmit: input.onFeedbackSubmit,
     onCopyResponseClick: input.onCopyResponseClick,
+    onExportClick: input.exportForAgentsClick,
     walkthrough: {
       ...input.walkthrough
     }
   }))}
-              ${shouldShowExportToAgent ? html7`
-                <devtools-button
-                  class="export-for-agents-button"
-                  .jslogContext=${"ai-export-for-agents"}
-                  .variant=${"text"}
-                  .iconName=${"copy"}
-                  @click=${input.exportForAgentsClick}
-                >Export for agents</devtools-button>
-              ` : nothing7}
               ${input.isLoading ? nothing7 : widget4(PatchWidget, {
     changeSummary: input.changeSummary ?? "",
     changeManager: input.changeManager
@@ -5024,7 +5350,7 @@ __export(DisabledWidget_exports, {
 });
 import * as Host6 from "./../../core/host/host.js";
 import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as Root5 from "./../../core/root/root.js";
+import * as Root4 from "./../../core/root/root.js";
 import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
 import { html as html8, render as render8 } from "./../../ui/lit/lit.js";
@@ -5182,7 +5508,7 @@ var DisabledWidget = class extends UI8.Widget.Widget {
     void this.requestUpdate();
   }
   performUpdate() {
-    const hostConfig = Root5.Runtime.hostConfig;
+    const hostConfig = Root4.Runtime.hostConfig;
     this.#view({
       aidaAvailability: this.aidaAvailability,
       hostConfig
@@ -5197,7 +5523,7 @@ __export(ExploreWidget_exports, {
   ExploreWidget: () => ExploreWidget
 });
 import * as i18n17 from "./../../core/i18n/i18n.js";
-import * as Root6 from "./../../core/root/root.js";
+import * as Root5 from "./../../core/root/root.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
 import { html as html9, render as render9 } from "./../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
@@ -5417,7 +5743,7 @@ var ExploreWidget = class extends UI9.Widget.Widget {
     void this.requestUpdate();
   }
   performUpdate() {
-    const config = Root6.Runtime.hostConfig;
+    const config = Root5.Runtime.hostConfig;
     const featureCards = [];
     if (config.devToolsFreestyler?.enabled && UI9.ViewManager.ViewManager.instance().hasView("elements")) {
       featureCards.push({
@@ -5536,9 +5862,9 @@ var MarkdownRendererWithCodeBlock = class extends MarkdownView.MarkdownView.Mark
 // gen/front_end/panels/ai_assistance/components/PerformanceAgentMarkdownRenderer.js
 import * as Common5 from "./../../core/common/common.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as Trace from "./../../models/trace/trace.js";
+import * as Trace2 from "./../../models/trace/trace.js";
 import * as Lit6 from "./../../ui/lit/lit.js";
-import * as PanelsCommon2 from "./../common/common.js";
+import * as PanelsCommon3 from "./../common/common.js";
 var { html: html11 } = Lit6.StaticHtml;
 var { until } = Lit6.Directives;
 var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlock {
@@ -5561,7 +5887,7 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
       }
       let label = token.text;
       let title = "";
-      if (Trace.Types.Events.isSyntheticNetworkRequest(event)) {
+      if (Trace2.Types.Events.isSyntheticNetworkRequest(event)) {
         title = event.args.data.url;
       } else {
         label += ` (${event.name})`;
@@ -5593,7 +5919,7 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
     if (node.frameId() !== this.mainFrameId) {
       return;
     }
-    const linkedNode = PanelsCommon2.DOMLinkifier.Linkifier.instance().linkify(node, { textContent: label });
+    const linkedNode = PanelsCommon3.DOMLinkifier.Linkifier.instance().linkify(node, { textContent: label });
     return linkedNode;
   }
 };
@@ -5602,7 +5928,7 @@ var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlo
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as Marked3 from "./../../third_party/marked/marked.js";
 import * as Lit7 from "./../../ui/lit/lit.js";
-import * as PanelsCommon3 from "./../common/common.js";
+import * as PanelsCommon4 from "./../common/common.js";
 var { html: html12 } = Lit7.StaticHtml;
 var { until: until2 } = Lit7.Directives;
 var StylingAgentMarkdownRenderer = class _StylingAgentMarkdownRenderer extends MarkdownRendererWithCodeBlock {
@@ -5741,7 +6067,7 @@ var StylingAgentMarkdownRenderer = class _StylingAgentMarkdownRenderer extends M
     if (node.frameId() !== this.mainFrameId) {
       return;
     }
-    const linkedNode = PanelsCommon3.DOMLinkifier.Linkifier.instance().linkify(node, { textContent: label });
+    const linkedNode = PanelsCommon4.DOMLinkifier.Linkifier.instance().linkify(node, { textContent: label });
     return linkedNode;
   }
 };
@@ -6045,7 +6371,7 @@ function getMarkdownRenderer(conversation) {
   return new MarkdownRendererWithCodeBlock();
 }
 function toolbarView(input) {
-  const hasAiV2 = Boolean(Root7.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
+  const hasAiV2 = Boolean(Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
   return html13`
     <div class="toolbar-container" role="toolbar" jslog=${VisualLogging6.toolbar()}>
       <devtools-toolbar class="freestyler-left-toolbar" role="presentation">
@@ -6133,12 +6459,12 @@ function defaultView(input, output, target) {
                     </devtools-widget>`;
     }
   }
-  if (Root7.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled || Greendev.Prototypes.instance().isEnabled("breakpointDebuggerAgent")) {
-    const shouldShowWalkthrough = input.state === "chat-view" && input.walkthrough.isExpanded;
+  if (Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled || Greendev.Prototypes.instance().isEnabled("breakpointDebuggerAgent")) {
+    const shouldShowWalkthrough = input.state === "chat-view" && input.props.walkthrough.isExpanded;
     let walkthroughIsForLastMessage = false;
     if (input.state === "chat-view") {
       const lastMessage = input.props.messages.at(-1);
-      if (lastMessage && input.props.walkthrough.activeMessage === lastMessage) {
+      if (lastMessage && input.props.walkthrough.activeSidebarMessage === lastMessage) {
         walkthroughIsForLastMessage = true;
       }
     }
@@ -6149,7 +6475,7 @@ function defaultView(input, output, target) {
           name="ai-assistance-split-view-state"
           direction="column"
           sidebar-position="second"
-          sidebar-visibility=${shouldShowWalkthrough && !input.walkthrough.isInlined ? "visible" : "hidden"}
+          sidebar-visibility=${shouldShowWalkthrough && !input.props.walkthrough.isInlined ? "visible" : "hidden"}
           sidebar-initial-size=${WALKTHROUGH_SIDEBAR_INITIAL_WIDTH}
         >
           <div slot="main" class="main-view">
@@ -6158,7 +6484,7 @@ function defaultView(input, output, target) {
           <div slot="sidebar" class="sidebar-view">
             ${shouldShowWalkthrough ? html13`
               <devtools-widget ${widget5(WalkthroughView, {
-      message: input.props.walkthrough.activeMessage,
+      message: input.props.walkthrough.activeSidebarMessage,
       isLoading: input.props.isLoading && walkthroughIsForLastMessage,
       markdownRenderer: input.props.markdownRenderer,
       onToggle: input.props.walkthrough.onToggle
@@ -6242,7 +6568,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
   #walkthrough = {
     isInlined: false,
     isExpanded: false,
-    activeMessage: null
+    activeSidebarMessage: null,
+    inlineExpandedMessages: []
   };
   constructor(view = defaultView, { aidaClient, aidaAvailability }) {
     super(_AiAssistancePanel.panelName);
@@ -6270,16 +6597,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
       },
       onSettingsClick: () => {
         void UI10.ViewManager.ViewManager.instance().showView("chrome-ai");
-      },
-      walkthrough: {
-        isExpanded: this.#walkthrough.isExpanded,
-        isInlined: this.#walkthrough.isInlined,
-        onToggle: this.#toggleWalkthrough.bind(this)
       }
     };
   }
   async #getPanelViewInput() {
-    const blockedByAge = Root7.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+    const blockedByAge = Root6.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
     if (this.#aidaAvailability !== "available" || !this.#aiAssistanceEnabledSetting?.getIfNotDisabled() || blockedByAge) {
       return {
         state: "disabled-view",
@@ -6351,7 +6673,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
             onOpen: this.#openWalkthrough.bind(this),
             isExpanded: this.#walkthrough.isExpanded,
             isInlined: this.#walkthrough.isInlined,
-            activeMessage: this.#walkthrough.activeMessage
+            activeSidebarMessage: this.#walkthrough.activeSidebarMessage,
+            inlineExpandedMessages: this.#walkthrough.inlineExpandedMessages
           }
         }
       };
@@ -6363,7 +6686,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
   // Responsive logic for Walkthrough
   onResize() {
     super.onResize();
-    if (Root7.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
+    if (Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
       this.#updateWalkthroughResponsiveness();
     }
   }
@@ -6372,17 +6695,54 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
     if (isNarrow === this.#walkthrough.isInlined) {
       return;
     }
-    this.#clearWalkthrough();
     this.#walkthrough.isInlined = isNarrow;
+    if (!this.#walkthrough.isExpanded) {
+      this.#walkthrough.activeSidebarMessage = null;
+      this.#walkthrough.inlineExpandedMessages = [];
+      this.requestUpdate();
+      return;
+    }
+    if (isNarrow) {
+      this.#walkthrough.inlineExpandedMessages = this.#walkthrough.activeSidebarMessage ? [this.#walkthrough.activeSidebarMessage] : [];
+    } else {
+      this.#walkthrough.activeSidebarMessage = this.#walkthrough.inlineExpandedMessages.at(-1) ?? null;
+    }
     this.requestUpdate();
   }
   #openWalkthrough(message) {
-    this.#walkthrough.activeMessage = message;
+    if (!this.#walkthrough.inlineExpandedMessages.includes(message)) {
+      this.#walkthrough.inlineExpandedMessages.push(message);
+    }
+    this.#walkthrough.activeSidebarMessage = message;
     this.#walkthrough.isExpanded = true;
     this.requestUpdate();
   }
-  #toggleWalkthrough(isOpen) {
-    this.#walkthrough.isExpanded = isOpen;
+  /**
+   * Toggles the expanded state of a walkthrough.
+   *
+   * In Wide (sidebar) mode:
+   * - Opening a message's walkthrough shows the sidebar for that message.
+   * - Closing the sidebar hides the walkthrough for the currently active message.
+   *
+   * In Narrow (inline) mode:
+   * - Any number of walkthroughs can be open at once.
+   * - Opening/closing a message's walkthrough only affects that message's inline display.
+   */
+  #toggleWalkthrough(isOpen, message) {
+    if (isOpen) {
+      this.#openWalkthrough(message);
+      return;
+    }
+    this.#walkthrough.inlineExpandedMessages = this.#walkthrough.inlineExpandedMessages.filter((m) => m !== message);
+    if (this.#walkthrough.isInlined) {
+      this.#walkthrough.isExpanded = this.#walkthrough.inlineExpandedMessages.length > 0;
+      if (this.#walkthrough.activeSidebarMessage === message) {
+        this.#walkthrough.activeSidebarMessage = this.#walkthrough.inlineExpandedMessages.at(-1) ?? null;
+      }
+    } else {
+      this.#walkthrough.isExpanded = false;
+      this.#walkthrough.activeSidebarMessage = null;
+    }
     this.requestUpdate();
   }
   #getAiAssistanceEnabledSetting() {
@@ -6422,11 +6782,14 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
   async #handlePerformanceRecordAndReload() {
     return await TimelinePanel2.TimelinePanel.TimelinePanel.executeRecordAndReload();
   }
-  async #handleLighthouseRun() {
-    return await LighthousePanel.LighthousePanel.LighthousePanel.executeLighthouseRecording({ isAIControlled: true });
+  async #handleLighthouseRun(overrides) {
+    return await LighthousePanel.LighthousePanel.LighthousePanel.executeLighthouseRecording({
+      isAIControlled: true,
+      ...overrides
+    });
   }
   #getDefaultConversationType() {
-    const { hostConfig } = Root7.Runtime;
+    const { hostConfig } = Root6.Runtime;
     const viewManager = UI10.ViewManager.ViewManager.instance();
     const isElementsPanelVisible = viewManager.isViewVisible("elements");
     const isNetworkPanelVisible = viewManager.isViewVisible("network");
@@ -6500,7 +6863,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
             isExternal: false,
             performanceRecordAndReload: this.#handlePerformanceRecordAndReload.bind(this),
             onInspectElement: this.#handleInspectElement.bind(this),
-            networkTimeCalculator: NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator()
+            networkTimeCalculator: NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator(),
+            lighthouseRecording: this.#handleLighthouseRun.bind(this)
           });
         }
       }
@@ -6531,7 +6895,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
       isExternal: false,
       performanceRecordAndReload: this.#handlePerformanceRecordAndReload.bind(this),
       onInspectElement: this.#handleInspectElement.bind(this),
-      networkTimeCalculator: NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator()
+      networkTimeCalculator: NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator(),
+      lighthouseRecording: this.#handleLighthouseRun.bind(this)
     });
     this.#updateConversationState(conversation);
     this.#conversation?.setContext(context);
@@ -6696,7 +7061,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
   }
   #shouldShowChatActions() {
     const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
-    const isBlockedByAge = Root7.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+    const isBlockedByAge = Root6.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
     if (!aiAssistanceSetting || isBlockedByAge) {
       return false;
     }
@@ -6741,7 +7106,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
     if (!this.#conversation || this.#conversation.isReadOnly) {
       return i18nString5(UIStrings5.inputDisclaimerForEmptyState);
     }
-    const noLogging = Root7.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root7.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+    const noLogging = Root6.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root6.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
     switch (this.#conversation.type) {
       case "freestyler":
         if (noLogging) {
@@ -6829,8 +7194,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
     this.requestUpdate();
   }
   #canExecuteQuery() {
-    const isBrandedBuild = Boolean(Root7.Runtime.hostConfig.aidaAvailability?.enabled);
-    const isBlockedByAge = Boolean(Root7.Runtime.hostConfig.aidaAvailability?.blockedByAge);
+    const isBrandedBuild = Boolean(Root6.Runtime.hostConfig.aidaAvailability?.enabled);
+    const isBlockedByAge = Boolean(Root6.Runtime.hostConfig.aidaAvailability?.blockedByAge);
     const isAidaAvailable = Boolean(
       this.#aidaAvailability === "available"
       /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */
@@ -6895,7 +7260,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
         isExternal: false,
         performanceRecordAndReload: this.#handlePerformanceRecordAndReload.bind(this),
         onInspectElement: this.#handleInspectElement.bind(this),
-        networkTimeCalculator: NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator()
+        networkTimeCalculator: NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator(),
+        lighthouseRecording: this.#handleLighthouseRun.bind(this)
       });
     }
     this.#updateConversationState(conversation);
@@ -6939,15 +7305,16 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
   #onHistoryDeleted() {
     this.#updateConversationState();
   }
-  #clearWalkthrough() {
+  #resetWalkthrough() {
     this.#walkthrough.isExpanded = false;
-    this.#walkthrough.activeMessage = null;
+    this.#walkthrough.activeSidebarMessage = null;
+    this.#walkthrough.inlineExpandedMessages = [];
   }
   #onDeleteClicked() {
     if (!this.#conversation) {
       return;
     }
-    this.#clearWalkthrough();
+    this.#resetWalkthrough();
     void AiAssistanceModel6.AiHistoryStorage.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
     this.#updateConversationState();
     UI10.ARIAUtils.LiveAnnouncer.alert(i18nString5(UIStrings5.chatDeleted));
@@ -6967,6 +7334,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
   }
   #handleNewChatRequest() {
     this.#updateConversationState();
+    this.#resetWalkthrough();
     UI10.ARIAUtils.LiveAnnouncer.alert(i18nString5(UIStrings5.newChatCreated));
     if (Annotations.AnnotationRepository.annotationsEnabled()) {
       Annotations.AnnotationRepository.instance().deleteAllAnnotations();
@@ -7200,7 +7568,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
               }
               systemMessage.parts.push(newPart);
             }
-            if (data.widgets && Root7.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
+            if (data.widgets && Root6.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled) {
               systemMessage.parts.push({
                 type: "widget",
                 widgets: data.widgets
@@ -7336,16 +7704,16 @@ var ActionDelegate = class {
   }
 };
 function isAiAssistanceMultimodalUploadInputEnabled() {
-  return isAiAssistanceMultimodalInputEnabled() && Boolean(Root7.Runtime.hostConfig.devToolsFreestyler?.multimodalUploadInput);
+  return isAiAssistanceMultimodalInputEnabled() && Boolean(Root6.Runtime.hostConfig.devToolsFreestyler?.multimodalUploadInput);
 }
 function isAiAssistanceMultimodalInputEnabled() {
-  return Boolean(Root7.Runtime.hostConfig.devToolsFreestyler?.multimodal);
+  return Boolean(Root6.Runtime.hostConfig.devToolsFreestyler?.multimodal);
 }
 function isAiAssistanceContextSelectionAgentEnabled() {
-  return Boolean(Root7.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
+  return Boolean(Root6.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
 }
 function isAiAssistanceServerSideLoggingEnabled() {
-  return !Root7.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+  return !Root6.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
 export {
   ActionDelegate,

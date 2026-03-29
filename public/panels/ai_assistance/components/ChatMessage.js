@@ -11,6 +11,8 @@ import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import * as ComputedStyle from '../../../models/computed_style/computed_style.js';
+import * as Trace from '../../../models/trace/trace.js';
+import * as PanelsCommon from '../../../panels/common/common.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Input from '../../../ui/components/input/input.js';
@@ -25,7 +27,7 @@ import * as Timeline from '../../timeline/timeline.js';
 import * as TimelineUtils from '../../timeline/utils/utils.js';
 import { PanelUtils } from '../../utils/utils.js';
 import chatMessageStyles from './chatMessage.css.js';
-import { walkthroughTitle, WalkthroughView } from './WalkthroughView.js';
+import { walkthroughCloseTitle, walkthroughTitle, WalkthroughView } from './WalkthroughView.js';
 const { html, Directives: { ref, ifDefined } } = Lit;
 const lockedString = i18n.i18n.lockedString;
 const { widget } = UI.Widget;
@@ -156,58 +158,95 @@ const UIStringsNotTranslate = {
      */
     imageUnavailable: 'Image unavailable',
     /**
-     * @description Title for the button that shows the thinking process (walkthrough).
-     */
-    showThinking: 'Show thinking',
-    /**
      * @description Title for the button that takes the user into other DevTools panels to reveal items the AI references.
      */
     reveal: 'Reveal',
     /**
      * @description Title used for revealing the performance trace.
      */
-    revealTrace: 'Reveal trace'
+    revealTrace: 'Reveal trace',
+    /**
+     * @description Title for the core web vitals widget.
+     */
+    coreVitals: 'Core Web Vitals',
+    /**
+     * @description Title for the LCP breakdown widget.
+     */
+    lcpBreakdown: 'LCP breakdown',
+    /**
+     * @description Title for the LCP element widget.
+     */
+    lcpElement: 'LCP element',
+    /**
+     * @description Title for the performance summary widget.
+     */
+    performanceSummary: 'Performance summary',
+    /**
+     * @description The title of the button that allows exporting the conversation for agents.
+     */
+    exportForAgents: 'Copy for your coding agent',
+    /**
+     * @description Title for the bottom up thread activity widget.
+     */
+    bottomUpTree: 'Bottom-up thread activity',
 };
 export const DEFAULT_VIEW = (input, output, target) => {
+    const hasAiV2 = Boolean(Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
     const message = input.message;
     if (message.entity === "user" /* ChatMessageEntity.USER */) {
         const imageInput = message.imageInput && 'inlineData' in message.imageInput ?
             renderImageChatMessage(message.imageInput.inlineData) :
             Lit.nothing;
+        const messageClasses = Lit.Directives.classMap({
+            'chat-message': true,
+            query: true,
+            'is-last-message': input.isLastMessage,
+            'is-first-message': input.isFirstMessage,
+            'ai-v2': hasAiV2,
+        });
+        const userQueryWrapperClasses = Lit.Directives.classMap({
+            // Don't need to style at all unless we are on the V2 flag.
+            // Once we ship this can be removed entirely.
+            'user-query-wrapper': hasAiV2
+        });
         // clang-format off
         Lit.render(html `
       <style>${Input.textInputStyles}</style>
       <style>${chatMessageStyles}</style>
-      <section
-        class="chat-message query ${input.isLastMessage ? 'is-last-message' : ''}"
-        jslog=${VisualLogging.section('question')}
-      >
-        ${imageInput}
-        <div class="message-content">${renderTextAsMarkdown(message.text, input.markdownRenderer)}</div>
-      </section>
+      <div class=${userQueryWrapperClasses}>
+        <section class=${messageClasses} jslog=${VisualLogging.section('question')}>
+          ${imageInput}
+          <div class="message-content">${renderTextAsMarkdown(message.text, input.markdownRenderer)}</div>
+        </section>
+      </div>
     `, target);
         // clang-format on
         return;
     }
     const steps = message.parts.filter(part => part.type === 'step').map(part => part.step);
     const icon = AiAssistanceModel.AiUtils.getIconName();
-    const aiAssistanceV2 = Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled;
+    const messageClasses = Lit.Directives.classMap({
+        'chat-message': true,
+        answer: true,
+        'is-last-message': input.isLastMessage,
+        'is-first-message': input.isFirstMessage,
+        'ai-v2': hasAiV2,
+    });
     // clang-format off
     Lit.render(html `
     <style>${Input.textInputStyles}</style>
     <style>${chatMessageStyles}</style>
-    <section
-      class="chat-message answer ${input.isLastMessage ? 'is-last-message' : ''}"
-      jslog=${VisualLogging.section('answer')}
-    >
-      <div class="message-info">
-        <devtools-icon name=${icon}></devtools-icon>
-        <div class="message-name">
-          <h2>${AiAssistanceModel.AiUtils.isGeminiBranding() ? lockedString(UIStringsNotTranslate.gemini) : lockedString(UIStringsNotTranslate.ai)}</h2>
-        </div>
-      </div>
-      ${aiAssistanceV2 ? renderWalkthroughUI(input, steps) : Lit.nothing}
-      ${Lit.Directives.repeat(message.parts, (_, index) => index, (part, index) => {
+    <section class=${messageClasses} jslog=${VisualLogging.section('answer')}>
+      ${hasAiV2 ? Lit.nothing : html `
+        <div class="message-info">
+          <devtools-icon name=${icon}></devtools-icon>
+          <div class="message-name">
+            <h2>${AiAssistanceModel.AiUtils.isGeminiBranding() ? lockedString(UIStringsNotTranslate.gemini) : lockedString(UIStringsNotTranslate.ai)}</h2>
+          </div>
+        </div>`}
+      ${hasAiV2 ? renderWalkthroughUI(input, steps) : Lit.nothing}
+      <div class="answer-body-wrapper">
+        ${Lit.Directives.repeat(message.parts, (_, index) => index, (part, index) => {
         const isLastPart = index === message.parts.length - 1;
         if (part.type === 'answer') {
             return html `<p>${renderTextAsMarkdown(part.text, input.markdownRenderer, { animate: !input.isReadOnly && input.isLoading && isLastPart && input.isLastMessage })}</p>`;
@@ -215,7 +254,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         if (part.type === 'widget') {
             return html `${Lit.Directives.until(renderWidgets(part.widgets, { wrapperClass: 'main-widgets-wrapper' }))}`;
         }
-        if (!aiAssistanceV2 && part.type === 'step') {
+        if (!hasAiV2 && part.type === 'step') {
             return renderStep({
                 step: part.step,
                 isLoading: input.isLoading,
@@ -225,8 +264,9 @@ export const DEFAULT_VIEW = (input, output, target) => {
         }
         return Lit.nothing;
     })}
-      ${renderError(message)}
-      ${input.showActions ? renderActions(input, output) : Lit.nothing}
+        ${renderError(message)}
+        ${input.showActions ? renderActions(input, output) : Lit.nothing}
+      </div>
     </section>
   `, target);
     // clang-format on
@@ -330,24 +370,32 @@ function renderWalkthroughSidebarButton(input, steps) {
         return Lit.nothing;
     }
     const hasOneStepWithWidget = steps.some(step => step.widgets?.length);
-    const title = walkthroughTitle({
+    const isExpanded = walkthrough.isExpanded && input.message === input.walkthrough.activeSidebarMessage;
+    const title = isExpanded ? walkthroughCloseTitle({ hasWidgets: hasOneStepWithWidget }) : walkthroughTitle({
         isLoading: input.isLoading,
         hasWidgets: hasOneStepWithWidget,
         lastStep,
     });
+    // The button should be tonal when there are widgets, but we only
+    // want to change it visually at the end once everything has stopped
+    // loading.
+    const variant = hasOneStepWithWidget && !input.isLoading ? "tonal" /* Buttons.Button.Variant.TONAL */ : "text" /* Buttons.Button.Variant.TEXT */;
+    const icon = AiAssistanceModel.AiUtils.getIconName();
     // clang-format off
     return html `
-    <div class="walkthrough-toggle-container">
-      ${input.isLoading ? html `<devtools-spinner></devtools-spinner>` : Lit.nothing}
+    <div class="walkthrough-toggle-container ${hasOneStepWithWidget ? 'has-widgets' : ''}">
+      ${input.isLoading ?
+        html `<devtools-spinner></devtools-spinner>` :
+        html `<devtools-icon name=${icon}></devtools-icon>`}
       <devtools-button
-        .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+        .variant=${variant}
         .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
-        .title=${lastStep.isLoading ? titleForStep(lastStep) : lockedString(UIStringsNotTranslate.showThinking)}
+        .title=${lastStep.isLoading ? titleForStep(lastStep) : title}
         .jslogContext=${walkthrough.isExpanded ? 'ai-hide-walkthrough-sidebar' : 'ai-show-walkthrough-sidebar'}
         data-show-walkthrough
         @click=${() => {
-        if (walkthrough.activeMessage === input.message && walkthrough.isExpanded) {
-            walkthrough.onToggle(false);
+        if (walkthrough.activeSidebarMessage === input.message && walkthrough.isExpanded) {
+            walkthrough.onToggle(false, message);
         }
         else {
             // Can't just toggle the visibility here; we need to ensure we
@@ -356,7 +404,9 @@ function renderWalkthroughSidebarButton(input, steps) {
             walkthrough.onOpen(message);
         }
     }}
-      >${title}</devtools-button>
+>
+        ${title}<devtools-icon class="chevron" .name=${isExpanded ? 'cross' : 'chevron-right'}></devtools-icon>
+      </devtools-button>
     </div>
   `;
     // clang-format on
@@ -380,7 +430,9 @@ function renderWalkthroughUI(input, steps) {
     // A message's walkthrough is considered expanded if the walkthrough is
     // open and it is specifically targeting this message. This is necessary
     // because the walkthrough state is shared across all messages in the chat.
-    const isExpanded = (input.walkthrough.isExpanded && input.walkthrough.activeMessage === input.message);
+    const isExpanded = input.walkthrough.isInlined ?
+        input.walkthrough.inlineExpandedMessages.includes(input.message) :
+        (input.walkthrough.isExpanded && input.walkthrough.activeSidebarMessage === input.message);
     // When a side-effect step is present, it's shown in the main chat UI if the
     // walkthrough is closed, allowing the user to approve it without opening
     // the walkthrough. If the walkthrough is already open, the side-effect
@@ -499,18 +551,30 @@ async function makeComputedStyleWidget(widgetData) {
         // This disables showing the nested traces and detailed information in the widget.
         propertyTraces: null,
         allowUserControl: false,
-        filterText: new RegExp(widgetData.data.properties.join('|'), 'i')
+        filterText: new RegExp(widgetData.data.properties.join('|'), 'i'),
+        enableNarrowViewResizing: false,
     })}></devtools-widget>`;
     // clang-format on
-    return { renderedWidget, revealable: new Elements.ElementsPanel.NodeComputedStyles(domNodeForId) };
+    return {
+        renderedWidget,
+        revealable: new Elements.ElementsPanel.NodeComputedStyles(domNodeForId),
+        title: html `<devtools-widget
+      ${widget(PanelsCommon.DOMLinkifier.DOMNodeLink, {
+            node: domNodeForId,
+        })}
+    ></devtools-widget>`,
+    };
 }
-async function makeCoreVitalsWidget(widgetData) {
+async function makeCoreWebVitalsWidget(widgetData) {
     // clang-format off
-    const renderedWidget = html `<devtools-widget
-      class="core-vitals-widget" ${widget(TimelineComponents.CWVMetrics.CWVMetrics, { data: widgetData.data })}>
+    const renderedWidget = html `<devtools-widget class="core-vitals-widget" ${widget(TimelineComponents.CWVMetrics.CWVMetrics, { data: widgetData.data, skipBottomBorder: true })}>
   </devtools-widget>`;
     // clang-format on
-    return { renderedWidget, revealable: new TimelineUtils.Helpers.RevealableCoreVitals(widgetData.data.insightSetKey) };
+    return {
+        renderedWidget,
+        revealable: new TimelineUtils.Helpers.RevealableCoreVitals(widgetData.data.insightSetKey),
+        title: lockedString(UIStringsNotTranslate.coreVitals),
+    };
 }
 async function makeStylePropertiesWidget(widgetData) {
     const domNodeForId = await resolveNode(widgetData.data.backendNodeId);
@@ -526,7 +590,15 @@ async function makeStylePropertiesWidget(widgetData) {
     })}>
   </devtools-widget>`;
     // clang-format on
-    return { renderedWidget, revealable: domNodeForId };
+    return {
+        renderedWidget,
+        revealable: domNodeForId,
+        title: html `<devtools-widget
+      ${widget(PanelsCommon.DOMLinkifier.DOMNodeLink, {
+            node: domNodeForId,
+        })}
+    ></devtools-widget>`,
+    };
 }
 async function makeLcpBreakdownWidget(widgetData) {
     const insight = widgetData.data.lcpData;
@@ -541,7 +613,34 @@ async function makeLcpBreakdownWidget(widgetData) {
         minimal: true,
     })}></devtools-widget>`;
     // clang-format on
-    return { renderedWidget, revealable: new TimelineUtils.Helpers.RevealableInsight(insight) };
+    return {
+        renderedWidget,
+        revealable: new TimelineUtils.Helpers.RevealableInsight(insight),
+        title: lockedString(UIStringsNotTranslate.lcpBreakdown),
+    };
+}
+async function makeBottomUpTimelineTreeWidget(widgetData) {
+    const bottomUpRootNode = AiAssistanceModel.AIQueries.AIQueries.mainThreadActivityBottomUp(widgetData.data.bounds, widgetData.data.parsedTrace);
+    if (!bottomUpRootNode) {
+        return null;
+    }
+    const events = bottomUpRootNode.events;
+    const startTime = Trace.Helpers.Timing.microToMilli(widgetData.data.bounds.min);
+    const endTime = Trace.Helpers.Timing.microToMilli(widgetData.data.bounds.max);
+    const renderedWidget = html `<devtools-widget
+      class="bottom-up-timeline-tree-widget"
+      ${widget(Timeline.TimelineTreeView.BottomUpTimelineTreeView, {
+        selectedEvents: events,
+        parsedTrace: widgetData.data.parsedTrace,
+        startTime,
+        endTime,
+        compactMode: true,
+    })}></devtools-widget>`;
+    return {
+        renderedWidget,
+        revealable: new TimelineUtils.Helpers.RevealableBottomUpProfile(widgetData.data.bounds),
+        title: lockedString(UIStringsNotTranslate.bottomUpTree)
+    };
 }
 function renderWidgetResponse(response) {
     if (response === null) {
@@ -557,20 +656,35 @@ function renderWidgetResponse(response) {
         'widget-and-revealer-container': true,
         'revealer-only': response.renderedWidget === null,
     });
+    const revealButton = html `
+    <devtools-button class="widget-reveal-button"
+      .variant=${"text" /* Buttons.Button.Variant.TEXT */}
+      @click=${onReveal}
+    >
+      ${response.customRevealTitle ?? lockedString(UIStringsNotTranslate.reveal)}
+      <devtools-icon name='tab-move'></devtools-icon>
+    </devtools-button>
+  `;
     // clang-format off
     return html `
     <div class=${classes}>
+      ${response.title ? html `
+        <div class="widget-header">
+          <div class="widget-name">${response.title}</div>
+          <div class="widget-reveal-container">
+            ${revealButton}
+          </div>
+        </div>
+      ` : Lit.nothing}
       ${response.renderedWidget ? html `
         <div class="widget-content-container">
           ${response.renderedWidget}
         </div>` : Lit.nothing}
-      <div class="widget-reveal-container">
-        <devtools-button class="widget-reveal"
-          .iconName=${'tab-move'}
-          .variant=${"text" /* Buttons.Button.Variant.TEXT */}
-          @click=${onReveal}
-        >${response.customRevealTitle ?? lockedString(UIStringsNotTranslate.reveal)}</devtools-button>
-      </div>
+      ${!response.title ? html `
+        <div class="widget-reveal-container">
+          ${revealButton}
+        </div>
+      ` : Lit.nothing}
     </div>
     `;
     // clang-format on
@@ -578,6 +692,7 @@ function renderWidgetResponse(response) {
 async function makePerformanceTraceWidget(widgetData) {
     return {
         renderedWidget: null,
+        title: null,
         revealable: new Timeline.TimelinePanel.ParsedTraceRevealable(widgetData.data.parsedTrace),
         customRevealTitle: lockedString(UIStringsNotTranslate.revealTrace),
     };
@@ -623,12 +738,14 @@ async function makeDomTreeWidget(widgetData) {
         rootDOMNode: root,
         visibleWidth: 400,
         wrap: true,
+        maxRows: 10,
     })}></devtools-widget>
   `;
     // clang-format on
     return {
         renderedWidget,
         revealable: new SDK.DOMModel.DeferredDOMNode(root.domModel().target(), root.backendNodeId()),
+        title: lockedString(UIStringsNotTranslate.lcpElement),
     };
 }
 /**
@@ -659,7 +776,7 @@ async function renderWidgets(widgets, options = {}) {
                 response = await makeComputedStyleWidget(widgetData);
                 break;
             case 'CORE_VITALS':
-                response = await makeCoreVitalsWidget(widgetData);
+                response = await makeCoreWebVitalsWidget(widgetData);
                 break;
             case 'STYLE_PROPERTIES':
                 response = await makeStylePropertiesWidget(widgetData);
@@ -672,6 +789,12 @@ async function renderWidgets(widgets, options = {}) {
                 break;
             case 'LCP_BREAKDOWN':
                 response = await makeLcpBreakdownWidget(widgetData);
+                break;
+            case 'TIMELINE_RANGE_SUMMARY':
+                response = await makeTimelineRangeSummaryWidget(widgetData);
+                break;
+            case 'BOTTOM_UP_TREE':
+                response = await makeBottomUpTimelineTreeWidget(widgetData);
                 break;
             default:
                 Platform.assertNever(widgetData, 'Unknown AiWidget name');
@@ -753,9 +876,14 @@ function renderImageChatMessage(inlineData) {
     // clang-format on
 }
 function renderActions(input, output) {
+    const aiAssistanceV2 = Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled;
+    const rowClasses = Lit.Directives.classMap({
+        'ai-assistance-feedback-row': true,
+        'not-v2': !aiAssistanceV2,
+    });
     // clang-format off
     return html `
-    <div class="ai-assistance-feedback-row">
+    <div class=${rowClasses}>
       <div class="action-buttons">
         ${input.showRateButtons ? html `
           <devtools-button
@@ -796,7 +924,8 @@ function renderActions(input, output) {
     }}
           @click=${input.onReportClick}
         ></devtools-button>
-        <div class="vertical-separator"></div>
+        ${aiAssistanceV2 ? Lit.nothing : html `
+          <div class="vertical-separator"></div>
           <devtools-button
             .data=${{
         variant: "icon" /* Buttons.Button.Variant.ICON */,
@@ -807,6 +936,18 @@ function renderActions(input, output) {
     }}
             aria-label=${lockedString(UIStringsNotTranslate.copyResponse)}
             @click=${input.onCopyResponseClick}></devtools-button>
+        `}
+        ${input.onExportClick && aiAssistanceV2 && input.isLastMessage ? html `
+        <div class="vertical-separator"></div>
+          <devtools-button
+            class="export-for-agents-button"
+            .jslogContext=${'ai-export-for-agents'}
+            .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+            .iconName=${'copy'}
+            @click=${input.onExportClick}
+          >${lockedString(UIStringsNotTranslate.exportForAgents)}</devtools-button>
+          <div class="vertical-separator"></div>
+        ` : Lit.nothing}
       </div>
       ${input.suggestions ? html `<div class="suggestions-container">
         <div class="scroll-button-container left hidden" ${ref(element => { output.suggestionsLeftScrollButtonContainer = element; })}>
@@ -897,25 +1038,29 @@ export class ChatMessage extends UI.Widget.Widget {
     isReadOnly = false;
     canShowFeedbackForm = false;
     isLastMessage = false;
+    isFirstMessage = false;
     markdownRenderer;
     onSuggestionClick = () => { };
     onFeedbackSubmit = () => { };
     onCopyResponseClick = () => { };
+    onExportClick = () => { };
     walkthrough = {
         onOpen: () => { },
         onToggle: () => { },
         isInlined: false,
         isExpanded: false,
-        activeMessage: null,
+        activeSidebarMessage: null,
+        inlineExpandedMessages: [],
     };
     #suggestionsResizeObserver = new ResizeObserver(() => this.#handleSuggestionsScrollOrResize());
-    #suggestionsEvaluateLayoutThrottler = new Common.Throttler.Throttler(50);
+    #suggestionsEvaluateLayoutThrottler = new Common.Throttler.Throttler(100);
     #feedbackValue = '';
     #currentRating;
     #isShowingFeedbackForm = false;
     #isSubmitButtonDisabled = true;
     #view;
     #viewOutput = {};
+    #isObservingSuggestions = false;
     constructor(element, view) {
         super(element);
         this.#view = view ?? DEFAULT_VIEW;
@@ -924,9 +1069,6 @@ export class ChatMessage extends UI.Widget.Widget {
         super.wasShown();
         void this.performUpdate();
         this.#evaluateSuggestionsLayout();
-        if (this.#viewOutput.suggestionsScrollContainer) {
-            this.#suggestionsResizeObserver.observe(this.#viewOutput.suggestionsScrollContainer);
-        }
     }
     performUpdate() {
         this.#view({
@@ -936,6 +1078,7 @@ export class ChatMessage extends UI.Widget.Widget {
             canShowFeedbackForm: this.canShowFeedbackForm,
             markdownRenderer: this.markdownRenderer,
             isLastMessage: this.isLastMessage,
+            isFirstMessage: this.isFirstMessage,
             onSuggestionClick: this.onSuggestionClick,
             onRatingClick: this.#handleRateClick.bind(this),
             onReportClick: () => UIHelpers.openInNewTab(REPORT_URL),
@@ -944,6 +1087,7 @@ export class ChatMessage extends UI.Widget.Widget {
                     this.onCopyResponseClick(this.message);
                 }
             },
+            onExportClick: this.onExportClick,
             scrollSuggestionsScrollContainer: this.#scrollSuggestionsScrollContainer.bind(this),
             onSuggestionsScrollOrResize: this.#handleSuggestionsScrollOrResize.bind(this),
             onSubmit: this.#handleSubmit.bind(this),
@@ -962,6 +1106,10 @@ export class ChatMessage extends UI.Widget.Widget {
             onFeedbackSubmit: this.onFeedbackSubmit,
             walkthrough: this.walkthrough,
         }, this.#viewOutput, this.contentElement);
+        if (this.#viewOutput.suggestionsScrollContainer && !this.#isObservingSuggestions) {
+            this.#suggestionsResizeObserver.observe(this.#viewOutput.suggestionsScrollContainer);
+            this.#isObservingSuggestions = true;
+        }
     }
     #handleInputChange(value) {
         this.#feedbackValue = value;
@@ -988,6 +1136,7 @@ export class ChatMessage extends UI.Widget.Widget {
     willHide() {
         super.willHide();
         this.#suggestionsResizeObserver.disconnect();
+        this.#isObservingSuggestions = false;
     }
     #handleSuggestionsScrollOrResize() {
         void this.#suggestionsEvaluateLayoutThrottler.schedule(() => {
@@ -1044,5 +1193,51 @@ export class ChatMessage extends UI.Widget.Widget {
         this.#isSubmitButtonDisabled = true;
         void this.performUpdate();
     }
+}
+async function makeTimelineRangeSummaryWidget(widgetData) {
+    const { bounds, parsedTrace, track } = widgetData.data;
+    let events = [];
+    if (track === 'main') {
+        const flameChartView = Timeline.TimelinePanel.TimelinePanel.instance().getFlameChart();
+        const mainDataProvider = flameChartView.getMainDataProvider();
+        const mainTrack = mainDataProvider.timelineData().groups.find((group) => group.name.startsWith('Main \u2014 '));
+        if (mainTrack) {
+            events = mainDataProvider.groupTreeEvents(mainTrack) ?? [];
+        }
+    }
+    const eventsArray = Array.from(events);
+    eventsArray.sort((a, b) => a.ts - b.ts);
+    const thirdPartyTree = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
+    const mapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
+    thirdPartyTree.model = { selectedEvents: eventsArray, parsedTrace, entityMapper: mapper };
+    thirdPartyTree.activeSelection = Timeline.TimelineSelection.selectionFromRangeMicroSeconds(bounds.min, bounds.max);
+    thirdPartyTree.refreshTree(true);
+    // clang-format off
+    const template = html `
+    <devtools-widget
+      ${widget(TimelineComponents.TimelineRangeSummaryView.TimelineRangeSummaryView, {
+        data: {
+            parsedTrace,
+            events,
+            startTime: Trace.Helpers.Timing.microToMilli(bounds.min),
+            endTime: Trace.Helpers.Timing.microToMilli(bounds.max),
+            thirdPartyTreeTemplate: html `${widget(Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget, {
+                maxRows: 10,
+                model: {
+                    selectedEvents: thirdPartyTree.selectedEvents ?? null,
+                    parsedTrace,
+                    entityMapper: thirdPartyTree.entityMapper(),
+                },
+                activeSelection: { bounds },
+            })}`,
+        },
+    })}
+    ></devtools-widget>`;
+    // clang-format on
+    return {
+        renderedWidget: template,
+        revealable: new TimelineUtils.Helpers.RevealableTimeRange(bounds),
+        title: lockedString(UIStringsNotTranslate.performanceSummary),
+    };
 }
 //# sourceMappingURL=ChatMessage.js.map

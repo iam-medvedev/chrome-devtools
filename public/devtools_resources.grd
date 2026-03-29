@@ -129,6 +129,7 @@
       <include file="Images/dog-paw.svg" name="IMAGES_DOG_PAW_SVG" resource_path="Images/dog-paw.svg" type="BINDATA" compress="false"/>
       <include file="Images/dom-detective-badge.svg" name="IMAGES_DOM_DETECTIVE_BADGE_SVG" resource_path="Images/dom-detective-badge.svg" type="BINDATA" compress="false"/>
       <include file="Images/domain.svg" name="IMAGES_DOMAIN_SVG" resource_path="Images/domain.svg" type="BINDATA" compress="false"/>
+      <include file="Images/dots-circle.svg" name="IMAGES_DOTS_CIRCLE_SVG" resource_path="Images/dots-circle.svg" type="BINDATA" compress="false"/>
       <include file="Images/dots-horizontal.svg" name="IMAGES_DOTS_HORIZONTAL_SVG" resource_path="Images/dots-horizontal.svg" type="BINDATA" compress="false"/>
       <include file="Images/dots-vertical.svg" name="IMAGES_DOTS_VERTICAL_SVG" resource_path="Images/dots-vertical.svg" type="BINDATA" compress="false"/>
       <include file="Images/download.svg" name="IMAGES_DOWNLOAD_SVG" resource_path="Images/download.svg" type="BINDATA" compress="false"/>
@@ -834,6 +835,7 @@
       <include file="ui/components/issue_counter/issue_counter.js" name="UI_COMPONENTS_ISSUE_COUNTER_ISSUE_COUNTER_JS" resource_path="ui/components/issue_counter/issue_counter.js" type="BINDATA" compress="false"/>
       <include file="ui/components/legacy_wrapper/legacy_wrapper.js" name="UI_COMPONENTS_LEGACY_WRAPPER_LEGACY_WRAPPER_JS" resource_path="ui/components/legacy_wrapper/legacy_wrapper.js" type="BINDATA" compress="false"/>
       <include file="ui/components/linkifier/linkifier.js" name="UI_COMPONENTS_LINKIFIER_LINKIFIER_JS" resource_path="ui/components/linkifier/linkifier.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/lists/lists.js" name="UI_COMPONENTS_LISTS_LISTS_JS" resource_path="ui/components/lists/lists.js" type="BINDATA" compress="false"/>
       <include file="ui/components/markdown_view/markdown_view.js" name="UI_COMPONENTS_MARKDOWN_VIEW_MARKDOWN_VIEW_JS" resource_path="ui/components/markdown_view/markdown_view.js" type="BINDATA" compress="false"/>
       <include file="ui/components/menus/menus.js" name="UI_COMPONENTS_MENUS_MENUS_JS" resource_path="ui/components/menus/menus.js" type="BINDATA" compress="false"/>
       <include file="ui/components/node_text/node_text.js" name="UI_COMPONENTS_NODE_TEXT_NODE_TEXT_JS" resource_path="ui/components/node_text/node_text.js" type="BINDATA" compress="false"/>

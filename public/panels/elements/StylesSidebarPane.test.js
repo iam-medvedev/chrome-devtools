@@ -1,9 +1,11 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
@@ -26,6 +28,11 @@ describe('StylesSidebarPane', () => {
             const target = createTarget();
             const cssModel = target.model(SDK.CSSModel.CSSModel);
             sinon.stub(ComputedStyle.ComputedStyleModel.ComputedStyleModel.prototype, 'cssModel').returns(cssModel);
+            sinon.stub(Host.AidaClient.HostConfigTracker, 'instance').returns({
+                addEventListener: () => { },
+                removeEventListener: () => { },
+                dispose: () => { },
+            });
         });
         it('unescapes CSS strings', () => {
             assert.strictEqual(Elements.StylesSidebarPane.unescapeCssString(String.raw `"I\F1 t\EB rn\E2 ti\F4 n\E0 liz\E6 ti\F8 n\2603 \1F308  can be \t\r\ic\k\y"`), '"I\xF1t\xEBrn\xE2ti\xF4n\xE0liz\xE6ti\xF8n\u2603\u{1F308} can be tricky"');
@@ -979,6 +986,86 @@ describe('StylesSidebarPane', () => {
                 });
             });
         });
+        describe('ai code completion provider callbacks', () => {
+            let stylesWrapper;
+            let stylesSidebarPane;
+            beforeEach(async () => {
+                updateHostConfig({
+                    devToolsAiCodeCompletionStyles: {
+                        enabled: true,
+                    },
+                    aidaAvailability: {
+                        enabled: true,
+                        blockedByAge: false,
+                        blockedByGeo: false,
+                    },
+                });
+                const aiCodeCompletionProviderStub = sinon.createStubInstance(TextEditor.AiCodeCompletionProvider.AiCodeCompletionProvider);
+                aiCodeCompletionProviderStub.extension.returns([]);
+                sinon.stub(TextEditor.AiCodeCompletionProvider.AiCodeCompletionProvider, 'createInstance')
+                    .returns(aiCodeCompletionProviderStub);
+                Common.Settings.Settings.instance().createSetting('ai-code-completion-enabled', true);
+                stylesWrapper = new UI.Widget.VBox();
+                stylesWrapper.element.classList.add('style-panes-wrapper');
+                stylesSidebarPane =
+                    new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                stylesSidebarPane.show(stylesWrapper.element);
+            });
+            it('initializes toolbar when the feature is enabled', async () => {
+                const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
+                assert.exists(providerConfig);
+                providerConfig.onFeatureEnabled();
+                assert.exists(stylesWrapper.contentElement.querySelector('div.ai-code-completion-summary-toolbar-container'));
+            });
+            it('cleans up toolbar when the feature is disabled', async () => {
+                const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
+                assert.exists(providerConfig);
+                providerConfig.onFeatureEnabled();
+                assert.exists(stylesWrapper.contentElement.querySelector('div.ai-code-completion-summary-toolbar-container'));
+                providerConfig.onFeatureDisabled();
+                assert.notExists(stylesWrapper.contentElement.querySelector('div.ai-code-completion-summary-toolbar-container'));
+            });
+            it('shows a loading state when a request is triggered', async () => {
+                const setLoadingSpy = sinon.stub(PanelsCommon.AiCodeCompletionSummaryToolbar.prototype, 'setLoading');
+                const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
+                assert.exists(providerConfig);
+                providerConfig.onFeatureEnabled();
+                providerConfig.onRequestTriggered();
+                sinon.assert.calledOnce(setLoadingSpy);
+                assert.isTrue(setLoadingSpy.firstCall.args[0]);
+            });
+            it('hides the loading indicator when a response is received', async () => {
+                const setLoadingSpy = sinon.stub(PanelsCommon.AiCodeCompletionSummaryToolbar.prototype, 'setLoading');
+                const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
+                assert.exists(providerConfig);
+                providerConfig.onFeatureEnabled();
+                providerConfig.onRequestTriggered();
+                sinon.assert.calledOnce(setLoadingSpy);
+                assert.isTrue(setLoadingSpy.firstCall.args[0]);
+                providerConfig.onResponseReceived();
+                sinon.assert.calledTwice(setLoadingSpy);
+                assert.isFalse(setLoadingSpy.secondCall.args[0]);
+            });
+            it('attaches the citations toolbar when a suggestion with citations is accepted', async () => {
+                const updateCitationsSpy = sinon.spy(PanelsCommon.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
+                const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
+                assert.exists(providerConfig);
+                providerConfig.onFeatureEnabled();
+                providerConfig.onResponseReceived();
+                providerConfig.onSuggestionAccepted([{ uri: 'https://example.com/source' }]);
+                sinon.assert.calledOnce(updateCitationsSpy);
+                assert.deepEqual(updateCitationsSpy.firstCall.args, [['https://example.com/source']]);
+            });
+            it('does not attach the citations toolbar if there are no citations', async () => {
+                const updateCitationsSpy = sinon.spy(PanelsCommon.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
+                const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
+                assert.exists(providerConfig);
+                providerConfig.onFeatureEnabled();
+                providerConfig.onResponseReceived();
+                providerConfig.onSuggestionAccepted([]);
+                sinon.assert.notCalled(updateCitationsSpy);
+            });
+        });
     });
     describe('IdleCallbackManager', () => {
         // IdleCallbackManager delegates work using requestIdleCallback, which does not generally execute requested callbacks
@@ -1014,6 +1101,7 @@ describe('StylesSidebarPane', () => {
             '--rgb-color': 'rgb(0 0 0)',
             '--wide-gamut-color': 'lch(0 0 0)',
         };
+        let aiCodeCompletionProvider;
         let section;
         let mockTreeItem;
         const noop = () => { };
@@ -1028,6 +1116,7 @@ describe('StylesSidebarPane', () => {
                 configurable: true,
             });
             sinon.stub(section, 'activeAiSuggestion').get(() => activeAiSuggestion);
+            section.commitActiveAiSuggestion.resolves();
             mockTreeItem = {
                 property: {
                     name: 'color',
@@ -1068,6 +1157,9 @@ describe('StylesSidebarPane', () => {
                     const pane = sinon.createStubInstance(Elements.StylesSidebarPane.StylesSidebarPane);
                     const cssModel = sinon.createStubInstance(SDK.CSSModel.CSSModel);
                     pane.cssModel.returns(cssModel);
+                    aiCodeCompletionProvider =
+                        sinon.createStubInstance(Elements.StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider);
+                    pane.aiCodeCompletionProvider = aiCodeCompletionProvider;
                     return pane;
                 }
             };
@@ -1136,7 +1228,6 @@ describe('StylesSidebarPane', () => {
             });
         });
         describe('AI code completion', () => {
-            let aiCodeCompletionProvider;
             let attachedElement;
             let cssPropertyPrompt;
             beforeEach(() => {
@@ -1150,28 +1241,24 @@ describe('StylesSidebarPane', () => {
                         blockedByGeo: false,
                     }
                 });
-                aiCodeCompletionProvider =
-                    sinon.createStubInstance(Elements.StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider);
-                sinon.stub(Elements.StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider, 'createInstance')
-                    .returns(aiCodeCompletionProvider);
                 attachedElement = document.createElement('div');
                 renderElementIntoDOM(attachedElement);
                 cssPropertyPrompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(mockTreeItem, false);
             });
             it('getCompletionHint returns null if suggestBox is not visible', () => {
                 cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
-                assert.exists(cssPropertyPrompt.aiCodeCompletionConfig);
-                assert.exists(cssPropertyPrompt.aiCodeCompletionConfig.getCompletionHint);
-                assert.isNull(cssPropertyPrompt.aiCodeCompletionConfig.getCompletionHint());
+                assert.exists(cssPropertyPrompt.aiCodeCompletionProvider?.getCompletionHint);
+                assert.isNull(cssPropertyPrompt.aiCodeCompletionProvider.getCompletionHint());
             });
             it('getCompletionHint returns the correct completion hint', async () => {
                 cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                 cssPropertyPrompt.setText('var(--rgb');
                 await cssPropertyPrompt.complete(true);
-                assert.strictEqual(cssPropertyPrompt.aiCodeCompletionConfig?.getCompletionHint?.(), '-color)');
+                assert.strictEqual(cssPropertyPrompt.aiCodeCompletionProvider?.getCompletionHint?.(), '-color)');
             });
             it('debounces triggerAiCodeCompletion', async () => {
                 const clock = sinon.useFakeTimers();
+                const triggerAiCodeCompletionStub = aiCodeCompletionProvider.triggerAiCodeCompletion.resolves();
                 cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                 cssPropertyPrompt.setText('backgr');
                 cssPropertyPrompt.onInput(new Event('input'));
@@ -1180,30 +1267,32 @@ describe('StylesSidebarPane', () => {
                 cssPropertyPrompt.setText('backgrou');
                 cssPropertyPrompt.onInput(new Event('input'));
                 await clock.tickAsync(TextEditor.AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
-                sinon.assert.calledOnce(aiCodeCompletionProvider.triggerAiCodeCompletion);
-                assert.strictEqual(aiCodeCompletionProvider.triggerAiCodeCompletion.firstCall.args[0], 'backgrou');
-                assert.strictEqual(aiCodeCompletionProvider.triggerAiCodeCompletion.firstCall.args[1], 8);
+                sinon.assert.calledOnce(triggerAiCodeCompletionStub);
+                assert.strictEqual(triggerAiCodeCompletionStub.firstCall.args[0], 'backgrou');
+                assert.strictEqual(triggerAiCodeCompletionStub.firstCall.args[1], 8);
                 clock.restore();
             });
             it('triggerAiCodeCompletion calls the provider with correct arguments', () => {
                 const clock = sinon.useFakeTimers();
+                const triggerAiCodeCompletionStub = aiCodeCompletionProvider.triggerAiCodeCompletion.resolves();
                 cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                 cssPropertyPrompt.setText('backgrou');
                 cssPropertyPrompt.onInput(new Event('input'));
                 clock.tick(TextEditor.AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
-                sinon.assert.calledOnce(aiCodeCompletionProvider.triggerAiCodeCompletion);
-                assert.strictEqual(aiCodeCompletionProvider.triggerAiCodeCompletion.firstCall.args[0], 'backgrou');
-                assert.strictEqual(aiCodeCompletionProvider.triggerAiCodeCompletion.firstCall.args[1], 8);
+                sinon.assert.calledOnce(triggerAiCodeCompletionStub);
+                assert.strictEqual(triggerAiCodeCompletionStub.firstCall.args[0], 'backgrou');
+                assert.strictEqual(triggerAiCodeCompletionStub.firstCall.args[1], 8);
                 clock.restore();
             });
             it('setAiAutoCompletion sets activeAiSuggestion on the section', async () => {
                 cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
-                cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                     text: 'color: pink;',
                     from: 0,
                     startTime: 0,
                     clearCachedRequest: () => { },
                     onImpression: () => { },
+                    citations: [],
                 });
                 assert.exists(section.activeAiSuggestion);
                 assert.deepEqual(section.activeAiSuggestion.properties, [{ name: 'color', value: 'pink' }]);
@@ -1216,12 +1305,13 @@ content: "This is a semicolon; and this is a colon: inside a string";
 --custom-property: var(--other, "fallback;value");
 width: calc(100% - 20px);
 color: pink !important;`;
-                cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                     text: complexCss,
                     from: 0,
                     startTime: 0,
                     clearCachedRequest: () => { },
                     onImpression: () => { },
+                    citations: [],
                 });
                 assert.exists(section.activeAiSuggestion);
                 assert.deepEqual(section.activeAiSuggestion.properties, [
@@ -1235,12 +1325,13 @@ color: pink !important;`;
                 cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                 cssPropertyPrompt.setText('var(--rgb');
                 await cssPropertyPrompt.complete(true);
-                cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                     text: 'color: var(--rgb-color);',
                     from: 0,
                     startTime: 0,
                     clearCachedRequest: () => { },
                     onImpression: () => { },
+                    citations: [],
                 });
                 assert.isTrue(cssPropertyPrompt.isSuggestBoxVisible());
                 const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
@@ -1252,12 +1343,13 @@ color: pink !important;`;
                 cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                 cssPropertyPrompt.setText('var(--rgb');
                 await cssPropertyPrompt.complete(true);
-                cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                     text: 'color: var(--rgb-color);',
                     from: 0,
                     startTime: 0,
                     clearCachedRequest: () => { },
                     onImpression: () => { },
+                    citations: [],
                 });
                 assert.strictEqual(section.activeAiSuggestion?.text, 'color: var(--rgb-color);');
                 assert.isTrue(cssPropertyPrompt.isSuggestBoxVisible());
@@ -1269,28 +1361,37 @@ color: pink !important;`;
                 it('accepts suggestion on Tab when suggest box is hidden', async () => {
                     cssPropertyPrompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(mockTreeItem, true);
                     cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
-                    cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                    const onSuggestionAcceptedStub = aiCodeCompletionProvider.onSuggestionAccepted.returns();
+                    cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                         text: 'color: pink;',
                         from: 0,
                         startTime: 0,
                         clearCachedRequest: () => { },
                         onImpression: () => { },
+                        citations: [{ uri: 'https://example.com' }],
+                        sampleId: 1,
+                        rpcGlobalId: 1,
                     });
                     const tabEvent = new KeyboardEvent('keydown', { key: 'Tab' });
                     cssPropertyPrompt.onKeyDown(tabEvent);
+                    // Required to make sure section.commitActiveAiSuggestion resolves
+                    await raf();
                     sinon.assert.calledOnce(section.commitActiveAiSuggestion);
+                    sinon.assert.calledOnce(onSuggestionAcceptedStub);
+                    assert.deepEqual(onSuggestionAcceptedStub.firstCall.args, [[{ uri: 'https://example.com' }], 1, 1]);
                 });
                 it('accepts auto complete suggestion and re-applies ghost text on first Tab accept when suggest box is visible', async () => {
                     const cssPropertyPrompt = new CSSPropertyPrompt(mockTreeItem, false, ['green']);
                     cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                     cssPropertyPrompt.setText('gre');
                     await cssPropertyPrompt.complete(true);
-                    cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                    cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                         text: 'color: greenyellow;',
                         from: 0,
                         startTime: 0,
                         clearCachedRequest: () => { },
                         onImpression: () => { },
+                        citations: [],
                     });
                     assert.isTrue(cssPropertyPrompt.isSuggestBoxVisible());
                     const applySuggestionSpy = sinon.spy(cssPropertyPrompt, 'applySuggestion');
@@ -1305,12 +1406,13 @@ color: pink !important;`;
                     cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                     cssPropertyPrompt.setText('var(--rgb');
                     await cssPropertyPrompt.complete(true);
-                    cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                    cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                         text: 'color: var(--rgb-color); background-color: white;',
                         from: 0,
                         startTime: 0,
                         clearCachedRequest: () => { },
                         onImpression: () => { },
+                        citations: [],
                     });
                     assert.isTrue(cssPropertyPrompt.isSuggestBoxVisible());
                     const tabEvent = new KeyboardEvent('keydown', { key: 'Tab' });
@@ -1325,13 +1427,14 @@ color: pink !important;`;
             describe('updateAiCodeSuggestion', () => {
                 it('clears suggestion if user input does not match', async () => {
                     cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
-                    assert.exists(cssPropertyPrompt.aiCodeCompletionConfig);
-                    cssPropertyPrompt.aiCodeCompletionConfig.setAiAutoCompletion?.({
+                    assert.exists(cssPropertyPrompt.aiCodeCompletionProvider);
+                    cssPropertyPrompt.aiCodeCompletionProvider.setAiAutoCompletion?.({
                         text: 'color: pink;',
                         from: 0,
                         startTime: 0,
                         clearCachedRequest: () => { },
                         onImpression: () => { },
+                        citations: [],
                     });
                     assert.exists(section.activeAiSuggestion);
                     cssPropertyPrompt.setText('bac');
@@ -1341,12 +1444,13 @@ color: pink !important;`;
                 it('clears suggestion if cursor is moved before trigger point', async () => {
                     cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                     cssPropertyPrompt.setText('pin');
-                    cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                    cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                         text: 'color: pink;',
                         from: 3,
                         startTime: 0,
                         clearCachedRequest: () => { },
                         onImpression: () => { },
+                        citations: [],
                     });
                     assert.exists(section.activeAiSuggestion);
                     const mockSelection = ({
@@ -1363,12 +1467,13 @@ color: pink !important;`;
                     cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                     cssPropertyPrompt.setText('var(--rgb');
                     await cssPropertyPrompt.complete(true);
-                    cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                    cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                         text: 'color: var(--rgb-background-color);',
                         from: 0,
                         startTime: 0,
                         clearCachedRequest: () => { },
                         onImpression: () => { },
+                        citations: [],
                     });
                     assert.exists(section.activeAiSuggestion);
                     await cssPropertyPrompt.onInput(new Event('input'));
@@ -1377,12 +1482,13 @@ color: pink !important;`;
                 it('keeps suggestion if input matches', async () => {
                     cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
                     cssPropertyPrompt.setText('p');
-                    cssPropertyPrompt.aiCodeCompletionConfig?.setAiAutoCompletion?.({
+                    cssPropertyPrompt.aiCodeCompletionProvider?.setAiAutoCompletion?.({
                         text: 'color: pink;',
                         from: 1,
                         startTime: 0,
                         clearCachedRequest: () => { },
                         onImpression: () => { },
+                        citations: [],
                     });
                     assert.exists(section.activeAiSuggestion);
                     cssPropertyPrompt.setText('pi');

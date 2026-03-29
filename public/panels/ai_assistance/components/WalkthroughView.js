@@ -30,6 +30,14 @@ const UIStrings = {
      * @description Title for the button that shows the walkthrough when there are widgets in the walkthrough.
      */
     showAgentWalkthrough: 'Show agent walkthrough',
+    /**
+     * @description Title for the button that hides the walkthrough when there are no widgets in the walkthrough.
+     */
+    hideThinking: 'Hide thinking',
+    /**
+     * @description Title for the button that hides the walkthrough when there are widgets in the walkthrough.
+     */
+    hideAgentWalkthrough: 'Hide agent walkthrough',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/ai_assistance/components/WalkthroughView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -42,6 +50,15 @@ export function walkthroughTitle(input) {
     }
     return lockedString(UIStrings.showThinking);
 }
+export function walkthroughCloseTitle(input) {
+    if (input.isInlined) {
+        return i18nString(UIStrings.title);
+    }
+    if (input.hasWidgets) {
+        return lockedString(UIStrings.hideAgentWalkthrough);
+    }
+    return lockedString(UIStrings.hideThinking);
+}
 function renderInlineWalkthrough(input, stepsOutput, steps) {
     const lastStep = steps.at(-1);
     if (!input.isInlined || !lastStep) {
@@ -49,21 +66,24 @@ function renderInlineWalkthrough(input, stepsOutput, steps) {
     }
     function onToggle(event) {
         const isOpen = event.target.open;
-        if (isOpen && input.message) {
+        if (!input.message) {
+            return;
+        }
+        if (isOpen) {
             input.onOpen(input.message);
         }
         else {
-            input.onToggle(isOpen);
+            input.onToggle(isOpen, input.message);
         }
     }
     const hasWidgets = steps.some(s => s.widgets?.length);
     // clang-format off
     return html `
     <details class="walkthrough-inline" ?open=${input.isExpanded} @toggle=${onToggle}>
-      <summary>
+      <summary ?data-has-widgets=${!input.isLoading && hasWidgets}>
         ${input.isLoading ? html `<devtools-spinner></devtools-spinner>` : Lit.nothing}
-        ${walkthroughTitle({ isLoading: input.isLoading, lastStep, hasWidgets })}
-        <devtools-icon name="chevron-down"></devtools-icon>
+        ${input.isExpanded ? walkthroughCloseTitle({ hasWidgets, isInlined: true }) : walkthroughTitle({ isLoading: input.isLoading, lastStep, hasWidgets })}
+        <devtools-icon name="chevron-right"></devtools-icon>
       </summary>
       ${stepsOutput}
     </details>
@@ -86,7 +106,11 @@ function renderSidebarWalkthrough(input, stepsOutput, stepsCount) {
         title: i18nString(UIStrings.close),
         jslogContext: 'close-walkthrough',
     }}
-          @click=${() => input.onToggle(false)}
+          @click=${() => {
+        if (input.message) {
+            input.onToggle(false, input.message);
+        }
+    }}
         ></devtools-button>
       </div>
       ${stepsOutput}
@@ -138,8 +162,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
 export class WalkthroughView extends UI.Widget.Widget {
     #view;
     #message = null;
-    // TODO(b/487921187): fix loading state - also unsure if we need this vs
-    // looking at the loading state in the message's steps.
     #isLoading = false;
     #markdownRenderer = null;
     #onToggle = () => { };
@@ -150,6 +172,7 @@ export class WalkthroughView extends UI.Widget.Widget {
     #isProgrammaticScroll = false;
     #output = {};
     #stepsContainerResizeObserver = new ResizeObserver(() => this.#handleStepsContainerResize());
+    #lastStepsContainerWidth = 0;
     constructor(element, view = DEFAULT_VIEW) {
         super(element);
         this.#view = view;
@@ -167,11 +190,26 @@ export class WalkthroughView extends UI.Widget.Widget {
             this.#stepsContainerResizeObserver.observe(this.#output.stepsContainer);
         }
     }
-    onResize() {
-        this.#handleStepsContainerResize();
-    }
     #handleStepsContainerResize() {
-        if (!this.#pinScrollToBottom) {
+        const width = this.#output.stepsContainer?.offsetWidth ?? 0;
+        /**
+         * If the width has changed, it's likely due to a manual resize (e.g., the
+         * user dragging the sidebar). In these cases, we want to avoid jumping the
+         * scroll position to the bottom, as it can be jarring for the user. We
+         * only auto-scroll if the width remains the same, meaning only the height
+         * has changed (likely due to new content being added).
+         */
+        if (width !== this.#lastStepsContainerWidth) {
+            this.#lastStepsContainerWidth = width;
+            return;
+        }
+        /**
+         * We only want to auto-scroll if the walkthrough is "live", which means it's
+         * currently loading. If it's not loading, it's a walkthrough for a previous
+         * message, and we don't want to jump the user to the bottom if they've
+         * scrolled away.
+         */
+        if (!this.#pinScrollToBottom || !this.#isLoading) {
             return;
         }
         this.scrollToBottom();
@@ -264,7 +302,13 @@ export class WalkthroughView extends UI.Widget.Widget {
             handleScroll: this.#handleScroll,
         }, this.#output, this.contentElement);
         this.#registerResizeObservers();
-        if (this.#pinScrollToBottom) {
+        /**
+         * We only want to auto-scroll if the walkthrough is "live", which means it's
+         * currently loading. If it's not loading, it's a walkthrough for a previous
+         * message, and we don't want to jump the user to the bottom if they've
+         * scrolled away.
+         */
+        if (this.#pinScrollToBottom && this.#isLoading) {
             this.scrollToBottom();
         }
     }

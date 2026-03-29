@@ -939,6 +939,14 @@ export namespace ProtocolMapping {
      */
     'WebMCP.toolsRemoved': [Protocol.WebMCP.ToolsRemovedEvent];
     /**
+     * Event fired when a tool invocation starts.
+     */
+    'WebMCP.toolInvoked': [Protocol.WebMCP.ToolInvokedEvent];
+    /**
+     * Event fired when a tool invocation completes or fails.
+     */
+    'WebMCP.toolResponded': [Protocol.WebMCP.ToolRespondedEvent];
+    /**
      * Fired when breakpoint is resolved to an actual script and location.
      * Deprecated in favor of `resolvedBreakpoints` in the `scriptParsed` event.
      */
@@ -1883,6 +1891,13 @@ export namespace ProtocolMapping {
     'Cast.stopCasting': {
       paramsType: [Protocol.Cast.StopCastingRequest];
       returnType: void;
+    };
+    /**
+     * Returns all entries in the CrashReportContext across all frames in the page.
+     */
+    'CrashReportContext.getEntries': {
+      paramsType: [];
+      returnType: Protocol.CrashReportContext.GetEntriesResponse;
     };
     /**
      * Collects class names for the node with given id and all of it's child nodes.

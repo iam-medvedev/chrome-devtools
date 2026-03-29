@@ -198,7 +198,6 @@ export class SensorsView extends UI.Widget.VBox {
     betaElement;
     gammaElement;
     orientationLayer;
-    boxElement;
     boxMatrix;
     mouseDownVector;
     originalBoxMatrix;
@@ -306,7 +305,10 @@ export class SensorsView extends UI.Widget.VBox {
             <input
               id="latitude-input"
               type="number"
+              min="-90"
+              max="90"
               step="any"
+              required
               .value=${String(location.latitude)}
               name="latitude"
               title=${modifierKeyMessage}
@@ -314,7 +316,6 @@ export class SensorsView extends UI.Widget.VBox {
               ${Directives.ref((el) => { if (el) {
             this.latitudeInput = el;
         } })}
-              @input=${this.#onLocationInput.bind(this)}
               @change=${this.#onLocationChange.bind(this)}
               @keydown=${this.#onLocationKeyDown.bind(this)}
               @focus=${this.#onLocationFocus.bind(this)}
@@ -326,7 +327,10 @@ export class SensorsView extends UI.Widget.VBox {
             <input
               id="longitude-input"
               type="number"
+              min="-180"
+              max="180"
               step="any"
+              required
               .value=${String(location.longitude)}
               name="longitude"
               title=${modifierKeyMessage}
@@ -334,7 +338,6 @@ export class SensorsView extends UI.Widget.VBox {
               ${Directives.ref((el) => { if (el) {
             this.longitudeInput = el;
         } })}
-              @input=${this.#onLocationInput.bind(this)}
               @change=${this.#onLocationChange.bind(this)}
               @keydown=${this.#onLocationKeyDown.bind(this)}
               @focus=${this.#onLocationFocus.bind(this)}
@@ -345,13 +348,13 @@ export class SensorsView extends UI.Widget.VBox {
             <input
               id="timezone-input"
               type="text"
+              pattern=".*[a-zA-Z].*"
               .value=${location.timezoneId}
               name="timezone"
               jslog=${VisualLogging.textField('timezone').track({ change: true })}
               ${Directives.ref((el) => { if (el) {
             this.timezoneInput = el;
         } })}
-              @input=${this.#onLocationInput.bind(this)}
               @change=${this.#onLocationChange.bind(this)}
               @keydown=${this.#onLocationKeyDown.bind(this)}
               @focus=${this.#onLocationFocus.bind(this)}
@@ -365,13 +368,13 @@ export class SensorsView extends UI.Widget.VBox {
             <input
               id="locale-input"
               type="text"
+              pattern=".*[a-zA-Z]{2}.*"
               .value=${location.locale}
               name="locale"
               jslog=${VisualLogging.textField('locale').track({ change: true })}
               ${Directives.ref((el) => { if (el) {
             this.localeInput = el;
         } })}
-              @input=${this.#onLocationInput.bind(this)}
               @change=${this.#onLocationChange.bind(this)}
               @keydown=${this.#onLocationKeyDown.bind(this)}
               @focus=${this.#onLocationFocus.bind(this)}
@@ -386,6 +389,7 @@ export class SensorsView extends UI.Widget.VBox {
             <input
               id="accuracy-input"
               type="number"
+              min="0"
               step="any"
               .value=${String(location.accuracy || SDK.EmulationModel.Location.DEFAULT_ACCURACY)}
               name="accuracy"
@@ -393,7 +397,6 @@ export class SensorsView extends UI.Widget.VBox {
               ${Directives.ref((el) => { if (el) {
             this.accuracyInput = el;
         } })}
-              @input=${this.#onLocationInput.bind(this)}
               @change=${this.#onLocationChange.bind(this)}
               @keydown=${this.#onLocationKeyDown.bind(this)}
               @focus=${this.#onLocationFocus.bind(this)}
@@ -435,35 +438,27 @@ export class SensorsView extends UI.Widget.VBox {
             this.#locationOverrideEnabled = true;
             const coordinates = JSON.parse(value);
             this.#location = new SDK.EmulationModel.Location(coordinates.lat, coordinates.long, coordinates.timezoneId, coordinates.locale, coordinates.accuracy || SDK.EmulationModel.Location.DEFAULT_ACCURACY, false);
-            this.#setInputValue(this.latitudeInput, coordinates.lat);
-            this.#setInputValue(this.longitudeInput, coordinates.long);
-            this.#setInputValue(this.timezoneInput, coordinates.timezoneId);
-            this.#setInputValue(this.localeInput, coordinates.locale);
-            this.#setInputValue(this.accuracyInput, String(coordinates.accuracy || SDK.EmulationModel.Location.DEFAULT_ACCURACY));
+            this.latitudeInput.value = coordinates.lat;
+            this.longitudeInput.value = coordinates.long;
+            this.timezoneInput.value = coordinates.timezoneId;
+            this.localeInput.value = coordinates.locale;
+            this.accuracyInput.value = String(coordinates.accuracy || SDK.EmulationModel.Location.DEFAULT_ACCURACY);
         }
         this.applyLocation();
         if (value === NonPresetOptions.Custom) {
             this.latitudeInput.focus();
         }
     }
-    #onLocationInput(event) {
-        const input = event.currentTarget;
-        const valid = this.#validateInput(input, input.value);
-        input.classList.toggle('error-input', !valid);
-    }
     #onLocationChange(event) {
         const input = event.currentTarget;
-        const valid = this.#validateInput(input, input.value);
-        input.classList.toggle('error-input', !valid);
-        if (valid) {
+        if (input.checkValidity()) {
             this.applyLocationUserInput();
         }
     }
     #onLocationKeyDown(event) {
         const input = event.currentTarget;
         if (event.key === 'Enter') {
-            const valid = this.#validateInput(input, input.value);
-            if (valid) {
+            if (input.checkValidity()) {
                 this.applyLocationUserInput();
             }
             event.preventDefault();
@@ -478,42 +473,20 @@ export class SensorsView extends UI.Widget.VBox {
         if (value === null) {
             return;
         }
-        const stringValue = String(value);
-        const valid = this.#validateInput(input, stringValue);
-        if (valid) {
-            this.#setInputValue(input, stringValue);
+        const prevValue = input.value;
+        input.value = String(value);
+        if (input.checkValidity()) {
+            this.applyLocationUserInput();
+        }
+        else {
+            // If ArrowUp/ArrowDown adjusts the value out of bounds, we reset it.
+            input.value = prevValue;
         }
         event.preventDefault();
     }
     #onLocationFocus(event) {
         const input = event.currentTarget;
         input.select();
-    }
-    #validateInput(input, value) {
-        if (input === this.latitudeInput) {
-            return SDK.EmulationModel.Location.latitudeValidator(value);
-        }
-        if (input === this.longitudeInput) {
-            return SDK.EmulationModel.Location.longitudeValidator(value);
-        }
-        if (input === this.timezoneInput) {
-            return SDK.EmulationModel.Location.timezoneIdValidator(value);
-        }
-        if (input === this.localeInput) {
-            return SDK.EmulationModel.Location.localeValidator(value);
-        }
-        if (input === this.accuracyInput) {
-            return SDK.EmulationModel.Location.accuracyValidator(value).valid;
-        }
-        return false;
-    }
-    #setInputValue(input, value) {
-        if (value === input.value) {
-            return;
-        }
-        const valid = this.#validateInput(input, value);
-        input.classList.toggle('error-input', !valid);
-        input.value = value;
     }
     applyLocationUserInput() {
         const location = SDK.EmulationModel.Location.parseUserInput(this.latitudeInput.value.trim(), this.longitudeInput.value.trim(), this.timezoneInput.value.trim(), this.localeInput.value.trim(), this.accuracyInput.value.trim());
@@ -553,11 +526,11 @@ export class SensorsView extends UI.Widget.VBox {
         }
     }
     clearFieldsetElementInputs() {
-        this.#setInputValue(this.latitudeInput, '0');
-        this.#setInputValue(this.longitudeInput, '0');
-        this.#setInputValue(this.timezoneInput, '');
-        this.#setInputValue(this.localeInput, '');
-        this.#setInputValue(this.accuracyInput, SDK.EmulationModel.Location.DEFAULT_ACCURACY.toString());
+        this.latitudeInput.value = '0';
+        this.longitudeInput.value = '0';
+        this.timezoneInput.value = '';
+        this.localeInput.value = '';
+        this.accuracyInput.value = SDK.EmulationModel.Location.DEFAULT_ACCURACY.toString();
     }
     createDeviceOrientationSection() {
         const orientationGroup = this.contentElement.createChild('section', 'sensors-group');
@@ -626,12 +599,14 @@ export class SensorsView extends UI.Widget.VBox {
                   <input
                     id="alpha-input"
                     type="number"
+                    min="0"
+                    max="359.9999"
                     step="any"
+                    required
                     ${Directives.ref((el) => { if (el) {
             this.alphaElement = el;
         } })}
                     @change=${this.#onOrientationChange.bind(this)}
-                    @input=${this.#onOrientationInput.bind(this)}
                     @keydown=${this.#onOrientationKeyDown.bind(this)}
                     @focus=${this.#onOrientationFocus.bind(this)}
                   >
@@ -642,12 +617,14 @@ export class SensorsView extends UI.Widget.VBox {
                   <input
                     id="beta-input"
                     type="number"
+                    min="-180"
+                    max="179.9999"
                     step="any"
+                    required
                     ${Directives.ref((el) => { if (el) {
             this.betaElement = el;
         } })}
                     @change=${this.#onOrientationChange.bind(this)}
-                    @input=${this.#onOrientationInput.bind(this)}
                     @keydown=${this.#onOrientationKeyDown.bind(this)}
                     @focus=${this.#onOrientationFocus.bind(this)}
                   >
@@ -658,12 +635,14 @@ export class SensorsView extends UI.Widget.VBox {
                   <input
                     id="gamma-input"
                     type="number"
+                    min="-90"
+                    max="89.9999"
                     step="any"
+                    required
                     ${Directives.ref((el) => { if (el) {
             this.gammaElement = el;
         } })}
                     @change=${this.#onOrientationChange.bind(this)}
-                    @input=${this.#onOrientationInput.bind(this)}
                     @keydown=${this.#onOrientationKeyDown.bind(this)}
                     @focus=${this.#onOrientationFocus.bind(this)}
                   >
@@ -699,9 +678,6 @@ export class SensorsView extends UI.Widget.VBox {
         } })}>
               <section
                 class="orientation-box orientation-element"
-                ${Directives.ref((el) => { if (el) {
-            this.boxElement = el;
-        } })}
               >
                 <section class="orientation-front orientation-element"></section>
                 <section class="orientation-top orientation-element"></section>
@@ -717,9 +693,9 @@ export class SensorsView extends UI.Widget.VBox {
         // clang-format on
         this.enableOrientationFields(true);
         this.setBoxOrientation(this.deviceOrientation, false);
-        this.#setOrientationInputValue(this.alphaElement, String(this.deviceOrientation.alpha));
-        this.#setOrientationInputValue(this.betaElement, String(this.deviceOrientation.beta));
-        this.#setOrientationInputValue(this.gammaElement, String(this.deviceOrientation.gamma));
+        this.alphaElement.value = String(this.deviceOrientation.alpha);
+        this.betaElement.value = String(this.deviceOrientation.beta);
+        this.gammaElement.value = String(this.deviceOrientation.gamma);
     }
     createPressureSection() {
         const container = this.contentElement.createChild('div', 'pressure-section');
@@ -791,9 +767,9 @@ export class SensorsView extends UI.Widget.VBox {
             // Even though the angles in |deviceOrientation| will not be rounded
             // here, their precision will be rounded by CSS when we change
             // |this.orientationLayer.style| in setBoxOrientation().
-            this.#setOrientationInputValue(this.alphaElement, String(roundAngle(deviceOrientation.alpha)));
-            this.#setOrientationInputValue(this.betaElement, String(roundAngle(deviceOrientation.beta)));
-            this.#setOrientationInputValue(this.gammaElement, String(roundAngle(deviceOrientation.gamma)));
+            this.alphaElement.value = String(roundAngle(deviceOrientation.alpha));
+            this.betaElement.value = String(roundAngle(deviceOrientation.beta));
+            this.gammaElement.value = String(roundAngle(deviceOrientation.gamma));
         }
         const animate = modificationSource !== "userDrag" /* DeviceOrientationModificationSource.USER_DRAG */;
         this.setBoxOrientation(deviceOrientation, animate);
@@ -801,24 +777,16 @@ export class SensorsView extends UI.Widget.VBox {
         this.applyDeviceOrientation();
         UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.deviceOrientationSetToAlphaSBeta, { PH1: deviceOrientation.alpha, PH2: deviceOrientation.beta, PH3: deviceOrientation.gamma }));
     }
-    #onOrientationInput(event) {
-        const input = event.currentTarget;
-        const valid = this.#validateOrientationInput(input, input.value);
-        input.classList.toggle('error-input', !valid);
-    }
     #onOrientationChange(event) {
         const input = event.currentTarget;
-        const valid = this.#validateOrientationInput(input, input.value);
-        input.classList.toggle('error-input', !valid);
-        if (valid) {
+        if (input.checkValidity()) {
             this.applyDeviceOrientationUserInput();
         }
     }
     #onOrientationKeyDown(event) {
         const input = event.currentTarget;
         if (event.key === 'Enter') {
-            const valid = this.#validateOrientationInput(input, input.value);
-            if (valid) {
+            if (input.checkValidity()) {
                 this.applyDeviceOrientationUserInput();
             }
             event.preventDefault();
@@ -828,33 +796,20 @@ export class SensorsView extends UI.Widget.VBox {
         if (value === null) {
             return;
         }
-        const stringValue = String(value);
-        const valid = this.#validateOrientationInput(input, stringValue);
-        if (valid) {
-            this.#setOrientationInputValue(input, stringValue);
+        const prevValue = input.value;
+        input.value = String(value);
+        if (input.checkValidity()) {
+            this.applyDeviceOrientationUserInput();
+        }
+        else {
+            // If ArrowUp/ArrowDown adjusts the value out of bounds, we reset it.
+            input.value = prevValue;
         }
         event.preventDefault();
     }
     #onOrientationFocus(event) {
         const input = event.currentTarget;
         input.select();
-    }
-    #validateOrientationInput(input, value) {
-        if (input === this.alphaElement) {
-            return SDK.EmulationModel.DeviceOrientation.alphaAngleValidator(value);
-        }
-        if (input === this.betaElement) {
-            return SDK.EmulationModel.DeviceOrientation.betaAngleValidator(value);
-        }
-        if (input === this.gammaElement) {
-            return SDK.EmulationModel.DeviceOrientation.gammaAngleValidator(value);
-        }
-        return false;
-    }
-    #setOrientationInputValue(input, value) {
-        input.value = value;
-        const valid = this.#validateOrientationInput(input, value);
-        input.classList.toggle('error-input', !valid);
     }
     setBoxOrientation(deviceOrientation, animate) {
         if (animate) {

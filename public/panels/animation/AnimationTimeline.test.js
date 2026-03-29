@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, stubNoopSettings, waitFor, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -83,14 +83,6 @@ const stubAnimationDOMNode = () => {
         addScrollEventListener,
         removeScrollEventListener,
     };
-};
-const waitFor = async (selector, root) => {
-    let element = null;
-    while (!element) {
-        element = root ? root.querySelector(selector) : document.querySelector(selector);
-        await new Promise(resolve => setTimeout(resolve, 10));
-    }
-    return element;
 };
 const waitForAll = async (selector, root) => {
     let elements = root ? root.querySelectorAll(selector) : document.querySelectorAll(selector);

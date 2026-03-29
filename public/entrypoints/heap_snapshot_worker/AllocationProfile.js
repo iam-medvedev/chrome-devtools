@@ -4,20 +4,14 @@
 import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
 export class AllocationProfile {
     #strings;
-    #nextNodeId;
-    #functionInfos;
-    #idToNode;
-    #idToTopDownNode;
-    #collapsedTopNodeIdToFunctionInfo;
-    #traceTops;
+    #nextNodeId = 1;
+    #functionInfos = [];
+    #idToNode = {};
+    #idToTopDownNode = {};
+    #collapsedTopNodeIdToFunctionInfo = {};
+    #traceTops = null;
     constructor(profile, liveObjectStats) {
         this.#strings = profile.strings;
-        this.#nextNodeId = 1;
-        this.#functionInfos = [];
-        this.#idToNode = {};
-        this.#idToTopDownNode = {};
-        this.#collapsedTopNodeIdToFunctionInfo = {};
-        this.#traceTops = null;
         this.#buildFunctionAllocationInfos(profile);
         this.#buildAllocationTree(profile, liveObjectStats);
     }
@@ -144,7 +138,7 @@ export class TopDownAllocationNode {
     liveCount;
     liveSize;
     parent;
-    children;
+    children = [];
     constructor(id, functionInfo, count, size, liveCount, liveSize, parent) {
         this.id = id;
         this.functionInfo = functionInfo;
@@ -153,25 +147,18 @@ export class TopDownAllocationNode {
         this.liveCount = liveCount;
         this.liveSize = liveSize;
         this.parent = parent;
-        this.children = [];
     }
 }
 export class BottomUpAllocationNode {
     functionInfo;
-    allocationCount;
-    allocationSize;
-    liveCount;
-    liveSize;
-    traceTopIds;
-    #callers;
+    allocationCount = 0;
+    allocationSize = 0;
+    liveCount = 0;
+    liveSize = 0;
+    traceTopIds = [];
+    #callers = [];
     constructor(functionInfo) {
         this.functionInfo = functionInfo;
-        this.allocationCount = 0;
-        this.allocationSize = 0;
-        this.liveCount = 0;
-        this.liveSize = 0;
-        this.traceTopIds = [];
-        this.#callers = [];
     }
     addCaller(traceNode) {
         const functionInfo = traceNode.functionInfo;
@@ -202,11 +189,11 @@ export class FunctionAllocationInfo {
     scriptId;
     line;
     column;
-    totalCount;
-    totalSize;
-    totalLiveCount;
-    totalLiveSize;
-    #traceTops;
+    totalCount = 0;
+    totalSize = 0;
+    totalLiveCount = 0;
+    totalLiveSize = 0;
+    #traceTops = [];
     #bottomUpTree;
     constructor(functionName, scriptName, scriptId, line, column) {
         this.functionName = functionName;
@@ -214,11 +201,6 @@ export class FunctionAllocationInfo {
         this.scriptId = scriptId;
         this.line = line;
         this.column = column;
-        this.totalCount = 0;
-        this.totalSize = 0;
-        this.totalLiveCount = 0;
-        this.totalLiveSize = 0;
-        this.#traceTops = [];
     }
     addTraceTopNode(node) {
         if (node.allocationCount === 0) {
@@ -237,7 +219,7 @@ export class FunctionAllocationInfo {
         if (!this.#bottomUpTree) {
             this.#buildAllocationTraceTree();
         }
-        return this.#bottomUpTree;
+        return this.#bottomUpTree ?? null;
     }
     #buildAllocationTraceTree() {
         this.#bottomUpTree = new BottomUpAllocationNode(this);

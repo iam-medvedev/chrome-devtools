@@ -81,33 +81,16 @@ async function domNodesForBackendIds(frameId, nodeIds) {
 // gen/front_end/panels/timeline/utils/Helpers.js
 var Helpers_exports = {};
 __export(Helpers_exports, {
+  RevealableBottomUpProfile: () => RevealableBottomUpProfile,
   RevealableCoreVitals: () => RevealableCoreVitals,
   RevealableInsight: () => RevealableInsight,
+  RevealableTimeRange: () => RevealableTimeRange,
   createUrlLabels: () => createUrlLabels,
   formatOriginWithEntity: () => formatOriginWithEntity,
-  getThrottlingRecommendations: () => getThrottlingRecommendations,
   shortenUrl: () => shortenUrl
 });
 import * as Platform from "./../../../core/platform/platform.js";
-import * as SDK2 from "./../../../core/sdk/sdk.js";
-import * as CrUXManager from "./../../../models/crux-manager/crux-manager.js";
 var MAX_ORIGIN_LENGTH = 60;
-function getThrottlingRecommendations() {
-  let cpuOption = SDK2.CPUThrottlingManager.CalibratedMidTierMobileThrottlingOption;
-  if (cpuOption.rate() === 0) {
-    cpuOption = SDK2.CPUThrottlingManager.MidTierThrottlingOption;
-  }
-  let networkConditions = null;
-  const response = CrUXManager.CrUXManager.instance().getSelectedFieldMetricData("round_trip_time");
-  if (response?.percentiles) {
-    const rtt = Number(response.percentiles.p75);
-    networkConditions = SDK2.NetworkManager.getRecommendedNetworkPreset(rtt);
-  }
-  return {
-    cpuOption,
-    networkConditions
-  };
-}
 function createTrimmedUrlSearch(url) {
   const maxSearchValueLength = 8;
   let search = "";
@@ -187,6 +170,18 @@ var RevealableCoreVitals = class {
   insightSetKey;
   constructor(insightSetKey) {
     this.insightSetKey = insightSetKey;
+  }
+};
+var RevealableTimeRange = class {
+  bounds;
+  constructor(bounds) {
+    this.bounds = bounds;
+  }
+};
+var RevealableBottomUpProfile = class {
+  bounds;
+  constructor(bounds) {
+    this.bounds = bounds;
   }
 };
 

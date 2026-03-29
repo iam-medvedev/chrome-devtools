@@ -1631,6 +1631,26 @@ Common6.Revealer.registerRevealer({
     return new Timeline.TimelinePanel.CoreVitalsRevealer();
   }
 });
+Common6.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes4((Timeline) => [Timeline.Utils.Helpers.RevealableTimeRange]);
+  },
+  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.TimeRangeRevealer();
+  }
+});
+Common6.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes4((Timeline) => [Timeline.Utils.Helpers.RevealableBottomUpProfile]);
+  },
+  destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.BottomUpProfileRevealer();
+  }
+});
 
 // gen/front_end/entrypoints/worker_app/WorkerMain.js
 import * as Common7 from "./../../core/common/common.js";
