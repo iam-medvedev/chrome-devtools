@@ -2125,7 +2125,7 @@ import * as Trace34 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver5 from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
 import * as Workspace4 from "./../../models/workspace/workspace.js";
 import * as PerfUI17 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI19 from "./../../ui/legacy/legacy.js";
+import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport25 from "./../../ui/legacy/theme_support/theme_support.js";
 
 // gen/front_end/panels/timeline/Initiators.js
@@ -2291,7 +2291,7 @@ import * as Trace33 from "./../../models/trace/trace.js";
 import * as Workspace3 from "./../../models/workspace/workspace.js";
 import * as TraceBounds15 from "./../../services/trace_bounds/trace_bounds.js";
 import * as PerfUI16 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI18 from "./../../ui/legacy/legacy.js";
+import * as UI17 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 import * as TimelineInsights2 from "./components/insights/insights.js";
 
@@ -2853,7 +2853,7 @@ import * as Trace30 from "./../../models/trace/trace.js";
 import * as TraceBounds13 from "./../../services/trace_bounds/trace_bounds.js";
 import * as Tracing5 from "./../../services/tracing/tracing.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI16 from "./../../ui/legacy/legacy.js";
+import * as UI15 from "./../../ui/legacy/legacy.js";
 import { Directives as Directives2, html as html5, nothing as nothing2, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 import * as TimelineComponents5 from "./components/components.js";
@@ -3100,7 +3100,7 @@ import * as LegacyComponents from "./../../ui/legacy/components/utils/utils.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport17 from "./../../ui/legacy/theme_support/theme_support.js";
 import { html as html2, render as render2 } from "./../../ui/lit/lit.js";
-import * as PanelsCommon from "./../common/common.js";
+import * as PanelsCommon2 from "./../common/common.js";
 import * as TimelineComponents4 from "./components/components.js";
 import * as Extensions2 from "./extensions/extensions.js";
 
@@ -3108,12 +3108,14 @@ import * as Extensions2 from "./extensions/extensions.js";
 var TimelinePanel_exports = {};
 __export(TimelinePanel_exports, {
   ActionDelegate: () => ActionDelegate,
+  BottomUpProfileRevealer: () => BottomUpProfileRevealer,
   CoreVitalsRevealer: () => CoreVitalsRevealer,
   EventRevealer: () => EventRevealer,
   InsightRevealer: () => InsightRevealer,
   ParsedTraceRevealable: () => ParsedTraceRevealable,
   ParsedTraceRevealer: () => ParsedTraceRevealer,
   SelectedInsight: () => SelectedInsight,
+  TimeRangeRevealer: () => TimeRangeRevealer,
   TimelinePanel: () => TimelinePanel,
   TraceRevealer: () => TraceRevealer,
   headerHeight: () => headerHeight,
@@ -3137,7 +3139,6 @@ import * as TraceBounds9 from "./../../services/trace_bounds/trace_bounds.js";
 import * as Tracing2 from "./../../services/tracing/tracing.js";
 import * as Adorners from "./../../ui/components/adorners/adorners.js";
 import * as Dialogs from "./../../ui/components/dialogs/dialogs.js";
-import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
 import { Link } from "./../../ui/kit/kit.js";
 import * as PerfUI12 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
@@ -3145,6 +3146,7 @@ import * as SettingsUI from "./../../ui/legacy/components/settings_ui/settings_u
 import * as UI8 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport15 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "./../common/common.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
 
 // gen/front_end/panels/timeline/ActiveFilters.js
@@ -6398,7 +6400,6 @@ var UIDevtoolsController = class extends TimelineController {
 };
 
 // gen/front_end/panels/timeline/TimelinePanel.js
-import * as Utils3 from "./utils/utils.js";
 var UIStrings18 = {
   /**
    * @description Text that appears when user drag and drop something (for example, a file) in Timeline Panel of the Performance panel
@@ -7025,7 +7026,7 @@ var TimelinePanel = class _TimelinePanel extends Common9.ObjectWrapper.eventMixi
     cruxManager.removeEventListener("field-data-changed", this.#onFieldDataChanged, this);
   }
   #onFieldDataChanged() {
-    const recs = Utils3.Helpers.getThrottlingRecommendations();
+    const recs = PanelsCommon.ThrottlingUtils.getThrottlingRecommendations();
     this.cpuThrottlingSelect?.updateRecommendedOption(recs.cpuOption);
     if (this.networkThrottlingSelect) {
       this.networkThrottlingSelect.recommendedConditions = recs.networkConditions;
@@ -8392,8 +8393,7 @@ var TimelinePanel = class _TimelinePanel extends Common9.ObjectWrapper.eventMixi
       this.landingPage.show(this.statusPaneContainer);
       return;
     }
-    const liveMetrics = new TimelineComponents3.LiveMetricsView.LiveMetricsView();
-    this.landingPage = LegacyWrapper.LegacyWrapper.legacyWrapper(UI8.Widget.Widget, liveMetrics);
+    this.landingPage = new TimelineComponents3.LiveMetricsView.LiveMetricsView();
     this.landingPage.element.classList.add("timeline-landing-page", "fill");
     this.landingPage.contentElement.classList.add("fill");
     this.landingPage.show(this.statusPaneContainer);
@@ -9002,6 +9002,24 @@ var CoreVitalsRevealer = class {
     TimelinePanel.instance().revealCoreVitals(revealable);
   }
 };
+var TimeRangeRevealer = class {
+  async reveal(revealable) {
+    await UI8.ViewManager.ViewManager.instance().showView("timeline");
+    const panel = TimelinePanel.instance();
+    TraceBounds9.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(revealable.bounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
+    panel.select(null);
+    panel.getFlameChart().selectDetailsViewTab(Tab.Details, null);
+  }
+};
+var BottomUpProfileRevealer = class {
+  async reveal(revealable) {
+    await UI8.ViewManager.ViewManager.instance().showView("timeline");
+    const panel = TimelinePanel.instance();
+    TraceBounds9.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(revealable.bounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
+    panel.select(null);
+    panel.getFlameChart().selectDetailsViewTab(Tab.BottomUp, null);
+  }
+};
 var ActionDelegate = class {
   handleAction(context, actionId) {
     const panel = context.flavor(TimelinePanel);
@@ -9048,7 +9066,7 @@ var SelectedInsight = class {
 };
 
 // gen/front_end/panels/timeline/TimelineUIUtils.js
-import * as Utils4 from "./utils/utils.js";
+import * as Utils3 from "./utils/utils.js";
 var UIStrings19 = {
   /**
    * @description Text that only contain a placeholder
@@ -9786,7 +9804,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     const maybeTarget = targetForEvent(parsedTrace, event);
     const { duration } = Trace23.Helpers.Timing.eventTimingsMicroSeconds(event);
     const selfTime = getEventSelfTime(event, parsedTrace);
-    const relatedNodesMap = await Utils4.EntryNodes.relatedDOMNodesForEvent(parsedTrace, event);
+    const relatedNodesMap = await Utils3.EntryNodes.relatedDOMNodesForEvent(parsedTrace, event);
     let entityAppended = false;
     if (maybeTarget) {
       if (typeof event[previewElementSymbol] === "undefined") {
@@ -10247,7 +10265,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     for (const relatedNode of relatedNodes) {
       if (relatedNode) {
         const nodeSpan = document.createElement("span");
-        render2(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(relatedNode), nodeSpan);
+        render2(PanelsCommon2.DOMLinkifier.Linkifier.instance().linkify(relatedNode), nodeSpan);
         contentHelper.appendElementRow(relatedNodeLabel || i18nString19(UIStrings19.relatedNode), nodeSpan);
       }
     }
@@ -10414,7 +10432,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       const node = invalidation.args.data.nodeId && relatedNodesMap ? relatedNodesMap.get(invalidation.args.data.nodeId) : null;
       if (node) {
         const nodeSpan2 = document.createElement("span");
-        render2(PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node), nodeSpan2);
+        render2(PanelsCommon2.DOMLinkifier.Linkifier.instance().linkify(node), nodeSpan2);
         return nodeSpan2;
       }
       if (invalidation.args.data.nodeName) {
@@ -10740,7 +10758,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     if (!entity) {
       return null;
     }
-    const originWithEntity = Utils4.Helpers.formatOriginWithEntity(parsedUrl, entity, true);
+    const originWithEntity = Utils3.Helpers.formatOriginWithEntity(parsedUrl, entity, true);
     return originWithEntity;
   }
 };
@@ -11312,8 +11330,8 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
   lastHoveredProfileNode;
   textFilterInternal;
   taskFilter;
-  startTime;
-  endTime;
+  startTimeInternal;
+  endTimeInternal;
   splitWidget;
   detailsView;
   searchableView;
@@ -11331,39 +11349,93 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
   #entityMapper = null;
   #lastHighlightedEvent = null;
   eventToTreeNode = /* @__PURE__ */ new WeakMap();
+  // Compact mode is used to render the tree view in a more compact UI,
+  // suitable for AI assistance widgets. It removes sidebars and toolbars.
+  #compactMode = false;
   /**
    * Determines if the first child in the data grid will be selected
    * by default when refreshTree() gets called.
    */
   autoSelectFirstChildOnRefresh = true;
-  constructor() {
-    super();
+  constructor(element) {
+    super(element);
     this.#selectedEvents = null;
     this.element.classList.add("timeline-tree-view");
     this.registerRequiredCSS(timelineTreeView_css_default);
     this.searchResults = [];
   }
+  get selectedEvents() {
+    return this.#selectedEvents || [];
+  }
+  set selectedEvents(selectedEvents) {
+    this.#selectedEvents = selectedEvents;
+    this.refreshTree();
+  }
+  set parsedTrace(parsedTrace) {
+    this.#parsedTrace = parsedTrace;
+    this.refreshTree();
+  }
+  get parsedTrace() {
+    return this.#parsedTrace;
+  }
+  set startTime(startTime) {
+    if (this.startTimeInternal === startTime) {
+      return;
+    }
+    this.startTimeInternal = startTime;
+    this.refreshTree();
+  }
+  get startTime() {
+    return this.startTimeInternal;
+  }
+  set endTime(endTime) {
+    if (this.endTimeInternal === endTime) {
+      return;
+    }
+    this.endTimeInternal = endTime;
+    this.refreshTree();
+  }
+  get endTime() {
+    return this.endTimeInternal;
+  }
+  get compactMode() {
+    return this.#compactMode;
+  }
+  set compactMode(v) {
+    if (this.#compactMode === v) {
+      return;
+    }
+    this.#compactMode = v;
+    if (this.dataGrid) {
+      this.#applyCompactMode();
+    }
+  }
+  #applyCompactMode() {
+    if (this.#compactMode && this.dataGrid) {
+      this.splitWidget?.detach();
+      this.dataGrid.asWidget().detach();
+      this.dataGrid.asWidget().show(this.element);
+      this.dataGrid.renderInline();
+    }
+  }
   #eventNameForSorting(event) {
     const name = TimelineUIUtils.eventTitle(event) || event.name;
-    if (!this.#parsedTrace) {
+    if (!this.parsedTrace) {
       return name;
     }
-    return name + ":@" + Trace25.Handlers.Helpers.getNonResolvedURL(event, this.#parsedTrace.data);
+    return name + ":@" + Trace25.Handlers.Helpers.getNonResolvedURL(event, this.parsedTrace.data);
   }
   setSearchableView(searchableView) {
     this.searchableView = searchableView;
   }
-  setModelWithEvents(selectedEvents, parsedTrace = null, entityMappings = null) {
-    this.#parsedTrace = parsedTrace;
-    this.#selectedEvents = selectedEvents;
-    this.#entityMapper = entityMappings;
+  set model(model) {
+    this.#parsedTrace = model.parsedTrace;
+    this.#selectedEvents = model.selectedEvents;
+    this.#entityMapper = model.entityMapper;
     this.refreshTree();
   }
   entityMapper() {
     return this.#entityMapper;
-  }
-  parsedTrace() {
-    return this.#parsedTrace;
   }
   isThirdPartyTreeView() {
     return false;
@@ -11381,15 +11453,9 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
     ]);
     this.textFilterInternal = new TimelineRegExp();
     this.currentThreadSetting = Common11.Settings.Settings.instance().createSetting("timeline-tree-current-thread", 0);
-    this.currentThreadSetting.addChangeListener(this.refreshTree, this);
+    this.currentThreadSetting.addChangeListener(() => this.refreshTree());
     const columns = [];
     this.populateColumns(columns);
-    this.splitWidget = new UI10.SplitWidget.SplitWidget(true, true, "timeline-tree-view-details-split-widget");
-    const mainView = new UI10.Widget.VBox();
-    const toolbar4 = mainView.element.createChild("devtools-toolbar");
-    toolbar4.setAttribute("jslog", `${VisualLogging5.toolbar()}`);
-    toolbar4.wrappable = true;
-    this.populateToolbar(toolbar4);
     this.dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
       displayName: i18nString20(UIStrings20.performance),
       columns
@@ -11403,8 +11469,18 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
       /* DataGrid.DataGrid.ResizeMethod.LAST */
     );
     this.dataGrid.setRowContextMenuCallback(this.onContextMenu.bind(this));
-    this.dataGrid.asWidget().show(mainView.element);
     this.dataGrid.addEventListener("SelectedNode", this.updateDetailsForSelection, this);
+    if (this.#compactMode) {
+      this.#applyCompactMode();
+      return;
+    }
+    this.splitWidget = new UI10.SplitWidget.SplitWidget(true, true, "timeline-tree-view-details-split-widget");
+    const mainView = new UI10.Widget.VBox();
+    const toolbar4 = mainView.element.createChild("devtools-toolbar");
+    toolbar4.setAttribute("jslog", `${VisualLogging5.toolbar()}`);
+    toolbar4.wrappable = true;
+    this.populateToolbar(toolbar4);
+    this.dataGrid.asWidget().show(mainView.element);
     this.detailsView = new UI10.Widget.VBox();
     this.detailsView.element.classList.add("timeline-details-view", "timeline-details-view-body");
     this.splitWidget.setMainWidget(mainView);
@@ -11413,10 +11489,16 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
     this.splitWidget.show(this.element);
     this.splitWidget.addEventListener("ShowModeChanged", this.onShowModeChanged, this);
   }
+  wasShown() {
+    super.wasShown();
+    this.refreshTree();
+    this.dataGrid.addEventListener("SelectedNode", this.#onDataGridSelectionChange, this);
+    this.dataGrid.addEventListener("DeselectedNode", this.#onDataGridDeselection, this);
+  }
   lastSelectedNode() {
     return this.lastSelectedNodeInternal;
   }
-  updateContents(selection) {
+  set activeSelection(selection) {
     const timings = rangeForSelection(selection);
     const timingMilli = Trace25.Helpers.Timing.traceWindowMicroSecondsToMilliSeconds(timings);
     this.setRange(timingMilli.min, timingMilli.max);
@@ -11472,9 +11554,6 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
     textFilterUI.addEventListener("TextChanged", this.#filterChanged, this);
     toolbar4.appendToolbarItem(textFilterUI);
   }
-  selectedEvents() {
-    return this.#selectedEvents || [];
-  }
   appendContextMenuItems(_contextMenu, _node) {
   }
   //  TODO(paulirish): rename profileNode to treeNode
@@ -11496,8 +11575,15 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
       gridNode.select(suppressSelectedEvent);
     }
   }
-  refreshTree() {
-    if (!this.element.parentElement) {
+  /**
+   * Refreshes the tree. By default, it will only do this
+   * if the tree is mounted into the DOM - as in the UI we
+   * have multiple trees and we only want to refresh the
+   * active one. Pass `true` into this function to force a
+   * refresh regardless.
+   */
+  refreshTree(forceRefresh = false) {
+    if (!this.element.parentElement && !forceRefresh) {
       return;
     }
     this.linkifier.reset();
@@ -11539,7 +11625,7 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
     throw new Error("Not Implemented");
   }
   buildTopDownTree(doNotAggregate, eventGroupIdCallback) {
-    return new Trace25.Extras.TraceTree.TopDownRootNode(this.selectedEvents(), {
+    return new Trace25.Extras.TraceTree.TopDownRootNode(this.selectedEvents, {
       filters: this.filters(),
       startTime: this.startTime,
       endTime: this.endTime,
@@ -11548,8 +11634,13 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
     });
   }
   populateColumns(columns) {
-    columns.push({ id: "self", title: i18nString20(UIStrings20.selfTime), width: "120px", fixedWidth: true, sortable: true });
-    columns.push({ id: "total", title: i18nString20(UIStrings20.totalTime), width: "120px", fixedWidth: true, sortable: true });
+    if (this.compactMode) {
+      columns.push({ id: "self", title: i18nString20(UIStrings20.selfTime), width: "15%", sortable: true });
+      columns.push({ id: "total", title: i18nString20(UIStrings20.totalTime), width: "15%", sortable: true });
+    } else {
+      columns.push({ id: "self", title: i18nString20(UIStrings20.selfTime), width: "120px", fixedWidth: true, sortable: true });
+      columns.push({ id: "total", title: i18nString20(UIStrings20.totalTime), width: "120px", fixedWidth: true, sortable: true });
+    }
     columns.push({ id: "activity", title: i18nString20(UIStrings20.activity), disclosure: true, sortable: true });
   }
   sortingChanged() {
@@ -11620,6 +11711,9 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
     this.refreshTree();
   }
   onShowModeChanged() {
+    if (this.#compactMode || !this.splitWidget) {
+      return;
+    }
     if (this.splitWidget.showMode() === "OnlyMain") {
       return;
     }
@@ -11627,6 +11721,9 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
     this.updateDetailsForSelection();
   }
   updateDetailsForSelection() {
+    if (this.#compactMode || !this.splitWidget || !this.detailsView) {
+      return;
+    }
     const selectedNode = this.dataGrid.selectedNode ? this.dataGrid.selectedNode.profileNode : null;
     if (selectedNode === this.lastSelectedNodeInternal) {
       return;
@@ -11660,11 +11757,6 @@ var TimelineTreeView = class extends Common11.ObjectWrapper.eventMixin(UI10.Widg
   }
   onClick(node) {
     this.dispatchEventToListeners("TreeRowClicked", { node });
-  }
-  wasShown() {
-    super.wasShown();
-    this.dataGrid.addEventListener("SelectedNode", this.#onDataGridSelectionChange, this);
-    this.dataGrid.addEventListener("DeselectedNode", this.#onDataGridDeselection, this);
   }
   childWasDetached(_widget) {
     this.dataGrid.removeEventListener("SelectedNode", this.#onDataGridSelectionChange);
@@ -11808,7 +11900,7 @@ var GridNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
       }
     } else if (event) {
       name.textContent = TimelineUIUtils.eventTitle(event);
-      const parsedTrace = this.treeView.parsedTrace();
+      const parsedTrace = this.treeView.parsedTrace;
       const target = parsedTrace ? targetForEvent(parsedTrace, event) : null;
       const linkifier = this.treeView.linkifier;
       const isFreshOrEnhanced = Boolean(parsedTrace && Tracing4.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace));
@@ -11839,7 +11931,7 @@ var GridNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
       case "start-time":
         {
           event = this.profileNode.event;
-          const parsedTrace = this.treeView.parsedTrace();
+          const parsedTrace = this.treeView.parsedTrace;
           if (!parsedTrace) {
             throw new Error("Unable to load trace data for tree view");
           }
@@ -11936,10 +12028,10 @@ var treeNodeToGridNode = /* @__PURE__ */ new WeakMap();
 var AggregatedTimelineTreeView = class _AggregatedTimelineTreeView extends TimelineTreeView {
   groupBySetting;
   stackView;
-  constructor() {
-    super();
+  constructor(element) {
+    super(element);
     this.groupBySetting = Common11.Settings.Settings.instance().createSetting("timeline-tree-group-by", _AggregatedTimelineTreeView.GroupBy.None);
-    this.groupBySetting.addChangeListener(this.refreshTree.bind(this));
+    this.groupBySetting.addChangeListener(() => this.refreshTree());
     this.init();
     this.stackView = new TimelineStackView(this);
     this.stackView.addEventListener("SelectionChanged", this.onStackViewSelectionChanged, this);
@@ -11947,8 +12039,8 @@ var AggregatedTimelineTreeView = class _AggregatedTimelineTreeView extends Timel
   setGroupBySetting(groupBy) {
     this.groupBySetting.set(groupBy);
   }
-  updateContents(selection) {
-    super.updateContents(selection);
+  set activeSelection(selection) {
+    super.activeSelection = selection;
     const rootNode = this.dataGrid.rootNode();
     if (rootNode.children.length) {
       rootNode.children[0].select(
@@ -11999,7 +12091,7 @@ var AggregatedTimelineTreeView = class _AggregatedTimelineTreeView extends Timel
       case _AggregatedTimelineTreeView.GroupBy.URL:
         break;
       case _AggregatedTimelineTreeView.GroupBy.Frame: {
-        const frame = id ? this.parsedTrace()?.data.PageFrames.frames.get(id) : void 0;
+        const frame = id ? this.parsedTrace?.data.PageFrames.frames.get(id) : void 0;
         const frameName = frame ? TimelineUIUtils.displayNameForFrame(frame) : i18nString20(UIStrings20.page);
         return { name: frameName, color };
       }
@@ -12025,8 +12117,10 @@ var AggregatedTimelineTreeView = class _AggregatedTimelineTreeView extends Timel
       { label: i18nString20(UIStrings20.groupByThirdParties), value: groupBy.ThirdParties }
     ];
     toolbar4.appendToolbarItem(new UI10.Toolbar.ToolbarSettingComboBox(options, this.groupBySetting, i18nString20(UIStrings20.groupBy)));
-    toolbar4.appendSpacer();
-    toolbar4.appendToolbarItem(this.splitWidget.createShowHideSidebarButton(i18nString20(UIStrings20.showHeaviestStack), i18nString20(UIStrings20.hideHeaviestStack), i18nString20(UIStrings20.heaviestStackShown), i18nString20(UIStrings20.heaviestStackHidden)));
+    if (!this.compactMode && this.splitWidget) {
+      toolbar4.appendSpacer();
+      toolbar4.appendToolbarItem(this.splitWidget.createShowHideSidebarButton(i18nString20(UIStrings20.showHeaviestStack), i18nString20(UIStrings20.hideHeaviestStack), i18nString20(UIStrings20.heaviestStackShown), i18nString20(UIStrings20.heaviestStackHidden)));
+    }
   }
   buildHeaviestStack(treeNode) {
     console.assert(Boolean(treeNode.parent), "Attempt to build stack for tree root");
@@ -12072,13 +12166,13 @@ var AggregatedTimelineTreeView = class _AggregatedTimelineTreeView extends Timel
         return this.domainByEvent.bind(this, groupBy);
       case GroupBy.URL:
         return (event) => {
-          const parsedTrace = this.parsedTrace();
+          const parsedTrace = this.parsedTrace;
           return parsedTrace ? Trace25.Handlers.Helpers.getNonResolvedURL(event, parsedTrace.data) ?? "" : "";
         };
       case GroupBy.Frame:
         return (event) => {
           const frameId = Trace25.Helpers.Trace.frameIDForEvent(event);
-          return frameId || this.parsedTrace()?.data.Meta.mainFrameId || "";
+          return frameId || this.parsedTrace?.data.Meta.mainFrameId || "";
         };
       default:
         console.assert(false, `Unexpected aggregation setting: ${groupBy}`);
@@ -12089,7 +12183,7 @@ var AggregatedTimelineTreeView = class _AggregatedTimelineTreeView extends Timel
   // The eventid == the identity of a node that we expect in a bottomUp tree (either without grouping or with the groupBy grouping)
   // A "top node" (in `ungroupedTopNodes`) is aggregated by this. (But so are all the other nodes, except the `GroupNode`s)
   domainByEvent(groupBy, event) {
-    const parsedTrace = this.parsedTrace();
+    const parsedTrace = this.parsedTrace;
     if (!parsedTrace) {
       return "";
     }
@@ -12188,8 +12282,8 @@ var AggregatedTimelineTreeView = class _AggregatedTimelineTreeView extends Timel
   })(GroupBy = AggregatedTimelineTreeView2.GroupBy || (AggregatedTimelineTreeView2.GroupBy = {}));
 })(AggregatedTimelineTreeView || (AggregatedTimelineTreeView = {}));
 var CallTreeTimelineTreeView = class extends AggregatedTimelineTreeView {
-  constructor() {
-    super();
+  constructor(element) {
+    super(element);
     this.element.setAttribute("jslog", `${VisualLogging5.pane("call-tree").track({ resize: true })}`);
     this.dataGrid.markColumnAsSortedBy("total", DataGrid.DataGrid.Order.Descending);
   }
@@ -12199,13 +12293,13 @@ var CallTreeTimelineTreeView = class extends AggregatedTimelineTreeView {
   }
 };
 var BottomUpTimelineTreeView = class extends AggregatedTimelineTreeView {
-  constructor() {
-    super();
+  constructor(element) {
+    super(element);
     this.element.setAttribute("jslog", `${VisualLogging5.pane("bottom-up").track({ resize: true })}`);
     this.dataGrid.markColumnAsSortedBy("self", DataGrid.DataGrid.Order.Descending);
   }
   buildTree() {
-    return new Trace25.Extras.TraceTree.BottomUpRootNode(this.selectedEvents(), {
+    return new Trace25.Extras.TraceTree.BottomUpRootNode(this.selectedEvents, {
       textFilter: this.textFilter(),
       filters: this.filtersWithoutTextFilter(),
       startTime: this.startTime,
@@ -12228,8 +12322,8 @@ var TimelineStackView = class extends Common11.ObjectWrapper.eventMixin(UI10.Wid
     header.textContent = i18nString20(UIStrings20.heaviestStack);
     this.treeView = treeView;
     const columns = [
-      { id: "total", title: i18nString20(UIStrings20.totalTime), fixedWidth: true, width: "110px" },
-      { id: "activity", title: i18nString20(UIStrings20.activity) }
+      { id: "total", title: i18nString20(UIStrings20.totalTime), fixedWidth: true, width: "110px", sortable: false },
+      { id: "activity", title: i18nString20(UIStrings20.activity), sortable: false }
     ];
     this.dataGrid = new DataGrid.ViewportDataGrid.ViewportDataGrid({
       displayName: i18nString20(UIStrings20.timelineStack),
@@ -12311,8 +12405,8 @@ var EventsTimelineTreeView = class extends TimelineTreeView {
   filters() {
     return [...super.filters(), ...this.filtersControl.filters()];
   }
-  updateContents(selection) {
-    super.updateContents(selection);
+  set activeSelection(selection) {
+    super.activeSelection = selection;
     if (selectionIsEvent(selection)) {
       this.selectEvent(selection.event, true);
     }
@@ -12360,7 +12454,7 @@ var EventsTimelineTreeView = class extends TimelineTreeView {
     this.filtersControl.populateToolbar(toolbar4);
   }
   showDetailsForNode(node) {
-    const parsedTrace = this.parsedTrace();
+    const parsedTrace = this.parsedTrace;
     if (!parsedTrace) {
       return false;
     }
@@ -12431,13 +12525,11 @@ var Filters = class _Filters extends Common12.ObjectWrapper.ObjectWrapper {
 // gen/front_end/panels/timeline/ThirdPartyTreeView.js
 var ThirdPartyTreeView_exports = {};
 __export(ThirdPartyTreeView_exports, {
-  ThirdPartyTreeElement: () => ThirdPartyTreeElement,
   ThirdPartyTreeViewWidget: () => ThirdPartyTreeViewWidget
 });
 import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as Trace27 from "./../../models/trace/trace.js";
 import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as UI12 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/thirdPartyTreeView.css.js
@@ -12447,7 +12539,7 @@ var thirdPartyTreeView_css_default = `/*
  * found in the LICENSE file.
  */
 
-devtools-performance-third-party-tree-view {
+:host {
   .background-bar-container {
     /* Dont need the bars in 3p table */
     display: none;
@@ -12528,6 +12620,12 @@ devtools-performance-third-party-tree-view {
     border-left: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
+  .has-max-rows {
+    /* 21px for header + max-rows * 22px rows */
+    max-height: calc(21px + (var(--max-rows) * 22px));
+    padding: var(--sys-size-3);
+  }
+
   /* While timeline treeview name-container uses flexbox to layout, it's overkill for this table's purposes.
      By not using it, we can benefit from text-overflow:ellipsis applying correctly to names and entity-badges */
  .timeline-tree-view .data-grid .name-container {
@@ -12588,8 +12686,11 @@ var ThirdPartyTreeViewWidget = class extends TimelineTreeView {
   // when the grid is refreshed but for the ThirdParty view we only
   // want to do this when the user hovers.
   autoSelectFirstChildOnRefresh = false;
-  constructor() {
-    super();
+  #onRowHovered;
+  #onBottomUpButtonClicked;
+  #onRowClicked;
+  constructor(element) {
+    super(element);
     this.element.setAttribute("jslog", `${VisualLogging7.pane("third-party-tree").track({ hover: true })}`);
     this.init();
     this.dataGrid.markColumnAsSortedBy("self", DataGrid5.DataGrid.Order.Descending);
@@ -12606,13 +12707,13 @@ var ThirdPartyTreeViewWidget = class extends TimelineTreeView {
     super.wasShown();
     this.registerRequiredCSS(thirdPartyTreeView_css_default);
   }
-  setModelWithEvents(selectedEvents, parsedTrace, entityMappings) {
-    super.setModelWithEvents(selectedEvents, parsedTrace, entityMappings);
-    const hasEvents = Boolean(selectedEvents && selectedEvents.length > 0);
+  set model(model) {
+    super.model = model;
+    const hasEvents = Boolean(model.selectedEvents && model.selectedEvents.length > 0);
     this.element.classList.toggle("empty-table", !hasEvents);
   }
   buildTree() {
-    const parsedTrace = this.parsedTrace();
+    const parsedTrace = this.parsedTrace;
     const entityMapper = this.entityMapper();
     if (!parsedTrace || !entityMapper) {
       return new Trace27.Extras.TraceTree.BottomUpRootNode([], {
@@ -12627,7 +12728,7 @@ var ThirdPartyTreeViewWidget = class extends TimelineTreeView {
       "SyntheticNetworkRequest"
       /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
     ]));
-    const node = new Trace27.Extras.TraceTree.BottomUpRootNode(this.selectedEvents(), {
+    const node = new Trace27.Extras.TraceTree.BottomUpRootNode(this.selectedEvents, {
       textFilter: this.textFilter(),
       filters: [filter],
       startTime: this.startTime,
@@ -12757,26 +12858,35 @@ var ThirdPartyTreeViewWidget = class extends TimelineTreeView {
     const entity = mapper.entityForEvent(node.event);
     return Boolean(entity) && entity?.category === "Chrome Extension";
   }
-};
-var ThirdPartyTreeElement = class extends UI12.Widget.WidgetElement {
-  #treeView;
-  set treeView(treeView) {
-    this.#treeView = treeView;
+  set maxRows(maxRows) {
+    this.element.style.setProperty("--max-rows", String(maxRows));
+    this.element.classList.toggle("has-max-rows", Boolean(maxRows));
   }
-  constructor() {
-    super();
-    this.style.display = "contents";
-  }
-  createWidget() {
-    const containerWidget = new UI12.Widget.Widget(this);
-    containerWidget.contentElement.style.display = "contents";
-    if (this.#treeView) {
-      this.#treeView.show(containerWidget.contentElement);
+  set onRowHovered(callback) {
+    if (!this.#onRowHovered) {
+      this.addEventListener("TreeRowHovered", ({ data }) => {
+        this.#onRowHovered?.(data.node, data.events);
+      });
     }
-    return containerWidget;
+    this.#onRowHovered = callback;
+  }
+  set onBottomUpButtonClicked(callback) {
+    if (!this.#onBottomUpButtonClicked) {
+      this.addEventListener("BottomUpButtonClicked", ({ data }) => {
+        this.#onBottomUpButtonClicked?.(data);
+      });
+    }
+    this.#onBottomUpButtonClicked = callback;
+  }
+  set onRowClicked(callback) {
+    if (!this.#onRowClicked) {
+      this.addEventListener("TreeRowClicked", ({ data }) => {
+        this.#onRowClicked?.(data.node, data.events);
+      });
+    }
+    this.#onRowClicked = callback;
   }
 };
-customElements.define("devtools-performance-third-party-tree-view", ThirdPartyTreeElement);
 
 // gen/front_end/panels/timeline/timelineDetailsView.css.js
 var timelineDetailsView_css_default = `/*
@@ -12899,9 +13009,9 @@ var TimelineLayersView_exports = {};
 __export(TimelineLayersView_exports, {
   TimelineLayersView: () => TimelineLayersView
 });
-import * as UI13 from "./../../ui/legacy/legacy.js";
+import * as UI12 from "./../../ui/legacy/legacy.js";
 import * as LayerViewer from "./../layer_viewer/layer_viewer.js";
-var TimelineLayersView = class extends UI13.SplitWidget.SplitWidget {
+var TimelineLayersView = class extends UI12.SplitWidget.SplitWidget {
   showPaintProfilerCallback;
   rightSplitWidget;
   layerViewHost;
@@ -12912,10 +13022,10 @@ var TimelineLayersView = class extends UI13.SplitWidget.SplitWidget {
     super(true, false, "timeline-layers-view");
     this.showPaintProfilerCallback = showPaintProfilerCallback;
     this.element.classList.add("timeline-layers-view");
-    this.rightSplitWidget = new UI13.SplitWidget.SplitWidget(true, true, "timeline-layers-view-details");
+    this.rightSplitWidget = new UI12.SplitWidget.SplitWidget(true, true, "timeline-layers-view-details");
     this.rightSplitWidget.element.classList.add("timeline-layers-view-properties");
     this.setMainWidget(this.rightSplitWidget);
-    const vbox = new UI13.Widget.VBox();
+    const vbox = new UI12.Widget.VBox();
     this.setSidebarWidget(vbox);
     this.layerViewHost = new LayerViewer.LayerViewHost.LayerViewHost();
     const layerTreeOutline = new LayerViewer.LayerTreeOutline.LayerTreeOutline(this.layerViewHost);
@@ -12966,7 +13076,7 @@ __export(TimelinePaintProfilerView_exports, {
 import * as SDK10 from "./../../core/sdk/sdk.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Trace28 from "./../../models/trace/trace.js";
-import * as UI14 from "./../../ui/legacy/legacy.js";
+import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 import * as LayerViewer2 from "./../layer_viewer/layer_viewer.js";
 
@@ -13345,7 +13455,7 @@ async function getPaintProfilerSnapshot(paintProfilerModel, paint) {
 // gen/front_end/panels/timeline/TimelinePaintProfilerView.js
 var { html: html3, render: render3 } = Lit;
 var { createRef, ref } = Lit.Directives;
-var TimelinePaintProfilerView = class extends UI14.SplitWidget.SplitWidget {
+var TimelinePaintProfilerView = class extends UI13.SplitWidget.SplitWidget {
   logAndImageSplitWidget;
   imageView;
   paintProfilerView;
@@ -13361,7 +13471,7 @@ var TimelinePaintProfilerView = class extends UI14.SplitWidget.SplitWidget {
     this.setSidebarSize(60);
     this.setResizable(false);
     this.#parsedTrace = parsedTrace;
-    this.logAndImageSplitWidget = new UI14.SplitWidget.SplitWidget(true, false, "timeline-paint-profiler-log-split");
+    this.logAndImageSplitWidget = new UI13.SplitWidget.SplitWidget(true, false, "timeline-paint-profiler-log-split");
     this.setMainWidget(this.logAndImageSplitWidget);
     this.imageView = new TimelinePaintImageView();
     this.logAndImageSplitWidget.setMainWidget(this.imageView);
@@ -13510,7 +13620,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
   }
   return { imageElementNaturalHeight: imageElement.naturalHeight, imageElementNaturalWidth: imageElement.naturalWidth };
 };
-var TimelinePaintImageView = class extends UI14.Widget.Widget {
+var TimelinePaintImageView = class extends UI13.Widget.Widget {
   transformController;
   maskRectangle;
   #inputData = {
@@ -13597,7 +13707,7 @@ import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as Trace29 from "./../../models/trace/trace.js";
-import * as UI15 from "./../../ui/legacy/legacy.js";
+import * as UI14 from "./../../ui/legacy/legacy.js";
 import { html as html4, render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -13615,7 +13725,7 @@ devtools-data-grid {
 /*# sourceURL=${import.meta.resolve("./timelineSelectorStatsView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineSelectorStatsView.js
-import * as Utils5 from "./utils/utils.js";
+import * as Utils4 from "./utils/utils.js";
 var UIStrings23 = {
   /**
    * @description Label for selector stats data table
@@ -13771,7 +13881,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
         </table>
       </devtools-data-grid>`, target);
 };
-var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
+var TimelineSelectorStatsView = class extends UI14.Widget.VBox {
   #selectorLocations;
   #parsedTrace = null;
   /**
@@ -13832,7 +13942,7 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
         ].join("	"));
       }
       const data = tableData.join("\n");
-      UI15.UIUtils.copyTextToClipboard(data, i18nString23(UIStrings23.tableCopiedToClipboard));
+      UI14.UIUtils.copyTextToClipboard(data, i18nString23(UIStrings23.tableCopiedToClipboard));
     });
   }
   performUpdate() {
@@ -13873,7 +13983,7 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
     }
     const invalidatedNodeIdMap = /* @__PURE__ */ new Map();
     for (const [frameId, backendNodeIds] of frameIdBackendNodeIdsMap) {
-      const backendNodeIdMap = await Utils5.EntryNodes.domNodesForBackendIds(frameId, backendNodeIds);
+      const backendNodeIdMap = await Utils4.EntryNodes.domNodesForBackendIds(frameId, backendNodeIds);
       invalidatedNodeIdMap.set(frameId, backendNodeIdMap);
     }
     for (const invalidatedNode of invalidatedNodes) {
@@ -14070,8 +14180,8 @@ var UIStrings24 = {
 };
 var str_24 = i18n47.i18n.registerUIStrings("panels/timeline/TimelineDetailsView.ts", UIStrings24);
 var i18nString24 = i18n47.i18n.getLocalizedString.bind(void 0, str_24);
-var { widget } = UI16.Widget;
-var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.Widget.VBox) {
+var { widget } = UI15.Widget;
+var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI15.Widget.VBox) {
   detailsLinkifier;
   tabbedPane;
   defaultDetailsWidget;
@@ -14087,17 +14197,16 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
   #parsedTrace = null;
   #eventToRelatedInsightsMap = null;
   #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
-  #thirdPartyTree = new ThirdPartyTreeViewWidget();
   #entityMapper = null;
   constructor(delegate) {
     super();
     this.registerRequiredCSS(timelineDetailsView_css_default);
     this.element.classList.add("timeline-details");
     this.detailsLinkifier = new Components3.Linkifier.Linkifier();
-    this.tabbedPane = new UI16.TabbedPane.TabbedPane();
+    this.tabbedPane = new UI15.TabbedPane.TabbedPane();
     this.tabbedPane.show(this.element);
     this.tabbedPane.headerElement().setAttribute("jslog", `${VisualLogging9.toolbar("sidebar").track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
-    this.defaultDetailsWidget = new UI16.Widget.VBox();
+    this.defaultDetailsWidget = new UI15.Widget.VBox();
     this.defaultDetailsWidget.element.classList.add("timeline-details-view");
     this.defaultDetailsWidget.element.setAttribute("jslog", `${VisualLogging9.pane("details").track({ resize: true })}`);
     this.#summaryContent.contentElement.classList.add("timeline-details-view-body");
@@ -14124,16 +14233,16 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
         view.stackView.addEventListener("TreeRowHovered", (node) => this.dispatchEventToListeners("TreeRowHovered", { node: node.data }));
       }
     });
-    this.#thirdPartyTree.addEventListener("TreeRowHovered", (node) => {
-      this.dispatchEventToListeners("TreeRowHovered", { node: node.data.node, events: node.data.events });
-    });
-    this.#thirdPartyTree.addEventListener("BottomUpButtonClicked", (node) => {
-      this.selectTab(Tab.BottomUp, node.data, AggregatedTimelineTreeView.GroupBy.ThirdParties);
-    });
-    this.#thirdPartyTree.addEventListener("TreeRowClicked", (node) => {
-      this.dispatchEventToListeners("TreeRowClicked", { node: node.data.node, events: node.data.events });
-    });
-    this.tabbedPane.addEventListener(UI16.TabbedPane.Events.TabSelected, this.tabSelected, this);
+    this.#summaryContent.onTreeRowHovered = (node, events) => {
+      this.dispatchEventToListeners("TreeRowHovered", { node, events });
+    };
+    this.#summaryContent.onBottomUpButtonClicked = (node) => {
+      this.selectTab(Tab.BottomUp, node, AggregatedTimelineTreeView.GroupBy.ThirdParties);
+    };
+    this.#summaryContent.onTreeRowClicked = (node, events) => {
+      this.dispatchEventToListeners("TreeRowClicked", { node, events });
+    };
+    this.tabbedPane.addEventListener(UI15.TabbedPane.Events.TabSelected, this.tabSelected, this);
     TraceBounds13.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
     this.lazySelectorStatsView = null;
   }
@@ -14228,9 +14337,12 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     this.#summaryContent.entityMapper = this.#entityMapper;
     this.tabbedPane.closeTabs([Tab.PaintProfiler, Tab.LayerViewer], false);
     for (const view of this.rangeDetailViews.values()) {
-      view.setModelWithEvents(data.selectedEvents, data.parsedTrace, data.entityMapper);
+      view.model = {
+        selectedEvents: data.selectedEvents,
+        parsedTrace: data.parsedTrace,
+        entityMapper: data.entityMapper
+      };
     }
-    this.#thirdPartyTree.setModelWithEvents(data.selectedEvents, data.parsedTrace, data.entityMapper);
     this.#summaryContent.requestUpdate();
     this.lazyPaintProfilerView = null;
     this.lazyLayersView = null;
@@ -14258,7 +14370,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     const visibleWindow = traceBoundsState.milli.timelineTraceWindow;
     const view = this.rangeDetailViews.get(this.tabbedPane.selectedTabId || "");
     if (view) {
-      view.updateContents(this.selection || selectionFromRangeMilliSeconds(visibleWindow.min, visibleWindow.max));
+      view.activeSelection = this.selection || selectionFromRangeMilliSeconds(visibleWindow.min, visibleWindow.max);
     }
   }
   appendTab(id, tabTitle, view, isCloseable) {
@@ -14443,13 +14555,11 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     this.#summaryContent.selectedEvent = null;
     this.#summaryContent.selectedRange = {
       events: this.#selectedEvents,
-      thirdPartyTree: this.#thirdPartyTree,
       startTime,
-      endTime
+      endTime,
+      selection: this.selection ?? null
     };
-    void this.updateSummaryPane().then(() => {
-      this.#thirdPartyTree.updateContents(this.selection || selectionFromRangeMilliSeconds(startTime, endTime));
-    });
+    void this.updateSummaryPane();
     const isSelectorStatsEnabled = Common14.Settings.Settings.instance().createSetting("timeline-capture-selector-stats", false).get();
     if (this.#selectedEvents && isSelectorStatsEnabled) {
       const eventsInRange = Trace30.Helpers.Trace.findRecalcStyleEvents(this.#selectedEvents, Trace30.Helpers.Timing.milliToMicro(startTime), Trace30.Helpers.Timing.milliToMicro(endTime));
@@ -14480,7 +14590,7 @@ var SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
   })}></devtools-widget>
       `, target);
 };
-var SummaryView = class extends UI16.Widget.Widget {
+var SummaryView = class extends UI15.Widget.Widget {
   #view;
   selectedEvent = null;
   eventToRelatedInsightsMap = null;
@@ -14490,6 +14600,12 @@ var SummaryView = class extends UI16.Widget.Widget {
   linkifier = null;
   filmStrip = null;
   selectedRange = null;
+  onTreeRowHovered = (_node, _events) => {
+  };
+  onBottomUpButtonClicked = (_node) => {
+  };
+  onTreeRowClicked = (_node, _events) => {
+  };
   constructor(element, view = SUMMARY_DEFAULT_VIEW) {
     super(element);
     this.#view = view;
@@ -14503,24 +14619,33 @@ var SummaryView = class extends UI16.Widget.Widget {
       target: this.target,
       linkifier: this.linkifier,
       filmStrip: this.filmStrip,
-      selectedRange: this.selectedRange
+      selectedRange: this.selectedRange,
+      onTreeRowHovered: this.onTreeRowHovered,
+      onBottomUpButtonClicked: this.onBottomUpButtonClicked,
+      onTreeRowClicked: this.onTreeRowClicked
     }, {}, this.contentElement);
   }
 };
 function generateRangeSummaryDetails(input) {
-  return html5`
-    <devtools-widget
-      ${widget(TimelineComponents5.TimelineRangeSummaryView.TimelineRangeSummaryView, {
+  return html5`${widget(TimelineComponents5.TimelineRangeSummaryView.TimelineRangeSummaryView, {
     data: {
       parsedTrace: input.parsedTrace,
       events: input.selectedRange?.events,
       startTime: input.selectedRange?.startTime,
       endTime: input.selectedRange?.endTime,
-      thirdPartyTreeTemplate: input.selectedRange?.thirdPartyTree ? html5`<devtools-performance-third-party-tree-view
-            .treeView=${input.selectedRange?.thirdPartyTree}></devtools-performance-third-party-tree-view>` : nothing2
+      thirdPartyTreeTemplate: input.selectedRange ? html5`${widget(ThirdPartyTreeViewWidget, {
+        model: {
+          parsedTrace: input.parsedTrace,
+          entityMapper: input.entityMapper,
+          selectedEvents: input.selectedRange.events ?? null
+        },
+        activeSelection: input.selectedRange.selection || selectionFromRangeMilliSeconds(input.selectedRange.startTime, input.selectedRange.endTime),
+        onRowHovered: input.onTreeRowHovered,
+        onBottomUpButtonClicked: input.onBottomUpButtonClicked,
+        onRowClicked: input.onTreeRowClicked
+      })}` : nothing2
     }
-  })}
-    ></devtools-widget>`;
+  })}`;
 }
 async function renderSelectedEventDetails(input) {
   const { selectedEvent, parsedTrace, linkifier } = input;
@@ -14589,7 +14714,7 @@ import * as Platform14 from "./../../core/platform/platform.js";
 import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as Trace32 from "./../../models/trace/trace.js";
 import * as PerfUI15 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI17 from "./../../ui/legacy/legacy.js";
+import * as UI16 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport23 from "./../../ui/legacy/theme_support/theme_support.js";
 import { html as html6, render as render6 } from "./../../ui/lit/lit.js";
 import * as TimelineComponents6 from "./components/components.js";
@@ -14918,7 +15043,7 @@ var TimelineFlameChartNetworkDataProvider = class {
       return;
     }
     const timelineNetworkRequest = SDK13.TraceObject.RevealableNetworkRequest.create(networkRequest);
-    const contextMenu = new UI17.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI16.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(timelineNetworkRequest);
     return contextMenu;
   }
@@ -15075,7 +15200,7 @@ var TimelineFlameChartNetworkDataProvider = class {
         const textPadding = 4;
         const textBaseline = 5;
         const textBaseHeight = barHeight - textBaseline;
-        const trimmedText = UI17.UIUtils.trimTextEnd(context, title, textWidth - 2 * textPadding);
+        const trimmedText = UI16.UIUtils.trimTextEnd(context, title, textWidth - 2 * textPadding);
         context.fillStyle = "#333";
         context.fillText(trimmedText, textStart + textPadding, barY + textBaseHeight);
       }
@@ -15125,7 +15250,7 @@ var TimelineFlameChartNetworkDataProvider = class {
     const event = this.#events[index];
     if (Trace32.Types.Events.isSyntheticNetworkRequest(event)) {
       const element = document.createElement("div");
-      const root = UI17.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopover_css_default });
+      const root = UI16.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopover_css_default });
       render6(html6`
         <div class="timeline-flamechart-popover">
           ${TimelineComponents6.NetworkRequestTooltip.NetworkRequestTooltip.createWidgetElement(event, this.#entityMapper || void 0)}
@@ -15504,7 +15629,7 @@ var timelineFlameChartView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineFlameChartView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineFlameChartView.js
-import * as Utils7 from "./utils/utils.js";
+import * as Utils6 from "./utils/utils.js";
 var UIStrings26 = {
   /**
    * @description Text in Timeline Flame Chart View of the Performance panel
@@ -15546,7 +15671,7 @@ var SORT_ORDER_PAGE_LOAD_MARKERS = {
   ]: 6
 };
 var TIMESTAMP_THRESHOLD_MS = Trace33.Types.Timing.Micro(10);
-var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI18.Widget.VBox) {
+var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI17.Widget.VBox) {
   delegate;
   /**
    * Tracks the indexes of matched entries when the user searches the panel.
@@ -15643,9 +15768,9 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.delegate = delegate;
     this.eventListeners = [];
     this.#parsedTrace = null;
-    const flameChartsContainer = new UI18.Widget.VBox();
+    const flameChartsContainer = new UI17.Widget.VBox();
     flameChartsContainer.element.classList.add("flame-charts-container");
-    this.networkSplitWidget = new UI18.SplitWidget.SplitWidget(false, false, "timeline-flamechart-main-view", 150);
+    this.networkSplitWidget = new UI17.SplitWidget.SplitWidget(false, false, "timeline-flamechart-main-view", 150);
     this.networkSplitWidget.show(flameChartsContainer.element);
     this.#overlaysContainer.classList.add("timeline-overlays-container");
     flameChartsContainer.element.appendChild(this.#overlaysContainer);
@@ -15746,7 +15871,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.element.addEventListener(OverlayComponents.EntriesLinkOverlay.EntryLinkStartCreating.eventName, () => {
       this.focus();
     });
-    this.networkPane = new UI18.Widget.VBox();
+    this.networkPane = new UI17.Widget.VBox();
     this.networkPane.setMinimumSize(23, 23);
     this.networkFlameChart.show(this.networkPane.element);
     this.splitResizer = this.networkPane.element.createChild("div", "timeline-flamechart-resizer");
@@ -15754,13 +15879,13 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.networkSplitWidget.installResizer(this.splitResizer);
     this.networkSplitWidget.setMainWidget(this.mainFlameChart);
     this.networkSplitWidget.setSidebarWidget(this.networkPane);
-    this.chartSplitWidget = new UI18.SplitWidget.SplitWidget(false, true, "timeline-counters-split-view-state");
+    this.chartSplitWidget = new UI17.SplitWidget.SplitWidget(false, true, "timeline-counters-split-view-state");
     this.countersView = new CountersGraph(this.delegate);
     this.chartSplitWidget.setMainWidget(flameChartsContainer);
     this.chartSplitWidget.setSidebarWidget(this.countersView);
     this.chartSplitWidget.hideDefaultResizer();
     this.chartSplitWidget.installResizer(this.countersView.resizerElement());
-    this.detailsSplitWidget = new UI18.SplitWidget.SplitWidget(false, true, "timeline-panel-details-split-view-state");
+    this.detailsSplitWidget = new UI17.SplitWidget.SplitWidget(false, true, "timeline-panel-details-split-view-state");
     this.detailsSplitWidget.element.classList.add("timeline-details-split");
     this.detailsView = new TimelineDetailsPane(delegate);
     this.detailsSplitWidget.installResizer(this.detailsView.headerElement());
@@ -16533,7 +16658,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     if (!target) {
       return;
     }
-    const nodeIds = Utils7.EntryNodes.nodeIdsForEvent(this.#parsedTrace, event);
+    const nodeIds = Utils6.EntryNodes.nodeIdsForEvent(this.#parsedTrace, event);
     for (const nodeId of nodeIds) {
       new SDK14.DOMModel.DeferredDOMNode(target, nodeId).highlight();
     }
@@ -16633,7 +16758,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
         return;
       }
       const event = selectionIsEvent(selection) ? selection.event : null;
-      let focus = UI18.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
+      let focus = UI17.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
       if (focus) {
         focus = focus.withEvent(event);
       } else if (event) {
@@ -16641,7 +16766,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
       } else {
         focus = null;
       }
-      UI18.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus);
+      UI17.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus);
     });
   }
   // Only opens the details view of a selection. This is used for Timing Markers. Timing markers replace
@@ -16983,7 +17108,7 @@ function groupForLevel(groups, level) {
 }
 
 // gen/front_end/panels/timeline/TimelineFlameChartDataProvider.js
-import * as Utils8 from "./utils/utils.js";
+import * as Utils7 from "./utils/utils.js";
 var UIStrings27 = {
   /**
    * @description Text for rendering frames
@@ -17112,7 +17237,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
         header.backgroundColor = ThemeSupport25.ThemeSupport.instance().getComputedValue("--sys-color-cdt-base-container");
       }
     });
-    Utils8.ImageCache.emitter.addEventListener("screenshot-loaded", () => this.dispatchEventToListeners(
+    Utils7.ImageCache.emitter.addEventListener("screenshot-loaded", () => this.dispatchEventToListeners(
       "DataChanged"
       /* Events.DATA_CHANGED */
     ));
@@ -17156,18 +17281,18 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     }
     const possibleActions = this.getPossibleActions(entryIndex, groupIndex);
     const PERF_AI_ACTION_ID = "drjones.performance-panel-context";
-    const perfAIEntryPointEnabled = Boolean(entry && this.parsedTrace && UI19.ActionRegistry.ActionRegistry.instance().hasAction(PERF_AI_ACTION_ID));
+    const perfAIEntryPointEnabled = Boolean(entry && this.parsedTrace && UI18.ActionRegistry.ActionRegistry.instance().hasAction(PERF_AI_ACTION_ID));
     if (!possibleActions && !perfAIEntryPointEnabled) {
       return;
     }
-    const contextMenu = new UI19.ContextMenu.ContextMenu(mouseEvent);
+    const contextMenu = new UI18.ContextMenu.ContextMenu(mouseEvent);
     if (perfAIEntryPointEnabled && this.parsedTrace) {
       const callTree = AIAssistance2.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
       if (callTree) {
         let appendSubmenuPromptAction = function(submenu2, action3, label, prompt, jslogContext) {
           submenu2.defaultSection().appendItem(label, () => action3.execute({ prompt }), { disabled: !action3.enabled(), jslogContext });
         };
-        const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
+        const action2 = UI18.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
         const submenu = contextMenu.footerSection().appendSubMenuItem(action2.title(), false, PERF_AI_ACTION_ID);
         submenu.defaultSection().appendAction(PERF_AI_ACTION_ID, i18nString27(UIStrings27.startAChat));
         submenu.defaultSection().appendItem(i18nString27(UIStrings27.labelEntry), () => {
@@ -17192,7 +17317,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       ],
       jslogContext: "hide-function"
     });
-    hideEntryOption.setAccelerator(UI19.KeyboardShortcut.Keys.H, [UI19.KeyboardShortcut.Modifiers.None]);
+    hideEntryOption.setAccelerator(UI18.KeyboardShortcut.Keys.H, [UI18.KeyboardShortcut.Modifiers.None]);
     hideEntryOption.setIsDevToolsPerformanceMenuItem(true);
     const hideChildrenOption = contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.hideChildren), () => {
       this.modifyTree("COLLAPSE_FUNCTION", entryIndex);
@@ -17203,7 +17328,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       ],
       jslogContext: "hide-children"
     });
-    hideChildrenOption.setAccelerator(UI19.KeyboardShortcut.Keys.C, [UI19.KeyboardShortcut.Modifiers.None]);
+    hideChildrenOption.setAccelerator(UI18.KeyboardShortcut.Keys.C, [UI18.KeyboardShortcut.Modifiers.None]);
     hideChildrenOption.setIsDevToolsPerformanceMenuItem(true);
     const hideRepeatingChildrenOption = contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.hideRepeatingChildren), () => {
       this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS", entryIndex);
@@ -17214,7 +17339,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       ],
       jslogContext: "hide-repeating-children"
     });
-    hideRepeatingChildrenOption.setAccelerator(UI19.KeyboardShortcut.Keys.R, [UI19.KeyboardShortcut.Modifiers.None]);
+    hideRepeatingChildrenOption.setAccelerator(UI18.KeyboardShortcut.Keys.R, [UI18.KeyboardShortcut.Modifiers.None]);
     hideRepeatingChildrenOption.setIsDevToolsPerformanceMenuItem(true);
     const resetChildrenOption = contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.resetChildren), () => {
       this.modifyTree("RESET_CHILDREN", entryIndex);
@@ -17225,7 +17350,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       ],
       jslogContext: "reset-children"
     });
-    resetChildrenOption.setAccelerator(UI19.KeyboardShortcut.Keys.U, [UI19.KeyboardShortcut.Modifiers.None]);
+    resetChildrenOption.setAccelerator(UI18.KeyboardShortcut.Keys.U, [UI18.KeyboardShortcut.Modifiers.None]);
     resetChildrenOption.setIsDevToolsPerformanceMenuItem(true);
     contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.resetTrace), () => {
       this.modifyTree("UNDO_ALL_ACTIONS", entryIndex);
@@ -17243,7 +17368,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (!url) {
       return contextMenu;
     }
-    if (Utils8.IgnoreList.isIgnoreListedEntry(entry)) {
+    if (Utils7.IgnoreList.isIgnoreListedEntry(entry)) {
       contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.removeScriptFromIgnoreList), () => {
         Workspace4.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
         this.#onIgnoreListChanged();
@@ -17418,7 +17543,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   textColor(index) {
     const event = this.entryData[index];
-    return Utils8.IgnoreList.isIgnoreListedEntry(event) ? "#888" : FlameChartStyle.textColor;
+    return Utils7.IgnoreList.isIgnoreListedEntry(event) ? "#888" : FlameChartStyle.textColor;
   }
   entryFont(_index) {
     return this.#font;
@@ -17684,7 +17809,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       return null;
     }
     const popoverElement = document.createElement("div");
-    const root = UI19.UIUtils.createShadowRootWithCoreStyles(popoverElement, { cssFile: timelineFlamechartPopover_css_default });
+    const root = UI18.UIUtils.createShadowRootWithCoreStyles(popoverElement, { cssFile: timelineFlamechartPopover_css_default });
     const popoverContents = root.createChild("div", "timeline-flamechart-popover");
     popoverContents.createChild("span", timeElementClassName).textContent = time;
     popoverContents.createChild("span", "popoverinfo-title").textContent = title;
@@ -17693,7 +17818,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       popoverContents.appendChild(warningElement);
     }
     for (const elem of additionalContent) {
-      const widget2 = UI19.Widget.Widget.get(elem);
+      const widget2 = UI18.Widget.Widget.get(elem);
       if (widget2) {
         widget2.show(
           popoverContents,
@@ -17709,7 +17834,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   preparePopoverForCollapsedArrow(entryIndex) {
     const element = document.createElement("div");
-    const root = UI19.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopover_css_default });
+    const root = UI18.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopover_css_default });
     const entry = this.entryData[entryIndex];
     const hiddenEntriesAmount = ModificationsManager.activeManager()?.getEntriesFilter().findHiddenDescendantsAmount(entry);
     if (!hiddenEntriesAmount) {
@@ -17806,7 +17931,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   async drawScreenshot(entryIndex, context, barX, barY, barWidth, barHeight) {
     const screenshot = this.entryData[entryIndex];
-    const image = Utils8.ImageCache.getOrQueue(screenshot);
+    const image = Utils7.ImageCache.getOrQueue(screenshot);
     if (!image) {
       return;
     }
@@ -17893,7 +18018,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (entryTitle) {
       const textStartX = desiredBoxStartX > 0 ? desiredBoxStartX : barX;
       context.font = this.#font;
-      const textWidth = UI19.UIUtils.measureTextWidth(context, entryTitle);
+      const textWidth = UI18.UIUtils.measureTextWidth(context, entryTitle);
       const textPadding = 5;
       const textBaseline = 5;
       if (textWidth <= desiredBoxEndX - textStartX + textPadding) {
@@ -18745,7 +18870,7 @@ var CompatibilityTracksAppender = class {
 };
 
 // gen/front_end/panels/timeline/timeline.prebundle.js
-import * as Utils9 from "./utils/utils.js";
+import * as Utils8 from "./utils/utils.js";
 export {
   AnimationsTrackAppender_exports as AnimationsTrackAppender,
   AnnotationHelpers_exports as AnnotationHelpers,
@@ -18788,6 +18913,6 @@ export {
   TrackConfiguration_exports as TrackConfiguration,
   UIDevtoolsController_exports as UIDevtoolsController,
   UIDevtoolsUtils_exports as UIDevtoolsUtils,
-  Utils9 as Utils
+  Utils8 as Utils
 };
 //# sourceMappingURL=timeline.js.map

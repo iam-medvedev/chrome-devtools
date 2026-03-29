@@ -18,11 +18,10 @@ function createProvider() {
         onSuggestionAccepted: () => { },
         onRequestTriggered: () => { },
         onResponseReceived: () => { },
-        getCompletionHint: () => null,
-        getCurrentText: () => '',
-        setAiAutoCompletion: () => { },
     };
     const provider = Elements.StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider.createInstance(config);
+    provider.getCompletionHint = () => null;
+    provider.setAiAutoCompletion = () => { };
     return { provider, config };
 }
 function createCssModelAndProperty() {
@@ -107,7 +106,7 @@ describeWithEnvironment('StylesAiCodeCompletionProvider', () => {
             fromCache: false,
         });
         const { provider, config } = createProvider();
-        const setAiAutoCompletionSpy = sinon.spy(config, 'setAiAutoCompletion');
+        const setAiAutoCompletionSpy = sinon.spy(provider, 'setAiAutoCompletion');
         const onRequestTriggeredSpy = sinon.spy(config, 'onRequestTriggered');
         const onResponseReceivedSpy = sinon.spy(config, 'onResponseReceived');
         const { cssModel, cssProperty } = createCssModelAndProperty();

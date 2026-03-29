@@ -53,6 +53,7 @@
     "../../../../../../front_end/ui/legacy/DockController.test.ts",
     "../../../../../../front_end/ui/legacy/FilterBar.test.ts",
     "../../../../../../front_end/ui/legacy/Infobar.test.ts",
+    "../../../../../../front_end/ui/legacy/InspectorDrawerView.test.ts",
     "../../../../../../front_end/ui/legacy/InspectorView.test.ts",
     "../../../../../../front_end/ui/legacy/KeyboardShortcut.test.ts",
     "../../../../../../front_end/ui/legacy/ListModel.test.ts",

@@ -964,7 +964,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert.deepEqual(nextInput.props.messages, []);
             sinon.assert.callCount(deleteHistoryEntrySpy, 1);
             assert.isString(deleteHistoryEntrySpy.lastCall.args[0]);
-            assert.isNull(nextInput.props.walkthrough.activeMessage);
+            assert.isNull(nextInput.props.walkthrough.activeSidebarMessage);
             const menuAfterDelete = openHistoryContextMenu(view.input, 'User question to Freestyler?');
             assert.isUndefined(menuAfterDelete.id);
         });
@@ -1148,9 +1148,10 @@ describeWithMockConnection('AI Assistance Panel', () => {
         afterEach(async () => {
             Network.NetworkPanel.NetworkPanel.instance().detach();
         });
-        it('blocks input on cross origin requests', async () => {
+        it('blocks input on requests with a different document origin', async () => {
             const networkRequest = createNetworkRequest({
-                url: urlString `https://a.test`,
+                url: urlString `https://a.test/app.js`,
+                documentURL: urlString `https://a.test`,
             });
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
             const { panel, view } = await createAiAssistancePanel({
@@ -1172,7 +1173,8 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             // Change context to https://b.test.
             const networkRequest2 = createNetworkRequest({
-                url: urlString `https://b.test`,
+                url: urlString `https://b.test/app.js`,
+                documentURL: urlString `https://b.test`,
             });
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest2);
             void panel.handleAction('drjones.network-floating-button');
@@ -1247,6 +1249,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'network');
             const networkRequest = createNetworkRequest({
                 url: urlString `https://a.test`,
+                documentURL: urlString `https://a.test`,
             });
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
             const { panel, view } = await createAiAssistancePanel({
@@ -1270,6 +1273,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             // Change context to https://b.test.
             const networkRequest2 = createNetworkRequest({
                 url: urlString `https://b.test`,
+                documentURL: urlString `https://b.test`,
             });
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest2);
             // Show the widget again
@@ -1473,9 +1477,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
         describe('disabled state', () => {
             it('should be disabled when the next message is blocked by cross origin and show crossOriginError placeholder', async () => {
                 Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
-                const networkRequest = createNetworkRequest({
-                    url: urlString `https://a.test`,
-                });
+                const networkRequest = createNetworkRequest({ url: urlString `https://a.test`, documentURL: urlString `https://a.test` });
                 UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
                 const { panel, view } = await createAiAssistancePanel({
                     aidaClient: mockAidaClient([
@@ -1494,9 +1496,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 nextInput = await view.nextInput;
                 assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
                 // Change context to https://b.test.
-                const networkRequest2 = createNetworkRequest({
-                    url: urlString `https://b.test`,
-                });
+                const networkRequest2 = createNetworkRequest({ url: urlString `https://b.test`, documentURL: urlString `https://b.test` });
                 UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest2);
                 void panel.handleAction('drjones.network-floating-button');
                 nextInput = await view.nextInput;
@@ -1938,6 +1938,9 @@ describeWithMockConnection('AI Assistance Panel', () => {
         });
     });
     describe('Walkthrough', () => {
+        function assertChatViewState(input) {
+            assert.strictEqual(input.state, "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+        }
         beforeEach(async () => {
             await enableAllFeatureAndSetting();
         });
@@ -1952,19 +1955,20 @@ describeWithMockConnection('AI Assistance Panel', () => {
             });
             void panel.handleAction('freestyler.elements-floating-button');
             let nextInput = await view.nextInput;
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assertChatViewState(nextInput);
             nextInput.props.onTextSubmit('test');
             nextInput = await view.nextInput; // User message
             // Drain updates until loading is done
             while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
                 nextInput = await view.nextInput;
             }
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            assert.isFalse(nextInput.walkthrough.isExpanded);
-            nextInput.walkthrough.onToggle(true);
+            assertChatViewState(nextInput);
+            assert.isFalse(nextInput.props.walkthrough.isExpanded);
+            const lastMessage = nextInput.props.messages.at(-1);
+            nextInput.props.walkthrough.onToggle(true, lastMessage);
             nextInput = await view.nextInput;
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            assert.isTrue(nextInput.walkthrough.isExpanded);
+            assertChatViewState(nextInput);
+            assert.isTrue(nextInput.props.walkthrough.isExpanded);
         });
         it('should open walkthrough for the specific message when onOpenWalkthrough is called with a message', async () => {
             const runStub = sinon.stub(AiAssistanceModel.StylingAgent.StylingAgent.prototype, 'run');
@@ -2004,46 +2008,45 @@ describeWithMockConnection('AI Assistance Panel', () => {
             void panel.handleAction('freestyler.elements-floating-button');
             // 1. Send first message
             let nextInput = await view.nextInput;
-            if (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
-                nextInput.props.onTextSubmit('test 1');
-            }
+            assertChatViewState(nextInput);
+            nextInput.props.onTextSubmit('test 1');
             nextInput = await view.nextInput; // User message
             while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
                 nextInput = await view.nextInput;
             }
             // 2. Send second message
-            if (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
-                nextInput.props.onTextSubmit('test 2');
-            }
+            assertChatViewState(nextInput);
+            nextInput.props.onTextSubmit('test 2');
             nextInput = await view.nextInput; // User message
             while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
                 nextInput = await view.nextInput;
             }
             // 3. Get messages
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assertChatViewState(nextInput);
             const modelMessages = nextInput.props.messages.filter(m => m.entity === "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */ && m.parts.length > 0);
             assert.lengthOf(modelMessages, 2);
             const [msg1, msg2] = modelMessages;
             // 4. Open walkthrough for first message
             nextInput.props.walkthrough.onOpen(msg1);
             nextInput = await view.nextInput;
-            if (nextInput.state !== "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
-                assert.fail('Expected CHAT_VIEW');
-            }
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            assert.isTrue(nextInput.walkthrough.isExpanded);
+            assertChatViewState(nextInput);
+            assert.isTrue(nextInput.props.walkthrough.isExpanded);
             // Verify steps match msg1
-            const msg1Steps = nextInput.props.walkthrough.activeMessage?.parts.filter(p => p.type === 'step').map(p => p.step) ?? [];
+            const msg1Steps = nextInput.props.walkthrough.activeSidebarMessage?.parts
+                .filter((p) => p.type === 'step')
+                .map(p => p.step) ??
+                [];
             assert.strictEqual(msg1Steps.at(0)?.thought, 'step 1');
             // 5. Open walkthrough for second message
             nextInput.props.walkthrough.onOpen(msg2);
             nextInput = await view.nextInput;
-            if (nextInput.state !== "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
-                assert.fail('Expected CHAT_VIEW');
-            }
-            assert.isTrue(nextInput.walkthrough.isExpanded);
+            assertChatViewState(nextInput);
+            assert.isTrue(nextInput.props.walkthrough.isExpanded);
             // Verify steps match msg2
-            const msg2Steps = nextInput.props.walkthrough.activeMessage?.parts.filter(p => p.type === 'step').map(p => p.step) ?? [];
+            const msg2Steps = nextInput.props.walkthrough.activeSidebarMessage?.parts
+                .filter((p) => p.type === 'step')
+                .map(p => p.step) ??
+                [];
             assert.strictEqual(msg2Steps.at(0)?.thought, 'step 2');
         });
         it('should automatically swap the walkthrough to the new message if the walkthrough is already expanded in the sidebar', async () => {
@@ -2063,34 +2066,107 @@ describeWithMockConnection('AI Assistance Panel', () => {
             void panel.handleAction('freestyler.elements-floating-button');
             // 1. Send first message and open walkthrough
             let nextInput = await view.nextInput;
-            if (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
-                nextInput.props.onTextSubmit('test 1');
-            }
+            assertChatViewState(nextInput);
+            nextInput.props.onTextSubmit('test 1');
             // Wait for it to finish loading
             nextInput = await view.nextInput; // User message
             while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
                 nextInput = await view.nextInput;
             }
             // Open walkthrough
-            if (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */) {
-                const msg1 = nextInput.props.messages.at(-1);
-                nextInput.props.walkthrough.onOpen(msg1);
-            }
+            assertChatViewState(nextInput);
+            const msg1 = nextInput.props.messages.at(-1);
+            nextInput.props.walkthrough.onOpen(msg1);
             nextInput = await view.nextInput;
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            assert.isTrue(nextInput.walkthrough.isExpanded);
+            assertChatViewState(nextInput);
+            assert.isTrue(nextInput.props.walkthrough.isExpanded);
             // 2. Send second message
             nextInput.props.onTextSubmit('test 2');
             // The USER_QUERY response should trigger the walkthrough swap
             nextInput = await view.nextInput; // User message
-            // Verify that after the user message is added, the walkthrough.activeMessage
+            // Verify that after the user message is added, the walkthrough.activeSidebarMessage
             // has been updated to the second model message.
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assertChatViewState(nextInput);
             const modelMessages = nextInput.props.messages.filter(m => m.entity === "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */);
             const msg2 = modelMessages.at(-1);
             // Verify the walkthrough is still expanded and the active message is the second message
-            assert.strictEqual(nextInput.props.walkthrough.activeMessage, msg2);
-            assert.isTrue(nextInput.walkthrough.isExpanded);
+            assert.strictEqual(nextInput.props.walkthrough.activeSidebarMessage, msg2);
+            assert.isTrue(nextInput.props.walkthrough.isExpanded);
+        });
+        describe('Responsiveness', () => {
+            it('should maintain expanded walkthroughs when resizing from wide to narrow', async () => {
+                const { panel, view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }]]) });
+                void panel.handleAction('freestyler.elements-floating-button');
+                // Start in wide mode
+                sinon.stub(panel.contentElement, 'offsetWidth').get(() => 1000);
+                panel.onResize();
+                let nextInput = await view.nextInput;
+                assertChatViewState(nextInput);
+                assert.isFalse(nextInput.props.walkthrough.isInlined);
+                nextInput.props.onTextSubmit('test');
+                nextInput = await view.nextInput; // User message
+                while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
+                    nextInput = await view.nextInput;
+                }
+                assertChatViewState(nextInput);
+                const msg = nextInput.props.messages.at(-1);
+                nextInput.props.walkthrough.onOpen(msg);
+                nextInput = await view.nextInput;
+                assertChatViewState(nextInput);
+                assert.isTrue(nextInput.props.walkthrough.isExpanded);
+                assert.strictEqual(nextInput.props.walkthrough.activeSidebarMessage, msg);
+                // Resize to narrow
+                sinon.restore();
+                sinon.stub(panel.contentElement, 'offsetWidth').get(() => 600);
+                panel.onResize();
+                nextInput = await view.nextInput;
+                assertChatViewState(nextInput);
+                assert.isTrue(nextInput.props.walkthrough.isInlined);
+                assert.deepEqual(nextInput.props.walkthrough.inlineExpandedMessages, [msg]);
+            });
+            it('should expand the last opened walkthrough when resizing from narrow to wide', async () => {
+                const { panel, view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test 1' }], [{ explanation: 'test 2' }]]) });
+                // Start in narrow mode
+                sinon.stub(panel.contentElement, 'offsetWidth').get(() => 600);
+                panel.onResize();
+                void panel.handleAction('freestyler.elements-floating-button');
+                let nextInput = await view.nextInput;
+                assertChatViewState(nextInput);
+                assert.isTrue(nextInput.props.walkthrough.isInlined);
+                // Send 2 messages
+                nextInput.props.onTextSubmit('test 1');
+                nextInput = await view.nextInput; // User 1
+                while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
+                    nextInput = await view.nextInput;
+                }
+                assertChatViewState(nextInput);
+                const msg1 = nextInput.props.messages.at(-1);
+                nextInput.props.onTextSubmit('test 2');
+                nextInput = await view.nextInput; // User 2
+                while (nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */ && nextInput.props.isLoading) {
+                    nextInput = await view.nextInput;
+                }
+                assertChatViewState(nextInput);
+                const msg2 = nextInput.props.messages.at(-1);
+                // Expand both
+                nextInput.props.walkthrough.onToggle(true, msg1);
+                nextInput = await view.nextInput;
+                assertChatViewState(nextInput);
+                nextInput.props.walkthrough.onToggle(true, msg2);
+                nextInput = await view.nextInput;
+                assertChatViewState(nextInput);
+                assert.isTrue(nextInput.props.walkthrough.isInlined);
+                assert.deepEqual(nextInput.props.walkthrough.inlineExpandedMessages, [msg1, msg2]);
+                // Resize to wide
+                sinon.restore();
+                sinon.stub(panel.contentElement, 'offsetWidth').get(() => 1000);
+                panel.onResize();
+                nextInput = await view.nextInput;
+                assertChatViewState(nextInput);
+                assert.isFalse(nextInput.props.walkthrough.isInlined);
+                assert.isTrue(nextInput.props.walkthrough.isExpanded);
+                assert.strictEqual(nextInput.props.walkthrough.activeSidebarMessage, msg2);
+            });
         });
     });
 });

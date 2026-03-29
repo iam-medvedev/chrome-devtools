@@ -14,10 +14,14 @@ export default `/*
     font-family: var(--default-font-family);
     width: 100%;
     display: flex;
-    gap: var(--sys-size-8);
     justify-content: space-between;
     align-items: center;
     margin-block: calc(-1 * var(--sys-size-3));
+
+    &.not-v2 {
+      /* Can be removed when AIv2 ships */
+      gap: var(--sys-size-8);
+    }
 
     .action-buttons {
       display: flex;
@@ -124,6 +128,12 @@ export default `/*
     }
   }
 
+  .user-query-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
   .chat-message {
     user-select: text;
     cursor: initial;
@@ -136,6 +146,38 @@ export default `/*
     word-break: normal;
     overflow-wrap: anywhere;
     border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+
+
+    &.query.ai-v2 {
+      width: fit-content;
+      max-width: 80%;
+      text-align: left;
+      padding: var(--sys-size-4) var(--sys-size-6);
+      font: var(--sys-typescale-body4-regular);
+      /* top left - top right - bottom right - bottom left */
+      border-radius: var(--sys-shape-corner-medium) var(--sys-shape-corner-extra-small) var(--sys-shape-corner-medium) var(--sys-shape-corner-medium);
+      background-color: var(--sys-color-surface5);
+      color: var(--sys-color-on-surface);
+
+      &.is-first-message {
+        /* So the first message doesn't bump right against the top
+         * toolbar */
+        margin-top: var(--sys-size-6);
+      }
+    }
+
+    &.ai-v2 {
+      border-bottom: none;
+    }
+
+    &.ai-v2 .answer-body-wrapper {
+      @container(min-width: 700px) {
+        /* Purposefully not using design system variables, this is a
+         * specific size to indent the content in and align it with the
+         * walkthrough CTA. */
+        padding-left: 35px;
+      }
+    }
 
     &.is-last-message {
       border-bottom: 0;
@@ -349,8 +391,19 @@ export default `/*
 
   .walkthrough-toggle-container {
     display: flex;
-    gap: var(--sys-size-4);
+    gap: var(--sys-size-2);
     align-items: center;
+
+    &.has-widgets {
+      gap: var(--sys-size-6);
+    }
+
+    .chevron {
+      color: var(--sys-color-primary);
+      width: var(--sys-size-8);
+      height: var(--sys-size-8);
+      margin-left: var(--sys-size-2);
+    }
   }
 
 
@@ -377,14 +430,50 @@ export default `/*
     gap: var(--sys-size-5);
   }
 
+  .widget-header {
+    display: flex;
+    justify-content: space-between;
+    height: var(--sys-size-11);
+    align-items: center;
+    background: var(--sys-color-surface5);
+    padding: var(--sys-size-2) var(--sys-size-4);
+    border-top-left-radius: var(--sys-shape-corner-small);
+    border-top-right-radius: var(--sys-shape-corner-small);
+
+    .widget-name {
+      font: var(--sys-typescale-body4-regular);
+    }
+
+    .widget-reveal-container {
+      padding: 0;
+      background: none;
+      border-radius: 0;
+    }
+  }
+
+  .widget-reveal-button {
+    display: flex;
+    align-items: center;
+
+    devtools-icon {
+      margin-left: var(--sys-size-3);
+      color: var(--sys-color-primary);
+      width: var(--sys-size-8);
+      height: var(--sys-size-8);
+    }
+
+  }
+
   .widget-and-revealer-container {
     width: 100%;
+    min-width: var(--sys-size-30);
+    max-width: var(--sys-size-33);
   }
 
   .widget-reveal-container {
     background: var(--sys-color-surface5);
-    border-bottom-right-radius: var(--sys-shape-corner-medium);
-    border-bottom-left-radius: var(--sys-shape-corner-medium);
+    border-bottom-right-radius: var(--sys-shape-corner-small);
+    border-bottom-left-radius: var(--sys-shape-corner-small);
     padding: 0 var(--sys-size-4) var(--sys-size-4) 0;
   }
 
@@ -394,13 +483,25 @@ export default `/*
   }
 
   .widget-content-container {
-    padding: var(--sys-size-4);
+    padding: var(--sys-size-4) var(--sys-size-5);
     border-top-left-radius: var(--sys-shape-corner-medium);
     border-top-right-radius: var(--sys-shape-corner-medium);
     overflow-x: auto;
     background-color: var(--sys-color-surface3);
 
     --override-computed-style-property-white-space: normal;
+
+    /* When header is present, content follows it and shouldn't have top radii */
+    .widget-header+& {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    /* When header is present, content is the last child and needs bottom radii */
+    .widget-header+&:last-child {
+      border-bottom-left-radius: var(--sys-shape-corner-medium);
+      border-bottom-right-radius: var(--sys-shape-corner-medium);
+    }
   }
 
   .network-request-preview {

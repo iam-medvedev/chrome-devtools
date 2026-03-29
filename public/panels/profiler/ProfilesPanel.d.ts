@@ -4,9 +4,9 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { type DataDisplayDelegate, ProfileHeader, type ProfileType } from './ProfileHeader.js';
 import { ProfileLauncherView } from './ProfileLauncherView.js';
 import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
+import type { ProfileTypeRegistry } from './ProfileTypeRegistry.js';
 export declare class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisplayDelegate {
     #private;
-    readonly profileTypes: ProfileType[];
     profilesItemTreeElement: ProfilesSidebarTreeElement;
     sidebarTree: UI.TreeOutline.TreeOutlineInShadow;
     profileViews: HTMLDivElement;
@@ -24,7 +24,9 @@ export declare class ProfilesPanel extends UI.Panel.PanelWithSidebar implements 
     typeIdToSidebarSection: Record<string, ProfileTypeSidebarSection>;
     fileSelectorElement: HTMLInputElement;
     selectedProfileType?: ProfileType;
-    constructor(name: string, profileTypes: ProfileType[], recordingActionId: string);
+    static registry: ProfileTypeRegistry;
+    constructor(name: string, recordingActionId: string);
+    get profileTypes(): ProfileType[];
     onKeyDown(event: KeyboardEvent): void;
     searchableView(): UI.SearchableView.SearchableView | null;
     createFileSelectorElement(): void;
@@ -63,15 +65,13 @@ export declare class ProfileTypeSidebarSection extends UI.TreeOutline.TreeElemen
     sidebarElementIndex(profile: ProfileHeader): number;
     onattach(): void;
 }
-export declare class ProfileGroup {
+export interface ProfileGroup {
     profileSidebarTreeElements: ProfileSidebarTreeElement[];
     sidebarTreeElement: ProfileGroupSidebarTreeElement | null;
-    constructor();
 }
 export declare class ProfileGroupSidebarTreeElement extends UI.TreeOutline.TreeElement {
     readonly dataDisplayDelegate: DataDisplayDelegate;
     profileTitle: string;
-    toggleOnClick: boolean;
     constructor(dataDisplayDelegate: DataDisplayDelegate, title: string);
     onselect(): boolean;
     onattach(): void;

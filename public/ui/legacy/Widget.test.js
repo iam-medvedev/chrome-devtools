@@ -605,7 +605,9 @@ describeWithEnvironment('Widget', () => {
             }
             const container = document.createElement('div');
             Lit.render(html `<devtools-widget ${UI.Widget.widget(WidgetInstance)}></devtools-widget>`, container);
-            renderElementIntoDOM(container.firstElementChild);
+            const devtoolsWidget = container.firstElementChild;
+            assert.exists(devtoolsWidget);
+            renderElementIntoDOM(devtoolsWidget);
         });
     });
 });

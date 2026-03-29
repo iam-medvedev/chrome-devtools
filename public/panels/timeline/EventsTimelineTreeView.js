@@ -45,8 +45,8 @@ export class EventsTimelineTreeView extends TimelineTreeView {
     filters() {
         return [...super.filters(), ...this.filtersControl.filters()];
     }
-    updateContents(selection) {
-        super.updateContents(selection);
+    set activeSelection(selection) {
+        super.activeSelection = selection;
         if (selectionIsEvent(selection)) {
             this.selectEvent(selection.event, true);
         }
@@ -94,7 +94,7 @@ export class EventsTimelineTreeView extends TimelineTreeView {
         this.filtersControl.populateToolbar(toolbar);
     }
     showDetailsForNode(node) {
-        const parsedTrace = this.parsedTrace();
+        const parsedTrace = this.parsedTrace;
         if (!parsedTrace) {
             return false;
         }

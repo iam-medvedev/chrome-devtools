@@ -15,7 +15,6 @@ import { BottomUpProfileDataGridTree } from './BottomUpProfileDataGrid.js';
 import { ProfileDataGridTree } from './ProfileDataGrid.js';
 import { ProfileFlameChart } from './ProfileFlameChartDataProvider.js';
 import { ProfileHeader } from './ProfileHeader.js';
-import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
 import { TopDownProfileDataGridTree } from './TopDownProfileDataGrid.js';
 const UIStrings = {
     /**
@@ -254,17 +253,11 @@ export class ProfileView extends UI.View.SimpleView {
         if (!this.profileDataGridTree) {
             return;
         }
-        const selectedProfileNode = this.dataGrid.selectedNode ? this.dataGrid.selectedNode.profileNode : null;
         this.dataGrid.rootNode().removeChildren();
         const children = this.profileDataGridTree.children;
         const count = children.length;
         for (let index = 0; index < count; ++index) {
             this.dataGrid.rootNode().appendChild(children[index]);
-        }
-        if (selectedProfileNode) {
-            // TODO(crbug.com/1011811): Cleanup the added `selected` property to this SDK class.
-            // @ts-expect-error
-            selectedProfileNode.selected = true;
         }
     }
     refreshVisibleData() {
@@ -460,9 +453,6 @@ export class WritableProfileHeader extends ProfileHeader {
     }
     dispose() {
         this.removeTempFile();
-    }
-    createSidebarTreeElement(panel) {
-        return new ProfileSidebarTreeElement(panel, this, 'profile-sidebar-tree-item');
     }
     canSaveToFile() {
         return !this.fromFile();

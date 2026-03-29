@@ -4,7 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockConnection.js';
 import * as Application from './application.js';
@@ -93,9 +93,6 @@ describeWithMockConnection('FrameDetailsView', () => {
     });
     it('renders report keys and values', async () => {
         const target = createTarget();
-        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
-        assert.exists(debuggerModel);
-        sinon.stub(SDK.DebuggerModel.DebuggerModel, 'modelForDebuggerId').resolves(debuggerModel);
         const scriptParsedEvent1 = {
             scriptId: '123',
             url: 'https://www.google.com/ad-script1.js',
@@ -127,11 +124,11 @@ describeWithMockConnection('FrameDetailsView', () => {
                 ancestryChain: [
                     {
                         scriptId: '123',
-                        debuggerId: '42',
+                        debuggerId: '',
                     },
                     {
                         scriptId: '456',
-                        debuggerId: '42',
+                        debuggerId: '',
                     }
                 ],
                 rootScriptFilterlistRule: '/ad-script2.$script',
@@ -216,6 +213,50 @@ report-uri: https://www.example.com/csp`,
         const adScriptAncestryItems = adScriptAncestryList.shadowRoot.querySelectorAll('.expandable-list-items .devtools-link');
         const adScriptsText = Array.from(adScriptAncestryItems).map(adScript => adScript.textContent?.trim());
         assert.deepEqual(adScriptsText, ['ad-script1.js:1', 'ad-script2.js:1']);
+    });
+    it('renders icon buttons fully when narrow', async () => {
+        const target = createTarget();
+        const frame = makeFrame(target);
+        const container = document.createElement('div');
+        container.style.width = '250px';
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const input = {
+            frame,
+            target: null,
+            creationStackTrace: null,
+            adScriptAncestry: null,
+            linkTargetDOMNode: null,
+            permissionsPolicies: null,
+            protocolMonitorExperimentEnabled: false,
+            trials: null,
+            securityIsolationInfo: null,
+            onRevealInNetwork: () => { },
+            onRevealInSources: () => { },
+        };
+        Application.FrameDetailsView.DEFAULT_VIEW(input, undefined, container);
+        await assertScreenshot('application/frame-details-narrow.png');
+    });
+    it('renders icon buttons close when wide', async () => {
+        const target = createTarget();
+        const frame = makeFrame(target);
+        const container = document.createElement('div');
+        container.style.width = '800px';
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const input = {
+            frame,
+            target: null,
+            creationStackTrace: null,
+            adScriptAncestry: null,
+            linkTargetDOMNode: null,
+            permissionsPolicies: null,
+            protocolMonitorExperimentEnabled: false,
+            trials: null,
+            securityIsolationInfo: null,
+            onRevealInNetwork: () => { },
+            onRevealInSources: () => { },
+        };
+        Application.FrameDetailsView.DEFAULT_VIEW(input, undefined, container);
+        await assertScreenshot('application/frame-details-wide.png');
     });
 });
 //# sourceMappingURL=FrameDetailsView.test.js.map

@@ -68,7 +68,9 @@ describe('ElementsTreeElement', () => {
             onHighlightSearchResults: () => { },
             onExpand: () => { },
             containerAdornerActive: false,
-            showAdAdorner: false,
+            adProvenance: undefined,
+            target: undefined,
+            adTooltipId: '',
             showContainerAdorner: false,
             showFlexAdorner: false,
             flexAdornerActive: false,
@@ -595,7 +597,7 @@ describeWithMockConnection('ElementsTreeElement in Snapshot Mode', () => {
         sinon.stub(node, 'nodeType').returns(Node.ELEMENT_NODE);
         sinon.stub(node, 'nodeNameInCorrectCase').returns('div');
         sinon.stub(node, 'nodeName').returns('DIV');
-        sinon.stub(node, 'isAdRelatedNode').returns(true);
+        sinon.stub(node, 'adProvenance').returns({});
         sinon.stub(node, 'isMediaNode').returns(true);
         treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
         /* omitRootDOMNode */ false, /* selectEnabled */ true, /* hideGutter */ false, /* maxTreeDepth */ 2, 

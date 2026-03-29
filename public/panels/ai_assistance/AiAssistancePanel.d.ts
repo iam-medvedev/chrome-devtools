@@ -14,11 +14,6 @@ interface ToolbarViewInput {
     showChatActions: boolean;
     showActiveConversationActions: boolean;
     isLoading: boolean;
-    walkthrough: {
-        isExpanded: boolean;
-        isInlined: boolean;
-        onToggle: (isOpen: boolean) => void;
-    };
 }
 export declare const enum ViewState {
     DISABLED_VIEW = "disabled-view",

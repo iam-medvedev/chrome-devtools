@@ -25,5 +25,12 @@ describeWithMockConnection('LighthouseController', () => {
         serviceWorkerManager.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, {});
         await pageAuditabilityChange;
     });
+    it('uses mode override', async () => {
+        const protocolService = sinon.createStubInstance(Lighthouse.LighthouseProtocolService.ProtocolService);
+        const controller = new Lighthouse.LighthouseController.LighthouseController(protocolService);
+        await controller.startLighthouse({ mode: 'snapshot' });
+        const flags = controller.getCurrentRun()?.flags;
+        assert.strictEqual(flags?.mode, 'snapshot');
+    });
 });
 //# sourceMappingURL=LighthouseController.test.js.map

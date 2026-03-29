@@ -50,7 +50,6 @@ import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
-import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import { Link } from '../../ui/kit/kit.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -58,6 +57,7 @@ import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as PanelsCommon from '../common/common.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import * as AnnotationHelpers from './AnnotationHelpers.js';
@@ -81,7 +81,6 @@ import { TimelineUIUtils } from './TimelineUIUtils.js';
 import { createHiddenTracksOverlay } from './TrackConfigBanner.js';
 import { UIDevtoolsController } from './UIDevtoolsController.js';
 import { UIDevtoolsUtils } from './UIDevtoolsUtils.js';
-import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      * @description Text that appears when user drag and drop something (for example, a file) in Timeline Panel of the Performance panel
@@ -676,7 +675,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         cruxManager.removeEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, this.#onFieldDataChanged, this);
     }
     #onFieldDataChanged() {
-        const recs = Utils.Helpers.getThrottlingRecommendations();
+        const recs = PanelsCommon.ThrottlingUtils.getThrottlingRecommendations();
         this.cpuThrottlingSelect?.updateRecommendedOption(recs.cpuOption);
         if (this.networkThrottlingSelect) {
             this.networkThrottlingSelect.recommendedConditions = recs.networkConditions;
@@ -2084,8 +2083,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.landingPage.show(this.statusPaneContainer);
             return;
         }
-        const liveMetrics = new TimelineComponents.LiveMetricsView.LiveMetricsView();
-        this.landingPage = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, liveMetrics);
+        this.landingPage = new TimelineComponents.LiveMetricsView.LiveMetricsView();
         this.landingPage.element.classList.add('timeline-landing-page', 'fill');
         this.landingPage.contentElement.classList.add('fill');
         this.landingPage.show(this.statusPaneContainer);
@@ -2756,6 +2754,24 @@ export class CoreVitalsRevealer {
     async reveal(revealable) {
         await UI.ViewManager.ViewManager.instance().showView('timeline');
         TimelinePanel.instance().revealCoreVitals(revealable);
+    }
+}
+export class TimeRangeRevealer {
+    async reveal(revealable) {
+        await UI.ViewManager.ViewManager.instance().showView('timeline');
+        const panel = TimelinePanel.instance();
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(revealable.bounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
+        panel.select(null);
+        panel.getFlameChart().selectDetailsViewTab(Tab.Details, null);
+    }
+}
+export class BottomUpProfileRevealer {
+    async reveal(revealable) {
+        await UI.ViewManager.ViewManager.instance().showView('timeline');
+        const panel = TimelinePanel.instance();
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(revealable.bounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
+        panel.select(null);
+        panel.getFlameChart().selectDetailsViewTab(Tab.BottomUp, null);
     }
 }
 export class ActionDelegate {

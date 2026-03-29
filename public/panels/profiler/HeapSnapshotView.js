@@ -23,8 +23,6 @@ import { HeapSnapshotWorkerProxy } from './HeapSnapshotProxy.js';
 import { HeapTimelineOverview, Samples } from './HeapTimelineOverview.js';
 import * as ModuleUIStrings from './ModuleUIStrings.js';
 import { ProfileHeader, ProfileType, } from './ProfileHeader.js';
-import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
-import { instance } from './ProfileTypeRegistry.js';
 const UIStrings = {
     /**
      * @description Text to find an item
@@ -245,7 +243,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const moduleUIstr_ = i18n.i18n.registerUIStrings('panels/profiler/ModuleUIStrings.ts', ModuleUIStrings.UIStrings);
 const moduleI18nString = i18n.i18n.getLocalizedString.bind(undefined, moduleUIstr_);
 export class HeapSnapshotView extends UI.View.SimpleView {
-    searchResults;
+    searchResults = [];
     profile;
     linkifier;
     parentDataDisplayDelegate;
@@ -282,6 +280,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     trackingOverviewGrid;
     currentSearchResultIndex = -1;
     currentSearch;
+    #registry;
     get currentQuery() {
         return this.currentSearch?.query;
     }
@@ -290,12 +289,12 @@ export class HeapSnapshotView extends UI.View.SimpleView {
             this.currentSearch.query = value;
         }
     }
-    constructor(dataDisplayDelegate, profile) {
+    constructor(dataDisplayDelegate, profile, registry) {
         super({
             title: i18nString(UIStrings.heapSnapshot),
             viewId: 'heap-snapshot',
         });
-        this.searchResults = [];
+        this.#registry = registry;
         this.element.classList.add('heap-snapshot-view');
         this.profile = profile;
         this.linkifier = new Components.Linkifier.Linkifier();
@@ -306,7 +305,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         if (isHeapTimeline) {
             this.createOverview();
         }
-        const hasAllocationStacks = instance.trackingHeapSnapshotProfileType.recordAllocationStacksSetting().get();
+        const hasAllocationStacks = registry.trackingHeapSnapshotProfileType.recordAllocationStacksSetting().get();
         this.parentDataDisplayDelegate = dataDisplayDelegate;
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this, null);
         this.searchableViewInternal.setPlaceholder(i18nString(UIStrings.find), i18nString(UIStrings.find));
@@ -370,7 +369,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         this.perspectives = [];
         this.comparisonPerspective = new ComparisonPerspective();
         this.perspectives.push(new SummaryPerspective());
-        if (profile.profileType() !== instance.trackingHeapSnapshotProfileType) {
+        if (profile.profileType() !== this.#registry.trackingHeapSnapshotProfileType) {
             this.perspectives.push(this.comparisonPerspective);
         }
         this.perspectives.push(new ContainmentPerspective());
@@ -533,7 +532,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     }
     async toolbarItems() {
         const result = [this.perspectiveSelect, this.classNameFilter];
-        if (this.profile.profileType() !== instance.trackingHeapSnapshotProfileType) {
+        if (this.profile.profileType() !== this.#registry.trackingHeapSnapshotProfileType) {
             result.push(this.baseSelect, this.filterSelect);
         }
         result.push(this.selectedSizeText);
@@ -814,8 +813,6 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         }
         let objectPopoverHelper;
         return {
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // @ts-expect-error
             box: span.boxInWindow(),
             show: async (popover) => {
                 if (!heapProfilerModel) {
@@ -1308,9 +1305,6 @@ export class TrackingHeapSnapshotProfileType extends Common.ObjectWrapper.eventM
         }
         this.setProfileBeingRecorded(new HeapProfileHeader(heapProfilerModel, this, undefined));
         this.profileSamples = new Samples();
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.profileBeingRecorded()._profileSamples = this.profileSamples;
         this.recording = true;
         this.addProfile(this.profileBeingRecorded());
         this.profileBeingRecorded().updateStatus(i18nString(UIStrings.recording));
@@ -1377,31 +1371,24 @@ export class TrackingHeapSnapshotProfileType extends Common.ObjectWrapper.eventM
 }
 export class HeapProfileHeader extends ProfileHeader {
     heapProfilerModelInternal;
-    maxJSObjectId;
-    workerProxy;
-    receiver;
-    snapshotProxy;
+    maxJSObjectId = -1;
+    workerProxy = null;
+    receiver = null;
+    snapshotProxy = null;
     loadPromise;
     fulfillLoad;
-    totalNumberOfChunks;
-    bufferedWriter;
-    onTempFileReady;
+    totalNumberOfChunks = 0;
+    bufferedWriter = null;
+    onTempFileReady = null;
     failedToCreateTempFile;
     wasDisposed;
     fileName;
     constructor(heapProfilerModel, type, title) {
         super(type, title || i18nString(UIStrings.snapshotD, { PH1: type.nextProfileUid() }));
         this.heapProfilerModelInternal = heapProfilerModel;
-        this.maxJSObjectId = -1;
-        this.workerProxy = null;
-        this.receiver = null;
-        this.snapshotProxy = null;
         const { promise, resolve } = Promise.withResolvers();
         this.loadPromise = promise;
         this.fulfillLoad = resolve;
-        this.totalNumberOfChunks = 0;
-        this.bufferedWriter = null;
-        this.onTempFileReady = null;
     }
     heapProfilerModel() {
         return this.heapProfilerModelInternal;
@@ -1411,12 +1398,6 @@ export class HeapProfileHeader extends ProfileHeader {
             return null;
         }
         return await this.snapshotProxy.getLocation(nodeIndex);
-    }
-    createSidebarTreeElement(dataDisplayDelegate) {
-        return new ProfileSidebarTreeElement(dataDisplayDelegate, this, 'heap-snapshot-sidebar-tree-item');
-    }
-    createView(dataDisplayDelegate) {
-        return new HeapSnapshotView(dataDisplayDelegate, this);
     }
     prepareToLoad() {
         console.assert(!this.receiver, 'Already loading');
@@ -1456,19 +1437,15 @@ export class HeapProfileHeader extends ProfileHeader {
         }, this);
         this.receiver = this.workerProxy.createLoader(this.uid, this.snapshotReceived.bind(this));
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handleWorkerEvent(eventName, data) {
         if (HeapSnapshotModel.HeapSnapshotModel.HeapSnapshotProgressEvent.BrokenSnapshot === eventName) {
-            const error = data;
-            Common.Console.Console.instance().error(error);
+            Common.Console.Console.instance().error(data);
             return;
         }
         if (HeapSnapshotModel.HeapSnapshotModel.HeapSnapshotProgressEvent.Update !== eventName) {
             return;
         }
-        const serializedMessage = data;
-        const messageObject = i18n.i18n.deserializeUIString(serializedMessage);
+        const messageObject = i18n.i18n.deserializeUIString(data);
         // We know all strings from the worker are declared inside a single file so we can
         // use a custom function.
         this.updateStatus(moduleI18nString(messageObject.string, messageObject.values));

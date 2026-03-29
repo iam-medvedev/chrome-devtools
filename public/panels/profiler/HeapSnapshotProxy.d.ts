@@ -3,14 +3,14 @@ import type * as PlatformApi from '../../core/platform/api/api.js';
 import type * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
 import type { ChildrenProvider } from './ChildrenProvider.js';
 export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper<HeapSnapshotWorkerProxy.EventTypes> {
-    readonly eventHandler: (arg0: string, arg1: any) => void;
+    readonly eventHandler: (arg0: string, arg1: string) => void;
     nextObjectId: number;
     nextCallId: number;
     callbacks: Map<number, (arg0: any) => void>;
     readonly previousCallbacks: Set<number>;
     readonly worker: PlatformApi.HostRuntime.Worker;
     interval?: number;
-    constructor(eventHandler: (arg0: string, arg1: any) => void);
+    constructor(eventHandler: (arg0: string, arg1: string) => void);
     createLoader(profileUid: number, snapshotReceivedCallback: (arg0: HeapSnapshotProxy) => void): HeapSnapshotLoaderProxy;
     dispose(): void;
     disposeObject(objectId: number): void;
@@ -54,7 +54,7 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     constructor(worker: HeapSnapshotWorkerProxy, objectId: number);
     search(searchConfig: HeapSnapshotModel.HeapSnapshotModel.SearchConfig, filter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<number[]>;
     interfaceDefinitions(): Promise<string>;
-    aggregatesWithFilter(filter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<Record<string, HeapSnapshotModel.HeapSnapshotModel.Aggregate>>;
+    aggregatesWithFilter(filter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregatedInfo>>;
     aggregatesForDiff(interfaceDefinitions: string): Promise<Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>>;
     calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>): Promise<Record<string, HeapSnapshotModel.HeapSnapshotModel.Diff>>;
     nodeClassKey(snapshotObjectId: number): Promise<string | null>;

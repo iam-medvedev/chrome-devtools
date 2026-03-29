@@ -365,4 +365,24 @@ Common.Revealer.registerRevealer({
         return new Timeline.TimelinePanel.CoreVitalsRevealer();
     },
 });
+Common.Revealer.registerRevealer({
+    contextTypes() {
+        return maybeRetrieveContextTypes(Timeline => [Timeline.Utils.Helpers.RevealableTimeRange]);
+    },
+    destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
+    async loadRevealer() {
+        const Timeline = await loadTimelineModule();
+        return new Timeline.TimelinePanel.TimeRangeRevealer();
+    },
+});
+Common.Revealer.registerRevealer({
+    contextTypes() {
+        return maybeRetrieveContextTypes(Timeline => [Timeline.Utils.Helpers.RevealableBottomUpProfile]);
+    },
+    destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
+    async loadRevealer() {
+        const Timeline = await loadTimelineModule();
+        return new Timeline.TimelinePanel.BottomUpProfileRevealer();
+    },
+});
 //# sourceMappingURL=timeline-meta.prebundle.js.map

@@ -3,156 +3,41 @@
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
 import * as Root from '../root/root.js';
+import { ClientFeature, debugLog, FunctionalityType, RecitationAction, Role, UserTier, } from './AidaClientTypes.js';
+import { gcaChunkResponseToAidaChunkResponse } from './AidaGcaTranslation.js';
 import * as DispatchHttpRequestClient from './DispatchHttpRequestClient.js';
+import * as GcaClient from './GcaClient.js';
 import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 import { bindOutputStream } from './ResourceLoader.js';
-export var Role;
-(function (Role) {
-    /** Provide this role when giving a function call response  */
-    Role[Role["ROLE_UNSPECIFIED"] = 0] = "ROLE_UNSPECIFIED";
-    /** Tags the content came from the user */
-    Role[Role["USER"] = 1] = "USER";
-    /** Tags the content came from the LLM */
-    Role[Role["MODEL"] = 2] = "MODEL";
-})(Role || (Role = {}));
-export var FunctionalityType;
-(function (FunctionalityType) {
-    // Unspecified functionality type.
-    FunctionalityType[FunctionalityType["FUNCTIONALITY_TYPE_UNSPECIFIED"] = 0] = "FUNCTIONALITY_TYPE_UNSPECIFIED";
-    // The generic AI chatbot functionality.
-    FunctionalityType[FunctionalityType["CHAT"] = 1] = "CHAT";
-    // The explain error functionality.
-    FunctionalityType[FunctionalityType["EXPLAIN_ERROR"] = 2] = "EXPLAIN_ERROR";
-    FunctionalityType[FunctionalityType["AGENTIC_CHAT"] = 5] = "AGENTIC_CHAT";
-})(FunctionalityType || (FunctionalityType = {}));
-/** See: cs/aida.proto (google3). **/
-export var ClientFeature;
-(function (ClientFeature) {
-    // Unspecified client feature.
-    ClientFeature[ClientFeature["CLIENT_FEATURE_UNSPECIFIED"] = 0] = "CLIENT_FEATURE_UNSPECIFIED";
-    // Chrome console insights feature.
-    ClientFeature[ClientFeature["CHROME_CONSOLE_INSIGHTS"] = 1] = "CHROME_CONSOLE_INSIGHTS";
-    // Chrome AI Assistance Styling Agent.
-    ClientFeature[ClientFeature["CHROME_STYLING_AGENT"] = 2] = "CHROME_STYLING_AGENT";
-    // Chrome AI Assistance Network Agent.
-    ClientFeature[ClientFeature["CHROME_NETWORK_AGENT"] = 7] = "CHROME_NETWORK_AGENT";
-    // Chrome AI Annotations Performance Agent
-    ClientFeature[ClientFeature["CHROME_PERFORMANCE_ANNOTATIONS_AGENT"] = 20] = "CHROME_PERFORMANCE_ANNOTATIONS_AGENT";
-    // Chrome AI Assistance File Agent.
-    ClientFeature[ClientFeature["CHROME_FILE_AGENT"] = 9] = "CHROME_FILE_AGENT";
-    // Chrome AI Patch Agent.
-    ClientFeature[ClientFeature["CHROME_PATCH_AGENT"] = 12] = "CHROME_PATCH_AGENT";
-    // Chrome AI Assistance Performance Agent.
-    ClientFeature[ClientFeature["CHROME_PERFORMANCE_FULL_AGENT"] = 24] = "CHROME_PERFORMANCE_FULL_AGENT";
-    // Chrome Context Selection Agent.
-    ClientFeature[ClientFeature["CHROME_CONTEXT_SELECTION_AGENT"] = 25] = "CHROME_CONTEXT_SELECTION_AGENT";
-    // Chrome Accessibility Agent
-    ClientFeature[ClientFeature["CHROME_ACCESSIBILITY_AGENT"] = 26] = "CHROME_ACCESSIBILITY_AGENT";
-    // Chrome AI Assistance Conversation Summary Agent.
-    ClientFeature[ClientFeature["CHROME_CONVERSATION_SUMMARY_AGENT"] = 27] = "CHROME_CONVERSATION_SUMMARY_AGENT";
-    // Removed features (for reference).
-    // Chrome AI Assistance Performance Insights Agent.
-    // CHROME_PERFORMANCE_INSIGHTS_AGENT = 13,
-    // Chrome AI Assistance Performance Agent (call trees).
-    // CHROME_PERFORMANCE_AGENT = 8,
-})(ClientFeature || (ClientFeature = {}));
-export var UserTier;
-(function (UserTier) {
-    // Unspecified user tier.
-    UserTier[UserTier["USER_TIER_UNSPECIFIED"] = 0] = "USER_TIER_UNSPECIFIED";
-    // Users who are internal testers.
-    UserTier[UserTier["TESTERS"] = 1] = "TESTERS";
-    // Users who are early adopters.
-    UserTier[UserTier["BETA"] = 2] = "BETA";
-    // Users in the general public.
-    UserTier[UserTier["PUBLIC"] = 3] = "PUBLIC";
-})(UserTier || (UserTier = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
-export var EditType;
-(function (EditType) {
-    // Unknown edit type
-    EditType[EditType["EDIT_TYPE_UNSPECIFIED"] = 0] = "EDIT_TYPE_UNSPECIFIED";
-    // User typed code/text into file
-    EditType[EditType["ADD"] = 1] = "ADD";
-    // User deleted code/text from file
-    EditType[EditType["DELETE"] = 2] = "DELETE";
-    // User pasted into file (this includes smart paste)
-    EditType[EditType["PASTE"] = 3] = "PASTE";
-    // User performs an undo action
-    EditType[EditType["UNDO"] = 4] = "UNDO";
-    // User performs a redo action
-    EditType[EditType["REDO"] = 5] = "REDO";
-    // User accepted a completion from AIDA
-    EditType[EditType["ACCEPT_COMPLETION"] = 6] = "ACCEPT_COMPLETION";
-})(EditType || (EditType = {}));
-export var Reason;
-(function (Reason) {
-    // Unknown reason.
-    Reason[Reason["UNKNOWN"] = 0] = "UNKNOWN";
-    // The file is currently open.
-    Reason[Reason["CURRENTLY_OPEN"] = 1] = "CURRENTLY_OPEN";
-    // The file is opened recently.
-    Reason[Reason["RECENTLY_OPENED"] = 2] = "RECENTLY_OPENED";
-    // The file is edited recently.
-    Reason[Reason["RECENTLY_EDITED"] = 3] = "RECENTLY_EDITED";
-    // The file is located within the same directory.
-    Reason[Reason["COLOCATED"] = 4] = "COLOCATED";
-    // Included based on relation to code around the cursor (e.g: could be
-    // provided by local IDE analysis)
-    Reason[Reason["RELATED_FILE"] = 5] = "RELATED_FILE";
-})(Reason || (Reason = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
-export var UseCase;
-(function (UseCase) {
-    // Unspecified usecase.
-    UseCase[UseCase["USE_CASE_UNSPECIFIED"] = 0] = "USE_CASE_UNSPECIFIED";
-    // Code generation use case is expected to generate code from scratch
-    UseCase[UseCase["CODE_GENERATION"] = 1] = "CODE_GENERATION";
-    // Code transformation or code editing use case.
-    UseCase[UseCase["CODE_TRANSFORMATION"] = 2] = "CODE_TRANSFORMATION";
-})(UseCase || (UseCase = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
-export var RecitationAction;
-(function (RecitationAction) {
-    RecitationAction["ACTION_UNSPECIFIED"] = "ACTION_UNSPECIFIED";
-    RecitationAction["CITE"] = "CITE";
-    RecitationAction["BLOCK"] = "BLOCK";
-    RecitationAction["NO_ACTION"] = "NO_ACTION";
-    RecitationAction["EXEMPT_FOUND_IN_PROMPT"] = "EXEMPT_FOUND_IN_PROMPT";
-})(RecitationAction || (RecitationAction = {}));
-export var CitationSourceType;
-(function (CitationSourceType) {
-    CitationSourceType["CITATION_SOURCE_TYPE_UNSPECIFIED"] = "CITATION_SOURCE_TYPE_UNSPECIFIED";
-    CitationSourceType["TRAINING_DATA"] = "TRAINING_DATA";
-    CitationSourceType["WORLD_FACTS"] = "WORLD_FACTS";
-    CitationSourceType["LOCAL_FACTS"] = "LOCAL_FACTS";
-    CitationSourceType["INDIRECT"] = "INDIRECT";
-})(CitationSourceType || (CitationSourceType = {}));
-const AidaLanguageToMarkdown = {
-    CPP: 'cpp',
-    PYTHON: 'py',
-    KOTLIN: 'kt',
-    JAVA: 'java',
-    JAVASCRIPT: 'js',
-    GO: 'go',
-    TYPESCRIPT: 'ts',
-    HTML: 'html',
-    BASH: 'sh',
-    CSS: 'css',
-    DART: 'dart',
-    JSON: 'json',
-    MARKDOWN: 'md',
-    VUE: 'vue',
-    XML: 'xml',
-};
+export * from './AidaClientTypes.js';
 export const CLIENT_NAME = 'CHROME_DEVTOOLS';
 export const SERVICE_NAME = 'aidaService';
 const CODE_CHUNK_SEPARATOR = (lang = '') => ('\n`````' + lang + '\n');
+const AidaLanguageToMarkdown = {
+    ["CPP" /* AidaInferenceLanguage.CPP */]: 'cpp',
+    ["PYTHON" /* AidaInferenceLanguage.PYTHON */]: 'py',
+    ["KOTLIN" /* AidaInferenceLanguage.KOTLIN */]: 'kt',
+    ["JAVA" /* AidaInferenceLanguage.JAVA */]: 'java',
+    ["JAVASCRIPT" /* AidaInferenceLanguage.JAVASCRIPT */]: 'js',
+    ["GO" /* AidaInferenceLanguage.GO */]: 'go',
+    ["TYPESCRIPT" /* AidaInferenceLanguage.TYPESCRIPT */]: 'ts',
+    ["HTML" /* AidaInferenceLanguage.HTML */]: 'html',
+    ["BASH" /* AidaInferenceLanguage.BASH */]: 'sh',
+    ["CSS" /* AidaInferenceLanguage.CSS */]: 'css',
+    ["DART" /* AidaInferenceLanguage.DART */]: 'dart',
+    ["JSON" /* AidaInferenceLanguage.JSON */]: 'json',
+    ["MARKDOWN" /* AidaInferenceLanguage.MARKDOWN */]: 'md',
+    ["VUE" /* AidaInferenceLanguage.VUE */]: 'vue',
+    ["XML" /* AidaInferenceLanguage.XML */]: 'xml',
+    ["UNKNOWN" /* AidaInferenceLanguage.UNKNOWN */]: 'unknown',
+};
 export class AidaAbortError extends Error {
 }
 export class AidaBlockError extends Error {
 }
 export class AidaClient {
+    // Delegate client
+    #gcaClient = new GcaClient.GcaClient();
     static buildConsoleInsightsRequest(input) {
         const disallowLogging = Root.Runtime.hostConfig.aidaAvailability?.disallowLogging ?? true;
         const chromeVersion = Root.Runtime.getChromeVersion();
@@ -228,17 +113,24 @@ export class AidaClient {
             };
         })();
         const streamId = bindOutputStream(stream);
-        DispatchHttpRequestClient
-            .makeHttpRequest({
-            service: SERVICE_NAME,
-            path: '/v1/aida:doConversation',
-            method: 'POST',
-            body: JSON.stringify(request),
-            streamId,
-        }, options)
-            .then(() => {
+        let response;
+        if (this.#gcaClient.enabled()) {
+            // Inline and remove the else clause after migration
+            response = this.#gcaClient.conversationRequest(request, streamId, options);
+        }
+        else {
+            response = DispatchHttpRequestClient.makeHttpRequest({
+                service: SERVICE_NAME,
+                path: '/v1/aida:doConversation',
+                method: 'POST',
+                body: JSON.stringify(request),
+                streamId,
+            }, options);
+        }
+        response.then(() => {
             void stream.close();
         }, err => {
+            debugLog('doConversation failed with error:', JSON.stringify(err));
             if (err instanceof DispatchHttpRequestClient.DispatchHttpRequestError && err.response) {
                 const result = err.response;
                 if (result.statusCode === 403) {
@@ -260,45 +152,26 @@ export class AidaClient {
             }
             stream.fail(err);
         });
+        await (yield* this.#handleResponseStream(stream));
+    }
+    async *#handleResponseStream(stream) {
         let chunk;
         const text = [];
         let inCodeChunk = false;
         const functionCalls = [];
         let metadata = { rpcGlobalId: 0 };
         while ((chunk = await stream.read())) {
+            debugLog('doConversation stream chunk:', chunk);
             let textUpdated = false;
-            // The AIDA response is a JSON array of objects, split at the object
-            // boundary. Therefore each chunk may start with `[` or `,` and possibly
-            // followed by `]`. Each chunk may include one or more objects, so we
-            // make sure that each chunk becomes a well-formed JSON array when we
-            // parse it by adding `[` and `]` and removing `,` where appropriate.
-            if (!chunk.length) {
-                continue;
-            }
-            if (chunk.startsWith(',')) {
-                chunk = chunk.slice(1);
-            }
-            if (!chunk.startsWith('[')) {
-                chunk = '[' + chunk;
-            }
-            if (!chunk.endsWith(']')) {
-                chunk = chunk + ']';
-            }
-            let results;
-            try {
-                results = JSON.parse(chunk);
-            }
-            catch (error) {
-                throw new Error('Cannot parse chunk: ' + chunk, { cause: error });
-            }
+            const results = this.#parseAndTranslate(chunk);
             for (const result of results) {
-                if ('metadata' in result) {
+                if (result.metadata) {
                     metadata = result.metadata;
                     if (metadata?.attributionMetadata?.attributionAction === RecitationAction.BLOCK) {
                         throw new AidaBlockError();
                     }
                 }
-                if ('textChunk' in result) {
+                if (result.textChunk) {
                     if (inCodeChunk) {
                         text.push(CODE_CHUNK_SEPARATOR());
                         inCodeChunk = false;
@@ -306,7 +179,7 @@ export class AidaClient {
                     text.push(result.textChunk.text);
                     textUpdated = true;
                 }
-                else if ('codeChunk' in result) {
+                else if (result.codeChunk) {
                     if (!inCodeChunk) {
                         const language = AidaLanguageToMarkdown[result.codeChunk.inferenceLanguage] ?? '';
                         text.push(CODE_CHUNK_SEPARATOR(language));
@@ -315,7 +188,7 @@ export class AidaClient {
                     text.push(result.codeChunk.code);
                     textUpdated = true;
                 }
-                else if ('functionCallChunk' in result) {
+                else if (result.functionCallChunk) {
                     functionCalls.push({
                         name: result.functionCallChunk.functionCall.name,
                         args: result.functionCallChunk.functionCall.args,
@@ -344,12 +217,48 @@ export class AidaClient {
             completed: true,
         };
     }
+    #parseAndTranslate(chunk) {
+        const results = this.#parseStreamChunk(chunk);
+        if (this.#gcaClient.enabled()) {
+            return results.flatMap(gcaChunkResponseToAidaChunkResponse);
+        }
+        return results;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    #parseStreamChunk(chunk) {
+        // The streamed response is a JSON array of objects, split at the object
+        // boundary. Therefore each chunk may start with `[` or `,` and possibly
+        // followed by `]`. Each chunk may include one or more objects, so we
+        // make sure that each chunk becomes a well-formed JSON array when we
+        // parse it by adding `[` and `]` and removing `,` where appropriate.
+        if (!chunk.length) {
+            return [];
+        }
+        if (chunk.startsWith(',')) {
+            chunk = chunk.slice(1);
+        }
+        if (!chunk.startsWith('[')) {
+            chunk = '[' + chunk;
+        }
+        if (!chunk.endsWith(']')) {
+            chunk = chunk + ']';
+        }
+        try {
+            return JSON.parse(chunk);
+        }
+        catch (error) {
+            throw new Error('Cannot parse chunk: ' + chunk, { cause: error });
+        }
+    }
     registerClientEvent(clientEvent) {
         // Disable logging for now.
         // For context, see b/454563259#comment35.
         // We should be able to remove this ~end of April.
         if (Root.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
             clientEvent.disable_user_content_logging = true;
+        }
+        if (this.#gcaClient.enabled()) {
+            return this.#gcaClient.registerClientEvent(clientEvent);
         }
         const { promise, resolve } = Promise.withResolvers();
         InspectorFrontendHostInstance.registerAidaClientEvent(JSON.stringify({
@@ -368,6 +277,9 @@ export class AidaClient {
         // We should be able to remove this ~end of April.
         if (Root.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
             request.metadata.disable_user_content_logging = true;
+        }
+        if (this.#gcaClient.enabled()) {
+            return await this.#gcaClient.completeCode(request);
         }
         const { promise, resolve } = Promise.withResolvers();
         InspectorFrontendHostInstance.aidaCodeComplete(JSON.stringify(request), resolve);
@@ -415,6 +327,10 @@ export class AidaClient {
         // We should be able to remove this ~end of April.
         if (Root.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
             request.metadata.disable_user_content_logging = true;
+        }
+        if (this.#gcaClient.enabled()) {
+            // Inline and remove the else clause after migration
+            return await this.#gcaClient.generateCode(request, options);
         }
         const response = await DispatchHttpRequestClient.makeHttpRequest({
             service: SERVICE_NAME,

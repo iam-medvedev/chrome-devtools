@@ -6,15 +6,13 @@ export class ProfileHeader extends Common.ObjectWrapper.ObjectWrapper {
     #profileType;
     title;
     uid;
-    #fromFile;
-    tempFile;
+    #fromFile = false;
+    tempFile = null;
     constructor(profileType, title) {
         super();
         this.#profileType = profileType;
         this.title = title;
         this.uid = profileType.incrementProfileUid();
-        this.#fromFile = false;
-        this.tempFile = null;
     }
     setTitle(title) {
         this.title = title;
@@ -25,15 +23,6 @@ export class ProfileHeader extends Common.ObjectWrapper.ObjectWrapper {
     }
     updateStatus(subtitle, wait) {
         this.dispatchEventToListeners("UpdateStatus" /* Events.UPDATE_STATUS */, new StatusUpdate(subtitle, wait));
-    }
-    /**
-     * Must be implemented by subclasses.
-     */
-    createSidebarTreeElement(_dataDisplayDelegate) {
-        throw new Error('Not implemented.');
-    }
-    createView(_dataDisplayDelegate) {
-        throw new Error('Not implemented.');
     }
     removeTempFile() {
         if (this.tempFile) {
@@ -71,16 +60,13 @@ export class StatusUpdate {
 export class ProfileType extends Common.ObjectWrapper.ObjectWrapper {
     #id;
     #name;
-    profiles;
-    #profileBeingRecorded;
-    #nextProfileUid;
+    profiles = [];
+    #profileBeingRecorded = null;
+    #nextProfileUid = 1;
     constructor(id, name) {
         super();
         this.#id = id;
         this.#name = name;
-        this.profiles = [];
-        this.#profileBeingRecorded = null;
-        this.#nextProfileUid = 1;
         if (!window.opener) {
             window.addEventListener('pagehide', this.clearTempStorage.bind(this), false);
         }

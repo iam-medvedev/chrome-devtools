@@ -47,7 +47,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base implements
     readonly linkifier: Components.Linkifier.Linkifier;
     private readonly decorator;
     private lastRevealedProperty;
-    userOperation: boolean;
+    private userOperation;
     isEditingStyle: boolean;
     private isActivePropertyHighlighted;
     private initialUpdateCompleted;
@@ -62,6 +62,8 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base implements
     private readonly boundOnScroll;
     private readonly imagePreviewPopover;
     activeCSSAngle: InlineEditor.CSSAngle.CSSAngle | null;
+    aiCodeCompletionConfig?: TextEditor.AiCodeCompletionProvider.AiCodeCompletionConfig;
+    aiCodeCompletionProvider?: StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider;
     constructor(computedStyleModel: ComputedStyle.ComputedStyleModel.ComputedStyleModel);
     get webCustomData(): WebCustomData | undefined;
     private onScroll;
@@ -83,7 +85,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base implements
     private onRegexToggled;
     setFilter(regex: RegExp | null): void;
     refreshUpdate(editedSection: StylePropertiesSection, editedTreeElement?: StylePropertyTreeElement): void;
-    performUpdate(): Promise<void>;
+    performUpdate(signal?: AbortSignal): Promise<void>;
     getVariableParserError(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, variableName: string): ElementsComponents.CSSVariableValueView.CSSVariableParserError | null;
     getVariablePopoverContents(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, variableName: string, computedValue: string | null): ElementsComponents.CSSVariableValueView.CSSVariableValueView;
     private fetchComputedStylesFor;
@@ -173,8 +175,8 @@ export declare class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
     private treeElement;
     private isEditingName;
     private readonly cssVariables;
-    aiCodeCompletionConfig?: TextEditor.AiCodeCompletionProvider.AiCodeCompletionConfig;
     aiCodeCompletionProvider?: StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider;
+    private activeAiSuggestionInfo?;
     constructor(treeElement: StylePropertyTreeElement, isEditingName: boolean, completions?: string[]);
     onKeyDown(event: Event): void;
     onMouseWheel(event: Event): void;

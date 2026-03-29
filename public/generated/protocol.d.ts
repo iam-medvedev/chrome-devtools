@@ -4180,6 +4180,25 @@ export declare namespace Cast {
     }
 }
 /**
+ * This domain exposes the current state of the CrashReportContext API.
+ */
+export declare namespace CrashReportContext {
+    /**
+     * Key-value pair in CrashReportContext.
+     */
+    interface CrashReportContextEntry {
+        key: string;
+        value: string;
+        /**
+         * The ID of the frame where the key-value pair was set.
+         */
+        frameId: Page.FrameId;
+    }
+    interface GetEntriesResponse extends ProtocolResponseWithError {
+        entries: CrashReportContextEntry[];
+    }
+}
+/**
  * This domain exposes DOM read/write operations. Each DOM Node is represented with its mirror object
  * that has an `id`. This `id` can be used to get additional information on the Node, resolve it into
  * the JavaScript object wrapper, etc. It is important that client receives DOM events only for the
@@ -19054,6 +19073,14 @@ export declare namespace WebMCP {
         autosubmit?: boolean;
     }
     /**
+     * Represents the status of a tool invocation.
+     */
+    const enum InvocationStatus {
+        Success = "Success",
+        Canceled = "Canceled",
+        Error = "Error"
+    }
+    /**
      * Definition of a tool that can be invoked.
      */
     interface Tool {
@@ -19103,6 +19130,52 @@ export declare namespace WebMCP {
          * Array of tools that were removed.
          */
         tools: Tool[];
+    }
+    /**
+     * Event fired when a tool invocation starts.
+     */
+    interface ToolInvokedEvent {
+        /**
+         * Name of the tool to invoke.
+         */
+        toolName: string;
+        /**
+         * Frame id
+         */
+        frameId: Page.FrameId;
+        /**
+         * Invocation identifier.
+         */
+        invocationId: string;
+        /**
+         * The input parameters used for the invocation.
+         */
+        input: string;
+    }
+    /**
+     * Event fired when a tool invocation completes or fails.
+     */
+    interface ToolRespondedEvent {
+        /**
+         * Invocation identifier.
+         */
+        invocationId: string;
+        /**
+         * Status of the invocation.
+         */
+        status: InvocationStatus;
+        /**
+         * Output or error delivered as delivered to the agent. Missing if `status` is anything other than Success.
+         */
+        output?: any;
+        /**
+         * Error text for protocol users.
+         */
+        errorText?: string;
+        /**
+         * The exception object, if the javascript tool threw an error>
+         */
+        exception?: Runtime.RemoteObject;
     }
 }
 /**

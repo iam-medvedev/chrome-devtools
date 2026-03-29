@@ -133,7 +133,10 @@ describeWithEnvironment('AiConversation', () => {
             isReadOnly: false,
             aidaClient,
         });
-        const networkRequest = createNetworkRequest({ url: Platform.DevToolsPath.urlString `https://example.com/test` });
+        const networkRequest = createNetworkRequest({
+            url: Platform.DevToolsPath.urlString `https://example.com/test`,
+            documentURL: Platform.DevToolsPath.urlString `https://example.com`
+        });
         const contentData = new TextUtils.ContentData.ContentData('test content', false, 'text/plain');
         sinon.stub(networkRequest, 'requestContentData').resolves(contentData);
         sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requests').returns([networkRequest]);
@@ -182,7 +185,10 @@ describeWithEnvironment('AiConversation', () => {
             isReadOnly: false,
             aidaClient,
         });
-        const networkRequest = createNetworkRequest({ url: Platform.DevToolsPath.urlString `https://example.com` });
+        const networkRequest = createNetworkRequest({
+            url: Platform.DevToolsPath.urlString `https://example.com`,
+            documentURL: Platform.DevToolsPath.urlString `https://example.com`
+        });
         sinon.stub(networkRequest, 'requestContentData')
             .resolves(new TextUtils.ContentData.ContentData('test content', false, 'text/plain'));
         sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requests').returns([networkRequest]);

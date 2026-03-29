@@ -244,10 +244,23 @@ describeWithMockConnection('PerformanceAgent', function () {
         });
         createTarget();
     });
-    it('uses the min and max bounds of the trace as the origin', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+    it('uses the mainFrameURL as the origin if it is valid', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
-        assert.strictEqual(context.getOrigin(), 'trace-658799706428-658804825864');
+        assert.strictEqual(context.getOrigin(), 'https://web.dev');
+    });
+    it('falls back to the min and max bounds if the URL is invalid', () => {
+        const parsedTrace = {
+            data: {
+                Meta: {
+                    traceBounds: { min: 100, max: 200 },
+                    mainFrameURL: 'not-a-url',
+                },
+            },
+            insights: new Map(),
+        };
+        const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+        assert.strictEqual(context.getOrigin(), 'trace-100-200');
     });
     it('outputs the right title for the selected insight', async () => {
         const context = PerformanceAgent.PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL);
@@ -383,13 +396,12 @@ code
             const titleResponse = responses.find(response => response.type === "title" /* AiAgent.ResponseType.TITLE */);
             assert.exists(titleResponse);
             assert.strictEqual(titleResponse.title, 'Investigating network activity…');
-            assert.exists(action);
             assert.deepEqual(action, {
                 type: 'action',
+                widgets: undefined,
                 output: expectedOutput,
                 code: 'getNetworkTrackSummary({min: 658799706428, max: 658804825864})',
                 canceled: false,
-                widgets: undefined,
             });
         });
         it('can call getMainThreadTrackSummary', async function () {
@@ -421,12 +433,19 @@ code
             const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(summary);
             sinon.assert.calledWith(metricsSpy, expectedBytesSize);
             const expectedOutput = JSON.stringify({ summary });
+            assert.exists(action);
+            assert.exists(action.widgets);
+            assert.lengthOf(action.widgets, 2);
+            assert.strictEqual(action.widgets[0].name, 'TIMELINE_RANGE_SUMMARY');
+            assert.strictEqual(action.widgets[1].name, 'BOTTOM_UP_TREE');
+            // @ts-expect-error
+            assert.deepEqual(action.widgets[0].data.bounds, bounds);
+            delete action.widgets;
             assert.deepEqual(action, {
                 type: 'action',
                 output: expectedOutput,
                 code: 'getMainThreadTrackSummary({min: 197695826524, max: 197698633660})',
                 canceled: false,
-                widgets: undefined,
             });
         });
         it('will not send facts from a previous insight if the context changes', async function () {

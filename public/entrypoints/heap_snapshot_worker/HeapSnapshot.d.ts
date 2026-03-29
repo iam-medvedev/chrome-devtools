@@ -298,11 +298,11 @@ export declare abstract class HeapSnapshot {
     get totalSize(): number;
     private createFilter;
     search(searchConfig: HeapSnapshotModel.HeapSnapshotModel.SearchConfig, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): number[];
-    aggregatesWithFilter(nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Record<string, HeapSnapshotModel.HeapSnapshotModel.Aggregate>;
+    aggregatesWithFilter(nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregatedInfo>;
     private createNodeIdFilter;
     private createAllocationStackFilter;
     private createNamedFilter;
-    getAggregatesByClassKey(sortedIndexes: boolean, key?: string, filter?: ((arg0: HeapSnapshotNode) => boolean)): Record<string, HeapSnapshotModel.HeapSnapshotModel.Aggregate>;
+    getAggregatesByClassKey(sortedIndexes: boolean, key?: string, filter?: ((arg0: HeapSnapshotNode) => boolean)): Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregatedInfo>;
     allocationTracesTops(): HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode[];
     allocationNodeCallers(nodeId: number): HeapSnapshotModel.HeapSnapshotModel.AllocationNodeCallers;
     allocationStack(nodeIndex: number): HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[] | null;
@@ -503,13 +503,5 @@ export declare class JSHeapSnapshotRetainerEdge extends HeapSnapshotRetainerEdge
     isInvisible(): boolean;
     isShortcut(): boolean;
     isWeak(): boolean;
-}
-export interface AggregatedInfo {
-    count: number;
-    distance: number;
-    self: number;
-    maxRet: number;
-    name: string;
-    idxs: number[];
 }
 export {};

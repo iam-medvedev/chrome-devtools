@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, waitFor, } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('ChatMessage', () => {
@@ -20,6 +21,7 @@ describeWithEnvironment('ChatMessage', () => {
             isLoading: false,
             isReadOnly: false,
             isLastMessage: true,
+            isFirstMessage: false,
             markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
             canShowFeedbackForm: true,
             onSuggestionClick: sinon.stub(),
@@ -35,7 +37,8 @@ describeWithEnvironment('ChatMessage', () => {
         onToggle: () => { },
         isExpanded: false,
         isInlined: false,
-        activeMessage: null,
+        activeSidebarMessage: null,
+        inlineExpandedMessages: [],
     };
     it('should show the feedback form when canShowFeedbackForm is true', async () => {
         const [view] = createComponent({
@@ -173,6 +176,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isSubmitButtonDisabled: false,
                 isShowingFeedbackForm: false,
                 isLastMessage: true,
+                isFirstMessage: false,
                 showActions: true,
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -184,6 +188,7 @@ describeWithEnvironment('ChatMessage', () => {
                 canShowFeedbackForm: false,
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 currentRating: undefined,
+                suggestions: props.suggestions,
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
                     ...(props.walkthrough ?? {}),
@@ -214,6 +219,61 @@ describeWithEnvironment('ChatMessage', () => {
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Show thinking');
+        });
+        it('renders "Hide thinking" when the walkthrough is open for the message', () => {
+            const target = renderView({
+                message: stepMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isExpanded: true,
+                    activeSidebarMessage: stepMessage,
+                    isInlined: false,
+                }
+            });
+            const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
+            assert.strictEqual(button.innerText, 'Hide thinking');
+        });
+        it('renders "Show thinking" when the walkthrough is closed but was the active message', () => {
+            const target = renderView({
+                message: stepMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: false,
+                    isExpanded: false,
+                    activeSidebarMessage: stepMessage,
+                }
+            });
+            const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
+            assert.strictEqual(button.innerText, 'Show thinking');
+        });
+        it('renders "Hide agent walkthrough" when the walkthrough is open and has widgets', () => {
+            const widgetMessage = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'step',
+                        step: {
+                            isLoading: false,
+                            title: 'Step with widget',
+                            widgets: [
+                                {
+                                    name: 'CORE_VITALS',
+                                },
+                            ],
+                        },
+                    }],
+                rpcId: 99,
+            };
+            const target = renderView({
+                message: widgetMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: false,
+                    isExpanded: true,
+                    activeSidebarMessage: widgetMessage,
+                }
+            });
+            const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
+            assert.strictEqual(button.innerText, 'Hide agent walkthrough');
         });
         it('when the step is loading, the walkthrough CTA shows the title of the step', async () => {
             const loadingMessage = {
@@ -413,6 +473,99 @@ describeWithEnvironment('ChatMessage', () => {
                 assert.isFalse(walkthrough.hasAttribute('open'));
             }
         });
+        it('renders widget name and top reveal button when widgetName is provided', async () => {
+            const root = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
+            const domModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
+            const target = sinon.createStubInstance(SDK.Target.Target);
+            root.domModel.returns(domModel);
+            domModel.target.returns(target);
+            root.backendNodeId.returns(1);
+            const messageWithNamedWidget = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'widget',
+                        widgets: [{
+                                name: 'DOM_TREE',
+                                data: {
+                                    root,
+                                },
+                            }],
+                    }],
+                rpcId: 99,
+            };
+            // We need to mock the widget maker to return a name
+            const targetElement = document.createElement('div');
+            AiAssistance.ChatMessage.DEFAULT_VIEW({
+                onRatingClick: () => { },
+                onReportClick: () => { },
+                onCopyResponseClick: () => { },
+                scrollSuggestionsScrollContainer: () => { },
+                onSuggestionsScrollOrResize: () => { },
+                onSuggestionClick: () => { },
+                onSubmit: () => { },
+                onClose: () => { },
+                onInputChange: () => { },
+                onFeedbackSubmit: () => { },
+                showRateButtons: false,
+                isSubmitButtonDisabled: false,
+                isShowingFeedbackForm: false,
+                isLastMessage: true,
+                isFirstMessage: false,
+                showActions: true,
+                message: messageWithNamedWidget,
+                isLoading: false,
+                isReadOnly: false,
+                canShowFeedbackForm: false,
+                markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
+                currentRating: undefined,
+                walkthrough: { ...DEFAULT_WALKTHROUGH },
+            }, {}, targetElement);
+            // We need to wait for the async renderWidgets
+            const widgetHeader = await waitFor('.widget-header', targetElement);
+            assert.isNotNull(widgetHeader);
+            assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'LCP element');
+        });
+        it('renders the "Export for agents" button after action buttons and before suggestions when onExportClick is provided, it is the last message, and V2 is enabled', async () => {
+            Root.Runtime.hostConfig.devToolsAiAssistanceV2 = {
+                enabled: true,
+            };
+            const onExportClick = sinon.stub();
+            const target = renderView({
+                onExportClick,
+                isLastMessage: true,
+                showActions: true,
+                suggestions: ['suggestion'],
+                message: {
+                    entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                    parts: [
+                        {
+                            type: 'answer',
+                            text: 'test',
+                            suggestions: ['suggestion'],
+                        },
+                    ],
+                    rpcId: 99,
+                },
+            });
+            const row = querySelectorErrorOnMissing(target, '.ai-assistance-feedback-row');
+            const exportButton = querySelectorErrorOnMissing(row, '.export-for-agents-button');
+            assert.strictEqual(exportButton.textContent?.trim(), 'Copy for your coding agent');
+            exportButton.click();
+            sinon.assert.calledOnce(onExportClick);
+        });
+        it('does not render the "Export for agents" button when V2 is disabled', async () => {
+            Root.Runtime.hostConfig.devToolsAiAssistanceV2 = {
+                enabled: false,
+            };
+            const onExportClick = sinon.stub();
+            const target = renderView({
+                onExportClick,
+                isLastMessage: true,
+                showActions: true,
+            });
+            const exportButton = target.querySelector('.export-for-agents-button');
+            assert.isNull(exportButton);
+        });
     });
     describe('view', () => {
         it('renders a minimal model message', async () => {
@@ -433,6 +586,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isSubmitButtonDisabled: false,
                 isShowingFeedbackForm: true,
                 isLastMessage: true,
+                isFirstMessage: false,
                 showActions: true,
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -466,6 +620,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isSubmitButtonDisabled: false,
                 isShowingFeedbackForm: true,
                 isLastMessage: true,
+                isFirstMessage: false,
                 showActions: true,
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -516,6 +671,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isSubmitButtonDisabled: false,
                 isShowingFeedbackForm: false,
                 isLastMessage: true,
+                isFirstMessage: false,
                 showActions: false,
                 message: {
                     entity: "user" /* AiAssistance.ChatMessage.ChatMessageEntity.USER */,
@@ -529,6 +685,70 @@ describeWithEnvironment('ChatMessage', () => {
                 walkthrough: { ...DEFAULT_WALKTHROUGH },
             }, {}, target);
             await assertScreenshot('ai_assistance/user_action_row_user_message.png');
+        });
+        it('should apply is-first-message class when isFirstMessage is true', () => {
+            const userTarget = document.createElement('div');
+            AiAssistance.ChatMessage.DEFAULT_VIEW({
+                onRatingClick: () => { },
+                onReportClick: () => { },
+                onCopyResponseClick: () => { },
+                scrollSuggestionsScrollContainer: () => { },
+                onSuggestionsScrollOrResize: () => { },
+                onSuggestionClick: () => { },
+                onSubmit: () => { },
+                onClose: () => { },
+                onInputChange: () => { },
+                onFeedbackSubmit: () => { },
+                showRateButtons: false,
+                isSubmitButtonDisabled: false,
+                isShowingFeedbackForm: false,
+                isLastMessage: false,
+                isFirstMessage: true,
+                showActions: false,
+                message: {
+                    entity: "user" /* AiAssistance.ChatMessage.ChatMessageEntity.USER */,
+                    text: 'First user message',
+                },
+                isLoading: false,
+                isReadOnly: false,
+                canShowFeedbackForm: false,
+                markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
+                currentRating: undefined,
+                walkthrough: { ...DEFAULT_WALKTHROUGH },
+            }, {}, userTarget);
+            const userMessage = querySelectorErrorOnMissing(userTarget, '.chat-message');
+            assert.isTrue(userMessage.classList.contains('is-first-message'));
+            const modelTarget = document.createElement('div');
+            AiAssistance.ChatMessage.DEFAULT_VIEW({
+                onRatingClick: () => { },
+                onReportClick: () => { },
+                onCopyResponseClick: () => { },
+                scrollSuggestionsScrollContainer: () => { },
+                onSuggestionsScrollOrResize: () => { },
+                onSuggestionClick: () => { },
+                onSubmit: () => { },
+                onClose: () => { },
+                onInputChange: () => { },
+                onFeedbackSubmit: () => { },
+                showRateButtons: false,
+                isSubmitButtonDisabled: false,
+                isShowingFeedbackForm: false,
+                isLastMessage: false,
+                isFirstMessage: true,
+                showActions: false,
+                message: {
+                    entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                    parts: [],
+                },
+                isLoading: false,
+                isReadOnly: false,
+                canShowFeedbackForm: false,
+                markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
+                currentRating: undefined,
+                walkthrough: { ...DEFAULT_WALKTHROUGH },
+            }, {}, modelTarget);
+            const modelMessage = querySelectorErrorOnMissing(modelTarget, '.chat-message');
+            assert.isTrue(modelMessage.classList.contains('is-first-message'));
         });
     });
 });

@@ -13,13 +13,13 @@ describeWithEnvironment('Third party tree', function () {
         const treeView = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
         const mapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
         const events = [...mapper.mappings().eventsByEntity.values()].flat().sort((a, b) => a.ts - b.ts);
-        treeView.setModelWithEvents(events, parsedTrace, mapper);
+        treeView.model = { selectedEvents: events, parsedTrace, entityMapper: mapper };
         const sel = {
             bounds: parsedTrace.data.Meta.traceBounds,
         };
         const box = new UI.Widget.VBox();
         treeView.show(box.element);
-        treeView.updateContents(sel);
+        treeView.activeSelection = sel;
         assert.isNull(treeView.dataGrid.selectedNode);
     });
     it('hides the table if there are no events', async function () {
@@ -27,12 +27,12 @@ describeWithEnvironment('Third party tree', function () {
         const mapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
         const treeView = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
         renderElementIntoDOM(treeView);
-        treeView.setModelWithEvents(null, parsedTrace, mapper);
+        treeView.model = { selectedEvents: null, parsedTrace, entityMapper: mapper };
         assert.isTrue(treeView.element.classList.contains('empty-table'));
         const events = [...mapper.mappings().eventsByEntity.values()].flat().sort((a, b) => a.ts - b.ts);
-        treeView.setModelWithEvents(events, parsedTrace, mapper);
+        treeView.model = { selectedEvents: events, parsedTrace, entityMapper: mapper };
         assert.isFalse(treeView.element.classList.contains('empty-table'));
-        treeView.setModelWithEvents([], parsedTrace, mapper);
+        treeView.model = { selectedEvents: [], parsedTrace, entityMapper: mapper };
         assert.isTrue(treeView.element.classList.contains('empty-table'));
     });
     it('includes 1p and extension badges', async function () {
@@ -42,11 +42,11 @@ describeWithEnvironment('Third party tree', function () {
         const treeView = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
         const mapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
         const events = [...mapper.mappings().eventsByEntity.values()].flat().sort((a, b) => a.ts - b.ts);
-        treeView.setModelWithEvents(events, parsedTrace, mapper);
+        treeView.model = { selectedEvents: events, parsedTrace, entityMapper: mapper };
         const sel = {
             bounds: parsedTrace.data.Meta.traceBounds,
         };
-        treeView.updateContents(sel);
+        treeView.activeSelection = sel;
         const tree = treeView.buildTree();
         const topNodesIterator = [...tree.children().values()].flat().sort((a, b) => b.selfTime - a.selfTime);
         // Node with first party
@@ -75,6 +75,39 @@ describeWithEnvironment('Third party tree', function () {
         entity = gridNode?.createCell('site');
         gotBadgeName = entity.querySelector('.entity-badge')?.textContent || '';
         assert.strictEqual(gotBadgeName, 'Extension');
+    });
+    it('allows setting maxRows', async function () {
+        const treeView = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
+        treeView.maxRows = 5;
+        assert.strictEqual(treeView.element.style.getPropertyValue('--max-rows'), '5');
+        assert.isTrue(treeView.element.classList.contains('has-max-rows'));
+    });
+    it('allows setting onRowHovered', async function () {
+        const treeView = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
+        let hoveredNode;
+        treeView.onRowHovered = node => {
+            hoveredNode = node;
+        };
+        treeView.dispatchEventToListeners("TreeRowHovered" /* Timeline.TimelineTreeView.TimelineTreeView.Events.TREE_ROW_HOVERED */, { node: null });
+        assert.isNull(hoveredNode);
+    });
+    it('allows setting onRowClicked', async function () {
+        const treeView = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
+        let clickedNode;
+        treeView.onRowClicked = node => {
+            clickedNode = node;
+        };
+        treeView.dispatchEventToListeners("TreeRowClicked" /* Timeline.TimelineTreeView.TimelineTreeView.Events.TREE_ROW_CLICKED */, { node: null });
+        assert.isNull(clickedNode);
+    });
+    it('allows setting onBottomUpButtonClicked', async function () {
+        const treeView = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
+        let bottomUpNode;
+        treeView.onBottomUpButtonClicked = node => {
+            bottomUpNode = node;
+        };
+        treeView.dispatchEventToListeners("BottomUpButtonClicked" /* Timeline.TimelineTreeView.TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, null);
+        assert.isNull(bottomUpNode);
     });
 });
 //# sourceMappingURL=ThirdPartyTreeView.test.js.map
