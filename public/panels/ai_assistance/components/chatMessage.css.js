@@ -17,6 +17,7 @@ export default `/*
     justify-content: space-between;
     align-items: center;
     margin-block: calc(-1 * var(--sys-size-3));
+    margin-top: var(--sys-size-5);
 
     &.not-v2 {
       /* Can be removed when AIv2 ships */
@@ -131,6 +132,7 @@ export default `/*
   .user-query-wrapper {
     display: flex;
     justify-content: flex-end;
+    padding: 0 var(--sys-size-5);
     align-items: center;
   }
 
@@ -168,6 +170,17 @@ export default `/*
 
     &.ai-v2 {
       border-bottom: none;
+    }
+
+    .ai-css-change {
+      margin: var(--sys-size-6) 0;
+    }
+
+    &:not(.ai-v2) .answer-body-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sys-size-5);
+      width: 100%;
     }
 
     &.ai-v2 .answer-body-wrapper {
@@ -442,6 +455,10 @@ export default `/*
 
     .widget-name {
       font: var(--sys-typescale-body4-regular);
+      max-width: 80%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap; /* stop the titles going onto multiple lines */
     }
 
     .widget-reveal-container {

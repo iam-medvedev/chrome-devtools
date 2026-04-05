@@ -6907,10 +6907,6 @@ export const NativeFunctions = [
         signatures: [["type", "?eventInitDict"]]
     },
     {
-        name: "PageHideEvent",
-        signatures: [["type", "?eventInitDict"]]
-    },
-    {
         name: "PageTransitionEvent",
         signatures: [["type", "?eventInitDict"]]
     },
@@ -7400,11 +7396,7 @@ export const NativeFunctions = [
     },
     {
         name: "registerTool",
-        signatures: [["tool"]]
-    },
-    {
-        name: "unregisterTool",
-        signatures: [["name"]]
+        signatures: [["tool", "?options"]]
     },
     {
         name: "SnapEvent",

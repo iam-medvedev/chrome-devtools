@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
 import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -197,61 +195,6 @@ describeWithEnvironment('TimelinePanel', function () {
             sinon.assert.notCalled(showBothStub);
         });
     });
-    describe('handleExternalRecordRequest', () => {
-        it('returns information on the insights found in the recording', async function () {
-            const uiView = UI.ViewManager.ViewManager.instance({ forceNew: true });
-            sinon.stub(uiView, 'showView');
-            const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
-            await timeline.loadingComplete(events, null, null);
-            sinon.stub(timeline, 'recordReload').callsFake(() => {
-                timeline.dispatchEventToListeners("RecordingCompleted" /* Timeline.TimelinePanel.Events.RECORDING_COMPLETED */, { traceIndex: 0 });
-            });
-            const generator = Timeline.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
-            let externalRequestResponse = await generator.next();
-            while (!externalRequestResponse.done) {
-                externalRequestResponse = await generator.next();
-            }
-            const { message } = externalRequestResponse.value;
-            assert.include(message, '# Trace recording results');
-            const EXPECTED_INSIGHT_TITLES = [
-                'LCP breakdown',
-                'LCP request discovery',
-                'Render-blocking requests',
-                'Document request latency',
-            ];
-            for (const title of EXPECTED_INSIGHT_TITLES) {
-                assert.include(message, `### Insight Title: ${title}`);
-            }
-            assert.include(message, `- Time to first byte: 8\xA0ms (6.1% of total LCP time)
-- Resource load delay: 33\xA0ms (25.7% of total LCP time)
-- Resource load duration: 15\xA0ms (11.4% of total LCP time)
-- Element render delay: 73\xA0ms (56.8% of total LCP time)`);
-        });
-        it('includes information on passing insights under a separate heading', async function () {
-            const uiView = UI.ViewManager.ViewManager.instance({ forceNew: true });
-            sinon.stub(uiView, 'showView');
-            const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
-            await timeline.loadingComplete(events, null, null);
-            sinon.stub(timeline, 'recordReload').callsFake(() => {
-                timeline.dispatchEventToListeners("RecordingCompleted" /* Timeline.TimelinePanel.Events.RECORDING_COMPLETED */, { traceIndex: 0 });
-            });
-            const generator = Timeline.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
-            let externalRequestResponse = await generator.next();
-            while (!externalRequestResponse.done) {
-                externalRequestResponse = await generator.next();
-            }
-            const { message } = externalRequestResponse.value;
-            assert.include(message, '# Trace recording results');
-            assert.include(message, '## Non-passing insights:');
-            const EXPECTED_INSIGHT_TITLES = [
-                'INP breakdown',
-                'Layout shift culprits',
-            ];
-            for (const title of EXPECTED_INSIGHT_TITLES) {
-                assert.include(message, `### Insight Title: ${title}`);
-            }
-        });
-    });
     describe('executeRecordAndReload', () => {
         it('shows the timeline view that then starts a recording', async function () {
             const uiView = UI.ViewManager.ViewManager.instance({ forceNew: true });
@@ -262,35 +205,6 @@ describeWithEnvironment('TimelinePanel', function () {
             sinon.stub(traceModel, 'parsedTrace').returns({});
             await Timeline.TimelinePanel.TimelinePanel.executeRecordAndReload();
             sinon.assert.calledWith(showViewStub, 'timeline');
-        });
-    });
-    describe('handleExternalRequest', function () {
-        beforeEach(async () => {
-            AIAssistance.ConversationHandler.ConversationHandler.removeInstance();
-            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
-            createTarget();
-        });
-        it('handles performance requests', async function () {
-            const explanation = 'I need more information';
-            const conversationHandler = AIAssistance.ConversationHandler.ConversationHandler.instance({
-                aidaClient: mockAidaClient([[{ explanation }]]),
-                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
-            });
-            // Create a timeline panel that has a trace imported with insights.
-            const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
-            const traceModel = Trace.TraceModel.Model.createWithAllHandlers();
-            await traceModel.parse(events);
-            const resourceLoader = { loadResource: sinon.stub() };
-            Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, traceModel });
-            const generator = await conversationHandler.handleExternalRequest({
-                prompt: 'Please help me debug this problem',
-                conversationType: "drjones-performance-full" /* AIAssistance.AiHistoryStorage.ConversationType.PERFORMANCE */,
-                data: Timeline.TimelinePanel.TimelinePanel.instance().getOrCreateExternalAIConversationData(),
-            });
-            let response = await generator.next();
-            assert.strictEqual(response.value.message, 'Analyzing data');
-            response = await generator.next();
-            assert.strictEqual(response.value.message, explanation);
         });
     });
     describe('saveToFile', function () {

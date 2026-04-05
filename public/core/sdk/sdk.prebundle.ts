@@ -22,6 +22,7 @@ import * as CookieModel from './CookieModel.js';
 import * as CookieParser from './CookieParser.js';
 import * as CPUProfilerModel from './CPUProfilerModel.js';
 import * as CPUThrottlingManager from './CPUThrottlingManager.js';
+import * as CrashReportContextModel from './CrashReportContextModel.js';
 import * as CSSContainerQuery from './CSSContainerQuery.js';
 import * as CSSFontFace from './CSSFontFace.js';
 import * as CSSLayer from './CSSLayer.js';
@@ -90,7 +91,6 @@ import * as Target from './Target.js';
 import * as TargetManager from './TargetManager.js';
 import * as TraceObject from './TraceObject.js';
 import * as WebAuthnModel from './WebAuthnModel.js';
-import * as WebMCPModel from './WebMCPModel.js';
 
 export {
   AccessibilityModel,
@@ -106,6 +106,7 @@ export {
   CookieParser,
   CPUProfilerModel,
   CPUThrottlingManager,
+  CrashReportContextModel,
   CSSContainerQuery,
   CSSFontFace,
   CSSLayer,
@@ -174,5 +175,4 @@ export {
   TargetManager,
   TraceObject,
   WebAuthnModel,
-  WebMCPModel,
 };

@@ -6,7 +6,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
@@ -19,7 +18,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotContainmentDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotRetainmentDataGrid, HeapSnapshotSortableDataGridEvents, } from './HeapSnapshotDataGrids.js';
 import { HeapSnapshotGenericObjectNode, } from './HeapSnapshotGridNodes.js';
-import { HeapSnapshotWorkerProxy } from './HeapSnapshotProxy.js';
 import { HeapTimelineOverview, Samples } from './HeapTimelineOverview.js';
 import * as ModuleUIStrings from './ModuleUIStrings.js';
 import { ProfileHeader, ProfileType, } from './ProfileHeader.js';
@@ -1124,10 +1122,9 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
         return i18nString(UIStrings.heapSnapshotProfilesShowMemory);
     }
     customContent() {
-        const showOptionToExposeInternalsInHeapSnapshot = Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.SHOW_OPTION_TO_EXPOSE_INTERNALS_IN_HEAP_SNAPSHOT);
         const exposeInternalsInHeapSnapshotCheckbox = SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.exposeInternals), this.exposeInternals);
         this.customContentInternal = exposeInternalsInHeapSnapshotCheckbox;
-        return showOptionToExposeInternalsInHeapSnapshot ? exposeInternalsInHeapSnapshotCheckbox : null;
+        return exposeInternalsInHeapSnapshotCheckbox;
     }
     setCustomContentEnabled(enable) {
         if (this.customContentInternal) {
@@ -1431,8 +1428,9 @@ export class HeapProfileHeader extends ProfileHeader {
     }
     setupWorker() {
         console.assert(!this.workerProxy, 'HeapSnapshotWorkerProxy already exists');
-        this.workerProxy = new HeapSnapshotWorkerProxy(this.handleWorkerEvent.bind(this));
-        this.workerProxy.addEventListener("Wait" /* HeapSnapshotWorkerProxy.Events.WAIT */, event => {
+        this.workerProxy =
+            new HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotWorkerProxy(this.handleWorkerEvent.bind(this));
+        this.workerProxy.addEventListener("Wait" /* HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotWorkerProxy.Events.WAIT */, event => {
             this.updateStatus(null, event.data);
         }, this);
         this.receiver = this.workerProxy.createLoader(this.uid, this.snapshotReceived.bind(this));
@@ -1536,13 +1534,11 @@ export class HeapProfileHeader extends ProfileHeader {
         this.setupWorker();
         const reader = new Bindings.FileUtils.ChunkedFileReader(file, 10000000);
         const success = await reader.read(this.receiver);
-        if (!success) {
-            const error = reader.error();
-            if (error) {
-                this.updateStatus(error.message);
-            }
+        const error = reader.error();
+        if (!success && error) {
+            this.updateStatus(error.message);
         }
-        return success ? null : reader.error();
+        return success ? null : error;
     }
     profileType() {
         return super.profileType();

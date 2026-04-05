@@ -5,6 +5,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Accessibility from './accessibility.js';
 const NODE_ID = 1;
 describeWithMockConnection('AccessibilitySidebarView', () => {
@@ -12,11 +13,19 @@ describeWithMockConnection('AccessibilitySidebarView', () => {
     let view;
     beforeEach(() => {
         stubNoopSettings();
+        UI.ActionRegistration.maybeRemoveActionExtension('elements.toggle-a11y-tree');
+        UI.ActionRegistration.registerActionExtension({
+            actionId: 'elements.toggle-a11y-tree',
+            category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
+            title: () => 'Toggle Accessibility Tree',
+            toggleable: true,
+        });
         target = createTarget();
         setMockConnectionResponseHandler('DOM.getDocument', () => ({ root: { nodeId: NODE_ID } }));
         setMockConnectionResponseHandler('DOM.getNodesForSubtreeByStyle', () => ({ nodeIds: [] }));
     });
     afterEach(() => {
+        UI.ActionRegistration.maybeRemoveActionExtension('elements.toggle-a11y-tree');
         view.detach();
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

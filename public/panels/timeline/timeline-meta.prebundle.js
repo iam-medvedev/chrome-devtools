@@ -58,6 +58,10 @@ const UIStrings = {
      * @description Title of a setting under the Performance category in Settings
      */
     chromeFrameInLayersView: 'Chrome frame in Layers view',
+    /**
+     * @description Title of a setting under the Performance category in Settings
+     */
+    timelineShowAllEvents: 'Show all events',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/timeline-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -295,6 +299,14 @@ Common.Settings.registerSettingExtension({
     settingName: 'frame-viewer-chrome-window',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
+});
+Common.Settings.registerSettingExtension({
+    category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.timelineShowAllEvents),
+    settingName: 'timeline-show-all-events',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
 });
 // IMPORTANT: if you are updating this, you should also update the setting in
 // js_timeline-meta.

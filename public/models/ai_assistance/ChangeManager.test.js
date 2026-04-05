@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as AiAssistanceModel from '../ai_assistance/ai_assistance.js';
-describe('ChangeManager', () => {
+describeWithEnvironment('ChangeManager', () => {
     let styleSheetId = 0;
     const frameId = '1';
     const anotherFrameId = '2';
@@ -179,7 +180,7 @@ describe('ChangeManager', () => {
                 className: 'ai-style-change-1',
                 styles: { color: 'blue', 'background-color': 'green' },
             });
-            assert.strictEqual(changeManager.formatChangesForPatching(agentId, /* includeSourceLocation=*/ true), `/* related resource: button.scss:1:1 */
+            assert.strictEqual(changeManager.formatChangesForPatching(agentId, /* includeMetadata=*/ true), `/* related resource: button.scss:1:1 */
 div {
   color: blue;
   background-color: green;
@@ -195,9 +196,24 @@ div {
                 className: 'ai-style-change-1',
                 styles: { color: 'blue', 'background-color': 'green' },
             });
-            assert.strictEqual(changeManager.formatChangesForPatching(agentId, /* includeSourceLocation=*/ true), `.bg-color-blue { /* the element was div#test */
+            assert.strictEqual(changeManager.formatChangesForPatching(agentId, /* includeMetadata=*/ true), `.bg-color-blue { /* the element was div#test */
   color: blue;
   background-color: green;
+}`);
+        });
+        it('omits source location and simple selector when includeMetadata is false', async () => {
+            const changeManager = new AiAssistanceModel.ChangeManager.ChangeManager();
+            const cssModel = createModel();
+            await changeManager.addChange(cssModel, frameId, {
+                groupId: agentId,
+                sourceLocation: 'button.scss:1:1',
+                selector: '.bg-color-blue',
+                simpleSelector: 'div#test',
+                className: 'ai-style-change-1',
+                styles: { color: 'blue' },
+            });
+            assert.strictEqual(changeManager.formatChangesForPatching(agentId, /* includeMetadata=*/ false), `.bg-color-blue {
+  color: blue;
 }`);
         });
     });

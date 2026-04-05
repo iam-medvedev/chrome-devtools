@@ -25,6 +25,7 @@ You aim to help developers of all levels, prioritizing teaching web concepts as 
 
 # Considerations
 * Determine what is the domain of the question - styling, network, sources, performance or other part of DevTools.
+* For questions about web performance metrics (e.g., LCP, INP, CLS) or page speed, use performanceRecordAndReload to record a performance trace.
 * Proactively try to gather additional data. If a select specific data can be selected, select one.
 * Always try select single specific context before answering the question.
 * Avoid making assumptions without sufficient evidence, and always seek further clarification if needed.
@@ -36,7 +37,7 @@ You aim to help developers of all levels, prioritizing teaching web concepts as 
 # Formatting Guidelines
 * Use Markdown for all code snippets.
 * Always specify the language for code blocks (e.g., \`\`\`css, \`\`\`javascript).
-* Keep text responses concise and scannable.
+* **CRITICAL**: Use the precision of Strunk & White, the brevity of Hemingway, and the simple clarity of Vonnegut. Don't add repeated information, and keep the whole answer short.
 
 * **CRITICAL** If a tool returns an empty list, immediately pivot to the next logical tool (e.g., from sources to network).
 * **CRITICAL** Always exhaust all possible way to find and select context from different domains.
@@ -88,7 +89,7 @@ export class ContextSelectionAgent extends AiAgent {
             },
             displayInfoFromArgs: () => {
                 return {
-                    title: lockedString('Listing network requests…'),
+                    title: lockedString('Listing network requests'),
                     action: 'listNetworkRequest()',
                 };
             },
@@ -147,7 +148,7 @@ export class ContextSelectionAgent extends AiAgent {
             },
             displayInfoFromArgs: args => {
                 return {
-                    title: lockedString('Getting network request…'),
+                    title: lockedString('Getting network request'),
                     action: `selectNetworkRequest(${args.id})`,
                 };
             },
@@ -183,7 +184,7 @@ export class ContextSelectionAgent extends AiAgent {
             },
             displayInfoFromArgs: () => {
                 return {
-                    title: lockedString('Listing source requests…'),
+                    title: lockedString('Listing source requests'),
                     action: 'listSourceFiles()',
                 };
             },
@@ -217,7 +218,7 @@ export class ContextSelectionAgent extends AiAgent {
             },
             displayInfoFromArgs: args => {
                 return {
-                    title: lockedString('Getting source file…'),
+                    title: lockedString('Getting source file'),
                     action: `selectSourceFile(${args.id})`,
                 };
             },
@@ -235,7 +236,7 @@ export class ContextSelectionAgent extends AiAgent {
             },
         });
         this.declareFunction('performanceRecordAndReload', {
-            description: 'Records a new performance trace, to help debug performance issue.',
+            description: 'Records a new performance trace. Use this to measure and debug performance metrics and Core Web Vitals like Largest Contentful Paint (LCP), Interaction to Next Paint (INP), and Cumulative Layout Shift (CLS).',
             parameters: {
                 type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                 description: '',
@@ -245,7 +246,7 @@ export class ContextSelectionAgent extends AiAgent {
             },
             displayInfoFromArgs: () => {
                 return {
-                    title: 'Recording a performance trace…',
+                    title: 'Recording a performance trace',
                     action: 'performanceRecordAndReload()',
                 };
             },
@@ -264,7 +265,7 @@ export class ContextSelectionAgent extends AiAgent {
             }
         });
         this.declareFunction('runLighthouseAudits', {
-            description: 'Records a Lighthouse audit on the current page, to help debug accessibility issues.',
+            description: 'Records a Lighthouse audit on the current page. Use this to debug accessibility, SEO, and best practices. (For performance metrics like LCP, use performanceRecordAndReload instead).',
             parameters: {
                 type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                 description: '',
@@ -274,7 +275,7 @@ export class ContextSelectionAgent extends AiAgent {
             },
             displayInfoFromArgs: () => {
                 return {
-                    title: 'Auditing your page with Lighthouse…',
+                    title: 'Auditing your page with Lighthouse',
                     action: 'runLighthouseAudits()',
                 };
             },

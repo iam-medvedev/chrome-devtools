@@ -387,6 +387,7 @@ UI2.ActionRegistration.registerActionExtension({
   actionId: "elements.toggle-a11y-tree",
   category: "ELEMENTS",
   title: i18nLazyString2(UIStrings2.toggleA11yTree),
+  toggleable: true,
   async loadActionDelegate() {
     const Elements2 = await loadElementsModule();
     return new Elements2.ElementsPanel.ElementsActionDelegate();
@@ -3010,7 +3011,11 @@ var UIStrings20 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  chromeFrameInLayersView: "Chrome frame in Layers view"
+  chromeFrameInLayersView: "Chrome frame in Layers view",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineShowAllEvents: "Show all events"
 };
 var str_20 = i18n41.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings20);
 var i18nLazyString20 = i18n41.i18n.getLazilyComputedLocalizedString.bind(void 0, str_20);
@@ -3248,6 +3253,14 @@ Common11.Settings.registerSettingExtension({
   settingName: "frame-viewer-chrome-window",
   settingType: "boolean",
   defaultValue: true
+});
+Common11.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString20(UIStrings20.timelineShowAllEvents),
+  settingName: "timeline-show-all-events",
+  settingType: "boolean",
+  defaultValue: false
 });
 Common11.Settings.registerSettingExtension({
   category: "PERFORMANCE",

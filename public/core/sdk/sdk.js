@@ -1060,7 +1060,8 @@ var generatedProperties = [
       "border-box",
       "padding-box",
       "content-box",
-      "text"
+      "text",
+      "border-area"
     ],
     "name": "background-clip"
   },
@@ -2895,7 +2896,8 @@ var generatedProperties = [
       "optimizespeed",
       "optimizequality",
       "-webkit-optimize-contrast",
-      "pixelated"
+      "pixelated",
+      "crisp-edges"
     ],
     "name": "image-rendering"
   },
@@ -5311,7 +5313,8 @@ var generatedPropertyValues = {
       "border-box",
       "padding-box",
       "content-box",
-      "text"
+      "text",
+      "border-area"
     ]
   },
   "background-color": {
@@ -6337,7 +6340,8 @@ var generatedPropertyValues = {
       "optimizespeed",
       "optimizequality",
       "-webkit-optimize-contrast",
-      "pixelated"
+      "pixelated",
+      "crisp-edges"
     ]
   },
   "initial-letter": {
@@ -30615,6 +30619,17 @@ var AccessibilityModel = class extends SDKModel {
     target.registerAccessibilityDispatcher(this);
     this.agent = target.accessibilityAgent();
     void this.resumeModel();
+    const domModel = target.model(DOMModel);
+    if (domModel) {
+      domModel.addEventListener(Events8.NodeRemoved, () => {
+        this.clear();
+        this.dispatchEventToListeners("TreeUpdated", {});
+      });
+      domModel.addEventListener(Events8.NodeInserted, () => {
+        this.clear();
+        this.dispatchEventToListeners("TreeUpdated", {});
+      });
+    }
   }
   clear() {
     this.#root = null;
@@ -34441,6 +34456,27 @@ function calibrationErrorToString(error) {
   return error;
 }
 
+// gen/front_end/core/sdk/CrashReportContextModel.js
+var CrashReportContextModel_exports = {};
+__export(CrashReportContextModel_exports, {
+  CrashReportContextModel: () => CrashReportContextModel
+});
+var CrashReportContextModel = class extends SDKModel {
+  #agent;
+  constructor(target) {
+    super(target);
+    this.#agent = target.crashReportContextAgent();
+  }
+  async getEntries() {
+    const response = await this.#agent.invoke_getEntries();
+    if (response.getError()) {
+      return null;
+    }
+    return response.entries;
+  }
+};
+SDKModel.register(CrashReportContextModel, { capabilities: 4, autostart: false });
+
 // gen/front_end/core/sdk/DOMDebuggerModel.js
 var DOMDebuggerModel_exports = {};
 __export(DOMDebuggerModel_exports, {
@@ -36619,8 +36655,6 @@ var StorageBucketsModel = class extends SDKModel {
       throw new Error(`Received an event that Storage Bucket '${bucketId}' was deleted, but it wasn't in the StorageBucketsModel.`);
     }
   }
-  attributionReportingTriggerRegistered(_event) {
-  }
   interestGroupAccessed(_event) {
   }
   interestGroupAuctionEventOccurred(_event) {
@@ -36638,12 +36672,6 @@ var StorageBucketsModel = class extends SDKModel {
   sharedStorageAccessed(_event) {
   }
   sharedStorageWorkletOperationExecutionFinished(_event) {
-  }
-  attributionReportingSourceRegistered(_event) {
-  }
-  attributionReportingReportSent(_event) {
-  }
-  attributionReportingVerboseDebugReportSent(_event) {
   }
 };
 SDKModel.register(StorageBucketsModel, { capabilities: 8192, autostart: false });
@@ -36854,8 +36882,6 @@ var ServiceWorkerCacheModel = class extends SDKModel {
       this.dispatchEventToListeners("CacheStorageContentUpdated", { storageBucket, cacheName });
     }
   }
-  attributionReportingTriggerRegistered(_event) {
-  }
   indexedDBListUpdated(_event) {
   }
   indexedDBContentUpdated(_event) {
@@ -36876,12 +36902,6 @@ var ServiceWorkerCacheModel = class extends SDKModel {
   }
   setThrottlerSchedulesAsSoonAsPossibleForTest() {
     this.#scheduleAsSoonAsPossible = true;
-  }
-  attributionReportingSourceRegistered(_event) {
-  }
-  attributionReportingReportSent(_event) {
-  }
-  attributionReportingVerboseDebugReportSent(_event) {
   }
 };
 var Cache = class {
@@ -37514,114 +37534,6 @@ var WebAuthnDispatcher = class {
   }
 };
 SDKModel.register(WebAuthnModel, { capabilities: 65536, autostart: false });
-
-// gen/front_end/core/sdk/WebMCPModel.js
-var WebMCPModel_exports = {};
-__export(WebMCPModel_exports, {
-  WebMCPModel: () => WebMCPModel
-});
-var WebMCPModel = class extends SDKModel {
-  #tools = /* @__PURE__ */ new Map();
-  #calls = /* @__PURE__ */ new Map();
-  agent;
-  #enabled = false;
-  constructor(target) {
-    super(target);
-    this.agent = target.webMCPAgent();
-    target.registerWebMCPDispatcher(new WebMCPDispatcher(this));
-    const runtimeModel = target.model(RuntimeModel);
-    if (runtimeModel) {
-      runtimeModel.addEventListener(Events6.ExecutionContextDestroyed, this.#executionContextDestroyed, this);
-    }
-    void this.enable();
-  }
-  get tools() {
-    return this.#tools.values().flatMap((toolMap) => toolMap.values());
-  }
-  get toolCalls() {
-    return [...this.#calls.values()];
-  }
-  clearCalls() {
-    this.#calls.clear();
-  }
-  async enable() {
-    if (this.#enabled) {
-      return;
-    }
-    await this.agent.invoke_enable();
-    this.#enabled = true;
-  }
-  #executionContextDestroyed(event) {
-    const executionContext = event.data;
-    if (executionContext.isDefault && executionContext.frameId) {
-      const frameTools = this.#tools.get(executionContext.frameId);
-      if (frameTools) {
-        const toolsToRemove = [...frameTools.values()];
-        this.#tools.delete(executionContext.frameId);
-        this.dispatchEventToListeners("ToolsRemoved", toolsToRemove);
-      }
-    }
-  }
-  onToolsRemoved(tools) {
-    const deletedTools = tools.filter((tool) => this.#tools.get(tool.frameId)?.delete(tool.name));
-    this.dispatchEventToListeners("ToolsRemoved", deletedTools);
-  }
-  onToolsAdded(tools) {
-    for (const tool of tools) {
-      const frameTools = this.#tools.get(tool.frameId) ?? /* @__PURE__ */ new Map();
-      if (!this.#tools.has(tool.frameId)) {
-        this.#tools.set(tool.frameId, frameTools);
-      }
-      frameTools.set(tool.name, tool);
-    }
-    this.dispatchEventToListeners("ToolsAdded", tools);
-  }
-  toolInvoked(params) {
-    const tool = this.#tools.get(params.frameId)?.get(params.toolName);
-    if (!tool) {
-      return;
-    }
-    const call = {
-      invocationId: params.invocationId,
-      input: params.input,
-      tool
-    };
-    this.#calls.set(params.invocationId, call);
-    this.dispatchEventToListeners("ToolInvoked", call);
-  }
-  toolResponded(params) {
-    const call = this.#calls.get(params.invocationId);
-    if (!call) {
-      return;
-    }
-    call.result = {
-      status: params.status,
-      output: params.output,
-      errorText: params.errorText,
-      exception: params.exception
-    };
-    this.dispatchEventToListeners("ToolResponded", call);
-  }
-};
-var WebMCPDispatcher = class {
-  #model;
-  constructor(model) {
-    this.#model = model;
-  }
-  toolsAdded(params) {
-    this.#model.onToolsAdded(params.tools);
-  }
-  toolsRemoved(params) {
-    this.#model.onToolsRemoved(params.tools);
-  }
-  toolInvoked(params) {
-    this.#model.toolInvoked(params);
-  }
-  toolResponded(params) {
-    this.#model.toolResponded(params);
-  }
-};
-SDKModel.register(WebMCPModel, { capabilities: 2097152, autostart: true });
 export {
   AccessibilityModel_exports as AccessibilityModel,
   AnimationModel_exports as AnimationModel,
@@ -37654,6 +37566,7 @@ export {
   Cookie_exports as Cookie,
   CookieModel_exports as CookieModel,
   CookieParser_exports as CookieParser,
+  CrashReportContextModel_exports as CrashReportContextModel,
   DOMDebuggerModel_exports as DOMDebuggerModel,
   DOMModel_exports as DOMModel,
   DebuggerModel_exports as DebuggerModel,
@@ -37703,7 +37616,6 @@ export {
   Target_exports as Target,
   TargetManager_exports as TargetManager,
   TraceObject_exports as TraceObject,
-  WebAuthnModel_exports as WebAuthnModel,
-  WebMCPModel_exports as WebMCPModel
+  WebAuthnModel_exports as WebAuthnModel
 };
 //# sourceMappingURL=sdk.js.map

@@ -109,6 +109,7 @@ core/sdk/ConsoleModel.test.js
 core/sdk/Cookie.test.js
 core/sdk/CookieModel.test.js
 core/sdk/CookieParser.test.js
+core/sdk/CrashReportContextModel.test.js
 core/sdk/DOMModel.test.js
 core/sdk/EmulationModel.test.js
 core/sdk/EnhancedTracesParser.test.js
@@ -138,7 +139,7 @@ core/sdk/SourceMapScopesInfo.test.js
 core/sdk/StorageBucketsModel.test.js
 core/sdk/StorageKeyManager.test.js
 core/sdk/TraceObject.test.js
-core/sdk/WebMCPModel.test.js
+entrypoints/heap_snapshot_worker/HeapSnapshot.test.js
 entrypoints/heap_snapshot_worker/heap_snapshot_worker.test.js
 entrypoints/inspector_main/InspectorMain.test.js
 entrypoints/inspector_main/OutermostTargetSelector.test.js
@@ -155,7 +156,6 @@ models/ai_assistance/AiConversation.test.js
 models/ai_assistance/AiHistoryStorage.test.js
 models/ai_assistance/BuiltInAi.test.js
 models/ai_assistance/ChangeManager.test.js
-models/ai_assistance/ConversationHandler.test.js
 models/ai_assistance/EvaluateAction.test.js
 models/ai_assistance/ExtensionScope.test.js
 models/ai_assistance/agents/AccessibilityAgent.test.js
@@ -309,6 +309,7 @@ models/trace/lantern/simulation/TCPConnection.test.js
 models/trace/types/File.test.js
 models/trace/types/TraceEvents.test.js
 models/trace_source_maps_resolver/SourceMapsResolver.test.js
+models/web_mcp/WebMCPModel.test.js
 models/workspace/IgnoreListManager.test.js
 models/workspace/SearchConfig.test.js
 models/workspace/UISourceCode.test.js
@@ -320,6 +321,7 @@ panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/ExportConversation.test.js
 panels/ai_assistance/PatchWidget.test.js
 panels/ai_assistance/SelectWorkspaceDialog.test.js
+panels/ai_assistance/components/AccessibilityAgentMarkdownRenderer.test.js
 panels/ai_assistance/components/ChatInput.test.js
 panels/ai_assistance/components/ChatMessage.test.js
 panels/ai_assistance/components/ChatView.test.js
@@ -332,6 +334,7 @@ panels/animation/AnimationTimeline.test.js
 panels/application/AppManifestView.test.js
 panels/application/ApplicationPanelSidebar.test.js
 panels/application/BackgroundServiceView.test.js
+panels/application/CrashReportContextView.test.js
 panels/application/DOMStorageModel.test.js
 panels/application/DeviceBoundSessionsModel.test.js
 panels/application/DeviceBoundSessionsTreeElement.test.js
@@ -346,6 +349,7 @@ panels/application/InterestGroupTreeElement.test.js
 panels/application/KeyValueStorageItemsView.test.js
 panels/application/OriginTrialTreeView.test.js
 panels/application/PreloadingTreeElement.test.js
+panels/application/ReportingApiTreeElement.test.js
 panels/application/ReportingApiView.test.js
 panels/application/ServiceWorkerCacheViews.test.js
 panels/application/ServiceWorkerUpdateCycleView.test.js
@@ -361,6 +365,7 @@ panels/application/WebMCPView.test.js
 panels/application/preloading/PreloadingView.test.js
 panels/application/components/BackForwardCacheView.test.js
 panels/application/components/BounceTrackingMitigationsView.test.js
+panels/application/components/CrashReportContextGrid.test.js
 panels/application/components/EndpointsGrid.test.js
 panels/application/components/InterestGroupAccessGrid.test.js
 panels/application/components/ProtocolHandlersView.test.js
@@ -437,6 +442,7 @@ panels/elements/ElementsPanel.test.js
 panels/elements/ElementsTreeElement.test.js
 panels/elements/ElementsTreeOutline.test.js
 panels/elements/EventListenersWidget.test.js
+panels/elements/ImagePreviewPopover.test.js
 panels/elements/InspectElementModeController.test.js
 panels/elements/LayoutPane.test.js
 panels/elements/PlatformFontsWidget.test.js
@@ -758,6 +764,7 @@ ui/legacy/components/perf_ui/TimelineGrid.test.js
 ui/legacy/components/perf_ui/TimelineOverviewCalculator.test.js
 ui/legacy/components/quick_open/CommandMenu.test.js
 ui/legacy/components/quick_open/FilteredListWidget.test.js
+ui/legacy/components/quick_open/QuickOpen.test.js
 ui/legacy/components/source_frame/BinaryResourceViewFactory.test.js
 ui/legacy/components/source_frame/JSONView.test.js
 ui/legacy/components/source_frame/ResourceSourceFrame.test.js
