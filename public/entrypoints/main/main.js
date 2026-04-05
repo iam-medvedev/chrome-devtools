@@ -437,8 +437,6 @@ __export(MainImpl_exports, {
   SearchActionDelegate: () => SearchActionDelegate,
   SettingsButtonProvider: () => SettingsButtonProvider,
   ZoomActionDelegate: () => ZoomActionDelegate,
-  handleExternalRequest: () => handleExternalRequest,
-  handleExternalRequestGenerator: () => handleExternalRequestGenerator,
   sendOverProtocol: () => sendOverProtocol
 });
 import * as Common2 from "./../../core/common/common.js";
@@ -527,10 +525,6 @@ var UIStrings2 = {
    */
   dockSideNavigation: "Use left and right arrow keys to navigate the options",
   /**
-   * @description Notification shown to the user whenever DevTools receives an external request.
-   */
-  externalRequestReceived: "`DevTools` received an external request",
-  /**
    * @description Notification shown to the user whenever DevTools has finished downloading a local AI model.
    */
   aiModelDownloaded: "AI model downloaded",
@@ -598,6 +592,7 @@ var MainImpl = class {
     };
     this.#universe = new Foundation.Universe.Universe(creationOptions);
     Root2.DevToolsContext.setGlobalInstance(this.#universe.context);
+    Root2.Runtime.experiments.cleanUpStaleExperiments();
     await this.requestAndRegisterLocaleData();
     Host.userMetrics.syncSetting(Common2.Settings.Settings.instance().moduleSetting("sync-preferences").get());
     const veLogging = config.devToolsVeLogging;
@@ -707,14 +702,11 @@ var MainImpl = class {
     });
     this.#migrateValueFromLegacyToHostExperiment(Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, protocolMonitorExperiment);
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.SAMPLING_HEAP_PROFILER_TIMELINE, "Sampling heap profiler timeline");
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.SHOW_OPTION_TO_EXPOSE_INTERNALS_IN_HEAP_SNAPSHOT, "Show option to expose internals in heap snapshots");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_INVALIDATION_TRACKING, "Performance panel: invalidation tracking");
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_SHOW_ALL_EVENTS, "Performance panel: show all events");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.TIMELINE_DEBUG_MODE, "Performance panel: debug mode (trace event details, etc)");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, "Instrumentation breakpoints");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, "Use scope information from source maps");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.APCA, "Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines", "https://developer.chrome.com/blog/new-in-devtools-89/#apca");
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE, "Full accessibility tree view in the Elements panel", "https://developer.chrome.com/blog/new-in-devtools-90/#accessibility-tree", "https://g.co/devtools/a11y-tree-feedback");
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.FONT_EDITOR, "New font editor in the Styles tab", "https://developer.chrome.com/blog/new-in-devtools-89/#font");
     Root2.Runtime.experiments.registerHostExperiment({
       name: Root2.ExperimentNames.ExperimentName.DURABLE_MESSAGES,
@@ -731,10 +723,8 @@ var MainImpl = class {
       requiresChromeRestart: true
     });
     Root2.Runtime.experiments.enableExperimentsByDefault([
-      Root2.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE,
       Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES
     ]);
-    Root2.Runtime.experiments.cleanUpStaleExperiments();
     const enabledExperiments = Root2.Runtime.Runtime.queryParam("enabledExperiments");
     if (enabledExperiments) {
       Root2.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(";"));
@@ -854,9 +844,6 @@ var MainImpl = class {
         void badgeNotification.present(badge, reason);
       });
     }
-    const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance();
-    conversationHandler.addEventListener("ExternalRequestReceived", () => Snackbar.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.externalRequestReceived) }));
-    conversationHandler.addEventListener("ExternalConversationStarted", (event) => void VisualLogging2.logFunctionCall(`start-conversation-${event.data}`, "external"));
     if (Root2.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
       await PanelCommon.GeminiRebrandPromoDialog.maybeShow();
     }
@@ -1315,63 +1302,6 @@ var ReloadActionDelegate = class {
     return false;
   }
 };
-async function handleExternalRequest(input) {
-  const generator = await handleExternalRequestGenerator(input);
-  let result;
-  do {
-    result = await generator.next();
-  } while (!result.done);
-  const response = result.value;
-  if (response.type === "error") {
-    throw new Error(response.message);
-  }
-  if (response.type === "answer") {
-    return {
-      response: response.message,
-      devToolsLogs: response.devToolsLogs
-    };
-  }
-  throw new Error("Received no response of type answer or type error");
-}
-globalThis.handleExternalRequest = handleExternalRequest;
-async function handleExternalRequestGenerator(input) {
-  switch (input.kind) {
-    case "PERFORMANCE_RELOAD_GATHER_INSIGHTS": {
-      const TimelinePanel = await import("./../../panels/timeline/timeline.js");
-      return TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
-    }
-    case "PERFORMANCE_ANALYZE": {
-      const TimelinePanel = await import("./../../panels/timeline/timeline.js");
-      return await TimelinePanel.TimelinePanel.TimelinePanel.handleExternalAnalyzeRequest(input.args.prompt);
-    }
-    case "NETWORK_DEBUGGER": {
-      const AiAssistanceModel2 = await import("./../../models/ai_assistance/ai_assistance.js");
-      const conversationHandler = AiAssistanceModel2.ConversationHandler.ConversationHandler.instance();
-      return await conversationHandler.handleExternalRequest({
-        conversationType: "drjones-network-request",
-        prompt: input.args.prompt,
-        requestUrl: input.args.requestUrl
-      });
-    }
-    case "LIVE_STYLE_DEBUGGER": {
-      const AiAssistanceModel2 = await import("./../../models/ai_assistance/ai_assistance.js");
-      const conversationHandler = AiAssistanceModel2.ConversationHandler.ConversationHandler.instance();
-      return await conversationHandler.handleExternalRequest({
-        conversationType: "freestyler",
-        prompt: input.args.prompt,
-        selector: input.args.selector
-      });
-    }
-  }
-  return async function* () {
-    return {
-      type: "error",
-      // @ts-expect-error
-      message: `Debugging with an agent of type '${input.kind}' is not implemented yet.`
-    };
-  }();
-}
-globalThis.handleExternalRequestGenerator = handleExternalRequestGenerator;
 
 // gen/front_end/entrypoints/main/SimpleApp.js
 var SimpleApp_exports = {};

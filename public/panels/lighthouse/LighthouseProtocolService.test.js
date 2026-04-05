@@ -1,9 +1,11 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('LighthouseProtocolService', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Lighthouse;
@@ -46,6 +48,45 @@ describeWithMockConnection('LighthouseProtocolService', () => {
         await service.attach();
         await service.detach();
         sinon.assert.calledOnce(resumeAllTargets);
+    });
+    it('rejects pending requests when detached', async () => {
+        // Mock Worker to avoid starting a real Lighthouse worker.
+        const mockWorker = new EventTarget();
+        mockWorker.postMessage = sinon.stub();
+        mockWorker.terminate = sinon.stub();
+        const workerStub = sinon.stub(globalThis, 'Worker').returns(mockWorker);
+        try {
+            setMockConnectionResponseHandler('Target.attachToTarget', () => ({ sessionId: 'mock-session-id' }));
+            const service = new Lighthouse.LighthouseProtocolService.ProtocolService();
+            await service.attach();
+            // Start a request. It will wait for the worker to be ready.
+            const requestPromise = service.startTimespan({
+                inspectedURL: urlString `https://example.com`,
+                categoryIDs: ['performance'],
+                flags: { formFactor: 'mobile', mode: 'timespan' },
+            });
+            // Simulate worker becoming ready.
+            mockWorker.dispatchEvent(new MessageEvent('message', { data: 'workerReady' }));
+            await service.ensureWorkerExists();
+            // Now the request is sent to the worker and waiting for a
+            // response.
+            // We detach the service before the worker responds.
+            await service.detach();
+            // The request should be rejected with CancelledError.
+            let error;
+            try {
+                await requestPromise;
+            }
+            catch (err) {
+                error = err;
+            }
+            assert.exists(error);
+            assert.instanceOf(error, Lighthouse.LighthouseProtocolService.CancelledError);
+            assert.strictEqual(error.message, 'Lighthouse run cancelled');
+        }
+        finally {
+            workerStub.restore();
+        }
     });
 });
 //# sourceMappingURL=LighthouseProtocolService.test.js.map

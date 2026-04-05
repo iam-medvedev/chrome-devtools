@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
-import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithEnvironment, waitFor, } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
+import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('ChatMessage', () => {
     function createComponent(props = {}) {
@@ -40,6 +40,44 @@ describeWithEnvironment('ChatMessage', () => {
         activeSidebarMessage: null,
         inlineExpandedMessages: [],
     };
+    function renderView(props) {
+        const target = document.createElement('div');
+        AiAssistance.ChatMessage.DEFAULT_VIEW({
+            onRatingClick: () => { },
+            onReportClick: () => { },
+            onCopyResponseClick: () => { },
+            scrollSuggestionsScrollContainer: () => { },
+            onSuggestionsScrollOrResize: () => { },
+            onSuggestionClick: () => { },
+            onSubmit: () => { },
+            onClose: () => { },
+            onInputChange: () => { },
+            onFeedbackSubmit: () => { },
+            showRateButtons: false,
+            isSubmitButtonDisabled: false,
+            isShowingFeedbackForm: false,
+            isLastMessage: true,
+            isFirstMessage: false,
+            showActions: true,
+            message: {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [],
+                rpcId: 99,
+            },
+            isLoading: false,
+            isReadOnly: false,
+            canShowFeedbackForm: false,
+            markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
+            currentRating: undefined,
+            suggestions: props.suggestions,
+            walkthrough: {
+                ...DEFAULT_WALKTHROUGH,
+                ...(props.walkthrough ?? {}),
+            },
+            ...props,
+        }, {}, target);
+        return target;
+    }
     it('should show the feedback form when canShowFeedbackForm is true', async () => {
         const [view] = createComponent({
             canShowFeedbackForm: true,
@@ -155,48 +193,8 @@ describeWithEnvironment('ChatMessage', () => {
     });
     describe('Walkthrough Rendering', () => {
         beforeEach(() => {
-            Root.Runtime.hostConfig.devToolsAiAssistanceV2 = {
-                enabled: true,
-            };
+            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
         });
-        function renderView(props) {
-            const target = document.createElement('div');
-            AiAssistance.ChatMessage.DEFAULT_VIEW({
-                onRatingClick: () => { },
-                onReportClick: () => { },
-                onCopyResponseClick: () => { },
-                scrollSuggestionsScrollContainer: () => { },
-                onSuggestionsScrollOrResize: () => { },
-                onSuggestionClick: () => { },
-                onSubmit: () => { },
-                onClose: () => { },
-                onInputChange: () => { },
-                onFeedbackSubmit: () => { },
-                showRateButtons: false,
-                isSubmitButtonDisabled: false,
-                isShowingFeedbackForm: false,
-                isLastMessage: true,
-                isFirstMessage: false,
-                showActions: true,
-                message: {
-                    entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                    parts: [],
-                    rpcId: 99,
-                },
-                isLoading: false,
-                isReadOnly: false,
-                canShowFeedbackForm: false,
-                markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
-                currentRating: undefined,
-                suggestions: props.suggestions,
-                walkthrough: {
-                    ...DEFAULT_WALKTHROUGH,
-                    ...(props.walkthrough ?? {}),
-                },
-                ...props,
-            }, {}, target);
-            return target;
-        }
         const stepMessage = {
             entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
             parts: [{
@@ -383,7 +381,7 @@ describeWithEnvironment('ChatMessage', () => {
             const walkthrough = target.querySelector('.walkthrough-container');
             assert.isNull(walkthrough);
         });
-        it('renders side effect confirmation when not inline and walkthrough is hidden', () => {
+        it('renders side effect confirmation regardless of walkthrough expansion state', () => {
             const sideEffectDescription = 'Proceed with cation!';
             const sideEffectMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -401,7 +399,8 @@ describeWithEnvironment('ChatMessage', () => {
                     }],
                 rpcId: 99,
             };
-            const target = renderView({
+            // Test closed state
+            const targetClosed = renderView({
                 message: sideEffectMessage,
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
@@ -409,11 +408,22 @@ describeWithEnvironment('ChatMessage', () => {
                     isExpanded: false,
                 }
             });
-            const sideEffectContainer = target.querySelector('.side-effect-container');
-            assert.isNotNull(sideEffectContainer);
-            assert.isTrue(sideEffectContainer.textContent.includes(sideEffectDescription));
+            assert.isNotNull(targetClosed.querySelector('.side-effect-container'));
+            assert.include(targetClosed.querySelector('.side-effect-container')?.textContent, sideEffectDescription);
+            // Test open state
+            const targetOpen = renderView({
+                message: sideEffectMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: false,
+                    isExpanded: true,
+                    activeSidebarMessage: sideEffectMessage,
+                }
+            });
+            assert.isNotNull(targetOpen.querySelector('.side-effect-container'));
+            assert.include(targetOpen.querySelector('.side-effect-container')?.textContent, sideEffectDescription);
         });
-        it('renders side effect confirmation when inline and walkthrough is hidden', () => {
+        it('renders side effect confirmation in inline mode regardless of walkthrough expansion state', () => {
             const sideEffectDescription = 'Proceed with cation!';
             const sideEffectMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -431,7 +441,8 @@ describeWithEnvironment('ChatMessage', () => {
                     }],
                 rpcId: 99,
             };
-            const target = renderView({
+            // Test closed state
+            const targetClosed = renderView({
                 message: sideEffectMessage,
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
@@ -439,9 +450,20 @@ describeWithEnvironment('ChatMessage', () => {
                     isExpanded: false,
                 }
             });
-            const sideEffectContainer = target.querySelector('.side-effect-container');
-            assert.isNotNull(sideEffectContainer);
-            assert.isTrue(sideEffectContainer.textContent.includes(sideEffectDescription));
+            assert.isNotNull(targetClosed.querySelector('.side-effect-container'));
+            assert.include(targetClosed.querySelector('.side-effect-container')?.textContent, sideEffectDescription);
+            // Test open state
+            const targetOpen = renderView({
+                message: sideEffectMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: true,
+                    isExpanded: true,
+                    inlineExpandedMessages: [sideEffectMessage],
+                }
+            });
+            assert.isNotNull(targetOpen.querySelector('.side-effect-container'));
+            assert.include(targetOpen.querySelector('.side-effect-container')?.textContent, sideEffectDescription);
         });
         it('does not force walkthrough expansion when there are side-effect steps', () => {
             const sideEffectMessage = {
@@ -526,9 +548,7 @@ describeWithEnvironment('ChatMessage', () => {
             assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'LCP element');
         });
         it('renders the "Export for agents" button after action buttons and before suggestions when onExportClick is provided, it is the last message, and V2 is enabled', async () => {
-            Root.Runtime.hostConfig.devToolsAiAssistanceV2 = {
-                enabled: true,
-            };
+            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
             const onExportClick = sinon.stub();
             const target = renderView({
                 onExportClick,
@@ -554,9 +574,7 @@ describeWithEnvironment('ChatMessage', () => {
             sinon.assert.calledOnce(onExportClick);
         });
         it('does not render the "Export for agents" button when V2 is disabled', async () => {
-            Root.Runtime.hostConfig.devToolsAiAssistanceV2 = {
-                enabled: false,
-            };
+            updateHostConfig({ devToolsAiAssistanceV2: { enabled: false } });
             const onExportClick = sinon.stub();
             const target = renderView({
                 onExportClick,
@@ -565,6 +583,50 @@ describeWithEnvironment('ChatMessage', () => {
             });
             const exportButton = target.querySelector('.export-for-agents-button');
             assert.isNull(exportButton);
+        });
+    });
+    describe('CSS change summary', () => {
+        beforeEach(() => {
+            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
+        });
+        it('should render devtools-code-block when hasAiV2 is true and changeSummary is present', async () => {
+            const target = renderView({
+                isLastMessage: true,
+                isLoading: false,
+                changeSummary: 'test summary',
+            });
+            const codeBlock = target.querySelector('devtools-code-block');
+            assert.instanceOf(codeBlock, MarkdownView.CodeBlock.CodeBlock);
+            assert.strictEqual(codeBlock.code, 'test summary');
+            assert.strictEqual(codeBlock.displayLimit, 11);
+        });
+        it('should NOT render devtools-code-block when changeSummary is missing', async () => {
+            const target = renderView({
+                isLastMessage: true,
+                isLoading: false,
+                changeSummary: undefined,
+            });
+            const codeBlock = target.querySelector('devtools-code-block');
+            assert.isNull(codeBlock);
+        });
+        it('should NOT render devtools-code-block when it is not the last message', async () => {
+            const target = renderView({
+                isLastMessage: false,
+                isLoading: false,
+                changeSummary: 'test summary',
+            });
+            const codeBlock = target.querySelector('devtools-code-block');
+            assert.isNull(codeBlock);
+        });
+        it('should NOT render devtools-code-block when hasAiV2 is false', async () => {
+            updateHostConfig({ devToolsAiAssistanceV2: { enabled: false } });
+            const target = renderView({
+                isLastMessage: true,
+                isLoading: false,
+                changeSummary: 'test summary',
+            });
+            const codeBlock = target.querySelector('devtools-code-block');
+            assert.isNull(codeBlock);
         });
     });
     describe('view', () => {

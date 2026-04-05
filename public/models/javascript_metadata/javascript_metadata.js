@@ -6913,10 +6913,6 @@ var NativeFunctions = [
     signatures: [["type", "?eventInitDict"]]
   },
   {
-    name: "PageHideEvent",
-    signatures: [["type", "?eventInitDict"]]
-  },
-  {
     name: "PageTransitionEvent",
     signatures: [["type", "?eventInitDict"]]
   },
@@ -7406,11 +7402,7 @@ var NativeFunctions = [
   },
   {
     name: "registerTool",
-    signatures: [["tool"]]
-  },
-  {
-    name: "unregisterTool",
-    signatures: [["name"]]
+    signatures: [["tool", "?options"]]
   },
   {
     name: "SnapEvent",

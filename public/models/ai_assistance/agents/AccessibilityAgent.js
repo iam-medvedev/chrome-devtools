@@ -5,9 +5,12 @@ import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import { ChangeManager } from '../ChangeManager.js';
 import { LighthouseFormatter } from '../data_formatters/LighthouseFormatter.js';
 import { debugLog } from '../debug.js';
+import { ExtensionScope } from '../ExtensionScope.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
+import { executeJavaScriptFunction, executeJsCode, JavascriptExecutor } from './ExecuteJavascript.js';
 /**
  * WARNING: preamble defined in code is only used when userTier is
  * TESTERS. Otherwise, a server-side preamble is used (see
@@ -17,7 +20,7 @@ const preamble = `You are an accessibility expert agent integrated into Chrome D
 Your role is to help users understand and fix accessibility issues found in Lighthouse reports.
 
 # Style Guidelines
-* **Concise and Direct**: Use short sentences and bullet points. Avoid paragraphs and long explanations.
+* **General style**: Use the precision of Strunk & White, the brevity of Hemingway, and the simple clarity of Vonnegut. Don't add repeated information, and keep the whole answer short.
 * **Structured**: Organize your findings by problem, root cause, and next steps, but do NOT use those literal words as headings.
 * **No Internal Identifiers**: NEVER show Lighthouse paths (e.g., "1,HTML,1,BODY...") to the user. Refer to elements by their tag name, classes, or IDs.
 * **Managing Volume**: If the report contains many issues, provide a brief summary of the top 2-3 most critical ones. Tell the user that there are more issues and invite them to ask for more details or to explore a specific area.
@@ -33,10 +36,28 @@ Your role is to help users understand and fix accessibility issues found in Ligh
 * \`runAccessibilityAudits\`: Trigger new accessibility snapshot audits.
 * \`getStyles\`: Get computed styles for an element by its path.
 * \`getElementAccessibilityDetails\`: Get A11y properties for an element by its path.
+* \`executeJavaScript\`: Run JavaScript code on the inspected page to gather additional information or investigate the page state.
+
+# Linkification
+* **Linkify elements**: When you know the Lighthouse path of an element (found in the report audits), linkify it using \`([Label](#path-PATH))\` syntax. Never show the path to the user directly, only use it in the link href.
 
 # Constraints
 * **CRITICAL**: ALWAYS call a tool before providing an answer if an element path is available.
 * **CRITICAL**: You are an accessibility agent. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, or any other non web-development topics.
+
+## Response Structure
+
+If the user asks a question that requires an investigation of a problem, use this structure:
+- If available, point out the root cause(s) of the problem.
+  - Example: "**Root Cause**: The page is slow because of [reason]."
+  - Example: "**Root Causes**:"
+    - [Reason 1]
+    - [Reason 2]
+- if applicable, list actionable solution suggestion(s) in order of impact:
+  - Example: "**Suggestion**: [Suggestion 1]
+  - Example: "**Suggestions**:"
+    - [Suggestion 1]
+    - [Suggestion 2]
 `;
 export class AccessibilityContext extends ConversationContext {
     #lh;
@@ -65,12 +86,33 @@ export class AccessibilityAgent extends AiAgent {
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_ACCESSIBILITY_AGENT;
     #lighthouseRecording;
+    #execJs;
+    #javascriptExecutor;
+    #changes;
+    #createExtensionScope;
+    #currentTurnId = 0;
     constructor(opts) {
         super(opts);
         this.#lighthouseRecording = opts.lighthouseRecording;
+        this.#changes = opts.changeManager || new ChangeManager();
+        this.#execJs = opts.execJs ?? executeJsCode;
+        this.#createExtensionScope =
+            opts.createExtensionScope ?? ((changes) => {
+                return new ExtensionScope(changes, this.sessionId, this.#getDocumentBodyNode(), this.#currentTurnId);
+            });
+        this.#javascriptExecutor = new JavascriptExecutor({
+            executionMode: this.executionMode,
+            getContextNode: () => this.#getDocumentBodyNode(),
+            createExtensionScope: this.#createExtensionScope.bind(this),
+            changes: this.#changes,
+        }, this.#execJs);
     }
     get userTier() {
         return Root.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    }
+    get executionMode() {
+        return Root.Runtime.hostConfig.devToolsFreestyler?.executionMode ??
+            Root.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
     }
     get options() {
         // TODO(b/491772868): tidy up userTier & feature flags in the backend.
@@ -80,6 +122,36 @@ export class AccessibilityAgent extends AiAgent {
             temperature,
             modelId,
         };
+    }
+    preambleFeatures() {
+        return ['function_calling'];
+    }
+    async preRun() {
+        this.#currentTurnId++;
+        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        const domModel = target?.model(SDK.DOMModel.DOMModel);
+        // We need to ensure the document is requested so that #getDocumentBodyNode()
+        // can return a valid node for the JavaScript execution context.
+        if (domModel && !domModel.existingDocument()) {
+            try {
+                await domModel.requestDocument();
+            }
+            catch (e) {
+                debugLog('Failed to request document', e);
+            }
+        }
+    }
+    /**
+     * For the Accessibility Agent, there is no single "selected" node.
+     * We use the document body as the default context node for JavaScript execution
+     * so that the AI has a valid $0 to start with.
+     */
+    #getDocumentBodyNode() {
+        const document = SDK.TargetManager.TargetManager.instance()
+            .primaryPageTarget()
+            ?.model(SDK.DOMModel.DOMModel)
+            ?.existingDocument();
+        return document?.body ?? document ?? null;
     }
     async *handleContextDetails(lhr) {
         if (!lhr) {
@@ -106,6 +178,7 @@ export class AccessibilityAgent extends AiAgent {
         return domModel.nodeForId(nodeId);
     }
     #declareFunctions() {
+        this.declareFunction('executeJavaScript', executeJavaScriptFunction(this.#javascriptExecutor));
         this.declareFunction('runAccessibilityAudits', {
             description: 'Triggers new Lighthouse accessibility audits in snapshot mode. Use this if the user has made changes to the page and you want to re-evaluate the accessibility audits.',
             parameters: {
@@ -123,7 +196,7 @@ export class AccessibilityAgent extends AiAgent {
             },
             displayInfoFromArgs: params => {
                 return {
-                    title: i18n.i18n.lockedString('Running accessibility audits…'),
+                    title: i18n.i18n.lockedString('Running accessibility audits'),
                     thought: params.explanation,
                     action: 'runAccessibilityAudits()'
                 };
@@ -162,7 +235,7 @@ export class AccessibilityAgent extends AiAgent {
             },
             displayInfoFromArgs: params => {
                 return {
-                    title: i18n.i18n.lockedString(`Getting Lighthouse audits for ${params.categoryId}…`),
+                    title: i18n.i18n.lockedString(`Getting Lighthouse audits for ${params.categoryId}`),
                     action: `getLighthouseAudits('${params.categoryId}')`
                 };
             },
@@ -226,7 +299,24 @@ export class AccessibilityAgent extends AiAgent {
                 for (const prop of params.styleProperties) {
                     result[prop] = styles.get(prop);
                 }
-                return { result: JSON.stringify(result, null, 2) };
+                result['backendNodeId'] = node.backendNodeId();
+                const widgets = [];
+                const matchedStyles = await node.domModel().cssModel().getMatchedStyles(node.id);
+                if (matchedStyles) {
+                    widgets.push({
+                        name: 'COMPUTED_STYLES',
+                        data: {
+                            computedStyles: styles,
+                            backendNodeId: node.backendNodeId(),
+                            matchedCascade: matchedStyles,
+                            properties: params.styleProperties,
+                        }
+                    });
+                }
+                return {
+                    result: JSON.stringify(result, null, 2),
+                    widgets: widgets.length > 0 ? widgets : undefined,
+                };
             },
         });
         this.declareFunction('getElementAccessibilityDetails', {
@@ -288,6 +378,7 @@ export class AccessibilityAgent extends AiAgent {
                     }, {}),
                     isIgnored: axNode.ignored(),
                     ignoredReasons: axNode.ignoredReasons(),
+                    backendNodeId: node.backendNodeId(),
                 };
                 return { result: JSON.stringify(result, null, 2) };
             },

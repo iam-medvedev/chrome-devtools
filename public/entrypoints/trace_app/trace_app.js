@@ -5214,9 +5214,9 @@ UI8.ContextMenu.registerItem({
 QuickOpen.FilteredListWidget.registerProvider({
   prefix: "@",
   iconName: "symbol",
-  async provider(jslogContext) {
+  async provider() {
     const Sources = await loadSourcesModule2();
-    return new Sources.OutlineQuickOpen.OutlineQuickOpen(jslogContext);
+    return new Sources.OutlineQuickOpen.OutlineQuickOpen();
   },
   helpTitle: i18nLazyString11(UIStrings11.goToSymbol),
   titlePrefix: i18nLazyString11(UIStrings11.goTo),
@@ -5226,9 +5226,9 @@ QuickOpen.FilteredListWidget.registerProvider({
 QuickOpen.FilteredListWidget.registerProvider({
   prefix: ":",
   iconName: "colon",
-  async provider(jslogContext) {
+  async provider() {
     const Sources = await loadSourcesModule2();
-    return new Sources.GoToLineQuickOpen.GoToLineQuickOpen(jslogContext);
+    return new Sources.GoToLineQuickOpen.GoToLineQuickOpen();
   },
   helpTitle: i18nLazyString11(UIStrings11.goToLine),
   titlePrefix: i18nLazyString11(UIStrings11.goTo),
@@ -5238,9 +5238,9 @@ QuickOpen.FilteredListWidget.registerProvider({
 QuickOpen.FilteredListWidget.registerProvider({
   prefix: "",
   iconName: "document",
-  async provider(jslogContext) {
+  async provider() {
     const Sources = await loadSourcesModule2();
-    return new Sources.OpenFileQuickOpen.OpenFileQuickOpen(jslogContext);
+    return new Sources.OpenFileQuickOpen.OpenFileQuickOpen();
   },
   helpTitle: i18nLazyString11(UIStrings11.openFile),
   titlePrefix: i18nLazyString11(UIStrings11.open),
@@ -5644,7 +5644,11 @@ var UIStrings13 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  chromeFrameInLayersView: "Chrome frame in Layers view"
+  chromeFrameInLayersView: "Chrome frame in Layers view",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineShowAllEvents: "Show all events"
 };
 var str_13 = i18n26.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings13);
 var i18nLazyString13 = i18n26.i18n.getLazilyComputedLocalizedString.bind(void 0, str_13);
@@ -5882,6 +5886,14 @@ Common12.Settings.registerSettingExtension({
   settingName: "frame-viewer-chrome-window",
   settingType: "boolean",
   defaultValue: true
+});
+Common12.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString13(UIStrings13.timelineShowAllEvents),
+  settingName: "timeline-show-all-events",
+  settingType: "boolean",
+  defaultValue: false
 });
 Common12.Settings.registerSettingExtension({
   category: "PERFORMANCE",

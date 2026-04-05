@@ -56,6 +56,10 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     get endTime(): Trace.Types.Timing.Milli;
     get compactMode(): boolean;
     set compactMode(v: boolean);
+    get maxLinkLength(): number | undefined;
+    set maxLinkLength(maxLinkLength: number | undefined);
+    get maxRows(): number | undefined;
+    set maxRows(maxRows: number | undefined);
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
     set model(model: {
         selectedEvents: Trace.Types.Events.Event[] | null;

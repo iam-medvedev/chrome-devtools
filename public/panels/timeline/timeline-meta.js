@@ -55,7 +55,11 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  chromeFrameInLayersView: "Chrome frame in Layers view"
+  chromeFrameInLayersView: "Chrome frame in Layers view",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineShowAllEvents: "Show all events"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
@@ -293,6 +297,14 @@ Common.Settings.registerSettingExtension({
   settingName: "frame-viewer-chrome-window",
   settingType: "boolean",
   defaultValue: true
+});
+Common.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString(UIStrings.timelineShowAllEvents),
+  settingName: "timeline-show-all-events",
+  settingType: "boolean",
+  defaultValue: false
 });
 Common.Settings.registerSettingExtension({
   category: "PERFORMANCE",

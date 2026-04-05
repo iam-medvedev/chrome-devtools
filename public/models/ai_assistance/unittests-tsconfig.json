@@ -49,7 +49,6 @@
     "../../../../../../front_end/models/ai_assistance/AiHistoryStorage.test.ts",
     "../../../../../../front_end/models/ai_assistance/BuiltInAi.test.ts",
     "../../../../../../front_end/models/ai_assistance/ChangeManager.test.ts",
-    "../../../../../../front_end/models/ai_assistance/ConversationHandler.test.ts",
     "../../../../../../front_end/models/ai_assistance/EvaluateAction.test.ts",
     "../../../../../../front_end/models/ai_assistance/ExtensionScope.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/AccessibilityAgent.test.ts",

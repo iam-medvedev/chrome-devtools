@@ -2,27 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import * as WebMCP from '../../models/web_mcp/web_mcp.js';
 import { findMenuItemWithLabel, getMenuForToolbarButton } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Application from './application.js';
 const { DEFAULT_VIEW, WebMCPView, filterToolCalls } = Application.WebMCPView;
+function createTool(name, description, frameId, target, backendNodeId) {
+    return new WebMCP.WebMCPModel.Tool({ name, description, inputSchema: { type: 'object' }, frameId, backendNodeId }, target);
+}
 describeWithEnvironment('WebMCPView (View)', () => {
+    const createDefaultViewInput = () => {
+        return {
+            filters: { text: '' },
+            tools: [],
+            toolCalls: [],
+            filterButtons: WebMCPView.createFilterButtons(() => { }, () => { }),
+            onClearLogClick: () => { },
+            onFilterChange: () => { },
+            selectedTool: null,
+            onToolSelect: () => { },
+            selectedCall: null,
+            onCallSelect: () => { },
+        };
+    };
     it('renders empty when no tools are available', async () => {
         const target = document.createElement('div');
         target.style.width = '600px';
         target.style.height = '400px';
-        renderElementIntoDOM(target);
-        const filterButtons = WebMCPView.createFilterButtons(() => { }, () => { });
-        DEFAULT_VIEW({
-            filters: { text: '' },
-            tools: [],
-            toolCalls: [],
-            filterButtons,
-            onClearLogClick: () => { },
-            onFilterChange: () => { },
-        }, {}, target);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        DEFAULT_VIEW(createDefaultViewInput(), {}, target);
         const listElements = target.querySelectorAll('.tool-item');
         assert.lengthOf(listElements, 0);
         const emptyStateHeader = target.querySelector('.tool-list .empty-state-header');
@@ -36,28 +47,28 @@ describeWithEnvironment('WebMCPView (View)', () => {
         await assertScreenshot('application/webmcp-empty.png');
     });
     it('renders tool calls with different statuses', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '600px';
         target.style.height = '400px';
-        renderElementIntoDOM(target);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        const tools = [
+            createTool('list_files', 'List files', 'frame-1', sdkTarget),
+            createTool('read_file', 'Read a file', 'frame-1', sdkTarget),
+            createTool('write_file', 'Write a file', 'frame-1', sdkTarget),
+            createTool('long_running_task', 'A long task', 'frame-1', sdkTarget),
+        ];
         const toolCalls = [
             {
                 invocationId: '1',
                 input: '{"dir": "/tmp"}',
-                tool: {
-                    name: 'list_files',
-                    description: 'desc',
-                    frameId: 'frame-1',
-                },
+                tool: tools[0],
             },
             {
                 invocationId: '2',
                 input: '{"path": "/tmp/test.txt"}',
-                tool: {
-                    name: 'read_file',
-                    description: 'desc',
-                    frameId: 'frame-1',
-                },
+                tool: tools[1],
                 result: {
                     status: "Success" /* Protocol.WebMCP.InvocationStatus.Success */,
                     output: 'File content here',
@@ -66,11 +77,7 @@ describeWithEnvironment('WebMCPView (View)', () => {
             {
                 invocationId: '3',
                 input: '{"path": "/root/secret.txt"}',
-                tool: {
-                    name: 'write_file',
-                    description: 'desc',
-                    frameId: 'frame-1',
-                },
+                tool: tools[2],
                 result: {
                     status: "Error" /* Protocol.WebMCP.InvocationStatus.Error */,
                     errorText: 'Permission denied',
@@ -79,68 +86,50 @@ describeWithEnvironment('WebMCPView (View)', () => {
             {
                 invocationId: '4',
                 input: '{"timeout": 100}',
-                tool: {
-                    name: 'long_running_task',
-                    description: 'desc',
-                    frameId: 'frame-1',
-                },
+                tool: tools[3],
                 result: {
                     status: "Canceled" /* Protocol.WebMCP.InvocationStatus.Canceled */,
                 },
             },
         ];
-        const filterButtons = WebMCPView.createFilterButtons(() => { }, () => { });
         DEFAULT_VIEW({
-            tools: [],
+            ...createDefaultViewInput(),
+            tools,
             toolCalls,
-            filters: { text: '' },
-            filterButtons,
-            onClearLogClick: function () {
-                throw new Error('Function not implemented.');
-            },
-            onFilterChange: function () {
-                throw new Error('Function not implemented.');
-            }
         }, {}, target);
         const grid = target.querySelector('devtools-data-grid');
         assert.isNotNull(grid);
         await assertScreenshot('application/webmcp-tool-calls.png');
     });
-    it('renders a list of tools correctly (screenshot)', async () => {
+    it('renders a list of tools correctly', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
         const container = document.createElement('div');
         container.style.width = '600px';
         container.style.height = '400px';
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         const tools = [
-            { name: 'calculator', description: 'Calculates math expressions', frameId: 'frame1' },
-            { name: 'weather', description: 'Gets the current weather', frameId: 'frame1' }
+            createTool('calculator', 'Calculates math expressions', 'frame1', sdkTarget),
+            createTool('weather', 'Gets the current weather', 'frame1', sdkTarget)
         ];
-        const filterButtons = WebMCPView.createFilterButtons(() => { }, () => { });
         DEFAULT_VIEW({
-            filters: { text: '' },
+            ...createDefaultViewInput(),
             tools,
-            filterButtons,
-            onClearLogClick: () => { },
-            onFilterChange: () => { },
-            toolCalls: [],
         }, {}, container);
         await assertScreenshot('application/webmcp_view.png');
     });
     it('renders a list of tools', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
         const target = document.createElement('div');
-        renderElementIntoDOM(target);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
         const tools = [
-            { name: 'tool1', description: 'desc1', frameId: 'frame1' },
-            { name: 'tool2', description: 'desc2', frameId: 'frame1' }
+            createTool('tool1', 'desc1', 'frame1', sdkTarget),
+            createTool('tool2', 'desc2', 'frame1', sdkTarget)
         ];
-        const filterButtons = WebMCPView.createFilterButtons(() => { }, () => { });
         DEFAULT_VIEW({
-            filters: { text: '' },
+            ...createDefaultViewInput(),
             tools,
-            filterButtons,
-            onClearLogClick: () => { },
-            onFilterChange: () => { },
-            toolCalls: [],
         }, {}, target);
         const listElements = target.querySelectorAll('.tool-item');
         assert.lengthOf(listElements, 2);
@@ -148,36 +137,70 @@ describeWithEnvironment('WebMCPView (View)', () => {
         assert.strictEqual(listElements[0].querySelector('.tool-description')?.textContent, 'desc1');
         assert.isNull(target.querySelector('.tool-list .empty-state'));
     });
-    it('renders filter bar with filters applied (screenshot)', async () => {
+    it('highlights the selected tool', () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const target = document.createElement('div');
+        const tools = [
+            createTool('tool1', 'desc1', 'frame1', sdkTarget),
+            createTool('tool2', 'desc2', 'frame1', sdkTarget)
+        ];
+        DEFAULT_VIEW({
+            ...createDefaultViewInput(),
+            tools,
+            selectedTool: tools[1],
+        }, {}, target);
+        const listElements = target.querySelectorAll('.tool-item');
+        assert.lengthOf(listElements, 2);
+        assert.isFalse(listElements[0].classList.contains('selected'));
+        assert.isTrue(listElements[1].classList.contains('selected'));
+    });
+    it('renders a selected tool call details in a TabbedPane', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const target = document.createElement('div');
+        target.style.width = '600px';
+        target.style.height = '400px';
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        const tool = createTool('list_files', 'List files', 'frame-1', sdkTarget);
+        const selectedCall = {
+            invocationId: '1',
+            input: '{"dir": "/tmp"}',
+            tool,
+            result: {
+                status: "Success" /* Protocol.WebMCP.InvocationStatus.Success */,
+                output: 'File content here',
+            },
+        };
+        DEFAULT_VIEW({
+            ...createDefaultViewInput(),
+            toolCalls: [selectedCall],
+            selectedCall,
+        }, {}, target);
+        await assertScreenshot('application/webmcp-tool-call-details.png');
+    });
+    it('renders filter bar with filters applied', async () => {
         const container = document.createElement('div');
         container.style.width = '600px';
         container.style.height = '400px';
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         const filterButtons = WebMCPView.createFilterButtons(() => { }, () => { });
         // Simulate setting an active filter visually
         filterButtons.toolTypes.setCount(1);
         DEFAULT_VIEW({
+            ...createDefaultViewInput(),
             filters: { text: 'test', toolTypes: { imperative: true } },
-            tools: [],
-            toolCalls: [],
             filterButtons,
-            onClearLogClick: () => { },
-            onFilterChange: () => { },
         }, {}, container);
         await assertScreenshot('application/webmcp_filter_bar_applied.png');
     });
     it('calls onClearLogClick when clear log button is clicked', async () => {
         const target = document.createElement('div');
-        renderElementIntoDOM(target);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
         const onClearLogClick = sinon.spy();
-        const filterButtons = WebMCPView.createFilterButtons(() => { }, () => { });
         DEFAULT_VIEW({
-            filters: { text: '' },
-            tools: [],
-            toolCalls: [],
-            filterButtons,
+            ...createDefaultViewInput(),
             onClearLogClick,
-            onFilterChange: () => { },
         }, {}, target);
         const clearButton = target.querySelector('devtools-button[title="Clear log"]');
         assert.isNotNull(clearButton);
@@ -190,7 +213,7 @@ describeWithEnvironment('WebMCPView Presenter', () => {
     async function setup() {
         updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         target = createTarget();
-        const model = target.model(SDK.WebMCPModel.WebMCPModel);
+        const model = target.model(WebMCP.WebMCPModel.WebMCPModel);
         const viewStub = createViewFunctionStub(WebMCPView);
         new WebMCPView(document.createElement('div'), viewStub);
         await viewStub.nextInput;
@@ -201,22 +224,54 @@ describeWithEnvironment('WebMCPView Presenter', () => {
     });
     it('passes tools to the view sorted by name', async () => {
         const { model, viewStub } = await setup();
-        model.onToolsAdded([
-            { name: 'b-tool', description: 'desc1', frameId: 'frame1' },
-            { name: 'a-tool', description: 'desc2', frameId: 'frame1' }
-        ]);
+        model.toolsAdded({
+            tools: [
+                {
+                    name: 'b-tool',
+                    description: 'desc1',
+                    inputSchema: { type: 'object' },
+                    frameId: 'frame1'
+                },
+                {
+                    name: 'a-tool',
+                    description: 'desc2',
+                    inputSchema: { type: 'object' },
+                    frameId: 'frame1'
+                }
+            ]
+        });
         const input = await viewStub.nextInput;
         assert.lengthOf(input.tools, 2);
         assert.strictEqual(input.tools[0].name, 'a-tool');
         assert.strictEqual(input.tools[1].name, 'b-tool');
     });
+    it('updates selected tool', async () => {
+        const { model, viewStub } = await setup();
+        const toolProtocol = {
+            name: 'tool1',
+            description: 'desc1',
+            inputSchema: { type: 'object' },
+            frameId: 'frame1'
+        };
+        model.toolsAdded({ tools: [toolProtocol] });
+        const input = await viewStub.nextInput;
+        const tool = input.tools[0];
+        viewStub.input.onToolSelect(tool);
+        const nextInput = await viewStub.nextInput;
+        assert.strictEqual(nextInput.selectedTool, tool);
+    });
     it('updates when tools are removed', async () => {
         const { model, viewStub } = await setup();
-        const tool = { name: 'tool1', description: 'desc1', frameId: 'frame1' };
-        model.onToolsAdded([tool]);
+        const tool = {
+            name: 'tool1',
+            description: 'desc1',
+            inputSchema: { type: 'object' },
+            frameId: 'frame1'
+        };
+        model.toolsAdded({ tools: [tool] });
         await viewStub.nextInput;
         assert.lengthOf(viewStub.input.tools, 1);
-        model.onToolsRemoved([tool]);
+        model.toolsRemoved({ tools: [tool] });
         const input = await viewStub.nextInput;
         assert.lengthOf(input.tools, 0);
     });
@@ -247,24 +302,24 @@ describeWithEnvironment('WebMCPView Presenter', () => {
     });
 });
 describe('filterToolCalls', () => {
+    const target = sinon.createStubInstance(SDK.Target.Target);
+    const tools = [
+        createTool('list_files', 'desc', 'frame-1', target),
+        createTool('read_file', 'desc', 'frame-1', target),
+        createTool('write_file', 'desc', 'frame-1', target),
+        createTool('long_running_task', 'desc', 'frame-1', target, 1),
+        createTool('declarative_success', 'desc', 'frame-1', target, 2),
+    ];
     const mockCalls = [
         {
             invocationId: '1',
             input: '{"dir": "/tmp"}',
-            tool: {
-                name: 'list_files',
-                description: 'desc',
-                frameId: 'frame-1',
-            },
+            tool: tools[0],
         },
         {
             invocationId: '2',
             input: '{"path": "/tmp/test.txt"}',
-            tool: {
-                name: 'read_file',
-                description: 'desc',
-                frameId: 'frame-1',
-            },
+            tool: tools[1],
             result: {
                 status: "Success" /* Protocol.WebMCP.InvocationStatus.Success */,
                 output: 'File content here',
@@ -273,11 +328,7 @@ describe('filterToolCalls', () => {
         {
             invocationId: '3',
             input: '{"path": "/root/secret.txt"}',
-            tool: {
-                name: 'write_file',
-                description: 'desc',
-                frameId: 'frame-1',
-            },
+            tool: tools[2],
             result: {
                 status: "Error" /* Protocol.WebMCP.InvocationStatus.Error */,
                 errorText: 'Permission denied',
@@ -286,22 +337,12 @@ describe('filterToolCalls', () => {
         {
             invocationId: '4',
             input: '{"timeout": 100}',
-            tool: {
-                name: 'long_running_task',
-                description: 'desc',
-                frameId: 'frame-1',
-                backendNodeId: 1,
-            },
+            tool: tools[3],
         },
         {
             invocationId: '5',
             input: '{}',
-            tool: {
-                name: 'declarative_success',
-                description: 'desc',
-                frameId: 'frame-1',
-                backendNodeId: 2,
-            },
+            tool: tools[3],
             result: {
                 status: "Success" /* Protocol.WebMCP.InvocationStatus.Success */,
                 output: 'Declarative success content',
@@ -366,6 +407,116 @@ describe('filterToolCalls', () => {
         });
         assert.lengthOf(result, 1);
         assert.strictEqual(result[0].invocationId, '5');
+    });
+});
+describeWithEnvironment('ToolDetailsWidget', () => {
+    it('renders a DOM node origin', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const container = document.createElement('div');
+        container.style.width = '600px';
+        container.style.height = '400px';
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const domNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        domNode.getAttribute.withArgs('id').returns('my-id');
+        domNode.getAttribute.withArgs('class').returns('class1 class2');
+        domNode.nodeNameInCorrectCase.returns('div');
+        const tool = createTool('my-tool', 'my description', 'frame1', sdkTarget);
+        sinon.stub(tool, 'node').get(() => ({
+            resolvePromise: () => Promise.resolve(domNode),
+        }));
+        const widget = new Application.WebMCPView.ToolDetailsWidget();
+        widget.markAsRoot();
+        widget.show(container);
+        widget.tool = tool;
+        await widget.updateComplete;
+        await assertScreenshot('application/webmcp_tool_details_node.png');
+    });
+    it('renders a stack trace origin', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const container = document.createElement('div');
+        container.style.width = '600px';
+        container.style.height = '400px';
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const tool = createTool('my-tool', 'my description', 'frame1', sdkTarget);
+        sinon.stub(tool, 'stackTrace')
+            .get(() => Promise.resolve(StubStackTrace.create(['http://example.com/script.js:myFunction:10:5'])));
+        const widget = new Application.WebMCPView.ToolDetailsWidget();
+        widget.markAsRoot();
+        widget.show(container);
+        widget.tool = tool;
+        await widget.updateComplete;
+        await assertScreenshot('application/webmcp_tool_details_stacktrace.png');
+    });
+    it('renders a frame', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const container = document.createElement('div');
+        container.style.width = '600px';
+        container.style.height = '400px';
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const frame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
+        frame.displayName.returns('My Frame Name');
+        const tool = createTool('my-tool', 'my description', 'frame1', sdkTarget);
+        sinon.stub(tool, 'frame').get(() => frame);
+        const widget = new Application.WebMCPView.ToolDetailsWidget();
+        widget.markAsRoot();
+        widget.show(container);
+        widget.tool = tool;
+        await widget.updateComplete;
+        await assertScreenshot('application/webmcp_tool_details_frame.png');
+    });
+});
+describeWithEnvironment('PayloadWidget (View)', () => {
+    const { PAYLOAD_DEFAULT_VIEW } = Application.WebMCPView;
+    it('renders parsed JSON input', async () => {
+        const target = document.createElement('div');
+        target.style.width = '600px';
+        target.style.height = '400px';
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        PAYLOAD_DEFAULT_VIEW({
+            valueObject: { key1: 'value1', key2: ['a', 'b'] },
+        }, {}, target);
+        await assertScreenshot('application/webmcp_payload_parsed.png');
+    });
+    it('renders unparsable input as raw source', async () => {
+        const target = document.createElement('div');
+        target.style.width = '600px';
+        target.style.height = '400px';
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        PAYLOAD_DEFAULT_VIEW({
+            valueString: 'invalid json input',
+        }, {}, target);
+        await assertScreenshot('application/webmcp_payload_unparsable.png');
+    });
+});
+describeWithEnvironment('PayloadWidget', () => {
+    const { PayloadWidget } = Application.WebMCPView;
+    async function createWidget() {
+        const view = createViewFunctionStub(PayloadWidget);
+        const widget = new PayloadWidget(undefined, view);
+        widget.markAsRoot();
+        renderElementIntoDOM(widget);
+        await view.nextInput;
+        return { view, widget };
+    }
+    it('renders nothing if no call is assigned', async () => {
+        const { view } = await createWidget();
+        assert.isUndefined(view.input.valueObject);
+        assert.isUndefined(view.input.valueString);
+    });
+    it('passes valid JSON input to view', async () => {
+        const { view, widget } = await createWidget();
+        widget.valueObject = { key: 'value' };
+        const nextInput = await view.nextInput;
+        assert.deepEqual(nextInput.valueObject, { key: 'value' });
+    });
+    it('passes string input to view', async () => {
+        const { view, widget } = await createWidget();
+        widget.valueString = 'invalid json';
+        const nextInput = await view.nextInput;
+        assert.strictEqual(nextInput.valueString, 'invalid json');
     });
 });
 //# sourceMappingURL=WebMCPView.test.js.map

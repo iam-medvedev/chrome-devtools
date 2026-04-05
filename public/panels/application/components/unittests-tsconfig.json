@@ -46,6 +46,7 @@
   "files": [
     "../../../../../../../front_end/panels/application/components/BackForwardCacheView.test.ts",
     "../../../../../../../front_end/panels/application/components/BounceTrackingMitigationsView.test.ts",
+    "../../../../../../../front_end/panels/application/components/CrashReportContextGrid.test.ts",
     "../../../../../../../front_end/panels/application/components/EndpointsGrid.test.ts",
     "../../../../../../../front_end/panels/application/components/InterestGroupAccessGrid.test.ts",
     "../../../../../../../front_end/panels/application/components/ProtocolHandlersView.test.ts",

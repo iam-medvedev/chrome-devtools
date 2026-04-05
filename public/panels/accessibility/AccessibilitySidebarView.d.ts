@@ -1,13 +1,15 @@
+import '../../ui/components/switch/switch.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class AccessibilitySidebarView extends UI.Widget.VBox {
     #private;
     private skipNextPullNode;
     private readonly sidebarPaneStack;
-    private readonly breadcrumbsSubPane;
     private readonly ariaSubPane;
     private readonly axNodeSubPane;
     private readonly sourceOrderSubPane;
+    private readonly toggleContainer;
+    private readonly toggleAction;
     private constructor();
     static instance(opts?: {
         forceNew: boolean;
@@ -20,5 +22,7 @@ export declare class AccessibilitySidebarView extends UI.Widget.VBox {
     wasShown(): void;
     willHide(): void;
     private pullNode;
+    private updateToggle;
+    private onToggleChange;
     private onNodeChange;
 }

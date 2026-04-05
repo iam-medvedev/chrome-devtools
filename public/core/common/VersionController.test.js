@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Root from '../root/root.js';
 import * as Common from './common.js';
 const InMemoryStorage = Common.Settings.InMemoryStorage;
 describe('VersionController', () => {
@@ -604,6 +605,73 @@ describe('updateVersionFrom41To42', () => {
         versionController.updateVersionFrom41To42();
         const first = recordingsSetting.get()[0];
         assert.isTrue(first.flow.steps.length <= 4096);
+    });
+});
+describe('updateVersionFrom42To43', () => {
+    let settings;
+    let syncedStorage;
+    let globalStorage;
+    let localStorage;
+    beforeEach(() => {
+        const mockStore = new Common.Settings.InMemoryStorage();
+        syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        localStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        Common.Settings.registerSettingExtension({
+            settingName: 'timeline-show-all-events',
+            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            defaultValue: false,
+            storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+        });
+        settings = new Common.Settings.Settings({
+            syncedStorage,
+            globalStorage,
+            localStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            runSettingsMigration: false,
+        });
+    });
+    afterEach(() => {
+        Common.Settings.resetSettings();
+    });
+    it('does nothing if timeline-show-all-events experiment is not enabled', () => {
+        const versionController = new Common.VersionController.VersionController(settings);
+        const timelineShowAllEventsSetting = settings.moduleSetting('timeline-show-all-events');
+        timelineShowAllEventsSetting.set(false);
+        versionController.updateVersionFrom42To43();
+        assert.isFalse(timelineShowAllEventsSetting.get());
+    });
+    it('sets timeline-show-all-events setting to true if experiment is enabled', () => {
+        const versionController = new Common.VersionController.VersionController(settings);
+        const timelineShowAllEventsSetting = settings.moduleSetting('timeline-show-all-events');
+        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
+        getValueFromStorageStub.withArgs('timeline-show-all-events').returns(true);
+        versionController.updateVersionFrom42To43();
+        assert.isTrue(timelineShowAllEventsSetting.get());
+        getValueFromStorageStub.restore();
+    });
+    it('does not overwrite timeline-show-all-events setting if already present in syncedStorage', () => {
+        const versionController = new Common.VersionController.VersionController(settings);
+        const timelineShowAllEventsSetting = settings.moduleSetting('timeline-show-all-events');
+        timelineShowAllEventsSetting.set(true);
+        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
+        getValueFromStorageStub.withArgs('timeline-show-all-events').returns(true);
+        const moduleSettingSpy = sinon.spy(settings, 'moduleSetting');
+        versionController.updateVersionFrom42To43();
+        sinon.assert.notCalled(moduleSettingSpy);
+        assert.isTrue(timelineShowAllEventsSetting.get());
+        getValueFromStorageStub.restore();
+        moduleSettingSpy.restore();
+    });
+    it('does not crash if setting is not registered', () => {
+        const versionController = new Common.VersionController.VersionController(settings);
+        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
+        getValueFromStorageStub.withArgs('timeline-show-all-events').returns(true);
+        const moduleSettingStub = sinon.stub(settings, 'moduleSetting');
+        moduleSettingStub.withArgs('timeline-show-all-events').throws();
+        versionController.updateVersionFrom42To43();
+        moduleSettingStub.restore();
+        getValueFromStorageStub.restore();
     });
 });
 describe('access logging', () => {

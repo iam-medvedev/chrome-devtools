@@ -52,7 +52,6 @@ describeWithMockConnection('AI Assistance Panel', () => {
     }
     beforeEach(() => {
         viewManagerIsViewVisibleStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'isViewVisible');
-        AiAssistanceModel.ConversationHandler.ConversationHandler.removeInstance();
         registerNoopActions([
             'elements.toggle-element-search',
             'timeline.record-reload',
@@ -1766,81 +1765,6 @@ describeWithMockConnection('AI Assistance Panel', () => {
             nextInput = await view.nextInput;
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.isTrue(liveAnnouncerStatusStub.calledWith('Answer ready'), 'Expected live announcer status to be called with the text "Answer loading"');
-        });
-    });
-    describe('external requests', () => {
-        it('can switch contexts', async () => {
-            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
-            updateHostConfig({
-                devToolsFreestyler: {
-                    enabled: true,
-                }
-            });
-            const aidaClient = mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test2' }], [{ explanation: 'test3' }]]);
-            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
-                aidaClient,
-                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
-            });
-            const { panel, view } = await createAiAssistancePanel({ aidaClient });
-            await panel.handleAction('drjones.network-floating-button');
-            let nextInput = await view.nextInput;
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            nextInput.props.onTextSubmit('User question to DrJones?');
-            nextInput = await view.nextInput;
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            assert.deepEqual(nextInput.props.messages, [
-                {
-                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
-                    text: 'User question to DrJones?',
-                    imageInput: undefined,
-                },
-                {
-                    parts: [{
-                            type: 'answer',
-                            text: 'test',
-                        }],
-                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
-                    rpcId: undefined,
-                },
-            ]);
-            const generator = await conversationHandler.handleExternalRequest({
-                prompt: 'Please help me debug this problem',
-                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */
-            });
-            const response = await generator.next();
-            assert.strictEqual(response.value.message, 'test2');
-            assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            view.input.props.onTextSubmit('Follow-up question to DrJones?');
-            nextInput = await view.nextInput;
-            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-            assert.deepEqual(nextInput.props.messages, [
-                {
-                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
-                    text: 'User question to DrJones?',
-                    imageInput: undefined,
-                },
-                {
-                    parts: [{
-                            type: 'answer',
-                            text: 'test',
-                        }],
-                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
-                    rpcId: undefined,
-                },
-                {
-                    entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */,
-                    text: 'Follow-up question to DrJones?',
-                    imageInput: undefined,
-                },
-                {
-                    parts: [{
-                            type: 'answer',
-                            text: 'test3',
-                        }],
-                    entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
-                    rpcId: undefined,
-                },
-            ]);
         });
     });
     describe('Interleaved Responses', () => {

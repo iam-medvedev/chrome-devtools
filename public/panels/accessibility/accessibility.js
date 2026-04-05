@@ -1590,9 +1590,25 @@ var AccessibilitySidebarView_exports = {};
 __export(AccessibilitySidebarView_exports, {
   AccessibilitySidebarView: () => AccessibilitySidebarView
 });
-import * as Root2 from "./../../core/root/root.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
+import "./../../ui/components/switch/switch.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as UI4 from "./../../ui/legacy/legacy.js";
+import * as Lit2 from "./../../ui/lit/lit.js";
+
+// gen/front_end/panels/accessibility/accessibilitySidebarView.css.js
+var accessibilitySidebarView_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.accessibility-toggle-container {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--sys-color-divider);
+}
+
+/*# sourceURL=${import.meta.resolve("./accessibilitySidebarView.css")} */`;
 
 // gen/front_end/panels/accessibility/ARIAAttributesView.js
 var ARIAAttributesView_exports = {};
@@ -4419,743 +4435,12 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
   }
 };
 
-// gen/front_end/panels/accessibility/AXBreadcrumbsPane.js
-var AXBreadcrumbsPane_exports = {};
-__export(AXBreadcrumbsPane_exports, {
-  AXBreadcrumb: () => AXBreadcrumb,
-  AXBreadcrumbsPane: () => AXBreadcrumbsPane,
-  RoleStyles: () => RoleStyles
-});
-import * as Common2 from "./../../core/common/common.js";
-import * as Host from "./../../core/host/host.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as Feedback from "./../../ui/components/panel_feedback/panel_feedback.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
-
-// gen/front_end/panels/accessibility/axBreadcrumbs.css.js
-var axBreadcrumbs_css_default = `/*
- * Copyright 2017 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-.ax-breadcrumbs-ignored-node {
-  font-style: italic;
-  opacity: 70%;
-}
-
-.ax-breadcrumbs {
-  padding-top: 1px;
-  margin: 0;
-  position: relative;
-}
-
-.ax-breadcrumbs .ax-node {
-  align-items: center;
-  margin-top: 1px;
-  min-height: 16px;
-  overflow-x: hidden;
-  padding-left: 4px;
-  padding-right: 4px;
-  padding-top: 1px;
-  position: relative;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ax-breadcrumbs .ax-node span {
-  flex-shrink: 0;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ax-breadcrumbs .ax-node .wrapper {
-  padding-left: 12px;
-  overflow-x: hidden;
-}
-
-.ax-breadcrumbs .ax-node::before {
-  mask-image: var(--image-file-arrow-collapse);
-  mask-repeat: no-repeat;
-  background-color: var(--icon-default);
-  content: "";
-  text-shadow: none;
-  margin-left: -5px;
-  margin-top: -2px;
-  height: 16px;
-  width: 16px;
-  position: absolute;
-  display: inline-block;
-}
-
-.ax-breadcrumbs .ax-node:not(.parent, .children-unloaded)::before {
-  background-color: transparent;
-}
-
-.ax-breadcrumbs .ax-node.parent::before {
-  mask-image: var(--image-file-arrow-drop-down);
-}
-
-.ax-breadcrumbs .ax-node.no-dom-node {
-  opacity: 70%;
-}
-
-.ax-breadcrumbs .ax-node .selection {
-  display: none;
-  z-index: -1;
-}
-
-.ax-breadcrumbs .ax-node.inspected .selection {
-  display: block;
-  background-color: var(--sys-color-neutral-container);
-}
-
-.ax-breadcrumbs .ax-node.inspected:focus .selection {
-  background-color: var(--sys-color-tonal-container);
-}
-
-.ax-breadcrumbs .ax-node.inspected:focus {
-  background-color: var(--sys-color-tonal-container);
-  color: var(--sys-color-on-tonal-container);
-}
-
-.ax-breadcrumbs .ax-node:not(.inspected):hover {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
-.ax-breadcrumbs .ax-node:not(.inspected):focus {
-  background-color: var(--sys-color-state-focus-highlight);
-}
-
-.ax-breadcrumbs .ax-node.inspected:focus * {
-  color: inherit;
-}
-
-.ax-breadcrumbs .ax-node.preselected:not(.inspected) .selection,
-.ax-breadcrumbs .ax-node.hovered:not(.inspected) .selection {
-  display: block;
-  left: 2px;
-  right: 2px;
-  background-color: var(--sys-color-state-hover-on-subtle);
-  border-radius: 5px;
-}
-
-.ax-breadcrumbs .ax-node.preselected:not(.inspected):focus .selection {
-  border: 1px solid var(--sys-color-primary);
-}
-
-@media (forced-colors: active) {
-  .ax-value-source-unused,
-  .ax-breadcrumbs .ax-node.children-unloaded::before {
-    opacity: 100%;
-  }
-
-  .ax-breadcrumbs .ax-node.parent::before,
-  .ax-breadcrumbs .ax-node.children-unloaded::before {
-    forced-color-adjust: none;
-    background-color: ButtonText;
-  }
-
-  .ax-breadcrumbs .ax-node.parent.inspected::before,
-  .ax-breadcrumbs .ax-node.parent.inspected:focus::before {
-    background-color: HighlightText;
-  }
-
-  .ax-breadcrumbs .ax-node.inspected .selection {
-    forced-color-adjust: none;
-    background: Highlight !important; /* stylelint-disable-line declaration-no-important */
-  }
-
-  .ax-breadcrumbs .ax-node.inspected .wrapper {
-    forced-color-adjust: none;
-    color: HighlightText;
-  }
-
-  .ax-breadcrumbs .ax-node.preselected:not(.inspected) .selection,
-  .ax-breadcrumbs .ax-node.hovered:not(.inspected) .selection,
-  .ax-breadcrumbs .ax-node.hovered:not(.inspected) .wrapper,
-  .ax-breadcrumbs .ax-node:focus-visible:not(.inspected) .wrapper {
-    forced-color-adjust: none;
-    background-color: Highlight;
-    color: HighlightText;
-    border-radius: 0;
-  }
-
-  .ax-breadcrumbs .ax-node.parent.hovered:not(.inspected)::before,
-  .ax-breadcrumbs .ax-node.parent:focus-visible:not(.inspected)::before,
-  .ax-breadcrumbs .ax-node.children-unloaded:focus-visible:not(.inspected)::before,
-  .ax-breadcrumbs .ax-node.hovered:not(.inspected).children-unloaded::before {
-    background-color: HighlightText;
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./axBreadcrumbs.css")} */`;
-
-// gen/front_end/panels/accessibility/AXBreadcrumbsPane.js
-var UIStrings4 = {
-  /**
-   * @description Text in AXBreadcrumbs Pane of the Accessibility panel
-   */
-  accessibilityTree: "Accessibility Tree",
-  /**
-   * @description Text to scroll the displayed content into view
-   */
-  scrollIntoView: "Scroll into view",
-  /**
-   * @description Ignored node element text content in AXBreadcrumbs Pane of the Accessibility panel
-   */
-  ignored: "Ignored",
-  /**
-   * @description Name for experimental tree toggle.
-   */
-  fullTreeExperimentName: "Enable full-page accessibility tree",
-  /**
-   * @description Description text for experimental tree toggle.
-   */
-  fullTreeExperimentDescription: "The accessibility tree moved to the top right corner of the DOM tree.",
-  /**
-   * @description Message saying that DevTools must be restarted before the experiment is enabled.
-   */
-  reloadRequired: "Reload required before the change takes effect"
-};
-var str_4 = i18n7.i18n.registerUIStrings("panels/accessibility/AXBreadcrumbsPane.ts", UIStrings4);
-var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var AXBreadcrumbsPane = class extends AccessibilitySubPane {
-  axSidebarView;
-  preselectedBreadcrumb;
-  inspectedNodeBreadcrumb;
-  collapsingBreadcrumbId;
-  hoveredBreadcrumb;
-  rootElement;
-  #legacyTreeDisabled = false;
-  constructor(axSidebarView) {
-    super({
-      title: i18nString3(UIStrings4.accessibilityTree),
-      viewId: "accessibility-tree",
-      jslog: `${VisualLogging3.section("accessibility-tree")}`
-    });
-    this.registerRequiredCSS(axBreadcrumbs_css_default);
-    this.element.classList.add("ax-subpane");
-    this.element.tabIndex = -1;
-    this.axSidebarView = axSidebarView;
-    this.preselectedBreadcrumb = null;
-    this.inspectedNodeBreadcrumb = null;
-    this.collapsingBreadcrumbId = -1;
-    this.rootElement = this.element.createChild("div", "ax-breadcrumbs");
-    this.hoveredBreadcrumb = null;
-    const previewToggle = new Feedback.PreviewToggle.PreviewToggle();
-    previewToggle.setAttribute("jslog", `${VisualLogging3.toggle("full-accessibility-tree")}`);
-    const name = i18nString3(UIStrings4.fullTreeExperimentName);
-    const experiment = Root.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE;
-    const onChangeCallback = (checked) => {
-      Host.userMetrics.experimentChanged(experiment, checked);
-      UI4.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString3(UIStrings4.reloadRequired));
-    };
-    if (Root.Runtime.experiments.isEnabled(experiment)) {
-      this.#legacyTreeDisabled = true;
-      const feedbackURL = "https://g.co/devtools/a11y-tree-feedback";
-      previewToggle.data = {
-        name,
-        helperText: i18nString3(UIStrings4.fullTreeExperimentDescription),
-        feedbackURL,
-        experiment,
-        onChangeCallback
-      };
-      this.element.appendChild(previewToggle);
-      return;
-    }
-    previewToggle.data = { name, helperText: null, feedbackURL: null, experiment, onChangeCallback };
-    this.element.prepend(previewToggle);
-    UI4.ARIAUtils.markAsTree(this.rootElement);
-    this.rootElement.addEventListener("keydown", this.onKeyDown.bind(this), true);
-    this.rootElement.addEventListener("mousemove", this.onMouseMove.bind(this), false);
-    this.rootElement.addEventListener("mouseleave", this.onMouseLeave.bind(this), false);
-    this.rootElement.addEventListener("click", this.onClick.bind(this), false);
-    this.rootElement.addEventListener("contextmenu", this.contextMenuEventFired.bind(this), false);
-    this.rootElement.addEventListener("focusout", this.onFocusOut.bind(this), false);
-  }
-  focus() {
-    if (this.inspectedNodeBreadcrumb) {
-      this.inspectedNodeBreadcrumb.nodeElement().focus();
-    } else {
-      this.element.focus();
-    }
-  }
-  setAXNode(axNode) {
-    if (this.#legacyTreeDisabled) {
-      return;
-    }
-    const hadFocus = this.element.hasFocus();
-    super.setAXNode(axNode);
-    this.rootElement.removeChildren();
-    if (!axNode) {
-      return;
-    }
-    const ancestorChain = [];
-    let ancestor = axNode;
-    while (ancestor) {
-      ancestorChain.push(ancestor);
-      ancestor = ancestor.parentNode();
-    }
-    ancestorChain.reverse();
-    let depth = 0;
-    let parent = null;
-    this.inspectedNodeBreadcrumb = null;
-    for (ancestor of ancestorChain) {
-      if (ancestor !== axNode && ancestor.ignored() && ancestor.parentNode()) {
-        continue;
-      }
-      const breadcrumb = new AXBreadcrumb(ancestor, depth, ancestor === axNode);
-      if (parent) {
-        parent.appendChild(breadcrumb);
-      } else {
-        this.rootElement.appendChild(breadcrumb.element());
-      }
-      parent = breadcrumb;
-      depth++;
-      this.inspectedNodeBreadcrumb = breadcrumb;
-    }
-    if (this.inspectedNodeBreadcrumb) {
-      this.inspectedNodeBreadcrumb.setPreselected(true, hadFocus);
-    }
-    this.setPreselectedBreadcrumb(this.inspectedNodeBreadcrumb);
-    function append(parentBreadcrumb, axNode2, localDepth) {
-      if (axNode2.ignored()) {
-        axNode2.children().map((child) => append(parentBreadcrumb, child, localDepth));
-        return;
-      }
-      const childBreadcrumb = new AXBreadcrumb(axNode2, localDepth, false);
-      parentBreadcrumb.appendChild(childBreadcrumb);
-      for (const child of axNode2.children()) {
-        append(childBreadcrumb, child, localDepth + 1);
-      }
-    }
-    if (this.inspectedNodeBreadcrumb && !axNode.ignored()) {
-      for (const child of axNode.children()) {
-        append(this.inspectedNodeBreadcrumb, child, depth);
-        if (child.backendDOMNodeId() === this.collapsingBreadcrumbId) {
-          this.setPreselectedBreadcrumb(this.inspectedNodeBreadcrumb.lastChild());
-        }
-      }
-    }
-    this.collapsingBreadcrumbId = -1;
-  }
-  willHide() {
-    super.willHide();
-    this.setPreselectedBreadcrumb(null);
-  }
-  onKeyDown(event) {
-    const preselectedBreadcrumb = this.preselectedBreadcrumb;
-    if (!preselectedBreadcrumb) {
-      return;
-    }
-    const keyboardEvent = event;
-    if (!keyboardEvent.composedPath().some((element) => element === preselectedBreadcrumb.element())) {
-      return;
-    }
-    if (keyboardEvent.shiftKey || keyboardEvent.metaKey || keyboardEvent.ctrlKey) {
-      return;
-    }
-    let handled = false;
-    if (keyboardEvent.key === "ArrowUp" && !keyboardEvent.altKey) {
-      handled = this.preselectPrevious();
-    } else if (keyboardEvent.key === "ArrowDown" && !keyboardEvent.altKey) {
-      handled = this.preselectNext();
-    } else if (keyboardEvent.key === "ArrowLeft" && !keyboardEvent.altKey) {
-      if (preselectedBreadcrumb.hasExpandedChildren()) {
-        this.collapseBreadcrumb(preselectedBreadcrumb);
-      } else {
-        handled = this.preselectParent();
-      }
-    } else if (keyboardEvent.key === "Enter" || keyboardEvent.key === "ArrowRight" && !keyboardEvent.altKey && preselectedBreadcrumb.axNode().hasOnlyUnloadedChildren()) {
-      handled = this.inspectDOMNode(preselectedBreadcrumb.axNode());
-    }
-    if (handled) {
-      keyboardEvent.consume(true);
-    }
-  }
-  preselectPrevious() {
-    if (!this.preselectedBreadcrumb) {
-      return false;
-    }
-    const previousBreadcrumb = this.preselectedBreadcrumb.previousBreadcrumb();
-    if (!previousBreadcrumb) {
-      return false;
-    }
-    this.setPreselectedBreadcrumb(previousBreadcrumb);
-    return true;
-  }
-  preselectNext() {
-    if (!this.preselectedBreadcrumb) {
-      return false;
-    }
-    const nextBreadcrumb = this.preselectedBreadcrumb.nextBreadcrumb();
-    if (!nextBreadcrumb) {
-      return false;
-    }
-    this.setPreselectedBreadcrumb(nextBreadcrumb);
-    return true;
-  }
-  preselectParent() {
-    if (!this.preselectedBreadcrumb) {
-      return false;
-    }
-    const parentBreadcrumb = this.preselectedBreadcrumb.parentBreadcrumb();
-    if (!parentBreadcrumb) {
-      return false;
-    }
-    this.setPreselectedBreadcrumb(parentBreadcrumb);
-    return true;
-  }
-  setPreselectedBreadcrumb(breadcrumb) {
-    if (breadcrumb === this.preselectedBreadcrumb) {
-      return;
-    }
-    const hadFocus = this.element.hasFocus();
-    if (this.preselectedBreadcrumb) {
-      this.preselectedBreadcrumb.setPreselected(false, hadFocus);
-    }
-    if (breadcrumb) {
-      this.preselectedBreadcrumb = breadcrumb;
-    } else {
-      this.preselectedBreadcrumb = this.inspectedNodeBreadcrumb;
-    }
-    if (this.preselectedBreadcrumb) {
-      this.preselectedBreadcrumb.setPreselected(true, hadFocus);
-    }
-    if (!breadcrumb && hadFocus) {
-      SDK3.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-    }
-  }
-  collapseBreadcrumb(breadcrumb) {
-    if (!breadcrumb.parentBreadcrumb()) {
-      return;
-    }
-    const backendNodeId = breadcrumb.axNode().backendDOMNodeId();
-    if (backendNodeId !== null) {
-      this.collapsingBreadcrumbId = backendNodeId;
-    }
-    const parentBreadcrumb = breadcrumb.parentBreadcrumb();
-    if (parentBreadcrumb) {
-      this.inspectDOMNode(parentBreadcrumb.axNode());
-    }
-  }
-  onMouseLeave(_event) {
-    this.setHoveredBreadcrumb(null);
-  }
-  onMouseMove(event) {
-    const target = event.target;
-    if (!target) {
-      return;
-    }
-    const breadcrumbElement = target.enclosingNodeOrSelfWithClass("ax-breadcrumb");
-    if (!breadcrumbElement) {
-      this.setHoveredBreadcrumb(null);
-      return;
-    }
-    const breadcrumb = elementsToAXBreadcrumb.get(breadcrumbElement);
-    if (!breadcrumb?.isDOMNode()) {
-      return;
-    }
-    this.setHoveredBreadcrumb(breadcrumb);
-  }
-  onFocusOut(event) {
-    if (!this.preselectedBreadcrumb || event.target !== this.preselectedBreadcrumb.nodeElement()) {
-      return;
-    }
-    this.setPreselectedBreadcrumb(null);
-  }
-  onClick(event) {
-    const target = event.target;
-    if (!target) {
-      return;
-    }
-    const breadcrumbElement = target.enclosingNodeOrSelfWithClass("ax-breadcrumb");
-    if (!breadcrumbElement) {
-      this.setHoveredBreadcrumb(null);
-      return;
-    }
-    const breadcrumb = elementsToAXBreadcrumb.get(breadcrumbElement);
-    if (!breadcrumb) {
-      return;
-    }
-    if (breadcrumb.inspected()) {
-      this.collapseBreadcrumb(breadcrumb);
-      breadcrumb.nodeElement().focus();
-      void VisualLogging3.logClick(breadcrumb.expandLoggable, event);
-      return;
-    }
-    if (!breadcrumb.isDOMNode()) {
-      return;
-    }
-    this.inspectDOMNode(breadcrumb.axNode());
-    void VisualLogging3.logClick(breadcrumb.expandLoggable, event);
-  }
-  setHoveredBreadcrumb(breadcrumb) {
-    if (breadcrumb === this.hoveredBreadcrumb) {
-      return;
-    }
-    if (this.hoveredBreadcrumb) {
-      this.hoveredBreadcrumb.setHovered(false);
-    }
-    const node = this.node();
-    if (breadcrumb) {
-      breadcrumb.setHovered(true);
-    } else if (node?.id) {
-      node.domModel().overlayModel().nodeHighlightRequested({ nodeId: node.id });
-    }
-    this.hoveredBreadcrumb = breadcrumb;
-  }
-  inspectDOMNode(axNode) {
-    if (!axNode.isDOMNode()) {
-      return false;
-    }
-    const deferredNode = axNode.deferredDOMNode();
-    if (deferredNode) {
-      deferredNode.resolve((domNode) => {
-        this.axSidebarView.setNode(
-          domNode,
-          true
-          /* fromAXTree */
-        );
-        void Common2.Revealer.reveal(
-          domNode,
-          true
-          /* omitFocus */
-        );
-      });
-    }
-    return true;
-  }
-  contextMenuEventFired(event) {
-    const target = event.target;
-    if (!target) {
-      return;
-    }
-    const breadcrumbElement = target.enclosingNodeOrSelfWithClass("ax-breadcrumb");
-    if (!breadcrumbElement) {
-      return;
-    }
-    const breadcrumb = elementsToAXBreadcrumb.get(breadcrumbElement);
-    if (!breadcrumb) {
-      return;
-    }
-    const axNode = breadcrumb.axNode();
-    if (!axNode.isDOMNode() || !axNode.deferredDOMNode()) {
-      return;
-    }
-    const contextMenu = new UI4.ContextMenu.ContextMenu(event);
-    contextMenu.viewSection().appendItem(i18nString3(UIStrings4.scrollIntoView), () => {
-      const deferredNode2 = axNode.deferredDOMNode();
-      if (!deferredNode2) {
-        return;
-      }
-      void deferredNode2.resolvePromise().then((domNode) => {
-        if (!domNode) {
-          return;
-        }
-        void domNode.scrollIntoView();
-      });
-    }, { jslogContext: "scroll-into-view" });
-    const deferredNode = axNode.deferredDOMNode();
-    if (deferredNode) {
-      contextMenu.appendApplicableItems(deferredNode);
-    }
-    void contextMenu.show();
-  }
-};
-var elementsToAXBreadcrumb = /* @__PURE__ */ new WeakMap();
-var AXBreadcrumb = class {
-  #axNode;
-  #element;
-  #nodeElement;
-  nodeWrapper;
-  selectionElement;
-  childrenGroupElement;
-  children;
-  hovered;
-  #preselected;
-  parent;
-  #inspected;
-  expandLoggable = {};
-  constructor(axNode, depth, inspected) {
-    this.#axNode = axNode;
-    this.#element = document.createElement("div");
-    this.#element.classList.add("ax-breadcrumb");
-    this.#element.setAttribute("jslog", `${VisualLogging3.treeItem().track({
-      click: true,
-      resize: true,
-      keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter"
-    })}`);
-    elementsToAXBreadcrumb.set(this.#element, this);
-    this.#nodeElement = document.createElement("div");
-    this.#nodeElement.classList.add("ax-node");
-    UI4.ARIAUtils.markAsTreeitem(this.#nodeElement);
-    this.#nodeElement.tabIndex = -1;
-    this.#element.appendChild(this.#nodeElement);
-    this.nodeWrapper = document.createElement("div");
-    this.nodeWrapper.classList.add("wrapper");
-    this.#nodeElement.appendChild(this.nodeWrapper);
-    this.selectionElement = document.createElement("div");
-    this.selectionElement.classList.add("selection");
-    this.selectionElement.classList.add("fill");
-    this.#nodeElement.appendChild(this.selectionElement);
-    this.childrenGroupElement = document.createElement("div");
-    this.childrenGroupElement.classList.add("children");
-    UI4.ARIAUtils.markAsGroup(this.childrenGroupElement);
-    this.#element.appendChild(this.childrenGroupElement);
-    this.children = [];
-    this.hovered = false;
-    this.#preselected = false;
-    this.parent = null;
-    this.#inspected = inspected;
-    this.#nodeElement.classList.toggle("inspected", inspected);
-    this.#nodeElement.style.paddingLeft = 16 * depth + 4 + "px";
-    if (this.#axNode.ignored()) {
-      this.appendIgnoredNodeElement();
-    } else {
-      this.appendRoleElement(this.#axNode.role());
-      const axNodeName = this.#axNode.name();
-      if (axNodeName?.value) {
-        this.nodeWrapper.createChild("span", "separator").textContent = "\xA0";
-        this.appendNameElement(axNodeName.value);
-      }
-    }
-    if (!this.#axNode.ignored() && this.#axNode.hasOnlyUnloadedChildren()) {
-      this.#nodeElement.classList.add("children-unloaded");
-      UI4.ARIAUtils.setExpanded(this.#nodeElement, false);
-      VisualLogging3.registerLoggable(this.expandLoggable, `${VisualLogging3.expand()}`, this.#element, new DOMRect(0, 0, 16, 16));
-    }
-    if (!this.#axNode.isDOMNode()) {
-      this.#nodeElement.classList.add("no-dom-node");
-    }
-  }
-  element() {
-    return this.#element;
-  }
-  nodeElement() {
-    return this.#nodeElement;
-  }
-  appendChild(breadcrumb) {
-    this.children.push(breadcrumb);
-    breadcrumb.setParent(this);
-    this.#nodeElement.classList.add("parent");
-    UI4.ARIAUtils.setExpanded(this.#nodeElement, true);
-    this.childrenGroupElement.appendChild(breadcrumb.element());
-    VisualLogging3.registerLoggable(this.expandLoggable, `${VisualLogging3.expand()}`, this.#element, new DOMRect(0, 0, 16, 16));
-  }
-  hasExpandedChildren() {
-    return this.children.length;
-  }
-  setParent(breadcrumb) {
-    this.parent = breadcrumb;
-  }
-  preselected() {
-    return this.#preselected;
-  }
-  setPreselected(preselected, selectedByUser) {
-    if (this.#preselected === preselected) {
-      return;
-    }
-    this.#preselected = preselected;
-    this.#nodeElement.classList.toggle("preselected", preselected);
-    if (preselected) {
-      this.#nodeElement.tabIndex = 0;
-    } else {
-      this.#nodeElement.tabIndex = -1;
-    }
-    if (this.#preselected) {
-      if (selectedByUser) {
-        this.#nodeElement.focus();
-      }
-      if (!this.#inspected) {
-        this.#axNode.highlightDOMNode();
-      } else {
-        SDK3.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-      }
-    }
-  }
-  setHovered(hovered) {
-    if (this.hovered === hovered) {
-      return;
-    }
-    this.hovered = hovered;
-    this.#nodeElement.classList.toggle("hovered", hovered);
-    if (this.hovered) {
-      this.#nodeElement.classList.toggle("hovered", true);
-      this.#axNode.highlightDOMNode();
-    }
-  }
-  axNode() {
-    return this.#axNode;
-  }
-  inspected() {
-    return this.#inspected;
-  }
-  isDOMNode() {
-    return this.#axNode.isDOMNode();
-  }
-  nextBreadcrumb() {
-    if (this.children.length) {
-      return this.children[0];
-    }
-    const nextSibling = this.element().nextSibling;
-    if (nextSibling) {
-      return elementsToAXBreadcrumb.get(nextSibling) || null;
-    }
-    return null;
-  }
-  previousBreadcrumb() {
-    const previousSibling = this.element().previousSibling;
-    if (previousSibling) {
-      return elementsToAXBreadcrumb.get(previousSibling) || null;
-    }
-    return this.parent;
-  }
-  parentBreadcrumb() {
-    return this.parent;
-  }
-  lastChild() {
-    return this.children[this.children.length - 1];
-  }
-  appendNameElement(name) {
-    const nameElement = document.createElement("span");
-    nameElement.textContent = '"' + name + '"';
-    nameElement.classList.add("ax-readable-string");
-    this.nodeWrapper.appendChild(nameElement);
-  }
-  appendRoleElement(role) {
-    if (!role) {
-      return;
-    }
-    const roleElement = document.createElement("span");
-    roleElement.classList.add("monospace");
-    roleElement.classList.add(RoleStyles[role.type]);
-    roleElement.setTextContentTruncatedIfNeeded(role.value || "");
-    this.nodeWrapper.appendChild(roleElement);
-  }
-  appendIgnoredNodeElement() {
-    const ignoredNodeElement = document.createElement("span");
-    ignoredNodeElement.classList.add("monospace");
-    ignoredNodeElement.textContent = i18nString3(UIStrings4.ignored);
-    ignoredNodeElement.classList.add("ax-breadcrumbs-ignored-node");
-    this.nodeWrapper.appendChild(ignoredNodeElement);
-  }
-};
-var RoleStyles = {
-  internalRole: "ax-internal-role",
-  role: "ax-role"
-};
-
 // gen/front_end/panels/accessibility/SourceOrderView.js
 import "./../../ui/legacy/legacy.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
 import { html as html2, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
-var UIStrings5 = {
+import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+var UIStrings4 = {
   /**
    * @description Name of a tool which allows the developer to view the contents of the page in the
    * 'source order' (the order in which the HTML elements show up in the source code). In the
@@ -5176,8 +4461,8 @@ var UIStrings5 = {
    */
   showSourceOrder: "Show source order"
 };
-var str_5 = i18n9.i18n.registerUIStrings("panels/accessibility/SourceOrderView.ts", UIStrings5);
-var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var str_4 = i18n7.i18n.registerUIStrings("panels/accessibility/SourceOrderView.ts", UIStrings4);
+var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var MAX_CHILD_ELEMENTS_THRESHOLD = 300;
 var DEFAULT_VIEW2 = (input, _output, target) => {
   function onShowSourceOrderChanged(event) {
@@ -5188,20 +4473,20 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
   render3(html2`
     ${input.showSourceOrder === void 0 ? html2`
         <div class="gray-info-message info-message-overflow">
-          ${i18nString4(UIStrings5.noSourceOrderInformation)}
+          ${i18nString3(UIStrings4.noSourceOrderInformation)}
         </div>
       ` : html2`
       ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html2`
           <div class="gray-info-message info-message-overflow"
                 id="source-order-warning">
-            ${i18nString4(UIStrings5.thereMayBeADelayInDisplaying)}
+            ${i18nString3(UIStrings4.thereMayBeADelayInDisplaying)}
           </div>
         ` : nothing2}
       <devtools-checkbox class="source-order-checkbox"
-                          jslog=${VisualLogging4.toggle().track({ click: true })}
+                          jslog=${VisualLogging3.toggle().track({ click: true })}
                           ?checked=${input.showSourceOrder}
                           @change=${onShowSourceOrderChanged}>
-        ${i18nString4(UIStrings5.showSourceOrder)}
+        ${i18nString3(UIStrings4.showSourceOrder)}
       </devtools-checkbox>
       `}
   `, target);
@@ -5212,9 +4497,9 @@ var SourceOrderPane = class extends AccessibilitySubPane {
   #view;
   constructor(view = DEFAULT_VIEW2) {
     super({
-      title: i18nString4(UIStrings5.sourceOrderViewer),
+      title: i18nString3(UIStrings4.sourceOrderViewer),
       viewId: "source-order-viewer",
-      jslog: `${VisualLogging4.section("source-order-viewer")}`
+      jslog: `${VisualLogging3.section("source-order-viewer")}`
     });
     this.#view = view;
   }
@@ -5266,25 +4551,40 @@ var SourceOrderPane = class extends AccessibilitySubPane {
 };
 
 // gen/front_end/panels/accessibility/AccessibilitySidebarView.js
+var { html: html3, render: render4 } = Lit2;
+var UIStrings5 = {
+  /**
+   * @description Text for a toggle to turn on the accessibility tree view.
+   */
+  showAccessibilityTree: "Show accessibility tree"
+};
+var str_5 = i18n9.i18n.registerUIStrings("panels/accessibility/AccessibilitySidebarView.ts", UIStrings5);
+var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var accessibilitySidebarViewInstance;
-var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widget.VBox {
+var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widget.VBox {
   #node;
   #axNode;
   skipNextPullNode;
   sidebarPaneStack;
-  breadcrumbsSubPane;
   ariaSubPane;
   axNodeSubPane;
   sourceOrderSubPane;
+  toggleContainer;
+  toggleAction;
   constructor() {
     super();
+    this.registerRequiredCSS(accessibilitySidebarView_css_default);
     this.element.classList.add("accessibility-sidebar-view");
     this.#node = null;
     this.#axNode = null;
     this.skipNextPullNode = false;
-    this.sidebarPaneStack = UI5.ViewManager.ViewManager.instance().createStackLocation();
-    this.breadcrumbsSubPane = new AXBreadcrumbsPane(this);
-    void this.sidebarPaneStack.showView(this.breadcrumbsSubPane);
+    this.sidebarPaneStack = UI4.ViewManager.ViewManager.instance().createStackLocation();
+    this.toggleContainer = document.createElement("div");
+    this.toggleContainer.classList.add("accessibility-toggle-container");
+    this.element.appendChild(this.toggleContainer);
+    this.toggleAction = UI4.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
+    this.toggleAction.addEventListener("Toggled", this.updateToggle, this);
+    this.updateToggle();
     this.ariaSubPane = new ARIAAttributesPane();
     void this.sidebarPaneStack.showView(this.ariaSubPane);
     this.axNodeSubPane = new AXNodeSubPane();
@@ -5292,7 +4592,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widge
     this.sourceOrderSubPane = new SourceOrderPane();
     void this.sidebarPaneStack.showView(this.sourceOrderSubPane);
     this.sidebarPaneStack.widget().show(this.element);
-    UI5.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.pullNode, this);
+    UI4.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.pullNode, this);
     this.pullNode();
   }
   static instance(opts) {
@@ -5323,23 +4623,18 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widge
       this.sidebarPaneStack.removeView(this.ariaSubPane);
     }
     this.axNodeSubPane.setAXNode(axNode);
-    this.breadcrumbsSubPane.setAXNode(axNode);
   }
   async performUpdate() {
     const node = this.node();
     this.axNodeSubPane.setNode(node);
     this.ariaSubPane.setNode(node);
-    this.breadcrumbsSubPane.setNode(node);
     void this.sourceOrderSubPane.setNodeAsync(node);
     if (!node) {
       return;
     }
-    const accessibilityModel = node.domModel().target().model(SDK4.AccessibilityModel.AccessibilityModel);
+    const accessibilityModel = node.domModel().target().model(SDK3.AccessibilityModel.AccessibilityModel);
     if (!accessibilityModel) {
       return;
-    }
-    if (!Root2.Runtime.experiments.isEnabled(Root2.ExperimentNames.ExperimentName.FULL_ACCESSIBILITY_TREE)) {
-      accessibilityModel.clear();
     }
     await accessibilityModel.requestPartialAXTree(node);
     this.accessibilityNodeCallback(accessibilityModel.axNodeForDOMNode(node));
@@ -5347,31 +4642,50 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widge
   wasShown() {
     super.wasShown();
     void this.performUpdate();
-    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrModified, this.onNodeChange, this, { scoped: true });
-    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrRemoved, this.onNodeChange, this, { scoped: true });
-    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.CharacterDataModified, this.onNodeChange, this, { scoped: true });
-    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this, { scoped: true });
+    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.onNodeChange, this, { scoped: true });
+    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.onNodeChange, this, { scoped: true });
+    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.CharacterDataModified, this.onNodeChange, this, { scoped: true });
+    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this, { scoped: true });
   }
   willHide() {
     super.willHide();
-    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrModified, this.onNodeChange, this);
-    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrRemoved, this.onNodeChange, this);
-    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.CharacterDataModified, this.onNodeChange, this);
-    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this);
+    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.onNodeChange, this);
+    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.onNodeChange, this);
+    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.CharacterDataModified, this.onNodeChange, this);
+    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this);
   }
   pullNode() {
     if (this.skipNextPullNode) {
       this.skipNextPullNode = false;
       return;
     }
-    this.setNode(UI5.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode));
+    this.setNode(UI4.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode));
+  }
+  updateToggle() {
+    const isToggled = this.toggleAction.toggled();
+    render4(html3`
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <devtools-switch
+          role="switch"
+          aria-label=${i18nString4(UIStrings5.showAccessibilityTree)}
+          .checked=${isToggled}
+          .label=${i18nString4(UIStrings5.showAccessibilityTree)}
+          .jslogContext=${"elements.toggle-a11y-tree"}
+          @switchchange=${this.onToggleChange}
+        ></devtools-switch>
+        <span style="color: var(--sys-color-on-surface);">${i18nString4(UIStrings5.showAccessibilityTree)}</span>
+      </div>
+    `, this.toggleContainer, { host: this });
+  }
+  onToggleChange(_event) {
+    void this.toggleAction.execute();
   }
   onNodeChange(event) {
     if (!this.node()) {
       return;
     }
     const data = event.data;
-    const node = data instanceof SDK4.DOMModel.DOMNode ? data : data.node;
+    const node = data instanceof SDK3.DOMModel.DOMNode ? data : data.node;
     if (this.node() !== node) {
       return;
     }
@@ -5381,7 +4695,6 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Widge
 export {
   ARIAAttributesView_exports as ARIAAttributesView,
   ARIAMetadata_exports as ARIAMetadata,
-  AXBreadcrumbsPane_exports as AXBreadcrumbsPane,
   AccessibilityNodeView_exports as AccessibilityNodeView,
   AccessibilitySidebarView_exports as AccessibilitySidebarView,
   AccessibilityStrings_exports as AccessibilityStrings,

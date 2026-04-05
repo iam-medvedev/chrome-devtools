@@ -772,11 +772,11 @@ const sub = (x, y) => x - y;
 describe('OutlineQuickOpen', () => {
     const { OutlineQuickOpen } = Sources.OutlineQuickOpen;
     it('reports no items before attached', () => {
-        const provider = new OutlineQuickOpen('');
+        const provider = new OutlineQuickOpen();
         assert.strictEqual(provider.itemCount(), 0);
     });
     it('reports no items when attached while no SourcesView is active', () => {
-        const provider = new OutlineQuickOpen('');
+        const provider = new OutlineQuickOpen();
         provider.attach();
         assert.strictEqual(provider.itemCount(), 0);
     });
@@ -804,7 +804,7 @@ function testBar(arg3) { }`;
         const sourcesView = sinon.createStubInstance(Sources.SourcesView.SourcesView);
         sourcesView.currentSourceFrame.returns(sourceFrame);
         UI.Context.Context.instance().setFlavor(Sources.SourcesView.SourcesView, sourcesView);
-        const provider = new OutlineQuickOpen('');
+        const provider = new OutlineQuickOpen();
         provider.attach();
         assert.deepEqual(scoredKeys('te'), ['testFoo(arg2)', 'test(arg1)', 'testBar(arg3)']);
         assert.deepEqual(scoredKeys('test'), ['test(arg1)', 'testFoo(arg2)', 'testBar(arg3)']);

@@ -1217,9 +1217,6 @@
   "entrypoints/main/MainImpl.ts | dockToRight": {
     "message": "Dock to right"
   },
-  "entrypoints/main/MainImpl.ts | externalRequestReceived": {
-    "message": "DevTools received an external request"
-  },
   "entrypoints/main/MainImpl.ts | focusDebuggee": {
     "message": "Focus page"
   },
@@ -2759,6 +2756,9 @@
   "panels/accessibility/AccessibilityNodeView.ts | placeholderIsPlaceholderOnAncestor": {
     "message": "{PH1} is {PH2} on ancestor: "
   },
+  "panels/accessibility/AccessibilitySidebarView.ts | showAccessibilityTree": {
+    "message": "Show accessibility tree"
+  },
   "panels/accessibility/AccessibilityStrings.ts | activeDescendant": {
     "message": "Active descendant"
   },
@@ -3070,24 +3070,6 @@
   },
   "panels/accessibility/ARIAAttributesView.ts | noAriaAttributes": {
     "message": "No ARIA attributes"
-  },
-  "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
-    "message": "Accessibility Tree"
-  },
-  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
-    "message": "The accessibility tree moved to the top right corner of the DOM tree."
-  },
-  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
-    "message": "Enable full-page accessibility tree"
-  },
-  "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
-    "message": "Ignored"
-  },
-  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
-    "message": "Reload required before the change takes effect"
-  },
-  "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
-    "message": "Scroll into view"
   },
   "panels/accessibility/SourceOrderView.ts | noSourceOrderInformation": {
     "message": "No source order information available"
@@ -4286,6 +4268,18 @@
   "panels/application/components/BounceTrackingMitigationsView.ts | stateDeletedFor": {
     "message": "State was deleted for the following sites:"
   },
+  "panels/application/components/CrashReportContextGrid.ts | copyKey": {
+    "message": "Copy key"
+  },
+  "panels/application/components/CrashReportContextGrid.ts | copyValue": {
+    "message": "Copy value"
+  },
+  "panels/application/components/CrashReportContextGrid.ts | key": {
+    "message": "Key"
+  },
+  "panels/application/components/CrashReportContextGrid.ts | value": {
+    "message": "Value"
+  },
   "panels/application/components/EndpointsGrid.ts | endpointsDescription": {
     "message": "Here you will find the list of endpoints that receive the reports"
   },
@@ -4555,6 +4549,18 @@
   },
   "panels/application/CookieItemsView.ts | showUrlDecoded": {
     "message": "Show URL-decoded"
+  },
+  "panels/application/CrashReportContextView.ts | filterByText": {
+    "message": "Filter by key or value"
+  },
+  "panels/application/CrashReportContextView.ts | noContext": {
+    "message": "No context entries detected across frames."
+  },
+  "panels/application/CrashReportContextView.ts | refresh": {
+    "message": "Refresh"
+  },
+  "panels/application/CrashReportContextView.ts | unknownFrame": {
+    "message": "Unknown Frame"
   },
   "panels/application/DeviceBoundSessionsTreeElement.ts | deviceBoundSessions": {
     "message": "Device bound sessions"
@@ -5888,6 +5894,9 @@
   "panels/application/PreloadingTreeElement.ts | speculativeLoads": {
     "message": "Speculative loads"
   },
+  "panels/application/ReportingApiTreeElement.ts | crashReportContext": {
+    "message": "Crash Report Context"
+  },
   "panels/application/ReportingApiTreeElement.ts | reportingApi": {
     "message": "Reporting API"
   },
@@ -6215,11 +6224,17 @@
   "panels/application/WebMCPView.ts | canceled": {
     "message": "Canceled"
   },
+  "panels/application/WebMCPView.ts | canceledCount": {
+    "message": "{PH1} Canceled"
+  },
   "panels/application/WebMCPView.ts | clearFilters": {
     "message": "Clear filters"
   },
   "panels/application/WebMCPView.ts | clearLog": {
     "message": "Clear log"
+  },
+  "panels/application/WebMCPView.ts | close": {
+    "message": "Close"
   },
   "panels/application/WebMCPView.ts | declarative": {
     "message": "Declarative"
@@ -6227,14 +6242,23 @@
   "panels/application/WebMCPView.ts | error": {
     "message": "Error"
   },
+  "panels/application/WebMCPView.ts | failed": {
+    "message": "{PH1} Failed"
+  },
   "panels/application/WebMCPView.ts | filter": {
     "message": "Filter"
+  },
+  "panels/application/WebMCPView.ts | frame": {
+    "message": "Frame"
   },
   "panels/application/WebMCPView.ts | imperative": {
     "message": "Imperative"
   },
   "panels/application/WebMCPView.ts | inProgress": {
     "message": "In Progress"
+  },
+  "panels/application/WebMCPView.ts | inProgressCount": {
+    "message": "{PH1} In Progress"
   },
   "panels/application/WebMCPView.ts | input": {
     "message": "Input"
@@ -6269,11 +6293,20 @@
   "panels/application/WebMCPView.ts | success": {
     "message": "Success"
   },
+  "panels/application/WebMCPView.ts | toolDetails": {
+    "message": "Details"
+  },
   "panels/application/WebMCPView.ts | toolRegistry": {
     "message": "Available Tools"
   },
   "panels/application/WebMCPView.ts | toolTypes": {
     "message": "Tool types"
+  },
+  "panels/application/WebMCPView.ts | totalCalls": {
+    "message": "{PH1} Total calls"
+  },
+  "panels/application/WebMCPView.ts | viewInElementsPanel": {
+    "message": "View in Elements panel"
   },
   "panels/autofill/autofill-meta.ts | autofill": {
     "message": "Autofill"
@@ -7801,12 +7834,6 @@
   },
   "panels/elements/ElementsPanel.ts | styles": {
     "message": "Styles"
-  },
-  "panels/elements/ElementsPanel.ts | switchToAccessibilityTreeView": {
-    "message": "Switch to Accessibility Tree view"
-  },
-  "panels/elements/ElementsPanel.ts | switchToDomTreeView": {
-    "message": "Switch to DOM Tree view"
   },
   "panels/elements/ElementsPanel.ts | theDeferredDomNodeCouldNotBe": {
     "message": "The deferred DOM Node could not be resolved to a valid node."
@@ -11872,9 +11899,6 @@
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | userObjectReachableFromWindow": {
     "message": "User object reachable from window"
-  },
-  "panels/profiler/HeapSnapshotProxy.ts | anErrorOccurredWhenACallToMethod": {
-    "message": "An error occurred when a call to method ''{PH1}'' was requested"
   },
   "panels/profiler/HeapSnapshotView.ts | allObjects": {
     "message": "All objects"
@@ -16097,6 +16121,9 @@
   "panels/timeline/timeline-meta.ts | stop": {
     "message": "Stop"
   },
+  "panels/timeline/timeline-meta.ts | timelineShowAllEvents": {
+    "message": "Show all events"
+  },
   "panels/timeline/TimelineController.ts | initializingTracing": {
     "message": "Initializing tracing…"
   },
@@ -16282,9 +16309,6 @@
   },
   "panels/timeline/TimelinePanel.ts | exportingFailed": {
     "message": "Exporting the trace failed"
-  },
-  "panels/timeline/TimelinePanel.ts | externalRequestReceived": {
-    "message": "DevTools received an external request"
   },
   "panels/timeline/TimelinePanel.ts | fixMe": {
     "message": "Fix me"
@@ -17164,6 +17188,9 @@
   },
   "ui/components/markdown_view/CodeBlock.ts | disclaimer": {
     "message": "Use code snippets with caution"
+  },
+  "ui/components/markdown_view/CodeBlock.ts | showAllLines": {
+    "message": "Show all lines ({PH1} more)"
   },
   "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
     "message": "Feedback"

@@ -37,7 +37,6 @@
   "files": [
     "../../../../../../front_end/panels/accessibility/ARIAAttributesView.ts",
     "../../../../../../front_end/panels/accessibility/ARIAMetadata.ts",
-    "../../../../../../front_end/panels/accessibility/AXBreadcrumbsPane.ts",
     "../../../../../../front_end/panels/accessibility/AccessibilityNodeView.ts",
     "../../../../../../front_end/panels/accessibility/AccessibilitySidebarView.ts",
     "../../../../../../front_end/panels/accessibility/AccessibilityStrings.ts",

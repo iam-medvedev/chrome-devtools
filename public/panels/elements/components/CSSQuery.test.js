@@ -35,5 +35,18 @@ describe('CSSQuery', () => {
         queryText.click();
         assert.strictEqual(clickListener.callCount, 1, 'query text click listener should be triggered by clicking');
     });
+    it('renders a name-only container query correctly', () => {
+        const component = new ElementsComponents.CSSQuery.CSSQuery();
+        renderElementIntoDOM(component);
+        component.data = {
+            queryPrefix: '@container',
+            queryName: '--bar',
+            queryText: '',
+            jslogContext: 'foo',
+        };
+        const queryElement = component.shadowRoot.querySelector('.query');
+        assert.isNotNull(queryElement, 'query element should exist');
+        assert.strictEqual(queryElement.innerText, '@container --bar {', 'text content of query element should match query text');
+    });
 });
 //# sourceMappingURL=CSSQuery.test.js.map

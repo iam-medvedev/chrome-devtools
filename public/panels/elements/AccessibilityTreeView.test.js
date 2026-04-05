@@ -10,17 +10,15 @@ import * as Elements from './elements.js';
 const MAIN_FRAME_ID = 'MAIN_FRAME_ID';
 describeWithMockConnection('AccessibilityTreeView', () => {
     let target;
-    let toggleButoon;
     let treeComponent;
     beforeEach(() => {
         stubNoopSettings();
         target = createTarget();
-        toggleButoon = document.createElement('div');
         treeComponent = new TreeOutline.TreeOutline.TreeOutline();
     });
     const updatesUiOnEvent = (inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
-        const view = new Elements.AccessibilityTreeView.AccessibilityTreeView(toggleButoon, treeComponent);
+        const view = new Elements.AccessibilityTreeView.AccessibilityTreeView(treeComponent);
         renderElementIntoDOM(view);
         const model = target.model(SDK.AccessibilityModel.AccessibilityModel);
         const treeComponentDataSet = sinon.spy(treeComponent, 'data', ['set']);
