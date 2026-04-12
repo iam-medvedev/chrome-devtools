@@ -511,6 +511,7 @@ export const generatedProperties = [
             "grid-template-areas",
             "grid-template-columns",
             "grid-template-rows",
+            "hanging-punctuation",
             "hash",
             "height",
             "hostname",
@@ -1822,7 +1823,7 @@ export const generatedProperties = [
         "inherited": false,
         "keywords": [
             "all",
-            "auto",
+            "normal",
             "around",
             "between"
         ],
@@ -2778,6 +2779,16 @@ export const generatedProperties = [
         "name": "grid-template-rows"
     },
     {
+        "inherited": true,
+        "keywords": [
+            "none",
+            "first",
+            "last",
+            "allow-end"
+        ],
+        "name": "hanging-punctuation"
+    },
+    {
         "name": "hash"
     },
     {
@@ -3481,6 +3492,7 @@ export const generatedProperties = [
     {
         "keywords": [
             "auto",
+            "chain",
             "contain",
             "none"
         ],
@@ -3489,6 +3501,7 @@ export const generatedProperties = [
     {
         "keywords": [
             "auto",
+            "chain",
             "contain",
             "none"
         ],
@@ -3903,7 +3916,7 @@ export const generatedProperties = [
         "inherited": false,
         "keywords": [
             "all",
-            "auto",
+            "normal",
             "around",
             "between"
         ],
@@ -5662,7 +5675,7 @@ export const generatedPropertyValues = {
     "column-rule-visibility-items": {
         "values": [
             "all",
-            "auto",
+            "normal",
             "around",
             "between"
         ]
@@ -6243,6 +6256,14 @@ export const generatedPropertyValues = {
             "none"
         ]
     },
+    "hanging-punctuation": {
+        "values": [
+            "none",
+            "first",
+            "last",
+            "allow-end"
+        ]
+    },
     "height": {
         "values": [
             "auto",
@@ -6615,6 +6636,7 @@ export const generatedPropertyValues = {
     "overscroll-behavior-x": {
         "values": [
             "auto",
+            "chain",
             "contain",
             "none"
         ]
@@ -6622,6 +6644,7 @@ export const generatedPropertyValues = {
     "overscroll-behavior-y": {
         "values": [
             "auto",
+            "chain",
             "contain",
             "none"
         ]
@@ -6823,7 +6846,7 @@ export const generatedPropertyValues = {
     "row-rule-visibility-items": {
         "values": [
             "all",
-            "auto",
+            "normal",
             "around",
             "between"
         ]

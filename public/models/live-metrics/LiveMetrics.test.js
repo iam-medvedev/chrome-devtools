@@ -5,6 +5,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as LiveMetrics from './live-metrics.js';
+import * as Spec from './web-vitals-injected/spec/spec.js';
 describeWithMockConnection('LiveMetrics', () => {
     let liveMetrics;
     let primaryTarget;
@@ -44,6 +45,69 @@ describeWithMockConnection('LiveMetrics', () => {
             await liveMetrics.targetAdded(prerenderTarget);
             assert.strictEqual(liveMetrics.interactions.size, 0);
             assert.lengthOf(liveMetrics.layoutShifts, 0);
+        });
+    });
+    describe('binding events', () => {
+        let runtimeModel;
+        let primaryExecutionContextId;
+        let childFrameExecutionContextId;
+        beforeEach(async () => {
+            await liveMetrics.targetAdded(primaryTarget);
+            const runtimeModelFromTarget = primaryTarget.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModelFromTarget);
+            runtimeModel = runtimeModelFromTarget;
+            const resourceTreeModel = primaryTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel?.mainFrame);
+            primaryExecutionContextId = 1;
+            childFrameExecutionContextId = 2;
+            runtimeModel.executionContextCreated({
+                id: primaryExecutionContextId,
+                uniqueId: 'primary-context',
+                origin: 'https://example.com',
+                name: 'DevTools Performance Metrics',
+                auxData: {
+                    isDefault: false,
+                    frameId: resourceTreeModel.mainFrame.id,
+                },
+            });
+            runtimeModel.executionContextCreated({
+                id: childFrameExecutionContextId,
+                uniqueId: 'child-context',
+                origin: 'https://example.com',
+                name: 'DevTools Performance Metrics',
+                auxData: {
+                    isDefault: false,
+                    frameId: 'child-frame-id',
+                },
+            });
+        });
+        const lcpEvent = (value) => ({
+            name: 'LCP',
+            value: value,
+            phases: {
+                timeToFirstByte: 0,
+                resourceLoadDelay: 0,
+                resourceLoadTime: 0,
+                elementRenderDelay: 0,
+            },
+            startedHidden: false,
+        });
+        const emitBindingCalled = async (executionContextId, payload) => {
+            runtimeModel.bindingCalled({
+                name: Spec.EVENT_BINDING_NAME,
+                payload: JSON.stringify(payload),
+                executionContextId,
+            });
+            await Promise.resolve();
+            await Promise.resolve();
+        };
+        it('ignores non-primary frame events', async () => {
+            await emitBindingCalled(primaryExecutionContextId, { name: 'reset' });
+            await emitBindingCalled(primaryExecutionContextId, lcpEvent(111));
+            assert.strictEqual(liveMetrics.lcpValue?.value, 111);
+            await emitBindingCalled(childFrameExecutionContextId, { name: 'reset' });
+            await emitBindingCalled(childFrameExecutionContextId, lcpEvent(999));
+            assert.strictEqual(liveMetrics.lcpValue?.value, 111);
         });
     });
     describe('status updates', () => {

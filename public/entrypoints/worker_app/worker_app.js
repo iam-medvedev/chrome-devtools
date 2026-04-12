@@ -1267,6 +1267,16 @@ Common5.Revealer.registerRevealer({
     return new Resources.ResourcesPanel.AttemptViewWithFilterRevealer();
   }
 });
+Common5.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes3((Resources) => [Resources.Components.StorageMetadataView.StorageBucketRevealInfo]);
+  },
+  destination: Common5.Revealer.RevealerDestination.APPLICATION_PANEL,
+  async loadRevealer() {
+    const Resources = await loadResourcesModule();
+    return new Resources.ResourcesPanel.StorageBucketRevealer();
+  }
+});
 
 // gen/front_end/panels/timeline/timeline-meta.js
 import * as Common6 from "./../../core/common/common.js";

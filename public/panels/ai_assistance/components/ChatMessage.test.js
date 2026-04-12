@@ -297,6 +297,82 @@ describeWithEnvironment('ChatMessage', () => {
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Investigating XYZ');
         });
+        it('accessible label appends "Show thinking" when showing step title', async () => {
+            const loadingMessage = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'step',
+                        step: {
+                            isLoading: true,
+                            title: 'Investigating XYZ',
+                            code: 'console.log("test")',
+                        },
+                    }],
+                rpcId: 99,
+            };
+            const target = renderView({
+                isLoading: true,
+                message: loadingMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: false,
+                }
+            });
+            const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Investigating XYZ Show thinking');
+        });
+        it('accessible label defaults to visible text when generic', async () => {
+            const target = renderView({
+                isLoading: false,
+                message: stepMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: false,
+                }
+            });
+            const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Show thinking');
+        });
+        it('accessible label defaults to visible text when expanded and not loading', async () => {
+            const target = renderView({
+                isLoading: false,
+                message: stepMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: false,
+                    isExpanded: true,
+                    activeSidebarMessage: stepMessage,
+                }
+            });
+            const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Hide thinking');
+        });
+        it('accessible label appends "Hide thinking" when expanded and loading', async () => {
+            const loadingMessage = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'step',
+                        step: {
+                            isLoading: true,
+                            title: 'Investigating XYZ',
+                            code: 'console.log("test")',
+                        },
+                    }],
+                rpcId: 99,
+            };
+            const target = renderView({
+                isLoading: true,
+                message: loadingMessage,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: false,
+                    isExpanded: true,
+                    activeSidebarMessage: loadingMessage,
+                }
+            });
+            const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Investigating XYZ Hide thinking');
+        });
         it('does not render "Show thinking" button when inline', () => {
             const target = renderView({
                 message: stepMessage,
@@ -465,6 +541,47 @@ describeWithEnvironment('ChatMessage', () => {
             assert.isNotNull(targetOpen.querySelector('.side-effect-container'));
             assert.include(targetOpen.querySelector('.side-effect-container')?.textContent, sideEffectDescription);
         });
+        it('renders side effect confirmation below the text output', () => {
+            const sideEffectDescription = 'Proceed with cation!';
+            const textOutput = 'Here is some text output before the action.';
+            const message = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [
+                    {
+                        type: 'answer',
+                        text: textOutput,
+                    },
+                    {
+                        type: 'step',
+                        step: {
+                            isLoading: false,
+                            title: 'Side Effect Step',
+                            code: 'doSomethingDangerous()',
+                            requestApproval: {
+                                description: sideEffectDescription,
+                                onAnswer: () => { },
+                            },
+                        },
+                    },
+                ],
+                rpcId: 99,
+            };
+            const target = renderView({
+                message,
+                walkthrough: {
+                    ...DEFAULT_WALKTHROUGH,
+                    isInlined: true,
+                    isExpanded: false,
+                }
+            });
+            const answerBody = target.querySelector('.answer-body-wrapper');
+            const sideEffect = target.querySelector('.side-effect-container');
+            assert.isNotNull(answerBody);
+            assert.isNotNull(sideEffect);
+            // Verify that sideEffect appears after answerBody in the DOM
+            const position = answerBody.compareDocumentPosition(sideEffect);
+            assert.isTrue(Boolean(position & Node.DOCUMENT_POSITION_FOLLOWING), 'Side effect confirmation should render after the text output');
+        });
         it('does not force walkthrough expansion when there are side-effect steps', () => {
             const sideEffectMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -546,6 +663,9 @@ describeWithEnvironment('ChatMessage', () => {
             const widgetHeader = await waitFor('.widget-header', targetElement);
             assert.isNotNull(widgetHeader);
             assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'LCP element');
+            const revealButton = widgetHeader.querySelector('.widget-reveal-button');
+            assert.isNotNull(revealButton);
+            assert.strictEqual(revealButton.getAttribute('accessibleLabel'), 'Reveal');
         });
         it('renders the "Export for agents" button after action buttons and before suggestions when onExportClick is provided, it is the last message, and V2 is enabled', async () => {
             updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
@@ -569,7 +689,8 @@ describeWithEnvironment('ChatMessage', () => {
             });
             const row = querySelectorErrorOnMissing(target, '.ai-assistance-feedback-row');
             const exportButton = querySelectorErrorOnMissing(row, '.export-for-agents-button');
-            assert.strictEqual(exportButton.textContent?.trim(), 'Copy for your coding agent');
+            assert.strictEqual(exportButton.textContent?.trim(), 'Copy to coding agent');
+            assert.strictEqual(exportButton.getAttribute('aria-label'), 'Copy to coding agent');
             exportButton.click();
             sinon.assert.calledOnce(onExportClick);
         });
@@ -663,57 +784,6 @@ describeWithEnvironment('ChatMessage', () => {
                 walkthrough: { ...DEFAULT_WALKTHROUGH },
             }, {}, target);
             await assertScreenshot('ai_assistance/user_action_row_minimal.png');
-        });
-        it('renders a complete model message', async () => {
-            const target = document.createElement('div');
-            renderElementIntoDOM(target);
-            AiAssistance.ChatMessage.DEFAULT_VIEW({
-                onRatingClick: () => { },
-                onReportClick: () => { },
-                onCopyResponseClick: () => { },
-                scrollSuggestionsScrollContainer: () => { },
-                onSuggestionsScrollOrResize: () => { },
-                onSuggestionClick: () => { },
-                onSubmit: () => { },
-                onClose: () => { },
-                onInputChange: () => { },
-                onFeedbackSubmit: () => { },
-                showRateButtons: true,
-                isSubmitButtonDisabled: false,
-                isShowingFeedbackForm: true,
-                isLastMessage: true,
-                isFirstMessage: false,
-                showActions: true,
-                message: {
-                    entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                    rpcId: 99,
-                    parts: [
-                        {
-                            type: 'step',
-                            step: {
-                                isLoading: false,
-                                title: 'Analyzing the page',
-                                thought: 'I am checking the page content to find the issue.',
-                                code: 'document.body.innerHTML',
-                                output: '<body>...</body>',
-                            }
-                        },
-                        {
-                            type: 'answer',
-                            text: 'The page seems to have some content.',
-                            suggestions: ['Fix the issue', 'Explain more'],
-                        }
-                    ],
-                },
-                isLoading: false,
-                isReadOnly: false,
-                canShowFeedbackForm: true,
-                markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
-                currentRating: undefined,
-                suggestions: ['Fix the issue', 'Explain more'],
-                walkthrough: { ...DEFAULT_WALKTHROUGH },
-            }, {}, target);
-            await assertScreenshot('ai_assistance/user_action_row_complete.png');
         });
         it('renders a complete user message', async () => {
             const target = document.createElement('div');

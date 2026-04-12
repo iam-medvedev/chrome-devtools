@@ -1,6 +1,8 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/kit/kit.js';
+import * as Common from '../../../core/common/common.js';
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
@@ -195,6 +197,36 @@ describe('StorageMetadataView', () => {
         sinon.assert.calledOnce(showDialog);
         await new Promise(resolve => setTimeout(resolve, 0));
         sinon.assert.calledOnceWithExactly(storageBucketsModel.deleteBucket, storageBucket);
+    });
+    it('renders bucket name as a link and reveals the bucket on click', async () => {
+        const component = new ApplicationComponents.StorageMetadataView.StorageMetadataView();
+        renderElementIntoDOM(component);
+        const bucketInfo = {
+            bucket: {
+                storageKey: 'test-key',
+                name: 'test-bucket',
+            },
+            id: 'test-id',
+            expiration: 0,
+            quota: 0,
+            persistent: false,
+            durability: "relaxed" /* Protocol.Storage.StorageBucketsDurability.Relaxed */,
+        };
+        component.setStorageBucket(bucketInfo);
+        component.setShowOnlyBucket(true);
+        await RenderCoordinator.done();
+        const report = component.shadowRoot.querySelector('devtools-report');
+        assert.exists(report);
+        const link = report.querySelectorAll('devtools-report-value')[0].querySelector('devtools-link');
+        assert.exists(link);
+        assert.strictEqual(link.textContent?.trim(), 'test-bucket');
+        const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+        link.click();
+        sinon.assert.calledOnce(revealStub);
+        const revealArg = revealStub.firstCall.args[0];
+        assert.instanceOf(revealArg, ApplicationComponents.StorageMetadataView.StorageBucketRevealInfo);
+        assert.deepEqual(revealArg.bucketInfo, bucketInfo);
+        revealStub.restore();
     });
 });
 //# sourceMappingURL=StorageMetadataView.test.js.map

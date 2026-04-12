@@ -12,7 +12,7 @@ __export(AllocationProfile_exports, {
   FunctionAllocationInfo: () => FunctionAllocationInfo,
   TopDownAllocationNode: () => TopDownAllocationNode
 });
-import * as HeapSnapshotModel from "./../../models/heap_snapshot_model/heap_snapshot_model.js";
+import * as HeapSnapshotModel from "./../../models/heap_snapshot/heap_snapshot.js";
 var AllocationProfile = class {
   #strings;
   #nextNodeId = 1;
@@ -283,7 +283,7 @@ __export(HeapSnapshot_exports, {
 });
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
-import * as HeapSnapshotModel3 from "./../../models/heap_snapshot_model/heap_snapshot_model.js";
+import * as HeapSnapshotModel3 from "./../../models/heap_snapshot/heap_snapshot.js";
 var _a;
 var HeapSnapshotEdge = class _HeapSnapshotEdge {
   snapshot;
@@ -2335,15 +2335,6 @@ var HeapSnapshot = class _HeapSnapshot {
     }
     return null;
   }
-  idsOfObjectsWithName(name) {
-    const ids = [];
-    for (let it = this.allNodes(); it.hasNext(); it.next()) {
-      if (it.item().name() === name) {
-        ids.push(it.item().id());
-      }
-    }
-    return ids;
-  }
   createEdgesProvider(nodeIndex) {
     const node = this.createNode(nodeIndex);
     const filter = this.containmentEdgesFilter();
@@ -3535,7 +3526,7 @@ var HeapSnapshotWorkerDispatcher_exports = {};
 __export(HeapSnapshotWorkerDispatcher_exports, {
   HeapSnapshotWorkerDispatcher: () => HeapSnapshotWorkerDispatcher
 });
-import * as HeapSnapshotModel5 from "./../../models/heap_snapshot_model/heap_snapshot_model.js";
+import * as HeapSnapshotModel5 from "./../../models/heap_snapshot/heap_snapshot.js";
 var HeapSnapshotWorkerDispatcher = class {
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

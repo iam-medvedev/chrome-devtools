@@ -196,7 +196,11 @@ var UIStrings2 = {
   /**
    * @description Command for toggling the eye dropper when the color picker is open
    */
-  toggleEyeDropper: "Toggle eye dropper"
+  toggleEyeDropper: "Toggle eye dropper",
+  /**
+   * @description Title of a setting under the Elements category.
+   */
+  cssAnimationsOnlyWhenAnimationsTabOpen: "Show animation styles only when the Animations tab is open"
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/elements/elements-meta.ts", UIStrings2);
 var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
@@ -576,6 +580,15 @@ Common.Settings.registerSettingExtension({
   order: 5,
   title: i18nLazyString2(UIStrings2.detailedInspectTooltip),
   settingName: "show-detailed-inspect-tooltip",
+  settingType: "boolean",
+  defaultValue: true
+});
+Common.Settings.registerSettingExtension({
+  category: "ELEMENTS",
+  storageType: "Synced",
+  order: 6,
+  title: i18nLazyString2(UIStrings2.cssAnimationsOnlyWhenAnimationsTabOpen),
+  settingName: "css-animations-only-when-animations-tab-open",
   settingType: "boolean",
   defaultValue: true
 });
@@ -2604,6 +2617,16 @@ Common8.Revealer.registerRevealer({
   async loadRevealer() {
     const Resources = await loadResourcesModule();
     return new Resources.ResourcesPanel.AttemptViewWithFilterRevealer();
+  }
+});
+Common8.Revealer.registerRevealer({
+  contextTypes() {
+    return maybeRetrieveContextTypes4((Resources) => [Resources.Components.StorageMetadataView.StorageBucketRevealInfo]);
+  },
+  destination: Common8.Revealer.RevealerDestination.APPLICATION_PANEL,
+  async loadRevealer() {
+    const Resources = await loadResourcesModule();
+    return new Resources.ResourcesPanel.StorageBucketRevealer();
   }
 });
 

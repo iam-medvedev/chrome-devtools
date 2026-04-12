@@ -109,6 +109,21 @@ describe('AidaGcaTranslation', () => {
             });
             assert.deepEqual(AidaGcaTranslation.aidaDoConversationRequestToGcaRequest(aidaRequest), expectedGcaRequest);
         });
+        it('translates a request with facts', () => {
+            const aidaRequest = createAidaDoConversationRequest({
+                facts: [
+                    { text: 'Fact 1', metadata: { source: 'src1', score: 1 } },
+                    { text: 'Fact 2', metadata: { source: 'src2', score: 2 } },
+                ],
+            });
+            const expectedGcaRequest = createGcaRequest('chat_console_insights', {
+                contents: [
+                    { role: 'user', parts: [{ text: '[source: src1] Fact 1' }, { text: '[source: src2] Fact 2' }] },
+                    { role: 'user', parts: [{ text: 'Hello' }] },
+                ],
+            });
+            assert.deepEqual(AidaGcaTranslation.aidaDoConversationRequestToGcaRequest(aidaRequest), expectedGcaRequest);
+        });
         it('translates a request with historical contexts', () => {
             const aidaRequest = createAidaDoConversationRequest({
                 historical_contexts: [
@@ -481,6 +496,36 @@ describe('AidaGcaTranslation', () => {
                     }],
                 metadata: { rpcGlobalId: 'response-789' },
             });
+        });
+    });
+    describe('GCA GenerateContentResponse to AIDA ChunkResponse', () => {
+        it('translates a basic chunk response and includes modelVersion', () => {
+            const gcaResponse = createGcaResponse({
+                modelVersion: 'gen-model',
+                responseId: 'response-789',
+                candidates: [{
+                        index: 0,
+                        content: { role: 'model', parts: [{ text: 'const add = (a, b) => a + b;' }] },
+                        finishReason: GcaTypes.FinishReason.STOP,
+                        safetyRatings: [],
+                        citationMetadata: { citations: [] },
+                        groundingMetadata: {},
+                        aicodeOutput: { contents: [] },
+                    }],
+            });
+            assert.deepEqual(AidaGcaTranslation.gcaChunkResponseToAidaChunkResponse(gcaResponse), [{
+                    textChunk: {
+                        text: 'const add = (a, b) => a + b;',
+                    },
+                    metadata: {
+                        rpcGlobalId: 'response-789',
+                        attributionMetadata: {
+                            attributionAction: AidaClient.RecitationAction.CITE,
+                            citations: [],
+                        },
+                        inferenceOptionMetadata: { modelId: 'gen-model' },
+                    },
+                }]);
         });
     });
 });

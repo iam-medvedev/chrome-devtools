@@ -1,5 +1,5 @@
 import * as Platform from '../../core/platform/platform.js';
-import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
+import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import type { HeapSnapshotWorkerDispatcher } from './HeapSnapshotWorkerDispatcher.js';
 export interface HeapSnapshotItem {
     itemIndex(): number;
@@ -371,7 +371,6 @@ export declare abstract class HeapSnapshot {
     private calculateDiffForClass;
     private nodeForSnapshotObjectId;
     nodeClassKey(snapshotObjectId: number): string | null;
-    idsOfObjectsWithName(name: string): number[];
     createEdgesProvider(nodeIndex: number): HeapSnapshotEdgesProvider;
     createEdgesProviderForTest(nodeIndex: number, filter: ((arg0: HeapSnapshotEdge) => boolean) | null): HeapSnapshotEdgesProvider;
     retainingEdgesFilter(): ((arg0: HeapSnapshotEdge) => boolean) | null;

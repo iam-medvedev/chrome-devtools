@@ -161,6 +161,7 @@
       <include file="Images/flex-no-wrap.svg" name="IMAGES_FLEX_NO_WRAP_SVG" resource_path="Images/flex-no-wrap.svg" type="BINDATA" compress="false"/>
       <include file="Images/flex-wrap.svg" name="IMAGES_FLEX_WRAP_SVG" resource_path="Images/flex-wrap.svg" type="BINDATA" compress="false"/>
       <include file="Images/flow.svg" name="IMAGES_FLOW_SVG" resource_path="Images/flow.svg" type="BINDATA" compress="false"/>
+      <include file="Images/flowsheet.svg" name="IMAGES_FLOWSHEET_SVG" resource_path="Images/flowsheet.svg" type="BINDATA" compress="false"/>
       <include file="Images/fold-more.svg" name="IMAGES_FOLD_MORE_SVG" resource_path="Images/fold-more.svg" type="BINDATA" compress="false"/>
       <include file="Images/folder-asterisk.svg" name="IMAGES_FOLDER_ASTERISK_SVG" resource_path="Images/folder-asterisk.svg" type="BINDATA" compress="false"/>
       <include file="Images/folder-off.svg" name="IMAGES_FOLDER_OFF_SVG" resource_path="Images/folder-off.svg" type="BINDATA" compress="false"/>
@@ -431,7 +432,7 @@
       <include file="models/geometry/geometry.js" name="MODELS_GEOMETRY_GEOMETRY_JS" resource_path="models/geometry/geometry.js" type="BINDATA" compress="false"/>
       <include file="models/greendev/greendev.js" name="MODELS_GREENDEV_GREENDEV_JS" resource_path="models/greendev/greendev.js" type="BINDATA" compress="false"/>
       <include file="models/har/har.js" name="MODELS_HAR_HAR_JS" resource_path="models/har/har.js" type="BINDATA" compress="false"/>
-      <include file="models/heap_snapshot_model/heap_snapshot_model.js" name="MODELS_HEAP_SNAPSHOT_MODEL_HEAP_SNAPSHOT_MODEL_JS" resource_path="models/heap_snapshot_model/heap_snapshot_model.js" type="BINDATA" compress="false"/>
+      <include file="models/heap_snapshot/heap_snapshot.js" name="MODELS_HEAP_SNAPSHOT_HEAP_SNAPSHOT_JS" resource_path="models/heap_snapshot/heap_snapshot.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COEPCOOPSANDBOXEDIFRAMECANNOTNAVIGATETOCOOPPAGE_MD" resource_path="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/CoepCorpNotSameOrigin.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COEPCORPNOTSAMEORIGIN_MD" resource_path="models/issues_manager/descriptions/CoepCorpNotSameOrigin.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/CoepCorpNotSameOriginAfterDefaultedToSameOriginByCoep.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COEPCORPNOTSAMEORIGINAFTERDEFAULTEDTOSAMEORIGINBYCOEP_MD" resource_path="models/issues_manager/descriptions/CoepCorpNotSameOriginAfterDefaultedToSameOriginByCoep.md" type="BINDATA" compress="false"/>

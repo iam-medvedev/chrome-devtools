@@ -143,9 +143,13 @@ const UIStringsNotTranslate = {
      */
     completed: 'Completed',
     /**
-     * @description Aria label for the cancel icon to be read by screen reader
+     * @description Aria label for the spinner to be read by screen reader when a step is in progress.
      */
-    canceled: 'Canceled',
+    inProgress: 'In progress',
+    /**
+     * @description Aria label for the aborted icon to be read by screen reader
+     */
+    aborted: 'Aborted',
     /**
      * @description Alt text for the image input (displayed in the chat messages) that has been sent to the model.
      */
@@ -185,11 +189,19 @@ const UIStringsNotTranslate = {
     /**
      * @description The title of the button that allows exporting the conversation for agents.
      */
-    exportForAgents: 'Copy for your coding agent',
+    exportForAgents: 'Copy to coding agent',
     /**
      * @description Title for the bottom up thread activity widget.
      */
     bottomUpTree: 'Bottom-up thread activity',
+    /**
+     * @description Accessilility label for the button that shows the walkthrough when there are no widgets in the walkthrough.
+     */
+    showThinking: 'Show thinking',
+    /**
+     * @description Accessilility label for the button that hides the walkthrough when there are no widgets in the walkthrough.
+     */
+    hideThinking: 'Hide thinking',
 };
 export const DEFAULT_VIEW = (input, output, target) => {
     const hasAiV2 = Boolean(Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
@@ -277,6 +289,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         ` : Lit.nothing}
         ${input.showActions ? renderActions(input, output) : Lit.nothing}
       </div>
+      ${hasAiV2 ? renderSideEffectStepsUI(input, steps) : Lit.nothing}
     </section>
   `, target);
     // clang-format on
@@ -313,7 +326,7 @@ function renderTitle(step) {
     const paused = step.requestApproval ?
         html `<span class="paused">${lockedString(UIStringsNotTranslate.paused)}: </span>` :
         Lit.nothing;
-    return html `<span class="title">${paused}${titleForStep(step)}</span>`;
+    return html `<span class="title" aria-label=${titleForStep(step)}>${paused}${titleForStep(step)}</span>`;
 }
 function renderStepCode(step) {
     if (!step.code && !step.output) {
@@ -330,7 +343,6 @@ function renderStepCode(step) {
       <devtools-code-block
         .code=${step.code.trim()}
         .codeLang=${'js'}
-        .displayLimit=${MAX_NUM_LINES_IN_CODEBLOCK}
         .displayNotice=${!Boolean(step.output)}
         .header=${codeHeadingText}
         .showCopyButton=${true}
@@ -341,7 +353,6 @@ function renderStepCode(step) {
     <devtools-code-block
       .code=${step.output}
       .codeLang=${'js'}
-      .displayLimit=${MAX_NUM_LINES_IN_CODEBLOCK}
       .displayNotice=${true}
       .header=${lockedString(UIStringsNotTranslate.dataReturned)}
       .showCopyButton=${false}
@@ -361,7 +372,6 @@ function renderStepDetails({ step, markdownRenderer, isLast, }) {
       <devtools-code-block
         .code=${contextDetail.text}
         .codeLang=${contextDetail.codeLang || ''}
-        .displayLimit=${MAX_NUM_LINES_IN_CODEBLOCK}
         .displayNotice=${false}
         .header=${contextDetail.title}
         .showCopyButton=${true}
@@ -394,9 +404,20 @@ function renderWalkthroughSidebarButton(input, steps) {
     // loading.
     const variant = hasOneStepWithWidget && !input.isLoading ? "tonal" /* Buttons.Button.Variant.TONAL */ : "text" /* Buttons.Button.Variant.TEXT */;
     const icon = AiAssistanceModel.AiUtils.getIconName();
+    const toggleContainerClasses = Lit.Directives.classMap({
+        'walkthrough-toggle-container': true,
+        // We only apply the widget styling when loading is complete
+        'has-widgets': hasOneStepWithWidget && !input.isLoading,
+    });
+    let accessibleLabel = title;
+    // If the agent is still thinking we want the accessibility label to include the current step title followed by Show/Hide thinking.
+    if (input.isLoading) {
+        const suffix = isExpanded ? UIStringsNotTranslate.hideThinking : UIStringsNotTranslate.showThinking;
+        accessibleLabel = `${titleForStep(lastStep)} ${i18n.i18n.lockedString(suffix)}`;
+    }
     // clang-format off
     return html `
-    <div class="walkthrough-toggle-container ${hasOneStepWithWidget ? 'has-widgets' : ''}">
+    <div class=${toggleContainerClasses}>
       ${input.isLoading ?
         html `<devtools-spinner></devtools-spinner>` :
         html `<devtools-icon name=${icon}></devtools-icon>`}
@@ -404,6 +425,7 @@ function renderWalkthroughSidebarButton(input, steps) {
         .variant=${variant}
         .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
         .title=${lastStep.isLoading ? titleForStep(lastStep) : title}
+        .accessibleLabel=${accessibleLabel}
         .jslogContext=${walkthrough.isExpanded ? 'ai-hide-walkthrough-sidebar' : 'ai-show-walkthrough-sidebar'}
         data-show-walkthrough
         @click=${() => {
@@ -416,9 +438,7 @@ function renderWalkthroughSidebarButton(input, steps) {
             // the walkthrough open with an alternative message.
             walkthrough.onOpen(message);
         }
-    }}
->
-        ${title}<devtools-icon class="chevron" .name=${isExpanded ? 'cross' : 'chevron-right'}></devtools-icon>
+    }}>${title}<devtools-icon class="chevron" .name=${isExpanded ? 'cross' : 'chevron-right'}></devtools-icon>
       </devtools-button>
     </div>
   `;
@@ -436,7 +456,6 @@ function renderWalkthroughUI(input, steps) {
         // No steps = no walkthrough UI in the chat view.
         return Lit.nothing;
     }
-    const sideEffectSteps = steps.filter(s => s.requestApproval);
     // If the walkthrough is in the sidebar, we render a button into the
     // ChatView to open it.
     const openWalkThroughSidebarButton = !input.walkthrough.isInlined ? renderWalkthroughSidebarButton(input, steps) : Lit.nothing;
@@ -446,21 +465,6 @@ function renderWalkthroughUI(input, steps) {
     const isExpanded = input.walkthrough.isInlined ?
         input.walkthrough.inlineExpandedMessages.includes(input.message) :
         (input.walkthrough.isExpanded && input.walkthrough.activeSidebarMessage === input.message);
-    // When a side-effect step is present and needs user approval, it's
-    // shown in the main chat UI, regardless of if the walkthrough is
-    // open or closed.
-    // Once the user has approved/denied it, it goes back into the sidebar.
-    // clang-format off
-    const sideEffectStepsUI = sideEffectSteps.length > 0 ? sideEffectSteps.map(step => html `
-    <div class="side-effect-container">
-      ${renderStep({
-        step,
-        isLoading: input.isLoading,
-        markdownRenderer: input.markdownRenderer,
-        isLast: true
-    })}
-    </div> `) : Lit.nothing;
-    // clang-format on
     // clang-format off
     const walkthroughInline = input.walkthrough.isInlined ? html `
     <div class="walkthrough-container">
@@ -478,24 +482,42 @@ function renderWalkthroughUI(input, steps) {
     return html `
     ${openWalkThroughSidebarButton}
     ${walkthroughInline}
-    ${sideEffectStepsUI}
+  `;
+    // clang-format on
+}
+function renderSideEffectStepsUI(input, steps) {
+    const sideEffectSteps = steps.filter(s => s.requestApproval);
+    if (sideEffectSteps.length === 0) {
+        return Lit.nothing;
+    }
+    // clang-format off
+    return html `
+    ${sideEffectSteps.map(step => html `
+      <div class="side-effect-container">
+        ${renderStep({
+        step,
+        isLoading: input.isLoading,
+        markdownRenderer: input.markdownRenderer,
+        isLast: true
+    })}
+      </div> `)}
   `;
     // clang-format on
 }
 function renderStepBadge({ step, isLoading, isLast }) {
     if (isLoading && isLast && !step.requestApproval) {
-        return html `<devtools-spinner></devtools-spinner>`;
+        return html `<devtools-spinner aria-label=${lockedString(UIStringsNotTranslate.inProgress)}></devtools-spinner>`;
     }
     let iconName = 'checkmark';
     let ariaLabel = lockedString(UIStringsNotTranslate.completed);
     let role = 'button';
     if (isLast && step.requestApproval) {
         role = undefined;
-        ariaLabel = undefined;
+        ariaLabel = lockedString(UIStringsNotTranslate.paused);
         iconName = 'pause-circle';
     }
     else if (step.canceled) {
-        ariaLabel = lockedString(UIStringsNotTranslate.canceled);
+        ariaLabel = lockedString(UIStringsNotTranslate.aborted);
         iconName = 'cross';
     }
     return html `<devtools-icon
@@ -556,6 +578,15 @@ async function makeComputedStyleWidget(widgetData) {
         return null;
     }
     const styles = new ComputedStyle.ComputedStyleModel.ComputedStyle(domNodeForId, widgetData.data.computedStyles);
+    let filterText = null;
+    try {
+        filterText = new RegExp(widgetData.data.properties.join('|'), 'i');
+    }
+    catch {
+        // If the AI provides an invalid regex (e.g. "*"), we don't want to crash.
+        // We can just skip the widget in this case.
+        return null;
+    }
     // clang-format off
     const renderedWidget = html `<devtools-widget
       class="computed-styles-widget" ${widget(Elements.ComputedStyleWidget.ComputedStyleWidget, {
@@ -564,18 +595,26 @@ async function makeComputedStyleWidget(widgetData) {
         // This disables showing the nested traces and detailed information in the widget.
         propertyTraces: null,
         allowUserControl: false,
-        filterText: new RegExp(widgetData.data.properties.join('|'), 'i'),
+        filterText,
         enableNarrowViewResizing: false,
     })}></devtools-widget>`;
     // clang-format on
     return {
         renderedWidget,
         revealable: new Elements.ElementsPanel.NodeComputedStyles(domNodeForId),
-        title: html `<devtools-widget
-      ${widget(PanelsCommon.DOMLinkifier.DOMNodeLink, {
+        // clang-format off
+        title: html `
+      <span class="computed-style-title-wrapper">
+        <span class="computed-style-title-prefix">Computed styles</span>
+        <span class="style-class-wrapper">
+          (<devtools-widget
+            ${widget(PanelsCommon.DOMLinkifier.DOMNodeLink, {
             node: domNodeForId,
         })}
-    ></devtools-widget>`,
+          ></devtools-widget>)
+        </span>
+      </span>`,
+        // clang-format on
     };
 }
 async function makeCoreWebVitalsWidget(widgetData) {
@@ -594,12 +633,21 @@ async function makeStylePropertiesWidget(widgetData) {
     if (!domNodeForId) {
         return null;
     }
+    let filter = null;
+    try {
+        filter = widgetData.data.selector ? new RegExp(widgetData.data.selector) : null;
+    }
+    catch {
+        // If the AI provides an invalid regex (e.g. "*"), we don't want to crash.
+        // We can just skip the widget in this case.
+        return null;
+    }
     // clang-format off
     const renderedWidget = html `<devtools-widget
       class="styling-preview-widget"
       ${widget(Elements.StandaloneStylesContainer.StandaloneStylesContainer, {
         domNode: domNodeForId,
-        filter: widgetData.data.selector ? new RegExp(widgetData.data.selector) : null,
+        filter,
     })}>
   </devtools-widget>`;
     // clang-format on
@@ -674,6 +722,7 @@ function renderWidgetResponse(response) {
     const revealButton = html `
     <devtools-button class="widget-reveal-button"
       .variant=${"text" /* Buttons.Button.Variant.TEXT */}
+      .accessibleLabel=${lockedString(UIStringsNotTranslate.reveal)}
       @click=${onReveal}
     >
       ${response.customRevealTitle ?? lockedString(UIStringsNotTranslate.reveal)}
@@ -685,7 +734,7 @@ function renderWidgetResponse(response) {
     <div class=${classes}>
       ${response.title ? html `
         <div class="widget-header">
-          <div class="widget-name">${response.title}</div>
+          <h3 class="widget-name">${response.title}</h3>
           <div class="widget-reveal-container">
             ${revealButton}
           </div>
@@ -958,6 +1007,7 @@ function renderActions(input, output) {
             .jslogContext=${'ai-export-for-agents'}
             .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
             .iconName=${'copy'}
+            aria-label=${lockedString(UIStringsNotTranslate.exportForAgents)}
             @click=${input.onExportClick}
           >${lockedString(UIStringsNotTranslate.exportForAgents)}</devtools-button>
           ${input.suggestions ? html `<div class="vertical-separator"></div>` : Lit.nothing}
@@ -1224,7 +1274,7 @@ async function makeTimelineRangeSummaryWidget(widgetData) {
     const eventsArray = Array.from(events);
     eventsArray.sort((a, b) => a.ts - b.ts);
     const thirdPartyTree = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
-    const mapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
+    const mapper = Trace.EntityMapper.EntityMapper.getOrCreate(parsedTrace);
     thirdPartyTree.model = { selectedEvents: eventsArray, parsedTrace, entityMapper: mapper };
     thirdPartyTree.activeSelection = Timeline.TimelineSelection.selectionFromRangeMicroSeconds(bounds.min, bounds.max);
     thirdPartyTree.refreshTree(true);
@@ -1245,6 +1295,9 @@ async function makeTimelineRangeSummaryWidget(widgetData) {
                     entityMapper: thirdPartyTree.entityMapper(),
                 },
                 activeSelection: { bounds },
+                onBottomUpButtonClicked: (node) => {
+                    void Common.Revealer.reveal(new TimelineUtils.Helpers.RevealableBottomUpProfile(bounds, node ?? undefined));
+                },
             })}`,
         },
     })}

@@ -5025,7 +5025,7 @@ var IDBDatabaseView = class extends ApplicationComponents5.StorageMetadataView.S
   constructor(model, database) {
     super();
     this.model = model;
-    this.setShowOnlyBucket(false);
+    this.setShowOnlyBucket(true);
     if (database) {
       this.update(database);
     }
@@ -8048,7 +8048,7 @@ var ServiceWorkerCacheView = class extends UI13.View.SimpleView {
     this.preview = null;
     this.cache = cache;
     const bucketInfo = this.model.target().model(SDK17.StorageBucketsModel.StorageBucketsModel)?.getBucketByName(cache.storageBucket.storageKey, cache.storageBucket.name);
-    this.metadataView.setShowOnlyBucket(false);
+    this.metadataView.setShowOnlyBucket(true);
     if (bucketInfo) {
       this.metadataView.setStorageBucket(bucketInfo);
     } else if (cache.storageKey) {
@@ -11840,7 +11840,8 @@ var webMCPView_css_default = `/*
         background-color: var(--sys-color-tonal-container);
       }
 
-      tr.selected.status-error {
+      tbody tr.selected.status-error,
+      tbody tr.selected.status-error.revealed {
         background-color: var(--sys-color-error-container);
         color: var(--sys-color-error);
       }
@@ -12001,6 +12002,11 @@ var webMCPView_css_default = `/*
         padding: var(--sys-size-5);
         flex: auto;
         overflow: auto;
+    }
+
+    .payload-value.error-text {
+      color: var(--sys-color-error);
+      white-space: pre-wrap;
     }
 }
 
@@ -12348,19 +12354,23 @@ var DEFAULT_VIEW7 = (input, output, target) => {
                   @click=${() => input.onCallSelect(null)}
                 ></devtools-button>
                 <devtools-widget
-                  id="details"
+                  id="webmcp.tool-details"
                   title=${i18nString30(UIStrings30.toolDetails)}
                   ${widget7(ToolDetailsWidget, { tool: input.selectedCall?.tool })}>
                 </devtools-widget>
                 <devtools-widget
-                  id="inputs"
+                  id="webmcp.call-inputs"
                   title=${i18nString30(UIStrings30.input)}
                   ${widget7(PayloadWidget, parsePayload(input.selectedCall?.input))}>
                 </devtools-widget>
                 <devtools-widget
-                  id="outputs"
+                  id="webmcp.call-outputs"
                   title=${i18nString30(UIStrings30.output)}
-                  ${widget7(PayloadWidget, parsePayload(input.selectedCall?.result?.output))}>
+                  ${widget7(PayloadWidget, {
+    valueObject: input.selectedCall?.result?.output,
+    errorText: input.selectedCall?.result?.errorText,
+    exceptionDetails: input.selectedCall?.result?.exceptionDetails
+  })}>
                 </devtools-widget>
               </devtools-tabbed-pane>
             </div>
@@ -12567,7 +12577,7 @@ var WebMCPView = class _WebMCPView extends UI23.Widget.VBox {
   }
 };
 var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
-  if (input.valueObject === void 0 && input.valueString === void 0) {
+  if (!input.valueObject && !input.valueString && !input.errorText && !input.exceptionDetails) {
     render9(nothing6, target);
     return;
   }
@@ -12591,11 +12601,36 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
         `}></devtools-tree>`;
   };
   const createSourceText = (text) => html10`<div class="payload-value source-code">${text}</div>`;
+  const createErrorText = (text) => html10`<div class="payload-value source-code error-text">${text}</div>`;
+  const createException = (details, linkifier = new Components4.Linkifier.Linkifier()) => {
+    const renderFrame = (frame, index, array) => {
+      const newline = index < array.length - 1 ? "\n" : "";
+      const { line, link: link3, isCallFrame } = frame;
+      if (!isCallFrame) {
+        return html10`<span>${line}${newline}</span>`;
+      }
+      if (!link3) {
+        return html10`<span class="formatted-builtin-stack-frame">${line}${newline}</span>`;
+      }
+      const scriptLocationLink = linkifier.linkifyScriptLocation(details.error.runtimeModel().target(), link3.scriptId || null, link3.url, link3.lineNumber, {
+        columnNumber: link3.columnNumber,
+        inlineFrameIndex: 0,
+        showColumnNumber: true
+      });
+      scriptLocationLink.tabIndex = -1;
+      return html10`<span class="formatted-stack-frame">${link3.prefix}${scriptLocationLink}${link3.suffix}${newline}</span>`;
+    };
+    return html10`
+      <div class="payload-value source-code error-text">
+        ${details.frames.length === 0 && details.description ? html10`<span>${details.description}\n</span>` : nothing6}
+        <div>${details.frames.map(renderFrame)}</div>
+        ${details.cause ? html10`\nCaused by:\n${createException(details.cause, linkifier)}` : nothing6}</div>`;
+  };
   render9(html10`
     <style>${webMCPView_css_default}</style>
     <div class="call-payload-view">
       <div class="call-payload-content">
-            ${isParsable ? createPayload(input.valueObject) : input.valueString !== void 0 ? createSourceText(input.valueString) : nothing6}
+            ${isParsable ? createPayload(input.valueObject) : input.valueString !== void 0 ? createSourceText(input.valueString) : input.exceptionDetails ? createException(input.exceptionDetails) : input.errorText ? createErrorText(input.errorText) : nothing6}
       </div>
     </div>
   `, target);
@@ -12603,6 +12638,9 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
 var PayloadWidget = class extends UI23.Widget.Widget {
   #valueObject;
   #valueString;
+  #errorText;
+  #exceptionDetailsPromise;
+  #exceptionDetails;
   #view;
   constructor(element, view = PAYLOAD_DEFAULT_VIEW) {
     super(element);
@@ -12622,6 +12660,32 @@ var PayloadWidget = class extends UI23.Widget.Widget {
   get valueString() {
     return this.#valueString;
   }
+  set errorText(errorText) {
+    this.#errorText = errorText;
+    this.requestUpdate();
+  }
+  get errorText() {
+    return this.#errorText;
+  }
+  async #updateExceptionDetails(exceptionDetailsPromise) {
+    if (this.#exceptionDetailsPromise === exceptionDetailsPromise) {
+      return;
+    }
+    this.#exceptionDetailsPromise = exceptionDetailsPromise;
+    this.#exceptionDetails = void 0;
+    this.requestUpdate();
+    const exceptionDetails = await exceptionDetailsPromise;
+    if (this.#exceptionDetailsPromise === exceptionDetailsPromise) {
+      this.#exceptionDetails = exceptionDetails;
+      this.requestUpdate();
+    }
+  }
+  set exceptionDetails(exceptionDetailsPromise) {
+    void this.#updateExceptionDetails(exceptionDetailsPromise);
+  }
+  get exceptionDetails() {
+    return this.#exceptionDetailsPromise;
+  }
   wasShown() {
     super.wasShown();
     this.requestUpdate();
@@ -12629,7 +12693,9 @@ var PayloadWidget = class extends UI23.Widget.Widget {
   performUpdate() {
     const input = {
       valueObject: this.#valueObject,
-      valueString: this.#valueString
+      valueString: this.#valueString,
+      errorText: this.#errorText,
+      exceptionDetails: this.#exceptionDetails
     };
     this.#view(input, {}, this.contentElement);
   }
@@ -13532,6 +13598,12 @@ var ApplicationPanelSidebar = class extends UI24.Widget.VBox {
   showPreloadingAttemptViewWithFilter(filter) {
     if (this.preloadingSummaryTreeElement) {
       this.preloadingSummaryTreeElement.expandAndRevealAttempts(filter);
+    }
+  }
+  showStorageBucket(bucketInfo) {
+    const bucketsModel = SDK26.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK26.StorageBucketsModel.StorageBucketsModel);
+    if (bucketsModel) {
+      this.storageBucketsTreeElement?.getBucketTreeElement(bucketsModel, bucketInfo)?.revealAndSelect(true);
     }
   }
   onmousemove(event) {
@@ -15077,9 +15149,10 @@ var CookieItemsView = class extends UI25.Widget.VBox {
     void this.model.deleteCookies(this.shownCookies);
   }
   deleteSelectedItem() {
-    if (this.selectedCookie) {
+    const cookie = this.selectedCookie;
+    if (cookie) {
       this.showPreview(null);
-      void this.model.deleteCookie(this.selectedCookie);
+      void this.model.deleteCookie(cookie);
     }
   }
   onCookieListUpdate() {
@@ -16428,7 +16501,8 @@ __export(ResourcesPanel_exports, {
   FrameDetailsRevealer: () => FrameDetailsRevealer,
   ResourceRevealer: () => ResourceRevealer,
   ResourcesPanel: () => ResourcesPanel,
-  RuleSetViewRevealer: () => RuleSetViewRevealer
+  RuleSetViewRevealer: () => RuleSetViewRevealer,
+  StorageBucketRevealer: () => StorageBucketRevealer
 });
 import "./../../ui/legacy/legacy.js";
 import * as Common22 from "./../../core/common/common.js";
@@ -16782,12 +16856,22 @@ var AttemptViewWithFilterRevealer = class {
     sidebar.showPreloadingAttemptViewWithFilter(filter);
   }
 };
+var StorageBucketRevealer = class {
+  async reveal(revealInfo) {
+    const sidebar = await ResourcesPanel.showAndGetSidebar();
+    sidebar.showStorageBucket(revealInfo.bucketInfo);
+  }
+};
+
+// gen/front_end/panels/application/application.prebundle.js
+import * as Components5 from "./components/components.js";
 export {
   AppManifestView_exports as AppManifestView,
   ApplicationPanelSidebar_exports as ApplicationPanelSidebar,
   BackgroundServiceModel_exports as BackgroundServiceModel,
   BackgroundServiceView_exports as BackgroundServiceView,
   BounceTrackingMitigationsTreeElement_exports as BounceTrackingMitigationsTreeElement,
+  Components5 as Components,
   CookieItemsView_exports as CookieItemsView,
   CrashReportContextView_exports as CrashReportContextView,
   DOMStorageItemsView_exports as DOMStorageItemsView,

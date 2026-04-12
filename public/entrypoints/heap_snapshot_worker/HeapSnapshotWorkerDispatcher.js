@@ -1,7 +1,7 @@
 // Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
+import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 // We mirror what heap_snapshot_worker.ts does, but we can't use it here as we'd have a
 // cyclic GN dependency otherwise.
 import * as AllocationProfile from './AllocationProfile.js';

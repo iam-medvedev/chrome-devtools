@@ -44,6 +44,7 @@ Your role is to help users understand and fix accessibility issues found in Ligh
 # Constraints
 * **CRITICAL**: ALWAYS call a tool before providing an answer if an element path is available.
 * **CRITICAL**: You are an accessibility agent. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, or any other non web-development topics.
+* **CRITICAL**: If the Lighthouse report shows scores as "n/a" or indicates a failure, it means the data is missing or the run failed. Do NOT assume that the page passed or has no issues.
 
 ## Response Structure
 
@@ -250,7 +251,7 @@ export class AccessibilityAgent extends AiAgent {
             }
         });
         this.declareFunction('getStyles', {
-            description: 'Get computed styles for an element on the inspected page by its Lighthouse path.',
+            description: 'Get computed styles for an element on the inspected page by its Lighthouse path. **CRITICAL** You MUST provide a specific list of CSS property names. Do not use generic values like "all" or "*".',
             parameters: {
                 type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                 description: '',
@@ -268,7 +269,7 @@ export class AccessibilityAgent extends AiAgent {
                     },
                     styleProperties: {
                         type: 5 /* Host.AidaClient.ParametersTypes.ARRAY */,
-                        description: 'One or more CSS style property names to fetch.',
+                        description: 'One or more specific CSS style property names to fetch. Generic values like "all" or "*" are not supported.',
                         nullable: false,
                         items: {
                             type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
@@ -393,7 +394,13 @@ export class AccessibilityAgent extends AiAgent {
     #getInitialPayload(context) {
         const report = context.getItem();
         const formatter = new LighthouseFormatter();
-        return `# Lighthouse Report:\n${formatter.summary(report)}\n${formatter.audits(report, 'accessibility')}\n`;
+        const summary = formatter.summary(report);
+        const audits = formatter.audits(report, 'accessibility');
+        const allFailed = Object.values(report.categories).every(category => category.score === null);
+        if (allFailed) {
+            return '**CRITICAL**: The Lighthouse report failed to record or all category scores are error/unavailable (n/a). This indicates a failed run or missing data.';
+        }
+        return `# Lighthouse Report:\n${summary}\n${audits}`;
     }
     async enhanceQuery(query, lhr) {
         this.clearDeclaredFunctions();

@@ -5,7 +5,7 @@ var _a;
 /* eslint-disable @devtools/prefer-private-class-members */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
+import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import { AllocationProfile } from './AllocationProfile.js';
 export class HeapSnapshotEdge {
     snapshot;
@@ -2256,15 +2256,6 @@ export class HeapSnapshot {
             return this.#classKeyFromClassKey(node.classKeyInternal());
         }
         return null;
-    }
-    idsOfObjectsWithName(name) {
-        const ids = [];
-        for (let it = this.allNodes(); it.hasNext(); it.next()) {
-            if (it.item().name() === name) {
-                ids.push(it.item().id());
-            }
-        }
-        return ids;
     }
     createEdgesProvider(nodeIndex) {
         const node = this.createNode(nodeIndex);

@@ -57,11 +57,13 @@ entrypoints/formatter_worker/ScopeParser.test.js
 entrypoints/formatter_worker/Substitute.test.js
 foundation/Universe.test.js
 models/ai_assistance/data_formatters/LighthouseFormatter.test.js
+models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
 models/crux-manager/CrUXManager.test.js
 models/formatter/FormatterWorkerPool.test.js
 models/formatter/ScriptFormatter.test.js
+models/heap_snapshot/heap_snapshot.test.js
 models/issues_manager/ConnectionAllowlistIssue.test.js
 models/issues_manager/DeprecationIssue.test.js
 models/issues_manager/ElementAccessibilityIssue.test.js
@@ -149,7 +151,6 @@ entrypoints/main/MainImpl.test.js
 entrypoints/node_app/app/NodeMain.test.js
 entrypoints/wasmparser_worker/wasmparser_worker.test.js
 models/ai_assistance/data_formatters/FileFormatter.test.js
-models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
 models/ai_assistance/data_formatters/UnitFormatters.test.js
 models/ai_assistance/AgentProject.test.js
 models/ai_assistance/AiConversation.test.js
@@ -199,11 +200,11 @@ models/geometry/Geometry.test.js
 models/har/Importer.test.js
 models/har/Log.test.js
 models/har/Writer.test.js
-models/heap_snapshot_model/heap_snapshot_model.test.js
 models/issues_manager/CheckFormsIssuesTrigger.test.js
 models/issues_manager/IssuesManager.test.js
 models/issues_manager/SelectivePermissionsInterventionIssue.test.js
 models/javascript_metadata/JavaScriptMetadata.test.js
+models/live-metrics/LiveMetrics.test.js
 models/logs/NetworkLog.test.js
 models/logs/RequestResolver.test.js
 models/persistence/AutomaticFileSystemManager.test.js
@@ -329,6 +330,7 @@ panels/ai_assistance/components/DisabledWidget.test.js
 panels/ai_assistance/components/ExploreWidget.test.js
 panels/ai_assistance/components/ExportForAgentsDialog.test.js
 panels/ai_assistance/components/MarkdownRendererWithCodeBlock.test.js
+panels/ai_assistance/components/OptInChangeDialog.test.js
 panels/ai_assistance/components/WalkthroughView.test.js
 panels/animation/AnimationTimeline.test.js
 panels/application/AppManifestView.test.js
@@ -402,6 +404,7 @@ panels/common/ThrottlingUtils.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
 panels/console/ConsoleInsightTeaser.test.js
+panels/console/ConsolePinPane.test.js
 panels/console/ConsolePrompt.test.js
 panels/console/ConsoleSidebar.test.js
 panels/console/ConsoleView.test.js
@@ -765,6 +768,7 @@ ui/legacy/components/perf_ui/TimelineOverviewCalculator.test.js
 ui/legacy/components/quick_open/CommandMenu.test.js
 ui/legacy/components/quick_open/FilteredListWidget.test.js
 ui/legacy/components/quick_open/QuickOpen.test.js
+ui/legacy/components/settings_ui/SettingsUI.test.js
 ui/legacy/components/source_frame/BinaryResourceViewFactory.test.js
 ui/legacy/components/source_frame/JSONView.test.js
 ui/legacy/components/source_frame/ResourceSourceFrame.test.js

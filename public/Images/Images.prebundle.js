@@ -1,5 +1,5 @@
 
-// Copyright 2026 The Chromium Authors
+// Copyright 1969 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 const sheet = new CSSStyleSheet();
@@ -165,6 +165,7 @@ style.setProperty('--image-file-flex-direction', 'url(\"' + new URL('./src/flex-
 style.setProperty('--image-file-flex-no-wrap', 'url(\"' + new URL('./src/flex-no-wrap.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-flex-wrap', 'url(\"' + new URL('./src/flex-wrap.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-flow', 'url(\"' + new URL('./src/flow.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-flowsheet', 'url(\"' + new URL('./src/flowsheet.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-fold-more', 'url(\"' + new URL('./src/fold-more.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-folder-asterisk', 'url(\"' + new URL('./src/folder-asterisk.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-folder-off', 'url(\"' + new URL('./src/folder-off.svg', import.meta.url).toString() + '\")');

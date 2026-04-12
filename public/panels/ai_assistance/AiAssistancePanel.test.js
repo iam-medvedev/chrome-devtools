@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Badges from '../../models/badges/badges.js';
@@ -31,6 +32,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
         viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
         await createNetworkPanelForMockConnection();
         Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+        Common.Settings.moduleSetting('ai-assistance-v2-opt-in-change-dialog-seen').set(true);
         sinon.stub(AiAssistanceModel.StylingAgent.NodeContext.prototype, 'getSuggestions')
             .returns(Promise.resolve([{ title: 'test suggestion' }]));
         const featureFlags = [
@@ -473,6 +475,76 @@ describeWithMockConnection('AI Assistance Panel', () => {
             nextInput.props.onTextSubmit('test 2');
             nextInput = await view.nextInput;
             sinon.assert.calledOnce(recordActionSpy);
+        });
+    });
+    describe('opt-in change dialog', () => {
+        it('should NOT show OptInChangeDialog when AIV2 is disabled', async () => {
+            await enableAllFeatureAndSetting();
+            updateHostConfig({
+                devToolsAiAssistanceV2: {
+                    enabled: false,
+                },
+            });
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
+                nodeType: Node.ELEMENT_NODE,
+            });
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+            Common.Settings.moduleSetting('ai-assistance-v2-opt-in-change-dialog-seen').set(false);
+            const { view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }]]) });
+            const showStub = sinon.stub(AiAssistancePanel.OptInChangeDialog.OptInChangeDialog, 'show');
+            assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            view.input.props.onTextSubmit('test');
+            sinon.assert.notCalled(showStub);
+        });
+        it('should restore the prompt when onManageSettings is clicked', async () => {
+            await enableAllFeatureAndSetting();
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
+                nodeType: Node.ELEMENT_NODE,
+            });
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+            Common.Settings.moduleSetting('ai-assistance-v2-opt-in-change-dialog-seen').set(false);
+            const chatView = sinon.createStubInstance(AiAssistancePanel.ChatView);
+            const showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView');
+            const { view } = await createAiAssistancePanel({
+                aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
+                chatView,
+            });
+            const showStub = sinon.stub(AiAssistancePanel.OptInChangeDialog.OptInChangeDialog, 'show');
+            assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            const prompt = 'test prompt';
+            view.input.props.onTextSubmit(prompt);
+            sinon.assert.calledOnce(showStub);
+            const { onManageSettings } = showStub.firstCall.args[0];
+            // Simulate clicking "Manage in settings"
+            onManageSettings();
+            sinon.assert.calledWith(showViewStub, 'chrome-ai');
+            sinon.assert.calledWith(chatView.setInputValue, prompt);
+        });
+        it('should show OptInChangeDialog when the setting is false', async () => {
+            await enableAllFeatureAndSetting();
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
+                nodeType: Node.ELEMENT_NODE,
+            });
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+            Common.Settings.moduleSetting('ai-assistance-v2-opt-in-change-dialog-seen').set(false);
+            const { view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }]]) });
+            const showStub = sinon.stub(AiAssistancePanel.OptInChangeDialog.OptInChangeDialog, 'show');
+            assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            view.input.props.onTextSubmit('test');
+            sinon.assert.calledOnce(showStub);
+        });
+        it('should NOT show OptInChangeDialog when the setting is true', async () => {
+            await enableAllFeatureAndSetting();
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
+                nodeType: Node.ELEMENT_NODE,
+            });
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+            Common.Settings.moduleSetting('ai-assistance-v2-opt-in-change-dialog-seen').set(true);
+            const { view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }]]) });
+            const showStub = sinon.stub(AiAssistancePanel.OptInChangeDialog.OptInChangeDialog, 'show');
+            assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            view.input.props.onTextSubmit('test');
+            sinon.assert.notCalled(showStub);
         });
     });
     describe('toolbar actions', () => {
@@ -1575,6 +1647,36 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
                 assert.strictEqual(view.input.props.inputPlaceholder, 'Ask a question about the selected performance trace');
                 assert.isFalse(view.input.props.isTextInputDisabled);
+            });
+        });
+        describe('disclaimer', () => {
+            it('shows the simplified disclaimer when V2 is enabled', async () => {
+                await enableAllFeatureAndSetting();
+                const { view } = await createAiAssistancePanel();
+                assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+                assert.strictEqual(view.input.props.disclaimerText, 'Chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.');
+            });
+            it('shows the simplified disclaimer when V2 is enabled and logging is disabled', async () => {
+                await enableAllFeatureAndSetting();
+                updateHostConfig({
+                    aidaAvailability: {
+                        enterprisePolicyValue: Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING,
+                    },
+                });
+                const { view } = await createAiAssistancePanel();
+                assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+                assert.strictEqual(view.input.props.disclaimerText, 'Chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google. The content submitted to and generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.');
+            });
+            it('shows the original disclaimer when V2 is disabled', async () => {
+                await enableAllFeatureAndSetting();
+                updateHostConfig({
+                    devToolsAiAssistanceV2: {
+                        enabled: false,
+                    },
+                });
+                const { view } = await createAiAssistancePanel();
+                assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+                assert.strictEqual(view.input.props.disclaimerText, 'Chat messages and any data the inspected page can access via Web APIs are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.');
             });
         });
         describe('removing context', () => {

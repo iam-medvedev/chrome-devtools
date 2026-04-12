@@ -4688,7 +4688,7 @@ var consolePinPane_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./consolePinPane.css")} */`;
 
 // gen/front_end/panels/console/ConsolePinPane.js
-var { createRef, ref: ref2 } = Directives;
+var { createRef, ref: ref2, repeat } = Directives;
 var { widget } = UI5.Widget;
 var UIStrings3 = {
   /**
@@ -4731,7 +4731,7 @@ var DEFAULT_PANE_VIEW = (input, _output, target) => {
   render4(html3`
     <style>${consolePinPane_css_default}</style>
     <div class='console-pins monospace' jslog=${VisualLogging3.pane("console-pins")} @contextmenu=${input.onContextMenu}>
-    ${input.pins.map((pin) => widget(ConsolePinPresenter, {
+    ${repeat(input.pins, (pin) => pin, (pin) => widget(ConsolePinPresenter, {
     pin,
     focusOut: input.focusOut,
     onRemove: () => input.onRemove(pin)
@@ -4904,6 +4904,7 @@ var ConsolePinPresenter = class extends UI5.Widget.Widget {
   set pin(pin) {
     this.#pin?.removeEventListener("EVALUATE_RESULT_READY", this.requestUpdate, this);
     this.#pin = pin;
+    this.#editor = void 0;
     this.#pin.setEditor(this.#pinEditor);
     this.#pin.addEventListener("EVALUATE_RESULT_READY", this.requestUpdate, this);
     this.requestUpdate();
@@ -7808,10 +7809,10 @@ var UIStrings6 = {
    */
   consolePrompt: "Console prompt",
   /**
-   * @description Warning shown to users when pasting text into the DevTools console.
+   * @description Warning shown to users when pasting text into the DevTools console. IMPORTANT: keep double quotes around PH1 and do not use single quotes.
    * @example {allow pasting} PH1
    */
-  selfXssWarning: "Warning: Don\u2019t paste code into the DevTools Console that you don\u2019t understand or haven\u2019t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type \u2018{PH1}\u2019 below and press Enter to allow pasting.",
+  selfXssWarning: "Warning: Don\u2019t paste code into the DevTools Console that you don\u2019t understand or haven\u2019t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type \u201C{PH1}\u201D below and press Enter to allow pasting.",
   /**
    * @description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools console.
    */

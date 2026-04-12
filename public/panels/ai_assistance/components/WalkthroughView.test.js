@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import * as Lit from '../../../ui/lit/lit.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('WalkthroughView', () => {
     const { WalkthroughView } = AiAssistance.WalkthroughView;
@@ -65,6 +66,7 @@ describeWithEnvironment('WalkthroughView', () => {
         assert.lengthOf(stepsWrapper.children, 1);
         const stepTitle = querySelectorErrorOnMissing(stepsWrapper, '.title');
         assert.strictEqual(stepTitle.innerText, 'Test step 1');
+        assert.strictEqual(stepTitle.getAttribute('aria-label'), 'Test step 1');
     });
     it('does not render steps that require approval', async () => {
         const message = {
@@ -156,6 +158,30 @@ describeWithEnvironment('WalkthroughView', () => {
         view.isExpanded = false;
         await view.updateComplete;
         assert.isFalse(inlineWalkthrough.hasAttribute('open'));
+    });
+    it('renders spinner with aria-label when loading', async () => {
+        const message = {
+            entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+            parts: [{
+                    type: 'step',
+                    step: {
+                        isLoading: true,
+                        title: 'Test step 1',
+                    }
+                }],
+        };
+        const view = await makeWalkthrough({
+            isLoading: true,
+            message,
+            isInlined: true,
+            isExpanded: true,
+        });
+        const headerSpinner = view.contentElement.querySelector('.inline-icon devtools-spinner');
+        assert.isNotNull(headerSpinner);
+        assert.strictEqual(headerSpinner?.getAttribute('aria-label'), 'In progress');
+        const stepSpinner = view.contentElement.querySelector('.summary devtools-spinner');
+        assert.isNotNull(stepSpinner);
+        assert.strictEqual(stepSpinner?.getAttribute('aria-label'), 'In progress');
     });
     it('renders the titlebar in sidebar mode', async () => {
         const message = {
@@ -272,6 +298,39 @@ describeWithEnvironment('WalkthroughView', () => {
                 hasWidgets: true,
                 isInlined: true,
             }), 'Agent walkthrough');
+        });
+    });
+    describe('renderStep status icons', () => {
+        function testStepBadge(step, expectedLabel, expectedIcon) {
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            Lit.render(AiAssistance.ChatMessage.renderStep({
+                step,
+                isLoading: false,
+                markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
+                isLast: true,
+            }), container);
+            const indicator = container.querySelector('.indicator');
+            assert.isNotNull(indicator);
+            assert.strictEqual(indicator?.getAttribute('aria-label'), expectedLabel);
+            assert.strictEqual(indicator.name, expectedIcon);
+        }
+        it('renders pause icon with Paused label', () => {
+            testStepBadge({
+                isLoading: false,
+                requestApproval: { description: 'Confirm', onAnswer: () => { } },
+            }, 'Paused', 'pause-circle');
+        });
+        it('renders cross icon with Aborted label when canceled', () => {
+            testStepBadge({
+                isLoading: false,
+                canceled: true,
+            }, 'Aborted', 'cross');
+        });
+        it('renders checkmark icon with Completed label', () => {
+            testStepBadge({
+                isLoading: false,
+            }, 'Completed', 'checkmark');
         });
     });
 });
