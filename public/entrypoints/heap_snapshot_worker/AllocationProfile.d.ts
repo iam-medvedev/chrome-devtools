@@ -1,4 +1,4 @@
-import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
+import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import type { LiveObjects, Profile } from './HeapSnapshot.js';
 export declare class AllocationProfile {
     #private;

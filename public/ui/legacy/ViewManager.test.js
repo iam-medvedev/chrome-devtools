@@ -147,6 +147,18 @@ describeWithEnvironment('ViewManager', () => {
         assert.isUndefined(events[0].data.hiddenViewId);
     });
     describe('createTabbedLocation', () => {
+        it('respects custom location visibility predicate', async () => {
+            let locationIsVisible = false;
+            const tabbedLocation = viewManager.createTabbedLocation(() => { }, 'visibility-test-location', false, true, undefined, () => locationIsVisible);
+            const view = new UI.View.SimpleView({
+                title: i18n.i18n.lockedString('Visibility test view'),
+                viewId: 'visibility-test-view',
+            });
+            await tabbedLocation.showView(view);
+            assert.isFalse(tabbedLocation.isViewVisible(view), 'view should not be visible when location predicate is false');
+            locationIsVisible = true;
+            assert.isTrue(tabbedLocation.isViewVisible(view), 'view should be visible when location predicate is true');
+        });
         it('remembers closeable views in the `closeable-tabs` setting', async () => {
             const tabbedLocation = viewManager.createTabbedLocation(() => { }, '');
             const closeableView = new UI.View.SimpleView({

@@ -56,6 +56,7 @@
     "../../../../../../front_end/panels/ai_assistance/components/ExploreWidget.test.ts",
     "../../../../../../front_end/panels/ai_assistance/components/ExportForAgentsDialog.test.ts",
     "../../../../../../front_end/panels/ai_assistance/components/MarkdownRendererWithCodeBlock.test.ts",
+    "../../../../../../front_end/panels/ai_assistance/components/OptInChangeDialog.test.ts",
     "../../../../../../front_end/panels/ai_assistance/components/WalkthroughView.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

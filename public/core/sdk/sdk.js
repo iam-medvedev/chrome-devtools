@@ -574,6 +574,7 @@ var generatedProperties = [
       "grid-template-areas",
       "grid-template-columns",
       "grid-template-rows",
+      "hanging-punctuation",
       "hash",
       "height",
       "hostname",
@@ -1885,7 +1886,7 @@ var generatedProperties = [
     "inherited": false,
     "keywords": [
       "all",
-      "auto",
+      "normal",
       "around",
       "between"
     ],
@@ -2841,6 +2842,16 @@ var generatedProperties = [
     "name": "grid-template-rows"
   },
   {
+    "inherited": true,
+    "keywords": [
+      "none",
+      "first",
+      "last",
+      "allow-end"
+    ],
+    "name": "hanging-punctuation"
+  },
+  {
     "name": "hash"
   },
   {
@@ -3544,6 +3555,7 @@ var generatedProperties = [
   {
     "keywords": [
       "auto",
+      "chain",
       "contain",
       "none"
     ],
@@ -3552,6 +3564,7 @@ var generatedProperties = [
   {
     "keywords": [
       "auto",
+      "chain",
       "contain",
       "none"
     ],
@@ -3966,7 +3979,7 @@ var generatedProperties = [
     "inherited": false,
     "keywords": [
       "all",
-      "auto",
+      "normal",
       "around",
       "between"
     ],
@@ -5725,7 +5738,7 @@ var generatedPropertyValues = {
   "column-rule-visibility-items": {
     "values": [
       "all",
-      "auto",
+      "normal",
       "around",
       "between"
     ]
@@ -6306,6 +6319,14 @@ var generatedPropertyValues = {
       "none"
     ]
   },
+  "hanging-punctuation": {
+    "values": [
+      "none",
+      "first",
+      "last",
+      "allow-end"
+    ]
+  },
   "height": {
     "values": [
       "auto",
@@ -6678,6 +6699,7 @@ var generatedPropertyValues = {
   "overscroll-behavior-x": {
     "values": [
       "auto",
+      "chain",
       "contain",
       "none"
     ]
@@ -6685,6 +6707,7 @@ var generatedPropertyValues = {
   "overscroll-behavior-y": {
     "values": [
       "auto",
+      "chain",
       "contain",
       "none"
     ]
@@ -6886,7 +6909,7 @@ var generatedPropertyValues = {
   "row-rule-visibility-items": {
     "values": [
       "all",
-      "auto",
+      "normal",
       "around",
       "between"
     ]
@@ -9890,7 +9913,7 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
       case Type.ServiceWorker:
         this.#capabilitiesMask = 4 | 8 | 16 | 32 | 2048 | 131072 | 524288;
         if (parentTarget?.type() !== Type.FRAME) {
-          this.#capabilitiesMask |= 1;
+          this.#capabilitiesMask |= 1 | 8192;
         }
         break;
       case Type.SHARED_WORKER:
@@ -10484,6 +10507,10 @@ var UIStrings = {
    */
   noContentForWebSocket: "Content for WebSockets is currently not supported",
   /**
+   * @description Explanation why no content is shown for Server-Sent Events (SSE).
+   */
+  noContentForSSE: "Content for Server-Sent Events (SSE) is currently not supported",
+  /**
    * @description Explanation why no content is shown for redirect response.
    */
   noContentForRedirect: "No content available because this request was redirected",
@@ -10665,6 +10692,9 @@ var NetworkManager = class _NetworkManager extends SDKModel {
       return { error: i18nString(UIStrings.noContentForWebSocket) };
     }
     if (!request.finished) {
+      if (Boolean(request.eventSourceMessages()?.length)) {
+        return { error: i18nString(UIStrings.noContentForSSE) };
+      }
       await request.once(Events.FINISHED_LOADING);
     }
     if (request.isRedirect()) {
@@ -27869,7 +27899,7 @@ var ResourceTreeFrame = class {
    * https://chromium.googlesource.com/chromium/src/+/HEAD/docs/frame_trees.md
    */
   isPrimaryFrame() {
-    return !this.#sameTargetParentFrame && this.#model.target() === TargetManager.instance().primaryPageTarget();
+    return !this.#sameTargetParentFrame && this.#model.target() === this.#model.target().targetManager().primaryPageTarget();
   }
   removeChildFrame(frame, isSwap) {
     this.#childFrames.delete(frame);
@@ -36141,7 +36171,7 @@ function makePreloadingAttemptId(key) {
       targetHint = "Self";
       break;
   }
-  return `${key.loaderId}:${action}:${key.url}:${targetHint}`;
+  return `${key.loaderId}:${action}:${key.url}:${targetHint}:${key.formSubmission ? "formSubmission" : "undefined"}`;
 }
 var PreloadPipeline = class _PreloadPipeline {
   inner;

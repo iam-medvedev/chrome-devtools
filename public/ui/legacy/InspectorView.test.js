@@ -74,6 +74,27 @@ describeWithEnvironment('InspectorView', () => {
         });
     });
     describe('action delegate', () => {
+        it('main.toggle-drawer triggers animated hide when drawer is expanded and visible', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            inspectorView.showDrawer({ focus: false, hasTargetDrawer: false });
+            assert.isTrue(inspectorView.drawerVisible());
+            const drawerSplitWidget = inspectorView.drawerSplitWidget;
+            const hideSidebarSpy = sinon.spy(drawerSplitWidget, 'hideSidebar');
+            const delegate = new LegacyUI.InspectorView.ActionDelegate();
+            delegate.handleAction({}, 'main.toggle-drawer');
+            sinon.assert.calledOnceWithExactly(hideSidebarSpy, true);
+        });
+        it('main.toggle-drawer hides without animation when drawer is minimized', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            inspectorView.showDrawer({ focus: false, hasTargetDrawer: false });
+            inspectorView.setDrawerMinimized(true);
+            const drawerSplitWidget = inspectorView.drawerSplitWidget;
+            const hideSidebarSpy = sinon.spy(drawerSplitWidget, 'hideSidebar');
+            const delegate = new LegacyUI.InspectorView.ActionDelegate();
+            delegate.handleAction({}, 'main.toggle-drawer');
+            sinon.assert.calledOnceWithExactly(hideSidebarSpy, false);
+            assert.isFalse(inspectorView.drawerVisible());
+        });
         it('main.toggle-drawer shows drawer when hidden', () => {
             const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
             assert.isFalse(inspectorView.drawerVisible());

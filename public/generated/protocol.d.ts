@@ -11658,14 +11658,6 @@ export declare namespace Network {
          * Whether 3pc restriction is enabled.
          */
         enableThirdPartyCookieRestriction: boolean;
-        /**
-         * Whether 3pc grace period exception should be enabled; false by default.
-         */
-        disableThirdPartyCookieMetadata: boolean;
-        /**
-         * Whether 3pc heuristics exceptions should be enabled; false by default.
-         */
-        disableThirdPartyCookieHeuristics: boolean;
     }
     /**
      * Fired when data chunk was received over the network.
@@ -13401,7 +13393,6 @@ export declare namespace Page {
         EncryptedMedia = "encrypted-media",
         ExecutionWhileOutOfViewport = "execution-while-out-of-viewport",
         ExecutionWhileNotRendered = "execution-while-not-rendered",
-        FencedUnpartitionedStorageRead = "fenced-unpartitioned-storage-read",
         FocusWithoutUserActivation = "focus-without-user-activation",
         Fullscreen = "fullscreen",
         Frobulate = "frobulate",
@@ -17199,23 +17190,6 @@ export declare namespace Storage {
     }
     interface GetRelatedWebsiteSetsResponse extends ProtocolResponseWithError {
         sets: RelatedWebsiteSet[];
-    }
-    interface GetAffectedUrlsForThirdPartyCookieMetadataRequest {
-        /**
-         * The URL of the page currently being visited.
-         */
-        firstPartyUrl: string;
-        /**
-         * The list of embedded resource URLs from the page.
-         */
-        thirdPartyUrls: string[];
-    }
-    interface GetAffectedUrlsForThirdPartyCookieMetadataResponse extends ProtocolResponseWithError {
-        /**
-         * Array of matching URLs. If there is a primary pattern match for the first-
-         * party URL, only the first-party URL is returned in the array.
-         */
-        matchedUrls: string[];
     }
     interface SetProtectedAudienceKAnonymityRequest {
         owner: string;

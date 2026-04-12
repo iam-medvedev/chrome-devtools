@@ -1,5 +1,5 @@
 import type * as PlatformApi from '../../core/platform/api/api.js';
-import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
+import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 export declare class HeapSnapshotWorkerDispatcher {
     #private;
     constructor(postMessage: typeof Window.prototype.postMessage);

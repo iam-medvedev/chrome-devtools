@@ -34,6 +34,12 @@ describeWithEnvironment('EntityMapper', function () {
         assert.deepEqual(fromRenderer, fromNetwork);
         assert.deepEqual(fromRenderer, mappings.eventsByEntity);
     });
+    it('caches mappers based on the parsed trace', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'lantern/paul/trace.json.gz');
+        const mapper1 = Trace.EntityMapper.EntityMapper.getOrCreate(parsedTrace);
+        const mapper2 = Trace.EntityMapper.EntityMapper.getOrCreate(parsedTrace);
+        assert.strictEqual(mapper1, mapper2);
+    });
     describe('entityForEvent', () => {
         it('correctly contains network req entity mappings', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'lantern/paul/trace.json.gz');

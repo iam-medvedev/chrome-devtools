@@ -97,6 +97,33 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
             ['Rule set', 'example.com/'],
         ]);
     });
+    it('renders prerendering details with form submission', async () => {
+        const url = urlString `https://example.com/prerendered.html`;
+        const data = {
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
+                {
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url,
+                        formSubmission: true,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                    prerenderStatus: null,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                },
+            ]),
+            ruleSets: [],
+            pageURL: urlString `https://example.com/`,
+        };
+        const report = await renderPreloadingDetailsReportView(data);
+        assert.isTrue(report.shadowRoot?.textContent?.includes('Form submissionYes'));
+    });
     it('renders prerendering details with target hint blank', async () => {
         const url = urlString `https://example.com/prerendered.html`;
         const data = {
