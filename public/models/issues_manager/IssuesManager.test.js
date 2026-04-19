@@ -281,5 +281,13 @@ describeWithMockConnection('IssuesManager', () => {
         navigate(frame, { loaderId: 'loaderId2' });
         assert.strictEqual(issuesManager.numberOfIssues(), 0);
     });
+    describe('isIssueCodeSupported', () => {
+        it('returns true for supported issue codes', () => {
+            assert.isTrue(IssuesManager.IssuesManager.isIssueCodeSupported("CookieIssue" /* Protocol.Audits.InspectorIssueCode.CookieIssue */));
+        });
+        it('returns false for unsupported issue codes', () => {
+            assert.isFalse(IssuesManager.IssuesManager.isIssueCodeSupported('NonExistentIssueCode'));
+        });
+    });
 });
 //# sourceMappingURL=IssuesManager.test.js.map

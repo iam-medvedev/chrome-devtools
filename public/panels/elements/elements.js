@@ -10112,7 +10112,7 @@ var CSSPropertyPrompt = class extends UI10.TextPrompt.TextPrompt {
             do {
               if (cursor.name === ":") {
                 name = suggestionText.slice(node.from, cursor.from);
-                value5 = suggestionText.slice(cursor.to + 1, node.to);
+                value5 = suggestionText.slice(cursor.to, node.to);
               }
             } while (cursor.nextSibling());
           }
@@ -10162,6 +10162,7 @@ var CSSPropertyPrompt = class extends UI10.TextPrompt.TextPrompt {
         return false;
       }
       if (suggestionForCurrentPrompt !== textAfterAccept) {
+        this.queryRange = new TextUtils5.TextRange.TextRange(0, 0, 0, textAfterAccept.length);
         this.applySuggestion({ text: suggestionForCurrentPrompt }, true);
       }
       return true;
@@ -12422,7 +12423,7 @@ function handleAdornerKeydown(cb) {
     }
   };
 }
-function renderTitle(node, isClosingTag, expanded, isExpandable, isXMLMimeType, updateRecord, onUpdateSearchHighlight, onExpand) {
+function renderTitle(node, isClosingTag, expanded, isExpandable, isXMLMimeType, updateRecord, onUpdateSearchHighlight, onExpand2) {
   switch (node.nodeType()) {
     case Node.ATTRIBUTE_NODE:
       return renderAttribute({ name: node.name, value: node.value }, updateRecord, true, node);
@@ -12442,7 +12443,7 @@ function renderTitle(node, isClosingTag, expanded, isExpandable, isXMLMimeType, 
       const openingTag = renderTag(node, tagName, false, expanded, false, updateRecord);
       if (isExpandable) {
         if (!expanded) {
-          return html8`${openingTag}<devtools-elements-tree-expand-button .data=${{ clickHandler: onExpand }}></devtools-elements-tree-expand-button><span style="font-size: 0;"
+          return html8`${openingTag}<devtools-elements-tree-expand-button .data=${{ clickHandler: onExpand2 }}></devtools-elements-tree-expand-button><span style="font-size: 0;"
                   >…</span>\u200B${renderTag(node, tagName, true, expanded, false, updateRecord)}`;
         }
         return openingTag;
@@ -19958,7 +19959,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
       ${input.objectTree && input.allChildrenFiltered ? html15`
         <div class="gray-info-message">${i18nString17(UIStrings18.noMatchingProperty)}</div>
       ` : nothing7}
-      <devtools-tree .template=${html15`
+      <devtools-tree @treeelementexpand=${onExpand} .template=${html15`
         <ul role=tree class="source-code object-properties-section">
           <style>${ObjectUI.ObjectPropertiesSection.objectValueStyles}</style>;
           <style>${ObjectUI.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>;
@@ -19977,10 +19978,15 @@ var getShowAllPropertiesSetting = () => Common16.Settings.Settings.instance().cr
   /* defaultValue */
   false
 );
+function onExpand(event) {
+  const expanded = event.detail.expanded;
+  if (expanded) {
+    Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.DOMPropertiesExpanded);
+  }
+}
 var PropertiesWidget = class extends UI24.Widget.VBox {
   showAllPropertiesSetting;
   filterRegex = null;
-  treeOutline;
   #lastRequestedNode = null;
   #view;
   #pendingNodeUpdate = true;
@@ -19998,16 +20004,6 @@ var PropertiesWidget = class extends UI24.Widget.VBox {
     SDK21.TargetManager.TargetManager.instance().addModelListener(SDK21.DOMModel.DOMModel, SDK21.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this, { scoped: true });
     UI24.Context.Context.instance().addFlavorChangeListener(SDK21.DOMModel.DOMNode, this.setNode, this);
     this.#view = view;
-    this.treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
-    this.treeOutline.setShowSelectionOnKeyboardFocus(
-      /* show */
-      true,
-      /* preventTabOrder */
-      false
-    );
-    this.treeOutline.addEventListener(UI24.TreeOutline.Events.ElementExpanded, () => {
-      Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.DOMPropertiesExpanded);
-    });
     this.requestUpdate();
   }
   #buildFilterRegex(text) {

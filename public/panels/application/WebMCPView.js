@@ -7,6 +7,7 @@ import '../../ui/components/node_text/node_text.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -18,6 +19,7 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render, } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as ProtocolMonitor from '../protocol_monitor/protocol_monitor.js';
 import webMCPViewStyles from './webMCPView.css.js';
 const UIStrings = {
     /**
@@ -115,7 +117,7 @@ const UIStrings = {
     /**
      * @description Text for the status of a tool call that succeeded
      */
-    success: 'Success',
+    completed: 'Completed',
     /**
      * @description Text for the status of a tool call that has failed
      */
@@ -140,6 +142,14 @@ const UIStrings = {
      * @example {1} PH1
      */
     inProgressCount: '{PH1} In Progress',
+    /**
+     * @description Context menu action to copy the name of a tool
+     */
+    copyName: 'Copy name',
+    /**
+     * @description Context menu action to copy the description of a tool
+     */
+    copyDescription: 'Copy description',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/WebMCPView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -149,8 +159,8 @@ export function filterToolCalls(toolCalls, filterState) {
     const statusTypes = filterState.statusTypes;
     if (statusTypes) {
         filtered = filtered.filter(call => {
-            const { success, error, pending } = statusTypes;
-            if (success && call.result?.status === "Success" /* Protocol.WebMCP.InvocationStatus.Success */) {
+            const { completed, error, pending } = statusTypes;
+            if (completed && call.result?.status === "Completed" /* Protocol.WebMCP.InvocationStatus.Completed */) {
                 return true;
             }
             if (error && call.result?.status === "Error" /* Protocol.WebMCP.InvocationStatus.Error */) {
@@ -186,7 +196,7 @@ export function filterToolCalls(toolCalls, filterState) {
     return filtered;
 }
 function calculateToolStats(calls) {
-    let total = 0, success = 0, failed = 0, canceled = 0, inProgress = 0;
+    let total = 0, completed = 0, failed = 0, canceled = 0, inProgress = 0;
     for (const call of calls) {
         total++;
         if (call.result?.status === "Error" /* Protocol.WebMCP.InvocationStatus.Error */) {
@@ -195,24 +205,24 @@ function calculateToolStats(calls) {
         else if (call.result?.status === "Canceled" /* Protocol.WebMCP.InvocationStatus.Canceled */) {
             canceled++;
         }
-        else if (call.result?.status === "Success" /* Protocol.WebMCP.InvocationStatus.Success */) {
-            success++;
+        else if (call.result?.status === "Completed" /* Protocol.WebMCP.InvocationStatus.Completed */) {
+            completed++;
         }
         else if (call.result === undefined) {
             inProgress++;
         }
     }
-    return { total, success, failed, canceled, inProgress };
+    return { total, completed, failed, canceled, inProgress };
 }
 function getIconGroupsFromStats(toolStats) {
     const groups = [];
-    if (toolStats.success > 0) {
+    if (toolStats.completed > 0) {
         groups.push({
             iconName: 'check-circle',
             iconColor: 'var(--sys-color-green)',
             iconWidth: '16px',
             iconHeight: '16px',
-            text: String(toolStats.success),
+            text: String(toolStats.completed),
         });
     }
     if (toolStats.failed > 0) {
@@ -279,11 +289,21 @@ export const DEFAULT_VIEW = (input, output, target) => {
                 return i18nString(UIStrings.error);
             case "Canceled" /* Protocol.WebMCP.InvocationStatus.Canceled */:
                 return i18nString(UIStrings.canceled);
-            case "Success" /* Protocol.WebMCP.InvocationStatus.Success */:
-                return i18nString(UIStrings.success);
+            case "Completed" /* Protocol.WebMCP.InvocationStatus.Completed */:
+                return i18nString(UIStrings.completed);
             default:
                 return i18nString(UIStrings.inProgress);
         }
+    };
+    const onToolContextMenu = (event, tool) => {
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyName), () => {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(tool.name);
+        }, { jslogContext: 'webmcp.copy-tool-name' });
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyDescription), () => {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(tool.description);
+        }, { jslogContext: 'webmcp.copy-tool-description' });
+        void contextMenu.show();
     };
     // clang-format off
     render(html `
@@ -423,7 +443,8 @@ export const DEFAULT_VIEW = (input, output, target) => {
         const groups = getIconGroupsFromStats(toolStats);
         return html `
                     <div class=${Directives.classMap({ 'tool-item': true, selected: tool === input.selectedTool })}
-                         @click=${() => input.onToolSelect(tool)}>
+                         @click=${() => input.onToolSelect(tool)}
+                         @contextmenu=${(e) => onToolContextMenu(e, tool)}>
                     <div class="tool-name-container">
                       <div class="tool-name source-code">${tool.name}</div>
                       ${groups.length > 0 ? html `<icon-button .data=${{ groups, compact: false }}></icon-button>` : ''}
@@ -515,12 +536,12 @@ export class WebMCPView extends UI.Widget.VBox {
             const current = this.#filterState.statusTypes ?? {};
             const next = { ...current, [key]: !current[key] };
             let statusTypesToPass = next;
-            if (!next.success && !next.error && !next.pending) {
+            if (!next.completed && !next.error && !next.pending) {
                 statusTypesToPass = undefined;
             }
             this.#handleFilterChange({ ...this.#filterState, statusTypes: statusTypesToPass });
         };
-        contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.success), () => toggle('success'), { checked: this.#filterState.statusTypes?.['success'] ?? false, jslogContext: 'webmcp.success' });
+        contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.completed), () => toggle('completed'), { checked: this.#filterState.statusTypes?.['completed'] ?? false, jslogContext: 'webmcp.completed' });
         contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.error), () => toggle('error'), { checked: this.#filterState.statusTypes?.['error'] ?? false, jslogContext: 'webmcp.error' });
         contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.pending), () => toggle('pending'), { checked: this.#filterState.statusTypes?.['pending'] ?? false, jslogContext: 'webmcp.pending' });
     }
@@ -814,5 +835,222 @@ export class ToolDetailsWidget extends UI.Widget.Widget {
         super.wasShown();
         this.requestUpdate();
     }
+}
+const parsedSchemaCache = new WeakMap();
+export function parseToolSchema(schema) {
+    if (typeof schema === 'object' && schema !== null) {
+        const cached = parsedSchemaCache.get(schema);
+        if (cached) {
+            return cached;
+        }
+    }
+    const typesByName = new Map();
+    const enumsByName = new Map();
+    const simpleTypesByName = new Map();
+    let typeCount = 0;
+    function createEnumRecord(values) {
+        const enumRecord = {};
+        for (const val of values) {
+            enumRecord[String(val)] = String(val);
+        }
+        return enumRecord;
+    }
+    function preScanDefinition(name, def) {
+        if (typeof def === 'boolean') {
+            return;
+        }
+        if (def.type === 'string' && def.enum) {
+            enumsByName.set(name, createEnumRecord(def.enum));
+        }
+        else if (def.type && typeof def.type === 'string' && def.type !== 'object' && def.type !== 'array') {
+            let paramType = "string" /* ProtocolMonitor.JSONEditor.ParameterType.STRING */;
+            switch (def.type) {
+                case 'number':
+                case 'integer':
+                    paramType = "number" /* ProtocolMonitor.JSONEditor.ParameterType.NUMBER */;
+                    break;
+                case 'boolean':
+                    paramType = "boolean" /* ProtocolMonitor.JSONEditor.ParameterType.BOOLEAN */;
+                    break;
+            }
+            simpleTypesByName.set(name, paramType);
+        }
+    }
+    function parseDefinition(name, def) {
+        if (typeof def === 'boolean') {
+            return;
+        }
+        if (def.type === 'object' && def.properties) {
+            const nestedParams = [];
+            for (const [key, value] of Object.entries(def.properties)) {
+                const isOpt = !(def.required || []).includes(key);
+                nestedParams.push(parseProperty(key, value, isOpt));
+            }
+            typesByName.set(name, nestedParams);
+        }
+    }
+    // First pass: populate enums and simple types
+    if (schema.definitions) {
+        for (const [name, def] of Object.entries(schema.definitions)) {
+            preScanDefinition(name, def);
+        }
+    }
+    if (schema.$defs) {
+        for (const [name, def] of Object.entries(schema.$defs)) {
+            preScanDefinition(name, def);
+        }
+    }
+    // Second pass: parse objects
+    if (schema.definitions) {
+        for (const [name, def] of Object.entries(schema.definitions)) {
+            parseDefinition(name, def);
+        }
+    }
+    if (schema.$defs) {
+        for (const [name, def] of Object.entries(schema.$defs)) {
+            parseDefinition(name, def);
+        }
+    }
+    function parseProperty(name, propDef, optional) {
+        if (typeof propDef === 'boolean') {
+            return {
+                name,
+                optional,
+                description: '',
+                type: "string" /* ProtocolMonitor.JSONEditor.ParameterType.STRING */,
+                isCorrectType: true,
+            };
+        }
+        const prop = propDef;
+        if (prop.$ref) {
+            const typeRef = prop.$ref.split('/').pop() || '';
+            let paramType = "object" /* ProtocolMonitor.JSONEditor.ParameterType.OBJECT */;
+            if (enumsByName.has(typeRef)) {
+                paramType = "string" /* ProtocolMonitor.JSONEditor.ParameterType.STRING */;
+            }
+            else {
+                const simpleType = simpleTypesByName.get(typeRef);
+                if (simpleType !== undefined) {
+                    paramType = simpleType;
+                }
+            }
+            return {
+                name,
+                optional,
+                description: prop.description || '',
+                type: paramType,
+                typeRef,
+                isCorrectType: true,
+            };
+        }
+        const typeStr = Array.isArray(prop.type) ? prop.type[0] : prop.type;
+        let type = typeStr === 'integer' ? 'number' : typeStr;
+        if (!typeStr) {
+            if (prop.properties) {
+                type = 'object';
+            }
+            else if (prop.items) {
+                type = 'array';
+            }
+            else {
+                type = 'unknown';
+            }
+        }
+        const description = prop.description || '';
+        let paramType = "unknown" /* ProtocolMonitor.JSONEditor.ParameterType.UNKNOWN */;
+        switch (type) {
+            case 'string':
+                paramType = "string" /* ProtocolMonitor.JSONEditor.ParameterType.STRING */;
+                break;
+            case 'number':
+                paramType = "number" /* ProtocolMonitor.JSONEditor.ParameterType.NUMBER */;
+                break;
+            case 'boolean':
+                paramType = "boolean" /* ProtocolMonitor.JSONEditor.ParameterType.BOOLEAN */;
+                break;
+            case 'object':
+                paramType = "object" /* ProtocolMonitor.JSONEditor.ParameterType.OBJECT */;
+                break;
+            case 'array':
+                paramType = "array" /* ProtocolMonitor.JSONEditor.ParameterType.ARRAY */;
+                break;
+        }
+        const base = {
+            name,
+            optional,
+            description,
+            type: paramType,
+            isCorrectType: true,
+        };
+        if (type === 'object') {
+            if (prop.properties) {
+                const typeRef = `Object_${++typeCount}`;
+                const nestedParams = [];
+                for (const [key, value] of Object.entries(prop.properties)) {
+                    const isOpt = !(prop.required || []).includes(key);
+                    nestedParams.push(parseProperty(key, value, isOpt));
+                }
+                typesByName.set(typeRef, nestedParams);
+                base.typeRef = typeRef;
+            }
+            else {
+                base.isKeyEditable = true;
+            }
+        }
+        else if (type === 'array') {
+            const items = prop.items && !Array.isArray(prop.items) && typeof prop.items !== 'boolean' ? prop.items : undefined;
+            if (items) {
+                const itemTypeStr = Array.isArray(items.type) ? items.type[0] : items.type;
+                if (items.$ref) {
+                    base.typeRef = items.$ref.split('/').pop() || '';
+                }
+                else if (itemTypeStr === 'object' && items.properties) {
+                    const typeRef = `Object_${++typeCount}`;
+                    const nestedParams = [];
+                    for (const [key, value] of Object.entries(items.properties)) {
+                        const isOpt = !(items.required || []).includes(key);
+                        nestedParams.push(parseProperty(key, value, isOpt));
+                    }
+                    typesByName.set(typeRef, nestedParams);
+                    base.typeRef = typeRef;
+                }
+                else if (itemTypeStr) {
+                    const itemType = itemTypeStr === 'integer' ? 'number' : itemTypeStr;
+                    if (itemType === 'string' && items.enum) {
+                        const typeRef = `Enum_${++typeCount}`;
+                        enumsByName.set(typeRef, createEnumRecord(items.enum));
+                        base.typeRef = typeRef;
+                    }
+                    else {
+                        base.typeRef = itemType;
+                    }
+                }
+                else {
+                    base.typeRef = 'string';
+                }
+            }
+            else {
+                base.typeRef = 'string';
+            }
+        }
+        else if (type === 'string' && prop.enum) {
+            const typeRef = `Enum_${++typeCount}`;
+            enumsByName.set(typeRef, createEnumRecord(prop.enum));
+            base.typeRef = typeRef;
+        }
+        return base;
+    }
+    const parameters = [];
+    if ((schema.type === 'object' || !schema.type) && schema.properties) {
+        for (const [key, value] of Object.entries(schema.properties)) {
+            const isOpt = !(schema.required || []).includes(key);
+            parameters.push(parseProperty(key, value, isOpt));
+        }
+    }
+    const result = { parameters, typesByName, enumsByName };
+    if (typeof schema === 'object' && schema !== null) {
+        parsedSchemaCache.set(schema, result);
+    }
+    return result;
 }
 //# sourceMappingURL=WebMCPView.js.map

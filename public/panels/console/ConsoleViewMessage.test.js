@@ -122,7 +122,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
         it('shows a hover button', () => {
             const messageElement = createMessage(Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, 'got here');
             const button = messageElement.querySelector('[aria-label=\'Understand this error. Powered by AI.\']');
-            assert.strictEqual(button?.textContent, 'Understand this error');
+            assert.strictEqual(button?.querySelector('.button-label div')?.getAttribute('data-text'), 'Understand this error');
         });
         it('creates teaser on hover', () => {
             const messageElement = createMessage(Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, 'got here');

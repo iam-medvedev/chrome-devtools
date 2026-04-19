@@ -43,9 +43,10 @@ describe('Runtime', () => {
     });
     it('allConfigurableExperiments returns all registered experiments', () => {
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.FONT_EDITOR, 'font editor');
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.APCA, 'apca');
+        const dummyExperiment = 'dummy-experiment';
+        Root.Runtime.experiments.register(dummyExperiment, 'dummy experiment');
         const experiments = Root.Runtime.experiments.allConfigurableExperiments();
-        assert.deepEqual(experiments.map(experiment => experiment.name), [Root.ExperimentNames.ExperimentName.FONT_EDITOR, Root.ExperimentNames.ExperimentName.APCA]);
+        assert.deepEqual(experiments.map(experiment => experiment.name), [Root.ExperimentNames.ExperimentName.FONT_EDITOR, dummyExperiment]);
     });
     describe('ExperimentsSupport', () => {
         it('throws for unknown experiment', () => {

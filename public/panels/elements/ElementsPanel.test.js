@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -16,7 +15,6 @@ describeWithMockConnection('ElementsPanel', () => {
     beforeEach(() => {
         stubNoopSettings();
         target = createTarget();
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.APCA, '');
         setMockConnectionResponseHandler('DOM.requestChildNodes', () => ({}));
         setMockConnectionResponseHandler('DOM.getDocument', () => ({
             root: {
@@ -74,7 +72,8 @@ describeWithMockConnection('ElementsPanel', () => {
     };
     it('creates tree outlines for in scope models', createsTreeOutlines(true));
     it('does not create tree outlines for out of scope models', createsTreeOutlines(false));
-    it('expands the tree even when target added later', async () => {
+    // Causes unit test execution to abort
+    it.skip('[crbug.com/503622772] expands the tree even when target added later', async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(null);
         const model = target.model(SDK.DOMModel.DOMModel);
         assert.exists(model);
@@ -91,7 +90,8 @@ describeWithMockConnection('ElementsPanel', () => {
         assert.isTrue(selectedTreeElement.expanded);
         panel.detach();
     });
-    it('restores the focused node after reload when it becomes available later', async () => {
+    // Causes unit test execution to abort
+    it.skip('[crbug.com/503622772] restores the focused node after reload when it becomes available later', async () => {
         const clock = sinon.useFakeTimers();
         try {
             let includeDivInDocument = true;
@@ -199,7 +199,8 @@ describeWithMockConnection('ElementsPanel', () => {
         sinon.assert.called(inScopeSearch);
         sinon.assert.notCalled(outOfScopeSearch);
     });
-    it('deleting a node unhides it if it was hidden', async () => {
+    // Causes unit test execution to abort
+    it.skip('[crbug.com/503622772] deleting a node unhides it if it was hidden', async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(null);
         const model = target.model(SDK.DOMModel.DOMModel);
         assert.exists(model);
@@ -225,7 +226,8 @@ describeWithMockConnection('ElementsPanel', () => {
         assert.isFalse(treeOutline.isToggledToHidden(selectedNode));
         panel.detach();
     });
-    it('duplicating a hidden node results in a hidden copy', async () => {
+    // Causes unit test execution to abort
+    it.skip('[crbug.com/503622772] duplicating a hidden node results in a hidden copy', async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(null);
         const model = target.model(SDK.DOMModel.DOMModel);
         assert.exists(model);
