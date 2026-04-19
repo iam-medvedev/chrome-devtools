@@ -156,6 +156,26 @@ describeWithMockConnection('PerformanceAgent', function () {
                     },
                 ]);
             });
+            it('yields TIMELINE_RANGE_SUMMARY and BOTTOM_UP_TREE widgets for call tree focus on initialization', async function () {
+                const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-outermost-frames.json.gz');
+                const events = allThreadEntriesInTrace(parsedTrace);
+                const layoutEvt = events.find(event => event.ts === 465457096322);
+                assert.exists(layoutEvt);
+                const aiCallTree = AICallTree.AICallTree.fromEvent(layoutEvt, parsedTrace);
+                assert.exists(aiCallTree);
+                const agent = new PerformanceAgent.PerformanceAgent({
+                    aidaClient: mockAidaClient([[{ explanation: 'done' }]]),
+                });
+                const context = PerformanceAgent.PerformanceTraceContext.fromCallTree(aiCallTree);
+                const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+                deleteAllWidgetData(responses);
+                const contextResponse = responses.find(r => r.type === "context" /* AiAgent.ResponseType.CONTEXT */);
+                assert.exists(contextResponse);
+                assert.exists(contextResponse.widgets);
+                assert.lengthOf(contextResponse.widgets, 2);
+                assert.strictEqual(contextResponse.widgets[0].name, 'TIMELINE_RANGE_SUMMARY');
+                assert.strictEqual(contextResponse.widgets[1].name, 'BOTTOM_UP_TREE');
+            });
         });
         describe('enhanceQuery', () => {
             it('does not send the serialized calltree again if it is a followup chat about the same calltree', async () => {
@@ -459,6 +479,7 @@ code
             });
             const context = PerformanceAgent.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+            deleteAllWidgetData(responses);
             const titleResponse = responses.find(response => response.type === "title" /* AiAgent.ResponseType.TITLE */);
             assert.exists(titleResponse);
             assert.strictEqual(titleResponse.title, 'Investigating main thread activity');
@@ -475,15 +496,49 @@ code
             assert.lengthOf(action.widgets, 2);
             assert.strictEqual(action.widgets[0].name, 'TIMELINE_RANGE_SUMMARY');
             assert.strictEqual(action.widgets[1].name, 'BOTTOM_UP_TREE');
-            // @ts-expect-error
-            assert.deepEqual(action.widgets[0].data.bounds, bounds);
-            delete action.widgets;
-            assert.deepEqual(action, {
-                type: 'action',
-                output: expectedOutput,
-                code: 'getMainThreadTrackSummary({min: 197695826524, max: 197698633660})',
-                canceled: false,
+            assert.strictEqual(action.code, 'getMainThreadTrackSummary({min: 197695826524, max: 197698633660})');
+            assert.strictEqual(action.output, expectedOutput);
+            assert.isFalse(action.canceled);
+        });
+        it('can call getMainThreadTrackSummaryByLabel', async function () {
+            const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAIMainThreadActivityResponseSize');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
+            assert.isOk(parsedTrace.insights);
+            const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
+            const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
+            const agent = createAgentForConversation({
+                aidaClient: mockAidaClient([
+                    [{
+                            explanation: '',
+                            functionCalls: [{ name: 'getMainThreadTrackSummaryByLabel', args: { label: 'LCPBreakdown' } }]
+                        }],
+                    [{ explanation: 'done' }]
+                ])
             });
+            const context = PerformanceAgent.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
+            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+            deleteAllWidgetData(responses);
+            const titleResponse = responses.find(response => response.type === "title" /* AiAgent.ResponseType.TITLE */);
+            assert.exists(titleResponse);
+            assert.strictEqual(titleResponse.title, 'Investigating main thread activity');
+            const action = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.exists(action);
+            const formatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(context.getItem());
+            const bounds = Trace.Insights.Common.insightBounds(lcpBreakdown, context.getItem().primaryInsightSet.bounds);
+            const summary = await formatter.formatMainThreadTrackSummary(bounds);
+            assert.isOk(summary);
+            const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(summary);
+            sinon.assert.calledWith(metricsSpy, expectedBytesSize);
+            const expectedOutput = JSON.stringify({ summary });
+            assert.exists(action);
+            assert.exists(action.widgets);
+            assert.lengthOf(action.widgets, 2);
+            assert.strictEqual(action.widgets[0].name, 'TIMELINE_RANGE_SUMMARY');
+            assert.strictEqual(action.widgets[1].name, 'BOTTOM_UP_TREE');
+            assert.strictEqual(action.code, 'getMainThreadTrackSummaryByLabel(\'LCPBreakdown\')');
+            assert.strictEqual(action.output, expectedOutput);
+            assert.isFalse(action.canceled);
+            assert.strictEqual(action.type, 'action');
         });
         it('will not send facts from a previous insight if the context changes', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
@@ -640,7 +695,7 @@ code
             assert.exists(secondActions[0].widgets);
             assert.lengthOf(secondActions[0].widgets, 1);
         });
-        it('yields an LCP_BREAKDOWN widget when getInsightDetails is called for LCPBreakdown', async function () {
+        it('yields an lcp-type PERF_INSIGHT widget when getInsightDetails is called for LCPBreakdown', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
             assert.isOk(parsedTrace.insights);
             const [nav] = parsedTrace.data.Meta.mainFrameNavigations;
@@ -673,9 +728,10 @@ code
             const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
             assert.lengthOf(actions, 1);
             assert.exists(actions[0].widgets);
-            const lcpWidget = actions[0].widgets?.find(w => w.name === 'LCP_BREAKDOWN');
+            const lcpWidget = actions[0].widgets?.find(w => w.name === 'PERF_INSIGHT');
             assert.exists(lcpWidget);
-            assert.strictEqual(lcpWidget?.data.lcpData, insightSet.model.LCPBreakdown);
+            assert.strictEqual(lcpWidget?.data.insight, 'lcp');
+            assert.strictEqual(lcpWidget?.data.insightData, insightSet.model.LCPBreakdown);
         });
         it('yields a BOTTOM_UP_TREE widget when getDetailedCallTree is called', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-outermost-frames.json.gz');
@@ -702,6 +758,8 @@ code
             assert.exists(actions[0].widgets);
             const bottomUpWidget = actions[0].widgets?.find(w => w.name === 'BOTTOM_UP_TREE');
             assert.exists(bottomUpWidget);
+            const rangeSummaryWidget = actions[0].widgets?.find(w => w.name === 'TIMELINE_RANGE_SUMMARY');
+            assert.exists(rangeSummaryWidget);
         });
     });
     describe('PerformanceTraceContext.getSuggestions', () => {

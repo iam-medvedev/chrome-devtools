@@ -674,6 +674,73 @@ describe('updateVersionFrom42To43', () => {
         getValueFromStorageStub.restore();
     });
 });
+describe('updateVersionFrom43To44', () => {
+    let settings;
+    let syncedStorage;
+    let globalStorage;
+    let localStorage;
+    beforeEach(() => {
+        const mockStore = new Common.Settings.InMemoryStorage();
+        syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        localStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        Common.Settings.registerSettingExtension({
+            settingName: 'apca',
+            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            defaultValue: false,
+            storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+        });
+        settings = new Common.Settings.Settings({
+            syncedStorage,
+            globalStorage,
+            localStorage,
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            runSettingsMigration: false,
+        });
+    });
+    afterEach(() => {
+        Common.Settings.resetSettings();
+    });
+    it('does nothing if apca experiment is not enabled', () => {
+        const versionController = new Common.VersionController.VersionController(settings);
+        const apcaSetting = settings.moduleSetting('apca');
+        apcaSetting.set(false);
+        versionController.updateVersionFrom43To44();
+        assert.isFalse(apcaSetting.get());
+    });
+    it('sets apca setting to true if experiment is enabled', () => {
+        const versionController = new Common.VersionController.VersionController(settings);
+        const apcaSetting = settings.moduleSetting('apca');
+        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
+        getValueFromStorageStub.withArgs('apca').returns(true);
+        versionController.updateVersionFrom43To44();
+        assert.isTrue(apcaSetting.get());
+        getValueFromStorageStub.restore();
+    });
+    it('does not overwrite apca setting if already present in syncedStorage', () => {
+        const versionController = new Common.VersionController.VersionController(settings);
+        const apcaSetting = settings.moduleSetting('apca');
+        apcaSetting.set(true);
+        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
+        getValueFromStorageStub.withArgs('apca').returns(true);
+        const moduleSettingSpy = sinon.spy(settings, 'moduleSetting');
+        versionController.updateVersionFrom43To44();
+        sinon.assert.notCalled(moduleSettingSpy);
+        assert.isTrue(apcaSetting.get());
+        getValueFromStorageStub.restore();
+        moduleSettingSpy.restore();
+    });
+    it('does not crash if setting is not registered', () => {
+        const versionController = new Common.VersionController.VersionController(settings);
+        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
+        getValueFromStorageStub.withArgs('apca').returns(true);
+        const moduleSettingStub = sinon.stub(settings, 'moduleSetting');
+        moduleSettingStub.withArgs('apca').throws();
+        versionController.updateVersionFrom43To44();
+        moduleSettingStub.restore();
+        getValueFromStorageStub.restore();
+    });
+});
 describe('access logging', () => {
     let settings;
     let logSettingAccess;

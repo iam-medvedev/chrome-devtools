@@ -551,12 +551,16 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
     }
 }
 const CONTROL_PANE_DEFAULT_VIEW = (input, _output, target) => {
-    render(input.chartsInfo.map(chartInfo => {
+    // clang-format off
+    render(html `
+    ${input.chartsInfo.map(chartInfo => {
         const chartName = chartInfo.metrics[0].name;
         const active = input.enabledCharts.has(chartName);
         const value = input.metricValues.get(chartName) || 0;
         return renderMetricIndicator(chartInfo, active, value, (e) => input.onCheckboxChange(chartName, e));
-    }), target);
+    })}
+    `, target, { container: { classes: ['perfmon-control-pane'] } });
+    // clang-format on
 };
 export class ControlPane extends UI.Widget.VBox {
     #enabledChartsSetting;
@@ -566,7 +570,7 @@ export class ControlPane extends UI.Widget.VBox {
     #metricValues = new Map();
     #view;
     constructor(element, view = CONTROL_PANE_DEFAULT_VIEW) {
-        super(element, { useShadowDom: false, classes: ['perfmon-control-pane'] });
+        super(element, { useShadowDom: false });
         this.#view = view;
         this.#enabledChartsSetting = Common.Settings.Settings.instance().createSetting('perfmon-active-indicators2', ['TaskDuration', 'JSHeapTotalSize', 'Nodes']);
         this.#enabledCharts = new Set(this.#enabledChartsSetting.get());

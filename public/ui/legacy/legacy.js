@@ -17358,7 +17358,7 @@ var DEFAULT_VIEW = (input, output, target) => {
         ${input.link ? html3`<devtools-link href=${input.link} jslogContext=${"learn-more"}>${i18nString13(UIStrings13.learnMore)}</devtools-link>` : ""}
       </div>
       ${input.extraElements}
-    </div>`, target);
+    </div>`, target, { container: { classes: ["empty-view-scroller"] } });
 };
 var EmptyWidget = class extends VBox {
   #header;
@@ -17372,7 +17372,7 @@ var EmptyWidget = class extends VBox {
     if (!element && headerOrElement instanceof HTMLElement) {
       element = headerOrElement;
     }
-    super(element, { classes: ["empty-view-scroller"] });
+    super(element);
     this.#header = header;
     this.#text = text;
     this.#link = void 0;
@@ -22761,11 +22761,13 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       }
     });
     this.#treeOutline.addEventListener(Events2.ElementExpanded, (event) => {
+      this.dispatchEvent(new _TreeViewElement.TreeElementExpandEvent(event.data, true));
       if (event.data instanceof TreeViewTreeElement) {
         event.data.listItemElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: true }));
       }
     });
     this.#treeOutline.addEventListener(Events2.ElementCollapsed, (event) => {
+      this.dispatchEvent(new _TreeViewElement.TreeElementExpandEvent(event.data, false));
       if (event.data instanceof TreeViewTreeElement) {
         event.data.listItemElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: false }));
       }
@@ -22914,8 +22916,14 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     }
   }
   TreeViewElement2.ExpandEvent = ExpandEvent;
+  class TreeElementExpandEvent extends CustomEvent {
+    constructor(treeElement, expanded) {
+      super("treeelementexpand", { detail: { treeElement, expanded } });
+    }
+  }
+  TreeViewElement2.TreeElementExpandEvent = TreeElementExpandEvent;
 })(TreeViewElement || (TreeViewElement = {}));
-var ifExpanded = Lit3.Directive.directive(class extends Lit3.Directive.Directive {
+var IfExpandedDirective = class extends Lit3.Directive.Directive {
   #partInfo;
   constructor(partInfo) {
     if (partInfo.type !== Lit3.Directive.PartType.CHILD) {
@@ -22950,7 +22958,8 @@ var ifExpanded = Lit3.Directive.directive(class extends Lit3.Directive.Directive
     }
     return node.expanded;
   }
-});
+};
+var ifExpanded = Lit3.Directive.directive(IfExpandedDirective);
 var TreeElementWrapper = class extends HTMLElement {
   #treeElement;
   set treeElement(treeElement) {

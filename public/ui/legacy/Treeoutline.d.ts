@@ -304,19 +304,22 @@ export declare namespace TreeViewElement {
             expanded: boolean;
         });
     }
+    /**
+     * @deprecated
+     */
+    class TreeElementExpandEvent extends CustomEvent<{
+        treeElement: TreeElement;
+        expanded: boolean;
+    }> {
+        constructor(treeElement: TreeElement, expanded: boolean);
+    }
 }
-export declare const ifExpanded: (content: Lit.LitTemplate | Iterable<Lit.LitTemplate>) => Lit.DirectiveResult<{
-    new (partInfo: Lit.Directive.PartInfo): {
-        "__#private@#partInfo": {
-            type: Lit.Directive.PartType;
-            startNode: Node;
-        };
-        render(content: Lit.LitTemplate | Iterable<Lit.LitTemplate>): Lit.LitTemplate | Iterable<Lit.LitTemplate>;
-        "__#private@#isInExpandedRow"(element: Node | null | undefined): boolean;
-        get _$isConnected(): boolean;
-        update(_part: Lit.Directive.Part, props: Array<unknown>): unknown;
-    };
-}>;
+declare class IfExpandedDirective extends Lit.Directive.Directive {
+    #private;
+    constructor(partInfo: Lit.Directive.PartInfo);
+    render(content: Lit.LitTemplate | Iterable<Lit.LitTemplate>): Lit.LitTemplate | Iterable<Lit.LitTemplate>;
+}
+export declare const ifExpanded: (content: Lit.LitTemplate | Iterable<Lit.LitTemplate>) => Lit.DirectiveResult<typeof IfExpandedDirective>;
 export declare class TreeElementWrapper extends HTMLElement {
     #private;
     set treeElement(treeElement: TreeElement);

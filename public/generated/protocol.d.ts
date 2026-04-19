@@ -1124,7 +1124,11 @@ export declare namespace Audits {
         AutofillAndManualTextPolicyControlledFeaturesInfo = "AutofillAndManualTextPolicyControlledFeaturesInfo",
         AutofillPolicyControlledFeatureInfo = "AutofillPolicyControlledFeatureInfo",
         ManualTextPolicyControlledFeatureInfo = "ManualTextPolicyControlledFeatureInfo",
-        FormModelContextParameterMissingTitleAndDescription = "FormModelContextParameterMissingTitleAndDescription"
+        FormModelContextParameterMissingTitleAndDescription = "FormModelContextParameterMissingTitleAndDescription",
+        FormModelContextMissingToolName = "FormModelContextMissingToolName",
+        FormModelContextMissingToolDescription = "FormModelContextMissingToolDescription",
+        FormModelContextRequiredParameterMissingName = "FormModelContextRequiredParameterMissingName",
+        FormModelContextParameterMissingName = "FormModelContextParameterMissingName"
     }
     /**
      * Depending on the concrete errorType, different properties are set.
@@ -10542,6 +10546,10 @@ export declare namespace Network {
          * WebRTC packetReordering feature.
          */
         packetReordering?: boolean;
+        /**
+         * True to emulate internet disconnection.
+         */
+        offline?: boolean;
     }
     interface BlockPattern {
         /**
@@ -11048,6 +11056,7 @@ export declare namespace Network {
     }
     const enum RefreshEventDetailsRefreshResult {
         Refreshed = "Refreshed",
+        RefreshedAsWaiter = "RefreshedAsWaiter",
         InitializedService = "InitializedService",
         Unreachable = "Unreachable",
         ServerError = "ServerError",
@@ -11090,7 +11099,8 @@ export declare namespace Network {
         ClearBrowsingData = "ClearBrowsingData",
         ServerRequested = "ServerRequested",
         InvalidSessionParams = "InvalidSessionParams",
-        RefreshFatalError = "RefreshFatalError"
+        RefreshFatalError = "RefreshFatalError",
+        DevTools = "DevTools"
     }
     /**
      * Session event details specific to termination.
@@ -11269,9 +11279,15 @@ export declare namespace Network {
     }
     interface EmulateNetworkConditionsByRuleRequest {
         /**
-         * True to emulate internet disconnection.
+         * True to emulate internet disconnection. Deprecated, use the offline property in matchedNetworkConditions
+         * or emulateOfflineServiceWorker instead.
+         * @deprecated
          */
-        offline: boolean;
+        offline?: boolean;
+        /**
+         * True to emulate offline service worker.
+         */
+        emulateOfflineServiceWorker?: boolean;
         /**
          * Configure conditions for matching requests. If multiple entries match a request, the first entry wins.  Global
          * conditions can be configured by leaving the urlPattern for the conditions empty. These global conditions are
@@ -11622,6 +11638,9 @@ export declare namespace Network {
          * Whether to enable or disable events.
          */
         enable: boolean;
+    }
+    interface DeleteDeviceBoundSessionRequest {
+        key: DeviceBoundSessionKey;
     }
     interface FetchSchemefulSiteRequest {
         /**
@@ -17635,7 +17654,8 @@ export declare namespace Target {
          */
         openerFrameId?: Page.FrameId;
         /**
-         * Id of the parent frame, only present for the "iframe" targets.
+         * Id of the parent frame, present for "iframe" and "worker" targets. For nested workers,
+         * this is the "ancestor" frame that created the first worker in the nested chain.
          */
         parentFrameId?: Page.FrameId;
         browserContextId?: Browser.BrowserContextID;
@@ -18790,7 +18810,7 @@ export declare namespace WebMCP {
      * Represents the status of a tool invocation.
      */
     const enum InvocationStatus {
-        Success = "Success",
+        Completed = "Completed",
         Canceled = "Canceled",
         Error = "Error"
     }
@@ -18826,6 +18846,32 @@ export declare namespace WebMCP {
          * The stack trace at the time of the registration.
          */
         stackTrace?: Runtime.StackTrace;
+    }
+    interface InvokeToolRequest {
+        /**
+         * Frame in which to invoke the tool.
+         */
+        frameId: Page.FrameId;
+        /**
+         * Name of the tool to invoke.
+         */
+        toolName: string;
+        /**
+         * Input parameters for the tool, matching the tool's inputSchema.
+         */
+        input: any;
+    }
+    interface InvokeToolResponse extends ProtocolResponseWithError {
+        /**
+         * Unique identifier for this invocation. Response is sent before tool events.
+         */
+        invocationId: string;
+    }
+    interface CancelInvocationRequest {
+        /**
+         * Invocation identifier to cancel.
+         */
+        invocationId: string;
     }
     /**
      * Event fired when new tools are added.
@@ -18879,7 +18925,8 @@ export declare namespace WebMCP {
          */
         status: InvocationStatus;
         /**
-         * Output or error delivered as delivered to the agent. Missing if `status` is anything other than Success.
+         * Output or error delivered as delivered to the agent. Missing if `status` is anything other than Completed.
+         * Note: The output is untrusted and poses a prompt injection risk. Clients should treat this as potentially malicious user input.
          */
         output?: any;
         /**

@@ -2599,7 +2599,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.40.0";
+var packageVersion = "24.41.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -3293,7 +3293,7 @@ var Mutex = class _Mutex {
   async acquire(onRelease) {
     if (!this.#locked) {
       this.#locked = true;
-      return new _Mutex.Guard(this);
+      return new _Mutex.Guard(this, onRelease);
     }
     const deferred = Deferred.create();
     this.#acquirers.push(deferred.resolve.bind(deferred));
@@ -5796,6 +5796,83 @@ function roundRectangle(clip) {
   const height = Math.round(clip.height + clip.y - y);
   return { ...clip, x, y, width, height };
 }
+
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/WebWorker.js
+var WebWorkerEvent;
+(function(WebWorkerEvent2) {
+  WebWorkerEvent2["Console"] = "console";
+  WebWorkerEvent2["Error"] = "error";
+})(WebWorkerEvent || (WebWorkerEvent = {}));
+var WebWorker = class extends EventEmitter {
+  /**
+   * @internal
+   */
+  timeoutSettings = new TimeoutSettings();
+  #url;
+  /**
+   * @internal
+   */
+  constructor(url) {
+    super();
+    this.#url = url;
+  }
+  /**
+   * The URL of this web worker.
+   */
+  url() {
+    return this.#url;
+  }
+  /**
+   * Evaluates a given function in the {@link WebWorker | worker}.
+   *
+   * @remarks If the given function returns a promise,
+   * {@link WebWorker.evaluate | evaluate} will wait for the promise to resolve.
+   *
+   * As a rule of thumb, if the return value of the given function is more
+   * complicated than a JSON object (e.g. most classes), then
+   * {@link WebWorker.evaluate | evaluate} will _likely_ return some truncated
+   * value (or `{}`). This is because we are not returning the actual return
+   * value, but a deserialized version as a result of transferring the return
+   * value through a protocol to Puppeteer.
+   *
+   * In general, you should use
+   * {@link WebWorker.evaluateHandle | evaluateHandle} if
+   * {@link WebWorker.evaluate | evaluate} cannot serialize the return value
+   * properly or you need a mutable {@link JSHandle | handle} to the return
+   * object.
+   *
+   * @param func - Function to be evaluated.
+   * @param args - Arguments to pass into `func`.
+   * @returns The result of `func`.
+   */
+  async evaluate(func, ...args) {
+    func = withSourcePuppeteerURLIfNone(this.evaluate.name, func);
+    return await this.mainRealm().evaluate(func, ...args);
+  }
+  /**
+   * Evaluates a given function in the {@link WebWorker | worker}.
+   *
+   * @remarks If the given function returns a promise,
+   * {@link WebWorker.evaluate | evaluate} will wait for the promise to resolve.
+   *
+   * In general, you should use
+   * {@link WebWorker.evaluateHandle | evaluateHandle} if
+   * {@link WebWorker.evaluate | evaluate} cannot serialize the return value
+   * properly or you need a mutable {@link JSHandle | handle} to the return
+   * object.
+   *
+   * @param func - Function to be evaluated.
+   * @param args - Arguments to pass into `func`.
+   * @returns A {@link JSHandle | handle} to the return value of `func`.
+   */
+  async evaluateHandle(func, ...args) {
+    func = withSourcePuppeteerURLIfNone(this.evaluateHandle.name, func);
+    return await this.mainRealm().evaluateHandle(func, ...args);
+  }
+  async close() {
+    throw new UnsupportedOperation("WebWorker.close() is not supported");
+  }
+};
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/ConsoleMessage.js
 var ConsoleMessage = class {
@@ -9340,6 +9417,22 @@ var Frame = (() => {
   };
 })();
 
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/CdpIssue.js
+var CdpIssue = class {
+  #code;
+  #details;
+  constructor(issue) {
+    this.#code = issue.code;
+    this.#details = issue.details;
+  }
+  get code() {
+    return this.#code;
+  }
+  get details() {
+    return this.#details;
+  }
+};
+
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/CdpPreloadScript.js
 var CdpPreloadScript = class {
   /**
@@ -10830,6 +10923,23 @@ function intersectBoundingBox(box, width, height) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/utils.js
+function createConsoleMessage(event, values, targetId) {
+  const textTokens = [];
+  for (const arg of values) {
+    textTokens.push(valueFromJSHandle(arg));
+  }
+  const stackTraceLocations = [];
+  if (event.stackTrace) {
+    for (const callFrame of event.stackTrace.callFrames) {
+      stackTraceLocations.push({
+        url: callFrame.url,
+        lineNumber: callFrame.lineNumber,
+        columnNumber: callFrame.columnNumber
+      });
+    }
+  }
+  return new ConsoleMessage(convertConsoleMessageLevel(event.type), textTokens.join(" "), values, stackTraceLocations, void 0, event.stackTrace, targetId);
+}
 function createEvaluationError(details) {
   let name;
   let message;
@@ -10990,6 +11100,14 @@ function addPageBinding(type, name, prefix) {
 var CDP_BINDING_PREFIX = "puppeteer_";
 function pageBindingInitString(type, name) {
   return evaluationString(addPageBinding, type, name, CDP_BINDING_PREFIX);
+}
+function convertConsoleMessageLevel(method) {
+  switch (method) {
+    case "warning":
+      return "warn";
+    default:
+      return method;
+  }
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/JSHandle.js
@@ -12389,11 +12507,38 @@ var TaskManager = class {
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Realm.js
 var Realm = class {
+  /** @internal */
   timeoutSettings;
+  /** @internal */
   taskManager = new TaskManager();
+  /** @internal */
   constructor(timeoutSettings) {
     this.timeoutSettings = timeoutSettings;
   }
+  /**
+   * Waits for a function to return a truthy value when evaluated in
+   * the realm's context.
+   *
+   * Arguments can be passed from Node.js to `pageFunction`.
+   *
+   * @example
+   *
+   * ```ts
+   * const selector = '.foo';
+   * await realm.waitForFunction(
+   *   selector => !!document.querySelector(selector),
+   *   {},
+   *   selector,
+   * );
+   * ```
+   *
+   * @param pageFunction - A function to evaluate in the realm.
+   * @param options - Options for polling and timeouts.
+   * @param args - Arguments to pass to the function.
+   * @returns A promise that resolves when the function returns a truthy
+   * value.
+   * @public
+   */
   async waitForFunction(pageFunction, options = {}, ...args) {
     const { polling = "raf", timeout: timeout2 = this.timeoutSettings.timeout(), root, signal } = options;
     if (typeof polling === "number" && polling < 0) {
@@ -12407,6 +12552,7 @@ var Realm = class {
     }, pageFunction, ...args);
     return await waitTask.result;
   }
+  /** @internal */
   get disposed() {
     return this.#disposed;
   }
@@ -12422,14 +12568,134 @@ var Realm = class {
   }
 };
 
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/IsolatedWorlds.js
+var MAIN_WORLD = Symbol("mainWorld");
+var PUPPETEER_WORLD = Symbol("puppeteerWorld");
+
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Target.js
+var TargetType;
+(function(TargetType2) {
+  TargetType2["PAGE"] = "page";
+  TargetType2["BACKGROUND_PAGE"] = "background_page";
+  TargetType2["SERVICE_WORKER"] = "service_worker";
+  TargetType2["SHARED_WORKER"] = "shared_worker";
+  TargetType2["BROWSER"] = "browser";
+  TargetType2["WEBVIEW"] = "webview";
+  TargetType2["OTHER"] = "other";
+  TargetType2["TAB"] = "tab";
+})(TargetType || (TargetType = {}));
+var Target = class {
+  /**
+   * @internal
+   */
+  constructor() {
+  }
+  /**
+   * If the target is not of type `"service_worker"` or `"shared_worker"`, returns `null`.
+   */
+  async worker() {
+    return null;
+  }
+  /**
+   * If the target is not of type `"page"`, `"webview"` or `"background_page"`,
+   * returns `null`.
+   */
+  async page() {
+    return null;
+  }
+};
+
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/WebWorker.js
+var CdpWebWorker = class extends WebWorker {
+  #world;
+  #client;
+  #id;
+  #targetType;
+  #emitter;
+  get internalEmitter() {
+    return this.#emitter;
+  }
+  constructor(client, url, targetId, targetType, exceptionThrown, networkManager) {
+    super(url);
+    this.#id = targetId;
+    this.#client = client;
+    this.#targetType = targetType;
+    this.#world = new IsolatedWorld(this, new TimeoutSettings(), MAIN_WORLD);
+    this.#emitter = new EventEmitter();
+    this.#client.once("Runtime.executionContextCreated", async (event) => {
+      this.#world.setContext(new ExecutionContext(client, event.context, this.#world));
+    });
+    this.#world.emitter.on("consoleapicalled", async (event) => {
+      try {
+        const values = event.args.map((arg) => {
+          return this.#world.createCdpHandle(arg);
+        });
+        const noInternalListeners = this.#emitter.listenerCount(WebWorkerEvent.Console) === 0;
+        const noWorkerListeners = this.listenerCount(WebWorkerEvent.Console) === 0;
+        if (noInternalListeners && noWorkerListeners) {
+          for (const value of values) {
+            void value.dispose().catch(debugError);
+          }
+          return;
+        }
+        const consoleMessages = createConsoleMessage(event, values, this.#id);
+        this.#emitter.emit(WebWorkerEvent.Console, consoleMessages);
+        if (!noWorkerListeners) {
+          this.emit(WebWorkerEvent.Console, consoleMessages);
+        }
+      } catch (err) {
+        debugError(err);
+      }
+    });
+    this.#client.on("Runtime.exceptionThrown", exceptionThrown);
+    this.#client.once(CDPSessionEvent.Disconnected, () => {
+      this.#world.dispose();
+    });
+    networkManager?.addClient(this.#client).catch(debugError);
+    this.#client.send("Runtime.enable").catch(debugError);
+  }
+  mainRealm() {
+    return this.#world;
+  }
+  get client() {
+    return this.#client;
+  }
+  async close() {
+    switch (this.#targetType) {
+      case TargetType.SERVICE_WORKER: {
+        await this.client.connection()?.send("Target.closeTarget", {
+          targetId: this.#id
+        });
+        await this.client.connection()?.send("Target.detachFromTarget", {
+          sessionId: this.client.id()
+        });
+        break;
+      }
+      case TargetType.SHARED_WORKER: {
+        await this.client.connection()?.send("Target.closeTarget", {
+          targetId: this.#id
+        });
+        break;
+      }
+      default:
+        await this.evaluate(() => {
+          self.close();
+        });
+    }
+  }
+};
+
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/IsolatedWorld.js
 var IsolatedWorld = class extends Realm {
   #context;
   #emitter = new EventEmitter();
+  #worldId;
+  #origin;
   #frameOrWorker;
-  constructor(frameOrWorker, timeoutSettings) {
+  constructor(frameOrWorker, timeoutSettings, worldId) {
     super(timeoutSettings);
     this.#frameOrWorker = frameOrWorker;
+    this.#worldId = worldId;
   }
   get environment() {
     return this.#frameOrWorker;
@@ -12550,11 +12816,29 @@ var IsolatedWorld = class extends Realm {
     super[disposeSymbol]();
     this.#emitter.removeAllListeners();
   }
+  get origin() {
+    return this.#origin;
+  }
+  set origin(origin) {
+    this.#origin = origin;
+  }
+  setWorldId(worldId) {
+    this.#worldId = worldId;
+  }
+  async extension() {
+    if (this.#frameOrWorker instanceof CdpWebWorker) {
+      throw new Error("Unable to get extension from Realm");
+    }
+    if (this.#worldId === MAIN_WORLD) {
+      return null;
+    }
+    if (typeof this.#worldId === "string") {
+      const extensions = await this.#frameOrWorker._frameManager.page().browser().extensions();
+      return extensions.get(this.#worldId) ?? null;
+    }
+    return null;
+  }
 };
-
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/IsolatedWorlds.js
-var MAIN_WORLD = Symbol("mainWorld");
-var PUPPETEER_WORLD = Symbol("puppeteerWorld");
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/LifecycleWatcher.js
 var puppeteerToProtocolLifecycle = /* @__PURE__ */ new Map([
@@ -12781,6 +13065,7 @@ var CdpFrame = (() => {
     _parentId;
     accessibility;
     worlds;
+    extensionWorlds = {};
     constructor(frameManager, frameId, parentFrameId, client) {
       super();
       this._frameManager = frameManager;
@@ -12791,28 +13076,29 @@ var CdpFrame = (() => {
       this.#client = client;
       this._loaderId = "";
       this.worlds = {
-        [MAIN_WORLD]: new IsolatedWorld(this, this._frameManager.timeoutSettings),
-        [PUPPETEER_WORLD]: new IsolatedWorld(this, this._frameManager.timeoutSettings)
+        [MAIN_WORLD]: new IsolatedWorld(this, this._frameManager.timeoutSettings, MAIN_WORLD),
+        [PUPPETEER_WORLD]: new IsolatedWorld(this, this._frameManager.timeoutSettings, PUPPETEER_WORLD)
       };
       this.accessibility = new Accessibility(this.worlds[MAIN_WORLD], frameId);
       this.on(FrameEvent.FrameSwappedByActivation, () => {
         this._onLoadingStarted();
         this._onLoadingStopped();
       });
-      this.worlds[MAIN_WORLD].emitter.on("consoleapicalled", this.#onMainWorldConsoleApiCalled.bind(this));
-      this.worlds[MAIN_WORLD].emitter.on("bindingcalled", this.#onMainWorldBindingCalled.bind(this));
+      this.registerWorldListeners(this.worlds[MAIN_WORLD]);
     }
-    #onMainWorldConsoleApiCalled(event) {
-      this._frameManager.emit(FrameManagerEvent.ConsoleApiCalled, [
-        this.worlds[MAIN_WORLD],
-        event
-      ]);
-    }
-    #onMainWorldBindingCalled(event) {
-      this._frameManager.emit(FrameManagerEvent.BindingCalled, [
-        this.worlds[MAIN_WORLD],
-        event
-      ]);
+    /**
+     * @internal
+     */
+    registerWorldListeners(world) {
+      world.emitter.on("consoleapicalled", (event) => {
+        this._frameManager.emit(FrameManagerEvent.ConsoleApiCalled, [
+          world,
+          event
+        ]);
+      });
+      world.emitter.on("bindingcalled", (event) => {
+        this._frameManager.emit(FrameManagerEvent.BindingCalled, [world, event]);
+      });
     }
     /**
      * This is used internally in DevTools.
@@ -13004,6 +13290,9 @@ var CdpFrame = (() => {
       this.#detached = true;
       this.worlds[MAIN_WORLD][disposeSymbol]();
       this.worlds[PUPPETEER_WORLD][disposeSymbol]();
+      for (const extensionWorld of Object.values(this.extensionWorlds)) {
+        extensionWorld[disposeSymbol]();
+      }
     }
     exposeFunction() {
       throw new UnsupportedOperation();
@@ -13017,6 +13306,12 @@ var CdpFrame = (() => {
         frameId: this._id
       });
       return await parent.mainRealm().adoptBackendNode(backendNodeId);
+    }
+    /**
+     * @public
+     */
+    extensionRealms() {
+      return Object.values(this.extensionWorlds);
     }
   };
 })();
@@ -14524,6 +14819,7 @@ var NetworkManager = class extends EventEmitter {
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/FrameManager.js
 var TIME_FOR_WAITING_FOR_SWAP = 100;
+var CHROME_EXTENSION_PREFIX = "chrome-extension://";
 var FrameManager = class extends EventEmitter {
   #page;
   #networkManager;
@@ -14653,6 +14949,9 @@ var FrameManager = class extends EventEmitter {
       await this.#frameTreeHandled?.valueOrThrow();
       this.#onLifecycleEvent(event);
     });
+    session.on("Audits.issueAdded", (event) => {
+      this.#page.emit("issue", new CdpIssue(event.issue));
+    });
   }
   async initialize(client, frame) {
     try {
@@ -14674,7 +14973,8 @@ var FrameManager = class extends EventEmitter {
         }),
         ...(frame ? Array.from(this.#bindings.values()) : []).map((binding) => {
           return frame?.addExposedFunctionBinding(binding);
-        })
+        }),
+        this.#page.browser().isIssuesEnabled() && client.send("Audits.enable")
       ]);
     } catch (error) {
       this.#frameTreeHandled?.resolve();
@@ -14879,8 +15179,20 @@ var FrameManager = class extends EventEmitter {
         break;
     }
   }
+  #isExtensionOrigin(origin) {
+    return origin.startsWith(CHROME_EXTENSION_PREFIX);
+  }
+  #extractExtensionId(origin) {
+    if (!origin || !this.#isExtensionOrigin(origin)) {
+      return null;
+    }
+    const pathPart = origin.substring(CHROME_EXTENSION_PREFIX.length);
+    const slashIndex = pathPart.indexOf("/");
+    return slashIndex === -1 ? pathPart : pathPart.substring(0, slashIndex);
+  }
   #onExecutionContextCreated(contextPayload, session) {
     const auxData = contextPayload.auxData;
+    const origin = contextPayload.origin;
     const frameId = auxData && auxData.frameId;
     const frame = typeof frameId === "string" ? this.frame(frameId) : void 0;
     let world;
@@ -14892,6 +15204,21 @@ var FrameManager = class extends EventEmitter {
         world = frame.worlds[MAIN_WORLD];
       } else if (contextPayload.name === UTILITY_WORLD_NAME) {
         world = frame.worlds[PUPPETEER_WORLD];
+      } else if (this.#isExtensionOrigin(origin)) {
+        const extId = this.#extractExtensionId(origin);
+        if (!extId) {
+          debugError("Error while parsing extension id");
+          return;
+        }
+        if (frame.extensionWorlds[extId]) {
+          world = frame.extensionWorlds[extId];
+        } else {
+          world = new IsolatedWorld(frame, this.timeoutSettings, extId);
+          frame.extensionWorlds[extId] = world;
+          frame.registerWorldListeners(world);
+          world.origin = origin;
+          world.setWorldId(extId);
+        }
       }
     }
     if (!world) {
@@ -15939,168 +16266,238 @@ var Tracing = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Target.js
-var TargetType;
-(function(TargetType2) {
-  TargetType2["PAGE"] = "page";
-  TargetType2["BACKGROUND_PAGE"] = "background_page";
-  TargetType2["SERVICE_WORKER"] = "service_worker";
-  TargetType2["SHARED_WORKER"] = "shared_worker";
-  TargetType2["BROWSER"] = "browser";
-  TargetType2["WEBVIEW"] = "webview";
-  TargetType2["OTHER"] = "other";
-  TargetType2["TAB"] = "tab";
-})(TargetType || (TargetType = {}));
-var Target = class {
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/WebMCP.js
+var WebMCPTool = class extends EventEmitter {
+  #webmcp;
+  #backendNodeId;
+  #formElement;
+  /**
+   * Tool name.
+   */
+  name;
+  /**
+   * Tool description.
+   */
+  description;
+  /**
+   * Schema for the tool's input parameters.
+   */
+  inputSchema;
+  /**
+   * Optional annotations for the tool.
+   */
+  annotations;
+  /**
+   * Frame the tool was defined for.
+   */
+  frame;
+  /**
+   * Source location that defined the tool (if available).
+   */
+  location;
   /**
    * @internal
    */
-  constructor() {
-  }
-  /**
-   * If the target is not of type `"service_worker"` or `"shared_worker"`, returns `null`.
-   */
-  async worker() {
-    return null;
-  }
-  /**
-   * If the target is not of type `"page"`, `"webview"` or `"background_page"`,
-   * returns `null`.
-   */
-  async page() {
-    return null;
-  }
-};
-
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/WebWorker.js
-var WebWorker = class extends EventEmitter {
+  rawStackTrace;
   /**
    * @internal
    */
-  timeoutSettings = new TimeoutSettings();
-  #url;
-  /**
-   * @internal
-   */
-  constructor(url) {
+  constructor(webmcp, tool, frame) {
     super();
-    this.#url = url;
+    this.#webmcp = webmcp;
+    this.name = tool.name;
+    this.description = tool.description;
+    this.inputSchema = tool.inputSchema;
+    this.annotations = tool.annotations;
+    this.frame = frame;
+    this.#backendNodeId = tool.backendNodeId;
+    if (tool.stackTrace?.callFrames.length) {
+      this.location = {
+        url: tool.stackTrace.callFrames[0].url,
+        lineNumber: tool.stackTrace.callFrames[0].lineNumber,
+        columnNumber: tool.stackTrace.callFrames[0].columnNumber
+      };
+    }
+    this.rawStackTrace = tool.stackTrace;
   }
   /**
-   * The URL of this web worker.
+   * The corresponding ElementHandle when tool was registered via a form.
    */
-  url() {
-    return this.#url;
+  get formElement() {
+    return (async () => {
+      if (this.#formElement && !this.#formElement.disposed) {
+        return this.#formElement;
+      }
+      if (!this.#backendNodeId) {
+        return void 0;
+      }
+      this.#formElement = await this.frame.worlds[MAIN_WORLD].adoptBackendNode(this.#backendNodeId);
+      return this.#formElement;
+    })();
   }
   /**
-   * Evaluates a given function in the {@link WebWorker | worker}.
-   *
-   * @remarks If the given function returns a promise,
-   * {@link WebWorker.evaluate | evaluate} will wait for the promise to resolve.
-   *
-   * As a rule of thumb, if the return value of the given function is more
-   * complicated than a JSON object (e.g. most classes), then
-   * {@link WebWorker.evaluate | evaluate} will _likely_ return some truncated
-   * value (or `{}`). This is because we are not returning the actual return
-   * value, but a deserialized version as a result of transferring the return
-   * value through a protocol to Puppeteer.
-   *
-   * In general, you should use
-   * {@link WebWorker.evaluateHandle | evaluateHandle} if
-   * {@link WebWorker.evaluate | evaluate} cannot serialize the return value
-   * properly or you need a mutable {@link JSHandle | handle} to the return
-   * object.
-   *
-   * @param func - Function to be evaluated.
-   * @param args - Arguments to pass into `func`.
-   * @returns The result of `func`.
+   * Executes tool with input parameters, matching tool's `inputSchema`.
    */
-  async evaluate(func, ...args) {
-    func = withSourcePuppeteerURLIfNone(this.evaluate.name, func);
-    return await this.mainRealm().evaluate(func, ...args);
-  }
-  /**
-   * Evaluates a given function in the {@link WebWorker | worker}.
-   *
-   * @remarks If the given function returns a promise,
-   * {@link WebWorker.evaluate | evaluate} will wait for the promise to resolve.
-   *
-   * In general, you should use
-   * {@link WebWorker.evaluateHandle | evaluateHandle} if
-   * {@link WebWorker.evaluate | evaluate} cannot serialize the return value
-   * properly or you need a mutable {@link JSHandle | handle} to the return
-   * object.
-   *
-   * @param func - Function to be evaluated.
-   * @param args - Arguments to pass into `func`.
-   * @returns A {@link JSHandle | handle} to the return value of `func`.
-   */
-  async evaluateHandle(func, ...args) {
-    func = withSourcePuppeteerURLIfNone(this.evaluateHandle.name, func);
-    return await this.mainRealm().evaluateHandle(func, ...args);
-  }
-  async close() {
-    throw new UnsupportedOperation("WebWorker.close() is not supported");
+  async execute(input = {}) {
+    const { invocationId } = await this.#webmcp.invokeTool(this, input);
+    return await new Promise((resolve) => {
+      const handler = (event) => {
+        if (event.id === invocationId) {
+          this.#webmcp.off("toolresponded", handler);
+          resolve(event);
+        }
+      };
+      this.#webmcp.on("toolresponded", handler);
+    });
   }
 };
-
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/WebWorker.js
-var CdpWebWorker = class extends WebWorker {
-  #world;
-  #client;
-  #id;
-  #targetType;
-  constructor(client, url, targetId, targetType, consoleAPICalled, exceptionThrown, networkManager) {
-    super(url);
-    this.#id = targetId;
-    this.#client = client;
-    this.#targetType = targetType;
-    this.#world = new IsolatedWorld(this, new TimeoutSettings());
-    this.#client.once("Runtime.executionContextCreated", async (event) => {
-      this.#world.setContext(new ExecutionContext(client, event.context, this.#world));
-    });
-    this.#world.emitter.on("consoleapicalled", async (event) => {
-      try {
-        return consoleAPICalled(this.#world, event);
-      } catch (err) {
-        debugError(err);
-      }
-    });
-    this.#client.on("Runtime.exceptionThrown", exceptionThrown);
-    this.#client.once(CDPSessionEvent.Disconnected, () => {
-      this.#world.dispose();
-    });
-    networkManager?.addClient(this.#client).catch(debugError);
-    this.#client.send("Runtime.enable").catch(debugError);
-  }
-  mainRealm() {
-    return this.#world;
-  }
-  get client() {
-    return this.#client;
-  }
-  async close() {
-    switch (this.#targetType) {
-      case TargetType.SERVICE_WORKER: {
-        await this.client.connection()?.send("Target.closeTarget", {
-          targetId: this.#id
-        });
-        await this.client.connection()?.send("Target.detachFromTarget", {
-          sessionId: this.client.id()
-        });
-        break;
-      }
-      case TargetType.SHARED_WORKER: {
-        await this.client.connection()?.send("Target.closeTarget", {
-          targetId: this.#id
-        });
-        break;
-      }
-      default:
-        await this.evaluate(() => {
-          self.close();
-        });
+var WebMCPToolCall = class {
+  /**
+   * Tool invocation identifier.
+   */
+  id;
+  /**
+   * Tool that was called.
+   */
+  tool;
+  /**
+   * The input parameters used for the call.
+   */
+  input;
+  /**
+   * @internal
+   */
+  constructor(invocationId, tool, input) {
+    this.id = invocationId;
+    this.tool = tool;
+    try {
+      this.input = JSON.parse(input);
+    } catch (error) {
+      this.input = {};
+      debugError(error);
     }
+  }
+};
+var WebMCP = class extends EventEmitter {
+  #client;
+  #frameManager;
+  #tools = /* @__PURE__ */ new Map();
+  #pendingCalls = /* @__PURE__ */ new Map();
+  #onToolsAdded = (event) => {
+    const tools = [];
+    for (const tool of event.tools) {
+      const frame = this.#frameManager.frame(tool.frameId);
+      if (!frame) {
+        continue;
+      }
+      const frameTools = this.#tools.get(tool.frameId) ?? /* @__PURE__ */ new Map();
+      if (!this.#tools.has(tool.frameId)) {
+        this.#tools.set(tool.frameId, frameTools);
+      }
+      const addedTool = new WebMCPTool(this, tool, frame);
+      frameTools.set(tool.name, addedTool);
+      tools.push(addedTool);
+    }
+    this.emit("toolsadded", { tools });
+  };
+  #onToolsRemoved = (event) => {
+    const tools = [];
+    event.tools.forEach((tool) => {
+      const removedTool = this.#tools.get(tool.frameId)?.get(tool.name);
+      if (removedTool) {
+        tools.push(removedTool);
+      }
+      this.#tools.get(tool.frameId)?.delete(tool.name);
+    });
+    this.emit("toolsremoved", { tools });
+  };
+  #onToolInvoked = (event) => {
+    const tool = this.#tools.get(event.frameId)?.get(event.toolName);
+    if (!tool) {
+      return;
+    }
+    const call = new WebMCPToolCall(event.invocationId, tool, event.input);
+    this.#pendingCalls.set(call.id, call);
+    tool.emit("toolinvoked", call);
+    this.emit("toolinvoked", call);
+  };
+  #onToolResponded = (event) => {
+    const call = this.#pendingCalls.get(event.invocationId);
+    if (call) {
+      this.#pendingCalls.delete(event.invocationId);
+    }
+    const response = {
+      id: event.invocationId,
+      call,
+      status: event.status,
+      output: event.output,
+      errorText: event.errorText,
+      exception: event.exception
+    };
+    this.emit("toolresponded", response);
+  };
+  #onFrameNavigated = (frame) => {
+    this.#pendingCalls.clear();
+    const frameTools = this.#tools.get(frame._id);
+    if (!frameTools) {
+      return;
+    }
+    const tools = Array.from(frameTools.values());
+    this.#tools.delete(frame._id);
+    if (tools.length) {
+      this.emit("toolsremoved", { tools });
+    }
+  };
+  /**
+   * @internal
+   */
+  constructor(client, frameManager) {
+    super();
+    this.#client = client;
+    this.#frameManager = frameManager;
+    this.#frameManager.on(FrameManagerEvent.FrameNavigated, this.#onFrameNavigated);
+    this.#bindListeners();
+  }
+  /**
+   * @internal
+   */
+  async initialize() {
+    return await this.#client.send("WebMCP.enable").catch(debugError);
+  }
+  /**
+   * @internal
+   */
+  async invokeTool(tool, input) {
+    return await this.#client.send("WebMCP.invokeTool", {
+      frameId: tool.frame._id,
+      toolName: tool.name,
+      input
+    });
+  }
+  /**
+   * Gets all WebMCP tools defined by the page.
+   */
+  tools() {
+    return Array.from(this.#tools.values()).flatMap((toolMap) => {
+      return Array.from(toolMap.values());
+    });
+  }
+  #bindListeners() {
+    this.#client.on("WebMCP.toolsAdded", this.#onToolsAdded);
+    this.#client.on("WebMCP.toolsRemoved", this.#onToolsRemoved);
+    this.#client.on("WebMCP.toolInvoked", this.#onToolInvoked);
+    this.#client.on("WebMCP.toolResponded", this.#onToolResponded);
+  }
+  /**
+   * @internal
+   */
+  updateClient(client) {
+    this.#client.off("WebMCP.toolsAdded", this.#onToolsAdded);
+    this.#client.off("WebMCP.toolsRemoved", this.#onToolsRemoved);
+    this.#client.off("WebMCP.toolInvoked", this.#onToolInvoked);
+    this.#client.off("WebMCP.toolResponded", this.#onToolResponded);
+    this.#client = client;
+    this.#bindListeners();
   }
 };
 
@@ -16163,14 +16560,6 @@ var __disposeResources12 = /* @__PURE__ */ function(SuppressedError3) {
   var e = new Error(message);
   return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 });
-function convertConsoleMessageLevel(method) {
-  switch (method) {
-    case "warning":
-      return "warn";
-    default:
-      return method;
-  }
-}
 function convertSameSiteFromPuppeteerToCdp(sameSite) {
   switch (sameSite) {
     case "Strict":
@@ -16211,6 +16600,7 @@ var CdpPage = class _CdpPage extends Page {
   #frameManager;
   #emulationManager;
   #tracing;
+  #webmcp;
   #bindings = /* @__PURE__ */ new Map();
   #exposedFunctions = /* @__PURE__ */ new Map();
   #coverage;
@@ -16236,6 +16626,7 @@ var CdpPage = class _CdpPage extends Page {
     this.#frameManager = new FrameManager(client, this, this._timeoutSettings);
     this.#emulationManager = new EmulationManager(client);
     this.#tracing = new Tracing(client);
+    this.#webmcp = new WebMCP(client, this.#frameManager);
     this.#coverage = new Coverage(client);
     this.#viewport = null;
     this.#cdpBluetoothEmulation = new CdpBluetoothEmulation(this.#primaryTargetClient.connection());
@@ -16310,6 +16701,7 @@ var CdpPage = class _CdpPage extends Page {
     this.#touchscreen.updateClient(newSession);
     this.#emulationManager.updateClient(newSession);
     this.#tracing.updateClient(newSession);
+    this.#webmcp.updateClient(newSession);
     this.#coverage.updateClient(newSession);
     await this.#frameManager.swapFrameTree(newSession);
     this.#setupPrimaryTargetListeners();
@@ -16358,8 +16750,24 @@ var CdpPage = class _CdpPage extends Page {
     assert(session instanceof CdpCDPSession);
     this.#frameManager.onAttachedToTarget(session.target());
     if (session.target()._getTargetInfo().type === "worker") {
-      const worker = new CdpWebWorker(session, session.target().url(), session.target()._targetId, session.target().type(), this.#onConsoleAPI.bind(this), this.#handleException.bind(this), this.#frameManager.networkManager);
+      const worker = new CdpWebWorker(session, session.target().url(), session.target()._targetId, session.target().type(), this.#handleException.bind(this), this.#frameManager.networkManager);
       this.#workers.set(session.id(), worker);
+      worker.internalEmitter.on(WebWorkerEvent.Console, (message) => {
+        const noListenersForConsoleOnPage = this.listenerCount(
+          "console"
+          /* PageEvent.Console */
+        ) === 0;
+        const noListenersForConsoleOnWorker = worker.listenerCount(WebWorkerEvent.Console) === 0;
+        if (noListenersForConsoleOnPage && noListenersForConsoleOnWorker) {
+          for (const arg of message.args()) {
+            void arg.dispose().catch(debugError);
+          }
+          return;
+        }
+        if (!noListenersForConsoleOnPage) {
+          this.emit("console", message);
+        }
+      });
       this.emit("workercreated", worker);
     }
     session.on(CDPSessionEvent.Ready, this.#onAttachedToTarget);
@@ -16369,7 +16777,8 @@ var CdpPage = class _CdpPage extends Page {
       await Promise.all([
         this.#frameManager.initialize(this.#primaryTargetClient),
         this.#primaryTargetClient.send("Performance.enable"),
-        this.#primaryTargetClient.send("Log.enable")
+        this.#primaryTargetClient.send("Log.enable"),
+        this.#webmcp.initialize()
       ]);
     } catch (err) {
       if (isErrorLike(err) && isTargetClosedError(err)) {
@@ -16505,6 +16914,9 @@ var CdpPage = class _CdpPage extends Page {
   }
   get tracing() {
     return this.#tracing;
+  }
+  get webmcp() {
+    return this.#webmcp;
   }
   frames() {
     return this.#frameManager.frames();
@@ -16719,39 +17131,30 @@ var CdpPage = class _CdpPage extends Page {
   #handleException(exception) {
     this.emit("pageerror", createClientError(exception.exceptionDetails));
   }
-  #onConsoleAPI(world, event) {
-    const values = event.args.map((arg) => {
-      return world.createCdpHandle(arg);
-    });
-    if (!this.listenerCount(
+  #onConsoleAPI(world, event, values) {
+    if (!values) {
+      values = event.args.map((arg) => {
+        return world.createCdpHandle(arg);
+      });
+    }
+    const hasPageConsoleListeners = this.listenerCount(
       "console"
       /* PageEvent.Console */
-    )) {
-      values.forEach((arg) => {
-        return arg.dispose();
-      });
-      return;
-    }
-    const textTokens = [];
-    for (const arg of values) {
-      textTokens.push(valueFromJSHandle(arg));
-    }
-    const stackTraceLocations = [];
-    if (event.stackTrace) {
-      for (const callFrame of event.stackTrace.callFrames) {
-        stackTraceLocations.push({
-          url: callFrame.url,
-          lineNumber: callFrame.lineNumber,
-          columnNumber: callFrame.columnNumber
-        });
+    ) > 0;
+    const hasWorkerConsoleListeners = world.environment instanceof WebWorker && world.environment.listenerCount(WebWorkerEvent.Console) > 0;
+    if (!hasPageConsoleListeners) {
+      if (!hasWorkerConsoleListeners) {
+        for (const value of values) {
+          void value.dispose().catch(debugError);
+        }
       }
+      return;
     }
     let targetId;
     if (world.environment.client instanceof CdpCDPSession) {
       targetId = world.environment.client.target()._targetId;
     }
-    const message = new ConsoleMessage(convertConsoleMessageLevel(event.type), textTokens.join(" "), values, stackTraceLocations, void 0, event.stackTrace, targetId);
-    this.emit("console", message);
+    this.emit("console", createConsoleMessage(event, values, targetId));
   }
   async #onBindingCalled(world, event) {
     let payload;
@@ -16819,6 +17222,9 @@ var CdpPage = class _CdpPage extends Page {
   }
   async setBypassCSP(enabled) {
     await this.#primaryTargetClient.send("Page.setBypassCSP", { enabled });
+  }
+  async triggerExtensionAction(extension) {
+    return await extension.triggerAction(this);
   }
   async emulateMediaType(type) {
     return await this.#emulationManager.emulateMediaType(type);
@@ -16995,6 +17401,9 @@ var CdpPage = class _CdpPage extends Page {
   }
   get bluetooth() {
     return this.#cdpBluetoothEmulation;
+  }
+  extensionRealms() {
+    return this.mainFrame().extensionRealms();
   }
 };
 var supportedMetrics = /* @__PURE__ */ new Set([
@@ -17217,6 +17626,114 @@ var CdpBrowserContext = class extends BrowserContext {
   }
 };
 
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Extension.js
+var Extension = class {
+  #id;
+  #version;
+  #name;
+  /**
+   * @internal
+   */
+  constructor(id, version, name) {
+    if (!id || !version) {
+      throw new Error("Extension ID and version are required");
+    }
+    this.#id = id;
+    this.#version = version;
+    this.#name = name;
+  }
+  /**
+   * The version of the extension as specified in its manifest.
+   *
+   * @public
+   */
+  get version() {
+    return this.#version;
+  }
+  /**
+   * The name of the extension as specified in its manifest.
+   *
+   * @public
+   */
+  get name() {
+    return this.#name;
+  }
+  /**
+   * The unique identifier of the extension.
+   *
+   * @public
+   */
+  get id() {
+    return this.#id;
+  }
+};
+
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Extension.js
+var CdpExtension = class extends Extension {
+  // needed to access the CDPSession to trigger an extension action.
+  #browser;
+  /*
+   * @internal
+   */
+  constructor(id, version, name, browser) {
+    super(id, version, name);
+    this.#browser = browser;
+  }
+  async workers() {
+    const targets = this.#browser.targets();
+    const extensionWorkers = targets.filter((target) => {
+      const targetUrl = target.url();
+      return target.type() === "service_worker" && targetUrl.startsWith("chrome-extension://" + this.id);
+    });
+    const workers = [];
+    for (const target of extensionWorkers) {
+      try {
+        const worker = await target.worker();
+        if (worker) {
+          workers.push(worker);
+        }
+      } catch (err) {
+        if (this.#canIgnoreError(err)) {
+          debugError(err);
+          continue;
+        }
+        throw err;
+      }
+    }
+    return workers;
+  }
+  async pages() {
+    const targets = this.#browser.targets();
+    const extensionPages = targets.filter((target) => {
+      const targetUrl = target.url();
+      return (target.type() === "page" || target.type() === "background_page") && targetUrl.startsWith("chrome-extension://" + this.id);
+    });
+    const pages = await Promise.all(extensionPages.map(async (target) => {
+      try {
+        return await target.asPage();
+      } catch (err) {
+        if (this.#canIgnoreError(err)) {
+          debugError(err);
+          return null;
+        }
+        throw err;
+      }
+    }));
+    return pages.filter((page) => {
+      return page !== null;
+    });
+  }
+  async triggerAction(page) {
+    await this.#browser._connection.send("Extensions.triggerAction", {
+      id: this.id,
+      targetId: page._tabId
+    });
+  }
+  #canIgnoreError(error) {
+    return isErrorLike(error) && (isTargetClosedError(error) || error.message.includes("No target with given id found"));
+  }
+};
+
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Target.js
 var InitializationStatus;
 (function(InitializationStatus2) {
@@ -17233,6 +17750,9 @@ var CdpTarget = class extends Target {
   _initializedDeferred = Deferred.create();
   _isClosedDeferred = Deferred.create();
   _targetId;
+  _asPagePromise;
+  /** @internal */
+  pagePromise;
   /**
    * To initialize the target for use, call initialize.
    *
@@ -17251,13 +17771,22 @@ var CdpTarget = class extends Target {
     }
   }
   async asPage() {
-    const session = this._session();
-    if (!session) {
-      return await this.createCDPSession().then((client) => {
+    if (this.pagePromise) {
+      const page = await this.pagePromise;
+      if (page) {
+        return page;
+      }
+    }
+    if (!this._asPagePromise) {
+      const session = this._session();
+      this._asPagePromise = (session ? Promise.resolve(session) : this._sessionFactory()(
+        /* isAutoAttachEmulated=*/
+        false
+      )).then((client) => {
         return CdpPage._create(client, this, null);
       });
     }
-    return await CdpPage._create(session, this, null);
+    return await this._asPagePromise ?? null;
   }
   _subtype() {
     return this.#targetInfo.subtype;
@@ -17361,7 +17890,6 @@ var CdpTarget = class extends Target {
 };
 var PageTarget = class _PageTarget extends CdpTarget {
   #defaultViewport;
-  pagePromise;
   constructor(targetInfo, session, browserContext, targetManager, sessionFactory, defaultViewport) {
     super(targetInfo, session, browserContext, targetManager, sessionFactory);
     this.#defaultViewport = defaultViewport ?? void 0;
@@ -17428,8 +17956,6 @@ var WorkerTarget = class extends CdpTarget {
           this._getTargetInfo().url,
           this._targetId,
           this.type(),
-          () => {
-          },
           () => {
           },
           void 0
@@ -17525,6 +18051,9 @@ var TargetManager = class extends EventEmitter {
     this.#finishInitializationIfReady();
     await this.#initializeDeferred.valueOrThrow();
   }
+  addToIgnoreTarget(targetId) {
+    this.#ignoredTargets.add(targetId);
+  }
   getChildTargets(target) {
     return target._childTargets();
   }
@@ -17537,6 +18066,9 @@ var TargetManager = class extends EventEmitter {
   }
   getAvailableTargets() {
     return this.#attachedTargetsByTargetId;
+  }
+  getDiscoveredTargetInfos() {
+    return this.#discoveredTargetsByTargetId;
   }
   #setupAttachmentListeners(session) {
     const listener = (event) => {
@@ -17636,7 +18168,7 @@ var TargetManager = class extends EventEmitter {
     }
     if (targetInfo.type === "service_worker") {
       await this.#silentDetach(session, parentSession);
-      if (this.#attachedTargetsByTargetId.has(targetInfo.targetId)) {
+      if (this.#attachedTargetsByTargetId.has(targetInfo.targetId) || this.#ignoredTargets.has(targetInfo.targetId) || !this.#discoveredTargetsByTargetId.has(targetInfo.targetId)) {
         return;
       }
       const target2 = this.#targetFactory(targetInfo);
@@ -17720,8 +18252,8 @@ function isDevToolsPageTarget(url) {
 }
 var CdpBrowser = class _CdpBrowser extends Browser {
   protocol = "cdp";
-  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, handleDevToolsAsPage = false) {
-    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled, handleDevToolsAsPage);
+  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false) {
+    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled, issuesEnabled, handleDevToolsAsPage);
     if (acceptInsecureCerts) {
       await connection.send("Security.setIgnoreCertificateErrors", {
         ignore: true
@@ -17739,11 +18271,14 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   #defaultContext;
   #contexts = /* @__PURE__ */ new Map();
   #networkEnabled = true;
+  #issuesEnabled = true;
   #targetManager;
   #handleDevToolsAsPage = false;
-  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, handleDevToolsAsPage = false) {
+  #extensions = /* @__PURE__ */ new Map();
+  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false) {
     super();
     this.#networkEnabled = networkEnabled;
+    this.#issuesEnabled = issuesEnabled;
     this.#defaultViewport = defaultViewport;
     this.#process = process3;
     this.#connection = connection;
@@ -17932,10 +18467,27 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   }
   async installExtension(path) {
     const { id } = await this.#connection.send("Extensions.loadUnpacked", { path });
+    this.#extensions.delete(id);
     return id;
   }
-  uninstallExtension(id) {
-    return this.#connection.send("Extensions.uninstall", { id });
+  async uninstallExtension(id) {
+    await this.#connection.send("Extensions.uninstall", { id });
+    const targetDestroyedPromises = [];
+    for (const [targetId, targetInfo] of this._targetManager().getDiscoveredTargetInfos().entries()) {
+      if (targetInfo.url.includes(id) && targetInfo.type === "service_worker") {
+        this._targetManager().addToIgnoreTarget(targetId);
+        targetDestroyedPromises.push(new Promise((resolve) => {
+          return setTimeout(() => {
+            this.#connection.emit("Target.targetDestroyed", {
+              targetId
+            });
+            resolve(null);
+          }, 0);
+        }));
+      }
+    }
+    await Promise.all(targetDestroyedPromises);
+    this.#extensions.delete(id);
   }
   async screens() {
     const { screenInfos } = await this.#connection.send("Emulation.getScreenInfos");
@@ -17992,6 +18544,12 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     this._detach();
     return Promise.resolve();
   }
+  /**
+   * @internal
+   */
+  get _connection() {
+    return this.#connection;
+  }
   get connected() {
     return !this.#connection._closed;
   }
@@ -18005,6 +18563,23 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   }
   isNetworkEnabled() {
     return this.#networkEnabled;
+  }
+  async extensions() {
+    const response = await this.#connection.send("Extensions.getExtensions");
+    const extensionsMap = /* @__PURE__ */ new Map();
+    for (const currExtension of response.extensions) {
+      if (this.#extensions.has(currExtension.id)) {
+        extensionsMap.set(currExtension.id, this.#extensions.get(currExtension.id));
+      } else {
+        const newExtension = new CdpExtension(currExtension.id, currExtension.version, currExtension.name, this);
+        extensionsMap.set(currExtension.id, newExtension);
+      }
+    }
+    this.#extensions = extensionsMap;
+    return this.#extensions;
+  }
+  isIssuesEnabled() {
+    return this.#issuesEnabled;
   }
 };
 export {
@@ -18053,6 +18628,11 @@ export {
 /**
  * @license
  * Copyright 2019 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/**
+ * @license
+ * Copyright 2026 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 //# sourceMappingURL=puppeteer.js.map

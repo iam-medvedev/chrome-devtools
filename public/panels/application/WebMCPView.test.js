@@ -1,22 +1,26 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as WebMCP from '../../models/web_mcp/web_mcp.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { findMenuItemWithLabel, getMenuForToolbarButton } from '../../testing/ContextMenuHelpers.js';
+import { findMenuItemWithLabel, getContextMenuForElement, getMenuForToolbarButton } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ProtocolMonitor from '../protocol_monitor/protocol_monitor.js';
 import * as Application from './application.js';
 const { urlString } = Platform.DevToolsPath;
 const { DEFAULT_VIEW, WebMCPView, filterToolCalls } = Application.WebMCPView;
-function createTool(name, description, frameId, target, backendNodeId) {
-    return new WebMCP.WebMCPModel.Tool({ name, description, inputSchema: { type: 'object' }, frameId, backendNodeId }, target);
+function createTool(name, description, frameId, target, backendNodeId, inputSchema = {
+    type: 'object'
+}) {
+    return new WebMCP.WebMCPModel.Tool({ name, description, inputSchema, frameId, backendNodeId }, target);
 }
 describeWithEnvironment('WebMCPView (View)', () => {
     const createDefaultViewInput = () => {
@@ -74,7 +78,7 @@ describeWithEnvironment('WebMCPView (View)', () => {
                 invocationId: '2',
                 input: '{"path": "/tmp/test.txt"}',
                 tool: tools[1],
-                result: new WebMCP.WebMCPModel.Result("Success" /* Protocol.WebMCP.InvocationStatus.Success */, 'File content here', undefined, undefined)
+                result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined)
             },
             {
                 invocationId: '3',
@@ -114,6 +118,30 @@ describeWithEnvironment('WebMCPView (View)', () => {
             tools,
         }, {}, container);
         await assertScreenshot('application/webmcp_view.png');
+    });
+    it('shows a context menu when right-clicking a tool', async () => {
+        const copyTextStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
+        const sdkTarget = createTarget();
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        const tools = [
+            createTool('test_tool', 'A test tool description', 'frame1', sdkTarget),
+        ];
+        DEFAULT_VIEW({
+            ...createDefaultViewInput(),
+            tools,
+        }, {}, container);
+        const toolItem = container.querySelector('.tool-item');
+        assert.isNotNull(toolItem);
+        const contextMenu = getContextMenuForElement(toolItem);
+        const copyNameItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'Copy name');
+        const copyDescItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'Copy description');
+        assert.isDefined(copyNameItem);
+        assert.isDefined(copyDescItem);
+        contextMenu.invokeHandler(copyNameItem.id());
+        sinon.assert.calledWith(copyTextStub, 'test_tool');
+        contextMenu.invokeHandler(copyDescItem.id());
+        sinon.assert.calledWith(copyTextStub, 'A test tool description');
     });
     it('renders a list of tools', async () => {
         updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
@@ -164,7 +192,7 @@ describeWithEnvironment('WebMCPView (View)', () => {
             invocationId: '1',
             input: '{"dir": "/tmp"}',
             tool,
-            result: new WebMCP.WebMCPModel.Result("Success" /* Protocol.WebMCP.InvocationStatus.Success */, 'File content here', undefined, undefined)
+            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined)
         };
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
@@ -376,7 +404,7 @@ describe('filterToolCalls', () => {
             invocationId: '2',
             tool: tools[1],
             input: '{"path": "/tmp/test.txt"}',
-            result: new WebMCP.WebMCPModel.Result("Success" /* Protocol.WebMCP.InvocationStatus.Success */, 'File content here', undefined, undefined)
+            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined)
         },
         {
             invocationId: '3',
@@ -393,7 +421,7 @@ describe('filterToolCalls', () => {
             invocationId: '5',
             tool: tools[3],
             input: '{}',
-            result: new WebMCP.WebMCPModel.Result("Success" /* Protocol.WebMCP.InvocationStatus.Success */, 'Declarative success content', undefined, undefined)
+            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'Declarative success content', undefined, undefined)
         }
     ];
     it('filters by name/text', () => {
@@ -405,7 +433,7 @@ describe('filterToolCalls', () => {
         const result = filterToolCalls(mockCalls, {
             text: '',
             statusTypes: {
-                success: true,
+                completed: true,
             },
         });
         assert.lengthOf(result, 2);
@@ -446,7 +474,7 @@ describe('filterToolCalls', () => {
         const result = filterToolCalls(mockCalls, {
             text: 'success',
             statusTypes: {
-                success: true,
+                completed: true,
             },
             toolTypes: {
                 declarative: true,
@@ -564,6 +592,192 @@ describeWithEnvironment('PayloadWidget', () => {
         widget.valueString = 'invalid json';
         const nextInput = await view.nextInput;
         assert.strictEqual(nextInput.valueString, 'invalid json');
+    });
+});
+describe('parseToolSchema', () => {
+    const { parseToolSchema } = Application.WebMCPView;
+    const { ParameterType } = ProtocolMonitor.JSONEditor;
+    it('parses empty schema', () => {
+        const parsed = parseToolSchema({});
+        assert.deepEqual(parsed.parameters, []);
+        assert.strictEqual(parsed.typesByName.size, 0);
+        assert.strictEqual(parsed.enumsByName.size, 0);
+    });
+    it('parses primitive properties', () => {
+        const schema = {
+            type: 'object',
+            properties: {
+                strProp: { type: 'string', description: 'A string' },
+                numProp: { type: 'integer' },
+                boolProp: { type: 'boolean' },
+            },
+            required: ['strProp'],
+        };
+        const parsed = parseToolSchema(schema);
+        assert.lengthOf(parsed.parameters, 3);
+        assert.deepEqual(parsed.parameters[0], {
+            name: 'strProp',
+            type: "string" /* ParameterType.STRING */,
+            description: 'A string',
+            optional: false,
+            isCorrectType: true,
+        });
+        assert.deepEqual(parsed.parameters[1], {
+            name: 'numProp',
+            type: "number" /* ParameterType.NUMBER */,
+            description: '',
+            optional: true,
+            isCorrectType: true,
+        });
+    });
+    it('parses nested objects', () => {
+        const schema = {
+            type: 'object',
+            properties: {
+                objProp: {
+                    type: 'object',
+                    properties: {
+                        nestedStr: { type: 'string' },
+                    },
+                    required: ['nestedStr'],
+                },
+                emptyObj: {
+                    type: 'object',
+                },
+            },
+        };
+        const parsed = parseToolSchema(schema);
+        assert.lengthOf(parsed.parameters, 2);
+        assert.strictEqual(parsed.parameters[0].name, 'objProp');
+        assert.strictEqual(parsed.parameters[0].type, "object" /* ParameterType.OBJECT */);
+        assert.isDefined(parsed.parameters[0].typeRef);
+        assert.isUndefined(parsed.parameters[0].isKeyEditable);
+        assert.strictEqual(parsed.parameters[1].name, 'emptyObj');
+        assert.strictEqual(parsed.parameters[1].type, "object" /* ParameterType.OBJECT */);
+        assert.isTrue(parsed.parameters[1].isKeyEditable);
+        const nestedType = parsed.typesByName.get(parsed.parameters[0].typeRef);
+        assert.isDefined(nestedType);
+        assert.lengthOf(nestedType, 1);
+        assert.strictEqual(nestedType[0].name, 'nestedStr');
+        assert.isFalse(nestedType[0].optional);
+    });
+    it('parses arrays', () => {
+        const schema = {
+            type: 'object',
+            properties: {
+                arrProp: {
+                    type: 'array',
+                    items: { type: 'string' },
+                },
+                objArrProp: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            nestedNum: { type: 'number' },
+                        },
+                    },
+                },
+            },
+        };
+        const parsed = parseToolSchema(schema);
+        assert.lengthOf(parsed.parameters, 2);
+        assert.strictEqual(parsed.parameters[0].name, 'arrProp');
+        assert.strictEqual(parsed.parameters[0].type, "array" /* ParameterType.ARRAY */);
+        assert.strictEqual(parsed.parameters[0].typeRef, 'string');
+        assert.strictEqual(parsed.parameters[1].name, 'objArrProp');
+        assert.strictEqual(parsed.parameters[1].type, "array" /* ParameterType.ARRAY */);
+        assert.isDefined(parsed.parameters[1].typeRef);
+        const nestedType = parsed.typesByName.get(parsed.parameters[1].typeRef);
+        assert.isDefined(nestedType);
+        assert.lengthOf(nestedType, 1);
+        assert.strictEqual(nestedType[0].name, 'nestedNum');
+        assert.strictEqual(nestedType[0].type, "number" /* ParameterType.NUMBER */);
+    });
+    it('parses enums', () => {
+        const schema = {
+            type: 'object',
+            properties: {
+                enumProp: {
+                    type: 'string',
+                    enum: ['val1', 'val2'],
+                },
+                enumArrProp: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        enum: ['arrVal1'],
+                    },
+                },
+            },
+        };
+        const parsed = parseToolSchema(schema);
+        assert.lengthOf(parsed.parameters, 2);
+        assert.isDefined(parsed.parameters[0].typeRef);
+        assert.isDefined(parsed.parameters[1].typeRef);
+        const enum1 = parsed.enumsByName.get(parsed.parameters[0].typeRef);
+        assert.deepEqual(enum1, { val1: 'val1', val2: 'val2' });
+        const enum2 = parsed.enumsByName.get(parsed.parameters[1].typeRef);
+        assert.deepEqual(enum2, { arrVal1: 'arrVal1' });
+    });
+    it('parses refs', () => {
+        const schema = {
+            type: 'object',
+            properties: {
+                refProp: {
+                    $ref: '#/definitions/MyObject',
+                },
+                enumRefProp: {
+                    $ref: '#/definitions/MyEnum',
+                },
+            },
+            definitions: {
+                MyObject: {
+                    type: 'object',
+                    properties: {
+                        nestedProp: { type: 'string' },
+                    },
+                },
+                MyEnum: {
+                    type: 'string',
+                    enum: ['val1', 'val2'],
+                },
+            },
+        };
+        const parsed = parseToolSchema(schema);
+        assert.lengthOf(parsed.parameters, 2);
+        assert.strictEqual(parsed.parameters[0].name, 'refProp');
+        assert.strictEqual(parsed.parameters[0].type, "object" /* ParameterType.OBJECT */);
+        assert.strictEqual(parsed.parameters[0].typeRef, 'MyObject');
+        assert.strictEqual(parsed.parameters[1].name, 'enumRefProp');
+        assert.strictEqual(parsed.parameters[1].type, "string" /* ParameterType.STRING */);
+        assert.strictEqual(parsed.parameters[1].typeRef, 'MyEnum');
+        const myObjectParams = parsed.typesByName.get('MyObject');
+        assert.isDefined(myObjectParams);
+        assert.lengthOf(myObjectParams, 1);
+        assert.strictEqual(myObjectParams[0].name, 'nestedProp');
+        assert.strictEqual(myObjectParams[0].type, "string" /* ParameterType.STRING */);
+        const myEnumRecord = parsed.enumsByName.get('MyEnum');
+        assert.isDefined(myEnumRecord);
+        assert.deepEqual(myEnumRecord, { val1: 'val1', val2: 'val2' });
+    });
+    it('parses unparsable types like anyOf as unknown by default', () => {
+        const schema = {
+            type: 'object',
+            properties: {
+                anyOfProp: {
+                    anyOf: [
+                        { type: 'string' },
+                        { type: 'number' },
+                    ],
+                },
+            },
+        };
+        const parsed = parseToolSchema(schema);
+        assert.lengthOf(parsed.parameters, 1);
+        assert.strictEqual(parsed.parameters[0].name, 'anyOfProp');
+        assert.strictEqual(parsed.parameters[0].type, "unknown" /* ParameterType.UNKNOWN */);
+        assert.isUndefined(parsed.parameters[0].typeRef);
     });
 });
 //# sourceMappingURL=WebMCPView.test.js.map
