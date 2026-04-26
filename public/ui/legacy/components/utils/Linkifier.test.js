@@ -12,6 +12,7 @@ import { createTarget, describeWithEnvironment, } from '../../../../testing/Envi
 import { describeWithMockConnection, dispatchEvent, } from '../../../../testing/MockConnection.js';
 import { MockProtocolBackend } from '../../../../testing/MockScopeChain.js';
 import { setMockResourceTree } from '../../../../testing/ResourceTreeHelpers.js';
+import { TestUniverse } from '../../../../testing/TestUniverse.js';
 import * as UI from '../../legacy.js';
 import * as Components from './utils.js';
 const { urlString } = Platform.DevToolsPath;
@@ -251,6 +252,23 @@ describeWithMockConnection('Linkifier', () => {
         });
         assert.exists(anchor);
         assert.strictEqual(anchor.textContent, `w.com/a.js:${lineNumber + 1}`);
+    });
+    describe('linkifyStackTraceFrame', () => {
+        it('applies ignore-list-link class to fallback anchor if URL is ignore-listed and manager is provided', () => {
+            const universe = new TestUniverse();
+            const ignoreListManager = universe.ignoreListManager;
+            const url = Platform.DevToolsPath.urlString `http://example.com/script.js`;
+            ignoreListManager.ignoreListURL(url);
+            const frame = {
+                url,
+                line: 1,
+                column: 1,
+                uiSourceCode: null,
+            };
+            const anchor = Components.Linkifier.Linkifier.linkifyStackTraceFrame(frame, { ignoreListManager });
+            assert.exists(anchor);
+            assert.isTrue(anchor.classList.contains('ignore-list-link'));
+        });
     });
     describe('maybeLinkifyScriptLocation', () => {
         it('uses the BreakLocation as a revealable if the option is provided and a breakpoint is at the given location', async () => {

@@ -3,14 +3,23 @@
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 describe('RequestInitiatorView', () => {
     setupLocaleHooks();
+    setupSettingsHooks();
+    beforeEach(() => {
+        Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+    });
+    afterEach(() => {
+        Workspace.IgnoreListManager.IgnoreListManager.removeInstance();
+    });
     it('renders empty request initiator view correctly', async () => {
         const component = document.createElement('div');
         renderElementIntoDOM(component);

@@ -1286,6 +1286,8 @@ var AiAgent = class {
     }
     const enableAidaFunctionCalling = declarations.length;
     const userTier = Host.AidaClient.convertToUserTierEnum(this.userTier);
+    const clientFeatureName = Host.AidaClient.getClientFeatureName(this.clientFeature);
+    debugLog(`Client ${clientFeatureName} running with userTier ${this.userTier}`);
     const preamble8 = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
     const facts = Array.from(this.#facts);
     const request = {
@@ -4236,7 +4238,8 @@ ${formatter.formatStatus()}${formatter.formatFailureReasons()}`
 var PerformanceAgent_exports = {};
 __export(PerformanceAgent_exports, {
   PerformanceAgent: () => PerformanceAgent,
-  PerformanceTraceContext: () => PerformanceTraceContext
+  PerformanceTraceContext: () => PerformanceTraceContext,
+  getLabelName: () => getLabelName
 });
 import * as Common4 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
@@ -6688,15 +6691,14 @@ Note: if the user asks a specific question about the trace (such as "What is my 
 
 ## Guidelines
 
-- You must call \`getMainThreadTrackSummary\` (by specifying a time range) or \`getMainThreadTrackSummaryByLabel\` (with the relevant label) to investigate the main thread activity before giving the user a reply or suggesting solutions for any performance problem or insight. Call \`getMainThreadTrackSummary\` with specific bounds when you identify a specific time range of interest from the initial data. This applies even if you already have some information about that period from \`getInsightDetails\` or the initial trace summary.
-- Dig Deeper: Before replying, you should really dig into the main thread activity to uncover what the performance issues actually are. Use the initially provided main thread data as a reference to identify interesting tasks or time ranges, and then use those time bounds to call functions like \`getMainThreadTrackSummary\` to get more detailed data. Do not solely rely on the information from the initial data; ensure you identify the root cause before suggesting solutions.
-- No Shortcutting: Even if the initial facts contain specific line numbers or function names, you are not allowed to reply using only that information. You MUST call \`getMainThreadTrackSummary\` with the time bounds of the task to inspect its full context and children before describing it to the user.
-- Look for Aggregated Cost: Performance issues are not always caused by a single "Long Task". Many small, frequent events (like unthrottled \`mousemove\` or \`scroll\` handlers) can add up to significant main thread blockage. Use the Bottom-Up summary in \`getMainThreadTrackSummary\` to identify functions with high total time, even if they are not associated with a Long Task.
+- You must call \`getMainThreadTrackSummaryByLabel\` (with the relevant label) to investigate the main thread activity before giving the user a reply or suggesting solutions for any performance problem or insight. This applies even if you already have some information about that period from \`getInsightDetails\` or the initial trace summary.
+- Dig Deeper: Before replying, you should really dig into the main thread activity to uncover what the performance issues actually are. Do not solely rely on the information from the initial data; ensure you identify the root cause before suggesting solutions.
+- No Shortcutting: Even if the initial facts contain specific line numbers or function names, you are not allowed to reply using only that information. You MUST call \`getMainThreadTrackSummaryByLabel\` to inspect its context before describing it to the user.
+- Look for Aggregated Cost: Performance issues are not always caused by a single "Long Task". Many small, frequent events (like unthrottled \`mousemove\` or \`scroll\` handlers) can add up to significant main thread blockage. Use the Bottom-Up summary in \`getMainThreadTrackSummaryByLabel\` to identify functions with high total time, even if they are not associated with a Long Task.
 - Use the provided functions to get detailed performance data. Prioritize functions that provide context relevant to the performance issue being investigated.
 - Before finalizing your advice, look over it and validate using any relevant functions. If something seems off, refine the advice before giving it to the user.
 - Base your analysis and advice solely on the data retrieved through the provided functions. Always use the provided functions to gather sufficient data when needed.
 - Use absolute microsecond timestamps for any function that requires a \`min\` and \`max\` bounds. These timestamps can be found in the trace summary or within the details of an insight.
-- Example: If the trace bounds are {min: 1000, max: 5000} and you want to investigate a specific interaction that happened between 2000 and 3000, you should call \`getMainThreadTrackSummary({min: 2000, max: 3000})\`.
 - Available labels for \`getMainThreadTrackSummaryByLabel\` include:
   - \`trace-bounds\` (entire trace)
   - \`nav-to-lcp\` (navigation to LCP)
@@ -6723,7 +6725,7 @@ Adhere to the following critical requirements:
 - Ensure comprehensive data retrieval through function calls to provide accurate and complete recommendations.
 - If the user asks a specific question about web performance that doesn't have anything to do with the trace, don't call any functions and be succinct in your answer.
 - Before suggesting changing the format of an image, consider what format it is already in. For example, if the mime type is image/webp, do not suggest to the user that the image is converted to WebP, as the image is already in that format.
-- Do not mention the functions you call to gather information about the trace (e.g., \`getEventByKey\`, \`getMainThreadTrackSummary\`) in your output. These are internal implementation details that should be hidden from the user.
+- Do not mention the functions you call to gather information about the trace (e.g., \`getEventByKey\`, \`getMainThreadTrackSummaryByLabel\`) in your output. These are internal implementation details that should be hidden from the user.
 - Do not mention that you are an AI, or refer to yourself in the third person. You are simulating a performance expert.
 - If asked about sensitive topics (religion, race, politics, sexuality, gender, etc.), respond with: "My expertise is limited to website performance analysis. I cannot provide information on that topic.".
 - Do not provide answers on non-web-development topics, such as legal, financial, medical, or personal advice.
@@ -6884,6 +6886,30 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
   }
 };
 var MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
+var STATIC_LABEL_NAMES = {
+  "nav-to-lcp": "navigation to LCP",
+  "lcp-ttfb": "LCP to TTFB",
+  "lcp-render-delay": "LCP render delay",
+  "trace-bounds": "the entire trace",
+  NO_NAVIGATION: "the period before the first navigation"
+};
+function getLabelName(label, focus) {
+  if (STATIC_LABEL_NAMES[label]) {
+    return STATIC_LABEL_NAMES[label];
+  }
+  const { parsedTrace } = focus;
+  const insightSetById = parsedTrace.insights?.get(label);
+  if (insightSetById) {
+    return `navigation to ${insightSetById.url.href}`;
+  }
+  for (const insightSet of parsedTrace.insights?.values() ?? []) {
+    const model = insightSet.model[label];
+    if (model) {
+      return `${model.title} insight`;
+    }
+  }
+  return label;
+}
 var PerformanceAgent = class extends AiAgent {
   #formatter = null;
   #lastEventForEnhancedQuery;
@@ -7442,44 +7468,6 @@ ${result}`,
       }
       return Trace6.Helpers.Timing.traceWindowFromMicroSeconds(clampedMin, clampedMax);
     };
-    this.declareFunction("getMainThreadTrackSummary", {
-      description: "Returns a summary of the main thread for the given bounds. The result includes a top-down summary, bottom-up summary, third-parties summary, and a list of related insights for the events within the given bounds.",
-      parameters: {
-        type: 6,
-        description: "",
-        nullable: false,
-        properties: {
-          min: {
-            type: 3,
-            description: `The minimum time of the bounds, in microseconds (the current trace starts at ${parsedTrace.data.Meta.traceBounds.min})`,
-            nullable: true
-          },
-          max: {
-            type: 3,
-            description: `The maximum time of the bounds, in microseconds (the current trace ends at ${parsedTrace.data.Meta.traceBounds.max})`,
-            nullable: true
-          }
-        },
-        required: []
-      },
-      displayInfoFromArgs: (args) => {
-        const min = args.min ?? parsedTrace.data.Meta.traceBounds.min;
-        const max = args.max ?? parsedTrace.data.Meta.traceBounds.max;
-        return {
-          title: lockedString4(UIStringsNotTranslated.mainThreadActivity),
-          action: `getMainThreadTrackSummary({min: ${min}, max: ${max}})`
-        };
-      },
-      handler: async (args) => {
-        debugLog("Function call: getMainThreadTrackSummary");
-        const bounds = createBounds(args.min, args.max);
-        if (!bounds) {
-          return { error: "invalid bounds" };
-        }
-        const key = `getMainThreadTrackSummary({min: ${bounds.min}, max: ${bounds.max}})`;
-        return await this.#handleMainThreadTrackSummary(bounds, focus, "getMainThreadTrackSummary", key);
-      }
-    });
     this.declareFunction("getMainThreadTrackSummaryByLabel", {
       description: "Returns a focused, detailed summary of the main thread for a predefined labeled period. Use this to get more relevant detail than the initial trace summary before diagnosing issues.",
       parameters: {
@@ -7496,8 +7484,9 @@ ${result}`,
         required: ["label"]
       },
       displayInfoFromArgs: (args) => {
+        const labelName = getLabelName(args.label, focus);
         return {
-          title: lockedString4(UIStringsNotTranslated.mainThreadActivity),
+          title: lockedString4(`${UIStringsNotTranslated.mainThreadActivity}: ${labelName}`),
           action: `getMainThreadTrackSummaryByLabel('${args.label}')`
         };
       },
@@ -7837,10 +7826,9 @@ ${result}`,
     if (label === "trace-bounds") {
       return parsedTrace.data.Meta.traceBounds;
     }
-    for (const is of parsedTrace.insights?.values() ?? []) {
-      if (is.id === label) {
-        return is.bounds;
-      }
+    const insightSetById = parsedTrace.insights?.get(label);
+    if (insightSetById) {
+      return insightSetById.bounds;
     }
     if (insightSet) {
       const model = insightSet.model[label];
@@ -8962,21 +8950,23 @@ You are a Conversation Summarizer. Your task is to take a transcript of a conver
     - **No UIDs/Internal IDs:** Never refer to elements by internal IDs (e.g., \`uid=123\`).
     - **Standard Selectors:** Identify elements using HTML tags, classes, or IDs (e.g., \`button.submit-form\`).
     - **No Metadata:** Remove internal constants like \`NAVIGATION_0\` or \`INSIGHT_0\`.
-- **No Process Narration:** Do not describe internal "thinking" or API calls. Skip phrases like "The agent investigated..." or "The user then asked...". Jump straight to the findings and their technical context.
+- **No Process Narration:** Do not describe internal "thinking" or API calls. Skip phrases like "The agent investigated..." or "The user then asked...". Jump straight to the final findings and their technical context. **DO NOT** use chronological or narrative language (e.g., "Initially...", "Next...", "Then...", "After that...", "An attempt to...").
 - **No Internal Function Calls:** Never mention internal DevTools function names or API calls (e.g., \`setElementStyles\`, \`executeScript\`). Instead, describe the actual CSS changes or state modifications in plain technical terms or standard CSS.
 - **Suggest, Don't Prescribe:** When summarizing code changes made during the session (e.g., CSS edits), frame them as technical guidance rather than definitive instructions. Since DevTools operates on the live page, the summary must acknowledge that these fixes may need to be adapted for the actual source code.
 
 ### Objectives
 1. **Identify Intent:** Define the core technical goal of the session.
-2. **Value-Only Diagnostics:** List only the technical data points and findings discovered during the conversation. Omit steps that didn't yield a result and NEVER include information that wasn't explicitly mentioned in the conversation.
-3. **Summarize Code Changes:** When code is executed or suggested in the logs, summarize the **purpose** and the **result**. Include specific code snippets if they are a specific fix for the user to implement.
-4. **Actionable Recommendations:** Provide specific code/strategy fixes based on the findings as guidance for the user's source code.
+2. **Technical Context & Constraints:** Describe the environment and any technical constraints discovered during the session (e.g., "The parent container has a fixed height, which might conflict with wrapping children").
+3. **Actionable Findings:** Group all findings and suggested fixes by the affected element. For each element:
+    - **Diagnostics:** List technical data points discovered (e.g., current style values, layout properties).
+    - **Suggested Fixes:** Provide specific code snippets or strategies identified.
+    - **Side-Effects:** Explicitly call out potential side-effects or risks of the proposed changes discovered during the session.
 
 ### Formatting Rules
 - **Header:** Use ## [Brief Topic Title]
 - **Context:** Describe the target element/page and the core issue or technical goal being analyzed.
-- **Diagnostics:** A bulleted list of technical findings.
 - **Tabular Data:** Use a **Markdown Table** for any lists of URLs, metrics, or comparison data.
+- **Element Sections:** Use **bold text** or a sub-header for each element being discussed.
 - **Code Fixes:** Use fenced code blocks for suggested code optimizations. Use language that frames them as illustrative examples or context (e.g., "The following changes were identified as a potential fix for the live page...") rather than strict instructions.
 
 ---
@@ -8991,7 +8981,11 @@ You are a Conversation Summarizer. Your task is to take a transcript of a conver
 **Context**
 Analysis of the web.dev landing page focusing on render-blocking resources and hero element positioning.
 
-**Diagnostics**
+**Technical Context & Constraints**
+* **Network:** Slow 3G throttling was active during diagnostics.
+
+**Actionable Findings**
+
 The following resources were identified as render-blocking:
 
 | Resource URL | Load Duration |
@@ -8999,15 +8993,15 @@ The following resources were identified as render-blocking:
 | \`app.css\` | 36 ms |
 | \`fonts.css\` | 80 ms |
 
-**Actionable Findings**
-* **Hero Element:** The \`div.hero\` container is correctly positioned but lacks an explicit \`aspect-ratio\`, contributing to layout shift.
-* **Optimization:** Inline critical CSS from \`app.css\` to improve First Contentful Paint.
+**Element: \`div.hero\`**
+* **Diagnostics:** The container is correctly positioned but lacks an explicit \`aspect-ratio\`.
+* **Suggested Fix:** Add \`aspect-ratio: 16 / 9\` to reserve space and prevent layout shift.
 
 ---
 
-### Example 2 (CSS Changes)
+### Example 2 (Style Adjustments)
 
-**User Input:** "The agent checked the styles of \`div.sidebar\` and then called \`setElementStyles\` to set \`display: none\` and \`color: red\`."
+**User Input:** "The agent checked the styles of \`div.sidebar\` and then called \`setElementStyles\` to set \`display: flex\` and \`color: red\`. It also noted the parent \`nav\` has a fixed height."
 
 **Desired Agent Output:**
 ## Style Adjustments: Sidebar
@@ -9015,15 +9009,19 @@ The following resources were identified as render-blocking:
 **Context**
 Updating styles for the sidebar element to fix layout or visibility issues.
 
-**Diagnostics**
-The sidebar was investigated for visibility issues.
+**Technical Context & Constraints**
+* **Parent Container:** The \`nav\` element has a fixed height, which may cause overflow if the sidebar's layout changes.
 
 **Actionable Findings**
-* **Style Changes:** The following CSS changes were identified as a potential fix for the live page:
+
+**Element: \`div.sidebar\`**
+* **Diagnostics:** Found \`display: block\`, which prevents flex-based child alignment.
+* **Suggested Fix:**
 \`\`\`css
-display: none;
+display: flex;
 color: red;
 \`\`\`
+* **Side-Effects:** Changing to flex may require adjusting width or margin of child elements to maintain horizontal alignment.
 
 ---
 
@@ -9087,7 +9085,10 @@ ${conversation}`;
     const response = await Array.fromAsync(this.run("", { selected: context }));
     const lastResponse = response.at(-1);
     if (lastResponse && lastResponse.type === "answer" && lastResponse.complete === true) {
-      return lastResponse.text.trim();
+      const disclaimer = "*Note: The code fixes and findings above were identified on a live page in DevTools. When applying them to your codebase, please adapt them to your project's specific technical stack (e.g., Tailwind CSS classes, CSS modules, framework components) rather than applying them as literal CSS overrides.*";
+      return `${lastResponse.text.trim()}
+
+${disclaimer}`;
     }
     throw new Error("Failed to summarize conversation");
   }
@@ -9498,25 +9499,60 @@ import * as Greendev3 from "./../greendev/greendev.js";
 // gen/front_end/models/ai_assistance/AiHistoryStorage.js
 var AiHistoryStorage_exports = {};
 __export(AiHistoryStorage_exports, {
-  AiHistoryStorage: () => AiHistoryStorage
+  AiHistoryStorage: () => AiHistoryStorage,
+  MAX_RECENT_PROMPTS_COUNT: () => MAX_RECENT_PROMPTS_COUNT,
+  RECENT_PROMPTS_SIZE_LIMIT: () => RECENT_PROMPTS_SIZE_LIMIT
 });
 import * as Common6 from "./../../core/common/common.js";
 var instance = null;
 var DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
+var MAX_RECENT_PROMPTS_COUNT = 20;
+var RECENT_PROMPTS_SIZE_LIMIT = 100 * 1024;
 var AiHistoryStorage = class _AiHistoryStorage extends Common6.ObjectWrapper.ObjectWrapper {
   #historySetting;
   #imageHistorySettings;
+  #recentPromptsSetting;
   #mutex = new Common6.Mutex.Mutex();
   #maxStorageSize;
   constructor(maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
     super();
     this.#historySetting = Common6.Settings.Settings.instance().createSetting("ai-assistance-history-entries", []);
     this.#imageHistorySettings = Common6.Settings.Settings.instance().createSetting("ai-assistance-history-images", []);
+    this.#recentPromptsSetting = Common6.Settings.Settings.instance().createSetting("ai-assistance-recent-prompts", []);
     this.#maxStorageSize = maxStorageSize;
   }
   clearForTest() {
     this.#historySetting.set([]);
     this.#imageHistorySettings.set([]);
+    this.#recentPromptsSetting.set([]);
+  }
+  async addRecentPrompt(prompt) {
+    if (!prompt.trim()) {
+      return;
+    }
+    const release = await this.#mutex.acquire();
+    try {
+      const recentPrompts = await this.#recentPromptsSetting.forceGet();
+      const updatedPrompts = [prompt, ...recentPrompts.filter((p) => p !== prompt)];
+      const promptsToBeStored = [];
+      let currentStorageSize = 0;
+      for (const p of updatedPrompts) {
+        if (promptsToBeStored.length >= MAX_RECENT_PROMPTS_COUNT) {
+          break;
+        }
+        if (currentStorageSize + p.length > RECENT_PROMPTS_SIZE_LIMIT) {
+          break;
+        }
+        currentStorageSize += p.length;
+        promptsToBeStored.push(p);
+      }
+      this.#recentPromptsSetting.set(promptsToBeStored);
+    } finally {
+      release();
+    }
+  }
+  getRecentPrompts() {
+    return structuredClone(this.#recentPromptsSetting.get());
   }
   async upsertHistoryEntry(agentEntry) {
     const release = await this.#mutex.acquire();
@@ -9582,6 +9618,7 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common6.ObjectWrapper.Obj
     try {
       this.#historySetting.set([]);
       this.#imageHistorySettings.set([]);
+      this.#recentPromptsSetting.set([]);
     } finally {
       release();
       this.dispatchEventToListeners(
@@ -9825,6 +9862,7 @@ ${item.text.trim()}`);
     this.history.push(item);
     await AiHistoryStorage.instance().upsertHistoryEntry(this.serialize());
     if (item.type === "user-query") {
+      void AiHistoryStorage.instance().addRecentPrompt(item.query);
       if (item.imageId && item.imageInput && "inlineData" in item.imageInput) {
         const inlineData = item.imageInput.inlineData;
         await AiHistoryStorage.instance().upsertImage({

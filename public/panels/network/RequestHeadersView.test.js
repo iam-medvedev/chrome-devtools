@@ -8,7 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import { assertScreenshot, dispatchCopyEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { createWorkspaceProject } from '../../testing/OverridesHelpers.js';
+import { createWorkspaceProject, setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import { recordedMetricsContain, resetRecordedMetrics, } from '../../testing/UserMetricsHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -88,6 +88,7 @@ const getRowHighlightStatus = (container) => {
 describeWithMockConnection('RequestHeadersView', () => {
     let component = null;
     beforeEach(() => {
+        setUpEnvironment();
         resetRecordedMetrics();
     });
     it('renders the General section', async () => {

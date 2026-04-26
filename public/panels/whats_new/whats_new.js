@@ -25,24 +25,24 @@ function getReleaseNote() {
   return releaseNote;
 }
 var releaseNote = {
-  version: 147,
-  header: "What's new in DevTools 147",
+  version: 148,
+  header: "What's new in DevTools 148",
   markdownLinks: [
     {
-      key: "ai-assistance",
-      link: "https://developer.chrome.com/blog/new-in-devtools-147/#ai-assistance"
+      key: "extension-debugging",
+      link: "https://developer.chrome.com/blog/new-in-devtools-148/#extension-debugging"
     },
     {
-      key: "mcp-server",
-      link: "https://developer.chrome.com/blog/new-in-devtools-147/#mcp-server"
+      key: "sort-network-requests",
+      link: "https://developer.chrome.com/blog/new-in-devtools-148/#sort-network-requests"
     },
     {
-      key: "code-generation",
-      link: "https://developer.chrome.com/blog/new-in-devtools-147/#code-generation"
+      key: "accessibility-tree",
+      link: "https://developer.chrome.com/blog/new-in-devtools-148/#accessibility-tree"
     }
   ],
   videoLinks: [],
-  link: "https://developer.chrome.com/blog/new-in-devtools-147/"
+  link: "https://developer.chrome.com/blog/new-in-devtools-148/"
 };
 
 // gen/front_end/panels/whats_new/ReleaseNoteView.js

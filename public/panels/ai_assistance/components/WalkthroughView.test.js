@@ -13,6 +13,7 @@ describeWithEnvironment('WalkthroughView', () => {
         view.message = state.message;
         view.isInlined = state.isInlined;
         view.isExpanded = state.isExpanded;
+        view.prompt = state.prompt ?? '';
         view.markdownRenderer = new AiAssistance.MarkdownRendererWithCodeBlock();
         renderElementIntoDOM(view);
         view.performUpdate();

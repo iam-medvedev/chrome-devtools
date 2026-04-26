@@ -1,3 +1,4 @@
+import type * as PlatformApi from '../../core/platform/api/api.js';
 import { JSHeapSnapshot } from './HeapSnapshot.js';
 import type { HeapSnapshotWorkerDispatcher } from './HeapSnapshotWorkerDispatcher.js';
 export declare class HeapSnapshotLoader {
@@ -6,6 +7,6 @@ export declare class HeapSnapshotLoader {
     constructor(dispatcher: HeapSnapshotWorkerDispatcher);
     dispose(): void;
     close(): void;
-    buildSnapshot(secondWorker: MessagePort): Promise<JSHeapSnapshot>;
+    buildSnapshot(secondWorker: PlatformApi.HostRuntime.WorkerMessagePort): Promise<JSHeapSnapshot>;
     write(chunk: string): void;
 }

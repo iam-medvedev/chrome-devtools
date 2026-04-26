@@ -36,10 +36,10 @@ import { cloneCustomElement, createShadowRootWithCoreStyles } from './UIUtils.js
 const { html } = Lit;
 // Remember the original DOM mutation methods here, since we
 // will override them below to sanity check the Widget system.
-const originalAppendChild = Element.prototype.appendChild;
-const originalInsertBefore = Element.prototype.insertBefore;
-const originalRemoveChild = Element.prototype.removeChild;
-const originalRemoveChildren = Element.prototype.removeChildren;
+const originalAppendChild = Node.prototype.appendChild;
+const originalInsertBefore = Node.prototype.insertBefore;
+const originalRemoveChild = Node.prototype.removeChild;
+const originalRemoveChildren = Node.prototype.removeChildren;
 function assert(condition, message) {
     if (!condition) {
         throw new Error(message);
@@ -111,15 +111,14 @@ function runNextUpdate() {
                 widget.addUpdateController(controller);
                 await widget.performUpdate(controller.signal);
             }
-            catch (e) {
-                if (e.name !== 'AbortError') {
-                    throw e;
-                }
-            }
             finally {
                 resolve();
             }
-        })();
+        })().catch(e => {
+            if (e.name !== 'AbortError') {
+                console.error(`${widget.constructor.name}.performUpdate failed: `, e);
+            }
+        });
     }
     currentUpdateQueue.clear();
     queueMicrotask(() => {
@@ -189,11 +188,13 @@ function setUpLifecycleTracking(element) {
             }
             widget = instantiateWidget(element, config);
         }
-        const parent = element.parentElementOrShadowHost();
+        const parent = (element.parentNode instanceof DocumentFragment) ? element.parentNode : element.parentElementOrShadowHost();
         if (!parent) {
             widget.markAsRoot();
         }
-        widget.show(parent, undefined, /* suppressOrphanWidgetError= */ true);
+        else {
+            widget.show(parent, undefined, /* suppressOrphanWidgetError= */ true);
+        }
     };
 }
 export class WidgetElement extends HTMLElement {
@@ -332,13 +333,13 @@ export function widgetRef(type, callback) {
 const widgetCounterMap = new WeakMap();
 const widgetMap = new WeakMap();
 function incrementWidgetCounter(parentElement, childElement) {
-    const count = (widgetCounterMap.get(childElement) || 0) + (widgetMap.get(childElement) ? 1 : 0);
+    const count = (widgetCounterMap.get(childElement) || 0) + (Widget.get(childElement) ? 1 : 0);
     for (let el = parentElement; el; el = el.parentElementOrShadowHost()) {
         widgetCounterMap.set(el, (widgetCounterMap.get(el) || 0) + count);
     }
 }
 function decrementWidgetCounter(parentElement, childElement) {
-    const count = (widgetCounterMap.get(childElement) || 0) + (widgetMap.get(childElement) ? 1 : 0);
+    const count = (widgetCounterMap.get(childElement) || 0) + (Widget.get(childElement) ? 1 : 0);
     for (let el = parentElement; el; el = el.parentElementOrShadowHost()) {
         const elCounter = widgetCounterMap.get(el);
         if (elCounter) {
@@ -352,7 +353,7 @@ function decrementWidgetCounter(parentElement, childElement) {
 const UPDATE_COMPLETE = Promise.resolve();
 export class Widget {
     element;
-    contentElement;
+    #contentElement;
     #shadowRoot;
     #visible = false;
     #isRoot = false;
@@ -385,19 +386,31 @@ export class Widget {
             this.#shadowRoot = createShadowRootWithCoreStyles(this.element, {
                 delegatesFocus: options?.delegatesFocus,
             });
-            this.contentElement = document.createElement('div');
-            this.#shadowRoot.appendChild(this.contentElement);
+            if (options.useShadowDom === 'pure') {
+                this.#contentElement = this.#shadowRoot;
+            }
+            else {
+                const div = document.createElement('div');
+                this.#shadowRoot.appendChild(div);
+                this.#contentElement = div;
+            }
         }
         else {
-            this.contentElement = this.element;
+            this.#contentElement = this.element;
         }
-        if (options?.classes) {
-            this.element.classList.add(...options.classes);
+        const legacyOptions = options;
+        if (legacyOptions?.classes) {
+            this.element.classList.add(...legacyOptions.classes);
         }
-        if (options?.jslog) {
-            this.contentElement.setAttribute('jslog', options.jslog);
+        if (legacyOptions?.jslog) {
+            this.element.setAttribute('jslog', legacyOptions.jslog);
         }
-        this.contentElement.classList.add('widget');
+        if (this.contentElement instanceof HTMLElement) {
+            this.contentElement.classList.add('widget');
+        }
+        else if (options?.useShadowDom === 'pure') {
+            this.element.classList.add('widget');
+        }
         widgetMap.set(this.element, this);
     }
     /**
@@ -429,6 +442,15 @@ export class Widget {
             config = widgetConfig(element => new Widget(element));
         }
         return instantiateWidget(element, config);
+    }
+    get contentElement() {
+        return this.#contentElement;
+    }
+    set contentElement(contentElement) {
+        this.#contentElement = contentElement;
+    }
+    dispatchDOMEvent(event) {
+        this.element.dispatchEvent(event);
     }
     markAsRoot() {
         assert(!this.element.parentElement, 'Attempt to mark as root attached node');
@@ -581,7 +603,7 @@ export class Widget {
     }
     #showWidget(parentElement, insertBefore) {
         let currentParent = parentElement;
-        while (currentParent && !widgetMap.get(currentParent)) {
+        while (currentParent && !Widget.get(currentParent)) {
             currentParent = currentParent.parentElementOrShadowHost();
         }
         if (this.#isRoot) {
@@ -591,7 +613,7 @@ export class Widget {
             assert(currentParent && widgetMap.get(currentParent) === this.#parentWidget, 'Attempt to show under node belonging to alien widget');
         }
         const wasVisible = this.#visible;
-        if (wasVisible && this.element.parentElement === parentElement) {
+        if (wasVisible && this.element.parentNode === parentElement) {
             return;
         }
         this.#visible = true;
@@ -600,7 +622,7 @@ export class Widget {
         }
         this.element.classList.remove('hidden');
         // Reparent
-        if (this.element.parentElement !== parentElement) {
+        if (this.element.parentNode !== parentElement) {
             if (!this.#externallyManaged) {
                 incrementWidgetCounter(parentElement, this.element);
             }
@@ -769,9 +791,10 @@ export class Widget {
     }
     getDefaultFocusedElements() {
         const autofocusElements = [...this.contentElement.querySelectorAll('[autofocus]')];
-        if (this.contentElement !== this.element) {
-            if (this.contentElement.hasAttribute('autofocus')) {
-                autofocusElements.push(this.contentElement);
+        const contentElement = this.contentElement;
+        if (contentElement !== this.element) {
+            if (contentElement instanceof HTMLElement && contentElement.hasAttribute('autofocus')) {
+                autofocusElements.push(contentElement);
             }
             if (autofocusElements.length === 0) {
                 autofocusElements.push(...this.element.querySelectorAll('[autofocus]'));
@@ -953,9 +976,15 @@ export class Widget {
 }
 const storedScrollPositions = new WeakMap();
 export class VBox extends Widget {
-    constructor() {
-        super(...arguments);
-        this.contentElement.classList.add('vbox');
+    constructor(elementOrOptions, options) {
+        // @ts-expect-error
+        super(elementOrOptions, options);
+        if (this.contentElement instanceof HTMLElement) {
+            this.contentElement.classList.add('vbox');
+        }
+        else {
+            this.element.classList.add('vbox');
+        }
     }
     calculateConstraints() {
         let constraints = new Geometry.Constraints();
@@ -969,9 +998,16 @@ export class VBox extends Widget {
     }
 }
 export class HBox extends Widget {
-    constructor() {
-        super(...arguments);
-        this.contentElement.classList.add('hbox');
+    constructor(elementOrOptions, options) {
+        // @ts-expect-error
+        super(elementOrOptions, options);
+        if (this.contentElement instanceof HTMLElement) {
+            this.contentElement.classList.add('hbox');
+        }
+        else {
+            this.element.classList.remove('vbox');
+            this.element.classList.add('hbox');
+        }
     }
     calculateConstraints() {
         let constraints = new Geometry.Constraints();
@@ -1016,25 +1052,25 @@ export class WidgetFocusRestorer {
 function domOperationError(funcName) {
     return new Error(`Attempt to modify widget with native DOM method \`${funcName}\``);
 }
-Element.prototype.appendChild = function (node) {
-    if (widgetMap.get(node) && node.parentElement !== this) {
+Node.prototype.appendChild = function (node) {
+    if (widgetMap.get(node) && node.parentNode !== this) {
         throw domOperationError('appendChild');
     }
     return originalAppendChild.call(this, node);
 };
-Element.prototype.insertBefore = function (node, child) {
-    if (widgetMap.get(node) && node.parentElement !== this) {
+Node.prototype.insertBefore = function (node, child) {
+    if (widgetMap.get(node) && node.parentNode !== this) {
         throw domOperationError('insertBefore');
     }
     return originalInsertBefore.call(this, node, child);
 };
-Element.prototype.removeChild = function (child) {
+Node.prototype.removeChild = function (child) {
     if (widgetCounterMap.get(child) || widgetMap.get(child)) {
         throw domOperationError('removeChild');
     }
     return originalRemoveChild.call(this, child);
 };
-Element.prototype.removeChildren = function () {
+Node.prototype.removeChildren = function () {
     if (widgetCounterMap.get(this)) {
         throw domOperationError('removeChildren');
     }

@@ -235,7 +235,7 @@ describe('Tooltip', () => {
     });
     const eventsNotToPropagate = ['click', 'mouseup'];
     eventsNotToPropagate.forEach(eventName => {
-        it('should stop propagation of click events', () => {
+        it(`should stop propagation of ${eventName} events`, () => {
             const container = renderTooltip();
             const callback = sinon.spy();
             container.addEventListener(eventName, callback);

@@ -3006,7 +3006,6 @@ async function init() {
     safeRegisterExperiment(Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, "Use scope information from source maps");
     safeRegisterExperiment(Root2.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE, "Live heap profile");
     safeRegisterExperiment(Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, "Protocol Monitor");
-    safeRegisterExperiment(Root2.ExperimentNames.ExperimentName.SAMPLING_HEAP_PROFILER_TIMELINE, "Sampling heap profiler timeline");
     const hostUnsyncedStorage = {
       register: (name) => Host2.InspectorFrontendHost.InspectorFrontendHostInstance.registerPreference(name, { synced: false }),
       set: Host2.InspectorFrontendHost.InspectorFrontendHostInstance.setPreference,

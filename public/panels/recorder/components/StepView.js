@@ -378,7 +378,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         `}
       </devtools-widget>
     </div>
-  `, target);
+  `, target, { container: { classes: ['step-view-widget'] } });
     // clang-format on
 };
 export class StepView extends UI.Widget.Widget {
@@ -414,7 +414,7 @@ export class StepView extends UI.Widget.Widget {
     };
     #view;
     constructor(element, view) {
-        super(element, { useShadowDom: true, classes: ['step-view-widget'] });
+        super(element, { useShadowDom: 'pure' });
         this.#view = view || DEFAULT_VIEW;
     }
     set step(step) {
@@ -430,7 +430,7 @@ export class StepView extends UI.Widget.Widget {
         this.#viewInput.state = state;
         this.performUpdate();
         if (this.#viewInput.state !== prevState && this.#viewInput.state === 'current' && !this.#viewInput.isVisible) {
-            this.contentElement.scrollIntoView();
+            this.element.scrollIntoView();
         }
     }
     set error(error) {
@@ -509,12 +509,12 @@ export class StepView extends UI.Widget.Widget {
     }
     wasShown() {
         super.wasShown();
-        this.#observer.observe(this.contentElement);
+        this.#observer.observe(this.element);
         this.requestUpdate();
     }
     willHide() {
         super.willHide();
-        this.#observer.unobserve(this.contentElement);
+        this.#observer.unobserve(this.element);
     }
     #toggleShowDetails() {
         this.#viewInput.showDetails = !this.#viewInput.showDetails;

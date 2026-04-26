@@ -10,13 +10,14 @@ interface ViewInput {
     highlightedItem: SDK.CategorizedBreakpoint.CategorizedBreakpoint | null;
     categories: Map<SDK.CategorizedBreakpoint.Category, SDK.CategorizedBreakpoint.CategorizedBreakpoint[]>;
     sortedCategoryNames: SDK.CategorizedBreakpoint.Category[];
+    jslog?: string;
 }
-export type View = typeof DEFAULT_VIEW;
-export declare const DEFAULT_VIEW: (input: ViewInput, output: undefined, target: HTMLElement) => void;
-export declare abstract class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
+export type View = (input: ViewInput, output: undefined, target: HTMLElement | DocumentFragment) => void;
+export declare const DEFAULT_VIEW: View;
+export declare abstract class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox<ShadowRoot> {
     #private;
     private readonly categories;
-    constructor(breakpoints: SDK.CategorizedBreakpoint.CategorizedBreakpoint[], jslog: string, viewId: string, view?: (input: ViewInput, output: undefined, target: HTMLElement) => void);
+    constructor(breakpoints: SDK.CategorizedBreakpoint.CategorizedBreakpoint[], jslog: string, viewId: string, view?: View);
     protected getBreakpointFromPausedDetails(_details: SDK.DebuggerModel.DebuggerPausedDetails): SDK.CategorizedBreakpoint.CategorizedBreakpoint | null;
     update(): void;
     protected onBreakpointChanged(breakpoint: SDK.CategorizedBreakpoint.CategorizedBreakpoint, enabled: boolean): void;

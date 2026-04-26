@@ -73,7 +73,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
              </ul>
            `}></devtools-tree>`, 
     // clang-format on
-    target);
+    target, { container: { attributes: { jslog: `${VisualLogging.section('aria-attributes')}` } } });
 };
 export class ARIAAttributesPane extends AccessibilitySubPane {
     #view;
@@ -82,7 +82,7 @@ export class ARIAAttributesPane extends AccessibilitySubPane {
         super({
             title: i18nString(UIStrings.ariaAttributes),
             viewId: 'aria-attributes',
-            jslog: `${VisualLogging.section('aria-attributes')}`,
+            useShadowDom: 'pure',
         });
         this.#view = view;
     }

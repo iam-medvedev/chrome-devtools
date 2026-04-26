@@ -1,6 +1,16 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/**
+ * @file This file contains a list of all known context values for visual
+ * logging. These values are used to generate stable hashes for logs.
+ *
+ * DO NOT REMOVE any values from this list, as it will break log analysis
+ * for historical data. New values should be added to the end of the list
+ * (the list is automatically sorted and maintained by the ESLint rule).
+ *
+ * See crbug.com/504758084 for details.
+ */
 export const knownContextValues = new Set([
     '%',
     '*',
@@ -344,6 +354,7 @@ export const knownContextValues = new Set([
     'ai-assistance-history-images',
     'ai-assistance-patching-fre-completed',
     'ai-assistance-patching-selected-project-id',
+    'ai-assistance-recent-prompts',
     'ai-assistance-v2-opt-in-change-dialog-seen',
     'ai-assistance-v2-opt-in.got-it',
     'ai-assistance-v2-opt-in.manage-settings',
@@ -1321,6 +1332,7 @@ export const knownContextValues = new Set([
     'devices',
     'devtools',
     'devtools-override',
+    'dialog-close',
     'direct-socket-chunks',
     'direct-socket-messages',
     'direction',
@@ -1777,6 +1789,9 @@ export const knownContextValues = new Set([
     'freestyler.settings',
     'freestyler.style-tab-context',
     'full-accessibility',
+    'full-accessibility-tree',
+    'full-accessibility-tree-documentation',
+    'full-accessibility-tree-feedback',
     'full-version',
     'function',
     'galaxy-z-fold-5',
@@ -3152,6 +3167,7 @@ export const knownContextValues = new Set([
     'recommendation',
     'reconnect',
     'record-allocation-stacks',
+    'record-sampling-heap-profiler-timeline',
     'recorder-panel-replay-extension',
     'recorder-panel-replay-speed',
     'recorder-preferred-copy-format',
@@ -3888,6 +3904,7 @@ export const knownContextValues = new Set([
     'text-decoration-color',
     'text-decoration-line',
     'text-decoration-skip-ink',
+    'text-decoration-skip-spaces',
     'text-decoration-style',
     'text-decoration-thickness',
     'text-editor-auto-detect-indent',
@@ -4358,6 +4375,7 @@ export const knownContextValues = new Set([
     'webmcp.pending',
     'webmcp.status-types',
     'webmcp.tool-details',
+    'webmcp.tool-types',
     'webp-format-disabled',
     'webp-format-disabled-true',
     'websocket',

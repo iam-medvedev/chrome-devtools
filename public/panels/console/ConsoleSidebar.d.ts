@@ -16,7 +16,7 @@ interface ViewInput {
     selectedFilter: ConsoleFilter;
     onSelectionChanged: (selectedFilter: ConsoleFilter) => void;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement | DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class ConsoleFilterGroup {
     #private;
@@ -39,7 +39,8 @@ declare const ConsoleSidebar_base: (new (...args: any[]) => {
     removeEventListener<T extends Events.FILTER_SELECTED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: Events.FILTER_SELECTED): boolean;
     dispatchEventToListeners<T extends Events.FILTER_SELECTED>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
-}) & typeof UI.Widget.VBox;
+    dispatchDOMEvent?(event: Event): void;
+}) & typeof UI.Widget.VBox<ShadowRoot>;
 export declare class ConsoleSidebar extends ConsoleSidebar_base {
     #private;
     constructor(element?: HTMLElement, view?: View);

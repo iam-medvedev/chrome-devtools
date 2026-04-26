@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as StackTrace from '../stack_trace/stack_trace.js';
 // eslint-disable-next-line @devtools/es-modules-import
 import * as StackTraceImpl from '../stack_trace/stack_trace_impl.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -14,7 +15,7 @@ import { DefaultScriptMapping } from './DefaultScriptMapping.js';
 import { LiveLocationWithPool } from './LiveLocation.js';
 import { NetworkProject } from './NetworkProject.js';
 import { ResourceScriptMapping } from './ResourceScriptMapping.js';
-import { SymbolizedError } from './SymbolizedError.js';
+import { SymbolizedErrorObject } from './SymbolizedError.js';
 export class DebuggerWorkspaceBinding {
     resourceMapping;
     #debuggerModelToData;
@@ -158,20 +159,39 @@ export class DebuggerWorkspaceBinding {
         this.recordLiveLocationChange(stackTracePromise);
         return await stackTracePromise;
     }
-    async createSymbolizedError(remoteObject) {
-        if (remoteObject.subtype !== 'error') {
+    async createSymbolizedError(remoteObject, exceptionDetails) {
+        let errorStack = '';
+        let causeRemoteObject;
+        let fetchedExceptionDetails = exceptionDetails;
+        if (remoteObject.subtype === 'error') {
+            const remoteError = SDK.RemoteObject.RemoteError.objectAsError(remoteObject);
+            errorStack = remoteError.errorStack;
+            const [details, causeRemote] = await Promise.all([
+                exceptionDetails ? Promise.resolve(exceptionDetails) : remoteError.exceptionDetails(),
+                remoteError.cause(),
+            ]);
+            fetchedExceptionDetails = details;
+            causeRemoteObject = causeRemote;
+        }
+        else if (remoteObject.type === 'string') {
+            errorStack = remoteObject.description || '';
+        }
+        else {
             return null;
         }
-        const remoteError = SDK.RemoteObject.RemoteError.objectAsError(remoteObject);
-        const [exceptionDetails, causeRemoteObject] = await Promise.all([
-            remoteError.exceptionDetails(),
-            remoteError.cause(),
-        ]);
         const [stackTrace, cause] = await Promise.all([
-            this.createStackTraceFromErrorStackLikeString(remoteObject.runtimeModel().target(), remoteError.errorStack, exceptionDetails),
+            this.createStackTraceFromErrorStackLikeString(remoteObject.runtimeModel().target(), errorStack, fetchedExceptionDetails),
             causeRemoteObject ? this.createSymbolizedError(causeRemoteObject) : Promise.resolve(null),
         ]);
-        return new SymbolizedError(remoteError, stackTrace, cause);
+        if (!stackTrace) {
+            return null;
+        }
+        const issueSummary = fetchedExceptionDetails?.exceptionMetaData?.issueSummary;
+        if (typeof issueSummary === 'string') {
+            errorStack = StackTrace.ErrorStackParser.concatErrorDescriptionAndIssueSummary(errorStack, issueSummary);
+        }
+        const message = StackTraceImpl.DetailedErrorStackParser.parseMessage(errorStack);
+        return new SymbolizedErrorObject(message, stackTrace, cause);
     }
     async createLiveLocation(rawLocation, updateDelegate, locationPool) {
         const modelData = this.#debuggerModelToData.get(rawLocation.debuggerModel);

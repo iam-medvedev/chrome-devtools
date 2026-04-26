@@ -784,10 +784,10 @@ function renderImage(imageSrc, imageUrl, naturalWidth) {
           width=${naturalWidth}>
     </div>`;
 }
-function setFocusOnSection(section9, output) {
+function setFocusOnSection(section8, output) {
   return (e) => {
     if (e instanceof HTMLElement) {
-      output.focusOnSection.set(section9, () => e.focus());
+      output.focusOnSection.set(section8, () => e.focus());
     }
   };
 }
@@ -2376,6 +2376,11 @@ var DeviceBoundSessionsModel = class extends Common3.ObjectWrapper.ObjectWrapper
     }
     this.dispatchEventToListeners("CLEAR_EVENTS", { emptySessions, emptySites, noLongerFailedSessions });
   }
+  deleteSession(site, id) {
+    for (const networkManager of SDK4.TargetManager.TargetManager.instance().models(SDK4.NetworkManager.NetworkManager, { scoped: true })) {
+      void networkManager.deleteDeviceBoundSession({ site, id });
+    }
+  }
   isSiteVisible(site) {
     return this.#visibleSites.has(site);
   }
@@ -2499,7 +2504,11 @@ var UIStrings5 = {
    *@description Tooltip text for a session with errors.
    *@example {session_1} sessionName
    */
-  sessionWithErrors: "{sessionName}, Session has errors"
+  sessionWithErrors: "{sessionName}, Session has errors",
+  /**
+   *@description Context menu item for clearing a session.
+   */
+  clear: "Clear"
 };
 var str_5 = i18n9.i18n.registerUIStrings("panels/application/DeviceBoundSessionsTreeElement.ts", UIStrings5);
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
@@ -2645,6 +2654,20 @@ var RootTreeElement = class extends ApplicationPanelTreeElement {
         this.resourcesPanel.showDeviceBoundSession(this.#model, site, sessionId);
         return false;
       };
+      sessionElement.listItemElement.addEventListener("keydown", (event) => {
+        const keyboardEvent = event;
+        if ((keyboardEvent.key === "Delete" || keyboardEvent.key === "Backspace") && sessionId !== void 0) {
+          this.#model.deleteSession(site, sessionId);
+          event.consume(true);
+        }
+      });
+      sessionElement.listItemElement.addEventListener("contextmenu", (event) => {
+        if (sessionId !== void 0) {
+          const contextMenu = new UI4.ContextMenu.ContextMenu(event);
+          contextMenu.defaultSection().appendItem(i18nString5(UIStrings5.clear), () => this.#model.deleteSession(site, sessionId), { jslogContext: "clear" });
+          void contextMenu.show();
+        }
+      });
       if (sessionId === void 0) {
         siteMapEntry.siteTreeElement.insertChild(sessionElement, 0);
       } else {
@@ -9482,15 +9505,15 @@ var ServiceWorkersView = class extends UI16.Widget.VBox {
   updateSectionVisibility() {
     let hasThis = false;
     const movedSections = [];
-    for (const section9 of this.sections.values()) {
-      const expectedView = this.getReportViewForOrigin(section9.registration.securityOrigin);
+    for (const section8 of this.sections.values()) {
+      const expectedView = this.getReportViewForOrigin(section8.registration.securityOrigin);
       hasThis = hasThis || expectedView === this.currentWorkersView;
-      if (section9.section.parentWidget() !== expectedView) {
-        movedSections.push(section9);
+      if (section8.section.parentWidget() !== expectedView) {
+        movedSections.push(section8);
       }
     }
-    for (const section9 of movedSections) {
-      const registration = section9.registration;
+    for (const section8 of movedSections) {
+      const registration = section8.registration;
       this.removeRegistrationFromList(registration);
       this.updateRegistration(registration, true);
     }
@@ -9501,11 +9524,11 @@ var ServiceWorkersView = class extends UI16.Widget.VBox {
       const bTimestamp = bRegistration ? this.getTimeStamp(bRegistration) : 0;
       return bTimestamp - aTimestamp;
     });
-    for (const section9 of this.sections.values()) {
-      if (section9.section.parentWidget() === this.currentWorkersView || this.isRegistrationVisible(section9.registration)) {
-        section9.section.showWidget();
+    for (const section8 of this.sections.values()) {
+      if (section8.section.parentWidget() === this.currentWorkersView || this.isRegistrationVisible(section8.registration)) {
+        section8.section.showWidget();
       } else {
-        section9.section.hideWidget();
+        section8.section.hideWidget();
       }
     }
     this.contentElement.classList.toggle("service-worker-has-current", Boolean(hasThis));
@@ -9547,8 +9570,8 @@ var ServiceWorkersView = class extends UI16.Widget.VBox {
     return null;
   }
   updateRegistration(registration, skipUpdate) {
-    let section9 = this.sections.get(registration);
-    if (!section9) {
+    let section8 = this.sections.get(registration);
+    if (!section8) {
       const title = registration.scopeURL;
       const reportView = this.getReportViewForOrigin(registration.securityOrigin);
       if (!reportView) {
@@ -9557,22 +9580,22 @@ var ServiceWorkersView = class extends UI16.Widget.VBox {
       const uiSection = reportView.appendSection(title);
       uiSection.setUiGroupTitle(i18nString21(UIStrings21.serviceWorkerForS, { PH1: title }));
       this.sectionToRegistration.set(uiSection, registration);
-      section9 = new Section(this.manager, uiSection, registration);
-      this.sections.set(registration, section9);
+      section8 = new Section(this.manager, uiSection, registration);
+      this.sections.set(registration, section8);
     }
     if (skipUpdate) {
       return;
     }
     this.updateSectionVisibility();
-    section9.scheduleUpdate();
+    section8.scheduleUpdate();
   }
   registrationDeleted(event) {
     this.removeRegistrationFromList(event.data);
   }
   removeRegistrationFromList(registration) {
-    const section9 = this.sections.get(registration);
-    if (section9) {
-      section9.section.detach();
+    const section8 = this.sections.get(registration);
+    if (section8) {
+      section8.section.detach();
     }
     this.sections.delete(registration);
     this.updateSectionVisibility();
@@ -9607,9 +9630,9 @@ var Section = class {
   throttler;
   updateCycleField;
   routerField;
-  constructor(manager, section9, registration) {
+  constructor(manager, section8, registration) {
     this.manager = manager;
-    this.section = section9;
+    this.section = section8;
     this.registration = registration;
     this.fingerprint = null;
     this.pushNotificationDataSetting = Common11.Settings.Settings.instance().createLocalSetting("push-data", i18nString21(UIStrings21.testPushMessageFromDevtools));
@@ -10350,22 +10373,10 @@ var StorageItemsToolbar = class extends Common14.ObjectWrapper.eventMixin(UI18.W
   #deleteAllButtonIconName = "clear";
   #deleteAllButtonTitle = i18nString24(UIStrings24.clearAll);
   #mainToolbarItems = [];
-  #onRefreshCallback;
-  #onDeleteAllCallback;
-  #onDeleteSelectedCallback;
   constructor(element, view = DEFAULT_VIEW6) {
     super(element);
     this.#view = view;
     this.filterRegex = null;
-  }
-  set onRefreshCallback(callback) {
-    this.#onRefreshCallback = callback;
-  }
-  set onDeleteAllCallback(callback) {
-    this.#onDeleteAllCallback = callback;
-  }
-  set onDeleteSelectedCallback(callback) {
-    this.#onDeleteSelectedCallback = callback;
   }
   set metadataView(view) {
     this.#metadataView = view;
@@ -10387,7 +10398,6 @@ var StorageItemsToolbar = class extends Common14.ObjectWrapper.eventMixin(UI18.W
       metadataView: this.metadataView,
       onFilterChanged: this.filterChanged.bind(this),
       onRefresh: () => {
-        this.#onRefreshCallback?.();
         this.dispatchEventToListeners(
           "Refresh"
           /* StorageItemsToolbar.Events.REFRESH */
@@ -10395,14 +10405,12 @@ var StorageItemsToolbar = class extends Common14.ObjectWrapper.eventMixin(UI18.W
         UI18.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings24.refreshedStatus));
       },
       onDeleteAll: () => {
-        this.#onDeleteAllCallback?.();
         this.dispatchEventToListeners(
           "DeleteAll"
           /* StorageItemsToolbar.Events.DELETE_ALL */
         );
       },
       onDeleteSelected: () => {
-        this.#onDeleteSelectedCallback?.();
         this.dispatchEventToListeners(
           "DeleteSelected"
           /* StorageItemsToolbar.Events.DELETE_SELECTED */
@@ -10428,7 +10436,6 @@ var StorageItemsToolbar = class extends Common14.ObjectWrapper.eventMixin(UI18.W
   }
   filterChanged({ detail: text }) {
     this.filterRegex = text ? new RegExp(Platform7.StringUtilities.escapeForRegExp(text), "i") : null;
-    this.#onRefreshCallback?.();
     this.dispatchEventToListeners(
       "Refresh"
       /* StorageItemsToolbar.Events.REFRESH */
@@ -10493,7 +10500,9 @@ var KeyValueStorageItemsView = class extends UI19.Widget.VBox {
   #editable;
   #toolbar;
   metadataView;
-  constructor(title, id, editable, view, metadataView, opts) {
+  #jslog;
+  #classes;
+  constructor(title, id, editable, view, metadataView, jslog, classes) {
     metadataView ??= new ApplicationComponents13.StorageMetadataView.StorageMetadataView();
     if (!view) {
       view = (input, output, target) => {
@@ -10502,6 +10511,9 @@ var KeyValueStorageItemsView = class extends UI19.Widget.VBox {
             <devtools-widget
               ${widget6(StorageItemsToolbar, { metadataView })}
               class=flex-none
+              @Refresh=${input.onRefresh}
+              @DeleteAll=${input.onDeleteAll}
+              @DeleteSelected=${input.onDeleteSelected}
               ${UI19.Widget.widgetRef(StorageItemsToolbar, (view2) => {
             output.toolbar = view2;
           })}
@@ -10515,7 +10527,7 @@ var KeyValueStorageItemsView = class extends UI19.Widget.VBox {
                   striped
                   style="flex: auto"
                   @sort=${(e) => input.onSort(e.detail.ascending)}
-                  @refresh=${input.onReferesh}
+                  @refresh=${input.onRefresh}
                   @create=${(e) => input.onCreate(e.detail.key, e.detail.value)}
                   @deselect=${() => input.onSelect(null)}
                 >
@@ -10549,13 +10561,16 @@ var KeyValueStorageItemsView = class extends UI19.Widget.VBox {
               </devtools-widget>
             </devtools-split-view>`,
           // clang-format on
-          target
+          target,
+          { container: { attributes: { jslog: input.jslog }, classes: input.classes } }
         );
       };
     }
-    super(opts);
+    super();
     this.metadataView = metadataView;
     this.#editable = editable;
+    this.#jslog = jslog;
+    this.#classes = classes;
     this.#view = view;
     this.performUpdate();
     this.#preview = new EmptyWidget9(i18nString25(UIStrings25.noPreviewSelected), i18nString25(UIStrings25.selectAValueToPreview));
@@ -10570,13 +10585,7 @@ var KeyValueStorageItemsView = class extends UI19.Widget.VBox {
     const that = this;
     const viewOutput = {
       set toolbar(toolbar8) {
-        that.#toolbar?.removeEventListener("DeleteSelected", that.deleteSelectedItem, that);
-        that.#toolbar?.removeEventListener("DeleteAll", that.deleteAllItems, that);
-        that.#toolbar?.removeEventListener("Refresh", that.refreshItems, that);
         that.#toolbar = toolbar8;
-        that.#toolbar.addEventListener("DeleteSelected", that.deleteSelectedItem, that);
-        that.#toolbar.addEventListener("DeleteAll", that.deleteAllItems, that);
-        that.#toolbar.addEventListener("Refresh", that.refreshItems, that);
       }
     };
     const viewInput = {
@@ -10584,6 +10593,8 @@ var KeyValueStorageItemsView = class extends UI19.Widget.VBox {
       selectedKey: this.#selectedKey,
       editable: this.#editable,
       preview: this.#preview,
+      jslog: this.#jslog,
+      classes: this.#classes,
       onSelect: (item2) => {
         this.#toolbar?.setCanDeleteSelected(Boolean(item2));
         if (!item2) {
@@ -10604,7 +10615,13 @@ var KeyValueStorageItemsView = class extends UI19.Widget.VBox {
       onDelete: (key) => {
         this.#deleteCallback(key);
       },
-      onReferesh: () => {
+      onDeleteSelected: () => {
+        this.deleteSelectedItem();
+      },
+      onDeleteAll: () => {
+        this.deleteAllItems();
+      },
+      onRefresh: () => {
         this.refreshItems();
       }
     };
@@ -11409,8 +11426,8 @@ var StorageView = class _StorageView extends UI22.Widget.VBox {
     storage.markFieldListAsGroup();
     SDK24.TargetManager.TargetManager.instance().observeTargets(this);
   }
-  appendItem(section9, title, settingName) {
-    const row = section9.appendRow();
+  appendItem(section8, title, settingName) {
+    const row = section8.appendRow();
     const setting = this.settings.get(settingName);
     if (setting) {
       row.appendChild(SettingsUI.SettingsUI.createSettingCheckbox(title, setting));
@@ -11769,6 +11786,7 @@ __export(WebMCPView_exports, {
   ToolDetailsWidget: () => ToolDetailsWidget,
   WebMCPView: () => WebMCPView,
   filterToolCalls: () => filterToolCalls,
+  getJSONEditorParameters: () => getJSONEditorParameters,
   parsePayload: () => parsePayload,
   parseToolSchema: () => parseToolSchema
 });
@@ -11860,6 +11878,7 @@ var webMCPView_css_default = `/*
         align-items: center;
         flex: none;
         color: var(--sys-color-on-surface);
+        border-bottom: 1px solid var(--sys-color-divider);
     }
 
     .status-cell {
@@ -12014,6 +12033,23 @@ var webMCPView_css_default = `/*
       color: var(--sys-color-error);
       white-space: pre-wrap;
     }
+
+    .sidebar-tool-details {
+        flex: none;
+        border-bottom: 1px solid var(--sys-color-divider);
+    }
+
+    .json-editor-widget {
+        flex: auto;
+        /* extend the JSON editor padding to match the details grid */
+        padding-left: calc(var(--sys-size-8) - 1em);
+        min-height: 0;
+    }
+
+    .webmcp-run-tool-button {
+        align-self: flex-end;
+        margin: var(--sys-size-6) var(--sys-size-8);
+    }
 }
 
 /*# sourceURL=${import.meta.resolve("./webMCPView.css")} */`;
@@ -12147,7 +12183,11 @@ var UIStrings30 = {
   /**
    * @description Context menu action to copy the description of a tool
    */
-  copyDescription: "Copy description"
+  copyDescription: "Copy description",
+  /**
+   * @description Text for the header of the tool run section
+   */
+  runTool: "Run Tool"
 };
 var str_30 = i18n59.i18n.registerUIStrings("panels/application/WebMCPView.ts", UIStrings30);
 var i18nString30 = i18n59.i18n.getLocalizedString.bind(void 0, str_30);
@@ -12259,8 +12299,23 @@ function parsePayload(payload) {
   }
   return { valueObject: payload, valueString: void 0 };
 }
+function getJSONEditorParameters(tool) {
+  const parsedSchema = parseToolSchema(tool.inputSchema);
+  const metadataByCommand = /* @__PURE__ */ new Map();
+  metadataByCommand.set(tool.name, {
+    parameters: parsedSchema.parameters,
+    description: tool.description,
+    replyArgs: []
+  });
+  return {
+    metadataByCommand,
+    typesByName: parsedSchema.typesByName,
+    enumsByName: parsedSchema.enumsByName
+  };
+}
 var DEFAULT_VIEW7 = (input, output, target) => {
   const tools = input.tools;
+  let editorWidget = null;
   const stats = calculateToolStats(input.toolCalls);
   const isFilterActive = Boolean(input.filters.text) || Boolean(input.filters.toolTypes) || Boolean(input.filters.statusTypes);
   const iconName = (call) => {
@@ -12460,7 +12515,44 @@ var DEFAULT_VIEW7 = (input, output, target) => {
             ></devtools-button>
             <span>${i18nString30(UIStrings30.toolDetails)}</span>
           </div>
-          ${widget7(ToolDetailsWidget, { tool: input.selectedTool })}
+          ${input.selectedTool ? html10`
+            <div class="sidebar-tool-details">
+              ${widget7(ToolDetailsWidget, { tool: input.selectedTool })}
+            </div>
+            <div class="section-title">
+              <span>${i18nString30(UIStrings30.runTool)}</span>
+            </div>
+            <devtools-widget
+              class="json-editor-widget"
+              ${widget7(ProtocolMonitor.JSONEditor.JSONEditor, {
+    displayTargetSelector: false,
+    displayCommandInput: false,
+    displayToolbar: false,
+    ...getJSONEditorParameters(input.selectedTool),
+    commandToDisplay: input.selectedTool.name
+  })}
+              ${UI23.Widget.widgetRef(ProtocolMonitor.JSONEditor.JSONEditor, (e) => {
+    editorWidget = e;
+  })}
+              @submiteditor=${(e) => input.onRunTool({ data: e.detail })}
+            ></devtools-widget>
+            <devtools-button
+              class="webmcp-run-tool-button"
+              .variant=${"outlined"}
+              .size=${"SMALL"}
+              jslogContext="webmcp.run-tool"
+              @click=${() => {
+    if (editorWidget && input.selectedTool) {
+      const params = editorWidget.getParameters();
+      input.onRunTool({
+        data: {
+          command: input.selectedTool.name,
+          parameters: params
+        }
+      });
+    }
+  }}>Run tool</devtools-button>
+          ` : nothing6}
         </div>
       </devtools-split-view>
     </devtools-split-view>
@@ -12546,15 +12638,21 @@ var WebMCPView = class _WebMCPView extends UI23.Widget.VBox {
   }
   #webMCPModelAdded(model) {
     model.addEventListener("ToolsAdded", this.requestUpdate, this);
-    model.addEventListener("ToolsRemoved", this.requestUpdate, this);
+    model.addEventListener("ToolsRemoved", this.#toolsRemoved, this);
     model.addEventListener("ToolInvoked", this.requestUpdate, this);
     model.addEventListener("ToolResponded", this.requestUpdate, this);
   }
   #webMCPModelRemoved(model) {
     model.removeEventListener("ToolsAdded", this.requestUpdate, this);
-    model.removeEventListener("ToolsRemoved", this.requestUpdate, this);
+    model.removeEventListener("ToolsRemoved", this.#toolsRemoved, this);
     model.removeEventListener("ToolInvoked", this.requestUpdate, this);
     model.removeEventListener("ToolResponded", this.requestUpdate, this);
+  }
+  #toolsRemoved(event) {
+    if (this.#selectedTool && event.data.includes(this.#selectedTool)) {
+      this.#selectedTool = null;
+    }
+    this.requestUpdate();
   }
   #handleClearLogClick = () => {
     const models = SDK25.TargetManager.TargetManager.instance().models(WebMCP.WebMCPModel.WebMCPModel);
@@ -12580,8 +12678,9 @@ var WebMCPView = class _WebMCPView extends UI23.Widget.VBox {
     const models = SDK25.TargetManager.TargetManager.instance().models(WebMCP.WebMCPModel.WebMCPModel);
     const toolCalls = models.flatMap((model) => model.toolCalls);
     const filteredCalls = filterToolCalls(toolCalls, this.#filterState);
+    const tools = this.#getTools();
     const input = {
-      tools: this.#getTools(),
+      tools,
       selectedTool: this.#selectedTool,
       onToolSelect: (tool) => {
         this.#selectedTool = tool;
@@ -12596,7 +12695,12 @@ var WebMCPView = class _WebMCPView extends UI23.Widget.VBox {
       filters: this.#filterState,
       filterButtons: this.#filterButtons,
       onClearLogClick: this.#handleClearLogClick,
-      onFilterChange: this.#handleFilterChange
+      onFilterChange: this.#handleFilterChange,
+      onRunTool: (event) => {
+        if (this.#selectedTool) {
+          void this.#selectedTool.invoke(event.data.parameters || {});
+        }
+      }
     };
     this.#view(input, {}, this.contentElement);
   }
@@ -12609,19 +12713,19 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
   const isParsable = input.valueObject !== void 0;
   const createPayload = (parsedInput) => {
     const object = new SDK25.RemoteObject.LocalJSONObject(parsedInput);
-    const section9 = new ObjectUI2.ObjectPropertiesSection.RootElement(new ObjectUI2.ObjectPropertiesSection.ObjectTree(object, {
+    const section8 = new ObjectUI2.ObjectPropertiesSection.RootElement(new ObjectUI2.ObjectPropertiesSection.ObjectTree(object, {
       readOnly: true,
       propertiesMode: 1
     }));
-    section9.title = document.createTextNode(object.description);
-    section9.listItemElement.classList.add("source-code", "object-properties-section");
-    section9.childrenListElement.classList.add("source-code", "object-properties-section");
-    section9.expand();
+    section8.title = document.createTextNode(object.description);
+    section8.listItemElement.classList.add("source-code", "object-properties-section");
+    section8.childrenListElement.classList.add("source-code", "object-properties-section");
+    section8.expand();
     return html10`<devtools-tree .template=${html10`
           <style>${ObjectUI2.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI2.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
           <ul role="tree">
-            <devtools-tree-wrapper .treeElement=${section9}></devtools-tree-wrapper>
+            <devtools-tree-wrapper .treeElement=${section8}></devtools-tree-wrapper>
           </ul>
         `}></devtools-tree>`;
   };
@@ -13971,9 +14075,9 @@ var AppManifestTreeElement = class extends ApplicationPanelTreeElement {
   }
   generateChildren() {
     const staticSections = this.view.getStaticSections();
-    for (const section9 of staticSections) {
-      const childTitle = section9.title;
-      const child = new ApplicationPanelTreeElement(this.resourcesPanel, childTitle, false, section9.jslogContext || "");
+    for (const section8 of staticSections) {
+      const childTitle = section8.title;
+      const child = new ApplicationPanelTreeElement(this.resourcesPanel, childTitle, false, section8.jslogContext || "");
       child.onselect = (selectedByUser) => {
         if (selectedByUser) {
           this.showView(this.view);
@@ -14724,9 +14828,9 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
   treeElementForWindow;
   treeElementForWorker;
   view;
-  constructor(section9, frame) {
-    super(section9.panel, "", false, "frame");
-    this.section = section9;
+  constructor(section8, frame) {
+    super(section8.panel, "", false, "frame");
+    this.section = section8;
     this.frame = frame;
     this.categoryElements = /* @__PURE__ */ new Map();
     this.treeElementForResource = /* @__PURE__ */ new Map();
@@ -15176,7 +15280,8 @@ var DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW = (input, output, target) => {
     </div>
   `,
     // clang-format on
-    target
+    target,
+    { container: { attributes: { jslog: `${VisualLogging18.pane("cookie-preview")}` } } }
   );
 };
 var CookiePreviewWidget = class extends UI25.Widget.VBox {
@@ -15184,7 +15289,7 @@ var CookiePreviewWidget = class extends UI25.Widget.VBox {
   #cookie;
   showDecodedSetting;
   constructor(element, view = DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW) {
-    super(element, { jslog: `${VisualLogging18.section("cookie-preview")}` });
+    super(element);
     this.view = view;
     this.setMinimumSize(230, 45);
     this.#cookie = null;
@@ -15211,12 +15316,11 @@ var DEFAULT_VIEW8 = (input, output, target) => {
   render10(
     html11`<style>${cookieItemsView_css_default}</style>
     <devtools-widget class="storage-view" ${widget8(UI25.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
-      <devtools-widget ${widget8(StorageItemsToolbar, {
-      onDeleteSelectedCallback: input.onDeleteSelectedItems,
-      onDeleteAllCallback: input.onDeleteAllItems,
-      onRefreshCallback: input.onRefreshItems
-    })}
+      <devtools-widget ${widget8(StorageItemsToolbar, { filterRegex: null })}
         class=flex-none
+        @Refresh=${input.onRefreshItems}
+        @DeleteAll=${input.onDeleteAllItems}
+        @DeleteSelected=${input.onDeleteSelectedItems}
         ${UI25.Widget.widgetRef(StorageItemsToolbar, (toolbar8) => {
       output.toolbar = toolbar8;
     })}
@@ -15246,7 +15350,8 @@ var DEFAULT_VIEW8 = (input, output, target) => {
     </devtools-widget>
   `,
     // clang-format on
-    target
+    target,
+    { container: { attributes: { jslog: `${VisualLogging18.pane("cookies-data")}` } } }
   );
 };
 var CookieItemsView = class extends UI25.Widget.VBox {
@@ -15259,7 +15364,7 @@ var CookieItemsView = class extends UI25.Widget.VBox {
   selectedCookie;
   #toolbar;
   constructor(model, cookieDomain, view = DEFAULT_VIEW8) {
-    super({ jslog: `${VisualLogging18.pane("cookies-data")}` });
+    super();
     this.view = view;
     this.model = model;
     this.cookieDomain = cookieDomain;
@@ -15980,7 +16085,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
       <style>${deviceBoundSessionsView_css_default}</style>
       ${toolbarHtml}
       <devtools-widget ${widget9(UI26.EmptyWidget.EmptyWidget, { header: defaultTitle, text: defaultDescription })} jslog=${VisualLogging19.pane("device-bound-sessions-empty")}></devtools-widget>
-    `, target);
+    `, target, { container: { attributes: { jslog: `${VisualLogging19.pane("device-bound-sessions")}` } } });
     return;
   }
   let sessionDetailsHtml;
@@ -16195,7 +16300,7 @@ var DeviceBoundSessionsView = class extends UI26.Widget.VBox {
   #defaultDescription;
   #selectedEvent;
   constructor(view = DEFAULT_VIEW9) {
-    super({ jslog: `${VisualLogging19.pane("device-bound-sessions")}` });
+    super();
     this.#view = view;
   }
   showSession(model, site, sessionId) {
@@ -16523,12 +16628,22 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
   domStorage;
   eventListeners;
   constructor(domStorage) {
-    super(i18nString34(UIStrings34.domStorageItems), "dom-storage", true);
+    super(
+      i18nString34(UIStrings34.domStorageItems),
+      "dom-storage",
+      true,
+      /* view=*/
+      void 0,
+      /* metadataView=*/
+      void 0,
+      /* jslog=*/
+      void 0,
+      ["storage-view", "table"]
+    );
     this.domStorage = domStorage;
     if (domStorage.storageKey) {
       this.toolbar?.setStorageKey(domStorage.storageKey);
     }
-    this.element.classList.add("storage-view", "table");
     this.showPreview(null, null);
     this.eventListeners = [];
     this.setStorage(domStorage);
@@ -16640,7 +16755,7 @@ var ExtensionStorageItemsView = class extends KeyValueStorageItemsView {
   #extensionStorage;
   extensionStorageItemsDispatcher;
   constructor(extensionStorage, view) {
-    super(i18nString35(UIStrings35.extensionStorageItems), "extension-storage", true, view, void 0, { jslog: `${VisualLogging21.pane().context("extension-storage-data")}`, classes: ["storage-view", "table"] });
+    super(i18nString35(UIStrings35.extensionStorageItems), "extension-storage", true, view, void 0, `${VisualLogging21.pane().context("extension-storage-data")}`, ["storage-view", "table"]);
     this.extensionStorageItemsDispatcher = new Common21.ObjectWrapper.ObjectWrapper();
     this.setStorage(extensionStorage);
   }

@@ -3507,7 +3507,7 @@ var DEFAULT_VIEW = (input, output, target) => {
         ` : nothing}
       </div>
     </div>
-  `, target);
+  `, target, { container: { attributes: { jslog: `${VisualLogging.dialog("timeline-status").track({ resize: true })}` } } });
 };
 var StatusDialog = class extends UI3.Widget.VBox {
   #view;
@@ -3528,10 +3528,7 @@ var StatusDialog = class extends UI3.Widget.VBox {
   #timeUpdateTimer;
   #rawEvents;
   constructor(options, onButtonClickCallback, view = DEFAULT_VIEW) {
-    super({
-      jslog: `${VisualLogging.dialog("timeline-status").track({ resize: true })}`,
-      useShadowDom: true
-    });
+    super({ useShadowDom: "pure" });
     this.#view = view;
     this.#showTimer = Boolean(options.showTimer);
     this.#showProgress = Boolean(options.showProgress);
@@ -5317,8 +5314,8 @@ var TimelineLoader = class _TimelineLoader {
       this.reportErrorAndCancelLoading(i18nString15(UIStrings15.malformedTimelineDataS));
       return;
     }
-    if ("metadata" in trace) {
-      this.#metadata = trace.metadata;
+    if (!Array.isArray(trace) && "traceEvents" in trace) {
+      this.#metadata = trace.metadata ?? {};
       if (this.#metadata.cpuThrottling === 1) {
         this.#metadata.cpuThrottling = void 0;
       }
@@ -12523,12 +12520,19 @@ var thirdPartyTreeView_css_default = `/*
     max-width: min(100%, 550px);
     min-width: 350px; /* Lower than this, there's not enough room for the entity name */
     padding: 0 0 0 var(--sys-size-6);
+
+    &.is-in-ai-widget {
+      /* Displayed below the summary in AI Assistance, so no left
+       * padding required */
+      padding-left: 0;
+      padding-top: var(--sys-size-4);
+    }
   }
 
   .has-max-rows {
     /* 21px for header + max-rows * 22px rows */
     max-height: calc(21px + (var(--max-rows) * 22px));
-    padding: var(--sys-size-3);
+    padding: var(--sys-size-3) 0;
   }
 
   /* While timeline treeview name-container uses flexbox to layout, it's overkill for this table's purposes.
@@ -12594,6 +12598,7 @@ var ThirdPartyTreeViewWidget = class extends TimelineTreeView {
   #onRowHovered;
   #onBottomUpButtonClicked;
   #onRowClicked;
+  #isInAIWidget = false;
   constructor(element) {
     super(element);
     this.element.setAttribute("jslog", `${VisualLogging7.pane("third-party-tree").track({ hover: true })}`);
@@ -12765,6 +12770,13 @@ var ThirdPartyTreeViewWidget = class extends TimelineTreeView {
   }
   get maxRows() {
     return super.maxRows;
+  }
+  get isInAIWidget() {
+    return this.#isInAIWidget;
+  }
+  set isInAIWidget(x) {
+    this.#isInAIWidget = x;
+    this.element.classList.toggle("is-in-ai-widget", x);
   }
   set maxRows(maxRows) {
     super.maxRows = maxRows;
@@ -13788,7 +13800,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
           </tr>`;
   })}
         </table>
-      </devtools-data-grid>`, target);
+      </devtools-data-grid>`, target, { container: { attributes: { jslog: `${VisualLogging8.pane("selector-stats").track({ resize: true })}` } } });
 };
 var TimelineSelectorStatsView = class extends UI14.Widget.VBox {
   #selectorLocations;
@@ -13805,7 +13817,7 @@ var TimelineSelectorStatsView = class extends UI14.Widget.VBox {
   #view;
   #timings = [];
   constructor(parsedTrace, view = DEFAULT_VIEW3) {
-    super({ jslog: `${VisualLogging8.pane("selector-stats").track({ resize: true })}` });
+    super();
     this.registerRequiredCSS(timelineSelectorStatsView_css_default);
     this.#view = view;
     this.#selectorLocations = /* @__PURE__ */ new Map();

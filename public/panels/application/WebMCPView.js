@@ -150,6 +150,10 @@ const UIStrings = {
      * @description Context menu action to copy the description of a tool
      */
     copyDescription: 'Copy description',
+    /**
+     * @description Text for the header of the tool run section
+     */
+    runTool: 'Run Tool',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/WebMCPView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -267,8 +271,23 @@ export function parsePayload(payload) {
     }
     return { valueObject: payload, valueString: undefined };
 }
+export function getJSONEditorParameters(tool) {
+    const parsedSchema = parseToolSchema(tool.inputSchema);
+    const metadataByCommand = new Map();
+    metadataByCommand.set(tool.name, {
+        parameters: parsedSchema.parameters,
+        description: tool.description,
+        replyArgs: [],
+    });
+    return {
+        metadataByCommand,
+        typesByName: parsedSchema.typesByName,
+        enumsByName: parsedSchema.enumsByName,
+    };
+}
 export const DEFAULT_VIEW = (input, output, target) => {
     const tools = input.tools;
+    let editorWidget = null;
     const stats = calculateToolStats(input.toolCalls);
     const isFilterActive = Boolean(input.filters.text) || Boolean(input.filters.toolTypes) || Boolean(input.filters.statusTypes);
     const iconName = (call) => {
@@ -467,7 +486,42 @@ export const DEFAULT_VIEW = (input, output, target) => {
             ></devtools-button>
             <span>${i18nString(UIStrings.toolDetails)}</span>
           </div>
-          ${widget(ToolDetailsWidget, { tool: input.selectedTool })}
+          ${input.selectedTool ? html `
+            <div class="sidebar-tool-details">
+              ${widget(ToolDetailsWidget, { tool: input.selectedTool })}
+            </div>
+            <div class="section-title">
+              <span>${i18nString(UIStrings.runTool)}</span>
+            </div>
+            <devtools-widget
+              class="json-editor-widget"
+              ${widget(ProtocolMonitor.JSONEditor.JSONEditor, {
+        displayTargetSelector: false,
+        displayCommandInput: false,
+        displayToolbar: false,
+        ...getJSONEditorParameters(input.selectedTool),
+        commandToDisplay: input.selectedTool.name,
+    })}
+              ${UI.Widget.widgetRef(ProtocolMonitor.JSONEditor.JSONEditor, e => { editorWidget = e; })}
+              @submiteditor=${(e) => input.onRunTool({ data: e.detail })}
+            ></devtools-widget>
+            <devtools-button
+              class="webmcp-run-tool-button"
+              .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+              .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+              jslogContext="webmcp.run-tool"
+              @click=${() => {
+        if (editorWidget && input.selectedTool) {
+            const params = editorWidget.getParameters();
+            input.onRunTool({
+                data: {
+                    command: input.selectedTool.name,
+                    parameters: params,
+                }
+            });
+        }
+    }}>Run tool</devtools-button>
+          ` : nothing}
         </div>
       </devtools-split-view>
     </devtools-split-view>
@@ -547,15 +601,21 @@ export class WebMCPView extends UI.Widget.VBox {
     }
     #webMCPModelAdded(model) {
         model.addEventListener("ToolsAdded" /* WebMCP.WebMCPModel.Events.TOOLS_ADDED */, this.requestUpdate, this);
-        model.addEventListener("ToolsRemoved" /* WebMCP.WebMCPModel.Events.TOOLS_REMOVED */, this.requestUpdate, this);
+        model.addEventListener("ToolsRemoved" /* WebMCP.WebMCPModel.Events.TOOLS_REMOVED */, this.#toolsRemoved, this);
         model.addEventListener("ToolInvoked" /* WebMCP.WebMCPModel.Events.TOOL_INVOKED */, this.requestUpdate, this);
         model.addEventListener("ToolResponded" /* WebMCP.WebMCPModel.Events.TOOL_RESPONDED */, this.requestUpdate, this);
     }
     #webMCPModelRemoved(model) {
         model.removeEventListener("ToolsAdded" /* WebMCP.WebMCPModel.Events.TOOLS_ADDED */, this.requestUpdate, this);
-        model.removeEventListener("ToolsRemoved" /* WebMCP.WebMCPModel.Events.TOOLS_REMOVED */, this.requestUpdate, this);
+        model.removeEventListener("ToolsRemoved" /* WebMCP.WebMCPModel.Events.TOOLS_REMOVED */, this.#toolsRemoved, this);
         model.removeEventListener("ToolInvoked" /* WebMCP.WebMCPModel.Events.TOOL_INVOKED */, this.requestUpdate, this);
         model.removeEventListener("ToolResponded" /* WebMCP.WebMCPModel.Events.TOOL_RESPONDED */, this.requestUpdate, this);
+    }
+    #toolsRemoved(event) {
+        if (this.#selectedTool && event.data.includes(this.#selectedTool)) {
+            this.#selectedTool = null;
+        }
+        this.requestUpdate();
     }
     #handleClearLogClick = () => {
         const models = SDK.TargetManager.TargetManager.instance().models(WebMCP.WebMCPModel.WebMCPModel);
@@ -581,8 +641,9 @@ export class WebMCPView extends UI.Widget.VBox {
         const models = SDK.TargetManager.TargetManager.instance().models(WebMCP.WebMCPModel.WebMCPModel);
         const toolCalls = models.flatMap(model => model.toolCalls);
         const filteredCalls = filterToolCalls(toolCalls, this.#filterState);
+        const tools = this.#getTools();
         const input = {
-            tools: this.#getTools(),
+            tools,
             selectedTool: this.#selectedTool,
             onToolSelect: tool => {
                 this.#selectedTool = tool;
@@ -598,6 +659,11 @@ export class WebMCPView extends UI.Widget.VBox {
             filterButtons: this.#filterButtons,
             onClearLogClick: this.#handleClearLogClick,
             onFilterChange: this.#handleFilterChange,
+            onRunTool: event => {
+                if (this.#selectedTool) {
+                    void this.#selectedTool.invoke(event.data.parameters || {});
+                }
+            },
         };
         this.#view(input, {}, this.contentElement);
     }

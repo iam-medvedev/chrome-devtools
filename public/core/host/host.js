@@ -23,7 +23,8 @@ __export(AidaClient_exports, {
   UseCase: () => UseCase,
   UserTier: () => UserTier,
   convertToUserTierEnum: () => convertToUserTierEnum,
-  debugLog: () => debugLog
+  debugLog: () => debugLog,
+  getClientFeatureName: () => getClientFeatureName
 });
 import * as Common4 from "./../common/common.js";
 import * as Root3 from "./../root/root.js";
@@ -413,7 +414,8 @@ function aidaCompletionRequestToGcaRequest(request) {
   try {
     let additionalFiles = (request.additional_files ?? []).map((f) => ({
       fileUri: f.path,
-      inclusionReason: [AidaReasonToGcaInclusionReason[f.included_reason]]
+      inclusionReason: [AidaReasonToGcaInclusionReason[f.included_reason]],
+      segments: [{ content: f.content, isSelected: false }]
     }));
     const inEditorFile = inFileEditRequestToSourceFile(request);
     if (inEditorFile) {
@@ -1971,6 +1973,13 @@ function convertToUserTierEnum(userTier) {
   }
   return UserTier.PUBLIC;
 }
+function getClientFeatureName(feature) {
+  const name = ClientFeature[feature];
+  if (typeof name !== "string") {
+    throw new Error(`Invalid ClientFeature: ${feature}`);
+  }
+  return name;
+}
 var hostConfigTrackerInstance;
 var HostConfigTracker = class _HostConfigTracker extends Common4.ObjectWrapper.ObjectWrapper {
   #pollTimer;
@@ -3019,7 +3028,6 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["capture-node-creation-stacks"] = 1] = "capture-node-creation-stacks";
   DevtoolsExperiments2[DevtoolsExperiments2["live-heap-profile"] = 11] = "live-heap-profile";
   DevtoolsExperiments2[DevtoolsExperiments2["protocol-monitor"] = 13] = "protocol-monitor";
-  DevtoolsExperiments2[DevtoolsExperiments2["sampling-heap-profiler-timeline"] = 17] = "sampling-heap-profiler-timeline";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-invalidation-tracking"] = 26] = "timeline-invalidation-tracking";
   DevtoolsExperiments2[DevtoolsExperiments2["font-editor"] = 41] = "font-editor";
   DevtoolsExperiments2[DevtoolsExperiments2["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";

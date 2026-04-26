@@ -5,8 +5,8 @@ export interface ViewInput {
     disabled: boolean;
     onClick: (event: Event) => void;
 }
-export declare const DEFAULT_VIEW: (input: ViewInput, _output: unknown, target: HTMLElement) => void;
-export declare class ControlButton extends UI.Widget.Widget {
+export declare const DEFAULT_VIEW: (input: ViewInput, _output: unknown, target: HTMLElement | DocumentFragment) => void;
+export declare class ControlButton extends UI.Widget.Widget<ShadowRoot> {
     #private;
     constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
     set label(label: string);

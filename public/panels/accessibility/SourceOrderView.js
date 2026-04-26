@@ -60,7 +60,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
         ${i18nString(UIStrings.showSourceOrder)}
       </devtools-checkbox>
       `}
-  `, target);
+  `, target, { container: { attributes: { jslog: `${VisualLogging.section('source-order-viewer')}` } } });
     // clang-format on
 };
 export class SourceOrderPane extends AccessibilitySubPane {
@@ -71,7 +71,7 @@ export class SourceOrderPane extends AccessibilitySubPane {
         super({
             title: i18nString(UIStrings.sourceOrderViewer),
             viewId: 'source-order-viewer',
-            jslog: `${VisualLogging.section('source-order-viewer')}`,
+            useShadowDom: 'pure',
         });
         this.#view = view;
     }

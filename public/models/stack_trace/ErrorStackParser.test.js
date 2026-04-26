@@ -5,7 +5,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as StackTrace from './stack_trace.js';
 const { urlString } = Platform.DevToolsPath;
-const { parseSourcePositionsFromErrorStack } = StackTrace.ErrorStackParser;
+const { parseSourcePositionsFromErrorStack, concatErrorDescriptionAndIssueSummary } = StackTrace.ErrorStackParser;
 describe('ErrorStackParser', () => {
     let runtimeModel;
     let parseErrorStack;
@@ -22,6 +22,14 @@ describe('ErrorStackParser', () => {
             }),
         });
         parseErrorStack = parseSourcePositionsFromErrorStack.bind(null, runtimeModel);
+    });
+    describe('concatErrorDescriptionAndIssueSummary', () => {
+        it('correctly appends the issue summary in case of single line error descriptions', () => {
+            assert.strictEqual(concatErrorDescriptionAndIssueSummary('TypeError: Failed to fetch', 'Access blocked by CORS policy: Cross origin requests are not allowed by request mode.'), 'TypeError: Failed to fetch. Access blocked by CORS policy: Cross origin requests are not allowed by request mode.');
+        });
+        it('correctly inserts the issue summary in case of multi-line error descriptions', () => {
+            assert.strictEqual(concatErrorDescriptionAndIssueSummary('TypeError: Failed to fetch\n  at (index):25:5', 'Access blocked by CORS policy: Cross origin requests are not allowed by request mode.'), 'TypeError: Failed to fetch. Access blocked by CORS policy: Cross origin requests are not allowed by request mode.\n  at (index):25:5');
+        });
     });
     it('returns null for invalid strings', () => {
         assert.isNull(parseErrorStack(''));

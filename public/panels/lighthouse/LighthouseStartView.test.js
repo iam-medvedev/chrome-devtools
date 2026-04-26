@@ -8,7 +8,7 @@ describeWithEnvironment('LighthouseStartView', () => {
     beforeEach(async () => {
         lighthouse = await import('./lighthouse.js');
     });
-    it('renders correctly', async () => {
+    function createStartView() {
         const controller = {
             getFlags: () => ({ mode: 'navigation' }),
             recomputePageAuditability: () => { },
@@ -17,9 +17,19 @@ describeWithEnvironment('LighthouseStartView', () => {
             handleTimespanStart: () => { },
             handleCompleteRun: () => { },
         };
-        const view = new lighthouse.LighthouseStartView.StartView(controller, panel);
+        return new lighthouse.LighthouseStartView.StartView(controller, panel);
+    }
+    it('renders correctly', async () => {
+        const view = createStartView();
         renderElementIntoDOM(view);
         await assertScreenshot('lighthouse/LighthouseStartView.png');
+    });
+    it('renders the title as a level-1 heading for accessibility', () => {
+        const view = createStartView();
+        renderElementIntoDOM(view);
+        const heading = view.contentElement.querySelector('h1.lighthouse-title');
+        assert.isOk(heading);
+        assert.strictEqual(heading.textContent?.trim(), 'Generate a Lighthouse report');
     });
 });
 //# sourceMappingURL=LighthouseStartView.test.js.map

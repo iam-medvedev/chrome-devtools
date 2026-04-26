@@ -70,6 +70,17 @@ describeWithEnvironment('TimelineLoader', () => {
         assert.lengthOf(collectedEvents, 8252);
         assert.notStrictEqual(metadata?.dataOrigin, "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */);
     });
+    it('can load a JSON file with no metadata', async () => {
+        const trace = {
+            traceEvents: [],
+            // No metadata field at all.
+        };
+        const loader = Timeline.TimelineLoader.TimelineLoader.loadFromParsedJsonFile(trace, client);
+        await loader.traceFinalizedForTest();
+        sinon.assert.calledOnce(loadingCompleteSpy);
+        const [, , metadata] = loadingCompleteSpy.args[0];
+        assert.deepEqual(metadata, {});
+    });
     it('can load a saved CPUProfile file', async () => {
         const url = getBasicCpuProfileUrl();
         const loader = await Timeline.TimelineLoader.TimelineLoader.loadFromURL(url, client);

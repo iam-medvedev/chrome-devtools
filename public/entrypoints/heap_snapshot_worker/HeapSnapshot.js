@@ -534,7 +534,7 @@ export class SecondaryInitManager {
         this.argsStep2 = argsStep2;
         const { promise: argsStep3, resolve: resolveArgsStep3 } = Promise.withResolvers();
         this.argsStep3 = argsStep3;
-        port.onmessage = e => {
+        const listener = (e) => {
             const data = e.data;
             switch (data.step) {
                 case 1:
@@ -545,9 +545,12 @@ export class SecondaryInitManager {
                     break;
                 case 3:
                     resolveArgsStep3(data.args);
+                    port.removeEventListener('message', listener);
                     break;
             }
         };
+        port.addEventListener('message', listener);
+        port.start();
         void this.initialize(port);
     }
     async getNodeSelfSizes() {
@@ -568,22 +571,23 @@ export class SecondaryInitManager {
             };
             const dominatorsAndRetainedSizes = await HeapSnapshot.calculateDominatorsAndRetainedSizes(args);
             const dominatedNodesOutputs = HeapSnapshot.buildDominatedNodes({ ...args, ...dominatorsAndRetainedSizes });
-            const results = {
+            const resultsFromSecondWorker = {
                 ...retainers,
                 ...dominatorsAndRetainedSizes,
                 ...dominatedNodesOutputs,
             };
-            port.postMessage({ resultsFromSecondWorker: results }, {
-                transfer: [
-                    results.dominatorsTree.buffer,
-                    results.firstRetainerIndex.buffer,
-                    results.retainedSizes.buffer,
-                    results.retainingEdges.buffer,
-                    results.retainingNodes.buffer,
-                    results.dominatedNodes.buffer,
-                    results.firstDominatedNodeIndex.buffer,
-                ]
-            });
+            port.postMessage({ resultsFromSecondWorker }, [
+                // DominatorsAndRetainedSizes
+                resultsFromSecondWorker.dominatorsTree.buffer,
+                resultsFromSecondWorker.retainedSizes.buffer,
+                // Retainers
+                resultsFromSecondWorker.firstRetainerIndex.buffer,
+                resultsFromSecondWorker.retainingNodes.buffer,
+                resultsFromSecondWorker.retainingEdges.buffer,
+                // DominatedNodes
+                resultsFromSecondWorker.firstDominatedNodeIndex.buffer,
+                resultsFromSecondWorker.dominatedNodes.buffer,
+            ]);
         }
         catch (e) {
             port.postMessage({ error: e + '\n' + e?.stack });
@@ -791,20 +795,23 @@ export class HeapSnapshot {
     }
     startInitStep1InSecondThread(secondWorker) {
         const resultsFromSecondWorker = new Promise((resolve, reject) => {
-            secondWorker.onmessage = (event) => {
-                const data = event.data;
+            const listener = (e) => {
+                const data = e.data;
                 if (data?.problemReport) {
                     const problemReport = data.problemReport;
                     console.warn(formatProblemReport(this, problemReport));
                 }
                 else if (data?.resultsFromSecondWorker) {
-                    const resultsFromSecondWorker = data.resultsFromSecondWorker;
-                    resolve(resultsFromSecondWorker);
+                    secondWorker.removeEventListener('message', listener);
+                    resolve(data.resultsFromSecondWorker);
                 }
                 else if (data?.error) {
+                    secondWorker.removeEventListener('message', listener);
                     reject(data.error);
                 }
             };
+            secondWorker.addEventListener('message', listener);
+            secondWorker.start();
         });
         const edgeCount = this.#edgeCount;
         const { containmentEdges, edgeToNodeOffset, edgeFieldsCount, nodeFieldCount } = this;

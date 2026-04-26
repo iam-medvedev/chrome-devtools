@@ -1,9 +1,8 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as HeapSnapshotWorker from './heap_snapshot_worker.js';
-describeWithEnvironment('HeapSnapshot', () => {
+describe('HeapSnapshot', () => {
     class MockArray extends Uint32Array {
         getValue(i) {
             return this[i];
@@ -537,6 +536,8 @@ describeWithEnvironment('HeapSnapshot', () => {
         const channel = new MessageChannel();
         new HeapSnapshotWorker.HeapSnapshot.SecondaryInitManager(channel.port2);
         const result = await loader.buildSnapshot(channel.port1);
+        channel.port1.close();
+        channel.port2.close();
         const reference = await HeapSnapshotWorker.HeapSnapshot.createJSHeapSnapshotForTesting(createHeapSnapshotMock());
         const resultToCompare = {
             nodes: Array.from(result.nodes.asUint32ArrayOrFail()),

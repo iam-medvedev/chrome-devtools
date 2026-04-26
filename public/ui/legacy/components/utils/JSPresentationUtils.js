@@ -128,6 +128,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
             inlineFrameIndex: 0,
             revealBreakpoint: previousStackFrameWasBreakpointCondition,
             maxLength: UI.UIUtils.MaxLengthForDisplayedURLsInConsole,
+            ignoreListManager: input.ignoreListManager,
         });
         link.setAttribute('jslog', `${VisualLogging.link('stack-trace').track({ click: true })}`);
         link.addEventListener('contextmenu', populateContextMenu.bind(null, link));
@@ -164,7 +165,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         </tfoot>
       ` : nothing}
     </table>
-  `, target);
+  `, target, { container: { classes: ['monospace', 'stack-preview-container'] } });
     // clang-format on
 };
 export class StackTracePreviewContent extends UI.Widget.Widget {
@@ -174,7 +175,7 @@ export class StackTracePreviewContent extends UI.Widget.Widget {
     #expanded = false;
     #showIgnoreListed = false;
     constructor(element, view = DEFAULT_VIEW) {
-        super(element, { useShadowDom: true, classes: ['monospace', 'stack-preview-container'] });
+        super(element, { useShadowDom: 'pure' });
         this.#view = view;
     }
     hasContent() {
@@ -208,7 +209,7 @@ export class StackTracePreviewContent extends UI.Widget.Widget {
         const hasNonIgnoredLinks = this.linkElements.some(link => {
             const uiLocation = Linkifier.uiLocation(link);
             if (uiLocation) {
-                return !uiLocation.isIgnoreListed();
+                return !uiLocation.isIgnoreListed(this.#options.ignoreListManager);
             }
             return !link.classList.contains('ignore-list-link');
         });
@@ -245,7 +246,7 @@ export class StackTracePreviewContent extends UI.Widget.Widget {
         this.#showIgnoreListed = more;
         this.requestUpdate();
         // If we are in a popup, this will trigger a re-layout
-        void this.updateComplete.then(() => UI.GlassPane.GlassPane.containerMoved(this.contentElement));
+        void this.updateComplete.then(() => UI.GlassPane.GlassPane.containerMoved(this.element));
     }
     #onExpand() {
         this.#expanded = !this.#expanded;

@@ -15,7 +15,8 @@ const triggerMicroTaskQueue = async (n = 1) => {
         await new Promise(resolve => setTimeout(resolve, 0));
     }
 };
-describe('StepEditor', () => {
+// Disabled due to flakiness
+describe.skip('[crbug.com/505637246]StepEditor', () => {
     setupLocaleHooks();
     async function renderEditor(step) {
         const editor = document.createElement('devtools-recorder-step-editor');

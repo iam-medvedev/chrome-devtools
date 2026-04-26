@@ -80,7 +80,7 @@ const DEFAULT_VIEW = (input, output, target) => {
     ${input.suspended ? html `
       <div class="perfmon-chart-suspend-overlay fill">
         <div>${i18nString(UIStrings.paused)}</div>
-      </div>` : ''}`, target);
+      </div>` : ''}`, target, { container: { attributes: { jslog: `${VisualLogging.pane('performance.monitor').track({ resize: true })}` } } });
     // clang-format on
 };
 export class PerformanceMonitorImpl extends UI.Widget.HBox {
@@ -102,10 +102,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
     suspended = false;
     graphRenderingContext = null;
     constructor(pollIntervalMs = 500, view = DEFAULT_VIEW) {
-        super({
-            jslog: `${VisualLogging.panel('performance.monitor').track({ resize: true })}`,
-            useShadowDom: true,
-        });
+        super({ useShadowDom: 'pure' });
         this.view = view;
         this.registerRequiredCSS(performanceMonitorStyles);
         this.metricsBuffer = [];
@@ -447,7 +444,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
     }
     createChartInfos() {
         const themeSupport = ThemeSupport.ThemeSupport.instance();
-        const elementForStyles = this.contentElement;
+        const elementForStyles = this.contentElement.firstElementChild;
         const defaults = {};
         return [
             {

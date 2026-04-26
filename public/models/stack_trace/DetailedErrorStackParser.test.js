@@ -13,6 +13,7 @@ describe('DetailedErrorStackParser', () => {
           at async asyncFunction (http://www.example.org/script.js:40:1)
           at http://www.example.org/script.js:50:1`;
             const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
             assert.lengthOf(frames, 5);
             assert.deepEqual(frames[0], {
                 url: 'http://www.example.org/script.js',
@@ -109,6 +110,7 @@ describe('DetailedErrorStackParser', () => {
             const stack = `Error: foo
           at eval (eval at <anonymous> (http://www.example.org/script.js:10:5), <anonymous>:1:1)`;
             const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
             assert.lengthOf(frames, 1);
             assert.isTrue(frames[0].parsedFrameInfo?.isEval);
             assert.strictEqual(frames[0].url, '<anonymous>');
@@ -124,6 +126,7 @@ describe('DetailedErrorStackParser', () => {
             const stack = `Error: foo
           at innerEval (eval at outerEval (eval at topEval (http://www.example.org/script.js:10:5)), <anonymous>:1:1)`;
             const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
             assert.lengthOf(frames, 1);
             assert.isTrue(frames[0].parsedFrameInfo?.isEval);
             assert.strictEqual(frames[0].url, '<anonymous>');
@@ -150,6 +153,7 @@ describe('DetailedErrorStackParser', () => {
             const stack = `Error: foo
           at Type.method [as alias] (http://www.example.org/script.js:10:5)`;
             const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
             assert.lengthOf(frames, 1);
             assert.strictEqual(frames[0].parsedFrameInfo?.typeName, 'Type');
             assert.strictEqual(frames[0].parsedFrameInfo?.methodName, 'alias');
@@ -158,6 +162,7 @@ describe('DetailedErrorStackParser', () => {
             const stack = `Error: foo
           at wasmModule.wasmFunc (http://www.example.org/script.js:wasm-function[123]:0xabc)`;
             const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
             assert.lengthOf(frames, 1);
             assert.isTrue(frames[0].parsedFrameInfo?.isWasm);
             assert.strictEqual(frames[0].url, 'http://www.example.org/script.js');
@@ -169,10 +174,70 @@ describe('DetailedErrorStackParser', () => {
             const stack = `Error: foo
           at Promise.all (index 2)`;
             const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
             assert.lengthOf(frames, 1);
             assert.strictEqual(frames[0].parsedFrameInfo?.promiseIndex, 2);
             assert.strictEqual(frames[0].url, '');
             assert.strictEqual(frames[0].functionName, 'Promise.all');
+        });
+        it('parses builtin frames', () => {
+            const stack = `Error: foo
+          at Array.map (<anonymous>)`;
+            const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
+            assert.lengthOf(frames, 1);
+            assert.strictEqual(frames[0].url, '');
+            assert.strictEqual(frames[0].functionName, 'Array.map');
+            assert.strictEqual(frames[0].lineNumber, -1);
+            assert.strictEqual(frames[0].columnNumber, -1);
+            assert.isTrue(StackTraceImpl.Trie.isBuiltinFrame(frames[0]));
+        });
+        it('returns null if arbitrary text is interleaved between frames', () => {
+            const stack = `Error: foo
+          at functionName (http://www.example.org/script.js:10:5)
+          injected arbitrary text
+          at http://www.example.org/script.js:50:1`;
+            const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.isNull(frames);
+        });
+        it('allows and skips empty or whitespace-only lines interleaved between frames', () => {
+            const stack = `Error: foo
+          at functionName (http://www.example.org/script.js:10:5)
+
+          at http://www.example.org/script.js:50:1
+          `;
+            const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
+            assert.lengthOf(frames, 2);
+            assert.strictEqual(frames[0].url, 'http://www.example.org/script.js');
+            assert.strictEqual(frames[0].functionName, 'functionName');
+            assert.strictEqual(frames[0].lineNumber, 9);
+            assert.strictEqual(frames[0].columnNumber, 4);
+            assert.strictEqual(frames[1].url, 'http://www.example.org/script.js');
+            assert.strictEqual(frames[1].functionName, '');
+            assert.strictEqual(frames[1].lineNumber, 49);
+            assert.strictEqual(frames[1].columnNumber, 0);
+        });
+    });
+    describe('parseMessage', () => {
+        it('extracts the message when stack frames are present', () => {
+            const stack = `Error: foo
+          at functionName (http://www.example.org/script.js:10:5)`;
+            const message = StackTraceImpl.DetailedErrorStackParser.parseMessage(stack);
+            assert.strictEqual(message, 'Error: foo');
+        });
+        it('returns the full string if no stack frames are present', () => {
+            const stack = `Error: foo
+          some other text`;
+            const message = StackTraceImpl.DetailedErrorStackParser.parseMessage(stack);
+            assert.strictEqual(message, stack);
+        });
+        it('extracts multi-line messages', () => {
+            const stack = `Error: foo
+more details
+          at functionName (http://www.example.org/script.js:10:5)`;
+            const message = StackTraceImpl.DetailedErrorStackParser.parseMessage(stack);
+            assert.strictEqual(message, 'Error: foo\nmore details');
         });
     });
     describe('augmentRawFramesWithScriptIds', () => {
