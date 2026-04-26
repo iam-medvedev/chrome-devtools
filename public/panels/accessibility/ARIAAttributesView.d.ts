@@ -8,9 +8,9 @@ interface ViewInput {
     attributeBeingEdited: SDK.DOMModel.Attribute | null;
     attributes: SDK.DOMModel.Attribute[];
 }
-type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+type View = (input: ViewInput, output: object, target: HTMLElement | DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class ARIAAttributesPane extends AccessibilitySubPane {
+export declare class ARIAAttributesPane extends AccessibilitySubPane<ShadowRoot> {
     #private;
     constructor(view?: View);
     setNode(node: SDK.DOMModel.DOMNode | null): void;

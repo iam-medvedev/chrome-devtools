@@ -793,6 +793,7 @@ var generatedProperties = [
       "text-decoration-color",
       "text-decoration-line",
       "text-decoration-skip-ink",
+      "text-decoration-skip-spaces",
       "text-decoration-style",
       "text-decoration-thickness",
       "text-emphasis-color",
@@ -4591,6 +4592,16 @@ var generatedProperties = [
     "name": "text-decoration-skip-ink"
   },
   {
+    "inherited": true,
+    "keywords": [
+      "none",
+      "start",
+      "end",
+      "all"
+    ],
+    "name": "text-decoration-skip-spaces"
+  },
+  {
     "keywords": [
       "solid",
       "double",
@@ -7195,6 +7206,14 @@ var generatedPropertyValues = {
     "values": [
       "none",
       "auto",
+      "all"
+    ]
+  },
+  "text-decoration-skip-spaces": {
+    "values": [
+      "none",
+      "start",
+      "end",
       "all"
     ]
   },
@@ -10858,6 +10877,9 @@ var NetworkManager = class _NetworkManager extends SDKModel {
   }
   async enableDeviceBoundSessions(enable = true) {
     return await this.#networkAgent.invoke_enableDeviceBoundSessions({ enable });
+  }
+  async deleteDeviceBoundSession(key) {
+    return await this.#networkAgent.invoke_deleteDeviceBoundSession({ key });
   }
   async loadNetworkResource(frameId, url, options) {
     const result = await this.#networkAgent.invoke_loadNetworkResource({ frameId: frameId ?? void 0, url, options });
@@ -27103,7 +27125,8 @@ var Resource = class {
     if (TextUtils21.ContentData.ContentData.isError(contentData)) {
       return;
     }
-    image.src = contentData.asDataUrl() ?? this.#url;
+    const imageSrc = contentData.asImagePreviewUrl();
+    image.src = imageSrc ?? "";
   }
   async innerRequestContent() {
     if (this.request) {
@@ -30017,16 +30040,8 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     if (TextUtils24.ContentData.ContentData.isError(contentData)) {
       return;
     }
-    let imageSrc = contentData.asDataUrl();
-    if (imageSrc === null && !this.#failed) {
-      const cacheControl = this.responseHeaderValue("cache-control") || "";
-      if (!cacheControl.includes("no-cache")) {
-        imageSrc = this.#url;
-      }
-    }
-    if (imageSrc !== null) {
-      image.src = imageSrc;
-    }
+    const imageSrc = contentData.asImagePreviewUrl();
+    image.src = imageSrc ?? "";
   }
   initiator() {
     return this.#initiator || null;
@@ -32380,7 +32395,7 @@ var TraceObject = class {
       this.metadata = meta ?? {};
     } else {
       this.traceEvents = payload.traceEvents;
-      this.metadata = payload.metadata;
+      this.metadata = payload.metadata ?? {};
     }
   }
 };

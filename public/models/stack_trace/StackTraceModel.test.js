@@ -15,8 +15,8 @@ describe('StackTraceModel', () => {
     setupSettingsHooks();
     setupRuntimeHooks();
     const identityTranslateFn = (frames, _target) => Promise.resolve(frames.map(f => [{
-            url: f.url,
-            name: f.functionName,
+            url: f.url || undefined,
+            name: f.functionName || undefined,
             line: f.lineNumber,
             column: f.columnNumber,
         }]));
@@ -397,6 +397,19 @@ describe('StackTraceModel', () => {
         });
     });
     describe('createFromErrorStackLikeString', () => {
+        it('correctly translates builtin frames resulting in no url and -1 for line/column', async () => {
+            const { model } = setup();
+            const stackTrace = await model.createFromErrorStackLikeString(`Error: foo
+              at Array.map (<anonymous>)`, identityTranslateFn);
+            assert.exists(stackTrace);
+            assert.lengthOf(stackTrace.syncFragment.frames, 1);
+            const frame = stackTrace.syncFragment.frames[0];
+            assert.isUndefined(frame.url);
+            assert.isUndefined(frame.uiSourceCode);
+            assert.strictEqual(frame.line, -1);
+            assert.strictEqual(frame.column, -1);
+            assert.strictEqual(frame.name, 'Array.map');
+        });
         it('correctly handles a stack trace with sync and async fragments', async () => {
             const { model } = setup();
             const stackTrace = await model.createFromErrorStackLikeString(`Error: foo
@@ -437,6 +450,7 @@ describe('StackTraceModel', () => {
                     },
                 },
             });
+            assert.exists(stackTrace);
             assert.strictEqual(stringifyStackTrace(stackTrace), [
                 'at foo (foo.js:0:9)',
                 'at bar (foo.js:1:19)',
@@ -465,6 +479,7 @@ describe('StackTraceModel', () => {
             };
             const stackTrace = await model.createFromErrorStackLikeString(`Error: foo
               at eval (eval at outerEval (foo.js:10:5), <anonymous>:1:1)`, translateFn);
+            assert.exists(stackTrace);
             const frames = stackTrace.syncFragment.frames;
             assert.lengthOf(frames, 1);
             assert.strictEqual(frames[0].url, '<anonymous>');

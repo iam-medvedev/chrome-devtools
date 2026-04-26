@@ -117,5 +117,71 @@ describeWithEnvironment('ChatView', () => {
             sinon.assert.callCount(generateSummaryStub, 1);
         });
     });
+    describe('getCSSChangeSummaryMessage', () => {
+        it('returns undefined if there are no messages', () => {
+            const result = AiAssistancePanel.getCSSChangeSummaryMessage([], false);
+            assert.isUndefined(result);
+        });
+        it('returns undefined if there are no model messages', () => {
+            const messages = [
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Hello' },
+            ];
+            const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, false);
+            assert.isUndefined(result);
+        });
+        it('returns the last model message if not loading', () => {
+            const modelMessage = {
+                entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{ type: 'answer', text: 'Response' }],
+            };
+            const messages = [
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Hello' },
+                modelMessage,
+            ];
+            const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, false);
+            assert.strictEqual(result, modelMessage);
+        });
+        it('returns the last model message if loading but the last message is a user message', () => {
+            const modelMessage = {
+                entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{ type: 'answer', text: 'Response' }],
+            };
+            const messages = [
+                modelMessage,
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Follow up' },
+            ];
+            const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, true);
+            assert.strictEqual(result, modelMessage);
+        });
+        it('returns the penultimate model message if loading and the last message is a model message', () => {
+            const modelMessage1 = {
+                entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{ type: 'answer', text: 'Response 1' }],
+            };
+            const modelMessage2 = {
+                entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{ type: 'answer', text: 'Response 2' }],
+            };
+            const messages = [
+                modelMessage1,
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Follow up' },
+                modelMessage2,
+            ];
+            const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, true);
+            assert.strictEqual(result, modelMessage1);
+        });
+        it('returns undefined if loading and there is only one model message and it is the last message', () => {
+            const modelMessage = {
+                entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{ type: 'answer', text: 'Response' }],
+            };
+            const messages = [
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Hello' },
+                modelMessage,
+            ];
+            const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, true);
+            assert.isUndefined(result);
+        });
+    });
 });
 //# sourceMappingURL=ChatView.test.js.map

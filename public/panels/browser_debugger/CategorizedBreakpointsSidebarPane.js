@@ -216,11 +216,12 @@ export const DEFAULT_VIEW = (input, output, target) => {
             </ul>
           </li>`)}
       </ul>`}>
-    </devtools-tree>`, target);
+    </devtools-tree>`, target, { container: { attributes: { jslog: input.jslog } } });
     // clang-format on
 };
 export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     #viewId;
+    #jslog;
     // A layout test reaches into this
     categories = new Map();
     #sortedCategories;
@@ -229,8 +230,9 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     #view;
     #selectedItem = null;
     constructor(breakpoints, jslog, viewId, view = DEFAULT_VIEW) {
-        super({ useShadowDom: true, jslog });
+        super({ useShadowDom: 'pure' });
         this.#view = view;
+        this.#jslog = jslog;
         this.#viewId = viewId;
         for (const breakpoint of breakpoints) {
             let categorizedBreakpoints = this.categories.get(breakpoint.category());
@@ -295,6 +297,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     performUpdate() {
         const input = {
             filterText: this.#filterText,
+            jslog: this.#jslog,
             onFilterChanged: this.#onFilterChanged.bind(this),
             onBreakpointChange: this.onBreakpointChanged.bind(this),
             onItemSelected: this.#onItemSelected.bind(this),

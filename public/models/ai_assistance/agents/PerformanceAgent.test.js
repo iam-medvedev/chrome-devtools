@@ -14,7 +14,7 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Trace from '../../trace/trace.js';
 import * as Workspace from '../../workspace/workspace.js';
-import { AICallTree, PerformanceAgent, PerformanceTraceFormatter, } from '../ai_assistance.js';
+import { AICallTree, AIContext, PerformanceAgent, PerformanceTraceFormatter, } from '../ai_assistance.js';
 /**
  * Widget data can be huge (e.g. an entire perf trace) and if we snapshot or
  * try to assert on these, it is not useful and also can crash Karma etc with
@@ -461,45 +461,6 @@ code
                 canceled: false,
             });
         });
-        it('can call getMainThreadTrackSummary', async function () {
-            const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAIMainThreadActivityResponseSize');
-            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
-            assert.isOk(parsedTrace.insights);
-            const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
-            const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
-            const bounds = parsedTrace.data.Meta.traceBounds;
-            const agent = createAgentForConversation({
-                aidaClient: mockAidaClient([
-                    [{
-                            explanation: '',
-                            functionCalls: [{ name: 'getMainThreadTrackSummary', args: { min: bounds.min, max: bounds.max } }]
-                        }],
-                    [{ explanation: 'done' }]
-                ])
-            });
-            const context = PerformanceAgent.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
-            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-            deleteAllWidgetData(responses);
-            const titleResponse = responses.find(response => response.type === "title" /* AiAgent.ResponseType.TITLE */);
-            assert.exists(titleResponse);
-            assert.strictEqual(titleResponse.title, 'Investigating main thread activity');
-            const action = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
-            assert.exists(action);
-            const formatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(context.getItem());
-            const summary = await formatter.formatMainThreadTrackSummary(bounds);
-            assert.isOk(summary);
-            const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(summary);
-            sinon.assert.calledWith(metricsSpy, expectedBytesSize);
-            const expectedOutput = JSON.stringify({ summary });
-            assert.exists(action);
-            assert.exists(action.widgets);
-            assert.lengthOf(action.widgets, 2);
-            assert.strictEqual(action.widgets[0].name, 'TIMELINE_RANGE_SUMMARY');
-            assert.strictEqual(action.widgets[1].name, 'BOTTOM_UP_TREE');
-            assert.strictEqual(action.code, 'getMainThreadTrackSummary({min: 197695826524, max: 197698633660})');
-            assert.strictEqual(action.output, expectedOutput);
-            assert.isFalse(action.canceled);
-        });
         it('can call getMainThreadTrackSummaryByLabel', async function () {
             const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAIMainThreadActivityResponseSize');
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
@@ -520,7 +481,7 @@ code
             deleteAllWidgetData(responses);
             const titleResponse = responses.find(response => response.type === "title" /* AiAgent.ResponseType.TITLE */);
             assert.exists(titleResponse);
-            assert.strictEqual(titleResponse.title, 'Investigating main thread activity');
+            assert.strictEqual(titleResponse.title, 'Investigating main thread activity: LCP breakdown insight');
             const action = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
             assert.exists(action);
             const formatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(context.getItem());
@@ -548,7 +509,7 @@ code
             const renderBlocking = getInsightOrError('RenderBlocking', parsedTrace.insights, firstNav);
             const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getMainThreadTrackSummary', args: {} }] }],
+                    [{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }],
                 ])
             });
             const lcpContext = PerformanceAgent.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
@@ -568,10 +529,7 @@ code
             const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
             const agent = createAgentForConversation({
-                aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getMainThreadTrackSummary', args: {} }] }],
-                    [{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }], [{ explanation: 'done' }]
-                ])
+                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }], [{ explanation: 'done' }]])
             });
             const context = PerformanceAgent.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             await Array.fromAsync(agent.run('test 1', { selected: context }));
@@ -582,7 +540,6 @@ code
             }), [
                 // https://www.youtube.com/watch?v=Vhh_GeBPOhs
                 'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools',
-                'getMainThreadTrackSummary({min: 197695826524, max: 197698633660})',
                 'getNetworkTrackSummary({min: 197695826524, max: 197698633660})'
             ]);
         });
@@ -918,6 +875,36 @@ code
             assert.strictEqual(suggestions[1].title, 'How can I reduce the size of my DOM?');
             assert.strictEqual(suggestions[2].title, 'How can I reduce the number of render-blocking requests?');
             assert.strictEqual(suggestions[3].title, 'Did anything slow down the request for this document?');
+        });
+    });
+    describe('getLabelName', () => {
+        it('returns correct names for static labels', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
+            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
+            assert.strictEqual(PerformanceAgent.getLabelName('nav-to-lcp', focus), 'navigation to LCP');
+            assert.strictEqual(PerformanceAgent.getLabelName('lcp-ttfb', focus), 'LCP to TTFB');
+            assert.strictEqual(PerformanceAgent.getLabelName('lcp-render-delay', focus), 'LCP render delay');
+            assert.strictEqual(PerformanceAgent.getLabelName('trace-bounds', focus), 'the entire trace');
+            assert.strictEqual(PerformanceAgent.getLabelName('NO_NAVIGATION', focus), 'the period before the first navigation');
+        });
+        it('returns correct name for navigation labels', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
+            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
+            const insightSet = Array.from(parsedTrace.insights.values())[0];
+            const navId = insightSet.id;
+            assert.exists(navId);
+            assert.strictEqual(PerformanceAgent.getLabelName(navId, focus), `navigation to ${insightSet.url.href}`);
+        });
+        it('returns correct name for insight labels', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
+            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
+            assert.strictEqual(PerformanceAgent.getLabelName('LCPBreakdown', focus), 'LCP breakdown insight');
+            assert.strictEqual(PerformanceAgent.getLabelName('CLSCulprits', focus), 'Layout shift culprits insight');
+        });
+        it('returns the label itself for unknown labels', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
+            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
+            assert.strictEqual(PerformanceAgent.getLabelName('unknown-label', focus), 'unknown-label');
         });
     });
 });

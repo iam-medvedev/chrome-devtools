@@ -4592,6 +4592,9 @@
   "panels/application/CrashReportContextView.ts | unknownFrame": {
     "message": "Unknown Frame"
   },
+  "panels/application/DeviceBoundSessionsTreeElement.ts | clear": {
+    "message": "Clear"
+  },
   "panels/application/DeviceBoundSessionsTreeElement.ts | deviceBoundSessions": {
     "message": "Device bound sessions"
   },
@@ -6331,6 +6334,9 @@
   },
   "panels/application/WebMCPView.ts | pending": {
     "message": "In Progress"
+  },
+  "panels/application/WebMCPView.ts | runTool": {
+    "message": "Run Tool"
   },
   "panels/application/WebMCPView.ts | status": {
     "message": "Status"
@@ -11770,6 +11776,9 @@
   },
   "panels/profiler/HeapProfileView.ts | recordMemoryAllocations": {
     "message": "Approximate memory allocations by sampling long operations with minimal overhead and get a breakdown by JavaScript execution stack"
+  },
+  "panels/profiler/HeapProfileView.ts | samplingHeapProfilerTimeline": {
+    "message": "Sampling heap profiler timeline"
   },
   "panels/profiler/HeapProfileView.ts | samplingProfiles": {
     "message": "Sampling profiles"
@@ -18037,6 +18046,9 @@
   },
   "ui/legacy/components/utils/Linkifier.ts | unknown": {
     "message": "(unknown)"
+  },
+  "ui/legacy/Dialog.ts | close": {
+    "message": "Close"
   },
   "ui/legacy/DockController.ts | close": {
     "message": "Close"

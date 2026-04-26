@@ -124,7 +124,7 @@ article {
 }
 `);
     });
-    it('formats import rule with media query correctly', () => {
+    it('formats keyframes rule correctly', () => {
         const formattedCode = formatCSS('p{animation-duration:3s;}@keyframes slidein{from{margin-left:100%;width:300%;}to{margin-left:0%;width:100%;}}p{animation-name:slidein}');
         assert.strictEqual(formattedCode, `p {
   animation-duration: 3s;

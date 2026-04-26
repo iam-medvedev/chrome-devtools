@@ -13,8 +13,8 @@ interface PerformanceMonitorOutput {
     graphRenderingContext: CanvasRenderingContext2D | null;
     width: number;
 }
-type PerformanceMonitorView = (input: PerformanceMonitorInput, output: PerformanceMonitorOutput, target: HTMLElement) => void;
-export declare class PerformanceMonitorImpl extends UI.Widget.HBox implements SDK.TargetManager.SDKModelObserver<SDK.PerformanceMetricsModel.PerformanceMetricsModel> {
+type PerformanceMonitorView = (input: PerformanceMonitorInput, output: PerformanceMonitorOutput, target: DocumentFragment) => void;
+export declare class PerformanceMonitorImpl extends UI.Widget.HBox<ShadowRoot> implements SDK.TargetManager.SDKModelObserver<SDK.PerformanceMetricsModel.PerformanceMetricsModel> {
     private view;
     private chartInfos;
     private activeCharts;

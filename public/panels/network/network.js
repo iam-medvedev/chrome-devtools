@@ -556,16 +556,18 @@ function renderItem(condition, editable, index, onToggle, onConditionsChanged, o
       aria-details=url-pattern-${index}>
         ${constructorStringOrWildcardURL}
     </div>
-    <devtools-widget
+    <select
        class=conditions-selector
        title=${i18nString2(UIStrings2.requestConditionsLabel)}
-       ${widget(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelectorWidget, {
+       @ConditionsChanged=${(e) => {
+    onConditionsChanged(condition, e.detail);
+  }}
+       ${widget(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect, {
     variant: "individual-request-conditions",
     jslogContext: "request-conditions",
     disabled: !editable,
-    onConditionsChanged: (conditions) => onConditionsChanged(condition, conditions),
     currentConditions: condition.conditions
-  })}></devtools-widget>
+  })}></select>
     <devtools-widget
       ?disabled=${!editable || !originalOrUpgradedURLPattern}
       ${widget(AffectedCountWidget, { condition, lookUpRequestCount })}></devtools-widget>`;
@@ -979,13 +981,13 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
             </div>
           ` : nothing2}
       </div>
-    `, target);
+    `, target, { container: { attributes: { jslog: `${VisualLogging2.pane("device-bound-sessions-request")}` } } });
 };
 var RequestDeviceBoundSessionsView = class extends UI3.Widget.VBox {
   #request;
   #view;
   constructor(request, view = DEFAULT_VIEW2) {
-    super({ jslog: `${VisualLogging2.pane("device-bound-sessions-request")}` });
+    super();
     this.#request = request;
     this.#view = view;
   }
@@ -1732,7 +1734,7 @@ var userAgentGroups = [
     values: [
       {
         title: "Chrome \u2014 Android Mobile",
-        value: "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36",
+        value: "Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36",
         metadata: {
           brands: [
             { brand: "Not A;Brand", version: "99" },
@@ -1741,15 +1743,15 @@ var userAgentGroups = [
           ],
           fullVersion: "%s",
           platform: "Android",
-          platformVersion: "6.0",
+          platformVersion: "16",
           architecture: "",
-          model: "Nexus 5",
+          model: "Pixel 10",
           mobile: true
         }
       },
       {
         title: "Chrome \u2014 Android Mobile (high-end)",
-        value: "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36",
+        value: "Mozilla/5.0 (Linux; Android 16; Pixel 10 Pro XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile Safari/537.36",
         metadata: {
           brands: [
             { brand: "Not A;Brand", version: "99" },
@@ -1758,15 +1760,15 @@ var userAgentGroups = [
           ],
           fullVersion: "%s",
           platform: "Android",
-          platformVersion: "10",
+          platformVersion: "16",
           architecture: "",
-          model: "Pixel 4",
+          model: "Pixel 10 Pro XL",
           mobile: true
         }
       },
       {
         title: "Chrome \u2014 Android Tablet",
-        value: "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JSS15Q) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36",
+        value: "Mozilla/5.0 (Linux; Android 16; Pixel Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36",
         metadata: {
           brands: [
             { brand: "Not A;Brand", version: "99" },
@@ -1775,20 +1777,20 @@ var userAgentGroups = [
           ],
           fullVersion: "%s",
           platform: "Android",
-          platformVersion: "4.3",
+          platformVersion: "16",
           architecture: "",
-          model: "Nexus 7",
+          model: "Pixel Tablet",
           mobile: true
         }
       },
       {
         title: "Chrome \u2014 iPhone",
-        value: "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/%s Mobile/15E148 Safari/604.1",
+        value: "Mozilla/5.0 (iPhone; CPU iPhone OS 26_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/%s Mobile/15E148 Safari/604.1",
         metadata: null
       },
       {
         title: "Chrome \u2014 iPad",
-        value: "Mozilla/5.0 (iPad; CPU OS 13_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/%s Mobile/15E148 Safari/604.1",
+        value: "Mozilla/5.0 (iPad; CPU OS 26_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/%s Mobile/15E148 Safari/604.1",
         metadata: null
       },
       {
@@ -3690,7 +3692,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
         `)}
       </div>
     </div>
-  `, target);
+  `, target, { container: { attributes: { jslog: `${VisualLogging5.pane("cookies").track({ resize: true })}` } } });
 };
 function getMalformedCookieTooltip(malformedCookie) {
   if (malformedCookie.blockedReasons.includes(
@@ -3712,7 +3714,7 @@ var RequestCookiesView = class extends UI7.Widget.Widget {
   showFilteredOutCookiesSetting;
   view;
   constructor(request, view = DEFAULT_VIEW3) {
-    super({ jslog: `${VisualLogging5.pane("cookies").track({ resize: true })}` });
+    super();
     this.request = request;
     this.showFilteredOutCookiesSetting = Common5.Settings.Settings.instance().createSetting(
       "show-filtered-out-request-cookies",
@@ -4096,7 +4098,8 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     })}
       `,
     // clang-format on
-    target
+    target,
+    { container: { attributes: { jslog: `${VisualLogging6.pane("headers").track({ resize: true })}` } } }
   );
 };
 var RequestHeadersView = class extends UI9.Widget.Widget {
@@ -4115,7 +4118,7 @@ var RequestHeadersView = class extends UI9.Widget.Widget {
     this.#addEventListeners();
   }
   constructor(target, view = DEFAULT_VIEW5) {
-    super({ jslog: `${VisualLogging6.pane("headers").track({ resize: true })}` });
+    super();
     this.#view = view;
   }
   #addEventListeners() {

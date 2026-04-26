@@ -22,6 +22,8 @@ describeWithEnvironment('ChatMessage', () => {
             isReadOnly: false,
             isLastMessage: true,
             isFirstMessage: false,
+            prompt: '',
+            shouldShowCSSChangeSummary: false,
             markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
             canShowFeedbackForm: true,
             onSuggestionClick: sinon.stub(),
@@ -58,6 +60,8 @@ describeWithEnvironment('ChatMessage', () => {
             isShowingFeedbackForm: false,
             isLastMessage: true,
             isFirstMessage: false,
+            prompt: '',
+            shouldShowCSSChangeSummary: false,
             showActions: true,
             message: {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -297,7 +301,7 @@ describeWithEnvironment('ChatMessage', () => {
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Investigating XYZ');
         });
-        it('accessible label appends "Show thinking" when showing step title', async () => {
+        it('accessible label shows the step title when loading', async () => {
             const loadingMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [{
@@ -319,7 +323,7 @@ describeWithEnvironment('ChatMessage', () => {
                 }
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
-            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Investigating XYZ Show thinking');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Loading: Investigating XYZ');
         });
         it('accessible label defaults to visible text when generic', async () => {
             const target = renderView({
@@ -331,7 +335,7 @@ describeWithEnvironment('ChatMessage', () => {
                 }
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
-            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Show thinking');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Show thinking for prompt \'\'');
         });
         it('accessible label defaults to visible text when expanded and not loading', async () => {
             const target = renderView({
@@ -345,9 +349,9 @@ describeWithEnvironment('ChatMessage', () => {
                 }
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
-            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Hide thinking');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Hide thinking for prompt \'\'');
         });
-        it('accessible label appends "Hide thinking" when expanded and loading', async () => {
+        it('accessible label appends "Loading: " when expanded and loading', async () => {
             const loadingMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [{
@@ -371,7 +375,7 @@ describeWithEnvironment('ChatMessage', () => {
                 }
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
-            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Investigating XYZ Hide thinking');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Loading: Hide thinking');
         });
         it('does not render "Show thinking" button when inline', () => {
             const target = renderView({
@@ -650,6 +654,8 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: false,
                 isLastMessage: true,
                 isFirstMessage: false,
+                prompt: '',
+                shouldShowCSSChangeSummary: false,
                 showActions: true,
                 message: messageWithNamedWidget,
                 isLoading: false,
@@ -665,7 +671,7 @@ describeWithEnvironment('ChatMessage', () => {
             assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'LCP element');
             const revealButton = widgetHeader.querySelector('.widget-reveal-button');
             assert.isNotNull(revealButton);
-            assert.strictEqual(revealButton.getAttribute('accessibleLabel'), 'Reveal');
+            assert.strictEqual(revealButton.getAttribute('accessibleLabel'), 'Reveal LCP element');
         });
         it('renders the "Export for agents" button after action buttons and before suggestions when onExportClick is provided, it is the last message, and V2 is enabled', async () => {
             updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
@@ -710,10 +716,9 @@ describeWithEnvironment('ChatMessage', () => {
         beforeEach(() => {
             updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
         });
-        it('should render devtools-code-block when hasAiV2 is true and changeSummary is present', async () => {
+        it('should render devtools-code-block when hasAiV2 is true, changeSummary is present and shouldShowCSSChangeSummary is true', async () => {
             const target = renderView({
-                isLastMessage: true,
-                isLoading: false,
+                shouldShowCSSChangeSummary: true,
                 changeSummary: 'test summary',
             });
             const codeBlock = target.querySelector('devtools-code-block');
@@ -723,17 +728,15 @@ describeWithEnvironment('ChatMessage', () => {
         });
         it('should NOT render devtools-code-block when changeSummary is missing', async () => {
             const target = renderView({
-                isLastMessage: true,
-                isLoading: false,
+                shouldShowCSSChangeSummary: true,
                 changeSummary: undefined,
             });
             const codeBlock = target.querySelector('devtools-code-block');
             assert.isNull(codeBlock);
         });
-        it('should NOT render devtools-code-block when it is not the last message', async () => {
+        it('should NOT render devtools-code-block when shouldShowCSSChangeSummary is false', async () => {
             const target = renderView({
-                isLastMessage: false,
-                isLoading: false,
+                shouldShowCSSChangeSummary: false,
                 changeSummary: 'test summary',
             });
             const codeBlock = target.querySelector('devtools-code-block');
@@ -742,8 +745,7 @@ describeWithEnvironment('ChatMessage', () => {
         it('should NOT render devtools-code-block when hasAiV2 is false', async () => {
             updateHostConfig({ devToolsAiAssistanceV2: { enabled: false } });
             const target = renderView({
-                isLastMessage: true,
-                isLoading: false,
+                shouldShowCSSChangeSummary: true,
                 changeSummary: 'test summary',
             });
             const codeBlock = target.querySelector('devtools-code-block');
@@ -770,6 +772,8 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: true,
                 isLastMessage: true,
                 isFirstMessage: false,
+                prompt: '',
+                shouldShowCSSChangeSummary: false,
                 showActions: true,
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
@@ -804,6 +808,8 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: false,
                 isLastMessage: true,
                 isFirstMessage: false,
+                prompt: '',
+                shouldShowCSSChangeSummary: false,
                 showActions: false,
                 message: {
                     entity: "user" /* AiAssistance.ChatMessage.ChatMessageEntity.USER */,
@@ -836,6 +842,8 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: false,
                 isLastMessage: false,
                 isFirstMessage: true,
+                prompt: '',
+                shouldShowCSSChangeSummary: false,
                 showActions: false,
                 message: {
                     entity: "user" /* AiAssistance.ChatMessage.ChatMessageEntity.USER */,
@@ -867,6 +875,8 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: false,
                 isLastMessage: false,
                 isFirstMessage: true,
+                prompt: '',
+                shouldShowCSSChangeSummary: false,
                 showActions: false,
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,

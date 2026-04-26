@@ -1,28 +1,28 @@
 // gen/front_end/third_party/puppeteer/package/lib/esm/third_party/rxjs/rxjs.js
-var extendStatics = function(d, b) {
-  extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
-    d2.__proto__ = b2;
-  } || function(d2, b2) {
-    for (var p in b2) if (Object.prototype.hasOwnProperty.call(b2, p)) d2[p] = b2[p];
+var extendStatics = function(d, b2) {
+  extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b22) {
+    d2.__proto__ = b22;
+  } || function(d2, b22) {
+    for (var p in b22) if (Object.prototype.hasOwnProperty.call(b22, p)) d2[p] = b22[p];
   };
-  return extendStatics(d, b);
+  return extendStatics(d, b2);
 };
-function __extends(d, b) {
-  if (typeof b !== "function" && b !== null)
-    throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-  extendStatics(d, b);
+function __extends(d, b2) {
+  if (typeof b2 !== "function" && b2 !== null)
+    throw new TypeError("Class extends value " + String(b2) + " is not a constructor or null");
+  extendStatics(d, b2);
   function __() {
     this.constructor = d;
   }
-  d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  d.prototype = b2 === null ? Object.create(b2) : (__.prototype = b2.prototype, new __());
 }
-function __awaiter(thisArg, _arguments, P, generator) {
+function __awaiter(thisArg, _arguments, P2, generator) {
   function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve) {
+    return value instanceof P2 ? value : new P2(function(resolve) {
       resolve(value);
     });
   }
-  return new (P || (P = Promise))(function(resolve, reject) {
+  return new (P2 || (P2 = Promise))(function(resolve, reject) {
     function fulfilled(value) {
       try {
         step(generator.next(value));
@@ -44,7 +44,7 @@ function __awaiter(thisArg, _arguments, P, generator) {
   });
 }
 function __generator(thisArg, body) {
-  var _ = { label: 0, sent: function() {
+  var _2 = { label: 0, sent: function() {
     if (t[0] & 1) throw t[1];
     return t[1];
   }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
@@ -52,13 +52,13 @@ function __generator(thisArg, body) {
     return this;
   }), g;
   function verb(n) {
-    return function(v) {
-      return step([n, v]);
+    return function(v2) {
+      return step([n, v2]);
     };
   }
   function step(op) {
     if (f) throw new TypeError("Generator is already executing.");
-    while (g && (g = 0, op[0] && (_ = 0)), _) try {
+    while (g && (g = 0, op[0] && (_2 = 0)), _2) try {
       if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
       if (y = 0, t) op = [op[0] & 2, t.value];
       switch (op[0]) {
@@ -67,41 +67,41 @@ function __generator(thisArg, body) {
           t = op;
           break;
         case 4:
-          _.label++;
+          _2.label++;
           return { value: op[1], done: false };
         case 5:
-          _.label++;
+          _2.label++;
           y = op[1];
           op = [0];
           continue;
         case 7:
-          op = _.ops.pop();
-          _.trys.pop();
+          op = _2.ops.pop();
+          _2.trys.pop();
           continue;
         default:
-          if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-            _ = 0;
+          if (!(t = _2.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+            _2 = 0;
             continue;
           }
           if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-            _.label = op[1];
+            _2.label = op[1];
             break;
           }
-          if (op[0] === 6 && _.label < t[1]) {
-            _.label = t[1];
+          if (op[0] === 6 && _2.label < t[1]) {
+            _2.label = t[1];
             t = op;
             break;
           }
-          if (t && _.label < t[2]) {
-            _.label = t[2];
-            _.ops.push(op);
+          if (t && _2.label < t[2]) {
+            _2.label = t[2];
+            _2.ops.push(op);
             break;
           }
-          if (t[2]) _.ops.pop();
-          _.trys.pop();
+          if (t[2]) _2.ops.pop();
+          _2.trys.pop();
           continue;
       }
-      op = body.call(thisArg, _);
+      op = body.call(thisArg, _2);
     } catch (e) {
       op = [6, e];
       y = 0;
@@ -149,39 +149,39 @@ function __spreadArray(to, from2, pack) {
   }
   return to.concat(ar || Array.prototype.slice.call(from2));
 }
-function __await(v) {
-  return this instanceof __await ? (this.v = v, this) : new __await(v);
+function __await(v2) {
+  return this instanceof __await ? (this.v = v2, this) : new __await(v2);
 }
 function __asyncGenerator(thisArg, _arguments, generator) {
   if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-  var g = generator.apply(thisArg, _arguments || []), i, q = [];
+  var g = generator.apply(thisArg, _arguments || []), i, q2 = [];
   return i = Object.create((typeof AsyncIterator === "function" ? AsyncIterator : Object).prototype), verb("next"), verb("throw"), verb("return", awaitReturn), i[Symbol.asyncIterator] = function() {
     return this;
   }, i;
   function awaitReturn(f) {
-    return function(v) {
-      return Promise.resolve(v).then(f, reject);
+    return function(v2) {
+      return Promise.resolve(v2).then(f, reject);
     };
   }
   function verb(n, f) {
     if (g[n]) {
-      i[n] = function(v) {
-        return new Promise(function(a, b) {
-          q.push([n, v, a, b]) > 1 || resume(n, v);
+      i[n] = function(v2) {
+        return new Promise(function(a2, b2) {
+          q2.push([n, v2, a2, b2]) > 1 || resume(n, v2);
         });
       };
       if (f) i[n] = f(i[n]);
     }
   }
-  function resume(n, v) {
+  function resume(n, v2) {
     try {
-      step(g[n](v));
+      step(g[n](v2));
     } catch (e) {
-      settle(q[0][3], e);
+      settle(q2[0][3], e);
     }
   }
   function step(r) {
-    r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
+    r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q2[0][2], r);
   }
   function fulfill(value) {
     resume("next", value);
@@ -189,8 +189,8 @@ function __asyncGenerator(thisArg, _arguments, generator) {
   function reject(value) {
     resume("throw", value);
   }
-  function settle(f, v) {
-    if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
+  function settle(f, v2) {
+    if (f(v2), q2.shift(), q2.length) resume(q2[0][0], q2[0][1]);
   }
 }
 function __asyncValues(o) {
@@ -200,15 +200,15 @@ function __asyncValues(o) {
     return this;
   }, i);
   function verb(n) {
-    i[n] = o[n] && function(v) {
+    i[n] = o[n] && function(v2) {
       return new Promise(function(resolve, reject) {
-        v = o[n](v), settle(resolve, reject, v.done, v.value);
+        v2 = o[n](v2), settle(resolve, reject, v2.done, v2.value);
       });
     };
   }
-  function settle(resolve, reject, d, v) {
-    Promise.resolve(v).then(function(v2) {
-      resolve({ value: v2, done: d });
+  function settle(resolve, reject, d, v2) {
+    Promise.resolve(v2).then(function(v22) {
+      resolve({ value: v22, done: d });
     }, reject);
   }
 }
@@ -616,8 +616,8 @@ var EMPTY_OBSERVER = {
 var observable = function() {
   return typeof Symbol === "function" && Symbol.observable || "@@observable";
 }();
-function identity(x) {
-  return x;
+function identity(x2) {
+  return x2;
 }
 function pipe() {
   var fns = [];
@@ -705,8 +705,8 @@ var Observable = function() {
     promiseCtor = getPromiseCtor(promiseCtor);
     return new promiseCtor(function(resolve, reject) {
       var value;
-      _this.subscribe(function(x) {
-        return value = x;
+      _this.subscribe(function(x2) {
+        return value = x2;
       }, function(err) {
         return reject(err);
       }, function() {
@@ -1204,8 +1204,8 @@ function popScheduler(args) {
 function popNumber(args, defaultValue) {
   return typeof last(args) === "number" ? args.pop() : defaultValue;
 }
-var isArrayLike = function(x) {
-  return x && typeof x.length === "number" && typeof x !== "function";
+var isArrayLike = function(x2) {
+  return x2 && typeof x2.length === "number" && typeof x2 !== "function";
 };
 function isPromise(value) {
   return isFunction(value === null || value === void 0 ? void 0 : value.then);
@@ -1674,10 +1674,10 @@ function mergeMap(project, resultSelector, concurrent) {
     concurrent = Infinity;
   }
   if (isFunction(resultSelector)) {
-    return mergeMap(function(a, i) {
-      return map(function(b, ii) {
-        return resultSelector(a, b, i, ii);
-      })(innerFrom(project(a, i)));
+    return mergeMap(function(a2, i) {
+      return map(function(b2, ii) {
+        return resultSelector(a2, b2, i, ii);
+      })(innerFrom(project(a2, i)));
     }, concurrent);
   } else if (typeof resultSelector === "number") {
     concurrent = resultSelector;
@@ -1920,8 +1920,8 @@ function distinctUntilChanged(comparator, keySelector) {
     }));
   });
 }
-function defaultCompare(a, b) {
-  return a === b;
+function defaultCompare(a2, b2) {
+  return a2 === b2;
 }
 function throwIfEmpty(errorFactory) {
   if (errorFactory === void 0) {
@@ -1943,8 +1943,8 @@ function defaultErrorFactory() {
 function first(predicate, defaultValue) {
   var hasDefaultValue = arguments.length >= 2;
   return function(source2) {
-    return source2.pipe(predicate ? filter(function(v, i) {
-      return predicate(v, i, source2);
+    return source2.pipe(predicate ? filter(function(v2, i) {
+      return predicate(v2, i, source2);
     }) : identity, take(1), hasDefaultValue ? defaultIfEmpty(defaultValue) : throwIfEmpty(function() {
       return new EmptyError();
     }));
@@ -2599,7 +2599,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.41.0";
+var packageVersion = "24.42.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -2781,7 +2781,7 @@ var withSourcePuppeteerURLIfNone = (functionName, object) => {
     return object;
   }
   const original = Error.prepareStackTrace;
-  Error.prepareStackTrace = (_, stack) => {
+  Error.prepareStackTrace = (_2, stack) => {
     return stack[2];
   };
   const site = new Error().stack;
@@ -3068,8 +3068,8 @@ var Browser = class extends EventEmitter {
     const contextPages = await Promise.all(this.browserContexts().map((context2) => {
       return context2.pages(includeAll);
     }));
-    return contextPages.reduce((acc, x) => {
-      return acc.concat(x);
+    return contextPages.reduce((acc, x2) => {
+      return acc.concat(x2);
     }, []);
   }
   /**
@@ -3540,7 +3540,7 @@ var __disposeResources = /* @__PURE__ */ function(SuppressedError3) {
   return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 });
 var instances = /* @__PURE__ */ new WeakSet();
-function moveable(Class, _) {
+function moveable(Class, _2) {
   let hasDispose = false;
   if (Class.prototype[disposeSymbol]) {
     const dispose = Class.prototype[disposeSymbol];
@@ -3575,7 +3575,7 @@ function moveable(Class, _) {
 function throwIfDisposed(message = (value) => {
   return `Attempted to use disposed ${value.constructor.name}.`;
 }) {
-  return (target, _) => {
+  return (target, _2) => {
     return function(...args) {
       if (this.disposed) {
         throw new Error(message(this));
@@ -3584,7 +3584,7 @@ function throwIfDisposed(message = (value) => {
     };
   };
 }
-function invokeAtMostOnceForArguments(target, _) {
+function invokeAtMostOnceForArguments(target, _2) {
   const cache = /* @__PURE__ */ new WeakMap();
   let cacheDepth = -1;
   return function(...args) {
@@ -3614,7 +3614,7 @@ function invokeAtMostOnceForArguments(target, _) {
 function guarded(getKey = function() {
   return this;
 }) {
-  return (target, _) => {
+  return (target, _2) => {
     const mutexes = /* @__PURE__ */ new WeakMap();
     return async function(...args) {
       const env_1 = { stack: [], error: void 0, hasError: false };
@@ -3625,7 +3625,7 @@ function guarded(getKey = function() {
           mutex = new Mutex();
           mutexes.set(key, mutex);
         }
-        const _2 = __addDisposableResource(env_1, await mutex.acquire(), true);
+        const _3 = __addDisposableResource(env_1, await mutex.acquire(), true);
         return await target.call(this, ...args);
       } catch (e_1) {
         env_1.error = e_1;
@@ -4355,7 +4355,7 @@ var __esDecorate = function(ctor, descriptorIn, decorators, contextIn, initializ
   var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
   var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
   var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-  var _, done = false;
+  var _2, done = false;
   for (var i = decorators.length - 1; i >= 0; i--) {
     var context2 = {};
     for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
@@ -4368,12 +4368,12 @@ var __esDecorate = function(ctor, descriptorIn, decorators, contextIn, initializ
     if (kind === "accessor") {
       if (result === void 0) continue;
       if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-      if (_ = accept(result.get)) descriptor.get = _;
-      if (_ = accept(result.set)) descriptor.set = _;
-      if (_ = accept(result.init)) initializers.unshift(_);
-    } else if (_ = accept(result)) {
-      if (kind === "field") initializers.unshift(_);
-      else descriptor[key] = _;
+      if (_2 = accept(result.get)) descriptor.get = _2;
+      if (_2 = accept(result.set)) descriptor.set = _2;
+      if (_2 = accept(result.init)) initializers.unshift(_2);
+    } else if (_2 = accept(result)) {
+      if (kind === "field") initializers.unshift(_2);
+      else descriptor[key] = _2;
     }
   }
   if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -5214,8 +5214,8 @@ var Page = (() => {
       const [width, height, devicePixelRatio] = await this.#getNativePixelDimensions();
       let crop;
       if (options.crop) {
-        const { x, y, width: cropWidth, height: cropHeight } = roundRectangle(normalizeRectangle(options.crop));
-        if (x < 0 || y < 0) {
+        const { x: x2, y, width: cropWidth, height: cropHeight } = roundRectangle(normalizeRectangle(options.crop));
+        if (x2 < 0 || y < 0) {
           throw new Error(`\`crop.x\` and \`crop.y\` must be greater than or equal to 0.`);
         }
         if (cropWidth <= 0 || cropHeight <= 0) {
@@ -5223,14 +5223,14 @@ var Page = (() => {
         }
         const viewportWidth = width / devicePixelRatio;
         const viewportHeight = height / devicePixelRatio;
-        if (x + cropWidth > viewportWidth) {
+        if (x2 + cropWidth > viewportWidth) {
           throw new Error(`\`crop.width\` cannot be larger than the viewport width (${viewportWidth}).`);
         }
         if (y + cropHeight > viewportHeight) {
           throw new Error(`\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`);
         }
         crop = {
-          x: x * devicePixelRatio,
+          x: x2 * devicePixelRatio,
           y: y * devicePixelRatio,
           width: cropWidth * devicePixelRatio,
           height: cropHeight * devicePixelRatio
@@ -5790,11 +5790,11 @@ function normalizeRectangle(clip) {
   };
 }
 function roundRectangle(clip) {
-  const x = Math.round(clip.x);
+  const x2 = Math.round(clip.x);
   const y = Math.round(clip.y);
-  const width = Math.round(clip.width + clip.x - x);
+  const width = Math.round(clip.width + clip.x - x2);
   const height = Math.round(clip.height + clip.y - y);
-  return { ...clip, x, y, width, height };
+  return { ...clip, x: x2, y, width, height };
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/WebWorker.js
@@ -6032,7 +6032,7 @@ var __esDecorate2 = function(ctor, descriptorIn, decorators, contextIn, initiali
   var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
   var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
   var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-  var _, done = false;
+  var _2, done = false;
   for (var i = decorators.length - 1; i >= 0; i--) {
     var context2 = {};
     for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
@@ -6045,12 +6045,12 @@ var __esDecorate2 = function(ctor, descriptorIn, decorators, contextIn, initiali
     if (kind === "accessor") {
       if (result === void 0) continue;
       if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-      if (_ = accept(result.get)) descriptor.get = _;
-      if (_ = accept(result.set)) descriptor.set = _;
-      if (_ = accept(result.init)) initializers.unshift(_);
-    } else if (_ = accept(result)) {
-      if (kind === "field") initializers.unshift(_);
-      else descriptor[key] = _;
+      if (_2 = accept(result.get)) descriptor.get = _2;
+      if (_2 = accept(result.set)) descriptor.set = _2;
+      if (_2 = accept(result.init)) initializers.unshift(_2);
+    } else if (_2 = accept(result)) {
+      if (kind === "field") initializers.unshift(_2);
+      else descriptor[key] = _2;
     }
   }
   if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -7099,16 +7099,16 @@ function convertToDisjointRanges(nestedRanges) {
     points.push({ offset: range.startOffset, type: 0, range });
     points.push({ offset: range.endOffset, type: 1, range });
   }
-  points.sort((a, b) => {
-    if (a.offset !== b.offset) {
-      return a.offset - b.offset;
+  points.sort((a2, b2) => {
+    if (a2.offset !== b2.offset) {
+      return a2.offset - b2.offset;
     }
-    if (a.type !== b.type) {
-      return b.type - a.type;
+    if (a2.type !== b2.type) {
+      return b2.type - a2.type;
     }
-    const aLength = a.range.endOffset - a.range.startOffset;
-    const bLength = b.range.endOffset - b.range.startOffset;
-    if (a.type === 0) {
+    const aLength = a2.range.endOffset - a2.range.startOffset;
+    const bLength = b2.range.endOffset - b2.range.startOffset;
+    if (a2.type === 0) {
       return bLength - aLength;
     }
     return aLength - bLength;
@@ -7231,7 +7231,7 @@ var __esDecorate3 = function(ctor, descriptorIn, decorators, contextIn, initiali
   var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
   var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
   var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-  var _, done = false;
+  var _2, done = false;
   for (var i = decorators.length - 1; i >= 0; i--) {
     var context2 = {};
     for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
@@ -7244,12 +7244,12 @@ var __esDecorate3 = function(ctor, descriptorIn, decorators, contextIn, initiali
     if (kind === "accessor") {
       if (result === void 0) continue;
       if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-      if (_ = accept(result.get)) descriptor.get = _;
-      if (_ = accept(result.set)) descriptor.set = _;
-      if (_ = accept(result.init)) initializers.unshift(_);
-    } else if (_ = accept(result)) {
-      if (kind === "field") initializers.unshift(_);
-      else descriptor[key] = _;
+      if (_2 = accept(result.get)) descriptor.get = _2;
+      if (_2 = accept(result.set)) descriptor.set = _2;
+      if (_2 = accept(result.init)) initializers.unshift(_2);
+    } else if (_2 = accept(result)) {
+      if (kind === "field") initializers.unshift(_2);
+      else descriptor[key] = _2;
     }
   }
   if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -8102,7 +8102,7 @@ var parseARIASelector = (selector) => {
     throw new Error(`Selector ${selector} is too long`);
   }
   const queryOptions = {};
-  const defaultName = selector.replace(ATTRIBUTE_REGEXP, (_, attribute, __, value) => {
+  const defaultName = selector.replace(ATTRIBUTE_REGEXP, (_2, attribute, __, value) => {
     assert(isKnownAttribute(attribute), `Unknown aria attribute "${attribute}" in selector`);
     queryOptions[attribute] = value;
     return "";
@@ -8633,7 +8633,7 @@ var __esDecorate4 = function(ctor, descriptorIn, decorators, contextIn, initiali
   var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
   var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
   var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-  var _, done = false;
+  var _2, done = false;
   for (var i = decorators.length - 1; i >= 0; i--) {
     var context2 = {};
     for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
@@ -8646,12 +8646,12 @@ var __esDecorate4 = function(ctor, descriptorIn, decorators, contextIn, initiali
     if (kind === "accessor") {
       if (result === void 0) continue;
       if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-      if (_ = accept(result.get)) descriptor.get = _;
-      if (_ = accept(result.set)) descriptor.set = _;
-      if (_ = accept(result.init)) initializers.unshift(_);
-    } else if (_ = accept(result)) {
-      if (kind === "field") initializers.unshift(_);
-      else descriptor[key] = _;
+      if (_2 = accept(result.get)) descriptor.get = _2;
+      if (_2 = accept(result.set)) descriptor.set = _2;
+      if (_2 = accept(result.init)) initializers.unshift(_2);
+    } else if (_2 = accept(result)) {
+      if (kind === "field") initializers.unshift(_2);
+      else descriptor[key] = _2;
     }
   }
   if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -9625,7 +9625,7 @@ var __esDecorate5 = function(ctor, descriptorIn, decorators, contextIn, initiali
   var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
   var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
   var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-  var _, done = false;
+  var _2, done = false;
   for (var i = decorators.length - 1; i >= 0; i--) {
     var context2 = {};
     for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
@@ -9638,12 +9638,12 @@ var __esDecorate5 = function(ctor, descriptorIn, decorators, contextIn, initiali
     if (kind === "accessor") {
       if (result === void 0) continue;
       if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-      if (_ = accept(result.get)) descriptor.get = _;
-      if (_ = accept(result.set)) descriptor.set = _;
-      if (_ = accept(result.init)) initializers.unshift(_);
-    } else if (_ = accept(result)) {
-      if (kind === "field") initializers.unshift(_);
-      else descriptor[key] = _;
+      if (_2 = accept(result.get)) descriptor.get = _2;
+      if (_2 = accept(result.set)) descriptor.set = _2;
+      if (_2 = accept(result.init)) initializers.unshift(_2);
+    } else if (_2 = accept(result)) {
+      if (kind === "field") initializers.unshift(_2);
+      else descriptor[key] = _2;
     }
   }
   if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -9711,7 +9711,7 @@ var __setFunctionName2 = function(f, name, prefix) {
   if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
   return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
 };
-function bindIsolatedHandle(target, _) {
+function bindIsolatedHandle(target, _2) {
   return async function(...args) {
     if (this.realm === this.frame.isolatedRealm()) {
       return await target.call(this, ...args);
@@ -10117,7 +10117,7 @@ var ElementHandle = (() => {
       try {
         pageFunction = withSourcePuppeteerURLIfNone(this.$$eval.name, pageFunction);
         const results = await this.$$(selector);
-        const elements = __addDisposableResource9(env_2, await this.evaluateHandle((_, ...elements2) => {
+        const elements = __addDisposableResource9(env_2, await this.evaluateHandle((_2, ...elements2) => {
           return elements2;
         }, ...results), false);
         const [result] = await Promise.all([
@@ -10267,8 +10267,8 @@ var ElementHandle = (() => {
      */
     async hover() {
       await this.scrollIntoViewIfNeeded();
-      const { x, y } = await this.clickablePoint();
-      await this.frame.page().mouse.move(x, y);
+      const { x: x2, y } = await this.clickablePoint();
+      await this.frame.page().mouse.move(x2, y);
     }
     /**
      * This method scrolls element into view if needed, and then
@@ -10277,18 +10277,18 @@ var ElementHandle = (() => {
      */
     async click(options = {}) {
       await this.scrollIntoViewIfNeeded();
-      const { x, y } = await this.clickablePoint(options.offset);
+      const { x: x2, y } = await this.clickablePoint(options.offset);
       try {
-        await this.frame.page().mouse.click(x, y, options);
+        await this.frame.page().mouse.click(x2, y, options);
       } finally {
         if (options.debugHighlight) {
-          await this.frame.page().evaluate((x2, y2) => {
+          await this.frame.page().evaluate((x3, y2) => {
             const highlight = document.createElement("div");
             highlight.innerHTML = `<style>
         @scope {
           :scope {
               position: fixed;
-              left: ${x2}px;
+              left: ${x3}px;
               top: ${y2}px;
               width: 10px;
               height: 10px;
@@ -10311,7 +10311,7 @@ var ElementHandle = (() => {
               highlight.remove();
             }, { once: true });
             document.body.append(highlight);
-          }, x, y);
+          }, x2, y);
         }
       }
     }
@@ -10451,8 +10451,8 @@ var ElementHandle = (() => {
      */
     async tap() {
       await this.scrollIntoViewIfNeeded();
-      const { x, y } = await this.clickablePoint();
-      await this.frame.page().touchscreen.tap(x, y);
+      const { x: x2, y } = await this.clickablePoint();
+      await this.frame.page().touchscreen.tap(x2, y);
     }
     /**
      * This method scrolls the element into view if needed, and then
@@ -10461,8 +10461,8 @@ var ElementHandle = (() => {
      */
     async touchStart() {
       await this.scrollIntoViewIfNeeded();
-      const { x, y } = await this.clickablePoint();
-      return await this.frame.page().touchscreen.touchStart(x, y);
+      const { x: x2, y } = await this.clickablePoint();
+      return await this.frame.page().touchscreen.touchStart(x2, y);
     }
     /**
      * This method scrolls the element into view if needed, and then
@@ -10472,11 +10472,11 @@ var ElementHandle = (() => {
      */
     async touchMove(touch) {
       await this.scrollIntoViewIfNeeded();
-      const { x, y } = await this.clickablePoint();
+      const { x: x2, y } = await this.clickablePoint();
       if (touch) {
-        return await touch.move(x, y);
+        return await touch.move(x2, y);
       }
-      await this.frame.page().touchscreen.touchMove(x, y);
+      await this.frame.page().touchscreen.touchMove(x2, y);
     }
     async touchEnd() {
       await this.scrollIntoViewIfNeeded();
@@ -11208,7 +11208,7 @@ var __esDecorate6 = function(ctor, descriptorIn, decorators, contextIn, initiali
   var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
   var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
   var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-  var _, done = false;
+  var _2, done = false;
   for (var i = decorators.length - 1; i >= 0; i--) {
     var context2 = {};
     for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
@@ -11221,12 +11221,12 @@ var __esDecorate6 = function(ctor, descriptorIn, decorators, contextIn, initiali
     if (kind === "accessor") {
       if (result === void 0) continue;
       if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-      if (_ = accept(result.get)) descriptor.get = _;
-      if (_ = accept(result.set)) descriptor.set = _;
-      if (_ = accept(result.init)) initializers.unshift(_);
-    } else if (_ = accept(result)) {
-      if (kind === "field") initializers.unshift(_);
-      else descriptor[key] = _;
+      if (_2 = accept(result.get)) descriptor.get = _2;
+      if (_2 = accept(result.set)) descriptor.set = _2;
+      if (_2 = accept(result.init)) initializers.unshift(_2);
+    } else if (_2 = accept(result)) {
+      if (kind === "field") initializers.unshift(_2);
+      else descriptor[key] = _2;
     }
   }
   if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -11333,7 +11333,8 @@ var CdpElementHandle = (() => {
       await this.client.send("Autofill.trigger", {
         fieldId,
         frameId,
-        card: data.creditCard
+        card: data.creditCard,
+        address: data.address
       });
     }
     async *queryAXTree(name, role) {
@@ -11477,7 +11478,7 @@ var ExecutionContext = class extends EventEmitter {
       if (this.#bindings.has(binding.name)) {
         return;
       }
-      const _ = __addDisposableResource10(env_1, await this.#mutex.acquire(), false);
+      const _2 = __addDisposableResource10(env_1, await this.#mutex.acquire(), false);
       try {
         await this.#client.send("Runtime.addBinding", this.#name ? {
           name: CDP_BINDING_PREFIX + binding.name,
@@ -13009,7 +13010,7 @@ var __esDecorate7 = function(ctor, descriptorIn, decorators, contextIn, initiali
   var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
   var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
   var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-  var _, done = false;
+  var _2, done = false;
   for (var i = decorators.length - 1; i >= 0; i--) {
     var context2 = {};
     for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
@@ -13022,12 +13023,12 @@ var __esDecorate7 = function(ctor, descriptorIn, decorators, contextIn, initiali
     if (kind === "accessor") {
       if (result === void 0) continue;
       if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-      if (_ = accept(result.get)) descriptor.get = _;
-      if (_ = accept(result.set)) descriptor.set = _;
-      if (_ = accept(result.init)) initializers.unshift(_);
-    } else if (_ = accept(result)) {
-      if (kind === "field") initializers.unshift(_);
-      else descriptor[key] = _;
+      if (_2 = accept(result.get)) descriptor.get = _2;
+      if (_2 = accept(result.set)) descriptor.set = _2;
+      if (_2 = accept(result.init)) initializers.unshift(_2);
+    } else if (_2 = accept(result)) {
+      if (kind === "field") initializers.unshift(_2);
+      else descriptor[key] = _2;
     }
   }
   if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -15289,8 +15290,8 @@ var Touchscreen = class {
    * @param x - Horizontal position of the tap.
    * @param y - Vertical position of the tap.
    */
-  async tap(x, y) {
-    const touch = await this.touchStart(x, y);
+  async tap(x2, y) {
+    const touch = await this.touchStart(x2, y);
     await touch.end();
   }
   /**
@@ -15305,12 +15306,12 @@ var Touchscreen = class {
    * {@link https://developer.chrome.com/blog/a-more-compatible-smoother-touch/#chromes-new-model-the-throttled-async-touchmove-model | throttles}
    * touch move events.
    */
-  async touchMove(x, y) {
+  async touchMove(x2, y) {
     const touch = this.touches[0];
     if (!touch) {
       throw new TouchError("Must start a new Touch first");
     }
-    return await touch.move(x, y);
+    return await touch.move(x2, y);
   }
   /**
    * Dispatches a `touchend` event on the first touch that is active.
@@ -15946,10 +15947,10 @@ var CdpMouse = class extends Mouse {
     }
     await Promise.all(actions);
   }
-  async move(x, y, options = {}) {
+  async move(x2, y, options = {}) {
     const { steps = 1 } = options;
     const from2 = this.#state.position;
-    const to = { x, y };
+    const to = { x: x2, y };
     for (let i = 1; i <= steps; i++) {
       await this.#withTransaction((updateState) => {
         updateState({
@@ -16017,12 +16018,12 @@ var CdpMouse = class extends Mouse {
       });
     });
   }
-  async click(x, y, options = {}) {
+  async click(x2, y, options = {}) {
     const { delay, count = 1, clickCount = count } = options;
     if (count < 1) {
       throw new Error("Click must occur a positive number of times.");
     }
-    const actions = [this.move(x, y)];
+    const actions = [this.move(x2, y)];
     if (clickCount === count) {
       for (let i = 1; i < count; ++i) {
         actions.push(this.down({ ...options, clickCount: i }), this.up({ ...options, clickCount: i }));
@@ -16130,8 +16131,8 @@ var CdpTouchHandle = class {
     });
     this.#started = true;
   }
-  move(x, y) {
-    this.#touchPoint.x = Math.round(x);
+  move(x2, y) {
+    this.#touchPoint.x = Math.round(x2);
     this.#touchPoint.y = Math.round(y);
     return this.#client.send("Input.dispatchTouchEvent", {
       type: "touchMove",
@@ -16162,10 +16163,10 @@ var CdpTouchscreen = class extends Touchscreen {
       t.updateClient(client);
     });
   }
-  async touchStart(x, y) {
+  async touchStart(x2, y) {
     const id = this.idGenerator();
     const touchPoint = {
-      x: Math.round(x),
+      x: Math.round(x2),
       y: Math.round(y),
       radiusX: 0.5,
       radiusY: 0.5,
@@ -17278,8 +17279,8 @@ var CdpPage = class _CdpPage extends Page {
       let clip = userClip;
       if (clip && !captureBeyondViewport) {
         const viewport = await this.mainFrame().isolatedRealm().evaluate(() => {
-          const { height, pageLeft: x, pageTop: y, width } = window.visualViewport;
-          return { x, y, height, width };
+          const { height, pageLeft: x2, pageTop: y, width } = window.visualViewport;
+          return { x: x2, y, height, width };
         });
         clip = getIntersectionRect(clip, viewport);
       }
@@ -17422,12 +17423,12 @@ var supportedMetrics = /* @__PURE__ */ new Set([
   "JSHeapTotalSize"
 ]);
 function getIntersectionRect(clip, viewport) {
-  const x = Math.max(clip.x, viewport.x);
+  const x2 = Math.max(clip.x, viewport.x);
   const y = Math.max(clip.y, viewport.y);
   return {
-    x,
+    x: x2,
     y,
-    width: Math.max(Math.min(clip.x + clip.width, viewport.x + viewport.width) - x, 0),
+    width: Math.max(Math.min(clip.x + clip.width, viewport.x + viewport.width) - x2, 0),
     height: Math.max(Math.min(clip.y + clip.height, viewport.y + viewport.height) - y, 0)
   };
 }
@@ -17631,16 +17632,36 @@ var Extension = class {
   #id;
   #version;
   #name;
+  #path;
+  #enabled;
   /**
    * @internal
    */
-  constructor(id, version, name) {
+  constructor(id, version, name, path, enabled) {
     if (!id || !version) {
       throw new Error("Extension ID and version are required");
     }
     this.#id = id;
     this.#version = version;
     this.#name = name;
+    this.#path = path;
+    this.#enabled = enabled;
+  }
+  /**
+   * Whether the extension is enabled.
+   *
+   * @public
+   */
+  get enabled() {
+    return this.#enabled;
+  }
+  /**
+   * The path in the file system where the extension is located.
+   *
+   * @public
+   */
+  get path() {
+    return this.#path;
   }
   /**
    * The version of the extension as specified in its manifest.
@@ -17675,8 +17696,8 @@ var CdpExtension = class extends Extension {
   /*
    * @internal
    */
-  constructor(id, version, name, browser) {
-    super(id, version, name);
+  constructor(id, version, name, path, enabled, browser) {
+    super(id, version, name, path, enabled);
     this.#browser = browser;
   }
   async workers() {
@@ -17969,6 +17990,786 @@ var WorkerTarget = class extends CdpTarget {
 var OtherTarget = class extends CdpTarget {
 };
 
+// gen/front_end/third_party/puppeteer/package/lib/esm/third_party/urlpattern-polyfill/urlpattern-polyfill.js
+var Pe = Object.defineProperty;
+var a = (e, t) => Pe(e, "name", { value: t, configurable: true });
+var P = class {
+  type = 3;
+  name = "";
+  prefix = "";
+  value = "";
+  suffix = "";
+  modifier = 3;
+  constructor(t, r, n, c, l, f) {
+    this.type = t, this.name = r, this.prefix = n, this.value = c, this.suffix = l, this.modifier = f;
+  }
+  hasCustomName() {
+    return this.name !== "" && typeof this.name != "number";
+  }
+};
+a(P, "Part");
+var Re = /[$_\p{ID_Start}]/u;
+var Ee = /[$_\u200C\u200D\p{ID_Continue}]/u;
+var v = ".*";
+function Oe(e, t) {
+  return (t ? /^[\x00-\xFF]*$/ : /^[\x00-\x7F]*$/).test(e);
+}
+a(Oe, "isASCII");
+function D(e, t = false) {
+  let r = [], n = 0;
+  for (; n < e.length; ) {
+    let c = e[n], l = a(function(f) {
+      if (!t) throw new TypeError(f);
+      r.push({ type: "INVALID_CHAR", index: n, value: e[n++] });
+    }, "ErrorOrInvalid");
+    if (c === "*") {
+      r.push({ type: "ASTERISK", index: n, value: e[n++] });
+      continue;
+    }
+    if (c === "+" || c === "?") {
+      r.push({ type: "OTHER_MODIFIER", index: n, value: e[n++] });
+      continue;
+    }
+    if (c === "\\") {
+      r.push({ type: "ESCAPED_CHAR", index: n++, value: e[n++] });
+      continue;
+    }
+    if (c === "{") {
+      r.push({ type: "OPEN", index: n, value: e[n++] });
+      continue;
+    }
+    if (c === "}") {
+      r.push({ type: "CLOSE", index: n, value: e[n++] });
+      continue;
+    }
+    if (c === ":") {
+      let f = "", s = n + 1;
+      for (; s < e.length; ) {
+        let i = e.substr(s, 1);
+        if (s === n + 1 && Re.test(i) || s !== n + 1 && Ee.test(i)) {
+          f += e[s++];
+          continue;
+        }
+        break;
+      }
+      if (!f) {
+        l(`Missing parameter name at ${n}`);
+        continue;
+      }
+      r.push({ type: "NAME", index: n, value: f }), n = s;
+      continue;
+    }
+    if (c === "(") {
+      let f = 1, s = "", i = n + 1, o = false;
+      if (e[i] === "?") {
+        l(`Pattern cannot start with "?" at ${i}`);
+        continue;
+      }
+      for (; i < e.length; ) {
+        if (!Oe(e[i], false)) {
+          l(`Invalid character '${e[i]}' at ${i}.`), o = true;
+          break;
+        }
+        if (e[i] === "\\") {
+          s += e[i++] + e[i++];
+          continue;
+        }
+        if (e[i] === ")") {
+          if (f--, f === 0) {
+            i++;
+            break;
+          }
+        } else if (e[i] === "(" && (f++, e[i + 1] !== "?")) {
+          l(`Capturing groups are not allowed at ${i}`), o = true;
+          break;
+        }
+        s += e[i++];
+      }
+      if (o) continue;
+      if (f) {
+        l(`Unbalanced pattern at ${n}`);
+        continue;
+      }
+      if (!s) {
+        l(`Missing pattern at ${n}`);
+        continue;
+      }
+      r.push({ type: "REGEX", index: n, value: s }), n = i;
+      continue;
+    }
+    r.push({ type: "CHAR", index: n, value: e[n++] });
+  }
+  return r.push({ type: "END", index: n, value: "" }), r;
+}
+a(D, "lexer");
+function F(e, t = {}) {
+  let r = D(e);
+  t.delimiter ??= "/#?", t.prefixes ??= "./";
+  let n = `[^${x(t.delimiter)}]+?`, c = [], l = 0, f = 0, s = "", i = /* @__PURE__ */ new Set(), o = a((u) => {
+    if (f < r.length && r[f].type === u) return r[f++].value;
+  }, "tryConsume"), h = a(() => o("OTHER_MODIFIER") ?? o("ASTERISK"), "tryConsumeModifier"), p = a((u) => {
+    let d = o(u);
+    if (d !== void 0) return d;
+    let { type: g, index: y } = r[f];
+    throw new TypeError(`Unexpected ${g} at ${y}, expected ${u}`);
+  }, "mustConsume"), A = a(() => {
+    let u = "", d;
+    for (; d = o("CHAR") ?? o("ESCAPED_CHAR"); ) u += d;
+    return u;
+  }, "consumeText"), xe = a((u) => u, "DefaultEncodePart"), N = t.encodePart || xe, H = "", $ = a((u) => {
+    H += u;
+  }, "appendToPendingFixedValue"), M = a(() => {
+    H.length && (c.push(new P(3, "", "", N(H), "", 3)), H = "");
+  }, "maybeAddPartFromPendingFixedValue"), X = a((u, d, g, y, Z) => {
+    let m = 3;
+    switch (Z) {
+      case "?":
+        m = 1;
+        break;
+      case "*":
+        m = 0;
+        break;
+      case "+":
+        m = 2;
+        break;
+    }
+    if (!d && !g && m === 3) {
+      $(u);
+      return;
+    }
+    if (M(), !d && !g) {
+      if (!u) return;
+      c.push(new P(3, "", "", N(u), "", m));
+      return;
+    }
+    let S;
+    g ? g === "*" ? S = v : S = g : S = n;
+    let k = 2;
+    S === n ? (k = 1, S = "") : S === v && (k = 0, S = "");
+    let E;
+    if (d ? E = d : g && (E = l++), i.has(E)) throw new TypeError(`Duplicate name '${E}'.`);
+    i.add(E), c.push(new P(k, E, N(u), S, N(y), m));
+  }, "addPart");
+  for (; f < r.length; ) {
+    let u = o("CHAR"), d = o("NAME"), g = o("REGEX");
+    if (!d && !g && (g = o("ASTERISK")), d || g) {
+      let m = u ?? "";
+      t.prefixes.indexOf(m) === -1 && ($(m), m = ""), M();
+      let S = h();
+      X(m, d, g, "", S);
+      continue;
+    }
+    let y = u ?? o("ESCAPED_CHAR");
+    if (y) {
+      $(y);
+      continue;
+    }
+    if (o("OPEN")) {
+      let m = A(), S = o("NAME"), k = o("REGEX");
+      !S && !k && (k = o("ASTERISK"));
+      let E = A();
+      p("CLOSE");
+      let be = h();
+      X(m, S, k, E, be);
+      continue;
+    }
+    M(), p("END");
+  }
+  return c;
+}
+a(F, "parse");
+function x(e) {
+  return e.replace(/([.+*?^${}()[\]|/\\])/g, "\\$1");
+}
+a(x, "escapeString");
+function B(e) {
+  return e && e.ignoreCase ? "ui" : "u";
+}
+a(B, "flags");
+function q(e, t, r) {
+  return W(F(e, r), t, r);
+}
+a(q, "stringToRegexp");
+function T(e) {
+  switch (e) {
+    case 0:
+      return "*";
+    case 1:
+      return "?";
+    case 2:
+      return "+";
+    case 3:
+      return "";
+  }
+}
+a(T, "modifierToString");
+function W(e, t, r = {}) {
+  r.delimiter ??= "/#?", r.prefixes ??= "./", r.sensitive ??= false, r.strict ??= false, r.end ??= true, r.start ??= true, r.endsWith = "";
+  let n = r.start ? "^" : "";
+  for (let s of e) {
+    if (s.type === 3) {
+      s.modifier === 3 ? n += x(s.value) : n += `(?:${x(s.value)})${T(s.modifier)}`;
+      continue;
+    }
+    t && t.push(s.name);
+    let i = `[^${x(r.delimiter)}]+?`, o = s.value;
+    if (s.type === 1 ? o = i : s.type === 0 && (o = v), !s.prefix.length && !s.suffix.length) {
+      s.modifier === 3 || s.modifier === 1 ? n += `(${o})${T(s.modifier)}` : n += `((?:${o})${T(s.modifier)})`;
+      continue;
+    }
+    if (s.modifier === 3 || s.modifier === 1) {
+      n += `(?:${x(s.prefix)}(${o})${x(s.suffix)})`, n += T(s.modifier);
+      continue;
+    }
+    n += `(?:${x(s.prefix)}`, n += `((?:${o})(?:`, n += x(s.suffix), n += x(s.prefix), n += `(?:${o}))*)${x(s.suffix)})`, s.modifier === 0 && (n += "?");
+  }
+  let c = `[${x(r.endsWith)}]|$`, l = `[${x(r.delimiter)}]`;
+  if (r.end) return r.strict || (n += `${l}?`), r.endsWith.length ? n += `(?=${c})` : n += "$", new RegExp(n, B(r));
+  r.strict || (n += `(?:${l}(?=${c}))?`);
+  let f = false;
+  if (e.length) {
+    let s = e[e.length - 1];
+    s.type === 3 && s.modifier === 3 && (f = r.delimiter.indexOf(s) > -1);
+  }
+  return f || (n += `(?=${l}|${c})`), new RegExp(n, B(r));
+}
+a(W, "partsToRegexp");
+var b = { delimiter: "", prefixes: "", sensitive: true, strict: true };
+var J = { delimiter: ".", prefixes: "", sensitive: true, strict: true };
+var Q = { delimiter: "/", prefixes: "/", sensitive: true, strict: true };
+function ee(e, t) {
+  return e.length ? e[0] === "/" ? true : !t || e.length < 2 ? false : (e[0] == "\\" || e[0] == "{") && e[1] == "/" : false;
+}
+a(ee, "isAbsolutePathname");
+function te(e, t) {
+  return e.startsWith(t) ? e.substring(t.length, e.length) : e;
+}
+a(te, "maybeStripPrefix");
+function ke(e, t) {
+  return e.endsWith(t) ? e.substr(0, e.length - t.length) : e;
+}
+a(ke, "maybeStripSuffix");
+function _(e) {
+  return !e || e.length < 2 ? false : e[0] === "[" || (e[0] === "\\" || e[0] === "{") && e[1] === "[";
+}
+a(_, "treatAsIPv6Hostname");
+var re = ["ftp", "file", "http", "https", "ws", "wss"];
+function U(e) {
+  if (!e) return true;
+  for (let t of re) if (e.test(t)) return true;
+  return false;
+}
+a(U, "isSpecialScheme");
+function ne(e, t) {
+  if (e = te(e, "#"), t || e === "") return e;
+  let r = new URL("https://example.com");
+  return r.hash = e, r.hash ? r.hash.substring(1, r.hash.length) : "";
+}
+a(ne, "canonicalizeHash");
+function se(e, t) {
+  if (e = te(e, "?"), t || e === "") return e;
+  let r = new URL("https://example.com");
+  return r.search = e, r.search ? r.search.substring(1, r.search.length) : "";
+}
+a(se, "canonicalizeSearch");
+function ie(e, t) {
+  return t || e === "" ? e : _(e) ? K(e) : j(e);
+}
+a(ie, "canonicalizeHostname");
+function ae(e, t) {
+  if (t || e === "") return e;
+  let r = new URL("https://example.com");
+  return r.password = e, r.password;
+}
+a(ae, "canonicalizePassword");
+function oe(e, t) {
+  if (t || e === "") return e;
+  let r = new URL("https://example.com");
+  return r.username = e, r.username;
+}
+a(oe, "canonicalizeUsername");
+function ce(e, t, r) {
+  if (r || e === "") return e;
+  if (t && !re.includes(t)) return new URL(`${t}:${e}`).pathname;
+  let n = e[0] == "/";
+  return e = new URL(n ? e : "/-" + e, "https://example.com").pathname, n || (e = e.substring(2, e.length)), e;
+}
+a(ce, "canonicalizePathname");
+function le(e, t, r) {
+  return z(t) === e && (e = ""), r || e === "" ? e : G(e);
+}
+a(le, "canonicalizePort");
+function fe(e, t) {
+  return e = ke(e, ":"), t || e === "" ? e : w(e);
+}
+a(fe, "canonicalizeProtocol");
+function z(e) {
+  switch (e) {
+    case "ws":
+    case "http":
+      return "80";
+    case "wws":
+    case "https":
+      return "443";
+    case "ftp":
+      return "21";
+    default:
+      return "";
+  }
+}
+a(z, "defaultPortForProtocol");
+function w(e) {
+  if (e === "") return e;
+  if (/^[-+.A-Za-z0-9]*$/.test(e)) return e.toLowerCase();
+  throw new TypeError(`Invalid protocol '${e}'.`);
+}
+a(w, "protocolEncodeCallback");
+function he(e) {
+  if (e === "") return e;
+  let t = new URL("https://example.com");
+  return t.username = e, t.username;
+}
+a(he, "usernameEncodeCallback");
+function ue(e) {
+  if (e === "") return e;
+  let t = new URL("https://example.com");
+  return t.password = e, t.password;
+}
+a(ue, "passwordEncodeCallback");
+function j(e) {
+  if (e === "") return e;
+  if (/[\t\n\r #%/:<>?@[\]^\\|]/g.test(e)) throw new TypeError(`Invalid hostname '${e}'`);
+  let t = new URL("https://example.com");
+  return t.hostname = e, t.hostname;
+}
+a(j, "hostnameEncodeCallback");
+function K(e) {
+  if (e === "") return e;
+  if (/[^0-9a-fA-F[\]:]/g.test(e)) throw new TypeError(`Invalid IPv6 hostname '${e}'`);
+  return e.toLowerCase();
+}
+a(K, "ipv6HostnameEncodeCallback");
+function G(e) {
+  if (e === "" || /^[0-9]*$/.test(e) && parseInt(e) <= 65535) return e;
+  throw new TypeError(`Invalid port '${e}'.`);
+}
+a(G, "portEncodeCallback");
+function de(e) {
+  if (e === "") return e;
+  let t = new URL("https://example.com");
+  return t.pathname = e[0] !== "/" ? "/-" + e : e, e[0] !== "/" ? t.pathname.substring(2, t.pathname.length) : t.pathname;
+}
+a(de, "standardURLPathnameEncodeCallback");
+function pe(e) {
+  return e === "" ? e : new URL(`data:${e}`).pathname;
+}
+a(pe, "pathURLPathnameEncodeCallback");
+function ge(e) {
+  if (e === "") return e;
+  let t = new URL("https://example.com");
+  return t.search = e, t.search.substring(1, t.search.length);
+}
+a(ge, "searchEncodeCallback");
+function me(e) {
+  if (e === "") return e;
+  let t = new URL("https://example.com");
+  return t.hash = e, t.hash.substring(1, t.hash.length);
+}
+a(me, "hashEncodeCallback");
+var C = class {
+  #i;
+  #n = [];
+  #t = {};
+  #e = 0;
+  #s = 1;
+  #l = 0;
+  #o = 0;
+  #d = 0;
+  #p = 0;
+  #g = false;
+  constructor(t) {
+    this.#i = t;
+  }
+  get result() {
+    return this.#t;
+  }
+  parse() {
+    for (this.#n = D(this.#i, true); this.#e < this.#n.length; this.#e += this.#s) {
+      if (this.#s = 1, this.#n[this.#e].type === "END") {
+        if (this.#o === 0) {
+          this.#b(), this.#f() ? this.#r(9, 1) : this.#h() ? this.#r(8, 1) : this.#r(7, 0);
+          continue;
+        } else if (this.#o === 2) {
+          this.#u(5);
+          continue;
+        }
+        this.#r(10, 0);
+        break;
+      }
+      if (this.#d > 0) if (this.#A()) this.#d -= 1;
+      else continue;
+      if (this.#T()) {
+        this.#d += 1;
+        continue;
+      }
+      switch (this.#o) {
+        case 0:
+          this.#P() && this.#u(1);
+          break;
+        case 1:
+          if (this.#P()) {
+            this.#C();
+            let t = 7, r = 1;
+            this.#E() ? (t = 2, r = 3) : this.#g && (t = 2), this.#r(t, r);
+          }
+          break;
+        case 2:
+          this.#S() ? this.#u(3) : (this.#x() || this.#h() || this.#f()) && this.#u(5);
+          break;
+        case 3:
+          this.#O() ? this.#r(4, 1) : this.#S() && this.#r(5, 1);
+          break;
+        case 4:
+          this.#S() && this.#r(5, 1);
+          break;
+        case 5:
+          this.#y() ? this.#p += 1 : this.#w() && (this.#p -= 1), this.#k() && !this.#p ? this.#r(6, 1) : this.#x() ? this.#r(7, 0) : this.#h() ? this.#r(8, 1) : this.#f() && this.#r(9, 1);
+          break;
+        case 6:
+          this.#x() ? this.#r(7, 0) : this.#h() ? this.#r(8, 1) : this.#f() && this.#r(9, 1);
+          break;
+        case 7:
+          this.#h() ? this.#r(8, 1) : this.#f() && this.#r(9, 1);
+          break;
+        case 8:
+          this.#f() && this.#r(9, 1);
+          break;
+        case 9:
+          break;
+        case 10:
+          break;
+      }
+    }
+    this.#t.hostname !== void 0 && this.#t.port === void 0 && (this.#t.port = "");
+  }
+  #r(t, r) {
+    switch (this.#o) {
+      case 0:
+        break;
+      case 1:
+        this.#t.protocol = this.#c();
+        break;
+      case 2:
+        break;
+      case 3:
+        this.#t.username = this.#c();
+        break;
+      case 4:
+        this.#t.password = this.#c();
+        break;
+      case 5:
+        this.#t.hostname = this.#c();
+        break;
+      case 6:
+        this.#t.port = this.#c();
+        break;
+      case 7:
+        this.#t.pathname = this.#c();
+        break;
+      case 8:
+        this.#t.search = this.#c();
+        break;
+      case 9:
+        this.#t.hash = this.#c();
+        break;
+      case 10:
+        break;
+    }
+    this.#o !== 0 && t !== 10 && ([1, 2, 3, 4].includes(this.#o) && [6, 7, 8, 9].includes(t) && (this.#t.hostname ??= ""), [1, 2, 3, 4, 5, 6].includes(this.#o) && [8, 9].includes(t) && (this.#t.pathname ??= this.#g ? "/" : ""), [1, 2, 3, 4, 5, 6, 7].includes(this.#o) && t === 9 && (this.#t.search ??= "")), this.#R(t, r);
+  }
+  #R(t, r) {
+    this.#o = t, this.#l = this.#e + r, this.#e += r, this.#s = 0;
+  }
+  #b() {
+    this.#e = this.#l, this.#s = 0;
+  }
+  #u(t) {
+    this.#b(), this.#o = t;
+  }
+  #m(t) {
+    return t < 0 && (t = this.#n.length - t), t < this.#n.length ? this.#n[t] : this.#n[this.#n.length - 1];
+  }
+  #a(t, r) {
+    let n = this.#m(t);
+    return n.value === r && (n.type === "CHAR" || n.type === "ESCAPED_CHAR" || n.type === "INVALID_CHAR");
+  }
+  #P() {
+    return this.#a(this.#e, ":");
+  }
+  #E() {
+    return this.#a(this.#e + 1, "/") && this.#a(this.#e + 2, "/");
+  }
+  #S() {
+    return this.#a(this.#e, "@");
+  }
+  #O() {
+    return this.#a(this.#e, ":");
+  }
+  #k() {
+    return this.#a(this.#e, ":");
+  }
+  #x() {
+    return this.#a(this.#e, "/");
+  }
+  #h() {
+    if (this.#a(this.#e, "?")) return true;
+    if (this.#n[this.#e].value !== "?") return false;
+    let t = this.#m(this.#e - 1);
+    return t.type !== "NAME" && t.type !== "REGEX" && t.type !== "CLOSE" && t.type !== "ASTERISK";
+  }
+  #f() {
+    return this.#a(this.#e, "#");
+  }
+  #T() {
+    return this.#n[this.#e].type == "OPEN";
+  }
+  #A() {
+    return this.#n[this.#e].type == "CLOSE";
+  }
+  #y() {
+    return this.#a(this.#e, "[");
+  }
+  #w() {
+    return this.#a(this.#e, "]");
+  }
+  #c() {
+    let t = this.#n[this.#e], r = this.#m(this.#l).index;
+    return this.#i.substring(r, t.index);
+  }
+  #C() {
+    let t = {};
+    Object.assign(t, b), t.encodePart = w;
+    let r = q(this.#c(), void 0, t);
+    this.#g = U(r);
+  }
+};
+a(C, "Parser");
+var V = ["protocol", "username", "password", "hostname", "port", "pathname", "search", "hash"];
+var O = "*";
+function Se(e, t) {
+  if (typeof e != "string") throw new TypeError("parameter 1 is not of type 'string'.");
+  let r = new URL(e, t);
+  return { protocol: r.protocol.substring(0, r.protocol.length - 1), username: r.username, password: r.password, hostname: r.hostname, port: r.port, pathname: r.pathname, search: r.search !== "" ? r.search.substring(1, r.search.length) : void 0, hash: r.hash !== "" ? r.hash.substring(1, r.hash.length) : void 0 };
+}
+a(Se, "extractValues");
+function R(e, t) {
+  return t ? I(e) : e;
+}
+a(R, "processBaseURLString");
+function L(e, t, r) {
+  let n;
+  if (typeof t.baseURL == "string") try {
+    n = new URL(t.baseURL), t.protocol === void 0 && (e.protocol = R(n.protocol.substring(0, n.protocol.length - 1), r)), !r && t.protocol === void 0 && t.hostname === void 0 && t.port === void 0 && t.username === void 0 && (e.username = R(n.username, r)), !r && t.protocol === void 0 && t.hostname === void 0 && t.port === void 0 && t.username === void 0 && t.password === void 0 && (e.password = R(n.password, r)), t.protocol === void 0 && t.hostname === void 0 && (e.hostname = R(n.hostname, r)), t.protocol === void 0 && t.hostname === void 0 && t.port === void 0 && (e.port = R(n.port, r)), t.protocol === void 0 && t.hostname === void 0 && t.port === void 0 && t.pathname === void 0 && (e.pathname = R(n.pathname, r)), t.protocol === void 0 && t.hostname === void 0 && t.port === void 0 && t.pathname === void 0 && t.search === void 0 && (e.search = R(n.search.substring(1, n.search.length), r)), t.protocol === void 0 && t.hostname === void 0 && t.port === void 0 && t.pathname === void 0 && t.search === void 0 && t.hash === void 0 && (e.hash = R(n.hash.substring(1, n.hash.length), r));
+  } catch {
+    throw new TypeError(`invalid baseURL '${t.baseURL}'.`);
+  }
+  if (typeof t.protocol == "string" && (e.protocol = fe(t.protocol, r)), typeof t.username == "string" && (e.username = oe(t.username, r)), typeof t.password == "string" && (e.password = ae(t.password, r)), typeof t.hostname == "string" && (e.hostname = ie(t.hostname, r)), typeof t.port == "string" && (e.port = le(t.port, e.protocol, r)), typeof t.pathname == "string") {
+    if (e.pathname = t.pathname, n && !ee(e.pathname, r)) {
+      let c = n.pathname.lastIndexOf("/");
+      c >= 0 && (e.pathname = R(n.pathname.substring(0, c + 1), r) + e.pathname);
+    }
+    e.pathname = ce(e.pathname, e.protocol, r);
+  }
+  return typeof t.search == "string" && (e.search = se(t.search, r)), typeof t.hash == "string" && (e.hash = ne(t.hash, r)), e;
+}
+a(L, "applyInit");
+function I(e) {
+  return e.replace(/([+*?:{}()\\])/g, "\\$1");
+}
+a(I, "escapePatternString");
+function Te(e) {
+  return e.replace(/([.+*?^${}()[\]|/\\])/g, "\\$1");
+}
+a(Te, "escapeRegexpString");
+function Ae(e, t) {
+  t.delimiter ??= "/#?", t.prefixes ??= "./", t.sensitive ??= false, t.strict ??= false, t.end ??= true, t.start ??= true, t.endsWith = "";
+  let r = ".*", n = `[^${Te(t.delimiter)}]+?`, c = /[$_\u200C\u200D\p{ID_Continue}]/u, l = "";
+  for (let f = 0; f < e.length; ++f) {
+    let s = e[f];
+    if (s.type === 3) {
+      if (s.modifier === 3) {
+        l += I(s.value);
+        continue;
+      }
+      l += `{${I(s.value)}}${T(s.modifier)}`;
+      continue;
+    }
+    let i = s.hasCustomName(), o = !!s.suffix.length || !!s.prefix.length && (s.prefix.length !== 1 || !t.prefixes.includes(s.prefix)), h = f > 0 ? e[f - 1] : null, p = f < e.length - 1 ? e[f + 1] : null;
+    if (!o && i && s.type === 1 && s.modifier === 3 && p && !p.prefix.length && !p.suffix.length) if (p.type === 3) {
+      let A = p.value.length > 0 ? p.value[0] : "";
+      o = c.test(A);
+    } else o = !p.hasCustomName();
+    if (!o && !s.prefix.length && h && h.type === 3) {
+      let A = h.value[h.value.length - 1];
+      o = t.prefixes.includes(A);
+    }
+    o && (l += "{"), l += I(s.prefix), i && (l += `:${s.name}`), s.type === 2 ? l += `(${s.value})` : s.type === 1 ? i || (l += `(${n})`) : s.type === 0 && (!i && (!h || h.type === 3 || h.modifier !== 3 || o || s.prefix !== "") ? l += "*" : l += `(${r})`), s.type === 1 && i && s.suffix.length && c.test(s.suffix[0]) && (l += "\\"), l += I(s.suffix), o && (l += "}"), s.modifier !== 3 && (l += T(s.modifier));
+  }
+  return l;
+}
+a(Ae, "partsToPattern");
+var Y = class {
+  #i;
+  #n = {};
+  #t = {};
+  #e = {};
+  #s = {};
+  #l = false;
+  constructor(t = {}, r, n) {
+    try {
+      let c;
+      if (typeof r == "string" ? c = r : n = r, typeof t == "string") {
+        let i = new C(t);
+        if (i.parse(), t = i.result, c === void 0 && typeof t.protocol != "string") throw new TypeError("A base URL must be provided for a relative constructor string.");
+        t.baseURL = c;
+      } else {
+        if (!t || typeof t != "object") throw new TypeError("parameter 1 is not of type 'string' and cannot convert to dictionary.");
+        if (c) throw new TypeError("parameter 1 is not of type 'string'.");
+      }
+      typeof n > "u" && (n = { ignoreCase: false });
+      let l = { ignoreCase: n.ignoreCase === true }, f = { pathname: O, protocol: O, username: O, password: O, hostname: O, port: O, search: O, hash: O };
+      this.#i = L(f, t, true), z(this.#i.protocol) === this.#i.port && (this.#i.port = "");
+      let s;
+      for (s of V) {
+        if (!(s in this.#i)) continue;
+        let i = {}, o = this.#i[s];
+        switch (this.#t[s] = [], s) {
+          case "protocol":
+            Object.assign(i, b), i.encodePart = w;
+            break;
+          case "username":
+            Object.assign(i, b), i.encodePart = he;
+            break;
+          case "password":
+            Object.assign(i, b), i.encodePart = ue;
+            break;
+          case "hostname":
+            Object.assign(i, J), _(o) ? i.encodePart = K : i.encodePart = j;
+            break;
+          case "port":
+            Object.assign(i, b), i.encodePart = G;
+            break;
+          case "pathname":
+            U(this.#n.protocol) ? (Object.assign(i, Q, l), i.encodePart = de) : (Object.assign(i, b, l), i.encodePart = pe);
+            break;
+          case "search":
+            Object.assign(i, b, l), i.encodePart = ge;
+            break;
+          case "hash":
+            Object.assign(i, b, l), i.encodePart = me;
+            break;
+        }
+        try {
+          this.#s[s] = F(o, i), this.#n[s] = W(this.#s[s], this.#t[s], i), this.#e[s] = Ae(this.#s[s], i), this.#l = this.#l || this.#s[s].some((h) => h.type === 2);
+        } catch {
+          throw new TypeError(`invalid ${s} pattern '${this.#i[s]}'.`);
+        }
+      }
+    } catch (c) {
+      throw new TypeError(`Failed to construct 'URLPattern': ${c.message}`);
+    }
+  }
+  get [Symbol.toStringTag]() {
+    return "URLPattern";
+  }
+  test(t = {}, r) {
+    let n = { pathname: "", protocol: "", username: "", password: "", hostname: "", port: "", search: "", hash: "" };
+    if (typeof t != "string" && r) throw new TypeError("parameter 1 is not of type 'string'.");
+    if (typeof t > "u") return false;
+    try {
+      typeof t == "object" ? n = L(n, t, false) : n = L(n, Se(t, r), false);
+    } catch {
+      return false;
+    }
+    let c;
+    for (c of V) if (!this.#n[c].exec(n[c])) return false;
+    return true;
+  }
+  exec(t = {}, r) {
+    let n = { pathname: "", protocol: "", username: "", password: "", hostname: "", port: "", search: "", hash: "" };
+    if (typeof t != "string" && r) throw new TypeError("parameter 1 is not of type 'string'.");
+    if (typeof t > "u") return;
+    try {
+      typeof t == "object" ? n = L(n, t, false) : n = L(n, Se(t, r), false);
+    } catch {
+      return null;
+    }
+    let c = {};
+    r ? c.inputs = [t, r] : c.inputs = [t];
+    let l;
+    for (l of V) {
+      let f = this.#n[l].exec(n[l]);
+      if (!f) return null;
+      let s = {};
+      for (let [i, o] of this.#t[l].entries()) if (typeof o == "string" || typeof o == "number") {
+        let h = f[i + 1];
+        s[o] = h;
+      }
+      c[l] = { input: n[l] ?? "", groups: s };
+    }
+    return c;
+  }
+  static compareComponent(t, r, n) {
+    let c = a((i, o) => {
+      for (let h of ["type", "modifier", "prefix", "value", "suffix"]) {
+        if (i[h] < o[h]) return -1;
+        if (i[h] === o[h]) continue;
+        return 1;
+      }
+      return 0;
+    }, "comparePart"), l = new P(3, "", "", "", "", 3), f = new P(0, "", "", "", "", 3), s = a((i, o) => {
+      let h = 0;
+      for (; h < Math.min(i.length, o.length); ++h) {
+        let p = c(i[h], o[h]);
+        if (p) return p;
+      }
+      return i.length === o.length ? 0 : c(i[h] ?? l, o[h] ?? l);
+    }, "comparePartList");
+    return !r.#e[t] && !n.#e[t] ? 0 : r.#e[t] && !n.#e[t] ? s(r.#s[t], [f]) : !r.#e[t] && n.#e[t] ? s([f], n.#s[t]) : s(r.#s[t], n.#s[t]);
+  }
+  get protocol() {
+    return this.#e.protocol;
+  }
+  get username() {
+    return this.#e.username;
+  }
+  get password() {
+    return this.#e.password;
+  }
+  get hostname() {
+    return this.#e.hostname;
+  }
+  get port() {
+    return this.#e.port;
+  }
+  get pathname() {
+    return this.#e.pathname;
+  }
+  get search() {
+    return this.#e.search;
+  }
+  get hash() {
+    return this.#e.hash;
+  }
+  get hasRegExpGroups() {
+    return this.#l;
+  }
+};
+a(Y, "URLPattern");
+if (!globalThis.URLPattern) {
+  globalThis.URLPattern = Y;
+}
+
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/TargetManager.js
 function isPageTargetBecomingPrimary(target, newTargetInfo) {
   return Boolean(target._subtype()) && !newTargetInfo.subtype;
@@ -18018,12 +18819,14 @@ var TargetManager = class extends EventEmitter {
   // done. It indicates whethere we are running the initial auto-attach step or
   // if we are handling targets after that.
   #initialAttachDone = false;
-  constructor(connection, targetFactory, targetFilterCallback, waitForInitiallyDiscoveredTargets = true) {
+  #blockList;
+  constructor(connection, targetFactory, targetFilterCallback, waitForInitiallyDiscoveredTargets = true, networkConditions) {
     super();
     this.#connection = connection;
     this.#targetFilterCallback = targetFilterCallback;
     this.#targetFactory = targetFactory;
     this.#waitForInitiallyDiscoveredTargets = waitForInitiallyDiscoveredTargets;
+    this.#blockList = networkConditions;
     this.#connection.on("Target.targetCreated", this.#onTargetCreated);
     this.#connection.on("Target.targetDestroyed", this.#onTargetDestroyed);
     this.#connection.on("Target.targetInfoChanged", this.#onTargetInfoChanged);
@@ -18166,6 +18969,10 @@ var TargetManager = class extends EventEmitter {
     if (!this.#connection.isAutoAttached(targetInfo.targetId)) {
       return;
     }
+    if (!this.#initialAttachDone && !this.#isUrlAllowed(targetInfo.url)) {
+      await this.#silentDetach(session, parentSession);
+      return;
+    }
     if (targetInfo.type === "service_worker") {
       await this.#silentDetach(session, parentSession);
       if (this.#attachedTargetsByTargetId.has(targetInfo.targetId) || this.#ignoredTargets.has(targetInfo.targetId) || !this.#discoveredTargetsByTargetId.has(targetInfo.targetId)) {
@@ -18218,6 +19025,7 @@ var TargetManager = class extends EventEmitter {
         autoAttach: true,
         filter: this.#discoveryFilter
       }),
+      this.#maybeSetupNetworkConditions(session),
       session.send("Runtime.runIfWaitingForDebugger")
     ]).catch(debugError);
   };
@@ -18244,6 +19052,45 @@ var TargetManager = class extends EventEmitter {
     this.#attachedTargetsByTargetId.delete(target._targetId);
     this.emit("targetGone", target);
   };
+  /**
+   * Helper to validate URL against blocklist patterns
+   */
+  #isUrlAllowed = (url) => {
+    if (!this.#blockList) {
+      return true;
+    }
+    if (!url || url === "about:blank") {
+      return true;
+    }
+    for (const rule of this.#blockList) {
+      try {
+        const pattern = new Y(rule);
+        if (pattern.test(url)) {
+          return false;
+        }
+      } catch {
+        debugError(`Invalid URL pattern: ${rule}`);
+      }
+    }
+    return true;
+  };
+  #maybeSetupNetworkConditions = async (session) => {
+    if (!this.#blockList?.length) {
+      return;
+    }
+    const matchedNetworkConditions = this.#blockList.map((pattern) => {
+      return {
+        urlPattern: pattern,
+        latency: 0,
+        downloadThroughput: -1,
+        uploadThroughput: -1
+      };
+    });
+    await session.send("Network.emulateNetworkConditionsByRule", {
+      matchedNetworkConditions,
+      offline: true
+    });
+  };
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Browser.js
@@ -18252,8 +19099,8 @@ function isDevToolsPageTarget(url) {
 }
 var CdpBrowser = class _CdpBrowser extends Browser {
   protocol = "cdp";
-  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false) {
-    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled, issuesEnabled, handleDevToolsAsPage);
+  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blockList) {
+    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled, issuesEnabled, handleDevToolsAsPage, blockList);
     if (acceptInsecureCerts) {
       await connection.send("Security.setIgnoreCertificateErrors", {
         ignore: true
@@ -18275,7 +19122,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   #targetManager;
   #handleDevToolsAsPage = false;
   #extensions = /* @__PURE__ */ new Map();
-  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false) {
+  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, networkConditions) {
     super();
     this.#networkEnabled = networkEnabled;
     this.#issuesEnabled = issuesEnabled;
@@ -18289,7 +19136,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     });
     this.#handleDevToolsAsPage = handleDevToolsAsPage;
     this.#setIsPageTargetCallback(isPageTargetCallback);
-    this.#targetManager = new TargetManager(connection, this.#createTarget, this.#targetFilterCallback, waitForInitiallyDiscoveredTargets);
+    this.#targetManager = new TargetManager(connection, this.#createTarget, this.#targetFilterCallback, waitForInitiallyDiscoveredTargets, networkConditions);
     this.#defaultContext = new CdpBrowserContext(this.#connection, this);
     for (const contextId of contextIds) {
       this.#contexts.set(contextId, new CdpBrowserContext(this.#connection, this, contextId));
@@ -18571,7 +19418,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
       if (this.#extensions.has(currExtension.id)) {
         extensionsMap.set(currExtension.id, this.#extensions.get(currExtension.id));
       } else {
-        const newExtension = new CdpExtension(currExtension.id, currExtension.version, currExtension.name, this);
+        const newExtension = new CdpExtension(currExtension.id, currExtension.version, currExtension.name, currExtension.path, currExtension.enabled, this);
         extensionsMap.set(currExtension.id, newExtension);
       }
     }

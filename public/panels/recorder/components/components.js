@@ -120,7 +120,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
       <div class="icon ${shape}"></div>
       <div class="label">${label}</div>
     </button>
-  `, target);
+  `, target, { container: { attributes: { classes: "flex-none" } } });
 };
 var ControlButton = class extends UI.Widget.Widget {
   #label = "";
@@ -130,7 +130,7 @@ var ControlButton = class extends UI.Widget.Widget {
   };
   #view;
   constructor(element, view) {
-    super(element, { useShadowDom: true, classes: ["flex-none"] });
+    super(element, { useShadowDom: "pure" });
     this.#view = view || DEFAULT_VIEW;
   }
   set label(label) {
@@ -3897,7 +3897,7 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
         `}
       </devtools-widget>
     </div>
-  `, target);
+  `, target, { container: { classes: ["step-view-widget"] } });
 };
 var StepView = class extends UI8.Widget.Widget {
   #observer = new IntersectionObserver((result) => {
@@ -3934,7 +3934,7 @@ var StepView = class extends UI8.Widget.Widget {
   };
   #view;
   constructor(element, view) {
-    super(element, { useShadowDom: true, classes: ["step-view-widget"] });
+    super(element, { useShadowDom: "pure" });
     this.#view = view || DEFAULT_VIEW7;
   }
   set step(step) {
@@ -3950,7 +3950,7 @@ var StepView = class extends UI8.Widget.Widget {
     this.#viewInput.state = state2;
     this.performUpdate();
     if (this.#viewInput.state !== prevState && this.#viewInput.state === "current" && !this.#viewInput.isVisible) {
-      this.contentElement.scrollIntoView();
+      this.element.scrollIntoView();
     }
   }
   set error(error) {
@@ -4029,12 +4029,12 @@ var StepView = class extends UI8.Widget.Widget {
   }
   wasShown() {
     super.wasShown();
-    this.#observer.observe(this.contentElement);
+    this.#observer.observe(this.element);
     this.requestUpdate();
   }
   willHide() {
     super.willHide();
-    this.#observer.unobserve(this.contentElement);
+    this.#observer.unobserve(this.element);
   }
   #toggleShowDetails() {
     this.#viewInput.showDetails = !this.#viewInput.showDetails;

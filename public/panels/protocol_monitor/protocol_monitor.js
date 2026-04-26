@@ -92,14 +92,21 @@ ul {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
 }
 
 .editor-wrapper {
   padding-left: 1em;
   overflow-x: hidden;
   flex-grow: 1;
-  padding-bottom: 50px;
   padding-top: 0.5em;
+  min-height: 1lh;
+}
+
+.editor-wrapper::after {
+  content: "";
+  display: block;
+  height: 50px;
 }
 
 .clear-button,
@@ -199,6 +206,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   #view;
   displayTargetSelector = true;
   displayCommandInput = true;
+  displayToolbar = true;
   constructor(element, view = DEFAULT_VIEW) {
     super(element, { useShadowDom: true });
     this.#view = view;
@@ -894,7 +902,8 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         return this.#computeDropdownValues(parameter);
       },
       displayTargetSelector: this.displayTargetSelector,
-      displayCommandInput: this.displayCommandInput
+      displayCommandInput: this.displayCommandInput,
+      displayToolbar: this.displayToolbar
     };
     const viewOutput = {};
     this.#view(viewInput, viewOutput, this.contentElement);
@@ -1145,6 +1154,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
           ${renderParameters(input, input.parameters)}
         ` : nothing}
       </div>
+      ${input.displayToolbar !== false ? html`
       <devtools-toolbar class="protocol-monitor-sidebar-toolbar">
         <devtools-button title=${i18nString(UIStrings.copyCommand)}
                         .iconName=${"copy"}
@@ -1158,6 +1168,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
                         .variant=${"primary_toolbar"}
                         @click=${input.onCommandSend}></devtools-button>
       </devtools-toolbar>
+      ` : nothing}
     </div>`, target);
 };
 
@@ -1475,6 +1486,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
           </div>
           <devtools-widget slot="sidebar"
               ${widget(JSONEditor, { metadataByCommand, typesByName, enumsByName })}
+              @submiteditor=${(e) => input.onEditorSubmit(e.detail.command, e.detail.parameters, e.detail.targetId)}
               ${widgetRef(JSONEditor, (e) => {
     output.editorWidget = e;
   })}>
@@ -1506,9 +1518,6 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
     this.filterParser = new TextUtils.TextUtils.FilterParser(this.#filterKeys);
     this.#selectedTargetId = "main";
     this.performUpdate();
-    this.#editorWidget.addEventListener("submiteditor", (event) => {
-      this.onCommandSend(event.data.command, event.data.parameters, event.data.targetId);
-    });
     SDK2.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged", () => {
       this.requestUpdate();
     });
@@ -1586,6 +1595,9 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
       onToggleSidebar: () => {
         this.#sidebarVisible = !this.#sidebarVisible;
         this.requestUpdate();
+      },
+      onEditorSubmit: (command, parameters, targetId) => {
+        this.onCommandSend(command, parameters, targetId);
       },
       targets: SDK2.TargetManager.TargetManager.instance().targets(),
       selectedTargetId: this.#selectedTargetId

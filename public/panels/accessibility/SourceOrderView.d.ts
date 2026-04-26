@@ -6,8 +6,8 @@ interface ViewInput {
     showSourceOrder: boolean | undefined;
     onShowSourceOrderChanged: (showSourceOrder: boolean) => void;
 }
-type View = (input: ViewInput, output: unknown, target: HTMLElement) => void;
-export declare class SourceOrderPane extends AccessibilitySubPane {
+type View = (input: ViewInput, output: unknown, target: HTMLElement | DocumentFragment) => void;
+export declare class SourceOrderPane extends AccessibilitySubPane<ShadowRoot> {
     #private;
     constructor(view?: View);
     setNodeAsync(node: SDK.DOMModel.DOMNode | null): Promise<void>;

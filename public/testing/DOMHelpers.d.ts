@@ -15,7 +15,7 @@ interface RenderOptions {
 /**
  * Renders a given element into the DOM. By default it will error if it finds an element already rendered but this can be controlled via the options.
  **/
-export declare function renderElementIntoDOM<E extends Node | UI.Widget.Widget>(element: E, renderOptions?: RenderOptions): E;
+export declare function renderElementIntoDOM<E extends Node | UI.Widget.AnyWidget>(element: E, renderOptions?: RenderOptions): E;
 export declare function removeChildren(node: Node): void;
 /**
  * Asserts that all elements of `nodeList` are at least of type `T`.
@@ -65,7 +65,7 @@ export declare function dispatchPasteEvent<T extends Element>(element: T, option
  * Listens to an event of an element and returns a Promise that resolves to the
  * specified event type.
  */
-export declare function getEventPromise<T extends Event>(element: HTMLElement, eventName: string): Promise<T>;
+export declare function getEventPromise<T extends Event>(element: EventTarget, eventName: string): Promise<T>;
 export declare function doubleRaf(): Promise<unknown>;
 export declare function raf(): Promise<unknown>;
 /**

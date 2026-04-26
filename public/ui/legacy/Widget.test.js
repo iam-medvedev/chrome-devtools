@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -63,8 +64,8 @@ describeWithEnvironment('Widget', () => {
         });
         it('correctly sets the `jslog` attribute of the `contentElement` in the presence of Shadow DOM', () => {
             const widget = new Widget({ jslog: 'Section; context: bar', useShadowDom: true });
-            assert.isNull(widget.element.getAttribute('jslog'));
-            assert.strictEqual(widget.contentElement.getAttribute('jslog'), 'Section; context: bar');
+            assert.isNull(widget.contentElement.getAttribute('jslog'));
+            assert.strictEqual(widget.element.getAttribute('jslog'), 'Section; context: bar');
         });
     });
     describe('parentWidget', () => {
@@ -610,7 +611,7 @@ describeWithEnvironment('Widget', () => {
             renderElementIntoDOM(devtoolsWidget);
         });
     });
-    describe('WidgetDirective', () => {
+    describe('WidgetDirective (non-devtools-widget elements)', () => {
         let attachedCount = 0;
         let detachedCount = 0;
         let fooSetterCount = 0;
@@ -726,6 +727,71 @@ describeWithEnvironment('Widget', () => {
             // By resetting the container's innerHTML manually here, we prevent the removeChildren() check from failing in teardown.
             container.innerHTML = '';
             container.remove();
+        });
+        it('dispatches DOM events through eventMixin', async () => {
+            class EventWidget extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
+                trigger() {
+                    this.dispatchEventToListeners('test-event', 'payload');
+                }
+            }
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            const stub = sinon.stub();
+            Lit.render(html `<devtools-widget ${UI.Widget.widget(EventWidget)} @test-event=${stub}></devtools-widget>`, container);
+            const widget = container.firstElementChild?.getWidget();
+            assert.isOk(widget);
+            widget.trigger();
+            sinon.assert.calledOnce(stub);
+            assert.strictEqual(stub.firstCall.firstArg.detail, 'payload');
+        });
+    });
+    describe('Shadow DOM', () => {
+        it('throws error when using DocumentFragment.appendChild with a widget', () => {
+            const fragment = document.createDocumentFragment();
+            const widget = new Widget();
+            widget.markAsRoot();
+            assert.throws(() => fragment.appendChild(widget.element), /Attempt to modify widget with native DOM method `appendChild`/);
+        });
+        it('keeps child widget in the Shadow Root when using pure shadow DOM', () => {
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            const parentWidget = new Widget({ useShadowDom: 'pure' });
+            parentWidget.markAsRoot();
+            parentWidget.show(container);
+            const childWidget = new Widget();
+            const shadowRoot = parentWidget.contentElement;
+            assert.instanceOf(shadowRoot, ShadowRoot);
+            childWidget.show(shadowRoot);
+            assert.strictEqual(childWidget.element.parentNode, shadowRoot, 'Child widget should be a child of the Shadow Root');
+            assert.isNull(childWidget.element.parentElement, 'Child widget should have no parentElement (since it is in a Shadow Root)');
+        });
+        it('keeps child widget in the Shadow Root when attached via WidgetDirective', async () => {
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            class ParentWidget extends Widget {
+                constructor() {
+                    super({ useShadowDom: 'pure' });
+                }
+            }
+            class ChildWidget extends Widget {
+                constructor(element) {
+                    super(element);
+                    this.element.classList.add('child-widget');
+                }
+                performUpdate() {
+                }
+            }
+            const parentWidget = new ParentWidget();
+            parentWidget.markAsRoot();
+            parentWidget.show(container);
+            const shadowRoot = parentWidget.contentElement;
+            Lit.render(html `<devtools-widget ${UI.Widget.widget(ChildWidget)}></devtools-widget>`, shadowRoot);
+            // Give some time for connectedCallback and potential microtasks
+            await new Promise(resolve => setTimeout(resolve, 0));
+            const childElement = shadowRoot.querySelector('devtools-widget');
+            assert.exists(childElement, 'Child widget element should exist in the Shadow Root');
+            assert.strictEqual(childElement?.parentNode, shadowRoot, 'Widget element should remain in the Shadow Root');
+            assert.isNull(childElement?.parentElement, 'Widget element should not be moved to the host (Light DOM)');
         });
     });
 });

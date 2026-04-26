@@ -94,7 +94,7 @@ export interface ViewInput {
 }
 export type ViewOutput = unknown;
 export declare const DEFAULT_VIEW: (input: ViewInput, _output: ViewOutput, target: HTMLElement | ShadowRoot) => void;
-export declare class StepView extends UI.Widget.Widget {
+export declare class StepView extends UI.Widget.Widget<ShadowRoot> {
     #private;
     constructor(element?: HTMLElement, view?: typeof DEFAULT_VIEW);
     set step(step: Models.Schema.Step | undefined);

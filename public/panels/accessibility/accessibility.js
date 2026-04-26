@@ -4379,7 +4379,8 @@ var DEFAULT_VIEW = (input, output, target) => {
              </ul>
            `}></devtools-tree>`,
     // clang-format on
-    target
+    target,
+    { container: { attributes: { jslog: `${VisualLogging2.section("aria-attributes")}` } } }
   );
 };
 var ARIAAttributesPane = class extends AccessibilitySubPane {
@@ -4389,7 +4390,7 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
     super({
       title: i18nString2(UIStrings3.ariaAttributes),
       viewId: "aria-attributes",
-      jslog: `${VisualLogging2.section("aria-attributes")}`
+      useShadowDom: "pure"
     });
     this.#view = view;
   }
@@ -4489,7 +4490,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
         ${i18nString3(UIStrings4.showSourceOrder)}
       </devtools-checkbox>
       `}
-  `, target);
+  `, target, { container: { attributes: { jslog: `${VisualLogging3.section("source-order-viewer")}` } } });
 };
 var SourceOrderPane = class extends AccessibilitySubPane {
   #childCount = 0;
@@ -4499,7 +4500,7 @@ var SourceOrderPane = class extends AccessibilitySubPane {
     super({
       title: i18nString3(UIStrings4.sourceOrderViewer),
       viewId: "source-order-viewer",
-      jslog: `${VisualLogging3.section("source-order-viewer")}`
+      useShadowDom: "pure"
     });
     this.#view = view;
   }

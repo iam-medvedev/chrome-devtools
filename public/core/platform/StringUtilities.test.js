@@ -634,9 +634,6 @@ describe('StringUtilities', () => {
         it('should handle uppercase acronyms as words', () => {
             assert.strictEqual(toKebabCase('showUAShadowDOM'), 'show-ua-shadow-dom');
         });
-        it('should handle uppercase acronyms as words', () => {
-            assert.strictEqual(toKebabCase('showUAShadowDOM'), 'show-ua-shadow-dom');
-        });
         it('should preserve \'.\' characters', () => {
             assert.strictEqual(toKebabCase('InspectorView.screencastSplitViewState'), 'inspector-view.screencast-split-view-state');
             assert.strictEqual(toKebabCase('version1.2.3'), 'version-1.2.3');

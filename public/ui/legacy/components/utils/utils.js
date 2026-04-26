@@ -275,6 +275,7 @@ var jsUtils_css_default = `/*
   --display-ignored-row: none;
   --display-toggle-link: var(--override-display-stack-preview-toggle-link, none);
 
+  align-self: flex-start;
   user-select: text;
 
   & > tfoot > tr {
@@ -698,6 +699,8 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
     const { className = "" } = linkifyURLOptions;
     const fallbackAnchor = _Linkifier.linkifyURL(frame.url, linkifyURLOptions);
     if (!frame.uiSourceCode) {
+      const isIgnoreListed = (options?.ignoreListManager ?? Workspace.IgnoreListManager.IgnoreListManager.instance()).isUserIgnoreListedURL(frame.url);
+      fallbackAnchor.classList.toggle("ignore-list-link", isIgnoreListed);
       return fallbackAnchor;
     }
     const createLinkOptions = {
@@ -713,7 +716,7 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       revealBreakpoint: options?.revealBreakpoint
     };
     const uiLocation = frame.uiSourceCode.uiLocation(frame.line, frame.column) ?? null;
-    _Linkifier.updateAnchorFromUILocation(link3, linkDisplayOptions, uiLocation);
+    _Linkifier.updateAnchorFromUILocation(link3, linkDisplayOptions, uiLocation, options?.ignoreListManager);
     return link3;
   }
   linkifyStackTraceTopFrame(target, stackTrace) {
@@ -806,7 +809,7 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
     });
     _Linkifier.updateAnchorFromUILocation(anchor, options, uiLocation);
   }
-  static updateAnchorFromUILocation(anchor, options, uiLocation) {
+  static updateAnchorFromUILocation(anchor, options, uiLocation, ignoreListManager) {
     if (!uiLocation) {
       anchor.classList.add("invalid-link");
       anchor.removeAttribute("role");
@@ -830,7 +833,7 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       }
     }
     UI.Tooltip.Tooltip.install(anchor, titleText);
-    const isIgnoreListed = Boolean(uiLocation?.isIgnoreListed());
+    const isIgnoreListed = Boolean(uiLocation?.isIgnoreListed(ignoreListManager));
     anchor.classList.toggle("ignore-list-link", isIgnoreListed);
     _Linkifier.updateLinkDecorations(anchor);
   }
@@ -1389,7 +1392,8 @@ var DEFAULT_VIEW = (input, output, target) => {
       tabStop: Boolean(input.tabStops),
       inlineFrameIndex: 0,
       revealBreakpoint: previousStackFrameWasBreakpointCondition,
-      maxLength: UI2.UIUtils.MaxLengthForDisplayedURLsInConsole
+      maxLength: UI2.UIUtils.MaxLengthForDisplayedURLsInConsole,
+      ignoreListManager: input.ignoreListManager
     });
     link3.setAttribute("jslog", `${VisualLogging2.link("stack-trace").track({ click: true })}`);
     link3.addEventListener("contextmenu", populateContextMenu.bind(null, link3));
@@ -1426,7 +1430,7 @@ var DEFAULT_VIEW = (input, output, target) => {
         </tfoot>
       ` : nothing}
     </table>
-  `, target);
+  `, target, { container: { classes: ["monospace", "stack-preview-container"] } });
 };
 var StackTracePreviewContent = class extends UI2.Widget.Widget {
   #view;
@@ -1435,7 +1439,7 @@ var StackTracePreviewContent = class extends UI2.Widget.Widget {
   #expanded = false;
   #showIgnoreListed = false;
   constructor(element, view = DEFAULT_VIEW) {
-    super(element, { useShadowDom: true, classes: ["monospace", "stack-preview-container"] });
+    super(element, { useShadowDom: "pure" });
     this.#view = view;
   }
   hasContent() {
@@ -1469,7 +1473,7 @@ var StackTracePreviewContent = class extends UI2.Widget.Widget {
     const hasNonIgnoredLinks = this.linkElements.some((link3) => {
       const uiLocation = Linkifier.uiLocation(link3);
       if (uiLocation) {
-        return !uiLocation.isIgnoreListed();
+        return !uiLocation.isIgnoreListed(this.#options.ignoreListManager);
       }
       return !link3.classList.contains("ignore-list-link");
     });
@@ -1505,7 +1509,7 @@ var StackTracePreviewContent = class extends UI2.Widget.Widget {
   #onShowMoreLess(more) {
     this.#showIgnoreListed = more;
     this.requestUpdate();
-    void this.updateComplete.then(() => UI2.GlassPane.GlassPane.containerMoved(this.contentElement));
+    void this.updateComplete.then(() => UI2.GlassPane.GlassPane.containerMoved(this.element));
   }
   #onExpand() {
     this.#expanded = !this.#expanded;

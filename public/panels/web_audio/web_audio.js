@@ -339,7 +339,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
             <span>${i18nString(UIStrings.renderCapacity)}: ${(contextRealtimeData.renderCapacity * 100).toFixed(3)} %</span>
           </div>` : ""}
       </div>
-    </div>`, target);
+    </div>`, target, { container: { attributes: { jslog: `${VisualLogging.panel("web-audio").track({ resize: true })}` } } });
 };
 var WebAudioView = class extends UI.Widget.VBox {
   knownContexts = /* @__PURE__ */ new Set();
@@ -349,7 +349,7 @@ var WebAudioView = class extends UI.Widget.VBox {
   selectedContextIndex = -1;
   pollRealtimeDataThrottler;
   constructor(element, view = DEFAULT_VIEW) {
-    super({ jslog: `${VisualLogging.panel("web-audio").track({ resize: true })}`, useShadowDom: true });
+    super({ useShadowDom: "pure" });
     this.view = view;
     this.contextSelectorItems = new UI.ListModel.ListModel();
     this.contextSelectorItems.addEventListener("ItemsReplaced", this.requestUpdate, this);

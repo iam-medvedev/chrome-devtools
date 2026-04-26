@@ -1,5 +1,4 @@
 import * as UI from '../../ui/legacy/legacy.js';
-import type { WidgetOptions } from '../../ui/legacy/Widget.js';
 import * as ApplicationComponents from './components/components.js';
 import { StorageItemsToolbar } from './StorageItemsToolbar.js';
 type Widget = UI.Widget.Widget;
@@ -17,9 +16,13 @@ export interface ViewInput {
     } | null) => void;
     onSort: (ascending: boolean) => void;
     onCreate: (key: string, value: string) => void;
-    onReferesh: () => void;
+    onRefresh: () => void;
     onEdit: (key: string, value: string, columnId: string, valueBeforeEditing: string, newText: string) => void;
     onDelete: (key: string) => void;
+    onDeleteSelected: () => void;
+    onDeleteAll: () => void;
+    jslog?: string;
+    classes?: string[];
 }
 interface ViewOutput {
     toolbar: StorageItemsToolbar;
@@ -32,7 +35,7 @@ export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) =
 export declare abstract class KeyValueStorageItemsView extends UI.Widget.VBox {
     #private;
     readonly metadataView: ApplicationComponents.StorageMetadataView.StorageMetadataView;
-    constructor(title: string, id: string, editable: boolean, view?: View, metadataView?: ApplicationComponents.StorageMetadataView.StorageMetadataView, opts?: WidgetOptions);
+    constructor(title: string, id: string, editable: boolean, view?: View, metadataView?: ApplicationComponents.StorageMetadataView.StorageMetadataView, jslog?: string, classes?: string[]);
     wasShown(): void;
     performUpdate(): void;
     protected get toolbar(): StorageItemsToolbar | undefined;

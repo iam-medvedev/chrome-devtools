@@ -414,6 +414,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
                 onFilterChanged: (_) => { },
                 onTargetChange: (_) => { },
                 onToggleSidebar: () => { },
+                onEditorSubmit: () => { },
                 targets: [],
                 selectedTargetId: 'main',
             };
@@ -465,6 +466,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
                 onFilterChanged: (_) => { },
                 onTargetChange: (_) => { },
                 onToggleSidebar: () => { },
+                onEditorSubmit: () => { },
                 targets: [
                     { id: () => 'main', name: () => 'Main', inspectedURL: () => 'www.example.com' },
                     { id: () => 'prerender', name: () => 'Prerender', inspectedURL: () => 'www.example.com/prerender' }

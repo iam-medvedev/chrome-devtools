@@ -1,3 +1,4 @@
+import type * as PlatformApi from '../../core/platform/api/api.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import type { HeapSnapshotWorkerDispatcher } from './HeapSnapshotWorkerDispatcher.js';
@@ -193,24 +194,24 @@ interface SecondaryInitArgumentsStep3 {
 }
 type ArgumentsToBuildRetainers = SecondaryInitArgumentsStep1;
 interface Retainers {
-    firstRetainerIndex: Uint32Array;
-    retainingNodes: Uint32Array;
-    retainingEdges: Uint32Array;
+    firstRetainerIndex: Uint32Array<ArrayBuffer>;
+    retainingNodes: Uint32Array<ArrayBuffer>;
+    retainingEdges: Uint32Array<ArrayBuffer>;
 }
 interface ArgumentsToComputeDominatorsAndRetainedSizes extends SecondaryInitArgumentsStep1, Retainers, SecondaryInitArgumentsStep2 {
     essentialEdges: Platform.TypedArrayUtilities.BitVector;
-    port: MessagePort;
+    port: PlatformApi.HostRuntime.WorkerMessagePort;
     nodeSelfSizesPromise: Promise<Uint32Array>;
 }
 interface DominatorsAndRetainedSizes {
-    dominatorsTree: Uint32Array;
-    retainedSizes: Float64Array;
+    dominatorsTree: Uint32Array<ArrayBuffer>;
+    retainedSizes: Float64Array<ArrayBuffer>;
 }
 interface ArgumentsToBuildDominatedNodes extends ArgumentsToComputeDominatorsAndRetainedSizes, DominatorsAndRetainedSizes {
 }
 interface DominatedNodes {
-    firstDominatedNodeIndex: Uint32Array;
-    dominatedNodes: Uint32Array;
+    firstDominatedNodeIndex: Uint32Array<ArrayBuffer>;
+    dominatedNodes: Uint32Array<ArrayBuffer>;
 }
 /**
  * Initialization work is split into two threads. This class is the entry point
@@ -220,7 +221,7 @@ export declare class SecondaryInitManager {
     argsStep1: Promise<SecondaryInitArgumentsStep1>;
     argsStep2: Promise<SecondaryInitArgumentsStep2>;
     argsStep3: Promise<SecondaryInitArgumentsStep3>;
-    constructor(port: MessagePort);
+    constructor(port: PlatformApi.HostRuntime.WorkerMessagePort);
     private getNodeSelfSizes;
     private initialize;
 }
@@ -282,7 +283,7 @@ export declare abstract class HeapSnapshot {
     nodeDetachednessAndClassIndexOffset: number;
     detachednessAndClassIndexArray?: Uint32Array;
     constructor(profile: Profile, progress: HeapSnapshotProgress);
-    initialize(secondWorker: MessagePort): Promise<void>;
+    initialize(secondWorker: PlatformApi.HostRuntime.WorkerMessagePort): Promise<void>;
     private startInitStep1InSecondThread;
     private startInitStep2InSecondThread;
     private startInitStep3InSecondThread;

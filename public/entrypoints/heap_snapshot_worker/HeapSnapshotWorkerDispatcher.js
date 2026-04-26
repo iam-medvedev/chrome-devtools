@@ -10,16 +10,15 @@ import * as HeapSnapshotLoader from './HeapSnapshotLoader.js';
 export class HeapSnapshotWorkerDispatcher {
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    #objects;
+    #objects = [];
     #postMessage;
     constructor(postMessage) {
-        this.#objects = [];
         this.#postMessage = postMessage;
     }
     sendEvent(name, data) {
         this.#postMessage({ eventName: name, data });
     }
-    async dispatchMessage({ data, ports }) {
+    async dispatchMessage({ data, ports, }) {
         const response = {
             callId: data.callId,
             result: null,
@@ -66,6 +65,8 @@ export class HeapSnapshotWorkerDispatcher {
                         };
                         // @ts-expect-error
                         globalThis.HeapSnapshotModel = HeapSnapshotModel;
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore only used for running test in Web Workers
                         response.result = await self.eval(data.source);
                     }
                     catch (error) {
