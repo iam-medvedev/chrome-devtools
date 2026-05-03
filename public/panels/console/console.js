@@ -1892,6 +1892,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   messageIcon;
   traceExpanded;
   expandTrace;
+  hasStackTrace;
   anchorElement;
   contentElementInternal;
   nestingLevelMarkers;
@@ -1927,6 +1928,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     this.messageIcon = null;
     this.traceExpanded = false;
     this.expandTrace = null;
+    this.hasStackTrace = false;
     this.anchorElement = null;
     this.contentElementInternal = null;
     this.nestingLevelMarkers = null;
@@ -2205,6 +2207,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     if (this.message.type === "trace" && Common3.Settings.Settings.instance().moduleSetting("console-trace-expand").get()) {
       this.expandTrace(true);
     }
+    this.hasStackTrace = true;
     toggleElement._expandStackTraceForTest = this.expandTrace.bind(this, true);
     return toggleElement;
   }
@@ -2662,6 +2665,17 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   }
   consoleGroup() {
     return this.consoleGroupInternal;
+  }
+  isTraceExpanded() {
+    return this.traceExpanded;
+  }
+  isExpandableTrace() {
+    return this.hasStackTrace;
+  }
+  setTraceExpanded(expanded) {
+    if (this.expandTrace && this.traceExpanded !== expanded) {
+      this.expandTrace(expanded);
+    }
   }
   setInSimilarGroup(inSimilarGroup, isLast) {
     this.inSimilarGroup = inSimilarGroup;
@@ -3469,11 +3483,14 @@ var ConsoleGroupViewMessage = class extends ConsoleViewMessage {
     this.groupEndMessageInternal = null;
   }
   setCollapsed(collapsed) {
+    this.setCollapsedSilent(collapsed);
+    this.onToggle.call(null);
+  }
+  setCollapsedSilent(collapsed) {
     this.collapsedInternal = collapsed;
     if (this.expandGroupIcon) {
       this.expandGroupIcon.name = this.collapsedInternal ? "triangle-right" : "triangle-down";
     }
-    this.onToggle.call(null);
   }
   collapsed() {
     return this.collapsedInternal;
@@ -6285,7 +6302,17 @@ var UIStrings5 = {
    * @description Text summary to indicate total number of messages in console for accessibility/screen readers.
    * @example {5} PH1
    */
-  filteredMessagesInConsole: "{PH1} messages in console"
+  filteredMessagesInConsole: "{PH1} messages in console",
+  /**
+   * @description Tooltip for the collapse all button in the Console panel toolbar.
+   * Clicking this button will collapse all groups and stack traces.
+   */
+  collapseAll: "Collapse all",
+  /**
+   * @description Tooltip for the expand all button in the Console panel toolbar.
+   * Clicking this button will expand all groups and stack traces.
+   */
+  expandAll: "Expand all"
 };
 var str_5 = i18n11.i18n.registerUIStrings("panels/console/ConsoleView.ts", UIStrings5);
 var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_5);
@@ -6352,6 +6379,8 @@ var ConsoleView = class _ConsoleView extends UI8.Widget.VBox {
   issueResolver = new IssuesManager.IssueResolver.IssueResolver();
   #isDetached = false;
   #onIssuesCountUpdateBound = this.#onIssuesCountUpdate.bind(this);
+  #collapseAllButton;
+  #allCollapsed = false;
   aiCodeCompletionConfig;
   aiCodeCompletionSummaryToolbarContainer;
   aiCodeCompletionSummaryToolbar;
@@ -6418,6 +6447,9 @@ var ConsoleView = class _ConsoleView extends UI8.Widget.VBox {
     toolbar2.wrappable = true;
     toolbar2.appendToolbarItem(this.splitWidget.createShowHideSidebarButton(i18nString5(UIStrings5.showConsoleSidebar), i18nString5(UIStrings5.hideConsoleSidebar), i18nString5(UIStrings5.consoleSidebarShown), i18nString5(UIStrings5.consoleSidebarHidden), "console-sidebar"));
     toolbar2.appendToolbarItem(UI8.Toolbar.Toolbar.createActionButton("console.clear"));
+    this.#collapseAllButton = new UI8.Toolbar.ToolbarButton(i18nString5(UIStrings5.collapseAll), "compress", void 0, "console.collapse-all");
+    this.#collapseAllButton.addEventListener("Click", this.#toggleCollapseAll, this);
+    toolbar2.appendToolbarItem(this.#collapseAllButton);
     toolbar2.appendSeparator();
     toolbar2.appendToolbarItem(this.consoleContextSelector.toolbarItem());
     toolbar2.appendSeparator();
@@ -6599,6 +6631,58 @@ var ConsoleView = class _ConsoleView extends UI8.Widget.VBox {
   clearConsole() {
     SDK7.ConsoleModel.ConsoleModel.requestClearMessages();
     this.prompt.clearAiCodeCompletionCache();
+  }
+  collapseAll() {
+    for (const message of this.consoleMessages) {
+      if (message instanceof ConsoleGroupViewMessage) {
+        message.setCollapsedSilent(true);
+      }
+      message.setTraceExpanded(false);
+    }
+    this.updateMessageList();
+  }
+  expandAll() {
+    for (const message of this.consoleMessages) {
+      if (message instanceof ConsoleGroupViewMessage) {
+        message.setCollapsedSilent(false);
+      }
+      message.setTraceExpanded(true);
+    }
+    this.updateMessageList();
+  }
+  #toggleCollapseAll() {
+    if (this.#allCollapsed) {
+      this.expandAll();
+    } else {
+      this.collapseAll();
+    }
+    this.#allCollapsed = !this.#allCollapsed;
+    this.#updateCollapseAllButton();
+  }
+  #updateCollapseAllButton() {
+    let hasExpandedMessages = false;
+    let hasCollapsedMessages = false;
+    for (const message of this.visibleViewMessages) {
+      if (message instanceof ConsoleGroupViewMessage) {
+        hasExpandedMessages = hasExpandedMessages || !message.collapsed();
+        hasCollapsedMessages = hasCollapsedMessages || message.collapsed();
+      }
+      if (message.isExpandableTrace()) {
+        hasExpandedMessages = hasExpandedMessages || message.isTraceExpanded();
+        hasCollapsedMessages = hasCollapsedMessages || !message.isTraceExpanded();
+      }
+      if (hasExpandedMessages && hasCollapsedMessages) {
+        break;
+      }
+    }
+    this.#allCollapsed = !hasExpandedMessages && hasCollapsedMessages;
+    if (this.#allCollapsed) {
+      this.#collapseAllButton.setGlyph("expand");
+      this.#collapseAllButton.setTitle(i18nString5(UIStrings5.expandAll));
+    } else {
+      this.#collapseAllButton.setGlyph("compress");
+      this.#collapseAllButton.setTitle(i18nString5(UIStrings5.collapseAll));
+    }
   }
   #onIssuesCountUpdate() {
     void this.issueToolbarThrottle.schedule(async () => this.updateIssuesToolbarItem());
@@ -6951,11 +7035,12 @@ var ConsoleView = class _ConsoleView extends UI8.Widget.VBox {
       }
       const parentGroup = currentGroup2.consoleGroup();
       if (parentGroup) {
+        if (parentGroup.messagesHidden()) {
+          return;
+        }
         showGroup(parentGroup, visibleViewMessages);
       }
-      if (!parentGroup?.messagesHidden()) {
-        visibleViewMessages.push(currentGroup2);
-      }
+      visibleViewMessages.push(currentGroup2);
     }
   }
   messageAppendedForTests() {
@@ -7151,18 +7236,22 @@ var ConsoleView = class _ConsoleView extends UI8.Widget.VBox {
       for (const consoleMessage of this.consoleMessages) {
         consoleMessage.setInSimilarGroup(false);
         if (consoleMessage.consoleMessage().isGroupable()) {
-          consoleMessage.clearConsoleGroup();
+          const group = consoleMessage.consoleGroup();
+          if (group && !this.consoleGroupStarts.includes(group)) {
+            consoleMessage.clearConsoleGroup();
+          }
         }
         this.appendMessageToEnd(
           consoleMessage,
           true
-          /* crbug.com/1082963: prevent collaps`e of same messages when "Group similar" is false */
+          /* crbug.com/1082963: prevent collapse of same messages when "Group similar" is false */
         );
       }
     }
     this.updateFilterStatus();
     this.#searchableView.updateSearchMatchesCount(this.regexMatchRanges.length);
     this.highlightMatch(this.currentMatchRangeIndex, false);
+    this.#updateCollapseAllButton();
     this.viewport.invalidate();
     this.messagesCountElement.setAttribute("aria-label", i18nString5(UIStrings5.filteredMessagesInConsole, { PH1: this.visibleViewMessages.length }));
   }
@@ -8195,6 +8284,62 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI10.Widget.W
   editorSetForTest() {
   }
 };
+
+// gen/front_end/panels/console/SymbolizedErrorWidget.js
+var SymbolizedErrorWidget_exports = {};
+__export(SymbolizedErrorWidget_exports, {
+  SymbolizedErrorWidget: () => SymbolizedErrorWidget
+});
+import * as Bindings4 from "./../../models/bindings/bindings.js";
+import * as UI11 from "./../../ui/legacy/legacy.js";
+var DEFAULT_VIEW5 = (_input, _output, _target) => {
+};
+var SymbolizedErrorWidget = class extends UI11.Widget.Widget {
+  #error;
+  #view;
+  #ignoreListManager;
+  constructor(element, view = DEFAULT_VIEW5) {
+    super(element);
+    this.#view = view;
+  }
+  set ignoreListManager(ignoreListManager) {
+    this.#ignoreListManager = ignoreListManager;
+    this.requestUpdate();
+  }
+  get ignoreListManager() {
+    return this.#ignoreListManager;
+  }
+  set error(error) {
+    this.#error?.removeEventListener("UPDATED", this.requestUpdate, this);
+    this.#error = error;
+    if (this.isShowing()) {
+      this.#error?.addEventListener("UPDATED", this.requestUpdate, this);
+    }
+    this.requestUpdate();
+  }
+  get error() {
+    return this.#error;
+  }
+  wasShown() {
+    super.wasShown();
+    this.#error?.addEventListener("UPDATED", this.requestUpdate, this);
+    this.requestUpdate();
+  }
+  willHide() {
+    super.willHide();
+    this.#error?.removeEventListener("UPDATED", this.requestUpdate, this);
+  }
+  performUpdate() {
+    if (!this.#error) {
+      return;
+    }
+    const input = {
+      error: this.#error,
+      ignoreListManager: this.#ignoreListManager
+    };
+    this.#view(input, {}, this.contentElement);
+  }
+};
 export {
   ConsoleContextSelector_exports as ConsoleContextSelector,
   ConsoleFilter_exports as ConsoleFilter,
@@ -8207,6 +8352,7 @@ export {
   ConsoleView_exports as ConsoleView,
   ConsoleViewMessage_exports as ConsoleViewMessage,
   ConsoleViewport_exports as ConsoleViewport,
-  PromptBuilder_exports as PromptBuilder
+  PromptBuilder_exports as PromptBuilder,
+  SymbolizedErrorWidget_exports as SymbolizedErrorWidget
 };
 //# sourceMappingURL=console.js.map

@@ -31,7 +31,9 @@ export declare class DeviceModeToolbar {
     private cachedModelDevice?;
     private cachedModelMode?;
     constructor(model: EmulationModel.DeviceModeModel.DeviceModeModel, showMediaInspectorSetting: Common.Settings.Setting<boolean>, showRulersSetting: Common.Settings.Setting<boolean>);
+    private appendOption;
     private createEmptyToolbarElement;
+    private createSizeInput;
     private createMainToolbar;
     private createOptionsToolbar;
     private getDevicePostureOptions;

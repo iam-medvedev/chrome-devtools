@@ -75,6 +75,9 @@
       "path": "../../models/ai_assistance/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/logs/meta-tsconfig.json"
+    },
+    {
       "path": "../../models/workspace/meta-tsconfig.json"
     },
     {
@@ -82,6 +85,15 @@
     },
     {
       "path": "../../panels/sensors/meta-tsconfig.json"
+    },
+    {
+      "path": "../../panels/sources/meta-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/markdown_view/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/components/source_frame/meta-tsconfig.json"
     }
   ]
 }

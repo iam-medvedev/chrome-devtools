@@ -129,7 +129,6 @@
       <include file="Images/dog-paw.svg" name="IMAGES_DOG_PAW_SVG" resource_path="Images/dog-paw.svg" type="BINDATA" compress="false"/>
       <include file="Images/dom-detective-badge.svg" name="IMAGES_DOM_DETECTIVE_BADGE_SVG" resource_path="Images/dom-detective-badge.svg" type="BINDATA" compress="false"/>
       <include file="Images/domain.svg" name="IMAGES_DOMAIN_SVG" resource_path="Images/domain.svg" type="BINDATA" compress="false"/>
-      <include file="Images/dots-circle.svg" name="IMAGES_DOTS_CIRCLE_SVG" resource_path="Images/dots-circle.svg" type="BINDATA" compress="false"/>
       <include file="Images/dots-horizontal.svg" name="IMAGES_DOTS_HORIZONTAL_SVG" resource_path="Images/dots-horizontal.svg" type="BINDATA" compress="false"/>
       <include file="Images/dots-vertical.svg" name="IMAGES_DOTS_VERTICAL_SVG" resource_path="Images/dots-vertical.svg" type="BINDATA" compress="false"/>
       <include file="Images/download.svg" name="IMAGES_DOWNLOAD_SVG" resource_path="Images/download.svg" type="BINDATA" compress="false"/>
@@ -137,6 +136,7 @@
       <include file="Images/empty.svg" name="IMAGES_EMPTY_SVG" resource_path="Images/empty.svg" type="BINDATA" compress="false"/>
       <include file="Images/errorWave.svg" name="IMAGES_ERRORWAVE_SVG" resource_path="Images/errorWave.svg" type="BINDATA" compress="false"/>
       <include file="Images/exclamation.svg" name="IMAGES_EXCLAMATION_SVG" resource_path="Images/exclamation.svg" type="BINDATA" compress="false"/>
+      <include file="Images/expand.svg" name="IMAGES_EXPAND_SVG" resource_path="Images/expand.svg" type="BINDATA" compress="false"/>
       <include file="Images/experiment-check.svg" name="IMAGES_EXPERIMENT_CHECK_SVG" resource_path="Images/experiment-check.svg" type="BINDATA" compress="false"/>
       <include file="Images/experiment.svg" name="IMAGES_EXPERIMENT_SVG" resource_path="Images/experiment.svg" type="BINDATA" compress="false"/>
       <include file="Images/extension.svg" name="IMAGES_EXTENSION_SVG" resource_path="Images/extension.svg" type="BINDATA" compress="false"/>
@@ -329,7 +329,6 @@
       <include file="Tests.js" name="TESTS_JS" resource_path="Tests.js" type="BINDATA" compress="false"/>
       <include file="application_tokens.css" name="APPLICATION_TOKENS_CSS" resource_path="application_tokens.css" type="BINDATA" compress="false"/>
       <include file="core/common/common.js" name="CORE_COMMON_COMMON_JS" resource_path="core/common/common.js" type="BINDATA" compress="false"/>
-      <include file="core/dom_extension/dom_extension.js" name="CORE_DOM_EXTENSION_DOM_EXTENSION_JS" resource_path="core/dom_extension/dom_extension.js" type="BINDATA" compress="false"/>
       <include file="core/host/host.js" name="CORE_HOST_HOST_JS" resource_path="core/host/host.js" type="BINDATA" compress="false"/>
       <include file="core/i18n/i18n.js" name="CORE_I18N_I18N_JS" resource_path="core/i18n/i18n.js" type="BINDATA" compress="false"/>
       <include file="core/i18n/locales/en-US.json" name="CORE_I18N_LOCALES_EN_US_JSON" resource_path="core/i18n/locales/en-US.json" type="BINDATA" compress="false"/>
@@ -549,6 +548,11 @@
       <include file="models/issues_manager/descriptions/genericFormLabelForMatchesNonExistingIdError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMLABELFORMATCHESNONEXISTINGIDERROR_MD" resource_path="models/issues_manager/descriptions/genericFormLabelForMatchesNonExistingIdError.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormLabelForNameError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMLABELFORNAMEERROR_MD" resource_path="models/issues_manager/descriptions/genericFormLabelForNameError.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormLabelHasNeitherForNorNestedInputError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMLABELHASNEITHERFORNORNESTEDINPUTERROR_MD" resource_path="models/issues_manager/descriptions/genericFormLabelHasNeitherForNorNestedInputError.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/genericFormModelContextMissingToolDescription.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMMODELCONTEXTMISSINGTOOLDESCRIPTION_MD" resource_path="models/issues_manager/descriptions/genericFormModelContextMissingToolDescription.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/genericFormModelContextMissingToolName.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMMODELCONTEXTMISSINGTOOLNAME_MD" resource_path="models/issues_manager/descriptions/genericFormModelContextMissingToolName.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/genericFormModelContextParameterMissingName.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMMODELCONTEXTPARAMETERMISSINGNAME_MD" resource_path="models/issues_manager/descriptions/genericFormModelContextParameterMissingName.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/genericFormModelContextParameterMissingTitleAndDescription.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMMODELCONTEXTPARAMETERMISSINGTITLEANDDESCRIPTION_MD" resource_path="models/issues_manager/descriptions/genericFormModelContextParameterMissingTitleAndDescription.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/genericFormModelContextRequiredParameterMissingName.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMMODELCONTEXTREQUIREDPARAMETERMISSINGNAME_MD" resource_path="models/issues_manager/descriptions/genericFormModelContextRequiredParameterMissingName.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericNavigationEntryMarkedSkippable.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICNAVIGATIONENTRYMARKEDSKIPPABLE_MD" resource_path="models/issues_manager/descriptions/genericNavigationEntryMarkedSkippable.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericResponseWasBlockedByORB.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICRESPONSEWASBLOCKEDBYORB_MD" resource_path="models/issues_manager/descriptions/genericResponseWasBlockedByORB.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/heavyAd.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_HEAVYAD_MD" resource_path="models/issues_manager/descriptions/heavyAd.md" type="BINDATA" compress="false"/>
@@ -707,7 +711,6 @@
       <include file="panels/elements/components/components.js" name="PANELS_ELEMENTS_COMPONENTS_COMPONENTS_JS" resource_path="panels/elements/components/components.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/elements-meta.js" name="PANELS_ELEMENTS_ELEMENTS_META_JS" resource_path="panels/elements/elements-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/elements.js" name="PANELS_ELEMENTS_ELEMENTS_JS" resource_path="panels/elements/elements.js" type="BINDATA" compress="false"/>
-      <include file="panels/emulation/components/components.js" name="PANELS_EMULATION_COMPONENTS_COMPONENTS_JS" resource_path="panels/emulation/components/components.js" type="BINDATA" compress="false"/>
       <include file="panels/emulation/emulation-meta.js" name="PANELS_EMULATION_EMULATION_META_JS" resource_path="panels/emulation/emulation-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/emulation/emulation.js" name="PANELS_EMULATION_EMULATION_JS" resource_path="panels/emulation/emulation.js" type="BINDATA" compress="false"/>
       <include file="panels/event_listeners/event_listeners.js" name="PANELS_EVENT_LISTENERS_EVENT_LISTENERS_JS" resource_path="panels/event_listeners/event_listeners.js" type="BINDATA" compress="false"/>
@@ -857,6 +860,7 @@
       <include file="ui/components/text_prompt/text_prompt.js" name="UI_COMPONENTS_TEXT_PROMPT_TEXT_PROMPT_JS" resource_path="ui/components/text_prompt/text_prompt.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tooltips/tooltips.js" name="UI_COMPONENTS_TOOLTIPS_TOOLTIPS_JS" resource_path="ui/components/tooltips/tooltips.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/tree_outline.js" name="UI_COMPONENTS_TREE_OUTLINE_TREE_OUTLINE_JS" resource_path="ui/components/tree_outline/tree_outline.js" type="BINDATA" compress="false"/>
+      <include file="ui/dom_extension/dom_extension.js" name="UI_DOM_EXTENSION_DOM_EXTENSION_JS" resource_path="ui/dom_extension/dom_extension.js" type="BINDATA" compress="false"/>
       <include file="ui/helpers/helpers.js" name="UI_HELPERS_HELPERS_JS" resource_path="ui/helpers/helpers.js" type="BINDATA" compress="false"/>
       <include file="ui/i18n/i18n.js" name="UI_I18N_I18N_JS" resource_path="ui/i18n/i18n.js" type="BINDATA" compress="false"/>
       <include file="ui/kit/kit.js" name="UI_KIT_KIT_JS" resource_path="ui/kit/kit.js" type="BINDATA" compress="false"/>

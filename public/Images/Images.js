@@ -132,7 +132,6 @@ style.setProperty('--image-file-document', 'url(\"' + new URL(new URL('document.
 style.setProperty('--image-file-dog-paw', 'url(\"' + new URL(new URL('dog-paw.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-dom-detective-badge', 'url(\"' + new URL(new URL('dom-detective-badge.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-domain', 'url(\"' + new URL(new URL('domain.svg', import.meta.url).href).toString() + '\")');
-style.setProperty('--image-file-dots-circle', 'url(\"' + new URL(new URL('dots-circle.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-dots-horizontal', 'url(\"' + new URL(new URL('dots-horizontal.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-dots-vertical', 'url(\"' + new URL(new URL('dots-vertical.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-download', 'url(\"' + new URL(new URL('download.svg', import.meta.url).href).toString() + '\")');
@@ -140,6 +139,7 @@ style.setProperty('--image-file-edit', 'url(\"' + new URL(new URL('edit.svg', im
 style.setProperty('--image-file-empty', 'url(\"' + new URL(new URL('empty.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-errorWave', 'url(\"' + new URL(new URL('errorWave.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-exclamation', 'url(\"' + new URL(new URL('exclamation.svg', import.meta.url).href).toString() + '\")');
+style.setProperty('--image-file-expand', 'url(\"' + new URL(new URL('expand.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-experiment-check', 'url(\"' + new URL(new URL('experiment-check.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-experiment', 'url(\"' + new URL(new URL('experiment.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-extension', 'url(\"' + new URL(new URL('extension.svg', import.meta.url).href).toString() + '\")');

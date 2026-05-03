@@ -133,7 +133,7 @@ describeWithMockConnection('Linkifier', () => {
         const observer = new MutationObserver(callback);
         observer.observe(anchor, { childList: true });
     });
-    it('always favors script ID over url', done => {
+    it('always favors script ID over url', async () => {
         const { target, linkifier } = setUpEnvironment();
         const lineNumber = 4;
         const url = 'https://www.google.com/script.js';
@@ -178,21 +178,23 @@ describeWithMockConnection('Linkifier', () => {
             length: 10,
         };
         dispatchEvent(target, 'Debugger.scriptParsed', scriptParsedEvent2);
-        const callback = function (mutations) {
-            for (const mutation of mutations) {
-                if (mutation.type === 'childList') {
-                    const info = Components.Linkifier.Linkifier.linkInfo(anchor);
-                    assert.exists(info);
-                    assert.exists(info.uiLocation);
-                    // Make sure that a uiSourceCode is linked to that anchor.
-                    assert.exists(info.uiLocation.uiSourceCode);
-                    observer.disconnect();
-                    done();
+        await new Promise(resolve => {
+            const callback = function (mutations) {
+                for (const mutation of mutations) {
+                    if (mutation.type === 'childList') {
+                        const info = Components.Linkifier.Linkifier.linkInfo(anchor);
+                        assert.exists(info);
+                        assert.exists(info.uiLocation);
+                        // Make sure that a uiSourceCode is linked to that anchor.
+                        assert.exists(info.uiLocation.uiSourceCode);
+                        observer.disconnect();
+                        resolve();
+                    }
                 }
-            }
-        };
-        const observer = new MutationObserver(callback);
-        observer.observe(anchor, { childList: true });
+            };
+            const observer = new MutationObserver(callback);
+            observer.observe(anchor, { childList: true });
+        });
     });
     it('optionally shows column numbers in the link text', done => {
         const { target, linkifier } = setUpEnvironment();
@@ -268,6 +270,38 @@ describeWithMockConnection('Linkifier', () => {
             const anchor = Components.Linkifier.Linkifier.linkifyStackTraceFrame(frame, { ignoreListManager });
             assert.exists(anchor);
             assert.isTrue(anchor.classList.contains('ignore-list-link'));
+        });
+    });
+    describe('linkifyUILocation', () => {
+        it('creates a link from a UILocation', async () => {
+            const { target, backend } = setUpEnvironment();
+            const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+            const url = Platform.DevToolsPath.urlString `https://www.google.com/script.js`;
+            const script = await backend.addScript(target, { content: simpleScriptContent, url }, null);
+            const uiSourceCode = debuggerWorkspaceBinding.uiSourceCodeForScript(script);
+            assert.exists(uiSourceCode);
+            const uiLocation = new Workspace.UISourceCode.UILocation(uiSourceCode, 1, 2);
+            const anchor = Components.Linkifier.Linkifier.linkifyUILocation(uiLocation);
+            assert.exists(anchor);
+            assert.include(anchor.textContent, 'script.js');
+            assert.include(anchor.textContent, '2');
+        });
+        it('applies ignore-list-link class to fallback anchor if URL is ignore-listed and manager is provided', async () => {
+            const { target, backend } = setUpEnvironment();
+            const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+            const url = Platform.DevToolsPath.urlString `https://www.google.com/script.js`;
+            const script = await backend.addScript(target, { content: simpleScriptContent, url }, null);
+            const uiSourceCode = debuggerWorkspaceBinding.uiSourceCodeForScript(script);
+            assert.exists(uiSourceCode);
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance();
+            ignoreListManager.ignoreListURL(url);
+            const uiLocation = new Workspace.UISourceCode.UILocation(uiSourceCode, 1, 2);
+            const anchor = Components.Linkifier.Linkifier.linkifyUILocation(uiLocation, { ignoreListManager });
+            assert.exists(anchor);
+            const info = Components.Linkifier.Linkifier.linkInfo(anchor);
+            assert.exists(info);
+            assert.exists(info.fallback);
+            assert.isTrue(info.fallback.classList.contains('ignore-list-link'));
         });
     });
     describe('maybeLinkifyScriptLocation', () => {

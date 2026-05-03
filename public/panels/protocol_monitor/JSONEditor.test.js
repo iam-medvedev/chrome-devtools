@@ -1110,11 +1110,86 @@ describeWithEnvironment('JSONEditor', () => {
         });
         it('sets the command via commandToDisplay', async () => {
             const jsonEditor = renderJSONEditor();
-            jsonEditor.commandToDisplay = 'Test.testCommand';
+            jsonEditor.commandToDisplay = { command: 'Test.testCommand', parameters: {} };
             await jsonEditor.updateComplete;
             assert.strictEqual(jsonEditor.command, 'Test.testCommand');
             const input = jsonEditor.contentElement.querySelector('devtools-suggestion-input');
             assert.strictEqual(input.value, 'Test.testCommand');
+        });
+    });
+    describe('displayCommand', () => {
+        it('should display the correct parameters with a command containing an UNKNOWN parameter', async () => {
+            const jsonEditor = renderJSONEditor();
+            jsonEditor.metadataByCommand = new Map([
+                [
+                    'Test.test', {
+                        parameters: [{
+                                name: 'test',
+                                type: "unknown" /* ProtocolMonitor.JSONEditor.ParameterType.UNKNOWN */,
+                                optional: true,
+                                description: '',
+                                isCorrectType: true,
+                            }],
+                        description: 'Description',
+                        replyArgs: [],
+                    }
+                ],
+            ]);
+            jsonEditor.commandToDisplay = { command: 'Test.test' };
+            await jsonEditor.updateComplete;
+            jsonEditor.displayCommand('Test.test', { test: { complex: 'object' } });
+            await jsonEditor.updateComplete;
+            const parameters = jsonEditor.getParameters();
+            assert.deepEqual(parameters, { test: { complex: 'object' } });
+        });
+        it('should ignore extra parameters that do not match the schema', async () => {
+            const jsonEditor = renderJSONEditor();
+            jsonEditor.metadataByCommand = new Map([
+                [
+                    'Test.test', {
+                        parameters: [{
+                                name: 'test',
+                                type: "string" /* ProtocolMonitor.JSONEditor.ParameterType.STRING */,
+                                optional: true,
+                                description: '',
+                                isCorrectType: true,
+                            }],
+                        description: 'Description',
+                        replyArgs: [],
+                    }
+                ],
+            ]);
+            jsonEditor.commandToDisplay = { command: 'Test.test' };
+            await jsonEditor.updateComplete;
+            jsonEditor.displayCommand('Test.test', { test: 'value', extra: 123 });
+            await jsonEditor.updateComplete;
+            const parameters = jsonEditor.getParameters();
+            // Only the schema-defined parameter should be kept.
+            assert.deepEqual(parameters, { test: 'value' });
+        });
+        it('should safely handle parameters that entirely do not match the schema (e.g. array instead of object)', async () => {
+            const jsonEditor = renderJSONEditor();
+            jsonEditor.metadataByCommand = new Map([
+                [
+                    'Test.test', {
+                        parameters: [{
+                                name: 'test',
+                                type: "string" /* ProtocolMonitor.JSONEditor.ParameterType.STRING */,
+                                optional: true,
+                                description: '',
+                                isCorrectType: true,
+                            }],
+                        description: 'Description',
+                        replyArgs: [],
+                    }
+                ],
+            ]);
+            jsonEditor.commandToDisplay = { command: 'Test.test' };
+            await jsonEditor.updateComplete;
+            jsonEditor.displayCommand('Test.test', ['an array', 'instead of object']);
+            await jsonEditor.updateComplete;
+            const parameters = jsonEditor.getParameters();
+            assert.isUndefined(parameters);
         });
     });
     describe('Command suggestion filter', () => {

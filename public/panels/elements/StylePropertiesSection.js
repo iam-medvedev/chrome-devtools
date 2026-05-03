@@ -767,8 +767,7 @@ export class StylePropertiesSection {
             return;
         }
         const sourceTreeElement = this.closestPropertyForEditing(this.#activeAiSuggestion.cssProperty.index);
-        if (!(sourceTreeElement instanceof StylePropertyTreeElement) ||
-            sourceTreeElement.property !== this.#activeAiSuggestion.cssProperty) {
+        if (!(sourceTreeElement instanceof StylePropertyTreeElement)) {
             return;
         }
         return sourceTreeElement;
@@ -1010,7 +1009,7 @@ export class StylePropertiesSection {
         }
         const containerElement = new ElementsComponents.QueryContainer.QueryContainer();
         containerElement.data = {
-            container: ElementsComponents.Helper.legacyNodeToElementsComponentsNode(container.containerNode),
+            container: container.containerNode,
             queryName: containerQuery.name,
             onContainerLinkClick: event => {
                 event.preventDefault();

@@ -1,8 +1,10 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
 describe('userAgentGroups', () => {
     it('Chrome UAs all have placeholder for major version patching', () => {
@@ -25,6 +27,9 @@ describeWithMockConnection('NetworkConfigView', () => {
             return {};
         });
         const networkConfigView = Network.NetworkConfigView.NetworkConfigView.instance();
+        networkConfigView.markAsRoot();
+        networkConfigView.show(renderElementIntoDOM(document.createElement('main')));
+        await UI.Widget.Widget.allUpdatesComplete;
         const saveDataSelect = networkConfigView.contentElement.querySelector('select[aria-label="Override the value reported by navigator.connection.saveData on the page"]');
         assert.exists(saveDataSelect);
         assert.instanceOf(saveDataSelect, HTMLSelectElement);

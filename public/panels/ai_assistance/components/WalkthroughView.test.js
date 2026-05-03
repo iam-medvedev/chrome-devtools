@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { makeFakeParsedTrace } from '../../../testing/TraceHelpers.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('WalkthroughView', () => {
@@ -216,6 +217,10 @@ describeWithEnvironment('WalkthroughView', () => {
                         widgets: [
                             {
                                 name: 'CORE_VITALS',
+                                data: {
+                                    insightSetKey: 'test-key',
+                                    parsedTrace: makeFakeParsedTrace(),
+                                },
                             },
                         ]
                     }

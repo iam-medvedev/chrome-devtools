@@ -45,10 +45,10 @@
       "path": "../../Images/optimize_images-tsconfig.json"
     },
     {
-      "path": "../../core/dom_extension/bundle-tsconfig.json"
+      "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/platform/bundle-tsconfig.json"
+      "path": "../../ui/dom_extension/bundle-tsconfig.json"
     }
   ]
 }

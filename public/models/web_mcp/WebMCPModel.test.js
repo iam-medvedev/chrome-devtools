@@ -89,5 +89,22 @@ describeWithEnvironment('WebMCPModel', () => {
         webMCPModel.clearCalls();
         assert.isEmpty(webMCPModel.toolCalls);
     });
+    it('provides a cancel method for in-progress tool calls', async () => {
+        const tool = createTool('test-tool', 'frame-1');
+        webMCPModel.toolsAdded({ tools: [tool] });
+        const toolInvokedPromise = webMCPModel.once("ToolInvoked" /* WebMCP.WebMCPModel.Events.TOOL_INVOKED */);
+        const invokedEvent = {
+            toolName: 'test-tool',
+            frameId: 'frame-1',
+            invocationId: 'cancelable-invocation',
+            input: 'test input',
+        };
+        webMCPModel.toolInvoked(invokedEvent);
+        const call = await toolInvokedPromise;
+        assert.isDefined(call.cancel);
+        const invokeCancelStub = sinon.stub(target.webMCPAgent(), 'invoke_cancelInvocation');
+        call.cancel();
+        sinon.assert.calledOnceWithExactly(invokeCancelStub, { invocationId: 'cancelable-invocation' });
+    });
 });
 //# sourceMappingURL=WebMCPModel.test.js.map

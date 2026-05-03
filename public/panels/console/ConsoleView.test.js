@@ -126,6 +126,12 @@ describeWithMockConnection('ConsoleView', () => {
     function createConsoleMessage(target, message, type = "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, level = null) {
         return new SDK.ConsoleModel.ConsoleMessage(target.model(SDK.RuntimeModel.RuntimeModel), "javascript" /* Protocol.Log.LogEntrySource.Javascript */, level, message, { type });
     }
+    let globalMessageTimestamp = 0;
+    function addMessage(consoleModel, target, message, type, level, timestamp) {
+        const consoleMessage = createConsoleMessage(target, message, type, level);
+        consoleMessage.timestamp = timestamp ?? ++globalMessageTimestamp;
+        consoleModel.addMessage(consoleMessage);
+    }
     it('can save to file', async () => {
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
@@ -420,11 +426,6 @@ describeWithMockConnection('ConsoleView', () => {
                 target.dispose('test cleanup');
             }
         });
-        function addMessage(message, type, level) {
-            const consoleMessage = createConsoleMessage(target, message, type, level);
-            consoleMessage.timestamp = ++messageTimestamp;
-            consoleModel.addMessage(consoleMessage);
-        }
         for (const level of ["error" /* Protocol.Log.LogEntryLevel.Error */,
             "warning" /* Protocol.Log.LogEntryLevel.Warning */,
             "info" /* Protocol.Log.LogEntryLevel.Info */,
@@ -436,9 +437,9 @@ describeWithMockConnection('ConsoleView', () => {
                 Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
                 consoleView.markAsRoot();
                 renderElementIntoDOM(consoleView);
-                addMessage('group', "startGroupCollapsed" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed */, "info" /* Protocol.Log.LogEntryLevel.Info */);
-                addMessage('message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, level);
-                addMessage('', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+                addMessage(consoleModel, target, 'group', "startGroupCollapsed" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
+                addMessage(consoleModel, target, 'message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, level, ++messageTimestamp);
+                addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
                 const messages = await getConsoleMessages();
                 assert.include(messages, 'group');
                 assert.notInclude(messages, 'message');
@@ -449,9 +450,9 @@ describeWithMockConnection('ConsoleView', () => {
                 Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
                 consoleView.markAsRoot();
                 renderElementIntoDOM(consoleView);
-                addMessage('group', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
-                addMessage('message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, level);
-                addMessage('', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+                addMessage(consoleModel, target, 'group', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
+                addMessage(consoleModel, target, 'message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, level, ++messageTimestamp);
+                addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
                 const messages = await getConsoleMessages();
                 assert.include(messages, 'group');
                 assert.include(messages, 'message');
@@ -463,9 +464,9 @@ describeWithMockConnection('ConsoleView', () => {
             Common.Settings.Settings.instance().createSetting('message-level-filters', levels).set(levels);
             consoleView.markAsRoot();
             renderElementIntoDOM(consoleView);
-            addMessage('group', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
-            addMessage('message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "error" /* Protocol.Log.LogEntryLevel.Error */);
-            addMessage('', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'group', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
+            addMessage(consoleModel, target, 'message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "error" /* Protocol.Log.LogEntryLevel.Error */, ++messageTimestamp);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
             const messages = await getConsoleMessages();
             assert.notInclude(messages, 'group');
             assert.notInclude(messages, 'message');
@@ -480,11 +481,11 @@ describeWithMockConnection('ConsoleView', () => {
                console.groupEnd() // B
                console.groupEnd() // A
             */
-            addMessage('A', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
-            addMessage('B', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
-            addMessage('C', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
-            addMessage('', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
-            addMessage('', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'A', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
+            addMessage(consoleModel, target, 'B', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
+            addMessage(consoleModel, target, 'C', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */, ++messageTimestamp);
             let messages = await getConsoleMessages();
             assert.include(messages, 'A', 'A should be visible');
             assert.include(messages, 'B', 'B should be visible');
@@ -497,6 +498,87 @@ describeWithMockConnection('ConsoleView', () => {
             assert.include(messages, 'A', 'A should be visible after collapsing');
             assert.notInclude(messages, 'B', 'B should be hidden after collapsing parent A');
             assert.notInclude(messages, 'C', 'C should be hidden after collapsing parent A');
+        });
+    });
+    describe('collapse all and expand all', () => {
+        let target;
+        let consoleModel;
+        beforeEach(() => {
+            target = createTarget();
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+            assert.exists(consoleModel);
+            consoleView.markAsRoot();
+            renderElementIntoDOM(consoleView);
+        });
+        it('collapseAll collapses expanded groups', async () => {
+            addMessage(consoleModel, target, 'group 1', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'inner message 1', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'group 2', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'inner message 2', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            // Both groups are expanded by default, so all group headers and messages are visible.
+            assert.strictEqual(consoleView.itemCount(), 4);
+            consoleView.collapseAll();
+            // After collapsing, only the two group headers should be visible.
+            assert.strictEqual(consoleView.itemCount(), 2);
+        });
+        it('expandAll expands collapsed groups', async () => {
+            addMessage(consoleModel, target, 'group 1', "startGroupCollapsed" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'inner message 1', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'group 2', "startGroupCollapsed" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'inner message 2', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            // Both groups are collapsed by default, so only group headers are visible.
+            assert.strictEqual(consoleView.itemCount(), 2);
+            consoleView.expandAll();
+            // After expanding, all group headers and messages are visible.
+            assert.strictEqual(consoleView.itemCount(), 4);
+        });
+        it('collapseAll then expandAll round-trips groups correctly', async () => {
+            addMessage(consoleModel, target, 'expanded group', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'expanded message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'collapsed group', "startGroupCollapsed" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'collapsed message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            // Mixed state: one expanded group and one collapsed group.
+            assert.strictEqual(consoleView.itemCount(), 3);
+            consoleView.collapseAll();
+            assert.strictEqual(consoleView.itemCount(), 2);
+            consoleView.expandAll();
+            assert.strictEqual(consoleView.itemCount(), 4);
+        });
+        it('collapseAll collapses nested groups', async () => {
+            addMessage(consoleModel, target, 'outer', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'inner', "startGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'deep message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            // All three are visible: outer, inner, deep message.
+            assert.strictEqual(consoleView.itemCount(), 3);
+            consoleView.collapseAll();
+            // After collapse, only outer is visible.
+            assert.strictEqual(consoleView.itemCount(), 1);
+        });
+        it('expandAll expands nested groups', async () => {
+            addMessage(consoleModel, target, 'outer', "startGroupCollapsed" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'inner', "startGroupCollapsed" /* Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, 'deep message', "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            addMessage(consoleModel, target, '', "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */, "info" /* Protocol.Log.LogEntryLevel.Info */);
+            await consoleView.getScheduledRefreshPromiseForTest();
+            // All collapsed, only outer visible.
+            assert.strictEqual(consoleView.itemCount(), 1);
+            consoleView.expandAll();
+            // After expanding, all three are visible.
+            assert.strictEqual(consoleView.itemCount(), 3);
         });
     });
 });

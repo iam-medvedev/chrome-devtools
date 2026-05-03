@@ -45,8 +45,10 @@
   },
   "files": [
     "../../../../../../front_end/core/sdk/DebuggerModel.test.ts",
+    "../../../../../../front_end/core/sdk/NetworkManager.test.ts",
     "../../../../../../front_end/core/sdk/PageResourceLoader.test.ts",
     "../../../../../../front_end/core/sdk/RuntimeModel.test.ts",
+    "../../../../../../front_end/core/sdk/ServerSentEventsProtocol.test.ts",
     "../../../../../../front_end/core/sdk/Target.test.ts",
     "../../../../../../front_end/core/sdk/TargetManager.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

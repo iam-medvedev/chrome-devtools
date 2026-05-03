@@ -237,6 +237,26 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
         }, {}, container);
         await assertScreenshot('elements/properties_widget_no_filter.png');
     });
+    it('renders a selected element', async () => {
+        const { container, objectTree } = await setUpView();
+        Elements.PropertiesWidget.DEFAULT_VIEW({
+            onFilterChanged: () => { },
+            objectTree,
+            allChildrenFiltered: false,
+            onRegexToggled: function () {
+                throw new Error('Function not implemented.');
+            },
+            isRegex: false
+        }, {}, container);
+        await UI.Widget.Widget.allUpdatesComplete;
+        const tree = container.querySelector('devtools-tree');
+        assert.exists(tree);
+        const treeOutline = tree.getInternalTreeOutlineForTest();
+        const child = treeOutline.rootElement().childAt(0);
+        assert.exists(child);
+        child.select();
+        await assertScreenshot('elements/properties_widget_selected_element.png');
+    });
     it('renders the view with a partial filter match', async () => {
         const { container, objectTree } = await setUpView('first');
         Elements.PropertiesWidget.DEFAULT_VIEW({

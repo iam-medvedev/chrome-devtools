@@ -6263,6 +6263,9 @@
   "panels/application/TrustTokensTreeElement.ts | trustTokens": {
     "message": "Private state tokens"
   },
+  "panels/application/WebMCPView.ts | cancelCall": {
+    "message": "Cancel"
+  },
   "panels/application/WebMCPView.ts | canceled": {
     "message": "Canceled"
   },
@@ -6289,6 +6292,9 @@
   },
   "panels/application/WebMCPView.ts | declarative": {
     "message": "Declarative"
+  },
+  "panels/application/WebMCPView.ts | editAndRun": {
+    "message": "Edit and run"
   },
   "panels/application/WebMCPView.ts | error": {
     "message": "Error"
@@ -6332,8 +6338,14 @@
   "panels/application/WebMCPView.ts | output": {
     "message": "Output"
   },
+  "panels/application/WebMCPView.ts | paste": {
+    "message": "Paste"
+  },
   "panels/application/WebMCPView.ts | pending": {
     "message": "In Progress"
+  },
+  "panels/application/WebMCPView.ts | revealTool": {
+    "message": "Reveal tool"
   },
   "panels/application/WebMCPView.ts | runTool": {
     "message": "Run Tool"
@@ -6352,6 +6364,9 @@
   },
   "panels/application/WebMCPView.ts | toolTypes": {
     "message": "Tool types"
+  },
+  "panels/application/WebMCPView.ts | toolUnregisteredNotice": {
+    "message": "This tool has been unregistered"
   },
   "panels/application/WebMCPView.ts | totalCalls": {
     "message": "{PH1} Total calls"
@@ -6956,6 +6971,9 @@
   "panels/console/ConsoleView.ts | autocompleteFromHistory": {
     "message": "Autocomplete from history"
   },
+  "panels/console/ConsoleView.ts | collapseAll": {
+    "message": "Collapse all"
+  },
   "panels/console/ConsoleView.ts | consoleCleared": {
     "message": "Console cleared"
   },
@@ -6994,6 +7012,9 @@
   },
   "panels/console/ConsoleView.ts | errors": {
     "message": "Errors"
+  },
+  "panels/console/ConsoleView.ts | expandAll": {
+    "message": "Expand all"
   },
   "panels/console/ConsoleView.ts | filteredMessagesInConsole": {
     "message": "{PH1} messages in console"
@@ -11986,9 +12007,6 @@
   },
   "panels/profiler/HeapSnapshotView.ts | duplicatedStrings": {
     "message": "Duplicated strings"
-  },
-  "panels/profiler/HeapSnapshotView.ts | exposeInternals": {
-    "message": "Internals with implementation details"
   },
   "panels/profiler/HeapSnapshotView.ts | filter": {
     "message": "Filter"

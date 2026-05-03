@@ -62,6 +62,8 @@ function getBaseViewInput() {
         decorationsTooltip: '',
         indent: 0,
         adTooltipId: '',
+        editorState: null,
+        editorWidth: null,
     };
 }
 describe('ElementsTreeElement', () => {

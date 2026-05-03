@@ -170,6 +170,73 @@ describe('DetailedErrorStackParser', () => {
             assert.strictEqual(frames[0].parsedFrameInfo?.wasmFunctionIndex, 123);
             assert.strictEqual(frames[0].columnNumber, 0xabc);
         });
+        it('matches wasm protocol frames accurately with multiple frames', () => {
+            const stack = `Error: foo
+          at $inner (http://example.com/unreachable.wasm:wasm-function[2]:0x21)
+          at $outer (http://example.com/unreachable.wasm:wasm-function[1]:0x95)
+          at go (http://example.com/unreachable.html:27:29)`;
+            const rawFrames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(rawFrames);
+            const protocolStackTrace = {
+                callFrames: [
+                    {
+                        url: 'http://example.com/unreachable.wasm',
+                        functionName: 'inner',
+                        scriptId: '17',
+                        lineNumber: 0,
+                        columnNumber: 33, // 0x21
+                    },
+                    {
+                        url: 'http://example.com/unreachable.wasm',
+                        functionName: 'outer',
+                        scriptId: '17',
+                        lineNumber: 0,
+                        columnNumber: 149, // 0x95
+                    },
+                    {
+                        url: 'http://example.com/unreachable.html',
+                        functionName: 'go',
+                        scriptId: '16',
+                        lineNumber: 26,
+                        columnNumber: 28,
+                    }
+                ]
+            };
+            StackTraceImpl.DetailedErrorStackParser.augmentRawFramesWithScriptIds(rawFrames, protocolStackTrace);
+            assert.strictEqual(rawFrames[0].scriptId, '17');
+            assert.strictEqual(rawFrames[0].columnNumber, 33);
+            assert.strictEqual(rawFrames[1].scriptId, '17');
+            assert.strictEqual(rawFrames[1].columnNumber, 149);
+            assert.strictEqual(rawFrames[2].scriptId, '16');
+        });
+        it('matches mixed JS and Wasm frames accurately', () => {
+            const stack = `Error: mixed
+          at jsFunc (http://example.com/script.js:10:5)
+          at $wasmFunc (http://example.com/module.wasm:wasm-function[0]:0x21)`;
+            const rawFrames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(rawFrames);
+            const protocolStackTrace = {
+                callFrames: [
+                    {
+                        url: 'http://example.com/script.js',
+                        functionName: 'jsFunc',
+                        scriptId: '10',
+                        lineNumber: 9,
+                        columnNumber: 4,
+                    },
+                    {
+                        url: 'http://example.com/module.wasm',
+                        functionName: 'wasmFunc',
+                        scriptId: '20',
+                        lineNumber: 0,
+                        columnNumber: 33, // 0x21
+                    }
+                ]
+            };
+            StackTraceImpl.DetailedErrorStackParser.augmentRawFramesWithScriptIds(rawFrames, protocolStackTrace);
+            assert.strictEqual(rawFrames[0].scriptId, '10');
+            assert.strictEqual(rawFrames[1].scriptId, '20');
+        });
         it('parses promise.all index', () => {
             const stack = `Error: foo
           at Promise.all (index 2)`;
