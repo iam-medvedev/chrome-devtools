@@ -15,7 +15,7 @@ import { DefaultScriptMapping } from './DefaultScriptMapping.js';
 import { LiveLocationWithPool } from './LiveLocation.js';
 import { NetworkProject } from './NetworkProject.js';
 import { ResourceScriptMapping } from './ResourceScriptMapping.js';
-import { SymbolizedErrorObject } from './SymbolizedError.js';
+import { isErrorLike, SymbolizedErrorObject, SymbolizedSyntaxError, UnparsableError, } from './SymbolizedError.js';
 export class DebuggerWorkspaceBinding {
     resourceMapping;
     #debuggerModelToData;
@@ -172,9 +172,18 @@ export class DebuggerWorkspaceBinding {
             ]);
             fetchedExceptionDetails = details;
             causeRemoteObject = causeRemote;
+            if (remoteObject.className === 'SyntaxError' && fetchedExceptionDetails) {
+                const syntaxError = await SymbolizedSyntaxError.fromExceptionDetails(remoteObject.runtimeModel().target(), this, fetchedExceptionDetails);
+                if (syntaxError) {
+                    return syntaxError;
+                }
+            }
         }
         else if (remoteObject.type === 'string') {
             errorStack = remoteObject.description || '';
+            if (!isErrorLike(errorStack)) {
+                return null;
+            }
         }
         else {
             return null;
@@ -183,12 +192,12 @@ export class DebuggerWorkspaceBinding {
             this.createStackTraceFromErrorStackLikeString(remoteObject.runtimeModel().target(), errorStack, fetchedExceptionDetails),
             causeRemoteObject ? this.createSymbolizedError(causeRemoteObject) : Promise.resolve(null),
         ]);
-        if (!stackTrace) {
-            return null;
-        }
         const issueSummary = fetchedExceptionDetails?.exceptionMetaData?.issueSummary;
         if (typeof issueSummary === 'string') {
             errorStack = StackTrace.ErrorStackParser.concatErrorDescriptionAndIssueSummary(errorStack, issueSummary);
+        }
+        if (!stackTrace) {
+            return new UnparsableError(errorStack, cause);
         }
         const message = StackTraceImpl.DetailedErrorStackParser.parseMessage(errorStack);
         return new SymbolizedErrorObject(message, stackTrace, cause);

@@ -4,7 +4,15 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as StackTrace from '../stack_trace/stack_trace.js';
 import type * as Workspace from '../workspace/workspace.js';
 import type { DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
-export type SymbolizedError = SymbolizedErrorObject;
+export declare function isErrorLike(stack: string): boolean;
+export type SymbolizedError = SymbolizedErrorObject | SymbolizedSyntaxError | UnparsableError;
+export declare class UnparsableError extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
+    #private;
+    readonly errorStack: string;
+    readonly cause: SymbolizedError | null;
+    constructor(errorStack: string, cause: SymbolizedError | null);
+    dispose(): void;
+}
 export declare class SymbolizedErrorObject extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     readonly message: string;
@@ -16,7 +24,7 @@ export declare class SymbolizedErrorObject extends Common.ObjectWrapper.ObjectWr
 export declare class SymbolizedSyntaxError extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     readonly message: string;
-    private constructor();
+    constructor(message: string);
     get uiLocation(): Workspace.UISourceCode.UILocation | null;
     static fromExceptionDetails(target: SDK.Target.Target, debuggerWorkspaceBinding: DebuggerWorkspaceBinding, exceptionDetails: Protocol.Runtime.ExceptionDetails): Promise<SymbolizedSyntaxError | null>;
 }

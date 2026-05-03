@@ -2711,7 +2711,7 @@ __export(Widget_exports, {
   widgetConfig: () => widgetConfig,
   widgetRef: () => widgetRef
 });
-import "./../../core/dom_extension/dom_extension.js";
+import "./../dom_extension/dom_extension.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Lit from "./../lit/lit.js";
@@ -16351,25 +16351,44 @@ var bindToSetting = (settingOrName, optionsOrValidator) => {
       jslog = optionsOrValidator.jslog;
     }
   }
-  const jslogBuilder = jslog ? VisualLogging15.toggle(setting.name).track({ change: true }) : null;
   let setValue;
   function settingChanged() {
     setValue(setting.get());
   }
   if (setting.type() === "boolean" || typeof setting.defaultValue === "boolean") {
+    let attachedButton;
+    let clickListener;
     return Directives2.ref((e) => {
       if (e === void 0) {
         setting.removeChangeListener(settingChanged);
+        if (attachedButton && clickListener) {
+          attachedButton.removeEventListener("click", clickListener);
+          attachedButton = void 0;
+        }
         return;
       }
-      if (jslogBuilder) {
-        e.setAttribute("jslog", jslogBuilder.toString());
+      if (jslog) {
+        const isButton = e instanceof Buttons6.Button.Button;
+        const jslogBuilder2 = VisualLogging15.toggle(setting.name).track(isButton ? { click: true } : { change: true });
+        e.setAttribute("jslog", jslogBuilder2.toString());
       }
       setting.addChangeListener(settingChanged);
-      setValue = bindCheckboxImpl(e, setting.set.bind(setting));
+      if (e instanceof Buttons6.Button.Button) {
+        attachedButton = e;
+        clickListener = () => {
+          setting.set(!setting.get());
+        };
+        e.addEventListener("click", clickListener);
+        setValue = (value) => {
+          e.toggled = value;
+        };
+      } else {
+        setValue = bindCheckboxImpl(e, setting.set.bind(setting));
+      }
       setValue(setting.get());
     });
   }
+  const jslogBuilder = jslog ? VisualLogging15.toggle(setting.name).track({ change: true }) : null;
   if (setting.type() === "regex" || setting instanceof Common15.Settings.RegExpSetting) {
     return Directives2.ref((e) => {
       if (e === void 0) {
@@ -22793,7 +22812,7 @@ function removeNode(node, preserveParentExpandable = false) {
   }
 }
 var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemplate {
-  static observedAttributes = ["navigation-variant", "hide-overflow", "dense"];
+  static observedAttributes = ["navigation-variant", "hide-overflow", "dense", "show-selection-on-keyboard-focus"];
   #treeOutline = new TreeOutlineInShadow(void 0, this);
   constructor() {
     super();
@@ -22941,6 +22960,9 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
         break;
       case "dense":
         this.#treeOutline.setDense(booleanValueIsTrue);
+        break;
+      case "show-selection-on-keyboard-focus":
+        this.#treeOutline.setShowSelectionOnKeyboardFocus(booleanValueIsTrue);
         break;
     }
   }

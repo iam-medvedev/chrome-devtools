@@ -6,6 +6,13 @@ describe('Runtime', () => {
     beforeEach(() => {
         Root.Runtime.experiments.clearForTest();
     });
+    it('getChromeVersion result has the correct shape', () => {
+        const version = Root.Runtime.getChromeVersion();
+        if (!version) {
+            return;
+        }
+        assert.isTrue(/^\d{3}\.0\.0\.0$/.test(version));
+    });
     describe('Module', () => {
         describe('getRemoteBase', () => {
             const bundled = 'devtools://devtools/bundled/devtools_app.html';
@@ -49,6 +56,11 @@ describe('Runtime', () => {
         assert.deepEqual(experiments.map(experiment => experiment.name), [Root.ExperimentNames.ExperimentName.FONT_EDITOR, dummyExperiment]);
     });
     describe('ExperimentsSupport', () => {
+        beforeEach(() => {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem('experiments');
+            }
+        });
         it('throws for unknown experiment', () => {
             const support = new Root.Runtime.ExperimentsSupport();
             assert.throws(() => support.isEnabled('test-experiment'));
@@ -59,6 +71,13 @@ describe('Runtime', () => {
             assert.throws(() => {
                 support.register('experiment', 'experiment title');
             });
+        });
+        it('registers an experiment', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.register('experiment', 'experiment title');
+            assert.isFalse(support.isEnabled('experiment'));
+            support.setEnabled('experiment', true);
+            assert.isTrue(support.isEnabled('experiment'));
         });
         it('registers a host experiment', () => {
             const support = new Root.Runtime.ExperimentsSupport();
@@ -83,6 +102,18 @@ describe('Runtime', () => {
             support.setEnabled('experiment', true);
             assert.isTrue(support.isEnabled('experiment'));
         });
+        it('enables an experiment by default', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.register('experiment', 'experiment title');
+            support.enableExperimentsByDefault(['experiment']);
+            assert.isTrue(support.isEnabled('experiment'));
+        });
+        it('enables an experiment via the server', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.register('experiment', 'experiment title');
+            support.setServerEnabledExperiments(['experiment']);
+            assert.isTrue(support.isEnabled('experiment'));
+        });
         it('enables a host experiment via initialization', () => {
             const support = new Root.Runtime.ExperimentsSupport();
             support.registerHostExperiment({
@@ -92,6 +123,13 @@ describe('Runtime', () => {
                 isEnabled: true,
                 requiresChromeRestart: false,
             });
+            assert.isTrue(support.isEnabled('experiment'));
+        });
+        it('enables an experiment for test', () => {
+            const support = new Root.Runtime.ExperimentsSupport();
+            support.register('experiment', 'experiment title');
+            assert.isFalse(support.isEnabled('experiment'));
+            support.enableForTest('experiment');
             assert.isTrue(support.isEnabled('experiment'));
         });
         it('enables a host experiment for test', () => {

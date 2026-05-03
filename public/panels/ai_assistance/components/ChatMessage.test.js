@@ -5,6 +5,7 @@ import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
+import { makeFakeParsedTrace, microsecondsTraceWindow } from '../../../testing/TraceHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as AiAssistance from '../ai_assistance.js';
@@ -22,7 +23,7 @@ describeWithEnvironment('ChatMessage', () => {
             isReadOnly: false,
             isLastMessage: true,
             isFirstMessage: false,
-            prompt: '',
+            prompt: 'test prompt',
             shouldShowCSSChangeSummary: false,
             markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
             canShowFeedbackForm: true,
@@ -60,7 +61,7 @@ describeWithEnvironment('ChatMessage', () => {
             isShowingFeedbackForm: false,
             isLastMessage: true,
             isFirstMessage: false,
-            prompt: '',
+            prompt: 'test prompt',
             shouldShowCSSChangeSummary: false,
             showActions: true,
             message: {
@@ -82,6 +83,185 @@ describeWithEnvironment('ChatMessage', () => {
         }, {}, target);
         return target;
     }
+    describe('Widget Deduplication', () => {
+        it('should generate the same signature for identical widgets', () => {
+            const widget1 = {
+                name: 'CORE_VITALS',
+                data: {
+                    insightSetKey: 'insight1',
+                    parsedTrace: makeFakeParsedTrace(),
+                },
+            };
+            const widget2 = {
+                name: 'CORE_VITALS',
+                data: {
+                    insightSetKey: 'insight1',
+                    parsedTrace: makeFakeParsedTrace(),
+                },
+            };
+            assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget1), AiAssistance.ChatMessage.getWidgetSignature(widget2));
+        });
+        it('should generate different signatures for different widgets', () => {
+            const widget1 = {
+                name: 'CORE_VITALS',
+                data: {
+                    insightSetKey: 'insight1',
+                    parsedTrace: makeFakeParsedTrace(),
+                },
+            };
+            const widget2 = {
+                name: 'CORE_VITALS',
+                data: {
+                    insightSetKey: 'insight2',
+                    parsedTrace: makeFakeParsedTrace(),
+                },
+            };
+            assert.notStrictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget1), AiAssistance.ChatMessage.getWidgetSignature(widget2));
+        });
+        it('should deduplicate identical widgets across the entire message', () => {
+            const widget = {
+                name: 'PERFORMANCE_TRACE',
+                data: {
+                    parsedTrace: makeFakeParsedTrace(),
+                },
+            };
+            const message = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [
+                    {
+                        type: 'widget',
+                        widgets: [widget],
+                    },
+                    {
+                        type: 'step',
+                        step: {
+                            isLoading: false,
+                            widgets: [widget],
+                        },
+                    },
+                ],
+            };
+            const deduplicated = AiAssistance.ChatMessage.getDeduplicatedWidgetsMessage(message);
+            assert.lengthOf(deduplicated.parts, 2);
+            assert.strictEqual(deduplicated.parts[0].type, 'widget');
+            assert.lengthOf(deduplicated.parts[0].widgets, 1);
+            assert.strictEqual(deduplicated.parts[1].type, 'step');
+            assert.lengthOf(deduplicated.parts[1].step.widgets, 0);
+        });
+        describe('getWidgetSignature', () => {
+            it('should correctly handle COMPUTED_STYLES widget', () => {
+                const widget = {
+                    name: 'COMPUTED_STYLES',
+                    data: {
+                        backendNodeId: 1,
+                        computedStyles: new Map(),
+                        matchedCascade: {},
+                        properties: [],
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'COMPUTED_STYLES:1');
+            });
+            it('should correctly handle CORE_VITALS widget', () => {
+                const widget = {
+                    name: 'CORE_VITALS',
+                    data: {
+                        insightSetKey: 'insight1',
+                        parsedTrace: makeFakeParsedTrace(),
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'CORE_VITALS:insight1');
+            });
+            it('should correctly handle STYLE_PROPERTIES widget', () => {
+                const widget = {
+                    name: 'STYLE_PROPERTIES',
+                    data: {
+                        backendNodeId: 1,
+                        selector: '.test',
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'STYLE_PROPERTIES:1:.test');
+            });
+            it('should correctly handle DOM_TREE widget', () => {
+                const widget = {
+                    name: 'DOM_TREE',
+                    data: {
+                        root: {
+                            backendNodeId: () => 1,
+                        },
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'DOM_TREE:1');
+            });
+            it('should correctly handle PERFORMANCE_TRACE widget', () => {
+                const widget = {
+                    name: 'PERFORMANCE_TRACE',
+                    data: {
+                        parsedTrace: makeFakeParsedTrace(),
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'PERFORMANCE_TRACE');
+            });
+            it('should correctly handle PERF_INSIGHT widget', () => {
+                const widget = {
+                    name: 'PERF_INSIGHT',
+                    data: {
+                        insight: 'LCPBreakdown',
+                        insightData: {
+                            insightKey: 'LCPBreakdown',
+                            navigation: {
+                                args: {
+                                    data: {
+                                        navigationId: 'nav1',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'PERF_INSIGHT:LCPBreakdown:LCPBreakdown:nav1');
+            });
+            it('should correctly handle PERF_INSIGHT widget with render-blocking-request', () => {
+                const widget = {
+                    name: 'PERF_INSIGHT',
+                    data: {
+                        insight: 'RenderBlocking',
+                        insightData: {
+                            insightKey: 'RenderBlocking',
+                            navigation: {
+                                args: {
+                                    data: {
+                                        navigationId: 'nav1',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'PERF_INSIGHT:RenderBlocking:RenderBlocking:nav1');
+            });
+            it('should correctly handle TIMELINE_RANGE_SUMMARY widget', () => {
+                const widget = {
+                    name: 'TIMELINE_RANGE_SUMMARY',
+                    data: {
+                        bounds: microsecondsTraceWindow(100, 200),
+                        parsedTrace: makeFakeParsedTrace(),
+                        track: 'main',
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'TIMELINE_RANGE_SUMMARY:main:100-200');
+            });
+            it('should correctly handle BOTTOM_UP_TREE widget', () => {
+                const widget = {
+                    name: 'BOTTOM_UP_TREE',
+                    data: {
+                        bounds: microsecondsTraceWindow(100, 200),
+                        parsedTrace: makeFakeParsedTrace(),
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'BOTTOM_UP_TREE:100-200');
+            });
+        });
+    });
     it('should show the feedback form when canShowFeedbackForm is true', async () => {
         const [view] = createComponent({
             canShowFeedbackForm: true,
@@ -335,7 +515,7 @@ describeWithEnvironment('ChatMessage', () => {
                 }
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
-            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Show thinking for prompt \'\'');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Show thinking for prompt test prompt');
         });
         it('accessible label defaults to visible text when expanded and not loading', async () => {
             const target = renderView({
@@ -349,7 +529,7 @@ describeWithEnvironment('ChatMessage', () => {
                 }
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
-            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Hide thinking for prompt \'\'');
+            assert.strictEqual(button.getAttribute('accessibleLabel'), 'Hide thinking for prompt test prompt');
         });
         it('accessible label appends "Loading: " when expanded and loading', async () => {
             const loadingMessage = {
@@ -654,7 +834,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: false,
                 isLastMessage: true,
                 isFirstMessage: false,
-                prompt: '',
+                prompt: 'test prompt',
                 shouldShowCSSChangeSummary: false,
                 showActions: true,
                 message: messageWithNamedWidget,
@@ -772,7 +952,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: true,
                 isLastMessage: true,
                 isFirstMessage: false,
-                prompt: '',
+                prompt: 'test prompt',
                 shouldShowCSSChangeSummary: false,
                 showActions: true,
                 message: {
@@ -808,7 +988,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: false,
                 isLastMessage: true,
                 isFirstMessage: false,
-                prompt: '',
+                prompt: 'test prompt',
                 shouldShowCSSChangeSummary: false,
                 showActions: false,
                 message: {
@@ -842,7 +1022,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: false,
                 isLastMessage: false,
                 isFirstMessage: true,
-                prompt: '',
+                prompt: 'test prompt',
                 shouldShowCSSChangeSummary: false,
                 showActions: false,
                 message: {
@@ -875,7 +1055,7 @@ describeWithEnvironment('ChatMessage', () => {
                 isShowingFeedbackForm: false,
                 isLastMessage: false,
                 isFirstMessage: true,
-                prompt: '',
+                prompt: 'test prompt',
                 shouldShowCSSChangeSummary: false,
                 showActions: false,
                 message: {

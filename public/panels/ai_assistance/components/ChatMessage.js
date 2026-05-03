@@ -13,6 +13,7 @@ import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.
 import * as ComputedStyle from '../../../models/computed_style/computed_style.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as PanelsCommon from '../../../panels/common/common.js';
+import * as TraceBounds from '../../../services/trace_bounds/trace_bounds.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Input from '../../../ui/components/input/input.js';
@@ -32,7 +33,7 @@ import { walkthroughCloseTitle, walkthroughTitle, WalkthroughView } from './Walk
 const { html, Directives: { ref, ifDefined } } = Lit;
 const lockedString = i18n.i18n.lockedString;
 const { widget } = UI.Widget;
-const REPORT_URL = 'https://crbug.com/364805393';
+const REPORT_URL = 'https://crbug.com/508304827';
 const SCROLL_ROUNDING_OFFSET = 1;
 const MAX_NUM_LINES_IN_CODEBLOCK = 11;
 /*
@@ -188,6 +189,18 @@ const UIStringsNotTranslate = {
      */
     revealLcpBreakdown: 'Reveal LCP breakdown',
     /**
+     * @description Accessible label for the reveal button in the LCP discovery widget.
+     */
+    revealLcpDiscovery: 'Reveal LCP discovery',
+    /**
+     * @description Accessible label for the reveal button in the layout shift culprits widget.
+     */
+    revealClsCulprits: 'Reveal layout shift culprits',
+    /**
+     * @description Accessible label for the reveal button in the render-blocking requests widget.
+     */
+    revealRenderBlockingBreakdown: 'Reveal render-blocking requests',
+    /**
      * @description Accessible label for the reveal button in the LCP element widget.
      */
     revealLcpElement: 'Reveal LCP element',
@@ -200,6 +213,14 @@ const UIStringsNotTranslate = {
      */
     revealBottomUpTree: 'Reveal bottom-up thread activity',
     /**
+     * @description Accessible label for the reveal button in the network dependency tree widget.
+     */
+    revealNetworkDependencyTree: 'Reveal network dependency tree',
+    /**
+     * @description Accessible label for the reveal button in the 3rd parties widget.
+     */
+    revealThirdParties: 'Reveal 3rd parties',
+    /**
      * @description Title for the core web vitals widget.
      */
     coreVitals: 'Core Web Vitals',
@@ -207,6 +228,26 @@ const UIStringsNotTranslate = {
      * @description Title for the LCP breakdown widget.
      */
     lcpBreakdown: 'LCP breakdown',
+    /**
+     * @description Title for the LCP discovery widget.
+     */
+    lcpDiscovery: 'LCP discovery',
+    /**
+     * @description Title for the layout shift culprits widget.
+     */
+    clsCulprits: 'Layout shift culprits',
+    /**
+     * @description Title for the render-blocking requests widget.
+     */
+    renderBlockingBreakdown: 'Render-blocking requests',
+    /**
+     * @description Title for the network dependency tree widget.
+     */
+    networkDependencyTree: 'Network dependency tree',
+    /**
+     * @description Title for the 3rd parties widget.
+     */
+    thirdParties: '3rd parties',
     /**
      * @description Title for the LCP element widget.
      */
@@ -223,6 +264,110 @@ const UIStringsNotTranslate = {
      * @description Title for the bottom up thread activity widget.
      */
     bottomUpTree: 'Bottom-up thread activity',
+    /**
+     * @description Accessible label for the reveal button in the forced reflow widget.
+     */
+    revealForcedReflow: 'Reveal forced reflow',
+    /**
+     * @description Title for the forced reflow widget.
+     */
+    forcedReflow: 'Forced reflow',
+    /**
+     * @description Accessible label for the reveal button in the cache widget.
+     */
+    revealCache: 'Reveal efficient cache lifetimes',
+    /**
+     * @description Title for the cache widget.
+     */
+    cache: 'Efficient cache lifetimes',
+    /**
+     * @description Accessible label for the reveal button in the INP breakdown widget.
+     */
+    revealInpBreakdown: 'Reveal INP breakdown',
+    /**
+     * @description Title for the INP breakdown widget.
+     */
+    inpBreakdown: 'INP breakdown',
+    /**
+     * @description Accessible label for the reveal button in the document latency widget.
+     */
+    revealDocumentLatency: 'Reveal document latency',
+    /**
+     * @description Title for the document latency widget.
+     */
+    documentLatency: 'Document latency',
+    /**
+     * @description Accessible label for the reveal button in the DOM size widget.
+     */
+    revealDomSize: 'Reveal DOM size',
+    /**
+     * @description Title for the DOM size widget.
+     */
+    domSize: 'DOM size',
+    /**
+     * @description Accessible label for the reveal button in the duplicated JavaScript widget.
+     */
+    revealDuplicateJavaScript: 'Reveal duplicated JavaScript',
+    /**
+     * @description Title for the duplicated JavaScript widget.
+     */
+    duplicateJavaScript: 'Duplicated JavaScript',
+    /**
+     * @description Accessible label for the reveal button in the image delivery widget.
+     */
+    revealImageDelivery: 'Reveal image delivery',
+    /**
+     * @description Title for the image delivery widget.
+     */
+    imageDelivery: 'Image delivery',
+    /**
+     * @description Accessible label for the reveal button in the font display widget.
+     */
+    revealFontDisplay: 'Reveal font display',
+    /**
+     * @description Title for the font display widget.
+     */
+    fontDisplay: 'Font display',
+    /**
+     * @description Accessible label for the reveal button in the slow CSS selectors widget.
+     */
+    revealSlowCssSelector: 'Reveal slow CSS selectors',
+    /**
+     * @description Title for the slow CSS selectors widget.
+     */
+    slowCssSelector: 'Slow CSS selectors',
+    /**
+     * @description Accessible label for the reveal button in the legacy JavaScript widget.
+     */
+    revealLegacyJavaScript: 'Reveal legacy JavaScript',
+    /**
+     * @description Title for the legacy JavaScript widget.
+     */
+    legacyJavaScript: 'Legacy JavaScript',
+    /**
+     * @description Accessible label for the reveal button in the viewport optimization widget.
+     */
+    revealViewport: 'Reveal viewport optimization',
+    /**
+     * @description Title for the viewport optimization widget.
+     */
+    viewport: 'Viewport optimization',
+    /**
+     * @description Accessible label for the reveal button in the modern HTTP usage widget.
+     */
+    revealModernHttp: 'Reveal modern HTTP usage',
+    /**
+     * @description Title for the modern HTTP usage widget.
+     */
+    modernHttp: 'Modern HTTP usage',
+    /**
+     * @description Accessible label for the reveal button in the character set declaration widget.
+     */
+    revealCharacterSet: 'Reveal character set declaration',
+    /**
+     * @description Title for the character set declaration widget.
+     */
+    characterSet: 'Character set declaration',
 };
 export const DEFAULT_VIEW = (input, output, target) => {
     const hasAiV2 = Boolean(Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
@@ -690,32 +835,154 @@ async function makeStylePropertiesWidget(widgetData) {
         jslogContext: 'standalone-styles',
     };
 }
+const INSIGHT_METADATA = {
+    [Trace.Insights.Types.InsightKeys.LCP_BREAKDOWN]: {
+        component: TimelineInsights.LCPBreakdown.LCPBreakdown,
+        accessibleLabel: UIStringsNotTranslate.revealLcpBreakdown,
+        title: UIStringsNotTranslate.lcpBreakdown,
+        jslog: 'lcp-breakdown-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.RENDER_BLOCKING]: {
+        component: TimelineInsights.RenderBlocking.RenderBlocking,
+        accessibleLabel: UIStringsNotTranslate.revealRenderBlockingBreakdown,
+        title: UIStringsNotTranslate.renderBlockingBreakdown,
+        jslog: 'render-blocking-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.LCP_DISCOVERY]: {
+        component: TimelineInsights.LCPDiscovery.LCPDiscovery,
+        accessibleLabel: UIStringsNotTranslate.revealLcpDiscovery,
+        title: UIStringsNotTranslate.lcpDiscovery,
+        jslog: 'lcp-discovery-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.CLS_CULPRITS]: {
+        component: TimelineInsights.CLSCulprits.CLSCulprits,
+        accessibleLabel: UIStringsNotTranslate.revealClsCulprits,
+        title: UIStringsNotTranslate.clsCulprits,
+        jslog: 'cls-culprits-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.NETWORK_DEPENDENCY_TREE]: {
+        component: TimelineInsights.NetworkDependencyTree.NetworkDependencyTree,
+        accessibleLabel: UIStringsNotTranslate.revealNetworkDependencyTree,
+        title: UIStringsNotTranslate.networkDependencyTree,
+        jslog: 'network-dependency-tree-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.THIRD_PARTIES]: {
+        component: TimelineInsights.ThirdParties.ThirdParties,
+        accessibleLabel: UIStringsNotTranslate.revealThirdParties,
+        title: UIStringsNotTranslate.thirdParties,
+        jslog: 'third-parties-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.FORCED_REFLOW]: {
+        component: TimelineInsights.ForcedReflow.ForcedReflow,
+        accessibleLabel: UIStringsNotTranslate.revealForcedReflow,
+        title: UIStringsNotTranslate.forcedReflow,
+        jslog: 'forced-reflow-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.CACHE]: {
+        component: TimelineInsights.Cache.Cache,
+        accessibleLabel: UIStringsNotTranslate.revealCache,
+        title: UIStringsNotTranslate.cache,
+        jslog: 'cache-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.INP_BREAKDOWN]: {
+        component: TimelineInsights.INPBreakdown.INPBreakdown,
+        accessibleLabel: UIStringsNotTranslate.revealInpBreakdown,
+        title: UIStringsNotTranslate.inpBreakdown,
+        jslog: 'inp-breakdown-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.DOCUMENT_LATENCY]: {
+        component: TimelineInsights.DocumentLatency.DocumentLatency,
+        accessibleLabel: UIStringsNotTranslate.revealDocumentLatency,
+        title: UIStringsNotTranslate.documentLatency,
+        jslog: 'document-latency-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.DOM_SIZE]: {
+        component: TimelineInsights.DOMSize.DOMSize,
+        accessibleLabel: UIStringsNotTranslate.revealDomSize,
+        title: UIStringsNotTranslate.domSize,
+        jslog: 'dom-size-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.DUPLICATE_JAVASCRIPT]: {
+        component: TimelineInsights.DuplicatedJavaScript.DuplicatedJavaScript,
+        accessibleLabel: UIStringsNotTranslate.revealDuplicateJavaScript,
+        title: UIStringsNotTranslate.duplicateJavaScript,
+        jslog: 'duplicate-javascript-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.IMAGE_DELIVERY]: {
+        component: TimelineInsights.ImageDelivery.ImageDelivery,
+        accessibleLabel: UIStringsNotTranslate.revealImageDelivery,
+        title: UIStringsNotTranslate.imageDelivery,
+        jslog: 'image-delivery-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.FONT_DISPLAY]: {
+        component: TimelineInsights.FontDisplay.FontDisplay,
+        accessibleLabel: UIStringsNotTranslate.revealFontDisplay,
+        title: UIStringsNotTranslate.fontDisplay,
+        jslog: 'font-display-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.SLOW_CSS_SELECTOR]: {
+        component: TimelineInsights.SlowCSSSelector.SlowCSSSelector,
+        accessibleLabel: UIStringsNotTranslate.revealSlowCssSelector,
+        title: UIStringsNotTranslate.slowCssSelector,
+        jslog: 'slow-css-selector-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.LEGACY_JAVASCRIPT]: {
+        component: TimelineInsights.LegacyJavaScript.LegacyJavaScript,
+        accessibleLabel: UIStringsNotTranslate.revealLegacyJavaScript,
+        title: UIStringsNotTranslate.legacyJavaScript,
+        jslog: 'legacy-javascript-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.VIEWPORT]: {
+        component: TimelineInsights.Viewport.Viewport,
+        accessibleLabel: UIStringsNotTranslate.revealViewport,
+        title: UIStringsNotTranslate.viewport,
+        jslog: 'viewport-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.MODERN_HTTP]: {
+        component: TimelineInsights.ModernHTTP.ModernHTTP,
+        accessibleLabel: UIStringsNotTranslate.revealModernHttp,
+        title: UIStringsNotTranslate.modernHttp,
+        jslog: 'modern-http-widget',
+    },
+    [Trace.Insights.Types.InsightKeys.CHARACTER_SET]: {
+        component: TimelineInsights.CharacterSet.CharacterSet,
+        accessibleLabel: UIStringsNotTranslate.revealCharacterSet,
+        title: UIStringsNotTranslate.characterSet,
+        jslog: 'character-set-widget',
+    },
+};
+function renderInsightWidget(component, insight, jslog, accessibleLabel, title, bounds) {
+    const renderedWidget = html `<devtools-widget
+    class=${jslog}
+    ${widget(component, {
+        model: insight,
+        minimal: true,
+        bounds: bounds ?? null,
+    })}></devtools-widget>`;
+    return {
+        renderedWidget,
+        revealable: new TimelineUtils.Helpers.RevealableInsight(insight),
+        accessibleRevealLabel: lockedString(accessibleLabel),
+        title: lockedString(title),
+        jslogContext: jslog,
+    };
+}
 async function makePerfInsightWidget(widgetData) {
-    switch (widgetData.data.insight) {
-        case 'lcp': {
-            const insight = widgetData.data.insightData;
-            if (!insight || !Trace.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(insight)) {
-                return null;
-            }
-            // clang-format off
-            const renderedWidget = html `<devtools-widget
-        class="lcp-breakdown-widget"
-        ${widget(TimelineInsights.LCPBreakdown.LCPBreakdown, {
-                model: insight,
-                minimal: true,
-            })}></devtools-widget>`;
-            // clang-format on
-            return {
-                renderedWidget,
-                revealable: new TimelineUtils.Helpers.RevealableInsight(insight),
-                accessibleRevealLabel: lockedString(UIStringsNotTranslate.revealLcpBreakdown),
-                title: lockedString(UIStringsNotTranslate.lcpBreakdown),
-                jslogContext: 'lcp-breakdown',
-            };
-        }
-        default:
-            return null;
+    const insightKey = widgetData.data.insight;
+    const insight = widgetData.data.insightData;
+    const meta = INSIGHT_METADATA[insightKey];
+    if (!meta) {
+        return null;
     }
+    let bounds;
+    if (insightKey === Trace.Insights.Types.InsightKeys.CLS_CULPRITS) {
+        const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
+        if (!traceBounds) {
+            return null;
+        }
+        bounds = traceBounds;
+    }
+    return renderInsightWidget(meta.component, insight, meta.jslog, meta.accessibleLabel, meta.title, bounds);
 }
 async function makeBottomUpTimelineTreeWidget(widgetData) {
     const bottomUpRootNode = AiAssistanceModel.AIQueries.AIQueries.mainThreadActivityBottomUp(widgetData.data.bounds, widgetData.data.parsedTrace);
@@ -872,8 +1139,74 @@ async function makeDomTreeWidget(widgetData) {
  *
  * This allows for a flexible and extensible system where new widget types
  * can be added to the AI responses and rendered in DevTools by adding
- * corresponding \`make...Widget\` functions and handling them here.
+ * corresponding `make...Widget` functions and handling them here.
  */
+/**
+ * Generates a deterministic unique identifier for a given AiWidget based on
+ * its name and identifying data. This signature is used for widget deduplication.
+ */
+export function getWidgetSignature(widget) {
+    switch (widget.name) {
+        case 'COMPUTED_STYLES':
+            return `${widget.name}:${widget.data.backendNodeId}`;
+        case 'CORE_VITALS':
+            return `${widget.name}:${widget.data.insightSetKey}`;
+        case 'STYLE_PROPERTIES':
+            return `${widget.name}:${widget.data.backendNodeId}:${widget.data.selector ?? ''}`;
+        case 'DOM_TREE':
+            return `${widget.name}:${widget.data.root.backendNodeId()}`;
+        case 'PERFORMANCE_TRACE':
+            return `${widget.name}`;
+        case 'PERF_INSIGHT':
+            return `${widget.name}:${widget.data.insight}:${widget.data.insightData.insightKey}:${widget.data.insightData.navigation?.args?.data?.navigationId ?? 'no-nav-id'}`;
+        case 'TIMELINE_RANGE_SUMMARY':
+            return `${widget.name}:${widget.data.track}:${widget.data.bounds.min}-${widget.data.bounds.max}`;
+        case 'BOTTOM_UP_TREE':
+            return `${widget.name}:${widget.data.bounds.min}-${widget.data.bounds.max}`;
+        default:
+            Platform.assertNever(widget, 'Unknown AiWidget name');
+    }
+}
+/**
+ * Returns a new ModelChatMessage where widgets have been deduplicated
+ * across all parts and steps of the message. The first occurrence of each
+ * unique widget (determined by its signature) is preserved.
+ */
+export function getDeduplicatedWidgetsMessage(message) {
+    const seenWidgets = new Set();
+    const filterWidgets = (widgets) => {
+        return widgets.filter(widget => {
+            const signature = getWidgetSignature(widget);
+            if (seenWidgets.has(signature)) {
+                return false;
+            }
+            seenWidgets.add(signature);
+            return true;
+        });
+    };
+    const deduplicatedParts = message.parts.map(part => {
+        if (part.type === 'widget') {
+            return {
+                ...part,
+                widgets: filterWidgets(part.widgets),
+            };
+        }
+        if (part.type === 'step' && part.step.widgets) {
+            return {
+                ...part,
+                step: {
+                    ...part.step,
+                    widgets: filterWidgets(part.step.widgets),
+                },
+            };
+        }
+        return part;
+    });
+    return {
+        ...message,
+        parts: deduplicatedParts,
+    };
+}
 async function renderWidgets(widgets, options = {}) {
     if (!Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled || !widgets || widgets.length === 0) {
         return Lit.nothing;
@@ -1183,8 +1516,9 @@ export class ChatMessage extends UI.Widget.Widget {
         this.#evaluateSuggestionsLayout();
     }
     performUpdate() {
+        const message = this.message.entity === "model" /* ChatMessageEntity.MODEL */ ? getDeduplicatedWidgetsMessage(this.message) : this.message;
         this.#view({
-            message: this.message,
+            message,
             isLoading: this.isLoading,
             isReadOnly: this.isReadOnly,
             canShowFeedbackForm: this.canShowFeedbackForm,

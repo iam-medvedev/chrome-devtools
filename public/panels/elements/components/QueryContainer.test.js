@@ -8,19 +8,15 @@ const nodeAttributes = new Map([
     ['id', 'container'],
     ['class', 'class-1 class-2'],
 ]);
-const FAKE_LEGACY_SDK_DOM_NODE = {};
 const containerTemplate = {
-    parentNode: null,
-    nodeType: Node.ELEMENT_NODE,
     id: 1,
-    pseudoType: '',
-    shadowRootType: '',
-    nodeName: 'body',
-    nodeNameNicelyCased: 'body',
-    legacyDomNode: FAKE_LEGACY_SDK_DOM_NODE,
-    highlightNode: () => { },
-    clearHighlight: () => { },
-    getAttribute: x => nodeAttributes.get(x) || '',
+    nodeType: () => Node.ELEMENT_NODE,
+    pseudoType: () => '',
+    shadowRootType: () => '',
+    nodeName: () => 'body',
+    nodeNameInCorrectCase: () => 'body',
+    getAttribute: (x) => nodeAttributes.get(x) || '',
+    highlight: () => { },
 };
 const assertContainerContent = (container, expectedContent) => {
     const nodeText = container.shadowRoot.querySelector('devtools-node-text');
@@ -46,13 +42,12 @@ describe('QueryContainer', () => {
         const component = new ElementsComponents.QueryContainer.QueryContainer();
         renderElementIntoDOM(component);
         const clickListener = sinon.spy();
-        const onHighlightNode = sinon.spy();
-        const onClearHighlight = sinon.spy();
+        const onHighlight = sinon.spy();
+        const hideHighlightStub = sinon.stub(SDK.OverlayModel.OverlayModel, 'hideDOMNodeHighlight');
         component.data = {
             container: {
                 ...containerTemplate,
-                highlightNode: onHighlightNode,
-                clearHighlight: onClearHighlight,
+                highlight: onHighlight,
             },
             queryName: 'named-container',
             onContainerLinkClick: clickListener,
@@ -63,9 +58,9 @@ describe('QueryContainer', () => {
         containerLink.click();
         assert.strictEqual(clickListener.callCount, 1, 'container link click listener should be triggered by clicking');
         containerLink.dispatchEvent(new Event('mouseenter'));
-        assert.strictEqual(onHighlightNode.callCount, 1, 'onHighlightNode callback should be triggered by mouseenter');
+        assert.strictEqual(onHighlight.callCount, 1, 'onHighlight callback should be triggered by mouseenter');
         containerLink.dispatchEvent(new Event('mouseleave'));
-        assert.strictEqual(onHighlightNode.callCount, 1, 'onClearHighlight callback should be triggered by mouseleave');
+        assert.strictEqual(hideHighlightStub.callCount, 1, 'hideDOMNodeHighlight stub should be triggered by mouseleave');
     });
     it('dispatches QueriedSizeRequestedEvent when hovered correctly', () => {
         const component = new ElementsComponents.QueryContainer.QueryContainer();

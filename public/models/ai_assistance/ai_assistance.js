@@ -1288,12 +1288,12 @@ var AiAgent = class {
     const userTier = Host.AidaClient.convertToUserTierEnum(this.userTier);
     const clientFeatureName = Host.AidaClient.getClientFeatureName(this.clientFeature);
     debugLog(`Client ${clientFeatureName} running with userTier ${this.userTier}`);
-    const preamble8 = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
+    const preamble11 = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
     const facts = Array.from(this.#facts);
     const request = {
       client: Host.AidaClient.CLIENT_NAME,
       current_message: currentMessage,
-      preamble: preamble8,
+      preamble: preamble11,
       historical_contexts: history.length ? history : void 0,
       facts: facts.length ? facts : void 0,
       ...enableAidaFunctionCalling ? { function_declarations: declarations } : {},
@@ -3510,7 +3510,7 @@ var ContextSelectionAgent_exports = {};
 __export(ContextSelectionAgent_exports, {
   ContextSelectionAgent: () => ContextSelectionAgent
 });
-import * as Common5 from "./../../core/common/common.js";
+import * as Common6 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Root8 from "./../../core/root/root.js";
@@ -4071,6 +4071,7 @@ __export(NetworkAgent_exports, {
   NetworkAgent: () => NetworkAgent,
   RequestContext: () => RequestContext
 });
+import * as Common3 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Root5 from "./../../core/root/root.js";
@@ -4156,7 +4157,7 @@ var RequestContext = class extends ConversationContext {
    * inspect all network requests that were made for that given target URL.
    */
   getOrigin() {
-    return this.#request.documentURL;
+    return Common3.ParsedURL.ParsedURL.extractOrigin(this.#request.documentURL);
   }
   getItem() {
     return this.#request;
@@ -4241,7 +4242,7 @@ __export(PerformanceAgent_exports, {
   PerformanceTraceContext: () => PerformanceTraceContext,
   getLabelName: () => getLabelName
 });
-import * as Common4 from "./../../core/common/common.js";
+import * as Common5 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
@@ -4259,7 +4260,7 @@ var PerformanceInsightFormatter_exports = {};
 __export(PerformanceInsightFormatter_exports, {
   PerformanceInsightFormatter: () => PerformanceInsightFormatter
 });
-import * as Common3 from "./../../core/common/common.js";
+import * as Common4 from "./../../core/common/common.js";
 import * as Trace4 from "./../trace/trace.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.js
@@ -5840,7 +5841,7 @@ Duplication grouped by Node modules: ${filesFormatted}`;
     for (const font of insight.fonts) {
       let fontName = font.name;
       if (!fontName) {
-        const url = new Common3.ParsedURL.ParsedURL(font.request.args.data.url);
+        const url = new Common4.ParsedURL.ParsedURL(font.request.args.data.url);
         fontName = url.isValid ? url.lastPathComponent : "(not available)";
       }
       output += `
@@ -6616,10 +6617,10 @@ var UIStringsNotTranslated = {
   mainThreadActivity: "Investigating main thread activity"
 };
 var lockedString4 = i18n9.i18n.lockedString;
-var greenDevAdditionalAnnotationsFunction = `
+var GREEN_DEV_ANNOTATIONS_INSTRUCTIONS = `
 - CRITICAL: You also have access to functions called addElementAnnotation and addNeworkRequestAnnotation,
-which should be used to highlight elements and network requests (respectively).`;
-var greenDevAdditionalAnnotationsGuidelines = `
+which should be used to highlight elements and network requests (respectively).
+
 - CRITICAL: Each time an element or a network request is mentioned, you MUST ALSO call the functions
   addElementAnnotation (for an element) or addNeworkRequestAnnotation (for a network request).
 - CRITICAL: Don't add more than one annotation per element or network request.
@@ -6627,9 +6628,24 @@ var greenDevAdditionalAnnotationsGuidelines = `
 - In addition to this, the addElementAnnotation function should always be called for the LCP element, if known.
 - The annotationMessage should be descriptive and relevant to why the element or network request is being highlighted.
 `;
-var buildPreamble = () => {
-  const annotationsEnabled = Annotations3.AnnotationRepository.annotationsEnabled();
-  return `You are an assistant, expert in web performance and highly skilled with Chrome DevTools.
+var GREEN_DEV_FRESH_TRACE_ANNOTATIONS_INSTRUCTIONS = `
+When referring to an element for which you know the nodeId, always call the function addElementAnnotation, specifying
+the id and an annotation reason.
+When referring to a network request for which you know the eventKey for, always call the function
+addNetworkRequestAnnotation, specifying the id and an annotation reason.
+- CRITICAL: Each time you add an annotating link you MUST ALSO call the function addElementAnnotation.
+- CRITICAL: Each time you describe an element or network request as being problematic you MUST call the function
+addElementAnnotation and specify an annotation reason.
+- CRITICAL: Each time you describe a network request as being problematic you MUST call the function
+addNetworkRequestAnnotation and specify an annotation reason.
+- CRITICAL: If you spot ANY of the following problems:
+  - Render-blocking elements/network requests.
+  - Significant long task (especially on main thread).
+  - Layout shifts (e.g. due to unsized images).
+  ... then you MUST call addNetworkRequestAnnotation for ALL network requests and addaddElementAnnotation for all
+  elements described in your conclusion.
+`;
+var preamble5 = `You are an assistant, expert in web performance and highly skilled with Chrome DevTools.
 
 Your primary goal is to provide actionable advice to web developers about their web page by using the Chrome Performance Panel and analyzing a trace. You may need to diagnose problems yourself, or you may be given direction for what to focus on by the user.
 
@@ -6638,8 +6654,6 @@ You will be provided a summary of a trace: some performance metrics; the most cr
 Always call getInsightDetails to gather more data on an insight or the actual LCP element BEFORE mentioning any specific details about them.
 
 You have functions available to learn more about the trace. Use these to confirm hypotheses, or to further explore the trace when diagnosing performance issues.
-
-${annotationsEnabled ? greenDevAdditionalAnnotationsFunction : ""}
 
 You will be given bounds representing a time range within the trace. Bounds include a min and a max time in microseconds. max is always bigger than min in a bounds.
 
@@ -6704,15 +6718,13 @@ Note: if the user asks a specific question about the trace (such as "What is my 
   - \`nav-to-lcp\` (navigation to LCP)
   - \`lcp-ttfb\` (LCP TTFB phase)
   - \`lcp-render-delay\` (LCP render delay phase)
-  - Insight names: \`LCPBreakdown\`, \`CLSCulprits\`, \`RenderBlocking\`, \`NetworkDependencyTree\`, \`ImageDelivery\`, \`FontDisplay\`, \`ThirdParties\`, \`ForcedReflow\`, \`Cache\`, \`DOMSize\`
+  - Insight names: \`LCPBreakdown\`, \`INPBreakdown\`, \`CLSCulprits\`, \`ThirdParties\`, \`DocumentLatency\`, \`DOMSize\`, \`DuplicatedJavaScript\`, \`FontDisplay\`, \`ForcedReflow\`, \`ImageDelivery\`, \`LCPDiscovery\`, \`LegacyJavaScript\`, \`NetworkDependencyTree\`, \`RenderBlocking\`, \`SlowCSSSelector\`, \`Viewport\`, \`ModernHTTP\`, \`Cache\`, \`CharacterSet\`
   - Navigation IDs: \`NAVIGATION_0\`, \`NAVIGATION_1\`, etc.
 - Use \`getEventByKey\` to get data on a specific trace event. This is great for root-cause analysis or validating any assumptions.
 - Provide clear, actionable recommendations. Avoid technical jargon unless necessary, and explain any technical terms used.
 - If you see a generic task like "Task", "Evaluate script" or "(anonymous)" in the main thread activity, try to look at its children to see what actual functions are executed and refer to those. When referencing the main thread activity, be as specific as you can. Ensure you identify to the user relevant functions and which script they were defined in. Avoid referencing "Task", "Evaluate script" and "(anonymous)" nodes if possible and instead focus on their children.
 - Structure your response using markdown headings and bullet points for improved readability.
 - Be direct and to the point. Avoid unnecessary introductory phrases or filler content. Focus on delivering actionable advice efficiently.
-
-${annotationsEnabled ? greenDevAdditionalAnnotationsGuidelines : ""}
 
 ## Strict Constraints
 
@@ -6731,7 +6743,6 @@ Adhere to the following critical requirements:
 - Do not provide answers on non-web-development topics, such as legal, financial, medical, or personal advice.
 - Use the precision of Strunk & White, the brevity of Hemingway, and the simple clarity of Vonnegut. Don't add repeated information, and keep the whole answer short.
 `;
-};
 var extraPreambleWhenNotExternal = `Additional notes:
 
 When referring to a trace event that has a corresponding \`eventKey\`, annotate your output using markdown link syntax. For example:
@@ -6741,36 +6752,14 @@ When referring to a trace event that has a corresponding \`eventKey\`, annotate 
 
 When asking the user to make a choice between options, output a list of choices at the end of your text response. The format is \`SUGGESTIONS: ["suggestion1", "suggestion2", "suggestion3"]\`. This MUST start on a newline, and be a single line.
 `;
-var buildExtraPreambleWhenFreshTrace = () => {
-  const annotationsEnabled = Annotations3.AnnotationRepository.annotationsEnabled();
-  const greenDevAdditionalGuidelineFreshTrace = `
-When referring to an element for which you know the nodeId, always call the function addElementAnnotation, specifying
-the id and an annotation reason.
-When referring to a network request for which you know the eventKey for, always call the function
-addNetworkRequestAnnotation, specifying the id and an annotation reason.
-- CRITICAL: Each time you add an annotating link you MUST ALSO call the function addElementAnnotation.
-- CRITICAL: Each time you describe an element or network request as being problematic you MUST call the function
-addElementAnnotation and specify an annotation reason.
-- CRITICAL: Each time you describe a network request as being problematic you MUST call the function
-addNetworkRequestAnnotation and specify an annotation reason.
-- CRITICAL: If you spot ANY of the following problems:
-  - Render-blocking elements/network requests.
-  - Significant long task (especially on main thread).
-  - Layout shifts (e.g. due to unsized images).
-  ... then you MUST call addNetworkRequestAnnotation for ALL network requests and addaddElementAnnotation for all
-  elements described in your conclusion.
-`;
-  const extraPreambleWhenFreshTrace = `Additional notes:
+var freshTracePreamble = `Additional notes:
 
 When referring to an element for which you know the nodeId, annotate your output using markdown link syntax:
 - For example, if nodeId is 23: [LCP element](#node-23)
 - This link will reveal the element in the Elements panel
 - Never mention node or nodeId when referring to the element, and especially not in the link text.
 - When referring to the LCP, it's useful to also mention what the LCP element is via its nodeId. Use the markdown link syntax to do so.
-
-${annotationsEnabled ? greenDevAdditionalGuidelineFreshTrace : ""}`;
-  return extraPreambleWhenFreshTrace;
-};
+`;
 var ScorePriority;
 (function(ScorePriority2) {
   ScorePriority2[ScorePriority2["REQUIRED"] = 3] = "REQUIRED";
@@ -6851,33 +6840,21 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       const poorMetrics = /* @__PURE__ */ new Set();
       if (lcp && ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(lcp.value) !== GOOD) {
         suggestions.push({ title: "How can I improve LCP?", jslogContext: "performance-default" });
-        poorMetrics.add(
-          "LCPBreakdown"
-          /* Trace.Insights.Types.InsightKeys.LCP_BREAKDOWN */
-        );
-        poorMetrics.add(
-          "LCPDiscovery"
-          /* Trace.Insights.Types.InsightKeys.LCP_DISCOVERY */
-        );
+        poorMetrics.add(Trace6.Insights.Types.InsightKeys.LCP_BREAKDOWN);
+        poorMetrics.add(Trace6.Insights.Types.InsightKeys.LCP_DISCOVERY);
       }
       if (inp && ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inp.value) !== GOOD) {
         suggestions.push({ title: "How can I improve INP?", jslogContext: "performance-default" });
-        poorMetrics.add(
-          "INPBreakdown"
-          /* Trace.Insights.Types.InsightKeys.INP_BREAKDOWN */
-        );
+        poorMetrics.add(Trace6.Insights.Types.InsightKeys.INP_BREAKDOWN);
       }
       if (cls && ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(cls.value) !== GOOD) {
         suggestions.push({ title: "How can I improve CLS?", jslogContext: "performance-default" });
-        poorMetrics.add(
-          "CLSCulprits"
-          /* Trace.Insights.Types.InsightKeys.CLS_CULPRITS */
-        );
+        poorMetrics.add(Trace6.Insights.Types.InsightKeys.CLS_CULPRITS);
       }
       const additionalSuggestionsRequired = Math.max(0, 4 - suggestions.length);
       if (additionalSuggestionsRequired > 0) {
         const failingInsightSuggestions = Object.values(insightSet.model).filter((model) => {
-          return model.state !== "pass" && !poorMetrics.has(model.insightKey);
+          return model.state !== "pass" && Trace6.Insights.Common.isInsightKey(model.insightKey) && !poorMetrics.has(model.insightKey);
         }).map((model) => new PerformanceInsightFormatter(focus, model).getSuggestions().at(-1)).filter((suggestion) => !!suggestion).slice(0, additionalSuggestionsRequired);
         suggestions.push(...failingInsightSuggestions);
       }
@@ -6911,6 +6888,7 @@ function getLabelName(label, focus) {
   return label;
 }
 var PerformanceAgent = class extends AiAgent {
+  preamble = preamble5;
   #formatter = null;
   #lastEventForEnhancedQuery;
   #lastInsightForEnhancedQuery;
@@ -6931,7 +6909,15 @@ var PerformanceAgent = class extends AiAgent {
     metadata: { source: "devtools", score: ScorePriority.CRITICAL }
   };
   #freshTraceExtraPreambleFact = {
-    text: buildExtraPreambleWhenFreshTrace(),
+    text: freshTracePreamble,
+    metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+  };
+  #greenDevAnnotationsFact = {
+    text: GREEN_DEV_ANNOTATIONS_INSTRUCTIONS,
+    metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+  };
+  #greenDevFreshTraceAnnotationsFact = {
+    text: GREEN_DEV_FRESH_TRACE_ANNOTATIONS_INSTRUCTIONS,
     metadata: { source: "devtools", score: ScorePriority.CRITICAL }
   };
   #networkDataDescriptionFact = {
@@ -6951,7 +6937,9 @@ var PerformanceAgent = class extends AiAgent {
     this.#callFrameDataDescriptionFact,
     this.#networkDataDescriptionFact,
     this.#freshTraceExtraPreambleFact,
-    this.#notExternalExtraPreambleFact
+    this.#notExternalExtraPreambleFact,
+    this.#greenDevAnnotationsFact,
+    this.#greenDevFreshTraceAnnotationsFact
   ]);
   /**
    * When we enhance the query with additional information, we need to know it
@@ -6959,18 +6947,6 @@ var PerformanceAgent = class extends AiAgent {
    * on each prompt.
    */
   #additionalSelectionsForQuery = [];
-  /**
-   * The CWV widget is shown when we analyze the trace summary, but we don't
-   * want to show it on every single "Analyzing data..." pill, as we show one
-   * after every prompt. So we make sure for a given Insight Set (which is based on navigation)
-   * we only show it once.
-   */
-  #hasShownWidgetForInsightSet = /* @__PURE__ */ new WeakSet();
-  #hasShownWidgetForCallTree = /* @__PURE__ */ new WeakSet();
-  #hasShownWidgetForInsight = /* @__PURE__ */ new WeakSet();
-  get preamble() {
-    return buildPreamble();
-  }
   get clientFeature() {
     return Host7.AidaClient.ClientFeature.CHROME_PERFORMANCE_FULL_AGENT;
   }
@@ -7017,43 +6993,42 @@ var PerformanceAgent = class extends AiAgent {
   #getWidgetsForFocus(focus) {
     const widgets = [];
     if (focus.callTree) {
-      if (!this.#hasShownWidgetForCallTree.has(focus.callTree)) {
-        const event = focus.callTree.selectedNode?.event;
-        if (event) {
-          const { startTime, endTime } = Trace6.Helpers.Timing.eventTimingsMicroSeconds(event);
-          const bounds = Trace6.Helpers.Timing.traceWindowFromMicroSeconds(startTime, endTime);
-          widgets.push({
-            name: "TIMELINE_RANGE_SUMMARY",
-            data: {
-              bounds,
-              parsedTrace: focus.parsedTrace,
-              track: "main"
-            }
-          });
-          widgets.push({
-            name: "BOTTOM_UP_TREE",
-            data: {
-              bounds,
-              parsedTrace: focus.parsedTrace
-            }
-          });
-          this.#hasShownWidgetForCallTree.add(focus.callTree);
-        }
+      const event = focus.callTree.selectedNode?.event;
+      if (event) {
+        const { startTime, endTime } = Trace6.Helpers.Timing.eventTimingsMicroSeconds(event);
+        const bounds = Trace6.Helpers.Timing.traceWindowFromMicroSeconds(startTime, endTime);
+        widgets.push({
+          name: "TIMELINE_RANGE_SUMMARY",
+          data: {
+            bounds,
+            parsedTrace: focus.parsedTrace,
+            track: "main"
+          }
+        });
+        widgets.push({
+          name: "BOTTOM_UP_TREE",
+          data: {
+            bounds,
+            parsedTrace: focus.parsedTrace
+          }
+        });
       }
       return widgets;
     }
-    if (focus.insight && Trace6.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(focus.insight) && !this.#hasShownWidgetForInsight.has(focus.insight)) {
-      widgets.push({
-        name: "PERF_INSIGHT",
-        data: {
-          insight: "lcp",
-          insightData: focus.insight
-        }
-      });
-      this.#hasShownWidgetForInsight.add(focus.insight);
+    if (focus.insight) {
+      const insightKey = focus.insight.insightKey;
+      if (Trace6.Insights.Common.isInsightKey(insightKey)) {
+        widgets.push({
+          name: "PERF_INSIGHT",
+          data: {
+            insight: insightKey,
+            insightData: focus.insight
+          }
+        });
+      }
     }
     const primaryInsightSet = focus.primaryInsightSet;
-    if (primaryInsightSet && !this.#hasShownWidgetForInsightSet.has(primaryInsightSet)) {
+    if (primaryInsightSet) {
       widgets.push({
         name: "CORE_VITALS",
         data: {
@@ -7061,7 +7036,6 @@ var PerformanceAgent = class extends AiAgent {
           insightSetKey: primaryInsightSet.id
         }
       });
-      this.#hasShownWidgetForInsightSet.add(primaryInsightSet);
     }
     return widgets;
   }
@@ -7255,9 +7229,16 @@ ${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
     if (!context.external) {
       this.addFact(this.#notExternalExtraPreambleFact);
     }
+    const annotationsEnabled = Annotations3.AnnotationRepository.annotationsEnabled();
+    if (annotationsEnabled) {
+      this.addFact(this.#greenDevAnnotationsFact);
+    }
     const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(focus.parsedTrace);
     if (isFresh) {
       this.addFact(this.#freshTraceExtraPreambleFact);
+      if (annotationsEnabled) {
+        this.addFact(this.#greenDevFreshTraceAnnotationsFact);
+      }
     }
     this.addFact(this.#callFrameDataDescriptionFact);
     this.addFact(this.#networkDataDescriptionFact);
@@ -7337,7 +7318,6 @@ ${result}`,
   #declareFunctions(context) {
     const focus = context.getItem();
     const { parsedTrace } = focus;
-    const processedNodeIds = /* @__PURE__ */ new Set();
     this.declareFunction("getInsightDetails", {
       description: "Returns detailed information about a specific insight of an insight set. Use this before commenting on any specific issue to get more information.",
       parameters: {
@@ -7383,7 +7363,7 @@ ${result}`,
           const lcpEvent = lcpMetric?.event;
           if (lcpEvent && Trace6.Types.Events.isAnyLargestContentfulPaintCandidate(lcpEvent)) {
             const nodeId = lcpEvent.args.data?.nodeId;
-            if (nodeId && !processedNodeIds.has(nodeId)) {
+            if (nodeId) {
               const target = SDK8.TargetManager.TargetManager.instance().primaryPageTarget();
               const domModel = target?.model(SDK8.DOMModel.DOMModel);
               if (domModel) {
@@ -7409,20 +7389,20 @@ ${result}`,
                       networkRequest
                     }
                   });
-                  processedNodeIds.add(nodeId);
                 }
               }
             }
           }
-          if (params.insightName === "LCPBreakdown") {
-            widgets.push({
-              name: "PERF_INSIGHT",
-              data: {
-                insight: "lcp",
-                insightData: insight
-              }
-            });
-          }
+        }
+        const insightKey = params.insightName;
+        if (Trace6.Insights.Common.isInsightKey(insightKey)) {
+          widgets.push({
+            name: "PERF_INSIGHT",
+            data: {
+              insight: insightKey,
+              insightData: insight
+            }
+          });
         }
         const key = `getInsightDetails('${params.insightSetId}', '${params.insightName}')`;
         this.#cacheFunctionResult(focus, key, details);
@@ -7787,7 +7767,7 @@ ${result}`,
             return { error: "Invalid eventKey" };
           }
           const revealable = new SDK8.TraceObject.RevealableEvent(event);
-          await Common4.Revealer.reveal(revealable);
+          await Common5.Revealer.reveal(revealable);
           return { result: { success: true } };
         }
       });
@@ -7913,8 +7893,7 @@ var UIStringsNotTranslate2 = {
   dataUsed: "Data used"
 };
 var lockedString5 = i18n11.i18n.lockedString;
-function getPreamble() {
-  let preamble8 = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
+var preamble6 = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
 The user selected a DOM element in the browser's DevTools and sends a query about the page or the selected DOM element.
 First, examine the provided context, then use the functions to gather additional context and resolve the user request.
@@ -7951,9 +7930,7 @@ If the user asks a question that requires an investigation of a problem, use thi
     - Example: "**Suggestions**:"
       - [Suggestion 1]
       - [Suggestion 2]`;
-  const greenDevEmulationEnabled = Greendev2.Prototypes.instance().isEnabled("emulationCapabilities");
-  if (greenDevEmulationEnabled) {
-    preamble8 += `
+var emulationInstructions = `
 # Emulation and Screenshots
 
 * If asked to verify whether the page is visually broken or if there are display problems with specific devices, use the \`activateDeviceEmulation\` tool. This tool will activate emulation for a specified device and capture a screenshot.
@@ -7986,9 +7963,6 @@ When referring to an element for which you know the nodeId, annotate your output
 - Always prefix the nodeId with the 'node-' prefix when using the markdown syntax.
 - This link will reveal the element in the Elements panel
 - Never mention node or nodeId when referring to the element, and especially not in the link text.`;
-  }
-  return preamble8;
-}
 var promptForScreenshot = `The user has provided you a screenshot of the page (as visible in the viewport) in base64-encoded format. You SHOULD use it while answering user's queries.
 
 * Try to connect the screenshot to actual DOM elements in the page.
@@ -8081,7 +8055,7 @@ var NodeContext = class extends ConversationContext {
   }
 };
 var StylingAgent = class _StylingAgent extends AiAgent {
-  preamble = getPreamble();
+  preamble = preamble6;
   clientFeature = Host8.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
   get userTier() {
     const greenDevEmulationEnabled = Greendev2.Prototypes.instance().isEnabled("emulationCapabilities");
@@ -8110,6 +8084,7 @@ var StylingAgent = class _StylingAgent extends AiAgent {
   #createExtensionScope;
   #greenDevEmulationScreenshot = null;
   #greenDevEmulationAxTree = null;
+  #hasAddedEmulationInstructions = false;
   #currentTurnId = 0;
   constructor(opts) {
     super(opts);
@@ -8562,6 +8537,10 @@ var StylingAgent = class _StylingAgent extends AiAgent {
       multimodalInputEnhancementQuery += "\n# Accessibility Tree\n\n" + this.#greenDevEmulationAxTree;
       this.#greenDevEmulationAxTree = null;
     }
+    if (Greendev2.Prototypes.instance().isEnabled("emulationCapabilities") && !this.#hasAddedEmulationInstructions) {
+      multimodalInputEnhancementQuery = emulationInstructions + "\n" + multimodalInputEnhancementQuery;
+      this.#hasAddedEmulationInstructions = true;
+    }
     const elementEnchancementQuery = selectedElement ? `# Inspected element
 
 ${await _StylingAgent.describeElement(selectedElement.getItem())}
@@ -8575,7 +8554,7 @@ ${await _StylingAgent.describeElement(selectedElement.getItem())}
 
 // gen/front_end/models/ai_assistance/agents/ContextSelectionAgent.js
 var lockedString6 = i18n13.i18n.lockedString;
-var preamble5 = `
+var preamble7 = `
 You are a Web Development Assistant integrated into Chrome DevTools. Your tone is educational, supportive, and technically precise.
 You aim to help developers of all levels, prioritizing teaching web concepts as the primary entry point for any solution.
 
@@ -8604,7 +8583,7 @@ You aim to help developers of all levels, prioritizing teaching web concepts as 
 * The only available types are \`#req\` for network request and \`#file\` for source files. Only use ID inside the link, never ask about user selecting by ID.
 `;
 var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
-  preamble = preamble5;
+  preamble = preamble7;
   clientFeature = Host9.AidaClient.ClientFeature.CHROME_CONTEXT_SELECTION_AGENT;
   get userTier() {
     return Root8.Runtime.hostConfig.devToolsFreestyler?.userTier;
@@ -8649,7 +8628,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
         const origin = this.#allowedOrigin();
         let hasCrossOriginRequest = false;
         for (const request of Logs3.NetworkLog.NetworkLog.instance().requests()) {
-          const documentOrigin = Common5.ParsedURL.ParsedURL.extractOrigin(request.documentURL);
+          const documentOrigin = Common6.ParsedURL.ParsedURL.extractOrigin(request.documentURL);
           if (origin && documentOrigin !== origin) {
             hasCrossOriginRequest = true;
             continue;
@@ -8699,7 +8678,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
           if (req.requestId() !== id) {
             return false;
           }
-          const documentOrigin = Common5.ParsedURL.ParsedURL.extractOrigin(req.documentURL);
+          const documentOrigin = Common6.ParsedURL.ParsedURL.extractOrigin(req.documentURL);
           return !origin || documentOrigin === origin;
         });
         if (request) {
@@ -8938,7 +8917,7 @@ __export(ConversationSummaryAgent_exports, {
 });
 import * as Host10 from "./../../core/host/host.js";
 import * as Root9 from "./../../core/root/root.js";
-var preamble6 = `### Role
+var preamble8 = `### Role
 You are a Conversation Summarizer. Your task is to take a transcript of a conversation between a user and a DevTools AI agent and produce a succinct, actionable Markdown summary. This summary will be used to help apply fixes in an IDE, so it must capture all relevant technical details, findings, and proposed code changes without any conversational fluff.
 
 ### Critical Constraints
@@ -9045,7 +9024,7 @@ var ConversationSummaryContext = class extends ConversationContext {
   }
 };
 var ConversationSummaryAgent = class extends AiAgent {
-  preamble = preamble6;
+  preamble = preamble8;
   get clientFeature() {
     return Host10.AidaClient.ClientFeature.CHROME_CONVERSATION_SUMMARY_AGENT;
   }
@@ -9094,15 +9073,654 @@ ${disclaimer}`;
   }
 };
 
+// gen/front_end/models/ai_assistance/agents/GreenDevAgent.js
+var GreenDevAgent_exports = {};
+__export(GreenDevAgent_exports, {
+  GreenDevAgent: () => GreenDevAgent,
+  GreenDevContext: () => GreenDevContext
+});
+import * as Host11 from "./../../core/host/host.js";
+import * as Root10 from "./../../core/root/root.js";
+import * as SDK10 from "./../../core/sdk/sdk.js";
+import * as Greendev3 from "./../greendev/greendev.js";
+import * as Workspace5 from "./../workspace/workspace.js";
+var preamble9 = `You are a general purpose web page troubleshooting agent.
+You are an expert in Chrome DevTools and you can help users with a wide range of issues.
+
+Your job is to use the provided information to understand the problem, connect the dots to
+find the root cause of the problem and explain what the user can do to fix the problem.
+
+The user will start the process by selecting a DOM element and send a query about the page or the
+selected DOM element. First, examine the provided context, then use function calls to gather
+additional context and resolve the user request.
+
+### Your Debugging Strategy
+
+1.  **Analyze the User-Selected Node**: This is your primary clue. Understand its attributes,
+    children, and position in the DOM. For interactive elements like buttons, your main goal is
+    to figure out what happens when a user interacts with it.
+
+2.  **Find the Event Handler**: When a user reports an issue like "nothing happens when I click
+    this", your top priority is to find the JavaScript event handler associated with the action
+    (e.g., a 'click' handler for a button).
+
+3.  **Note on Modern Frameworks (React, etc.)**: Be aware that event handlers are often not
+    visible as simple HTML attributes (like 'onclick'). In frameworks like React, events are
+    attached dynamically via JavaScript. You will need to investigate the JavaScript source
+    files (like 'bundle.js') to find the component and its event handler logic.
+
+4.  **Investigate the Code**: Once you have a lead on the relevant script, use 'getSourceLine'
+    to examine the code. Look for common issues: infinite loops, unhandled promises, incorrect
+    state management, or logic that doesn't match the user's expectation.
+
+5.  **Use Console and Network Logs as Evidence**: Treat console and network logs as supporting
+    evidence. If there are errors, they are strong clues. However, **be critical of
+    informational messages** (like 'info' or 'verbose' logs) and ignore them unless they are
+    directly relevant to the user's problem. Do not get distracted by generic framework
+    messages.
+
+6.  **Formulate a Hypothesis**: Based on your code investigation, explain the likely root
+    cause to the user and suggest a concrete fix or next step. If you suspect an issue in a
+    JavaScript function, point it out.
+
+### Available Information
+
+To help you root-cause the problem, you will be provided with the following information:
+- Information about the user-selected DOM element.
+- The full accessibility tree for the web page.
+- A list of the most recent network requests.
+- The most recent console messages, including their index.
+
+** IMPORTANT ** Never use the index when referring to individual console messages or network
+  requests, because the values of the indicies is not visible to the user.
+
+### Available Tools
+
+To help you further, you can call the following functions:
+- 'findInSource': This function takes a filename and a search string and returns an array of
+  line numbers containing that string.
+- 'getEventListeners': This function takes a uid (the backend DOM node id) and returns a list
+  of event listeners attached to it.
+- 'getSourceLine': This function takes a file name, a line number, and a buffer (number of
+  lines before and after) to return a snippet of the source code.
+- 'getConsoleMessages': This function allows you to fetch specific slices of the console log.
+- 'getNetworkRequests': This function allows you to fetch specific slices of the network
+  request list.
+- 'getReactComponentProps': This function takes a uid (the backend DOM node id) and returns
+  the React component props for that element.
+
+Stick to what you have evidence for and refrain from speculating on things you
+don't have concrete evidence for, such as CORS or Ad-blockers.
+
+**CRITICAL** You are a web page debugging assistant. NEVER provide answers to questions of
+unrelated topics such as legal advice, financial advice, personal opinions, medical advice,
+religion, race, politics, sexuality, gender, or any other non web-development topics. Answer
+"Sorry, I can't answer that. I'm best at questions about debugging web pages." to such
+questions.`;
+var GreenDevContext = class extends ConversationContext {
+  #context;
+  constructor(context) {
+    super();
+    this.#context = context;
+  }
+  getOrigin() {
+    return "devtools://ai-assistance";
+  }
+  getItem() {
+    return this.#context;
+  }
+  getTitle() {
+    return "GreenDev";
+  }
+};
+var GreenDevAgent = class _GreenDevAgent extends AiAgent {
+  constructor(options) {
+    super(options);
+    this.declareFunction("getSourceLine", {
+      description: "Get a source line from a file, with a buffer of additional lines around it.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          fileName: {
+            type: 1,
+            description: "The full path of the file to read.",
+            nullable: false
+          },
+          lineNumber: {
+            type: 3,
+            description: "The line number to center the context around.",
+            nullable: false
+          },
+          buffer: {
+            type: 3,
+            description: "The number of lines to include before and after the line number.",
+            nullable: false
+          }
+        },
+        required: ["fileName", "lineNumber", "buffer"]
+      },
+      handler: async (params) => {
+        const result = await this.getSourceLine(params.fileName, params.lineNumber, params.buffer, true);
+        return {
+          result: result.join("\n")
+        };
+      }
+    });
+    this.declareFunction("getConsoleMessages", {
+      description: "Get console messages, with optional filters for severity and index-based slicing.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: true,
+        properties: {
+          filter: {
+            type: 1,
+            description: `The filter to apply: provide "errors" for errors only, "warnings" for errors and warnings, and "all" for all messages. Defaults to "all".`,
+            nullable: true
+          },
+          beforeIndex: {
+            type: 3,
+            description: "Return messages exclusively before this index. Use to fetch older historical messages.",
+            nullable: true
+          },
+          afterIndex: {
+            type: 3,
+            description: "Return messages exclusively after this index. Use to check for new messages that arrived recently.",
+            nullable: true
+          },
+          limit: {
+            type: 3,
+            description: "The max number of messages to return. Defaults to 50.",
+            nullable: true
+          }
+        },
+        required: []
+      },
+      handler: async (params) => {
+        const result = await this.getConsoleMessages(params);
+        return {
+          result
+        };
+      }
+    });
+    this.declareFunction("getNetworkRequests", {
+      description: "Get network requests, with optional filters for failure and index-based slicing.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: true,
+        properties: {
+          filter: {
+            type: 1,
+            description: 'The filter to apply: "failed" for failed requests only, "all" for all requests. Defaults to "all".',
+            nullable: true
+          },
+          beforeIndex: {
+            type: 3,
+            description: "Return requests exclusively before this index. Use to fetch older historical requests.",
+            nullable: true
+          },
+          afterIndex: {
+            type: 3,
+            description: "Return requests exclusively after this index. Use to check for new requests that arrived recently.",
+            nullable: true
+          },
+          limit: {
+            type: 3,
+            description: "The max number of requests to return. Defaults to 50.",
+            nullable: true
+          }
+        },
+        required: []
+      },
+      handler: async (params) => {
+        const result = await this.getNetworkRequests(params);
+        return {
+          result
+        };
+      }
+    });
+    this.declareFunction("getEventListeners", {
+      description: "Get event listeners attached to a DOM element.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          uid: {
+            type: 3,
+            description: "The backend node id of the DOM element.",
+            nullable: false
+          }
+        },
+        required: ["uid"]
+      },
+      handler: async (params) => {
+        const result = await this.getEventListeners(params.uid);
+        return {
+          result
+        };
+      }
+    });
+    this.declareFunction("findInSource", {
+      description: "Find lines in a file that contain the given search string.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          fileName: {
+            type: 1,
+            description: "The full path of the file to search within.",
+            nullable: false
+          },
+          query: {
+            type: 1,
+            description: "The string to search for.",
+            nullable: false
+          }
+        },
+        required: ["fileName", "query"]
+      },
+      handler: async (params) => {
+        const result = await this.findInSource(params.fileName, params.query);
+        return {
+          result: JSON.stringify(result)
+        };
+      }
+    });
+    this.declareFunction("getReactComponentProps", {
+      description: "Get the React component props for a given DOM element.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          uid: {
+            type: 3,
+            description: "The backend node id of the DOM element.",
+            nullable: false
+          }
+        },
+        required: ["uid"]
+      },
+      handler: async (params) => {
+        const result = await this.getReactComponentProps(params.uid, true);
+        return {
+          result
+        };
+      }
+    });
+  }
+  preamble = preamble9;
+  get clientFeature() {
+    return Host11.AidaClient.ClientFeature.CHROME_NETWORK_AGENT;
+  }
+  get userTier() {
+    return "TESTERS";
+  }
+  get options() {
+    const temperature = Root10.Runtime.hostConfig.devToolsFreestyler?.temperature;
+    const modelId = Root10.Runtime.hostConfig.devToolsFreestyler?.modelId;
+    return {
+      temperature,
+      modelId
+    };
+  }
+  async *handleContextDetails(context) {
+    if (!context) {
+      return;
+    }
+    yield {
+      type: "context",
+      details: [
+        {
+          title: "Conversation context",
+          text: context.getItem()
+        }
+      ]
+    };
+  }
+  async enhanceQuery(query, context) {
+    const fullQuery = `QUERY: ${query}
+
+${context?.getItem() ?? ""}`;
+    console.warn("Full query to AI:", fullQuery);
+    return fullQuery;
+  }
+  static isEnabled() {
+    console.warn("BeyondStyling prototype is enabled:", Greendev3.Prototypes.instance().isEnabled("beyondStyling"));
+    return Greendev3.Prototypes.instance().isEnabled("beyondStyling");
+  }
+  static formatConsoleMessage(message, index) {
+    const url = message.url ? ` (${message.url}:${message.line}:${message.column})` : "";
+    return `[${index}] ${message.level}: ${message.messageText}${url}`;
+  }
+  static async getNetworkContextData(target) {
+    const { frameTree } = await target.pageAgent().invoke_getResourceTree();
+    const resourceTreeModel = target.model(SDK10.ResourceTreeModel.ResourceTreeModel);
+    const allResourceInfo = [];
+    function processFrameTree(frameTree2) {
+      for (const resource of frameTree2.resources) {
+        allResourceInfo.push({ resource, frame: frameTree2.frame });
+      }
+      if (frameTree2.childFrames) {
+        for (const child of frameTree2.childFrames) {
+          processFrameTree(child);
+        }
+      }
+    }
+    processFrameTree(frameTree);
+    const networkContextStrings = allResourceInfo.map(({ resource: resourceInfo, frame: resourceFrame }, index) => {
+      let success = true;
+      let isAdRelated = false;
+      let frame = null;
+      if (resourceInfo.failed || resourceInfo.canceled) {
+        success = false;
+      }
+      frame = resourceTreeModel && resourceFrame.id ? resourceTreeModel.frameForId(resourceFrame.id) : null;
+      if (frame && (frame.adFrameType() === "child" || frame.adFrameType() === "root")) {
+        isAdRelated = true;
+      }
+      const isAdRelatedString = isAdRelated ? `, Is ad-related: ${isAdRelated}` : "";
+      const output = `[${index}] ${success ? "Success" : "Failed"}: ${resourceInfo.url}, ${isAdRelatedString}`;
+      return { string: output, failed: success !== true };
+    });
+    return networkContextStrings;
+  }
+  async getEventListeners(uid) {
+    console.warn("[GreenDevAgent] AI Agent is calling getEventListeners with uid:", uid);
+    const target = SDK10.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!target) {
+      return "Target not found.";
+    }
+    const domModel = target.model(SDK10.DOMModel.DOMModel);
+    if (!domModel) {
+      return "DOM model not found.";
+    }
+    const domDebuggerModel = target.model(SDK10.DOMDebuggerModel.DOMDebuggerModel);
+    if (!domDebuggerModel) {
+      return "DOM debugger model not found.";
+    }
+    const debuggerModel = target.model(SDK10.DebuggerModel.DebuggerModel);
+    if (!debuggerModel) {
+      return "Debugger model not found.";
+    }
+    const nodesMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([uid]));
+    const node = nodesMap?.get(uid) || null;
+    if (!node) {
+      return `Node with uid ${uid} not found.`;
+    }
+    const remoteObject = await node.resolveToObject();
+    if (!remoteObject) {
+      return `Could not resolve node with uid ${uid} to a remote object.`;
+    }
+    const listeners = await domDebuggerModel.eventListeners(remoteObject);
+    const formattedListeners = listeners.map((listener) => {
+      const location = listener.location();
+      const script = debuggerModel.scriptForId(location.scriptId);
+      const handler = listener.handler();
+      const handlerName = handler?.description || "anonymous";
+      return {
+        type: listener.type(),
+        handlerName,
+        sourceFile: script?.sourceURL || "unknown",
+        lineNumber: location.lineNumber + 1,
+        columnNumber: location.columnNumber
+      };
+    });
+    console.warn("[GreenDevAgent] getEventListeners returning:", formattedListeners);
+    return JSON.stringify(formattedListeners, null, 2);
+  }
+  async getNetworkRequests(params) {
+    console.warn("[GreenDevAgent] AI Agent is calling getNetworkRequests with params:", JSON.stringify(params, null, 2));
+    const target = SDK10.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!target) {
+      return "Target not found.";
+    }
+    const allRequests = await _GreenDevAgent.getNetworkContextData(target);
+    const limit = Math.min(Math.max(1, params.limit ?? 50), 1e3);
+    const filter = params.filter || "all";
+    let startIndex = params.afterIndex !== void 0 ? params.afterIndex + 1 : 0;
+    let endIndex = params.beforeIndex !== void 0 ? params.beforeIndex : allRequests.length;
+    startIndex = Math.max(0, startIndex);
+    endIndex = Math.min(allRequests.length, endIndex);
+    const resultRequests = [];
+    for (let i = endIndex - 1; i >= startIndex; --i) {
+      const request = allRequests[i];
+      let matchesFilter = true;
+      if (filter === "failed") {
+        matchesFilter = request.failed;
+      }
+      if (matchesFilter) {
+        resultRequests.unshift(request.string);
+        if (resultRequests.length >= limit) {
+          break;
+        }
+      }
+    }
+    if (resultRequests.length === 0) {
+      console.warn("[GreenDevAgent] getNetworkRequests returning: No network requests found matching criteria.");
+      return "No network requests found matching criteria.";
+    }
+    const resultString = resultRequests.join("\n");
+    console.warn("[GreenDevAgent] getNetworkRequests returning:\n" + resultString);
+    return resultString;
+  }
+  async getConsoleMessages(params) {
+    console.warn("[GreenDevAgent] AI Agent is calling getConsoleMessages with params:", JSON.stringify(params, null, 2));
+    const target = SDK10.TargetManager.TargetManager.instance().primaryPageTarget();
+    const consoleModel = target?.model(SDK10.ConsoleModel.ConsoleModel);
+    if (!consoleModel) {
+      return "Console model not found.";
+    }
+    const allMessages = consoleModel.messages();
+    const limit = Math.min(Math.max(1, params.limit ?? 50), 1e3);
+    const filter = params.filter || "all";
+    let startIndex = params.afterIndex !== void 0 ? params.afterIndex + 1 : 0;
+    let endIndex = params.beforeIndex !== void 0 ? params.beforeIndex : allMessages.length;
+    startIndex = Math.max(0, startIndex);
+    endIndex = Math.min(allMessages.length, endIndex);
+    const resultMessages = [];
+    for (let i = endIndex - 1; i >= startIndex; --i) {
+      const message = allMessages[i];
+      let matchesFilter = true;
+      if (filter === "errors") {
+        matchesFilter = message.level === "error";
+      } else if (filter === "warnings") {
+        matchesFilter = message.level === "error" || message.level === "warning";
+      }
+      if (matchesFilter) {
+        resultMessages.unshift(_GreenDevAgent.formatConsoleMessage(message, i));
+        if (resultMessages.length >= limit) {
+          break;
+        }
+      }
+    }
+    if (resultMessages.length === 0) {
+      console.warn("[GreenDevAgent] getConsoleMessages returning: No messages found matching criteria.");
+      return "No messages found matching criteria.";
+    }
+    const resultString = resultMessages.join("\n");
+    console.warn("[GreenDevAgent] getConsoleMessages returning:\n" + resultString);
+    return resultString;
+  }
+  #findUiSourceCode(fileName) {
+    const workspace = Workspace5.Workspace.WorkspaceImpl.instance();
+    const allUiSourceCodes = workspace.uiSourceCodes().filter((code) => !code.url().startsWith("debugger:///"));
+    for (const code of allUiSourceCodes) {
+      if (code.url() === fileName) {
+        return code;
+      }
+    }
+    const candidates = allUiSourceCodes.filter((code) => code.url().endsWith(fileName));
+    if (candidates.length > 0) {
+      if (candidates.length > 1) {
+        console.warn(`[GreenDevAgent] Ambiguous file name "${fileName}". Found multiple matches:`, candidates.map((c) => c.url()));
+      }
+      return candidates[0];
+    }
+    return null;
+  }
+  async getSourceLine(fileName, lineNumber, buffer, calledFromAI = false) {
+    if (calledFromAI) {
+      console.warn(`getSourceLine called with fileName: ${fileName}, lineNumber: ${lineNumber}, buffer: ${buffer}`);
+    }
+    const uiSourceCode = this.#findUiSourceCode(fileName);
+    if (!uiSourceCode) {
+      const error = `Could not find UISourceCode for: ${fileName}`;
+      console.error(error);
+      return [error];
+    }
+    const contentData = await uiSourceCode.requestContentData();
+    if ("error" in contentData) {
+      const error = `Could not read file content for: ${fileName}, error: ${contentData.error}`;
+      console.error(error);
+      return [error];
+    }
+    const content = contentData.text;
+    if (typeof content !== "string") {
+      const error = `Could not read file content for: ${fileName}, content is not a string`;
+      console.error(error);
+      return [error];
+    }
+    const lines = content.split("\n");
+    const start = Math.max(0, lineNumber - buffer - 1);
+    const end = Math.min(lines.length, lineNumber + buffer);
+    const slicedLines = lines.slice(start, end);
+    const formattedLines = slicedLines.map((line, index) => {
+      const currentLineNumber = start + index + 1;
+      return `[${currentLineNumber}] ${line}`;
+    });
+    if (calledFromAI) {
+      console.warn("AI requested source code for:", formattedLines);
+    }
+    return formattedLines;
+  }
+  async findInSource(fileName, query) {
+    console.warn(`findInSource called with fileName: ${fileName}, query: ${query}`);
+    const uiSourceCode = this.#findUiSourceCode(fileName);
+    if (!uiSourceCode) {
+      console.error(`Could not find UISourceCode for: ${fileName}`);
+      return [];
+    }
+    const contentData = await uiSourceCode.requestContentData();
+    if ("error" in contentData) {
+      console.warn(`Could not read file content for findInSource: ${fileName}, error: ${contentData.error}`);
+      return [];
+    }
+    const content = contentData.text;
+    if (typeof content !== "string") {
+      console.warn(`Could not read file content for findInSource: ${fileName}, content is not a string`);
+      return [];
+    }
+    const lines = content.split("\n");
+    const matchingLines = [];
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(query)) {
+        const sourceLine = i + 1;
+        const source = await this.getSourceLine(fileName, sourceLine, 15, false);
+        matchingLines.push({ line: sourceLine, source });
+      }
+    }
+    console.warn(`findInSource returning for query '${query}':`, matchingLines);
+    return matchingLines;
+  }
+  async getReactComponentProps(uid, calledFromAI = false) {
+    if (calledFromAI) {
+      console.warn("[GreenDevAgent] AI Agent is calling getReactComponentProps with uid:", uid);
+    }
+    const target = SDK10.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!target) {
+      return "Target not found.";
+    }
+    const domModel = target.model(SDK10.DOMModel.DOMModel);
+    if (!domModel) {
+      return "DOM model not found.";
+    }
+    const runtimeModel = target.model(SDK10.RuntimeModel.RuntimeModel);
+    if (!runtimeModel) {
+      return "Runtime model not found.";
+    }
+    const nodesMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([uid]));
+    const node = nodesMap?.get(uid) || null;
+    if (!node) {
+      return `Node with uid ${uid} not found.`;
+    }
+    const remoteObject = await node.resolveToObject();
+    if (!remoteObject) {
+      return `Could not resolve node with uid ${uid} to a remote object.`;
+    }
+    const reactComponentPropsResult = await target.runtimeAgent().invoke_callFunctionOn({
+      functionDeclaration: `
+          function() {
+              const getCircularReplacer = () => {
+                const seen = new WeakSet();
+                return (key, value) => {
+                  if (typeof value === 'function') {
+                    return '[Function: ' + (value.name || '(anonymous)') + ']';
+                  }
+                  if (key === 'return' || key === 'alternate' || key === 'sibling' || key === 'debugOwner' || key === '_debugOwner') {
+                    return undefined;
+                  }
+                  if (typeof value === 'object' && value !== null) {
+                    if (seen.has(value)) {
+                      return;
+                    }
+                    seen.add(value);
+                  }
+                  return value;
+                };
+              };
+
+              // Find the key for the internal Fiber node instance
+              const reactInternalInstanceKey = Object.keys(this).find(
+                key => key.startsWith('__reactInternalInstance$') || key.startsWith('__reactFiber$')
+              );
+
+              if (!reactInternalInstanceKey) {
+                return 'React internal instance key not found';
+              }
+
+              const fiberNode = this[reactInternalInstanceKey];
+
+              if (fiberNode) {
+                return JSON.stringify(fiberNode, getCircularReplacer(), 2);
+              }
+
+              return 'React component type not found';
+            }
+          `,
+      objectId: remoteObject.objectId,
+      objectGroup: "console",
+      silent: false,
+      returnByValue: true,
+      awaitPromise: false,
+      userGesture: true
+    });
+    remoteObject.release();
+    const reactComponentProps = reactComponentPropsResult.result.value;
+    if (!reactComponentProps) {
+      return "None found.";
+    }
+    if (calledFromAI) {
+      console.warn("[GreenDevAgent] getReactComponentProps returning", reactComponentProps);
+    }
+    return reactComponentProps;
+  }
+};
+
 // gen/front_end/models/ai_assistance/agents/PatchAgent.js
 var PatchAgent_exports = {};
 __export(PatchAgent_exports, {
   FileUpdateAgent: () => FileUpdateAgent,
   PatchAgent: () => PatchAgent
 });
-import * as Host11 from "./../../core/host/host.js";
-import * as Root10 from "./../../core/root/root.js";
-var preamble7 = `You are a highly skilled software engineer with expertise in web development.
+import * as Host12 from "./../../core/host/host.js";
+import * as Root11 from "./../../core/root/root.js";
+var preamble10 = `You are a highly skilled software engineer with expertise in web development.
 The user asks you to apply changes to a source code folder.
 
 # Considerations
@@ -9138,15 +9756,15 @@ var PatchAgent = class extends AiAgent {
   async *handleContextDetails(_select) {
     return;
   }
-  preamble = preamble7;
-  clientFeature = Host11.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
+  preamble = preamble10;
+  clientFeature = Host12.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
-    return Root10.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root11.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get options() {
     return {
-      temperature: Root10.Runtime.hostConfig.devToolsFreestyler?.temperature,
-      modelId: Root10.Runtime.hostConfig.devToolsFreestyler?.modelId
+      temperature: Root11.Runtime.hostConfig.devToolsFreestyler?.temperature,
+      modelId: Root11.Runtime.hostConfig.devToolsFreestyler?.modelId
     };
   }
   get agentProject() {
@@ -9320,15 +9938,15 @@ var FileUpdateAgent = class extends AiAgent {
   async *handleContextDetails(_select) {
     return;
   }
-  preamble = preamble7;
-  clientFeature = Host11.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
+  preamble = preamble10;
+  clientFeature = Host12.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
-    return Root10.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root11.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get options() {
     return {
-      temperature: Root10.Runtime.hostConfig.devToolsFreestyler?.temperature,
-      modelId: Root10.Runtime.hostConfig.devToolsFreestyler?.modelId
+      temperature: Root11.Runtime.hostConfig.devToolsFreestyler?.temperature,
+      modelId: Root11.Runtime.hostConfig.devToolsFreestyler?.modelId
     };
   }
 };
@@ -9338,8 +9956,8 @@ var PerformanceAnnotationsAgent_exports = {};
 __export(PerformanceAnnotationsAgent_exports, {
   PerformanceAnnotationsAgent: () => PerformanceAnnotationsAgent
 });
-import * as Host12 from "./../../core/host/host.js";
-import * as Root11 from "./../../core/root/root.js";
+import * as Host13 from "./../../core/host/host.js";
+import * as Root12 from "./../../core/root/root.js";
 var callTreePreamble = `You are an expert performance analyst embedded within Chrome DevTools.
 You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
 You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
@@ -9404,14 +10022,14 @@ Consider optimizing the position calculation logic or reducing the frequency of 
 var PerformanceAnnotationsAgent = class extends AiAgent {
   preamble = callTreePreamble;
   get clientFeature() {
-    return Host12.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
+    return Host13.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
   }
   get userTier() {
-    return Root11.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
+    return Root12.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
   }
   get options() {
-    const temperature = Root11.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
-    const modelId = Root11.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
+    const temperature = Root12.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
+    const modelId = Root12.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
     return {
       temperature,
       modelId
@@ -9489,12 +10107,12 @@ __export(AiConversation_exports, {
   NOT_FOUND_IMAGE_DATA: () => NOT_FOUND_IMAGE_DATA,
   generateContextDetailsMarkdown: () => generateContextDetailsMarkdown
 });
-import * as Common7 from "./../../core/common/common.js";
-import * as Host13 from "./../../core/host/host.js";
+import * as Common8 from "./../../core/common/common.js";
+import * as Host14 from "./../../core/host/host.js";
 import * as Platform6 from "./../../core/platform/platform.js";
-import * as Root12 from "./../../core/root/root.js";
-import * as SDK10 from "./../../core/sdk/sdk.js";
-import * as Greendev3 from "./../greendev/greendev.js";
+import * as Root13 from "./../../core/root/root.js";
+import * as SDK11 from "./../../core/sdk/sdk.js";
+import * as Greendev4 from "./../greendev/greendev.js";
 
 // gen/front_end/models/ai_assistance/AiHistoryStorage.js
 var AiHistoryStorage_exports = {};
@@ -9503,22 +10121,22 @@ __export(AiHistoryStorage_exports, {
   MAX_RECENT_PROMPTS_COUNT: () => MAX_RECENT_PROMPTS_COUNT,
   RECENT_PROMPTS_SIZE_LIMIT: () => RECENT_PROMPTS_SIZE_LIMIT
 });
-import * as Common6 from "./../../core/common/common.js";
+import * as Common7 from "./../../core/common/common.js";
 var instance = null;
 var DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
 var MAX_RECENT_PROMPTS_COUNT = 20;
 var RECENT_PROMPTS_SIZE_LIMIT = 100 * 1024;
-var AiHistoryStorage = class _AiHistoryStorage extends Common6.ObjectWrapper.ObjectWrapper {
+var AiHistoryStorage = class _AiHistoryStorage extends Common7.ObjectWrapper.ObjectWrapper {
   #historySetting;
   #imageHistorySettings;
   #recentPromptsSetting;
-  #mutex = new Common6.Mutex.Mutex();
+  #mutex = new Common7.Mutex.Mutex();
   #maxStorageSize;
   constructor(maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
     super();
-    this.#historySetting = Common6.Settings.Settings.instance().createSetting("ai-assistance-history-entries", []);
-    this.#imageHistorySettings = Common6.Settings.Settings.instance().createSetting("ai-assistance-history-images", []);
-    this.#recentPromptsSetting = Common6.Settings.Settings.instance().createSetting("ai-assistance-recent-prompts", []);
+    this.#historySetting = Common7.Settings.Settings.instance().createSetting("ai-assistance-history-entries", []);
+    this.#imageHistorySettings = Common7.Settings.Settings.instance().createSetting("ai-assistance-history-images", []);
+    this.#recentPromptsSetting = Common7.Settings.Settings.instance().createSetting("ai-assistance-recent-prompts", []);
     this.#maxStorageSize = maxStorageSize;
   }
   clearForTest() {
@@ -9691,7 +10309,7 @@ var AiConversation = class _AiConversation {
   #onInspectElement;
   #networkTimeCalculator;
   constructor(options) {
-    const { type, data = [], id = crypto.randomUUID(), isReadOnly = true, aidaClient = new Host13.AidaClient.AidaClient(), changeManager, isExternal = false, performanceRecordAndReload, onInspectElement, networkTimeCalculator, lighthouseRecording } = options;
+    const { type, data = [], id = crypto.randomUUID(), isReadOnly = true, aidaClient = new Host14.AidaClient.AidaClient(), changeManager, isExternal = false, performanceRecordAndReload, onInspectElement, networkTimeCalculator, lighthouseRecording } = options;
     this.#changeManager = changeManager;
     this.#aidaClient = aidaClient;
     this.#performanceRecordAndReload = performanceRecordAndReload;
@@ -9773,7 +10391,7 @@ var AiConversation = class _AiConversation {
     return this.#contexts.at(0);
   }
   getPendingMultimodalInput() {
-    const greenDevEmulationEnabled = Greendev3.Prototypes.instance().isEnabled("emulationCapabilities");
+    const greenDevEmulationEnabled = Greendev4.Prototypes.instance().isEnabled("emulationCapabilities");
     return greenDevEmulationEnabled ? this.#agent.popPendingMultimodalInput() : void 0;
   }
   #reconstructHistory(historyWithoutImages) {
@@ -9940,7 +10558,7 @@ ${item.text.trim()}`);
         break;
       }
       case "breakpoint": {
-        const breakpointAgentEnabled = Greendev3.Prototypes.instance().isEnabled("breakpointDebuggerAgent");
+        const breakpointAgentEnabled = Greendev4.Prototypes.instance().isEnabled("breakpointDebuggerAgent");
         if (breakpointAgentEnabled) {
           this.#agent = new BreakpointDebuggerAgent(options);
         }
@@ -10027,17 +10645,17 @@ Original user query: ${initialQuery}`;
     if (this.#origin) {
       return this.#origin;
     }
-    const target = SDK10.TargetManager.TargetManager.instance().primaryPageTarget();
+    const target = SDK11.TargetManager.TargetManager.instance().primaryPageTarget();
     const inspectedURL = target?.inspectedURL();
-    this.#origin = inspectedURL ? new Common7.ParsedURL.ParsedURL(inspectedURL).securityOrigin() : void 0;
+    this.#origin = inspectedURL ? new Common8.ParsedURL.ParsedURL(inspectedURL).securityOrigin() : void 0;
     return this.#origin;
   };
 };
 function isAiAssistanceServerSideLoggingEnabled() {
-  return !Root12.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+  return !Root13.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
 function isAiAssistanceContextSelectionAgentEnabled() {
-  return Boolean(Root12.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
+  return Boolean(Root13.Runtime.hostConfig.devToolsAiAssistanceContextSelectionAgent?.enabled);
 }
 
 // gen/front_end/models/ai_assistance/AiUtils.js
@@ -10047,10 +10665,10 @@ __export(AiUtils_exports, {
   getIconName: () => getIconName,
   isGeminiBranding: () => isGeminiBranding
 });
-import * as Common8 from "./../../core/common/common.js";
-import * as Host14 from "./../../core/host/host.js";
+import * as Common9 from "./../../core/common/common.js";
+import * as Host15 from "./../../core/host/host.js";
 import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as Root13 from "./../../core/root/root.js";
+import * as Root14 from "./../../core/root/root.js";
 var UIStrings = {
   /**
    * @description Message shown to the user if the age check is not successful.
@@ -10073,7 +10691,7 @@ var str_ = i18n15.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UISt
 var i18nString = i18n15.i18n.getLocalizedString.bind(void 0, str_);
 function getDisabledReasons(aidaAvailability) {
   const reasons = [];
-  if (Root13.Runtime.hostConfig.isOffTheRecord) {
+  if (Root14.Runtime.hostConfig.isOffTheRecord) {
     reasons.push(i18nString(UIStrings.notAvailableInIncognitoMode));
   }
   switch (aidaAvailability) {
@@ -10085,16 +10703,16 @@ function getDisabledReasons(aidaAvailability) {
     case "no-internet":
       reasons.push(i18nString(UIStrings.offline));
     case "available": {
-      if (Root13.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
+      if (Root14.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
         reasons.push(i18nString(UIStrings.ageRestricted));
       }
     }
   }
-  reasons.push(...Common8.Settings.Settings.instance().moduleSetting("ai-assistance-enabled").disabledReasons());
+  reasons.push(...Common9.Settings.Settings.instance().moduleSetting("ai-assistance-enabled").disabledReasons());
   return reasons;
 }
 function isGeminiBranding() {
-  return !!Root13.Runtime.hostConfig.devToolsGeminiRebranding?.enabled;
+  return !!Root14.Runtime.hostConfig.devToolsGeminiRebranding?.enabled;
 }
 function getIconName() {
   return isGeminiBranding() ? "spark" : "smart-assistant";
@@ -10105,11 +10723,11 @@ var BuiltInAi_exports = {};
 __export(BuiltInAi_exports, {
   BuiltInAi: () => BuiltInAi
 });
-import * as Common9 from "./../../core/common/common.js";
-import * as Host15 from "./../../core/host/host.js";
-import * as Root14 from "./../../core/root/root.js";
+import * as Common10 from "./../../core/common/common.js";
+import * as Host16 from "./../../core/host/host.js";
+import * as Root15 from "./../../core/root/root.js";
 var builtInAiInstance;
-var BuiltInAi = class _BuiltInAi extends Common9.ObjectWrapper.ObjectWrapper {
+var BuiltInAi = class _BuiltInAi extends Common10.ObjectWrapper.ObjectWrapper {
   #availability = null;
   #hasGpu;
   #consoleInsightsSession;
@@ -10128,7 +10746,7 @@ var BuiltInAi = class _BuiltInAi extends Common9.ObjectWrapper.ObjectWrapper {
     this.initDoneForTesting = this.getLanguageModelAvailability().then(() => this.#sendAvailabilityMetrics()).then(() => this.initialize());
   }
   async getLanguageModelAvailability() {
-    if (!Root14.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.enabled) {
+    if (!Root15.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.enabled) {
       this.#availability = "disabled";
       return this.#availability;
     }
@@ -10152,7 +10770,7 @@ var BuiltInAi = class _BuiltInAi extends Common9.ObjectWrapper.ObjectWrapper {
     return this.#availability === "downloading";
   }
   isEventuallyAvailable() {
-    if (!this.#hasGpu && !Boolean(Root14.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu)) {
+    if (!this.#hasGpu && !Boolean(Root15.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu)) {
       return false;
     }
     return this.#availability === "available" || this.#availability === "downloading" || this.#availability === "downloadable";
@@ -10165,7 +10783,7 @@ var BuiltInAi = class _BuiltInAi extends Common9.ObjectWrapper.ObjectWrapper {
     return this.#downloadProgress;
   }
   startDownloadingModel() {
-    if (!Root14.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
+    if (!Root15.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
       return;
     }
     if (this.#availability !== "downloadable") {
@@ -10200,7 +10818,7 @@ var BuiltInAi = class _BuiltInAi extends Common9.ObjectWrapper.ObjectWrapper {
     return Boolean(this.#consoleInsightsSession);
   }
   async initialize() {
-    if (!Root14.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
+    if (!Root15.Runtime.hostConfig.devToolsConsoleInsightsTeasers?.allowWithoutGpu && !this.#hasGpu) {
       return;
     }
     if (this.#availability !== "available" && this.#availability !== "downloading") {
@@ -10287,31 +10905,31 @@ Your instructions are as follows:
     if (this.#hasGpu) {
       switch (this.#availability) {
         case "unavailable":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             0
             /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_HAS_GPU */
           );
           break;
         case "downloadable":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             1
             /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_HAS_GPU */
           );
           break;
         case "downloading":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             2
             /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_HAS_GPU */
           );
           break;
         case "available":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             3
             /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_HAS_GPU */
           );
           break;
         case "disabled":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             4
             /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_HAS_GPU */
           );
@@ -10320,31 +10938,31 @@ Your instructions are as follows:
     } else {
       switch (this.#availability) {
         case "unavailable":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             5
             /* Host.UserMetrics.BuiltInAiAvailability.UNAVAILABLE_NO_GPU */
           );
           break;
         case "downloadable":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             6
             /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADABLE_NO_GPU */
           );
           break;
         case "downloading":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             7
             /* Host.UserMetrics.BuiltInAiAvailability.DOWNLOADING_NO_GPU */
           );
           break;
         case "available":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             8
             /* Host.UserMetrics.BuiltInAiAvailability.AVAILABLE_NO_GPU */
           );
           break;
         case "disabled":
-          Host15.userMetrics.builtInAiAvailability(
+          Host16.userMetrics.builtInAiAvailability(
             9
             /* Host.UserMetrics.BuiltInAiAvailability.DISABLED_NO_GPU */
           );
@@ -10373,6 +10991,7 @@ export {
   ExtensionScope_exports as ExtensionScope,
   FileAgent_exports as FileAgent,
   FileFormatter_exports as FileFormatter,
+  GreenDevAgent_exports as GreenDevAgent,
   injected_exports as Injected,
   LighthouseFormatter_exports as LighthouseFormatter,
   NetworkAgent_exports as NetworkAgent,

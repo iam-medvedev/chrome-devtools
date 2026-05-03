@@ -133,7 +133,6 @@ style.setProperty('--image-file-document', 'url(\"' + new URL('./src/document.sv
 style.setProperty('--image-file-dog-paw', 'url(\"' + new URL('./src/dog-paw.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dom-detective-badge', 'url(\"' + new URL('./src/dom-detective-badge.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-domain', 'url(\"' + new URL('./src/domain.svg', import.meta.url).toString() + '\")');
-style.setProperty('--image-file-dots-circle', 'url(\"' + new URL('./src/dots-circle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dots-horizontal', 'url(\"' + new URL('./src/dots-horizontal.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dots-vertical', 'url(\"' + new URL('./src/dots-vertical.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-download', 'url(\"' + new URL('./src/download.svg', import.meta.url).toString() + '\")');
@@ -141,6 +140,7 @@ style.setProperty('--image-file-edit', 'url(\"' + new URL('./src/edit.svg', impo
 style.setProperty('--image-file-empty', 'url(\"' + new URL('./src/empty.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-errorWave', 'url(\"' + new URL('./src/errorWave.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-exclamation', 'url(\"' + new URL('./src/exclamation.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-expand', 'url(\"' + new URL('./src/expand.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-experiment-check', 'url(\"' + new URL('./src/experiment-check.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-experiment', 'url(\"' + new URL('./src/experiment.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-extension', 'url(\"' + new URL('./src/extension.svg', import.meta.url).toString() + '\")');

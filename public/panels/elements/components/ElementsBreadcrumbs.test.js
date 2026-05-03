@@ -6,26 +6,17 @@ import { deinitializeGlobalVars, initializeGlobalVars, } from '../../../testing/
 import { withNoMutations } from '../../../testing/MutationHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ElementsComponents from './components.js';
-/*
- * This very clearly is not a real legacy SDK DOMNode, but for the purposes of
- * the test we just need something that presents as one, and doesn't need to
- * implement anything */
-const FAKE_LEGACY_SDK_DOM_NODE = {};
 const makeCrumb = (overrides = {}) => {
     const attributes = overrides.attributes || {};
     const newCrumb = {
-        parentNode: null,
-        nodeType: Node.ELEMENT_NODE,
-        id: 1,
-        pseudoType: '',
-        shadowRootType: '',
-        nodeName: 'body',
-        nodeNameNicelyCased: 'body',
-        legacyDomNode: FAKE_LEGACY_SDK_DOM_NODE,
-        highlightNode: () => { },
-        clearHighlight: () => { },
-        getAttribute: x => attributes[x] || '',
-        ...overrides,
+        id: (overrides.id || 1),
+        nodeType: () => overrides.nodeType ?? Node.ELEMENT_NODE,
+        pseudoType: () => overrides.pseudoType ?? '',
+        shadowRootType: () => overrides.shadowRootType ?? '',
+        nodeName: () => overrides.nodeName ?? 'body',
+        nodeNameInCorrectCase: () => overrides.nodeNameNicelyCased ?? 'body',
+        getAttribute: (x) => attributes[x] || '',
+        highlight: () => { },
     };
     return newCrumb;
 };
@@ -150,7 +141,6 @@ describe('ElementsBreadcrumbs', () => {
                     },
                     selected: true,
                     node: bodyCrumb,
-                    originalNode: bodyCrumb.legacyDomNode,
                 },
             ]);
         });
@@ -204,7 +194,7 @@ describe('ElementsBreadcrumbs', () => {
                 selectedNode: bodyCrumb,
             });
             await withNoMutations(shadowRoot, async (shadowRoot) => {
-                const newDiv = { ...divCrumb, nodeName: 'span', nodeNameNicelyCased: 'span' };
+                const newDiv = makeCrumb({ nodeName: 'span', nodeNameNicelyCased: 'span' });
                 component.data = {
                     crumbs: [newDiv, bodyCrumb],
                     selectedNode: bodyCrumb,

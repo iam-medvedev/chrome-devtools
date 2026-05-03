@@ -514,6 +514,49 @@ describe('bindToSetting (boolean)', () => {
         assert.isTrue(input.checked);
     });
 });
+describe('bindToSetting (devtools-button)', () => {
+    setupLocaleHooks();
+    function setup(opts = {}) {
+        const { bindToSetting } = UI.UIUtils;
+        const setting = createFakeSetting('fake-setting', true);
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        const inputRef = Lit.Directives.createRef();
+        Lit.render(html `<devtools-button ${Lit.Directives.ref(inputRef)} ${bindToSetting(setting, opts)}></devtools-button>`, container);
+        const input = inputRef.value;
+        assert.exists(input);
+        return { input, setting, container };
+    }
+    it('shows the current value on initial render', () => {
+        const { input } = setup();
+        assert.isTrue(input.toggled);
+    });
+    it('adds jslog for tracking changes', () => {
+        const { input } = setup();
+        assert.strictEqual(input.getAttribute('jslog'), 'Toggle; context: fake-setting; track: click');
+    });
+    it('does not add jslog if disabled via options', () => {
+        const { input } = setup({ jslog: false });
+        assert.isNull(input.getAttribute('jslog'));
+    });
+    it('changes the setting when the button is clicked', () => {
+        const { input, setting } = setup();
+        input.click();
+        assert.isFalse(setting.get());
+    });
+    it('changes the button when the setting changes', () => {
+        const { input, setting } = setup();
+        setting.set(false);
+        assert.isFalse(input.toggled);
+    });
+    it('removes the change listener when the input is removed from the DOM', () => {
+        const { setting, input, container } = setup();
+        Lit.render(nothing, container);
+        setting.set(false);
+        assert.isFalse(input.isConnected);
+        assert.isTrue(input.toggled);
+    });
+});
 describe('bindCheckbox', () => {
     function setup() {
         const setting = createFakeSetting('fake-setting', true);

@@ -12,6 +12,7 @@ import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers
 import { createTarget, describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ProtocolMonitor from '../protocol_monitor/protocol_monitor.js';
 import * as Application from './application.js';
@@ -22,22 +23,24 @@ function createTool(name, description, frameId, target, backendNodeId, inputSche
 }) {
     return new WebMCP.WebMCPModel.Tool({ name, description, inputSchema, frameId, backendNodeId }, target);
 }
-describeWithEnvironment('WebMCPView (View)', () => {
-    const createDefaultViewInput = () => {
-        return {
-            filters: { text: '' },
-            tools: [],
-            toolCalls: [],
-            filterButtons: WebMCPView.createFilterButtons(() => { }, () => { }),
-            onClearLogClick: () => { },
-            onFilterChange: () => { },
-            selectedTool: null,
-            onToolSelect: () => { },
-            selectedCall: null,
-            onCallSelect: () => { },
-            onRunTool: () => { },
-        };
+const createDefaultViewInput = () => {
+    return {
+        filters: { text: '' },
+        tools: [],
+        toolCalls: [],
+        filterButtons: WebMCPView.createFilterButtons(() => { }, () => { }),
+        onClearLogClick: () => { },
+        onFilterChange: () => { },
+        selectedTool: null,
+        onToolSelect: () => { },
+        onRevealTool: () => { },
+        selectedCall: null,
+        onCallSelect: () => { },
+        onRunTool: () => { },
+        onPaste: () => { },
     };
+};
+describeWithEnvironment('WebMCPView (View)', () => {
     it('renders empty when no tools are available', async () => {
         const target = document.createElement('div');
         target.style.width = '600px';
@@ -74,24 +77,28 @@ describeWithEnvironment('WebMCPView (View)', () => {
                 invocationId: '1',
                 input: '{"dir": "/tmp"}',
                 tool: tools[0],
+                cancel: () => { },
             },
             {
                 invocationId: '2',
                 input: '{"path": "/tmp/test.txt"}',
                 tool: tools[1],
-                result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined)
+                result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined),
+                cancel: () => { },
             },
             {
                 invocationId: '3',
                 input: '{"path": "/root/secret.txt"}',
                 tool: tools[2],
-                result: new WebMCP.WebMCPModel.Result("Error" /* Protocol.WebMCP.InvocationStatus.Error */, undefined, 'Permission denied', undefined)
+                result: new WebMCP.WebMCPModel.Result("Error" /* Protocol.WebMCP.InvocationStatus.Error */, undefined, 'Permission denied', undefined),
+                cancel: () => { },
             },
             {
                 invocationId: '4',
                 input: '{"timeout": 100}',
                 tool: tools[3],
-                result: new WebMCP.WebMCPModel.Result("Canceled" /* Protocol.WebMCP.InvocationStatus.Canceled */, undefined, undefined, undefined)
+                result: new WebMCP.WebMCPModel.Result("Canceled" /* Protocol.WebMCP.InvocationStatus.Canceled */, undefined, undefined, undefined),
+                cancel: () => { },
             },
         ];
         DEFAULT_VIEW({
@@ -102,6 +109,48 @@ describeWithEnvironment('WebMCPView (View)', () => {
         const grid = target.querySelector('devtools-data-grid');
         assert.isNotNull(grid);
         await assertScreenshot('application/webmcp-tool-calls.png');
+    });
+    it('renders tool calls with action button visible on focus', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const target = document.createElement('div');
+        target.style.width = '600px';
+        target.style.height = '400px';
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        const tools = [
+            createTool('list_files', 'List files', 'frame-1', sdkTarget),
+        ];
+        const toolCalls = [
+            {
+                invocationId: '1',
+                input: '{"dir": "/tmp"}',
+                tool: tools[0],
+                cancel: () => { },
+            },
+        ];
+        DEFAULT_VIEW({
+            ...createDefaultViewInput(),
+            tools,
+            toolCalls,
+            selectedCall: toolCalls[0],
+        }, {}, target);
+        const grid = target.querySelector('devtools-data-grid');
+        assert.isNotNull(grid);
+        await RenderCoordinator.done({ waitForWork: true });
+        const row = grid.shadowRoot?.querySelector('tbody tr.selected');
+        assert.isNotNull(row);
+        // Focus the datagrid wrapper to trigger focus-within on host-context
+        const dataGridContainer = grid.shadowRoot?.querySelector('.data-grid');
+        assert.isNotNull(dataGridContainer);
+        dataGridContainer.focus();
+        const button = grid.shadowRoot?.querySelector('.run-tool-action-button');
+        assert.isNotNull(button);
+        const icon = button.querySelector('devtools-icon');
+        assert.isNotNull(icon);
+        const rect = icon.getBoundingClientRect();
+        assert.isAbove(rect.width, 0, 'Icon width should be above 0');
+        assert.isAbove(rect.height, 0, 'Icon height should be above 0');
+        await assertScreenshot('application/webmcp-tool-call-action-focus.png');
     });
     it('renders a list of tools correctly', async () => {
         updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
@@ -163,10 +212,13 @@ describeWithEnvironment('WebMCPView (View)', () => {
         assert.strictEqual(listElements[0].querySelector('.tool-description')?.textContent, 'desc1');
         assert.isNull(target.querySelector('.tool-list .empty-state'));
     });
-    it('highlights the selected tool', () => {
+    it('highlights the selected tool', async () => {
         updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
+        target.style.width = '600px';
+        target.style.height = '400px';
+        renderElementIntoDOM(target, { includeCommonStyles: true });
         const tools = [
             createTool('tool1', 'desc1', 'frame1', sdkTarget),
             createTool('tool2', 'desc2', 'frame1', sdkTarget)
@@ -174,26 +226,28 @@ describeWithEnvironment('WebMCPView (View)', () => {
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
             tools,
-            selectedTool: tools[1],
+            selectedTool: { tool: tools[1] },
         }, {}, target);
         const listElements = target.querySelectorAll('.tool-item');
         assert.lengthOf(listElements, 2);
         assert.isFalse(listElements[0].classList.contains('selected'));
         assert.isTrue(listElements[1].classList.contains('selected'));
+        await assertScreenshot('application/webmcp-tool-selected.png');
     });
     it('renders a selected tool call details in a TabbedPane', async () => {
         updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
         const target = document.createElement('div');
         target.style.width = '600px';
-        target.style.height = '400px';
+        target.style.height = '600px';
         renderElementIntoDOM(target, { includeCommonStyles: true });
         const tool = createTool('list_files', 'List files', 'frame-1', sdkTarget);
         const selectedCall = {
             invocationId: '1',
             input: '{"dir": "/tmp"}',
             tool,
-            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined)
+            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined),
+            cancel: () => { },
         };
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
@@ -226,7 +280,8 @@ describeWithEnvironment('WebMCPView (View)', () => {
             invocationId: '1',
             input: '{"dir": "/tmp"}',
             tool,
-            result: new WebMCP.WebMCPModel.Result("Error" /* Protocol.WebMCP.InvocationStatus.Error */, undefined, undefined, undefined)
+            result: new WebMCP.WebMCPModel.Result("Error" /* Protocol.WebMCP.InvocationStatus.Error */, undefined, undefined, undefined),
+            cancel: () => { },
         };
         const errorObject = sinon.createStubInstance(SDK.RemoteObject.RemoteObject);
         const runtimeModel = sinon.createStubInstance(SDK.RuntimeModel.RuntimeModel);
@@ -292,6 +347,47 @@ describeWithEnvironment('WebMCPView (View)', () => {
         clearButton.click();
         sinon.assert.calledOnce(onClearLogClick);
     });
+    it('calls onRevealTool on context menu actions', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const target = document.createElement('div');
+        target.style.width = '600px';
+        target.style.height = '400px';
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        const tool = createTool('list_files', 'List files', 'frame-1', sdkTarget);
+        const selectedCall = {
+            invocationId: '1',
+            input: '{"dir": "/tmp"}',
+            tool,
+            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined),
+            cancel: () => { },
+        };
+        const onRevealTool = sinon.spy();
+        DEFAULT_VIEW({
+            ...createDefaultViewInput(),
+            toolCalls: [selectedCall],
+            onRevealTool,
+        }, {}, target);
+        const dataGrid = target.querySelector('devtools-data-grid');
+        assert.isNotNull(dataGrid);
+        // Wait for the data grid to fully render its shadow DOM and internal legacy grid
+        await RenderCoordinator.done({ waitForWork: true });
+        const nameCell = dataGrid.shadowRoot?.querySelector('.name-cell');
+        assert.isNotNull(nameCell);
+        const row = nameCell.closest('tr');
+        assert.isNotNull(row);
+        // Select the row before requesting the context menu
+        row.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        const contextMenu = getContextMenuForElement(row);
+        const revealToolItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'Reveal tool');
+        assert.exists(revealToolItem);
+        contextMenu.invokeHandler(revealToolItem.id());
+        sinon.assert.calledWith(onRevealTool, tool);
+        const editAndRunItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'Edit and run');
+        assert.exists(editAndRunItem);
+        contextMenu.invokeHandler(editAndRunItem.id());
+        sinon.assert.calledWith(onRevealTool, tool, { dir: '/tmp' });
+    });
 });
 describeWithEnvironment('WebMCPView Presenter', () => {
     let target;
@@ -343,7 +439,23 @@ describeWithEnvironment('WebMCPView Presenter', () => {
         const tool = input.tools[0];
         viewStub.input.onToolSelect(tool);
         const nextInput = await viewStub.nextInput;
-        assert.strictEqual(nextInput.selectedTool, tool);
+        assert.strictEqual(nextInput.selectedTool?.tool, tool);
+    });
+    it('updates selected tool and parameters on reveal tool', async () => {
+        const { model, viewStub } = await setup();
+        const toolProtocol = {
+            name: 'tool1',
+            description: 'desc1',
+            inputSchema: { type: 'object' },
+            frameId: 'frame1'
+        };
+        model.toolsAdded({ tools: [toolProtocol] });
+        const input = await viewStub.nextInput;
+        const tool = input.tools[0];
+        viewStub.input.onRevealTool(tool, { foo: 'bar' });
+        const nextInput = await viewStub.nextInput;
+        assert.strictEqual(nextInput.selectedTool?.tool, tool);
+        assert.deepEqual(nextInput.selectedTool?.parameters, { foo: 'bar' });
     });
     it('invokes tool via onRunTool', async () => {
         const { model, viewStub } = await setup();
@@ -403,7 +515,7 @@ describeWithEnvironment('WebMCPView Presenter', () => {
         const tool = input.tools[0];
         viewStub.input.onToolSelect(tool);
         const nextInput = await viewStub.nextInput;
-        assert.strictEqual(nextInput.selectedTool, tool);
+        assert.strictEqual(nextInput.selectedTool?.tool, tool);
         model.toolsRemoved({ tools: [toolProtocol] });
         const finalInput = await viewStub.nextInput;
         assert.isNull(finalInput.selectedTool);
@@ -433,6 +545,43 @@ describeWithEnvironment('WebMCPView Presenter', () => {
         assert.isUndefined(input.filters.toolTypes);
         assert.isUndefined(input.filters.statusTypes);
     });
+    describe('onPaste', () => {
+        it('successfully populates a command', async () => {
+            const { model, viewStub } = await setup();
+            const toolProtocol = {
+                name: 'tool1',
+                description: 'desc1',
+                inputSchema: { type: 'object', properties: { arg1: { type: 'string' } } },
+                frameId: 'frame1'
+            };
+            model.toolsAdded({ tools: [toolProtocol] });
+            const input = await viewStub.nextInput;
+            const tool = input.tools[0];
+            viewStub.input.onToolSelect(tool);
+            const nextInput = await viewStub.nextInput;
+            sinon.stub(navigator.clipboard, 'readText').resolves('{"arg1": "value"}');
+            await nextInput.onPaste();
+            const pasteInput = await viewStub.nextInput;
+            assert.deepEqual(pasteInput.selectedTool?.parameters, { arg1: 'value' });
+        });
+        it('fails to populate a command because the json doesn\'t parse', async () => {
+            const { model, viewStub } = await setup();
+            const toolProtocol = {
+                name: 'tool1',
+                description: 'desc1',
+                inputSchema: { type: 'object' },
+                frameId: 'frame1'
+            };
+            model.toolsAdded({ tools: [toolProtocol] });
+            const input = await viewStub.nextInput;
+            const tool = input.tools[0];
+            viewStub.input.onToolSelect(tool);
+            const nextInput = await viewStub.nextInput;
+            sinon.stub(navigator.clipboard, 'readText').resolves('invalid json');
+            await nextInput.onPaste();
+            assert.isUndefined(viewStub.input.selectedTool?.parameters);
+        });
+    });
 });
 describe('filterToolCalls', () => {
     const target = sinon.createStubInstance(SDK.Target.Target);
@@ -448,29 +597,41 @@ describe('filterToolCalls', () => {
             invocationId: '1',
             tool: tools[0],
             input: '{"dir": "/tmp"}',
+            cancel: () => { },
         },
         {
             invocationId: '2',
             tool: tools[1],
             input: '{"path": "/tmp/test.txt"}',
-            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined)
+            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'File content here', undefined, undefined),
+            cancel: () => { },
         },
         {
             invocationId: '3',
             tool: tools[2],
             input: '{"path": "/root/secret.txt"}',
-            result: new WebMCP.WebMCPModel.Result("Error" /* Protocol.WebMCP.InvocationStatus.Error */, undefined, 'Permission denied', undefined)
+            result: new WebMCP.WebMCPModel.Result("Error" /* Protocol.WebMCP.InvocationStatus.Error */, undefined, 'Permission denied', undefined),
+            cancel: () => { },
         },
         {
             invocationId: '4',
             tool: tools[3],
             input: '{"timeout": 100}',
+            cancel: () => { },
         },
         {
             invocationId: '5',
             tool: tools[3],
             input: '{}',
-            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'Declarative success content', undefined, undefined)
+            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, 'Declarative success content', undefined, undefined),
+            cancel: () => { },
+        },
+        {
+            invocationId: '6',
+            tool: tools[0],
+            input: '{}',
+            result: new WebMCP.WebMCPModel.Result("Canceled" /* Protocol.WebMCP.InvocationStatus.Canceled */, undefined, undefined, undefined),
+            cancel: () => { },
         }
     ];
     it('filters by name/text', () => {
@@ -497,6 +658,14 @@ describe('filterToolCalls', () => {
         assert.lengthOf(resultPending, 2);
         assert.strictEqual(resultPending[0].invocationId, '1');
         assert.strictEqual(resultPending[1].invocationId, '4');
+        const resultCanceled = filterToolCalls(mockCalls, {
+            text: '',
+            statusTypes: {
+                canceled: true,
+            },
+        });
+        assert.lengthOf(resultCanceled, 1);
+        assert.strictEqual(resultCanceled[0].invocationId, '6');
     });
     it('filters by type', () => {
         const resultDeclarative = filterToolCalls(mockCalls, {
@@ -514,10 +683,11 @@ describe('filterToolCalls', () => {
                 imperative: true,
             },
         });
-        assert.lengthOf(resultImperative, 3);
+        assert.lengthOf(resultImperative, 4);
         assert.strictEqual(resultImperative[0].invocationId, '1');
         assert.strictEqual(resultImperative[1].invocationId, '2');
         assert.strictEqual(resultImperative[2].invocationId, '3');
+        assert.strictEqual(resultImperative[3].invocationId, '6');
     });
     it('filters by all three together', () => {
         const result = filterToolCalls(mockCalls, {
@@ -593,6 +763,25 @@ describeWithEnvironment('ToolDetailsWidget', () => {
         widget.tool = tool;
         await widget.updateComplete;
         await assertScreenshot('application/webmcp_tool_details_frame.png');
+    });
+    it('renders an unregistered warning', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const container = document.createElement('div');
+        container.style.width = '600px';
+        container.style.height = '600px';
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const tool = createTool('my-tool', 'my description', 'frame1', sdkTarget);
+        const widget = new Application.WebMCPView.ToolDetailsWidget();
+        widget.markAsRoot();
+        widget.show(container);
+        widget.tool = tool;
+        widget.isUnregistered = true;
+        await widget.updateComplete;
+        const warning = container.querySelector('.call-to-action .explanation');
+        assert.isNotNull(warning);
+        assert.include(warning.textContent, 'This tool has been unregistered');
+        await assertScreenshot('application/webmcp_tool_details_unregistered.png');
     });
 });
 describeWithEnvironment('PayloadWidget (View)', () => {
@@ -843,9 +1032,11 @@ describeWithEnvironment('WebMCPView JSON Editor', () => {
             onFilterChange: () => { },
             selectedTool: null,
             onToolSelect: () => { },
+            onRevealTool: () => { },
             selectedCall: null,
             onCallSelect: () => { },
             onRunTool: () => { },
+            onPaste: () => { },
         };
     };
     it('renders parameters based on tool schema', async () => {
@@ -863,7 +1054,7 @@ describeWithEnvironment('WebMCPView JSON Editor', () => {
         renderElementIntoDOM(targetEl, { includeCommonStyles: true });
         Application.WebMCPView.DEFAULT_VIEW({
             ...createDefaultViewInput(),
-            selectedTool: tool,
+            selectedTool: { tool },
         }, {}, targetEl);
         // Wait for nested Lit renders
         await new Promise(resolve => setTimeout(resolve, 50));

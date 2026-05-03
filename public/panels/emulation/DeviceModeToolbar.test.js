@@ -48,9 +48,10 @@ describeWithMockConnection('DeviceModeToolbar', () => {
         deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         // Stub ThrottlingManager to avoid dependency on network condition settings.
         const fakeMenuButton = new UI.Toolbar.ToolbarMenuButton(() => { }, undefined, undefined, 'throttle-menu');
+        const fakeSelectElement = document.createElement('select');
         sinon.stub(MobileThrottling.ThrottlingManager.ThrottlingManager, 'instance').returns({
             createMobileThrottlingButton: () => fakeMenuButton,
-            createSaveDataOverrideSelector: () => fakeMenuButton,
+            createSaveDataOverrideSelector: () => fakeSelectElement,
         });
         toolbar = new Emulation.DeviceModeToolbar.DeviceModeToolbar(deviceModeModel, createFakeSetting(false), createFakeSetting(false));
     });
@@ -60,7 +61,7 @@ describeWithMockConnection('DeviceModeToolbar', () => {
      */
     function findRotateButton() {
         const buttons = toolbar.element().querySelectorAll('devtools-button.toolbar-button');
-        const button = [...buttons].find(b => b.jslogContext === 'screen-rotation');
+        const button = [...buttons].find(b => b.getAttribute('jslog')?.includes('screen-rotation'));
         assert.exists(button, 'Could not find rotate button');
         return button;
     }

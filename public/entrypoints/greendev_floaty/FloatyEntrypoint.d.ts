@@ -1,5 +1,9 @@
 import '../../core/sdk/sdk-meta.js';
 import '../../models/workspace/workspace-meta.js';
+import '../../models/logs/logs-meta.js';
 import '../../panels/sensors/sensors-meta.js';
+import '../../panels/sources/sources-meta.js';
 import '../../entrypoints/inspector_main/inspector_main-meta.js';
 import '../../entrypoints/main/main-meta.js';
+import '../../ui/legacy/components/source_frame/source_frame-meta.js';
+import '../../ui/components/markdown_view/markdown_view.js';

@@ -2414,6 +2414,8 @@ var ChatMessage_exports = {};
 __export(ChatMessage_exports, {
   ChatMessage: () => ChatMessage,
   DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  getDeduplicatedWidgetsMessage: () => getDeduplicatedWidgetsMessage,
+  getWidgetSignature: () => getWidgetSignature,
   renderStep: () => renderStep,
   titleForStep: () => titleForStep
 });
@@ -2429,6 +2431,7 @@ import * as AiAssistanceModel5 from "./../../models/ai_assistance/ai_assistance.
 import * as ComputedStyle from "./../../models/computed_style/computed_style.js";
 import * as Trace from "./../../models/trace/trace.js";
 import * as PanelsCommon3 from "./../common/common.js";
+import * as TraceBounds from "./../../services/trace_bounds/trace_bounds.js";
 import * as Marked from "./../../third_party/marked/marked.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as Input3 from "./../../ui/components/input/input.js";
@@ -3093,7 +3096,7 @@ function getButtonLabel(input) {
   const TARGET_LENGTH = 50;
   const { truncatedText, moreCharacters } = smartTruncate(input.prompt, TARGET_LENGTH);
   const promptSuffix = moreCharacters > 0 ? ` (and ${moreCharacters} more characters)` : "";
-  return `${labelBase} for prompt '${truncatedText}'${promptSuffix}`;
+  return `${labelBase} for prompt ${truncatedText}${promptSuffix}`;
 }
 
 // gen/front_end/panels/ai_assistance/components/WalkthroughView.js
@@ -3622,6 +3625,7 @@ var WalkthroughView = class extends UI4.Widget.Widget {
     if (!this.#markdownRenderer) {
       return;
     }
+    const message = this.#message ? getDeduplicatedWidgetsMessage(this.#message) : null;
     this.#view({
       isLoading: this.#isLoading,
       markdownRenderer: this.#markdownRenderer,
@@ -3630,7 +3634,7 @@ var WalkthroughView = class extends UI4.Widget.Widget {
       isInlined: this.#isInlined,
       isExpanded: this.#isExpanded,
       prompt: this.#prompt,
-      message: this.#message,
+      message,
       handleScroll: this.#handleScroll
     }, this.#output, this.contentElement);
     this.#registerResizeObservers();
@@ -3644,7 +3648,7 @@ var WalkthroughView = class extends UI4.Widget.Widget {
 var { html: html7, Directives: { ref: ref3, ifDefined } } = Lit5;
 var lockedString5 = i18n9.i18n.lockedString;
 var { widget: widget3 } = UI5.Widget;
-var REPORT_URL = "https://crbug.com/364805393";
+var REPORT_URL = "https://crbug.com/508304827";
 var SCROLL_ROUNDING_OFFSET = 1;
 var MAX_NUM_LINES_IN_CODEBLOCK = 11;
 var UIStringsNotTranslate4 = {
@@ -3797,6 +3801,18 @@ var UIStringsNotTranslate4 = {
    */
   revealLcpBreakdown: "Reveal LCP breakdown",
   /**
+   * @description Accessible label for the reveal button in the LCP discovery widget.
+   */
+  revealLcpDiscovery: "Reveal LCP discovery",
+  /**
+   * @description Accessible label for the reveal button in the layout shift culprits widget.
+   */
+  revealClsCulprits: "Reveal layout shift culprits",
+  /**
+   * @description Accessible label for the reveal button in the render-blocking requests widget.
+   */
+  revealRenderBlockingBreakdown: "Reveal render-blocking requests",
+  /**
    * @description Accessible label for the reveal button in the LCP element widget.
    */
   revealLcpElement: "Reveal LCP element",
@@ -3809,6 +3825,14 @@ var UIStringsNotTranslate4 = {
    */
   revealBottomUpTree: "Reveal bottom-up thread activity",
   /**
+   * @description Accessible label for the reveal button in the network dependency tree widget.
+   */
+  revealNetworkDependencyTree: "Reveal network dependency tree",
+  /**
+   * @description Accessible label for the reveal button in the 3rd parties widget.
+   */
+  revealThirdParties: "Reveal 3rd parties",
+  /**
    * @description Title for the core web vitals widget.
    */
   coreVitals: "Core Web Vitals",
@@ -3816,6 +3840,26 @@ var UIStringsNotTranslate4 = {
    * @description Title for the LCP breakdown widget.
    */
   lcpBreakdown: "LCP breakdown",
+  /**
+   * @description Title for the LCP discovery widget.
+   */
+  lcpDiscovery: "LCP discovery",
+  /**
+   * @description Title for the layout shift culprits widget.
+   */
+  clsCulprits: "Layout shift culprits",
+  /**
+   * @description Title for the render-blocking requests widget.
+   */
+  renderBlockingBreakdown: "Render-blocking requests",
+  /**
+   * @description Title for the network dependency tree widget.
+   */
+  networkDependencyTree: "Network dependency tree",
+  /**
+   * @description Title for the 3rd parties widget.
+   */
+  thirdParties: "3rd parties",
   /**
    * @description Title for the LCP element widget.
    */
@@ -3831,7 +3875,111 @@ var UIStringsNotTranslate4 = {
   /**
    * @description Title for the bottom up thread activity widget.
    */
-  bottomUpTree: "Bottom-up thread activity"
+  bottomUpTree: "Bottom-up thread activity",
+  /**
+   * @description Accessible label for the reveal button in the forced reflow widget.
+   */
+  revealForcedReflow: "Reveal forced reflow",
+  /**
+   * @description Title for the forced reflow widget.
+   */
+  forcedReflow: "Forced reflow",
+  /**
+   * @description Accessible label for the reveal button in the cache widget.
+   */
+  revealCache: "Reveal efficient cache lifetimes",
+  /**
+   * @description Title for the cache widget.
+   */
+  cache: "Efficient cache lifetimes",
+  /**
+   * @description Accessible label for the reveal button in the INP breakdown widget.
+   */
+  revealInpBreakdown: "Reveal INP breakdown",
+  /**
+   * @description Title for the INP breakdown widget.
+   */
+  inpBreakdown: "INP breakdown",
+  /**
+   * @description Accessible label for the reveal button in the document latency widget.
+   */
+  revealDocumentLatency: "Reveal document latency",
+  /**
+   * @description Title for the document latency widget.
+   */
+  documentLatency: "Document latency",
+  /**
+   * @description Accessible label for the reveal button in the DOM size widget.
+   */
+  revealDomSize: "Reveal DOM size",
+  /**
+   * @description Title for the DOM size widget.
+   */
+  domSize: "DOM size",
+  /**
+   * @description Accessible label for the reveal button in the duplicated JavaScript widget.
+   */
+  revealDuplicateJavaScript: "Reveal duplicated JavaScript",
+  /**
+   * @description Title for the duplicated JavaScript widget.
+   */
+  duplicateJavaScript: "Duplicated JavaScript",
+  /**
+   * @description Accessible label for the reveal button in the image delivery widget.
+   */
+  revealImageDelivery: "Reveal image delivery",
+  /**
+   * @description Title for the image delivery widget.
+   */
+  imageDelivery: "Image delivery",
+  /**
+   * @description Accessible label for the reveal button in the font display widget.
+   */
+  revealFontDisplay: "Reveal font display",
+  /**
+   * @description Title for the font display widget.
+   */
+  fontDisplay: "Font display",
+  /**
+   * @description Accessible label for the reveal button in the slow CSS selectors widget.
+   */
+  revealSlowCssSelector: "Reveal slow CSS selectors",
+  /**
+   * @description Title for the slow CSS selectors widget.
+   */
+  slowCssSelector: "Slow CSS selectors",
+  /**
+   * @description Accessible label for the reveal button in the legacy JavaScript widget.
+   */
+  revealLegacyJavaScript: "Reveal legacy JavaScript",
+  /**
+   * @description Title for the legacy JavaScript widget.
+   */
+  legacyJavaScript: "Legacy JavaScript",
+  /**
+   * @description Accessible label for the reveal button in the viewport optimization widget.
+   */
+  revealViewport: "Reveal viewport optimization",
+  /**
+   * @description Title for the viewport optimization widget.
+   */
+  viewport: "Viewport optimization",
+  /**
+   * @description Accessible label for the reveal button in the modern HTTP usage widget.
+   */
+  revealModernHttp: "Reveal modern HTTP usage",
+  /**
+   * @description Title for the modern HTTP usage widget.
+   */
+  modernHttp: "Modern HTTP usage",
+  /**
+   * @description Accessible label for the reveal button in the character set declaration widget.
+   */
+  revealCharacterSet: "Reveal character set declaration",
+  /**
+   * @description Title for the character set declaration widget.
+   */
+  characterSet: "Character set declaration"
 };
 var DEFAULT_VIEW4 = (input, output, target) => {
   const hasAiV2 = Boolean(Root3.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
@@ -4225,30 +4373,154 @@ async function makeStylePropertiesWidget(widgetData) {
     jslogContext: "standalone-styles"
   };
 }
-async function makePerfInsightWidget(widgetData) {
-  switch (widgetData.data.insight) {
-    case "lcp": {
-      const insight = widgetData.data.insightData;
-      if (!insight || !Trace.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(insight)) {
-        return null;
-      }
-      const renderedWidget = html7`<devtools-widget
-        class="lcp-breakdown-widget"
-        ${widget3(TimelineInsights.LCPBreakdown.LCPBreakdown, {
-        model: insight,
-        minimal: true
-      })}></devtools-widget>`;
-      return {
-        renderedWidget,
-        revealable: new TimelineUtils.Helpers.RevealableInsight(insight),
-        accessibleRevealLabel: lockedString5(UIStringsNotTranslate4.revealLcpBreakdown),
-        title: lockedString5(UIStringsNotTranslate4.lcpBreakdown),
-        jslogContext: "lcp-breakdown"
-      };
-    }
-    default:
-      return null;
+var INSIGHT_METADATA = {
+  [Trace.Insights.Types.InsightKeys.LCP_BREAKDOWN]: {
+    component: TimelineInsights.LCPBreakdown.LCPBreakdown,
+    accessibleLabel: UIStringsNotTranslate4.revealLcpBreakdown,
+    title: UIStringsNotTranslate4.lcpBreakdown,
+    jslog: "lcp-breakdown-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.RENDER_BLOCKING]: {
+    component: TimelineInsights.RenderBlocking.RenderBlocking,
+    accessibleLabel: UIStringsNotTranslate4.revealRenderBlockingBreakdown,
+    title: UIStringsNotTranslate4.renderBlockingBreakdown,
+    jslog: "render-blocking-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.LCP_DISCOVERY]: {
+    component: TimelineInsights.LCPDiscovery.LCPDiscovery,
+    accessibleLabel: UIStringsNotTranslate4.revealLcpDiscovery,
+    title: UIStringsNotTranslate4.lcpDiscovery,
+    jslog: "lcp-discovery-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.CLS_CULPRITS]: {
+    component: TimelineInsights.CLSCulprits.CLSCulprits,
+    accessibleLabel: UIStringsNotTranslate4.revealClsCulprits,
+    title: UIStringsNotTranslate4.clsCulprits,
+    jslog: "cls-culprits-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.NETWORK_DEPENDENCY_TREE]: {
+    component: TimelineInsights.NetworkDependencyTree.NetworkDependencyTree,
+    accessibleLabel: UIStringsNotTranslate4.revealNetworkDependencyTree,
+    title: UIStringsNotTranslate4.networkDependencyTree,
+    jslog: "network-dependency-tree-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.THIRD_PARTIES]: {
+    component: TimelineInsights.ThirdParties.ThirdParties,
+    accessibleLabel: UIStringsNotTranslate4.revealThirdParties,
+    title: UIStringsNotTranslate4.thirdParties,
+    jslog: "third-parties-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.FORCED_REFLOW]: {
+    component: TimelineInsights.ForcedReflow.ForcedReflow,
+    accessibleLabel: UIStringsNotTranslate4.revealForcedReflow,
+    title: UIStringsNotTranslate4.forcedReflow,
+    jslog: "forced-reflow-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.CACHE]: {
+    component: TimelineInsights.Cache.Cache,
+    accessibleLabel: UIStringsNotTranslate4.revealCache,
+    title: UIStringsNotTranslate4.cache,
+    jslog: "cache-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.INP_BREAKDOWN]: {
+    component: TimelineInsights.INPBreakdown.INPBreakdown,
+    accessibleLabel: UIStringsNotTranslate4.revealInpBreakdown,
+    title: UIStringsNotTranslate4.inpBreakdown,
+    jslog: "inp-breakdown-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.DOCUMENT_LATENCY]: {
+    component: TimelineInsights.DocumentLatency.DocumentLatency,
+    accessibleLabel: UIStringsNotTranslate4.revealDocumentLatency,
+    title: UIStringsNotTranslate4.documentLatency,
+    jslog: "document-latency-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.DOM_SIZE]: {
+    component: TimelineInsights.DOMSize.DOMSize,
+    accessibleLabel: UIStringsNotTranslate4.revealDomSize,
+    title: UIStringsNotTranslate4.domSize,
+    jslog: "dom-size-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.DUPLICATE_JAVASCRIPT]: {
+    component: TimelineInsights.DuplicatedJavaScript.DuplicatedJavaScript,
+    accessibleLabel: UIStringsNotTranslate4.revealDuplicateJavaScript,
+    title: UIStringsNotTranslate4.duplicateJavaScript,
+    jslog: "duplicate-javascript-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.IMAGE_DELIVERY]: {
+    component: TimelineInsights.ImageDelivery.ImageDelivery,
+    accessibleLabel: UIStringsNotTranslate4.revealImageDelivery,
+    title: UIStringsNotTranslate4.imageDelivery,
+    jslog: "image-delivery-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.FONT_DISPLAY]: {
+    component: TimelineInsights.FontDisplay.FontDisplay,
+    accessibleLabel: UIStringsNotTranslate4.revealFontDisplay,
+    title: UIStringsNotTranslate4.fontDisplay,
+    jslog: "font-display-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.SLOW_CSS_SELECTOR]: {
+    component: TimelineInsights.SlowCSSSelector.SlowCSSSelector,
+    accessibleLabel: UIStringsNotTranslate4.revealSlowCssSelector,
+    title: UIStringsNotTranslate4.slowCssSelector,
+    jslog: "slow-css-selector-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.LEGACY_JAVASCRIPT]: {
+    component: TimelineInsights.LegacyJavaScript.LegacyJavaScript,
+    accessibleLabel: UIStringsNotTranslate4.revealLegacyJavaScript,
+    title: UIStringsNotTranslate4.legacyJavaScript,
+    jslog: "legacy-javascript-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.VIEWPORT]: {
+    component: TimelineInsights.Viewport.Viewport,
+    accessibleLabel: UIStringsNotTranslate4.revealViewport,
+    title: UIStringsNotTranslate4.viewport,
+    jslog: "viewport-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.MODERN_HTTP]: {
+    component: TimelineInsights.ModernHTTP.ModernHTTP,
+    accessibleLabel: UIStringsNotTranslate4.revealModernHttp,
+    title: UIStringsNotTranslate4.modernHttp,
+    jslog: "modern-http-widget"
+  },
+  [Trace.Insights.Types.InsightKeys.CHARACTER_SET]: {
+    component: TimelineInsights.CharacterSet.CharacterSet,
+    accessibleLabel: UIStringsNotTranslate4.revealCharacterSet,
+    title: UIStringsNotTranslate4.characterSet,
+    jslog: "character-set-widget"
   }
+};
+function renderInsightWidget(component, insight, jslog, accessibleLabel, title, bounds) {
+  const renderedWidget = html7`<devtools-widget
+    class=${jslog}
+    ${widget3(component, {
+    model: insight,
+    minimal: true,
+    bounds: bounds ?? null
+  })}></devtools-widget>`;
+  return {
+    renderedWidget,
+    revealable: new TimelineUtils.Helpers.RevealableInsight(insight),
+    accessibleRevealLabel: lockedString5(accessibleLabel),
+    title: lockedString5(title),
+    jslogContext: jslog
+  };
+}
+async function makePerfInsightWidget(widgetData) {
+  const insightKey = widgetData.data.insight;
+  const insight = widgetData.data.insightData;
+  const meta = INSIGHT_METADATA[insightKey];
+  if (!meta) {
+    return null;
+  }
+  let bounds;
+  if (insightKey === Trace.Insights.Types.InsightKeys.CLS_CULPRITS) {
+    const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
+    if (!traceBounds) {
+      return null;
+    }
+    bounds = traceBounds;
+  }
+  return renderInsightWidget(meta.component, insight, meta.jslog, meta.accessibleLabel, meta.title, bounds);
 }
 async function makeBottomUpTimelineTreeWidget(widgetData) {
   const bottomUpRootNode = AiAssistanceModel5.AIQueries.AIQueries.mainThreadActivityBottomUp(widgetData.data.bounds, widgetData.data.parsedTrace);
@@ -4383,6 +4655,63 @@ async function makeDomTreeWidget(widgetData) {
     accessibleRevealLabel: lockedString5(UIStringsNotTranslate4.revealLcpElement),
     title: lockedString5(UIStringsNotTranslate4.lcpElement),
     jslogContext: "dom-snapshot"
+  };
+}
+function getWidgetSignature(widget6) {
+  switch (widget6.name) {
+    case "COMPUTED_STYLES":
+      return `${widget6.name}:${widget6.data.backendNodeId}`;
+    case "CORE_VITALS":
+      return `${widget6.name}:${widget6.data.insightSetKey}`;
+    case "STYLE_PROPERTIES":
+      return `${widget6.name}:${widget6.data.backendNodeId}:${widget6.data.selector ?? ""}`;
+    case "DOM_TREE":
+      return `${widget6.name}:${widget6.data.root.backendNodeId()}`;
+    case "PERFORMANCE_TRACE":
+      return `${widget6.name}`;
+    case "PERF_INSIGHT":
+      return `${widget6.name}:${widget6.data.insight}:${widget6.data.insightData.insightKey}:${widget6.data.insightData.navigation?.args?.data?.navigationId ?? "no-nav-id"}`;
+    case "TIMELINE_RANGE_SUMMARY":
+      return `${widget6.name}:${widget6.data.track}:${widget6.data.bounds.min}-${widget6.data.bounds.max}`;
+    case "BOTTOM_UP_TREE":
+      return `${widget6.name}:${widget6.data.bounds.min}-${widget6.data.bounds.max}`;
+    default:
+      Platform5.assertNever(widget6, "Unknown AiWidget name");
+  }
+}
+function getDeduplicatedWidgetsMessage(message) {
+  const seenWidgets = /* @__PURE__ */ new Set();
+  const filterWidgets = (widgets) => {
+    return widgets.filter((widget6) => {
+      const signature = getWidgetSignature(widget6);
+      if (seenWidgets.has(signature)) {
+        return false;
+      }
+      seenWidgets.add(signature);
+      return true;
+    });
+  };
+  const deduplicatedParts = message.parts.map((part) => {
+    if (part.type === "widget") {
+      return {
+        ...part,
+        widgets: filterWidgets(part.widgets)
+      };
+    }
+    if (part.type === "step" && part.step.widgets) {
+      return {
+        ...part,
+        step: {
+          ...part.step,
+          widgets: filterWidgets(part.step.widgets)
+        }
+      };
+    }
+    return part;
+  });
+  return {
+    ...message,
+    parts: deduplicatedParts
   };
 }
 async function renderWidgets(widgets, options = {}) {
@@ -4704,8 +5033,9 @@ var ChatMessage = class extends UI5.Widget.Widget {
     this.#evaluateSuggestionsLayout();
   }
   performUpdate() {
+    const message = this.message.entity === "model" ? getDeduplicatedWidgetsMessage(this.message) : this.message;
     this.#view({
-      message: this.message,
+      message,
       isLoading: this.isLoading,
       isReadOnly: this.isReadOnly,
       canShowFeedbackForm: this.canShowFeedbackForm,
