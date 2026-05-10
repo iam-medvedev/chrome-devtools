@@ -57,7 +57,19 @@
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/platform/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
       "path": "../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../bindings/bundle-tsconfig.json"
+    },
+    {
+      "path": "../breakpoints/bundle-tsconfig.json"
     },
     {
       "path": "../persistence/bundle-tsconfig.json"

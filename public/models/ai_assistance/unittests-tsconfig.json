@@ -82,7 +82,13 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/root/bundle-tsconfig.json"
+    },
+    {
       "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../generated/generated-tsconfig.json"
     },
     {
       "path": "../../generated/protocol-tsconfig.json"
@@ -91,16 +97,34 @@
       "path": "../../testing/testing-tsconfig.json"
     },
     {
+      "path": "../../ui/components/render_coordinator/bundle-tsconfig.json"
+    },
+    {
       "path": "../bindings/bundle-tsconfig.json"
     },
     {
+      "path": "../greendev/bundle-tsconfig.json"
+    },
+    {
       "path": "../lighthouse/bundle-tsconfig.json"
+    },
+    {
+      "path": "../logs/bundle-tsconfig.json"
+    },
+    {
+      "path": "../network_time_calculator/bundle-tsconfig.json"
     },
     {
       "path": "../text_utils/bundle-tsconfig.json"
     },
     {
       "path": "../trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../trace/types/bundle-tsconfig.json"
+    },
+    {
+      "path": "../workspace/bundle-tsconfig.json"
     },
     {
       "path": "data_formatters/unittests-tsconfig.json"

@@ -166,7 +166,7 @@ describe('NetworkRequestFormatter', () => {
                 blockedReason: "inspector" /* Protocol.Network.BlockedReason.Inspector */,
                 corsErrorStatus: undefined,
                 localizedFailDescription: null,
-            }), 'Blocked reason: inspector\n');
+            }), 'Blocked reason: a custom network condition in DevTools is blocking this request\n');
         });
         it('handles CORS error correctly', () => {
             assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatFailureReasons({

@@ -43,6 +43,7 @@
     "../../../../../../front_end/models/ai_assistance/ChangeManager.ts",
     "../../../../../../front_end/models/ai_assistance/EvaluateAction.ts",
     "../../../../../../front_end/models/ai_assistance/ExtensionScope.ts",
+    "../../../../../../front_end/models/ai_assistance/StorageItem.ts",
     "../../../../../../front_end/models/ai_assistance/agents/AccessibilityAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/AiAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/BreakpointDebuggerAgent.ts",
@@ -56,6 +57,7 @@
     "../../../../../../front_end/models/ai_assistance/agents/PatchAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAnnotationsAgent.ts",
+    "../../../../../../front_end/models/ai_assistance/agents/StorageAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StylingAgent.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/FileFormatter.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/LighthouseFormatter.ts",
@@ -92,6 +94,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
@@ -116,7 +121,19 @@
       "path": "../bindings/bundle-tsconfig.json"
     },
     {
+      "path": "../breakpoints/bundle-tsconfig.json"
+    },
+    {
       "path": "../crux-manager/bundle-tsconfig.json"
+    },
+    {
+      "path": "../emulation/bundle-tsconfig.json"
+    },
+    {
+      "path": "../formatter/bundle-tsconfig.json"
+    },
+    {
+      "path": "../greendev/bundle-tsconfig.json"
     },
     {
       "path": "../lighthouse/bundle-tsconfig.json"

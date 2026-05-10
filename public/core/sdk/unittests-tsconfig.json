@@ -44,11 +44,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/core/sdk/AccessibilityModel.test.ts",
-    "../../../../../../front_end/core/sdk/AnimationModel.test.ts",
-    "../../../../../../front_end/core/sdk/AutofillModel.test.ts",
-    "../../../../../../front_end/core/sdk/CPUThrottlingManager.test.ts",
-    "../../../../../../front_end/core/sdk/CSSContainerQuery.test.ts",
     "../../../../../../front_end/core/sdk/CSSMatchedStyles.test.ts",
     "../../../../../../front_end/core/sdk/CSSModel.test.ts",
     "../../../../../../front_end/core/sdk/CSSProperty.test.ts",
@@ -63,6 +58,7 @@
     "../../../../../../front_end/core/sdk/CookieParser.test.ts",
     "../../../../../../front_end/core/sdk/CrashReportContextModel.test.ts",
     "../../../../../../front_end/core/sdk/DOMModel.test.ts",
+    "../../../../../../front_end/core/sdk/DOMStorageModel.test.ts",
     "../../../../../../front_end/core/sdk/EmulationModel.test.ts",
     "../../../../../../front_end/core/sdk/EnhancedTracesParser.test.ts",
     "../../../../../../front_end/core/sdk/FrameManager.test.ts",
@@ -98,6 +94,12 @@
       "path": "./bundle-tsconfig.json"
     },
     {
+      "path": "../../entrypoints/formatter_worker/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
@@ -122,7 +124,16 @@
       "path": "../../testing/testing-tsconfig.json"
     },
     {
+      "path": "../../third_party/codemirror.next/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../third_party/source-map-scopes-codec/bundle-tsconfig.json"
+    },
+    {
       "path": "../common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../platform/bundle-tsconfig.json"
     },
     {
       "path": "../protocol_client/bundle-tsconfig.json"

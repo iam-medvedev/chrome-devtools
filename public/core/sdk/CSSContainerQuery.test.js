@@ -1,11 +1,20 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
 const { getPhysicalAxisFromQueryAxis, getQueryAxisFromContainerType, PhysicalAxis, QueryAxis } = SDK.CSSContainerQuery;
 describe('CSSContainerQuery', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     describe('getQueryAxisFromContainerType', () => {
         it('gets the query axis of no container-type correctly', () => {
             assert.strictEqual(getQueryAxisFromContainerType(''), "" /* QueryAxis.NONE */);
@@ -42,9 +51,9 @@ describe('CSSContainerQuery', () => {
             assert.strictEqual(getPhysicalAxisFromQueryAxis("size" /* QueryAxis.BOTH */, 'vertical-rl'), "Both" /* PhysicalAxis.BOTH */);
         });
     });
-    describeWithMockConnection('Construction from protocol payload', () => {
+    describe('Construction from protocol payload', () => {
         it('anchored()', () => {
-            const target = createTarget();
+            const target = universe.createTarget();
             const cssModel = new SDK.CSSModel.CSSModel(target);
             const query = new SDK.CSSContainerQuery.CSSContainerQuery(cssModel, { queriesAnchored: true });
             assert.isTrue(query.queriesAnchored);

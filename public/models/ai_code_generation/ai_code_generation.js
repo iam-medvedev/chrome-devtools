@@ -58,7 +58,7 @@ The console has direct access to the inspected page's \`window\` and \`document\
 
 *   **Utilize Console Utilities:** You have access to the Console Utilities API. You **should** use these helper functions and variables when they are the most direct way to accomplish the user's goal.
 `;
-var AiCodeGeneration = class {
+var AiCodeGeneration = class _AiCodeGeneration {
   #sessionId = crypto.randomUUID();
   #aidaClient;
   #serverSideLoggingEnabled;
@@ -114,7 +114,7 @@ var AiCodeGeneration = class {
     const nanos = Math.floor(remainingMs * 1e6);
     void this.#aidaClient.registerClientEvent({
       corresponding_aida_rpc_global_id: rpcGlobalId,
-      disable_user_content_logging: true,
+      disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
       generate_code_client_event: {
         user_impression: {
           sample: {
@@ -135,7 +135,7 @@ var AiCodeGeneration = class {
   registerUserAcceptance(rpcGlobalId, sampleId) {
     void this.#aidaClient.registerClientEvent({
       corresponding_aida_rpc_global_id: rpcGlobalId,
-      disable_user_content_logging: true,
+      disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
       generate_code_client_event: {
         user_acceptance: {
           sample: {
@@ -153,6 +153,9 @@ var AiCodeGeneration = class {
     debugLog({ request, response });
     return response;
   }
+  static isAiCodeGenerationAvailable() {
+    return Root.Runtime.hostConfig.devToolsAiCodeGeneration?.enabled ?? false;
+  }
   static isAiCodeGenerationEnabled(locale) {
     if (!locale.startsWith("en-")) {
       return false;
@@ -161,7 +164,7 @@ var AiCodeGeneration = class {
     if (!aidaAvailability || aidaAvailability.blockedByGeo || aidaAvailability.blockedByAge || aidaAvailability.blockedByEnterprisePolicy) {
       return false;
     }
-    return Boolean(aidaAvailability.enabled && Root.Runtime.hostConfig.devToolsAiCodeGeneration?.enabled);
+    return Boolean(aidaAvailability.enabled && _AiCodeGeneration.isAiCodeGenerationAvailable());
   }
 };
 export {

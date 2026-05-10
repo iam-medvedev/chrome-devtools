@@ -1075,7 +1075,7 @@ export const generatedProperties = [
     {
         "inherited": true,
         "keywords": [
-            "auto",
+            "ellipsis",
             "no-ellipsis"
         ],
         "name": "block-ellipsis"
@@ -1944,11 +1944,27 @@ export const generatedProperties = [
     },
     {
         "keywords": [
-            "auto",
+            "normal",
             "collapse",
             "-webkit-legacy"
         ],
         "name": "continue"
+    },
+    {
+        "keywords": [
+            "normal"
+        ],
+        "longhands": [
+            "border-top-left-radius",
+            "corner-top-left-shape",
+            "border-top-right-radius",
+            "corner-top-right-shape",
+            "border-bottom-right-radius",
+            "corner-bottom-right-shape",
+            "border-bottom-left-radius",
+            "corner-bottom-left-shape"
+        ],
+        "name": "corner"
     },
     {
         "longhands": [
@@ -2070,22 +2086,6 @@ export const generatedProperties = [
             "corner-top-right-shape"
         ],
         "name": "corner-top-shape"
-    },
-    {
-        "keywords": [
-            "normal"
-        ],
-        "longhands": [
-            "border-top-left-radius",
-            "corner-top-left-shape",
-            "border-top-right-radius",
-            "corner-top-right-shape",
-            "border-bottom-right-radius",
-            "corner-bottom-right-shape",
-            "border-bottom-left-radius",
-            "corner-bottom-left-shape"
-        ],
-        "name": "corners"
     },
     {
         "keywords": [
@@ -3949,7 +3949,7 @@ export const generatedProperties = [
         "inherited": true,
         "keywords": [
             "auto",
-            "none"
+            "spaces"
         ],
         "name": "ruby-overhang"
     },
@@ -5323,7 +5323,7 @@ export const generatedPropertyValues = {
     },
     "block-ellipsis": {
         "values": [
-            "auto",
+            "ellipsis",
             "no-ellipsis"
         ]
     },
@@ -5766,9 +5766,14 @@ export const generatedPropertyValues = {
     },
     "continue": {
         "values": [
-            "auto",
+            "normal",
             "collapse",
             "-webkit-legacy"
+        ]
+    },
+    "corner": {
+        "values": [
+            "normal"
         ]
     },
     "corner-bottom-left-shape": {
@@ -5809,11 +5814,6 @@ export const generatedPropertyValues = {
             "round",
             "squircle",
             "square"
-        ]
-    },
-    "corners": {
-        "values": [
-            "normal"
         ]
     },
     "counter-increment": {
@@ -6884,7 +6884,7 @@ export const generatedPropertyValues = {
     "ruby-overhang": {
         "values": [
             "auto",
-            "none"
+            "spaces"
         ]
     },
     "ruby-position": {

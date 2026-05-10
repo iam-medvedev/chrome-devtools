@@ -95,7 +95,7 @@ export class AiCodeGeneration {
         const nanos = Math.floor(remainingMs * 1_000_000);
         void this.#aidaClient.registerClientEvent({
             corresponding_aida_rpc_global_id: rpcGlobalId,
-            disable_user_content_logging: true,
+            disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
             generate_code_client_event: {
                 user_impression: {
                     sample: {
@@ -116,7 +116,7 @@ export class AiCodeGeneration {
     registerUserAcceptance(rpcGlobalId, sampleId) {
         void this.#aidaClient.registerClientEvent({
             corresponding_aida_rpc_global_id: rpcGlobalId,
-            disable_user_content_logging: true,
+            disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
             generate_code_client_event: {
                 user_acceptance: {
                     sample: {
@@ -134,6 +134,9 @@ export class AiCodeGeneration {
         debugLog({ request, response });
         return response;
     }
+    static isAiCodeGenerationAvailable() {
+        return Root.Runtime.hostConfig.devToolsAiCodeGeneration?.enabled ?? false;
+    }
     static isAiCodeGenerationEnabled(locale) {
         if (!locale.startsWith('en-')) {
             return false;
@@ -143,7 +146,7 @@ export class AiCodeGeneration {
             aidaAvailability.blockedByEnterprisePolicy) {
             return false;
         }
-        return Boolean(aidaAvailability.enabled && Root.Runtime.hostConfig.devToolsAiCodeGeneration?.enabled);
+        return Boolean(aidaAvailability.enabled && AiCodeGeneration.isAiCodeGenerationAvailable());
     }
 }
 //# sourceMappingURL=AiCodeGeneration.js.map

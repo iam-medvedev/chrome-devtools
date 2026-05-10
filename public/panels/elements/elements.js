@@ -11,7 +11,7 @@ __export(InspectElementModeController_exports, {
   ToggleSearchActionDelegate: () => ToggleSearchActionDelegate
 });
 import * as Common14 from "./../../core/common/common.js";
-import * as Root7 from "./../../core/root/root.js";
+import * as Root6 from "./../../core/root/root.js";
 import * as SDK19 from "./../../core/sdk/sdk.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
@@ -32,7 +32,7 @@ import * as Common13 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
 import * as i18n32 from "./../../core/i18n/i18n.js";
 import * as Platform10 from "./../../core/platform/platform.js";
-import * as Root6 from "./../../core/root/root.js";
+import * as Root5 from "./../../core/root/root.js";
 import * as SDK18 from "./../../core/sdk/sdk.js";
 import * as Annotations from "./../../models/annotations/annotations.js";
 import * as ComputedStyle3 from "./../../models/computed_style/computed_style.js";
@@ -328,7 +328,6 @@ var ColorSwatchPopoverIcon_exports = {};
 __export(ColorSwatchPopoverIcon_exports, {
   BezierPopoverIcon: () => BezierPopoverIcon,
   ColorSwatchPopoverIcon: () => ColorSwatchPopoverIcon,
-  FontEditorSectionManager: () => FontEditorSectionManager,
   ShadowSwatchPopoverHelper: () => ShadowSwatchPopoverHelper
 });
 import * as Common from "./../../core/common/common.js";
@@ -715,135 +714,6 @@ var ShadowSwatchPopoverHelper = class extends Common.ObjectWrapper.ObjectWrapper
     delete this.originalPropertyText;
   }
 };
-var FontEditorSectionManager = class {
-  treeElementMap;
-  swatchPopoverHelper;
-  section;
-  stylesContainer;
-  fontEditor;
-  scrollerElement;
-  boundFontChanged;
-  boundOnScroll;
-  boundResized;
-  constructor(swatchPopoverHelper, section5) {
-    this.treeElementMap = /* @__PURE__ */ new Map();
-    this.swatchPopoverHelper = swatchPopoverHelper;
-    this.section = section5;
-    this.stylesContainer = null;
-    this.fontEditor = null;
-    this.scrollerElement = null;
-    this.boundFontChanged = this.fontChanged.bind(this);
-    this.boundOnScroll = this.onScroll.bind(this);
-    this.boundResized = this.fontEditorResized.bind(this);
-  }
-  fontChanged(event) {
-    const { propertyName, value: value5 } = event.data;
-    const treeElement = this.treeElementMap.get(propertyName);
-    void this.updateFontProperty(propertyName, value5, treeElement);
-  }
-  async updateFontProperty(propertyName, value5, treeElement) {
-    if (treeElement?.treeOutline && treeElement.valueElement && treeElement.property.parsedOk && treeElement.property.range) {
-      let elementRemoved = false;
-      treeElement.valueElement.textContent = value5;
-      treeElement.property.value = value5;
-      let styleText;
-      const propertyName2 = treeElement.property.name;
-      if (value5.length) {
-        styleText = treeElement.renderedPropertyText();
-      } else {
-        styleText = "";
-        elementRemoved = true;
-        this.fixIndex(treeElement.property.index);
-      }
-      this.treeElementMap.set(propertyName2, treeElement);
-      await treeElement.applyStyleText(styleText, true);
-      if (elementRemoved) {
-        this.treeElementMap.delete(propertyName2);
-      }
-    } else if (value5.length) {
-      const newProperty = this.section.addNewBlankProperty();
-      if (newProperty) {
-        newProperty.property.name = propertyName;
-        newProperty.property.value = value5;
-        newProperty.updateTitle();
-        await newProperty.applyStyleText(newProperty.renderedPropertyText(), true);
-        this.treeElementMap.set(newProperty.property.name, newProperty);
-      }
-    }
-    this.section.onpopulate();
-    this.swatchPopoverHelper.reposition();
-    return;
-  }
-  fontEditorResized() {
-    this.swatchPopoverHelper.reposition();
-  }
-  fixIndex(removedIndex) {
-    for (const treeElement of this.treeElementMap.values()) {
-      if (treeElement.property.index > removedIndex) {
-        treeElement.property.index -= 1;
-      }
-    }
-  }
-  createPropertyValueMap() {
-    const propertyMap = /* @__PURE__ */ new Map();
-    for (const fontProperty of this.treeElementMap) {
-      const propertyName = fontProperty[0];
-      const treeElement = fontProperty[1];
-      if (treeElement.property.value.length) {
-        propertyMap.set(propertyName, treeElement.property.value);
-      } else {
-        this.treeElementMap.delete(propertyName);
-      }
-    }
-    return propertyMap;
-  }
-  registerFontProperty(treeElement) {
-    const propertyName = treeElement.property.name;
-    if (this.treeElementMap.has(propertyName)) {
-      const treeElementFromMap = this.treeElementMap.get(propertyName);
-      if (!treeElement.overloaded() || treeElementFromMap?.overloaded()) {
-        this.treeElementMap.set(propertyName, treeElement);
-      }
-    } else {
-      this.treeElementMap.set(propertyName, treeElement);
-    }
-  }
-  async showPopover(iconElement, stylesContainer) {
-    if (this.swatchPopoverHelper.isShowing()) {
-      this.swatchPopoverHelper.hide(true);
-      return;
-    }
-    this.stylesContainer = stylesContainer;
-    const propertyValueMap = this.createPropertyValueMap();
-    this.fontEditor = new InlineEditor.FontEditor.FontEditor(propertyValueMap);
-    this.fontEditor.addEventListener("FontChanged", this.boundFontChanged);
-    this.fontEditor.addEventListener("FontEditorResized", this.boundResized);
-    this.swatchPopoverHelper.show(this.fontEditor, iconElement, this.onPopoverHidden.bind(this));
-    this.scrollerElement = iconElement.enclosingNodeOrSelfWithClass("style-panes-wrapper");
-    if (this.scrollerElement) {
-      this.scrollerElement.addEventListener("scroll", this.boundOnScroll, false);
-    }
-    this.stylesContainer.setEditingStyle(true);
-  }
-  onScroll() {
-    this.swatchPopoverHelper.hide(true);
-  }
-  onPopoverHidden() {
-    if (this.scrollerElement) {
-      this.scrollerElement.removeEventListener("scroll", this.boundOnScroll, false);
-    }
-    this.section.onpopulate();
-    if (this.fontEditor) {
-      this.fontEditor.removeEventListener("FontChanged", this.boundFontChanged);
-    }
-    this.fontEditor = null;
-    if (this.stylesContainer) {
-      this.stylesContainer.setEditingStyle(false);
-    }
-    this.section.resetToolbars();
-    this.section.onpopulate();
-  }
-};
 
 // gen/front_end/panels/elements/ElementsPanel.js
 import * as ElementsComponents7 from "./components/components.js";
@@ -1189,7 +1059,6 @@ import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 // gen/front_end/panels/elements/StylesSidebarPane.js
 var StylesSidebarPane_exports = {};
 __export(StylesSidebarPane_exports, {
-  AT_RULE_SECTION_NAME: () => AT_RULE_SECTION_NAME,
   ActionDelegate: () => ActionDelegate,
   ButtonProvider: () => ButtonProvider2,
   CSSPropertyPrompt: () => CSSPropertyPrompt,
@@ -1208,7 +1077,7 @@ import * as Host4 from "./../../core/host/host.js";
 import * as i18n12 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import { assertNotNullOrUndefined } from "./../../core/platform/platform.js";
-import * as Root4 from "./../../core/root/root.js";
+import * as Root3 from "./../../core/root/root.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as AiCodeCompletion3 from "./../../models/ai_code_completion/ai_code_completion.js";
 import * as Bindings4 from "./../../models/bindings/bindings.js";
@@ -1460,7 +1329,6 @@ __export(StylePropertyTreeElement_exports, {
   CustomFunctionRenderer: () => CustomFunctionRenderer,
   EnvFunctionRenderer: () => EnvFunctionRenderer,
   FlexGridRenderer: () => FlexGridRenderer,
-  FontRenderer: () => FontRenderer,
   GhostStylePropertyTreeElement: () => GhostStylePropertyTreeElement,
   GridTemplateRenderer: () => GridTemplateRenderer,
   LengthRenderer: () => LengthRenderer,
@@ -1482,7 +1350,6 @@ import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
-import * as Root from "./../../core/root/root.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
@@ -2352,7 +2219,11 @@ var stylePropertiesTreeOutline_css_default = `/*
   }
 
   &.ghost-row, .ghost-value-prediction {
-    opacity: 50%;
+    .webkit-css-property {
+      opacity: 50%;
+    }
+
+    color: var(--sys-color-token-subtle);
     font-style: italic;
     pointer-events: none;
   }
@@ -3684,8 +3555,18 @@ var LinkableNameRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatc
         return {
           jslogContext: "css-font-palette",
           metric: null,
-          ruleBlock: "@font-*",
+          ruleBlock: "",
+          // Not used
           isDefined: Boolean(this.#matchedStyles.atRules().find((ar) => ar.type() === "font-palette-values" && ar.name()?.text === match.text))
+        };
+      case "list-style":
+      case "list-style-type":
+        return {
+          jslogContext: "css-list-style-type",
+          metric: null,
+          ruleBlock: "",
+          // Not used
+          isDefined: Boolean(this.#matchedStyles.atRules().find((ar) => ar.type() === "counter-style" && ar.name()?.text === match.text))
         };
       case "position-try":
       case "position-try-fallbacks":
@@ -3708,6 +3589,8 @@ var LinkableNameRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatc
         metric && Host.userMetrics.swatchActivated(metric);
         if (match.propertyName === "font-palette") {
           this.#stylesContainer.jumpToFontPaletteDefinition(match.text);
+        } else if (match.propertyName === "list-style" || match.propertyName === "list-style-type") {
+          this.#stylesContainer.jumpToCounterStyleDefinition(match.text);
         } else {
           this.#stylesContainer.jumpToSectionBlock(`${ruleBlock} ${match.text}`);
         }
@@ -4058,19 +3941,6 @@ var ShadowRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.S
       }
     }
     return result;
-  }
-};
-var FontRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.FontMatch) {
-  treeElement;
-  // clang-format on
-  constructor(treeElement) {
-    super();
-    this.treeElement = treeElement;
-  }
-  render(match, context) {
-    this.treeElement.section().registerFontProperty(this.treeElement);
-    const { nodes } = Renderer.render(ASTUtils.siblings(ASTUtils.declValue(match.node)), context);
-    return nodes;
   }
 };
 var GridTemplateRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.GridTemplateMatch) {
@@ -4747,9 +4617,6 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeO
       this.expandElement.setAttribute("jslog", `${VisualLogging3.expand().track({ click: true })}`);
     }
     const renderers = this.property.parsedOk ? getPropertyRenderers(this.name, this.style, this.#stylesContainer, this.#matchedStyles, this, this.getComputedStyles() ?? /* @__PURE__ */ new Map(), this.getComputedStyleExtraFields()) : [];
-    if (Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.FONT_EDITOR) && this.property.parsedOk) {
-      renderers.push(new FontRenderer(this));
-    }
     this.listItemElement.removeChildren();
     const matchedResult = this.property.parseValue(this.matchedStyles(), this.computedStyles);
     this.valueElement = Renderer.renderValueElement(this.property, matchedResult, renderers).valueElement;
@@ -5583,7 +5450,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeO
     if (this.prompt) {
       this.prompt.detach();
       this.prompt = null;
-      this.#clearGhostTextInValue();
+      this.section().activeAiSuggestion = void 0;
     }
   }
   styleTextAppliedForTest() {
@@ -5650,9 +5517,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeO
     this.#matchedStyles.resetActiveProperties();
     this.hasBeenEditedIncrementally = true;
     const deleteProperty = majorChange && !styleText.length;
-    if (deleteProperty) {
-      this.#parentSection.resetToolbars();
-    } else if (!deleteProperty && updatedProperty) {
+    if (!deleteProperty && updatedProperty) {
       this.property = updatedProperty;
     }
     if (currentNode === this.node()) {
@@ -5672,11 +5537,11 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeO
     }
     const isEditingName = UI7.UIUtils.isBeingEdited(this.nameElement);
     if (isEditingName) {
-      this.prompt.applySuggestion({ text: activeAiSuggestion.name }, true);
+      this.prompt.applySuggestion({ text: activeAiSuggestion.name, disableAcceptSuggestionOnStopCharacters: true }, true);
       this.#showGhostTextInValue(activeAiSuggestion.value);
     } else {
       const currentSuggestedText = isEditingName ? activeAiSuggestion.name : activeAiSuggestion.value;
-      this.prompt.applySuggestion({ text: currentSuggestedText }, true);
+      this.prompt.applySuggestion({ text: currentSuggestedText, disableAcceptSuggestionOnStopCharacters: true }, true);
     }
   }
   clearActiveAiSuggestion() {
@@ -5687,6 +5552,9 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeO
       return;
     }
     this.#clearGhostTextInValue();
+    if (this.value === text) {
+      return;
+    }
     if (this.value) {
       this.listItemElement.classList.add("not-parsed-ok", "invalid-property-value");
     }
@@ -5696,7 +5564,22 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeO
     this.valueElement.insertAdjacentElement("afterend", ghostTextElement);
   }
   #clearGhostTextInValue() {
-    this.listItemElement.querySelector(".ghost-value-prediction")?.remove();
+    const ghostTextElement = this.listItemElement.querySelector(".ghost-value-prediction");
+    if (!ghostTextElement) {
+      return;
+    }
+    ghostTextElement.remove();
+    if (!this.value) {
+      return;
+    }
+    if (this.property.parsedOk) {
+      this.listItemElement.classList.remove("not-parsed-ok", "invalid-property-value");
+    } else {
+      const invalidPropertyValue = SDK6.CSSMetadata.cssMetadata().isCSSPropertyName(this.property.name);
+      if (!invalidPropertyValue) {
+        this.listItemElement.classList.remove("invalid-property-value");
+      }
+    }
   }
 };
 var GhostStylePropertyTreeElement = class extends StylePropertyTreeElement {
@@ -5888,7 +5771,6 @@ import * as Common3 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
-import * as Root2 from "./../../core/root/root.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as Badges2 from "./../../models/badges/badges.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
@@ -5990,9 +5872,6 @@ var StylePropertiesSection = class _StylePropertiesSection {
   showAllButton;
   selectorElement;
   newStyleRuleToolbar;
-  fontEditorToolbar;
-  fontEditorSectionManager;
-  fontEditorButton;
   selectedSinceMouseDown;
   elementToSelectorIndex = /* @__PURE__ */ new WeakMap();
   navigable;
@@ -6110,28 +5989,6 @@ var StylePropertiesSection = class _StylePropertiesSection {
       this.newStyleRuleToolbar.appendToolbarItem(newRuleButton);
       UI9.ARIAUtils.setHidden(this.newStyleRuleToolbar, true);
     }
-    if (Root2.Runtime.experiments.isEnabled(Root2.ExperimentNames.ExperimentName.FONT_EDITOR) && this.editable) {
-      this.fontEditorToolbar = this.#styleRuleElement.createChild("devtools-toolbar", "sidebar-pane-section-toolbar");
-      this.fontEditorSectionManager = new FontEditorSectionManager(this.stylesContainer.swatchPopoverHelper(), this);
-      this.fontEditorButton = new UI9.Toolbar.ToolbarButton("Font Editor", "custom-typography", void 0, "font-editor");
-      this.fontEditorButton.addEventListener("Click", () => {
-        this.onFontEditorButtonClicked();
-      }, this);
-      this.fontEditorButton.element.addEventListener("keydown", (event) => {
-        if (Platform3.KeyboardUtilities.isEnterOrSpaceKey(event)) {
-          event.consume(true);
-          this.onFontEditorButtonClicked();
-        }
-      }, false);
-      this.fontEditorToolbar.appendToolbarItem(this.fontEditorButton);
-      if (this.styleInternal.type === SDK7.CSSStyleDeclaration.Type.Inline) {
-        if (this.newStyleRuleToolbar) {
-          this.newStyleRuleToolbar.classList.add("shifted-toolbar");
-        }
-      } else {
-        this.fontEditorToolbar.classList.add("font-toolbar-hidden");
-      }
-    }
     this.selectorElement.addEventListener("click", this.handleSelectorClick.bind(this), false);
     this.selectorElement.setAttribute("jslog", `${VisualLogging4.cssRuleHeader("selector").track({ click: true, change: true })}`);
     this.element.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), false);
@@ -6192,28 +6049,6 @@ var StylePropertiesSection = class _StylePropertiesSection {
   }
   getSectionIdx() {
     return this.sectionIdx;
-  }
-  registerFontProperty(treeElement) {
-    if (this.fontEditorSectionManager) {
-      this.fontEditorSectionManager.registerFontProperty(treeElement);
-    }
-    if (this.fontEditorToolbar) {
-      this.fontEditorToolbar.classList.remove("font-toolbar-hidden");
-      if (this.newStyleRuleToolbar) {
-        this.newStyleRuleToolbar.classList.add("shifted-toolbar");
-      }
-    }
-  }
-  resetToolbars() {
-    if (this.stylesContainer.swatchPopoverHelper().isShowing() || this.styleInternal.type === SDK7.CSSStyleDeclaration.Type.Inline) {
-      return;
-    }
-    if (this.fontEditorToolbar) {
-      this.fontEditorToolbar.classList.add("font-toolbar-hidden");
-    }
-    if (this.newStyleRuleToolbar) {
-      this.newStyleRuleToolbar.classList.remove("shifted-toolbar");
-    }
   }
   static createRuleOriginNode(matchedStyles, linkifier, rule) {
     if (!rule) {
@@ -6396,11 +6231,6 @@ var StylePropertiesSection = class _StylePropertiesSection {
     const selection = this.element.getComponentSelection();
     if (!this.selectedSinceMouseDown && selection?.toString()) {
       this.selectedSinceMouseDown = true;
-    }
-  }
-  onFontEditorButtonClicked() {
-    if (this.fontEditorSectionManager && this.fontEditorButton) {
-      void this.fontEditorSectionManager.showPopover(this.fontEditorButton.element, this.stylesContainer);
     }
   }
   style() {
@@ -7774,6 +7604,7 @@ __export(StylesAiCodeCompletionProvider_exports, {
 import * as Common4 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as Root from "./../../core/root/root.js";
 import * as AiCodeCompletion from "./../../models/ai_code_completion/ai_code_completion.js";
 import * as TextUtils4 from "./../../models/text_utils/text_utils.js";
 import * as TextEditor from "./../../ui/components/text_editor/text_editor.js";
@@ -7786,9 +7617,8 @@ var StylesAiCodeCompletionProvider = class _StylesAiCodeCompletionProvider {
   setAiAutoCompletion;
   #boundOnUpdateAiCodeCompletionState = this.#updateAiCodeCompletionState.bind(this);
   constructor(aiCodeCompletionConfig) {
-    const devtoolsLocale = i18n11.DevToolsLocale.DevToolsLocale.instance();
-    if (!AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesEnabled(devtoolsLocale.locale)) {
-      throw new Error("AI code completion feature in Styles is not enabled.");
+    if (!AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesAvailable()) {
+      throw new Error("AI code completion feature in Styles is not available.");
     }
     this.#aiCodeCompletionConfig = aiCodeCompletionConfig;
     Host3.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnUpdateAiCodeCompletionState);
@@ -7805,7 +7635,14 @@ var StylesAiCodeCompletionProvider = class _StylesAiCodeCompletionProvider {
     if (this.#aiCodeCompletion) {
       return;
     }
-    this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#aiCodeCompletionConfig.panel, void 0, this.#aiCodeCompletionConfig.completionContext.stopSequences);
+    const stopSequences = ["}"];
+    if (this.#aiCodeCompletionConfig.completionContext.stopSequences) {
+      stopSequences.push(...this.#aiCodeCompletionConfig.completionContext.stopSequences);
+    }
+    this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({
+      aidaClient: this.#aidaClient,
+      serverSideLoggingEnabled: !Root.Runtime.hostConfig.aidaAvailability?.disallowLogging
+    }, this.#aiCodeCompletionConfig.panel, void 0, stopSequences);
     this.#aiCodeCompletionConfig.onFeatureEnabled();
   }
   #cleanupAiCodeCompletion() {
@@ -7818,7 +7655,8 @@ var StylesAiCodeCompletionProvider = class _StylesAiCodeCompletionProvider {
   async #updateAiCodeCompletionState() {
     const aidaAvailability = await Host3.AidaClient.AidaClient.checkAccessPreconditions();
     const isAvailable = aidaAvailability === "available";
-    const isEnabled = this.#aiCodeCompletionSetting.get();
+    const devtoolsLocale = i18n11.DevToolsLocale.DevToolsLocale.instance().locale;
+    const isEnabled = AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesEnabled(devtoolsLocale) && this.#aiCodeCompletionSetting.get();
     if (isAvailable && isEnabled) {
       this.#setupAiCodeCompletion();
     } else {
@@ -7882,7 +7720,7 @@ var StylesAiCodeCompletionProvider = class _StylesAiCodeCompletionProvider {
   }
   async #requestAidaSuggestion(prefix, suffix, cursorPositionAtRequest) {
     this.#aiCodeCompletionConfig?.onRequestTriggered();
-    Host3.userMetrics.actionTaken(Host3.UserMetrics.Action.AiCodeCompletionRequestTriggered);
+    Host3.userMetrics.actionTaken(Host3.UserMetrics.Action.AiCodeCompletionRequestTriggeredFromStyles);
     try {
       const completionResponse = await this.#aiCodeCompletion?.completeCode(
         prefix,
@@ -8172,10 +8010,6 @@ var stylesSidebarPane_css_default = `/**
   width: 100%;
 }
 
-.font-toolbar-hidden {
-  visibility: hidden;
-}
-
 .sidebar-separator {
   background-color: var(--sys-color-surface2);
   padding: 0 5px;
@@ -8216,10 +8050,6 @@ var stylesSidebarPane_css_default = `/**
     margin-bottom: 5px;
 
     --toolbar-height: 16px;
-  }
-
-  &.shifted-toolbar {
-    padding-right: 32px;
   }
 }
 
@@ -8297,7 +8127,7 @@ var WebCustomData_exports = {};
 __export(WebCustomData_exports, {
   WebCustomData: () => WebCustomData
 });
-import * as Root3 from "./../../core/root/root.js";
+import * as Root2 from "./../../core/root/root.js";
 var WebCustomData = class _WebCustomData {
   #data = /* @__PURE__ */ new Map();
   /** The test actually needs to wait for the result */
@@ -8319,7 +8149,7 @@ var WebCustomData = class _WebCustomData {
    * Throws if no valid remoteBase was found.
    */
   static create() {
-    const remoteBase = Root3.Runtime.getRemoteBase();
+    const remoteBase = Root2.Runtime.getRemoteBase();
     return new _WebCustomData(remoteBase?.base ?? "");
   }
   /**
@@ -8384,15 +8214,24 @@ var UIStrings6 = {
   /**
    * @description Tooltip text for the link in the sidebar pane layer separators that reveals the layer in the layer tree view.
    */
-  clickToRevealLayer: "Click to reveal layer in layer tree"
+  clickToRevealLayer: "Click to reveal layer in layer tree",
+  /**
+   * @description Text to announce that the AI suggestion was accepted.
+   * @example {color: blue;} PH1
+   */
+  aiSuggestionAccepted: "{PH1} Suggestion accepted.",
+  /**
+   * @description Title of the general at-rule section
+   */
+  atRuleSection: "Other @rules"
 };
 var str_6 = i18n12.i18n.registerUIStrings("panels/elements/StylesSidebarPane.ts", UIStrings6);
 var i18nString6 = i18n12.i18n.getLocalizedString.bind(void 0, str_6);
+var lockedString = i18n12.i18n.lockedString;
 var FILTER_IDLE_PERIOD = 500;
 var MIN_FOLDED_SECTIONS_COUNT = 5;
 var REGISTERED_PROPERTY_SECTION_NAME = "@property";
 var FUNCTION_SECTION_NAME = "@function";
-var AT_RULE_SECTION_NAME = "@font-*";
 var HIGHLIGHTABLE_PROPERTIES = [
   { mode: "padding", properties: ["padding"] },
   { mode: "border", properties: ["border"] },
@@ -8492,8 +8331,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
         this.#scheduleResetUpdateIfNotEditing();
       }
     });
-    const devtoolsLocale = i18n12.DevToolsLocale.DevToolsLocale.instance();
-    if (AiCodeCompletion3.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesEnabled(devtoolsLocale.locale)) {
+    if (AiCodeCompletion3.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesAvailable()) {
       this.aiCodeCompletionConfig = {
         completionContext: {},
         generationContext: {},
@@ -8551,7 +8389,10 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
     this.jumpToSection(functionName, FUNCTION_SECTION_NAME);
   }
   jumpToFontPaletteDefinition(paletteName) {
-    this.jumpToSection(`@font-palette-values ${paletteName}`, AT_RULE_SECTION_NAME);
+    this.jumpToSection(`@font-palette-values ${paletteName}`, i18nString6(UIStrings6.atRuleSection));
+  }
+  jumpToCounterStyleDefinition(counterStyleName) {
+    this.jumpToSection(`@counter-style ${counterStyleName}`, i18nString6(UIStrings6.atRuleSection));
   }
   forceUpdate() {
     this.needsForceUpdate = true;
@@ -8867,7 +8708,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
     this.#resetUpdateIfNotEditing();
   }
   onComputedStyleChanged() {
-    if (!Root4.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled) {
+    if (!Root3.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled) {
       return;
     }
     void this.computedStyleUpdateThrottler.schedule(async () => {
@@ -9080,7 +8921,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
       this.lastRevealedProperty = null;
     }
     this.swatchPopoverHelper().reposition();
-    Host4.userMetrics.panelLoaded("elements", "DevTools.Launch.Elements");
+    UI10.UIUserMetrics.UIUserMetrics.instance().panelLoaded("elements", "DevTools.Launch.Elements");
     this.dispatchEventToListeners("StylesUpdateCompleted", { hasMatchedStyles: false });
   }
   nodeStylesUpdatedForTest(_node, _rebuild) {
@@ -9607,7 +9448,7 @@ var SectionBlock = class _SectionBlock {
     const separatorElement = document.createElement("div");
     const block = new _SectionBlock(separatorElement, true, expandedByDefault);
     separatorElement.className = "sidebar-separator";
-    separatorElement.appendChild(document.createTextNode(AT_RULE_SECTION_NAME));
+    separatorElement.appendChild(document.createTextNode(i18nString6(UIStrings6.atRuleSection)));
     return block;
   }
   static createPositionTryBlock(positionTryName) {
@@ -10091,9 +9932,16 @@ var CSSPropertyPrompt = class extends UI10.TextPrompt.TextPrompt {
     if (!this.queryRange) {
       this.queryRange = new TextUtils5.TextRange.TextRange(0, 0, 0, this.text().length);
     }
+    const properties = this.#getAiSuggestedProperties(args.text);
+    if (properties.length === 0) {
+      this.treeElement.section().activeAiSuggestion = void 0;
+      this.activeAiSuggestionInfo = void 0;
+      return;
+    }
+    const styleText = properties.map((p) => `${p.name}: ${p.value};`).join(" ");
     this.treeElement.section().activeAiSuggestion = {
-      text: args.text,
-      properties: this.#getAiSuggestedProperties(args.text),
+      text: styleText,
+      properties,
       cursorPosition: args.from,
       clearCachedRequest: args.clearCachedRequest,
       cssProperty: this.treeElement.property
@@ -10103,6 +9951,7 @@ var CSSPropertyPrompt = class extends UI10.TextPrompt.TextPrompt {
     if (args.rpcGlobalId) {
       args.onImpression(args.rpcGlobalId, latency, args.sampleId);
     }
+    UI10.ARIAUtils.LiveAnnouncer.status(lockedString(styleText));
   }
   #getAiSuggestedProperties(suggestionText) {
     const cssParser = CodeMirror.css.cssLanguage.parser.configure({ top: "Styles" });
@@ -10169,7 +10018,7 @@ var CSSPropertyPrompt = class extends UI10.TextPrompt.TextPrompt {
       }
       if (suggestionForCurrentPrompt !== textAfterAccept) {
         this.queryRange = new TextUtils5.TextRange.TextRange(0, 0, 0, textAfterAccept.length);
-        this.applySuggestion({ text: suggestionForCurrentPrompt }, true);
+        this.applySuggestion({ text: suggestionForCurrentPrompt, disableAcceptSuggestionOnStopCharacters: true }, true);
       }
       return true;
     }
@@ -10180,9 +10029,13 @@ var CSSPropertyPrompt = class extends UI10.TextPrompt.TextPrompt {
     return true;
   }
   async commitAiSuggestion() {
+    const suggestionText = this.treeElement.section().activeAiSuggestion?.text;
     await this.treeElement.section().commitActiveAiSuggestion();
     if (this.activeAiSuggestionInfo) {
       this.aiCodeCompletionProvider?.onSuggestionAccepted(this.activeAiSuggestionInfo.citations, this.activeAiSuggestionInfo.rpcGlobalId, this.activeAiSuggestionInfo.sampleId);
+    }
+    if (suggestionText) {
+      UI10.ARIAUtils.LiveAnnouncer.status(i18nString6(UIStrings6.aiSuggestionAccepted, { PH1: suggestionText }));
     }
     this.setAiAutoCompletion(null);
   }
@@ -11744,7 +11597,7 @@ import * as Common8 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n22 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
-import * as Root5 from "./../../core/root/root.js";
+import * as Root4 from "./../../core/root/root.js";
 import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as AIAssistance from "./../../models/ai_assistance/ai_assistance.js";
 import * as Badges3 from "./../../models/badges/badges.js";
@@ -11754,7 +11607,6 @@ import * as CodeMirror2 from "./../../third_party/codemirror.next/codemirror.nex
 import * as CodeHighlighter3 from "./../../ui/components/code_highlighter/code_highlighter.js";
 import * as Highlighting2 from "./../../ui/components/highlighting/highlighting.js";
 import * as TextEditor3 from "./../../ui/components/text_editor/text_editor.js";
-import { Icon as Icon3 } from "./../../ui/kit/kit.js";
 import * as Components6 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
 import * as Lit6 from "./../../ui/lit/lit.js";
@@ -13040,12 +12892,9 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI14.TreeOutline.Tr
     this.expandAllButtonElement = null;
     this.performUpdate();
     if (this.nodeInternal.retained && !this.isClosingTag()) {
-      const icon = new Icon3();
-      icon.name = "small-status-dot";
-      icon.style.color = "var(--icon-error)";
-      icon.classList.add("extra-small");
-      icon.style.setProperty("vertical-align", "middle");
-      this.setLeadingIcons([icon]);
+      this.setLeadingIcons([
+        html8`<devtools-icon class="extra-small" name="small-status-dot" style="color:var(--icon-error); vertical-align:middle"></devtools-icon>`
+      ]);
       this.listItemNode.classList.add("detached-elements-detached-node");
       this.listItemNode.style.setProperty("display", "-webkit-box");
       this.listItemNode.setAttribute("title", "Retained Node");
@@ -13120,7 +12969,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI14.TreeOutline.Tr
       showGridAdorner: Boolean(this.#layout?.isGrid) && !this.isClosingTag(),
       showGridLanesAdorner: Boolean(this.#layout?.isGridLanes) && !this.isClosingTag(),
       showMediaAdorner: this.node().isMediaNode() && !this.isClosingTag(),
-      showPopoverAdorner: Boolean(Root5.Runtime.hostConfig.devToolsAllowPopoverForcing?.enabled) && Boolean(this.node().attributes().find((attr) => attr.name === "popover")) && !this.isClosingTag(),
+      showPopoverAdorner: Boolean(Root4.Runtime.hostConfig.devToolsAllowPopoverForcing?.enabled) && Boolean(this.node().attributes().find((attr) => attr.name === "popover")) && !this.isClosingTag(),
       showTopLayerAdorner: this.node().topLayerIndex() !== -1 && !this.isClosingTag(),
       gridAdornerActive: this.#gridAdornerActive,
       popoverAdornerActive: this.#popoverAdornerActive,
@@ -13981,7 +13830,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI14.TreeOutline.Tr
     return;
   }
   addNewAttribute() {
-    const container = document.createElement("span");
+    const container = document.createDocumentFragment();
     Lit6.render(renderAttribute({ name: " ", value: "" }, null, false, this.nodeInternal), container);
     const attr = container.firstElementChild;
     attr.style.marginLeft = "2px";
@@ -18599,7 +18448,7 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
     }
     const isComputedStyleWidgetVisible = this.#computedStyleWidget.isShowing();
     const isStylesTabVisible = Boolean(UI21.Context.Context.instance().flavor(StylesSidebarPane));
-    const shouldTrackComputedStyleUpdates = isComputedStyleWidgetVisible || isStylesTabVisible && Root6.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled;
+    const shouldTrackComputedStyleUpdates = isComputedStyleWidgetVisible || isStylesTabVisible && Root5.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled;
     void selectedNode.domModel()?.cssModel()?.trackComputedStyleUpdatesForNode(shouldTrackComputedStyleUpdates ? selectedNode.id : void 0);
   }, 100);
   async #updateComputedStyles() {
@@ -19731,7 +19580,7 @@ var InspectElementModeController = class _InspectElementModeController {
 };
 var ToggleSearchActionDelegate = class {
   handleAction(_context, actionId) {
-    if (Root7.Runtime.Runtime.queryParam("isSharedWorker")) {
+    if (Root6.Runtime.Runtime.queryParam("isSharedWorker")) {
       return false;
     }
     inspectElementModeController = InspectElementModeController.instance();
@@ -21345,6 +21194,8 @@ var StandaloneStylesContainer = class extends Common18.ObjectWrapper.eventMixin(
   jumpToSectionBlock(_section) {
   }
   jumpToFontPaletteDefinition(_paletteName) {
+  }
+  jumpToCounterStyleDefinition(_counterStyleName) {
   }
   jumpToDeclaration(_valueSource) {
   }

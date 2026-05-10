@@ -2599,7 +2599,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.42.0";
+var packageVersion = "24.43.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -3931,20 +3931,27 @@ var Locator = class extends EventEmitter {
           return "typeable-input";
         }
         if (el instanceof HTMLInputElement) {
-          if ((/* @__PURE__ */ new Set([
-            "textarea",
-            "text",
-            "url",
-            "tel",
-            "search",
-            "password",
-            "number",
-            "email"
-          ])).has(el.type)) {
-            return "typeable-input";
-          } else {
-            return "other-input";
+          switch (el.type) {
+            case "checkbox":
+            case "radio":
+              return "checkable-input";
+            case "text":
+            case "url":
+            case "tel":
+            case "search":
+            case "password":
+            case "number":
+            case "email":
+              return "typeable-input";
+            default:
+              return "other-input";
           }
+        }
+        switch (el.getAttribute("role")) {
+          case "checkbox":
+          case "radio":
+          case "switch":
+            return "checkable-input";
         }
         if (el.isContentEditable) {
           return "contenteditable";
@@ -3955,36 +3962,56 @@ var Locator = class extends EventEmitter {
           return from(handle.focus()).pipe(mergeMap(() => {
             return from(handle.evaluate((input, newValue) => {
               const element = input;
+              const valString = String(newValue);
               const currentValue = element.isContentEditable ? element.innerText : element.value;
-              if (currentValue === newValue) {
+              if (currentValue === valString) {
                 return;
               }
               if (element.isContentEditable) {
-                element.innerText = newValue;
+                element.innerText = valString;
               } else {
-                element.value = newValue;
+                element.value = valString;
               }
               element.dispatchEvent(new Event("input", { bubbles: true }));
               element.dispatchEvent(new Event("change", { bubbles: true }));
             }, value));
           }));
         };
+        const toggleIfNeeded = () => {
+          return from(handle.evaluate((toggleEl) => {
+            if (toggleEl.indeterminate || toggleEl.getAttribute("aria-checked") === "mixed") {
+              return "mixed";
+            }
+            return toggleEl.checked || toggleEl.getAttribute("aria-checked") === "true";
+          })).pipe(mergeMap((currentState) => {
+            if (currentState === "mixed" || currentState !== !!value) {
+              return from(handle.click());
+            }
+            return of(void 0);
+          }));
+        };
         switch (inputType) {
+          case "checkable-input":
+            return toggleIfNeeded();
           case "select":
             return from(handle.select(value).then(noop));
           case "contenteditable":
           case "typeable-input":
-            if (value.length < typingThreshold) {
+            if (typeof value === "string" && value.length < typingThreshold) {
               return from(handle.evaluate((input, newValue) => {
                 const element = input;
+                const valString = String(newValue);
                 const currentValue = element.isContentEditable ? element.innerText : input.value;
-                if (newValue.length <= currentValue.length || !newValue.startsWith(currentValue)) {
+                if (currentValue === valString) {
+                  return "";
+                }
+                if (!valString.startsWith(currentValue) || !currentValue) {
                   if (element.isContentEditable) {
                     element.innerText = "";
                   } else {
                     input.value = "";
                   }
-                  return newValue;
+                  return valString;
                 }
                 if (element.isContentEditable) {
                   element.innerText = "";
@@ -3993,7 +4020,7 @@ var Locator = class extends EventEmitter {
                   input.value = "";
                   input.value = currentValue;
                 }
-                return newValue.substring(currentValue.length);
+                return valString.substring(currentValue.length);
               }, value)).pipe(mergeMap((textToType) => {
                 if (!textToType) {
                   return of(void 0);
@@ -4135,7 +4162,8 @@ var Locator = class extends EventEmitter {
    * Fills out the input identified by the locator using the provided value. The
    * type of the input is determined at runtime and the appropriate fill-out
    * method is chosen based on the type. `contenteditable`, select, textarea and
-   * input elements are supported.
+   * input elements are supported. For checkboxes, radio buttons and switches
+   * specify a boolean value.
    */
   fill(value, options) {
     return firstValueFrom(this.#fill(value, options));
@@ -16837,6 +16865,10 @@ var CdpPage = class _CdpPage extends Page {
   async openDevTools() {
     const pageTargetId = this.target()._targetId;
     const browser = this.browser();
+    const devtoolsTargetId = await browser._hasDevToolsTarget(this.target()._targetId);
+    if (devtoolsTargetId) {
+      return await browser._getDevToolsTargetPage(devtoolsTargetId);
+    }
     const devtoolsPage = await browser._createDevToolsPage(pageTargetId);
     return devtoolsPage;
   }
@@ -18819,14 +18851,19 @@ var TargetManager = class extends EventEmitter {
   // done. It indicates whethere we are running the initial auto-attach step or
   // if we are handling targets after that.
   #initialAttachDone = false;
-  #blockList;
-  constructor(connection, targetFactory, targetFilterCallback, waitForInitiallyDiscoveredTargets = true, networkConditions) {
+  #blocklist = [];
+  #allowlist = [];
+  constructor(connection, targetFactory, targetFilterCallback, waitForInitiallyDiscoveredTargets = true, blocklist, allowlist) {
     super();
+    if (blocklist && allowlist) {
+      throw new Error("Cannot specify both blockList and allowList");
+    }
     this.#connection = connection;
     this.#targetFilterCallback = targetFilterCallback;
     this.#targetFactory = targetFactory;
     this.#waitForInitiallyDiscoveredTargets = waitForInitiallyDiscoveredTargets;
-    this.#blockList = networkConditions;
+    this.#blocklist = this.#mapPatterns(blocklist);
+    this.#allowlist = this.#mapPatterns(allowlist);
     this.#connection.on("Target.targetCreated", this.#onTargetCreated);
     this.#connection.on("Target.targetDestroyed", this.#onTargetDestroyed);
     this.#connection.on("Target.targetInfoChanged", this.#onTargetInfoChanged);
@@ -19056,39 +19093,70 @@ var TargetManager = class extends EventEmitter {
    * Helper to validate URL against blocklist patterns
    */
   #isUrlAllowed = (url) => {
-    if (!this.#blockList) {
+    if (this.#blocklist.length === 0 && this.#allowlist.length === 0) {
       return true;
     }
     if (!url || url === "about:blank") {
       return true;
     }
-    for (const rule of this.#blockList) {
-      try {
-        const pattern = new Y(rule);
-        if (pattern.test(url)) {
-          return false;
-        }
-      } catch {
-        debugError(`Invalid URL pattern: ${rule}`);
+    for (const item of this.#blocklist) {
+      if (item.pattern.test(url)) {
+        return false;
       }
+    }
+    if (this.#allowlist.length > 0) {
+      for (const item of this.#allowlist) {
+        if (item.pattern.test(url)) {
+          return true;
+        }
+      }
+      return false;
     }
     return true;
   };
+  #mapPatterns(rules) {
+    const result = [];
+    for (const rule of rules ?? []) {
+      result.push({ pattern: new Y(rule), rule });
+    }
+    return result;
+  }
   #maybeSetupNetworkConditions = async (session) => {
-    if (!this.#blockList?.length) {
+    if (this.#blocklist.length === 0 && this.#allowlist.length === 0) {
       return;
     }
-    const matchedNetworkConditions = this.#blockList.map((pattern) => {
-      return {
-        urlPattern: pattern,
+    const matchedNetworkConditions = [];
+    for (const item of this.#blocklist) {
+      matchedNetworkConditions.push({
+        urlPattern: item.rule,
+        offline: true,
         latency: 0,
         downloadThroughput: -1,
         uploadThroughput: -1
-      };
-    });
+      });
+    }
+    if (this.#allowlist.length > 0) {
+      for (const item of this.#allowlist) {
+        matchedNetworkConditions.push({
+          urlPattern: item.rule,
+          offline: false,
+          latency: 0,
+          downloadThroughput: -1,
+          uploadThroughput: -1
+        });
+      }
+      matchedNetworkConditions.push({
+        urlPattern: "",
+        offline: true,
+        latency: 0,
+        downloadThroughput: -1,
+        uploadThroughput: -1
+      });
+    }
     await session.send("Network.emulateNetworkConditionsByRule", {
-      matchedNetworkConditions,
-      offline: true
+      // @ts-expect-error offline cannot be undefined before M149.
+      offline: this.#blocklist.length > 0 ? true : void 0,
+      matchedNetworkConditions
     });
   };
 };
@@ -19099,8 +19167,15 @@ function isDevToolsPageTarget(url) {
 }
 var CdpBrowser = class _CdpBrowser extends Browser {
   protocol = "cdp";
-  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blockList) {
-    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled, issuesEnabled, handleDevToolsAsPage, blockList);
+  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blocklist, allowlist) {
+    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled, issuesEnabled, handleDevToolsAsPage, blocklist, allowlist);
+    if (allowlist) {
+      const version = await browser.#getVersion();
+      const majorVersion = parseInt(version.product.match(/\d+/)?.[0] ?? "0", 10);
+      if (majorVersion < 149) {
+        throw new Error("The allowlist option require Chrome 149 or greater.");
+      }
+    }
     if (acceptInsecureCerts) {
       await connection.send("Security.setIgnoreCertificateErrors", {
         ignore: true
@@ -19122,7 +19197,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   #targetManager;
   #handleDevToolsAsPage = false;
   #extensions = /* @__PURE__ */ new Map();
-  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, networkConditions) {
+  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blocklist, allowlist) {
     super();
     this.#networkEnabled = networkEnabled;
     this.#issuesEnabled = issuesEnabled;
@@ -19136,7 +19211,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     });
     this.#handleDevToolsAsPage = handleDevToolsAsPage;
     this.#setIsPageTargetCallback(isPageTargetCallback);
-    this.#targetManager = new TargetManager(connection, this.#createTarget, this.#targetFilterCallback, waitForInitiallyDiscoveredTargets, networkConditions);
+    this.#targetManager = new TargetManager(connection, this.#createTarget, this.#targetFilterCallback, waitForInitiallyDiscoveredTargets, blocklist, allowlist);
     this.#defaultContext = new CdpBrowserContext(this.#connection, this);
     for (const contextId of contextIds) {
       this.#contexts.set(contextId, new CdpBrowserContext(this.#connection, this, contextId));
@@ -19290,19 +19365,22 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     const openDevToolsResponse = await this.#connection.send("Target.openDevTools", {
       targetId: pageTargetId
     });
+    return await this._getDevToolsTargetPage(openDevToolsResponse.targetId);
+  }
+  async _getDevToolsTargetPage(devtoolsTargetId) {
     const target = await this.waitForTarget((t) => {
-      return t._targetId === openDevToolsResponse.targetId;
+      return t._targetId === devtoolsTargetId;
     });
     if (!target) {
-      throw new Error(`Missing target for DevTools page (id = ${pageTargetId})`);
+      throw new Error(`Missing target for DevTools page (id = ${devtoolsTargetId})`);
     }
     const initialized = await target._initializedDeferred.valueOrThrow() === InitializationStatus.SUCCESS;
     if (!initialized) {
-      throw new Error(`Failed to create target for DevTools page (id = ${pageTargetId})`);
+      throw new Error(`Failed to create target for DevTools page (id = ${devtoolsTargetId})`);
     }
     const page = await target.page();
     if (!page) {
-      throw new Error(`Failed to create a DevTools Page for target (id = ${pageTargetId})`);
+      throw new Error(`Failed to create a DevTools Page for target (id = ${devtoolsTargetId})`);
     }
     return page;
   }

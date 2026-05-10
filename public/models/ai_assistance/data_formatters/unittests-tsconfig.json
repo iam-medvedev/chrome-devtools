@@ -80,6 +80,9 @@
     },
     {
       "path": "../../trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../workspace/bundle-tsconfig.json"
     }
   ]
 }

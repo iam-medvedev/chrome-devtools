@@ -57,6 +57,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
@@ -64,6 +67,9 @@
     },
     {
       "path": "../trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "web-vitals-injected/spec/bundle-tsconfig.json"
     }
   ]
 }

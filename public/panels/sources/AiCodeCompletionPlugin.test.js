@@ -38,7 +38,7 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
             },
         });
         const uiSourceCode = createUiSourceCodeStub();
-        assert.throws(() => new AiCodeCompletionPlugin.AiCodeCompletionPlugin(uiSourceCode), 'AI code completion feature is not enabled.');
+        assert.throws(() => new AiCodeCompletionPlugin.AiCodeCompletionPlugin(uiSourceCode), 'AI code completion feature is not available.');
     });
     describe('provider callbacks', () => {
         let clock;

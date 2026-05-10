@@ -70,6 +70,9 @@
       "path": "../../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../../../generated/protocol-tsconfig.json"
     },
     {
@@ -77,6 +80,9 @@
     },
     {
       "path": "../../../ui/components/helpers/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/components/input/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/components/legacy_wrapper/bundle-tsconfig.json"

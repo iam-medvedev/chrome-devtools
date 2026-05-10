@@ -143,6 +143,13 @@ const WINDOW_LOCAL_STORAGE = {
     },
     clear: () => window.localStorage.clear(),
 };
+let isCustomDevtoolsFrontendInternal;
+function isCustomDevtoolsFrontend() {
+    if (typeof isCustomDevtoolsFrontendInternal === 'undefined') {
+        isCustomDevtoolsFrontendInternal = window.location.toString().startsWith('devtools://devtools/custom/');
+    }
+    return isCustomDevtoolsFrontendInternal;
+}
 export class MainImpl {
     #readyForTestPromise = Promise.withResolvers();
     #veStartPromise;
@@ -257,7 +264,7 @@ export class MainImpl {
     createSettingsStorage(prefs) {
         this.#initializeExperiments();
         let storagePrefix = '';
-        if (Host.Platform.isCustomDevtoolsFrontend()) {
+        if (isCustomDevtoolsFrontend()) {
             storagePrefix = '__custom__';
         }
         else if (!Root.Runtime.Runtime.queryParam('can_dock') && Boolean(Root.Runtime.Runtime.queryParam('debugFrontend')) &&
@@ -305,7 +312,6 @@ export class MainImpl {
     }
     #initializeExperiments() {
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS, 'Capture node creation stacks');
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE, 'Live heap profile');
         const enableProtocolMonitor = (Root.Runtime.hostConfig.devToolsProtocolMonitor?.enabled ?? false) ||
             Boolean(Root.Runtime.Runtime.queryParam('isChromeForTesting'));
         const protocolMonitorExperiment = Root.Runtime.experiments.registerHostExperiment({
@@ -323,8 +329,6 @@ export class MainImpl {
         // Debugging
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, 'Instrumentation breakpoints');
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, 'Use scope information from source maps');
-        // Font Editor
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.FONT_EDITOR, 'New font editor in the Styles tab', 'https://developer.chrome.com/blog/new-in-devtools-89/#font');
         Root.Runtime.experiments.registerHostExperiment({
             name: Root.ExperimentNames.ExperimentName.DURABLE_MESSAGES,
             title: 'Durable Messages',
@@ -345,12 +349,6 @@ export class MainImpl {
         const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
         if (enabledExperiments) {
             Root.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(';'));
-        }
-        if (Host.InspectorFrontendHost.isUnderTest()) {
-            const testParam = Root.Runtime.Runtime.queryParam('test');
-            if (testParam?.includes('live-line-level-heap-profile.js')) {
-                Root.Runtime.experiments.enableForTest(Root.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE);
-            }
         }
         for (const experiment of Root.Runtime.experiments.allConfigurableExperiments()) {
             if (experiment.isEnabled()) {
@@ -474,7 +472,7 @@ export class MainImpl {
             await PanelCommon.GeminiRebrandPromoDialog.maybeShow();
         }
         _a.timeEnd('Main._createAppUI');
-        const appProvider = Common.AppProvider.getRegisteredAppProviders()[0];
+        const appProvider = UI.AppProvider.getRegisteredAppProviders()[0];
         if (!appProvider) {
             throw new Error('Unable to boot DevTools, as the appprovider is missing');
         }
@@ -559,27 +557,10 @@ export class MainImpl {
     async #lateInitialization() {
         _a.time('Main._lateInitialization');
         PanelCommon.ExtensionServer.ExtensionServer.instance().initializeExtensions();
-        const promises = Common.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
+        void Promise.all(Common.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
             const runnable = await lateInitializationLoader();
             return await runnable.run();
-        });
-        if (Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE)) {
-            const PerfUI = await import('../../ui/legacy/components/perf_ui/perf_ui.js');
-            const setting = 'memory-live-heap-profile';
-            if (Common.Settings.Settings.instance().moduleSetting(setting).get()) {
-                promises.push(PerfUI.LiveHeapProfile.LiveHeapProfile.instance().run());
-            }
-            else {
-                const changeListener = async (event) => {
-                    if (!event.data) {
-                        return;
-                    }
-                    Common.Settings.Settings.instance().moduleSetting(setting).removeChangeListener(changeListener);
-                    void PerfUI.LiveHeapProfile.LiveHeapProfile.instance().run();
-                };
-                Common.Settings.Settings.instance().moduleSetting(setting).addChangeListener(changeListener);
-            }
-        }
+        }));
         _a.timeEnd('Main._lateInitialization');
     }
     readyForTest() {

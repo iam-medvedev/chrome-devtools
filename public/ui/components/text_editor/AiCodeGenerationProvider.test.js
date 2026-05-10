@@ -74,7 +74,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
                 enabled: false,
             },
         });
-        assert.throws(() => createEditorWithProvider(''), 'AI code generation feature is not enabled.');
+        assert.throws(() => createEditorWithProvider(''), 'AI code generation feature is not available.');
     });
     describe('Teaser decoration', () => {
         it('shows teaser when cursor is in empty line', async () => {

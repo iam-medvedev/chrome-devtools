@@ -56,6 +56,9 @@
       "path": "./bundle-tsconfig.json"
     },
     {
+      "path": "../../bundle-tsconfig.json"
+    },
+    {
       "path": "../../../../core/common/bundle-tsconfig.json"
     },
     {
@@ -66,6 +69,9 @@
     },
     {
       "path": "../../../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../../../lit/bundle-tsconfig.json"
     }
   ]
 }

@@ -1898,7 +1898,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.nameElement.textContent = 'col';
             stylePropertyTreeElement.renderActiveAiSuggestion({ name: 'color', value: 'red' });
             sinon.assert.calledOnce(applySuggestionSpy);
-            assert.deepEqual(applySuggestionSpy.firstCall.args, [{ text: 'color' }, true]);
+            assert.deepEqual(applySuggestionSpy.firstCall.args, [{ text: 'color', disableAcceptSuggestionOnStopCharacters: true }, true]);
             const valueGhostElement = stylePropertyTreeElement.listItemElement.querySelector('.ghost-value-prediction');
             assert.exists(valueGhostElement);
             assert.strictEqual(valueGhostElement.textContent, 'red');
@@ -1912,7 +1912,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.valueElement.textContent = 'p';
             stylePropertyTreeElement.renderActiveAiSuggestion({ name: 'color', value: 'purple' });
             sinon.assert.calledOnce(applySuggestionSpy);
-            assert.deepEqual(applySuggestionSpy.firstCall.args, [{ text: 'purple' }, true]);
+            assert.deepEqual(applySuggestionSpy.firstCall.args, [{ text: 'purple', disableAcceptSuggestionOnStopCharacters: true }, true]);
         });
         it('clearActiveAiSuggestion removes ghost text', async () => {
             const stylePropertyTreeElement = getTreeElement('', '');
@@ -1925,6 +1925,29 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.strictEqual(valueGhostElement.textContent, 'red');
             stylePropertyTreeElement.clearActiveAiSuggestion();
             assert.isNull(stylePropertyTreeElement.listItemElement.querySelector('.ghost-value-prediction'));
+        });
+        it('renderActiveAiSuggestion does not show ghost text when suggestion value matches existing value', async () => {
+            const stylePropertyTreeElement = getTreeElement('color', 'red');
+            stylePropertyTreeElement.treeOutline = new LegacyUI.TreeOutline.TreeOutline();
+            stylePropertyTreeElement.updateTitle();
+            stylePropertyTreeElement.startEditingName();
+            stylePropertyTreeElement.renderActiveAiSuggestion({ name: 'background-color', value: 'red' });
+            const valueGhostElement = stylePropertyTreeElement.listItemElement.querySelector('.ghost-value-prediction');
+            assert.isNull(valueGhostElement);
+            assert.isFalse(stylePropertyTreeElement.listItemElement.classList.contains('not-parsed-ok'));
+            assert.isFalse(stylePropertyTreeElement.listItemElement.classList.contains('invalid-property-value'));
+        });
+        it('clearActiveAiSuggestion restores original validation classes correctly', async () => {
+            const stylePropertyTreeElement = getTreeElement('color', 'red');
+            stylePropertyTreeElement.treeOutline = new LegacyUI.TreeOutline.TreeOutline();
+            stylePropertyTreeElement.updateTitle();
+            stylePropertyTreeElement.startEditingName();
+            stylePropertyTreeElement.renderActiveAiSuggestion({ name: 'background-color', value: 'blue' });
+            assert.isTrue(stylePropertyTreeElement.listItemElement.classList.contains('not-parsed-ok'));
+            assert.isTrue(stylePropertyTreeElement.listItemElement.classList.contains('invalid-property-value'));
+            stylePropertyTreeElement.clearActiveAiSuggestion();
+            assert.isFalse(stylePropertyTreeElement.listItemElement.classList.contains('not-parsed-ok'));
+            assert.isFalse(stylePropertyTreeElement.listItemElement.classList.contains('invalid-property-value'));
         });
         it('commitAiSuggestion calls applyStyleText and ends editing', async () => {
             const stylePropertyTreeElement = getTreeElement('color', '');

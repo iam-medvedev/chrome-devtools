@@ -27,9 +27,11 @@ __export(AidaClient_exports, {
   getClientFeatureName: () => getClientFeatureName
 });
 import * as Common4 from "./../common/common.js";
+import * as Platform4 from "./../platform/platform.js";
 import * as Root3 from "./../root/root.js";
 
 // gen/front_end/core/host/AidaClientTypes.js
+import * as Platform from "./../platform/platform.js";
 var Role;
 (function(Role2) {
   Role2[Role2["ROLE_UNSPECIFIED"] = 0] = "ROLE_UNSPECIFIED";
@@ -56,6 +58,7 @@ var ClientFeature;
   ClientFeature2[ClientFeature2["CHROME_CONTEXT_SELECTION_AGENT"] = 25] = "CHROME_CONTEXT_SELECTION_AGENT";
   ClientFeature2[ClientFeature2["CHROME_ACCESSIBILITY_AGENT"] = 26] = "CHROME_ACCESSIBILITY_AGENT";
   ClientFeature2[ClientFeature2["CHROME_CONVERSATION_SUMMARY_AGENT"] = 27] = "CHROME_CONVERSATION_SUMMARY_AGENT";
+  ClientFeature2[ClientFeature2["CHROME_STORAGE_AGENT"] = 28] = "CHROME_STORAGE_AGENT";
 })(ClientFeature || (ClientFeature = {}));
 var UserTier;
 (function(UserTier2) {
@@ -106,7 +109,7 @@ var CitationSourceType;
   CitationSourceType2["INDIRECT"] = "INDIRECT";
 })(CitationSourceType || (CitationSourceType = {}));
 function debugLog(...log) {
-  if (!Boolean(localStorage.getItem("debugAiServicesEnabled"))) {
+  if (!Boolean(Platform.HostRuntime.HOST_RUNTIME.getLocalStorage()?.getItem("debugAiServicesEnabled"))) {
     return;
   }
   console.log(...log);
@@ -671,7 +674,7 @@ function gcaChunkResponseToAidaChunkResponse(response) {
     }
     const chunks = parts.map((part) => {
       const aidaChunkResponse = { metadata };
-      if (part.text) {
+      if (part.text !== void 0) {
         aidaChunkResponse.textChunk = {
           text: extractTextFromGcaParts(parts)
         };
@@ -707,6 +710,7 @@ __export(DispatchHttpRequestClient_exports, {
   ErrorType: () => ErrorType,
   makeHttpRequest: () => makeHttpRequest
 });
+import * as Platform3 from "./../platform/platform.js";
 
 // gen/front_end/core/host/InspectorFrontendHost.js
 var InspectorFrontendHost_exports = {};
@@ -790,7 +794,7 @@ var EventDescriptors = [
 // gen/front_end/core/host/InspectorFrontendHostStub.js
 import * as Common2 from "./../common/common.js";
 import * as i18n3 from "./../i18n/i18n.js";
-import * as Platform from "./../platform/platform.js";
+import * as Platform2 from "./../platform/platform.js";
 
 // gen/front_end/core/host/ResourceLoader.js
 var ResourceLoader_exports = {};
@@ -1133,8 +1137,8 @@ var InspectorFrontendHostStub = class {
     let fileName = "";
     if (url) {
       try {
-        const trimmed = Platform.StringUtilities.trimURL(url);
-        fileName = Platform.StringUtilities.removeURLFragment(trimmed);
+        const trimmed = Platform2.StringUtilities.trimURL(url);
+        fileName = Platform2.StringUtilities.removeURLFragment(trimmed);
       } catch {
         fileName = url;
       }
@@ -1515,7 +1519,7 @@ async function makeHttpRequest(request, options) {
   throw new DispatchHttpRequestError(ErrorType.HTTP_RESPONSE_UNAVAILABLE, response);
 }
 function isDebugMode() {
-  return Boolean(localStorage.getItem("debugDispatchHttpRequestEnabled"));
+  return Boolean(Platform3.HostRuntime.HOST_RUNTIME.getLocalStorage()?.getItem("debugDispatchHttpRequestEnabled"));
 }
 function debugLog2(...log) {
   if (!isDebugMode()) {
@@ -1524,10 +1528,11 @@ function debugLog2(...log) {
   console.log("debugLog", ...log);
 }
 function setDebugDispatchHttpRequestEnabled(enabled) {
+  const localStorage = Platform3.HostRuntime.HOST_RUNTIME.getLocalStorage();
   if (enabled) {
-    localStorage.setItem("debugDispatchHttpRequestEnabled", "true");
+    localStorage?.setItem("debugDispatchHttpRequestEnabled", "true");
   } else {
-    localStorage.removeItem("debugDispatchHttpRequestEnabled");
+    localStorage?.removeItem("debugDispatchHttpRequestEnabled");
   }
 }
 globalThis.setDebugDispatchHttpRequestEnabled = setDebugDispatchHttpRequestEnabled;
@@ -1718,7 +1723,7 @@ var AidaClient = class {
     return request;
   }
   static async checkAccessPreconditions() {
-    if (!navigator.onLine) {
+    if (!Platform4.HostRuntime.HOST_RUNTIME.getOnLine()) {
       return "no-internet";
     }
     const syncInfo = await new Promise((resolve) => InspectorFrontendHostInstance.getSyncInformation((syncInfo2) => resolve(syncInfo2)));
@@ -1836,7 +1841,7 @@ var AidaClient = class {
         } else if ("error" in result) {
           throw new Error(`Server responded: ${JSON.stringify(result)}`);
         } else {
-          throw new Error("Unknown chunk result");
+          throw new Error(`Unknown chunk result ${JSON.stringify(result)}`);
         }
       }
       if (textUpdated) {
@@ -1997,7 +2002,7 @@ var HostConfigTracker = class _HostConfigTracker extends Common4.ObjectWrapper.O
     const isFirst = !this.hasEventListeners(eventType);
     const eventDescriptor = super.addEventListener(eventType, listener);
     if (isFirst) {
-      window.clearTimeout(this.#pollTimer);
+      clearTimeout(this.#pollTimer);
       void this.pollAidaAvailability();
     }
     return eventDescriptor;
@@ -2005,11 +2010,11 @@ var HostConfigTracker = class _HostConfigTracker extends Common4.ObjectWrapper.O
   removeEventListener(eventType, listener) {
     super.removeEventListener(eventType, listener);
     if (!this.hasEventListeners(eventType)) {
-      window.clearTimeout(this.#pollTimer);
+      clearTimeout(this.#pollTimer);
     }
   }
   async pollAidaAvailability() {
-    this.#pollTimer = window.setTimeout(() => this.pollAidaAvailability(), 2e3);
+    this.#pollTimer = setTimeout(() => this.pollAidaAvailability(), 2e3);
     const currentAidaAvailability = await AidaClient.checkAccessPreconditions();
     if (currentAidaAvailability !== this.#aidaAvailability) {
       this.#aidaAvailability = currentAidaAvailability;
@@ -2225,7 +2230,6 @@ function isStarterBadgeEnabled() {
 var Platform_exports = {};
 __export(Platform_exports, {
   fontFamily: () => fontFamily,
-  isCustomDevtoolsFrontend: () => isCustomDevtoolsFrontend,
   isMac: () => isMac,
   isWin: () => isWin,
   platform: () => platform,
@@ -2256,13 +2260,6 @@ function setPlatformForTests(platform2) {
   _platform = platform2;
   _isMac = void 0;
   _isWin = void 0;
-}
-var _isCustomDevtoolsFrontend;
-function isCustomDevtoolsFrontend() {
-  if (typeof _isCustomDevtoolsFrontend === "undefined") {
-    _isCustomDevtoolsFrontend = window.location.toString().startsWith("devtools://devtools/custom/");
-  }
-  return _isCustomDevtoolsFrontend;
 }
 var _fontFamily;
 function fontFamily() {
@@ -2300,25 +2297,6 @@ __export(UserMetrics_exports, {
   UserMetrics: () => UserMetrics
 });
 var UserMetrics = class {
-  #panelChangedSinceLaunch;
-  #firedLaunchHistogram;
-  #launchPanelName;
-  constructor() {
-    this.#panelChangedSinceLaunch = false;
-    this.#firedLaunchHistogram = false;
-    this.#launchPanelName = "";
-  }
-  panelShown(panelName, isLaunching) {
-    const code = PanelCodes[panelName] || 0;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShown", code, PanelCodes.MAX_VALUE);
-    InspectorFrontendHostInstance.recordUserMetricsAction("DevTools_PanelShown_" + panelName);
-    if (!isLaunching) {
-      this.#panelChangedSinceLaunch = true;
-    }
-  }
-  settingsPanelShown(settingsViewId) {
-    this.panelShown("settings-" + settingsViewId);
-  }
   sourcesPanelFileDebugged(mediaType) {
     const code = mediaType && MediaTypes[mediaType] || MediaTypes.Unknown;
     InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SourcesPanelFileDebugged", code, MediaTypes.MAX_VALUE);
@@ -2333,27 +2311,6 @@ var UserMetrics = class {
   }
   actionTaken(action) {
     InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ActionTaken", action, Action.MAX_VALUE);
-  }
-  panelLoaded(panelName, histogramName) {
-    if (this.#firedLaunchHistogram || panelName !== this.#launchPanelName) {
-      return;
-    }
-    this.#firedLaunchHistogram = true;
-    requestAnimationFrame(() => {
-      window.setTimeout(() => {
-        performance.mark(histogramName);
-        if (this.#panelChangedSinceLaunch) {
-          return;
-        }
-        InspectorFrontendHostInstance.recordPerformanceHistogram(histogramName, performance.now());
-      }, 0);
-    });
-  }
-  setLaunchPanel(panelName) {
-    this.#launchPanelName = panelName;
-  }
-  performanceTraceLoad(measure) {
-    InspectorFrontendHostInstance.recordPerformanceHistogram("DevTools.TraceLoad", measure.duration);
   }
   keybindSetSettingChanged(keybindSet) {
     const value = KeybindSetSettings[keybindSet] || 0;
@@ -2507,7 +2464,7 @@ var UserMetrics = class {
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
       "DevTools.LighthouseCategoryUsed",
       type,
-      6
+      7
       /* LighthouseCategoryUsed.MAX_VALUE */
     );
   }
@@ -2781,7 +2738,14 @@ var Action;
   Action2[Action2["InsightTeaserModelDownloadCompleted"] = 198] = "InsightTeaserModelDownloadCompleted";
   Action2[Action2["AiCodeGenerationError"] = 199] = "AiCodeGenerationError";
   Action2[Action2["AiCodeGenerationRequestTriggered"] = 200] = "AiCodeGenerationRequestTriggered";
-  Action2[Action2["MAX_VALUE"] = 201] = "MAX_VALUE";
+  Action2[Action2["AiCodeCompletionRequestTriggeredFromConsole"] = 201] = "AiCodeCompletionRequestTriggeredFromConsole";
+  Action2[Action2["AiCodeCompletionRequestTriggeredFromSources"] = 202] = "AiCodeCompletionRequestTriggeredFromSources";
+  Action2[Action2["AiCodeCompletionRequestTriggeredFromStyles"] = 203] = "AiCodeCompletionRequestTriggeredFromStyles";
+  Action2[Action2["AiCodeGenerationRequestTriggeredFromConsole"] = 204] = "AiCodeGenerationRequestTriggeredFromConsole";
+  Action2[Action2["AiCodeGenerationRequestTriggeredFromSources"] = 205] = "AiCodeGenerationRequestTriggeredFromSources";
+  Action2[Action2["AiCodeCompletionFreCompletedFromConsole"] = 206] = "AiCodeCompletionFreCompletedFromConsole";
+  Action2[Action2["AiCodeCompletionFreCompletedFromSources"] = 207] = "AiCodeCompletionFreCompletedFromSources";
+  Action2[Action2["MAX_VALUE"] = 208] = "MAX_VALUE";
 })(Action || (Action = {}));
 var PanelCodes;
 (function(PanelCodes2) {
@@ -2809,7 +2773,6 @@ var PanelCodes;
   PanelCodes2[PanelCodes2["changes.changes"] = 23] = "changes.changes";
   PanelCodes2[PanelCodes2["performance.monitor"] = 24] = "performance.monitor";
   PanelCodes2[PanelCodes2["release-note"] = 25] = "release-note";
-  PanelCodes2[PanelCodes2["live-heap-profile"] = 26] = "live-heap-profile";
   PanelCodes2[PanelCodes2["sources.quick"] = 27] = "sources.quick";
   PanelCodes2[PanelCodes2["network.blocked-urls"] = 28] = "network.blocked-urls";
   PanelCodes2[PanelCodes2["settings-preferences"] = 29] = "settings-preferences";
@@ -2953,8 +2916,6 @@ var KeyboardShortcutAction;
   KeyboardShortcutAction2[KeyboardShortcutAction2["inspector-main.focus-debuggee"] = 47] = "inspector-main.focus-debuggee";
   KeyboardShortcutAction2[KeyboardShortcutAction2["inspector-main.hard-reload"] = 48] = "inspector-main.hard-reload";
   KeyboardShortcutAction2[KeyboardShortcutAction2["inspector-main.reload"] = 49] = "inspector-main.reload";
-  KeyboardShortcutAction2[KeyboardShortcutAction2["live-heap-profile.start-with-reload"] = 50] = "live-heap-profile.start-with-reload";
-  KeyboardShortcutAction2[KeyboardShortcutAction2["live-heap-profile.toggle-recording"] = 51] = "live-heap-profile.toggle-recording";
   KeyboardShortcutAction2[KeyboardShortcutAction2["main.debug-reload"] = 52] = "main.debug-reload";
   KeyboardShortcutAction2[KeyboardShortcutAction2["main.next-tab"] = 53] = "main.next-tab";
   KeyboardShortcutAction2[KeyboardShortcutAction2["main.previous-tab"] = 54] = "main.previous-tab";
@@ -3026,10 +2987,8 @@ var KeyboardShortcutAction;
 var DevtoolsExperiments;
 (function(DevtoolsExperiments2) {
   DevtoolsExperiments2[DevtoolsExperiments2["capture-node-creation-stacks"] = 1] = "capture-node-creation-stacks";
-  DevtoolsExperiments2[DevtoolsExperiments2["live-heap-profile"] = 11] = "live-heap-profile";
   DevtoolsExperiments2[DevtoolsExperiments2["protocol-monitor"] = 13] = "protocol-monitor";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-invalidation-tracking"] = 26] = "timeline-invalidation-tracking";
-  DevtoolsExperiments2[DevtoolsExperiments2["font-editor"] = 41] = "font-editor";
   DevtoolsExperiments2[DevtoolsExperiments2["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
   DevtoolsExperiments2[DevtoolsExperiments2["use-source-map-scopes"] = 76] = "use-source-map-scopes";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";

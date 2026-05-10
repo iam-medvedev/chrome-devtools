@@ -297,8 +297,10 @@ export declare const enum LinkableNameProperties {
     ANIMATION = "animation",
     ANIMATION_NAME = "animation-name",
     FONT_PALETTE = "font-palette",
-    POSITION_TRY_FALLBACKS = "position-try-fallbacks",
-    POSITION_TRY = "position-try"
+    LIST_STYLE = "list-style",
+    LIST_STYLE_TYPE = "list-style-type",
+    POSITION_TRY = "position-try",
+    POSITION_TRY_FALLBACKS = "position-try-fallbacks"
 }
 declare const enum AnimationLonghandPart {
     DIRECTION = "direction",
@@ -377,22 +379,6 @@ declare const ShadowMatcher_base: {
 export declare class ShadowMatcher extends ShadowMatcher_base {
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): ShadowMatch | null;
-}
-export declare class FontMatch implements Match {
-    readonly text: string;
-    readonly node: CodeMirror.SyntaxNode;
-    constructor(text: string, node: CodeMirror.SyntaxNode);
-}
-declare const FontMatcher_base: {
-    new (): {
-        matchType: Platform.Constructor.ConstructorOrAbstract<FontMatch>;
-        accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): FontMatch | null;
-    };
-};
-export declare class FontMatcher extends FontMatcher_base {
-    accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export declare class LengthMatch implements Match {
     readonly text: string;

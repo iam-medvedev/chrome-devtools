@@ -55,6 +55,9 @@
     },
     {
       "path": "../../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../../legacy/bundle-tsconfig.json"
     }
   ]
 }

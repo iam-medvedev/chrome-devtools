@@ -58,13 +58,25 @@
       "path": "../../../core/common/bundle-tsconfig.json"
     },
     {
+      "path": "../../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../../../models/issues_manager/bundle-tsconfig.json"
     },
     {
       "path": "../../../testing/testing-tsconfig.json"
     },
     {
+      "path": "../../kit/bundle-tsconfig.json"
+    },
+    {
       "path": "../../legacy/bundle-tsconfig.json"
+    },
+    {
+      "path": "../icon_button/bundle-tsconfig.json"
+    },
+    {
+      "path": "../render_coordinator/bundle-tsconfig.json"
     }
   ]
 }

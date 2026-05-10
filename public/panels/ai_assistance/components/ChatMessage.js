@@ -559,7 +559,7 @@ function renderWalkthroughSidebarButton(input, steps) {
         return Lit.nothing;
     }
     const hasOneStepWithWidget = steps.some(step => step.widgets?.length);
-    const isExpanded = walkthrough.isExpanded && input.message === input.walkthrough.activeSidebarMessage;
+    const isExpanded = walkthrough.isExpanded && input.message.id === input.walkthrough.activeSidebarMessage?.id;
     const title = isExpanded ? walkthroughCloseTitle({ hasWidgets: hasOneStepWithWidget }) : walkthroughTitle({
         isLoading: input.isLoading,
         hasWidgets: hasOneStepWithWidget,
@@ -596,7 +596,7 @@ function renderWalkthroughSidebarButton(input, steps) {
         .jslogContext=${walkthrough.isExpanded ? 'ai-hide-walkthrough-sidebar' : 'ai-show-walkthrough-sidebar'}
         data-show-walkthrough
         @click=${() => {
-        if (walkthrough.activeSidebarMessage === input.message && walkthrough.isExpanded) {
+        if (walkthrough.activeSidebarMessage?.id === input.message.id && walkthrough.isExpanded) {
             walkthrough.onToggle(false, message);
         }
         else {
@@ -630,8 +630,8 @@ function renderWalkthroughUI(input, steps) {
     // open and it is specifically targeting this message. This is necessary
     // because the walkthrough state is shared across all messages in the chat.
     const isExpanded = input.walkthrough.isInlined ?
-        input.walkthrough.inlineExpandedMessages.includes(input.message) :
-        (input.walkthrough.isExpanded && input.walkthrough.activeSidebarMessage === input.message);
+        input.walkthrough.inlineExpandedMessages.some(m => m.id === input.message.id) :
+        (input.walkthrough.isExpanded && input.walkthrough.activeSidebarMessage?.id === input.message.id);
     // clang-format off
     const walkthroughInline = input.walkthrough.isInlined ? html `
     <div class="walkthrough-container">
@@ -1076,16 +1076,16 @@ function renderNetworkRequestPreview(networkRequest) {
     const size = i18n.ByteUtilities.bytesToString(networkRequest.size);
     const resourceType = Common.ResourceType.resourceTypes[networkRequest.resourceType];
     const { iconName, color } = PanelUtils.iconDataForResourceType(resourceType);
+    const imageUrl = networkRequest.imageContent?.asImagePreviewUrl() ?? networkRequest.url;
     return html `
     <div class="network-request-preview">
       <div class="network-request-header">
         <div class="network-request-icon">
-          ${resourceType.isImage() ? html `<img src=${networkRequest.imageUrl ?? networkRequest.url} alt=${filename} />` :
+          ${resourceType.isImage() ? html `<img src=${imageUrl} alt=${filename} />` :
         html `<devtools-icon name=${iconName} style=${Lit.Directives.styleMap({
             color: color ?? ''
         })}></devtools-icon>`}
-        </div>
-        <div class="network-request-details">
+        </div>        <div class="network-request-details">
           <div class="network-request-name" title=${networkRequest.url}>${filename}</div>
           <div class="network-request-size">${size}</div>
         </div>
@@ -1475,7 +1475,7 @@ function renderActions(input, output) {
     // clang-format on
 }
 export class ChatMessage extends UI.Widget.Widget {
-    message = { entity: "user" /* ChatMessageEntity.USER */, text: '' };
+    message = { entity: "user" /* ChatMessageEntity.USER */, text: '', id: '' };
     isLoading = false;
     isReadOnly = false;
     prompt = '';
@@ -1646,19 +1646,35 @@ export class ChatMessage extends UI.Widget.Widget {
 async function makeTimelineRangeSummaryWidget(widgetData) {
     const { bounds, parsedTrace, track } = widgetData.data;
     let events = [];
+    // Note: right now "main" is the only track we support, but in the future we
+    // can imagine supporting more.
     if (track === 'main') {
-        const flameChartView = Timeline.TimelinePanel.TimelinePanel.instance().getFlameChart();
-        const mainDataProvider = flameChartView.getMainDataProvider();
-        const mainTrack = mainDataProvider.timelineData().groups.find((group) => group.name.startsWith('Main \u2014 '));
-        if (mainTrack) {
-            events = mainDataProvider.groupTreeEvents(mainTrack) ?? [];
+        // To find the main thread, we first find the navigationId that is "active"
+        // for the given bounds. We do this because the "main" thread can change on
+        // navigations, so this is the most accurate way to find the main thread at
+        // the timespan we are interested in.
+        let navigationId;
+        for (const nav of parsedTrace.data.Meta.mainFrameNavigations) {
+            if (nav.ts <= bounds.min) {
+                navigationId = nav.args.data?.navigationId;
+            }
+            else {
+                break;
+            }
+        }
+        const mainThread = AiAssistanceModel.AIQueries.AIQueries.findMainThread(navigationId, parsedTrace);
+        if (mainThread) {
+            events = mainThread.entries;
+            AiAssistanceModel.Debug.debugLog(`TimelineRangeSummaryAiWidget found main thread. PID:`, mainThread.pid, 'TID:', mainThread.tid, 'Number of entries:', mainThread.entries.length);
         }
     }
-    const eventsArray = Array.from(events);
-    eventsArray.sort((a, b) => a.ts - b.ts);
+    if (!events) {
+        AiAssistanceModel.Debug.debugLog(`Warning: could not find events for TimelineRangeSummaryAiWidget`, widgetData);
+        return null;
+    }
     const thirdPartyTree = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
     const mapper = Trace.EntityMapper.EntityMapper.getOrCreate(parsedTrace);
-    thirdPartyTree.model = { selectedEvents: eventsArray, parsedTrace, entityMapper: mapper };
+    thirdPartyTree.model = { selectedEvents: events, parsedTrace, entityMapper: mapper };
     thirdPartyTree.activeSelection = Timeline.TimelineSelection.selectionFromRangeMicroSeconds(bounds.min, bounds.max);
     thirdPartyTree.refreshTree(true);
     // clang-format off

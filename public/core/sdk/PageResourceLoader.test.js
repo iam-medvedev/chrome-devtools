@@ -197,15 +197,15 @@ describe('PageResourceLoader', () => {
         function setupLoadingSourceMapsAsNetworkResource(connection) {
             return new Promise(resolve => {
                 let contentToRead = 'foo';
-                connection.setHandler('IO.read', () => {
+                connection.setSuccessHandler('IO.read', () => {
                     const data = contentToRead;
                     contentToRead = null;
-                    return { result: { data } };
+                    return { data };
                 });
-                connection.setHandler('IO.close', () => ({ result: {} }));
-                connection.setHandler('Network.loadNetworkResource', request => {
+                connection.setSuccessHandler('IO.close', () => ({}));
+                connection.setSuccessHandler('Network.loadNetworkResource', request => {
                     resolve(request);
-                    return { result: { resource: { success: true, stream, statusCode: 200 } } };
+                    return { resource: { success: true, stream, statusCode: 200 } };
                 });
             });
         }
@@ -232,25 +232,21 @@ describe('PageResourceLoader', () => {
             const { loader, settings, targetManager } = setup();
             settings.moduleSetting('cache-disabled').set(false);
             const connection = new MockCDPConnection();
-            connection.setHandler('Network.getSecurityIsolationStatus', () => {
+            connection.setSuccessHandler('Network.getSecurityIsolationStatus', () => {
                 return {
-                    result: {
-                        status: {
-                            csp: [{
-                                    effectiveDirectives: 'connect-src \'none\'',
-                                    isEnforced: true,
-                                    source: 'HTTP',
-                                }],
-                        },
+                    status: {
+                        csp: [{
+                                effectiveDirectives: 'connect-src \'none\'',
+                                isEnforced: true,
+                                source: 'HTTP',
+                            }],
                     },
                 };
             });
-            connection.setHandler('Network.loadNetworkResource', () => {
+            connection.setFailureHandler('Network.loadNetworkResource', () => {
                 return {
-                    error: {
-                        code: -32000,
-                        message: 'Frame not found',
-                    },
+                    code: -32000,
+                    message: 'Frame not found',
                 };
             });
             const target = createTarget({ connection, targetManager });
@@ -271,21 +267,17 @@ describe('PageResourceLoader', () => {
             const { loader, settings, targetManager } = setup();
             settings.moduleSetting('cache-disabled').set(false);
             const connection = new MockCDPConnection();
-            connection.setHandler('Network.getSecurityIsolationStatus', () => {
+            connection.setSuccessHandler('Network.getSecurityIsolationStatus', () => {
                 return {
-                    result: {
-                        status: {
-                            csp: [],
-                        },
+                    status: {
+                        csp: [],
                     },
                 };
             });
-            connection.setHandler('Network.loadNetworkResource', () => {
+            connection.setFailureHandler('Network.loadNetworkResource', () => {
                 return {
-                    error: {
-                        code: -32000,
-                        message: 'Frame not found',
-                    },
+                    code: -32000,
+                    message: 'Frame not found',
                 };
             });
             const target = createTarget({ connection, targetManager });

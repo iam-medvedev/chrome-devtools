@@ -521,7 +521,7 @@ describe('StylesSidebarPane', () => {
                 assert.isTrue(inheritedSection.element.classList.contains('collapsed'), 'Inherited section with all overloaded properties should be collapsed');
             });
         });
-        it('should add @font-* section to the end', async () => {
+        it('should add "Other @rules" section to the end', async () => {
             const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
             const matchedStyles = await getMatchedStyles({
                 cssModel: stylesSidebarPane.cssModel(),
@@ -558,7 +558,7 @@ describe('StylesSidebarPane', () => {
             });
             const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
             assert.lengthOf(sectionBlocks, 2);
-            assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@font-*');
+            assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, 'Other @rules');
             assert.lengthOf(sectionBlocks[1].sections, 3);
             const contents = [
                 '@font-palette-values --palette {    font-family: Bixa;    override-colors: 0 red;}',
@@ -593,6 +593,7 @@ describe('StylesSidebarPane', () => {
                                             condition: {
                                                 containerQueries: {
                                                     text: '(width > 300px)',
+                                                    conditionText: '--foo (width > 300px)',
                                                 },
                                                 conditionText: '<unused>',
                                                 children: [

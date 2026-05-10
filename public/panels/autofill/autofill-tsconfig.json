@@ -57,6 +57,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
@@ -64,6 +67,9 @@
     },
     {
       "path": "../../ui/components/adorners/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/kit/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

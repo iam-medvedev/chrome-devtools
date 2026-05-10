@@ -65,6 +65,9 @@
       "path": "../../legacy/bundle-tsconfig.json"
     },
     {
+      "path": "../buttons/bundle-tsconfig.json"
+    },
+    {
       "path": "../render_coordinator/bundle-tsconfig.json"
     }
   ]

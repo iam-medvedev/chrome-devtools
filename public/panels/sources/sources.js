@@ -129,7 +129,6 @@ __export(AiCodeCompletionPlugin_exports, {
   AiCodeCompletionPlugin: () => AiCodeCompletionPlugin
 });
 import * as Host from "./../../core/host/host.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as AiCodeCompletion from "./../../models/ai_code_completion/ai_code_completion.js";
 import * as AiCodeGeneration from "./../../models/ai_code_generation/ai_code_generation.js";
 import * as TextEditor from "./../../ui/components/text_editor/text_editor.js";
@@ -194,9 +193,8 @@ var AiCodeCompletionPlugin = class extends Plugin {
   #aiCodeCompletionProvider;
   constructor(uiSourceCode) {
     super(uiSourceCode);
-    const devtoolsLocale = i18n3.DevToolsLocale.DevToolsLocale.instance();
-    if (!AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionEnabled(devtoolsLocale.locale)) {
-      throw new Error("AI code completion feature is not enabled.");
+    if (!AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionAvailable()) {
+      throw new Error("AI code completion feature is not available.");
     }
     this.aiCodeCompletionConfig = {
       completionContext: {
@@ -384,7 +382,7 @@ var AiWarningInfobarPlugin_exports = {};
 __export(AiWarningInfobarPlugin_exports, {
   AiWarningInfobarPlugin: () => AiWarningInfobarPlugin
 });
-import * as i18n4 from "./../../core/i18n/i18n.js";
+import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as SourceFrame3 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
@@ -394,8 +392,8 @@ var UIStrings2 = {
    */
   aiContentWarning: "This file contains AI-generated content"
 };
-var str_2 = i18n4.i18n.registerUIStrings("panels/sources/AiWarningInfobarPlugin.ts", UIStrings2);
-var i18nString2 = i18n4.i18n.getLocalizedString.bind(void 0, str_2);
+var str_2 = i18n3.i18n.registerUIStrings("panels/sources/AiWarningInfobarPlugin.ts", UIStrings2);
+var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var AiWarningInfobarPlugin = class extends Plugin {
   #editor = void 0;
   #aiWarningInfobar = null;
@@ -451,7 +449,7 @@ __export(BreakpointEditDialog_exports, {
 import "./../../ui/kit/kit.js";
 import "./../../ui/legacy/legacy.js";
 import * as Common from "./../../core/common/common.js";
-import * as i18n6 from "./../../core/i18n/i18n.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as TextEditor2 from "./../../ui/components/text_editor/text_editor.js";
@@ -576,8 +574,8 @@ var UIStrings3 = {
    */
   logAMessageToConsoleDoNotBreak: "Log a message to Console, do not break"
 };
-var str_3 = i18n6.i18n.registerUIStrings("panels/sources/BreakpointEditDialog.ts", UIStrings3);
-var i18nString3 = i18n6.i18n.getLocalizedString.bind(void 0, str_3);
+var str_3 = i18n5.i18n.registerUIStrings("panels/sources/BreakpointEditDialog.ts", UIStrings3);
+var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var DEFAULT_VIEW2 = (input, output, target) => {
   const editorRef = (e) => {
     output.editor = e;
@@ -812,7 +810,7 @@ __export(BreakpointsView_exports, {
 import "./../../ui/kit/kit.js";
 import * as Common3 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
-import * as i18n8 from "./../../core/i18n/i18n.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
@@ -1412,8 +1410,8 @@ var UIStrings4 = {
    */
   logpointCode: "Logpoint: {PH1}"
 };
-var str_4 = i18n8.i18n.registerUIStrings("panels/sources/BreakpointsView.ts", UIStrings4);
-var i18nString4 = i18n8.i18n.getLocalizedString.bind(void 0, str_4);
+var str_4 = i18n7.i18n.registerUIStrings("panels/sources/BreakpointsView.ts", UIStrings4);
+var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var MAX_SNIPPET_LENGTH = 200;
 var breakpointsViewInstance = null;
 var breakpointsViewControllerInstance;
@@ -2177,7 +2175,7 @@ __export(CallStackSidebarPane_exports, {
 });
 import * as Common13 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
-import * as i18n37 from "./../../core/i18n/i18n.js";
+import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform13 from "./../../core/platform/platform.js";
 import * as Bindings9 from "./../../models/bindings/bindings.js";
 import * as Persistence10 from "./../../models/persistence/persistence.js";
@@ -2345,7 +2343,7 @@ __export(SourcesPanel_exports, {
 import "./../../ui/legacy/legacy.js";
 import * as Common12 from "./../../core/common/common.js";
 import * as Host8 from "./../../core/host/host.js";
-import * as i18n35 from "./../../core/i18n/i18n.js";
+import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as Platform12 from "./../../core/platform/platform.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
@@ -2367,7 +2365,7 @@ __export(DebuggerPausedMessage_exports, {
   BreakpointTypeNouns: () => BreakpointTypeNouns,
   DebuggerPausedMessage: () => DebuggerPausedMessage
 });
-import * as i18n12 from "./../../core/i18n/i18n.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
@@ -2379,7 +2377,7 @@ var CategorizedBreakpointL10n_exports = {};
 __export(CategorizedBreakpointL10n_exports, {
   getLocalizedBreakpointName: () => getLocalizedBreakpointName
 });
-import * as i18n10 from "./../../core/i18n/i18n.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 var UIStrings5 = {
   /**
@@ -2471,10 +2469,10 @@ var UIStrings5 = {
    */
   policyViolations: "Policy Violations"
 };
-var str_5 = i18n10.i18n.registerUIStrings("panels/sources/CategorizedBreakpointL10n.ts", UIStrings5);
-var i18nLazyString = i18n10.i18n.getLazilyComputedLocalizedString.bind(void 0, str_5);
+var str_5 = i18n9.i18n.registerUIStrings("panels/sources/CategorizedBreakpointL10n.ts", UIStrings5);
+var i18nLazyString = i18n9.i18n.getLazilyComputedLocalizedString.bind(void 0, str_5);
 function getLocalizedBreakpointName(name) {
-  const l10nLazyName = LOCALIZED_NAMES.get(name) ?? i18n10.i18n.lockedLazyString(name);
+  const l10nLazyName = LOCALIZED_NAMES.get(name) ?? i18n9.i18n.lockedLazyString(name);
   return l10nLazyName();
 }
 var LOCALIZED_INSTRUMENTATION_NAMES = {
@@ -2497,11 +2495,11 @@ var LOCALIZED_INSTRUMENTATION_NAMES = {
   [
     "setTimeout"
     /* SDK.EventBreakpointsModel.InstrumentationNames.SET_TIMEOUT */
-  ]: i18n10.i18n.lockedLazyString("setTimeout"),
+  ]: i18n9.i18n.lockedLazyString("setTimeout"),
   [
     "clearTimeout"
     /* SDK.EventBreakpointsModel.InstrumentationNames.CLEAR_TIMEOUT */
-  ]: i18n10.i18n.lockedLazyString("clearTimeout"),
+  ]: i18n9.i18n.lockedLazyString("clearTimeout"),
   [
     "setTimeout.callback"
     /* SDK.EventBreakpointsModel.InstrumentationNames.SET_TIMEOUT_CALLBACK */
@@ -2509,11 +2507,11 @@ var LOCALIZED_INSTRUMENTATION_NAMES = {
   [
     "setInterval"
     /* SDK.EventBreakpointsModel.InstrumentationNames.SET_INTERVAL */
-  ]: i18n10.i18n.lockedLazyString("setInterval"),
+  ]: i18n9.i18n.lockedLazyString("setInterval"),
   [
     "clearInterval"
     /* SDK.EventBreakpointsModel.InstrumentationNames.CLEAR_INTERVAL */
-  ]: i18n10.i18n.lockedLazyString("clearInterval"),
+  ]: i18n9.i18n.lockedLazyString("clearInterval"),
   [
     "setInterval.callback"
     /* SDK.EventBreakpointsModel.InstrumentationNames.SET_INTERVAL_CALLBACK */
@@ -2561,23 +2559,23 @@ var LOCALIZED_INSTRUMENTATION_NAMES = {
   [
     "Geolocation.getCurrentPosition"
     /* SDK.EventBreakpointsModel.InstrumentationNames.GEOLOCATION_GET_CURRENT_POSITION */
-  ]: i18n10.i18n.lockedLazyString("getCurrentPosition"),
+  ]: i18n9.i18n.lockedLazyString("getCurrentPosition"),
   [
     "Geolocation.watchPosition"
     /* SDK.EventBreakpointsModel.InstrumentationNames.GEOLOCATION_WATCH_POSITION */
-  ]: i18n10.i18n.lockedLazyString("watchPosition"),
+  ]: i18n9.i18n.lockedLazyString("watchPosition"),
   [
     "Notification.requestPermission"
     /* SDK.EventBreakpointsModel.InstrumentationNames.NOTIFICATION_REQUEST_PERMISSION */
-  ]: i18n10.i18n.lockedLazyString("requestPermission"),
+  ]: i18n9.i18n.lockedLazyString("requestPermission"),
   [
     "DOMWindow.close"
     /* SDK.EventBreakpointsModel.InstrumentationNames.DOM_WINDOW_CLOSE */
-  ]: i18n10.i18n.lockedLazyString("window.close"),
+  ]: i18n9.i18n.lockedLazyString("window.close"),
   [
     "Document.write"
     /* SDK.EventBreakpointsModel.InstrumentationNames.DOCUMENT_WRITE */
-  ]: i18n10.i18n.lockedLazyString("document.write"),
+  ]: i18n9.i18n.lockedLazyString("document.write"),
   [
     "audioContextCreated"
     /* SDK.EventBreakpointsModel.InstrumentationNames.AUDIO_CONTEXT_CREATED */
@@ -2762,9 +2760,9 @@ var UIStrings6 = {
    */
   scriptBlockedDueToContent: "Script blocked due to Content Security Policy directive: {PH1}"
 };
-var str_6 = i18n12.i18n.registerUIStrings("panels/sources/DebuggerPausedMessage.ts", UIStrings6);
-var i18nString5 = i18n12.i18n.getLocalizedString.bind(void 0, str_6);
-var i18nLazyString2 = i18n12.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
+var str_6 = i18n11.i18n.registerUIStrings("panels/sources/DebuggerPausedMessage.ts", UIStrings6);
+var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
+var i18nLazyString2 = i18n11.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
 var i18nTemplate2 = Lit2.i18nTemplate.bind(void 0, str_6);
 function domBreakpointSubtext(data) {
   let message = Lit2.nothing;
@@ -2951,7 +2949,7 @@ __export(NavigatorView_exports, {
 });
 import * as Common6 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
-import * as i18n14 from "./../../core/i18n/i18n.js";
+import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as AiAssistance from "./../../models/ai_assistance/ai_assistance.js";
@@ -3552,8 +3550,8 @@ var UIStrings7 = {
    */
   connectFolderToWorkspace: "Connect to workspace"
 };
-var str_7 = i18n14.i18n.registerUIStrings("panels/sources/NavigatorView.ts", UIStrings7);
-var i18nString6 = i18n14.i18n.getLocalizedString.bind(void 0, str_7);
+var str_7 = i18n13.i18n.registerUIStrings("panels/sources/NavigatorView.ts", UIStrings7);
+var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var Types = {
   Authored: "authored",
   AutomaticFileSystem: "automatic-fs",
@@ -5243,7 +5241,7 @@ __export(SourcesView_exports, {
 import "./../../ui/legacy/legacy.js";
 import * as Common11 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
-import * as i18n31 from "./../../core/i18n/i18n.js";
+import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as Platform11 from "./../../core/platform/platform.js";
 import * as SDK9 from "./../../core/sdk/sdk.js";
 import * as Bindings7 from "./../../models/bindings/bindings.js";
@@ -5409,7 +5407,7 @@ __export(TabbedEditorContainer_exports, {
   TabbedEditorContainer: () => TabbedEditorContainer
 });
 import * as Common10 from "./../../core/common/common.js";
-import * as i18n29 from "./../../core/i18n/i18n.js";
+import * as i18n27 from "./../../core/i18n/i18n.js";
 import * as Platform9 from "./../../core/platform/platform.js";
 import * as Persistence7 from "./../../models/persistence/persistence.js";
 import * as TextUtils10 from "./../../models/text_utils/text_utils.js";
@@ -5431,7 +5429,6 @@ __export(UISourceCodeFrame_exports, {
 });
 import * as Common9 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
-import * as i18n28 from "./../../core/i18n/i18n.js";
 
 // gen/front_end/entrypoints/formatter_worker/FormatterActions.js
 var FORMATTABLE_MEDIA_TYPES = [
@@ -5461,7 +5458,7 @@ var CoveragePlugin_exports = {};
 __export(CoveragePlugin_exports, {
   CoveragePlugin: () => CoveragePlugin
 });
-import * as i18n16 from "./../../core/i18n/i18n.js";
+import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
 import * as Workspace10 from "./../../models/workspace/workspace.js";
@@ -5487,8 +5484,8 @@ var UIStrings8 = {
    */
   coverageNa: "Coverage: n/a"
 };
-var str_8 = i18n16.i18n.registerUIStrings("panels/sources/CoveragePlugin.ts", UIStrings8);
-var i18nString7 = i18n16.i18n.getLocalizedString.bind(void 0, str_8);
+var str_8 = i18n15.i18n.registerUIStrings("panels/sources/CoveragePlugin.ts", UIStrings8);
+var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
 var CoveragePlugin = class extends Plugin {
   originalSourceCode;
   infoInToolbar;
@@ -5538,7 +5535,7 @@ var CoveragePlugin = class extends Plugin {
   updateStats() {
     if (this.coverage) {
       this.infoInToolbar.setTitle(i18nString7(UIStrings8.showDetails));
-      const formatter = new Intl.NumberFormat(i18n16.DevToolsLocale.DevToolsLocale.instance().locale, {
+      const formatter = new Intl.NumberFormat(i18n15.DevToolsLocale.DevToolsLocale.instance().locale, {
         style: "percent",
         maximumFractionDigits: 1
       });
@@ -5677,7 +5674,7 @@ __export(CSSPlugin_exports, {
   cssBindings: () => cssBindings
 });
 import * as Common7 from "./../../core/common/common.js";
-import * as i18n18 from "./../../core/i18n/i18n.js";
+import * as i18n17 from "./../../core/i18n/i18n.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined3 } from "./../../core/platform/platform.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as Bindings4 from "./../../models/bindings/bindings.js";
@@ -5703,8 +5700,8 @@ var UIStrings9 = {
    */
   addSourceMap: "Add source map\u2026"
 };
-var str_9 = i18n18.i18n.registerUIStrings("panels/sources/CSSPlugin.ts", UIStrings9);
-var i18nString8 = i18n18.i18n.getLocalizedString.bind(void 0, str_9);
+var str_9 = i18n17.i18n.registerUIStrings("panels/sources/CSSPlugin.ts", UIStrings9);
+var i18nString8 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
 var doNotCompleteIn = /* @__PURE__ */ new Set(["ColorLiteral", "NumberLiteral", "StringLiteral", "Comment", "Important"]);
 function findPropertyAt(node, pos) {
   if (doNotCompleteIn.has(node.name)) {
@@ -6092,7 +6089,7 @@ __export(DebuggerPlugin_exports, {
 });
 import * as Common8 from "./../../core/common/common.js";
 import * as Host4 from "./../../core/host/host.js";
-import * as i18n20 from "./../../core/i18n/i18n.js";
+import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as Badges from "./../../models/badges/badges.js";
@@ -6228,8 +6225,8 @@ var UIStrings10 = {
    */
   openDeveloperResources: "Opens the request in the Developer resource panel"
 };
-var str_10 = i18n20.i18n.registerUIStrings("panels/sources/DebuggerPlugin.ts", UIStrings10);
-var i18nString9 = i18n20.i18n.getLocalizedString.bind(void 0, str_10);
+var str_10 = i18n19.i18n.registerUIStrings("panels/sources/DebuggerPlugin.ts", UIStrings10);
+var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
 var MAX_POSSIBLE_BREAKPOINT_LINE = 2500;
 var MAX_CODE_SIZE_FOR_VALUE_DECORATIONS = 1e4;
 var MAX_PROPERTIES_IN_SCOPE_FOR_VALUE_DECORATIONS = 500;
@@ -8169,7 +8166,7 @@ function inlineLogpointArrow(color, outline2, opacity = "1") {
 }
 
 // gen/front_end/panels/sources/ProfilePlugin.js
-import * as i18n22 from "./../../core/i18n/i18n.js";
+import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as Workspace15 from "./../../models/workspace/workspace.js";
 import * as CodeMirror5 from "./../../third_party/codemirror.next/codemirror.next.js";
@@ -8177,51 +8174,10 @@ var UIStrings11 = {
   /**
    * @description The milisecond unit
    */
-  ms: "ms",
-  /**
-   * @description Unit for data size in DevTools
-   */
-  mb: "MB",
-  /**
-   * @description A unit
-   */
-  kb: "kB"
+  ms: "ms"
 };
-var str_11 = i18n22.i18n.registerUIStrings("panels/sources/ProfilePlugin.ts", UIStrings11);
-var i18nString10 = i18n22.i18n.getLocalizedString.bind(void 0, str_11);
-var MemoryMarker = class extends CodeMirror5.GutterMarker {
-  value;
-  constructor(value2) {
-    super();
-    this.value = value2;
-  }
-  eq(other) {
-    return this.value === other.value;
-  }
-  toDOM() {
-    const element = document.createElement("div");
-    element.className = "cm-profileMarker";
-    let value2 = this.value;
-    const intensity = Platform7.NumberUtilities.clamp(Math.log10(1 + 2e-3 * value2) / 5, 0.02, 1);
-    element.style.backgroundColor = `hsla(217, 100%, 70%, ${intensity.toFixed(3)})`;
-    value2 /= 1e3;
-    let units;
-    let fractionDigits;
-    if (value2 >= 1e3) {
-      units = i18nString10(UIStrings11.mb);
-      value2 /= 1e3;
-      fractionDigits = value2 >= 20 ? 0 : 1;
-    } else {
-      units = i18nString10(UIStrings11.kb);
-      fractionDigits = 0;
-    }
-    element.textContent = value2.toFixed(fractionDigits);
-    const unitElement = element.appendChild(document.createElement("span"));
-    unitElement.className = "cm-units";
-    unitElement.textContent = units;
-    return element;
-  }
-};
+var str_11 = i18n21.i18n.registerUIStrings("panels/sources/ProfilePlugin.ts", UIStrings11);
+var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
 var PerformanceMarker = class extends CodeMirror5.GutterMarker {
   value;
   constructor(value2) {
@@ -8244,8 +8200,7 @@ var PerformanceMarker = class extends CodeMirror5.GutterMarker {
     return element;
   }
 };
-function markersFromProfileData(map, state, type) {
-  const markerType = type === "performance" ? PerformanceMarker : MemoryMarker;
+function markersFromProfileData(map, state) {
   const markers = [];
   const aggregatedByLine = /* @__PURE__ */ new Map();
   for (const [line, value2] of map) {
@@ -8257,11 +8212,11 @@ function markersFromProfileData(map, state, type) {
   }
   for (const [line, value2] of aggregatedByLine) {
     const { from } = state.doc.line(line);
-    markers.push(new markerType(value2).range(from));
+    markers.push(new PerformanceMarker(value2).range(from));
   }
   return CodeMirror5.RangeSet.of(markers, true);
 }
-var makeLineLevelProfilePlugin = (type) => class ProfilePlugin extends Plugin {
+var PerformanceProfilePlugin = class extends Plugin {
   updateEffect = CodeMirror5.StateEffect.define();
   field;
   gutter;
@@ -8275,13 +8230,13 @@ var makeLineLevelProfilePlugin = (type) => class ProfilePlugin extends Plugin {
       },
       update: (markers, tr) => {
         return tr.effects.reduce((markers2, effect) => {
-          return effect.is(this.updateEffect) ? markersFromProfileData(effect.value, tr.state, type) : markers2;
+          return effect.is(this.updateEffect) ? markersFromProfileData(effect.value, tr.state) : markers2;
         }, markers.map(tr.changes));
       }
     });
     this.gutter = CodeMirror5.gutter({
       markers: (view) => view.state.field(this.field),
-      class: `cm-${type}Gutter`
+      class: `cm-${"performance"}Gutter`
     });
     this.#transformer = transformer;
   }
@@ -8289,7 +8244,10 @@ var makeLineLevelProfilePlugin = (type) => class ProfilePlugin extends Plugin {
     return uiSourceCode.contentType().hasScripts();
   }
   getLineMap() {
-    const uiSourceCodeProfileMap = this.uiSourceCode.getDecorationData(type);
+    const uiSourceCodeProfileMap = this.uiSourceCode.getDecorationData(
+      "performance"
+      /* Workspace.UISourceCode.DecoratorType.PERFORMANCE */
+    );
     if (!uiSourceCodeProfileMap) {
       return void 0;
     }
@@ -8300,9 +8258,9 @@ var makeLineLevelProfilePlugin = (type) => class ProfilePlugin extends Plugin {
   }
   editorExtension() {
     const map = this.getLineMap();
-    return this.compartment.of(!map ? [] : [this.field.init((state) => markersFromProfileData(map, state, type)), this.gutter, theme4]);
+    return this.compartment.of(!map ? [] : [this.field.init((state) => markersFromProfileData(map, state)), this.gutter, theme4]);
   }
-  decorationChanged(type2, editor) {
+  decorationChanged(type, editor) {
     const installed = Boolean(editor.state.field(this.field, false));
     const map = this.getLineMap();
     if (!map) {
@@ -8311,7 +8269,7 @@ var makeLineLevelProfilePlugin = (type) => class ProfilePlugin extends Plugin {
       }
     } else if (!installed) {
       editor.dispatch({
-        effects: this.compartment.reconfigure([this.field.init((state) => markersFromProfileData(map, state, type2)), this.gutter, theme4])
+        effects: this.compartment.reconfigure([this.field.init((state) => markersFromProfileData(map, state)), this.gutter, theme4])
       });
     } else {
       editor.dispatch({ effects: this.updateEffect.of(map) });
@@ -8328,11 +8286,6 @@ var theme4 = CodeMirror5.EditorView.baseTheme({
     backgroundColor: "var(--sys-color-cdt-base-container)",
     marginLeft: "3px"
   },
-  ".cm-memoryGutter": {
-    width: "48px",
-    backgroundColor: "var(--sys-color-cdt-base-container)",
-    marginLeft: "3px"
-  },
   ".cm-profileMarker": {
     textAlign: "right",
     paddingRight: "3px"
@@ -8343,21 +8296,13 @@ var theme4 = CodeMirror5.EditorView.baseTheme({
     marginLeft: "3px"
   }
 });
-var MemoryProfilePlugin = makeLineLevelProfilePlugin(
-  "memory"
-  /* Workspace.UISourceCode.DecoratorType.MEMORY */
-);
-var PerformanceProfilePlugin = makeLineLevelProfilePlugin(
-  "performance"
-  /* Workspace.UISourceCode.DecoratorType.PERFORMANCE */
-);
 
 // gen/front_end/panels/sources/ResourceOriginPlugin.js
 var ResourceOriginPlugin_exports = {};
 __export(ResourceOriginPlugin_exports, {
   ResourceOriginPlugin: () => ResourceOriginPlugin
 });
-import * as i18n24 from "./../../core/i18n/i18n.js";
+import * as i18n23 from "./../../core/i18n/i18n.js";
 import * as Bindings6 from "./../../models/bindings/bindings.js";
 import * as uiI18n from "./../../ui/i18n/i18n.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
@@ -8374,8 +8319,8 @@ var UIStrings12 = {
    */
   sourceMappedFromS: "(Source mapped from {PH1})"
 };
-var str_12 = i18n24.i18n.registerUIStrings("panels/sources/ResourceOriginPlugin.ts", UIStrings12);
-var i18nString11 = i18n24.i18n.getLocalizedString.bind(void 0, str_12);
+var str_12 = i18n23.i18n.registerUIStrings("panels/sources/ResourceOriginPlugin.ts", UIStrings12);
+var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
 var ResourceOriginPlugin = class extends Plugin {
   #linkifier = new Components.Linkifier.Linkifier();
   static accepts(uiSourceCode) {
@@ -8430,7 +8375,7 @@ __export(SnippetsPlugin_exports, {
   SnippetsPlugin: () => SnippetsPlugin
 });
 import * as Host5 from "./../../core/host/host.js";
-import * as i18n26 from "./../../core/i18n/i18n.js";
+import * as i18n25 from "./../../core/i18n/i18n.js";
 import * as TextEditor4 from "./../../ui/components/text_editor/text_editor.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as Snippets2 from "./../snippets/snippets.js";
@@ -8444,8 +8389,8 @@ var UIStrings13 = {
    */
   ctrlenter: "Ctrl+Enter"
 };
-var str_13 = i18n26.i18n.registerUIStrings("panels/sources/SnippetsPlugin.ts", UIStrings13);
-var i18nString12 = i18n26.i18n.getLocalizedString.bind(void 0, str_13);
+var str_13 = i18n25.i18n.registerUIStrings("panels/sources/SnippetsPlugin.ts", UIStrings13);
+var i18nString12 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
 var SnippetsPlugin = class extends Plugin {
   static accepts(uiSourceCode) {
     return Snippets2.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode);
@@ -8690,12 +8635,10 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common9.ObjectWrapper.e
       SnippetsPlugin,
       ResourceOriginPlugin,
       CoveragePlugin,
-      MemoryProfilePlugin,
       PerformanceProfilePlugin,
       AiWarningInfobarPlugin
     ];
-    const devtoolsLocale = i18n28.DevToolsLocale.DevToolsLocale.instance();
-    if (AiCodeCompletion3.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionEnabled(devtoolsLocale.locale)) {
+    if (AiCodeCompletion3.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionAvailable()) {
       sourceFramePluginsList.push(AiCodeCompletionPlugin);
     }
     return sourceFramePluginsList;
@@ -9171,8 +9114,8 @@ var UIStrings14 = {
    */
   changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace: "Changes weren't saved to file system. To save, set up your {PH1}."
 };
-var str_14 = i18n29.i18n.registerUIStrings("panels/sources/TabbedEditorContainer.ts", UIStrings14);
-var i18nString13 = i18n29.i18n.getLocalizedString.bind(void 0, str_14);
+var str_14 = i18n27.i18n.registerUIStrings("panels/sources/TabbedEditorContainer.ts", UIStrings14);
+var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var tabId = 0;
 var TabbedEditorContainer = class extends Common10.ObjectWrapper.ObjectWrapper {
   delegate;
@@ -9837,8 +9780,8 @@ var UIStrings15 = {
    */
   sourceViewActions: "Source View Actions"
 };
-var str_15 = i18n31.i18n.registerUIStrings("panels/sources/SourcesView.ts", UIStrings15);
-var i18nString14 = i18n31.i18n.getLocalizedString.bind(void 0, str_15);
+var str_15 = i18n29.i18n.registerUIStrings("panels/sources/SourcesView.ts", UIStrings15);
+var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var SourcesView = class _SourcesView extends Common11.ObjectWrapper.eventMixin(UI16.Widget.VBox) {
   #searchableView;
   sourceViewByUISourceCode;
@@ -10406,7 +10349,7 @@ var ThreadsSidebarPane_exports = {};
 __export(ThreadsSidebarPane_exports, {
   ThreadsSidebarPane: () => ThreadsSidebarPane
 });
-import * as i18n33 from "./../../core/i18n/i18n.js";
+import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../ui/lit/lit.js";
@@ -10488,8 +10431,8 @@ var UIStrings16 = {
    */
   paused: "paused"
 };
-var str_16 = i18n33.i18n.registerUIStrings("panels/sources/ThreadsSidebarPane.ts", UIStrings16);
-var i18nString15 = i18n33.i18n.getLocalizedString.bind(void 0, str_16);
+var str_16 = i18n31.i18n.registerUIStrings("panels/sources/ThreadsSidebarPane.ts", UIStrings16);
+var i18nString15 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var DEFAULT_VIEW5 = (input, _output, target) => {
   render6(html6`
     <style>${threadsSidebarPane_css_default}</style>
@@ -10707,8 +10650,8 @@ var UIStrings17 = {
    */
   explainInputHandling: "Explain input handling"
 };
-var str_17 = i18n35.i18n.registerUIStrings("panels/sources/SourcesPanel.ts", UIStrings17);
-var i18nString16 = i18n35.i18n.getLocalizedString.bind(void 0, str_17);
+var str_17 = i18n33.i18n.registerUIStrings("panels/sources/SourcesPanel.ts", UIStrings17);
+var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var primitiveRemoteObjectTypes = /* @__PURE__ */ new Set(["number", "boolean", "bigint", "undefined"]);
 var sourcesPanelInstance;
 var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
@@ -11746,8 +11689,8 @@ var UIStrings18 = {
    */
   debugSymbolsIncomplete: "The debug information for function {PH1} is incomplete"
 };
-var str_18 = i18n37.i18n.registerUIStrings("panels/sources/CallStackSidebarPane.ts", UIStrings18);
-var i18nString17 = i18n37.i18n.getLocalizedString.bind(void 0, str_18);
+var str_18 = i18n35.i18n.registerUIStrings("panels/sources/CallStackSidebarPane.ts", UIStrings18);
+var i18nString17 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
 var { createRef, ref: ref2 } = Directives2;
 var callstackSidebarPaneInstance;
 var CallStackSidebarPane = class _CallStackSidebarPane extends UI19.View.SimpleView {
@@ -12309,7 +12252,7 @@ __export(FilteredUISourceCodeListProvider_exports, {
 });
 import "./../../ui/components/highlighting/highlighting.js";
 import * as Common14 from "./../../core/common/common.js";
-import * as i18n39 from "./../../core/i18n/i18n.js";
+import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as Persistence12 from "./../../models/persistence/persistence.js";
 import * as Workspace25 from "./../../models/workspace/workspace.js";
 import * as QuickOpen3 from "./../../ui/legacy/components/quick_open/quick_open.js";
@@ -12372,8 +12315,8 @@ var UIStrings19 = {
    */
   sIgnoreListed: "{PH1} (ignore listed)"
 };
-var str_19 = i18n39.i18n.registerUIStrings("panels/sources/FilteredUISourceCodeListProvider.ts", UIStrings19);
-var i18nString18 = i18n39.i18n.getLocalizedString.bind(void 0, str_19);
+var str_19 = i18n37.i18n.registerUIStrings("panels/sources/FilteredUISourceCodeListProvider.ts", UIStrings19);
+var i18nString18 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 var { classMap: classMap2 } = Directives3;
 var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidget.Provider {
   queryLineNumberAndColumnNumber;
@@ -12572,7 +12515,7 @@ __export(GoToLineQuickOpen_exports, {
   GoToLineQuickOpen: () => GoToLineQuickOpen
 });
 import "./../../ui/kit/kit.js";
-import * as i18n41 from "./../../core/i18n/i18n.js";
+import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as QuickOpen4 from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
 import { html as html9 } from "./../../ui/lit/lit.js";
@@ -12617,8 +12560,8 @@ var UIStrings20 = {
    */
   goToLineS: "Go to line {PH1}"
 };
-var str_20 = i18n41.i18n.registerUIStrings("panels/sources/GoToLineQuickOpen.ts", UIStrings20);
-var i18nString19 = i18n41.i18n.getLocalizedString.bind(void 0, str_20);
+var str_20 = i18n39.i18n.registerUIStrings("panels/sources/GoToLineQuickOpen.ts", UIStrings20);
+var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
   #goToLineStrings = [];
   selectItem(_itemIndex, promptValue) {
@@ -12724,7 +12667,7 @@ __export(InplaceFormatterEditorAction_exports, {
   InplaceFormatterEditorAction: () => InplaceFormatterEditorAction
 });
 import * as Common15 from "./../../core/common/common.js";
-import * as i18n43 from "./../../core/i18n/i18n.js";
+import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as Formatter2 from "./../../models/formatter/formatter.js";
 import * as Persistence14 from "./../../models/persistence/persistence.js";
 import * as TextUtils11 from "./../../models/text_utils/text_utils.js";
@@ -12741,8 +12684,8 @@ var UIStrings21 = {
    */
   format: "Format"
 };
-var str_21 = i18n43.i18n.registerUIStrings("panels/sources/InplaceFormatterEditorAction.ts", UIStrings21);
-var i18nString20 = i18n43.i18n.getLocalizedString.bind(void 0, str_21);
+var str_21 = i18n41.i18n.registerUIStrings("panels/sources/InplaceFormatterEditorAction.ts", UIStrings21);
+var i18nString20 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
 var inplaceFormatterEditorActionInstance;
 var InplaceFormatterEditorAction = class _InplaceFormatterEditorAction {
   button;
@@ -12874,7 +12817,7 @@ __export(OutlineQuickOpen_exports, {
 });
 import "./../../ui/kit/kit.js";
 import "./../../ui/components/highlighting/highlighting.js";
-import * as i18n45 from "./../../core/i18n/i18n.js";
+import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as CodeMirror7 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as QuickOpen5 from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
@@ -12893,8 +12836,8 @@ var UIStrings22 = {
    */
   noResultsFound: "No results found"
 };
-var str_22 = i18n45.i18n.registerUIStrings("panels/sources/OutlineQuickOpen.ts", UIStrings22);
-var i18nString21 = i18n45.i18n.getLocalizedString.bind(void 0, str_22);
+var str_22 = i18n43.i18n.registerUIStrings("panels/sources/OutlineQuickOpen.ts", UIStrings22);
+var i18nString21 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
 function outline(state) {
   function toLineColumn(offset) {
     offset = Math.max(0, Math.min(offset, state.doc.length));
@@ -13233,7 +13176,7 @@ __export(PersistenceActions_exports, {
 });
 import * as Common17 from "./../../core/common/common.js";
 import * as Host11 from "./../../core/host/host.js";
-import * as i18n47 from "./../../core/i18n/i18n.js";
+import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as Bindings10 from "./../../models/bindings/bindings.js";
 import * as Persistence16 from "./../../models/persistence/persistence.js";
@@ -13282,8 +13225,8 @@ var UIStrings23 = {
    */
   saveWasmFailed: "Unable to save WASM module to disk. Most likely the module is too large."
 };
-var str_23 = i18n47.i18n.registerUIStrings("panels/sources/PersistenceActions.ts", UIStrings23);
-var i18nString22 = i18n47.i18n.getLocalizedString.bind(void 0, str_23);
+var str_23 = i18n45.i18n.registerUIStrings("panels/sources/PersistenceActions.ts", UIStrings23);
+var i18nString22 = i18n45.i18n.getLocalizedString.bind(void 0, str_23);
 var ContextMenuProvider = class {
   appendApplicableItems(_event, contextMenu, contentProvider) {
     async function saveAs() {
@@ -13453,7 +13396,7 @@ var ScopeChainSidebarPane_exports = {};
 __export(ScopeChainSidebarPane_exports, {
   ScopeChainSidebarPane: () => ScopeChainSidebarPane
 });
-import * as i18n49 from "./../../core/i18n/i18n.js";
+import * as i18n47 from "./../../core/i18n/i18n.js";
 import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as SourceMapScopes2 from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as StackTrace7 from "./../../models/stack_trace/stack_trace.js";
@@ -13523,8 +13466,8 @@ var UIStrings24 = {
    */
   closure: "Closure"
 };
-var str_24 = i18n49.i18n.registerUIStrings("panels/sources/ScopeChainSidebarPane.ts", UIStrings24);
-var i18nString23 = i18n49.i18n.getLocalizedString.bind(void 0, str_24);
+var str_24 = i18n47.i18n.registerUIStrings("panels/sources/ScopeChainSidebarPane.ts", UIStrings24);
+var i18nString23 = i18n47.i18n.getLocalizedString.bind(void 0, str_24);
 var scopeChainSidebarPaneInstance;
 var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBox {
   treeOutline;
@@ -13557,6 +13500,9 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBo
       scopeChainSidebarPaneInstance = new _ScopeChainSidebarPane();
     }
     return scopeChainSidebarPaneInstance;
+  }
+  treeOutlineForTest() {
+    return this.treeOutline;
   }
   flavorChanged(callFrame) {
     this.#scopeChainModel?.dispose();
@@ -13662,7 +13608,7 @@ __export(SourcesNavigator_exports, {
 import "./../../ui/legacy/legacy.js";
 import * as Common18 from "./../../core/common/common.js";
 import * as Host12 from "./../../core/host/host.js";
-import * as i18n51 from "./../../core/i18n/i18n.js";
+import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as Platform15 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Bindings11 from "./../../models/bindings/bindings.js";
@@ -13784,15 +13730,15 @@ var UIStrings25 = {
    */
   automaticWorkspaceNudge: "Use {PH1} to automatically connect your project folder"
 };
-var str_25 = i18n51.i18n.registerUIStrings("panels/sources/SourcesNavigator.ts", UIStrings25);
-var i18nString24 = i18n51.i18n.getLocalizedString.bind(void 0, str_25);
+var str_25 = i18n49.i18n.registerUIStrings("panels/sources/SourcesNavigator.ts", UIStrings25);
+var i18nString24 = i18n49.i18n.getLocalizedString.bind(void 0, str_25);
 var networkNavigatorViewInstance;
 var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
   constructor() {
     super("navigator-network", true);
     this.registerRequiredCSS(sourcesNavigator_css_default);
     SDK14.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged", this.inspectedURLChanged, this);
-    Host12.userMetrics.panelLoaded("sources", "DevTools.Launch.Sources");
+    UI25.UIUserMetrics.UIUserMetrics.instance().panelLoaded("sources", "DevTools.Launch.Sources");
     SDK14.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
   }
   static instance(opts = { forceNew: null }) {
@@ -14058,12 +14004,13 @@ var ActionDelegate5 = class {
 // gen/front_end/panels/sources/WatchExpressionsSidebarPane.js
 var WatchExpressionsSidebarPane_exports = {};
 __export(WatchExpressionsSidebarPane_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW6,
   WatchExpression: () => WatchExpression,
   WatchExpressionsSidebarPane: () => WatchExpressionsSidebarPane
 });
 import * as Common19 from "./../../core/common/common.js";
 import * as Host13 from "./../../core/host/host.js";
-import * as i18n53 from "./../../core/i18n/i18n.js";
+import * as i18n51 from "./../../core/i18n/i18n.js";
 import * as Platform16 from "./../../core/platform/platform.js";
 import * as SDK15 from "./../../core/sdk/sdk.js";
 import * as Formatter3 from "./../../models/formatter/formatter.js";
@@ -14184,6 +14131,7 @@ var objectValue_css_default = `/*
 // gen/front_end/panels/sources/WatchExpressionsSidebarPane.js
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI26 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives5, html as html12, render as render8 } from "./../../ui/lit/lit.js";
 import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/watchExpressionsSidebarPane.css.js
@@ -14390,18 +14338,71 @@ var UIStrings26 = {
    */
   watchExpressionDeleted: "Watch expression deleted"
 };
-var str_26 = i18n53.i18n.registerUIStrings("panels/sources/WatchExpressionsSidebarPane.ts", UIStrings26);
-var i18nString25 = i18n53.i18n.getLocalizedString.bind(void 0, str_26);
+var str_26 = i18n51.i18n.registerUIStrings("panels/sources/WatchExpressionsSidebarPane.ts", UIStrings26);
+var i18nString25 = i18n51.i18n.getLocalizedString.bind(void 0, str_26);
 var watchExpressionsSidebarPaneInstance;
+var { repeat: repeat2 } = Directives5;
+var DEFAULT_VIEW6 = (input, output, target) => {
+  const onContextMenu = (watchExpression, event) => {
+    const contextMenu = new UI26.ContextMenu.ContextMenu(event);
+    const isEditing = input.watchExpressions.some((e) => e.isEditing());
+    if (!isEditing) {
+      contextMenu.debugSection().appendItem(i18nString25(UIStrings26.addWatchExpression), input.onAddExpression, { jslogContext: "add-watch-expression" });
+    }
+    if (input.watchExpressions.length > 1) {
+      contextMenu.debugSection().appendItem(i18nString25(UIStrings26.deleteAllWatchExpressions), input.onDeleteAll, { jslogContext: "delete-all-watch-expressions" });
+    }
+    if (watchExpression) {
+      if (!watchExpression.isEditing()) {
+        contextMenu.editSection().appendItem(i18nString25(UIStrings26.deleteWatchExpression), watchExpression.updateExpression.bind(watchExpression, null), { jslogContext: "delete-watch-expression" });
+      }
+      if (!watchExpression.isEditing() && watchExpression.result && (watchExpression.result.type === "number" || watchExpression.result.type === "string")) {
+        contextMenu.clipboardSection().appendItem(i18nString25(UIStrings26.copyValue), () => input.onCopyWatchExpression(watchExpression), { jslogContext: "copy-watch-expression-value" });
+      }
+      contextMenu.appendApplicableItems(watchExpression.result);
+    }
+    void contextMenu.show();
+    event.consume();
+  };
+  for (const watchExpression of input.watchExpressions) {
+    watchExpression.treeElement().listItemElement.oncontextmenu = onContextMenu.bind(void 0, watchExpression);
+    watchExpression.treeElement().childrenListElement.oncontextmenu = onContextMenu.bind(void 0, watchExpression);
+  }
+  render8(
+    // clang-format off
+    html12`
+      ${input.watchExpressions.length === 0 ? html12`<div class=gray-info-message tabindex=-1 >
+        ${i18nString25(UIStrings26.noWatchExpressions)}
+        </div>` : html12`<devtools-tree hide-overflow show-selection-on-keyboard-focus .template=${html12`
+        <ul role=tree class="source-code object-properties-section">
+          <style>${ObjectUI4.ObjectPropertiesSection.objectValueStyles}</style>
+          <style>${ObjectUI4.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
+          <style>${watchExpressionsSidebarPane_css_default}</style>
+          ${repeat2(input.watchExpressions, (e) => html12`<devtools-tree-wrapper .treeElement=${e.treeElement()}></devtools-tree-wrapper>`)}
+        </ul>`}>
+      </devtools-tree>`}`,
+    // clang-format on
+    target,
+    {
+      container: {
+        classes: ["watch-expressions"],
+        attributes: {
+          jslog: `${VisualLogging14.section("sources.watch")}`,
+          "aria-label": i18nString25(UIStrings26.addWatchExpression)
+        },
+        listeners: { contextmenu: onContextMenu.bind(void 0, void 0) }
+      }
+    }
+  );
+};
 var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI26.Widget.VBox {
   #watchExpressions;
-  emptyElement;
   #watchExpressionsSetting;
   addButton;
   refreshButton;
-  treeOutline;
-  expandController;
   linkifier;
+  #view;
+  #expandControllers = /* @__PURE__ */ new Map();
   constructor() {
     super({ useShadowDom: true });
     this.registerRequiredCSS(watchExpressionsSidebarPane_css_default, objectValue_css_default);
@@ -14420,22 +14421,12 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
       "SMALL"
       /* Buttons.Button.Size.SMALL */
     );
-    this.refreshButton.addEventListener("Click", this.requestUpdate, this);
-    this.contentElement.classList.add("watch-expressions");
-    this.contentElement.setAttribute("jslog", `${VisualLogging14.section("sources.watch")}`);
-    this.contentElement.addEventListener("contextmenu", this.contextMenu.bind(this), false);
-    this.treeOutline = new ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
-    this.treeOutline.registerRequiredCSS(watchExpressionsSidebarPane_css_default);
-    this.treeOutline.setHideOverflow(true);
-    this.treeOutline.setShowSelectionOnKeyboardFocus(
-      /* show */
-      true
-    );
-    this.expandController = new ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController(this.treeOutline);
-    UI26.Context.Context.instance().addFlavorChangeListener(SDK15.RuntimeModel.ExecutionContext, this.requestUpdate, this);
-    UI26.Context.Context.instance().addFlavorChangeListener(StackTrace9.StackTrace.DebuggableFrameFlavor, this.requestUpdate, this);
+    this.refreshButton.addEventListener("Click", this.#refreshExpressions, this);
+    UI26.Context.Context.instance().addFlavorChangeListener(SDK15.RuntimeModel.ExecutionContext, this.#refreshExpressions, this);
+    UI26.Context.Context.instance().addFlavorChangeListener(StackTrace9.StackTrace.DebuggableFrameFlavor, this.#refreshExpressions, this);
     this.linkifier = new Components4.Linkifier.Linkifier();
-    this.requestUpdate();
+    this.#view = DEFAULT_VIEW6;
+    this.#refreshExpressions();
   }
   static instance() {
     if (!watchExpressionsSidebarPaneInstance) {
@@ -14449,14 +14440,6 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
   toolbarItems() {
     return [this.addButton, this.refreshButton];
   }
-  focus() {
-    if (this.hasFocus()) {
-      return;
-    }
-    if (this.#watchExpressions.length > 0) {
-      this.treeOutline.forceSelect();
-    }
-  }
   saveExpressions() {
     const toSave = [];
     for (let i = 0; i < this.#watchExpressions.length; i++) {
@@ -14469,85 +14452,82 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
   }
   async addButtonClicked() {
     await UI26.ViewManager.ViewManager.instance().showView("sources.watch");
-    this.emptyElement.classList.add("hidden");
-    this.createWatchExpression(null).startEditing();
+    const watchExpression = this.createWatchExpression(null);
+    this.requestUpdate();
+    await this.updateComplete;
+    watchExpression.startEditing();
   }
-  async performUpdate() {
+  #refreshExpressions() {
     this.linkifier.reset();
-    this.contentElement.removeChildren();
-    this.treeOutline.removeChildren();
-    this.#watchExpressions = [];
-    this.emptyElement = this.contentElement.createChild("div", "gray-info-message");
-    this.emptyElement.textContent = i18nString25(UIStrings26.noWatchExpressions);
-    this.emptyElement.tabIndex = -1;
-    const watchExpressionStrings = this.#watchExpressionsSetting.get();
-    if (watchExpressionStrings.length) {
-      this.emptyElement.classList.add("hidden");
+    for (const expression of this.#watchExpressions) {
+      expression.removeEventListener("ExpressionUpdated", this.watchExpressionUpdated, this);
     }
+    this.#watchExpressions = [];
+    const watchExpressionStrings = this.#watchExpressionsSetting.get();
+    const oldExpandControllers = this.#expandControllers;
+    this.#expandControllers = /* @__PURE__ */ new Map();
     for (let i = 0; i < watchExpressionStrings.length; ++i) {
       const expression = watchExpressionStrings[i];
       if (!expression) {
         continue;
       }
+      const controller = oldExpandControllers.get(expression);
+      if (controller) {
+        this.#expandControllers.set(expression, controller);
+      }
       this.createWatchExpression(expression);
     }
+    this.requestUpdate();
+  }
+  async performUpdate() {
     await Promise.all(this.#watchExpressions.map((we) => we.updateComplete));
+    this.#view({
+      watchExpressions: this.watchExpressions,
+      onDeleteAll: this.deleteAllButtonClicked.bind(this),
+      onAddExpression: this.addButtonClicked.bind(this),
+      onCopyWatchExpression: (watchExpression) => {
+        if (watchExpression.result?.description) {
+          Host13.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(watchExpression.result.description);
+        }
+      }
+    }, {}, this.contentElement);
+  }
+  #getExpandController(expression) {
+    if (expression === null) {
+      return new ObjectUI4.ObjectPropertiesSection.ObjectTreeExpansionTracker();
+    }
+    let expandController = this.#expandControllers.get(expression);
+    if (!expandController) {
+      expandController = new ObjectUI4.ObjectPropertiesSection.ObjectTreeExpansionTracker();
+      this.#expandControllers.set(expression, expandController);
+    }
+    return expandController;
   }
   createWatchExpression(expression) {
-    this.contentElement.appendChild(this.treeOutline.element);
-    const watchExpression = new WatchExpression(expression, this.expandController, this.linkifier);
-    UI26.ARIAUtils.setLabel(this.contentElement, i18nString25(UIStrings26.addWatchExpression));
+    const expandController = this.#getExpandController(expression);
+    const watchExpression = new WatchExpression(expression, expandController, this.linkifier);
     watchExpression.addEventListener("ExpressionUpdated", this.watchExpressionUpdated, this);
-    this.treeOutline.appendChild(watchExpression.treeElement());
     this.#watchExpressions.push(watchExpression);
     return watchExpression;
   }
   watchExpressionUpdated({ data: watchExpression }) {
-    if (!watchExpression.expression()) {
+    const expression = watchExpression.expression();
+    if (!expression) {
       Platform16.ArrayUtilities.removeElement(this.#watchExpressions, watchExpression);
-      this.treeOutline.removeChild(watchExpression.treeElement());
-      this.emptyElement.classList.toggle("hidden", Boolean(this.#watchExpressions.length));
-      if (this.#watchExpressions.length === 0) {
-        this.treeOutline.element.remove();
-      }
     }
     this.saveExpressions();
-  }
-  contextMenu(event) {
-    const contextMenu = new UI26.ContextMenu.ContextMenu(event);
-    this.populateContextMenu(contextMenu, event);
-    void contextMenu.show();
-  }
-  populateContextMenu(contextMenu, event) {
-    let isEditing = false;
-    for (const watchExpression of this.#watchExpressions) {
-      isEditing = isEditing || watchExpression.isEditing();
-    }
-    if (!isEditing) {
-      contextMenu.debugSection().appendItem(i18nString25(UIStrings26.addWatchExpression), this.addButtonClicked.bind(this), { jslogContext: "add-watch-expression" });
-    }
-    if (this.#watchExpressions.length > 1) {
-      contextMenu.debugSection().appendItem(i18nString25(UIStrings26.deleteAllWatchExpressions), this.deleteAllButtonClicked.bind(this), { jslogContext: "delete-all-watch-expressions" });
-    }
-    const treeElement = this.treeOutline.treeElementFromEvent(event);
-    if (!treeElement) {
-      return;
-    }
-    const currentWatchExpression = this.#watchExpressions.find((watchExpression) => treeElement.hasAncestorOrSelf(watchExpression.treeElement()));
-    if (currentWatchExpression) {
-      currentWatchExpression.populateContextMenu(contextMenu, event);
-    }
+    this.requestUpdate();
   }
   deleteAllButtonClicked() {
     this.#watchExpressions = [];
     this.saveExpressions();
-    this.requestUpdate();
+    this.#refreshExpressions();
   }
   async focusAndAddExpressionToWatch(expression) {
     await UI26.ViewManager.ViewManager.instance().showView("sources.watch");
     this.createWatchExpression(expression);
     this.saveExpressions();
-    this.requestUpdate();
+    this.#refreshExpressions();
   }
   handleAction(_context, _actionId) {
     const frame = UI26.Context.Context.instance().flavor(UISourceCodeFrame);
@@ -14583,25 +14563,28 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
   nameElement;
   valueElement;
   #expression;
-  expandController;
+  #expandController;
   element;
   editing;
   linkifier;
   textPrompt;
-  result;
+  #result;
   preventClickTimeout;
   #updateComplete = Promise.resolve();
   constructor(expression, expandController, linkifier) {
     super();
     this.#expression = expression;
-    this.expandController = expandController;
+    this.#expandController = expandController;
     this.element = document.createElement("div");
     this.element.classList.add("watch-expression");
     this.element.classList.add("monospace");
     this.editing = false;
     this.linkifier = linkifier;
-    this.createWatchExpression();
+    void this.createWatchExpression();
     this.update();
+  }
+  get result() {
+    return this.#result ?? null;
   }
   get updateComplete() {
     return this.#updateComplete;
@@ -14639,16 +14622,16 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
   update() {
     const currentExecutionContext = UI26.Context.Context.instance().flavor(SDK15.RuntimeModel.ExecutionContext);
     if (currentExecutionContext && this.#expression) {
-      this.#updateComplete = this.#evaluateExpression(currentExecutionContext, this.#expression).then((result) => {
+      this.#updateComplete = this.#evaluateExpression(currentExecutionContext, this.#expression).then(async (result) => {
         if ("object" in result) {
-          this.createWatchExpression(result.object, result.exceptionDetails);
+          await this.createWatchExpression(result.object, result.exceptionDetails);
         } else {
-          this.createWatchExpression();
+          await this.createWatchExpression();
         }
+      }).catch(() => {
       });
     } else {
-      this.createWatchExpression();
-      this.#updateComplete = Promise.resolve();
+      this.#updateComplete = this.createWatchExpression();
     }
   }
   startEditing() {
@@ -14695,8 +14678,8 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
     }
   }
   updateExpression(newExpression) {
-    if (this.#expression) {
-      this.expandController.stopWatchSectionsWithId(this.#expression);
+    if (this.#expression !== newExpression && newExpression) {
+      this.#expandController.clear();
     }
     this.#expression = newExpression;
     this.update();
@@ -14707,11 +14690,11 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
     UI26.ARIAUtils.LiveAnnouncer.alert(i18nString25(UIStrings26.watchExpressionDeleted));
     this.updateExpression(null);
   }
-  createWatchExpression(result, exceptionDetails) {
-    this.result = result || null;
+  async createWatchExpression(result, exceptionDetails) {
+    this.#result = result || null;
     this.element.removeChildren();
     const oldTreeElement = this.#treeElement;
-    this.createWatchExpressionTreeElement(result, exceptionDetails);
+    await this.#createWatchExpressionTreeElement(result, exceptionDetails);
     if (oldTreeElement?.parent) {
       const root = oldTreeElement.parent;
       const index = root.indexOfChild(oldTreeElement);
@@ -14760,15 +14743,17 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
     titleElement.append(this.nameElement, separatorElement, this.valueElement);
     return headerElement;
   }
-  createWatchExpressionTreeElement(expressionValue, exceptionDetails) {
+  async #createWatchExpressionTreeElement(expressionValue, exceptionDetails) {
     const headerElement = this.createWatchExpressionHeader(expressionValue, exceptionDetails);
     if (!exceptionDetails && expressionValue && expressionValue.hasChildren && !expressionValue.customPreview()) {
       headerElement.classList.add("watch-expression-object-header");
-      this.#treeElement = new ObjectUI4.ObjectPropertiesSection.RootElement(new ObjectUI4.ObjectPropertiesSection.ObjectTree(expressionValue, {
+      const objectTree = new ObjectUI4.ObjectPropertiesSection.ObjectTree(expressionValue, {
         readOnly: true,
-        propertiesMode: 1
-      }), this.linkifier);
-      this.expandController.watchSection(this.#expression, this.#treeElement);
+        propertiesMode: 1,
+        expansionTracker: this.#expandController
+      });
+      await this.#expandController.apply(objectTree);
+      this.#treeElement = new ObjectUI4.ObjectPropertiesSection.RootElement(objectTree, this.linkifier);
       this.#treeElement.toggleOnClick = false;
       this.#treeElement.listItemElement.addEventListener("click", this.onSectionClick.bind(this), false);
       this.#treeElement.listItemElement.addEventListener("dblclick", this.dblClickOnWatchExpression.bind(this));
@@ -14812,21 +14797,6 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
     if (event.key === "Enter" || isEscapeKey) {
       this.finishEditing(event, isEscapeKey);
     }
-  }
-  populateContextMenu(contextMenu, event) {
-    if (!this.isEditing()) {
-      contextMenu.editSection().appendItem(i18nString25(UIStrings26.deleteWatchExpression), this.updateExpression.bind(this, null), { jslogContext: "delete-watch-expression" });
-    }
-    if (!this.isEditing() && this.result && (this.result.type === "number" || this.result.type === "string")) {
-      contextMenu.clipboardSection().appendItem(i18nString25(UIStrings26.copyValue), this.copyValueButtonClicked.bind(this), { jslogContext: "copy-watch-expression-value" });
-    }
-    const target = UI26.UIUtils.deepElementFromEvent(event);
-    if (target && this.valueElement.isSelfOrAncestor(target) && this.result) {
-      contextMenu.appendApplicableItems(this.result);
-    }
-  }
-  copyValueButtonClicked() {
-    Host13.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.valueElement.textContent);
   }
   static watchObjectGroupId = "watch-group";
 };

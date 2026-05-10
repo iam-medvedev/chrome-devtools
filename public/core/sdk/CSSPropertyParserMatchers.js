@@ -712,8 +712,10 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
             "animation" /* LinkableNameProperties.ANIMATION */,
             "animation-name" /* LinkableNameProperties.ANIMATION_NAME */,
             "font-palette" /* LinkableNameProperties.FONT_PALETTE */,
-            "position-try-fallbacks" /* LinkableNameProperties.POSITION_TRY_FALLBACKS */,
+            "list-style" /* LinkableNameProperties.LIST_STYLE */,
+            "list-style-type" /* LinkableNameProperties.LIST_STYLE_TYPE */,
             "position-try" /* LinkableNameProperties.POSITION_TRY */,
+            "position-try-fallbacks" /* LinkableNameProperties.POSITION_TRY_FALLBACKS */,
         ];
         return names.includes(propertyName);
     }
@@ -799,6 +801,10 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
             !isAParentDeclarationOrVarCall || (node.name === 'ValueName' && shouldMatchOnlyVariableName)) {
             return null;
         }
+        // If it is a builtin keyword value, it is not linkable.
+        if (cssMetadata().getPropertyValues(propertyName).includes(text)) {
+            return null;
+        }
         if (propertyName === 'animation') {
             return this.matchAnimationNameInShorthand(node, matching);
         }
@@ -873,37 +879,6 @@ export class ShadowMatcher extends matcherBase(ShadowMatch) {
         }
         const valueText = matching.ast.textRange(valueNodes[0], valueNodes[valueNodes.length - 1]);
         return new ShadowMatch(valueText, node, matching.ast.propertyName === 'text-shadow' ? "textShadow" /* ShadowType.TEXT_SHADOW */ : "boxShadow" /* ShadowType.BOX_SHADOW */);
-    }
-}
-export class FontMatch {
-    text;
-    node;
-    constructor(text, node) {
-        this.text = text;
-        this.node = node;
-    }
-}
-// clang-format off
-export class FontMatcher extends matcherBase(FontMatch) {
-    // clang-format on
-    accepts(propertyName) {
-        return cssMetadata().isFontAwareProperty(propertyName);
-    }
-    matches(node, matching) {
-        if (node.name !== 'Declaration') {
-            return null;
-        }
-        const valueNodes = ASTUtils.siblings(ASTUtils.declValue(node));
-        if (valueNodes.length === 0) {
-            return null;
-        }
-        const validNodes = matching.ast.propertyName === 'font-family' ? ['ValueName', 'StringLiteral', 'Comment', ','] :
-            ['Comment', 'ValueName', 'NumberLiteral'];
-        if (valueNodes.some(node => !validNodes.includes(node.name))) {
-            return null;
-        }
-        const valueText = matching.ast.textRange(valueNodes[0], valueNodes[valueNodes.length - 1]);
-        return new FontMatch(valueText, node);
     }
 }
 export class LengthMatch {

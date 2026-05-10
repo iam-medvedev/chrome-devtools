@@ -110,7 +110,6 @@
       <include file="Images/cross-circle.svg" name="IMAGES_CROSS_CIRCLE_SVG" resource_path="Images/cross-circle.svg" type="BINDATA" compress="false"/>
       <include file="Images/cross.svg" name="IMAGES_CROSS_SVG" resource_path="Images/cross.svg" type="BINDATA" compress="false"/>
       <include file="Images/cssoverview_icons_2x.avif" name="IMAGES_CSSOVERVIEW_ICONS_2X_AVIF" resource_path="Images/cssoverview_icons_2x.avif" type="BINDATA" compress="false"/>
-      <include file="Images/custom-typography.svg" name="IMAGES_CUSTOM_TYPOGRAPHY_SVG" resource_path="Images/custom-typography.svg" type="BINDATA" compress="false"/>
       <include file="Images/database-off.svg" name="IMAGES_DATABASE_OFF_SVG" resource_path="Images/database-off.svg" type="BINDATA" compress="false"/>
       <include file="Images/database.svg" name="IMAGES_DATABASE_SVG" resource_path="Images/database.svg" type="BINDATA" compress="false"/>
       <include file="Images/deployed.svg" name="IMAGES_DEPLOYED_SVG" resource_path="Images/deployed.svg" type="BINDATA" compress="false"/>

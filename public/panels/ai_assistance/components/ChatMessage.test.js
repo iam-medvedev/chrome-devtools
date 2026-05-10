@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as TextUtils from '../../../models/text_utils/text_utils.js';
 import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
 import { makeFakeParsedTrace, microsecondsTraceWindow } from '../../../testing/TraceHelpers.js';
@@ -18,6 +19,7 @@ describeWithEnvironment('ChatMessage', () => {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [],
                 rpcId: 99,
+                id: '1',
             },
             isLoading: false,
             isReadOnly: false,
@@ -68,6 +70,7 @@ describeWithEnvironment('ChatMessage', () => {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [],
                 rpcId: 99,
+                id: '1',
             },
             isLoading: false,
             isReadOnly: false,
@@ -140,6 +143,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     },
                 ],
+                id: '1',
             };
             const deduplicated = AiAssistance.ChatMessage.getDeduplicatedWidgetsMessage(message);
             assert.lengthOf(deduplicated.parts, 2);
@@ -318,6 +322,7 @@ describeWithEnvironment('ChatMessage', () => {
             message: {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [],
+                id: '1',
             },
         });
         sinon.assert.callCount(view, 1);
@@ -351,6 +356,7 @@ describeWithEnvironment('ChatMessage', () => {
                     },
                 ],
                 rpcId: 99,
+                id: '1',
             },
             isLastMessage: false,
         });
@@ -369,6 +375,7 @@ describeWithEnvironment('ChatMessage', () => {
                     },
                 ],
                 rpcId: 99,
+                id: '1',
             },
             isLastMessage: true,
         });
@@ -390,6 +397,7 @@ describeWithEnvironment('ChatMessage', () => {
                     },
                 }],
             rpcId: 99,
+            id: '1',
         };
         it('renders "Show thinking" button when there are steps and not inline', () => {
             const target = renderView({
@@ -444,6 +452,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     }],
                 rpcId: 99,
+                id: '1',
             };
             const target = renderView({
                 message: widgetMessage,
@@ -469,6 +478,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     }],
                 rpcId: 99,
+                id: '1',
             };
             const target = renderView({
                 isLoading: true,
@@ -493,6 +503,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     }],
                 rpcId: 99,
+                id: '1',
             };
             const target = renderView({
                 isLoading: true,
@@ -543,6 +554,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     }],
                 rpcId: 99,
+                id: '1',
             };
             const target = renderView({
                 isLoading: true,
@@ -579,6 +591,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     }],
                 rpcId: 99,
+                id: '1',
             };
             const target = renderView({
                 isLoading: false,
@@ -605,6 +618,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     }],
                 rpcId: 99,
+                id: '1',
             };
             const target = renderView({
                 isLoading: false,
@@ -658,6 +672,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     }],
                 rpcId: 99,
+                id: '1',
             };
             // Test closed state
             const targetClosed = renderView({
@@ -700,6 +715,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     }],
                 rpcId: 99,
+                id: '1',
             };
             // Test closed state
             const targetClosed = renderView({
@@ -749,6 +765,7 @@ describeWithEnvironment('ChatMessage', () => {
                     },
                 ],
                 rpcId: 99,
+                id: '1',
             };
             const target = renderView({
                 message,
@@ -782,6 +799,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     }],
                 rpcId: 99,
+                id: '1',
             };
             const target = renderView({
                 message: sideEffectMessage,
@@ -815,36 +833,11 @@ describeWithEnvironment('ChatMessage', () => {
                             }],
                     }],
                 rpcId: 99,
+                id: '1',
             };
-            // We need to mock the widget maker to return a name
-            const targetElement = document.createElement('div');
-            AiAssistance.ChatMessage.DEFAULT_VIEW({
-                onRatingClick: () => { },
-                onReportClick: () => { },
-                onCopyResponseClick: () => { },
-                scrollSuggestionsScrollContainer: () => { },
-                onSuggestionsScrollOrResize: () => { },
-                onSuggestionClick: () => { },
-                onSubmit: () => { },
-                onClose: () => { },
-                onInputChange: () => { },
-                onFeedbackSubmit: () => { },
-                showRateButtons: false,
-                isSubmitButtonDisabled: false,
-                isShowingFeedbackForm: false,
-                isLastMessage: true,
-                isFirstMessage: false,
-                prompt: 'test prompt',
-                shouldShowCSSChangeSummary: false,
-                showActions: true,
+            const targetElement = renderView({
                 message: messageWithNamedWidget,
-                isLoading: false,
-                isReadOnly: false,
-                canShowFeedbackForm: false,
-                markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
-                currentRating: undefined,
-                walkthrough: { ...DEFAULT_WALKTHROUGH },
-            }, {}, targetElement);
+            });
             // We need to wait for the async renderWidgets
             const widgetHeader = await waitFor('.widget-header', targetElement);
             assert.isNotNull(widgetHeader);
@@ -852,6 +845,45 @@ describeWithEnvironment('ChatMessage', () => {
             const revealButton = widgetHeader.querySelector('.widget-reveal-button');
             assert.isNotNull(revealButton);
             assert.strictEqual(revealButton.getAttribute('accessibleLabel'), 'Reveal LCP element');
+        });
+        it('renders network request image using imageContent.asImagePreviewUrl()', async () => {
+            const root = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
+            const domModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
+            const target = sinon.createStubInstance(SDK.Target.Target);
+            root.domModel.returns(domModel);
+            domModel.target.returns(target);
+            root.backendNodeId.returns(1);
+            const mockContentData = sinon.createStubInstance(TextUtils.ContentData.ContentData);
+            mockContentData.asImagePreviewUrl.returns('blob:http://localhost/123');
+            const messageWithWidget = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'widget',
+                        widgets: [{
+                                name: 'DOM_TREE',
+                                data: {
+                                    root,
+                                    networkRequest: {
+                                        url: 'https://example.com/image.png',
+                                        size: 100,
+                                        resourceType: 'Image',
+                                        mimeType: 'image/png',
+                                        imageContent: mockContentData,
+                                    },
+                                },
+                            }],
+                    }],
+                rpcId: 99,
+                id: '1',
+            };
+            const targetElement = renderView({
+                message: messageWithWidget,
+            });
+            await waitFor('img', targetElement);
+            const img = targetElement.querySelector('img');
+            assert.exists(img);
+            assert.strictEqual(img?.src, 'blob:http://localhost/123');
+            sinon.assert.calledOnce(mockContentData.asImagePreviewUrl);
         });
         it('renders the "Export for agents" button after action buttons and before suggestions when onExportClick is provided, it is the last message, and V2 is enabled', async () => {
             updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
@@ -871,6 +903,7 @@ describeWithEnvironment('ChatMessage', () => {
                         },
                     ],
                     rpcId: 99,
+                    id: '1',
                 },
             });
             const row = querySelectorErrorOnMissing(target, '.ai-assistance-feedback-row');
@@ -959,6 +992,7 @@ describeWithEnvironment('ChatMessage', () => {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                     parts: [],
                     rpcId: 99,
+                    id: '1',
                 },
                 isLoading: false,
                 isReadOnly: false,
@@ -994,6 +1028,7 @@ describeWithEnvironment('ChatMessage', () => {
                 message: {
                     entity: "user" /* AiAssistance.ChatMessage.ChatMessageEntity.USER */,
                     text: 'Can you help me fix specific CSS rules?',
+                    id: '1',
                 },
                 isLoading: false,
                 isReadOnly: false,
@@ -1028,6 +1063,7 @@ describeWithEnvironment('ChatMessage', () => {
                 message: {
                     entity: "user" /* AiAssistance.ChatMessage.ChatMessageEntity.USER */,
                     text: 'First user message',
+                    id: '1',
                 },
                 isLoading: false,
                 isReadOnly: false,
@@ -1061,6 +1097,7 @@ describeWithEnvironment('ChatMessage', () => {
                 message: {
                     entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                     parts: [],
+                    id: '1',
                 },
                 isLoading: false,
                 isReadOnly: false,

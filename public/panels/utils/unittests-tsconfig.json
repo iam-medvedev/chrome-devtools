@@ -63,6 +63,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
@@ -73,6 +76,9 @@
     },
     {
       "path": "../../third_party/diff/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/lit/bundle-tsconfig.json"
     }
   ]
 }

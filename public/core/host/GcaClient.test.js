@@ -1,9 +1,12 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import * as Host from './host.js';
-describeWithEnvironment('GcaClient', () => {
+describe('GcaClient', () => {
+    setupLocaleHooks();
+    setupRuntimeHooks();
     let gcaClient;
     beforeEach(() => {
         gcaClient = new Host.GcaClient.GcaClient();

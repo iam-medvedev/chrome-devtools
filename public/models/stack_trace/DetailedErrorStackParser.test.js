@@ -285,6 +285,118 @@ describe('DetailedErrorStackParser', () => {
             assert.strictEqual(frames[1].lineNumber, 49);
             assert.strictEqual(frames[1].columnNumber, 0);
         });
+        it('parses a complex real-world stack trace', () => {
+            const stack = `Error: V8-Stack
+    at end (eval at <anonymous> (eval at <anonymous> (eval at evalCaller (http://example.com/index.html:11:45))), <anonymous>:1:23)
+    at eval (eval at <anonymous> (eval at <anonymous> (eval at evalCaller (http://example.com/index.html:11:45))), <anonymous>:1:44)
+    at eval (eval at <anonymous> (eval at evalCaller (http://example.com/index.html:11:45)), <anonymous>:1:1)
+    at eval (eval at evalCaller (http://example.com/index.html:11:45), <anonymous>:1:1)
+    at evalCaller (http://example.com/index.html:15:45)
+    at new MyConstructor (http://example.com/index.html:16:43)
+    at Object.originalName [as aliasedMethod] (http://example.com/index.html:12:33)
+    at http://example.com/index.html:21:29
+    at Array.map (<anonymous>)
+    at get triggerGetter (http://example.com/index.html:9:35)`;
+            const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
+            assert.lengthOf(frames, 10);
+            // Frame 0: end
+            assert.deepEqual(frames[0], {
+                url: '<anonymous>',
+                functionName: 'end',
+                lineNumber: 0,
+                columnNumber: 22,
+                parsedFrameInfo: {
+                    isAsync: false,
+                    isConstructor: false,
+                    isEval: true,
+                    isWasm: false,
+                    wasmModuleName: undefined,
+                    wasmFunctionIndex: undefined,
+                    typeName: undefined,
+                    methodName: undefined,
+                    promiseIndex: undefined,
+                    evalOrigin: {
+                        url: '',
+                        functionName: '<anonymous>',
+                        lineNumber: -1,
+                        columnNumber: -1,
+                        parsedFrameInfo: {
+                            isAsync: false,
+                            isConstructor: false,
+                            isEval: true,
+                            isWasm: false,
+                            wasmModuleName: undefined,
+                            wasmFunctionIndex: undefined,
+                            typeName: undefined,
+                            methodName: undefined,
+                            promiseIndex: undefined,
+                            evalOrigin: {
+                                url: '',
+                                functionName: '<anonymous>',
+                                lineNumber: -1,
+                                columnNumber: -1,
+                                parsedFrameInfo: {
+                                    isAsync: false,
+                                    isConstructor: false,
+                                    isEval: true,
+                                    isWasm: false,
+                                    wasmModuleName: undefined,
+                                    wasmFunctionIndex: undefined,
+                                    typeName: undefined,
+                                    methodName: undefined,
+                                    promiseIndex: undefined,
+                                    evalOrigin: {
+                                        url: 'http://example.com/index.html',
+                                        functionName: 'evalCaller',
+                                        lineNumber: 10,
+                                        columnNumber: 44,
+                                        parsedFrameInfo: {
+                                            isAsync: false,
+                                            isConstructor: false,
+                                            isEval: false,
+                                            isWasm: false,
+                                            wasmModuleName: undefined,
+                                            wasmFunctionIndex: undefined,
+                                            typeName: undefined,
+                                            methodName: undefined,
+                                            promiseIndex: undefined,
+                                            evalOrigin: undefined,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            // Frame 4: evalCaller
+            assert.strictEqual(frames[4].functionName, 'evalCaller');
+            assert.strictEqual(frames[4].url, 'http://example.com/index.html');
+            assert.strictEqual(frames[4].lineNumber, 14);
+            assert.strictEqual(frames[4].columnNumber, 44);
+            // Frame 5: new MyConstructor
+            assert.strictEqual(frames[5].functionName, 'MyConstructor');
+            assert.isTrue(frames[5].parsedFrameInfo?.isConstructor);
+            assert.strictEqual(frames[5].lineNumber, 15);
+            assert.strictEqual(frames[5].columnNumber, 42);
+            // Frame 6: Object.originalName [as aliasedMethod]
+            assert.strictEqual(frames[6].functionName, 'Object.originalName');
+            assert.strictEqual(frames[6].parsedFrameInfo?.methodName, 'aliasedMethod');
+            assert.strictEqual(frames[6].lineNumber, 11);
+            assert.strictEqual(frames[6].columnNumber, 32);
+            // Frame 7: anonymous
+            assert.strictEqual(frames[7].functionName, '');
+            assert.strictEqual(frames[7].lineNumber, 20);
+            assert.strictEqual(frames[7].columnNumber, 28);
+            // Frame 8: Array.map
+            assert.strictEqual(frames[8].functionName, 'Array.map');
+            assert.isTrue(StackTraceImpl.Trie.isBuiltinFrame(frames[8]));
+            // Frame 9: get triggerGetter
+            assert.strictEqual(frames[9].functionName, 'get triggerGetter');
+            assert.strictEqual(frames[9].lineNumber, 8);
+            assert.strictEqual(frames[9].columnNumber, 34);
+        });
     });
     describe('parseMessage', () => {
         it('extracts the message when stack frames are present', () => {

@@ -6,7 +6,6 @@ import * as Host from '../../core/host/host.js';
 interface AgentOptions {
     aidaClient: Host.AidaClient.AidaClient;
     serverSideLoggingEnabled?: boolean;
-    confirmSideEffectForTest?: typeof Promise.withResolvers;
 }
 export interface Callbacks {
     getSelectionHead: () => number;
@@ -37,7 +36,9 @@ export declare class AiCodeCompletion {
         fromCache: boolean;
     }>;
     remove(): void;
+    static isAiCodeCompletionAvailable(): boolean;
     static isAiCodeCompletionEnabled(locale: string): boolean;
+    static isAiCodeCompletionStylesAvailable(): boolean;
     static isAiCodeCompletionStylesEnabled(locale: string): boolean;
 }
 export declare const enum ContextFlavor {
