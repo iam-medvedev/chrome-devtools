@@ -54,6 +54,9 @@
       "path": "./bundle-tsconfig.json"
     },
     {
+      "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
       "path": "../../testing/testing-tsconfig.json"
     }
   ]

@@ -61,6 +61,12 @@
     },
     {
       "path": "../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../../third_party/i18n/bundle-tsconfig.json"
+    },
+    {
+      "path": "../platform/bundle-tsconfig.json"
     }
   ]
 }

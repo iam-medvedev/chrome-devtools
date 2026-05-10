@@ -44,6 +44,11 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/core/sdk/AccessibilityModel.test.ts",
+    "../../../../../../front_end/core/sdk/AnimationModel.test.ts",
+    "../../../../../../front_end/core/sdk/AutofillModel.test.ts",
+    "../../../../../../front_end/core/sdk/CPUThrottlingManager.test.ts",
+    "../../../../../../front_end/core/sdk/CSSContainerQuery.test.ts",
     "../../../../../../front_end/core/sdk/DebuggerModel.test.ts",
     "../../../../../../front_end/core/sdk/NetworkManager.test.ts",
     "../../../../../../front_end/core/sdk/PageResourceLoader.test.ts",
@@ -66,16 +71,28 @@
       "path": "../../models/bindings/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/persistence/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/text_utils/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
       "path": "../../testing/testing-tsconfig.json"
     },
     {
+      "path": "../common/bundle-tsconfig.json"
+    },
+    {
       "path": "../host/bundle-tsconfig.json"
     },
     {
       "path": "../platform/bundle-tsconfig.json"
+    },
+    {
+      "path": "../protocol_client/bundle-tsconfig.json"
     },
     {
       "path": "../root/bundle-tsconfig.json"

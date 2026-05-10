@@ -1,8 +1,11 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { clearAllMockConnectionResponseHandlers, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
 function createAnimationPayload(payload) {
     return {
@@ -29,13 +32,17 @@ function createAnimationPayload(payload) {
         },
     };
 }
-describeWithMockConnection('AnimationModel', () => {
-    afterEach(() => {
-        clearAllMockConnectionResponseHandlers();
+describe('AnimationModel', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
     });
     it('can be instantiated', () => {
         assert.doesNotThrow(() => {
-            const target = createTarget();
+            const target = universe.createTarget();
             new SDK.AnimationModel.AnimationModel(target);
         });
     });
@@ -47,7 +54,7 @@ describeWithMockConnection('AnimationModel', () => {
             sinon.stub(SDK.AnimationModel.AnimationEffect.prototype, 'node').resolves(stubDOMNode);
         });
         it('should resolve the containing animation group if the animation with given name and node id exists in the group', async () => {
-            const target = createTarget();
+            const target = universe.createTarget();
             const model = new SDK.AnimationModel.AnimationModel(target);
             const animationGroupStartedPromiseWithResolvers = Promise.withResolvers();
             model.addEventListener(SDK.AnimationModel.Events.AnimationGroupStarted, () => {
@@ -59,7 +66,7 @@ describeWithMockConnection('AnimationModel', () => {
             assert.isNotNull(receivedAnimationGroup);
         });
         it('should resolve null if there is no animations with matching name', async () => {
-            const target = createTarget();
+            const target = universe.createTarget();
             const model = new SDK.AnimationModel.AnimationModel(target);
             const animationGroupStartedPromiseWithResolvers = Promise.withResolvers();
             model.addEventListener(SDK.AnimationModel.Events.AnimationGroupStarted, () => {
@@ -71,7 +78,7 @@ describeWithMockConnection('AnimationModel', () => {
             assert.isNull(receivedAnimationGroup);
         });
         it('should resolve null if there is an animation with the same name but for a different node id', async () => {
-            const target = createTarget();
+            const target = universe.createTarget();
             const model = new SDK.AnimationModel.AnimationModel(target);
             const animationGroupStartedPromiseWithResolvers = Promise.withResolvers();
             model.addEventListener(SDK.AnimationModel.Events.AnimationGroupStarted, () => {
@@ -85,7 +92,7 @@ describeWithMockConnection('AnimationModel', () => {
     });
     describe('AnimationImpl', () => {
         it('setPayload should update values returned from the relevant value functions for time based animations', async () => {
-            const target = createTarget();
+            const target = universe.createTarget();
             const model = new SDK.AnimationModel.AnimationModel(target);
             const animationImpl = await SDK.AnimationModel.AnimationImpl.parsePayload(model, {
                 id: '1',
@@ -147,15 +154,14 @@ describeWithMockConnection('AnimationModel', () => {
             assert.strictEqual(animationImpl.type(), "CSSTransition" /* Protocol.Animation.AnimationType.CSSTransition */);
         });
         it('setPayload should update values returned from the relevant value functions for scroll based animations', async () => {
-            setMockConnectionResponseHandler('Runtime.evaluate', () => {
-                return {
-                    result: {
-                        type: 'number',
-                        value: 1,
-                    },
-                };
-            });
-            const target = createTarget();
+            const connection = new MockCDPConnection();
+            connection.setSuccessHandler('Runtime.evaluate', () => ({
+                result: {
+                    type: "number" /* Protocol.Runtime.RemoteObjectType.Number */,
+                    value: 1,
+                },
+            }));
+            const target = universe.createTarget({ connection });
             const model = new SDK.AnimationModel.AnimationModel(target);
             const animationImpl = await SDK.AnimationModel.AnimationImpl.parsePayload(model, {
                 id: '1',

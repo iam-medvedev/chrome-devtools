@@ -114,9 +114,19 @@ const UIStrings = {
      * @description Tooltip text for the link in the sidebar pane layer separators that reveals the layer in the layer tree view.
      */
     clickToRevealLayer: 'Click to reveal layer in layer tree',
+    /**
+     * @description Text to announce that the AI suggestion was accepted.
+     * @example {color: blue;} PH1
+     */
+    aiSuggestionAccepted: '{PH1} Suggestion accepted.',
+    /**
+     * @description Title of the general at-rule section
+     */
+    atRuleSection: 'Other @rules',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylesSidebarPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const lockedString = i18n.i18n.lockedString;
 // Number of ms elapsed with no keypresses to determine is the input is finished, to announce results
 const FILTER_IDLE_PERIOD = 500;
 // Minimum number of @property rules for the @property section block to be folded initially
@@ -125,8 +135,6 @@ const MIN_FOLDED_SECTIONS_COUNT = 5;
 export const REGISTERED_PROPERTY_SECTION_NAME = '@property';
 /** Title of the function section **/
 export const FUNCTION_SECTION_NAME = '@function';
-/** Title of the general at-rule section */
-export const AT_RULE_SECTION_NAME = '@font-*';
 // Highlightable properties are those that can be hovered in the sidebar to trigger a specific
 // highlighting mode on the current element.
 const HIGHLIGHTABLE_PROPERTIES = [
@@ -224,8 +232,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 this.#scheduleResetUpdateIfNotEditing();
             }
         });
-        const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
-        if (AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesEnabled(devtoolsLocale.locale)) {
+        if (AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.isAiCodeCompletionStylesAvailable()) {
             this.aiCodeCompletionConfig = {
                 completionContext: {},
                 generationContext: {},
@@ -287,7 +294,10 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.jumpToSection(functionName, FUNCTION_SECTION_NAME);
     }
     jumpToFontPaletteDefinition(paletteName) {
-        this.jumpToSection(`@font-palette-values ${paletteName}`, AT_RULE_SECTION_NAME);
+        this.jumpToSection(`@font-palette-values ${paletteName}`, i18nString(UIStrings.atRuleSection));
+    }
+    jumpToCounterStyleDefinition(counterStyleName) {
+        this.jumpToSection(`@counter-style ${counterStyleName}`, i18nString(UIStrings.atRuleSection));
     }
     forceUpdate() {
         this.needsForceUpdate = true;
@@ -846,7 +856,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }
         this.swatchPopoverHelper().reposition();
         // Record the elements tool load time after the sidepane has loaded.
-        Host.userMetrics.panelLoaded('elements', 'DevTools.Launch.Elements');
+        UI.UIUserMetrics.UIUserMetrics.instance().panelLoaded('elements', 'DevTools.Launch.Elements');
         this.dispatchEventToListeners("StylesUpdateCompleted" /* Events.STYLES_UPDATE_COMPLETED */, { hasMatchedStyles: false });
     }
     nodeStylesUpdatedForTest(_node, _rebuild) {
@@ -1379,7 +1389,7 @@ export class SectionBlock {
         const separatorElement = document.createElement('div');
         const block = new SectionBlock(separatorElement, true, expandedByDefault);
         separatorElement.className = 'sidebar-separator';
-        separatorElement.appendChild(document.createTextNode(AT_RULE_SECTION_NAME));
+        separatorElement.appendChild(document.createTextNode(i18nString(UIStrings.atRuleSection)));
         return block;
     }
     static createPositionTryBlock(positionTryName) {
@@ -1880,9 +1890,16 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         if (!this.queryRange) {
             this.queryRange = new TextUtils.TextRange.TextRange(0, 0, 0, this.text().length);
         }
+        const properties = this.#getAiSuggestedProperties(args.text);
+        if (properties.length === 0) {
+            this.treeElement.section().activeAiSuggestion = undefined;
+            this.activeAiSuggestionInfo = undefined;
+            return;
+        }
+        const styleText = properties.map(p => `${p.name}: ${p.value};`).join(' ');
         this.treeElement.section().activeAiSuggestion = {
-            text: args.text,
-            properties: this.#getAiSuggestedProperties(args.text),
+            text: styleText,
+            properties,
             cursorPosition: args.from,
             clearCachedRequest: args.clearCachedRequest,
             cssProperty: this.treeElement.property,
@@ -1892,6 +1909,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         if (args.rpcGlobalId) {
             args.onImpression(args.rpcGlobalId, latency, args.sampleId);
         }
+        UI.ARIAUtils.LiveAnnouncer.status(lockedString(styleText));
     }
     #getAiSuggestedProperties(suggestionText) {
         const cssParser = CodeMirror.css.cssLanguage.parser.configure({ top: 'Styles' });
@@ -1964,7 +1982,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
                 // Explicitly set the query range as it is cleared during `acceptAutoComplete`
                 this.queryRange = new TextUtils.TextRange.TextRange(0, 0, 0, textAfterAccept.length);
                 // Re-apply the ghost text for the remainder
-                this.applySuggestion({ text: suggestionForCurrentPrompt }, true);
+                this.applySuggestion({ text: suggestionForCurrentPrompt, disableAcceptSuggestionOnStopCharacters: true }, true);
             }
             return true;
         }
@@ -1976,9 +1994,13 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         return true;
     }
     async commitAiSuggestion() {
+        const suggestionText = this.treeElement.section().activeAiSuggestion?.text;
         await this.treeElement.section().commitActiveAiSuggestion();
         if (this.activeAiSuggestionInfo) {
             this.aiCodeCompletionProvider?.onSuggestionAccepted(this.activeAiSuggestionInfo.citations, this.activeAiSuggestionInfo.rpcGlobalId, this.activeAiSuggestionInfo.sampleId);
+        }
+        if (suggestionText) {
+            UI.ARIAUtils.LiveAnnouncer.status(i18nString(UIStrings.aiSuggestionAccepted, { PH1: suggestionText }));
         }
         // Clear state and return
         this.setAiAutoCompletion(null);

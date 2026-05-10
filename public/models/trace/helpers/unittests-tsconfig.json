@@ -58,10 +58,16 @@
       "path": "../../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../bundle-tsconfig.json"
     },
     {
       "path": "../../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../../cpu_profile/bundle-tsconfig.json"
     }
   ]
 }

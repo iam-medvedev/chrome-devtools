@@ -2,7 +2,6 @@
 import "./../devtools_app/devtools_app.js";
 
 // gen/front_end/panels/screencast/screencast-meta.js
-import * as Common from "./../../core/common/common.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var loadedScreencastModule;
 async function loadScreencastModule() {
@@ -19,7 +18,7 @@ UI.Toolbar.registerToolbarItem({
   order: 1,
   location: "main-toolbar-left"
 });
-Common.AppProvider.registerAppProvider({
+UI.AppProvider.registerAppProvider({
   async loadAppProvider() {
     const Screencast = await loadScreencastModule();
     return Screencast.ScreencastApp.ScreencastAppProvider.instance();

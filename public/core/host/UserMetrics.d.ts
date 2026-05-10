@@ -1,15 +1,8 @@
 export declare class UserMetrics {
-    #private;
-    constructor();
-    panelShown(panelName: string, isLaunching?: boolean): void;
-    settingsPanelShown(settingsViewId: string): void;
     sourcesPanelFileDebugged(mediaType?: string): void;
     sourcesPanelFileOpened(mediaType?: string): void;
     networkPanelResponsePreviewOpened(mediaType: string): void;
     actionTaken(action: Action): void;
-    panelLoaded(panelName: string, histogramName: string): void;
-    setLaunchPanel(panelName: string | null): void;
-    performanceTraceLoad(measure: PerformanceMeasure): void;
     keybindSetSettingChanged(keybindSet: string): void;
     keyboardShortcutFired(actionId: string): void;
     issuesPanelOpenedFrom(issueOpener: IssueOpener): void;
@@ -261,7 +254,14 @@ export declare enum Action {
     InsightTeaserModelDownloadCompleted = 198,
     AiCodeGenerationError = 199,
     AiCodeGenerationRequestTriggered = 200,
-    MAX_VALUE = 201
+    AiCodeCompletionRequestTriggeredFromConsole = 201,
+    AiCodeCompletionRequestTriggeredFromSources = 202,
+    AiCodeCompletionRequestTriggeredFromStyles = 203,
+    AiCodeGenerationRequestTriggeredFromConsole = 204,
+    AiCodeGenerationRequestTriggeredFromSources = 205,
+    AiCodeCompletionFreCompletedFromConsole = 206,
+    AiCodeCompletionFreCompletedFromSources = 207,
+    MAX_VALUE = 208
 }
 export declare enum PanelCodes {
     elements = 1,
@@ -288,7 +288,6 @@ export declare enum PanelCodes {
     'changes.changes' = 23,
     'performance.monitor' = 24,
     'release-note' = 25,
-    'live-heap-profile' = 26,
     'sources.quick' = 27,
     'network.blocked-urls' = 28,
     'settings-preferences' = 29,
@@ -429,8 +428,6 @@ export declare enum KeyboardShortcutAction {
     'inspector-main.focus-debuggee' = 47,
     'inspector-main.hard-reload' = 48,
     'inspector-main.reload' = 49,
-    'live-heap-profile.start-with-reload' = 50,
-    'live-heap-profile.toggle-recording' = 51,
     'main.debug-reload' = 52,
     'main.next-tab' = 53,
     'main.previous-tab' = 54,
@@ -514,10 +511,8 @@ export declare const enum IssueOpener {
  */
 export declare enum DevtoolsExperiments {
     'capture-node-creation-stacks' = 1,
-    'live-heap-profile' = 11,
     'protocol-monitor' = 13,
     'timeline-invalidation-tracking' = 26,
-    'font-editor' = 41,
     'instrumentation-breakpoints' = 61,
     'use-source-map-scopes' = 76,
     'timeline-debug-mode' = 93,
@@ -865,7 +860,8 @@ export declare const enum LighthouseCategoryUsed {
     SEO = 3,
     PWA = 4,
     PUB_ADS = 5,
-    MAX_VALUE = 6
+    AGENTIC_BROWSING = 6,
+    MAX_VALUE = 7
 }
 export declare const enum SwatchType {
     VAR_LINK = 0,

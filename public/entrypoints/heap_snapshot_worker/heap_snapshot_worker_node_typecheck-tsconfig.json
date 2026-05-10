@@ -59,6 +59,9 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/platform/api/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/heap_snapshot/bundle-tsconfig.json"
     },
     {

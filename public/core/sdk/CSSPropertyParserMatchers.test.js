@@ -251,6 +251,11 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             assert.deepEqual(match('position-try', '--one, --two'), ['--one', '--two']);
         }
         {
+            assert.deepEqual(match('list-style-type', 'custom'), ['custom']);
+            assert.deepEqual(match('list-style-type', 'georgian'), []);
+            assert.deepEqual(match('list-style', 'custom outside'), ['custom']);
+        }
+        {
             injectVariableSubstitutions({
                 '--duration-and-easing': '1s linear',
             });
@@ -299,22 +304,6 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
         const { match, text } = matchSingleValue('box-shadow', '/*0*/3px 3px red, -1em 0 .4em /*a*/ olive /*b*/', new SDK.CSSPropertyParserMatchers.ShadowMatcher());
         assert.exists(match, text);
         assert.strictEqual(match.text, '/*0*/3px 3px red, -1em 0 .4em /*a*/ olive');
-    });
-    it('parses fonts correctly', () => {
-        for (const fontSize of ['-.23', 'smaller', '17px']) {
-            const { ast, match, text } = matchSingleValue('font-size', fontSize, new SDK.CSSPropertyParserMatchers.FontMatcher());
-            assert.exists(ast, text);
-            assert.exists(match, text);
-            assert.strictEqual(match.text, fontSize);
-        }
-        {
-            const ast = SDK.CSSPropertyParser.tokenizeDeclaration('font-family', '"Gill Sans", sans-serif');
-            assert.exists(ast);
-            const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new SDK.CSSPropertyParserMatchers.FontMatcher()]);
-            assert.exists(matchedResult);
-            const matches = SDK.CSSPropertyParser.TreeSearch.findAll(ast, node => matchedResult.getMatch(node) instanceof SDK.CSSPropertyParserMatchers.FontMatch);
-            assert.deepEqual(matches.map(m => matchedResult.getMatch(m)?.text), ['"Gill Sans", sans-serif']);
-        }
     });
     it('parses grid templates correctly', () => {
         injectVariableSubstitutions({

@@ -44,6 +44,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../front_end/testing/MockCDPConnection.test.ts",
     "../../../../../front_end/testing/MockScopeChain.test.ts",
     "../../../../../front_end/testing/MutationHelpers.test.ts",
     "../../../../../front_end/testing/SnapshotTester.test.ts",
@@ -55,6 +56,15 @@
   "references": [
     {
       "path": "./testing-tsconfig.json"
+    },
+    {
+      "path": "../core/protocol_client/bundle-tsconfig.json"
+    },
+    {
+      "path": "../generated/generated-tsconfig.json"
+    },
+    {
+      "path": "../ui/lit/bundle-tsconfig.json"
     }
   ]
 }

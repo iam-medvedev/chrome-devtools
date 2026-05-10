@@ -1,7 +1,6 @@
-import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class ScreencastApp implements Common.App.App, SDK.TargetManager.SDKModelObserver<SDK.ScreenCaptureModel.ScreenCaptureModel> {
+export declare class ScreencastApp implements UI.App.App, SDK.TargetManager.SDKModelObserver<SDK.ScreenCaptureModel.ScreenCaptureModel> {
     private readonly enabledSetting;
     toggleButton: UI.Toolbar.ToolbarToggle;
     private rootSplitWidget?;
@@ -22,9 +21,9 @@ export declare class ToolbarButtonProvider implements UI.Toolbar.Provider {
     }): ToolbarButtonProvider;
     item(): UI.Toolbar.ToolbarItem | null;
 }
-export declare class ScreencastAppProvider implements Common.AppProvider.AppProvider {
+export declare class ScreencastAppProvider implements UI.AppProvider.AppProvider {
     static instance(opts?: {
         forceNew: boolean;
     }): ScreencastAppProvider;
-    createApp(): Common.App.App;
+    createApp(): UI.App.App;
 }

@@ -45,7 +45,6 @@
     "../../../../../../front_end/panels/application/CookieItemsView.ts",
     "../../../../../../front_end/panels/application/CrashReportContextView.ts",
     "../../../../../../front_end/panels/application/DOMStorageItemsView.ts",
-    "../../../../../../front_end/panels/application/DOMStorageModel.ts",
     "../../../../../../front_end/panels/application/DeviceBoundSessionsModel.ts",
     "../../../../../../front_end/panels/application/DeviceBoundSessionsTreeElement.ts",
     "../../../../../../front_end/panels/application/DeviceBoundSessionsView.ts",
@@ -107,6 +106,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
@@ -158,10 +160,16 @@
       "path": "../../ui/components/expandable_list/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/icon_button/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/legacy_wrapper/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/lists/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/node_text/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/report_view/bundle-tsconfig.json"

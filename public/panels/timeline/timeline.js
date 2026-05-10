@@ -7003,7 +7003,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   wasShown() {
     super.wasShown();
     UI8.Context.Context.instance().setFlavor(_TimelinePanel, this);
-    Host2.userMetrics.panelLoaded("timeline", "DevTools.Launch.Timeline");
+    UI8.UIUserMetrics.UIUserMetrics.instance().panelLoaded("timeline", "DevTools.Launch.Timeline");
     const cruxManager = CrUXManager3.CrUXManager.instance();
     cruxManager.addEventListener("field-data-changed", this.#onFieldDataChanged, this);
     this.#onFieldDataChanged();
@@ -8469,7 +8469,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         const measure = performance.measure("TraceLoad", { start, end });
         const duration = Trace22.Types.Timing.Milli(measure.duration);
         this.element.dispatchEvent(new TraceLoadEvent(duration));
-        Host2.userMetrics.performanceTraceLoad(measure);
+        UI8.UIUserMetrics.UIUserMetrics.instance().performanceTraceLoad(measure);
       }, 0);
     });
   }
@@ -10905,7 +10905,7 @@ var timelineTreeView_css_default = `/*
 }
 
 .timeline-tree-view .data-grid .data-container {
-  overflow-y: scroll;
+  overflow: scroll;
 }
 
 .timeline-tree-view .data-grid.data-grid-fits-viewport .corner {
@@ -10913,6 +10913,7 @@ var timelineTreeView_css_default = `/*
 }
 
 .timeline-tree-view .data-grid table.data {
+  width: max-content;
   background: var(--sys-color-cdt-base-container);
 }
 
@@ -10998,7 +10999,6 @@ var timelineTreeView_css_default = `/*
 
 .timeline-tree-view .data-grid .name-container .activity-link {
   flex: auto;
-  text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-left: 5px;

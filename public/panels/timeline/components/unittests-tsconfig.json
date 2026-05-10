@@ -75,19 +75,61 @@
       "path": "./bundle-tsconfig.json"
     },
     {
+      "path": "../bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/platform/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../generated/generated-tsconfig.json"
+    },
+    {
+      "path": "../../../models/bindings/bundle-tsconfig.json"
     },
     {
       "path": "../../../models/cpu_profile/bundle-tsconfig.json"
     },
     {
+      "path": "../../../models/crux-manager/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../models/emulation/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../models/live-metrics/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../models/trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../models/workspace/bundle-tsconfig.json"
     },
     {
       "path": "../../../testing/testing-tsconfig.json"
     },
     {
+      "path": "../../../ui/components/menus/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../ui/components/render_coordinator/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/legacy/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/legacy/components/utils/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../mobile_throttling/bundle-tsconfig.json"
+    },
+    {
+      "path": "insights/bundle-tsconfig.json"
     }
   ]
 }

@@ -257,8 +257,8 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
     };
     it('adds interest group event on in scope event', testUiUpdate("InterestGroupAccess" /* Application.InterestGroupStorageModel.Events.INTEREST_GROUP_ACCESS */, Application.InterestGroupStorageModel.InterestGroupStorageModel, 'interestGroupTreeElement.addEvent', true));
     it('does not add interest group event on out of scope event', testUiUpdate("InterestGroupAccess" /* Application.InterestGroupStorageModel.Events.INTEREST_GROUP_ACCESS */, Application.InterestGroupStorageModel.InterestGroupStorageModel, 'interestGroupTreeElement.addEvent', false));
-    it('adds DOM storage on in scope event', testUiUpdate("DOMStorageAdded" /* Application.DOMStorageModel.Events.DOM_STORAGE_ADDED */, Application.DOMStorageModel.DOMStorageModel, 'sessionStorageListTreeElement.appendChild', true));
-    it('does not add DOM storage on out of scope event', testUiUpdate("DOMStorageAdded" /* Application.DOMStorageModel.Events.DOM_STORAGE_ADDED */, Application.DOMStorageModel.DOMStorageModel, 'sessionStorageListTreeElement.appendChild', false));
+    it('adds DOM storage on in scope event', testUiUpdate("DOMStorageAdded" /* SDK.DOMStorageModel.Events.DOM_STORAGE_ADDED */, SDK.DOMStorageModel.DOMStorageModel, 'sessionStorageListTreeElement.appendChild', true));
+    it('does not add DOM storage on out of scope event', testUiUpdate("DOMStorageAdded" /* SDK.DOMStorageModel.Events.DOM_STORAGE_ADDED */, SDK.DOMStorageModel.DOMStorageModel, 'sessionStorageListTreeElement.appendChild', false));
     it('adds indexed DB on in scope event', testUiUpdate(Application.IndexedDBModel.Events.DatabaseAdded, Application.IndexedDBModel.IndexedDBModel, 'indexedDBListTreeElement.appendChild', true));
     it('does not add indexed DB on out of scope event', testUiUpdate(Application.IndexedDBModel.Events.DatabaseAdded, Application.IndexedDBModel.IndexedDBModel, 'indexedDBListTreeElement.appendChild', false));
     it('adds shared storage on in scope event', testUiUpdate("SharedStorageAdded" /* Application.SharedStorageModel.Events.SHARED_STORAGE_ADDED */, Application.SharedStorageModel.SharedStorageModel, 'sharedStorageListTreeElement.appendChild', true));
@@ -278,7 +278,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         sinon.assert.called(expectedCall);
     };
-    it('adds DOM storage element after scope change', testUiUpdateOnScopeChange(Application.DOMStorageModel.DOMStorageModel, 'storages', 'sessionStorageListTreeElement.appendChild'));
+    it('adds DOM storage element after scope change', testUiUpdateOnScopeChange(SDK.DOMStorageModel.DOMStorageModel, 'storages', 'sessionStorageListTreeElement.appendChild'));
     it('adds shared storage after scope change', testUiUpdateOnScopeChange(Application.SharedStorageModel.SharedStorageModel, 'storages', 'sharedStorageListTreeElement.appendChild'));
     it('adds indexed db after scope change', testUiUpdateOnScopeChange(Application.IndexedDBModel.IndexedDBModel, 'databases', 'indexedDBListTreeElement.appendChild'));
     it('uses extension name when available for tree element title', () => {

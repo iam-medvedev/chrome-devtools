@@ -1,9 +1,14 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as SDK from './sdk.js';
-describeWithEnvironment('CSSProperty', () => {
+describe('CSSProperty', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     describe('formatStyle', () => {
         const formatStyle = (styleText, indentation = ' ', endIndentation = '') => SDK.CSSProperty.CSSProperty.formatStyle(styleText, indentation, endIndentation);
         it('formats a style declaration with a single trailing semicolon correctly', async () => {

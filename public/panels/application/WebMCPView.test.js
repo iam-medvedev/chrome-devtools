@@ -41,6 +41,110 @@ const createDefaultViewInput = () => {
     };
 };
 describeWithEnvironment('WebMCPView (View)', () => {
+    it('calls onCallSelect with correct tab when clicking different columns', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const target = document.createElement('div');
+        target.style.width = '800px';
+        target.style.height = '600px';
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        const tool = createTool('testTool', 'Test tool', 'frame-1', sdkTarget);
+        const call = {
+            invocationId: '1',
+            input: '{"foo": "bar"}',
+            tool,
+            result: new WebMCP.WebMCPModel.Result("Completed" /* Protocol.WebMCP.InvocationStatus.Completed */, { baz: 'qux' }, undefined, undefined),
+            cancel: () => { },
+        };
+        const onCallSelect = sinon.spy();
+        DEFAULT_VIEW({
+            ...createDefaultViewInput(),
+            toolCalls: [call],
+            onCallSelect,
+        }, {}, target);
+        await UI.Widget.Widget.allUpdatesComplete;
+        await RenderCoordinator.done({ waitForWork: true });
+        const grid = target.querySelector('devtools-data-grid');
+        assert.isNotNull(grid);
+        const shadowRoot = grid.shadowRoot;
+        assert.isNotNull(shadowRoot);
+        const rows = shadowRoot.querySelectorAll('tr');
+        // First row is header (th), second is the call (td)
+        const callRow = Array.from(rows).find(r => r.querySelector('td') && r.textContent?.includes(call.tool.name));
+        assert.isDefined(callRow, 'Should have a data row with tool name');
+        const cells = callRow.querySelectorAll('td');
+        assert.isAtLeast(cells.length, 4, 'Should have at least 4 columns');
+        // Name column -> Details tab
+        cells[0].dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        assert.isTrue(onCallSelect.called, 'onCallSelect should have been called');
+        sinon.assert.calledWith(onCallSelect, call, "webmcp.tool-details" /* Application.WebMCPView.TabId.DETAILS */);
+        // Status column -> Output tab
+        cells[1].click();
+        sinon.assert.calledWith(onCallSelect, call, "webmcp.call-outputs" /* Application.WebMCPView.TabId.OUTPUT */);
+        // Input column -> Input tab
+        cells[2].click();
+        sinon.assert.calledWith(onCallSelect, call, "webmcp.call-inputs" /* Application.WebMCPView.TabId.INPUT */);
+        // Output column -> Output tab
+        cells[3].click();
+        sinon.assert.calledWith(onCallSelect, call, "webmcp.call-outputs" /* Application.WebMCPView.TabId.OUTPUT */);
+    });
+    it('ignores shortcuts when details view is already open', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const tool = createTool('testTool', 'Test tool', 'frame-1', sdkTarget);
+        const call1 = { invocationId: '1', tool, input: '', cancel: () => { } };
+        const call2 = { invocationId: '2', tool, input: '', cancel: () => { } };
+        // Stub the model to return our calls
+        const model = sdkTarget.model(WebMCP.WebMCPModel.WebMCPModel);
+        assert.isNotNull(model);
+        sinon.stub(model, 'toolCalls').get(() => [call1, call2]);
+        const view = createViewFunctionStub(Application.WebMCPView.WebMCPView);
+        const presenter = new Application.WebMCPView.WebMCPView(undefined, view);
+        renderElementIntoDOM(presenter);
+        // Opening for the first time: shortcut should work
+        let input = await view.nextInput;
+        input.onCallSelect(call1, "webmcp.tool-details" /* Application.WebMCPView.TabId.DETAILS */);
+        input = await view.nextInput;
+        assert.strictEqual(input.selectedCall, call1);
+        assert.strictEqual(input.selectedTab, "webmcp.tool-details" /* Application.WebMCPView.TabId.DETAILS */);
+        // Already open: shortcut on different call should change call but NOT tab.
+        // Note: selectedTab will be undefined in the input because it's reset after the initial request.
+        input.onCallSelect(call2, "webmcp.call-outputs" /* Application.WebMCPView.TabId.OUTPUT */);
+        input = await view.nextInput;
+        assert.strictEqual(input.selectedCall, call2);
+        assert.isUndefined(input.selectedTab);
+    });
+    it('calls onRevealTool when run tool button is clicked', async () => {
+        updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
+        const sdkTarget = createTarget();
+        const target = document.createElement('div');
+        target.style.width = '800px';
+        target.style.height = '600px';
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        const tool = createTool('testTool', 'Test tool', 'frame-1', sdkTarget);
+        const call = {
+            invocationId: '1',
+            input: '{"foo": "bar"}',
+            tool,
+            cancel: () => { },
+        };
+        const onRevealTool = sinon.spy();
+        DEFAULT_VIEW({
+            ...createDefaultViewInput(),
+            toolCalls: [call],
+            onRevealTool,
+        }, {}, target);
+        await UI.Widget.Widget.allUpdatesComplete;
+        await RenderCoordinator.done({ waitForWork: true });
+        const grid = target.querySelector('devtools-data-grid');
+        assert.isNotNull(grid);
+        const shadowRoot = grid.shadowRoot;
+        assert.isNotNull(shadowRoot);
+        const button = shadowRoot.querySelector('.run-tool-action-button');
+        assert.isNotNull(button, 'Should find the run tool button');
+        button.click();
+        assert.isTrue(onRevealTool.called, 'onRevealTool should have been called');
+    });
     it('renders empty when no tools are available', async () => {
         const target = document.createElement('div');
         target.style.width = '600px';
@@ -306,6 +410,7 @@ describeWithEnvironment('WebMCPView (View)', () => {
                 }
             ],
         };
+        assert.isDefined(selectedCall.result);
         sinon.stub(selectedCall.result, 'exceptionDetails').get(() => Promise.resolve(mockExceptionDetails));
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
@@ -780,7 +885,7 @@ describeWithEnvironment('ToolDetailsWidget', () => {
         await widget.updateComplete;
         const warning = container.querySelector('.call-to-action .explanation');
         assert.isNotNull(warning);
-        assert.include(warning.textContent, 'This tool has been unregistered');
+        assert.include(warning.textContent || '', 'This tool has been unregistered');
         await assertScreenshot('application/webmcp_tool_details_unregistered.png');
     });
 });
@@ -896,7 +1001,9 @@ describe('parseToolSchema', () => {
         assert.strictEqual(parsed.parameters[1].name, 'emptyObj');
         assert.strictEqual(parsed.parameters[1].type, "object" /* ParameterType.OBJECT */);
         assert.isTrue(parsed.parameters[1].isKeyEditable);
-        const nestedType = parsed.typesByName.get(parsed.parameters[0].typeRef);
+        const typeRef = parsed.parameters[0].typeRef;
+        assert.isDefined(typeRef);
+        const nestedType = parsed.typesByName.get(typeRef);
         assert.isDefined(nestedType);
         assert.lengthOf(nestedType, 1);
         assert.strictEqual(nestedType[0].name, 'nestedStr');
@@ -929,7 +1036,9 @@ describe('parseToolSchema', () => {
         assert.strictEqual(parsed.parameters[1].name, 'objArrProp');
         assert.strictEqual(parsed.parameters[1].type, "array" /* ParameterType.ARRAY */);
         assert.isDefined(parsed.parameters[1].typeRef);
-        const nestedType = parsed.typesByName.get(parsed.parameters[1].typeRef);
+        const typeRef = parsed.parameters[1].typeRef;
+        assert.isDefined(typeRef);
+        const nestedType = parsed.typesByName.get(typeRef);
         assert.isDefined(nestedType);
         assert.lengthOf(nestedType, 1);
         assert.strictEqual(nestedType[0].name, 'nestedNum');
@@ -954,11 +1063,13 @@ describe('parseToolSchema', () => {
         };
         const parsed = parseToolSchema(schema);
         assert.lengthOf(parsed.parameters, 2);
-        assert.isDefined(parsed.parameters[0].typeRef);
-        assert.isDefined(parsed.parameters[1].typeRef);
-        const enum1 = parsed.enumsByName.get(parsed.parameters[0].typeRef);
+        const typeRef0 = parsed.parameters[0].typeRef;
+        const typeRef1 = parsed.parameters[1].typeRef;
+        assert.isDefined(typeRef0);
+        assert.isDefined(typeRef1);
+        const enum1 = parsed.enumsByName.get(typeRef0);
         assert.deepEqual(enum1, { val1: 'val1', val2: 'val2' });
-        const enum2 = parsed.enumsByName.get(parsed.parameters[1].typeRef);
+        const enum2 = parsed.enumsByName.get(typeRef1);
         assert.deepEqual(enum2, { arrVal1: 'arrVal1' });
     });
     it('parses refs', () => {
@@ -1057,7 +1168,7 @@ describeWithEnvironment('WebMCPView JSON Editor', () => {
             selectedTool: { tool },
         }, {}, targetEl);
         // Wait for nested Lit renders
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await UI.Widget.Widget.allUpdatesComplete;
         const devtoolsWidget = targetEl.querySelector('devtools-widget.json-editor-widget');
         assert.isNotNull(devtoolsWidget);
         const inputs = devtoolsWidget.shadowRoot?.querySelectorAll('devtools-suggestion-input');

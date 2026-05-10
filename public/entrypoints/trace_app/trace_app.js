@@ -888,7 +888,7 @@ UI.Toolbar.registerToolbarItem({
   order: 101,
   location: "main-toolbar-right"
 });
-Common.AppProvider.registerAppProvider({
+UI.AppProvider.registerAppProvider({
   async loadAppProvider() {
     const Main2 = await loadMainModule();
     return Main2.SimpleApp.SimpleAppProvider.instance();
@@ -6086,8 +6086,11 @@ function isPerformanceAgentFeatureAvailable(config) {
 function isFileAgentFeatureAvailable(config) {
   return (config?.aidaAvailability?.enabled && config?.devToolsAiAssistanceFileAgent?.enabled) === true;
 }
+function isStorageAgentFeatureAvailable(config) {
+  return (config?.aidaAvailability?.enabled && config?.devToolsAiAssistanceStorageAgent?.enabled) === true;
+}
 function isAnyFeatureAvailable(config) {
-  return isStylingAgentFeatureAvailable(config) || isNetworkAgentFeatureAvailable(config) || isPerformanceAgentFeatureAvailable(config) || isFileAgentFeatureAvailable(config);
+  return isStylingAgentFeatureAvailable(config) || isNetworkAgentFeatureAvailable(config) || isPerformanceAgentFeatureAvailable(config) || isFileAgentFeatureAvailable(config) || isStorageAgentFeatureAvailable(config);
 }
 UI11.ViewManager.registerViewExtension({
   location: "drawer-view",
@@ -6250,7 +6253,6 @@ UI11.ActionRegistration.registerActionExtension({
 // gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.js
 import * as Common14 from "./../../core/common/common.js";
 import * as i18n30 from "./../../core/i18n/i18n.js";
-import * as Root7 from "./../../core/root/root.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 var UIStrings15 = {
   /**
@@ -6267,21 +6269,6 @@ var UIStrings15 = {
    * @description Classic navigation option in the Performance Panel.
    */
   classic: "Classic",
-  /**
-   * @description Title of a setting under the Memory category in Settings. Live memory is memory
-   * that is still in-use by the program (not dead). Allocation of live memory is when the program
-   * creates new memory. This is a setting that turns on extra annotations in the UI to mark these
-   * allocations.
-   */
-  liveMemoryAllocationAnnotations: "Live memory allocation annotations",
-  /**
-   * @description Title of a setting under the Memory category that can be invoked through the Command Menu
-   */
-  showLiveMemoryAllocation: "Show live memory allocation annotations",
-  /**
-   * @description Title of a setting under the Memory category that can be invoked through the Command Menu
-   */
-  hideLiveMemoryAllocation: "Hide live memory allocation annotations",
   /**
    * @description Title of an action in the components tool to collect garbage
    */
@@ -6323,24 +6310,6 @@ Common14.Settings.registerSettingExtension({
       title: i18nLazyString14(UIStrings15.classic),
       text: i18nLazyString14(UIStrings15.classic),
       value: "classic"
-    }
-  ]
-});
-Common14.Settings.registerSettingExtension({
-  category: "MEMORY",
-  experiment: Root7.ExperimentNames.ExperimentName.LIVE_HEAP_PROFILE,
-  title: i18nLazyString14(UIStrings15.liveMemoryAllocationAnnotations),
-  settingName: "memory-live-heap-profile",
-  settingType: "boolean",
-  defaultValue: false,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString14(UIStrings15.showLiveMemoryAllocation)
-    },
-    {
-      value: false,
-      title: i18nLazyString14(UIStrings15.hideLiveMemoryAllocation)
     }
   ]
 });

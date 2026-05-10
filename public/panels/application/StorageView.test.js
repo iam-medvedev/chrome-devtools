@@ -17,7 +17,7 @@ describeWithMockConnection('StorageView', () => {
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
-        domStorageModel = target.model(Resources.DOMStorageModel.DOMStorageModel);
+        domStorageModel = target.model(SDK.DOMStorageModel.DOMStorageModel);
         domStorageModel?.enable();
         storageKeyManager = target.model(SDK.StorageKeyManager.StorageKeyManager);
         sinon.stub(target.networkAgent(), 'invoke_getCookies').resolves({
@@ -41,8 +41,8 @@ describeWithMockConnection('StorageView', () => {
         // must be called 4 times, twice with DOMStorageRemoved for local and non-local storage and twice with DOMStorageAdded
         sinon.assert.calledOnce(spyClearDataForStorageKey);
         sinon.assert.callCount(dispatcherSpy, 4);
-        sinon.assert.calledWith(dispatcherSpy, "DOMStorageRemoved" /* Resources.DOMStorageModel.Events.DOM_STORAGE_REMOVED */);
-        sinon.assert.calledWith(dispatcherSpy, "DOMStorageAdded" /* Resources.DOMStorageModel.Events.DOM_STORAGE_ADDED */);
+        sinon.assert.calledWith(dispatcherSpy, "DOMStorageRemoved" /* SDK.DOMStorageModel.Events.DOM_STORAGE_REMOVED */);
+        sinon.assert.calledWith(dispatcherSpy, "DOMStorageAdded" /* SDK.DOMStorageModel.Events.DOM_STORAGE_ADDED */);
     });
     it('changes subtitle on MainStorageKeyChanged event', () => {
         assert.exists(domStorageModel);

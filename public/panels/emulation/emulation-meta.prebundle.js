@@ -174,7 +174,7 @@ UI.Toolbar.registerToolbarItem({
     location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
     order: 1,
 });
-Common.AppProvider.registerAppProvider({
+UI.AppProvider.registerAppProvider({
     async loadAppProvider() {
         const Emulation = await loadEmulationModule();
         return Emulation.AdvancedApp.AdvancedAppProvider.instance();

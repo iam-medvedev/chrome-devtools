@@ -65,6 +65,7 @@ describeWithEnvironment('ChatView', () => {
                 messages: [
                     {
                         entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                        id: '1',
                         parts: [
                             {
                                 type: 'step',
@@ -124,7 +125,7 @@ describeWithEnvironment('ChatView', () => {
         });
         it('returns undefined if there are no model messages', () => {
             const messages = [
-                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Hello' },
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Hello', id: '2' },
             ];
             const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, false);
             assert.isUndefined(result);
@@ -132,10 +133,11 @@ describeWithEnvironment('ChatView', () => {
         it('returns the last model message if not loading', () => {
             const modelMessage = {
                 entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                id: '1',
                 parts: [{ type: 'answer', text: 'Response' }],
             };
             const messages = [
-                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Hello' },
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Hello', id: '2' },
                 modelMessage,
             ];
             const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, false);
@@ -144,11 +146,12 @@ describeWithEnvironment('ChatView', () => {
         it('returns the last model message if loading but the last message is a user message', () => {
             const modelMessage = {
                 entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                id: '1',
                 parts: [{ type: 'answer', text: 'Response' }],
             };
             const messages = [
                 modelMessage,
-                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Follow up' },
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Follow up', id: '2' },
             ];
             const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, true);
             assert.strictEqual(result, modelMessage);
@@ -156,15 +159,17 @@ describeWithEnvironment('ChatView', () => {
         it('returns the penultimate model message if loading and the last message is a model message', () => {
             const modelMessage1 = {
                 entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                id: '1',
                 parts: [{ type: 'answer', text: 'Response 1' }],
             };
             const modelMessage2 = {
                 entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                id: '2',
                 parts: [{ type: 'answer', text: 'Response 2' }],
             };
             const messages = [
                 modelMessage1,
-                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Follow up' },
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Follow up', id: '3' },
                 modelMessage2,
             ];
             const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, true);
@@ -173,10 +178,11 @@ describeWithEnvironment('ChatView', () => {
         it('returns undefined if loading and there is only one model message and it is the last message', () => {
             const modelMessage = {
                 entity: "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */,
+                id: '1',
                 parts: [{ type: 'answer', text: 'Response' }],
             };
             const messages = [
-                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Hello' },
+                { entity: "user" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.USER */, text: 'Hello', id: '2' },
                 modelMessage,
             ];
             const result = AiAssistancePanel.getCSSChangeSummaryMessage(messages, true);

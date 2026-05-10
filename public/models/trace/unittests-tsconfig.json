@@ -59,6 +59,9 @@
     },
     {
       "path": "../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../cpu_profile/bundle-tsconfig.json"
     }
   ]
 }

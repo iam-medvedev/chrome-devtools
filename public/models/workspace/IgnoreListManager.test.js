@@ -1,13 +1,15 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { createResource, getMainFrame } from '../../testing/ResourceHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
-import * as Bindings from '../bindings/bindings.js';
 import * as Workspace from './workspace.js';
 const { urlString } = Platform.DevToolsPath;
 // Same as in IgnoreListManager.ts.
@@ -39,7 +41,11 @@ function notNull(val) {
     assert.exists(val);
     return val;
 }
-describeWithMockConnection('IgnoreListManager', () => {
+describe('IgnoreListManager', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
     let debuggerModel;
     let ignoreListManager;
     let uiSourceCode;
@@ -119,20 +125,16 @@ describeWithMockConnection('IgnoreListManager', () => {
     ];
     const ALL_URLS = [...sourceMap.sources, ...SCRIPTS.map(({ sourceURL }) => sourceURL)];
     beforeEach(async () => {
-        const forceNew = true;
-        const target = createTarget();
-        const targetManager = target.targetManager();
-        SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew, maxConcurrentLoads: 1, loadOverride: null });
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
+        universe = new TestUniverse();
+        const { targetManager, workspace, settings } = universe;
+        const target = universe.createTarget({ url });
+        ignoreListManager = universe.ignoreListManager;
+        // Stub globals so legacy helpers use TestUniverse components
+        sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(workspace);
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(targetManager);
+        sinon.stub(Common.Settings.Settings, 'instance').returns(settings);
+        sinon.stub(SDK.PageResourceLoader.PageResourceLoader, 'instance').returns(universe.pageResourceLoader);
+        const debuggerWorkspaceBinding = universe.debuggerWorkspaceBinding;
         // Inject the HTML document resource.
         createResource(getMainFrame(target), url, 'text/html', '');
         uiSourceCode = notNull(workspace.uiSourceCodeForURL(url));

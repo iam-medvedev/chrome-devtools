@@ -83,7 +83,7 @@ describe('StackTraceModel', () => {
             const { model, connection } = setup();
             {
                 let index = 0;
-                connection.setHandler('Debugger.enable', () => ({ result: { debuggerId: `target${index++}` } }));
+                connection.setSuccessHandler('Debugger.enable', () => ({ debuggerId: `target${index++}` }));
                 sinon.stub(SDK.DebuggerModel.DebuggerModel, 'resyncDebuggerIdForModels');
             }
             const [model1, model2] = [

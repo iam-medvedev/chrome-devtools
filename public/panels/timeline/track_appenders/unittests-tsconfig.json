@@ -60,10 +60,25 @@
   ],
   "references": [
     {
+      "path": "../../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/platform/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../../models/bindings/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../models/trace/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../models/trace/handlers/unittests-tsconfig.json"
+    },
+    {
+      "path": "../../../models/workspace/bundle-tsconfig.json"
     },
     {
       "path": "../bundle-tsconfig.json"
@@ -73,6 +88,12 @@
     },
     {
       "path": "../../../ui/legacy/components/perf_ui/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/legacy/theme_support/bundle-tsconfig.json"
+    },
+    {
+      "path": "../components/bundle-tsconfig.json"
     }
   ]
 }

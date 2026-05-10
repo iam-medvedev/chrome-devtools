@@ -3006,6 +3006,10 @@ export declare namespace CSS {
     interface CSSContainerQuery {
         /**
          * Container query text.
+         * Contains the query part without the container name for a single query.
+         * Deprecated in favor of conditionText which contains the full prelude
+         * after @container.
+         * @deprecated
          */
         text: string;
         /**
@@ -3037,6 +3041,10 @@ export declare namespace CSS {
          * true if the query contains anchored() queries.
          */
         queriesAnchored?: boolean;
+        /**
+         * CSSContainerRule.conditionText
+         */
+        conditionText: string;
     }
     /**
      * CSS Supports at-rule descriptor.
@@ -3308,7 +3316,8 @@ export declare namespace CSS {
     const enum CSSAtRuleType {
         FontFace = "font-face",
         FontFeatureValues = "font-feature-values",
-        FontPaletteValues = "font-palette-values"
+        FontPaletteValues = "font-palette-values",
+        CounterStyle = "counter-style"
     }
     const enum CSSAtRuleSubsection {
         Swash = "swash",
@@ -3830,6 +3839,17 @@ export declare namespace CSS {
         text: string;
     }
     interface SetContainerQueryTextResponse extends ProtocolResponseWithError {
+        /**
+         * The resulting CSS container query rule after modification.
+         */
+        containerQuery: CSSContainerQuery;
+    }
+    interface SetContainerQueryConditionTextRequest {
+        styleSheetId: DOM.StyleSheetId;
+        range: SourceRange;
+        text: string;
+    }
+    interface SetContainerQueryConditionTextResponse extends ProtocolResponseWithError {
         /**
          * The resulting CSS container query rule after modification.
          */
@@ -10946,6 +10966,7 @@ export declare namespace Network {
         Success = "Success",
         KeyError = "KeyError",
         SigningError = "SigningError",
+        TransientSigningError = "TransientSigningError",
         ServerRequestedTermination = "ServerRequestedTermination",
         InvalidSessionId = "InvalidSessionId",
         InvalidChallenge = "InvalidChallenge",
@@ -11056,13 +11077,14 @@ export declare namespace Network {
     }
     const enum RefreshEventDetailsRefreshResult {
         Refreshed = "Refreshed",
-        RefreshedAsWaiter = "RefreshedAsWaiter",
         InitializedService = "InitializedService",
         Unreachable = "Unreachable",
         ServerError = "ServerError",
         RefreshQuotaExceeded = "RefreshQuotaExceeded",
         FatalError = "FatalError",
-        SigningQuotaExceeded = "SigningQuotaExceeded"
+        SigningQuotaExceeded = "SigningQuotaExceeded",
+        RefreshedAsWaiter = "RefreshedAsWaiter",
+        TransientSigningError = "TransientSigningError"
     }
     /**
      * Session event details specific to refresh.
@@ -13457,6 +13479,7 @@ export declare namespace Page {
         SubApps = "sub-apps",
         Summarizer = "summarizer",
         SyncXhr = "sync-xhr",
+        Tools = "tools",
         Translator = "translator",
         Unload = "unload",
         Usb = "usb",

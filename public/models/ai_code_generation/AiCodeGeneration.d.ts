@@ -4,7 +4,6 @@ export declare const additionalContextForConsole = "\nYou are operating within t
 interface Options {
     aidaClient: Host.AidaClient.AidaClient;
     serverSideLoggingEnabled?: boolean;
-    confirmSideEffectForTest?: typeof Promise.withResolvers;
 }
 /**
  * The AiCodeGeneration class is responsible for fetching generated code suggestions
@@ -18,6 +17,7 @@ export declare class AiCodeGeneration {
     generateCode(prompt: string, preamble: string, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage, options?: {
         signal?: AbortSignal;
     }): Promise<Host.AidaClient.GenerateCodeResponse | null>;
+    static isAiCodeGenerationAvailable(): boolean;
     static isAiCodeGenerationEnabled(locale: string): boolean;
 }
 export {};

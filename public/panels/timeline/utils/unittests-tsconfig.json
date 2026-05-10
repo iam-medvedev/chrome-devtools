@@ -58,6 +58,9 @@
       "path": "./bundle-tsconfig.json"
     },
     {
+      "path": "../../../core/common/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../core/platform/bundle-tsconfig.json"
     },
     {
@@ -67,10 +70,16 @@
       "path": "../../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../../generated/generated-tsconfig.json"
+    },
+    {
       "path": "../../../models/bindings/bundle-tsconfig.json"
     },
     {
       "path": "../../../models/trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../models/trace_source_maps_resolver/bundle-tsconfig.json"
     },
     {
       "path": "../../../models/workspace/bundle-tsconfig.json"

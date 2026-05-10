@@ -60,6 +60,12 @@
       "path": "../../bundle-tsconfig.json"
     },
     {
+      "path": "../../../../generated/generated-tsconfig.json"
+    },
+    {
+      "path": "../../../../testing/testing-tsconfig.json"
+    },
+    {
       "path": "../testing/bundle-tsconfig.json"
     }
   ]

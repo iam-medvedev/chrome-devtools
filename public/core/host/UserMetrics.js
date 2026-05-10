@@ -3,26 +3,6 @@
 // found in the LICENSE file.
 import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 export class UserMetrics {
-    #panelChangedSinceLaunch;
-    #firedLaunchHistogram;
-    #launchPanelName;
-    constructor() {
-        this.#panelChangedSinceLaunch = false;
-        this.#firedLaunchHistogram = false;
-        this.#launchPanelName = '';
-    }
-    panelShown(panelName, isLaunching) {
-        const code = PanelCodes[panelName] || 0;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShown" /* EnumeratedHistogram.PanelShown */, code, PanelCodes.MAX_VALUE);
-        InspectorFrontendHostInstance.recordUserMetricsAction('DevTools_PanelShown_' + panelName);
-        // Store that the user has changed the panel so we know launch histograms should not be fired.
-        if (!isLaunching) {
-            this.#panelChangedSinceLaunch = true;
-        }
-    }
-    settingsPanelShown(settingsViewId) {
-        this.panelShown('settings-' + settingsViewId);
-    }
     sourcesPanelFileDebugged(mediaType) {
         const code = (mediaType && MediaTypes[mediaType]) || MediaTypes.Unknown;
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SourcesPanelFileDebugged" /* EnumeratedHistogram.SourcesPanelFileDebugged */, code, MediaTypes.MAX_VALUE);
@@ -37,34 +17,6 @@ export class UserMetrics {
     }
     actionTaken(action) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ActionTaken" /* EnumeratedHistogram.ActionTaken */, action, Action.MAX_VALUE);
-    }
-    panelLoaded(panelName, histogramName) {
-        if (this.#firedLaunchHistogram || panelName !== this.#launchPanelName) {
-            return;
-        }
-        this.#firedLaunchHistogram = true;
-        // Use rAF and window.setTimeout to ensure the marker is fired after layout and rendering.
-        // This will give the most accurate representation of the tool being ready for a user.
-        requestAnimationFrame(() => {
-            window.setTimeout(() => {
-                // Mark the load time so that we can pinpoint it more easily in a trace.
-                performance.mark(histogramName);
-                // If the user has switched panel before we finished loading, ignore the histogram,
-                // since the launch timings will have been affected and are no longer valid.
-                if (this.#panelChangedSinceLaunch) {
-                    return;
-                }
-                // This fires the event for the appropriate launch histogram.
-                // The duration is measured as the time elapsed since the time origin of the document.
-                InspectorFrontendHostInstance.recordPerformanceHistogram(histogramName, performance.now());
-            }, 0);
-        });
-    }
-    setLaunchPanel(panelName) {
-        this.#launchPanelName = panelName;
-    }
-    performanceTraceLoad(measure) {
-        InspectorFrontendHostInstance.recordPerformanceHistogram('DevTools.TraceLoad', measure.duration);
     }
     keybindSetSettingChanged(keybindSet) {
         const value = KeybindSetSettings[keybindSet] || 0;
@@ -172,7 +124,7 @@ export class UserMetrics {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseModeRun" /* EnumeratedHistogram.LighthouseModeRun */, type, 4 /* LighthouseModeRun.MAX_VALUE */);
     }
     lighthouseCategoryUsed(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseCategoryUsed" /* EnumeratedHistogram.LighthouseCategoryUsed */, type, 6 /* LighthouseCategoryUsed.MAX_VALUE */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseCategoryUsed" /* EnumeratedHistogram.LighthouseCategoryUsed */, type, 7 /* LighthouseCategoryUsed.MAX_VALUE */);
     }
     swatchActivated(swatch) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 13 /* SwatchType.MAX_VALUE */);
@@ -446,7 +398,14 @@ export var Action;
     Action[Action["InsightTeaserModelDownloadCompleted"] = 198] = "InsightTeaserModelDownloadCompleted";
     Action[Action["AiCodeGenerationError"] = 199] = "AiCodeGenerationError";
     Action[Action["AiCodeGenerationRequestTriggered"] = 200] = "AiCodeGenerationRequestTriggered";
-    Action[Action["MAX_VALUE"] = 201] = "MAX_VALUE";
+    Action[Action["AiCodeCompletionRequestTriggeredFromConsole"] = 201] = "AiCodeCompletionRequestTriggeredFromConsole";
+    Action[Action["AiCodeCompletionRequestTriggeredFromSources"] = 202] = "AiCodeCompletionRequestTriggeredFromSources";
+    Action[Action["AiCodeCompletionRequestTriggeredFromStyles"] = 203] = "AiCodeCompletionRequestTriggeredFromStyles";
+    Action[Action["AiCodeGenerationRequestTriggeredFromConsole"] = 204] = "AiCodeGenerationRequestTriggeredFromConsole";
+    Action[Action["AiCodeGenerationRequestTriggeredFromSources"] = 205] = "AiCodeGenerationRequestTriggeredFromSources";
+    Action[Action["AiCodeCompletionFreCompletedFromConsole"] = 206] = "AiCodeCompletionFreCompletedFromConsole";
+    Action[Action["AiCodeCompletionFreCompletedFromSources"] = 207] = "AiCodeCompletionFreCompletedFromSources";
+    Action[Action["MAX_VALUE"] = 208] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;
@@ -476,7 +435,6 @@ export var PanelCodes;
     PanelCodes[PanelCodes["changes.changes"] = 23] = "changes.changes";
     PanelCodes[PanelCodes["performance.monitor"] = 24] = "performance.monitor";
     PanelCodes[PanelCodes["release-note"] = 25] = "release-note";
-    PanelCodes[PanelCodes["live-heap-profile"] = 26] = "live-heap-profile";
     PanelCodes[PanelCodes["sources.quick"] = 27] = "sources.quick";
     PanelCodes[PanelCodes["network.blocked-urls"] = 28] = "network.blocked-urls";
     PanelCodes[PanelCodes["settings-preferences"] = 29] = "settings-preferences";
@@ -626,8 +584,6 @@ export var KeyboardShortcutAction;
     KeyboardShortcutAction[KeyboardShortcutAction["inspector-main.focus-debuggee"] = 47] = "inspector-main.focus-debuggee";
     KeyboardShortcutAction[KeyboardShortcutAction["inspector-main.hard-reload"] = 48] = "inspector-main.hard-reload";
     KeyboardShortcutAction[KeyboardShortcutAction["inspector-main.reload"] = 49] = "inspector-main.reload";
-    KeyboardShortcutAction[KeyboardShortcutAction["live-heap-profile.start-with-reload"] = 50] = "live-heap-profile.start-with-reload";
-    KeyboardShortcutAction[KeyboardShortcutAction["live-heap-profile.toggle-recording"] = 51] = "live-heap-profile.toggle-recording";
     KeyboardShortcutAction[KeyboardShortcutAction["main.debug-reload"] = 52] = "main.debug-reload";
     KeyboardShortcutAction[KeyboardShortcutAction["main.next-tab"] = 53] = "main.next-tab";
     KeyboardShortcutAction[KeyboardShortcutAction["main.previous-tab"] = 54] = "main.previous-tab";
@@ -705,10 +661,8 @@ export var DevtoolsExperiments;
 (function (DevtoolsExperiments) {
     /* eslint-disable @typescript-eslint/naming-convention */
     DevtoolsExperiments[DevtoolsExperiments["capture-node-creation-stacks"] = 1] = "capture-node-creation-stacks";
-    DevtoolsExperiments[DevtoolsExperiments["live-heap-profile"] = 11] = "live-heap-profile";
     DevtoolsExperiments[DevtoolsExperiments["protocol-monitor"] = 13] = "protocol-monitor";
     DevtoolsExperiments[DevtoolsExperiments["timeline-invalidation-tracking"] = 26] = "timeline-invalidation-tracking";
-    DevtoolsExperiments[DevtoolsExperiments["font-editor"] = 41] = "font-editor";
     DevtoolsExperiments[DevtoolsExperiments["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";

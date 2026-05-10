@@ -2329,6 +2329,11 @@ var NativeFunctions = [
     receivers: ["HTMLScriptElement", "ClipboardItem"]
   },
   {
+    name: "supports",
+    signatures: [["operation", "algorithm", "?length"], ["operation", "algorithm", "additionalAlgorithm"]],
+    receivers: ["SubtleCrypto"]
+  },
+  {
     name: "toggle",
     signatures: [["token", "?force"]]
   },
@@ -7024,6 +7029,10 @@ var NativeFunctions = [
     signatures: [["html", "?options"]]
   },
   {
+    name: "matchContainer",
+    signatures: [["query"]]
+  },
+  {
     name: "scrollIntoViewIfNeeded",
     signatures: [["?centerIfNeeded"]]
   },
@@ -7438,10 +7447,6 @@ var NativeFunctions = [
   {
     name: "setReportEventDataForAutomaticBeacons",
     signatures: [["event"]]
-  },
-  {
-    name: "notifyEvent",
-    signatures: [["triggering_event"]]
   },
   {
     name: "FencedFrameConfig",
@@ -7958,10 +7963,6 @@ var NativeFunctions = [
   {
     name: "strokeTextCluster",
     signatures: [["textCluster", "x", "y", "?options"]]
-  },
-  {
-    name: "transferToGPUTexture",
-    signatures: [["options"]]
   },
   {
     name: "beginLayer",
@@ -9393,6 +9394,10 @@ var NativeFunctions = [
   },
   {
     name: "startDiagnosticLogging",
+    signatures: [["?options"]]
+  },
+  {
+    name: "finishDiagnosticLogging",
     signatures: [["?options"]]
   },
   {

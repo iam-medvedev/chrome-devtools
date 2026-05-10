@@ -4141,7 +4141,7 @@ function renderWalkthroughSidebarButton(input, steps) {
     return Lit5.nothing;
   }
   const hasOneStepWithWidget = steps.some((step) => step.widgets?.length);
-  const isExpanded = walkthrough.isExpanded && input.message === input.walkthrough.activeSidebarMessage;
+  const isExpanded = walkthrough.isExpanded && input.message.id === input.walkthrough.activeSidebarMessage?.id;
   const title = isExpanded ? walkthroughCloseTitle({ hasWidgets: hasOneStepWithWidget }) : walkthroughTitle({
     isLoading: input.isLoading,
     hasWidgets: hasOneStepWithWidget,
@@ -4172,7 +4172,7 @@ function renderWalkthroughSidebarButton(input, steps) {
         .jslogContext=${walkthrough.isExpanded ? "ai-hide-walkthrough-sidebar" : "ai-show-walkthrough-sidebar"}
         data-show-walkthrough
         @click=${() => {
-    if (walkthrough.activeSidebarMessage === input.message && walkthrough.isExpanded) {
+    if (walkthrough.activeSidebarMessage?.id === input.message.id && walkthrough.isExpanded) {
       walkthrough.onToggle(false, message);
     } else {
       walkthrough.onOpen(message);
@@ -4188,7 +4188,7 @@ function renderWalkthroughUI(input, steps) {
     return Lit5.nothing;
   }
   const openWalkThroughSidebarButton = !input.walkthrough.isInlined ? renderWalkthroughSidebarButton(input, steps) : Lit5.nothing;
-  const isExpanded = input.walkthrough.isInlined ? input.walkthrough.inlineExpandedMessages.includes(input.message) : input.walkthrough.isExpanded && input.walkthrough.activeSidebarMessage === input.message;
+  const isExpanded = input.walkthrough.isInlined ? input.walkthrough.inlineExpandedMessages.some((m) => m.id === input.message.id) : input.walkthrough.isExpanded && input.walkthrough.activeSidebarMessage?.id === input.message.id;
   const walkthroughInline = input.walkthrough.isInlined ? html7`
     <div class="walkthrough-container">
       ${widget3(WalkthroughView, {
@@ -4612,15 +4612,15 @@ function renderNetworkRequestPreview(networkRequest) {
   const size = i18n9.ByteUtilities.bytesToString(networkRequest.size);
   const resourceType = Common4.ResourceType.resourceTypes[networkRequest.resourceType];
   const { iconName, color } = PanelUtils3.iconDataForResourceType(resourceType);
+  const imageUrl = networkRequest.imageContent?.asImagePreviewUrl() ?? networkRequest.url;
   return html7`
     <div class="network-request-preview">
       <div class="network-request-header">
         <div class="network-request-icon">
-          ${resourceType.isImage() ? html7`<img src=${networkRequest.imageUrl ?? networkRequest.url} alt=${filename} />` : html7`<devtools-icon name=${iconName} style=${Lit5.Directives.styleMap({
+          ${resourceType.isImage() ? html7`<img src=${imageUrl} alt=${filename} />` : html7`<devtools-icon name=${iconName} style=${Lit5.Directives.styleMap({
     color: color ?? ""
   })}></devtools-icon>`}
-        </div>
-        <div class="network-request-details">
+        </div>        <div class="network-request-details">
           <div class="network-request-name" title=${networkRequest.url}>${filename}</div>
           <div class="network-request-size">${size}</div>
         </div>
@@ -4986,7 +4986,7 @@ function renderActions(input, output) {
   `;
 }
 var ChatMessage = class extends UI5.Widget.Widget {
-  message = { entity: "user", text: "" };
+  message = { entity: "user", text: "", id: "" };
   isLoading = false;
   isReadOnly = false;
   prompt = "";
@@ -5161,18 +5161,27 @@ async function makeTimelineRangeSummaryWidget(widgetData) {
   const { bounds, parsedTrace, track } = widgetData.data;
   let events = [];
   if (track === "main") {
-    const flameChartView = Timeline.TimelinePanel.TimelinePanel.instance().getFlameChart();
-    const mainDataProvider = flameChartView.getMainDataProvider();
-    const mainTrack = mainDataProvider.timelineData().groups.find((group) => group.name.startsWith("Main \u2014 "));
-    if (mainTrack) {
-      events = mainDataProvider.groupTreeEvents(mainTrack) ?? [];
+    let navigationId;
+    for (const nav of parsedTrace.data.Meta.mainFrameNavigations) {
+      if (nav.ts <= bounds.min) {
+        navigationId = nav.args.data?.navigationId;
+      } else {
+        break;
+      }
+    }
+    const mainThread = AiAssistanceModel5.AIQueries.AIQueries.findMainThread(navigationId, parsedTrace);
+    if (mainThread) {
+      events = mainThread.entries;
+      AiAssistanceModel5.Debug.debugLog(`TimelineRangeSummaryAiWidget found main thread. PID:`, mainThread.pid, "TID:", mainThread.tid, "Number of entries:", mainThread.entries.length);
     }
   }
-  const eventsArray = Array.from(events);
-  eventsArray.sort((a, b) => a.ts - b.ts);
+  if (!events) {
+    AiAssistanceModel5.Debug.debugLog(`Warning: could not find events for TimelineRangeSummaryAiWidget`, widgetData);
+    return null;
+  }
   const thirdPartyTree = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
   const mapper = Trace.EntityMapper.EntityMapper.getOrCreate(parsedTrace);
-  thirdPartyTree.model = { selectedEvents: eventsArray, parsedTrace, entityMapper: mapper };
+  thirdPartyTree.model = { selectedEvents: events, parsedTrace, entityMapper: mapper };
   thirdPartyTree.activeSelection = Timeline.TimelineSelection.selectionFromRangeMicroSeconds(bounds.min, bounds.max);
   thirdPartyTree.refreshTree(true);
   const template = html7`
@@ -5983,7 +5992,7 @@ var DEFAULT_VIEW6 = (input, output, target) => {
   })}>
           ${input.messages.length > 0 ? html9`
             <div class="messages-container" ${ref4(input.handleMessageContainerRef)}>
-              ${repeat(input.messages, (message, index) => {
+              ${repeat(input.messages, (message) => message.id, (message, index) => {
     const prevMessage = index > 0 ? input.messages[index - 1] : null;
     const prompt = message.entity === "model" && prevMessage?.entity === "user" ? prevMessage.text : "";
     return widget4(ChatMessage, {
@@ -5995,7 +6004,7 @@ var DEFAULT_VIEW6 = (input, output, target) => {
       isLastMessage: index === input.messages.length - 1,
       isFirstMessage: index === 0,
       prompt,
-      shouldShowCSSChangeSummary: message === cssChangeSummaryMessage,
+      shouldShowCSSChangeSummary: message.id === cssChangeSummaryMessage?.id,
       onSuggestionClick: input.handleSuggestionClick,
       onFeedbackSubmit: input.onFeedbackSubmit,
       onCopyResponseClick: input.onCopyResponseClick,
@@ -7537,7 +7546,7 @@ function defaultView(input, output, target) {
     let walkthroughIsForLastMessage = false;
     if (input.state === "chat-view") {
       const lastMessage = input.props.messages.at(-1);
-      if (lastMessage && input.props.walkthrough.activeSidebarMessage === lastMessage) {
+      if (lastMessage && input.props.walkthrough.activeSidebarMessage?.id === lastMessage.id) {
         walkthroughIsForLastMessage = true;
       }
     }
@@ -7800,7 +7809,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     this.requestUpdate();
   }
   #openWalkthrough(message) {
-    if (!this.#walkthrough.inlineExpandedMessages.includes(message)) {
+    if (!this.#walkthrough.inlineExpandedMessages.some((m) => m.id === message.id)) {
       this.#walkthrough.inlineExpandedMessages.push(message);
     }
     this.#walkthrough.activeSidebarMessage = message;
@@ -7823,10 +7832,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
       this.#openWalkthrough(message);
       return;
     }
-    this.#walkthrough.inlineExpandedMessages = this.#walkthrough.inlineExpandedMessages.filter((m) => m !== message);
+    this.#walkthrough.inlineExpandedMessages = this.#walkthrough.inlineExpandedMessages.filter((m) => m.id !== message.id);
     if (this.#walkthrough.isInlined) {
       this.#walkthrough.isExpanded = this.#walkthrough.inlineExpandedMessages.length > 0;
-      if (this.#walkthrough.activeSidebarMessage === message) {
+      if (this.#walkthrough.activeSidebarMessage?.id === message.id) {
         this.#walkthrough.activeSidebarMessage = this.#walkthrough.inlineExpandedMessages.at(-1) ?? null;
       }
     } else {
@@ -8559,7 +8568,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
       };
       let systemMessage = {
         entity: "model",
-        parts: []
+        parts: [],
+        id: crypto.randomUUID()
       };
       let step = { isLoading: true };
       this.#isLoading = true;
@@ -8572,11 +8582,13 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
             this.#messages.push({
               entity: "user",
               text: data.query,
-              imageInput: data.imageInput
+              imageInput: data.imageInput,
+              id: crypto.randomUUID()
             });
             systemMessage = {
               entity: "model",
-              parts: []
+              parts: [],
+              id: crypto.randomUUID()
             };
             this.#messages.push(systemMessage);
             const isSidebarWalkthroughOpen = this.#walkthrough.isExpanded && !this.#walkthrough.isInlined;

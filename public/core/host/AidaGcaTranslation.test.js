@@ -1,6 +1,8 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { AidaClient, AidaGcaTranslation, GcaTypes } from './host.js';
 const DEFAULT_CLIENT = 'CHROME_DEVTOOLS';
 const DEFAULT_METADATA = {
@@ -92,6 +94,8 @@ function describeCommonRequestFields(aidaRequestFactory, translateFn) {
     });
 }
 describe('AidaGcaTranslation', () => {
+    setupLocaleHooks();
+    setupRuntimeHooks();
     describe('AIDA DoConversationRequest to GCA GenerateContentRequest', () => {
         describeCommonRequestFields(createAidaDoConversationRequest, AidaGcaTranslation.aidaDoConversationRequestToGcaRequest);
         it('translates a basic request', () => {

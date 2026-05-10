@@ -1691,7 +1691,7 @@ UI7.Toolbar.registerToolbarItem({
   location: "main-toolbar-left",
   order: 1
 });
-Common3.AppProvider.registerAppProvider({
+UI7.AppProvider.registerAppProvider({
   async loadAppProvider() {
     const Emulation = await loadEmulationModule();
     return Emulation.AdvancedApp.AdvancedAppProvider.instance();

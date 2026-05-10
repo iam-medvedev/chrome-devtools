@@ -59,6 +59,24 @@
       "path": "./bundle-tsconfig.json"
     },
     {
+      "path": "../../../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../core/root/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../generated/generated-tsconfig.json"
+    },
+    {
+      "path": "../../../../models/ai_assistance/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../models/badges/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../../models/trace/bundle-tsconfig.json"
     },
     {
@@ -66,6 +84,15 @@
     },
     {
       "path": "../../../../ui/components/render_coordinator/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../ui/legacy/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../ui/lit/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../common/bundle-tsconfig.json"
     }
   ]
 }

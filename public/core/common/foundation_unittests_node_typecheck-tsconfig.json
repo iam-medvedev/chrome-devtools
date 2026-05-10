@@ -86,6 +86,12 @@
     },
     {
       "path": "../i18n/bundle-tsconfig.json"
+    },
+    {
+      "path": "../platform/bundle-tsconfig.json"
+    },
+    {
+      "path": "../root/bundle-tsconfig.json"
     }
   ]
 }

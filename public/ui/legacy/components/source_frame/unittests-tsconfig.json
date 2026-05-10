@@ -70,6 +70,9 @@
       "path": "../../../../models/text_utils/bundle-tsconfig.json"
     },
     {
+      "path": "../../../../panels/linear_memory_inspector/components/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../../testing/testing-tsconfig.json"
     },
     {
@@ -77,6 +80,9 @@
     },
     {
       "path": "../../bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../components/buttons/bundle-tsconfig.json"
     },
     {
       "path": "../object_ui/bundle-tsconfig.json"

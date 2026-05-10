@@ -1,10 +1,15 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import * as Platform from '../platform/platform.js';
 import * as Host from './host.js';
 const TEST_MODEL_ID = 'testModelId';
-describeWithEnvironment('AidaClient', () => {
+describe('AidaClient', () => {
+    setupLocaleHooks();
+    setupRuntimeHooks();
     beforeEach(() => {
         setUserAgentForTesting();
     });
@@ -16,6 +21,7 @@ describeWithEnvironment('AidaClient', () => {
             aidaAvailability: {
                 disallowLogging: false,
             },
+            devToolsConsoleInsights: {}
         });
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
         assert.deepEqual(request, {
@@ -483,10 +489,10 @@ describeWithEnvironment('AidaClient', () => {
         const provider = new Host.AidaClient.AidaClient();
         try {
             await getAllResults(provider);
-            expect.fail('provider.fetch did not throw');
+            assert.fail('provider.fetch did not throw');
         }
         catch (err) {
-            expect(err.message).equals('Server responded: permission denied');
+            assert.strictEqual(err.message, 'Server responded: permission denied');
         }
     });
     it('throws a timeout error on timeout', async () => {
@@ -496,10 +502,10 @@ describeWithEnvironment('AidaClient', () => {
         const provider = new Host.AidaClient.AidaClient();
         try {
             await getAllResults(provider);
-            expect.fail('provider.fetch did not throw');
+            assert.fail('provider.fetch did not throw');
         }
         catch (err) {
-            expect(err.message).equals('doAidaConversation timed out');
+            assert.strictEqual(err.message, 'doAidaConversation timed out');
         }
     });
     it('throws an error for other codes', async () => {
@@ -509,10 +515,10 @@ describeWithEnvironment('AidaClient', () => {
         const provider = new Host.AidaClient.AidaClient();
         try {
             await getAllResults(provider);
-            expect.fail('provider.fetch did not throw');
+            assert.fail('provider.fetch did not throw');
         }
         catch (err) {
-            expect(err.message).equals('Request failed: {"statusCode":418}');
+            assert.strictEqual(err.message, 'Request failed: {"statusCode":418}');
         }
     });
     it('throws an error with all details for other failures', async () => {
@@ -523,11 +529,10 @@ describeWithEnvironment('AidaClient', () => {
         const provider = new Host.AidaClient.AidaClient();
         try {
             await getAllResults(provider);
-            expect.fail('provider.fetch did not throw');
+            assert.fail('provider.fetch did not throw');
         }
         catch (err) {
-            expect(err.message)
-                .equals('Cannot send request: Cannot get OAuth credentials {\'@type\': \'type.googleapis.com/google.rpc.DebugInfo\', \'detail\': \'DETAILS\'}');
+            assert.strictEqual(err.message, 'Cannot send request: Cannot get OAuth credentials {\'@type\': \'type.googleapis.com/google.rpc.DebugInfo\', \'detail\': \'DETAILS\'}');
         }
     });
     describe('getAidaClientAvailability', () => {
@@ -537,19 +542,9 @@ describeWithEnvironment('AidaClient', () => {
             });
         }
         it('should return NO_INTERNET when navigator is not online', async () => {
-            const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
-            Object.defineProperty(globalThis, 'navigator', {
-                get() {
-                    return { onLine: false };
-                },
-            });
-            try {
-                const result = await Host.AidaClient.AidaClient.checkAccessPreconditions();
-                assert.strictEqual(result, "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */);
-            }
-            finally {
-                Object.defineProperty(globalThis, 'navigator', navigatorDescriptor);
-            }
+            sinon.stub(Platform.HostRuntime.HOST_RUNTIME, 'getOnLine').returns(false);
+            const result = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+            assert.strictEqual(result, "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */);
         });
         it('should return NO_ACCOUNT_EMAIL when the syncInfo doesn\'t contain accountEmail', async () => {
             mockGetSyncInformation({ accountEmail: undefined, isSyncActive: true });
@@ -653,10 +648,10 @@ describeWithEnvironment('AidaClient', () => {
                     },
                 };
                 await provider.completeCode(request);
+                assert.fail('should have thrown');
             }
             catch (err) {
-                expect(err.message)
-                    .equals('Cannot send request: Cannot get OAuth credentials {\'@type\': \'type.googleapis.com/google.rpc.DebugInfo\', \'detail\': \'DETAILS\'}');
+                assert.strictEqual(err.message, 'Cannot send request: Cannot get OAuth credentials {\'@type\': \'type.googleapis.com/google.rpc.DebugInfo\', \'detail\': \'DETAILS\'}');
             }
         });
         it('throws on empty response from the host', async () => {
@@ -674,9 +669,10 @@ describeWithEnvironment('AidaClient', () => {
             };
             try {
                 await provider.completeCode(request);
+                assert.fail('should have thrown');
             }
             catch (err) {
-                expect(err.message).equals('Empty response');
+                assert.strictEqual(err.message, 'Empty response');
             }
         });
     });

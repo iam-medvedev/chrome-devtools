@@ -61,6 +61,12 @@
       "path": "./bundle-tsconfig.json"
     },
     {
+      "path": "../../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/host/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../generated/protocol-tsconfig.json"
     },
     {
