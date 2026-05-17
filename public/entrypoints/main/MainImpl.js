@@ -311,7 +311,6 @@ export class MainImpl {
         }
     }
     #initializeExperiments() {
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS, 'Capture node creation stacks');
         const enableProtocolMonitor = (Root.Runtime.hostConfig.devToolsProtocolMonitor?.enabled ?? false) ||
             Boolean(Root.Runtime.Runtime.queryParam('isChromeForTesting'));
         const protocolMonitorExperiment = Root.Runtime.experiments.registerHostExperiment({
@@ -323,9 +322,6 @@ export class MainImpl {
             docLink: 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor',
         });
         this.#migrateValueFromLegacyToHostExperiment(Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, protocolMonitorExperiment);
-        // Timeline
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.TIMELINE_INVALIDATION_TRACKING, 'Performance panel: invalidation tracking');
-        Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.TIMELINE_DEBUG_MODE, 'Performance panel: debug mode (trace event details, etc)');
         // Debugging
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, 'Instrumentation breakpoints');
         Root.Runtime.experiments.register(Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, 'Use scope information from source maps');

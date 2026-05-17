@@ -7191,10 +7191,6 @@ var NativeFunctions = [
     signatures: [["type", "?eventInitDict"]]
   },
   {
-    name: "EmailVerifiedEvent",
-    signatures: [["type", "?eventInitDict"]]
-  },
-  {
     name: "ErrorEvent",
     signatures: [["type", "?eventInitDict"]]
   },
@@ -7667,6 +7663,10 @@ var NativeFunctions = [
   {
     name: "registerTool",
     signatures: [["tool", "?options"]]
+  },
+  {
+    name: "executeTool",
+    signatures: [["tool", "input_arguments", "?options"]]
   },
   {
     name: "SnapEvent",

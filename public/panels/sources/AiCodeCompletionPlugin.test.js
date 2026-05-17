@@ -117,7 +117,7 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
             assert.isFalse(fakeLoadingSetter.secondCall.args[0]);
         });
         it('attaches the citations toolbar when a suggestion with citations is accepted', async () => {
-            const updateCitationsSpy = sinon.spy(PanelCommon.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
+            const updateCitationsSpy = sinon.spy(PanelCommon.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
             const plugin = setupPlugin();
             await clock.tickAsync(0);
             const providerConfig = plugin.aiCodeCompletionConfig;
@@ -134,7 +134,7 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
             });
         });
         it('does not attach the citations toolbar if there are no citations', async () => {
-            const updateCitationsSpy = sinon.spy(PanelCommon.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
+            const updateCitationsSpy = sinon.spy(PanelCommon.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
             const plugin = setupPlugin();
             await clock.tickAsync(0);
             const providerConfig = plugin.aiCodeCompletionConfig;

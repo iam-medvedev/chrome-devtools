@@ -634,7 +634,7 @@ describe('StylesSidebarPane', () => {
             assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@function');
             assert.lengthOf(sectionBlocks[1].sections, 1);
             assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.FunctionRuleSection);
-            assert.strictEqual(sectionBlocks[1].sections[0].element.deepTextContent().replaceAll(/\s+/g, ' ').trim(), '--f(--x, --y) { @media (width > 400px) { @container (width > 300px) { @supports (color: red) { result: var(--y); } } } result: var(--x);}');
+            assert.strictEqual(sectionBlocks[1].sections[0].element.deepTextContent().replaceAll(/\s+/g, ' ').trim(), '--f(--x, --y) { @media (width > 400px) { @container --foo (width > 300px) { @supports (color: red) { result: var(--y); } } } result: var(--x);}');
         });
         describe('Animation styles', () => {
             function mockGetAnimatedComputedStyles(response) {
@@ -1057,7 +1057,7 @@ describe('StylesSidebarPane', () => {
                 assert.notExists(stylesWrapper.contentElement.querySelector('div.ai-code-completion-summary-toolbar-container'));
             });
             it('shows a loading state when a request is triggered', async () => {
-                const setLoadingSpy = sinon.stub(PanelsCommon.AiCodeCompletionSummaryToolbar.prototype, 'setLoading');
+                const setLoadingSpy = sinon.stub(PanelsCommon.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar.prototype, 'setLoading');
                 const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
                 assert.exists(providerConfig);
                 providerConfig.onFeatureEnabled();
@@ -1066,7 +1066,7 @@ describe('StylesSidebarPane', () => {
                 assert.isTrue(setLoadingSpy.firstCall.args[0]);
             });
             it('hides the loading indicator when a response is received', async () => {
-                const setLoadingSpy = sinon.stub(PanelsCommon.AiCodeCompletionSummaryToolbar.prototype, 'setLoading');
+                const setLoadingSpy = sinon.stub(PanelsCommon.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar.prototype, 'setLoading');
                 const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
                 assert.exists(providerConfig);
                 providerConfig.onFeatureEnabled();
@@ -1078,7 +1078,7 @@ describe('StylesSidebarPane', () => {
                 assert.isFalse(setLoadingSpy.secondCall.args[0]);
             });
             it('attaches the citations toolbar when a suggestion with citations is accepted', async () => {
-                const updateCitationsSpy = sinon.spy(PanelsCommon.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
+                const updateCitationsSpy = sinon.spy(PanelsCommon.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
                 const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
                 assert.exists(providerConfig);
                 providerConfig.onFeatureEnabled();
@@ -1088,7 +1088,7 @@ describe('StylesSidebarPane', () => {
                 assert.deepEqual(updateCitationsSpy.firstCall.args, [['https://example.com/source']]);
             });
             it('does not attach the citations toolbar if there are no citations', async () => {
-                const updateCitationsSpy = sinon.spy(PanelsCommon.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
+                const updateCitationsSpy = sinon.spy(PanelsCommon.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar.prototype, 'updateCitations');
                 const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
                 assert.exists(providerConfig);
                 providerConfig.onFeatureEnabled();

@@ -1339,7 +1339,15 @@ var UIStrings8 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  timelineShowAllEvents: "Show all events"
+  timelineShowAllEvents: "Show all events",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineDebugMode: "Timeline debug mode (trace event details, etc.)",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineInvalidationTracking: "Invalidation tracking"
 };
 var str_8 = i18n15.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings8);
 var i18nLazyString8 = i18n15.i18n.getLazilyComputedLocalizedString.bind(void 0, str_8);
@@ -1583,6 +1591,22 @@ Common6.Settings.registerSettingExtension({
   storageType: "Synced",
   title: i18nLazyString8(UIStrings8.timelineShowAllEvents),
   settingName: "timeline-show-all-events",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common6.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString8(UIStrings8.timelineDebugMode),
+  settingName: "timeline-debug-mode",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common6.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString8(UIStrings8.timelineInvalidationTracking),
+  settingName: "timeline-invalidation-tracking",
   settingType: "boolean",
   defaultValue: false
 });

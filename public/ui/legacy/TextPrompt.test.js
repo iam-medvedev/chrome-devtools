@@ -153,6 +153,50 @@ describe('TextPromptElement', () => {
         const suggestions = await suggestBoxStub;
         assert.deepEqual(suggestions, [{ text: 'modified and removed' }]);
     });
+    it('supports custom validation', async () => {
+        const prompt = renderPrompt(html `<devtools-prompt editing></devtools-prompt>`);
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        container.style.height = '600px';
+        container.style.width = '800px';
+        const listener = sinon.stub();
+        prompt.addEventListener('commit', listener);
+        prompt.validator = text => text === 'invalid' ? 'Error' : null;
+        const placeholder = prompt.shadowRoot.querySelector('[contenteditable]');
+        assert.exists(placeholder);
+        placeholder.textContent = 'invalid';
+        placeholder.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        sinon.assert.notCalled(listener);
+        assert.isTrue(prompt.matches(':invalid'));
+        placeholder.textContent = 'valid';
+        placeholder.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        sinon.assert.called(listener);
+    });
+    it('clears validation on input', async () => {
+        const prompt = renderPrompt(html `<devtools-prompt editing></devtools-prompt>`);
+        prompt.validator = () => 'Error';
+        const placeholder = prompt.shadowRoot.querySelector('[contenteditable]');
+        assert.exists(placeholder);
+        placeholder.textContent = 'invalid';
+        placeholder.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        assert.isTrue(prompt.matches(':invalid'));
+        placeholder.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true }));
+        assert.isFalse(prompt.matches(':invalid'));
+    });
+    it('cancel-on-blur', async () => {
+        const prompt = renderPrompt(html `<devtools-prompt editing cancel-on-blur></devtools-prompt>`);
+        const commitListener = sinon.stub();
+        const cancelListener = sinon.stub();
+        prompt.addEventListener('commit', commitListener);
+        prompt.addEventListener('cancel', cancelListener);
+        const placeholder = prompt.shadowRoot.querySelector('[contenteditable]');
+        assert.exists(placeholder);
+        placeholder.textContent = 'foo';
+        placeholder.blur();
+        sinon.assert.notCalled(commitListener);
+        sinon.assert.called(cancelListener);
+    });
 });
 describe('TextPrompt', () => {
     setupLocaleHooks();

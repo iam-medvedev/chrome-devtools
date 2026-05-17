@@ -607,140 +607,80 @@ describe('updateVersionFrom41To42', () => {
         assert.isTrue(first.flow.steps.length <= 4096);
     });
 });
-describe('updateVersionFrom42To43', () => {
-    let settings;
-    let syncedStorage;
-    let globalStorage;
-    let localStorage;
-    beforeEach(() => {
-        const mockStore = new Common.Settings.InMemoryStorage();
-        syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        localStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        Common.Settings.registerSettingExtension({
-            settingName: 'timeline-show-all-events',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+function describeExperimentMigration(versionFrom, versionTo, settingName, experimentName) {
+    const updateMethodName = `updateVersionFrom${versionFrom}To${versionTo}`;
+    describe(updateMethodName, () => {
+        let settings;
+        let syncedStorage;
+        let globalStorage;
+        let localStorage;
+        beforeEach(() => {
+            const mockStore = new Common.Settings.InMemoryStorage();
+            syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
+            globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
+            localStorage = new Common.Settings.SettingsStorage({}, mockStore);
+            Common.Settings.registerSettingExtension({
+                settingName,
+                settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+                defaultValue: false,
+                storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+            });
+            settings = new Common.Settings.Settings({
+                syncedStorage,
+                globalStorage,
+                localStorage,
+                settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+                runSettingsMigration: false,
+            });
         });
-        settings = new Common.Settings.Settings({
-            syncedStorage,
-            globalStorage,
-            localStorage,
-            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
-            runSettingsMigration: false,
+        afterEach(() => {
+            Common.Settings.resetSettings();
         });
-    });
-    afterEach(() => {
-        Common.Settings.resetSettings();
-    });
-    it('does nothing if timeline-show-all-events experiment is not enabled', () => {
-        const versionController = new Common.VersionController.VersionController(settings);
-        const timelineShowAllEventsSetting = settings.moduleSetting('timeline-show-all-events');
-        timelineShowAllEventsSetting.set(false);
-        versionController.updateVersionFrom42To43();
-        assert.isFalse(timelineShowAllEventsSetting.get());
-    });
-    it('sets timeline-show-all-events setting to true if experiment is enabled', () => {
-        const versionController = new Common.VersionController.VersionController(settings);
-        const timelineShowAllEventsSetting = settings.moduleSetting('timeline-show-all-events');
-        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
-        getValueFromStorageStub.withArgs('timeline-show-all-events').returns(true);
-        versionController.updateVersionFrom42To43();
-        assert.isTrue(timelineShowAllEventsSetting.get());
-        getValueFromStorageStub.restore();
-    });
-    it('does not overwrite timeline-show-all-events setting if already present in syncedStorage', () => {
-        const versionController = new Common.VersionController.VersionController(settings);
-        const timelineShowAllEventsSetting = settings.moduleSetting('timeline-show-all-events');
-        timelineShowAllEventsSetting.set(true);
-        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
-        getValueFromStorageStub.withArgs('timeline-show-all-events').returns(true);
-        const moduleSettingSpy = sinon.spy(settings, 'moduleSetting');
-        versionController.updateVersionFrom42To43();
-        sinon.assert.notCalled(moduleSettingSpy);
-        assert.isTrue(timelineShowAllEventsSetting.get());
-        getValueFromStorageStub.restore();
-        moduleSettingSpy.restore();
-    });
-    it('does not crash if setting is not registered', () => {
-        const versionController = new Common.VersionController.VersionController(settings);
-        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
-        getValueFromStorageStub.withArgs('timeline-show-all-events').returns(true);
-        const moduleSettingStub = sinon.stub(settings, 'moduleSetting');
-        moduleSettingStub.withArgs('timeline-show-all-events').throws();
-        versionController.updateVersionFrom42To43();
-        moduleSettingStub.restore();
-        getValueFromStorageStub.restore();
-    });
-});
-describe('updateVersionFrom43To44', () => {
-    let settings;
-    let syncedStorage;
-    let globalStorage;
-    let localStorage;
-    beforeEach(() => {
-        const mockStore = new Common.Settings.InMemoryStorage();
-        syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        localStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        Common.Settings.registerSettingExtension({
-            settingName: 'apca',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-            storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+        it(`does nothing if ${experimentName} experiment is not enabled`, () => {
+            const versionController = new Common.VersionController.VersionController(settings);
+            const setting = settings.moduleSetting(settingName);
+            setting.set(false);
+            versionController[updateMethodName]();
+            assert.isFalse(setting.get());
         });
-        settings = new Common.Settings.Settings({
-            syncedStorage,
-            globalStorage,
-            localStorage,
-            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
-            runSettingsMigration: false,
+        it(`sets ${settingName} setting to true if experiment is enabled`, () => {
+            const versionController = new Common.VersionController.VersionController(settings);
+            const setting = settings.moduleSetting(settingName);
+            const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
+            getValueFromStorageStub.withArgs(experimentName).returns(true);
+            versionController[updateMethodName]();
+            assert.isTrue(setting.get());
+            getValueFromStorageStub.restore();
+        });
+        it(`does not overwrite ${settingName} setting if already present in syncedStorage`, () => {
+            const versionController = new Common.VersionController.VersionController(settings);
+            const setting = settings.moduleSetting(settingName);
+            setting.set(true);
+            const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
+            getValueFromStorageStub.withArgs(experimentName).returns(true);
+            const moduleSettingSpy = sinon.spy(settings, 'moduleSetting');
+            versionController[updateMethodName]();
+            sinon.assert.notCalled(moduleSettingSpy);
+            assert.isTrue(setting.get());
+            getValueFromStorageStub.restore();
+            moduleSettingSpy.restore();
+        });
+        it('does not crash if setting is not registered', () => {
+            const versionController = new Common.VersionController.VersionController(settings);
+            const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
+            getValueFromStorageStub.withArgs(experimentName).returns(true);
+            const moduleSettingStub = sinon.stub(settings, 'moduleSetting');
+            moduleSettingStub.withArgs(settingName).throws();
+            versionController[updateMethodName]();
+            moduleSettingStub.restore();
+            getValueFromStorageStub.restore();
         });
     });
-    afterEach(() => {
-        Common.Settings.resetSettings();
-    });
-    it('does nothing if apca experiment is not enabled', () => {
-        const versionController = new Common.VersionController.VersionController(settings);
-        const apcaSetting = settings.moduleSetting('apca');
-        apcaSetting.set(false);
-        versionController.updateVersionFrom43To44();
-        assert.isFalse(apcaSetting.get());
-    });
-    it('sets apca setting to true if experiment is enabled', () => {
-        const versionController = new Common.VersionController.VersionController(settings);
-        const apcaSetting = settings.moduleSetting('apca');
-        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
-        getValueFromStorageStub.withArgs('apca').returns(true);
-        versionController.updateVersionFrom43To44();
-        assert.isTrue(apcaSetting.get());
-        getValueFromStorageStub.restore();
-    });
-    it('does not overwrite apca setting if already present in syncedStorage', () => {
-        const versionController = new Common.VersionController.VersionController(settings);
-        const apcaSetting = settings.moduleSetting('apca');
-        apcaSetting.set(true);
-        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
-        getValueFromStorageStub.withArgs('apca').returns(true);
-        const moduleSettingSpy = sinon.spy(settings, 'moduleSetting');
-        versionController.updateVersionFrom43To44();
-        sinon.assert.notCalled(moduleSettingSpy);
-        assert.isTrue(apcaSetting.get());
-        getValueFromStorageStub.restore();
-        moduleSettingSpy.restore();
-    });
-    it('does not crash if setting is not registered', () => {
-        const versionController = new Common.VersionController.VersionController(settings);
-        const getValueFromStorageStub = sinon.stub(Root.Runtime.experiments, 'getValueFromStorage');
-        getValueFromStorageStub.withArgs('apca').returns(true);
-        const moduleSettingStub = sinon.stub(settings, 'moduleSetting');
-        moduleSettingStub.withArgs('apca').throws();
-        versionController.updateVersionFrom43To44();
-        moduleSettingStub.restore();
-        getValueFromStorageStub.restore();
-    });
-});
+}
+describeExperimentMigration(42, 43, 'timeline-show-all-events', 'timeline-show-all-events');
+describeExperimentMigration(43, 44, 'apca', 'apca');
+describeExperimentMigration(44, 45, 'timeline-debug-mode', 'timeline-debug-mode');
+describeExperimentMigration(45, 46, 'timeline-invalidation-tracking', 'timeline-invalidation-tracking');
 describe('access logging', () => {
     let settings;
     let logSettingAccess;

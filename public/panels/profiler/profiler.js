@@ -843,6 +843,7 @@ var objectValue_css_default = `/*
 
 // gen/front_end/panels/profiler/ProfilesPanel.js
 import * as UI14 from "./../../ui/legacy/legacy.js";
+import { render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/HeapDetachedElementsView.js
@@ -3642,17 +3643,19 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends Common7.ObjectWra
       const value2 = this.data[columnId];
       const percentColumn = columnId + "-percent";
       const percent = this.data[percentColumn];
+      const tooltipColumn = `${columnId}-tooltip`;
+      const tooltip = this.data[tooltipColumn];
       if (percent) {
         render(html`
           <div class="profile-multiple-values">
-            <span aria-hidden="true">${value2}</span>
+            <span aria-hidden="true" title=${Directives.ifDefined(tooltip)}>${value2}</span>
             <span class="percent-column" aria-hidden="true">${percent}</span>
           </div>`, cell);
         this.setCellAccessibleName(i18nString6(UIStrings6.genericStringsTwoPlaceholders, { PH1: value2, PH2: percent }), cell, columnId);
       } else {
         render(html`
           <div>
-            <span>${value2}</span>
+            <span title=${Directives.ifDefined(tooltip)}>${value2}</span>
           </div>`, cell);
       }
     }
@@ -3868,7 +3871,9 @@ var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
       shallowSize: i18n13.ByteUtilities.formatBytesToKb(this.shallowSize),
       retainedSize: i18n13.ByteUtilities.formatBytesToKb(this.retainedSize),
       "shallowSize-percent": this.toPercentString(shallowSizePercent),
-      "retainedSize-percent": this.toPercentString(retainedSizePercent)
+      "retainedSize-percent": this.toPercentString(retainedSizePercent),
+      "shallowSize-tooltip": i18n13.ByteUtilities.bytesToString(this.shallowSize),
+      "retainedSize-tooltip": i18n13.ByteUtilities.bytesToString(this.retainedSize)
     };
   }
   get name() {
@@ -3882,8 +3887,7 @@ var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
     };
   }
   createCell(columnId) {
-    const cell = columnId !== "object" ? this.createValueCell(columnId) : this.createObjectCell();
-    return cell;
+    return columnId !== "object" ? this.createValueCell(columnId) : this.createObjectCell();
   }
   createObjectCell() {
     let value2 = this.nameInternal;
@@ -4329,7 +4333,9 @@ var HeapSnapshotConstructorNode = class extends HeapSnapshotGridNode {
       shallowSize: i18n13.ByteUtilities.formatBytesToKb(this.shallowSize),
       retainedSize: i18n13.ByteUtilities.formatBytesToKb(this.retainedSize),
       "shallowSize-percent": this.toPercentString(shallowSizePercent),
-      "retainedSize-percent": this.toPercentString(retainedSizePercent)
+      "retainedSize-percent": this.toPercentString(retainedSizePercent),
+      "shallowSize-tooltip": i18n13.ByteUtilities.bytesToString(this.shallowSize),
+      "retainedSize-tooltip": i18n13.ByteUtilities.bytesToString(this.retainedSize)
     };
   }
   get name() {
@@ -8635,7 +8641,11 @@ var ProfilesPanel = class _ProfilesPanel extends UI14.Panel.PanelWithSidebar {
     }
     this.profileViewToolbar.removeToolbarItems();
     void view.toolbarItems().then((items) => {
-      items.map((item) => this.profileViewToolbar.appendToolbarItem(item));
+      if (Array.isArray(items)) {
+        items.map((item) => this.profileViewToolbar.appendToolbarItem(item));
+      } else {
+        render2(items, this.profileViewToolbar);
+      }
     });
     return view;
   }

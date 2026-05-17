@@ -792,10 +792,10 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const focusedIndex = this.focusedSectionIndex();
         this.linkifier.reset();
         const prevSections = this.sectionBlocks.map(block => block.sections).flat();
-        this.sectionBlocks = [];
         const node = this.node();
         this.hasMatchedStyles = matchedStyles !== null && node !== null;
         if (!this.hasMatchedStyles) {
+            this.sectionBlocks = [];
             this.sectionsContainer.contentElement.removeChildren();
             this.sectionsContainer.detachChildWidgets();
             this.noMatchesElement.classList.remove('hidden');
@@ -1287,12 +1287,13 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         if (this.#aiCodeCompletionSummaryToolbar) {
             return;
         }
-        this.#aiCodeCompletionSummaryToolbar = new PanelsCommon.AiCodeCompletionSummaryToolbar({
-            citationsTooltipId: CITATIONS_TOOLTIP_ID,
-            disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID,
-            spinnerTooltipId: SPINNER_TOOLTIP_ID,
-            panel: "styles" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.STYLES */,
-        });
+        this.#aiCodeCompletionSummaryToolbar =
+            new PanelsCommon.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar({
+                citationsTooltipId: CITATIONS_TOOLTIP_ID,
+                disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID,
+                spinnerTooltipId: SPINNER_TOOLTIP_ID,
+                panel: "styles" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.STYLES */,
+            });
         const containingPane = this.contentElement.enclosingNodeOrSelfWithClass('style-panes-wrapper');
         this.#aiCodeCompletionSummaryToolbarContainer =
             containingPane.createChild('div', 'ai-code-completion-summary-toolbar-container');

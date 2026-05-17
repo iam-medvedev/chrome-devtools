@@ -72,17 +72,6 @@ var UIStrings2 = {
    */
   properties: "Properties",
   /**
-   * @description Command for showing the 'Stack Trace' tool. Stack trace refers to the location in
-   * the code where the program was at a point in time.
-   */
-  showStackTrace: "Show Stack Trace",
-  /**
-   * @description Text for the execution stack trace tool, which shows the stack trace from when this
-   * HTML element was created. Stack trace refers to the location in the code where the program was
-   * at a point in time.
-   */
-  stackTrace: "Stack Trace",
-  /**
    * @description Command for showing the 'Layout' tool
    */
   showLayout: "Show Layout",
@@ -270,19 +259,6 @@ UI2.ViewManager.registerViewExtension({
   async loadView() {
     const Elements2 = await loadElementsModule();
     return new Elements2.PropertiesWidget.PropertiesWidget();
-  }
-});
-UI2.ViewManager.registerViewExtension({
-  experiment: Root.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS,
-  location: "elements-sidebar",
-  id: "elements.dom-creation",
-  commandPrompt: i18nLazyString2(UIStrings2.showStackTrace),
-  title: i18nLazyString2(UIStrings2.stackTrace),
-  order: 10,
-  persistence: "permanent",
-  async loadView() {
-    const Elements2 = await loadElementsModule();
-    return new Elements2.NodeStackTraceWidget.NodeStackTraceWidget();
   }
 });
 UI2.ViewManager.registerViewExtension({
@@ -3038,7 +3014,15 @@ var UIStrings20 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  timelineShowAllEvents: "Show all events"
+  timelineShowAllEvents: "Show all events",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineDebugMode: "Timeline debug mode (trace event details, etc.)",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineInvalidationTracking: "Invalidation tracking"
 };
 var str_20 = i18n41.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings20);
 var i18nLazyString20 = i18n41.i18n.getLazilyComputedLocalizedString.bind(void 0, str_20);
@@ -3282,6 +3266,22 @@ Common11.Settings.registerSettingExtension({
   storageType: "Synced",
   title: i18nLazyString20(UIStrings20.timelineShowAllEvents),
   settingName: "timeline-show-all-events",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common11.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString20(UIStrings20.timelineDebugMode),
+  settingName: "timeline-debug-mode",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common11.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString20(UIStrings20.timelineInvalidationTracking),
+  settingName: "timeline-invalidation-tracking",
   settingType: "boolean",
   defaultValue: false
 });

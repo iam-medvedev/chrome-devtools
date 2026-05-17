@@ -2427,115 +2427,6 @@ var SuppressedErrorPolyfill = class extends Error {
 };
 var SuppressedError2 = globalThis.SuppressedError ?? SuppressedErrorPolyfill;
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/EventEmitter.js
-var EventEmitter = class {
-  #emitter;
-  #handlers = /* @__PURE__ */ new Map();
-  /**
-   * If you pass an emitter, the returned emitter will wrap the passed emitter.
-   *
-   * @internal
-   */
-  constructor(emitter = mitt_default(/* @__PURE__ */ new Map())) {
-    this.#emitter = emitter;
-  }
-  /**
-   * Bind an event listener to fire when an event occurs.
-   * @param type - the event type you'd like to listen to. Can be a string or symbol.
-   * @param handler - the function to be called when the event occurs.
-   * @returns `this` to enable you to chain method calls.
-   */
-  on(type, handler) {
-    const handlers = this.#handlers.get(type);
-    if (handlers === void 0) {
-      this.#handlers.set(type, [handler]);
-    } else {
-      handlers.push(handler);
-    }
-    this.#emitter.on(type, handler);
-    return this;
-  }
-  /**
-   * Remove an event listener from firing.
-   * @param type - the event type you'd like to stop listening to.
-   * @param handler - the function that should be removed.
-   * @returns `this` to enable you to chain method calls.
-   */
-  off(type, handler) {
-    const handlers = this.#handlers.get(type) ?? [];
-    if (handler === void 0) {
-      for (const handler2 of handlers) {
-        this.#emitter.off(type, handler2);
-      }
-      this.#handlers.delete(type);
-      return this;
-    }
-    const index = handlers.lastIndexOf(handler);
-    if (index > -1) {
-      this.#emitter.off(type, ...handlers.splice(index, 1));
-    }
-    return this;
-  }
-  /**
-   * Emit an event and call any associated listeners.
-   *
-   * @param type - the event you'd like to emit
-   * @param eventData - any data you'd like to emit with the event
-   * @returns `true` if there are any listeners, `false` if there are not.
-   */
-  emit(type, event) {
-    this.#emitter.emit(type, event);
-    return this.listenerCount(type) > 0;
-  }
-  /**
-   * Like `on` but the listener will only be fired once and then it will be removed.
-   * @param type - the event you'd like to listen to
-   * @param handler - the handler function to run when the event occurs
-   * @returns `this` to enable you to chain method calls.
-   */
-  once(type, handler) {
-    const onceHandler = (eventData) => {
-      handler(eventData);
-      this.off(type, onceHandler);
-    };
-    return this.on(type, onceHandler);
-  }
-  /**
-   * Gets the number of listeners for a given event.
-   *
-   * @param type - the event to get the listener count for
-   * @returns the number of listeners bound to the given event
-   */
-  listenerCount(type) {
-    return this.#handlers.get(type)?.length || 0;
-  }
-  /**
-   * Removes all listeners. If given an event argument, it will remove only
-   * listeners for that event.
-   *
-   * @param type - the event to remove listeners for.
-   * @returns `this` to enable you to chain method calls.
-   */
-  removeAllListeners(type) {
-    if (type !== void 0) {
-      return this.off(type);
-    }
-    this[disposeSymbol]();
-    return this;
-  }
-  /**
-   * @internal
-   */
-  [disposeSymbol]() {
-    for (const [type, handlers] of this.#handlers) {
-      for (const handler of handlers) {
-        this.#emitter.off(type, handler);
-      }
-    }
-    this.#handlers.clear();
-  }
-};
-
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/environment.js
 var isNode = !!(typeof process !== "undefined" && process.version);
 var environment = {
@@ -2599,7 +2490,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.43.0";
+var packageVersion = "24.43.1";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -2995,6 +2886,121 @@ function filterAsync(predicate) {
   });
 }
 
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/EventEmitter.js
+var EventEmitter = class {
+  #emitter;
+  #handlers = /* @__PURE__ */ new Map();
+  /**
+   * If you pass an emitter, the returned emitter will wrap the passed emitter.
+   *
+   * @internal
+   */
+  constructor(emitter = mitt_default(/* @__PURE__ */ new Map())) {
+    this.#emitter = emitter;
+  }
+  /**
+   * Bind an event listener to fire when an event occurs.
+   * @param type - the event type you'd like to listen to. Can be a string or symbol.
+   * @param handler - the function to be called when the event occurs.
+   * @returns `this` to enable you to chain method calls.
+   */
+  on(type, handler) {
+    const handlers = this.#handlers.get(type);
+    if (handlers === void 0) {
+      this.#handlers.set(type, [handler]);
+    } else {
+      handlers.push(handler);
+    }
+    this.#emitter.on(type, handler);
+    return this;
+  }
+  /**
+   * Remove an event listener from firing.
+   * @param type - the event type you'd like to stop listening to.
+   * @param handler - the function that should be removed.
+   * @returns `this` to enable you to chain method calls.
+   */
+  off(type, handler) {
+    const handlers = this.#handlers.get(type) ?? [];
+    if (handler === void 0) {
+      for (const handler2 of handlers) {
+        this.#emitter.off(type, handler2);
+      }
+      this.#handlers.delete(type);
+      return this;
+    }
+    const index = handlers.lastIndexOf(handler);
+    if (index > -1) {
+      this.#emitter.off(type, ...handlers.splice(index, 1));
+    }
+    return this;
+  }
+  /**
+   * Emit an event and call any associated listeners.
+   *
+   * @param type - the event you'd like to emit
+   * @param eventData - any data you'd like to emit with the event
+   * @returns `true` if there are any listeners, `false` if there are not.
+   */
+  emit(type, event) {
+    this.#emitter.emit(type, event);
+    return this.listenerCount(type) > 0;
+  }
+  /**
+   * Like `on` but the listener will only be fired once and then it will be removed.
+   * @param type - the event you'd like to listen to
+   * @param handler - the handler function to run when the event occurs
+   * @returns `this` to enable you to chain method calls.
+   */
+  once(type, handler) {
+    const onceHandler = (eventData) => {
+      handler(eventData);
+      this.off(type, onceHandler);
+    };
+    return this.on(type, onceHandler);
+  }
+  /**
+   * Gets the number of listeners for a given event.
+   *
+   * @param type - the event to get the listener count for
+   * @returns the number of listeners bound to the given event
+   */
+  listenerCount(type) {
+    return this.#handlers.get(type)?.length || 0;
+  }
+  /**
+   * Removes all listeners. If given an event argument, it will remove only
+   * listeners for that event.
+   *
+   * @param type - the event to remove listeners for.
+   * @returns `this` to enable you to chain method calls.
+   */
+  removeAllListeners(type) {
+    if (type !== void 0) {
+      return this.off(type);
+    }
+    this[disposeSymbol]();
+    return this;
+  }
+  /**
+   * @internal
+   */
+  [disposeSymbol]() {
+    return void this[asyncDisposeSymbol]().catch(debugError);
+  }
+  /**
+   * @internal
+   */
+  async [asyncDisposeSymbol]() {
+    for (const [type, handlers] of this.#handlers) {
+      for (const handler of handlers) {
+        this.#emitter.off(type, handler);
+      }
+    }
+    this.#handlers.clear();
+  }
+};
+
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Browser.js
 var WEB_PERMISSION_TO_PROTOCOL_PERMISSION = /* @__PURE__ */ new Map([
   ["accelerometer", "sensors"],
@@ -3147,17 +3153,16 @@ var Browser = class extends EventEmitter {
   }
   /** @internal */
   [disposeSymbol]() {
-    if (this.process()) {
-      return void this.close().catch(debugError);
-    }
-    return void this.disconnect().catch(debugError);
+    return void this[asyncDisposeSymbol]().catch(debugError);
   }
   /** @internal */
-  [asyncDisposeSymbol]() {
+  async [asyncDisposeSymbol]() {
     if (this.process()) {
-      return this.close();
+      await this.close();
+    } else {
+      await this.disconnect();
     }
-    return this.disconnect();
+    await super[asyncDisposeSymbol]();
   }
 };
 
@@ -3440,11 +3445,12 @@ var BrowserContext = class extends EventEmitter {
   }
   /** @internal */
   [disposeSymbol]() {
-    return void this.close().catch(debugError);
+    return void this[asyncDisposeSymbol]().catch(debugError);
   }
   /** @internal */
-  [asyncDisposeSymbol]() {
-    return this.close();
+  async [asyncDisposeSymbol]() {
+    await this.close();
+    await super[asyncDisposeSymbol]();
   }
 };
 
@@ -5790,11 +5796,12 @@ var Page = (() => {
     [(_screenshot_decorators = [guarded(function() {
       return this.browser();
     })], disposeSymbol)]() {
-      return void this.close().catch(debugError);
+      return void this[asyncDisposeSymbol]().catch(debugError);
     }
     /** @internal */
-    [asyncDisposeSymbol]() {
-      return this.close();
+    async [asyncDisposeSymbol]() {
+      await this.close();
+      await super[asyncDisposeSymbol]();
     }
   };
 })();
@@ -6243,7 +6250,7 @@ var JSHandle = (() => {
     }
     /** @internal */
     [(_getProperty_decorators = [throwIfDisposed()], _getProperties_decorators = [throwIfDisposed()], disposeSymbol)]() {
-      return void this.dispose().catch(debugError);
+      return void this[asyncDisposeSymbol]().catch(debugError);
     }
     /** @internal */
     [asyncDisposeSymbol]() {
@@ -11800,6 +11807,7 @@ ${sourceUrlComment}
   [disposeSymbol]() {
     this.#disposables.dispose();
     this.emit("disposed", void 0);
+    super[disposeSymbol]();
   }
 };
 var rewriteError2 = (error) => {
@@ -12842,8 +12850,8 @@ var IsolatedWorld = class extends Realm {
   [disposeSymbol]() {
     this.#context?.[disposeSymbol]();
     this.#emitter.emit("disposed", void 0);
-    super[disposeSymbol]();
     this.#emitter.removeAllListeners();
+    super[disposeSymbol]();
   }
   get origin() {
     return this.#origin;
@@ -13151,6 +13159,9 @@ var CdpFrame = (() => {
       return this._frameManager.page();
     }
     async goto(url, options = {}) {
+      if (!this.page()._isUrlAllowed(url)) {
+        throw new Error(`Navigation to ${url} is blocked by blocklist/allowlist rules`);
+      }
       const { referer = this._frameManager.networkManager.extraHTTPHeaders()["referer"], referrerPolicy = this._frameManager.networkManager.extraHTTPHeaders()["referer-policy"], waitUntil = ["load"], timeout: timeout2 = this._frameManager.timeoutSettings.navigationTimeout() } = options;
       let ensureNewDocumentNavigation = false;
       const watcher = new LifecycleWatcher(this._frameManager.networkManager, this, waitUntil, timeout2);
@@ -13322,6 +13333,7 @@ var CdpFrame = (() => {
       for (const extensionWorld of Object.values(this.extensionWorlds)) {
         extensionWorld[disposeSymbol]();
       }
+      super[disposeSymbol]();
     }
     exposeFunction() {
       throw new UnsupportedOperation();
@@ -15260,10 +15272,10 @@ var FrameManager = class extends EventEmitter {
     for (const child of frame.childFrames()) {
       this.#removeFramesRecursively(child);
     }
-    frame[disposeSymbol]();
     this._frameTree.removeFrame(frame);
     this.emit(FrameManagerEvent.FrameDetached, frame);
     frame.emit(FrameEvent.FrameDetached, frame);
+    frame[disposeSymbol]();
   }
 };
 
@@ -16852,6 +16864,9 @@ var CdpPage = class _CdpPage extends Page {
   }
   _client() {
     return this.#primaryTargetClient;
+  }
+  _isUrlAllowed(url) {
+    return this.#targetManager.isUrlAllowed(url);
   }
   isServiceWorkerBypassed() {
     return this.#serviceWorkerBypassed;
@@ -19006,7 +19021,7 @@ var TargetManager = class extends EventEmitter {
     if (!this.#connection.isAutoAttached(targetInfo.targetId)) {
       return;
     }
-    if (!this.#initialAttachDone && !this.#isUrlAllowed(targetInfo.url)) {
+    if (!this.#initialAttachDone && !this.isUrlAllowed(targetInfo.url)) {
       await this.#silentDetach(session, parentSession);
       return;
     }
@@ -19092,7 +19107,7 @@ var TargetManager = class extends EventEmitter {
   /**
    * Helper to validate URL against blocklist patterns
    */
-  #isUrlAllowed = (url) => {
+  isUrlAllowed = (url) => {
     if (this.#blocklist.length === 0 && this.#allowlist.length === 0) {
       return true;
     }
@@ -19522,11 +19537,6 @@ export {
  */
 /**
  * @license
- * Copyright 2022 Google Inc.
- * SPDX-License-Identifier: Apache-2.0
- */
-/**
- * @license
  * Copyright 2020 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -19548,6 +19558,11 @@ export {
 /**
  * @license
  * Copyright 2017 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/**
+ * @license
+ * Copyright 2022 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
