@@ -2674,6 +2674,13 @@ UI2.ActionRegistration.registerActionExtension({
         "devToolsDefault",
         "vsCode"
       ]
+    },
+    {
+      shortcut: "Alt+g",
+      keybindSets: [
+        "devToolsDefault",
+        "vsCode"
+      ]
     }
   ]
 });
@@ -5246,7 +5253,6 @@ async function init() {
       new Promise((resolve) => Host3.InspectorFrontendHost.InspectorFrontendHostInstance.getPreferences(resolve))
     ]);
     Object.assign(Root3.Runtime.hostConfig, config);
-    safeRegisterExperiment(Root3.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS, "Capture node creation stacks");
     safeRegisterExperiment(Root3.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, "Enable instrumentation breakpoints");
     safeRegisterExperiment(Root3.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, "Use scope information from source maps");
     safeRegisterExperiment(Root3.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, "Protocol Monitor");

@@ -5,7 +5,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import { assertScreenshot, dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, registerNoopActions, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -15,6 +15,7 @@ import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection(`RequestConditionsDrawer with individual request throttling enabled`, () => {
     beforeEach(() => {
+        stubNoopSettings();
         setMockConnectionResponseHandler('Debugger.enable', () => ({}));
         setMockConnectionResponseHandler('Storage.getStorageKey', () => ({}));
         registerNoopActions([
@@ -26,8 +27,7 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
         sinon.stub(SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions, 'applyConditions')
             .returns(false);
     });
-    // Test is failing on CQ
-    it.skip('[crbug.com/504504142] shows a placeholder', async () => {
+    it('shows a placeholder', async () => {
         const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
         renderElementIntoDOM(requestConditionsDrawer);
         await requestConditionsDrawer.updateComplete;
@@ -38,8 +38,7 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
         assert.deepEqual(placeholder.querySelector('.empty-state-description > span')?.textContent, 'To throttle or block a network request, add a rule here manually or via the network panel\'s context menu. Learn more');
         await assertScreenshot('request_conditions/throttling_placeholder.png');
     });
-    // Test is failing on CQ
-    it.skip('[crbug.com/504504142] Add pattern button triggers showing the editor view', async () => {
+    it('Add pattern button triggers showing the editor view', async () => {
         const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
         renderElementIntoDOM(requestConditionsDrawer);
         await requestConditionsDrawer.updateComplete;
@@ -80,12 +79,10 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
                 await assertScreenshot(`request_conditions/throttling_blocked-not-matched.png`);
             }
         };
+        it('are updated upon RequestFinished event (when target is in scope)', updatesOnRequestFinishedEvent(true));
+        it('are updated upon RequestFinished event (when target is out of scope)', updatesOnRequestFinishedEvent(false));
         // Test is failing on CQ
-        it.skip('[crbug.com/503622772] are updated upon RequestFinished event (when target is in scope)', updatesOnRequestFinishedEvent(true));
-        // Test is failing on CQ
-        it.skip('[crbug.com/504504142] are updated upon RequestFinished event (when target is out of scope)', updatesOnRequestFinishedEvent(false));
-        // Test is failing on CQ
-        it.skip('[crbug.com/504504142] are updated upon Reset event', async () => {
+        it('are updated upon Reset event', async () => {
             const viewFunction = createViewFunctionStub(Network.RequestConditionsDrawer.AffectedCountWidget);
             const widget = new Network.RequestConditionsDrawer.AffectedCountWidget(undefined, viewFunction);
             widget.condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*', enabled: true });
@@ -99,6 +96,11 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
 });
 describeWithMockConnection('RequestConditionsDrawer', () => {
     beforeEach(() => {
+        stubNoopSettings();
+        registerNoopActions([
+            'network.add-network-request-blocking-pattern',
+            'network.remove-all-network-request-blocking-patterns',
+        ]);
         SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
     });
     describe('shows information for upgrading wildcard patterns to URLPatterns', () => {

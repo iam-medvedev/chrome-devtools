@@ -43,6 +43,7 @@ import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 // gen/front_end/panels/emulation/DeviceModeToolbar.js
 var DeviceModeToolbar_exports = {};
 __export(DeviceModeToolbar_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   DeviceModeToolbar: () => DeviceModeToolbar
 });
 import "./../../ui/legacy/legacy.js";
@@ -53,9 +54,45 @@ import * as Platform from "./../../core/platform/platform.js";
 import * as EmulationModel from "./../../models/emulation/emulation.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI from "./../../ui/legacy/legacy.js";
-import { Directives, html, i18nTemplate, render } from "./../../ui/lit/lit.js";
+import { Directive, Directives, html, i18nTemplate, noChange, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
+var AutoWidthSelectDirective = class _AutoWidthSelectDirective extends Directive.Directive {
+  static itemWidthCache = /* @__PURE__ */ new Map();
+  constructor(partInfo) {
+    super(partInfo);
+    if (partInfo.type !== Directive.PartType.ELEMENT) {
+      throw new Error("AutoWidthSelectDirective must be used as an element directive");
+    }
+  }
+  update(part, [text]) {
+    const select = part.element;
+    let widthPx = _AutoWidthSelectDirective.itemWidthCache.get(text);
+    if (!widthPx) {
+      const measuringElement = document.createElement("select");
+      measuringElement.className = select.className;
+      measuringElement.style.width = "fit-content";
+      measuringElement.style.position = "absolute";
+      measuringElement.style.visibility = "hidden";
+      measuringElement.style.pointerEvents = "none";
+      measuringElement.appendChild(document.createElement("option"));
+      measuringElement.options[0].textContent = text;
+      select.parentElement?.appendChild(measuringElement);
+      const width = measuringElement.offsetWidth;
+      measuringElement.remove();
+      widthPx = width ? `${width}px` : "";
+      if (width > 0) {
+        _AutoWidthSelectDirective.itemWidthCache.set(text, widthPx);
+      }
+    }
+    select.style.width = widthPx;
+    return this.render(text);
+  }
+  render(_text) {
+    return noChange;
+  }
+};
+var autoWidthSelect = Directive.directive(AutoWidthSelectDirective);
 var UIStrings = {
   /**
    * @description Title of the device dimensions selection item in the Device Mode Toolbar.
@@ -227,10 +264,174 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/emulation/DeviceModeToolbar.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var { ifDefined, styleMap } = Directives;
+var { ifDefined, live } = Directives;
 var { widget } = UI.Widget;
 var { bindToSetting } = UI.UIUtils;
-var DeviceModeToolbar = class {
+function createSizeInput(title, jslogContext, value, disabled, placeholder, onChange) {
+  return html`
+      <input type="number"
+             max=${EmulationModel.DeviceModeModel.MaxDeviceSize}
+             min=${EmulationModel.DeviceModeModel.MinDeviceSize}
+             title=${title}
+             class="device-mode-size-input"
+             .disabled=${disabled ?? false}
+             jslog=${VisualLogging.textField().track({ change: true }).context(jslogContext)}
+             .value=${value ?? ""}
+             placeholder=${ifDefined(placeholder)}
+             @change=${onChange}
+             @keydown=${(event) => {
+    const input = event.target;
+    let modifiedValue = UI.UIUtils.modifiedFloatNumber(Number(input.value), event);
+    if (modifiedValue === null) {
+      return;
+    }
+    modifiedValue = Math.min(modifiedValue, EmulationModel.DeviceModeModel.MaxDeviceSize);
+    modifiedValue = Math.max(modifiedValue, EmulationModel.DeviceModeModel.MinDeviceSize);
+    event.preventDefault();
+    input.value = String(modifiedValue);
+    input.dispatchEvent(new Event("change"));
+  }}>`;
+}
+var DEFAULT_VIEW = (input, _output, target) => {
+  render(html`
+    <devtools-toolbar class="main-toolbar">
+      <div class="device-mode-empty-toolbar-element"></div>
+      ${i18nTemplate(str_, UIStrings.dimensions, { PH1: html`
+        <select class="dark-text toolbar-has-dropdown-shrinkable"
+                ${autoWidthSelect(input.deviceText)}
+                title=${i18nString(UIStrings.deviceType)}
+                aria-label=${i18nString(UIStrings.deviceType)}
+                @change=${input.onDeviceChange}
+                .value=${live(input.selectedDeviceOption === input.deviceModeOptions.responsive ? "Responsive" : input.selectedDeviceOption?.title || "Responsive")}
+                jslog=${VisualLogging.dropDown().track({ change: true }).context("device")}>
+          <option value="Responsive" ?selected=${input.deviceModeOptions.responsive.selected} jslog=${VisualLogging.item(input.deviceModeOptions.responsive.jslogContext).track({ click: true })}>
+            ${input.deviceModeOptions.responsive.title}
+          </option>
+          ${input.deviceModeOptions.standard.length > 0 ? html`
+            <optgroup label="Standard">
+              ${input.deviceModeOptions.standard.map((o) => html`<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+            </optgroup>
+          ` : ""}
+          ${input.deviceModeOptions.custom.length > 0 ? html`
+            <optgroup label="Custom">
+              ${input.deviceModeOptions.custom.map((o) => html`<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+            </optgroup>
+          ` : ""}
+          <option value="Edit" jslog=${VisualLogging.item(input.deviceModeOptions.edit.jslogContext).track({ click: true })}>
+            ${input.deviceModeOptions.edit.title}
+          </option>
+        </select>` })}
+
+      ${createSizeInput(i18nString(UIStrings.width), "width", input.widthValue, !input.isResponsive, "", input.onWidthChange)}
+
+      <div class="device-mode-x">×</div>
+      ${createSizeInput(i18nString(UIStrings.heightLeaveEmptyForFull), "height", input.heightValue, !input.isResponsive, input.heightPlaceholder, input.onHeightChange)}
+
+      <div class="device-mode-empty-toolbar-element"></div>
+      <select class="dark-text toolbar-has-dropdown-shrinkable"
+              ${autoWidthSelect(input.scaleText)}
+              title=${i18nString(UIStrings.zoom)}
+              aria-label=${i18nString(UIStrings.zoom)}
+              @change=${input.onScaleChange}
+              .value=${String(input.scaleOptions.find((o) => o.selected)?.value || "")}
+              jslog=${VisualLogging.dropDown().track({ change: true }).context("scale")}>
+        ${input.scaleOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+      </select>
+
+      <devtools-button .data=${{
+    variant: "toolbar",
+    iconName: "center-focus-weak",
+    toggledIconName: "center-focus-weak",
+    toggleType: "primary-toggle"
+    /* Buttons.Button.ToggleType.PRIMARY */
+  }}
+                       class="toolbar-button" title=${i18nString(UIStrings.autoadjustZoom)}
+                       ${bindToSetting(input.autoAdjustScaleSetting)}>
+      </devtools-button>
+
+      <div class="device-mode-empty-toolbar-element"></div>
+
+      ${input.showDeviceScaleFactorSetting.get() ? html`
+        <div class="toolbar-text">
+          ${i18nTemplate(str_, UIStrings.dpr, {
+    PH1: html`
+              <select class="dark-text toolbar-has-dropdown-shrinkable"
+                      ${autoWidthSelect(input.dprText)}
+                    title=${i18nString(UIStrings.devicePixelRatio)}
+                    aria-label=${i18nString(UIStrings.devicePixelRatio)}
+                    @change=${input.onDeviceScaleChange}
+                    .value=${String(input.dprOptions.find((o) => o.selected)?.value || "")}
+                    jslog=${VisualLogging.dropDown().track({ change: true }).context("device-pixel-ratio")}
+                    ?disabled=${!input.isResponsive}>
+                ${input.dprOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+              </select>`
+  })}
+        </div>` : ""}
+
+      <div class="device-mode-empty-toolbar-element"></div>
+      ${input.showUserAgentTypeSetting.get() ? html`
+        <select class="dark-text toolbar-has-dropdown-shrinkable"
+                ${autoWidthSelect(input.uaText)}
+                title=${i18nString(UIStrings.deviceType)}
+                aria-label=${i18nString(UIStrings.deviceType)}
+                @change=${input.onUAChange}
+                .value=${input.uaOptions.find((o) => o.selected)?.value || ""}
+                jslog=${VisualLogging.dropDown().track({ change: true }).context("device-type")}
+                ?disabled=${!input.isResponsive}>
+          ${input.uaOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+        </select>` : ""}
+      <select class="dark-text" ${widget(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect, {
+    title: i18nString(UIStrings.throttling),
+    bindToGlobalConditions: true
+  })}></select>
+      <select class="dark-text toolbar-has-dropdown-shrinkable" ${widget(MobileThrottling.ThrottlingManager.SaveDataOverrideSelect)}></select>
+
+      <div class="device-mode-empty-toolbar-element"></div>
+      <devtools-button class="toolbar-button"
+                       .data=${{ variant: "toolbar", iconName: "screen-rotation" }}
+                       jslog=${VisualLogging.action("screen-rotation").track({ click: true })}
+                       @click=${input.onModeMenuClick}
+                       .title=${input.modeButtonTitle}
+                       .disabled=${input.modeButtonDisabled}>
+      </devtools-button>
+
+      <!-- Show dual screen toolbar -->
+      ${input.showSpanButton ? html`
+        <devtools-button class="toolbar-button"
+                         .data=${{ variant: "toolbar", iconName: "device-fold" }}
+                         jslog=${VisualLogging.action("device-fold").track({ click: true })}
+                         .title=${i18nString(UIStrings.toggleDualscreenMode)}
+                         @click=${input.onSpanClick}>
+        </devtools-button>` : ""}
+
+      <!-- Show posture toolbar menu for foldable devices. -->
+      <div class="device-mode-empty-toolbar-element"></div>
+      ${input.showPostureItem ? html`
+        <select class="dark-text toolbar-has-dropdown-shrinkable"
+                ${autoWidthSelect(input.postureText)}
+                title=${i18nString(UIStrings.devicePosture)}
+                aria-label=${i18nString(UIStrings.devicePosture)}
+                @change=${input.onPostureChange}
+                .value=${input.postureOptions.find((o) => o.selected)?.value || ""}
+                jslog=${VisualLogging.dropDown().track({ change: true }).context("device-posture")}>
+          ${input.postureOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.value.toLowerCase()).track({ click: true })}>${o.title}</option>`)}
+        </select>` : ""}
+    </devtools-toolbar>
+    <devtools-toolbar class="device-mode-toolbar-options" wrappable>
+      <div class="device-mode-empty-toolbar-element"></div>
+      <devtools-button
+        .data=${{ variant: "toolbar", iconName: "dots-vertical", title: i18nString(UIStrings.moreOptions) }}
+        @click=${input.onMoreOptionsClick}
+        jslog=${VisualLogging.dropDown("more-options").track({ click: true })}
+      ></devtools-button></devtools-toolbar>
+  `, target, { container: {
+    classes: ["device-mode-toolbar"],
+    attributes: {
+      jslog: `${VisualLogging.toolbar("device-mode").track({ resize: true })}`
+    }
+  } });
+};
+var DeviceModeToolbar = class extends UI.Widget.Widget {
   model;
   showMediaInspectorSetting;
   showRulersSetting;
@@ -239,75 +440,34 @@ var DeviceModeToolbar = class {
   showUserAgentTypeSetting;
   autoAdjustScaleSetting;
   lastMode;
-  #element;
   emulatedDevicesList;
   persistenceSetting;
-  mainToolbar;
-  optionsToolbar;
-  #itemWidthCache = /* @__PURE__ */ new Map();
-  #measuringElement = null;
-  constructor(model, showMediaInspectorSetting, showRulersSetting) {
+  view;
+  constructor(model, showMediaInspectorSetting, showRulersSetting, view = DEFAULT_VIEW) {
+    super();
+    this.view = view;
     this.model = model;
     this.showMediaInspectorSetting = showMediaInspectorSetting;
     this.showRulersSetting = showRulersSetting;
     this.deviceOutlineSetting = this.model.deviceOutlineSetting();
     this.showDeviceScaleFactorSetting = Common.Settings.Settings.instance().createSetting("emulation.show-device-scale-factor", false);
-    this.showDeviceScaleFactorSetting.addChangeListener(this.update, this);
+    this.showDeviceScaleFactorSetting.addChangeListener(this.requestUpdate, this);
     this.showUserAgentTypeSetting = Common.Settings.Settings.instance().createSetting("emulation.show-user-agent-type", false);
-    this.showUserAgentTypeSetting.addChangeListener(this.update, this);
+    this.showUserAgentTypeSetting.addChangeListener(this.requestUpdate, this);
     this.autoAdjustScaleSetting = Common.Settings.Settings.instance().createSetting("emulation.auto-adjust-scale", true);
     this.lastMode = /* @__PURE__ */ new Map();
-    this.#element = document.createElement("div");
-    this.#element.classList.add("device-mode-toolbar");
-    this.#element.setAttribute("jslog", `${VisualLogging.toolbar("device-mode").track({ resize: true })}`);
-    this.mainToolbar = this.createMainToolbar();
-    this.optionsToolbar = this.createOptionsToolbar();
     this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
     this.emulatedDevicesList.addEventListener("CustomDevicesUpdated", this.deviceListChanged, this);
     this.emulatedDevicesList.addEventListener("StandardDevicesUpdated", this.deviceListChanged, this);
     this.persistenceSetting = Common.Settings.Settings.instance().createSetting("emulation.device-mode-value", { device: "", orientation: "", mode: "" });
-    this.model.toolbarControlsEnabledSetting().addChangeListener(this.update, this);
-    this.model.scaleSetting().addChangeListener(this.update, this);
-    this.model.uaSetting().addChangeListener(this.update, this);
-    this.model.deviceScaleFactorSetting().addChangeListener(this.update, this);
-    this.model.addEventListener("Updated", this.update, this);
-    this.update();
+    this.model.toolbarControlsEnabledSetting().addChangeListener(this.requestUpdate, this);
+    this.model.scaleSetting().addChangeListener(this.requestUpdate, this);
+    this.model.uaSetting().addChangeListener(this.requestUpdate, this);
+    this.model.deviceScaleFactorSetting().addChangeListener(this.requestUpdate, this);
+    this.model.addEventListener("Updated", this.requestUpdate, this);
+    this.performUpdate();
   }
-  createEmptyToolbarElement() {
-    const element = document.createElement("div");
-    element.classList.add("device-mode-empty-toolbar-element");
-    return element;
-  }
-  createSizeInput(title, jslogContext, value, disabled, placeholder, onChange) {
-    return html`
-        <input type="number"
-               max=${EmulationModel.DeviceModeModel.MaxDeviceSize}
-               min=${EmulationModel.DeviceModeModel.MinDeviceSize}
-               title=${title}
-               class="device-mode-size-input"
-               .disabled=${disabled ?? false}
-               jslog=${VisualLogging.textField().track({ change: true }).context(jslogContext)}
-               .value=${value ?? ""}
-               placeholder=${ifDefined(placeholder)}
-               @change=${onChange}
-               @keydown=${(event) => {
-      const input = event.target;
-      let modifiedValue = UI.UIUtils.modifiedFloatNumber(Number(input.value), event);
-      if (modifiedValue === null) {
-        return;
-      }
-      modifiedValue = Math.min(modifiedValue, EmulationModel.DeviceModeModel.MaxDeviceSize);
-      modifiedValue = Math.max(modifiedValue, EmulationModel.DeviceModeModel.MinDeviceSize);
-      event.preventDefault();
-      input.value = String(modifiedValue);
-      input.dispatchEvent(new Event("change"));
-    }}>`;
-  }
-  createMainToolbar() {
-    const mainToolbar = this.#element.createChild("devtools-toolbar", "main-toolbar");
-    return mainToolbar;
-  }
-  renderMainToolbar() {
+  performUpdate() {
     const isResponsive = this.model.type() === EmulationModel.DeviceModeModel.Type.Responsive;
     const isFullHeight = isResponsive && this.model.isFullHeight();
     const size = this.model.appliedDeviceSize();
@@ -315,6 +475,21 @@ var DeviceModeToolbar = class {
     const heightValue = isFullHeight ? "" : String(size.height);
     const heightPlaceholder = String(size.height);
     const device = this.model.device();
+    if (this.model.type() === EmulationModel.DeviceModeModel.Type.Device && device) {
+      this.lastMode.set(device, this.model.mode());
+    }
+    const value = this.persistenceSetting.get();
+    const currentMode = this.model.mode();
+    if (device) {
+      value.device = device.title;
+      value.orientation = currentMode ? currentMode.orientation : "";
+      value.mode = currentMode ? currentMode.title : "";
+    } else {
+      value.device = "";
+      value.orientation = "";
+      value.mode = "";
+    }
+    this.persistenceSetting.set(value);
     let modeButtonTitle = i18nString(UIStrings.rotate);
     let modeButtonDisabled = false;
     if (this.model.isScreenOrientationLocked()) {
@@ -353,152 +528,62 @@ var DeviceModeToolbar = class {
     }
     const uaText = uaOptions.find((o) => o.selected)?.title || "";
     const postureText = postureOptions.find((o) => o.selected)?.title || "";
-    render(html`
-      <div class="device-mode-empty-toolbar-element"></div>
-      ${i18nTemplate(str_, UIStrings.dimensions, { PH1: html`
-        <select class="dark-text toolbar-has-dropdown-shrinkable"
-                style=${styleMap({ width: this.calculateItemWidth(deviceText) })}
-                title=${i18nString(UIStrings.deviceType)}
-                aria-label=${i18nString(UIStrings.deviceType)}
-                @change=${this.onDeviceChange.bind(this)}
-                .value=${selectedDeviceOption === deviceModeOptions.responsive ? "Responsive" : selectedDeviceOption?.title || "Responsive"}
-                jslog=${VisualLogging.dropDown().track({ change: true }).context("device")}>
-          <option value="Responsive" ?selected=${deviceModeOptions.responsive.selected} jslog=${VisualLogging.item(deviceModeOptions.responsive.jslogContext).track({ click: true })}>
-            ${deviceModeOptions.responsive.title}
-          </option>
-          ${deviceModeOptions.standard.length > 0 ? html`
-            <optgroup label="Standard">
-              ${deviceModeOptions.standard.map((o) => html`<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
-            </optgroup>
-          ` : ""}
-          ${deviceModeOptions.custom.length > 0 ? html`
-            <optgroup label="Custom">
-              ${deviceModeOptions.custom.map((o) => html`<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
-            </optgroup>
-          ` : ""}
-          <option value="Edit" jslog=${VisualLogging.item(deviceModeOptions.edit.jslogContext).track({ click: true })}>
-            ${deviceModeOptions.edit.title}
-          </option>
-        </select>` })}
-
-      ${this.createSizeInput(i18nString(UIStrings.width), "width", widthValue, !isResponsive, "", (event) => {
-      const width = Number(event.target.value);
-      if (this.autoAdjustScaleSetting.get()) {
-        this.model.setWidthAndScaleToFit(width);
-      } else {
-        this.model.setWidth(width);
-      }
-    })}
-
-      <div class="device-mode-x">×</div>
-      ${this.createSizeInput(i18nString(UIStrings.heightLeaveEmptyForFull), "height", heightValue, !isResponsive, heightPlaceholder, (event) => {
-      const height = Number(event.target.value);
-      if (this.autoAdjustScaleSetting.get()) {
-        this.model.setHeightAndScaleToFit(height);
-      } else {
-        this.model.setHeight(height);
-      }
-    })}
-
-      <div class="device-mode-empty-toolbar-element"></div>
-      <select class="dark-text toolbar-has-dropdown-shrinkable"
-              style=${styleMap({ width: this.calculateItemWidth(scaleText) })}
-              title=${i18nString(UIStrings.zoom)}
-              aria-label=${i18nString(UIStrings.zoom)}
-              @change=${this.onScaleChange.bind(this)}
-              .value=${String(scaleOptions.find((o) => o.selected)?.value || "")}
-              jslog=${VisualLogging.dropDown().track({ change: true }).context("scale")}>
-        ${scaleOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
-      </select>
-
-      <devtools-button .data=${{
-      variant: "toolbar",
-      iconName: "center-focus-weak",
-      toggledIconName: "center-focus-weak",
-      toggleType: "primary-toggle"
-      /* Buttons.Button.ToggleType.PRIMARY */
-    }}
-                       class="toolbar-button" title=${i18nString(UIStrings.autoadjustZoom)}
-                       ${bindToSetting(this.autoAdjustScaleSetting)}>
-      </devtools-button>
-
-      <div class="device-mode-empty-toolbar-element"></div>
-
-      ${this.showDeviceScaleFactorSetting.get() ? html`
-        ${i18nTemplate(str_, UIStrings.dpr, {
-      PH1: html`
-            <select class="dark-text toolbar-has-dropdown-shrinkable"
-                    style=${styleMap({ width: this.calculateItemWidth(dprText) })}
-                    title=${i18nString(UIStrings.devicePixelRatio)}
-                    aria-label=${i18nString(UIStrings.devicePixelRatio)}
-                    @change=${this.onDeviceScaleChange.bind(this)}
-                    .value=${String(dprOptions.find((o) => o.selected)?.value || "")}
-                    jslog=${VisualLogging.dropDown().track({ change: true }).context("device-pixel-ratio")}
-                    ?disabled=${!isResponsive}>
-              ${dprOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
-            </select>`
-    })}` : ""}
-
-      <div class="device-mode-empty-toolbar-element"></div>
-      ${this.showUserAgentTypeSetting.get() ? html`
-        <select class="dark-text toolbar-has-dropdown-shrinkable"
-                style=${styleMap({ width: this.calculateItemWidth(uaText) })}
-                title=${i18nString(UIStrings.deviceType)}
-                aria-label=${i18nString(UIStrings.deviceType)}
-                @change=${this.onUAChange.bind(this)}
-                .value=${uaOptions.find((o) => o.selected)?.value || ""}
-                jslog=${VisualLogging.dropDown().track({ change: true }).context("device-type")}
-                ?disabled=${!isResponsive}>
-          ${uaOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
-        </select>` : ""}
-      <select class="dark-text" ${widget(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect, {
-      title: i18nString(UIStrings.throttling),
-      bindToGlobalConditions: true
-    })}></select>
-      <select class="dark-text toolbar-has-dropdown-shrinkable" ${widget(MobileThrottling.ThrottlingManager.SaveDataOverrideSelect)}></select>
-
-      <div class="device-mode-empty-toolbar-element"></div>
-      <devtools-button class="toolbar-button"
-                       .data=${{
-      variant: "toolbar",
-      iconName: "screen-rotation",
-      disabled: modeButtonDisabled
-    }}
-                       jslog=${VisualLogging.action("screen-rotation").track({ click: true })}
-                       @click=${this.modeMenuClicked.bind(this)}
-                       .title=${modeButtonTitle}>
-      </devtools-button>
-
-      <!-- Show dual screen toolbar -->
-      ${showSpanButton ? html`
-        <devtools-button class="toolbar-button"
-                         .data=${{ variant: "toolbar", iconName: "device-fold" }}
-                         jslog=${VisualLogging.action("device-fold").track({ click: true })}
-                         .title=${i18nString(UIStrings.toggleDualscreenMode)}
-                         @click=${this.spanClicked.bind(this)}>
-        </devtools-button>` : ""}
-
-      <!-- Show posture toolbar menu for foldable devices. -->
-      <div class="device-mode-empty-toolbar-element"></div>
-      ${showPostureItem ? html`
-        <select class="dark-text toolbar-has-dropdown-shrinkable"
-                style=${styleMap({ width: this.calculateItemWidth(postureText) })}
-                title=${i18nString(UIStrings.devicePosture)}
-                aria-label=${i18nString(UIStrings.devicePosture)}
-                @change=${this.onPostureChange.bind(this)}
-                .value=${postureOptions.find((o) => o.selected)?.value || ""}
-                jslog=${VisualLogging.dropDown().track({ change: true }).context("device-posture")}>
-          ${postureOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.value.toLowerCase()).track({ click: true })}>${o.title}</option>`)}
-        </select>` : ""}`, this.mainToolbar, { host: this });
-  }
-  createOptionsToolbar() {
-    const optionsToolbar = this.#element.createChild("devtools-toolbar", "device-mode-toolbar-options");
-    optionsToolbar.wrappable = true;
-    optionsToolbar.appendToolbarItem(new UI.Toolbar.ToolbarItem(this.createEmptyToolbarElement()));
-    const moreOptionsButton = new UI.Toolbar.ToolbarMenuButton(this.appendOptionsMenuItems.bind(this), true, void 0, "more-options", "dots-vertical");
-    moreOptionsButton.setTitle(i18nString(UIStrings.moreOptions));
-    optionsToolbar.appendToolbarItem(moreOptionsButton);
-    return optionsToolbar;
+    const enabled = this.model.toolbarControlsEnabledSetting().get();
+    this.contentElement.classList.toggle("disabled", !enabled);
+    const input = {
+      isResponsive,
+      isFullHeight,
+      widthValue,
+      heightValue,
+      heightPlaceholder,
+      modeButtonTitle,
+      modeButtonDisabled,
+      showSpanButton,
+      showPostureItem,
+      deviceModeOptions,
+      scaleOptions,
+      dprOptions,
+      uaOptions,
+      postureOptions,
+      selectedDeviceOption,
+      deviceText,
+      scaleText,
+      dprText,
+      uaText,
+      postureText,
+      onDeviceChange: this.onDeviceChange.bind(this),
+      onWidthChange: (event) => {
+        const width = Number(event.target.value);
+        if (this.autoAdjustScaleSetting.get()) {
+          this.model.setWidthAndScaleToFit(width);
+        } else {
+          this.model.setWidth(width);
+        }
+      },
+      onHeightChange: (event) => {
+        const height = Number(event.target.value);
+        if (this.autoAdjustScaleSetting.get()) {
+          this.model.setHeightAndScaleToFit(height);
+        } else {
+          this.model.setHeight(height);
+        }
+      },
+      onScaleChange: this.onScaleChange.bind(this),
+      onDeviceScaleChange: this.onDeviceScaleChange.bind(this),
+      onUAChange: this.onUAChange.bind(this),
+      onPostureChange: this.onPostureChange.bind(this),
+      onModeMenuClick: this.modeMenuClicked.bind(this),
+      onSpanClick: this.spanClicked.bind(this),
+      onMoreOptionsClick: (event) => {
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        this.appendOptionsMenuItems(contextMenu);
+        void contextMenu.show();
+      },
+      autoAdjustScaleSetting: this.autoAdjustScaleSetting,
+      showDeviceScaleFactorSetting: this.showDeviceScaleFactorSetting,
+      showUserAgentTypeSetting: this.showUserAgentTypeSetting
+    };
+    this.view(input, {}, this.contentElement);
   }
   getDevicePostureOptions() {
     const currentPosture = this.currentDevicePosture();
@@ -677,7 +762,7 @@ var DeviceModeToolbar = class {
     const value = event.target.value;
     if (value === "Edit") {
       this.emulatedDevicesList.revealCustomSetting();
-      this.renderMainToolbar();
+      this.requestUpdate();
     } else if (value === "Responsive") {
       this.switchToResponsive();
     } else {
@@ -690,7 +775,7 @@ var DeviceModeToolbar = class {
     }
   }
   deviceListChanged() {
-    this.renderMainToolbar();
+    this.requestUpdate();
     const device = this.model.device();
     if (!device) {
       return;
@@ -794,31 +879,6 @@ var DeviceModeToolbar = class {
   getPrettyZoomPercentage() {
     return `${(this.model.scale() * 100).toFixed(0)}`;
   }
-  element() {
-    return this.#element;
-  }
-  update() {
-    const enabled = this.model.toolbarControlsEnabledSetting().get();
-    this.mainToolbar.setEnabled(enabled);
-    this.optionsToolbar.setEnabled(enabled);
-    const device = this.model.device();
-    if (this.model.type() === EmulationModel.DeviceModeModel.Type.Device) {
-      this.lastMode.set(this.model.device(), this.model.mode());
-    }
-    const value = this.persistenceSetting.get();
-    const currentMode = this.model.mode();
-    if (device) {
-      value.device = device.title;
-      value.orientation = currentMode ? currentMode.orientation : "";
-      value.mode = currentMode ? currentMode.title : "";
-    } else {
-      value.device = "";
-      value.orientation = "";
-      value.mode = "";
-    }
-    this.persistenceSetting.set(value);
-    this.renderMainToolbar();
-  }
   restore() {
     for (const device of this.allDevices()) {
       if (device.title === this.persistenceSetting.get().device) {
@@ -832,33 +892,6 @@ var DeviceModeToolbar = class {
       }
     }
     this.model.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
-  }
-  calculateItemWidth(text) {
-    if (!text) {
-      return "";
-    }
-    if (this.#itemWidthCache.has(text)) {
-      return this.#itemWidthCache.get(text);
-    }
-    if (!this.#measuringElement) {
-      this.#measuringElement = document.createElement("select");
-      this.#measuringElement.className = "dark-text toolbar-has-dropdown-shrinkable";
-      this.#measuringElement.style.width = "fit-content";
-      this.#measuringElement.style.position = "absolute";
-      this.#measuringElement.style.visibility = "hidden";
-      this.#measuringElement.style.pointerEvents = "none";
-      const dummyOption2 = document.createElement("option");
-      this.#measuringElement.appendChild(dummyOption2);
-      this.#element.appendChild(this.#measuringElement);
-    }
-    const dummyOption = this.#measuringElement.options[0];
-    dummyOption.textContent = text;
-    const width = this.#measuringElement.offsetWidth;
-    const widthPx = width ? `${width}px` : "";
-    if (width > 0) {
-      this.#itemWidthCache.set(text, widthPx);
-    }
-    return widthPx;
   }
 };
 
@@ -1266,7 +1299,7 @@ devtools-toolbar.device-mode-toolbar-options {
 // gen/front_end/panels/emulation/MediaQueryInspector.js
 var MediaQueryInspector_exports = {};
 __export(MediaQueryInspector_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   MediaQueryInspector: () => MediaQueryInspector,
   MediaQueryUIModel: () => MediaQueryUIModel
 });
@@ -1422,7 +1455,7 @@ var UIStrings2 = {
 var str_2 = i18n3.i18n.registerUIStrings("panels/emulation/MediaQueryInspector.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var { classMap } = Directives2;
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW2 = (input, _output, target) => {
   const createBarClassMap = (marker) => ({
     "media-inspector-bar": true,
     "media-inspector-marker-inactive": !marker.active
@@ -1524,7 +1557,7 @@ var MediaQueryInspector = class extends UI2.Widget.Widget {
   scale;
   cssModel;
   cachedQueryModels;
-  constructor(getWidthCallback, setWidthCallback, mediaThrottler, view = DEFAULT_VIEW) {
+  constructor(getWidthCallback, setWidthCallback, mediaThrottler, view = DEFAULT_VIEW2) {
     super({ useShadowDom: "pure" });
     this.view = view;
     this.mediaThrottler = mediaThrottler;
@@ -1927,7 +1960,7 @@ var DeviceModeView = class extends UI3.Widget.VBox {
   }
   createUI() {
     this.toolbar = new DeviceModeToolbar(this.model, this.showMediaInspectorSetting, this.showRulersSetting);
-    this.contentElement.appendChild(this.toolbar.element());
+    this.toolbar.show(this.contentElement);
     this.contentClip = this.contentElement.createChild("div", "device-mode-content-clip vbox");
     this.responsivePresetsContainer = this.contentClip.createChild("div", "device-mode-presets-container");
     this.responsivePresetsContainer.setAttribute("jslog", `${VisualLogging3.responsivePresets()}`);
@@ -2130,7 +2163,7 @@ var DeviceModeView = class extends UI3.Widget.VBox {
       }
       this.cachedScale = this.model.scale();
     }
-    this.toolbar.update();
+    this.toolbar.requestUpdate();
     this.loadImage(this.screenImage, this.model.screenImage());
     this.loadImage(this.outlineImage, this.model.outlineImage());
     this.mediaInspector.setAxisTransform(this.model.scale());

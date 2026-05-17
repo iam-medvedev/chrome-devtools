@@ -9568,7 +9568,7 @@ __export(CookieModel_exports, {
 });
 import * as Common25 from "./../common/common.js";
 import * as Platform16 from "./../platform/platform.js";
-import * as Root10 from "./../root/root.js";
+import * as Root9 from "./../root/root.js";
 
 // gen/front_end/core/sdk/Cookie.js
 var Cookie_exports = {};
@@ -12692,7 +12692,6 @@ __export(DOMModel_exports, {
 });
 import * as Common21 from "./../common/common.js";
 import * as Platform13 from "./../platform/platform.js";
-import * as Root9 from "./../root/root.js";
 
 // gen/front_end/core/sdk/CSSModel.js
 var CSSModel_exports = {};
@@ -15061,6 +15060,7 @@ var CSSContainerQuery = class _CSSContainerQuery extends CSSQuery {
   logicalAxes;
   queriesScrollState;
   queriesAnchored;
+  textIsConditionText;
   static parseContainerQueriesPayload(cssModel, payload) {
     return payload.map((cq) => new _CSSContainerQuery(cssModel, cq));
   }
@@ -15069,7 +15069,8 @@ var CSSContainerQuery = class _CSSContainerQuery extends CSSQuery {
     this.reinitialize(payload);
   }
   reinitialize(payload) {
-    this.text = payload.text;
+    this.textIsConditionText = !!payload.conditionText;
+    this.text = this.textIsConditionText ? payload.conditionText : payload.text;
     this.range = payload.range ? TextUtils5.TextRange.TextRange.fromObject(payload.range) : null;
     this.styleSheetId = payload.styleSheetId;
     this.name = payload.name;
@@ -20909,6 +20910,23 @@ var CSSModel = class _CSSModel extends SDKModel {
       return false;
     }
   }
+  async setContainerQueryConditionText(styleSheetId, range, newContainerQueryConditionText) {
+    Host3.userMetrics.actionTaken(Host3.UserMetrics.Action.StyleRuleEdited);
+    try {
+      await this.ensureOriginalStyleSheetText(styleSheetId);
+      const { containerQuery } = await this.agent.invoke_setContainerQueryConditionText({ styleSheetId, range, text: newContainerQueryConditionText });
+      if (!containerQuery) {
+        return false;
+      }
+      this.#domModel.markUndoableState();
+      const edit = new Edit(styleSheetId, range, newContainerQueryConditionText, containerQuery);
+      this.fireStyleSheetChanged(styleSheetId, edit);
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
   async setSupportsText(styleSheetId, range, newSupportsText) {
     Host3.userMetrics.actionTaken(Host3.UserMetrics.Action.StyleRuleEdited);
     try {
@@ -26230,9 +26248,6 @@ var DOMModel = class _DOMModel extends SDKModel {
     if (!target.suspended()) {
       void this.agent.invoke_enable({});
     }
-    if (Root9.Runtime.experiments.isEnabled(Root9.ExperimentNames.ExperimentName.CAPTURE_NODE_CREATION_STACKS)) {
-      void this.agent.invoke_setNodeStackTracesEnabled({ enable: true });
-    }
   }
   runtimeModel() {
     return this.runtimeModelInternal;
@@ -28204,8 +28219,8 @@ var CookieModel = class extends SDKModel {
     if (cookie.expires()) {
       expires = Math.floor(Date.parse(`${cookie.expires()}`) / 1e3);
     }
-    const schemeBindingEnabled = Boolean(Root10.Runtime.hostConfig.devToolsEnableOriginBoundCookies?.schemeBindingEnabled);
-    const portBindingEnabled = Boolean(Root10.Runtime.hostConfig.devToolsEnableOriginBoundCookies?.portBindingEnabled);
+    const schemeBindingEnabled = Boolean(Root9.Runtime.hostConfig.devToolsEnableOriginBoundCookies?.schemeBindingEnabled);
+    const portBindingEnabled = Boolean(Root9.Runtime.hostConfig.devToolsEnableOriginBoundCookies?.portBindingEnabled);
     const preserveUnset = (scheme) => scheme === "Unset" ? scheme : void 0;
     const protocolCookie = {
       name: cookie.name(),
@@ -32022,7 +32037,7 @@ import * as i18n29 from "./../i18n/i18n.js";
 import * as Common33 from "./../common/common.js";
 import * as Host7 from "./../host/host.js";
 import * as ProtocolClient3 from "./../protocol_client/protocol_client.js";
-import * as Root12 from "./../root/root.js";
+import * as Root11 from "./../root/root.js";
 
 // gen/front_end/core/sdk/RehydratingConnection.js
 var RehydratingConnection_exports = {};
@@ -32033,7 +32048,7 @@ __export(RehydratingConnection_exports, {
 import * as Common32 from "./../common/common.js";
 import * as i18n27 from "./../i18n/i18n.js";
 import * as ProtocolClient2 from "./../protocol_client/protocol_client.js";
-import * as Root11 from "./../root/root.js";
+import * as Root10 from "./../root/root.js";
 
 // gen/front_end/core/sdk/EnhancedTracesParser.js
 var EnhancedTracesParser_exports = {};
@@ -32433,9 +32448,9 @@ var RehydratingConnectionTransport = class {
   }
   /** Returns true if found a trace URL. */
   #maybeHandleLoadingFromUrl() {
-    let traceUrl = Root11.Runtime.Runtime.queryParam("traceURL");
+    let traceUrl = Root10.Runtime.Runtime.queryParam("traceURL");
     if (!traceUrl) {
-      const timelineUrl = Root11.Runtime.Runtime.queryParam("loadTimelineFromURL");
+      const timelineUrl = Root10.Runtime.Runtime.queryParam("loadTimelineFromURL");
       if (timelineUrl) {
         traceUrl = decodeURIComponent(timelineUrl);
       }
@@ -32968,11 +32983,11 @@ async function initMainConnection(createRootTarget, onConnectionLost) {
   Host7.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
 }
 function createMainTransport(onConnectionLost) {
-  if (Root12.Runtime.Runtime.isTraceApp()) {
+  if (Root11.Runtime.Runtime.isTraceApp()) {
     return new RehydratingConnectionTransport(onConnectionLost);
   }
-  const wsParam = Root12.Runtime.Runtime.queryParam("ws");
-  const wssParam = Root12.Runtime.Runtime.queryParam("wss");
+  const wsParam = Root11.Runtime.Runtime.queryParam("ws");
+  const wssParam = Root11.Runtime.Runtime.queryParam("wss");
   if (wsParam || wssParam) {
     const ws = wsParam ? `ws://${wsParam}` : `wss://${wssParam}`;
     return new WebSocketTransport(ws, onConnectionLost);

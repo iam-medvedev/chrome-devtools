@@ -1042,7 +1042,11 @@ export declare namespace Audits {
         ValidationFailedSignatureExpired = "ValidationFailedSignatureExpired",
         ValidationFailedInvalidLength = "ValidationFailedInvalidLength",
         ValidationFailedSignatureMismatch = "ValidationFailedSignatureMismatch",
-        ValidationFailedIntegrityMismatch = "ValidationFailedIntegrityMismatch"
+        ValidationFailedIntegrityMismatch = "ValidationFailedIntegrityMismatch",
+        SignatureBaseUnknownDerivedComponent = "SignatureBaseUnknownDerivedComponent",
+        SignatureBaseMissingHeader = "SignatureBaseMissingHeader",
+        SignatureBaseInvalidUnencodedDigest = "SignatureBaseInvalidUnencodedDigest",
+        SignatureBaseUnsupportedComponent = "SignatureBaseUnsupportedComponent"
     }
     const enum UnencodedDigestError {
         MalformedDictionary = "MalformedDictionary",
@@ -1121,6 +1125,7 @@ export declare namespace Audits {
         FormInputHasWrongButWellIntendedAutocompleteValueError = "FormInputHasWrongButWellIntendedAutocompleteValueError",
         ResponseWasBlockedByORB = "ResponseWasBlockedByORB",
         NavigationEntryMarkedSkippable = "NavigationEntryMarkedSkippable",
+        BackUINavigationWouldSkipAd = "BackUINavigationWouldSkipAd",
         AutofillAndManualTextPolicyControlledFeaturesInfo = "AutofillAndManualTextPolicyControlledFeaturesInfo",
         AutofillPolicyControlledFeatureInfo = "AutofillPolicyControlledFeatureInfo",
         ManualTextPolicyControlledFeatureInfo = "ManualTextPolicyControlledFeatureInfo",
@@ -15844,7 +15849,8 @@ export declare namespace Preload {
         PrerenderFailedDuringPrefetch = "PrerenderFailedDuringPrefetch",
         BrowsingDataRemoved = "BrowsingDataRemoved",
         PrerenderHostReused = "PrerenderHostReused",
-        FormSubmitWhenPrerendering = "FormSubmitWhenPrerendering"
+        FormSubmitWhenPrerendering = "FormSubmitWhenPrerendering",
+        CrossDocumentRestart = "CrossDocumentRestart"
     }
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This

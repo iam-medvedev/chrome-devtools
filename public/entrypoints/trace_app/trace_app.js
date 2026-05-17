@@ -4345,6 +4345,13 @@ UI8.ActionRegistration.registerActionExtension({
         "devToolsDefault",
         "vsCode"
       ]
+    },
+    {
+      shortcut: "Alt+g",
+      keybindSets: [
+        "devToolsDefault",
+        "vsCode"
+      ]
     }
   ]
 });
@@ -5660,7 +5667,15 @@ var UIStrings13 = {
   /**
    * @description Title of a setting under the Performance category in Settings
    */
-  timelineShowAllEvents: "Show all events"
+  timelineShowAllEvents: "Show all events",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineDebugMode: "Timeline debug mode (trace event details, etc.)",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineInvalidationTracking: "Invalidation tracking"
 };
 var str_13 = i18n26.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings13);
 var i18nLazyString13 = i18n26.i18n.getLazilyComputedLocalizedString.bind(void 0, str_13);
@@ -5904,6 +5919,22 @@ Common12.Settings.registerSettingExtension({
   storageType: "Synced",
   title: i18nLazyString13(UIStrings13.timelineShowAllEvents),
   settingName: "timeline-show-all-events",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common12.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString13(UIStrings13.timelineDebugMode),
+  settingName: "timeline-debug-mode",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common12.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString13(UIStrings13.timelineInvalidationTracking),
+  settingName: "timeline-invalidation-tracking",
   settingType: "boolean",
   defaultValue: false
 });
