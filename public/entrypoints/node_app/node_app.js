@@ -154,7 +154,15 @@ var UIStrings2 = {
   /**
    * @description Title of an action in the timeline tool to record a reload of the current page
    */
-  recordAndReload: "Record and reload"
+  recordAndReload: "Record and reload",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineShowAllEvents: "Show all events",
+  /**
+   * @description Title of a setting under the Performance category in Settings
+   */
+  timelineDebugMode: "Timeline debug mode (trace event details, etc.)"
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/js_timeline/js_timeline-meta.ts", UIStrings2);
 var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
@@ -264,6 +272,22 @@ UI2.ActionRegistration.registerActionExtension({
       shortcut: "Meta+Shift+E"
     }
   ]
+});
+Common2.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString2(UIStrings2.timelineShowAllEvents),
+  settingName: "timeline-show-all-events",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common2.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString2(UIStrings2.timelineDebugMode),
+  settingName: "timeline-debug-mode",
+  settingType: "boolean",
+  defaultValue: false
 });
 Common2.Settings.registerSettingExtension({
   category: "PERFORMANCE",

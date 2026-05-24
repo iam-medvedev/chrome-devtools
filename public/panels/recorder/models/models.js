@@ -166,6 +166,13 @@ var defaultTimeout = 5e3;
 function isPageTarget(target) {
   return Common2.ParsedURL.schemeIs(target.url, "devtools:") || target.type === "page" || target.type === "background_page" || target.type === "webview";
 }
+function checkNavigationUrl(url) {
+  const allowedSchemes = ["http:", "https:", "data:"];
+  const isAllowed = allowedSchemes.some((scheme) => Common2.ParsedURL.schemeIs(url, scheme));
+  if (!isAllowed && url !== "about:blank") {
+    throw new Error(`Navigation to ${url} is not allowed, due to blocked schema`);
+  }
+}
 var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.ObjectWrapper {
   userFlow;
   speed;
@@ -340,8 +347,8 @@ var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.Objec
         if (Common2.ParsedURL.schemeIs(page?.url(), "devtools:") && (step.type === "setViewport" || step.type === "navigate")) {
           return;
         }
-        if (step.type === "navigate" && Common2.ParsedURL.schemeIs(step.url, "chrome:")) {
-          throw new Error("Not allowed to replay on chrome:// URLs");
+        if (step.type === "navigate") {
+          checkNavigationUrl(step.url);
         }
         await this.page.bringToFront();
         await super.runStep(step, flow);

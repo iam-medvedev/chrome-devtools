@@ -36,6 +36,16 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         createTarget().setInspectedURL(urlString `chrome://version`);
         sinon.assert.notCalled(addExtensionStub);
     });
+    it('applies network.addRequestHeaders when no host policy is configured', async () => {
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(urlString `http://example.com`);
+        assert.exists(context.chrome.devtools);
+        const headersCall = spyCall(SDK.NetworkManager.MultitargetNetworkManager.instance(), 'setExtraHTTPHeaders');
+        const networkApi = context.chrome.devtools?.network;
+        networkApi.addRequestHeaders({ 'X-Test': 'v' });
+        const { args } = await headersCall;
+        assert.deepEqual(args[0], { 'X-Test': 'v' });
+    });
     it('defers loading extensions until after navigation from a privileged to a non-privileged host', async () => {
         const addExtensionSpy = sinon.spy(PanelCommon.ExtensionServer.ExtensionServer.instance(), 'addExtension');
         const target = createTarget({ type: SDK.Target.Type.FRAME });
@@ -336,6 +346,35 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         await onHiddenCalled;
         await context.chrome.devtools?.recorder.unregisterRecorderExtensionPlugin(extensionPlugin);
     });
+    it('cannot show a Recorder view registered by another extension', async () => {
+        const view = await context.chrome.devtools?.recorder.createView('Test', 'test.html');
+        assert.isNotNull(view);
+        const viewId = view._id;
+        const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
+        const attackerOrigin = Platform.DevToolsPath.urlString `chrome-extension://attacker`;
+        const attackerDescriptor = {
+            startPage: `${attackerOrigin}/blank.html`,
+            name: 'AttackerExtension',
+            exposeExperimentalAPIs: true,
+            allowFileAccess: false,
+        };
+        server.addExtension(attackerDescriptor);
+        const channel = new MessageChannel();
+        server.registerExtension(attackerOrigin, channel.port1);
+        const responsePromise = new Promise(resolve => {
+            channel.port2.onmessage = (event) => resolve(event.data);
+        });
+        channel.port2.postMessage({
+            command: 'showRecorderView',
+            id: viewId,
+            requestId: 123,
+        });
+        const response = await responsePromise;
+        assert.isTrue(response.result.isError);
+        assert.strictEqual(response.result.code, 'E_FAILED');
+        assert.strictEqual(response.result.description, 'Operation failed: %s');
+        assert.deepEqual(response.result.details, ['Permission denied']);
+    });
     it('reload only the main toplevel frame', async () => {
         const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         assert.isNotNull(target);
@@ -632,6 +671,18 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         assert.deepEqual(responses.map(response => response?.details), [[]]);
         assert.deepEqual(project.uiSourceCodeForURL(allowedUrl)?.content(), 'modified');
         assert.deepEqual(project.uiSourceCodeForURL(blockedUrl)?.content(), 'content');
+    });
+    it('blocks network.addRequestHeaders when runtime_blocked_hosts is set', async () => {
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(allowedUrl);
+        assert.exists(context.chrome.devtools);
+        const setHeadersSpy = sinon.spy(SDK.NetworkManager.MultitargetNetworkManager.instance(), 'setExtraHTTPHeaders');
+        const networkApi = context.chrome.devtools?.network;
+        networkApi.addRequestHeaders({ 'X-Test': '1' });
+        // Round-trip a callback command on the same MessagePort to ensure the
+        // addRequestHeaders message has been processed before we assert.
+        await new Promise(cb => context.chrome.devtools?.network.getHAR(cb));
+        sinon.assert.notCalled(setHeadersSpy);
     });
 });
 describe('ExtensionServer', () => {

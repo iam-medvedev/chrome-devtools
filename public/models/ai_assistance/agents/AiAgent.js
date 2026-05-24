@@ -5,17 +5,47 @@ import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as Greendev from '../../greendev/greendev.js';
 import { debugLog, isStructuredLogEnabled } from '../debug.js';
+const MAX_SUGGESTION_LENGTH = 200;
+/**
+ * Returns true if the origin is considered opaque and should be blocked from
+ * AI assistance to prevent potential data leakage.
+ *
+ * @see https://crbug.com/513732588
+ */
+export function isOpaqueOrigin(origin) {
+    /**
+     * Origins starting with 'about' (like about:blank or about:srcdoc) are
+     * considered opaque. 'about://' is the sentinel used by DevTools
+     * ParsedURL.securityOrigin() for these.
+     */
+    return origin === 'null' || origin === 'data:' || origin.startsWith('about') || origin.startsWith('detached');
+}
 export const MAX_STEPS = 10;
 export class ConversationContext {
-    isOriginAllowed(agentOrigin) {
-        if (!agentOrigin) {
+    /**
+     * Returns true if this data context (e.g., a DOM node or Network Request) is
+     * allowed to be included in a conversation that is locked to the provided
+     * `establishedOrigin`.
+     *
+     * A conversation is "locked" to an origin once the first query is made.
+     * This method ensures that we don't mix data from different origins in the
+     * same conversation.
+     *
+     * @param establishedOrigin The origin that the current conversation is locked to.
+     * If undefined, the conversation has not yet been locked to an origin.
+     */
+    isOriginAllowed(establishedOrigin) {
+        const dataOrigin = this.getOrigin();
+        // Opaque origins are never allowed to be used as context.
+        if (isOpaqueOrigin(dataOrigin)) {
+            return false;
+        }
+        // If no origin is established yet, this context will be the one to lock the conversation.
+        if (!establishedOrigin) {
             return true;
         }
-        // Currently does not handle opaque origins because they
-        // are not available to DevTools, instead checks
-        // that serialization of the origin is the same
-        // https://html.spec.whatwg.org/#ascii-serialisation-of-an-origin.
-        return this.getOrigin() === agentOrigin;
+        // Only allow data that matches the origin the conversation is already locked to.
+        return dataOrigin === establishedOrigin;
     }
     /**
      * This method is called at the start of `AiAgent.run`.
@@ -44,6 +74,7 @@ export class AiAgent {
     #serverSideLoggingEnabled;
     confirmSideEffect;
     #functionDeclarations = new Map();
+    #allowedOrigin;
     /**
      * Used in the debug mode and evals.
      */
@@ -68,6 +99,7 @@ export class AiAgent {
         this.#sessionId = opts.sessionId ?? crypto.randomUUID();
         this.confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
         this.#history = opts.history ?? [];
+        this.#allowedOrigin = opts.allowedOrigin;
     }
     async enhanceQuery(query) {
         return query;
@@ -167,8 +199,7 @@ export class AiAgent {
             const trimmed = line.trim();
             if (trimmed.startsWith('SUGGESTIONS:')) {
                 try {
-                    // TODO: Do basic validation this is an array with strings
-                    suggestions = JSON.parse(trimmed.substring('SUGGESTIONS:'.length).trim());
+                    suggestions = sanitizeSuggestions(trimmed.substring('SUGGESTIONS:'.length).trim());
                 }
                 catch {
                 }
@@ -182,8 +213,7 @@ export class AiAgent {
         if (!suggestions && answerLines.at(-1)?.includes('SUGGESTIONS:')) {
             const [answer, suggestionsText] = answerLines[answerLines.length - 1].split('SUGGESTIONS:', 2);
             try {
-                // TODO: Do basic validation this is an array with strings
-                suggestions = JSON.parse(suggestionsText.trim().substring('SUGGESTIONS:'.length).trim());
+                suggestions = sanitizeSuggestions(suggestionsText.trim());
             }
             catch {
             }
@@ -313,8 +343,15 @@ export class AiAgent {
                 }
             }
             if (functionCall) {
+                const allowedOriginResult = this.#allowedOrigin?.();
+                if (allowedOriginResult && 'blocked' in allowedOriginResult) {
+                    // Abort immediately if the page navigated before we could lock the origin.
+                    // This prevents the AI from accessing data from the new page.
+                    yield this.#createErrorResponse("cross-origin" /* ErrorType.CROSS_ORIGIN */);
+                    break;
+                }
                 try {
-                    const result = yield* this.#callFunction(functionCall.name, functionCall.args, {
+                    const result = yield* this.#callFunction(functionCall.name, functionCall.args, functionCall.thoughtSignature, {
                         ...options,
                         explanation: textResponse,
                     });
@@ -356,7 +393,7 @@ export class AiAgent {
         }
         return;
     }
-    async *#callFunction(name, args, options) {
+    async *#callFunction(name, args, thoughtSignature, options) {
         const call = this.#functionDeclarations.get(name);
         if (!call) {
             throw new Error(`Function ${name} is not found.`);
@@ -367,12 +404,14 @@ export class AiAgent {
                 text: options.explanation,
             });
         }
-        parts.push({
-            functionCall: {
-                name,
-                args,
-            },
-        });
+        const functionCall = {
+            name,
+            args,
+        };
+        if (thoughtSignature) {
+            functionCall.thoughtSignature = thoughtSignature;
+        }
+        parts.push({ functionCall });
         this.#history.push({
             parts,
             role: Host.AidaClient.Role.MODEL,
@@ -506,5 +545,27 @@ export class AiAgent {
             error,
         };
     }
+}
+function sanitizeSuggestions(suggestions) {
+    const parsed = JSON.parse(suggestions);
+    if (!Array.isArray(parsed)) {
+        return undefined;
+    }
+    const sanitized = [];
+    for (const item of parsed) {
+        if (typeof item !== 'string') {
+            continue;
+        }
+        // Collapse multiple whitespace/newlines into a single space.
+        const noExtraWhitespace = item.replace(/\s+/g, ' ').trim();
+        if (noExtraWhitespace.length === 0) {
+            continue;
+        }
+        sanitized.push(noExtraWhitespace.substring(0, MAX_SUGGESTION_LENGTH));
+    }
+    if (sanitized.length === 0) {
+        return undefined;
+    }
+    return sanitized;
 }
 //# sourceMappingURL=AiAgent.js.map

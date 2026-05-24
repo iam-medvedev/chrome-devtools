@@ -61,6 +61,7 @@
     "../../../../../../front_end/models/ai_assistance/agents/PatchAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAnnotationsAgent.test.ts",
+    "../../../../../../front_end/models/ai_assistance/agents/StorageAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StylingAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AICallTree.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AIQueries.test.ts",

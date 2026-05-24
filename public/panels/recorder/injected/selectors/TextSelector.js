@@ -1,8 +1,8 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTextContent, } from '../../../../third_party/puppeteer/package/lib/esm/puppeteer/injected/TextContent.js';
-import { textQuerySelectorAll, } from '../../../../third_party/puppeteer/package/lib/esm/puppeteer/injected/TextQuerySelector.js';
+import { createTextContent, } from '../../../../third_party/puppeteer/package/lib/puppeteer/injected/TextContent.js';
+import { textQuerySelectorAll, } from '../../../../third_party/puppeteer/package/lib/puppeteer/injected/TextQuerySelector.js';
 const MINIMUM_TEXT_LENGTH = 12;
 const MAXIMUM_TEXT_LENGTH = 64;
 const collect = (iter, max = Infinity) => {

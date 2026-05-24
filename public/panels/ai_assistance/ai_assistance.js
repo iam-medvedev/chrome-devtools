@@ -23,7 +23,7 @@ import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 import * as Lit10 from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
-import * as LighthousePanel from "./../lighthouse/lighthouse.js";
+import * as LighthousePanel2 from "./../lighthouse/lighthouse.js";
 import * as NetworkForward from "./../network/forward/forward.js";
 import * as NetworkPanel from "./../network/network.js";
 import * as TimelinePanel2 from "./../timeline/timeline.js";
@@ -227,6 +227,9 @@ var AccessibilityAgentMarkdownRenderer = class extends MarkdownRendererWithCodeB
     }
     const node = domModel.nodeForId(nodeId);
     if (!node) {
+      return;
+    }
+    if (node.frameId() !== this.mainFrameId) {
       return;
     }
     const linkedNode = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, { textContent: label });
@@ -1823,6 +1826,10 @@ var UIStringsNotTranslate3 = {
   /**
    * @description Label added to the button that remove the currently selected context in AI Assistance panel.
    */
+  removeContextStorage: "Remove storage from context",
+  /**
+   * @description Label added to the button that remove the currently selected context in AI Assistance panel.
+   */
   removeContext: "Remove from context"
 };
 var str_ = i18n5.i18n.registerUIStrings("panels/ai_assistance/components/ChatInput.ts", UIStrings);
@@ -1845,6 +1852,9 @@ function getContextRemoveLabel(context) {
   }
   if (context instanceof AiAssistanceModel3.PerformanceAgent.PerformanceTraceContext) {
     return lockedString3(UIStringsNotTranslate3.removeContextPerfInsight);
+  }
+  if (context instanceof AiAssistanceModel3.StorageAgent.StorageContext) {
+    return lockedString3(UIStringsNotTranslate3.removeContextStorage);
   }
   return lockedString3(UIStringsNotTranslate3.removeContext);
 }
@@ -1989,7 +1999,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     }
   })}
                               ></devtools-widget>` : html5`
-                          ${input.context instanceof AiAssistanceModel3.NetworkAgent.RequestContext ? PanelUtils.PanelUtils.getIconForNetworkRequest(input.context.getItem()) : input.context instanceof AiAssistanceModel3.FileAgent.FileContext ? PanelUtils.PanelUtils.getIconForSourceFile(input.context.getItem()) : input.context instanceof AiAssistanceModel3.AccessibilityAgent.AccessibilityContext ? html5`<devtools-icon class="icon" name="performance" title="Lighthouse"></devtools-icon>` : input.context instanceof AiAssistanceModel3.PerformanceAgent.PerformanceTraceContext ? html5`<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` : Lit3.nothing}
+                          ${input.context instanceof AiAssistanceModel3.NetworkAgent.RequestContext ? PanelUtils.PanelUtils.getIconForNetworkRequest(input.context.getItem()) : input.context instanceof AiAssistanceModel3.FileAgent.FileContext ? PanelUtils.PanelUtils.getIconForSourceFile(input.context.getItem()) : input.context instanceof AiAssistanceModel3.AccessibilityAgent.AccessibilityContext ? html5`<devtools-icon class="icon" name="performance" title="Lighthouse"></devtools-icon>` : input.context instanceof AiAssistanceModel3.PerformanceAgent.PerformanceTraceContext ? html5`<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` : input.context instanceof AiAssistanceModel3.StorageAgent.StorageContext ? html5`<devtools-icon class="icon" name="table" title="Storage"></devtools-icon>` : Lit3.nothing}
                             <span
                               role="button"
                               class="title"
@@ -2137,8 +2147,10 @@ var ChatInput = class extends UI3.Widget.Widget {
   #uncommittedText = "";
   setInputValue(text) {
     if (this.#textAreaRef.value) {
-      this.#textAreaRef.value.value = text;
-      this.#textAreaRef.value.setSelectionRange(text.length, text.length);
+      const maxLength = this.#textAreaRef.value.maxLength;
+      const truncatedText = maxLength >= 0 ? text.substring(0, maxLength) : text;
+      this.#textAreaRef.value.value = truncatedText;
+      this.#textAreaRef.value.setSelectionRange(truncatedText.length, truncatedText.length);
     }
     this.performUpdate();
   }
@@ -2440,6 +2452,7 @@ import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as Lit5 from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 import * as Elements from "./../elements/elements.js";
+import * as Lighthouse from "./../lighthouse/lighthouse.js";
 import * as TimelineComponents from "./../timeline/components/components.js";
 import * as TimelineInsights from "./../timeline/components/insights/insights.js";
 import * as Timeline from "./../timeline/timeline.js";
@@ -3837,6 +3850,14 @@ var UIStringsNotTranslate4 = {
    */
   coreVitals: "Core Web Vitals",
   /**
+   * @description Title for the Lighthouse report widget.
+   */
+  lighthouseReport: "Lighthouse report",
+  /**
+   * @description Accessible label for the reveal button in the Lighthouse report widget.
+   */
+  revealLighthouse: "Reveal Lighthouse report",
+  /**
    * @description Title for the LCP breakdown widget.
    */
   lcpBreakdown: "LCP breakdown",
@@ -4607,20 +4628,34 @@ async function makePerformanceTraceWidget(widgetData) {
     jslogContext: "performance-trace"
   };
 }
+async function makeSourceFileWidget(widgetData) {
+  const file = widgetData.data.uiSourceCode;
+  const customRevealTitle = i18n9.i18n.lockedString(`Show ${file.name()}`);
+  return {
+    renderedWidget: null,
+    title: null,
+    revealable: file,
+    customRevealTitle,
+    accessibleRevealLabel: customRevealTitle,
+    jslogContext: "source-file-widget"
+  };
+}
 function renderNetworkRequestPreview(networkRequest) {
   const filename = networkRequest.url.split("/").pop() || networkRequest.url;
   const size = i18n9.ByteUtilities.bytesToString(networkRequest.size);
   const resourceType = Common4.ResourceType.resourceTypes[networkRequest.resourceType];
   const { iconName, color } = PanelUtils3.iconDataForResourceType(resourceType);
-  const imageUrl = networkRequest.imageContent?.asImagePreviewUrl() ?? networkRequest.url;
+  const imageUrl = networkRequest.imageContent?.asImagePreviewUrl();
   return html7`
     <div class="network-request-preview">
       <div class="network-request-header">
         <div class="network-request-icon">
-          ${resourceType.isImage() ? html7`<img src=${imageUrl} alt=${filename} />` : html7`<devtools-icon name=${iconName} style=${Lit5.Directives.styleMap({
-    color: color ?? ""
-  })}></devtools-icon>`}
-        </div>        <div class="network-request-details">
+          ${resourceType.isImage() && imageUrl ? (
+    // only try to render the image if we have a preview URL, else fallback to a coloured square.
+    html7`<img src=${imageUrl} alt=${filename} />`
+  ) : html7`<devtools-icon name=${iconName} style=${Lit5.Directives.styleMap({ color: color ?? "" })}></devtools-icon>`}
+        </div>
+        <div class="network-request-details">
           <div class="network-request-name" title=${networkRequest.url}>${filename}</div>
           <div class="network-request-size">${size}</div>
         </div>
@@ -4675,6 +4710,10 @@ function getWidgetSignature(widget6) {
       return `${widget6.name}:${widget6.data.track}:${widget6.data.bounds.min}-${widget6.data.bounds.max}`;
     case "BOTTOM_UP_TREE":
       return `${widget6.name}:${widget6.data.bounds.min}-${widget6.data.bounds.max}`;
+    case "SOURCE_FILE":
+      return `${widget6.name}:${widget6.data.uiSourceCode.url()}`;
+    case "LIGHTHOUSE_REPORT":
+      return `${widget6.name}:${widget6.data.report.fetchTime}`;
     default:
       Platform5.assertNever(widget6, "Unknown AiWidget name");
   }
@@ -4744,6 +4783,12 @@ async function renderWidgets(widgets, options = {}) {
         break;
       case "BOTTOM_UP_TREE":
         response = await makeBottomUpTimelineTreeWidget(widgetData);
+        break;
+      case "SOURCE_FILE":
+        response = await makeSourceFileWidget(widgetData);
+        break;
+      case "LIGHTHOUSE_REPORT":
+        response = await makeLighthouseReportWidget(widgetData);
         break;
       default:
         Platform5.assertNever(widgetData, "Unknown AiWidget name");
@@ -5215,6 +5260,20 @@ async function makeTimelineRangeSummaryWidget(widgetData) {
     accessibleRevealLabel: lockedString5(UIStringsNotTranslate4.revealPerformanceSummary),
     title: lockedString5(UIStringsNotTranslate4.performanceSummary),
     jslogContext: "timeline-range-summary"
+  };
+}
+async function makeLighthouseReportWidget(widgetData) {
+  const reportEl = Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.renderLighthouseScores(widgetData.data.report);
+  if (!reportEl) {
+    return null;
+  }
+  const snapshotReport = widgetData.data.snapshotReport;
+  return {
+    renderedWidget: html7`<div class="lighthouse-report-widget">${reportEl}</div>`,
+    revealable: new Lighthouse.LighthousePanel.ActiveLighthouseReport(widgetData.data.report),
+    accessibleRevealLabel: lockedString5(UIStringsNotTranslate4.revealLighthouse),
+    title: lockedString5(UIStringsNotTranslate4.lighthouseReport),
+    jslogContext: snapshotReport ? "lighthouse-snapshot-report-widget" : "lighthouse-report-widget"
   };
 }
 
@@ -5763,13 +5822,13 @@ var UIStrings3 = {
    */
   copiedToClipboard: "Copied to clipboard",
   /**
-   * @description Label for the 'as prompt' radio button in the export for agents dialog.
+   * @description Label for the 'summary prompt' radio button in the export for agents dialog.
    */
-  asPrompt: "As prompt",
+  asPrompt: "Summary prompt",
   /**
-   * @description Label for the 'as markdown' radio button in the export for agents dialog.
+   * @description Label for the 'full conversation' radio button in the export for agents dialog.
    */
-  asMarkdown: "As markdown",
+  asMarkdown: "Full conversation",
   /**
    * @description Button text for saving content as a markdown file.
    */
@@ -7426,6 +7485,12 @@ async function getEmptyStateSuggestions(conversation) {
         { title: "What are the slowest network requests on this page?", jslogContext: "empty" }
       ];
     }
+    case "storage": {
+      return [
+        { title: "How is localStorage used on this page?", jslogContext: "storage-default" },
+        { title: "How is sessionStorage used on this page?", jslogContext: "storage-default" }
+      ];
+    }
     default:
       Platform7.assertNever(conversation.type, "Unknown conversation type");
   }
@@ -7617,6 +7682,12 @@ function createPerformanceTraceContext(focus) {
   }
   return new AiAssistanceModel7.PerformanceAgent.PerformanceTraceContext(focus);
 }
+function createStorageContext(item) {
+  if (!item) {
+    return null;
+  }
+  return new AiAssistanceModel7.StorageAgent.StorageContext(item);
+}
 var panelInstance;
 var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
   view;
@@ -7637,6 +7708,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
   #selectedRequest = null;
   #selectedBreakpoint = null;
   #selectedAccessibility = null;
+  #selectedStorage = null;
   // Messages displayed in the `ChatView` component.
   #messages = [];
   // Whether the UI should show loading or not.
@@ -7882,7 +7954,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     return await TimelinePanel2.TimelinePanel.TimelinePanel.executeRecordAndReload();
   }
   async #handleLighthouseRun(overrides) {
-    return await LighthousePanel.LighthousePanel.LighthousePanel.executeLighthouseRecording({
+    return await LighthousePanel2.LighthousePanel.LighthousePanel.executeLighthouseRecording({
       isAIControlled: true,
       ...overrides
     });
@@ -7895,6 +7967,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     const isSourcesPanelVisible = viewManager.isViewVisible("sources");
     const isPerformancePanelVisible = viewManager.isViewVisible("timeline");
     const isLighthousePanelVisible = viewManager.isViewVisible("lighthouse");
+    const isApplicationPanelVisible = viewManager.isViewVisible("resources");
     let targetConversationType;
     if (isElementsPanelVisible && hostConfig.devToolsFreestyler?.enabled) {
       targetConversationType = "freestyler";
@@ -7908,6 +7981,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
       targetConversationType = "drjones-performance-full";
     } else if (isLighthousePanelVisible && hostConfig.devToolsAiAssistanceAccessibilityAgent?.enabled) {
       targetConversationType = "accessibility";
+    } else if (isApplicationPanelVisible && hostConfig.devToolsAiAssistanceStorageAgent?.enabled) {
+      targetConversationType = "storage";
     }
     if (isAiAssistanceContextSelectionAgentEnabled() && !targetConversationType) {
       return "none";
@@ -8014,7 +8089,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     this.#selectedPerformanceTrace = createPerformanceTraceContext(UI11.Context.Context.instance().flavor(AiAssistanceModel7.AIContext.AgentFocus));
     this.#selectedFile = createFileContext(UI11.Context.Context.instance().flavor(Workspace6.UISourceCode.UISourceCode));
     this.#selectedBreakpoint = createBreakpointContext(UI11.Context.Context.instance().flavor(Workspace6.UISourceCode.UILocation));
-    this.#selectedAccessibility = createAccessibilityContext(UI11.Context.Context.instance().flavor(LighthousePanel.LighthousePanel.ActiveLighthouseReport));
+    this.#selectedAccessibility = createAccessibilityContext(UI11.Context.Context.instance().flavor(LighthousePanel2.LighthousePanel.ActiveLighthouseReport));
+    this.#selectedStorage = createStorageContext(UI11.Context.Context.instance().flavor(AiAssistanceModel7.StorageItem.StorageItem));
     this.#updateConversationState(this.#conversation);
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
     Host7.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
@@ -8022,9 +8098,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     UI11.Context.Context.instance().addFlavorChangeListener(SDK6.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
     UI11.Context.Context.instance().addFlavorChangeListener(SDK6.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
     UI11.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel7.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI11.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel7.StorageItem.StorageItem, this.#handleStorageItemFlavorChange);
     UI11.Context.Context.instance().addFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI11.Context.Context.instance().addFlavorChangeListener(Workspace6.UISourceCode.UILocation, this.#handleBreakpointFlavorChange);
-    UI11.Context.Context.instance().addFlavorChangeListener(LighthousePanel.LighthousePanel.ActiveLighthouseReport, this.#handleLighthouseReportFlavorChange);
+    UI11.Context.Context.instance().addFlavorChangeListener(LighthousePanel2.LighthousePanel.ActiveLighthouseReport, this.#handleLighthouseReportFlavorChange);
     UI11.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     SDK6.TargetManager.TargetManager.instance().addModelListener(SDK6.DOMModel.DOMModel, SDK6.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
     SDK6.TargetManager.TargetManager.instance().addModelListener(SDK6.DOMModel.DOMModel, SDK6.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
@@ -8041,8 +8118,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     UI11.Context.Context.instance().removeFlavorChangeListener(SDK6.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
     UI11.Context.Context.instance().removeFlavorChangeListener(SDK6.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
     UI11.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel7.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI11.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel7.StorageItem.StorageItem, this.#handleStorageItemFlavorChange);
     UI11.Context.Context.instance().removeFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
-    UI11.Context.Context.instance().removeFlavorChangeListener(LighthousePanel.LighthousePanel.ActiveLighthouseReport, this.#handleLighthouseReportFlavorChange);
+    UI11.Context.Context.instance().removeFlavorChangeListener(LighthousePanel2.LighthousePanel.ActiveLighthouseReport, this.#handleLighthouseReportFlavorChange);
     UI11.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     UI11.Context.Context.instance().removeFlavorChangeListener(TimelinePanel2.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
     SDK6.TargetManager.TargetManager.instance().removeModelListener(SDK6.DOMModel.DOMModel, SDK6.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
@@ -8064,6 +8142,13 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
       return;
     }
     this.#selectedElement = createNodeContext(selectedElementFilter(ev.data));
+    this.#updateConversationState(this.#conversation);
+  };
+  #handleStorageItemFlavorChange = (ev) => {
+    if (this.#selectedStorage?.getItem() === ev.data) {
+      return;
+    }
+    this.#selectedStorage = createStorageContext(ev.data);
     this.#updateConversationState(this.#conversation);
   };
   #handleDOMNodeAttrChange = (ev) => {
@@ -8195,6 +8280,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
         return lockedString8(UIStringsNotTranslate7.inputPlaceholderForNoContext);
       case "accessibility":
         return this.#conversation.selectedContext ? lockedString8(UIStringsNotTranslate7.inputPlaceholderForAccessibility) : lockedString8(UIStringsNotTranslate7.inputPlaceholderForAccessibilityNoContext);
+      case "storage":
+        return lockedString8(UIStringsNotTranslate7.inputPlaceholderForNoContext);
       case "none":
         if (AiAssistanceModel7.AiUtils.isGeminiBranding()) {
           return lockedString8(UIStringsNotTranslate7.inputPlaceholderForNoContextBranded);
@@ -8242,6 +8329,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
         }
         return lockedString8(UIStringsNotTranslate7.inputDisclaimerForAccessibilityEnterpriseNoLogging);
       case "breakpoint":
+      case "storage":
       case "none":
         if (loggingEnabled) {
           return lockedString8(UIStringsNotTranslate7.inputDisclaimerForNoContext);
@@ -8464,6 +8552,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
         return this.#selectedBreakpoint;
       case "accessibility":
         return this.#selectedAccessibility;
+      case "storage":
+        return this.#selectedStorage;
       case "none":
       case void 0:
         return null;
@@ -8482,6 +8572,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
       this.#selectedBreakpoint = data;
     } else if (data instanceof AiAssistanceModel7.AccessibilityAgent.AccessibilityContext) {
       this.#selectedAccessibility = data;
+    } else if (data instanceof AiAssistanceModel7.StorageAgent.StorageContext) {
+      this.#selectedStorage = data;
     }
     void VisualLogging9.logFunctionCall(`context-change-${this.#conversation?.type}`);
     this.requestUpdate();

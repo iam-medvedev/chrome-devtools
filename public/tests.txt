@@ -172,6 +172,7 @@ models/ai_assistance/agents/NetworkAgent.test.js
 models/ai_assistance/agents/PatchAgent.test.js
 models/ai_assistance/agents/PerformanceAgent.test.js
 models/ai_assistance/agents/PerformanceAnnotationsAgent.test.js
+models/ai_assistance/agents/StorageAgent.test.js
 models/ai_assistance/agents/StylingAgent.test.js
 models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIQueries.test.js
@@ -730,6 +731,7 @@ ui/legacy/InspectorView.test.js
 ui/legacy/KeyboardShortcut.test.js
 ui/legacy/ListModel.test.js
 ui/legacy/ListWidget.test.js
+ui/legacy/PlusButton.test.js
 ui/legacy/SearchableView.test.js
 ui/legacy/ShortcutRegistry.test.js
 ui/legacy/SoftContextMenu.test.js
@@ -747,6 +749,7 @@ ui/legacy/ViewRegistration.test.js
 ui/legacy/Widget.test.js
 ui/legacy/components/color_picker/ColorFormatSpec.test.js
 ui/legacy/components/color_picker/Spectrum.test.js
+ui/legacy/components/data_grid/DataGrid.test.js
 ui/legacy/components/data_grid/DataGridElement.test.js
 ui/legacy/components/inline_editor/AnimationTimingModel.test.js
 ui/legacy/components/inline_editor/AnimationTimingUI.test.js

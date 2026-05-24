@@ -480,11 +480,11 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     const [head, tail] = splitDescription(elementData.description);
     const type = elementData.type;
     const replyArgs = elementData.replyArgs;
-    let popupContent = "";
+    let popupContent;
     if (replyArgs && replyArgs.length > 0) {
-      popupContent = tail + `Returns: ${replyArgs}<br>`;
+      popupContent = html`${tail}Returns: ${replyArgs}<br>`;
     } else if (type) {
-      popupContent = tail + `<br>Type: ${type}<br>`;
+      popupContent = html`${tail}<br>Type: ${type}<br>`;
     } else {
       popupContent = tail;
     }
@@ -492,7 +492,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       box: hintElement.boxInWindow(),
       show: async (popover) => {
         const popupElement = new ElementsComponents.CSSHintDetailsView.CSSHintDetailsView({
-          getMessage: () => `<span>${head}</span>`,
+          getMessage: () => html`<span>${head}</span>`,
           getPossibleFixMessage: () => popupContent,
           getLearnMoreLink: () => `https://chromedevtools.github.io/devtools-protocol/tot/${this.command.split(".")[0]}/`
         });
@@ -1184,7 +1184,6 @@ __export(ProtocolMonitor_exports, {
 });
 import "./../../ui/legacy/legacy.js";
 import "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as Host2 from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as ProtocolClient from "./../../core/protocol_client/protocol_client.js";
@@ -1192,6 +1191,7 @@ import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
+import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as SourceFrame from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import { Directives as Directives2, html as html2, render as render2 } from "./../../ui/lit/lit.js";
@@ -1633,7 +1633,7 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
     menu.footerSection().appendItem(i18nString2(UIStrings2.documentation), () => {
       const [domain, method] = message.method.split(".");
       const type = "id" in message ? "method" : "event";
-      Host2.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(`https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}`);
+      UIHelpers.openInNewTab(`https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}`);
     }, { jslogContext: "documentation" });
   }
   onCommandSend(command, parameters, target) {

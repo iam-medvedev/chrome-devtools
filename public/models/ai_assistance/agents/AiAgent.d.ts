@@ -4,6 +4,7 @@ import type * as Protocol from '../../../generated/protocol.js';
 import type * as LHModel from '../../lighthouse/lighthouse.js';
 import type * as TextUtils from '../../text_utils/text_utils.js';
 import type * as Trace from '../../trace/trace.js';
+import type * as Workspace from '../../workspace/workspace.js';
 export declare const enum ResponseType {
     CONTEXT = "context",
     TITLE = "title",
@@ -24,6 +25,13 @@ export declare const enum ErrorType {
     BLOCK = "block",
     CROSS_ORIGIN = "cross-origin"
 }
+/**
+ * Returns true if the origin is considered opaque and should be blocked from
+ * AI assistance to prevent potential data leakage.
+ *
+ * @see https://crbug.com/513732588
+ */
+export declare function isOpaqueOrigin(origin: string): boolean;
 export declare const enum MultimodalInputType {
     SCREENSHOT = "screenshot",
     UPLOADED_IMAGE = "uploaded-image"
@@ -114,6 +122,11 @@ export interface RequestOptions {
     temperature?: number;
     modelId?: string;
 }
+export type AllowedOriginResult = {
+    origin: string | undefined;
+} | {
+    blocked: true;
+};
 export interface AgentOptions {
     aidaClient: Host.AidaClient.AidaClient;
     serverSideLoggingEnabled?: boolean;
@@ -121,7 +134,7 @@ export interface AgentOptions {
     confirmSideEffectForTest?: typeof Promise.withResolvers;
     onInspectElement?: () => Promise<SDK.DOMModel.DOMNode | null>;
     history?: Host.AidaClient.Content[];
-    allowedOrigin?: () => string | undefined;
+    allowedOrigin?: () => AllowedOriginResult;
     lighthouseRecording?: (overrides?: LHModel.RunTypes.RunOverrides) => Promise<LHModel.ReporterTypes.ReportJSON | null>;
 }
 export interface ParsedAnswer {
@@ -140,7 +153,19 @@ export declare abstract class ConversationContext<T> {
     abstract getOrigin(): string;
     abstract getItem(): T;
     abstract getTitle(): string;
-    isOriginAllowed(agentOrigin: string | undefined): boolean;
+    /**
+     * Returns true if this data context (e.g., a DOM node or Network Request) is
+     * allowed to be included in a conversation that is locked to the provided
+     * `establishedOrigin`.
+     *
+     * A conversation is "locked" to an origin once the first query is made.
+     * This method ensures that we don't mix data from different origins in the
+     * same conversation.
+     *
+     * @param establishedOrigin The origin that the current conversation is locked to.
+     * If undefined, the conversation has not yet been locked to an origin.
+     */
+    isOriginAllowed(establishedOrigin: string | undefined): boolean;
     /**
      * This method is called at the start of `AiAgent.run`.
      * It will be overridden in subclasses to fetch data related to the context item.
@@ -212,7 +237,20 @@ export interface BottomUpTreeAiWidget {
         parsedTrace: Trace.TraceModel.ParsedTrace;
     };
 }
-export type AiWidget = ComputedStyleAiWidget | CoreVitalsAiWidget | StylePropertiesAiWidget | DomTreeAiWidget | PerformanceTraceAiWidget | PerfInsightAiWidget | TimelineRangeSummaryAiWidget | BottomUpTreeAiWidget;
+export interface SourceFileAiWidget {
+    name: 'SOURCE_FILE';
+    data: {
+        uiSourceCode: Workspace.UISourceCode.UISourceCode;
+    };
+}
+export interface LighthouseReportAiWidget {
+    name: 'LIGHTHOUSE_REPORT';
+    data: {
+        report: LHModel.ReporterTypes.ReportJSON;
+        snapshotReport?: boolean;
+    };
+}
+export type AiWidget = ComputedStyleAiWidget | CoreVitalsAiWidget | StylePropertiesAiWidget | DomTreeAiWidget | PerformanceTraceAiWidget | PerfInsightAiWidget | TimelineRangeSummaryAiWidget | BottomUpTreeAiWidget | SourceFileAiWidget | LighthouseReportAiWidget;
 export type FunctionCallHandlerResult<Result> = {
     requiresApproval: true;
     /**

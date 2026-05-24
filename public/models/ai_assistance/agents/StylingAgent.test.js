@@ -7,6 +7,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
+import { createStubbedDomNodeWithModels, getMatchedStyles, ruleMatch } from '../../../testing/StyleHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { StylingAgent, AiAgent } = AiAssistance;
 describeWithEnvironment('StylingAgent', function () {
@@ -584,11 +585,203 @@ describeWithEnvironment('StylingAgent', function () {
                     createExtensionScope,
                     execJs,
                 });
-                const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.StylingAgent.NodeContext(element) }));
-                const actionStep = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
-                assert.strictEqual(actionStep.output, 'Error: JavaScript execution that modifies the page is currently disabled.');
+                await Array.fromAsync(agent.run('test', { selected: new AiAssistance.StylingAgent.NodeContext(element) }));
                 assert.lengthOf(execJs.getCalls(), 1);
             });
+        });
+    });
+    describe('getStyles', () => {
+        it('successfully returns computed and authored styles', async () => {
+            const { node: resolvedNode, cssModel } = createStubbedDomNodeWithModels({ nodeId: 42 });
+            resolvedNode.ownerDocument = null;
+            element.ownerDocument = null;
+            sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
+            const computedStyleMap = new Map([['color', 'red']]);
+            cssModel.getComputedStyle.resolves(computedStyleMap);
+            const matchedPayload = [ruleMatch('div', { color: 'red' })];
+            const matchedStyles = getMatchedStyles({ cssModel, node: resolvedNode, matchedPayload });
+            cssModel.getMatchedStyles.resolves(matchedStyles);
+            const agent = new StylingAgent.StylingAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'getStyles',
+                                    args: {
+                                        explanation: 'Get element styles',
+                                        elements: [42],
+                                        styleProperties: ['color'],
+                                    },
+                                }],
+                            explanation: '',
+                        }],
+                    [{
+                            explanation: 'this is the actual answer',
+                        }]
+                ]),
+                createExtensionScope,
+                execJs: sinon.spy(),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.StylingAgent.NodeContext(element) }));
+            const actionStep = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+            assert.exists(actionStep);
+            assert.strictEqual(actionStep.output, JSON.stringify({
+                42: {
+                    computed: { color: 'red' },
+                    authored: { color: 'red' },
+                },
+            }, null, 2));
+        });
+        it('returns error on origin mismatch', async () => {
+            const { node: resolvedNode } = createStubbedDomNodeWithModels({ nodeId: 42 });
+            element.ownerDocument = {
+                documentURL: 'https://example.com',
+            };
+            resolvedNode.ownerDocument = {
+                documentURL: 'https://another.com',
+            };
+            sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
+            const agent = new StylingAgent.StylingAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'getStyles',
+                                    args: {
+                                        explanation: 'Get element styles',
+                                        elements: [42],
+                                        styleProperties: ['color'],
+                                    },
+                                }],
+                            explanation: '',
+                        }],
+                    [{
+                            explanation: 'this is the actual answer',
+                        }]
+                ]),
+                createExtensionScope,
+                execJs: sinon.spy(),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.StylingAgent.NodeContext(element) }));
+            const actionStep = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+            assert.exists(actionStep);
+            assert.strictEqual(actionStep.output, 'Error: Node does not belong to the current origin.');
+        });
+        it('returns error when selected element is missing', async () => {
+            const agent = new StylingAgent.StylingAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'getStyles',
+                                    args: {
+                                        explanation: 'Get element styles',
+                                        elements: [42],
+                                        styleProperties: ['color'],
+                                    },
+                                }],
+                            explanation: '',
+                        }],
+                    [{
+                            explanation: 'this is the actual answer',
+                        }]
+                ]),
+                createExtensionScope,
+                execJs: sinon.spy(),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            const actionStep = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+            assert.exists(actionStep);
+            assert.strictEqual(actionStep.output, 'Error: Could not find the currently selected element.');
+        });
+        it('returns error when target node cannot be resolved', async () => {
+            element.ownerDocument = null;
+            sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(null);
+            const agent = new StylingAgent.StylingAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'getStyles',
+                                    args: {
+                                        explanation: 'Get element styles',
+                                        elements: [42],
+                                        styleProperties: ['color'],
+                                    },
+                                }],
+                            explanation: '',
+                        }],
+                    [{
+                            explanation: 'this is the actual answer',
+                        }]
+                ]),
+                createExtensionScope,
+                execJs: sinon.spy(),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.StylingAgent.NodeContext(element) }));
+            const actionStep = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+            assert.exists(actionStep);
+            assert.strictEqual(actionStep.output, 'Error: Could not find the element with uid=42');
+        });
+        it('returns error when computed styles fail', async () => {
+            const { node: resolvedNode, cssModel } = createStubbedDomNodeWithModels({ nodeId: 42 });
+            resolvedNode.ownerDocument = null;
+            element.ownerDocument = null;
+            sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
+            cssModel.getComputedStyle.resolves(null);
+            const agent = new StylingAgent.StylingAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'getStyles',
+                                    args: {
+                                        explanation: 'Get element styles',
+                                        elements: [42],
+                                        styleProperties: ['color'],
+                                    },
+                                }],
+                            explanation: '',
+                        }],
+                    [{
+                            explanation: 'this is the actual answer',
+                        }]
+                ]),
+                createExtensionScope,
+                execJs: sinon.spy(),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.StylingAgent.NodeContext(element) }));
+            const actionStep = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+            assert.exists(actionStep);
+            assert.strictEqual(actionStep.output, 'Error: Could not get computed styles.');
+        });
+        it('returns error when matched styles fail', async () => {
+            const { node: resolvedNode, cssModel } = createStubbedDomNodeWithModels({ nodeId: 42 });
+            resolvedNode.ownerDocument = null;
+            element.ownerDocument = null;
+            sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
+            const computedStyleMap = new Map([['color', 'red']]);
+            cssModel.getComputedStyle.resolves(computedStyleMap);
+            cssModel.getMatchedStyles.resolves(null);
+            const agent = new StylingAgent.StylingAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'getStyles',
+                                    args: {
+                                        explanation: 'Get element styles',
+                                        elements: [42],
+                                        styleProperties: ['color'],
+                                    },
+                                }],
+                            explanation: '',
+                        }],
+                    [{
+                            explanation: 'this is the actual answer',
+                        }]
+                ]),
+                createExtensionScope,
+                execJs: sinon.spy(),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.StylingAgent.NodeContext(element) }));
+            const actionStep = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+            assert.exists(actionStep);
+            assert.strictEqual(actionStep.output, 'Error: Could not get authored styles.');
         });
     });
 });

@@ -93,6 +93,18 @@ describe('PerformanceTraceFormatter', function () {
             assert.include(output, 'insight name: INPBreakdown');
             snapshotTester.assert(this, output);
         });
+        it('includes LCP insight of the provided deviceScope', async function () {
+            const { parsedTrace } = await createFormatter(this, 'crux.json.gz');
+            const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
+            // Test PHONE scope (LCP is 1082 in crux.json.gz)
+            const phoneFormatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(focus, 'PHONE');
+            const phoneOutput = phoneFormatter.formatTraceSummary();
+            assert.include(phoneOutput, 'LCP: 1082 ms');
+            // Test DESKTOP scope (LCP is 883 in crux.json.gz)
+            const desktopFormatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(focus, 'DESKTOP');
+            const desktopOutput = desktopFormatter.formatTraceSummary();
+            assert.include(desktopOutput, 'LCP: 883 ms');
+        });
     });
     describe('formatCriticalRequests', () => {
         it('render-blocking-requests.json.gz', async function () {
