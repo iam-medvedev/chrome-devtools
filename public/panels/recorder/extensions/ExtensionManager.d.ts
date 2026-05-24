@@ -2,6 +2,7 @@ import * as Common from '../../../core/common/common.js';
 import * as PanelCommon from '../../common/common.js';
 export interface Extension {
     getName(): string;
+    getOrigin(): string;
     getMediaType(): string | undefined;
     stringify(recording: Object): Promise<string>;
     stringifyStep(step: Object): Promise<string>;

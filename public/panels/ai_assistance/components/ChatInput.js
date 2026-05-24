@@ -97,6 +97,10 @@ const UIStringsNotTranslate = {
     /**
      * @description Label added to the button that remove the currently selected context in AI Assistance panel.
      */
+    removeContextStorage: 'Remove storage from context',
+    /**
+     * @description Label added to the button that remove the currently selected context in AI Assistance panel.
+     */
     removeContext: 'Remove from context',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/ai_assistance/components/ChatInput.ts', UIStrings);
@@ -119,6 +123,9 @@ function getContextRemoveLabel(context) {
     }
     if (context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
         return lockedString(UIStringsNotTranslate.removeContextPerfInsight);
+    }
+    if (context instanceof AiAssistanceModel.StorageAgent.StorageContext) {
+        return lockedString(UIStringsNotTranslate.removeContextStorage);
     }
     return lockedString(UIStringsNotTranslate.removeContext);
 }
@@ -287,7 +294,9 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                                 html `<devtools-icon class="icon" name="performance" title="Lighthouse"></devtools-icon>` :
                                 input.context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext ?
                                     html `<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` :
-                                    Lit.nothing}
+                                    input.context instanceof AiAssistanceModel.StorageAgent.StorageContext ?
+                                        html `<devtools-icon class="icon" name="table" title="Storage"></devtools-icon>` :
+                                        Lit.nothing}
                             <span
                               role="button"
                               class="title"
@@ -450,9 +459,11 @@ export class ChatInput extends UI.Widget.Widget {
     #uncommittedText = '';
     setInputValue(text) {
         if (this.#textAreaRef.value) {
-            this.#textAreaRef.value.value = text;
+            const maxLength = this.#textAreaRef.value.maxLength;
+            const truncatedText = (maxLength >= 0) ? text.substring(0, maxLength) : text;
+            this.#textAreaRef.value.value = truncatedText;
             // Place the cursor at the end of the new value.
-            this.#textAreaRef.value.setSelectionRange(text.length, text.length);
+            this.#textAreaRef.value.setSelectionRange(truncatedText.length, truncatedText.length);
         }
         this.performUpdate();
     }

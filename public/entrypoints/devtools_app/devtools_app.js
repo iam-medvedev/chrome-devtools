@@ -2691,8 +2691,10 @@ UI16.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/panels/lighthouse/lighthouse-meta.js
+import * as Common10 from "./../../core/common/common.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
+import * as Lighthouse from "./../../panels/lighthouse/lighthouse.js";
 var UIStrings16 = {
   /**
    * @description Command for showing the 'Lighthouse' tool
@@ -2715,13 +2717,25 @@ UI17.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString16(UIStrings16.showLighthouse),
   order: 90,
   async loadView() {
-    const Lighthouse = await loadLighthouseModule();
-    return Lighthouse.LighthousePanel.LighthousePanel.instance();
+    const Lighthouse2 = await loadLighthouseModule();
+    return Lighthouse2.LighthousePanel.LighthousePanel.instance();
   },
   tags: [
     i18n33.i18n.lockedLazyString("lighthouse"),
     i18n33.i18n.lockedLazyString("pwa")
   ]
+});
+Common10.Revealer.registerRevealer({
+  contextTypes() {
+    return [
+      Lighthouse.LighthousePanel.ActiveLighthouseReport
+    ];
+  },
+  destination: Common10.Revealer.RevealerDestination.LIGHTHOUSE_PANEL,
+  async loadRevealer() {
+    const Lighthouse2 = await loadLighthouseModule();
+    return new Lighthouse2.LighthousePanel.ReportRevealer();
+  }
 });
 
 // gen/front_end/panels/media/media-meta.js
@@ -2768,7 +2782,7 @@ UI18.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/panels/mobile_throttling/mobile_throttling-meta.js
-import * as Common10 from "./../../core/common/common.js";
+import * as Common11 from "./../../core/common/common.js";
 import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
 var UIStrings18 = {
@@ -2884,7 +2898,7 @@ UI19.ActionRegistration.registerActionExtension({
     i18nLazyString18(UIStrings18.throttlingTag)
   ]
 });
-Common10.Settings.registerSettingExtension({
+Common11.Settings.registerSettingExtension({
   storageType: "Synced",
   settingName: "custom-network-conditions",
   settingType: "array",
@@ -2954,7 +2968,7 @@ UI20.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/panels/timeline/timeline-meta.js
-import * as Common11 from "./../../core/common/common.js";
+import * as Common12 from "./../../core/common/common.js";
 import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
@@ -3253,7 +3267,7 @@ UI21.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString20(UIStrings20.chromeFrameInLayersView),
@@ -3261,23 +3275,7 @@ Common11.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: true
 });
-Common11.Settings.registerSettingExtension({
-  category: "PERFORMANCE",
-  storageType: "Synced",
-  title: i18nLazyString20(UIStrings20.timelineShowAllEvents),
-  settingName: "timeline-show-all-events",
-  settingType: "boolean",
-  defaultValue: false
-});
-Common11.Settings.registerSettingExtension({
-  category: "PERFORMANCE",
-  storageType: "Synced",
-  title: i18nLazyString20(UIStrings20.timelineDebugMode),
-  settingName: "timeline-debug-mode",
-  settingType: "boolean",
-  defaultValue: false
-});
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   title: i18nLazyString20(UIStrings20.timelineInvalidationTracking),
@@ -3285,7 +3283,23 @@ Common11.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-Common11.Settings.registerSettingExtension({
+Common12.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString20(UIStrings20.timelineShowAllEvents),
+  settingName: "timeline-show-all-events",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common12.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString20(UIStrings20.timelineDebugMode),
+  settingName: "timeline-debug-mode",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common12.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
   settingName: "annotations-hidden",
@@ -3302,71 +3316,71 @@ UI21.ContextMenu.registerItem({
   actionId: "timeline.save-to-file",
   order: 15
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [SDK7.TraceObject.TraceObject];
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.TraceRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes5((Timeline) => [Timeline.TimelinePanel.ParsedTraceRevealable]);
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.ParsedTraceRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return [SDK7.TraceObject.RevealableEvent];
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.EventRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.Helpers.RevealableInsight]);
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.InsightRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.Helpers.RevealableCoreVitals]);
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.CoreVitalsRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.Helpers.RevealableTimeRange]);
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.TimeRangeRevealer();
   }
 });
-Common11.Revealer.registerRevealer({
+Common12.Revealer.registerRevealer({
   contextTypes() {
     return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.Helpers.RevealableBottomUpProfile]);
   },
-  destination: Common11.Revealer.RevealerDestination.TIMELINE_PANEL,
+  destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {
     const Timeline = await loadTimelineModule();
     return new Timeline.TimelinePanel.BottomUpProfileRevealer();
@@ -3753,7 +3767,7 @@ UI25.ActionRegistration.registerActionExtension({
 });
 
 // gen/front_end/panels/whats_new/whats_new-meta.js
-import * as Common12 from "./../../core/common/common.js";
+import * as Common13 from "./../../core/common/common.js";
 import * as i18n51 from "./../../core/i18n/i18n.js";
 import * as UI26 from "./../../ui/legacy/legacy.js";
 var UIStrings25 = {
@@ -3798,7 +3812,7 @@ async function loadWhatsNewModule() {
 UI26.ViewManager.maybeRemoveViewExtension("release-note");
 UI26.ActionRegistration.maybeRemoveActionExtension("help.release-notes");
 UI26.ActionRegistration.maybeRemoveActionExtension("help.report-issue");
-Common12.Settings.maybeRemoveSettingExtension("help.show-release-note");
+Common13.Settings.maybeRemoveSettingExtension("help.show-release-note");
 UI26.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
   actionId: "help.release-notes"
@@ -3807,7 +3821,7 @@ UI26.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
   actionId: "help.report-issue"
 });
-Common12.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
+Common13.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
 UI26.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "release-note",
@@ -3839,7 +3853,7 @@ UI26.ActionRegistration.registerActionExtension({
   },
   tags: [i18nLazyString25(UIStrings25.bug)]
 });
-Common12.Settings.registerSettingExtension({
+Common13.Settings.registerSettingExtension({
   category: "APPEARANCE",
   title: i18nLazyString25(UIStrings25.showWhatsNewAfterEachUpdate),
   settingName: "help.show-release-note",
@@ -3866,7 +3880,7 @@ UI26.ContextMenu.registerItem({
   actionId: "help.report-issue",
   order: 11
 });
-Common12.Runnable.registerLateInitializationRunnable({
+Common13.Runnable.registerLateInitializationRunnable({
   id: "whats-new",
   async loadRunnable() {
     const WhatsNew = await loadWhatsNewModule();

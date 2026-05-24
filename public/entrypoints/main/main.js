@@ -722,6 +722,13 @@ var MainImpl = class {
       isEnabled: Root2.Runtime.hostConfig.devToolsJpegXlImageFormat?.enabled ?? false,
       requiresChromeRestart: true
     });
+    Root2.Runtime.experiments.registerHostExperiment({
+      name: Root2.ExperimentNames.ExperimentName.PLUS_BUTTON,
+      title: 'Show "+" button on the tab strip for adding tools',
+      aboutFlag: "devtools-plus-button",
+      isEnabled: Root2.Runtime.hostConfig.devToolsPlusButton?.enabled ?? false,
+      requiresChromeRestart: false
+    });
     Root2.Runtime.experiments.enableExperimentsByDefault([
       Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES
     ]);

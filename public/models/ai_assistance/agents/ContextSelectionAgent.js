@@ -10,7 +10,7 @@ import * as NetworkTimeCalculator from '../../network_time_calculator/network_ti
 import * as Workspace from '../../workspace/workspace.js';
 import { debugLog } from '../debug.js';
 import { AccessibilityContext } from './AccessibilityAgent.js';
-import { AiAgent, } from './AiAgent.js';
+import { AiAgent, isOpaqueOrigin, } from './AiAgent.js';
 import { FileContext } from './FileAgent.js';
 import { RequestContext } from './NetworkAgent.js';
 import { PerformanceTraceContext } from './PerformanceAgent.js';
@@ -79,7 +79,7 @@ export class ContextSelectionAgent extends AiAgent {
         this.#lighthouseRecording = opts.lighthouseRecording;
         this.#onInspectElement = opts.onInspectElement;
         this.#networkTimeCalculator = opts.networkTimeCalculator;
-        this.#allowedOrigin = opts.allowedOrigin ?? (() => undefined);
+        this.#allowedOrigin = opts.allowedOrigin ?? (() => ({ origin: undefined }));
         this.declareFunction('listNetworkRequests', {
             description: `Gives a list of network requests including URL, status code, and duration.`,
             parameters: {
@@ -97,7 +97,18 @@ export class ContextSelectionAgent extends AiAgent {
             },
             handler: async () => {
                 const requests = [];
-                const origin = this.#allowedOrigin();
+                const allowedOriginResult = this.#allowedOrigin();
+                if ('blocked' in allowedOriginResult) {
+                    return {
+                        error: 'Cross-origin access blocked due to navigation. Please start a new chat.',
+                    };
+                }
+                const origin = allowedOriginResult.origin;
+                if (origin && isOpaqueOrigin(origin)) {
+                    return {
+                        error: 'No requests recorded by DevTools',
+                    };
+                }
                 let hasCrossOriginRequest = false;
                 for (const request of Logs.NetworkLog.NetworkLog.instance().requests()) {
                     const documentOrigin = Common.ParsedURL.ParsedURL.extractOrigin(request.documentURL);
@@ -155,7 +166,18 @@ export class ContextSelectionAgent extends AiAgent {
                 };
             },
             handler: async ({ id }) => {
-                const origin = this.#allowedOrigin();
+                const allowedOriginResult = this.#allowedOrigin();
+                if ('blocked' in allowedOriginResult) {
+                    return {
+                        error: 'Cross-origin access blocked due to navigation. Please start a new chat.',
+                    };
+                }
+                const origin = allowedOriginResult.origin;
+                if (origin && isOpaqueOrigin(origin)) {
+                    return {
+                        error: 'No request found',
+                    };
+                }
                 const request = Logs.NetworkLog.NetworkLog.instance().requests().find(req => {
                     if (req.requestId() !== id) {
                         return false;
@@ -191,8 +213,20 @@ export class ContextSelectionAgent extends AiAgent {
                 };
             },
             handler: async () => {
+                const allowedOriginResult = this.#allowedOrigin();
+                if ('blocked' in allowedOriginResult) {
+                    return {
+                        error: 'Cross-origin access blocked due to navigation. Please start a new chat.',
+                    };
+                }
+                const origin = allowedOriginResult.origin;
                 const files = [];
                 for (const file of ContextSelectionAgent.getUISourceCodes()) {
+                    const fileUrl = file.url();
+                    const fileOrigin = Common.ParsedURL.ParsedURL.extractOrigin(fileUrl);
+                    if (origin && fileOrigin !== origin) {
+                        continue;
+                    }
                     files.push({
                         file: file.fullDisplayName(),
                         id: ContextSelectionAgent.uiSourceCodeId.get(file),
@@ -225,7 +259,21 @@ export class ContextSelectionAgent extends AiAgent {
                 };
             },
             handler: async (params) => {
-                const file = ContextSelectionAgent.getUISourceCodes().find(file => ContextSelectionAgent.uiSourceCodeId.get(file) === params.id);
+                const allowedOriginResult = this.#allowedOrigin();
+                if ('blocked' in allowedOriginResult) {
+                    return {
+                        error: 'Cross-origin access blocked due to navigation. Please start a new chat.',
+                    };
+                }
+                const origin = allowedOriginResult.origin;
+                const file = ContextSelectionAgent.getUISourceCodes().find(file => {
+                    if (ContextSelectionAgent.uiSourceCodeId.get(file) !== params.id) {
+                        return false;
+                    }
+                    const fileUrl = file.url();
+                    const fileOrigin = Common.ParsedURL.ParsedURL.extractOrigin(fileUrl);
+                    return !origin || fileOrigin === origin;
+                });
                 if (!file) {
                     return {
                         error: 'Unable to find file.',
@@ -234,6 +282,12 @@ export class ContextSelectionAgent extends AiAgent {
                 return {
                     context: new FileContext(file),
                     description: 'User selected a source file',
+                    widgets: [{
+                            name: 'SOURCE_FILE',
+                            data: {
+                                uiSourceCode: file,
+                            },
+                        }],
                 };
             },
         });
@@ -306,6 +360,7 @@ export class ContextSelectionAgent extends AiAgent {
                 return {
                     context: new AccessibilityContext(result),
                     description: 'User has selected a Lighthouse report',
+                    widgets: [{ name: 'LIGHTHOUSE_REPORT', data: { report: result } }],
                 };
             }
         });

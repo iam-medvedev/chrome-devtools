@@ -382,7 +382,7 @@ var queryCSSSelectorAll = (selectors) => {
   return lists.flatMap((list) => [...list]);
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/injected/PierceQuerySelector.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/injected/PierceQuerySelector.js
 var pierceQuerySelectorAll = (element, selector) => {
   const result = [];
   const collect2 = (root) => {
@@ -445,7 +445,7 @@ var computePierceSelector = (node, attributes) => {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/injected/TextContent.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/injected/TextContent.js
 var TRIVIAL_VALUE_INPUT_TYPES = /* @__PURE__ */ new Set(["checkbox", "image", "radio"]);
 var isNonTrivialValueNode = (node) => {
   if (node instanceof HTMLSelectElement) {
@@ -530,7 +530,7 @@ var createTextContent = (root) => {
   return value;
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/injected/TextQuerySelector.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/injected/TextQuerySelector.js
 var textQuerySelectorAll = function* (root, selector) {
   let yielded = false;
   for (const node of root.childNodes) {

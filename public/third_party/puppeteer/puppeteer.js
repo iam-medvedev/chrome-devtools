@@ -1,4 +1,4 @@
-// gen/front_end/third_party/puppeteer/package/lib/esm/third_party/rxjs/rxjs.js
+// gen/front_end/third_party/puppeteer/package/lib/third_party/rxjs/rxjs.js
 var extendStatics = function(d, b2) {
   extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b22) {
     d2.__proto__ = b22;
@@ -2105,7 +2105,7 @@ function tap(observerOrNext, error, complete) {
   }) : identity;
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/third_party/mitt/mitt.js
+// gen/front_end/third_party/puppeteer/package/lib/third_party/mitt/mitt.js
 function mitt_default(n) {
   return { all: n = n || /* @__PURE__ */ new Map(), on: function(t, e) {
     var i = n.get(t);
@@ -2123,7 +2123,7 @@ function mitt_default(n) {
   } };
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/disposable.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/disposable.js
 Symbol.dispose ??= Symbol("dispose");
 Symbol.asyncDispose ??= Symbol("asyncDispose");
 var disposeSymbol = Symbol.dispose;
@@ -2427,7 +2427,7 @@ var SuppressedErrorPolyfill = class extends Error {
 };
 var SuppressedError2 = globalThis.SuppressedError ?? SuppressedErrorPolyfill;
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/environment.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/environment.js
 var isNode = !!(typeof process !== "undefined" && process.version);
 var environment = {
   value: {
@@ -2440,14 +2440,14 @@ var environment = {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/assert.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/assert.js
 var assert = (value, message) => {
   if (!value) {
     throw new Error(message);
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/encoding.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/encoding.js
 function stringToTypedArray(string, base64Encoded = false) {
   if (base64Encoded) {
     if ("fromBase64" in Uint8Array) {
@@ -2489,10 +2489,10 @@ function mergeUint8Arrays(items) {
   return result;
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.43.1";
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
+var packageVersion = "25.0.4";
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/Debug.js
 var debugModule = null;
 async function importDebug() {
   if (!debugModule) {
@@ -2530,7 +2530,7 @@ var debug = (prefix) => {
 var capturedLogs = [];
 var captureLogs = false;
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Errors.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/Errors.js
 var PuppeteerError = class extends Error {
   /**
    * @internal
@@ -2581,7 +2581,7 @@ var TargetCloseError = class extends ProtocolError {
 var ConnectionClosedError = class extends ProtocolError {
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/PDFOptions.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/PDFOptions.js
 var paperFormats = {
   letter: {
     cm: { width: 21.59, height: 27.94 },
@@ -2629,7 +2629,7 @@ var paperFormats = {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/util.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/util.js
 var debugError = debug("puppeteer:error");
 var DEFAULT_VIEWPORT = Object.freeze({ width: 800, height: 600 });
 var SOURCE_URL = Symbol("Source URL for Puppeteer evaluation scripts");
@@ -2886,7 +2886,7 @@ function filterAsync(predicate) {
   });
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/EventEmitter.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/EventEmitter.js
 var EventEmitter = class {
   #emitter;
   #handlers = /* @__PURE__ */ new Map();
@@ -3001,7 +3001,7 @@ var EventEmitter = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Browser.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/Browser.js
 var WEB_PERMISSION_TO_PROTOCOL_PERMISSION = /* @__PURE__ */ new Map([
   ["accelerometer", "sensors"],
   ["ambient-light-sensor", "sensors"],
@@ -3143,14 +3143,6 @@ var Browser = class extends EventEmitter {
   async setPermission(origin, ...permissions) {
     return await this.defaultBrowserContext().setPermission(origin, ...permissions);
   }
-  /**
-   * Whether Puppeteer is connected to this {@link Browser | browser}.
-   *
-   * @deprecated Use {@link Browser | Browser.connected}.
-   */
-  isConnected() {
-    return this.connected;
-  }
   /** @internal */
   [disposeSymbol]() {
     return void this[asyncDisposeSymbol]().catch(debugError);
@@ -3166,7 +3158,7 @@ var Browser = class extends EventEmitter {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/CDPSession.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/CDPSession.js
 var CDPSessionEvent;
 (function(CDPSessionEvent2) {
   CDPSessionEvent2.Disconnected = Symbol("CDPSession.Disconnected");
@@ -3192,7 +3184,7 @@ var CDPSession = class extends EventEmitter {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/Deferred.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/Deferred.js
 var Deferred = class _Deferred {
   static create(opts) {
     return new _Deferred(opts);
@@ -3278,7 +3270,7 @@ var Deferred = class _Deferred {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/Mutex.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/Mutex.js
 var Mutex = class _Mutex {
   static Guard = class Guard {
     #mutex;
@@ -3315,7 +3307,7 @@ var Mutex = class _Mutex {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/BrowserContext.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/BrowserContext.js
 var BrowserContext = class extends EventEmitter {
   /**
    * @internal
@@ -3454,7 +3446,7 @@ var BrowserContext = class extends EventEmitter {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/TimeoutSettings.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/TimeoutSettings.js
 var DEFAULT_TIMEOUT = 3e4;
 var TimeoutSettings = class {
   #defaultTimeout;
@@ -3486,7 +3478,7 @@ var TimeoutSettings = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/decorators.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/decorators.js
 var __addDisposableResource = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
@@ -3645,7 +3637,7 @@ function guarded(getKey = function() {
   };
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/locators/locators.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/locators/locators.js
 var __addDisposableResource2 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
@@ -4373,7 +4365,7 @@ var RaceLocator = class _RaceLocator extends Locator {
 };
 var RETRY_DELAY = 100;
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Page.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/Page.js
 var __runInitializers = function(thisArg, initializers, value) {
   var useValue = arguments.length > 2;
   for (var i = 0; i < initializers.length; i++) {
@@ -5832,7 +5824,7 @@ function roundRectangle(clip) {
   return { ...clip, x: x2, y, width, height };
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/WebWorker.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/WebWorker.js
 var WebWorkerEvent;
 (function(WebWorkerEvent2) {
   WebWorkerEvent2["Console"] = "console";
@@ -5909,7 +5901,7 @@ var WebWorker = class extends EventEmitter {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/ConsoleMessage.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/ConsoleMessage.js
 var ConsoleMessage = class {
   #type;
   #text;
@@ -5978,7 +5970,7 @@ var ConsoleMessage = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/FileChooser.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/FileChooser.js
 var FileChooser = class {
   #element;
   #multiple;
@@ -6024,7 +6016,7 @@ var FileChooser = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/NetworkManagerEvents.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/NetworkManagerEvents.js
 var NetworkManagerEvent;
 (function(NetworkManagerEvent2) {
   NetworkManagerEvent2.Request = Symbol("NetworkManager.Request");
@@ -6034,7 +6026,7 @@ var NetworkManagerEvent;
   NetworkManagerEvent2.RequestFinished = Symbol("NetworkManager.RequestFinished");
 })(NetworkManagerEvent || (NetworkManagerEvent = {}));
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/ErrorLike.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/ErrorLike.js
 function isErrorLike(obj) {
   return typeof obj === "object" && obj !== null && "name" in obj && "message" in obj;
 }
@@ -6051,7 +6043,7 @@ function createProtocolErrorMessage(object) {
   return message;
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/JSHandle.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/JSHandle.js
 var __runInitializers2 = function(thisArg, initializers, value) {
   var useValue = arguments.length > 2;
   for (var i = 0; i < initializers.length; i++) {
@@ -6260,7 +6252,7 @@ var JSHandle = (() => {
   return JSHandle2 = _classThis;
 })();
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Binding.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Binding.js
 var __addDisposableResource5 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
@@ -6401,7 +6393,7 @@ var Binding = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/BluetoothEmulation.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/BluetoothEmulation.js
 var CdpBluetoothEmulation = class {
   #connection;
   constructor(connection) {
@@ -6422,12 +6414,15 @@ var CdpBluetoothEmulation = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/CallbackRegistry.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/CallbackRegistry.js
 var CallbackRegistry = class {
   #callbacks = /* @__PURE__ */ new Map();
   #idGenerator;
   constructor(idGenerator) {
     this.#idGenerator = idGenerator;
+  }
+  has(id) {
+    return this.#callbacks.has(id);
   }
   create(label, timeout2, request) {
     const callback = new Callback(this.#idGenerator(), label, timeout2);
@@ -6533,7 +6528,7 @@ var Callback = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/CdpSession.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/CdpSession.js
 var CdpCDPSession = class extends CDPSession {
   #sessionId;
   #targetType;
@@ -6589,7 +6584,13 @@ var CdpCDPSession = class extends CDPSession {
     if (this.detached) {
       return Promise.reject(new TargetCloseError(`Protocol error (${method}): Session closed. Most likely the ${this.#targetType} has been closed.`));
     }
-    return this.#connection._rawSend(this.#callbacks, method, params, this.#sessionId, options);
+    return this.#connection._rawSend(this.#callbacks, method, params, this.#sessionId, options).catch((error) => {
+      if (error instanceof Error && error.message.includes("Session with given id not found")) {
+        this.onClosed();
+        throw new TargetCloseError(`Protocol error (${method}): Session with given id not found.`);
+      }
+      throw error;
+    });
   }
   /**
    * @internal
@@ -6640,12 +6641,18 @@ var CdpCDPSession = class extends CDPSession {
   /**
    * @internal
    */
+  hasCallback(id) {
+    return this.#callbacks.has(id);
+  }
+  /**
+   * @internal
+   */
   getPendingProtocolErrors() {
     return this.#callbacks.getPendingProtocolErrors();
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/incremental-id-generator.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/incremental-id-generator.js
 function createIncrementalIdGenerator() {
   let id = 0;
   return () => {
@@ -6656,7 +6663,7 @@ function createIncrementalIdGenerator() {
   };
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Connection.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Connection.js
 var debugProtocolSend = debug("puppeteer:protocol:SEND \u25BA");
 var debugProtocolReceive = debug("puppeteer:protocol:RECV \u25C0");
 var Connection = class extends EventEmitter {
@@ -6667,6 +6674,7 @@ var Connection = class extends EventEmitter {
   #sessions = /* @__PURE__ */ new Map();
   #closed = false;
   #manuallyAttached = /* @__PURE__ */ new Set();
+  #rejectEmulateNetworkConditionsCalls = false;
   #callbacks;
   #rawErrors = false;
   #idGenerator;
@@ -6693,6 +6701,15 @@ var Connection = class extends EventEmitter {
   }
   get timeout() {
     return this.#timeout;
+  }
+  /**
+   * @internal
+   */
+  get rejectEmulateNetworkConditionsCalls() {
+    return this.#rejectEmulateNetworkConditionsCalls;
+  }
+  set rejectEmulateNetworkConditionsCalls(value) {
+    this.#rejectEmulateNetworkConditionsCalls = value;
   }
   /**
    * @internal
@@ -6737,6 +6754,9 @@ var Connection = class extends EventEmitter {
   _rawSend(callbacks, method, params, sessionId, options) {
     if (this.#closed) {
       return Promise.reject(new ConnectionClosedError("Connection closed."));
+    }
+    if (method === "Network.emulateNetworkConditions" && this.rejectEmulateNetworkConditionsCalls) {
+      return Promise.reject(new Error("Cannot reset network conditions: rule-based emulation is enabled."));
     }
     return callbacks.create(method, options?.timeout ?? this.#timeout, (id) => {
       const stringifiedMessage = JSON.stringify({
@@ -6793,14 +6813,23 @@ var Connection = class extends EventEmitter {
         session.onMessage(object);
       }
     } else if (object.id) {
-      if (object.error) {
-        if (this.#rawErrors) {
-          this.#callbacks.rejectRaw(object.id, object.error);
+      if (this.#callbacks.has(object.id)) {
+        if (object.error) {
+          if (this.#rawErrors) {
+            this.#callbacks.rejectRaw(object.id, object.error);
+          } else {
+            this.#callbacks.reject(object.id, createProtocolErrorMessage(object), object.error.message);
+          }
         } else {
-          this.#callbacks.reject(object.id, createProtocolErrorMessage(object), object.error.message);
+          this.#callbacks.resolve(object.id, object.result);
         }
       } else {
-        this.#callbacks.resolve(object.id, object.result);
+        for (const session of this.#sessions.values()) {
+          if (session.hasCallback(object.id)) {
+            session.onMessage(object);
+            break;
+          }
+        }
       }
     } else {
       this.emit(object.method, object.params);
@@ -6871,7 +6900,7 @@ function isTargetClosedError(error) {
   return error instanceof TargetCloseError;
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Coverage.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Coverage.js
 var Coverage = class {
   #jsCoverage;
   #cssCoverage;
@@ -7172,7 +7201,7 @@ function convertToDisjointRanges(nestedRanges) {
   });
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Dialog.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/Dialog.js
 var Dialog = class {
   #type;
   #message;
@@ -7235,7 +7264,7 @@ var Dialog = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Dialog.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Dialog.js
 var CdpDialog = class extends Dialog {
   #client;
   constructor(client, type, message, defaultValue = "") {
@@ -7250,7 +7279,7 @@ var CdpDialog = class extends Dialog {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/EmulationManager.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/EmulationManager.js
 var __runInitializers3 = function(thisArg, initializers, value) {
   var useValue = arguments.length > 2;
   for (var i = 0; i < initializers.length; i++) {
@@ -7710,7 +7739,7 @@ var EmulationManager = (() => {
   };
 })();
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/AsyncIterableUtil.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/AsyncIterableUtil.js
 var AsyncIterableUtil = class {
   static async *map(iterable, map2) {
     for await (const value of iterable) {
@@ -7737,10 +7766,10 @@ var AsyncIterableUtil = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/ElementHandleSymbol.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/ElementHandleSymbol.js
 var _isElementHandle = Symbol("_isElementHandle");
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/Function.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/Function.js
 var createdFunctions = /* @__PURE__ */ new Map();
 var createFunction = (functionValue) => {
   let fn = createdFunctions.get(functionValue);
@@ -7781,7 +7810,7 @@ var interpolateFunction = (fn, replacements) => {
   return createFunction(value);
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/HandleIterator.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/HandleIterator.js
 var __addDisposableResource6 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
@@ -7904,7 +7933,7 @@ async function* transposeIterableHandle(handle) {
   }
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/LazyArg.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/LazyArg.js
 var LazyArg = class _LazyArg {
   static create = (get) => {
     return new _LazyArg(get);
@@ -7918,7 +7947,7 @@ var LazyArg = class _LazyArg {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/QueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/QueryHandler.js
 var __addDisposableResource7 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
@@ -8127,7 +8156,7 @@ var QueryHandler = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/AriaQueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/AriaQueryHandler.js
 var isKnownAttribute = (attribute) => {
   return ["name", "role"].includes(attribute);
 };
@@ -8160,7 +8189,7 @@ var ARIAQueryHandler = class extends QueryHandler {
   };
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/CSSQueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/CSSQueryHandler.js
 var CSSQueryHandler = class extends QueryHandler {
   static querySelector = (element, selector, { cssQuerySelector }) => {
     return cssQuerySelector(element, selector);
@@ -8170,10 +8199,10 @@ var CSSQueryHandler = class extends QueryHandler {
   };
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/injected.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/generated/injected.js
 var source = '"use strict";var g=Object.defineProperty;var X=Object.getOwnPropertyDescriptor;var B=Object.getOwnPropertyNames;var Y=Object.prototype.hasOwnProperty;var l=(t,e)=>{for(var r in e)g(t,r,{get:e[r],enumerable:!0})},G=(t,e,r,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let s of B(e))!Y.call(t,s)&&s!==r&&g(t,s,{get:()=>e[s],enumerable:!(o=X(e,s))||o.enumerable});return t};var J=t=>G(g({},"__esModule",{value:!0}),t);var pe={};l(pe,{default:()=>he});module.exports=J(pe);var N=class extends Error{constructor(e,r){super(e,r),this.name=this.constructor.name}get[Symbol.toStringTag](){return this.constructor.name}},p=class extends N{};var c=class t{static create(e){return new t(e)}static async race(e){let r=new Set;try{let o=e.map(s=>s instanceof t?(s.#s&&r.add(s),s.valueOrThrow()):s);return await Promise.race(o)}finally{for(let o of r)o.reject(new Error("Timeout cleared"))}}#e=!1;#r=!1;#o;#t;#a=new Promise(e=>{this.#t=e});#s;#i;constructor(e){e&&e.timeout>0&&(this.#i=new p(e.message),this.#s=setTimeout(()=>{this.reject(this.#i)},e.timeout))}#l(e){clearTimeout(this.#s),this.#o=e,this.#t()}resolve(e){this.#r||this.#e||(this.#e=!0,this.#l(e))}reject(e){this.#r||this.#e||(this.#r=!0,this.#l(e))}resolved(){return this.#e}finished(){return this.#e||this.#r}value(){return this.#o}#n;valueOrThrow(){return this.#n||(this.#n=(async()=>{if(await this.#a,this.#r)throw this.#o;return this.#o})()),this.#n}};var L=new Map,W=t=>{let e=L.get(t);return e||(e=new Function(`return ${t}`)(),L.set(t,e),e)};var b={};l(b,{ariaQuerySelector:()=>z,ariaQuerySelectorAll:()=>x});var z=(t,e)=>globalThis.__ariaQuerySelector(t,e),x=async function*(t,e){yield*await globalThis.__ariaQuerySelectorAll(t,e)};var E={};l(E,{cssQuerySelector:()=>K,cssQuerySelectorAll:()=>Z});var K=(t,e)=>t.querySelector(e),Z=function(t,e){return t.querySelectorAll(e)};var A={};l(A,{customQuerySelectors:()=>P});var v=class{#e=new Map;register(e,r){if(!r.queryOne&&r.queryAll){let o=r.queryAll;r.queryOne=(s,i)=>{for(let n of o(s,i))return n;return null}}else if(r.queryOne&&!r.queryAll){let o=r.queryOne;r.queryAll=(s,i)=>{let n=o(s,i);return n?[n]:[]}}else if(!r.queryOne||!r.queryAll)throw new Error("At least one query method must be defined.");this.#e.set(e,{querySelector:r.queryOne,querySelectorAll:r.queryAll})}unregister(e){this.#e.delete(e)}get(e){return this.#e.get(e)}clear(){this.#e.clear()}},P=new v;var R={};l(R,{pierceQuerySelector:()=>ee,pierceQuerySelectorAll:()=>te});var ee=(t,e)=>{let r=null,o=s=>{let i=document.createTreeWalker(s,NodeFilter.SHOW_ELEMENT);do{let n=i.currentNode;n.shadowRoot&&o(n.shadowRoot),!(n instanceof ShadowRoot)&&n!==s&&!r&&n.matches(e)&&(r=n)}while(!r&&i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r},te=(t,e)=>{let r=[],o=s=>{let i=document.createTreeWalker(s,NodeFilter.SHOW_ELEMENT);do{let n=i.currentNode;n.shadowRoot&&o(n.shadowRoot),!(n instanceof ShadowRoot)&&n!==s&&n.matches(e)&&r.push(n)}while(i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r};var u=(t,e)=>{if(!t)throw new Error(e)};var y=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=new MutationObserver(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())}),this.#o.observe(this.#r,{childList:!0,subtree:!0,attributes:!0})}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(this.#o.disconnect(),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}},w=class{#e;#r;constructor(e){this.#e=e}async start(){let e=this.#r=c.create(),r=await this.#e();if(r){e.resolve(r);return}let o=async()=>{if(e.finished())return;let s=await this.#e();if(!s){window.requestAnimationFrame(o);return}e.resolve(s),await this.stop()};window.requestAnimationFrame(o)}async stop(){u(this.#r,"Polling never started."),this.#r.finished()||this.#r.reject(new Error("Polling stopped"))}result(){return u(this.#r,"Polling never started."),this.#r.valueOrThrow()}},T=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=setInterval(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())},this.#r)}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(clearInterval(this.#o),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}};var _={};l(_,{PCombinator:()=>H,pQuerySelector:()=>fe,pQuerySelectorAll:()=>$});var a=class{static async*map(e,r){for await(let o of e)yield await r(o)}static async*flatMap(e,r){for await(let o of e)yield*r(o)}static async collect(e){let r=[];for await(let o of e)r.push(o);return r}static async first(e){for await(let r of e)return r}};var C={};l(C,{textQuerySelectorAll:()=>m});var re=new Set(["checkbox","image","radio"]),oe=t=>t instanceof HTMLSelectElement||t instanceof HTMLTextAreaElement||t instanceof HTMLInputElement&&!re.has(t.type),se=new Set(["SCRIPT","STYLE"]),f=t=>!se.has(t.nodeName)&&!document.head?.contains(t),I=new WeakMap,F=t=>{for(;t;)I.delete(t),t instanceof ShadowRoot?t=t.host:t=t.parentNode},j=new WeakSet,ne=new MutationObserver(t=>{for(let e of t)F(e.target)}),d=t=>{let e=I.get(t);if(e||(e={full:"",immediate:[]},!f(t)))return e;let r="";if(oe(t))e.full=t.value,e.immediate.push(t.value),t.addEventListener("input",o=>{F(o.target)},{once:!0,capture:!0});else{for(let o=t.firstChild;o;o=o.nextSibling){if(o.nodeType===Node.TEXT_NODE){e.full+=o.nodeValue??"",r+=o.nodeValue??"";continue}r&&e.immediate.push(r),r="",o.nodeType===Node.ELEMENT_NODE&&(e.full+=d(o).full)}r&&e.immediate.push(r),t instanceof Element&&t.shadowRoot&&(e.full+=d(t.shadowRoot).full),j.has(t)||(ne.observe(t,{childList:!0,characterData:!0,subtree:!0}),j.add(t))}return I.set(t,e),e};var m=function*(t,e){let r=!1;for(let o of t.childNodes)if(o instanceof Element&&f(o)){let s;o.shadowRoot?s=m(o.shadowRoot,e):s=m(o,e);for(let i of s)yield i,r=!0}r||t instanceof Element&&f(t)&&d(t).full.includes(e)&&(yield t)};var k={};l(k,{checkVisibility:()=>le,pierce:()=>S,pierceAll:()=>O});var ie=["hidden","collapse"],le=(t,e)=>{if(!t)return e===!1;if(e===void 0)return t;let r=t.nodeType===Node.TEXT_NODE?t.parentElement:t,o=window.getComputedStyle(r),s=o&&!ie.includes(o.visibility)&&!ae(r);return e===s?t:!1};function ae(t){let e=t.getBoundingClientRect();return e.width===0||e.height===0}var ce=t=>"shadowRoot"in t&&t.shadowRoot instanceof ShadowRoot;function*S(t){ce(t)?yield t.shadowRoot:yield t}function*O(t){t=S(t).next().value,yield t;let e=[document.createTreeWalker(t,NodeFilter.SHOW_ELEMENT)];for(let r of e){let o;for(;o=r.nextNode();)o.shadowRoot&&(yield o.shadowRoot,e.push(document.createTreeWalker(o.shadowRoot,NodeFilter.SHOW_ELEMENT)))}}var D={};l(D,{xpathQuerySelectorAll:()=>q});var q=function*(t,e,r=-1){let s=(t.ownerDocument||document).evaluate(e,t,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE),i=[],n;for(;(n=s.iterateNext())&&(i.push(n),!(r&&i.length===r)););for(let h=0;h<i.length;h++)n=i[h],yield n,i[h]=null};var ue=/[-\\w\\P{ASCII}*]/u,H=(r=>(r.Descendent=">>>",r.Child=">>>>",r))(H||{}),V=t=>"querySelectorAll"in t,Q=class{#e;#r=[];#o=void 0;elements;constructor(e,r){this.elements=[e],this.#e=r,this.#t()}async run(){for(typeof this.#o=="string"&&this.#o.trimStart()===":scope"&&this.#t();this.#o!==void 0;this.#t()){let e=this.#o;typeof e=="string"?e[0]&&ue.test(e[0])?this.elements=a.flatMap(this.elements,async function*(r){V(r)&&(yield*r.querySelectorAll(e))}):this.elements=a.flatMap(this.elements,async function*(r){if(!r.parentElement){if(!V(r))return;yield*r.querySelectorAll(e);return}let o=0;for(let s of r.parentElement.children)if(++o,s===r)break;yield*r.parentElement.querySelectorAll(`:scope>:nth-child(${o})${e}`)}):this.elements=a.flatMap(this.elements,async function*(r){switch(e.name){case"text":yield*m(r,e.value);break;case"xpath":yield*q(r,e.value);break;case"aria":yield*x(r,e.value);break;default:let o=P.get(e.name);if(!o)throw new Error(`Unknown selector type: ${e.name}`);yield*o.querySelectorAll(r,e.value)}})}}#t(){if(this.#r.length!==0){this.#o=this.#r.shift();return}if(this.#e.length===0){this.#o=void 0;return}let e=this.#e.shift();switch(e){case">>>>":{this.elements=a.flatMap(this.elements,S),this.#t();break}case">>>":{this.elements=a.flatMap(this.elements,O),this.#t();break}default:this.#r=e,this.#t();break}}},M=class{#e=new WeakMap;calculate(e,r=[]){if(e===null)return r;e instanceof ShadowRoot&&(e=e.host);let o=this.#e.get(e);if(o)return[...o,...r];let s=0;for(let n=e.previousSibling;n;n=n.previousSibling)++s;let i=this.calculate(e.parentNode,[s]);return this.#e.set(e,i),[...i,...r]}},U=(t,e)=>{if(t.length+e.length===0)return 0;let[r=-1,...o]=t,[s=-1,...i]=e;return r===s?U(o,i):r<s?-1:1},de=async function*(t){let e=new Set;for await(let o of t)e.add(o);let r=new M;yield*[...e.values()].map(o=>[o,r.calculate(o)]).sort(([,o],[,s])=>U(o,s)).map(([o])=>o)},$=function(t,e){let r=JSON.parse(e);if(r.some(o=>{let s=0;return o.some(i=>(typeof i=="string"?++s:s=0,s>1))}))throw new Error("Multiple deep combinators found in sequence.");return de(a.flatMap(r,o=>{let s=new Q(t,o);return s.run(),s.elements}))},fe=async function(t,e){for await(let r of $(t,e))return r;return null};var me=Object.freeze({...b,...A,...R,..._,...C,...k,...D,...E,Deferred:c,createFunction:W,createTextContent:d,IntervalPoller:T,isSuitableNodeForTextMatching:f,MutationPoller:y,RAFPoller:w}),he=me;\n';
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/ScriptInjector.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/ScriptInjector.js
 var ScriptInjector = class {
   #updated = false;
   #amendments = /* @__PURE__ */ new Set();
@@ -8211,7 +8240,7 @@ var ScriptInjector = class {
 };
 var scriptInjector = new ScriptInjector();
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/CustomQueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/CustomQueryHandler.js
 var CustomQueryHandlerRegistry = class {
   #handlers = /* @__PURE__ */ new Map();
   get(name) {
@@ -8294,7 +8323,7 @@ var CustomQueryHandlerRegistry = class {
 };
 var customQueryHandlers = new CustomQueryHandlerRegistry();
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/PierceQueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/PierceQueryHandler.js
 var PierceQueryHandler = class extends QueryHandler {
   static querySelector = (element, selector, { pierceQuerySelector }) => {
     return pierceQuerySelector(element, selector);
@@ -8304,7 +8333,7 @@ var PierceQueryHandler = class extends QueryHandler {
   };
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/PQueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/PQueryHandler.js
 var PQueryHandler = class extends QueryHandler {
   static querySelectorAll = (element, selector, { pQuerySelectorAll }) => {
     return pQuerySelectorAll(element, selector);
@@ -8314,7 +8343,7 @@ var PQueryHandler = class extends QueryHandler {
   };
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/third_party/parsel-js/parsel-js.js
+// gen/front_end/third_party/puppeteer/package/lib/third_party/parsel-js/parsel-js.js
 var TOKENS = {
   attribute: /\[\s*(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>[-\w\P{ASCII}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
   id: /#(?<name>[-\w\P{ASCII}]+)/gu,
@@ -8482,7 +8511,7 @@ function stringify(listOrNode) {
   }
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/PSelectorParser.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/PSelectorParser.js
 TOKENS["nesting"] = /&/g;
 TOKENS["combinator"] = /\s*(>>>>?|[\s>+~])\s*/g;
 var ESCAPE_REGEXP = /\\[\s\S]/g;
@@ -8580,14 +8609,14 @@ function parsePSelectors(selector) {
   return [selectors, isPureCSS, hasPseudoClasses, hasAria];
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/TextQueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/TextQueryHandler.js
 var TextQueryHandler = class extends QueryHandler {
   static querySelectorAll = (element, selector, { textQuerySelectorAll }) => {
     return textQuerySelectorAll(element, selector);
   };
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/XPathQueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/XPathQueryHandler.js
 var XPathQueryHandler = class extends QueryHandler {
   static querySelectorAll = (element, selector, { xpathQuerySelectorAll }) => {
     return xpathQuerySelectorAll(element, selector);
@@ -8600,7 +8629,7 @@ var XPathQueryHandler = class extends QueryHandler {
   };
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/GetQueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/GetQueryHandler.js
 var BUILTIN_QUERY_HANDLERS = {
   aria: ARIAQueryHandler,
   pierce: PierceQueryHandler,
@@ -8652,7 +8681,7 @@ function getQueryHandlerAndSelector(selector) {
   }
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Frame.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/Frame.js
 var __runInitializers4 = function(thisArg, initializers, value) {
   var useValue = arguments.length > 2;
   for (var i = 0; i < initializers.length; i++) {
@@ -9452,7 +9481,7 @@ var Frame = (() => {
   };
 })();
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/CdpIssue.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/CdpIssue.js
 var CdpIssue = class {
   #code;
   #details;
@@ -9468,7 +9497,7 @@ var CdpIssue = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/CdpPreloadScript.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/CdpPreloadScript.js
 var CdpPreloadScript = class {
   /**
    * This is the ID of the preload script returned by
@@ -9500,7 +9529,7 @@ var CdpPreloadScript = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/DeviceRequestPrompt.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/DeviceRequestPrompt.js
 var DeviceRequestPrompt = class {
   /**
    * Current list of selectable devices.
@@ -9508,7 +9537,7 @@ var DeviceRequestPrompt = class {
   devices = [];
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/DeviceRequestPrompt.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/DeviceRequestPrompt.js
 var CdpDeviceRequestPrompt = class extends DeviceRequestPrompt {
   #client;
   #timeoutSettings;
@@ -9644,7 +9673,7 @@ var CdpDeviceRequestPromptManager = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/ElementHandle.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/ElementHandle.js
 var __runInitializers5 = function(thisArg, initializers, value) {
   var useValue = arguments.length > 2;
   for (var i = 0; i < initializers.length; i++) {
@@ -10957,7 +10986,7 @@ function intersectBoundingBox(box, width, height) {
   box.y = Math.max(box.y, 0);
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/utils.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/utils.js
 function createConsoleMessage(event, values, targetId) {
   const textTokens = [];
   for (const arg of values) {
@@ -11145,7 +11174,7 @@ function convertConsoleMessageLevel(method) {
   }
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/JSHandle.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/JSHandle.js
 var CdpJSHandle = class extends JSHandle {
   #disposed = false;
   #remoteObject;
@@ -11227,7 +11256,7 @@ async function releaseObject(client, remoteObject) {
   });
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/ElementHandle.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/ElementHandle.js
 var __runInitializers6 = function(thisArg, initializers, value) {
   var useValue = arguments.length > 2;
   for (var i = 0; i < initializers.length; i++) {
@@ -11407,7 +11436,7 @@ var CdpElementHandle = (() => {
   };
 })();
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/ExecutionContext.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/ExecutionContext.js
 var __addDisposableResource10 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
@@ -11823,7 +11852,7 @@ var rewriteError2 = (error) => {
   throw error;
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Accessibility.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Accessibility.js
 var __addDisposableResource11 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
@@ -12359,7 +12388,7 @@ var AXNode = class _AXNode {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/FrameManagerEvents.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/FrameManagerEvents.js
 var FrameManagerEvent;
 (function(FrameManagerEvent2) {
   FrameManagerEvent2.FrameAttached = Symbol("FrameManager.FrameAttached");
@@ -12372,7 +12401,7 @@ var FrameManagerEvent;
   FrameManagerEvent2.BindingCalled = Symbol("FrameManager.BindingCalled");
 })(FrameManagerEvent || (FrameManagerEvent = {}));
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/WaitTask.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/WaitTask.js
 var WaitTask = class {
   #world;
   #polling;
@@ -12542,7 +12571,7 @@ var TaskManager = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Realm.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/Realm.js
 var Realm = class {
   /** @internal */
   timeoutSettings;
@@ -12605,11 +12634,11 @@ var Realm = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/IsolatedWorlds.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/IsolatedWorlds.js
 var MAIN_WORLD = Symbol("mainWorld");
 var PUPPETEER_WORLD = Symbol("puppeteerWorld");
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Target.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/Target.js
 var TargetType;
 (function(TargetType2) {
   TargetType2["PAGE"] = "page";
@@ -12642,7 +12671,7 @@ var Target = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/WebWorker.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/WebWorker.js
 var CdpWebWorker = class extends WebWorker {
   #world;
   #client;
@@ -12722,7 +12751,7 @@ var CdpWebWorker = class extends WebWorker {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/IsolatedWorld.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/IsolatedWorld.js
 var IsolatedWorld = class extends Realm {
   #context;
   #emitter = new EventEmitter();
@@ -12877,7 +12906,7 @@ var IsolatedWorld = class extends Realm {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/LifecycleWatcher.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/LifecycleWatcher.js
 var puppeteerToProtocolLifecycle = /* @__PURE__ */ new Map([
   ["load", "load"],
   ["domcontentloaded", "DOMContentLoaded"],
@@ -13030,7 +13059,7 @@ var LifecycleWatcher = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Frame.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Frame.js
 var __runInitializers7 = function(thisArg, initializers, value) {
   var useValue = arguments.length > 2;
   for (var i = 0; i < initializers.length; i++) {
@@ -13362,7 +13391,7 @@ function referrerPolicyToProtocol(referrerPolicy) {
   });
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/FrameTree.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/FrameTree.js
 var FrameTree = class {
   #frames = /* @__PURE__ */ new Map();
   // frameID -> parentFrameID
@@ -13437,7 +13466,7 @@ var FrameTree = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/HTTPRequest.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/HTTPRequest.js
 var HTTPRequest = class {
   /**
    * @internal
@@ -13826,7 +13855,7 @@ function handleError(error) {
   debugError(error);
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/HTTPRequest.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/HTTPRequest.js
 var CdpHTTPRequest = class extends HTTPRequest {
   id;
   #client;
@@ -13999,7 +14028,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/HTTPResponse.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/HTTPResponse.js
 var HTTPResponse = class {
   /**
    * @internal
@@ -14045,7 +14074,7 @@ var HTTPResponse = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/SecurityDetails.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/SecurityDetails.js
 var SecurityDetails = class {
   #subjectName;
   #issuer;
@@ -14104,7 +14133,17 @@ var SecurityDetails = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/HTTPResponse.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/httpUtils.js
+function normalizeHeaderValue(header) {
+  if (!header.includes("\n")) {
+    return header;
+  }
+  return header.split("\n").map((v2) => {
+    return v2.trim();
+  }).filter(Boolean).join(", ");
+}
+
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/HTTPResponse.js
 var CdpHTTPResponse = class extends HTTPResponse {
   #request;
   #contentPromise = null;
@@ -14130,7 +14169,7 @@ var CdpHTTPResponse = class extends HTTPResponse {
     this.#status = extraInfo ? extraInfo.statusCode : responsePayload.status;
     const headers = extraInfo ? extraInfo.headers : responsePayload.headers;
     for (const [key, value] of Object.entries(headers)) {
-      this.#headers[key.toLowerCase()] = value;
+      this.#headers[key.toLowerCase()] = normalizeHeaderValue(value);
     }
     this.#securityDetails = responsePayload.securityDetails ? new SecurityDetails(responsePayload.securityDetails) : null;
     this.#timing = responsePayload.timing || null;
@@ -14212,7 +14251,7 @@ var CdpHTTPResponse = class extends HTTPResponse {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/NetworkEventManager.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/NetworkEventManager.js
 var NetworkEventManager = class {
   /**
    * There are four possible orders of events:
@@ -14364,7 +14403,7 @@ var NetworkEventManager = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/NetworkManager.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/NetworkManager.js
 var NetworkManager = class extends EventEmitter {
   #frameManager;
   #networkEventManager = new NetworkEventManager();
@@ -14858,7 +14897,7 @@ var NetworkManager = class extends EventEmitter {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/FrameManager.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/FrameManager.js
 var TIME_FOR_WAITING_FOR_SWAP = 100;
 var CHROME_EXTENSION_PREFIX = "chrome-extension://";
 var FrameManager = class extends EventEmitter {
@@ -15279,7 +15318,7 @@ var FrameManager = class extends EventEmitter {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Input.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/Input.js
 var Keyboard = class {
   /**
    * @internal
@@ -15365,7 +15404,7 @@ var Touchscreen = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/USKeyboardLayout.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/USKeyboardLayout.js
 var _keyDefinitions = {
   "0": { keyCode: 48, key: "0", code: "Digit0" },
   "1": { keyCode: 49, key: "1", code: "Digit1" },
@@ -15752,7 +15791,7 @@ var _keyDefinitions = {
   VolumeUp: { keyCode: 183, key: "VolumeUp", code: "VolumeUp", location: 4 }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Input.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Input.js
 var CdpKeyboard = class extends Keyboard {
   #client;
   #pressedKeys = /* @__PURE__ */ new Set();
@@ -16059,17 +16098,15 @@ var CdpMouse = class extends Mouse {
     });
   }
   async click(x2, y, options = {}) {
-    const { delay, count = 1, clickCount = count } = options;
+    const { delay, count = 1 } = options;
     if (count < 1) {
       throw new Error("Click must occur a positive number of times.");
     }
     const actions = [this.move(x2, y)];
-    if (clickCount === count) {
-      for (let i = 1; i < count; ++i) {
-        actions.push(this.down({ ...options, clickCount: i }), this.up({ ...options, clickCount: i }));
-      }
+    for (let i = 1; i < count; ++i) {
+      actions.push(this.down({ ...options, clickCount: i }), this.up({ ...options, clickCount: i }));
     }
-    actions.push(this.down({ ...options, clickCount }));
+    actions.push(this.down({ ...options, clickCount: count }));
     if (typeof delay === "number") {
       await Promise.all(actions);
       actions.length = 0;
@@ -16077,7 +16114,7 @@ var CdpMouse = class extends Mouse {
         setTimeout(resolve, delay);
       });
     }
-    actions.push(this.up({ ...options, clickCount }));
+    actions.push(this.up({ ...options, clickCount: count }));
     await Promise.all(actions);
   }
   async wheel(options = {}) {
@@ -16220,7 +16257,7 @@ var CdpTouchscreen = class extends Touchscreen {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Tracing.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Tracing.js
 var Tracing = class {
   #client;
   #recording = false;
@@ -16307,7 +16344,7 @@ var Tracing = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/WebMCP.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/WebMCP.js
 var WebMCPTool = class extends EventEmitter {
   #webmcp;
   #backendNodeId;
@@ -16542,7 +16579,7 @@ var WebMCP = class extends EventEmitter {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Page.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Page.js
 var __addDisposableResource12 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
@@ -17030,9 +17067,7 @@ var CdpPage = class _CdpPage extends Page {
         ...cookie,
         // TODO: a breaking change is needed in Puppeteer types to support other
         // partition keys.
-        partitionKey: cookie.partitionKey ? cookie.partitionKey.topLevelSite : void 0,
-        // TODO: remove sameParty as it is removed from Chrome.
-        sameParty: false
+        partitionKey: cookie.partitionKey ? cookie.partitionKey.topLevelSite : void 0
       };
     });
   }
@@ -17495,7 +17530,7 @@ function convertCookiesPartitionKeyFromPuppeteerToCdp(partitionKey) {
   };
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/BrowserContext.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/BrowserContext.js
 var __addDisposableResource13 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
@@ -17647,9 +17682,7 @@ var CdpBrowserContext = class extends BrowserContext {
         partitionKey: cookie.partitionKey ? {
           sourceOrigin: cookie.partitionKey.topLevelSite,
           hasCrossSiteAncestor: cookie.partitionKey.hasCrossSiteAncestor
-        } : void 0,
-        // TODO: remove sameParty as it is removed from Chrome.
-        sameParty: false
+        } : void 0
       };
     });
   }
@@ -17674,7 +17707,7 @@ var CdpBrowserContext = class extends BrowserContext {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/Extension.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/api/Extension.js
 var Extension = class {
   #id;
   #version;
@@ -17736,7 +17769,7 @@ var Extension = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Extension.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Extension.js
 var CdpExtension = class extends Extension {
   // needed to access the CDPSession to trigger an extension action.
   #browser;
@@ -17802,7 +17835,7 @@ var CdpExtension = class extends Extension {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Target.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Target.js
 var InitializationStatus;
 (function(InitializationStatus2) {
   InitializationStatus2["SUCCESS"] = "success";
@@ -18037,7 +18070,7 @@ var WorkerTarget = class extends CdpTarget {
 var OtherTarget = class extends CdpTarget {
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/third_party/urlpattern-polyfill/urlpattern-polyfill.js
+// gen/front_end/third_party/puppeteer/package/lib/third_party/urlpattern-polyfill/urlpattern-polyfill.js
 var Pe = Object.defineProperty;
 var a = (e, t) => Pe(e, "name", { value: t, configurable: true });
 var P = class {
@@ -18817,7 +18850,7 @@ if (!globalThis.URLPattern) {
   globalThis.URLPattern = Y;
 }
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/TargetManager.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/TargetManager.js
 function isPageTargetBecomingPrimary(target, newTargetInfo) {
   return Boolean(target._subtype()) && !newTargetInfo.subtype;
 }
@@ -19176,7 +19209,7 @@ var TargetManager = class extends EventEmitter {
   };
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Browser.js
+// gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Browser.js
 function isDevToolsPageTarget(url) {
   return url.startsWith("devtools://devtools/bundled/devtools_app.html");
 }
@@ -19226,6 +19259,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     });
     this.#handleDevToolsAsPage = handleDevToolsAsPage;
     this.#setIsPageTargetCallback(isPageTargetCallback);
+    connection.rejectEmulateNetworkConditionsCalls = Boolean(blocklist && blocklist.length > 0 || allowlist && allowlist.length > 0);
     this.#targetManager = new TargetManager(connection, this.#createTarget, this.#targetFilterCallback, waitForInitiallyDiscoveredTargets, blocklist, allowlist);
     this.#defaultContext = new CdpBrowserContext(this.#connection, this);
     for (const contextId of contextIds) {

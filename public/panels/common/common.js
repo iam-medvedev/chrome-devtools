@@ -3451,12 +3451,14 @@ var ExtensionServer = class _ExtensionServer extends Common6.ObjectWrapper.Objec
   inspectedTabId;
   extensionAPITestHook;
   themeChangeHandlers = /* @__PURE__ */ new Map();
+  recorderViewPortMap;
   #pendingExtensions = [];
   constructor() {
     super();
     this.clientObjects = /* @__PURE__ */ new Map();
     this.handlers = /* @__PURE__ */ new Map();
     this.subscribers = /* @__PURE__ */ new Map();
+    this.recorderViewPortMap = /* @__PURE__ */ new Map();
     this.subscriptionStartHandlers = /* @__PURE__ */ new Map();
     this.subscriptionStopHandlers = /* @__PURE__ */ new Map();
     this.extraHeaders = /* @__PURE__ */ new Map();
@@ -3653,7 +3655,8 @@ var ExtensionServer = class _ExtensionServer extends Common6.ObjectWrapper.Objec
       return this.status.E_BADARG("command", `expected ${"registerRecorderExtensionPlugin"}`);
     }
     const { pluginName, mediaType, port, capabilities } = message;
-    Extensions2.RecorderPluginManager.RecorderPluginManager.instance().addPlugin(new Extensions2.RecorderExtensionEndpoint.RecorderExtensionEndpoint(pluginName, port, capabilities, mediaType));
+    const extensionOrigin = this.getExtensionOrigin(_shared_port);
+    Extensions2.RecorderPluginManager.RecorderPluginManager.instance().addPlugin(new Extensions2.RecorderExtensionEndpoint.RecorderExtensionEndpoint(pluginName, port, capabilities, extensionOrigin, mediaType));
     return this.status.OK();
   }
   onReportResourceLoad(message) {
@@ -3697,9 +3700,12 @@ var ExtensionServer = class _ExtensionServer extends Common6.ObjectWrapper.Objec
     }
     return this.status.OK();
   }
-  onShowRecorderView(message) {
+  onShowRecorderView(message, port) {
     if (message.command !== "showRecorderView") {
       return this.status.E_BADARG("command", `expected ${"showRecorderView"}`);
+    }
+    if (this.recorderViewPortMap.get(message.id) !== port) {
+      return this.status.E_FAILED("Permission denied");
     }
     Extensions2.RecorderPluginManager.RecorderPluginManager.instance().showView(message.id);
     return void 0;
@@ -3719,7 +3725,8 @@ var ExtensionServer = class _ExtensionServer extends Common6.ObjectWrapper.Objec
     if (this.clientObjects.has(id)) {
       return this.status.E_EXISTS(id);
     }
-    const pagePath = _ExtensionServer.expandResourcePath(this.getExtensionOrigin(port), message.pagePath);
+    const extensionOrigin = this.getExtensionOrigin(port);
+    const pagePath = _ExtensionServer.expandResourcePath(extensionOrigin, message.pagePath);
     if (pagePath === void 0) {
       return this.status.E_BADARG("pagePath", "Resources paths cannot point to non-extension resources");
     }
@@ -3730,8 +3737,10 @@ var ExtensionServer = class _ExtensionServer extends Common6.ObjectWrapper.Objec
       pagePath,
       title: message.title,
       onShown,
-      onHidden
+      onHidden,
+      extensionOrigin
     });
+    this.recorderViewPortMap.set(id, port);
     return this.status.OK();
   }
   inspectedURLChanged(event) {
@@ -3809,13 +3818,17 @@ var ExtensionServer = class _ExtensionServer extends Common6.ObjectWrapper.Objec
     }
     return void 0;
   }
-  onAddRequestHeaders(message) {
+  onAddRequestHeaders(message, port) {
     if (message.command !== "addRequestHeaders") {
       return this.status.E_BADARG("command", `expected ${"addRequestHeaders"}`);
     }
-    const id = message.extensionId;
-    if (typeof id !== "string") {
-      return this.status.E_BADARGTYPE("extensionId", typeof id, "string");
+    const id = this.getExtensionOrigin(port);
+    const extension = this.registeredExtensions.get(id);
+    if (!extension) {
+      return this.status.E_FAILED("Permission denied");
+    }
+    if (extension.hostsPolicy.runtimeBlockedHosts.length > 0) {
+      return this.status.E_FAILED("Permission denied");
     }
     let extensionHeaders = this.extraHeaders.get(id);
     if (!extensionHeaders) {
@@ -4106,7 +4119,6 @@ var ExtensionServer = class _ExtensionServer extends Common6.ObjectWrapper.Objec
       return this.status.E_BADARG("command", `expected ${"Reload"}`);
     }
     const options = message.options || {};
-    SDK2.NetworkManager.MultitargetNetworkManager.instance().setUserAgentOverride(typeof options.userAgent === "string" ? options.userAgent : "", null);
     let injectedScript;
     if (options.injectedScript) {
       injectedScript = "(function(){" + options.injectedScript + "})()";
@@ -4119,6 +4131,7 @@ var ExtensionServer = class _ExtensionServer extends Common6.ObjectWrapper.Objec
     if (!this.extensionAllowedOnTarget(target, port)) {
       return this.status.E_FAILED("Permission denied");
     }
+    SDK2.NetworkManager.MultitargetNetworkManager.instance().setUserAgentOverride(typeof options.userAgent === "string" ? options.userAgent : "", null);
     resourceTreeModel?.reloadPage(Boolean(options.ignoreCache), injectedScript);
     return this.status.OK();
   }

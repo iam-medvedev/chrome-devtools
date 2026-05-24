@@ -1589,6 +1589,14 @@ Common6.Settings.registerSettingExtension({
 Common6.Settings.registerSettingExtension({
   category: "PERFORMANCE",
   storageType: "Synced",
+  title: i18nLazyString8(UIStrings8.timelineInvalidationTracking),
+  settingName: "timeline-invalidation-tracking",
+  settingType: "boolean",
+  defaultValue: false
+});
+Common6.Settings.registerSettingExtension({
+  category: "PERFORMANCE",
+  storageType: "Synced",
   title: i18nLazyString8(UIStrings8.timelineShowAllEvents),
   settingName: "timeline-show-all-events",
   settingType: "boolean",
@@ -1599,14 +1607,6 @@ Common6.Settings.registerSettingExtension({
   storageType: "Synced",
   title: i18nLazyString8(UIStrings8.timelineDebugMode),
   settingName: "timeline-debug-mode",
-  settingType: "boolean",
-  defaultValue: false
-});
-Common6.Settings.registerSettingExtension({
-  category: "PERFORMANCE",
-  storageType: "Synced",
-  title: i18nLazyString8(UIStrings8.timelineInvalidationTracking),
-  settingName: "timeline-invalidation-tracking",
   settingType: "boolean",
   defaultValue: false
 });

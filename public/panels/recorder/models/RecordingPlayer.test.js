@@ -1,8 +1,10 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import { createCustomStep, installMocksForRecordingPlayer, installMocksForTargetManager, } from '../testing/RecorderHelpers.js';
 import * as Models from './models.js';
+const { urlString } = Platform.DevToolsPath;
 describe('RecordingPlayer', () => {
     let recordingPlayer;
     /**
@@ -163,6 +165,71 @@ describe('RecordingPlayer', () => {
             recordingPlayer.continue();
             await doneEventPromise;
             assert.lengthOf(stepEventHandlerStub.getCalls(), 5);
+        });
+    });
+    describe('Navigation URL schema restriction', () => {
+        async function waitForRecordingUrlError(url) {
+            recordingPlayer = new Models.RecordingPlayer.RecordingPlayer({
+                title: 'test',
+                steps: [
+                    {
+                        type: Models.Schema.StepType.Navigate,
+                        url,
+                    },
+                ],
+            }, {
+                speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */,
+            });
+            return await new Promise(resolve => {
+                recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, ({ data: { resolve: resolveStep } }) => {
+                    resolveStep();
+                });
+                recordingPlayer.addEventListener("Error" /* Models.RecordingPlayer.Events.ERROR */, ({ data }) => {
+                    resolve(data);
+                }, { once: true });
+                recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.DONE */, () => {
+                    resolve(null);
+                }, { once: true });
+                void recordingPlayer.play();
+            });
+        }
+        it('should reject navigation to chrome:// URLs', async () => {
+            const url = urlString `chrome://settings`;
+            const error = await waitForRecordingUrlError(url);
+            assert.isNotNull(error);
+            assert.strictEqual(error.message, `Navigation to ${url} is not allowed, due to blocked schema`);
+        });
+        it('should reject navigation to javascript:// URLs', async () => {
+            const url = urlString `javascript:alert(1)`;
+            const error = await waitForRecordingUrlError(url);
+            assert.isNotNull(error);
+            assert.strictEqual(error.message, `Navigation to ${url} is not allowed, due to blocked schema`);
+        });
+        it('should allow navigation to http:// URLs', async () => {
+            const url = urlString `http://example.com`;
+            const error = await waitForRecordingUrlError(url);
+            assert.isNull(error);
+        });
+        it('should allow navigation to https:// URLs', async () => {
+            const url = urlString `https://example.com`;
+            const error = await waitForRecordingUrlError(url);
+            assert.isNull(error);
+        });
+        it('should allow navigation to data: URLs', async () => {
+            const url = urlString `data:text/plain,hello`;
+            const error = await waitForRecordingUrlError(url);
+            assert.isNull(error);
+        });
+        it('should allow navigation to about:blank', async () => {
+            const url = urlString `about:blank`;
+            const error = await waitForRecordingUrlError(url);
+            assert.isNull(error);
+        });
+        it('should reject navigation to other about: URLs', async () => {
+            const url = urlString `about:srcdoc`;
+            const error = await waitForRecordingUrlError(url);
+            assert.isNotNull(error);
+            assert.strictEqual(error.message, `Navigation to ${url} is not allowed, due to blocked schema`);
         });
     });
 });

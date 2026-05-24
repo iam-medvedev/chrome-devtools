@@ -320,39 +320,78 @@ describeWithEnvironment('AiAgent', () => {
         it('checks context origins', () => {
             const tests = [
                 {
-                    contextOrigin: 'https://google.test',
-                    agentOrigin: 'https://google.test',
+                    dataOrigin: 'https://google.test',
+                    establishedOrigin: 'https://google.test',
                     isAllowed: true,
                 },
                 {
-                    contextOrigin: 'https://google.test',
-                    agentOrigin: 'about:blank',
+                    dataOrigin: 'https://google.test',
+                    establishedOrigin: 'about:blank',
                     isAllowed: false,
                 },
                 {
-                    contextOrigin: 'https://google.test',
-                    agentOrigin: 'https://www.google.test',
+                    dataOrigin: 'https://google.test',
+                    establishedOrigin: 'https://www.google.test',
                     isAllowed: false,
                 },
                 {
-                    contextOrigin: 'https://a.test',
-                    agentOrigin: 'https://b.test',
+                    dataOrigin: 'https://a.test',
+                    establishedOrigin: 'https://b.test',
                     isAllowed: false,
                 },
                 {
-                    contextOrigin: 'https://a.test',
-                    agentOrigin: 'file:///tmp',
+                    dataOrigin: 'https://a.test',
+                    establishedOrigin: 'file:///tmp',
                     isAllowed: false,
                 },
                 {
-                    contextOrigin: 'https://a.test',
-                    agentOrigin: 'http://a.test',
+                    dataOrigin: 'https://a.test',
+                    establishedOrigin: 'http://a.test',
+                    isAllowed: false,
+                },
+                {
+                    dataOrigin: 'null',
+                    establishedOrigin: 'null',
+                    isAllowed: false,
+                },
+                {
+                    dataOrigin: 'null',
+                    establishedOrigin: undefined,
+                    isAllowed: false,
+                },
+                {
+                    dataOrigin: 'data:',
+                    establishedOrigin: 'data:',
+                    isAllowed: false,
+                },
+                {
+                    dataOrigin: 'about://',
+                    establishedOrigin: 'about://',
+                    isAllowed: false,
+                },
+                {
+                    dataOrigin: 'about:srcdoc',
+                    establishedOrigin: 'about:srcdoc',
+                    isAllowed: false,
+                },
+                {
+                    dataOrigin: 'detached',
+                    establishedOrigin: 'detached',
                     isAllowed: false,
                 },
             ];
             for (const test of tests) {
-                assert.strictEqual(getTestContext(test.contextOrigin).isOriginAllowed(test.agentOrigin), test.isAllowed);
+                assert.strictEqual(getTestContext(test.dataOrigin).isOriginAllowed(test.establishedOrigin), test.isAllowed, `Checking origin ${test.dataOrigin} against ${test.establishedOrigin}`);
             }
+        });
+        it('identifies opaque origins', () => {
+            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('null'));
+            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('data:'));
+            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('about://'));
+            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('about:srcdoc'));
+            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('detached'));
+            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('detached:123'));
+            assert.isFalse(AiAssistance.AiAgent.isOpaqueOrigin('https://google.com'));
         });
     });
     describe('functions', () => {
@@ -442,6 +481,80 @@ describeWithEnvironment('AiAgent', () => {
                     },
                 ],
             });
+        });
+    });
+    describe('parseTextResponseForSuggestions', () => {
+        it('should parse valid suggestions', () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient(),
+            });
+            const parsed = agent.parseTextResponseForSuggestions('SUGGESTIONS: ["how to fix", "why it fails"]');
+            assert.deepEqual(parsed.suggestions, ['how to fix', 'why it fails']);
+        });
+        it('should filter out non-string suggestions', () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient(),
+            });
+            const parsed = agent.parseTextResponseForSuggestions('SUGGESTIONS: ["valid", 123, null, {"key": "val"}]');
+            assert.deepEqual(parsed.suggestions, ['valid']);
+        });
+        it('should truncate long suggestions', () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient(),
+            });
+            const longSuggestion = 'a'.repeat(300);
+            const parsed = agent.parseTextResponseForSuggestions(`SUGGESTIONS: ["${longSuggestion}"]`);
+            assert.isDefined(parsed.suggestions);
+            assert.lengthOf(parsed.suggestions[0], 200);
+            assert.strictEqual(parsed.suggestions[0], 'a'.repeat(200));
+        });
+        it('should sanitize whitespace and newlines in suggestions', () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient(),
+            });
+            const parsed = agent.parseTextResponseForSuggestions('SUGGESTIONS: ["line1\\nline2", "word1\\r\\nword2", "excessive   spaces"]');
+            assert.deepEqual(parsed.suggestions, ['line1 line2', 'word1 word2', 'excessive spaces']);
+        });
+        it('should reject non-array suggestions', () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient(),
+            });
+            const parsed = agent.parseTextResponseForSuggestions('SUGGESTIONS: "not an array"');
+            assert.isUndefined(parsed.suggestions);
+        });
+        it('should remove empty suggestions after sanitization', () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient(),
+            });
+            const parsed = agent.parseTextResponseForSuggestions('SUGGESTIONS: ["", "   ", "\\n\\n"]');
+            assert.isUndefined(parsed.suggestions);
+        });
+        it('should parse suggestions from a multi-line response containing both answer and suggestions', () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient(),
+            });
+            const responseText = [
+                'Here is the first line of the answer.',
+                'SUGGESTIONS: ["suggestion 1", "suggestion 2"]',
+                'Here is the second line of the answer.',
+            ].join('\n');
+            const parsed = agent.parseTextResponseForSuggestions(responseText);
+            assert.strictEqual(parsed.answer, 'Here is the first line of the answer.\nHere is the second line of the answer.');
+            assert.deepEqual(parsed.suggestions, ['suggestion 1', 'suggestion 2']);
+        });
+        it('should handle multiple SUGGESTIONS lines by keeping the last valid one', () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient(),
+            });
+            const responseText = [
+                'Answer text.',
+                'SUGGESTIONS: ["first suggestion"]',
+                'More answer text.',
+                'SUGGESTIONS: ["second suggestion"]',
+            ].join('\n');
+            const parsed = agent.parseTextResponseForSuggestions(responseText);
+            assert.strictEqual(parsed.answer, 'Answer text.\nMore answer text.');
+            assert.deepEqual(parsed.suggestions, ['second suggestion']);
         });
     });
 });

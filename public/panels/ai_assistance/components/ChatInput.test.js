@@ -49,6 +49,15 @@ describeWithEnvironment('ChatInput', () => {
         sinon.assert.callCount(view, 2);
         assert.isTrue(view.input.isReadOnly);
     });
+    it('should truncate input value to maxlength in setInputValue', async () => {
+        const [view, component] = createComponent();
+        const mockTextArea = document.createElement('textarea');
+        mockTextArea.maxLength = 10;
+        assert.isDefined(view.input.textAreaRef);
+        view.input.textAreaRef.value = mockTextArea;
+        component.setInputValue('a'.repeat(20));
+        assert.strictEqual(mockTextArea.value, 'a'.repeat(10));
+    });
     describe('multimodal input', () => {
         let target;
         let model;

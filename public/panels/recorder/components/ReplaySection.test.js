@@ -57,6 +57,7 @@ describeWithEnvironment('ReplaySection', () => {
         const onStartReplay = sinon.stub();
         const extension = {
             getName: () => 'Test Extension',
+            getOrigin: () => 'chrome-extension://test',
             getDescriptor: () => ({}),
             install: () => { },
             uninstall: () => { },

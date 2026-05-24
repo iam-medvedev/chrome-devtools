@@ -1,6 +1,8 @@
 // gen/front_end/panels/lighthouse/lighthouse-meta.prebundle.js
+import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as UI from "./../../ui/legacy/legacy.js";
+import * as Lighthouse from "./lighthouse.js";
 var UIStrings = {
   /**
    * @description Command for showing the 'Lighthouse' tool
@@ -23,12 +25,24 @@ UI.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString(UIStrings.showLighthouse),
   order: 90,
   async loadView() {
-    const Lighthouse = await loadLighthouseModule();
-    return Lighthouse.LighthousePanel.LighthousePanel.instance();
+    const Lighthouse2 = await loadLighthouseModule();
+    return Lighthouse2.LighthousePanel.LighthousePanel.instance();
   },
   tags: [
     i18n.i18n.lockedLazyString("lighthouse"),
     i18n.i18n.lockedLazyString("pwa")
   ]
+});
+Common.Revealer.registerRevealer({
+  contextTypes() {
+    return [
+      Lighthouse.LighthousePanel.ActiveLighthouseReport
+    ];
+  },
+  destination: Common.Revealer.RevealerDestination.LIGHTHOUSE_PANEL,
+  async loadRevealer() {
+    const Lighthouse2 = await loadLighthouseModule();
+    return new Lighthouse2.LighthousePanel.ReportRevealer();
+  }
 });
 //# sourceMappingURL=lighthouse-meta.js.map
