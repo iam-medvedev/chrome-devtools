@@ -52,9 +52,6 @@
   "references": [
     {
       "path": "./bundle-tsconfig.json"
-    },
-    {
-      "path": "../../testing/testing-tsconfig.json"
     }
   ]
 }

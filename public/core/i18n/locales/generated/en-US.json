@@ -1658,6 +1658,9 @@
   "models/issues_manager/DeprecationIssue.ts | title": {
     "message": "Deprecated feature used"
   },
+  "models/issues_manager/EmailVerificationRequestIssue.ts | emailVerification": {
+    "message": "Email Verification Protocol"
+  },
   "models/issues_manager/FederatedAuthRequestIssue.ts | fedCm": {
     "message": "Federated Credential Management API"
   },
@@ -5528,9 +5531,6 @@
   "panels/application/preloading/components/PreloadingGrid.ts | status": {
     "message": "Status"
   },
-  "panels/application/preloading/components/PreloadingString.ts | PrefetchCancelledOnUserNavigation": {
-    "message": "The prefetch was cancelled because the user navigated the page before the prefetch finished"
-  },
   "panels/application/preloading/components/PreloadingString.ts | PrefetchEvictedAfterBrowsingDataRemoved": {
     "message": "The prefetch was discarded because browsing data was removed."
   },
@@ -7798,6 +7798,9 @@
   },
   "panels/elements/elements-meta.ts | captureAreaScreenshot": {
     "message": "Capture area screenshot"
+  },
+  "panels/elements/elements-meta.ts | collapseNonContributingCSSRules": {
+    "message": "Collapse non-contributing CSS rules"
   },
   "panels/elements/elements-meta.ts | copyStyles": {
     "message": "Copy styles"
@@ -17860,6 +17863,9 @@
   },
   "ui/legacy/components/source_frame/ImageView.ts | saveImageAs": {
     "message": "Save image as…"
+  },
+  "ui/legacy/components/source_frame/ImageView.ts | thisImageIsTooBig": {
+    "message": "This image is too big to display in DevTools. Click here to open it in a new tab."
   },
   "ui/legacy/components/source_frame/JSONView.ts | find": {
     "message": "Find"

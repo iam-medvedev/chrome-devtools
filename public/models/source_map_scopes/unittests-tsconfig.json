@@ -71,12 +71,6 @@
       "path": "../bindings/bundle-tsconfig.json"
     },
     {
-      "path": "../formatter/bundle-tsconfig.json"
-    },
-    {
-      "path": "../text_utils/bundle-tsconfig.json"
-    },
-    {
       "path": "../workspace/bundle-tsconfig.json"
     }
   ]

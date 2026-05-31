@@ -56,22 +56,13 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
-    },
-    {
       "path": "../../third_party/marked/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/helpers/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/components/markdown_view/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/render_coordinator/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/helpers/bundle-tsconfig.json"

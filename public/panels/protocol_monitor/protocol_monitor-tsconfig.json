@@ -61,9 +61,6 @@
       "path": "../../core/protocol_client/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
-    },
-    {
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
@@ -79,13 +76,13 @@
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/dialogs/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/components/menus/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/suggestion_input/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/helpers/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/kit/bundle-tsconfig.json"

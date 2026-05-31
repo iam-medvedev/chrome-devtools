@@ -75,9 +75,6 @@
       "path": "../bindings/bundle-tsconfig.json"
     },
     {
-      "path": "../persistence/bundle-tsconfig.json"
-    },
-    {
       "path": "../text_utils/bundle-tsconfig.json"
     }
   ]

@@ -51,9 +51,6 @@
   ],
   "references": [
     {
-      "path": "../injected-tsconfig.json"
-    },
-    {
       "path": "../bundle-tsconfig.json"
     }
   ]

@@ -73,12 +73,6 @@
       "path": "../../../generated/protocol-tsconfig.json"
     },
     {
-      "path": "../../../models/persistence/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../elements/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../services/puppeteer/bundle-tsconfig.json"
     },
     {

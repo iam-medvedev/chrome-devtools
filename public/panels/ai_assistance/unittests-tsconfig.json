@@ -89,9 +89,6 @@
       "path": "../../generated/generated-tsconfig.json"
     },
     {
-      "path": "../../generated/protocol-tsconfig.json"
-    },
-    {
       "path": "../../models/ai_assistance/bundle-tsconfig.json"
     },
     {
@@ -120,9 +117,6 @@
     },
     {
       "path": "../network/bundle-tsconfig.json"
-    },
-    {
-      "path": "../timeline/utils/bundle-tsconfig.json"
     },
     {
       "path": "../../testing/testing-tsconfig.json"

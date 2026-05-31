@@ -5955,10 +5955,6 @@ import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
 var UIStrings12 = {
   /**
-   * @description Descrption text for Prefetch status PrefetchCancelledOnUserNavigation.
-   */
-  PrefetchCancelledOnUserNavigation: "The prefetch was cancelled because the user navigated the page before the prefetch finished",
-  /**
    * @description  Description text for Prefetch status PrefetchFailedIneligibleRedirect.
    */
   PrefetchFailedIneligibleRedirect: "The prefetch was redirected, but the redirect URL is not eligible for prefetch.",
@@ -6337,8 +6333,7 @@ var PrefetchReasonDescription = {
   PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler: { name: () => i18n23.i18n.lockedString("Unknown") },
   PrefetchNotEligibleRedirectFromServiceWorker: { name: () => i18n23.i18n.lockedString("Unknown") },
   PrefetchNotEligibleRedirectToServiceWorker: { name: () => i18n23.i18n.lockedString("Unknown") },
-  PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings12.PrefetchEvictedAfterBrowsingDataRemoved) },
-  PrefetchCancelledOnUserNavigation: { name: i18nLazyString(UIStrings12.PrefetchCancelledOnUserNavigation) }
+  PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings12.PrefetchEvictedAfterBrowsingDataRemoved) }
 };
 function ruleSetLocationShort(ruleSet, pageURL2) {
   const url = ruleSet.url === void 0 ? pageURL2 : ruleSet.url;

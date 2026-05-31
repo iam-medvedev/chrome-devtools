@@ -60,9 +60,6 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
-    },
-    {
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
@@ -79,9 +76,6 @@
     },
     {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/helpers/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/panel_feedback/bundle-tsconfig.json"

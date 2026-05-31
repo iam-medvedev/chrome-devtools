@@ -18,6 +18,11 @@ function mockConversationContext() {
         }
     })();
 }
+function findFirstErrorResponse(responses) {
+    const errorResponse = responses.find(r => r.type === "error" /* AiAssistance.AiAgent.ResponseType.ERROR */);
+    assert.isDefined(errorResponse);
+    return errorResponse;
+}
 class AiAgentMock extends AiAssistance.AiAgent.AiAgent {
     preamble = 'preamble';
     // eslint-disable-next-line require-yield
@@ -30,6 +35,9 @@ class AiAgentMock extends AiAssistance.AiAgent.AiAgent {
         temperature: 1,
         modelId: 'test model',
     };
+    declareFunctionForTest(name, declaration) {
+        this.declareFunction(name, declaration);
+    }
 }
 describeWithEnvironment('AiAgent', () => {
     describe('buildRequest', () => {
@@ -481,6 +489,57 @@ describeWithEnvironment('AiAgent', () => {
                     },
                 ],
             });
+        });
+        it('should abort execution if origin becomes blocked after approval', async () => {
+            let called = 0;
+            // Flag to simulate whether the origin is blocked or not.
+            let originBlocked = false;
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient([
+                    [
+                        {
+                            explanation: 'Calling function',
+                            functionCalls: [{ name: 'testFn', args: {} }],
+                        },
+                    ],
+                    [{
+                            explanation: 'Final answer',
+                        }]
+                ]),
+                // Mock allowedOrigin to return blocked if our flag is set.
+                allowedOrigin: () => originBlocked ? { blocked: true } : { origin: 'https://google.com' },
+                // Mock the side effect confirmation to simulate user approval AND concurrent navigation.
+                confirmSideEffectForTest: () => {
+                    const resolvers = Promise.withResolvers();
+                    // 1. Simulate the user clicking "Continue" (approving the run).
+                    resolvers.resolve(true);
+                    // 2. Simulate that while the user was deciding, the page navigated cross-origin.
+                    // This flips the flag so that the next call to allowedOrigin() will return {blocked: true}.
+                    originBlocked = true;
+                    return resolvers;
+                },
+            });
+            agent.declareFunctionForTest('testFn', {
+                description: 'test fn description',
+                parameters: {
+                    type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                    description: 'test parameters',
+                    properties: {},
+                    required: []
+                },
+                handler: async (args, options) => {
+                    called++;
+                    if (!options?.approved) {
+                        return { requiresApproval: true, description: 'test approval' };
+                    }
+                    return { result: 'success' };
+                },
+            });
+            const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
+            const errorResponse = findFirstErrorResponse(responses);
+            assert.strictEqual(errorResponse.error, "cross-origin" /* AiAssistance.AiAgent.ErrorType.CROSS_ORIGIN */);
+            // Verify that the handler was only called once (the dry run) and not re-invoked after approval.
+            assert.strictEqual(called, 1);
         });
     });
     describe('parseTextResponseForSuggestions', () => {

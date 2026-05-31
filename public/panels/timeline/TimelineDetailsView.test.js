@@ -130,5 +130,20 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const range = categorySummaryWidget?.querySelector('.summary-range');
         assert.strictEqual(range?.innerText, 'Range: 0 ms – 5.39 s');
     });
+    it('correctly creates an event widget using the static method and hides the tabbed header', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const evalScriptEvent = allThreadEntriesInTrace(parsedTrace).find(event => {
+            return event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.dur && event.dur > 2000;
+        });
+        assert.isOk(evalScriptEvent);
+        const detailsView = Timeline.TimelineDetailsView.TimelineDetailsPane.makeEventWidget(evalScriptEvent, parsedTrace);
+        renderElementIntoDOM(detailsView);
+        await doubleRaf();
+        const detailsContentElement = detailsView.getDetailsContentElementForTest();
+        assert.strictEqual(detailsContentElement.querySelector('.timeline-details-chip-title')?.innerText, 'Evaluate script');
+        const tabbedPaneHeader = detailsView.element.querySelector('.tabbed-pane')?.shadowRoot?.querySelector('.tabbed-pane-header');
+        assert.isOk(tabbedPaneHeader);
+        assert.isTrue(tabbedPaneHeader.classList.contains('hidden'));
+    });
 });
 //# sourceMappingURL=TimelineDetailsView.test.js.map

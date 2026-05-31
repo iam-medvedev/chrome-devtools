@@ -42,28 +42,10 @@
   ],
   "references": [
     {
-      "path": "../../../core/host/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../../core/i18n/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../../core/root/bundle-tsconfig.json"
-    },
-    {
       "path": "../helpers/bundle-tsconfig.json"
     },
     {
-      "path": "../render_coordinator/bundle-tsconfig.json"
-    },
-    {
       "path": "../../lit/bundle-tsconfig.json"
-    },
-    {
-      "path": "../buttons/bundle-tsconfig.json"
-    },
-    {
-      "path": "../input/bundle-tsconfig.json"
     }
   ]
 }

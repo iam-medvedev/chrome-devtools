@@ -1281,7 +1281,6 @@ __export(FontView_exports, {
   FontView: () => FontView
 });
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
-import * as Platform2 from "./../../../../core/platform/platform.js";
 import * as TextUtils6 from "./../../../../models/text_utils/text_utils.js";
 import { Directives, html, render } from "./../../../lit/lit.js";
 import * as VisualLogging2 from "./../../../visual_logging/visual_logging.js";
@@ -1376,7 +1375,16 @@ var FontView = class extends UI4.View.SimpleView {
     this.#fontFamily = `WebInspectorFontPreview${++fontId}`;
     void this.contentProvider.requestContentData().then((contentData) => {
       const url = TextUtils6.ContentData.ContentData.isError(contentData) ? this.url : contentData.asDataUrl();
-      this.#fontFaceRule = Platform2.StringUtilities.sprintf('@font-face { font-family: "%s"; src: url(%s); }', this.#fontFamily, url);
+      if (url) {
+        const sheet = new CSSStyleSheet();
+        sheet.insertRule("@font-face {}");
+        const rule = sheet.cssRules[0];
+        rule.style.setProperty("font-family", this.#fontFamily);
+        rule.style.setProperty("src", `url(${JSON.stringify(url)})`);
+        this.#fontFaceRule = rule.cssText;
+      } else {
+        this.#fontFaceRule = "";
+      }
       this.#previewVisible = true;
       this.requestUpdate();
     });
@@ -1435,9 +1443,10 @@ __export(ImageView_exports, {
 import * as Common3 from "./../../../../core/common/common.js";
 import * as Host2 from "./../../../../core/host/host.js";
 import * as i18n7 from "./../../../../core/i18n/i18n.js";
-import * as Platform3 from "./../../../../core/platform/platform.js";
+import * as Platform2 from "./../../../../core/platform/platform.js";
 import * as TextUtils7 from "./../../../../models/text_utils/text_utils.js";
 import * as Workspace from "./../../../../models/workspace/workspace.js";
+import { createIcon } from "./../../../kit/kit.js";
 import * as VisualLogging3 from "./../../../visual_logging/visual_logging.js";
 import * as UI5 from "./../../legacy.js";
 
@@ -1464,6 +1473,19 @@ var imageView_css_default = `/*
   box-shadow: 0 5px 10px var(--sys-color-outline);
   user-select: text;
   -webkit-user-drag: auto;
+}
+
+.resource-image-unavailable {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sys-size-4);
+}
+
+.resource-image-unavailable devtools-icon {
+  color: var(--sys-color-primary);
+  width: var(--sys-size-7);
+  height: var(--sys-size-7);
 }
 
 /*# sourceURL=${import.meta.resolve("./imageView.css")} */`;
@@ -1508,7 +1530,11 @@ var UIStrings4 = {
   /**
    * @description The default file name when downloading a file
    */
-  download: "download"
+  download: "download",
+  /**
+   * @description Text indicating an image is too large to display and offering to open it in a new tab
+   */
+  thisImageIsTooBig: "This image is too big to display in DevTools. Click here to open it in a new tab."
 };
 var str_4 = i18n7.i18n.registerUIStrings("ui/legacy/components/source_frame/ImageView.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
@@ -1523,6 +1549,7 @@ var ImageView = class extends UI5.View.SimpleView {
   mimeTypeLabel;
   container;
   imagePreviewElement;
+  imageUnavailableElement;
   cachedContent;
   constructor(mimeType, contentProvider) {
     super({
@@ -1548,6 +1575,13 @@ var ImageView = class extends UI5.View.SimpleView {
     this.container = this.element.createChild("div", "image");
     this.imagePreviewElement = this.container.createChild("img", "resource-image-view");
     this.imagePreviewElement.addEventListener("contextmenu", this.contextMenu.bind(this), true);
+    const link = document.createElement("devtools-link");
+    link.setAttribute("href", this.url);
+    link.classList.add("resource-image-unavailable", "hidden");
+    link.appendChild(createIcon("open-externally"));
+    link.appendChild(document.createTextNode(i18nString4(UIStrings4.thisImageIsTooBig)));
+    this.container.appendChild(link);
+    this.imageUnavailableElement = link;
   }
   async toolbarItems() {
     await this.updateContentIfNeeded();
@@ -1581,18 +1615,20 @@ var ImageView = class extends UI5.View.SimpleView {
     this.cachedContent = content;
     const imageSrc = content.asImagePreviewUrl();
     if (imageSrc === null) {
+      this.imageUnavailableElement.classList.remove("hidden");
       return;
     }
+    this.imageUnavailableElement.classList.add("hidden");
     const loadPromise = new Promise((x) => {
       this.imagePreviewElement.onload = x;
     });
     this.imagePreviewElement.src = imageSrc;
     this.imagePreviewElement.alt = i18nString4(UIStrings4.imageFromS, { PH1: this.url });
-    const size = content.isTextContent ? content.text.length : Platform3.StringUtilities.base64ToSize(content.base64);
+    const size = content.isTextContent ? content.text.length : Platform2.StringUtilities.base64ToSize(content.base64);
     this.sizeLabel.setText(i18n7.ByteUtilities.bytesToString(size));
     await loadPromise;
     this.dimensionsLabel.setText(i18nString4(UIStrings4.dD, { PH1: this.imagePreviewElement.naturalWidth, PH2: this.imagePreviewElement.naturalHeight }));
-    this.aspectRatioLabel.setText(Platform3.NumberUtilities.aspectRatio(this.imagePreviewElement.naturalWidth, this.imagePreviewElement.naturalHeight));
+    this.aspectRatioLabel.setText(Platform2.NumberUtilities.aspectRatio(this.imagePreviewElement.naturalWidth, this.imagePreviewElement.naturalHeight));
   }
   contextMenu(event) {
     const contextMenu = new UI5.ContextMenu.ContextMenu(event);
@@ -1697,7 +1733,7 @@ __export(JSONView_exports, {
   SearchableJsonView: () => SearchableJsonView
 });
 import * as i18n9 from "./../../../../core/i18n/i18n.js";
-import * as Platform4 from "./../../../../core/platform/platform.js";
+import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as SDK2 from "./../../../../core/sdk/sdk.js";
 import * as Highlighting from "./../../../components/highlighting/highlighting.js";
 import * as VisualLogging4 from "./../../../visual_logging/visual_logging.js";
@@ -1922,21 +1958,21 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
       this.updateSearchIndex(-1);
       return;
     }
-    newIndex = Platform4.NumberUtilities.mod(newIndex, this.currentSearchTreeElements.length);
+    newIndex = Platform3.NumberUtilities.mod(newIndex, this.currentSearchTreeElements.length);
     this.jumpToMatch(newIndex);
   }
   jumpToNextSearchResult() {
     if (!this.currentSearchTreeElements.length) {
       return;
     }
-    const newIndex = Platform4.NumberUtilities.mod(this.currentSearchFocusIndex + 1, this.currentSearchTreeElements.length);
+    const newIndex = Platform3.NumberUtilities.mod(this.currentSearchFocusIndex + 1, this.currentSearchTreeElements.length);
     this.jumpToMatch(newIndex);
   }
   jumpToPreviousSearchResult() {
     if (!this.currentSearchTreeElements.length) {
       return;
     }
-    const newIndex = Platform4.NumberUtilities.mod(this.currentSearchFocusIndex - 1, this.currentSearchTreeElements.length);
+    const newIndex = Platform3.NumberUtilities.mod(this.currentSearchFocusIndex - 1, this.currentSearchTreeElements.length);
     this.jumpToMatch(newIndex);
   }
   supportsCaseSensitiveSearch() {

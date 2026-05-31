@@ -391,17 +391,17 @@ export class UsedPreloadingView extends UI.Widget.VBox {
             prefetch?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
             kind = "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DOWNGRADED_PRERENDER_TO_PREFETCH_AND_USED */;
         }
-        else if (prefetch?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
-            kind = "PrefetchUsed" /* UsedKind.PREFETCH_USED */;
-        }
         else if (prerenderLike?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
             kind = "PrerenderUsed" /* UsedKind.PRERENDER_USED */;
         }
-        else if (prefetch?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */) {
-            kind = "PrefetchFailed" /* UsedKind.PREFETCH_FAILED */;
+        else if (prefetch?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
+            kind = "PrefetchUsed" /* UsedKind.PREFETCH_USED */;
         }
         else if (prerenderLike?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */) {
             kind = "PrerenderFailed" /* UsedKind.PRERENDER_FAILED */;
+        }
+        else if (prefetch?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */) {
+            kind = "PrefetchFailed" /* UsedKind.PREFETCH_FAILED */;
         }
         else {
             kind = "NoPreloads" /* UsedKind.NO_PRELOADS */;

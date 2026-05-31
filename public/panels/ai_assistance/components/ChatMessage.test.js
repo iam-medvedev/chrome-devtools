@@ -275,6 +275,18 @@ describeWithEnvironment('ChatMessage', () => {
                 };
                 assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'LIGHTHOUSE_REPORT:123456');
             });
+            it('should correctly handle TIMELINE_EVENT_SUMMARY widget', () => {
+                const widget = {
+                    name: 'TIMELINE_EVENT_SUMMARY',
+                    data: {
+                        event: {
+                            ts: 1000000,
+                            name: 'MyTraceEvent',
+                        },
+                    },
+                };
+                assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'TIMELINE_EVENT_SUMMARY:1000000:MyTraceEvent');
+            });
         });
     });
     it('should show the feedback form when canShowFeedbackForm is true', async () => {

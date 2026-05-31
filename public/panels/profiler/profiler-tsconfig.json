@@ -73,19 +73,10 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/platform/api/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../core/root/bundle-tsconfig.json"
-    },
-    {
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
       "path": "../../generated/generated-tsconfig.json"
-    },
-    {
-      "path": "../../generated/protocol-tsconfig.json"
     },
     {
       "path": "../../models/bindings/bundle-tsconfig.json"
@@ -100,13 +91,7 @@
       "path": "../../models/network_time_calculator/bundle-tsconfig.json"
     },
     {
-      "path": "../../models/workspace/bundle-tsconfig.json"
-    },
-    {
       "path": "../elements/bundle-tsconfig.json"
-    },
-    {
-      "path": "../settings/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"

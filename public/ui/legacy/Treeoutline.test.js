@@ -13,7 +13,7 @@ describe('TreeOutline', () => {
             parent.appendChild(new UI.TreeOutline.TreeElement('child', false));
             tree.appendChild(parent);
             parent.select();
-            dispatchKeyDownEvent(tree.contentElement, { bubbles: true, key: 'Enter' });
+            dispatchKeyDownEvent(parent.listItemNode, { bubbles: true, key: 'Enter' });
             assert.isTrue(parent.expanded, 'Enter key was supposed to expand the parent node');
         });
         it('by collapsing expanded parent nodes', () => {
@@ -24,7 +24,7 @@ describe('TreeOutline', () => {
             tree.appendChild(parent);
             parent.select();
             parent.expand();
-            dispatchKeyDownEvent(tree.contentElement, { bubbles: true, key: 'Enter' });
+            dispatchKeyDownEvent(parent.listItemNode, { bubbles: true, key: 'Enter' });
             assert.isFalse(parent.expanded, 'Enter key was supposed to collapse the parent node');
         });
     });

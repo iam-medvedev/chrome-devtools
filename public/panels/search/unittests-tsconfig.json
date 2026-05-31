@@ -58,9 +58,6 @@
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/platform/bundle-tsconfig.json"
-    },
-    {
       "path": "../../models/text_utils/bundle-tsconfig.json"
     },
     {

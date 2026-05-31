@@ -83,9 +83,6 @@
       "path": "../../../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../../../ui/components/render_coordinator/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../../ui/legacy/bundle-tsconfig.json"
     },
     {

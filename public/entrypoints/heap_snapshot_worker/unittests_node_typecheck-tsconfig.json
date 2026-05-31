@@ -57,9 +57,6 @@
     },
     {
       "path": "../../models/heap_snapshot/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../testing/testing-tsconfig.json"
     }
   ]
 }

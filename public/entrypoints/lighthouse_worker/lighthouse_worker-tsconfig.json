@@ -48,13 +48,7 @@
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/sdk/bundle-tsconfig.json"
-    },
-    {
       "path": "../../services/puppeteer/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../third_party/lighthouse/lighthouse-tsconfig.json"
     },
     {
       "path": "../../third_party/third-party-web/bundle-tsconfig.json"
