@@ -19,7 +19,7 @@ async function renderUsedPreloadingView(data) {
     return component.element;
 }
 describeWithEnvironment('UsedPreloadingView', () => {
-    it('renderes prefetch used', async () => {
+    it('renders prefetch used', async () => {
         const data = {
             pageURL: urlString `https://example.com/prefetched.html`,
             previousAttempts: [
@@ -70,7 +70,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
         assert.strictEqual(badges[0]?.textContent?.trim(), 'No speculative loads');
         assert.include(sections[2]?.textContent, 'Learn more: Speculative loading on developer.chrome.com');
     });
-    it('renderes prerender used', async () => {
+    it('renders prerender used', async () => {
         const data = {
             pageURL: urlString `https://example.com/prerendered.html`,
             previousAttempts: [
@@ -121,7 +121,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
         assert.strictEqual(badges[0]?.textContent?.trim(), 'No speculative loads');
         assert.include(sections[2]?.textContent, 'Learn more: Speculative loading on developer.chrome.com');
     });
-    it('renderes prefetch failed', async () => {
+    it('renders prefetch failed', async () => {
         const data = {
             pageURL: urlString `https://example.com/prefetched.html`,
             previousAttempts: [
@@ -174,7 +174,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
         assert.strictEqual(badges[0]?.textContent?.trim(), 'No speculative loads');
         assert.include(sections[3]?.textContent, 'Learn more: Speculative loading on developer.chrome.com');
     });
-    it('renderes prerender failed', async () => {
+    it('renders prerender failed', async () => {
         const data = {
             pageURL: urlString `https://example.com/prerendered.html`,
             previousAttempts: [
@@ -227,7 +227,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
         assert.strictEqual(badges[0]?.textContent?.trim(), 'No speculative loads');
         assert.include(sections[3]?.textContent, 'Learn more: Speculative loading on developer.chrome.com');
     });
-    it('renderes prerender failed due to header mismatch', async () => {
+    it('renders prerender failed due to header mismatch', async () => {
         const data = {
             pageURL: urlString `https://example.com/prerendered.html`,
             previousAttempts: [
@@ -297,7 +297,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
         assert.strictEqual(badges[0]?.textContent?.trim(), 'No speculative loads');
         assert.include(sections[4]?.textContent, 'Learn more: Speculative loading on developer.chrome.com');
     });
-    it('renderes prerender -> prefetch downgraded and used', async () => {
+    it('renders prerender -> prefetch downgraded and used', async () => {
         const data = {
             pageURL: urlString `https://example.com/downgraded.html`,
             previousAttempts: [
@@ -619,7 +619,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
         assert.strictEqual(badges[3]?.textContent?.trim(), '1 failure');
         assert.include(sections[2]?.textContent, 'Learn more: Speculative loading on developer.chrome.com');
     });
-    it('renderes prerender-until-script used', async () => {
+    it('renders prerender-until-script used', async () => {
         const data = {
             pageURL: urlString `https://example.com/prerendered.html`,
             previousAttempts: [
@@ -640,6 +640,57 @@ describeWithEnvironment('UsedPreloadingView', () => {
                 },
             ],
             currentAttempts: [],
+        };
+        const component = await renderUsedPreloadingView(data);
+        assert.isNotNull(component.shadowRoot);
+        const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
+        const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
+        assert.lengthOf(headers, 2);
+        assert.lengthOf(sections, 3);
+        assert.include(headers[0]?.textContent, 'Speculative loading status');
+        assert.strictEqual(sections[0]?.querySelector('.status-badge span')?.textContent?.trim(), 'Success');
+        assert.include(sections[0]?.textContent, 'This page was successfully prerendered.');
+        assert.include(headers[1]?.textContent, 'Speculations initiated by this page');
+        const badges = sections[1]?.querySelectorAll('.status-badge span') || [];
+        assert.lengthOf(badges, 1);
+        assert.strictEqual(badges[0]?.textContent?.trim(), 'No speculative loads');
+        assert.include(sections[2]?.textContent, 'Learn more: Speculative loading on developer.chrome.com');
+    });
+    it('renders prefetch and prerender used', async () => {
+        const data = {
+            pageURL: urlString `https://example.com/preloaded.html`,
+            previousAttempts: [
+                {
+                    action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                    key: {
+                        loaderId: 'loaderId:1',
+                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                        url: urlString `https://example.com/preloaded.html`,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
+                    prefetchStatus: null,
+                    requestId: 'requestId:1',
+                    ruleSetIds: ['ruleSetId:1'],
+                    nodeIds: [1],
+                },
+                {
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId: 'loaderId:1',
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url: urlString `https://example.com/preloaded.html`,
+                    },
+                    pipelineId: 'pipelineId:2',
+                    status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
+                    prerenderStatus: null,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId:1'],
+                    nodeIds: [1],
+                }
+            ],
+            currentAttempts: []
         };
         const component = await renderUsedPreloadingView(data);
         assert.isNotNull(component.shadowRoot);

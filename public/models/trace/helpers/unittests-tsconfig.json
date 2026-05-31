@@ -55,9 +55,6 @@
   ],
   "references": [
     {
-      "path": "../../../core/platform/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../generated/generated-tsconfig.json"
     },
     {

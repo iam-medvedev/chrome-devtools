@@ -48,9 +48,6 @@
   ],
   "references": [
     {
-      "path": "../../../core/common/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../third_party/puppeteer-replay/bundle-tsconfig.json"
     },
     {

@@ -50,9 +50,6 @@
   ],
   "references": [
     {
-      "path": "../../core/common/bundle-tsconfig.json"
-    },
-    {
       "path": "../../core/i18n/bundle-tsconfig.json"
     },
     {

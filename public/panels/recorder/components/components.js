@@ -1512,6 +1512,9 @@ var UIStrings4 = {
 var str_4 = i18n7.i18n.registerUIStrings("panels/recorder/components/ReplaySection.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var REPLAY_EXTENSION_PREFIX = "extension";
+function isPlayRecordingSpeed(string) {
+  return string === "normal" || string === "slow" || string === "very_slow" || string === "extremely_slow";
+}
 var DEFAULT_VIEW4 = (input, _output, target) => {
   const { disabled, groups, selectedItem, actionTitle, onButtonClick, onItemSelected } = input;
   const buttonVariant = "primary";
@@ -1663,9 +1666,9 @@ var ReplaySection = class extends UI4.Widget.Widget {
     if (this.#replayExtensions.length) {
       groups.push({
         name: i18nString4(UIStrings4.extensionGroup),
-        items: this.#replayExtensions.map((extension, idx) => {
+        items: this.#replayExtensions.map((extension) => {
           return {
-            value: REPLAY_EXTENSION_PREFIX + idx,
+            value: REPLAY_EXTENSION_PREFIX + extension.getOrigin(),
             buttonIconName: "play",
             buttonLabel: () => extension.getName(),
             label: () => extension.getName()
@@ -1688,16 +1691,21 @@ var ReplaySection = class extends UI4.Widget.Widget {
   }
   #onStartReplay() {
     const value2 = this.#settings?.replayExtension || this.#settings?.speed || "";
-    if (value2?.startsWith(REPLAY_EXTENSION_PREFIX)) {
-      const extensionIdx = Number(value2.substring(REPLAY_EXTENSION_PREFIX.length));
-      const extension = this.#replayExtensions[extensionIdx];
-      if (this.#settings) {
-        this.#settings.replayExtension = REPLAY_EXTENSION_PREFIX + extensionIdx;
+    if (value2.startsWith(REPLAY_EXTENSION_PREFIX)) {
+      const origin = value2.substring(REPLAY_EXTENSION_PREFIX.length);
+      const extension = this.#replayExtensions.find((ext) => ext.getOrigin() === origin);
+      if (extension) {
+        if (this.#settings) {
+          this.#settings.replayExtension = REPLAY_EXTENSION_PREFIX + extension.getOrigin();
+        }
+        if (this.onStartReplay) {
+          this.onStartReplay("normal", extension);
+        }
+        this.performUpdate();
+        return;
       }
-      if (this.onStartReplay) {
-        this.onStartReplay("normal", extension);
-      }
-    } else if (this.onStartReplay) {
+    }
+    if (this.onStartReplay) {
       this.onStartReplay(
         this.#settings ? this.#settings.speed : "normal"
         /* PlayRecordingSpeed.NORMAL */
@@ -1706,10 +1714,14 @@ var ReplaySection = class extends UI4.Widget.Widget {
     this.performUpdate();
   }
   #onItemSelected(item4) {
-    const speed = item4;
-    if (this.#settings && speed) {
-      this.#settings.speed = speed;
+    if (!this.#settings) {
+      return;
+    }
+    if (isPlayRecordingSpeed(item4)) {
+      this.#settings.speed = item4;
       this.#settings.replayExtension = "";
+    } else {
+      this.#settings.replayExtension = item4;
     }
     this.performUpdate();
   }

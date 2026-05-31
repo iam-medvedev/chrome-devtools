@@ -71,9 +71,6 @@
       "path": "../../../ui/components/suggestion_input/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/components/text_editor/bundle-tsconfig.json"
-    },
-    {
       "path": "../converters/bundle-tsconfig.json"
     },
     {

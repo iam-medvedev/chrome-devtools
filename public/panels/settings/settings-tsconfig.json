@@ -62,22 +62,7 @@
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/sdk/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../generated/protocol-tsconfig.json"
-    },
-    {
       "path": "../../models/ai_assistance/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/ai_code_generation/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/bindings/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/breakpoints/bundle-tsconfig.json"
     },
     {
       "path": "../../models/greendev/bundle-tsconfig.json"
@@ -86,22 +71,10 @@
       "path": "../../models/persistence/bundle-tsconfig.json"
     },
     {
-      "path": "../../models/project_settings/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/text_utils/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/workspace/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/input/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/legacy_wrapper/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/switch/bundle-tsconfig.json"

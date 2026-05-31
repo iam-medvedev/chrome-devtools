@@ -75,9 +75,6 @@
       "path": "../../../models/trace/bundle-tsconfig.json"
     },
     {
-      "path": "../../../models/trace/handlers/unittests-tsconfig.json"
-    },
-    {
       "path": "../../../models/workspace/bundle-tsconfig.json"
     },
     {

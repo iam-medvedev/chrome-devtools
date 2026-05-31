@@ -26,10 +26,6 @@ import * as SDK from "./../../../../core/sdk/sdk.js";
 import * as Bindings from "./../../../../models/bindings/bindings.js";
 var UIStrings = {
   /**
-   * @description Descrption text for Prefetch status PrefetchCancelledOnUserNavigation.
-   */
-  PrefetchCancelledOnUserNavigation: "The prefetch was cancelled because the user navigated the page before the prefetch finished",
-  /**
    * @description  Description text for Prefetch status PrefetchFailedIneligibleRedirect.
    */
   PrefetchFailedIneligibleRedirect: "The prefetch was redirected, but the redirect URL is not eligible for prefetch.",
@@ -408,8 +404,7 @@ var PrefetchReasonDescription = {
   PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler: { name: () => i18n.i18n.lockedString("Unknown") },
   PrefetchNotEligibleRedirectFromServiceWorker: { name: () => i18n.i18n.lockedString("Unknown") },
   PrefetchNotEligibleRedirectToServiceWorker: { name: () => i18n.i18n.lockedString("Unknown") },
-  PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings.PrefetchEvictedAfterBrowsingDataRemoved) },
-  PrefetchCancelledOnUserNavigation: { name: i18nLazyString(UIStrings.PrefetchCancelledOnUserNavigation) }
+  PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings.PrefetchEvictedAfterBrowsingDataRemoved) }
 };
 function prefetchFailureReason({ prefetchStatus }, statusCode) {
   switch (prefetchStatus) {
@@ -491,8 +486,6 @@ function prefetchFailureReason({ prefetchStatus }, statusCode) {
       return PrefetchReasonDescription["PrefetchNotEligibleRedirectToServiceWorker"].name();
     case "PrefetchEvictedAfterBrowsingDataRemoved":
       return PrefetchReasonDescription["PrefetchEvictedAfterBrowsingDataRemoved"].name();
-    case "PrefetchCancelledOnUserNavigation":
-      return PrefetchReasonDescription["PrefetchCancelledOnUserNavigation"].name();
     default:
       return i18n.i18n.lockedString(`Unknown failure reason: ${prefetchStatus}`);
   }
@@ -2557,14 +2550,14 @@ var UsedPreloadingView = class extends UI7.Widget.VBox {
     let kind = "NoPreloads";
     if (prerenderLike?.status === "Failure" && prefetch?.status === "Success") {
       kind = "DowngradedPrerenderToPrefetchAndUsed";
-    } else if (prefetch?.status === "Success") {
-      kind = "PrefetchUsed";
     } else if (prerenderLike?.status === "Success") {
       kind = "PrerenderUsed";
-    } else if (prefetch?.status === "Failure") {
-      kind = "PrefetchFailed";
+    } else if (prefetch?.status === "Success") {
+      kind = "PrefetchUsed";
     } else if (prerenderLike?.status === "Failure") {
       kind = "PrerenderFailed";
+    } else if (prefetch?.status === "Failure") {
+      kind = "PrefetchFailed";
     } else {
       kind = "NoPreloads";
     }

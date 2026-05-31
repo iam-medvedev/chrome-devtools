@@ -93,9 +93,6 @@
       "path": "../../../models/bindings/bundle-tsconfig.json"
     },
     {
-      "path": "../../../models/cpu_profile/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../models/crux-manager/bundle-tsconfig.json"
     },
     {

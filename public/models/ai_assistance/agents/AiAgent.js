@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
-import * as Greendev from '../../greendev/greendev.js';
 import { debugLog, isStructuredLogEnabled } from '../debug.js';
 const MAX_SUGGESTION_LENGTH = 200;
 /**
@@ -274,10 +273,7 @@ export class AiAgent {
         // Request is built here to capture history up to this point.
         let request = this.buildRequest(query, Host.AidaClient.Role.USER);
         yield* this.handleContextDetails(options.selected);
-        const breakpointAgentEnabled = Greendev.Prototypes.instance().isEnabled('breakpointDebuggerAgent');
-        const isBreakpointDebuggerAgent = this.constructor.name === 'BreakpointDebuggerAgent';
-        const finalMaxSteps = (isBreakpointDebuggerAgent && breakpointAgentEnabled) ? 1000 : MAX_STEPS;
-        for (let i = 0; i < finalMaxSteps; i++) {
+        for (let i = 0; i < MAX_STEPS; i++) {
             yield {
                 type: "querying" /* ResponseType.QUERYING */,
             };
@@ -355,6 +351,10 @@ export class AiAgent {
                         ...options,
                         explanation: textResponse,
                     });
+                    if ('result' in result && result.result === 'BLOCKED_CROSS_ORIGIN') {
+                        yield this.#createErrorResponse("cross-origin" /* ErrorType.CROSS_ORIGIN */);
+                        break;
+                    }
                     if (options.signal?.aborted) {
                         yield this.#createErrorResponse("abort" /* ErrorType.ABORT */);
                         break;
@@ -468,6 +468,15 @@ export class AiAgent {
                 };
                 return {
                     result: 'Error: User denied code execution with side effects.',
+                };
+            }
+            // Re-check allowed origin after the approval await to prevent a TOCTOU (Time-of-Check
+            // to Time-of-Use) race condition where the page might have navigated cross-origin
+            // while the user was confirming the action.
+            const allowedOriginResult = this.#allowedOrigin?.();
+            if (allowedOriginResult && 'blocked' in allowedOriginResult) {
+                return {
+                    result: 'BLOCKED_CROSS_ORIGIN',
                 };
             }
             result = await call.handler(args, {

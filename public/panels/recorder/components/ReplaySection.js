@@ -59,6 +59,10 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/components/ReplaySection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const REPLAY_EXTENSION_PREFIX = 'extension';
+function isPlayRecordingSpeed(string) {
+    return string === "normal" /* PlayRecordingSpeed.NORMAL */ || string === "slow" /* PlayRecordingSpeed.SLOW */ ||
+        string === "very_slow" /* PlayRecordingSpeed.VERY_SLOW */ || string === "extremely_slow" /* PlayRecordingSpeed.EXTREMELY_SLOW */;
+}
 export const DEFAULT_VIEW = (input, _output, target) => {
     const { disabled, groups, selectedItem, actionTitle, onButtonClick, onItemSelected } = input;
     const buttonVariant = "primary" /* Buttons.Button.Variant.PRIMARY */;
@@ -213,9 +217,9 @@ export class ReplaySection extends UI.Widget.Widget {
         if (this.#replayExtensions.length) {
             groups.push({
                 name: i18nString(UIStrings.extensionGroup),
-                items: this.#replayExtensions.map((extension, idx) => {
+                items: this.#replayExtensions.map(extension => {
                     return {
-                        value: (REPLAY_EXTENSION_PREFIX + idx),
+                        value: REPLAY_EXTENSION_PREFIX + extension.getOrigin(),
                         buttonIconName: 'play',
                         buttonLabel: () => extension.getName(),
                         label: () => extension.getName(),
@@ -238,26 +242,35 @@ export class ReplaySection extends UI.Widget.Widget {
     }
     #onStartReplay() {
         const value = this.#settings?.replayExtension || this.#settings?.speed || '';
-        if (value?.startsWith(REPLAY_EXTENSION_PREFIX)) {
-            const extensionIdx = Number(value.substring(REPLAY_EXTENSION_PREFIX.length));
-            const extension = this.#replayExtensions[extensionIdx];
-            if (this.#settings) {
-                this.#settings.replayExtension = REPLAY_EXTENSION_PREFIX + extensionIdx;
-            }
-            if (this.onStartReplay) {
-                this.onStartReplay("normal" /* PlayRecordingSpeed.NORMAL */, extension);
+        if (value.startsWith(REPLAY_EXTENSION_PREFIX)) {
+            const origin = value.substring(REPLAY_EXTENSION_PREFIX.length);
+            const extension = this.#replayExtensions.find(ext => ext.getOrigin() === origin);
+            if (extension) {
+                if (this.#settings) {
+                    this.#settings.replayExtension = REPLAY_EXTENSION_PREFIX + extension.getOrigin();
+                }
+                if (this.onStartReplay) {
+                    this.onStartReplay("normal" /* PlayRecordingSpeed.NORMAL */, extension);
+                }
+                this.performUpdate();
+                return;
             }
         }
-        else if (this.onStartReplay) {
+        if (this.onStartReplay) {
             this.onStartReplay(this.#settings ? this.#settings.speed : "normal" /* PlayRecordingSpeed.NORMAL */);
         }
         this.performUpdate();
     }
     #onItemSelected(item) {
-        const speed = item;
-        if (this.#settings && speed) {
-            this.#settings.speed = speed;
+        if (!this.#settings) {
+            return;
+        }
+        if (isPlayRecordingSpeed(item)) {
+            this.#settings.speed = item;
             this.#settings.replayExtension = '';
+        }
+        else {
+            this.#settings.replayExtension = item;
         }
         this.performUpdate();
     }

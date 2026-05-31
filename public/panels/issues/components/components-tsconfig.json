@@ -49,16 +49,7 @@
       "path": "../../../core/i18n/bundle-tsconfig.json"
     },
     {
-      "path": "../../../models/issues_manager/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/components/buttons/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../../ui/components/helpers/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../../ui/kit/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/legacy/bundle-tsconfig.json"

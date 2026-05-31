@@ -66,12 +66,6 @@
       "path": "../../generated/generated-tsconfig.json"
     },
     {
-      "path": "../../generated/protocol-tsconfig.json"
-    },
-    {
-      "path": "../../models/text_utils/bundle-tsconfig.json"
-    },
-    {
       "path": "../../testing/testing-tsconfig.json"
     },
     {

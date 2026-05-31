@@ -54,9 +54,6 @@
       "path": "../../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../../core/sdk/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../models/badges/bundle-tsconfig.json"
     },
     {
@@ -69,9 +66,6 @@
       "path": "../../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/components/helpers/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/components/settings/bundle-tsconfig.json"
     },
     {
@@ -79,9 +73,6 @@
     },
     {
       "path": "../../../ui/helpers/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../../ui/i18n/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/kit/bundle-tsconfig.json"

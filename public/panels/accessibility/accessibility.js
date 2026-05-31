@@ -1637,6 +1637,23 @@ var config = {
     {
       "isGlobal": true,
       "name": "aria-actions",
+      "preventedOnRoles": [
+        "caption",
+        "code",
+        "definition",
+        "deletion",
+        "emphasis",
+        "generic",
+        "insertion",
+        "mark",
+        "paragraph",
+        "strong",
+        "subscript",
+        "suggestion",
+        "superscript",
+        "term",
+        "time"
+      ],
       "type": "IDREF_list"
     },
     {

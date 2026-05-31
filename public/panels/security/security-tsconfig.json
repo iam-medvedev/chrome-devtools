@@ -58,9 +58,6 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
-    },
-    {
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
@@ -70,34 +67,13 @@
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
-      "path": "../../models/issues_manager/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/text_utils/bundle-tsconfig.json"
-    },
-    {
       "path": "../network/forward/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/buttons/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/input/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/switch/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/i18n/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/kit/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/legacy/components/data_grid/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/lit/bundle-tsconfig.json"

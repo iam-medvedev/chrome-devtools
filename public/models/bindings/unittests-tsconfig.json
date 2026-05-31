@@ -65,6 +65,9 @@
       "path": "./bundle-tsconfig.json"
     },
     {
+      "path": "../../../extension-api/extension-api-tsconfig.json"
+    },
+    {
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
@@ -84,9 +87,6 @@
     },
     {
       "path": "../../third_party/source-map-scopes-codec/bundle-tsconfig.json"
-    },
-    {
-      "path": "../persistence/bundle-tsconfig.json"
     },
     {
       "path": "../stack_trace/bundle-tsconfig.json"

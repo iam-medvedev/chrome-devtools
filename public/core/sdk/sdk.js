@@ -729,6 +729,7 @@ var generatedProperties = [
       "rx",
       "ry",
       "scale",
+      "scroll-axis-lock",
       "scroll-behavior",
       "scroll-initial-target",
       "scroll-margin-block-end",
@@ -2030,6 +2031,18 @@ var generatedProperties = [
     "name": "corner"
   },
   {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-end-start-radius",
+      "corner-end-start-shape",
+      "border-end-end-radius",
+      "corner-end-end-shape"
+    ],
+    "name": "corner-block-end"
+  },
+  {
     "longhands": [
       "corner-end-start-shape",
       "corner-end-end-shape"
@@ -2037,11 +2050,45 @@ var generatedProperties = [
     "name": "corner-block-end-shape"
   },
   {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-start-start-radius",
+      "corner-start-start-shape",
+      "border-start-end-radius",
+      "corner-start-end-shape"
+    ],
+    "name": "corner-block-start"
+  },
+  {
     "longhands": [
       "corner-start-start-shape",
       "corner-start-end-shape"
     ],
     "name": "corner-block-start-shape"
+  },
+  {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-bottom-left-radius",
+      "corner-bottom-left-shape",
+      "border-bottom-right-radius",
+      "corner-bottom-right-shape"
+    ],
+    "name": "corner-bottom"
+  },
+  {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-bottom-left-radius",
+      "corner-bottom-left-shape"
+    ],
+    "name": "corner-bottom-left"
   },
   {
     "keywords": [
@@ -2053,6 +2100,16 @@ var generatedProperties = [
       "square"
     ],
     "name": "corner-bottom-left-shape"
+  },
+  {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-bottom-right-radius",
+      "corner-bottom-right-shape"
+    ],
+    "name": "corner-bottom-right"
   },
   {
     "keywords": [
@@ -2073,10 +2130,42 @@ var generatedProperties = [
     "name": "corner-bottom-shape"
   },
   {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-end-end-radius",
+      "corner-end-end-shape"
+    ],
+    "name": "corner-end-end"
+  },
+  {
     "name": "corner-end-end-shape"
   },
   {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-end-start-radius",
+      "corner-end-start-shape"
+    ],
+    "name": "corner-end-start"
+  },
+  {
     "name": "corner-end-start-shape"
+  },
+  {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-start-end-radius",
+      "corner-start-end-shape",
+      "border-end-end-radius",
+      "corner-end-end-shape"
+    ],
+    "name": "corner-inline-end"
   },
   {
     "longhands": [
@@ -2086,6 +2175,18 @@ var generatedProperties = [
     "name": "corner-inline-end-shape"
   },
   {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-start-start-radius",
+      "corner-start-start-shape",
+      "border-end-start-radius",
+      "corner-end-start-shape"
+    ],
+    "name": "corner-inline-start"
+  },
+  {
     "longhands": [
       "corner-start-start-shape",
       "corner-end-start-shape"
@@ -2093,11 +2194,35 @@ var generatedProperties = [
     "name": "corner-inline-start-shape"
   },
   {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-top-left-radius",
+      "corner-top-left-shape",
+      "border-bottom-left-radius",
+      "corner-bottom-left-shape"
+    ],
+    "name": "corner-left"
+  },
+  {
     "longhands": [
       "corner-top-left-shape",
       "corner-bottom-left-shape"
     ],
     "name": "corner-left-shape"
+  },
+  {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-top-right-radius",
+      "corner-top-right-shape",
+      "border-bottom-right-radius",
+      "corner-bottom-right-shape"
+    ],
+    "name": "corner-right"
   },
   {
     "longhands": [
@@ -2116,10 +2241,52 @@ var generatedProperties = [
     "name": "corner-shape"
   },
   {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-start-end-radius",
+      "corner-start-end-shape"
+    ],
+    "name": "corner-start-end"
+  },
+  {
     "name": "corner-start-end-shape"
   },
   {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-start-start-radius",
+      "corner-start-start-shape"
+    ],
+    "name": "corner-start-start"
+  },
+  {
     "name": "corner-start-start-shape"
+  },
+  {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-top-left-radius",
+      "corner-top-left-shape",
+      "border-top-right-radius",
+      "corner-top-right-shape"
+    ],
+    "name": "corner-top"
+  },
+  {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-top-left-radius",
+      "corner-top-left-shape"
+    ],
+    "name": "corner-top-left"
   },
   {
     "keywords": [
@@ -2131,6 +2298,16 @@ var generatedProperties = [
       "square"
     ],
     "name": "corner-top-left-shape"
+  },
+  {
+    "keywords": [
+      "normal"
+    ],
+    "longhands": [
+      "border-top-right-radius",
+      "corner-top-right-shape"
+    ],
+    "name": "corner-top-right"
   },
   {
     "keywords": [
@@ -3308,7 +3485,7 @@ var generatedProperties = [
   },
   {
     "keywords": [
-      "none"
+      "auto"
     ],
     "name": "max-lines"
   },
@@ -4145,6 +4322,13 @@ var generatedProperties = [
   {
     "keywords": [
       "auto",
+      "none"
+    ],
+    "name": "scroll-axis-lock"
+  },
+  {
+    "keywords": [
+      "auto",
       "smooth"
     ],
     "name": "scroll-behavior"
@@ -4643,6 +4827,7 @@ var generatedProperties = [
     "name": "text-emphasis-style"
   },
   {
+    "inherited": true,
     "name": "text-fit"
   },
   {
@@ -5839,6 +6024,26 @@ var generatedPropertyValues = {
       "normal"
     ]
   },
+  "corner-block-end": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-block-start": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-bottom": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-bottom-left": {
+    "values": [
+      "normal"
+    ]
+  },
   "corner-bottom-left-shape": {
     "values": [
       "notch",
@@ -5847,6 +6052,11 @@ var generatedPropertyValues = {
       "round",
       "squircle",
       "square"
+    ]
+  },
+  "corner-bottom-right": {
+    "values": [
+      "normal"
     ]
   },
   "corner-bottom-right-shape": {
@@ -5859,6 +6069,56 @@ var generatedPropertyValues = {
       "square"
     ]
   },
+  "corner-end-end": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-end-start": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-inline-end": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-inline-start": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-left": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-right": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-start-end": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-start-start": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-top": {
+    "values": [
+      "normal"
+    ]
+  },
+  "corner-top-left": {
+    "values": [
+      "normal"
+    ]
+  },
   "corner-top-left-shape": {
     "values": [
       "notch",
@@ -5867,6 +6127,11 @@ var generatedPropertyValues = {
       "round",
       "squircle",
       "square"
+    ]
+  },
+  "corner-top-right": {
+    "values": [
+      "normal"
     ]
   },
   "corner-top-right-shape": {
@@ -6567,7 +6832,7 @@ var generatedPropertyValues = {
   },
   "max-lines": {
     "values": [
-      "none"
+      "auto"
     ]
   },
   "max-width": {
@@ -6970,6 +7235,12 @@ var generatedPropertyValues = {
   "ry": {
     "values": [
       "auto"
+    ]
+  },
+  "scroll-axis-lock": {
+    "values": [
+      "auto",
+      "none"
     ]
   },
   "scroll-behavior": {
@@ -19922,9 +20193,13 @@ var SourceMap = class {
     }
     return reverseMappings.slice(startIndex, endIndex);
   }
-  findReverseEntries(sourceURL, lineNumber, columnNumber) {
+  findReverseEntries(sourceURL, lineNumber, columnNumber, filterContiguous = false) {
     const mappings = this.mappings();
-    return this.findReverseIndices(sourceURL, lineNumber, columnNumber).map((i) => mappings[i]);
+    let indices = this.findReverseIndices(sourceURL, lineNumber, columnNumber);
+    if (filterContiguous) {
+      indices = indices.filter((index, i) => i === 0 || index !== indices[i - 1] + 1);
+    }
+    return indices.map((i) => mappings[i]);
   }
   findReverseRanges(sourceURL, lineNumber, columnNumber) {
     const mappings = this.mappings();
@@ -20355,13 +20630,13 @@ var SourceMapCache = class _SourceMapCache {
   constructor(name) {
     this.#name = name;
   }
-  async set(debugId, sourceMap) {
+  async set(debugId, securityOrigin, sourceMap) {
     const cache = await this.#cache();
-    await cache.put(_SourceMapCache.#urlForDebugId(debugId), new Response(JSON.stringify(sourceMap)));
+    await cache.put(_SourceMapCache.#urlForDebugId(debugId, securityOrigin), new Response(JSON.stringify(sourceMap)));
   }
-  async get(debugId) {
+  async get(debugId, securityOrigin) {
     const cache = await this.#cache();
-    const response = await cache.match(_SourceMapCache.#urlForDebugId(debugId));
+    const response = await cache.match(_SourceMapCache.#urlForDebugId(debugId, securityOrigin));
     return await response?.json() ?? null;
   }
   async #cache() {
@@ -20372,8 +20647,8 @@ var SourceMapCache = class _SourceMapCache {
     return await this.#cachePromise;
   }
   /** The Cache API only allows URL as keys, so we construct a simple one. Given that we have our own cache, we have no risk of conflicting URLs */
-  static #urlForDebugId(debugId) {
-    return "http://debug.id/" + encodeURIComponent(debugId);
+  static #urlForDebugId(debugId, securityOrigin) {
+    return `http://debug.id/${encodeURIComponent(debugId)}?origin=${encodeURIComponent(securityOrigin)}`;
   }
   async disposeForTest() {
     await window.caches.delete(this.#name);
@@ -20381,11 +20656,11 @@ var SourceMapCache = class _SourceMapCache {
 };
 var IN_MEMORY_INSTANCE = new class {
   #cache = /* @__PURE__ */ new Map();
-  async set(debugId, sourceMap) {
-    this.#cache.set(debugId, sourceMap);
+  async set(debugId, securityOrigin, sourceMap) {
+    this.#cache.set(`${debugId}|${securityOrigin}`, sourceMap);
   }
-  async get(debugId) {
-    return this.#cache.get(debugId) ?? null;
+  async get(debugId, securityOrigin) {
+    return this.#cache.get(`${debugId}|${securityOrigin}`) ?? null;
   }
   async disposeForTest() {
   }
@@ -20527,15 +20802,17 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
 async function loadSourceMap(resourceLoader, url, debugId, initiator) {
   try {
     if (debugId) {
-      const cachedSourceMap = await SourceMapCache.instance().get(debugId);
+      const securityOrigin = initiator.initiatorUrl ? Common12.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform9.DevToolsPath.EmptyUrlString;
+      const cachedSourceMap = await SourceMapCache.instance().get(debugId, securityOrigin);
       if (cachedSourceMap) {
         return cachedSourceMap;
       }
     }
     const { content } = await resourceLoader.loadResource(url, initiator);
     const sourceMap = parseSourceMap(content);
-    if ("debugId" in sourceMap && sourceMap.debugId) {
-      await SourceMapCache.instance().set(sourceMap.debugId, sourceMap).catch();
+    if (debugId && "debugId" in sourceMap && sourceMap.debugId === debugId) {
+      const securityOrigin = initiator.initiatorUrl ? Common12.ParsedURL.ParsedURL.extractOrigin(initiator.initiatorUrl) : Platform9.DevToolsPath.EmptyUrlString;
+      await SourceMapCache.instance().set(sourceMap.debugId, securityOrigin, sourceMap).catch();
     }
     return sourceMap;
   } catch (cause) {

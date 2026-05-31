@@ -59,9 +59,6 @@
       "path": "../helpers/bundle-tsconfig.json"
     },
     {
-      "path": "../render_coordinator/bundle-tsconfig.json"
-    },
-    {
       "path": "../../legacy/bundle-tsconfig.json"
     },
     {
@@ -71,13 +68,7 @@
       "path": "../../kit/bundle-tsconfig.json"
     },
     {
-      "path": "../../visual_logging/bundle-tsconfig.json"
-    },
-    {
       "path": "../buttons/bundle-tsconfig.json"
-    },
-    {
-      "path": "../input/bundle-tsconfig.json"
     }
   ]
 }

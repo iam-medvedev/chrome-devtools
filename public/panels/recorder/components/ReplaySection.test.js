@@ -52,7 +52,24 @@ describeWithEnvironment('ReplaySection', () => {
         const [view] = await createReplaySection("slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */);
         assert.strictEqual(view.input.selectedItem.value, "slow" /* Models.RecordingPlayer.PlayRecordingSpeed.SLOW */);
     });
-    it('should call onStartReplay with extension when extension is selected', async () => {
+    it('should call onStartReplay with extension when extension is selected by origin prefixed with REPLAY_EXTENSION_PREFIX', async () => {
+        const [view, component] = await createReplaySection();
+        const onStartReplay = sinon.stub();
+        const extension = {
+            getName: () => 'Test Extension',
+            getOrigin: () => 'chrome-extension://test',
+            getDescriptor: () => ({}),
+            install: () => { },
+            uninstall: () => { },
+        };
+        component.settings = settings;
+        component.replayExtensions = [extension];
+        component.onStartReplay = onStartReplay;
+        view.input.onItemSelected('extensionchrome-extension://test');
+        view.input.onButtonClick();
+        sinon.assert.calledWith(onStartReplay, "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */, extension);
+    });
+    it('should fallback to default speed mode when selected extension format does not match', async () => {
         const [view, component] = await createReplaySection();
         const onStartReplay = sinon.stub();
         const extension = {
@@ -67,7 +84,7 @@ describeWithEnvironment('ReplaySection', () => {
         component.onStartReplay = onStartReplay;
         view.input.onItemSelected('extension0');
         view.input.onButtonClick();
-        sinon.assert.calledWith(onStartReplay, "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */, extension);
+        sinon.assert.calledWith(onStartReplay, "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */);
     });
 });
 //# sourceMappingURL=ReplaySection.test.js.map

@@ -713,13 +713,12 @@ var PuppeteerStringifyExtension = class extends StringifyExtension {
     this.#targetBrowser = targetBrowser;
   }
   async beforeAllSteps(out, flow) {
-    out.appendLine("const puppeteer = require('puppeteer'); // v23.0.0 or later");
+    out.appendLine("import { Locator, launch } from 'puppeteer'; // v25.0.0 or later");
     out.appendLine("");
-    out.appendLine("(async () => {").startBlock();
     if (this.#targetBrowser === "firefox") {
-      out.appendLine(`const browser = await puppeteer.launch({browser: 'firefox'});`);
+      out.appendLine(`const browser = await launch({browser: 'firefox'});`);
     } else {
-      out.appendLine("const browser = await puppeteer.launch();");
+      out.appendLine("const browser = await launch();");
     }
     out.appendLine("const page = await browser.newPage();");
     out.appendLine(`const timeout = ${flow.timeout || defaultTimeout};`);
@@ -736,10 +735,6 @@ var PuppeteerStringifyExtension = class extends StringifyExtension {
         out.appendLine(line);
       }
     }
-    out.endBlock().appendLine("})().catch(err => {").startBlock();
-    out.appendLine("console.error(err);");
-    out.appendLine("process.exit(1);");
-    out.endBlock().appendLine("});");
   }
   async stringifyStep(out, step, flow) {
     out.appendLine("{").startBlock();
@@ -791,7 +786,7 @@ var PuppeteerStringifyExtension = class extends StringifyExtension {
     }
   }
   #appendLocators(out, step, action) {
-    out.appendLine("await puppeteer.Locator.race([").startBlock();
+    out.appendLine("await Locator.race([").startBlock();
     out.appendLine(step.selectors.map((s) => {
       return `${step.frame ? "frame" : "targetPage"}.locator(${formatJSONAsJS(selectorToPElementSelector(s), out.getIndent())})`;
     }).join(",\n"));
@@ -1607,7 +1602,7 @@ function isMobileFlow(flow) {
 var LighthouseStringifyExtension = class extends PuppeteerStringifyExtension {
   #isProcessingTimespan = false;
   async beforeAllSteps(out, flow) {
-    out.appendLine(`const fs = require('fs');`);
+    out.appendLine(`import fs from 'fs';`);
     await super.beforeAllSteps(out, flow);
     out.appendLine(`const lhApi = await import('lighthouse'); // v10.0.0 or later`);
     const flags = {
@@ -1649,7 +1644,7 @@ var LighthouseStringifyExtension = class extends PuppeteerStringifyExtension {
       out.appendLine(`await lhFlow.endTimespan();`);
     }
     out.appendLine(`const lhFlowReport = await lhFlow.generateReport();`);
-    out.appendLine(`fs.writeFileSync(__dirname + '/flow.report.html', lhFlowReport)`);
+    out.appendLine(`fs.writeFileSync(import.meta.dirname + '/flow.report.html', lhFlowReport)`);
     await super.afterAllSteps(out, flow);
   }
 };
@@ -1740,4 +1735,9 @@ export {
   typeableInputTypes,
   validTimeout
 };
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 //# sourceMappingURL=puppeteer-replay.js.map

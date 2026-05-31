@@ -87,9 +87,6 @@
       "path": "../../../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../bundle-tsconfig.json"
-    },
-    {
       "path": "../../../visual_logging/bundle-tsconfig.json"
     }
   ]

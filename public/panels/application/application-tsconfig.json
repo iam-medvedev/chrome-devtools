@@ -97,9 +97,6 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/protocol_client/bundle-tsconfig.json"
-    },
-    {
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {
@@ -221,9 +218,6 @@
     },
     {
       "path": "../common/bundle-tsconfig.json"
-    },
-    {
-      "path": "../network/components/bundle-tsconfig.json"
     },
     {
       "path": "components/bundle-tsconfig.json"

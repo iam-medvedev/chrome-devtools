@@ -533,6 +533,11 @@ describeWithMockConnection('ContextSelectionAgent', function () {
             assert.exists(contextChange);
             assert.instanceOf(contextChange.context, NetworkAgent.RequestContext);
             assert.strictEqual(contextChange.context.getItem(), request);
+            assert.exists(contextChange.widgets);
+            assert.lengthOf(contextChange.widgets, 1);
+            const widget = contextChange.widgets[0];
+            assert.strictEqual(widget.name, 'NETWORK_REQUEST_GENERAL_HEADERS');
+            assert.strictEqual(widget.data.request, request);
         });
         it('returns an error when selecting cross-origin network request', async () => {
             const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://another.com/`, urlString `https://another.com/`, null, null, null);

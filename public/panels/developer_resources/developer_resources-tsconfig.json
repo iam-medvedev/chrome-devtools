@@ -61,9 +61,6 @@
       "path": "../../generated/generated-tsconfig.json"
     },
     {
-      "path": "../../generated/protocol-tsconfig.json"
-    },
-    {
       "path": "../../models/text_utils/bundle-tsconfig.json"
     },
     {
@@ -74,9 +71,6 @@
     },
     {
       "path": "../../ui/legacy/components/data_grid/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/legacy/components/settings_ui/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/lit/bundle-tsconfig.json"

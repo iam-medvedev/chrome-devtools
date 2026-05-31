@@ -150,7 +150,11 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Elements category.
    */
-  cssAnimationsOnlyWhenAnimationsTabOpen: "Show animation styles only when the Animations tab is open"
+  cssAnimationsOnlyWhenAnimationsTabOpen: "Show animation styles only when the Animations tab is open",
+  /**
+   * @description Whether CSS rules that do not apply active styles in the Styles pane are collapsed by default.
+   */
+  collapseNonContributingCSSRules: "Collapse non-contributing CSS rules"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/elements/elements-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
@@ -528,6 +532,15 @@ Common.Settings.registerSettingExtension({
   settingName: "css-animations-only-when-animations-tab-open",
   settingType: "boolean",
   defaultValue: true
+});
+Common.Settings.registerSettingExtension({
+  category: "ELEMENTS",
+  storageType: "Synced",
+  order: 7,
+  title: i18nLazyString(UIStrings.collapseNonContributingCSSRules),
+  settingName: "collapse-non-contributing-css-rules",
+  settingType: "boolean",
+  defaultValue: false
 });
 Common.Settings.registerSettingExtension({
   settingName: "show-event-listeners-for-ancestors",

@@ -82,9 +82,6 @@
       "path": "../../generated/generated-tsconfig.json"
     },
     {
-      "path": "../../generated/protocol-tsconfig.json"
-    },
-    {
       "path": "../../models/bindings/bundle-tsconfig.json"
     },
     {
@@ -92,9 +89,6 @@
     },
     {
       "path": "../../models/logs/bundle-tsconfig.json"
-    },
-    {
-      "path": "../console_counters/bundle-tsconfig.json"
     },
     {
       "path": "../network/forward/bundle-tsconfig.json"
@@ -107,9 +101,6 @@
     },
     {
       "path": "../../ui/components/issue_counter/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/linkifier/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/markdown_view/bundle-tsconfig.json"

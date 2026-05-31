@@ -54,37 +54,13 @@
       "path": "../../core/host/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/i18n/bundle-tsconfig.json"
-    },
-    {
       "path": "../../core/platform/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../core/root/bundle-tsconfig.json"
     },
     {
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
-      "path": "../../entrypoints/inspector_main/meta-tsconfig.json"
-    },
-    {
-      "path": "../../entrypoints/main/meta-tsconfig.json"
-    },
-    {
-      "path": "../../foundation/bundle-tsconfig.json"
-    },
-    {
       "path": "../../generated/generated-tsconfig.json"
-    },
-    {
-      "path": "../../models/ai_assistance/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/workspace/meta-tsconfig.json"
-    },
-    {
-      "path": "../sensors/meta-tsconfig.json"
     },
     {
       "path": "../../third_party/marked/bundle-tsconfig.json"

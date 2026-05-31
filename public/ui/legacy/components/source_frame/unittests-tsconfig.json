@@ -45,6 +45,7 @@
   },
   "files": [
     "../../../../../../../../front_end/ui/legacy/components/source_frame/BinaryResourceViewFactory.test.ts",
+    "../../../../../../../../front_end/ui/legacy/components/source_frame/FontView.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/source_frame/JSONView.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/source_frame/ResourceSourceFrame.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/source_frame/SourceFrame.test.ts",

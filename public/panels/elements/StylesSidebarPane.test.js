@@ -140,7 +140,9 @@ describe('StylesSidebarPane', () => {
             });
         });
         describe('collapsing non-contributing sections', () => {
+            const enableCollapse = () => Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules').set(true);
             it('collapses a section where all properties are overloaded', async () => {
+                enableCollapse();
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.id = 1;
@@ -191,7 +193,49 @@ describe('StylesSidebarPane', () => {
                 // The section with active properties should NOT be collapsed.
                 assert.isFalse(activeSection.element.classList.contains('collapsed'), 'Section with active properties should not be collapsed');
             });
+            it('does not collapse non-contributing sections when the setting is disabled', async () => {
+                Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules').set(false);
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.id = 1;
+                const matchedStyles = await getMatchedStyles({
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node,
+                    matchedPayload: [
+                        {
+                            rule: {
+                                selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                                style: {
+                                    cssProperties: [{ name: 'color', value: 'blue' }],
+                                    shorthandEntries: [],
+                                },
+                            },
+                            matchingSelectors: [0],
+                        },
+                        {
+                            rule: {
+                                selectorList: { selectors: [{ text: '#id' }], text: '#id' },
+                                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                                style: {
+                                    cssProperties: [{ name: 'color', value: 'red' }],
+                                    shorthandEntries: [],
+                                },
+                            },
+                            matchingSelectors: [0],
+                        },
+                    ],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                const overloadedSection = sectionBlocks[0].sections.find(section => section.headerText() === 'div');
+                if (!overloadedSection) {
+                    assert.fail('Expected div section to exist');
+                }
+                assert.isFalse(overloadedSection.element.classList.contains('collapsed'), 'Section with all overloaded properties should not collapse when the setting is disabled');
+                assert.isFalse(overloadedSection.element.classList.contains('collapsible'), 'Section should not be marked collapsible when automatic collapsing is disabled');
+            });
             it('collapses an empty section (no leading properties)', async () => {
+                enableCollapse();
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.id = 1;
@@ -233,6 +277,7 @@ describe('StylesSidebarPane', () => {
                 assert.isFalse(activeSection.element.classList.contains('collapsed'), 'Non-empty section should not be collapsed');
             });
             it('does NOT collapse a section containing only disabled properties', async () => {
+                enableCollapse();
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.id = 1;
@@ -274,6 +319,7 @@ describe('StylesSidebarPane', () => {
                 assert.isFalse(disabledSection.element.classList.contains('collapsed'), 'Section with disabled properties should not be collapsed');
             });
             it('does NOT collapse a section with at least one active property', async () => {
+                enableCollapse();
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.id = 1;
@@ -316,6 +362,7 @@ describe('StylesSidebarPane', () => {
                 assert.isFalse(mixedSection.element.classList.contains('collapsed'), 'Section with at least one active property should not be collapsed');
             });
             it('expands a collapsed section when jump-to targets it', async () => {
+                enableCollapse();
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.id = 1;
@@ -373,6 +420,7 @@ describe('StylesSidebarPane', () => {
                 assert.isFalse(overloadedSection.element.classList.contains('collapsed'), 'Section should be expanded after revealProperty');
             });
             it('can be manually expanded and re-collapsed via toggle', async () => {
+                enableCollapse();
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.id = 1;
@@ -419,7 +467,58 @@ describe('StylesSidebarPane', () => {
                 // Still marked collapsible so the icon remains visible.
                 assert.isTrue(overloadedSection.element.classList.contains('collapsible'), 'Section should retain collapsible class after manual expand');
             });
+            it('reacts to toggling the collapse-non-contributing-css-rules setting at runtime', async () => {
+                enableCollapse();
+                const collapseSetting = Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules');
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.id = 1;
+                const matchedStyles = await getMatchedStyles({
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node,
+                    matchedPayload: [
+                        {
+                            rule: {
+                                selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                                style: {
+                                    cssProperties: [{ name: 'color', value: 'blue' }],
+                                    shorthandEntries: [],
+                                },
+                            },
+                            matchingSelectors: [0],
+                        },
+                        {
+                            rule: {
+                                selectorList: { selectors: [{ text: '#id' }], text: '#id' },
+                                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                                style: {
+                                    cssProperties: [{ name: 'color', value: 'red' }],
+                                    shorthandEntries: [],
+                                },
+                            },
+                            matchingSelectors: [0],
+                        },
+                    ],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                // `allSections()` reads from `sectionBlocks`, which the test helper doesn't populate.
+                stylesSidebarPane.sectionBlocks =
+                    sectionBlocks;
+                const overloadedSection = sectionBlocks[0].sections.find(section => section.headerText() === 'div');
+                if (!overloadedSection) {
+                    assert.fail('Expected div section to exist');
+                }
+                assert.isTrue(overloadedSection.element.classList.contains('collapsed'), 'Section should be collapsed while the setting is enabled');
+                collapseSetting.set(false);
+                assert.isFalse(overloadedSection.element.classList.contains('collapsed'), 'Section should expand when the setting is turned off');
+                assert.isFalse(overloadedSection.element.classList.contains('collapsible'), 'Section should drop the collapsible marker when the setting is turned off');
+                collapseSetting.set(true);
+                assert.isTrue(overloadedSection.element.classList.contains('collapsed'), 'Section should collapse again when the setting is re-enabled');
+                assert.isTrue(overloadedSection.element.classList.contains('collapsible'), 'Section should be marked collapsible again when the setting is re-enabled');
+            });
             it('expands collapsed sections before adding a new blank property', async () => {
+                enableCollapse();
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.id = 1;
@@ -467,6 +566,7 @@ describe('StylesSidebarPane', () => {
                 assert.exists(treeElement, 'Expected a new blank property tree element to be created');
             });
             it('collapses inherited sections with all overloaded properties', async () => {
+                enableCollapse();
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.nodeName.returns('div');

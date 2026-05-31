@@ -93,9 +93,6 @@
       "path": "../../generated/generated-tsconfig.json"
     },
     {
-      "path": "../../generated/protocol-tsconfig.json"
-    },
-    {
       "path": "../../models/har/bundle-tsconfig.json"
     },
     {
@@ -112,9 +109,6 @@
     },
     {
       "path": "../../models/workspace/bundle-tsconfig.json"
-    },
-    {
-      "path": "../linear_memory_inspector/components/bundle-tsconfig.json"
     },
     {
       "path": "../../services/tracing/bundle-tsconfig.json"
