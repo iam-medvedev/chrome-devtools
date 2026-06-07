@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks, } from '../../../testing/LocaleHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
@@ -35,7 +36,7 @@ describe('ShortcutDialog', () => {
             open
         };
         container.append(shortcutDialog);
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         await RenderCoordinator.done();
         await raf();
         return shortcutDialog;

@@ -224,7 +224,7 @@ export const NativeFunctions = [
     {
         name: "create",
         signatures: [["?options"]],
-        receivers: ["CredentialsContainer", "Classifier"]
+        receivers: ["CredentialsContainer", "Classifier", "SemanticEmbedder"]
     },
     {
         name: "defineProperty",
@@ -6685,7 +6685,7 @@ export const NativeFunctions = [
     },
     {
         name: "copyElementImageToTexture",
-        signatures: [["source", "destination"], ["source", "width", "height", "destination"], ["source", "sx", "sy", "swidth", "sheight", "destination"], ["source", "sx", "sy", "swidth", "sheight", "width", "height", "destination"]]
+        signatures: [["source", "destination"]]
     },
     {
         name: "multiDrawIndirect",
@@ -6769,7 +6769,7 @@ export const NativeFunctions = [
     },
     {
         name: "texElementImage2D",
-        signatures: [["target", "level", "internalformat", "format", "type", "element"], ["target", "level", "internalformat", "width", "height", "format", "type", "element"], ["target", "level", "internalformat", "sx", "sy", "swidth", "sheight", "format", "type", "element"], ["target", "level", "internalformat", "sx", "sy", "swidth", "sheight", "width", "height", "format", "type", "element"]]
+        signatures: [["target", "internalformat", "element", "?config"]]
     },
     {
         name: "drawingBufferStorage",
@@ -8240,6 +8240,11 @@ export const NativeFunctions = [
         signatures: [["animatorName", "effects", "?timeline", "?options"]]
     },
     {
+        name: "availability",
+        signatures: [["?options"]],
+        receivers: ["SemanticEmbedder"]
+    },
+    {
         name: "classify",
         signatures: [["input", "?options"]]
     },
@@ -8254,6 +8259,10 @@ export const NativeFunctions = [
     {
         name: "LanguageModelToolError",
         signatures: [["init"]]
+    },
+    {
+        name: "embed",
+        signatures: [["input", "?options"]]
     },
     {
         name: "queryFeatureSupport",
@@ -8406,6 +8415,10 @@ export const NativeFunctions = [
     {
         name: "registerTool",
         signatures: [["tool", "?options"]]
+    },
+    {
+        name: "getTools",
+        signatures: [["?options"]]
     },
     {
         name: "executeTool",

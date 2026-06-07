@@ -11,7 +11,10 @@ import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import * as ComputedStyle from '../../../models/computed_style/computed_style.js';
+import * as Formatter from '../../../models/formatter/formatter.js';
+import * as TextUtils from '../../../models/text_utils/text_utils.js';
 import * as Trace from '../../../models/trace/trace.js';
+import * as Workspace from '../../../models/workspace/workspace.js';
 import * as PanelsCommon from '../../../panels/common/common.js';
 import * as TraceBounds from '../../../services/trace_bounds/trace_bounds.js';
 import * as Marked from '../../../third_party/marked/marked.js';
@@ -395,6 +398,10 @@ const UIStringsNotTranslate = {
      * @description Title for the character set declaration widget.
      */
     characterSet: 'Character set declaration',
+    /**
+     * @description Title for the source files list widget.
+     */
+    inspectedFileNames: 'Inspected file names',
 };
 export const DEFAULT_VIEW = (input, output, target) => {
     const hasAiV2 = Boolean(Root.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
@@ -1110,6 +1117,86 @@ async function makeSourceFileWidget(widgetData) {
         jslogContext: 'source-file-widget',
     };
 }
+async function makeSourceCodeWidget(widgetData) {
+    const url = widgetData.data.url;
+    const filename = url.split('/').pop() || url;
+    const line = widgetData.data.line;
+    const column = widgetData.data.column;
+    // If both line and column numbers are provided, we represent a specific function execution,
+    // so the widget title is formatted as 'filename:line:column' (matching the Sources Panel style).
+    // Otherwise, if line and column are not provided, we are viewing the entire file contents,
+    // so the header simply displays 'filename'.
+    const header = line !== undefined && column !== undefined ? `${filename}:${line}:${column}` : filename;
+    const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
+    const lastDotIndex = filename.lastIndexOf('.');
+    const fileExtension = lastDotIndex !== -1 ? filename.substring(lastDotIndex + 1) : '';
+    let code = widgetData.data.code;
+    if (TextUtils.TextUtils.isMinified(code)) {
+        const canonicalMimeType = uiSourceCode?.contentType().canonicalMimeType() || 'text/javascript';
+        const formatted = await Formatter.ScriptFormatter.formatScriptContent(canonicalMimeType, code, '  ');
+        code = formatted.formattedContent;
+    }
+    const renderedWidget = html `
+    <devtools-code-block
+      class="source-code-widget"
+      .displayLimit=${20}
+      .code=${code}
+      .codeLang=${fileExtension}
+      .displayToolbar=${false}
+      .displayNotice=${false}
+    ></devtools-code-block>
+  `;
+    return {
+        renderedWidget,
+        title: lockedString(header),
+        revealable: uiSourceCode,
+        accessibleRevealLabel: i18n.i18n.lockedString(`Show ${filename} in Sources`),
+        jslogContext: 'source-code-widget',
+    };
+}
+function renderFileRevealButton(file, collapsed) {
+    const onReveal = () => {
+        void Common.Revealer.reveal(file);
+    };
+    const accessibleLabel = i18n.i18n.lockedString(`Show ${file.fullDisplayName()}`);
+    const className = `widget-reveal-button ${collapsed ? 'collapsed-file' : 'visible-file'}`;
+    return html `
+    <devtools-button class=${className}
+      .variant=${"text" /* Buttons.Button.Variant.TEXT */}
+      .accessibleLabel=${accessibleLabel}
+      .jslogContext=${'reveal'}
+      @click=${onReveal}>
+      ${file.fullDisplayName()}
+      <devtools-icon name='tab-move'></devtools-icon>
+    </devtools-button>
+  `;
+}
+async function makeSourceFilesListWidget(widgetData) {
+    const files = widgetData.data.uiSourceCodes;
+    if (files.length === 0) {
+        return null;
+    }
+    // If there are more than 10 files, only show the first 10, and hide the rest unless "Show all" is clicked.
+    // clang-format off
+    const renderedWidget = html `
+    <div class="source-files-widget">
+      ${files.slice(0, 10).map(file => renderFileRevealButton(file, /* collapsed */ false))}
+      ${files.length > 10 ? html `
+        <details class="source-files-details">
+          <summary class="show-more-summary">${i18n.i18n.lockedString(`Show all ${files.length} files`)}</summary>
+          ${files.slice(10).map(file => renderFileRevealButton(file, /* collapsed */ true))}
+        </details> ` : Lit.nothing}
+    </div>`;
+    // clang-format on
+    const title = lockedString(UIStringsNotTranslate.inspectedFileNames);
+    return {
+        renderedWidget,
+        title,
+        revealable: files[0],
+        accessibleRevealLabel: i18n.i18n.lockedString('Reveal first file in Sources panel'),
+        jslogContext: 'source-files-list-widget',
+    };
+}
 function renderNetworkRequestPreview(networkRequest) {
     const filename = networkRequest.url.split('/').pop() || networkRequest.url;
     const size = i18n.ByteUtilities.bytesToString(networkRequest.size);
@@ -1208,12 +1295,16 @@ export function getWidgetSignature(widget) {
             return `${widget.name}:${widget.data.bounds.min}-${widget.data.bounds.max}`;
         case 'SOURCE_FILE':
             return `${widget.name}:${widget.data.uiSourceCode.url()}`;
+        case 'SOURCE_FILES_LIST':
+            return `${widget.name}:${widget.data.uiSourceCodes.map(f => f.url()).join(',')}`;
         case 'LIGHTHOUSE_REPORT':
             return `${widget.name}:${widget.data.report.fetchTime}`;
         case 'TIMELINE_EVENT_SUMMARY':
             return `${widget.name}:${widget.data.event.ts}:${widget.data.event.name}`;
         case 'NETWORK_REQUEST_GENERAL_HEADERS':
             return `${widget.name}:${widget.data.request.requestId()}`;
+        case 'SOURCE_CODE':
+            return `${widget.name}:${widget.data.url}:${widget.data.line ?? ''}:${widget.data.column ?? ''}`;
         default:
             Platform.assertNever(widget, 'Unknown AiWidget name');
     }
@@ -1292,6 +1383,9 @@ async function renderWidgets(widgets, options = {}) {
             case 'SOURCE_FILE':
                 response = await makeSourceFileWidget(widgetData);
                 break;
+            case 'SOURCE_FILES_LIST':
+                response = await makeSourceFilesListWidget(widgetData);
+                break;
             case 'LIGHTHOUSE_REPORT':
                 response = await makeLighthouseReportWidget(widgetData);
                 break;
@@ -1300,6 +1394,9 @@ async function renderWidgets(widgets, options = {}) {
                 break;
             case 'NETWORK_REQUEST_GENERAL_HEADERS':
                 response = await makeNetworkRequestGeneralHeadersWidget(widgetData);
+                break;
+            case 'SOURCE_CODE':
+                response = await makeSourceCodeWidget(widgetData);
                 break;
             default:
                 Platform.assertNever(widgetData, 'Unknown AiWidget name');

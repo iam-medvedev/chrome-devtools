@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
 describe('createIssueDescriptionFromMarkdown', () => {
     it('only accepts Markdown where the first AST element is a heading, describing the title', () => {

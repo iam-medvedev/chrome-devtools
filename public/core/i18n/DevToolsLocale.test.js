@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as i18n from './i18n.js';
 describe('DevToolsLocale', () => {
     // For tests, we assume DevTools supports all locales we throw at it.

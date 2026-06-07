@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
@@ -79,7 +80,7 @@ describeWithEnvironment('CreateRecordingView', () => {
     describe('view', () => {
         it('renders default view', async () => {
             const target = document.createElement('div');
-            renderElementIntoDOM(target);
+            renderElementIntoDOM(target, { includeCommonStyles: true });
             Components.CreateRecordingView.DEFAULT_VIEW({
                 name: 'test',
                 selectorAttribute: '',
@@ -99,7 +100,7 @@ describeWithEnvironment('CreateRecordingView', () => {
         });
         it('renders the error view', async () => {
             const target = document.createElement('div');
-            renderElementIntoDOM(target);
+            renderElementIntoDOM(target, { includeCommonStyles: true });
             Components.CreateRecordingView.DEFAULT_VIEW({
                 name: 'test',
                 selectorAttribute: '',

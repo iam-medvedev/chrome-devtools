@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Platform from '../../core/platform/platform.js';
 // eslint-disable-next-line @devtools/es-modules-import
 import * as StackTraceImpl from './stack_trace_impl.js';

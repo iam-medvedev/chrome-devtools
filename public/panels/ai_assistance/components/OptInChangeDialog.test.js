@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';

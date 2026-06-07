@@ -22,7 +22,7 @@ describe('RequestInitiatorView', () => {
     });
     it('renders empty request initiator view correctly', async () => {
         const component = document.createElement('div');
-        renderElementIntoDOM(component);
+        renderElementIntoDOM(component, { includeCommonStyles: true });
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/foo.js`, urlString `https://example.com`, null, null, null);
         const initiatorGraph = { initiators: new Set(), initiated: new Map() };
         Network.RequestInitiatorView.DEFAULT_VIEW({
@@ -34,7 +34,7 @@ describe('RequestInitiatorView', () => {
     });
     it('renders the initiator view with stack trace correctly', async () => {
         const component = document.createElement('div');
-        renderElementIntoDOM(component);
+        renderElementIntoDOM(component, { includeCommonStyles: true });
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/foo.js`, urlString `https://example.com`, null, null, {
             type: "script" /* Protocol.Network.InitiatorType.Script */,
         });
@@ -50,7 +50,7 @@ describe('RequestInitiatorView', () => {
     });
     it('renders the initiator view with initiator chain correctly', async () => {
         const component = document.createElement('div');
-        renderElementIntoDOM(component);
+        renderElementIntoDOM(component, { includeCommonStyles: true });
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/foo.js`, urlString `https://example.com`, null, null, null);
         const initiator = SDK.NetworkRequest.NetworkRequest.create('initiatorId', urlString `https://example.com/initiator.js`, urlString `https://example.com`, null, null, null);
         const initiatorGraph = { initiators: new Set([initiator, request]), initiated: new Map() };
@@ -63,7 +63,7 @@ describe('RequestInitiatorView', () => {
     });
     it('renders the initiator view with both stack trace and initiator chain correctly', async () => {
         const component = document.createElement('div');
-        renderElementIntoDOM(component);
+        renderElementIntoDOM(component, { includeCommonStyles: true });
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/foo.js`, urlString `https://example.com`, null, null, {
             type: "script" /* Protocol.Network.InitiatorType.Script */,
         });

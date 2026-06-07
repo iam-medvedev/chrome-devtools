@@ -256,6 +256,14 @@ var FrameImpl = class {
     this.rawName = rawName;
   }
 };
+function createParsedErrorStackFrameImplFromEvalOrigin(evalOrigin, parsedFrameInfo) {
+  if (!evalOrigin || evalOrigin.frames.length === 0) {
+    return void 0;
+  }
+  const frame = evalOrigin.frames[0];
+  const nestedOrigin = createParsedErrorStackFrameImplFromEvalOrigin(evalOrigin.evalOrigin, parsedFrameInfo?.evalOrigin?.parsedFrameInfo);
+  return new ParsedErrorStackFrameImpl(frame, parsedFrameInfo?.evalOrigin?.parsedFrameInfo, nestedOrigin);
+}
 var ParsedErrorStackFragmentImpl = class {
   fragment;
   constructor(fragment) {
@@ -267,21 +275,22 @@ var ParsedErrorStackFragmentImpl = class {
     }
     const frames = [];
     for (const node of this.fragment.node.getCallStack()) {
+      const evalOrigin = createParsedErrorStackFrameImplFromEvalOrigin(node.evalOrigin, node.parsedFrameInfo);
       for (const frame of node.frames) {
-        frames.push(new ParsedErrorStackFrameImpl(frame, node.parsedFrameInfo, node.evalOriginFrames));
+        frames.push(new ParsedErrorStackFrameImpl(frame, node.parsedFrameInfo, evalOrigin));
       }
     }
     return frames;
   }
 };
-var ParsedErrorStackFrameImpl = class _ParsedErrorStackFrameImpl {
+var ParsedErrorStackFrameImpl = class {
   #frame;
   #parsedFrameInfo;
-  #evalOriginFrames;
-  constructor(frame, parsedFrameInfo, evalOriginFrames) {
+  #evalOrigin;
+  constructor(frame, parsedFrameInfo, evalOrigin) {
     this.#frame = frame;
     this.#parsedFrameInfo = parsedFrameInfo;
-    this.#evalOriginFrames = evalOriginFrames;
+    this.#evalOrigin = evalOrigin;
   }
   get url() {
     return this.#frame.url;
@@ -314,10 +323,7 @@ var ParsedErrorStackFrameImpl = class _ParsedErrorStackFrameImpl {
     return this.#parsedFrameInfo?.isEval;
   }
   get evalOrigin() {
-    if (!this.#evalOriginFrames || this.#evalOriginFrames.length === 0) {
-      return void 0;
-    }
-    return new _ParsedErrorStackFrameImpl(this.#evalOriginFrames[0], this.#parsedFrameInfo?.evalOrigin?.parsedFrameInfo);
+    return this.#evalOrigin;
   }
   get isWasm() {
     return this.#parsedFrameInfo?.isWasm;
@@ -406,6 +412,7 @@ import * as StackTrace from "./stack_trace.js";
 // gen/front_end/models/stack_trace/Trie.js
 var Trie_exports = {};
 __export(Trie_exports, {
+  EvalOrigin: () => EvalOrigin,
   FrameNode: () => FrameNode,
   Trie: () => Trie,
   compareRawFrames: () => compareRawFrames,
@@ -414,6 +421,14 @@ __export(Trie_exports, {
 function isBuiltinFrame(rawFrame) {
   return rawFrame.lineNumber === -1 && rawFrame.columnNumber === -1 && !Boolean(rawFrame.scriptId) && !Boolean(rawFrame.url);
 }
+var EvalOrigin = class {
+  frames;
+  evalOrigin;
+  constructor(frames, evalOrigin) {
+    this.frames = frames;
+    this.evalOrigin = evalOrigin;
+  }
+};
 var FrameNode = class {
   parent;
   children = [];
@@ -421,7 +436,7 @@ var FrameNode = class {
   frames = [];
   fragment;
   parsedFrameInfo;
-  evalOriginFrames;
+  evalOrigin;
   constructor(rawFrame, parent) {
     this.rawFrame = rawFrame;
     this.parent = parent;
@@ -638,17 +653,16 @@ var StackTraceModel = class extends SDK.SDKModel.SDKModel {
     const evalOriginPromises = [];
     for (const node of fragment.node.getCallStack()) {
       if (node.parsedFrameInfo?.evalOrigin) {
-        evalOriginPromises.push(rawFramesToUIFrames([node.parsedFrameInfo.evalOrigin], this.target()));
+        evalOriginPromises.push(translateEvalOrigin(node.parsedFrameInfo.evalOrigin, rawFramesToUIFrames, this.target()));
       }
     }
-    const evalUiFrames = await Promise.all(evalOriginPromises);
+    const evalOrigins = await Promise.all(evalOriginPromises);
     let i = 0;
     let evalI = 0;
     for (const node of fragment.node.getCallStack()) {
       node.frames = uiFrames[i++].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, node.rawFrame.functionName));
       if (node.parsedFrameInfo?.evalOrigin) {
-        const evalOriginRawFrame = node.parsedFrameInfo.evalOrigin;
-        node.evalOriginFrames = evalUiFrames[evalI++][0].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, evalOriginRawFrame.functionName));
+        node.evalOrigin = evalOrigins[evalI++];
       }
     }
   }
@@ -674,6 +688,15 @@ var StackTraceModel = class extends SDK.SDKModel.SDKModel {
   }
 };
 _a = StackTraceModel;
+async function translateEvalOrigin(rawFrame, rawFramesToUIFrames, target) {
+  const uiFrames = await rawFramesToUIFrames([rawFrame], target);
+  const frames = uiFrames[0].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, rawFrame.functionName));
+  let parentEvalOrigin;
+  if (rawFrame.parsedFrameInfo?.evalOrigin) {
+    parentEvalOrigin = await translateEvalOrigin(rawFrame.parsedFrameInfo.evalOrigin, rawFramesToUIFrames, target);
+  }
+  return new EvalOrigin(frames, parentEvalOrigin);
+}
 SDK.SDKModel.SDKModel.register(StackTraceModel, { capabilities: 0, autostart: false });
 export {
   DetailedErrorStackParser_exports as DetailedErrorStackParser,

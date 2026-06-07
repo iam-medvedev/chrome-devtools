@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
@@ -87,7 +88,7 @@ describe('ExploreWidget', () => {
     describe('view', () => {
         it('looks fine', async () => {
             const target = document.createElement('div');
-            renderElementIntoDOM(target);
+            renderElementIntoDOM(target, { includeCommonStyles: true });
             AiAssistance.ExploreWidget.DEFAULT_VIEW({
                 featureCards: [{
                         icon: 'brush-2',

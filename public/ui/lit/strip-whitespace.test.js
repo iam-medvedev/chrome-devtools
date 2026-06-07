@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { html } from './lit.js';
 describe('html', () => {
     it('should return the same string if there are no newlines', () => {

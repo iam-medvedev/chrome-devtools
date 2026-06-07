@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertNodeTextContent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as NodeText from './node_text.js';
 describe('NodeText', () => {

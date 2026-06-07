@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -49,7 +50,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api?foo=bar&baz=qux`, urlString ``, null, null, null);
         const view = new Network.RequestPayloadView.RequestPayloadView();
         view.request = request;
-        renderElementIntoDOM(view);
+        renderElementIntoDOM(view, { includeCommonStyles: true });
         view.wasShown();
         await assertScreenshot('network/request-payload-query-params.png');
     });
@@ -60,7 +61,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         sinon.stub(request, 'requestFormData').resolves('foo=bar&baz=qux');
         const view = new Network.RequestPayloadView.RequestPayloadView();
         view.request = request;
-        renderElementIntoDOM(view);
+        renderElementIntoDOM(view, { includeCommonStyles: true });
         view.wasShown();
         await view.updateComplete;
         await assertScreenshot('network/request-payload-data-params.png');
@@ -69,7 +70,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api?foo=bar%20baz`, urlString ``, null, null, null);
         const view = new Network.RequestPayloadView.RequestPayloadView();
         view.request = request;
-        renderElementIntoDOM(view);
+        renderElementIntoDOM(view, { includeCommonStyles: true });
         view.wasShown();
         await view.updateComplete;
         const treeOutline = view.element.querySelector('.request-payload-tree');
@@ -94,7 +95,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api?foo=bar`, urlString ``, null, null, null);
         const view = new Network.RequestPayloadView.RequestPayloadView();
         view.request = request;
-        renderElementIntoDOM(view);
+        renderElementIntoDOM(view, { includeCommonStyles: true });
         view.wasShown();
         await view.updateComplete;
         const treeOutline = view.element.querySelector('.request-payload-tree');
@@ -135,7 +136,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://example.com/api?foo=${text}`, urlString ``, null, null, null);
         const view = new Network.RequestPayloadView.RequestPayloadView();
         view.request = request;
-        renderElementIntoDOM(view);
+        renderElementIntoDOM(view, { includeCommonStyles: true });
         view.wasShown();
         await view.updateComplete;
         const treeOutline = view.element.querySelector('.request-payload-tree');
@@ -161,7 +162,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         sinon.stub(request, 'requestFormData').resolves('{"foo": "bar"}');
         const view = new Network.RequestPayloadView.RequestPayloadView();
         view.request = request;
-        renderElementIntoDOM(view);
+        renderElementIntoDOM(view, { includeCommonStyles: true });
         view.wasShown();
         await view.updateComplete;
         const treeOutline = view.element.querySelector('.request-payload-tree');
@@ -203,7 +204,7 @@ describeWithEnvironment('RequestPayloadView', () => {
         sinon.stub(request, 'requestFormData').resolves('{"foo": "bar"}');
         const view = new Network.RequestPayloadView.RequestPayloadView();
         view.request = request;
-        renderElementIntoDOM(view);
+        renderElementIntoDOM(view, { includeCommonStyles: true });
         view.wasShown();
         await view.updateComplete;
         const treeOutline = view.element.querySelector('.request-payload-tree');

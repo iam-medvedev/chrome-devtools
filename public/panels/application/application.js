@@ -6333,7 +6333,9 @@ var PrefetchReasonDescription = {
   PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler: { name: () => i18n23.i18n.lockedString("Unknown") },
   PrefetchNotEligibleRedirectFromServiceWorker: { name: () => i18n23.i18n.lockedString("Unknown") },
   PrefetchNotEligibleRedirectToServiceWorker: { name: () => i18n23.i18n.lockedString("Unknown") },
-  PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings12.PrefetchEvictedAfterBrowsingDataRemoved) }
+  PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings12.PrefetchEvictedAfterBrowsingDataRemoved) },
+  PrefetchNotEligibleBlockedByConnectionAllowlist: { name: () => i18n23.i18n.lockedString("Unknown") },
+  PrefetchCancelledOnUserNavigation: { name: () => i18n23.i18n.lockedString("Unknown") }
 };
 function ruleSetLocationShort(ruleSet, pageURL2) {
   const url = ruleSet.url === void 0 ? pageURL2 : ruleSet.url;
@@ -15223,6 +15225,7 @@ __export(CookieItemsView_exports, {
 import * as Common18 from "./../../core/common/common.js";
 import * as i18n63 from "./../../core/i18n/i18n.js";
 import * as SDK26 from "./../../core/sdk/sdk.js";
+import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as CookieTable from "./../../ui/legacy/components/cookie_table/cookie_table.js";
@@ -15449,6 +15452,7 @@ var CookieItemsView = class extends UI31.Widget.VBox {
     this.cookieDomain = domain;
     this.refreshItems();
     this.model.addEventListener("CookieListUpdated", this.onCookieListUpdate, this);
+    this.updateAiAssistanceContext(null);
   }
   performUpdate() {
     const that = this;
@@ -15485,6 +15489,7 @@ var CookieItemsView = class extends UI31.Widget.VBox {
   wasShown() {
     super.wasShown();
     this.refreshItems();
+    this.updateAiAssistanceContext(this.selectedCookie);
   }
   showPreview(cookie) {
     if (cookie === this.selectedCookie) {
@@ -15492,6 +15497,21 @@ var CookieItemsView = class extends UI31.Widget.VBox {
     }
     this.selectedCookie = cookie;
     this.requestUpdate();
+    this.updateAiAssistanceContext(cookie);
+  }
+  updateAiAssistanceContext(cookie) {
+    if (!cookie || cookie.httpOnly()) {
+      UI31.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, null);
+      return;
+    }
+    const target = SDK26.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainPageOrigin = target?.inspectedURL() ? Common18.ParsedURL.ParsedURL.extractOrigin(target.inspectedURL()) : "";
+    if (!mainPageOrigin) {
+      UI31.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, null);
+      return;
+    }
+    const storageItem = new AiAssistanceModel.StorageItem.CookieItem(mainPageOrigin, this.cookieDomain, cookie.name());
+    UI31.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, storageItem);
   }
   handleCookieSelected(selectedCookie) {
     if (!this.#toolbar) {
@@ -16670,7 +16690,7 @@ __export(DOMStorageItemsView_exports, {
 import * as Common19 from "./../../core/common/common.js";
 import * as i18n67 from "./../../core/i18n/i18n.js";
 import * as SDK27 from "./../../core/sdk/sdk.js";
-import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
+import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
 import * as TextUtils4 from "./../../models/text_utils/text_utils.js";
 import * as SourceFrame7 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI33 from "./../../ui/legacy/legacy.js";
@@ -16795,13 +16815,14 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
     const parsedKey = SDK27.StorageKeyManager.parseStorageKey(storageKey);
     const origin = parsedKey.origin;
     const storageType = this.domStorage.isLocalStorage ? "localStorage" : "sessionStorage";
-    if (!item2) {
-      const storageItem2 = new AiAssistanceModel.StorageItem.StorageItem({ origin, storageKey });
-      UI33.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, storageItem2);
+    const target = SDK27.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainPageOrigin = target?.inspectedURL() ? Common19.ParsedURL.ParsedURL.extractOrigin(target.inspectedURL()) : "";
+    if (!mainPageOrigin) {
+      UI33.Context.Context.instance().setFlavor(AiAssistanceModel2.StorageItem.StorageItem, null);
       return;
     }
-    const storageItem = new AiAssistanceModel.StorageItem.StorageItem({ origin, storageKey, storageType, key: item2.key });
-    UI33.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, storageItem);
+    const storageItem = new AiAssistanceModel2.StorageItem.DOMStorageItem(mainPageOrigin, origin, storageKey, storageType, item2 ? item2.key : void 0);
+    UI33.Context.Context.instance().setFlavor(AiAssistanceModel2.StorageItem.StorageItem, storageItem);
   }
   removeItem(key) {
     this.domStorage?.removeItem(key);

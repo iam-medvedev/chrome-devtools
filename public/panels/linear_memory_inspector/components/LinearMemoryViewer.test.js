@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertElements, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 const NUM_BYTES_PER_GROUP = 4;

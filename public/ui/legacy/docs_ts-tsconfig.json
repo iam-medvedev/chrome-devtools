@@ -37,9 +37,7 @@
     ],
     "types": [
       "mocha",
-      "chai",
-      "sinon",
-      "karma-chai-sinon"
+      "sinon"
     ],
     "useUnknownInCatchVariables": false
   },
@@ -56,6 +54,9 @@
   "references": [
     {
       "path": "./bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
       "path": "../lit/bundle-tsconfig.json"

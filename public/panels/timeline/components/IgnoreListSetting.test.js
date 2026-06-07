@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
@@ -13,7 +14,6 @@ describeWithEnvironment('Ignore List Setting', () => {
     async function renderIgnoreListSetting() {
         const component = new TimelineComponents.IgnoreListSetting.IgnoreListSetting();
         renderElementIntoDOM(component);
-        component.requestUpdate();
         await component.updateComplete;
         return component.element;
     }

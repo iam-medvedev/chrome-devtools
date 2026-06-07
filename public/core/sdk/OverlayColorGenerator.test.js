@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as SDK from './sdk.js';
 describe('OverlayColorGenerator', () => {
     it('generates colors for at least 100 iterations', () => {

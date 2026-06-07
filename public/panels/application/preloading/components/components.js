@@ -404,7 +404,9 @@ var PrefetchReasonDescription = {
   PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler: { name: () => i18n.i18n.lockedString("Unknown") },
   PrefetchNotEligibleRedirectFromServiceWorker: { name: () => i18n.i18n.lockedString("Unknown") },
   PrefetchNotEligibleRedirectToServiceWorker: { name: () => i18n.i18n.lockedString("Unknown") },
-  PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings.PrefetchEvictedAfterBrowsingDataRemoved) }
+  PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings.PrefetchEvictedAfterBrowsingDataRemoved) },
+  PrefetchNotEligibleBlockedByConnectionAllowlist: { name: () => i18n.i18n.lockedString("Unknown") },
+  PrefetchCancelledOnUserNavigation: { name: () => i18n.i18n.lockedString("Unknown") }
 };
 function prefetchFailureReason({ prefetchStatus }, statusCode) {
   switch (prefetchStatus) {
@@ -486,6 +488,10 @@ function prefetchFailureReason({ prefetchStatus }, statusCode) {
       return PrefetchReasonDescription["PrefetchNotEligibleRedirectToServiceWorker"].name();
     case "PrefetchEvictedAfterBrowsingDataRemoved":
       return PrefetchReasonDescription["PrefetchEvictedAfterBrowsingDataRemoved"].name();
+    case "PrefetchNotEligibleBlockedByConnectionAllowlist":
+      return PrefetchReasonDescription["PrefetchNotEligibleBlockedByConnectionAllowlist"].name();
+    case "PrefetchCancelledOnUserNavigation":
+      return PrefetchReasonDescription["PrefetchCancelledOnUserNavigation"].name();
     default:
       return i18n.i18n.lockedString(`Unknown failure reason: ${prefetchStatus}`);
   }

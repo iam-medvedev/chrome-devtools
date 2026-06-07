@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as Persistence from '../../models/persistence/persistence.js';
@@ -33,7 +34,7 @@ describeWithEnvironment('SelectWorkspaceDialog', () => {
         const component = new AiAssistance.SelectWorkspaceDialog({ dialog, onProjectSelected }, view);
         component.markAsRoot();
         const container = document.createElement('div');
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         component.show(container);
         await view.nextInput;
         sinon.assert.callCount(view, 1);
@@ -52,7 +53,7 @@ describeWithEnvironment('SelectWorkspaceDialog', () => {
             target.style.maxWidth = '420px';
             target.style.maxHeight = '600px';
             target.style.padding = '12px';
-            renderElementIntoDOM(target);
+            renderElementIntoDOM(target, { includeCommonStyles: true });
             AiAssistance.SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW({
                 folders: [
                     {

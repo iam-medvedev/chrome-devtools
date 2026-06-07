@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as Models from '../models/models.js';

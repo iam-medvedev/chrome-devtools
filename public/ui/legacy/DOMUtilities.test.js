@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import * as UI from './legacy.js';
 const cssInJS = (strings, ...values) => String.raw({ raw: strings }, ...values);

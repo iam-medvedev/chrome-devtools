@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as puppeteer from '../../third_party/puppeteer/puppeteer.js';
+// Matches the ProtocolError found in node_modules/puppeteer-core/src/common/Errors.ts
+class ProtocolError extends Error {
+    code;
+    data;
+    constructor(message, code, data) {
+        super(message);
+        this.code = code;
+        this.data = data;
+        this.name = 'ProtocolError';
+    }
+}
 /**
  * This class serves as a puppeteer.Connection while sending/receiving CDP messages
  * over DevTools' own SessionRouter.
@@ -11,7 +22,7 @@ import * as puppeteer from '../../third_party/puppeteer/puppeteer.js';
  *
  * Since we see all CDPEvents, we filter out the ones whose session we don't know about.
  */
-class PuppeteerConnectionAdapter extends puppeteer.Connection {
+export class PuppeteerConnectionAdapter extends puppeteer.Connection {
     #connection;
     #sessionId;
     constructor(connection, sessionId) {
@@ -29,7 +40,12 @@ class PuppeteerConnectionAdapter extends puppeteer.Connection {
     _options) {
         return this.#connection
             .send(method, params, sessionId ?? this.#sessionId)
-            .then(response => 'result' in response ? response.result : {});
+            .then(response => {
+            if ('error' in response) {
+                throw new ProtocolError(response.error.message, response.error.code, response.error.data);
+            }
+            return response.result;
+        });
     }
     onEvent(event) {
         const { sessionId } = event;

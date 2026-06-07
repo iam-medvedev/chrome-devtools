@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Platform from '../../../core/platform/platform.js';
 import { assertScreenshot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
@@ -99,7 +100,7 @@ describeWithEnvironment('RequestHeaderSection', () => {
     });
     it('renders correctly', async () => {
         const container = document.createElement('div');
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         NetworkComponents.RequestHeaderSection.DEFAULT_VIEW({
             headers: [
                 {

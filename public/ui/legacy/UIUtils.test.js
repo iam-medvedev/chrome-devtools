@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as i18n from '../../core/i18n/i18n.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createFakeSetting } from '../../testing/EnvironmentHelpers.js';

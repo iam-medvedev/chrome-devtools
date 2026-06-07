@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert, expect } from 'chai';
 import { restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';

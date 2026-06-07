@@ -17,7 +17,7 @@ describeWithEnvironment('RadioSetting', () => {
             { value: 'c', label: () => 'Option C' },
         ];
         const radioSetting = new lighthouse.RadioSetting.RadioSetting(options, setting, 'Test Radio Setting');
-        renderElementIntoDOM(radioSetting.element);
+        renderElementIntoDOM(radioSetting.element, { includeCommonStyles: true });
         await assertScreenshot('lighthouse/RadioSetting.png');
     });
 });

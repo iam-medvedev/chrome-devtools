@@ -45,12 +45,6 @@
       "path": "../entrypoints/devtools_app/entrypoint-tsconfig.json"
     },
     {
-      "path": "../panels/console_counters/bundle-tsconfig.json"
-    },
-    {
-      "path": "../panels/event_listeners/bundle-tsconfig.json"
-    },
-    {
       "path": "test_runner/bundle-tsconfig.json"
     }
   ]

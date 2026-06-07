@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
@@ -24,7 +25,8 @@ describe('DOMBreakpointsSidebarPane', () => {
         const container = document.createElement('div');
         container.classList.add('sources', 'panel');
         container.style.width = '300px';
-        renderElementIntoDOM(container);
+        container.style.position = 'relative';
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         const shadowHost = container.createChild('div');
         const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
         const target = shadowRoot.createChild('div');
@@ -41,7 +43,8 @@ describe('DOMBreakpointsSidebarPane', () => {
         const container = document.createElement('div');
         container.classList.add('elements', 'panel');
         container.style.width = '300px';
-        renderElementIntoDOM(container);
+        container.style.position = 'relative';
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         const shadowHost = container.createChild('div');
         const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
         const target = shadowRoot.createChild('div');
@@ -57,7 +60,7 @@ describe('DOMBreakpointsSidebarPane', () => {
     it('renders correctly with some breakpoints', async () => {
         const container = document.createElement('div');
         container.style.width = '300px';
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         const shadowHost = container.createChild('div');
         const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
         const target = shadowRoot.createChild('div');

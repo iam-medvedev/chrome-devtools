@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -715,7 +716,21 @@ describeWithMockConnection('ContextSelectionAgent', function () {
                     [{ explanation: 'Done' }],
                 ]),
             });
-            await Array.fromAsync(agent.run('test', { selected: null }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.exists(actionResponse);
+            assert.deepEqual(actionResponse, {
+                type: "action" /* AiAgent.ResponseType.ACTION */,
+                code: 'listSourceFiles()',
+                output: '[{"file":"script.js","id":1}]',
+                widgets: [{
+                        name: 'SOURCE_FILES_LIST',
+                        data: {
+                            uiSourceCodes: [file],
+                        },
+                    }],
+                canceled: false,
+            });
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
             assert.isOk(requestToAida.historical_contexts);
             assert.isOk(requestToAida.historical_contexts[2].parts);
@@ -760,7 +775,21 @@ describeWithMockConnection('ContextSelectionAgent', function () {
                 ]),
                 allowedOrigin: () => ({ origin: 'https://example.com' }),
             });
-            await Array.fromAsync(agent.run('test', { selected: null }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.exists(actionResponse);
+            assert.deepEqual(actionResponse, {
+                type: "action" /* AiAgent.ResponseType.ACTION */,
+                code: 'listSourceFiles()',
+                output: '[{"file":"script.js","id":1}]',
+                widgets: [{
+                        name: 'SOURCE_FILES_LIST',
+                        data: {
+                            uiSourceCodes: [file1],
+                        },
+                    }],
+                canceled: false,
+            });
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
             assert.isOk(requestToAida.historical_contexts);
             assert.isOk(requestToAida.historical_contexts[2].parts);

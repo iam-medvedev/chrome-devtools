@@ -1,14 +1,15 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Host from '../../../core/host/host.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 function mockConversationContext() {
     return new (class extends AiAssistance.AiAgent.ConversationContext {
-        getOrigin() {
-            return 'origin';
+        getURL() {
+            return 'https://origin.test';
         }
         getItem() {
             return null;
@@ -311,13 +312,13 @@ describeWithEnvironment('AiAgent', () => {
         });
     });
     describe('ConversationContext', () => {
-        function getTestContext(origin) {
+        function getTestContext(url) {
             class TestContext extends AiAssistance.AiAgent.ConversationContext {
                 getTitle() {
                     throw new Error('Method not implemented.');
                 }
-                getOrigin() {
-                    return origin;
+                getURL() {
+                    return url;
                 }
                 getItem() {
                     return undefined;
@@ -387,19 +388,20 @@ describeWithEnvironment('AiAgent', () => {
                     establishedOrigin: 'detached',
                     isAllowed: false,
                 },
+                {
+                    dataOrigin: 'trace-1-10',
+                    establishedOrigin: 'trace-1-10',
+                    isAllowed: true,
+                },
+                {
+                    dataOrigin: 'trace-1-10',
+                    establishedOrigin: 'trace-1-20',
+                    isAllowed: false,
+                },
             ];
             for (const test of tests) {
                 assert.strictEqual(getTestContext(test.dataOrigin).isOriginAllowed(test.establishedOrigin), test.isAllowed, `Checking origin ${test.dataOrigin} against ${test.establishedOrigin}`);
             }
-        });
-        it('identifies opaque origins', () => {
-            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('null'));
-            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('data:'));
-            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('about://'));
-            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('about:srcdoc'));
-            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('detached'));
-            assert.isTrue(AiAssistance.AiAgent.isOpaqueOrigin('detached:123'));
-            assert.isFalse(AiAssistance.AiAgent.isOpaqueOrigin('https://google.com'));
         });
     });
     describe('functions', () => {
@@ -539,6 +541,43 @@ describeWithEnvironment('AiAgent', () => {
             const errorResponse = findFirstErrorResponse(responses);
             assert.strictEqual(errorResponse.error, "cross-origin" /* AiAssistance.AiAgent.ErrorType.CROSS_ORIGIN */);
             // Verify that the handler was only called once (the dry run) and not re-invoked after approval.
+            assert.strictEqual(called, 1);
+        });
+        it('should abort execution if origin becomes blocked during handler execution', async () => {
+            let called = 0;
+            let originBlocked = false;
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient([
+                    [
+                        {
+                            explanation: 'Calling function',
+                            functionCalls: [{ name: 'testFn', args: {} }],
+                        },
+                    ],
+                    [{
+                            explanation: 'Final answer',
+                        }]
+                ]),
+                allowedOrigin: () => originBlocked ? { blocked: true } : { origin: 'https://google.com' },
+            });
+            agent.declareFunctionForTest('testFn', {
+                description: 'test fn description',
+                parameters: {
+                    type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                    description: 'test parameters',
+                    properties: {},
+                    required: []
+                },
+                handler: async (_args, _options) => {
+                    called++;
+                    // Simulate navigation happening DURING handler execution.
+                    originBlocked = true;
+                    return { result: 'success' };
+                },
+            });
+            const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
+            const errorResponse = findFirstErrorResponse(responses);
+            assert.strictEqual(errorResponse.error, "cross-origin" /* AiAssistance.AiAgent.ErrorType.CROSS_ORIGIN */);
             assert.strictEqual(called, 1);
         });
     });

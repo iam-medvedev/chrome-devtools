@@ -377,6 +377,7 @@ export declare abstract class HeapSnapshot {
     retainingEdgesFilter(): ((arg0: HeapSnapshotEdge) => boolean) | null;
     containmentEdgesFilter(): ((arg0: HeapSnapshotEdge) => boolean) | null;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotEdgesProvider;
+    getRetainingPaths(nodeIndex: number, maxDepth?: number, maxNodes?: number, maxSiblings?: number): HeapSnapshotModel.HeapSnapshotModel.RetainingPaths;
     createAddedNodesProvider(baseSnapshotId: string, classKey: string): HeapSnapshotNodesProvider;
     createDeletedNodesProvider(nodeIndexes: number[]): HeapSnapshotNodesProvider;
     createNodesProviderForClass(classKey: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotNodesProvider;

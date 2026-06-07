@@ -37,16 +37,16 @@
     ],
     "types": [
       "mocha",
-      "chai",
-      "sinon",
-      "karma-chai-sinon"
+      "sinon"
     ],
     "useUnknownInCatchVariables": false
   },
   "files": [
     "../../../../../../front_end/models/ai_assistance/AgentProject.test.ts",
+    "../../../../../../front_end/models/ai_assistance/AiAgent2.test.ts",
     "../../../../../../front_end/models/ai_assistance/AiConversation.test.ts",
     "../../../../../../front_end/models/ai_assistance/AiHistoryStorage.test.ts",
+    "../../../../../../front_end/models/ai_assistance/AiOrigins.test.ts",
     "../../../../../../front_end/models/ai_assistance/AiUtils.test.ts",
     "../../../../../../front_end/models/ai_assistance/BuiltInAi.test.ts",
     "../../../../../../front_end/models/ai_assistance/ChangeManager.test.ts",
@@ -65,6 +65,7 @@
     "../../../../../../front_end/models/ai_assistance/agents/StorageAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StylingAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AICallTree.test.ts",
+    "../../../../../../front_end/models/ai_assistance/performance/AIContext.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AIQueries.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -112,6 +113,9 @@
     },
     {
       "path": "../network_time_calculator/bundle-tsconfig.json"
+    },
+    {
+      "path": "../source_map_scopes/bundle-tsconfig.json"
     },
     {
       "path": "../text_utils/bundle-tsconfig.json"

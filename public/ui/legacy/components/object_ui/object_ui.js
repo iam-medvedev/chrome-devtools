@@ -53,7 +53,6 @@ __export(ObjectPropertiesSection_exports, {
   InitialVisibleChildrenLimit: () => InitialVisibleChildrenLimit,
   OBJECT_PROPERTY_DEFAULT_VIEW: () => OBJECT_PROPERTY_DEFAULT_VIEW,
   ObjectPropertiesSection: () => ObjectPropertiesSection,
-  ObjectPropertiesSectionsTreeExpandController: () => ObjectPropertiesSectionsTreeExpandController,
   ObjectPropertiesSectionsTreeOutline: () => ObjectPropertiesSectionsTreeOutline,
   ObjectPropertyTreeElement: () => ObjectPropertyTreeElement,
   ObjectPropertyWidget: () => ObjectPropertyWidget,
@@ -254,7 +253,20 @@ var RemoteObjectPreviewFormatter = class _RemoteObjectPreviewFormatter {
     }
   }
   renderPropertyPreview(type, subtype, className, description) {
-    const title = type === "accessor" ? i18nString(UIStrings.thePropertyIsComputedWithAGetter) : type === "object" && !subtype ? description : void 0;
+    let title;
+    switch (type) {
+      case "accessor":
+        title = i18nString(UIStrings.thePropertyIsComputedWithAGetter);
+        break;
+      case "string":
+        title = description;
+        break;
+      case "object":
+        if (!subtype) {
+          title = description;
+        }
+        break;
+    }
     const abbreviateFullQualifiedClassName = (description2) => {
       const abbreviatedDescription = description2.split(".");
       for (let i = 0; i < abbreviatedDescription.length - 1; ++i) {
@@ -297,7 +309,7 @@ function renderNodeTitle(nodeTitle) {
   return html`<span class=webkit-html-tag-name>${match[1]}</span>${match[2] && html`<span class=webkit-html-attribute-value>${match[2]}</span>`}${match[3] && html`<span class=webkit-html-attribute-name>${match[3]}</span>`}`;
 }
 function renderTrustedType(description, className) {
-  return html`${className} <span class=object-value-string>"${description.replace(/\n/g, "\u21B5")}"</span>`;
+  return html`${className} <span class=object-value-string title=${description}>"${description.replace(/\n/g, "\u21B5")}"</span>`;
 }
 
 // gen/front_end/ui/legacy/components/object_ui/JavaScriptREPL.js
@@ -2241,73 +2253,6 @@ var ArrayGroupingTreeElement = class _ArrayGroupingTreeElement extends UI2.TreeO
   // These should be module constants but they are modified by layout tests.
   static bucketThreshold = 100;
   static sparseIterationThreshold = 25e4;
-};
-var ObjectPropertiesSectionsTreeExpandController = class _ObjectPropertiesSectionsTreeExpandController {
-  static #propertyPathCache = /* @__PURE__ */ new WeakMap();
-  static #sectionMap = /* @__PURE__ */ new WeakMap();
-  #expandedProperties = /* @__PURE__ */ new Set();
-  constructor(treeOutline) {
-    treeOutline.addEventListener(UI2.TreeOutline.Events.ElementAttached, this.#elementAttached, this);
-    treeOutline.addEventListener(UI2.TreeOutline.Events.ElementExpanded, this.#elementExpanded, this);
-    treeOutline.addEventListener(UI2.TreeOutline.Events.ElementCollapsed, this.#elementCollapsed, this);
-  }
-  watchSection(id, section) {
-    _ObjectPropertiesSectionsTreeExpandController.#sectionMap.set(section, id);
-    if (this.#expandedProperties.has(id)) {
-      section.expand();
-    }
-  }
-  stopWatchSectionsWithId(id) {
-    for (const property of this.#expandedProperties) {
-      if (property.startsWith(id + ":")) {
-        this.#expandedProperties.delete(property);
-      }
-    }
-  }
-  #elementAttached(event) {
-    const element = event.data;
-    if (element.isExpandable() && this.#expandedProperties.has(this.#propertyPath(element))) {
-      element.expand();
-    }
-  }
-  #elementExpanded(event) {
-    const element = event.data;
-    this.#expandedProperties.add(this.#propertyPath(element));
-  }
-  #elementCollapsed(event) {
-    const element = event.data;
-    this.#expandedProperties.delete(this.#propertyPath(element));
-  }
-  #propertyPath(treeElement) {
-    const cachedPropertyPath = _ObjectPropertiesSectionsTreeExpandController.#propertyPathCache.get(treeElement);
-    if (cachedPropertyPath) {
-      return cachedPropertyPath;
-    }
-    let current = treeElement;
-    let sectionRoot = current;
-    if (!treeElement.treeOutline) {
-      throw new Error("No tree outline available");
-    }
-    const rootElement = treeElement.treeOutline.rootElement();
-    let result;
-    while (current !== rootElement) {
-      let currentName = "";
-      if (current instanceof ObjectPropertyTreeElement) {
-        currentName = current.property.name;
-      } else {
-        currentName = typeof current.title === "string" ? current.title : current.title.textContent || "";
-      }
-      result = currentName + (result ? "." + result : "");
-      sectionRoot = current;
-      if (current.parent) {
-        current = current.parent;
-      }
-    }
-    const treeOutlineId = _ObjectPropertiesSectionsTreeExpandController.#sectionMap.get(sectionRoot);
-    result = treeOutlineId + (result ? ":" + result : "");
-    _ObjectPropertiesSectionsTreeExpandController.#propertyPathCache.set(treeElement, result);
-    return result;
-  }
 };
 var rendererInstance;
 var Renderer = class _Renderer {

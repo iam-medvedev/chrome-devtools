@@ -3,24 +3,14 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
+import { areOriginsEquivalent, extractContextOrigin, isOpaqueOrigin } from '../AiOrigins.js';
 import { debugLog, isStructuredLogEnabled } from '../debug.js';
 const MAX_SUGGESTION_LENGTH = 200;
-/**
- * Returns true if the origin is considered opaque and should be blocked from
- * AI assistance to prevent potential data leakage.
- *
- * @see https://crbug.com/513732588
- */
-export function isOpaqueOrigin(origin) {
-    /**
-     * Origins starting with 'about' (like about:blank or about:srcdoc) are
-     * considered opaque. 'about://' is the sentinel used by DevTools
-     * ParsedURL.securityOrigin() for these.
-     */
-    return origin === 'null' || origin === 'data:' || origin.startsWith('about') || origin.startsWith('detached');
-}
 export const MAX_STEPS = 10;
 export class ConversationContext {
+    getOrigin() {
+        return extractContextOrigin(this.getURL());
+    }
     /**
      * Returns true if this data context (e.g., a DOM node or Network Request) is
      * allowed to be included in a conversation that is locked to the provided
@@ -34,17 +24,14 @@ export class ConversationContext {
      * If undefined, the conversation has not yet been locked to an origin.
      */
     isOriginAllowed(establishedOrigin) {
-        const dataOrigin = this.getOrigin();
-        // Opaque origins are never allowed to be used as context.
-        if (isOpaqueOrigin(dataOrigin)) {
-            return false;
-        }
+        const origin = this.getOrigin();
         // If no origin is established yet, this context will be the one to lock the conversation.
+        // Opaque origins are never allowed to be used as context.
         if (!establishedOrigin) {
-            return true;
+            return !isOpaqueOrigin(origin);
         }
         // Only allow data that matches the origin the conversation is already locked to.
-        return dataOrigin === establishedOrigin;
+        return areOriginsEquivalent(origin, establishedOrigin);
     }
     /**
      * This method is called at the start of `AiAgent.run`.
@@ -55,6 +42,12 @@ export class ConversationContext {
     }
     async getSuggestions() {
         return;
+    }
+}
+class CrossOriginError extends Error {
+    constructor() {
+        super('Cross-origin navigation detected');
+        this.name = 'CrossOriginError';
     }
 }
 /**
@@ -123,6 +116,13 @@ export class AiAgent {
     }
     clearFacts() {
         this.#facts.clear();
+    }
+    /**
+     * Clears any subclass-specific caches. This is called when a run encounters
+     * an error (e.g., cross-origin navigation, abort, or execution error) to
+     * prevent unvalidated cached data from being replayed in subsequent runs.
+     */
+    clearCache() {
     }
     popPendingMultimodalInput() {
         return undefined;
@@ -351,10 +351,6 @@ export class AiAgent {
                         ...options,
                         explanation: textResponse,
                     });
-                    if ('result' in result && result.result === 'BLOCKED_CROSS_ORIGIN') {
-                        yield this.#createErrorResponse("cross-origin" /* ErrorType.CROSS_ORIGIN */);
-                        break;
-                    }
                     if (options.signal?.aborted) {
                         yield this.#createErrorResponse("abort" /* ErrorType.ABORT */);
                         break;
@@ -378,6 +374,10 @@ export class AiAgent {
                     request = this.buildRequest(query, Host.AidaClient.Role.ROLE_UNSPECIFIED);
                 }
                 catch (err) {
+                    if (err instanceof CrossOriginError) {
+                        yield this.#createErrorResponse("cross-origin" /* ErrorType.CROSS_ORIGIN */);
+                        break;
+                    }
                     debugLog('Error handling function call', err);
                     yield this.#createErrorResponse("unknown" /* ErrorType.UNKNOWN */);
                     break;
@@ -433,7 +433,16 @@ export class AiAgent {
                 };
             }
         }
+        const isOriginBlocked = () => {
+            const allowedOriginResult = this.#allowedOrigin?.();
+            return Boolean(allowedOriginResult && 'blocked' in allowedOriginResult);
+        };
         let result = await call.handler(args, options);
+        // Check 1: After first handler execution.
+        // Navigation could have occurred during the async handler execution.
+        if (isOriginBlocked()) {
+            throw new CrossOriginError();
+        }
         if ('requiresApproval' in result) {
             if (code) {
                 yield {
@@ -473,16 +482,19 @@ export class AiAgent {
             // Re-check allowed origin after the approval await to prevent a TOCTOU (Time-of-Check
             // to Time-of-Use) race condition where the page might have navigated cross-origin
             // while the user was confirming the action.
-            const allowedOriginResult = this.#allowedOrigin?.();
-            if (allowedOriginResult && 'blocked' in allowedOriginResult) {
-                return {
-                    result: 'BLOCKED_CROSS_ORIGIN',
-                };
+            // Check 2: After waiting for user approval.
+            if (isOriginBlocked()) {
+                throw new CrossOriginError();
             }
             result = await call.handler(args, {
                 ...options,
                 approved: true,
             });
+            // Check 3: After second handler execution (approved run).
+            // Navigation could have occurred during the async execution of the approved action.
+            if (isOriginBlocked()) {
+                throw new CrossOriginError();
+            }
         }
         if ('result' in result) {
             yield {
@@ -546,6 +558,7 @@ export class AiAgent {
     }
     #createErrorResponse(error) {
         this.#removeLastRunParts();
+        this.clearCache();
         if (error !== "abort" /* ErrorType.ABORT */) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceError);
         }

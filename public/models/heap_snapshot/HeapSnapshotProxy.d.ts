@@ -76,6 +76,7 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     getLocation(nodeIndex: number): Promise<HeapSnapshotModel.Location | null>;
     getSamples(): Promise<HeapSnapshotModel.Samples | null>;
     ignoreNodeInRetainersView(nodeIndex: number): Promise<void>;
+    getRetainingPaths(nodeIndex: number, maxDepth?: number, maxNodes?: number, maxSiblings?: number): Promise<HeapSnapshotModel.RetainingPaths>;
     unignoreNodeInRetainersView(nodeIndex: number): Promise<void>;
     unignoreAllNodesInRetainersView(): Promise<void>;
     areNodesIgnoredInRetainersView(): Promise<boolean>;

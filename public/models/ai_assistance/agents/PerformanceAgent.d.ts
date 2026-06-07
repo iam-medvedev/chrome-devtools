@@ -15,7 +15,7 @@ export declare class PerformanceTraceContext extends ConversationContext<AgentFo
     static fromCallTree(callTree: AICallTree): PerformanceTraceContext;
     external: boolean;
     constructor(focus: AgentFocus);
-    getOrigin(): string;
+    getURL(): string;
     getItem(): AgentFocus;
     getTitle(): string;
     /**
@@ -46,6 +46,7 @@ export declare class PerformanceAgent extends AiAgent<AgentFocus> {
         selected: PerformanceTraceContext | null;
         signal?: AbortSignal;
     }): AsyncGenerator<ResponseData, void, void>;
+    clearCache(): void;
     addElementAnnotation(elementId: string, annotationMessage: string): Promise<FunctionCallHandlerResult<unknown>>;
     addNetworkRequestAnnotation(eventKey: string, annotationMessage: string): Promise<FunctionCallHandlerResult<unknown>>;
 }

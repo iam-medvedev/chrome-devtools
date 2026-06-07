@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, dispatchKeyDownEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -36,7 +37,7 @@ describeWithEnvironment('BreakpointEditDialog', function () {
             try {
                 const { editor, dialog } = await getDialogAndEditor(0, '', false, resolve);
                 setCodeMirrorContent(editor, 'x === 5');
-                renderElementIntoDOM(dialog);
+                renderElementIntoDOM(dialog, { includeCommonStyles: true });
                 await assertScreenshot('sources/breakpoint-edit-dialog.png');
                 dispatchKeyDownEvent(editor.contentDOM, { key: 'Enter' });
             }

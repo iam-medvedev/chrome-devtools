@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -29,7 +30,7 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
     });
     it('shows a placeholder', async () => {
         const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
-        renderElementIntoDOM(requestConditionsDrawer);
+        renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
         await requestConditionsDrawer.updateComplete;
         const blockedElement = requestConditionsDrawer.contentElement.querySelector('.blocked-urls');
         const placeholder = blockedElement?.shadowRoot?.querySelector('.empty-state');
@@ -40,7 +41,7 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
     });
     it('Add pattern button triggers showing the editor view', async () => {
         const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
-        renderElementIntoDOM(requestConditionsDrawer);
+        renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
         await requestConditionsDrawer.updateComplete;
         const blockedElement = requestConditionsDrawer.contentElement.querySelector('.blocked-urls');
         const list = blockedElement?.shadowRoot?.querySelector('.list');
@@ -60,7 +61,7 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
             const networkManager = target.model(SDK.NetworkManager.NetworkManager);
             SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*', enabled: true }));
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
-            renderElementIntoDOM(requestConditionsDrawer);
+            renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
             await requestConditionsDrawer.updateComplete;
             assert.exists(networkManager);
             const list = requestConditionsDrawer.contentElement.querySelector('.blocked-urls')?.shadowRoot;

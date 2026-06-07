@@ -40,6 +40,7 @@ export declare class CookieItemsView extends UI.Widget.VBox {
     performUpdate(): void;
     wasShown(): void;
     private showPreview;
+    private updateAiAssistanceContext;
     private handleCookieSelected;
     private saveCookie;
     private deleteCookie;
