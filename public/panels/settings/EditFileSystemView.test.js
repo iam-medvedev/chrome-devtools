@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Platform from '../../core/platform/platform.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -12,7 +13,7 @@ const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('EditFileSystemView view', () => {
     it('renders excluded sub-directories', async () => {
         const target = document.createElement('div');
-        renderElementIntoDOM(target);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
         DEFAULT_VIEW({
             fileSystemPath: urlString `file:///home/user/project`,
             excludedFolderPaths: [
@@ -27,7 +28,7 @@ describeWithEnvironment('EditFileSystemView view', () => {
     });
     it('renders errors for invalid sub-directories', async () => {
         const target = document.createElement('div');
-        renderElementIntoDOM(target);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
         DEFAULT_VIEW({
             fileSystemPath: urlString `file:///home/user/project`,
             excludedFolderPaths: [

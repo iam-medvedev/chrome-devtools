@@ -16,7 +16,7 @@ import * as AiAssistanceModel8 from "./../../models/ai_assistance/ai_assistance.
 import * as Annotations from "./../../models/annotations/annotations.js";
 import * as Badges from "./../../models/badges/badges.js";
 import * as Greendev from "./../../models/greendev/greendev.js";
-import * as Workspace6 from "./../../models/workspace/workspace.js";
+import * as Workspace8 from "./../../models/workspace/workspace.js";
 import * as Buttons9 from "./../../ui/components/buttons/buttons.js";
 import * as Snackbars3 from "./../../ui/components/snackbars/snackbars.js";
 import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
@@ -2446,7 +2446,10 @@ import * as Root3 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel6 from "./../../models/ai_assistance/ai_assistance.js";
 import * as ComputedStyle from "./../../models/computed_style/computed_style.js";
+import * as Formatter from "./../../models/formatter/formatter.js";
+import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Trace from "./../../models/trace/trace.js";
+import * as Workspace5 from "./../../models/workspace/workspace.js";
 import * as PanelsCommon3 from "./../common/common.js";
 import * as TraceBounds from "./../../services/trace_bounds/trace_bounds.js";
 import * as Marked from "./../../third_party/marked/marked.js";
@@ -2748,6 +2751,10 @@ var chatMessage_css_default = `/*
     display: flex;
     flex-direction: column;
     gap: var(--sys-size-2);
+  }
+
+  .show-all-container {
+    padding-bottom: 0;
   }
 
   .js-code-output {
@@ -3064,6 +3071,29 @@ var chatMessage_css_default = `/*
           color: var(--sys-color-on-surface-subtle);
         }
       }
+    }
+  }
+
+
+  .source-files-details {
+    display: contents;
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 4px 12px;
+      border: 1px solid var(--sys-color-neutral-outline);
+      border-radius: var(--sys-shape-corner-small);
+      color: var(--sys-color-primary);
+      width: fit-content;
+
+      &:hover {
+        background-color: var(--sys-color-state-hover-on-subtle);
+      }
+    }
+
+    &[open] summary {
+      display: none;
     }
   }
 }
@@ -4023,7 +4053,11 @@ var UIStringsNotTranslate4 = {
   /**
    * @description Title for the character set declaration widget.
    */
-  characterSet: "Character set declaration"
+  characterSet: "Character set declaration",
+  /**
+   * @description Title for the source files list widget.
+   */
+  inspectedFileNames: "Inspected file names"
 };
 var DEFAULT_VIEW4 = (input, output, target) => {
   const hasAiV2 = Boolean(Root3.Runtime.hostConfig.devToolsAiAssistanceV2?.enabled);
@@ -4663,6 +4697,87 @@ async function makeSourceFileWidget(widgetData) {
     jslogContext: "source-file-widget"
   };
 }
+async function makeSourceCodeWidget(widgetData) {
+  const url = widgetData.data.url;
+  const filename = url.split("/").pop() || url;
+  const line = widgetData.data.line;
+  const column = widgetData.data.column;
+  const header = line !== void 0 && column !== void 0 ? `${filename}:${line}:${column}` : filename;
+  const uiSourceCode = Workspace5.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
+  const lastDotIndex = filename.lastIndexOf(".");
+  const fileExtension = lastDotIndex !== -1 ? filename.substring(lastDotIndex + 1) : "";
+  let code = widgetData.data.code;
+  if (TextUtils.TextUtils.isMinified(code)) {
+    const canonicalMimeType = uiSourceCode?.contentType().canonicalMimeType() || "text/javascript";
+    const formatted = await Formatter.ScriptFormatter.formatScriptContent(canonicalMimeType, code, "  ");
+    code = formatted.formattedContent;
+  }
+  const renderedWidget = html7`
+    <devtools-code-block
+      class="source-code-widget"
+      .displayLimit=${20}
+      .code=${code}
+      .codeLang=${fileExtension}
+      .displayToolbar=${false}
+      .displayNotice=${false}
+    ></devtools-code-block>
+  `;
+  return {
+    renderedWidget,
+    title: lockedString5(header),
+    revealable: uiSourceCode,
+    accessibleRevealLabel: i18n9.i18n.lockedString(`Show ${filename} in Sources`),
+    jslogContext: "source-code-widget"
+  };
+}
+function renderFileRevealButton(file, collapsed) {
+  const onReveal = () => {
+    void Common4.Revealer.reveal(file);
+  };
+  const accessibleLabel = i18n9.i18n.lockedString(`Show ${file.fullDisplayName()}`);
+  const className = `widget-reveal-button ${collapsed ? "collapsed-file" : "visible-file"}`;
+  return html7`
+    <devtools-button class=${className}
+      .variant=${"text"}
+      .accessibleLabel=${accessibleLabel}
+      .jslogContext=${"reveal"}
+      @click=${onReveal}>
+      ${file.fullDisplayName()}
+      <devtools-icon name='tab-move'></devtools-icon>
+    </devtools-button>
+  `;
+}
+async function makeSourceFilesListWidget(widgetData) {
+  const files = widgetData.data.uiSourceCodes;
+  if (files.length === 0) {
+    return null;
+  }
+  const renderedWidget = html7`
+    <div class="source-files-widget">
+      ${files.slice(0, 10).map((file) => renderFileRevealButton(
+    file,
+    /* collapsed */
+    false
+  ))}
+      ${files.length > 10 ? html7`
+        <details class="source-files-details">
+          <summary class="show-more-summary">${i18n9.i18n.lockedString(`Show all ${files.length} files`)}</summary>
+          ${files.slice(10).map((file) => renderFileRevealButton(
+    file,
+    /* collapsed */
+    true
+  ))}
+        </details> ` : Lit5.nothing}
+    </div>`;
+  const title = lockedString5(UIStringsNotTranslate4.inspectedFileNames);
+  return {
+    renderedWidget,
+    title,
+    revealable: files[0],
+    accessibleRevealLabel: i18n9.i18n.lockedString("Reveal first file in Sources panel"),
+    jslogContext: "source-files-list-widget"
+  };
+}
 function renderNetworkRequestPreview(networkRequest) {
   const filename = networkRequest.url.split("/").pop() || networkRequest.url;
   const size = i18n9.ByteUtilities.bytesToString(networkRequest.size);
@@ -4735,12 +4850,16 @@ function getWidgetSignature(widget6) {
       return `${widget6.name}:${widget6.data.bounds.min}-${widget6.data.bounds.max}`;
     case "SOURCE_FILE":
       return `${widget6.name}:${widget6.data.uiSourceCode.url()}`;
+    case "SOURCE_FILES_LIST":
+      return `${widget6.name}:${widget6.data.uiSourceCodes.map((f) => f.url()).join(",")}`;
     case "LIGHTHOUSE_REPORT":
       return `${widget6.name}:${widget6.data.report.fetchTime}`;
     case "TIMELINE_EVENT_SUMMARY":
       return `${widget6.name}:${widget6.data.event.ts}:${widget6.data.event.name}`;
     case "NETWORK_REQUEST_GENERAL_HEADERS":
       return `${widget6.name}:${widget6.data.request.requestId()}`;
+    case "SOURCE_CODE":
+      return `${widget6.name}:${widget6.data.url}:${widget6.data.line ?? ""}:${widget6.data.column ?? ""}`;
     default:
       Platform5.assertNever(widget6, "Unknown AiWidget name");
   }
@@ -4814,6 +4933,9 @@ async function renderWidgets(widgets, options = {}) {
       case "SOURCE_FILE":
         response = await makeSourceFileWidget(widgetData);
         break;
+      case "SOURCE_FILES_LIST":
+        response = await makeSourceFilesListWidget(widgetData);
+        break;
       case "LIGHTHOUSE_REPORT":
         response = await makeLighthouseReportWidget(widgetData);
         break;
@@ -4822,6 +4944,9 @@ async function renderWidgets(widgets, options = {}) {
         break;
       case "NETWORK_REQUEST_GENERAL_HEADERS":
         response = await makeNetworkRequestGeneralHeadersWidget(widgetData);
+        break;
+      case "SOURCE_CODE":
+        response = await makeSourceCodeWidget(widgetData);
         break;
       default:
         Platform5.assertNever(widgetData, "Unknown AiWidget name");
@@ -7268,11 +7393,11 @@ __export(ExportConversation_exports, {
   saveToDisk: () => saveToDisk
 });
 import * as Platform6 from "./../../core/platform/platform.js";
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
-import * as Workspace5 from "./../../models/workspace/workspace.js";
+import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
+import * as Workspace7 from "./../../models/workspace/workspace.js";
 async function saveToDisk(conversation) {
   const markdownContent = conversation.getConversationMarkdown();
-  const contentData = new TextUtils.ContentData.ContentData(markdownContent, false, "text/markdown");
+  const contentData = new TextUtils3.ContentData.ContentData(markdownContent, false, "text/markdown");
   const titleFormatted = Platform6.StringUtilities.toSnakeCase(conversation.title || "");
   const prefix = "devtools_";
   const suffix = ".md";
@@ -7282,8 +7407,8 @@ async function saveToDisk(conversation) {
     finalTitle = finalTitle.substring(0, maxTitleLength);
   }
   const filename = `${prefix}${finalTitle}${suffix}`;
-  await Workspace5.FileManager.FileManager.instance().save(filename, contentData, true);
-  Workspace5.FileManager.FileManager.instance().close(filename);
+  await Workspace7.FileManager.FileManager.instance().save(filename, contentData, true);
+  Workspace7.FileManager.FileManager.instance().close(filename);
 }
 
 // gen/front_end/panels/ai_assistance/AiAssistancePanel.js
@@ -7412,6 +7537,10 @@ var UIStringsNotTranslate7 = {
    * @description Placeholder text for the chat UI input with branding Gemini (do not translate)
    */
   inputPlaceholderForNoContextBranded: "Ask Gemini",
+  /**
+   * @description Placeholder text for the chat UI input when AIAgent2 is enabled.
+   */
+  inputPlaceholderForV2: "Ask a question (AIAgent2 enabled)",
   /**
    * @description Disclaimer text right after the chat input.
    */
@@ -8109,7 +8238,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     this.#selectedElement = createNodeContext(selectedElementFilter(UI11.Context.Context.instance().flavor(SDK6.DOMModel.DOMNode)));
     this.#selectedRequest = createRequestContext(UI11.Context.Context.instance().flavor(SDK6.NetworkRequest.NetworkRequest));
     this.#selectedPerformanceTrace = createPerformanceTraceContext(UI11.Context.Context.instance().flavor(AiAssistanceModel8.AIContext.AgentFocus));
-    this.#selectedFile = createFileContext(UI11.Context.Context.instance().flavor(Workspace6.UISourceCode.UISourceCode));
+    this.#selectedFile = createFileContext(UI11.Context.Context.instance().flavor(Workspace8.UISourceCode.UISourceCode));
     this.#selectedAccessibility = createAccessibilityContext(UI11.Context.Context.instance().flavor(LighthousePanel2.LighthousePanel.ActiveLighthouseReport));
     this.#selectedStorage = createStorageContext(UI11.Context.Context.instance().flavor(AiAssistanceModel8.StorageItem.StorageItem));
     this.#updateConversationState(this.#conversation);
@@ -8120,7 +8249,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     UI11.Context.Context.instance().addFlavorChangeListener(SDK6.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
     UI11.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel8.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI11.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel8.StorageItem.StorageItem, this.#handleStorageItemFlavorChange);
-    UI11.Context.Context.instance().addFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
+    UI11.Context.Context.instance().addFlavorChangeListener(Workspace8.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI11.Context.Context.instance().addFlavorChangeListener(LighthousePanel2.LighthousePanel.ActiveLighthouseReport, this.#handleLighthouseReportFlavorChange);
     UI11.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     SDK6.TargetManager.TargetManager.instance().addModelListener(SDK6.DOMModel.DOMModel, SDK6.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
@@ -8139,7 +8268,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     UI11.Context.Context.instance().removeFlavorChangeListener(SDK6.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
     UI11.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel8.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI11.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel8.StorageItem.StorageItem, this.#handleStorageItemFlavorChange);
-    UI11.Context.Context.instance().removeFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
+    UI11.Context.Context.instance().removeFlavorChangeListener(Workspace8.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI11.Context.Context.instance().removeFlavorChangeListener(LighthousePanel2.LighthousePanel.ActiveLighthouseReport, this.#handleLighthouseReportFlavorChange);
     UI11.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     UI11.Context.Context.instance().removeFlavorChangeListener(TimelinePanel2.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
@@ -8270,6 +8399,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
   #getChatInputPlaceholder() {
     if (!this.#conversation) {
       return i18nString6(UIStrings6.followTheSteps);
+    }
+    if (Root8.Runtime.hostConfig.devToolsAiV2Architecture?.enabled) {
+      return lockedString8(UIStringsNotTranslate7.inputPlaceholderForV2);
     }
     if (this.#conversation && this.#conversation.isBlockedByOrigin) {
       return lockedString8(UIStringsNotTranslate7.crossOriginError);

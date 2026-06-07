@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as MobileThrottling from '../../../panels/mobile_throttling/mobile_throttling.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
@@ -135,10 +136,11 @@ describeWithEnvironment('CPUThrottlingSelector view', () => {
       box-sizing: border-box;
       background-color: aqua;
     `;
-    it('renders hint correctly', async () => {
+    // Passes locally, but fails on the bots.
+    it.skip('[crbug.com/520434324] renders hint correctly', async () => {
         const container = document.createElement('div');
         container.style.cssText = containerCss;
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         DEFAULT_VIEW({ ...DEFAULT_INPUT, recommendedOption: SDK.CPUThrottlingManager.LowTierThrottlingOption }, undefined, container);
         await assertScreenshot('timeline/cpu_throttling_selector_recommendation.png');
     });

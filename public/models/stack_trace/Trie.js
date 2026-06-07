@@ -9,6 +9,14 @@ export function isBuiltinFrame(rawFrame) {
     return rawFrame.lineNumber === -1 && rawFrame.columnNumber === -1 && !Boolean(rawFrame.scriptId) &&
         !Boolean(rawFrame.url);
 }
+export class EvalOrigin {
+    frames;
+    evalOrigin;
+    constructor(frames, evalOrigin) {
+        this.frames = frames;
+        this.evalOrigin = evalOrigin;
+    }
+}
 export class FrameNode {
     parent;
     children = [];
@@ -16,7 +24,7 @@ export class FrameNode {
     frames = [];
     fragment;
     parsedFrameInfo;
-    evalOriginFrames;
+    evalOrigin;
     constructor(rawFrame, parent) {
         this.rawFrame = rawFrame;
         this.parent = parent;

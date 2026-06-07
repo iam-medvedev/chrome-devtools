@@ -17,8 +17,10 @@ import * as PerformanceAgent from './agents/PerformanceAgent.js';
 import * as PerformanceAnnotationsAgent from './agents/PerformanceAnnotationsAgent.js';
 import * as StorageAgent from './agents/StorageAgent.js';
 import * as StylingAgent from './agents/StylingAgent.js';
+import * as AiAgent2 from './AiAgent2.js';
 import * as AiConversation from './AiConversation.js';
 import * as AiHistoryStorage from './AiHistoryStorage.js';
+import * as AiOrigins from './AiOrigins.js';
 import * as AiUtils from './AiUtils.js';
 import * as BuiltInAi from './BuiltInAi.js';
 import * as ChangeManager from './ChangeManager.js';
@@ -41,10 +43,12 @@ export {
   AccessibilityAgent,
   AgentProject,
   AiAgent,
+  AiAgent2,
   AICallTree,
   AIContext,
   AiConversation,
   AiHistoryStorage,
+  AiOrigins,
   AIQueries,
   AiUtils,
   BuiltInAi,

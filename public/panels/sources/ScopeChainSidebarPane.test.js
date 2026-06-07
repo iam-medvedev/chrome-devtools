@@ -1,15 +1,15 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as StackTrace from '../../models/stack_trace/stack_trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { spyCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockDebuggerBackend, parseScopeChain } from '../../testing/MockScopeChain.js';
-import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Sources from './sources.js';
 describeWithMockConnection('ScopeChainSidebarPane', () => {
     let backend;
@@ -43,9 +43,8 @@ describeWithMockConnection('ScopeChainSidebarPane', () => {
             column: 0,
         };
         const flavor = StackTrace.StackTrace.DebuggableFrameFlavor.for(debuggableFrame);
-        const sidebarPaneUpdatedPromise = spyCall(pane, 'sidebarPaneUpdatedForTest');
         pane.flavorChanged(flavor);
-        await sidebarPaneUpdatedPromise;
+        await pane.updateComplete;
         // Object properties are rendered asynchronously.
         await raf();
         await assertScreenshot('sources/scope-chain-sidebar-pane.png');
@@ -56,7 +55,8 @@ describeWithMockConnection('ScopeChainSidebarPane', () => {
         parseScopeChain(scopes);
         const functionScopeObject = backend.createSimpleRemoteObject([{ name: 'a', value: 1 }]);
         const callFrame = await backend.createCallFrame(target, { url: 'file:///tmp/example.js', content: source }, scopes, null, [functionScopeObject]);
-        const pane = Sources.ScopeChainSidebarPane.ScopeChainSidebarPane.instance();
+        const view = createViewFunctionStub(Sources.ScopeChainSidebarPane.ScopeChainSidebarPane);
+        const pane = new Sources.ScopeChainSidebarPane.ScopeChainSidebarPane(undefined, view);
         renderElementIntoDOM(pane.contentElement);
         const debuggableFrame = {
             sdkFrame: callFrame,
@@ -64,16 +64,12 @@ describeWithMockConnection('ScopeChainSidebarPane', () => {
             column: 0,
         };
         const flavor = StackTrace.StackTrace.DebuggableFrameFlavor.for(debuggableFrame);
-        const sidebarPaneUpdatedPromise = spyCall(pane, 'sidebarPaneUpdatedForTest');
         pane.flavorChanged(flavor);
-        await sidebarPaneUpdatedPromise;
-        await raf();
-        const root = pane.treeOutlineForTest().rootElement();
-        const localScope = root.childAt(0);
-        assert.instanceOf(localScope, ObjectUI.ObjectPropertiesSection.RootElement);
-        const property = localScope?.childAt(0);
-        assert.instanceOf(property, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
-        assert.isFalse(property.property.readOnly);
+        await view.nextInput;
+        const { scopeChain } = view.input;
+        assert.isNotNull(scopeChain);
+        const localScope = scopeChain[0];
+        assert.isFalse(localScope.objectTree.readOnly);
     });
 });
 //# sourceMappingURL=ScopeChainSidebarPane.test.js.map

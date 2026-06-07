@@ -11,7 +11,7 @@ describeWithEnvironment('ValueInterpreterSettings', () => {
         const target = document.createElement('div');
         target.style.width = 'var(--sys-size-30)';
         target.style.height = 'var(--sys-size-30)';
-        renderElementIntoDOM(target);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
         const valueTypes = new Set([
             "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
             "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,

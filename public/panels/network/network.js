@@ -2848,6 +2848,19 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
     }
     return aValue > bValue ? 1 : -1;
   }
+  static OverrideTypesComparator(a, b) {
+    const aRequest = a.requestOrFirstKnownChildRequest();
+    const bRequest = b.requestOrFirstKnownChildRequest();
+    if (!aRequest || !bRequest) {
+      if (!aRequest && !bRequest) {
+        return 0;
+      }
+      return !aRequest ? -1 : 1;
+    }
+    const aValue = aRequest.overrideTypes.join(", ");
+    const bValue = bRequest.overrideTypes.join(", ");
+    return aValue.localeCompare(bValue) || aRequest.identityCompare(bRequest);
+  }
   showingInitiatorChainChanged() {
     const showInitiatorChain = this.showingInitiatorChain();
     const initiatorGraph = Logs2.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this.requestInternal);
@@ -6003,7 +6016,6 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
   position: absolute;
   min-width: 1px;
   inset: 0 attr(data-right %) 0 attr(data-left %); /* stylelint-disable-line declaration-property-value-no-unknown */
-  background-color: attr(data-background <color>); /* stylelint-disable-line declaration-property-value-no-unknown */
 }
 
 .network-timing-bar-title {
@@ -6142,9 +6154,8 @@ td.throttled {
   background: var(--sys-color-surface1);
 }
 
-.network-timing-bar.server-timing,
-.-theme-preserve {
-  background-color: var(--sys-color-neutral-container);
+.network-timing-bar.server-timing {
+  background-color: attr(data-background type(<color>), var(--sys-color-neutral-container)); /* stylelint-disable-line declaration-property-value-no-unknown */
 }
 
 tr.synthetic {
@@ -10458,9 +10469,9 @@ var DEFAULT_COLUMNS = [
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "etag")
   },
   {
-    id: "response-header-has-overrides",
+    id: "has-overrides",
     title: i18nLazyString3(UIStrings21.hasOverrides),
-    sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "has-overrides")
+    sortingFunction: NetworkRequestNode.OverrideTypesComparator
   },
   {
     id: "response-header-keep-alive",

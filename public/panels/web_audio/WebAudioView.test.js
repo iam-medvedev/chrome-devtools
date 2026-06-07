@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -42,7 +43,7 @@ describeWithMockConnection('WebAudioView', () => {
     it('shows placeholder', async () => {
         const viewFunction = WebAudio.WebAudioView.DEFAULT_VIEW;
         const container = document.createElement('div');
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         viewFunction({
             contexts: [],
             selectedContextIndex: -1,
@@ -55,7 +56,7 @@ describeWithMockConnection('WebAudioView', () => {
     it('shows contexts', async () => {
         const viewFunction = WebAudio.WebAudioView.DEFAULT_VIEW;
         const container = document.createElement('div');
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         viewFunction({
             contexts: [context1, context2],
             selectedContextIndex: 0,
@@ -67,7 +68,7 @@ describeWithMockConnection('WebAudioView', () => {
     });
     it('starts empty', async () => {
         const view = createViewFunctionStub(WebAudio.WebAudioView.WebAudioView);
-        renderElementIntoDOM(new WebAudio.WebAudioView.WebAudioView(undefined, view));
+        renderElementIntoDOM(new WebAudio.WebAudioView.WebAudioView(undefined, view), { includeCommonStyles: true });
         assert.isEmpty(view.input.contexts);
         assert.strictEqual(view.input.selectedContextIndex, -1);
     });

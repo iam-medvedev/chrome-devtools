@@ -1,4 +1,5 @@
 import * as Host from '../../../core/host/host.js';
+import type { UrlString } from '../../../core/platform/DevToolsPath.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import type * as LHModel from '../../lighthouse/lighthouse.js';
@@ -25,13 +26,6 @@ export declare const enum ErrorType {
     BLOCK = "block",
     CROSS_ORIGIN = "cross-origin"
 }
-/**
- * Returns true if the origin is considered opaque and should be blocked from
- * AI assistance to prevent potential data leakage.
- *
- * @see https://crbug.com/513732588
- */
-export declare function isOpaqueOrigin(origin: string): boolean;
 export declare const enum MultimodalInputType {
     SCREENSHOT = "screenshot",
     UPLOADED_IMAGE = "uploaded-image"
@@ -150,9 +144,10 @@ export interface ConversationSuggestion {
 /** At least one. */
 export type ConversationSuggestions = [ConversationSuggestion, ...ConversationSuggestion[]];
 export declare abstract class ConversationContext<T> {
-    abstract getOrigin(): string;
+    abstract getURL(): string;
     abstract getItem(): T;
     abstract getTitle(): string;
+    getOrigin(): string;
     /**
      * Returns true if this data context (e.g., a DOM node or Network Request) is
      * allowed to be included in a conversation that is locked to the provided
@@ -243,6 +238,12 @@ export interface SourceFileAiWidget {
         uiSourceCode: Workspace.UISourceCode.UISourceCode;
     };
 }
+export interface SourceFilesListAiWidget {
+    name: 'SOURCE_FILES_LIST';
+    data: {
+        uiSourceCodes: Workspace.UISourceCode.UISourceCode[];
+    };
+}
 export interface LighthouseReportAiWidget {
     name: 'LIGHTHOUSE_REPORT';
     data: {
@@ -263,7 +264,16 @@ export interface NetworkRequestGeneralHeadersAiWidget {
         request: SDK.NetworkRequest.NetworkRequest;
     };
 }
-export type AiWidget = ComputedStyleAiWidget | CoreVitalsAiWidget | StylePropertiesAiWidget | DomTreeAiWidget | PerformanceTraceAiWidget | PerfInsightAiWidget | TimelineRangeSummaryAiWidget | BottomUpTreeAiWidget | SourceFileAiWidget | LighthouseReportAiWidget | TimelineEventSummaryAiWidget | NetworkRequestGeneralHeadersAiWidget;
+export interface SourceCodeAiWidget {
+    name: 'SOURCE_CODE';
+    data: {
+        url: UrlString;
+        code: string;
+        line?: number;
+        column?: number;
+    };
+}
+export type AiWidget = ComputedStyleAiWidget | CoreVitalsAiWidget | StylePropertiesAiWidget | DomTreeAiWidget | PerformanceTraceAiWidget | PerfInsightAiWidget | TimelineRangeSummaryAiWidget | BottomUpTreeAiWidget | SourceFileAiWidget | LighthouseReportAiWidget | TimelineEventSummaryAiWidget | NetworkRequestGeneralHeadersAiWidget | SourceCodeAiWidget | SourceFilesListAiWidget;
 export type FunctionCallHandlerResult<Result> = {
     requiresApproval: true;
     /**
@@ -357,6 +367,12 @@ export declare abstract class AiAgent<T> {
     addFact(fact: Host.AidaClient.RequestFact): ReadonlySet<Host.AidaClient.RequestFact>;
     removeFact(fact: Host.AidaClient.RequestFact): boolean;
     clearFacts(): void;
+    /**
+     * Clears any subclass-specific caches. This is called when a run encounters
+     * an error (e.g., cross-origin navigation, abort, or execution error) to
+     * prevent unvalidated cached data from being replayed in subsequent runs.
+     */
+    clearCache(): void;
     popPendingMultimodalInput(): MultimodalInput | undefined;
     preambleFeatures(): string[];
     buildRequest(part: Host.AidaClient.Part | Host.AidaClient.Part[], role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.DoConversationRequest;

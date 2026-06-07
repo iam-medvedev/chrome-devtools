@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Buttons from '../buttons/buttons.js';
@@ -94,13 +95,13 @@ describeWithEnvironment('ButtonDialog', () => {
     }
     it('renders the dialog button (with the dialog closed)', async () => {
         const { container } = prepareButtonDialogForScreenshot();
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         await RenderCoordinator.done();
         await assertScreenshot('dialog/button_dialog_closed.png');
     });
     it('renders the button dialog', async () => {
         const { buttonDialog, container } = prepareButtonDialogForScreenshot();
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         await RenderCoordinator.done();
         const dialog = getDialogFromButtonDialog(buttonDialog);
         const animated = new Promise(resolve => {
@@ -116,7 +117,7 @@ describeWithEnvironment('ButtonDialog', () => {
     });
     it('click the close button and close the button dialog', async () => {
         const { buttonDialog, container } = prepareButtonDialogForScreenshot();
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         await RenderCoordinator.done();
         const dialog = getDialogFromButtonDialog(buttonDialog);
         const animated = new Promise(resolve => {

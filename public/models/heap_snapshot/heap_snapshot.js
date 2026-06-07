@@ -504,6 +504,9 @@ var HeapSnapshotProxy = class extends HeapSnapshotProxyObject {
   ignoreNodeInRetainersView(nodeIndex) {
     return this.callMethodPromise("ignoreNodeInRetainersView", nodeIndex);
   }
+  getRetainingPaths(nodeIndex, maxDepth, maxNodes, maxSiblings) {
+    return this.callMethodPromise("getRetainingPaths", nodeIndex, maxDepth, maxNodes, maxSiblings);
+  }
   unignoreNodeInRetainersView(nodeIndex) {
     return this.callMethodPromise("unignoreNodeInRetainersView", nodeIndex);
   }

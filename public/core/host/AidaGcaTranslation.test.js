@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { AidaClient, AidaGcaTranslation, GcaTypes } from './host.js';
@@ -10,8 +11,8 @@ const DEFAULT_METADATA = {
     client_version: '1.2.3.4',
 };
 const DEFAULT_LABELS = {
-    client: DEFAULT_CLIENT,
-    client_version: '1.2.3.4',
+    client: 'chrome_devtools',
+    client_version: '1_2_3_4',
     disable_user_content_logging: 'false',
 };
 function createAidaDoConversationRequest(overrides = {}) {
@@ -77,7 +78,7 @@ function describeCommonRequestFields(aidaRequestFactory, translateFn) {
             const result = translateFn(aidaRequest);
             assert.strictEqual(result.model, 'test-model');
             assert.strictEqual(result.labels?.['session_id'], 'session-123');
-            assert.strictEqual(result.labels?.['client_version'], '1.2.3.4');
+            assert.strictEqual(result.labels?.['client_version'], '1_2_3_4');
             assert.strictEqual(result.labels?.['disable_user_content_logging'], 'false');
             assert.strictEqual(result.generationConfig?.temperature, 0.5);
         });
@@ -87,9 +88,9 @@ function describeCommonRequestFields(aidaRequestFactory, translateFn) {
                 client_feature: AidaClient.ClientFeature.CHROME_CONSOLE_INSIGHTS,
             });
             const result = translateFn(aidaRequest);
-            assert.strictEqual(result.labels?.['client'], DEFAULT_CLIENT);
-            assert.strictEqual(result.labels?.['functionality_type'], 'EXPLAIN_ERROR');
-            assert.strictEqual(result.labels?.['client_feature'], 'CHROME_CONSOLE_INSIGHTS');
+            assert.strictEqual(result.labels?.['client'], 'chrome_devtools');
+            assert.strictEqual(result.labels?.['functionality_type'], 'explain_error');
+            assert.strictEqual(result.labels?.['client_feature'], 'chrome_console_insights');
         });
     });
 }
@@ -383,8 +384,8 @@ describe('AidaGcaTranslation', () => {
                 model: 'code-model',
                 generationConfig: { stopSequences: ['\n'], temperature: 0 },
                 labels: {
-                    inference_language: 'JAVASCRIPT',
-                    last_user_action: 'ADD',
+                    inference_language: 'javascript',
+                    last_user_action: 'add',
                     session_id: 'session-456',
                     ...DEFAULT_LABELS,
                 },
@@ -451,7 +452,7 @@ describe('AidaGcaTranslation', () => {
                 aicode: { experience: 'generate_code' },
                 contents: [{ role: 'user', parts: [{ text: 'that adds two numbers' }] }],
                 systemInstruction: { role: 'user', parts: [{ text: 'Generate a function' }] },
-                labels: { use_case: 'CODE_GENERATION', ...DEFAULT_LABELS },
+                labels: { use_case: 'code_generation', ...DEFAULT_LABELS },
             });
         });
         it('translates a generate code request with options and context files', () => {
@@ -478,11 +479,11 @@ describe('AidaGcaTranslation', () => {
                 model: 'gen-model',
                 generationConfig: { temperature: 0.7 },
                 labels: {
-                    inference_language: 'TYPESCRIPT',
+                    inference_language: 'typescript',
                     expect_code_output: 'true',
-                    client_feature: 'CHROME_FILE_AGENT',
+                    client_feature: 'chrome_file_agent',
                     session_id: 'session-789',
-                    use_case: 'CODE_GENERATION',
+                    use_case: 'code_generation',
                     ...DEFAULT_LABELS,
                 },
                 aicode: {

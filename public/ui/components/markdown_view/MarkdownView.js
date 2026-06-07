@@ -211,6 +211,33 @@ export class MarkdownLitRenderer {
                 return html `<strong class=${this.customClassMapForToken('strong')}>${this.renderText(token)}</strong>`;
             case 'em':
                 return html `<em class=${this.customClassMapForToken('em')}>${this.renderText(token)}</em>`;
+            case 'table': {
+                const tableToken = token;
+                return html `
+          <table class=${this.customClassMapForToken('table')}>
+            <thead>
+              <tr>
+                ${tableToken.header.map(cell => html `
+                  <th style=${cell.align ? `text-align: ${cell.align}` : ''}>
+                    ${cell.tokens.map(t => this.renderToken(t))}
+                  </th>
+                `)}
+              </tr>
+            </thead>
+            <tbody>
+              ${tableToken.rows.map(row => html `
+                <tr>
+                  ${row.map(cell => html `
+                    <td style=${cell.align ? `text-align: ${cell.align}` : ''}>
+                      ${cell.tokens.map(t => this.renderToken(t))}
+                    </td>
+                  `)}
+                </tr>
+              `)}
+            </tbody>
+          </table>
+        `;
+            }
             default:
                 return null;
         }
@@ -234,11 +261,21 @@ export class MarkdownInsightRenderer extends MarkdownLitRenderer {
         this.addCustomClasses({ heading: 'insight' });
     }
     renderToken(token) {
-        const template = this.templateForToken(token);
-        if (template === null) {
+        try {
+            const template = this.templateForToken(token);
+            if (template === null) {
+                return html `${token.raw}`;
+            }
+            return template;
+        }
+        catch (error) {
+            // We catch any rendering/lookup errors here so that one bad or malformed
+            // token (e.g. an invalid trace link or broken custom reference) does not
+            // crash the entire markdown renderer or cause it to fallback completely.
+            // Instead, we gracefully fallback to rendering the raw token text.
+            console.error('Failed to render markdown token:', error);
             return html `${token.raw}`;
         }
-        return template;
     }
     sanitizeUrl(maybeUrl) {
         try {

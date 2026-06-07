@@ -208,10 +208,11 @@ export class PerformanceTraceContext extends ConversationContext {
         super();
         this.#focus = focus;
     }
-    getOrigin() {
+    getURL() {
+        const url = this.#focus.parsedTrace.data.Meta.mainFrameURL;
         try {
-            const url = new URL(this.#focus.parsedTrace.data.Meta.mainFrameURL);
-            return url.origin;
+            new URL(url);
+            return url;
         }
         catch {
             const { min, max } = this.#focus.parsedTrace.data.Meta.traceBounds;
@@ -619,6 +620,12 @@ export class PerformanceAgent extends AiAgent {
             await this.#addFacts(options.selected);
         }
         yield* super.run(initialQuery, options);
+    }
+    clearCache() {
+        // Clear the function call cache to prevent stashed tool execution results
+        // (which might contain cross-origin resource content fetched before navigation
+        // was detected) from being replayed as facts in subsequent runs.
+        this.#functionCallCacheForFocus.clear();
     }
     #createFactForTraceSummary() {
         if (!this.#formatter) {
@@ -1202,7 +1209,18 @@ export class PerformanceAgent extends AiAgent {
                 const result = this.#formatter.formatFunctionCode(code);
                 const key = `getFunctionCode('${args.scriptUrl}', ${args.line}, ${args.column})`;
                 this.#cacheFunctionResult(focus, key, result);
-                return { result: { result } };
+                return {
+                    result: { result },
+                    widgets: [{
+                            name: 'SOURCE_CODE',
+                            data: {
+                                url: args.scriptUrl,
+                                line: args.line,
+                                column: args.column,
+                                code: code.code,
+                            },
+                        }],
+                };
             },
         });
         const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace);
@@ -1253,7 +1271,16 @@ export class PerformanceAgent extends AiAgent {
                 }
                 const key = `getResourceContent(${args.url})`;
                 this.#cacheFunctionResult(focus, key, content);
-                return { result: { content } };
+                return {
+                    result: { content },
+                    widgets: [{
+                            name: 'SOURCE_CODE',
+                            data: {
+                                url: args.url,
+                                code: content,
+                            },
+                        }],
+                };
             },
         });
         if (!context.external) {

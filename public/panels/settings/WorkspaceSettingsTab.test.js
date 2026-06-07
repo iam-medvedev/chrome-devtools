@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Platform from '../../core/platform/platform.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -12,7 +13,7 @@ const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('WorkspaceSettingsTab view', () => {
     it('renders the exclude regex setting and one card per mapped file system', async () => {
         const target = document.createElement('div');
-        renderElementIntoDOM(target);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
         const fileSystem = sinon.createStubInstance(Persistence.IsolatedFileSystem.IsolatedFileSystem);
         fileSystem.path.returns(urlString `file:///home/user/foo`);
         fileSystem.excludedFolders.returns(new Set());
@@ -43,7 +44,7 @@ describeWithEnvironment('WorkspaceSettingsTab widget', () => {
         const view = createViewFunctionStub(WorkspaceSettingsTab);
         const widget = new WorkspaceSettingsTab(view);
         const container = document.createElement('div');
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         widget.markAsRoot();
         widget.show(container);
         await view.nextInput;

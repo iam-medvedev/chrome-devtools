@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { expect } from 'chai';
 import * as AiAssistance from '../ai_assistance.js';
 describe('WalkthroughUtils', () => {
     const { getButtonLabel } = AiAssistance.WalkthroughUtils;

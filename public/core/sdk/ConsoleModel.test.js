@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import { FRAME_URL, getInitializedResourceTreeModel, getMainFrame, navigate, } from '../../testing/ResourceTreeHelpers.js';

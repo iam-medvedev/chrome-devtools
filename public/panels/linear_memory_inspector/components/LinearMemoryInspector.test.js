@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertScreenshot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
@@ -12,7 +13,7 @@ describe('LinearMemoryInspector', () => {
         const target = document.createElement('div');
         target.style.width = 'var(--sys-size-40)';
         target.style.height = 'var(--sys-size-30)';
-        renderElementIntoDOM(target);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
         const array = [];
         const string = 'Hello this is a string from the memory buffer!';
         for (let i = 0; i < string.length; ++i) {

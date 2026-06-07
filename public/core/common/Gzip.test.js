@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 // Can't use @ts-expect-error as it only errors in 1 out of 2 type-check runs.
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { assert } from 'chai';
 import * as Common from './common.js';
 describe('Gzip', () => {
     it('can compress and decompress a string', async () => {

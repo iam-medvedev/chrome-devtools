@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -105,7 +106,7 @@ describeWithEnvironment('WatchExpression', () => {
         const pane = new Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane();
         pane.element.style.width = '300px';
         pane.element.style.height = '200px';
-        renderElementIntoDOM(pane);
+        renderElementIntoDOM(pane, { includeCommonStyles: true });
         await pane.updateComplete;
         await assertScreenshot('sources/watch-expressions-empty.png');
     });
@@ -128,7 +129,7 @@ describeWithEnvironment('WatchExpression', () => {
         UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, executionContext);
         pane.element.style.width = '300px';
         pane.element.style.height = '200px';
-        renderElementIntoDOM(pane);
+        renderElementIntoDOM(pane, { includeCommonStyles: true });
         await pane.updateComplete;
         const watchExpressions = pane.watchExpressions;
         assert.lengthOf(watchExpressions, 2);

@@ -7,9 +7,20 @@ var __export = (target, all) => {
 // gen/front_end/services/puppeteer/PuppeteerConnection.js
 var PuppeteerConnection_exports = {};
 __export(PuppeteerConnection_exports, {
+  PuppeteerConnectionAdapter: () => PuppeteerConnectionAdapter,
   PuppeteerConnectionHelper: () => PuppeteerConnectionHelper
 });
 import * as puppeteer from "./../../third_party/puppeteer/puppeteer.js";
+var ProtocolError = class extends Error {
+  code;
+  data;
+  constructor(message, code, data) {
+    super(message);
+    this.code = code;
+    this.data = data;
+    this.name = "ProtocolError";
+  }
+};
 var PuppeteerConnectionAdapter = class extends puppeteer.Connection {
   #connection;
   #sessionId;
@@ -21,7 +32,12 @@ var PuppeteerConnectionAdapter = class extends puppeteer.Connection {
   }
   // eslint-disable-next-line @devtools/no-underscored-properties
   _rawSend(_callbacks, method, params, sessionId, _options) {
-    return this.#connection.send(method, params, sessionId ?? this.#sessionId).then((response) => "result" in response ? response.result : {});
+    return this.#connection.send(method, params, sessionId ?? this.#sessionId).then((response) => {
+      if ("error" in response) {
+        throw new ProtocolError(response.error.message, response.error.code, response.error.data);
+      }
+      return response.result;
+    });
   }
   onEvent(event) {
     const { sessionId } = event;

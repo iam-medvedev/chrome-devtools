@@ -28,6 +28,11 @@ export interface RawFrame {
  * have neither source position nor script or URL. They only have a name.
  */
 export declare function isBuiltinFrame(rawFrame: RawFrame): boolean;
+export declare class EvalOrigin {
+    readonly frames: FrameImpl[];
+    readonly evalOrigin?: EvalOrigin;
+    constructor(frames: FrameImpl[], evalOrigin?: EvalOrigin);
+}
 interface FrameNodeBase<ChildT, ParentT> {
     readonly parent: ParentT;
     readonly children: ChildT[];
@@ -41,7 +46,7 @@ export declare class FrameNode implements FrameNodeBase<FrameNode, AnyFrameNode>
     frames: FrameImpl[];
     fragment?: FragmentImpl;
     parsedFrameInfo?: ParsedFrameInfo;
-    evalOriginFrames?: FrameImpl[];
+    evalOrigin?: EvalOrigin;
     constructor(rawFrame: RawFrame, parent: AnyFrameNode);
     /**
      * Produces the ancestor chain. Including `this` but excluding the `RootFrameNode`.

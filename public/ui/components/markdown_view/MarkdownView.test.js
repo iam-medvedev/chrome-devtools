@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Deprecation from '../../../generated/Deprecation.js';
 /* eslint-disable @devtools/es-modules-import */
@@ -32,8 +33,9 @@ describeWithEnvironment('MarkdownView', () => {
                     tokens: [
                         {
                             raw: '\'',
-                            text: '&#39;',
+                            text: '\'',
                             type: 'text',
+                            escaped: false,
                         },
                         {
                             href: 'https://example.test',
@@ -50,8 +52,9 @@ describeWithEnvironment('MarkdownView', () => {
                         },
                         {
                             raw: '\'',
-                            text: '&#39;',
+                            text: '\'',
                             type: 'text',
+                            escaped: false,
                         },
                     ],
                     type: 'paragraph',
@@ -246,6 +249,19 @@ describeWithEnvironment('MarkdownView', () => {
             result = renderer.detectCodeLanguage({ text: '{\n"test": "test"\n}', lang: '' });
             assert.strictEqual(result, '');
         });
+        it('gracefully catches errors thrown during token rendering and falls back to raw text', () => {
+            class TestRenderer extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
+                templateForToken() {
+                    throw new Error('Mock rendering error');
+                }
+            }
+            const errorRenderer = new TestRenderer();
+            const consoleErrorStub = sinon.stub(console, 'error');
+            const token = { type: 'link', text: 'learn more', href: 'https://example.test', raw: '[learn more](https://example.test)' };
+            const result = errorRenderer.renderToken(token);
+            assert.strictEqual(result.values[0], '[learn more](https://example.test)');
+            sinon.assert.calledOnce(consoleErrorStub);
+        });
     });
     const paragraphText = 'Single paragraph with a sentence of text and some list items to test that the component works end-to-end.';
     const listItemTexts = ['Simple unordered list item 1', 'Simple unordered list item 2'];
@@ -292,6 +308,31 @@ console.log('test')
                 }
             }());
             assert.strictEqual(codeBlock.innerText, 'overriden');
+        });
+        it('renders a table', () => {
+            const component = new MarkdownView.MarkdownView.MarkdownView();
+            renderElementIntoDOM(component);
+            const markdownTable = `
+| Header 1 | Header 2 |
+| :--- | :---: |
+| Cell 1 | Cell 2 |
+`;
+            component.data = { tokens: Marked.Marked.lexer(markdownTable) };
+            assert.isNotNull(component.shadowRoot);
+            const table = component.shadowRoot.querySelector('table');
+            assert.isNotNull(table);
+            const headers = Array.from(table.querySelectorAll('th'));
+            assert.lengthOf(headers, 2);
+            assert.strictEqual(headers[0].textContent?.trim(), 'Header 1');
+            assert.strictEqual(headers[0].style.textAlign, 'left');
+            assert.strictEqual(headers[1].textContent?.trim(), 'Header 2');
+            assert.strictEqual(headers[1].style.textAlign, 'center');
+            const cells = Array.from(table.querySelectorAll('td'));
+            assert.lengthOf(cells, 2);
+            assert.strictEqual(cells[0].textContent?.trim(), 'Cell 1');
+            assert.strictEqual(cells[0].style.textAlign, 'left');
+            assert.strictEqual(cells[1].textContent?.trim(), 'Cell 2');
+            assert.strictEqual(cells[1].style.textAlign, 'center');
         });
     });
     describe('escaping', () => {

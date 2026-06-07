@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightSetOrError, processTrace } from '../../../testing/InsightHelpers.js';
 import { microsecondsTraceWindow } from '../../../testing/TraceHelpers.js';

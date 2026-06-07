@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Host from '../../core/host/host.js';
 import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -98,7 +99,7 @@ describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
             target.style.width = width;
             target.style.height = '200px';
             container.appendChild(target);
-            renderElementIntoDOM(container);
+            renderElementIntoDOM(container, { includeCommonStyles: true });
             return target;
         }
         it('renders correct wide layout', async () => {

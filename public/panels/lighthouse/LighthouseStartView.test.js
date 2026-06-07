@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 describeWithEnvironment('LighthouseStartView', () => {
@@ -21,7 +22,7 @@ describeWithEnvironment('LighthouseStartView', () => {
     }
     it('renders correctly', async () => {
         const view = createStartView();
-        renderElementIntoDOM(view);
+        renderElementIntoDOM(view, { includeCommonStyles: true });
         await assertScreenshot('lighthouse/LighthouseStartView.png');
     });
     it('renders the title as a level-1 heading for accessibility', () => {

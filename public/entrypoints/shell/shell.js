@@ -4658,6 +4658,18 @@ var UIStrings14 = {
    */
   osTextScaleEmulation200: "200%",
   /**
+   * @description A drop-down menu option to emulate an OS text scale of 250%
+   */
+  osTextScaleEmulation250: "250%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 300%
+   */
+  osTextScaleEmulation300: "300%",
+  /**
+   * @description A drop-down menu option to emulate an OS text scale of 350%
+   */
+  osTextScaleEmulation350: "350%",
+  /**
    * @description Text that refers to disabling local fonts
    */
   disableLocalFonts: "Disable local fonts",
@@ -5378,6 +5390,21 @@ Common9.Settings.registerSettingExtension({
       title: i18nLazyString14(UIStrings14.osTextScaleEmulation200),
       text: i18nLazyString14(UIStrings14.osTextScaleEmulation200),
       value: "2"
+    },
+    {
+      title: i18nLazyString14(UIStrings14.osTextScaleEmulation250),
+      text: i18nLazyString14(UIStrings14.osTextScaleEmulation250),
+      value: "2.5"
+    },
+    {
+      title: i18nLazyString14(UIStrings14.osTextScaleEmulation300),
+      text: i18nLazyString14(UIStrings14.osTextScaleEmulation300),
+      value: "3"
+    },
+    {
+      title: i18nLazyString14(UIStrings14.osTextScaleEmulation350),
+      text: i18nLazyString14(UIStrings14.osTextScaleEmulation350),
+      value: "3.5"
     }
   ],
   tags: [

@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assert } from 'chai';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as StackTrace from '../../../../models/stack_trace/stack_trace.js';
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
