@@ -62,6 +62,8 @@
     "../../../../../../front_end/ui/legacy/SoftContextMenu.test.ts",
     "../../../../../../front_end/ui/legacy/SoftDropDown.test.ts",
     "../../../../../../front_end/ui/legacy/SplitWidget.test.ts",
+    "../../../../../../front_end/ui/legacy/StackLocation.test.ts",
+    "../../../../../../front_end/ui/legacy/StackedPane.test.ts",
     "../../../../../../front_end/ui/legacy/SuggestBox.test.ts",
     "../../../../../../front_end/ui/legacy/TabbedPane.test.ts",
     "../../../../../../front_end/ui/legacy/TextPrompt.test.ts",

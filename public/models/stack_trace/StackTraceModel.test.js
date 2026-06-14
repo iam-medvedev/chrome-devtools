@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
@@ -12,6 +13,7 @@ import * as StackTrace from './stack_trace.js';
 // TODO(crbug.com/444191656): Expose a `testing` bundle.
 // eslint-disable-next-line @devtools/es-modules-import
 import * as StackTraceImpl from './stack_trace_impl.js';
+const { urlString } = Platform.DevToolsPath;
 describe('StackTraceModel', () => {
     setupSettingsHooks();
     setupRuntimeHooks();
@@ -24,6 +26,7 @@ describe('StackTraceModel', () => {
     function setup() {
         const connection = new MockCDPConnection();
         const target = createTarget({ connection });
+        sinon.stub(target, 'inspectedURL').returns(urlString `http://example.com`);
         return {
             model: target.model(StackTraceImpl.StackTraceModel.StackTraceModel),
             connection,
@@ -169,7 +172,7 @@ describe('StackTraceModel', () => {
                 'baz.js:3:baz:3:30',
             ].map(protocolCallFrame);
             await model.createFromProtocolRuntime({ callFrames }, translateSpy);
-            sinon.assert.calledOnceWithMatch(translateSpy, callFrames, model.target());
+            sinon.assert.calledOnceWithMatch(translateSpy, callFrames.map(f => ({ ...f, isWasm: false })), model.target());
         });
         it('translates identical stack traces only once', async () => {
             const { model, translateSpy } = setup();
@@ -221,13 +224,13 @@ describe('StackTraceModel', () => {
             const stackTracePromise1 = model.createFromProtocolRuntime({ callFrames: callFrames1 }, translateSpy);
             const stackTracePromise2 = model.createFromProtocolRuntime({ callFrames: callFrames2 }, translateSpy);
             await new Promise(r => setTimeout(r, 0)); // Run microtask queue as far as possible.
-            sinon.assert.calledOnceWithExactly(translateSpy, callFrames1, model.target());
+            sinon.assert.calledOnceWithExactly(translateSpy, callFrames1.map(f => ({ ...f, isWasm: false })), model.target());
             resolveTranslate();
             await stackTracePromise1;
             // Now the second call should have happened.
             await new Promise(r => setTimeout(r, 0)); // Run microtask queue as far as possible.
             sinon.assert.calledTwice(translateSpy);
-            sinon.assert.calledWith(translateSpy, callFrames2, model.target());
+            sinon.assert.calledWith(translateSpy, callFrames2.map(f => ({ ...f, isWasm: false })), model.target());
             await stackTracePromise2;
         });
     });
@@ -248,7 +251,7 @@ describe('StackTraceModel', () => {
             const script = { scriptId: 'id1', sourceURL: 'foo.js' };
             await model.scriptInfoChanged(script, translateSpy);
             sinon.assert.calledOnce(updatedSpy);
-            sinon.assert.calledOnceWithMatch(translateSpy, callFrames, model.target());
+            sinon.assert.calledOnceWithMatch(translateSpy, callFrames.map(f => ({ ...f, isWasm: false })), model.target());
         });
         it('only re-translates affected fragments and notifies affected stack traces', async () => {
             const { model, translateSpy } = setup();
@@ -265,7 +268,7 @@ describe('StackTraceModel', () => {
             const [updatedSpy1, updatedSpy2] = [createUpdatedSpy(stackTrace1), createUpdatedSpy(stackTrace2)];
             const script = { scriptId: 'id2', sourceURL: 'bar.js' };
             await model.scriptInfoChanged(script, translateSpy);
-            sinon.assert.calledOnceWithMatch(translateSpy, callFrames1, model.target());
+            sinon.assert.calledOnceWithMatch(translateSpy, callFrames1.map(f => ({ ...f, isWasm: false })), model.target());
             sinon.assert.calledOnce(updatedSpy1);
             sinon.assert.notCalled(updatedSpy2);
         });
@@ -297,7 +300,7 @@ describe('StackTraceModel', () => {
             const updatedSpy = createUpdatedSpy(stackTrace);
             const script = { scriptId: 'scriptId1', sourceURL: 'foo.js' };
             await model.scriptInfoChanged(script, translateSpy);
-            sinon.assert.calledOnceWithMatch(translateSpy, callFrames);
+            sinon.assert.calledOnceWithMatch(translateSpy, callFrames.map(f => ({ ...f, isWasm: false })));
             sinon.assert.calledOnce(updatedSpy);
         });
         it('does nothing if no fragments are affected', async () => {
@@ -326,7 +329,7 @@ describe('StackTraceModel', () => {
             const [updatedSpyFull, updatedSpySubSet] = [createUpdatedSpy(fullStackTrace), createUpdatedSpy(subSetStackTrace)];
             const script = { scriptId: 'id2', sourceURL: 'bar.js' };
             await model.scriptInfoChanged(script, translateSpy);
-            sinon.assert.calledOnceWithMatch(translateSpy, fullCallFrames, model.target());
+            sinon.assert.calledOnceWithMatch(translateSpy, fullCallFrames.map(f => ({ ...f, isWasm: false })), model.target());
             sinon.assert.calledOnce(updatedSpyFull);
             sinon.assert.calledOnce(updatedSpySubSet);
         });
@@ -346,11 +349,27 @@ describe('StackTraceModel', () => {
             const frame = stackTrace.syncFragment.frames[0];
             assert.strictEqual(frame.missingDebugInfo?.type, "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */);
         });
+        it('resolves isWasm using DebuggerModel for protocol stack trace frames', async () => {
+            const { model, debuggerModel } = setup();
+            sinon.stub(debuggerModel, 'scriptForId').callsFake(scriptId => {
+                return {
+                    isWasm: () => scriptId === 'wasmScriptId',
+                };
+            });
+            const stackTrace = await model.createFromProtocolRuntime({
+                callFrames: [
+                    'foo.js:jsScriptId:foo:10:20',
+                    'bar.wasm:wasmScriptId:bar:0:30',
+                ].map(protocolCallFrame),
+            }, identityTranslateFn);
+            assert.isFalse(Boolean(stackTrace.syncFragment.frames[0].isWasm));
+            assert.isTrue(stackTrace.syncFragment.frames[1].isWasm);
+        });
     });
     describe('createFromDebuggerPaused', () => {
         it('assigns the right DebuggerModel.CallFrame to the right StackTrace.Frame', async () => {
             const { model, debuggerModel } = setup();
-            sinon.stub(debuggerModel, 'scriptForId').returns({});
+            sinon.stub(debuggerModel, 'scriptForId').returns({ isWasm: () => false });
             const details = new SDK.DebuggerModel.DebuggerPausedDetails(debuggerModel, [
                 'foo.js:id1:foo:1:10',
                 'bar.js:id2:bar:2:20',
@@ -361,7 +380,7 @@ describe('StackTraceModel', () => {
         });
         it('assigns the same DebuggerModel.CallFrame to inlined StackTrace.Frame', async () => {
             const { model, debuggerModel } = setup();
-            sinon.stub(debuggerModel, 'scriptForId').returns({});
+            sinon.stub(debuggerModel, 'scriptForId').returns({ isWasm: () => false });
             const details = new SDK.DebuggerModel.DebuggerPausedDetails(debuggerModel, [debuggerCallFrame('foo.js:id1:foo:1:10')], "other" /* Protocol.Debugger.PausedEventReason.Other */, undefined, []);
             const stackTrace = await model.createFromDebuggerPaused(details, () => Promise.resolve([[
                     { url: 'foo.ts', name: 'foo', line: 10, column: 20 },
@@ -373,6 +392,13 @@ describe('StackTraceModel', () => {
             assert.strictEqual(stackTrace.syncFragment.frames[1].sdkFrame.functionName, 'bar');
             assert.strictEqual(stackTrace.syncFragment.frames[2].sdkFrame.inlineFrameIndex, 2);
             assert.strictEqual(stackTrace.syncFragment.frames[2].sdkFrame.functionName, 'baz');
+        });
+        it('sets isWasm on StackTrace.Frame when paused in Wasm', async () => {
+            const { model, debuggerModel } = setup();
+            sinon.stub(debuggerModel, 'scriptForId').returns({ isWasm: () => true });
+            const details = new SDK.DebuggerModel.DebuggerPausedDetails(debuggerModel, [debuggerCallFrame('foo.wasm:id1:wasmFunc:1:10')], "other" /* Protocol.Debugger.PausedEventReason.Other */, undefined, []);
+            const stackTrace = await model.createFromDebuggerPaused(details, identityTranslateFn);
+            assert.isTrue(stackTrace.syncFragment.frames[0].isWasm);
         });
         it('preserves the raw function name', async () => {
             const { model } = setup();
@@ -393,8 +419,11 @@ describe('StackTraceModel', () => {
                     { url: 'baz.ts', name: 'baz', line: 40, column: 50 },
                 ]]));
             assert.strictEqual(stackTrace.syncFragment.frames[0].rawName, 'foo');
+            assert.isTrue(stackTrace.syncFragment.frames[0].isInline);
             assert.strictEqual(stackTrace.syncFragment.frames[1].rawName, 'foo');
+            assert.isTrue(stackTrace.syncFragment.frames[1].isInline);
             assert.strictEqual(stackTrace.syncFragment.frames[2].rawName, 'foo');
+            assert.isFalse(stackTrace.syncFragment.frames[2].isInline);
         });
     });
     describe('createFromErrorStackLikeString', () => {
@@ -453,8 +482,8 @@ describe('StackTraceModel', () => {
             });
             assert.exists(stackTrace);
             assert.strictEqual(stringifyStackTrace(stackTrace), [
-                'at foo (foo.js:0:9)',
-                'at bar (foo.js:1:19)',
+                'at foo (http://example.com/foo.js:0:9)',
+                'at bar (http://example.com/foo.js:1:19)',
                 '--- setTimeout -------------------------',
                 'at barFnX (bar.js:0:9)',
             ].join('\n'));
@@ -546,6 +575,43 @@ describe('StackTraceModel', () => {
             assert.strictEqual(origin3?.line, 12);
             // Level 4 (Outermost): undefined
             assert.isUndefined(origin3?.evalOrigin);
+        });
+        it('uses resolveURL callback to match scripts and complete relative URLs', async () => {
+            const { model, connection } = setup();
+            // Register a script with a relative path on the DebuggerModel
+            connection.dispatchEvent('Debugger.scriptParsed', {
+                scriptId: 'script-id-1',
+                url: 'registered-relative.js',
+                startLine: 0,
+                startColumn: 0,
+                endLine: 10,
+                endColumn: 10,
+                executionContextId: 1,
+                hash: '',
+                buildId: '',
+                isLiveEdit: false,
+                sourceMapURL: undefined,
+                hasSourceURL: false,
+                length: 100,
+            }, model.target().sessionId);
+            // 1. A relative URL that is registered as a script should be accepted and resolved
+            const stack1 = `Error: test
+          at foo (registered-relative.js:5:1)`;
+            const stackTrace1 = await model.createFromErrorStackLikeString(stack1, identityTranslateFn);
+            assert.exists(stackTrace1);
+            assert.strictEqual(stringifyStackTrace(stackTrace1), 'at foo (registered-relative.js:4:0)');
+            // 2. A relative URL that is NOT registered as a script, but can be completed against the page inspectedURL (http://example.com) should be accepted and completed
+            const stack2 = `Error: test
+          at foo (not-registered.js:5:1)`;
+            const stackTrace2 = await model.createFromErrorStackLikeString(stack2, identityTranslateFn);
+            assert.exists(stackTrace2);
+            assert.strictEqual(stringifyStackTrace(stackTrace2), 'at foo (http://example.com/not-registered.js:4:0)');
+            // 3. If target has no inspected URL, and the relative URL is not registered, it should fail parsing and return null
+            model.target().inspectedURL.returns(Platform.DevToolsPath.EmptyUrlString);
+            const stack3 = `Error: test
+          at foo (not-registered.js:5:1)`;
+            const stackTrace3 = await model.createFromErrorStackLikeString(stack3, identityTranslateFn);
+            assert.isNull(stackTrace3);
         });
     });
 });

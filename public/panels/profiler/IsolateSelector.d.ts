@@ -8,7 +8,7 @@ export declare class IsolateSelector extends UI.Widget.VBox implements UI.ListCo
     readonly totalElement: HTMLDivElement;
     totalValueDiv: HTMLElement;
     readonly totalTrendDiv: HTMLElement;
-    constructor();
+    constructor(element?: HTMLElement);
     wasShown(): void;
     willHide(): void;
     isolateAdded(isolate: SDK.IsolateManager.Isolate): void;

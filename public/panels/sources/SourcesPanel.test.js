@@ -64,5 +64,16 @@ describeWithEnvironment('SourcesPanel', () => {
         assert.exists(debugWithAiItem);
         assert.deepEqual(debugWithAiItem.subItems?.map(item => item.label), ['Start a chat', 'Assess performance', 'Explain this script', 'Explain input handling']);
     });
+    it('notifies ViewManager when debugger sidebar is toggled', () => {
+        setUpEnvironment();
+        const sources = new Sources.SourcesPanel.SourcesPanel();
+        const viewManager = UI.ViewManager.ViewManager.instance();
+        const visibilitySpy = sinon.spy();
+        viewManager.addEventListener("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, visibilitySpy);
+        sources.toggleDebuggerSidebar();
+        sinon.assert.calledWith(visibilitySpy, sinon.match({ data: sinon.match({ location: sinon.match.string, revealedViewId: sinon.match.any }) }));
+        sources.toggleDebuggerSidebar();
+        sinon.assert.calledWith(visibilitySpy, sinon.match({ data: sinon.match({ location: sinon.match.string, hiddenViewId: sinon.match.any }) }));
+    });
 });
 //# sourceMappingURL=SourcesPanel.test.js.map

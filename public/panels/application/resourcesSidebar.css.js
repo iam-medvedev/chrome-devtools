@@ -70,4 +70,15 @@ devtools-icon.navigator-font-tree-item {
   font-style: italic;
 }
 
+.ai-button-container {
+  display: none;
+  position: absolute;
+  z-index: 999;
+  right: var(--sys-size-3);
+}
+
+.tree-outline li:hover .ai-button-container {
+  display: inline-flex;
+}
+
 /*# sourceURL=${import.meta.resolve('./resourcesSidebar.css')} */`;

@@ -13,9 +13,18 @@ export declare class PerformanceTraceContext extends ConversationContext<AgentFo
     static fromParsedTrace(parsedTrace: Trace.TraceModel.ParsedTrace): PerformanceTraceContext;
     static fromInsight(parsedTrace: Trace.TraceModel.ParsedTrace, insight: Trace.Insights.Types.InsightModel): PerformanceTraceContext;
     static fromCallTree(callTree: AICallTree): PerformanceTraceContext;
-    external: boolean;
     constructor(focus: AgentFocus);
     getURL(): string;
+    /**
+     * Returns the origin for a performance trace in the AI context.
+     *
+     * To prevent cross-origin prompt injection attacks, imported traces
+     * are isolated from live pages. We assign them a virtual origin
+     * (`imported-trace://${domain}`) so they do not share the origin of live pages
+     * (e.g., `https://${domain}`). This forces a conversation reset when transitioning
+     * between imported trace data and live pages.
+     */
+    getOrigin(): string;
     getItem(): AgentFocus;
     getTitle(): string;
     /**
@@ -46,6 +55,12 @@ export declare class PerformanceAgent extends AiAgent<AgentFocus> {
         selected: PerformanceTraceContext | null;
         signal?: AbortSignal;
     }): AsyncGenerator<ResponseData, void, void>;
+    /**
+     * Clears performance-agent-specific caches and state.
+     * This is called when the conversation needs to be reset (e.g. on navigation)
+     * to prevent stale formatters, trace facts, or selection contexts from leaking
+     * into subsequent runs.
+     */
     clearCache(): void;
     addElementAnnotation(elementId: string, annotationMessage: string): Promise<FunctionCallHandlerResult<unknown>>;
     addNetworkRequestAnnotation(eventKey: string, annotationMessage: string): Promise<FunctionCallHandlerResult<unknown>>;

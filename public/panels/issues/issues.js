@@ -213,7 +213,7 @@ var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
     sourceCodeLocation.classList.add("affected-source-location");
     if (sourceLocation) {
       const linkifier = new Components.Linkifier.Linkifier(UI.UIUtils.MaxLengthForDisplayedURLsInConsole);
-      const sourceAnchor = linkifier.linkifyScriptLocation(target || null, sourceLocation.scriptId || null, sourceLocation.url, sourceLocation.lineNumber, { columnNumber: sourceLocation.columnNumber, inlineFrameIndex: 0 });
+      const sourceAnchor = linkifier.linkifyScriptLocation(target || null, sourceLocation.scriptId || null, sourceLocation.url, sourceLocation.lineNumber, { columnNumber: sourceLocation.columnNumber });
       sourceAnchor.setAttribute("jslog", `${VisualLogging.link("source-location").track({ click: true })}`);
       sourceCodeLocation.appendChild(sourceAnchor);
     }
@@ -1973,7 +1973,7 @@ var AffectedSourcesView = class extends AffectedResourcesView {
   }
   #appendAffectedSource({ url, lineNumber, columnNumber }) {
     const cellElement = document.createElement("td");
-    const linkifierURLOptions = { columnNumber, lineNumber, tabStop: true, showColumnNumber: false, inlineFrameIndex: 0 };
+    const linkifierURLOptions = { columnNumber, lineNumber, tabStop: true, showColumnNumber: false };
     const anchorElement = Components4.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
     anchorElement.setAttribute("jslog", `${VisualLogging4.link("source-location").track({ click: true })}`);
     cellElement.appendChild(anchorElement);

@@ -8366,6 +8366,12 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   async loadingStarted() {
     this.#changeView({ mode: "STATUS_PANE_OVERLAY" });
+    if (this.state === "Recording") {
+      this.setState(
+        "StopPending"
+        /* State.STOP_PENDING */
+      );
+    }
     if (this.statusDialog) {
       this.statusDialog.remove();
     }
@@ -9475,8 +9481,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         if (url) {
           const options = {
             tabStop: true,
-            showColumnNumber: false,
-            inlineFrameIndex: 0
+            showColumnNumber: false
           };
           details = LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options);
         }
@@ -9554,7 +9559,6 @@ var TimelineUIUtils = class _TimelineUIUtils {
       lineNumber,
       columnNumber,
       showColumnNumber: true,
-      inlineFrameIndex: 0,
       className: "timeline-details",
       tabStop: true,
       omitOrigin
@@ -9575,14 +9579,13 @@ var TimelineUIUtils = class _TimelineUIUtils {
     const options = {
       className: "timeline-details",
       tabStop: true,
-      inlineFrameIndex: 0,
       showColumnNumber: true,
       columnNumber: frame.columnNumber,
       lineNumber: frame.lineNumber,
       maxLength
     };
     if (isFreshOrEnhanced) {
-      return linkifier.maybeLinkifyConsoleCallFrame(target, frame, { showColumnNumber: true, inlineFrameIndex: 0 });
+      return linkifier.maybeLinkifyConsoleCallFrame(target, frame, { showColumnNumber: true });
     }
     return LegacyComponents.Linkifier.Linkifier.linkifyURL(frame.url, options);
   }
@@ -9595,16 +9598,20 @@ var TimelineUIUtils = class _TimelineUIUtils {
         name = "Largest Contentful Paint";
         break;
       case "largestContentfulPaint::CandidateForSoftNavigation":
-        link = "https://developer.chrome.com/docs/web-platform/soft-navigations-experiment";
+        link = "https://developer.chrome.com/docs/web-platform/soft-navigations";
         name = "Soft Largest Contentful Paint";
         break;
       case "SoftNavigationStart":
-        link = "https://developer.chrome.com/docs/web-platform/soft-navigations-experiment";
+        link = "https://developer.chrome.com/docs/web-platform/soft-navigations";
         name = "Soft Navigations";
         break;
       case "firstContentfulPaint":
         link = "https://web.dev/first-contentful-paint/";
         name = "First Contentful Paint";
+        break;
+      case "SyntheticSoftFirstContentfulPaint":
+        link = "https://developer.chrome.com/docs/web-platform/soft-navigations";
+        name = "Soft First Contentful Paint";
         break;
       default:
         break;
@@ -9701,7 +9708,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         contentHelper.appendElementRow(i18nString19(UIStrings19.warning), warning, true);
       }
     }
-    if (Trace23.Helpers.Trace.eventHasCategory(event, Trace23.Types.Events.Categories.UserTiming) || Trace23.Types.Extensions.isSyntheticExtensionEntry(event)) {
+    if (Trace23.Helpers.Trace.eventHasCategory(event, Trace23.Types.Events.Categories.UserTiming) || Trace23.Types.Extensions.isSyntheticExtensionEntry(event) || Trace23.Types.Events.isSoftNavigationStart(event)) {
       const adjustedEventTimeStamp = timeStampForEventAdjustedForClosestNavigationIfPossible(event, parsedTrace);
       contentHelper.appendTextRow(i18nString19(UIStrings19.timestamp), i18n37.TimeUtilities.preciseMillisToString(adjustedEventTimeStamp, 1));
     }
@@ -9911,8 +9918,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         if (url) {
           const options = {
             tabStop: true,
-            showColumnNumber: false,
-            inlineFrameIndex: 0
+            showColumnNumber: false
           };
           contentHelper.appendElementRow(i18nString19(UIStrings19.imageUrl), LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options));
         }
@@ -9923,8 +9929,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         if (url) {
           const options = {
             tabStop: true,
-            showColumnNumber: false,
-            inlineFrameIndex: 0
+            showColumnNumber: false
           };
           contentHelper.appendElementRow(i18nString19(UIStrings19.stylesheetUrl), LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options));
         }
@@ -10091,6 +10096,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       }
       case "firstPaint":
       case "firstContentfulPaint":
+      case "SyntheticSoftFirstContentfulPaint":
       case "MarkLoad":
       case "MarkDOMContent": {
         const adjustedEventTimeStamp = timeStampForEventAdjustedForClosestNavigationIfPossible(event, parsedTrace);
@@ -10549,7 +10555,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         tall = true;
         break;
       case "SoftNavigationStart":
-        color = "var(--sys-color-blue)";
+        color = "var(--color-text-primary)";
         tall = true;
         break;
       case "FrameStartedLoading":
@@ -10569,6 +10575,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         tall = true;
         break;
       case "firstContentfulPaint":
+      case "SyntheticSoftFirstContentfulPaint":
         color = "var(--sys-color-green-bright)";
         tall = true;
         break;
@@ -10735,7 +10742,6 @@ var TimelineDetailsContentHelper = class {
       tabStop: true,
       columnNumber: startColumn,
       showColumnNumber: true,
-      inlineFrameIndex: 0,
       text,
       omitOrigin
     };
@@ -10750,7 +10756,7 @@ var TimelineDetailsContentHelper = class {
       return;
     }
     const locationContent = document.createElement("span");
-    const link = this.#linkifier.maybeLinkifyScriptLocation(this.target, null, url, startLine, { tabStop: true, inlineFrameIndex: 0 });
+    const link = this.#linkifier.maybeLinkifyScriptLocation(this.target, null, url, startLine, { tabStop: true });
     if (!link) {
       return;
     }
@@ -10797,7 +10803,7 @@ function isMarkerEvent(parsedTrace, event) {
   if (event.name === "TimeStamp" || event.name === "navigationStart" || event.name === "SoftNavigationStart") {
     return true;
   }
-  if (Trace23.Types.Events.isFirstContentfulPaint(event) || Trace23.Types.Events.isFirstPaint(event)) {
+  if (Trace23.Types.Events.isAnyFirstContentfulPaint(event) || Trace23.Types.Events.isFirstPaint(event)) {
     return event.args.frame === parsedTrace.data.Meta.mainFrameId;
   }
   if (Trace23.Types.Events.isMarkDOMContent(event) || Trace23.Types.Events.isMarkLoad(event) || Trace23.Types.Events.isAnyLargestContentfulPaintCandidate(event)) {
@@ -15603,17 +15609,21 @@ var SORT_ORDER_PAGE_LOAD_MARKERS = {
     /* Trace.Types.Events.Name.MARK_FCP */
   ]: 3,
   [
+    "SyntheticSoftFirstContentfulPaint"
+    /* Trace.Types.Events.Name.MARK_SOFT_FCP */
+  ]: 4,
+  [
     "MarkDOMContent"
     /* Trace.Types.Events.Name.MARK_DOM_CONTENT */
-  ]: 4,
+  ]: 5,
   [
     "largestContentfulPaint::Candidate"
     /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */
-  ]: 5,
+  ]: 6,
   [
     "largestContentfulPaint::CandidateForSoftNavigation"
     /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE_FOR_SOFT_NAVIGATION */
-  ]: 6
+  ]: 7
 };
 var TIMESTAMP_THRESHOLD_MS = Trace33.Types.Timing.Micro(10);
 var TimelineFlameChartView = class extends Common16.ObjectWrapper.eventMixin(UI17.Widget.VBox) {
@@ -16046,7 +16056,7 @@ var TimelineFlameChartView = class extends Common16.ObjectWrapper.eventMixin(UI1
     this.bulkRemoveOverlays(this.#markers);
     const markerEvents = parsedTrace.data.PageLoadMetrics.allMarkerEvents;
     const markers = markerEvents.filter(
-      (event) => event.name === "navigationStart" || event.name === "SoftNavigationStart" || event.name === "largestContentfulPaint::Candidate" || event.name === "largestContentfulPaint::CandidateForSoftNavigation" || event.name === "firstContentfulPaint" || event.name === "MarkDOMContent" || event.name === "MarkLoad"
+      (event) => event.name === "navigationStart" || event.name === "SoftNavigationStart" || event.name === "largestContentfulPaint::Candidate" || event.name === "largestContentfulPaint::CandidateForSoftNavigation" || event.name === "firstContentfulPaint" || event.name === "SyntheticSoftFirstContentfulPaint" || event.name === "MarkDOMContent" || event.name === "MarkLoad"
       /* Trace.Types.Events.Name.MARK_LOAD */
     );
     this.#sortMarkersForPreferredVisualOrder(markers);
@@ -18168,29 +18178,37 @@ var SORT_ORDER_PAGE_LOAD_MARKERS2 = {
     /* Trace.Types.Events.Name.NAVIGATION_START */
   ]: 0,
   [
-    "MarkLoad"
-    /* Trace.Types.Events.Name.MARK_LOAD */
+    "SoftNavigationStart"
+    /* Trace.Types.Events.Name.SOFT_NAVIGATION_START */
   ]: 1,
-  [
-    "firstContentfulPaint"
-    /* Trace.Types.Events.Name.MARK_FCP */
-  ]: 2,
   [
     "firstPaint"
     /* Trace.Types.Events.Name.MARK_FIRST_PAINT */
   ]: 2,
   [
+    "firstContentfulPaint"
+    /* Trace.Types.Events.Name.MARK_FCP */
+  ]: 3,
+  [
+    "SyntheticSoftFirstContentfulPaint"
+    /* Trace.Types.Events.Name.MARK_SOFT_FCP */
+  ]: 4,
+  [
     "MarkDOMContent"
     /* Trace.Types.Events.Name.MARK_DOM_CONTENT */
-  ]: 3,
+  ]: 5,
+  [
+    "MarkLoad"
+    /* Trace.Types.Events.Name.MARK_LOAD */
+  ]: 6,
   [
     "largestContentfulPaint::Candidate"
     /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */
-  ]: 4,
+  ]: 7,
   [
     "largestContentfulPaint::CandidateForSoftNavigation"
     /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE_FOR_SOFT_NAVIGATION */
-  ]: 5
+  ]: 8
 };
 var TimingsTrackAppender = class {
   appenderName = "Timings";

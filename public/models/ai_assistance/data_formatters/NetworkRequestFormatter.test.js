@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../text_utils/text_utils.js';
 import { NetworkRequestFormatter } from '../ai_assistance.js';
+const { urlString } = Platform.DevToolsPath;
 describe('NetworkRequestFormatter', () => {
     describe('allowHeader', () => {
         it('allows a header from the list', () => {
@@ -49,10 +51,26 @@ describe('NetworkRequestFormatter', () => {
                 targetResource: 'https://test.example.test:9901',
                 shouldBeRedacted: true,
             },
+            {
+                allowedResource: 'invalid-url',
+                targetResource: 'invalid-url',
+                shouldBeRedacted: true,
+            },
+            {
+                allowedResource: 'https://example.test',
+                targetResource: 'invalid-url',
+                shouldBeRedacted: true,
+            },
+            {
+                allowedResource: 'invalid-url',
+                targetResource: 'https://example.test',
+                shouldBeRedacted: true,
+            },
         ];
         for (const t of tests) {
             it(`${t.targetResource} test when allowed resource is ${t.allowedResource}`, () => {
-                const formatted = NetworkRequestFormatter.NetworkRequestFormatter.formatInitiatorUrl(new URL(t.targetResource).origin, new URL(t.allowedResource).origin);
+                const allowedOrigin = Common.ParsedURL.ParsedURL.extractOrigin(urlString `${t.allowedResource}`);
+                const formatted = NetworkRequestFormatter.NetworkRequestFormatter.formatInitiatorUrl(urlString `${t.targetResource}`, allowedOrigin);
                 if (t.shouldBeRedacted) {
                     assert.strictEqual(formatted, '<redacted cross-origin initiator URL>', `${JSON.stringify(t)} was not redacted`);
                 }

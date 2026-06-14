@@ -6,6 +6,7 @@ import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as Tracing from '../../../services/tracing/tracing.js';
 import { createNetworkRequest, mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { createTarget, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../testing/InsightHelpers.js';
@@ -128,6 +129,8 @@ describeWithMockConnection('PerformanceAgent', function () {
                 workspace,
             });
             createTarget();
+            // For call tree focus tests, we want to simulate a fresh trace by default.
+            sinon.stub(Tracing.FreshRecording.Tracker.instance(), 'recordingIsFresh').returns(true);
         });
         describe('run', function () {
             it('generates an answer', async function () {
@@ -270,6 +273,7 @@ describeWithMockConnection('PerformanceAgent', function () {
     });
     it('uses the mainFrameURL as the origin if it is valid', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
         const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
         assert.strictEqual(context.getOrigin(), 'https://web.dev');
     });
@@ -283,6 +287,7 @@ describeWithMockConnection('PerformanceAgent', function () {
             },
             insights: new Map(),
         };
+        Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
         const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
         assert.strictEqual(context.getOrigin(), 'trace-100-200');
     });
@@ -385,6 +390,10 @@ code
         });
     });
     describe('enhanceQuery', () => {
+        beforeEach(() => {
+            // For enhanceQuery tests, we want to simulate a fresh trace to avoid the SECURITY_WARNING.
+            sinon.stub(Tracing.FreshRecording.Tracker.instance(), 'recordingIsFresh').returns(true);
+        });
         it('adds the context to the query from the user', async () => {
             const agent = createAgentForConversation({
                 aidaClient: {},
@@ -491,6 +500,8 @@ code
             assert.strictEqual(widget.data.code, 'console.log("hello world");');
         });
         it('can call getFunctionCode and yields SOURCE_CODE widget', async function () {
+            // Stub recordingIsFresh to return true to allow the tool to be declared.
+            sinon.stub(Tracing.FreshRecording.Tracker.instance(), 'recordingIsFresh').returns(true);
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
             assert.isOk(parsedTrace.insights);
             const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
@@ -523,6 +534,26 @@ code
             assert.strictEqual(widget.data.line, 10);
             assert.strictEqual(widget.data.column, 5);
             assert.strictEqual(widget.data.code, 'function test() {}');
+        });
+        it('cannot resolve function code if the trace is not fresh', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+            assert.isOk(parsedTrace.insights);
+            const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
+            const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
+            const scriptUrl = 'https://chromedevtools.github.io/performance-stories/lcp-large-image/app.js';
+            const agent = createAgentForConversation({
+                aidaClient: mockAidaClient([
+                    [{ explanation: '', functionCalls: [{ name: 'getFunctionCode', args: { scriptUrl, line: 10, column: 5 } }] }],
+                    [{ explanation: 'done' }]
+                ])
+            });
+            const context = PerformanceAgent.PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
+            // Stub recordingIsFresh to return false
+            sinon.stub(Tracing.FreshRecording.Tracker.instance(), 'recordingIsFresh').returns(false);
+            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+            const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.exists(actionResponse);
+            assert.strictEqual(actionResponse.output, 'Cannot use this tool on an imported file.');
         });
         it('can call getMainThreadTrackSummaryByLabel', async function () {
             const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAIMainThreadActivityResponseSize');
@@ -1578,6 +1609,52 @@ code
             assert.strictEqual(suggestions[3].title, 'Did anything slow down the request for this document?');
         });
     });
+    describe('PerformanceTraceContext.getOrigin', () => {
+        it('returns normal origin for fresh recordings', () => {
+            const parsedTrace = {
+                insights: new Map(),
+                metadata: {},
+                data: {
+                    Meta: {
+                        mainFrameURL: 'https://example.com/page',
+                        traceBounds: { min: 0, max: 100 },
+                    },
+                },
+            };
+            Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
+            const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            assert.strictEqual(context.getOrigin(), 'https://example.com');
+        });
+        it('returns imported-trace origin for non-fresh (imported) recordings', () => {
+            const parsedTrace = {
+                insights: new Map(),
+                metadata: {},
+                data: {
+                    Meta: {
+                        mainFrameURL: 'https://example.com/page',
+                        traceBounds: { min: 0, max: 100 },
+                    },
+                },
+            };
+            // Do not register as fresh
+            const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            assert.strictEqual(context.getOrigin(), 'imported-trace://example.com');
+        });
+        it('handles invalid URLs by prefixing the fallback URL', () => {
+            const parsedTrace = {
+                insights: new Map(),
+                metadata: {},
+                data: {
+                    Meta: {
+                        mainFrameURL: 'invalid-url',
+                        traceBounds: { min: 100, max: 200 },
+                    },
+                },
+            };
+            const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            assert.strictEqual(context.getOrigin(), 'imported-trace://trace-100-200');
+        });
+    });
     describe('getEventByKey', () => {
         it('sanitizes headers for network requests', async function () {
             const agent = createAgentForConversation({
@@ -1699,6 +1776,120 @@ code
                 { name: 'content-type', value: 'text/html' },
             ]);
         });
+        it('redacts sourceText for RundownScriptSource events', async function () {
+            const agent = createAgentForConversation({
+                aidaClient: mockAidaClient([
+                    [{
+                            explanation: '',
+                            functionCalls: [
+                                { name: 'getEventByKey', args: { eventKey: 'valid-event-key' } },
+                            ]
+                        }],
+                    [{ explanation: 'done' }]
+                ])
+            });
+            const parsedTrace = {
+                insights: new Map(),
+                metadata: {
+                    cpuThrottling: undefined,
+                    networkThrottling: undefined,
+                },
+                data: {
+                    Meta: {
+                        mainFrameNavigations: [],
+                        traceBounds: { min: 0, max: 100 },
+                        mainFrameURL: 'https://example.com',
+                    }
+                }
+            };
+            const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            await agent.run('test', { selected: context }).next();
+            const focus = context.getItem();
+            assert.exists(focus);
+            const mockRundownSourceEvent = {
+                cat: 'disabled-by-default-devtools.v8-source-rundown-sources',
+                name: 'ScriptCatchup',
+                args: {
+                    data: {
+                        isolate: 1,
+                        scriptId: 2,
+                        sourceText: 'console.log("sensitive");',
+                    },
+                },
+            };
+            sinon.stub(focus, 'lookupEvent').callsFake(key => {
+                if (key === 'valid-event-key') {
+                    return mockRundownSourceEvent;
+                }
+                return null;
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+            const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.lengthOf(actions, 1);
+            const action = actions[0];
+            assert.exists(action.output);
+            const parsedOutput = JSON.parse(action.output);
+            const details = JSON.parse(parsedOutput.details);
+            assert.isUndefined(details.args.data.sourceText);
+        });
+        it('redacts sourceText for RundownScriptSourceLarge events', async function () {
+            const agent = createAgentForConversation({
+                aidaClient: mockAidaClient([
+                    [{
+                            explanation: '',
+                            functionCalls: [
+                                { name: 'getEventByKey', args: { eventKey: 'valid-event-key' } },
+                            ]
+                        }],
+                    [{ explanation: 'done' }]
+                ])
+            });
+            const parsedTrace = {
+                insights: new Map(),
+                metadata: {
+                    cpuThrottling: undefined,
+                    networkThrottling: undefined,
+                },
+                data: {
+                    Meta: {
+                        mainFrameNavigations: [],
+                        traceBounds: { min: 0, max: 100 },
+                        mainFrameURL: 'https://example.com',
+                    }
+                }
+            };
+            const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            await agent.run('test', { selected: context }).next();
+            const focus = context.getItem();
+            assert.exists(focus);
+            const mockRundownSourceLargeEvent = {
+                cat: 'disabled-by-default-devtools.v8-source-rundown-sources',
+                name: 'LargeScriptCatchup',
+                args: {
+                    data: {
+                        isolate: 1,
+                        scriptId: 2,
+                        splitIndex: 0,
+                        splitCount: 1,
+                        sourceText: 'console.log("sensitive large");',
+                    },
+                },
+            };
+            sinon.stub(focus, 'lookupEvent').callsFake(key => {
+                if (key === 'valid-event-key') {
+                    return mockRundownSourceLargeEvent;
+                }
+                return null;
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+            const actions = responses.filter(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.lengthOf(actions, 1);
+            const action = actions[0];
+            assert.exists(action.output);
+            const parsedOutput = JSON.parse(action.output);
+            const details = JSON.parse(parsedOutput.details);
+            assert.isUndefined(details.args.data.sourceText);
+        });
     });
     describe('getLabelName', () => {
         it('returns correct names for static labels', async function () {
@@ -1728,6 +1919,61 @@ code
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
             const focus = AIContext.AgentFocus.fromParsedTrace(parsedTrace);
             assert.strictEqual(PerformanceAgent.getLabelName('unknown-label', focus), 'unknown-label');
+        });
+    });
+    describe('clearCache', () => {
+        it('clears the formatter and trace facts, forcing recreation with new target', async () => {
+            const parsedTrace = {
+                insights: new Map(),
+                metadata: {},
+                data: {
+                    Meta: {
+                        mainFrameURL: 'https://example.com/page',
+                        traceBounds: { min: 0, max: 100 },
+                        mainFrameNavigations: [],
+                    },
+                    Scripts: {
+                        scripts: [],
+                    },
+                    NetworkRequests: {
+                        byTime: [],
+                    },
+                },
+            };
+            Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
+            const target1 = createTarget();
+            const target2 = createTarget();
+            const debuggerModel1 = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
+            debuggerModel1.scripts.returns([]);
+            const target1ModelStub = sinon.stub(target1, 'model').callThrough();
+            target1ModelStub.withArgs(SDK.DebuggerModel.DebuggerModel).returns(debuggerModel1);
+            const debuggerModel2 = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
+            debuggerModel2.scripts.returns([]);
+            const target2ModelStub = sinon.stub(target2, 'model').callThrough();
+            target2ModelStub.withArgs(SDK.DebuggerModel.DebuggerModel).returns(debuggerModel2);
+            const primaryPageTargetStub = sinon.stub(SDK.TargetManager.TargetManager.instance(), 'primaryPageTarget');
+            primaryPageTargetStub.returns(target1);
+            const aidaClient = mockAidaClient([
+                [{ explanation: 'answer 1' }], [{
+                        explanation: '',
+                        functionCalls: [{ name: 'getFunctionCode', args: { scriptUrl: 'https://example.com/script.js', line: 10, column: 5 } }]
+                    }],
+                [{ explanation: 'done' }]
+            ]);
+            const agent = new PerformanceAgent.PerformanceAgent({ aidaClient });
+            const context = PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+            // Run 1: Initialize formatter with target 1
+            await Array.fromAsync(agent.run('test 1', { selected: context }));
+            target1ModelStub.resetHistory();
+            // Change primary target to target 2
+            primaryPageTargetStub.returns(target2);
+            // Call clearCache
+            agent.clearCache();
+            // Run 2: Trigger function call which uses the resolver
+            await Array.fromAsync(agent.run('test 2', { selected: context }));
+            // Verify that the resolver was called with target 2, not target 1
+            sinon.assert.calledWith(target2ModelStub, SDK.DebuggerModel.DebuggerModel);
+            sinon.assert.neverCalledWith(target1ModelStub, SDK.DebuggerModel.DebuggerModel);
         });
     });
 });

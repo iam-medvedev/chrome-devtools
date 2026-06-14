@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import * as Lantern from '../lantern.js';
 const { NetworkRequestTypes } = Lantern.Types;
 const { PageDependencyGraph } = Lantern.Graph;
@@ -67,8 +67,8 @@ describe('PageDependencyGraph', () => {
                 workerRequest,
             ];
             const networkNodeOutput = PageDependencyGraph.getNetworkNodeOutput(recordsWithWorker);
-            expect(networkNodeOutput.nodes).to.have.lengthOf(3);
-            expect(networkNodeOutput.nodes.map(node => node.request)).not.contain(workerRequest);
+            assert.lengthOf(networkNodeOutput.nodes, 3);
+            assert.notInclude(networkNodeOutput.nodes.map(node => node.request), workerRequest);
         });
         it('should index nodes by ID', () => {
             const networkNodeOutput = PageDependencyGraph.getNetworkNodeOutput(networkRequests);
@@ -113,7 +113,7 @@ describe('PageDependencyGraph', () => {
             ]);
             const nodes = networkNodeOutput.nodes;
             const indexedByFrame = networkNodeOutput.frameIdToNodeMap;
-            expect([...indexedByFrame.entries()]).deep.equals([
+            assert.deepEqual([...indexedByFrame.entries()], [
                 ['A', nodes[0]],
                 ['D', nodes[3]],
                 ['collision', null],
@@ -374,13 +374,12 @@ describe('PageDependencyGraph', () => {
             const graph = PageDependencyGraph.createGraph(traceEvents, networkRequests, url);
             const cpuNodes = [];
             graph.traverse(node => node.type === 'cpu' && cpuNodes.push(node));
-            expect(cpuNodes.map(node => {
+            assert.deepEqual(cpuNodes.map(node => {
                 return {
                     id: node.id,
                     name: node.childEvents[0].name,
                 };
-            }))
-                .deep.equals([
+            }), [
                 {
                     id: '1.0',
                     name: 'Paint',

@@ -26,14 +26,28 @@ export class StackTraceModel extends SDK.SDKModel.SDKModel {
         return model;
     }
     async createFromProtocolRuntime(stackTrace, rawFramesToUIFrames) {
+        const debuggerModel = this.target().model(SDK.DebuggerModel.DebuggerModel);
+        const syncFrames = stackTrace.callFrames.map((frame) => {
+            const isWasm = debuggerModel?.isWasm(frame.scriptId) ?? false;
+            return { ...frame, isWasm };
+        });
         const [syncFragment, asyncFragments] = await Promise.all([
-            this.#createFragment(stackTrace.callFrames, rawFramesToUIFrames),
+            this.#createFragment(syncFrames, rawFramesToUIFrames),
             this.#createAsyncFragments(stackTrace, rawFramesToUIFrames),
         ]);
         return new StackTraceImpl(syncFragment, asyncFragments);
     }
     async createFromErrorStackLikeString(stack, rawFramesToUIFrames, exceptionDetails) {
-        const rawFrames = parseRawFramesFromErrorStack(stack);
+        const debuggerModel = this.target().model(SDK.DebuggerModel.DebuggerModel);
+        const baseURL = this.target().inspectedURL();
+        const resolveURL = (url) => {
+            let urlWithScheme = parseOrScriptMatch(debuggerModel, url);
+            if (!urlWithScheme && Common.ParsedURL.ParsedURL.isRelativeURL(url)) {
+                urlWithScheme = parseOrScriptMatch(debuggerModel, Common.ParsedURL.ParsedURL.completeURL(baseURL, url));
+            }
+            return urlWithScheme;
+        };
+        const rawFrames = parseRawFramesFromErrorStack(stack, resolveURL);
         if (!rawFrames) {
             return null;
         }
@@ -86,6 +100,7 @@ export class StackTraceModel extends SDK.SDKModel.SDKModel {
             functionName: frame.functionName,
             lineNumber: frame.location().lineNumber,
             columnNumber: frame.location().columnNumber,
+            isWasm: frame.script.isWasm(),
         })), rawFramesToUIFrames);
         return new DebuggableFragmentImpl(fragment, pausedDetails.callFrames);
     }
@@ -99,7 +114,12 @@ export class StackTraceModel extends SDK.SDKModel.SDKModel {
                     continue;
                 }
                 const model = _a.#modelForTarget(target);
-                const asyncFragmentPromise = model.#createFragment(asyncStackTrace.callFrames, rawFramesToUIFrames)
+                const targetDebuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+                const asyncFrames = asyncStackTrace.callFrames.map((frame) => {
+                    const isWasm = targetDebuggerModel?.isWasm(frame.scriptId) ?? false;
+                    return { ...frame, isWasm };
+                });
+                const asyncFragmentPromise = model.#createFragment(asyncFrames, rawFramesToUIFrames)
                     .then(fragment => new AsyncFragmentImpl(asyncStackTrace.description ?? '', fragment));
                 asyncFragments.push(asyncFragmentPromise);
             }
@@ -142,7 +162,9 @@ export class StackTraceModel extends SDK.SDKModel.SDKModel {
         let i = 0;
         let evalI = 0;
         for (const node of fragment.node.getCallStack()) {
-            node.frames = uiFrames[i++].map(frame => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, node.rawFrame.functionName));
+            const group = uiFrames[i++];
+            node.frames =
+                group.map((frame, index) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, node.rawFrame.functionName, node.rawFrame.isWasm, index < group.length - 1));
             if (node.parsedFrameInfo?.evalOrigin) {
                 node.evalOrigin = evalOrigins[evalI++];
             }
@@ -176,12 +198,34 @@ export class StackTraceModel extends SDK.SDKModel.SDKModel {
 _a = StackTraceModel;
 async function translateEvalOrigin(rawFrame, rawFramesToUIFrames, target) {
     const uiFrames = await rawFramesToUIFrames([rawFrame], target);
-    const frames = uiFrames[0].map(frame => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, rawFrame.functionName));
+    const group = uiFrames[0];
+    const frames = group.map((frame, index) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, rawFrame.functionName, rawFrame.isWasm, index < group.length - 1));
     let parentEvalOrigin;
     if (rawFrame.parsedFrameInfo?.evalOrigin) {
         parentEvalOrigin = await translateEvalOrigin(rawFrame.parsedFrameInfo.evalOrigin, rawFramesToUIFrames, target);
     }
     return new EvalOrigin(frames, parentEvalOrigin);
+}
+function parseOrScriptMatch(debuggerModel, url) {
+    if (!url) {
+        return null;
+    }
+    if (Common.ParsedURL.ParsedURL.isValidUrlString(url)) {
+        return url;
+    }
+    if (debuggerModel.scriptsForSourceURL(url).length) {
+        return url;
+    }
+    // nodejs stack traces contain (absolute) file paths, but v8 reports them as file: urls.
+    try {
+        const fileUrl = new URL(url, 'file://');
+        if (debuggerModel.scriptsForSourceURL(fileUrl.href).length) {
+            return fileUrl.href;
+        }
+    }
+    catch {
+    }
+    return null;
 }
 SDK.SDKModel.SDKModel.register(StackTraceModel, { capabilities: 0 /* SDK.Target.Capability.NONE */, autostart: false });
 //# sourceMappingURL=StackTraceModel.js.map

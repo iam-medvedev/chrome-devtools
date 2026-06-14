@@ -35,6 +35,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/panels/application/components/AdsView.ts",
     "../../../../../../../front_end/panels/application/components/BackForwardCacheStrings.ts",
     "../../../../../../../front_end/panels/application/components/BackForwardCacheView.ts",
     "../../../../../../../front_end/panels/application/components/BounceTrackingMitigationsView.ts",

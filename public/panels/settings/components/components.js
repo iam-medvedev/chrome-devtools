@@ -418,7 +418,11 @@ var SyncSection = class extends UI.Widget.Widget {
   }
   #onWarningClick(event) {
     const warningLink = this.#syncInfo.isSyncActive ? "chrome://settings/syncSetup/advanced" : "chrome://settings/syncSetup";
-    UIHelpers.openInNewTab(warningLink);
+    UIHelpers.openInNewTab(
+      warningLink,
+      /* allowPrivileged=*/
+      true
+    );
     event.consume();
   }
   async #fetchGdpDetails() {

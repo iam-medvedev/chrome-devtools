@@ -261,7 +261,9 @@ export declare enum Action {
     AiCodeGenerationRequestTriggeredFromSources = 205,
     AiCodeCompletionFreCompletedFromConsole = 206,
     AiCodeCompletionFreCompletedFromSources = 207,
-    MAX_VALUE = 208
+    AiAssistanceOpenedFromApplicationPanelFloatingButton = 208,
+    AiAssistanceOpenedFromApplicationPanel = 209,
+    MAX_VALUE = 210
 }
 export declare enum PanelCodes {
     elements = 1,
@@ -514,7 +516,6 @@ export declare const enum IssueOpener {
 export declare enum DevtoolsExperiments {
     'protocol-monitor' = 13,
     'instrumentation-breakpoints' = 61,
-    'use-source-map-scopes' = 76,
     'durable-messages' = 110,
     'jpeg-xl' = 111,
     'plus-button' = 112,

@@ -4,6 +4,248 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/panels/application/components/AdsView.js
+var AdsView_exports = {};
+__export(AdsView_exports, {
+  AdsView: () => AdsView
+});
+import * as i18n from "./../../../core/i18n/i18n.js";
+import * as SDK from "./../../../core/sdk/sdk.js";
+import * as UI from "./../../../ui/legacy/legacy.js";
+import * as Lit from "./../../../ui/lit/lit.js";
+
+// gen/front_end/panels/application/components/adsView.css.js
+var adsView_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+:host {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.metrics-container {
+  flex: 0 0 auto;
+  margin: 0 0 24px;
+  border: 1px solid var(--sys-color-divider);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background-color: var(--sys-color-divider);
+}
+
+.metric-box {
+  background-color: var(--sys-color-surface);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.metric-title {
+  font-size: 12px;
+  color: var(--sys-color-on-surface-subtle);
+  margin: 0 0 4px;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--sys-color-on-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  gap: 2px;
+}
+
+.metric-average {
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--sys-color-on-surface-subtle);
+}
+
+/*# sourceURL=${import.meta.resolve("./adsView.css")} */`;
+
+// gen/front_end/panels/application/components/AdsView.js
+var { html } = Lit;
+var UIStrings = {
+  /**
+   * @description Title for a metric showing the percentage of the viewport covered by ads.
+   */
+  viewportAdDensity: "Viewport ad density",
+  /**
+   * @description Title for a metric showing the number of ads in the viewport.
+   */
+  viewportAdCount: "Viewport ad count",
+  /**
+   * @description Title for a metric showing the total CPU usage by ads.
+   */
+  totalCpuUsage: "Total CPU usage by ads",
+  /**
+   * @description Title for a metric showing the total network usage by ads.
+   */
+  totalNetworkUsage: "Total network usage by ads",
+  /**
+   * @description Subtext showing the average value of a metric.
+   * @example {5.00%} PH1
+   */
+  average: "(Average: {PH1})"
+};
+var str_ = i18n.i18n.registerUIStrings("panels/application/components/AdsView.ts", UIStrings);
+var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var DEFAULT_VIEW = (input, output, target) => {
+  const metrics = input.metrics;
+  const formatValue = (val, isPercentage) => {
+    if (isPercentage) {
+      return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, {
+        style: "percent",
+        maximumFractionDigits: 0
+      }).format(val / 100);
+    }
+    return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale).format(val);
+  };
+  const formatAverage = (val, isPercentage) => {
+    if (isPercentage) {
+      return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, {
+        style: "percent",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(val / 100);
+    }
+    return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(val);
+  };
+  const formatCpu = (val) => {
+    return i18n.TimeUtilities.preciseMillisToString(val, 1);
+  };
+  const formatNetwork = (val) => {
+    return i18n.ByteUtilities.bytesToString(val);
+  };
+  Lit.render(html`
+    <style>${adsView_css_default}</style>
+    <dl class="metrics-container">
+      <div class="metric-box">
+        <dt class="metric-title">${i18nString(UIStrings.viewportAdDensity)}</dt>
+        <dd class="metric-value">
+          <span>${formatValue(metrics.viewportAdDensityByArea, true)}</span>
+          <span class="metric-average">${i18nString(UIStrings.average, { PH1: formatAverage(metrics.averageViewportAdDensityByArea, true) })}</span>
+        </dd>
+      </div>
+      <div class="metric-box">
+        <dt class="metric-title">${i18nString(UIStrings.viewportAdCount)}</dt>
+        <dd class="metric-value">
+          <span>${formatValue(metrics.viewportAdCount, false)}</span>
+          <span class="metric-average">${i18nString(UIStrings.average, { PH1: formatAverage(metrics.averageViewportAdCount, false) })}</span>
+        </dd>
+      </div>
+      <div class="metric-box">
+        <dt class="metric-title">${i18nString(UIStrings.totalCpuUsage)}</dt>
+        <dd class="metric-value">
+          <span>${formatCpu(metrics.totalAdCpuTime)}</span>
+        </dd>
+      </div>
+      <div class="metric-box">
+        <dt class="metric-title">${i18nString(UIStrings.totalNetworkUsage)}</dt>
+        <dd class="metric-value">
+          <span>${formatNetwork(metrics.totalAdNetworkBytes)}</span>
+        </dd>
+      </div>
+    </dl>
+  `, target);
+};
+var AdsView = class extends UI.Widget.Widget {
+  #currentMetrics;
+  #pollTimer;
+  #isPolling = false;
+  #pollSessionId = 0;
+  #view;
+  constructor(view = DEFAULT_VIEW) {
+    super({ useShadowDom: true });
+    this.#view = view;
+    this.#currentMetrics = {
+      viewportAdDensityByArea: 0,
+      averageViewportAdDensityByArea: 0,
+      viewportAdCount: 0,
+      averageViewportAdCount: 0,
+      totalAdCpuTime: 0,
+      totalAdNetworkBytes: 0
+    };
+    this.requestUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    this.#startPolling();
+    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+  }
+  willHide() {
+    this.#stopPolling();
+    SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    super.willHide();
+  }
+  #startPolling() {
+    if (this.#isPolling) {
+      return;
+    }
+    this.#isPolling = true;
+    this.#pollSessionId++;
+    void this.#pollMetrics(this.#pollSessionId);
+  }
+  #stopPolling() {
+    this.#isPolling = false;
+    if (this.#pollTimer !== void 0) {
+      window.clearTimeout(this.#pollTimer);
+      this.#pollTimer = void 0;
+    }
+  }
+  async #pollMetrics(sessionId) {
+    if (!this.#isPolling || this.#pollSessionId !== sessionId) {
+      return;
+    }
+    const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (target) {
+      const adsAgent = target.adsAgent();
+      if (adsAgent) {
+        const response = await adsAgent.invoke_getAdMetrics();
+        if (!this.#isPolling || this.#pollSessionId !== sessionId) {
+          return;
+        }
+        if (!response.getError()) {
+          this.#currentMetrics = response.metrics;
+          this.requestUpdate();
+        }
+      }
+    }
+    if (this.#isPolling && this.#pollSessionId === sessionId) {
+      this.#pollTimer = window.setTimeout(() => this.#pollMetrics(sessionId), 500);
+    }
+  }
+  #onPrimaryPageChanged() {
+    this.#currentMetrics = {
+      viewportAdDensityByArea: 0,
+      averageViewportAdDensityByArea: 0,
+      viewportAdCount: 0,
+      averageViewportAdCount: 0,
+      totalAdCpuTime: 0,
+      totalAdNetworkBytes: 0
+    };
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const viewInput = {
+      metrics: this.#currentMetrics
+    };
+    this.#view(viewInput, void 0, this.contentElement);
+  }
+};
+
 // gen/front_end/panels/application/components/BackForwardCacheView.js
 var BackForwardCacheView_exports = {};
 __export(BackForwardCacheView_exports, {
@@ -14,17 +256,17 @@ import "./../../../ui/components/report_view/report_view.js";
 import "./../../../ui/legacy/legacy.js";
 import "./../../../ui/kit/kit.js";
 import * as Common from "./../../../core/common/common.js";
-import * as i18n3 from "./../../../core/i18n/i18n.js";
-import * as SDK from "./../../../core/sdk/sdk.js";
+import * as i18n5 from "./../../../core/i18n/i18n.js";
+import * as SDK2 from "./../../../core/sdk/sdk.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as Components from "./../../../ui/legacy/components/utils/utils.js";
-import * as UI from "./../../../ui/legacy/legacy.js";
-import { html, nothing, render } from "./../../../ui/lit/lit.js";
+import * as UI2 from "./../../../ui/legacy/legacy.js";
+import { html as html2, nothing, render as render2 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/BackForwardCacheStrings.js
-import * as i18n from "./../../../core/i18n/i18n.js";
-var UIStrings = {
+import * as i18n3 from "./../../../core/i18n/i18n.js";
+var UIStrings2 = {
   /**
    * @description Description text for not restored reason NotMainFrame.
    */
@@ -513,161 +755,161 @@ var UIStrings = {
    */
   webSocketUsedWithCCNS: "Back/forward cache is disabled because WebSocket has been used."
 };
-var str_ = i18n.i18n.registerUIStrings("panels/application/components/BackForwardCacheStrings.ts", UIStrings);
-var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
+var str_2 = i18n3.i18n.registerUIStrings("panels/application/components/BackForwardCacheStrings.ts", UIStrings2);
+var i18nLazyString = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
 var NotRestoredReasonDescription = {
-  NotPrimaryMainFrame: { name: i18nLazyString(UIStrings.notMainFrame) },
-  BackForwardCacheDisabled: { name: i18nLazyString(UIStrings.backForwardCacheDisabled) },
-  RelatedActiveContentsExist: { name: i18nLazyString(UIStrings.relatedActiveContentsExist) },
-  HTTPStatusNotOK: { name: i18nLazyString(UIStrings.HTTPStatusNotOK) },
-  SchemeNotHTTPOrHTTPS: { name: i18nLazyString(UIStrings.schemeNotHTTPOrHTTPS) },
-  Loading: { name: i18nLazyString(UIStrings.loading) },
-  WasGrantedMediaAccess: { name: i18nLazyString(UIStrings.wasGrantedMediaAccess) },
-  HTTPMethodNotGET: { name: i18nLazyString(UIStrings.HTTPMethodNotGET) },
-  SubframeIsNavigating: { name: i18nLazyString(UIStrings.subframeIsNavigating) },
-  Timeout: { name: i18nLazyString(UIStrings.timeout) },
-  CacheLimit: { name: i18nLazyString(UIStrings.cacheLimit) },
-  JavaScriptExecution: { name: i18nLazyString(UIStrings.JavaScriptExecution) },
-  RendererProcessKilled: { name: i18nLazyString(UIStrings.rendererProcessKilled) },
-  RendererProcessCrashed: { name: i18nLazyString(UIStrings.rendererProcessCrashed) },
+  NotPrimaryMainFrame: { name: i18nLazyString(UIStrings2.notMainFrame) },
+  BackForwardCacheDisabled: { name: i18nLazyString(UIStrings2.backForwardCacheDisabled) },
+  RelatedActiveContentsExist: { name: i18nLazyString(UIStrings2.relatedActiveContentsExist) },
+  HTTPStatusNotOK: { name: i18nLazyString(UIStrings2.HTTPStatusNotOK) },
+  SchemeNotHTTPOrHTTPS: { name: i18nLazyString(UIStrings2.schemeNotHTTPOrHTTPS) },
+  Loading: { name: i18nLazyString(UIStrings2.loading) },
+  WasGrantedMediaAccess: { name: i18nLazyString(UIStrings2.wasGrantedMediaAccess) },
+  HTTPMethodNotGET: { name: i18nLazyString(UIStrings2.HTTPMethodNotGET) },
+  SubframeIsNavigating: { name: i18nLazyString(UIStrings2.subframeIsNavigating) },
+  Timeout: { name: i18nLazyString(UIStrings2.timeout) },
+  CacheLimit: { name: i18nLazyString(UIStrings2.cacheLimit) },
+  JavaScriptExecution: { name: i18nLazyString(UIStrings2.JavaScriptExecution) },
+  RendererProcessKilled: { name: i18nLazyString(UIStrings2.rendererProcessKilled) },
+  RendererProcessCrashed: { name: i18nLazyString(UIStrings2.rendererProcessCrashed) },
   // @ts-expect-error kept for backwards compatibly
-  GrantedMediaStreamAccess: { name: i18nLazyString(UIStrings.grantedMediaStreamAccess) },
-  CacheFlushed: { name: i18nLazyString(UIStrings.cacheFlushed) },
-  ServiceWorkerVersionActivation: { name: i18nLazyString(UIStrings.serviceWorkerVersionActivation) },
-  SessionRestored: { name: i18nLazyString(UIStrings.sessionRestored) },
-  ServiceWorkerPostMessage: { name: i18nLazyString(UIStrings.serviceWorkerPostMessage) },
-  EnteredBackForwardCacheBeforeServiceWorkerHostAdded: { name: i18nLazyString(UIStrings.enteredBackForwardCacheBeforeServiceWorkerHostAdded) },
-  ServiceWorkerClaim: { name: i18nLazyString(UIStrings.serviceWorkerClaim) },
-  HaveInnerContents: { name: i18nLazyString(UIStrings.haveInnerContents) },
-  TimeoutPuttingInCache: { name: i18nLazyString(UIStrings.timeoutPuttingInCache) },
-  BackForwardCacheDisabledByLowMemory: { name: i18nLazyString(UIStrings.backForwardCacheDisabledByLowMemory) },
-  BackForwardCacheDisabledByCommandLine: { name: i18nLazyString(UIStrings.backForwardCacheDisabledByCommandLine) },
-  NetworkRequestDatapipeDrainedAsBytesConsumer: { name: i18nLazyString(UIStrings.networkRequestDatapipeDrainedAsBytesConsumer) },
-  NetworkRequestRedirected: { name: i18nLazyString(UIStrings.networkRequestRedirected) },
-  NetworkRequestTimeout: { name: i18nLazyString(UIStrings.networkRequestTimeout) },
-  NetworkExceedsBufferLimit: { name: i18nLazyString(UIStrings.networkExceedsBufferLimit) },
-  NavigationCancelledWhileRestoring: { name: i18nLazyString(UIStrings.navigationCancelledWhileRestoring) },
-  BackForwardCacheDisabledForPrerender: { name: i18nLazyString(UIStrings.backForwardCacheDisabledForPrerender) },
-  UserAgentOverrideDiffers: { name: i18nLazyString(UIStrings.userAgentOverrideDiffers) },
-  ForegroundCacheLimit: { name: i18nLazyString(UIStrings.foregroundCacheLimit) },
-  BackForwardCacheDisabledForDelegate: { name: i18nLazyString(UIStrings.backForwardCacheDisabledForDelegate) },
-  UnloadHandlerExistsInMainFrame: { name: i18nLazyString(UIStrings.unloadHandlerExistsInMainFrame) },
-  UnloadHandlerExistsInSubFrame: { name: i18nLazyString(UIStrings.unloadHandlerExistsInSubFrame) },
-  ServiceWorkerUnregistration: { name: i18nLazyString(UIStrings.serviceWorkerUnregistration) },
-  NoResponseHead: { name: i18nLazyString(UIStrings.noResponseHead) },
-  CacheControlNoStore: { name: i18nLazyString(UIStrings.cacheControlNoStore) },
-  CacheControlNoStoreCookieModified: { name: i18nLazyString(UIStrings.cacheControlNoStore) },
-  CacheControlNoStoreHTTPOnlyCookieModified: { name: i18nLazyString(UIStrings.cacheControlNoStore) },
-  DisableForRenderFrameHostCalled: { name: i18nLazyString(UIStrings.ineligibleAPI) },
-  BlocklistedFeatures: { name: i18nLazyString(UIStrings.ineligibleAPI) },
-  SchedulerTrackedFeatureUsed: { name: i18nLazyString(UIStrings.ineligibleAPI) },
-  DomainNotAllowed: { name: i18nLazyString(UIStrings.internalError) },
-  ConflictingBrowsingInstance: { name: i18nLazyString(UIStrings.internalError) },
-  NotMostRecentNavigationEntry: { name: i18nLazyString(UIStrings.internalError) },
-  IgnoreEventAndEvict: { name: i18nLazyString(UIStrings.internalError) },
-  BrowsingInstanceNotSwapped: { name: i18nLazyString(UIStrings.internalError) },
-  ActivationNavigationsDisallowedForBug1234857: { name: i18nLazyString(UIStrings.internalError) },
-  Unknown: { name: i18nLazyString(UIStrings.internalError) },
-  RenderFrameHostReused_SameSite: { name: i18nLazyString(UIStrings.internalError) },
-  RenderFrameHostReused_CrossSite: { name: i18nLazyString(UIStrings.internalError) },
-  WebSocket: { name: i18nLazyString(UIStrings.webSocket) },
-  WebTransport: { name: i18nLazyString(UIStrings.webTransport) },
-  WebRTC: { name: i18nLazyString(UIStrings.webRTC) },
-  MainResourceHasCacheControlNoStore: { name: i18nLazyString(UIStrings.mainResourceHasCacheControlNoStore) },
-  MainResourceHasCacheControlNoCache: { name: i18nLazyString(UIStrings.mainResourceHasCacheControlNoCache) },
-  SubresourceHasCacheControlNoStore: { name: i18nLazyString(UIStrings.subresourceHasCacheControlNoStore) },
-  SubresourceHasCacheControlNoCache: { name: i18nLazyString(UIStrings.subresourceHasCacheControlNoCache) },
-  ContainsPlugins: { name: i18nLazyString(UIStrings.containsPlugins) },
-  DocumentLoaded: { name: i18nLazyString(UIStrings.documentLoaded) },
-  DedicatedWorkerOrWorklet: { name: i18nLazyString(UIStrings.dedicatedWorkerOrWorklet) },
-  OutstandingNetworkRequestOthers: { name: i18nLazyString(UIStrings.outstandingNetworkRequestOthers) },
-  OutstandingIndexedDBTransaction: { name: i18nLazyString(UIStrings.outstandingIndexedDBTransaction) },
-  RequestedNotificationsPermission: { name: i18nLazyString(UIStrings.requestedNotificationsPermission) },
-  RequestedMIDIPermission: { name: i18nLazyString(UIStrings.requestedMIDIPermission) },
-  RequestedAudioCapturePermission: { name: i18nLazyString(UIStrings.requestedAudioCapturePermission) },
-  RequestedVideoCapturePermission: { name: i18nLazyString(UIStrings.requestedVideoCapturePermission) },
-  RequestedBackForwardCacheBlockedSensors: { name: i18nLazyString(UIStrings.requestedBackForwardCacheBlockedSensors) },
-  RequestedBackgroundWorkPermission: { name: i18nLazyString(UIStrings.requestedBackgroundWorkPermission) },
-  BroadcastChannel: { name: i18nLazyString(UIStrings.broadcastChannel) },
-  IndexedDBConnection: { name: i18nLazyString(UIStrings.indexedDBConnection) },
-  WebXR: { name: i18nLazyString(UIStrings.webXR) },
-  SharedWorker: { name: i18nLazyString(UIStrings.sharedWorker) },
-  SharedWorkerMessage: { name: i18nLazyString(UIStrings.sharedWorkerMessage) },
-  WebLocks: { name: i18nLazyString(UIStrings.webLocks) },
-  WebHID: { name: i18nLazyString(UIStrings.webHID) },
-  WebShare: { name: i18nLazyString(UIStrings.webShare) },
-  RequestedStorageAccessGrant: { name: i18nLazyString(UIStrings.requestedStorageAccessGrant) },
-  WebNfc: { name: i18nLazyString(UIStrings.webNfc) },
-  OutstandingNetworkRequestFetch: { name: i18nLazyString(UIStrings.outstandingNetworkRequestFetch) },
-  OutstandingNetworkRequestXHR: { name: i18nLazyString(UIStrings.outstandingNetworkRequestXHR) },
-  AppBanner: { name: i18nLazyString(UIStrings.appBanner) },
-  Printing: { name: i18nLazyString(UIStrings.printing) },
-  WebDatabase: { name: i18nLazyString(UIStrings.webDatabase) },
-  PictureInPicture: { name: i18nLazyString(UIStrings.pictureInPicture) },
-  SpeechRecognizer: { name: i18nLazyString(UIStrings.speechRecognizer) },
-  IdleManager: { name: i18nLazyString(UIStrings.idleManager) },
-  PaymentManager: { name: i18nLazyString(UIStrings.paymentManager) },
-  SpeechSynthesis: { name: i18nLazyString(UIStrings.speechSynthesis) },
-  KeyboardLock: { name: i18nLazyString(UIStrings.keyboardLock) },
-  WebOTPService: { name: i18nLazyString(UIStrings.webOTPService) },
-  OutstandingNetworkRequestDirectSocket: { name: i18nLazyString(UIStrings.outstandingNetworkRequestDirectSocket) },
-  InjectedJavascript: { name: i18nLazyString(UIStrings.injectedJavascript) },
-  InjectedStyleSheet: { name: i18nLazyString(UIStrings.injectedStyleSheet) },
-  Dummy: { name: i18nLazyString(UIStrings.internalError) },
-  ContentDiscarded: { name: i18nLazyString(UIStrings.contentDiscarded) },
-  ContentSecurityHandler: { name: i18nLazyString(UIStrings.contentSecurityHandler) },
-  ContentWebAuthenticationAPI: { name: i18nLazyString(UIStrings.contentWebAuthenticationAPI) },
-  ContentFileChooser: { name: i18nLazyString(UIStrings.contentFileChooser) },
-  ContentSerial: { name: i18nLazyString(UIStrings.contentSerial) },
-  ContentFileSystemAccess: { name: i18nLazyString(UIStrings.contentFileSystemAccess) },
-  ContentMediaDevicesDispatcherHost: { name: i18nLazyString(UIStrings.contentMediaDevicesDispatcherHost) },
-  ContentWebBluetooth: { name: i18nLazyString(UIStrings.contentWebBluetooth) },
-  ContentWebUSB: { name: i18nLazyString(UIStrings.contentWebUSB) },
-  ContentMediaSession: { name: i18nLazyString(UIStrings.contentMediaSession) },
-  ContentMediaSessionService: { name: i18nLazyString(UIStrings.contentMediaSessionService) },
-  ContentMediaPlay: { name: i18nLazyString(UIStrings.contentMediaPlay) },
-  ContentScreenReader: { name: i18nLazyString(UIStrings.contentScreenReader) },
-  EmbedderPopupBlockerTabHelper: { name: i18nLazyString(UIStrings.embedderPopupBlockerTabHelper) },
-  EmbedderSafeBrowsingTriggeredPopupBlocker: { name: i18nLazyString(UIStrings.embedderSafeBrowsingTriggeredPopupBlocker) },
-  EmbedderSafeBrowsingThreatDetails: { name: i18nLazyString(UIStrings.embedderSafeBrowsingThreatDetails) },
-  EmbedderAppBannerManager: { name: i18nLazyString(UIStrings.embedderAppBannerManager) },
-  EmbedderDomDistillerViewerSource: { name: i18nLazyString(UIStrings.embedderDomDistillerViewerSource) },
-  EmbedderDomDistillerSelfDeletingRequestDelegate: { name: i18nLazyString(UIStrings.embedderDomDistillerSelfDeletingRequestDelegate) },
-  EmbedderOomInterventionTabHelper: { name: i18nLazyString(UIStrings.embedderOomInterventionTabHelper) },
-  EmbedderOfflinePage: { name: i18nLazyString(UIStrings.embedderOfflinePage) },
-  EmbedderChromePasswordManagerClientBindCredentialManager: { name: i18nLazyString(UIStrings.embedderChromePasswordManagerClientBindCredentialManager) },
-  EmbedderPermissionRequestManager: { name: i18nLazyString(UIStrings.embedderPermissionRequestManager) },
-  EmbedderModalDialog: { name: i18nLazyString(UIStrings.embedderModalDialog) },
-  EmbedderExtensions: { name: i18nLazyString(UIStrings.embedderExtensions) },
-  EmbedderExtensionMessaging: { name: i18nLazyString(UIStrings.embedderExtensionMessaging) },
-  EmbedderExtensionMessagingForOpenPort: { name: i18nLazyString(UIStrings.embedderExtensionMessagingForOpenPort) },
-  EmbedderExtensionSentMessageToCachedFrame: { name: i18nLazyString(UIStrings.embedderExtensionSentMessageToCachedFrame) },
-  ErrorDocument: { name: i18nLazyString(UIStrings.errorDocument) },
-  FencedFramesEmbedder: { name: i18nLazyString(UIStrings.fencedFramesEmbedder) },
-  KeepaliveRequest: { name: i18nLazyString(UIStrings.keepaliveRequest) },
-  JsNetworkRequestReceivedCacheControlNoStoreResource: { name: i18nLazyString(UIStrings.jsNetworkRequestReceivedCacheControlNoStoreResource) },
-  IndexedDBEvent: { name: i18nLazyString(UIStrings.indexedDBEvent) },
-  CookieDisabled: { name: i18nLazyString(UIStrings.cookieDisabled) },
-  WebRTCUsedWithCCNS: { name: i18nLazyString(UIStrings.webRTCUsedWithCCNS) },
-  WebTransportUsedWithCCNS: { name: i18nLazyString(UIStrings.webTransportUsedWithCCNS) },
-  WebSocketUsedWithCCNS: { name: i18nLazyString(UIStrings.webSocketUsedWithCCNS) },
-  HTTPAuthRequired: { name: i18n.i18n.lockedLazyString("HTTPAuthRequired") },
-  CookieFlushed: { name: i18n.i18n.lockedLazyString("CookieFlushed") },
-  SmartCard: { name: i18n.i18n.lockedLazyString("SmartCard") },
-  LiveMediaStreamTrack: { name: i18n.i18n.lockedLazyString("LiveMediaStreamTrack") },
-  UnloadHandler: { name: i18n.i18n.lockedLazyString("UnloadHandler") },
-  ParserAborted: { name: i18n.i18n.lockedLazyString("ParserAborted") },
-  BroadcastChannelOnMessage: { name: i18n.i18n.lockedLazyString("BroadcastChannelOnMessage") },
-  RequestedByWebViewClient: { name: i18n.i18n.lockedLazyString("RequestedByWebViewClient") },
-  PostMessageByWebViewClient: { name: i18n.i18n.lockedLazyString("PostMessageByWebViewClient") },
-  WebViewSettingsChanged: { name: i18n.i18n.lockedLazyString("WebViewSettingsChanged") },
-  WebViewJavaScriptObjectChanged: { name: i18n.i18n.lockedLazyString("WebViewJavaScriptObjectChanged") },
-  WebViewMessageListenerInjected: { name: i18n.i18n.lockedLazyString("WebViewMessageListenerInjected") },
-  WebViewSafeBrowsingAllowlistChanged: { name: i18n.i18n.lockedLazyString("WebViewSafeBrowsingAllowlistChanged") },
-  WebViewDocumentStartJavascriptChanged: { name: i18n.i18n.lockedLazyString("WebViewDocumentStartJavascriptChanged") },
-  CacheControlNoStoreDeviceBoundSessionTerminated: { name: i18nLazyString(UIStrings.cacheControlNoStore) },
-  CacheLimitPrunedOnModerateMemoryPressure: { name: i18n.i18n.lockedLazyString("CacheLimitPrunedOnModerateMemoryPressure") },
-  CacheLimitPrunedOnCriticalMemoryPressure: { name: i18n.i18n.lockedLazyString("CacheLimitPrunedOnCriticalMemoryPressure") }
+  GrantedMediaStreamAccess: { name: i18nLazyString(UIStrings2.grantedMediaStreamAccess) },
+  CacheFlushed: { name: i18nLazyString(UIStrings2.cacheFlushed) },
+  ServiceWorkerVersionActivation: { name: i18nLazyString(UIStrings2.serviceWorkerVersionActivation) },
+  SessionRestored: { name: i18nLazyString(UIStrings2.sessionRestored) },
+  ServiceWorkerPostMessage: { name: i18nLazyString(UIStrings2.serviceWorkerPostMessage) },
+  EnteredBackForwardCacheBeforeServiceWorkerHostAdded: { name: i18nLazyString(UIStrings2.enteredBackForwardCacheBeforeServiceWorkerHostAdded) },
+  ServiceWorkerClaim: { name: i18nLazyString(UIStrings2.serviceWorkerClaim) },
+  HaveInnerContents: { name: i18nLazyString(UIStrings2.haveInnerContents) },
+  TimeoutPuttingInCache: { name: i18nLazyString(UIStrings2.timeoutPuttingInCache) },
+  BackForwardCacheDisabledByLowMemory: { name: i18nLazyString(UIStrings2.backForwardCacheDisabledByLowMemory) },
+  BackForwardCacheDisabledByCommandLine: { name: i18nLazyString(UIStrings2.backForwardCacheDisabledByCommandLine) },
+  NetworkRequestDatapipeDrainedAsBytesConsumer: { name: i18nLazyString(UIStrings2.networkRequestDatapipeDrainedAsBytesConsumer) },
+  NetworkRequestRedirected: { name: i18nLazyString(UIStrings2.networkRequestRedirected) },
+  NetworkRequestTimeout: { name: i18nLazyString(UIStrings2.networkRequestTimeout) },
+  NetworkExceedsBufferLimit: { name: i18nLazyString(UIStrings2.networkExceedsBufferLimit) },
+  NavigationCancelledWhileRestoring: { name: i18nLazyString(UIStrings2.navigationCancelledWhileRestoring) },
+  BackForwardCacheDisabledForPrerender: { name: i18nLazyString(UIStrings2.backForwardCacheDisabledForPrerender) },
+  UserAgentOverrideDiffers: { name: i18nLazyString(UIStrings2.userAgentOverrideDiffers) },
+  ForegroundCacheLimit: { name: i18nLazyString(UIStrings2.foregroundCacheLimit) },
+  BackForwardCacheDisabledForDelegate: { name: i18nLazyString(UIStrings2.backForwardCacheDisabledForDelegate) },
+  UnloadHandlerExistsInMainFrame: { name: i18nLazyString(UIStrings2.unloadHandlerExistsInMainFrame) },
+  UnloadHandlerExistsInSubFrame: { name: i18nLazyString(UIStrings2.unloadHandlerExistsInSubFrame) },
+  ServiceWorkerUnregistration: { name: i18nLazyString(UIStrings2.serviceWorkerUnregistration) },
+  NoResponseHead: { name: i18nLazyString(UIStrings2.noResponseHead) },
+  CacheControlNoStore: { name: i18nLazyString(UIStrings2.cacheControlNoStore) },
+  CacheControlNoStoreCookieModified: { name: i18nLazyString(UIStrings2.cacheControlNoStore) },
+  CacheControlNoStoreHTTPOnlyCookieModified: { name: i18nLazyString(UIStrings2.cacheControlNoStore) },
+  DisableForRenderFrameHostCalled: { name: i18nLazyString(UIStrings2.ineligibleAPI) },
+  BlocklistedFeatures: { name: i18nLazyString(UIStrings2.ineligibleAPI) },
+  SchedulerTrackedFeatureUsed: { name: i18nLazyString(UIStrings2.ineligibleAPI) },
+  DomainNotAllowed: { name: i18nLazyString(UIStrings2.internalError) },
+  ConflictingBrowsingInstance: { name: i18nLazyString(UIStrings2.internalError) },
+  NotMostRecentNavigationEntry: { name: i18nLazyString(UIStrings2.internalError) },
+  IgnoreEventAndEvict: { name: i18nLazyString(UIStrings2.internalError) },
+  BrowsingInstanceNotSwapped: { name: i18nLazyString(UIStrings2.internalError) },
+  ActivationNavigationsDisallowedForBug1234857: { name: i18nLazyString(UIStrings2.internalError) },
+  Unknown: { name: i18nLazyString(UIStrings2.internalError) },
+  RenderFrameHostReused_SameSite: { name: i18nLazyString(UIStrings2.internalError) },
+  RenderFrameHostReused_CrossSite: { name: i18nLazyString(UIStrings2.internalError) },
+  WebSocket: { name: i18nLazyString(UIStrings2.webSocket) },
+  WebTransport: { name: i18nLazyString(UIStrings2.webTransport) },
+  WebRTC: { name: i18nLazyString(UIStrings2.webRTC) },
+  MainResourceHasCacheControlNoStore: { name: i18nLazyString(UIStrings2.mainResourceHasCacheControlNoStore) },
+  MainResourceHasCacheControlNoCache: { name: i18nLazyString(UIStrings2.mainResourceHasCacheControlNoCache) },
+  SubresourceHasCacheControlNoStore: { name: i18nLazyString(UIStrings2.subresourceHasCacheControlNoStore) },
+  SubresourceHasCacheControlNoCache: { name: i18nLazyString(UIStrings2.subresourceHasCacheControlNoCache) },
+  ContainsPlugins: { name: i18nLazyString(UIStrings2.containsPlugins) },
+  DocumentLoaded: { name: i18nLazyString(UIStrings2.documentLoaded) },
+  DedicatedWorkerOrWorklet: { name: i18nLazyString(UIStrings2.dedicatedWorkerOrWorklet) },
+  OutstandingNetworkRequestOthers: { name: i18nLazyString(UIStrings2.outstandingNetworkRequestOthers) },
+  OutstandingIndexedDBTransaction: { name: i18nLazyString(UIStrings2.outstandingIndexedDBTransaction) },
+  RequestedNotificationsPermission: { name: i18nLazyString(UIStrings2.requestedNotificationsPermission) },
+  RequestedMIDIPermission: { name: i18nLazyString(UIStrings2.requestedMIDIPermission) },
+  RequestedAudioCapturePermission: { name: i18nLazyString(UIStrings2.requestedAudioCapturePermission) },
+  RequestedVideoCapturePermission: { name: i18nLazyString(UIStrings2.requestedVideoCapturePermission) },
+  RequestedBackForwardCacheBlockedSensors: { name: i18nLazyString(UIStrings2.requestedBackForwardCacheBlockedSensors) },
+  RequestedBackgroundWorkPermission: { name: i18nLazyString(UIStrings2.requestedBackgroundWorkPermission) },
+  BroadcastChannel: { name: i18nLazyString(UIStrings2.broadcastChannel) },
+  IndexedDBConnection: { name: i18nLazyString(UIStrings2.indexedDBConnection) },
+  WebXR: { name: i18nLazyString(UIStrings2.webXR) },
+  SharedWorker: { name: i18nLazyString(UIStrings2.sharedWorker) },
+  SharedWorkerMessage: { name: i18nLazyString(UIStrings2.sharedWorkerMessage) },
+  WebLocks: { name: i18nLazyString(UIStrings2.webLocks) },
+  WebHID: { name: i18nLazyString(UIStrings2.webHID) },
+  WebShare: { name: i18nLazyString(UIStrings2.webShare) },
+  RequestedStorageAccessGrant: { name: i18nLazyString(UIStrings2.requestedStorageAccessGrant) },
+  WebNfc: { name: i18nLazyString(UIStrings2.webNfc) },
+  OutstandingNetworkRequestFetch: { name: i18nLazyString(UIStrings2.outstandingNetworkRequestFetch) },
+  OutstandingNetworkRequestXHR: { name: i18nLazyString(UIStrings2.outstandingNetworkRequestXHR) },
+  AppBanner: { name: i18nLazyString(UIStrings2.appBanner) },
+  Printing: { name: i18nLazyString(UIStrings2.printing) },
+  WebDatabase: { name: i18nLazyString(UIStrings2.webDatabase) },
+  PictureInPicture: { name: i18nLazyString(UIStrings2.pictureInPicture) },
+  SpeechRecognizer: { name: i18nLazyString(UIStrings2.speechRecognizer) },
+  IdleManager: { name: i18nLazyString(UIStrings2.idleManager) },
+  PaymentManager: { name: i18nLazyString(UIStrings2.paymentManager) },
+  SpeechSynthesis: { name: i18nLazyString(UIStrings2.speechSynthesis) },
+  KeyboardLock: { name: i18nLazyString(UIStrings2.keyboardLock) },
+  WebOTPService: { name: i18nLazyString(UIStrings2.webOTPService) },
+  OutstandingNetworkRequestDirectSocket: { name: i18nLazyString(UIStrings2.outstandingNetworkRequestDirectSocket) },
+  InjectedJavascript: { name: i18nLazyString(UIStrings2.injectedJavascript) },
+  InjectedStyleSheet: { name: i18nLazyString(UIStrings2.injectedStyleSheet) },
+  Dummy: { name: i18nLazyString(UIStrings2.internalError) },
+  ContentDiscarded: { name: i18nLazyString(UIStrings2.contentDiscarded) },
+  ContentSecurityHandler: { name: i18nLazyString(UIStrings2.contentSecurityHandler) },
+  ContentWebAuthenticationAPI: { name: i18nLazyString(UIStrings2.contentWebAuthenticationAPI) },
+  ContentFileChooser: { name: i18nLazyString(UIStrings2.contentFileChooser) },
+  ContentSerial: { name: i18nLazyString(UIStrings2.contentSerial) },
+  ContentFileSystemAccess: { name: i18nLazyString(UIStrings2.contentFileSystemAccess) },
+  ContentMediaDevicesDispatcherHost: { name: i18nLazyString(UIStrings2.contentMediaDevicesDispatcherHost) },
+  ContentWebBluetooth: { name: i18nLazyString(UIStrings2.contentWebBluetooth) },
+  ContentWebUSB: { name: i18nLazyString(UIStrings2.contentWebUSB) },
+  ContentMediaSession: { name: i18nLazyString(UIStrings2.contentMediaSession) },
+  ContentMediaSessionService: { name: i18nLazyString(UIStrings2.contentMediaSessionService) },
+  ContentMediaPlay: { name: i18nLazyString(UIStrings2.contentMediaPlay) },
+  ContentScreenReader: { name: i18nLazyString(UIStrings2.contentScreenReader) },
+  EmbedderPopupBlockerTabHelper: { name: i18nLazyString(UIStrings2.embedderPopupBlockerTabHelper) },
+  EmbedderSafeBrowsingTriggeredPopupBlocker: { name: i18nLazyString(UIStrings2.embedderSafeBrowsingTriggeredPopupBlocker) },
+  EmbedderSafeBrowsingThreatDetails: { name: i18nLazyString(UIStrings2.embedderSafeBrowsingThreatDetails) },
+  EmbedderAppBannerManager: { name: i18nLazyString(UIStrings2.embedderAppBannerManager) },
+  EmbedderDomDistillerViewerSource: { name: i18nLazyString(UIStrings2.embedderDomDistillerViewerSource) },
+  EmbedderDomDistillerSelfDeletingRequestDelegate: { name: i18nLazyString(UIStrings2.embedderDomDistillerSelfDeletingRequestDelegate) },
+  EmbedderOomInterventionTabHelper: { name: i18nLazyString(UIStrings2.embedderOomInterventionTabHelper) },
+  EmbedderOfflinePage: { name: i18nLazyString(UIStrings2.embedderOfflinePage) },
+  EmbedderChromePasswordManagerClientBindCredentialManager: { name: i18nLazyString(UIStrings2.embedderChromePasswordManagerClientBindCredentialManager) },
+  EmbedderPermissionRequestManager: { name: i18nLazyString(UIStrings2.embedderPermissionRequestManager) },
+  EmbedderModalDialog: { name: i18nLazyString(UIStrings2.embedderModalDialog) },
+  EmbedderExtensions: { name: i18nLazyString(UIStrings2.embedderExtensions) },
+  EmbedderExtensionMessaging: { name: i18nLazyString(UIStrings2.embedderExtensionMessaging) },
+  EmbedderExtensionMessagingForOpenPort: { name: i18nLazyString(UIStrings2.embedderExtensionMessagingForOpenPort) },
+  EmbedderExtensionSentMessageToCachedFrame: { name: i18nLazyString(UIStrings2.embedderExtensionSentMessageToCachedFrame) },
+  ErrorDocument: { name: i18nLazyString(UIStrings2.errorDocument) },
+  FencedFramesEmbedder: { name: i18nLazyString(UIStrings2.fencedFramesEmbedder) },
+  KeepaliveRequest: { name: i18nLazyString(UIStrings2.keepaliveRequest) },
+  JsNetworkRequestReceivedCacheControlNoStoreResource: { name: i18nLazyString(UIStrings2.jsNetworkRequestReceivedCacheControlNoStoreResource) },
+  IndexedDBEvent: { name: i18nLazyString(UIStrings2.indexedDBEvent) },
+  CookieDisabled: { name: i18nLazyString(UIStrings2.cookieDisabled) },
+  WebRTCUsedWithCCNS: { name: i18nLazyString(UIStrings2.webRTCUsedWithCCNS) },
+  WebTransportUsedWithCCNS: { name: i18nLazyString(UIStrings2.webTransportUsedWithCCNS) },
+  WebSocketUsedWithCCNS: { name: i18nLazyString(UIStrings2.webSocketUsedWithCCNS) },
+  HTTPAuthRequired: { name: i18n3.i18n.lockedLazyString("HTTPAuthRequired") },
+  CookieFlushed: { name: i18n3.i18n.lockedLazyString("CookieFlushed") },
+  SmartCard: { name: i18n3.i18n.lockedLazyString("SmartCard") },
+  LiveMediaStreamTrack: { name: i18n3.i18n.lockedLazyString("LiveMediaStreamTrack") },
+  UnloadHandler: { name: i18n3.i18n.lockedLazyString("UnloadHandler") },
+  ParserAborted: { name: i18n3.i18n.lockedLazyString("ParserAborted") },
+  BroadcastChannelOnMessage: { name: i18n3.i18n.lockedLazyString("BroadcastChannelOnMessage") },
+  RequestedByWebViewClient: { name: i18n3.i18n.lockedLazyString("RequestedByWebViewClient") },
+  PostMessageByWebViewClient: { name: i18n3.i18n.lockedLazyString("PostMessageByWebViewClient") },
+  WebViewSettingsChanged: { name: i18n3.i18n.lockedLazyString("WebViewSettingsChanged") },
+  WebViewJavaScriptObjectChanged: { name: i18n3.i18n.lockedLazyString("WebViewJavaScriptObjectChanged") },
+  WebViewMessageListenerInjected: { name: i18n3.i18n.lockedLazyString("WebViewMessageListenerInjected") },
+  WebViewSafeBrowsingAllowlistChanged: { name: i18n3.i18n.lockedLazyString("WebViewSafeBrowsingAllowlistChanged") },
+  WebViewDocumentStartJavascriptChanged: { name: i18n3.i18n.lockedLazyString("WebViewDocumentStartJavascriptChanged") },
+  CacheControlNoStoreDeviceBoundSessionTerminated: { name: i18nLazyString(UIStrings2.cacheControlNoStore) },
+  CacheLimitPrunedOnModerateMemoryPressure: { name: i18n3.i18n.lockedLazyString("CacheLimitPrunedOnModerateMemoryPressure") },
+  CacheLimitPrunedOnCriticalMemoryPressure: { name: i18n3.i18n.lockedLazyString("CacheLimitPrunedOnCriticalMemoryPressure") }
 };
 
 // gen/front_end/panels/application/components/backForwardCacheView.css.js
@@ -773,7 +1015,7 @@ devtools-report-value:has(devtools-tree-outline) {
 /*# sourceURL=${import.meta.resolve("./backForwardCacheView.css")} */`;
 
 // gen/front_end/panels/application/components/BackForwardCacheView.js
-var UIStrings2 = {
+var UIStrings3 = {
   /**
    * @description Title text in back/forward cache view of the Application panel
    */
@@ -890,37 +1132,37 @@ var UIStrings2 = {
    */
   filesPerIssue: "{n, plural, =1 {# file} other {# files}}"
 };
-var str_2 = i18n3.i18n.registerUIStrings("panels/application/components/BackForwardCacheView.ts", UIStrings2);
-var i18nString = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var { widget } = UI.Widget;
+var str_3 = i18n5.i18n.registerUIStrings("panels/application/components/BackForwardCacheView.ts", UIStrings3);
+var i18nString2 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var { widget } = UI2.Widget;
 function renderMainFrameInformation(frame, frameTreeData, reasonToFramesMap, screenStatus, navigateAwayAndBack) {
   if (!frame) {
-    return html`
+    return html2`
       <devtools-report-key>
-        ${i18nString(UIStrings2.mainFrame)}
+        ${i18nString2(UIStrings3.mainFrame)}
       </devtools-report-key>
       <devtools-report-value>
-        ${i18nString(UIStrings2.unavailable)}
+        ${i18nString2(UIStrings3.unavailable)}
       </devtools-report-value>`;
   }
   const isTestRunning = screenStatus === "Running";
   const isTestingForbidden = Common.ParsedURL.schemeIs(frame.url, "devtools:");
-  return html`
+  return html2`
     ${renderBackForwardCacheStatus(frame.backForwardCacheDetails.restoredFromCache)}
-    <devtools-report-key>${i18nString(UIStrings2.url)}</devtools-report-key>
+    <devtools-report-key>${i18nString2(UIStrings3.url)}</devtools-report-key>
     <devtools-report-value>${frame.url}</devtools-report-value>
     ${maybeRenderFrameTree(frameTreeData)}
     <devtools-report-section>
       <devtools-button
-        aria-label=${i18nString(UIStrings2.runTest)}
+        aria-label=${i18nString2(UIStrings3.runTest)}
         .disabled=${isTestRunning || isTestingForbidden}
         .spinner=${isTestRunning}
         .variant=${"primary"}
         @click=${navigateAwayAndBack}
         jslog=${VisualLogging.action("back-forward-cache.run-test").track({ click: true })}>
-        ${isTestRunning ? html`
-          ${i18nString(UIStrings2.runningTest)}` : `
-          ${i18nString(UIStrings2.runTest)}
+        ${isTestRunning ? html2`
+          ${i18nString2(UIStrings3.runningTest)}` : `
+          ${i18nString2(UIStrings3.runTest)}
         `}
       </devtools-button>
     </devtools-report-section>
@@ -930,7 +1172,7 @@ function renderMainFrameInformation(frame, frameTreeData, reasonToFramesMap, scr
     <devtools-report-section>
       <devtools-link href="https://web.dev/bfcache/" class="link"
       jslogcontext="learn-more.eligibility">
-        ${i18nString(UIStrings2.learnMore)}
+        ${i18nString2(UIStrings3.learnMore)}
       </devtools-link>
     </devtools-report-section>`;
 }
@@ -939,14 +1181,14 @@ function maybeRenderFrameTree(frameTreeData) {
     return nothing;
   }
   function renderFrameTreeNode(node) {
-    return html`
+    return html2`
       <li role="treeitem" class="text-ellipsis">
-        ${node.iconName ? html`
+        ${node.iconName ? html2`
           <devtools-icon class="inline-icon extra-large" .name=${node.iconName} style="margin-bottom: -3px;">
           </devtools-icon>
         ` : nothing}
         ${node.text}
-        ${node.children?.length ? html`
+        ${node.children?.length ? html2`
           <ul role="group">
             ${node.children.map((child) => renderFrameTreeNode(child))}
           </ul>` : nothing}
@@ -954,14 +1196,14 @@ function maybeRenderFrameTree(frameTreeData) {
   }
   let title = "";
   if (frameTreeData.frameCount === 1) {
-    title = i18nString(UIStrings2.issuesInSingleFrame, { n: frameTreeData.issueCount });
+    title = i18nString2(UIStrings3.issuesInSingleFrame, { n: frameTreeData.issueCount });
   } else {
-    title = i18nString(UIStrings2.issuesInMultipleFrames, { n: frameTreeData.issueCount, m: frameTreeData.frameCount });
+    title = i18nString2(UIStrings3.issuesInMultipleFrames, { n: frameTreeData.issueCount, m: frameTreeData.frameCount });
   }
-  return html`
-    <devtools-report-key jslog=${VisualLogging.section("frames")}>${i18nString(UIStrings2.framesTitle)}</devtools-report-key>
+  return html2`
+    <devtools-report-key jslog=${VisualLogging.section("frames")}>${i18nString2(UIStrings3.framesTitle)}</devtools-report-key>
     <devtools-report-value>
-      <devtools-tree .template=${html`
+      <devtools-tree .template=${html2`
         <ul role="tree">
           <li role="treeitem" class="text-ellipsis">
             ${title}
@@ -977,28 +1219,28 @@ function maybeRenderFrameTree(frameTreeData) {
 function renderBackForwardCacheStatus(status) {
   switch (status) {
     case true:
-      return html`
+      return html2`
         <devtools-report-section autofocus tabindex="-1">
           <div class="status extra-large">
             <devtools-icon class="inline-icon extra-large" name="check-circle" style="color: var(--icon-checkmark-green);">
             </devtools-icon>
           </div>
-          ${i18nString(UIStrings2.restoredFromBFCache)}
+          ${i18nString2(UIStrings3.restoredFromBFCache)}
         </devtools-report-section>`;
     // clang-format on
     case false:
-      return html`
+      return html2`
         <devtools-report-section autofocus tabindex="-1">
           <div class="status">
             <devtools-icon class="inline-icon extra-large" name="clear">
             </devtools-icon>
           </div>
-          ${i18nString(UIStrings2.normalNavigation)}
+          ${i18nString2(UIStrings3.normalNavigation)}
         </devtools-report-section>`;
   }
-  return html`
+  return html2`
     <devtools-report-section autofocus tabindex="-1">
-      ${i18nString(UIStrings2.unknown)}
+      ${i18nString2(UIStrings3.unknown)}
     </devtools-report-section>`;
 }
 function maybeRenderExplanations(explanations, explanationTree, reasonToFramesMap) {
@@ -1017,14 +1259,14 @@ function maybeRenderExplanations(explanations, explanationTree, reasonToFramesMa
     (explanation) => explanation.type === "Circumstantial"
     /* Protocol.Page.BackForwardCacheNotRestoredReasonType.Circumstantial */
   );
-  return html`
-    ${renderExplanations(i18nString(UIStrings2.pageSupportNeeded), i18nString(UIStrings2.pageSupportNeededExplanation), pageSupportNeeded, reasonToFramesMap)}
-    ${renderExplanations(i18nString(UIStrings2.supportPending), i18nString(UIStrings2.supportPendingExplanation), supportPending, reasonToFramesMap)}
-    ${renderExplanations(i18nString(UIStrings2.circumstantial), i18nString(UIStrings2.circumstantialExplanation), circumstantial, reasonToFramesMap)}`;
+  return html2`
+    ${renderExplanations(i18nString2(UIStrings3.pageSupportNeeded), i18nString2(UIStrings3.pageSupportNeededExplanation), pageSupportNeeded, reasonToFramesMap)}
+    ${renderExplanations(i18nString2(UIStrings3.supportPending), i18nString2(UIStrings3.supportPendingExplanation), supportPending, reasonToFramesMap)}
+    ${renderExplanations(i18nString2(UIStrings3.circumstantial), i18nString2(UIStrings3.circumstantialExplanation), circumstantial, reasonToFramesMap)}`;
 }
 function renderExplanations(category, explainerText, explanations, reasonToFramesMap) {
-  return html`
-    ${explanations.length > 0 ? html`
+  return html2`
+    ${explanations.length > 0 ? html2`
       <devtools-report-section-header>
         ${category}
         <div class="help-outline-icon">
@@ -1038,8 +1280,8 @@ function renderExplanations(category, explainerText, explanations, reasonToFrame
 function maybeRenderReasonContext(explanation) {
   if (explanation.reason === "EmbedderExtensionSentMessageToCachedFrame" && explanation.context) {
     const link = "chrome://extensions/?id=" + explanation.context;
-    return html`${i18nString(UIStrings2.blockingExtensionId)}
-      <devtools-link .href=${link}>${explanation.context}</devtools-link>`;
+    return html2`${i18nString2(UIStrings3.blockingExtensionId)}
+      <devtools-link .href=${link} allow-privileged>${explanation.context}</devtools-link>`;
   }
   return nothing;
 }
@@ -1047,15 +1289,15 @@ function renderFramesPerReason(frames) {
   if (frames === void 0 || frames.length === 0) {
     return nothing;
   }
-  const rows = [html`<div>${i18nString(UIStrings2.framesPerIssue, { n: frames.length })}</div>`];
-  rows.push(...frames.map((url) => html`<div class="text-ellipsis" title=${url}
+  const rows = [html2`<div>${i18nString2(UIStrings3.framesPerIssue, { n: frames.length })}</div>`];
+  rows.push(...frames.map((url) => html2`<div class="text-ellipsis" title=${url}
     jslog=${VisualLogging.treeItem().track({ resize: true })}>${url}</div>`));
-  return html`
+  return html2`
       <div class="details-list"
       jslog=${VisualLogging.tree("frames-per-issue")}>
         <devtools-expandable-list .data=${{
     rows,
-    title: i18nString(UIStrings2.framesPerIssue, { n: frames.length })
+    title: i18nString2(UIStrings3.framesPerIssue, { n: frames.length })
   }}
         jslog=${VisualLogging.treeItem().track({
     resize: true
@@ -1065,10 +1307,10 @@ function renderFramesPerReason(frames) {
 }
 function maybeRenderDeepLinkToUnload(explanation) {
   if (explanation.reason === "UnloadHandlerExistsInMainFrame" || explanation.reason === "UnloadHandlerExistsInSubFrame") {
-    return html`
+    return html2`
         <devtools-link href="https://web.dev/bfcache/#never-use-the-unload-event" class="link"
         jslogContext=${"learn-more.never-use-unload"}>
-          ${i18nString(UIStrings2.neverUseUnload)}
+          ${i18nString2(UIStrings3.neverUseUnload)}
         </devtools-link>`;
   }
   return nothing;
@@ -1078,28 +1320,27 @@ function maybeRenderJavaScriptDetails(details) {
     return nothing;
   }
   const maxLengthForDisplayedURLs = 50;
-  const rows = [html`<div>${i18nString(UIStrings2.filesPerIssue, { n: details.length })}</div>`];
-  rows.push(...details.map((detail) => html`
+  const rows = [html2`<div>${i18nString2(UIStrings3.filesPerIssue, { n: details.length })}</div>`];
+  rows.push(...details.map((detail) => html2`
           ${widget(Components.Linkifier.ScriptLocationLink, {
     sourceURL: detail.url,
     lineNumber: detail.lineNumber,
     options: {
       columnNumber: detail.columnNumber,
       showColumnNumber: true,
-      inlineFrameIndex: 0,
       maxLength: maxLengthForDisplayedURLs
     }
   })}`));
-  return html`
+  return html2`
       <div class="details-list">
         <devtools-expandable-list .data=${{ rows }}></devtools-expandable-list>
       </div>
     `;
 }
 function renderReason(explanation, frames) {
-  return html`
+  return html2`
     <devtools-report-section>
-      ${explanation.reason in NotRestoredReasonDescription ? html`
+      ${explanation.reason in NotRestoredReasonDescription ? html2`
           <div class="circled-exclamation-icon">
             <devtools-icon class="inline-icon medium" style="color: var(--icon-warning)" name="warning">
             </devtools-icon>
@@ -1116,29 +1357,29 @@ function renderReason(explanation, frames) {
     ${maybeRenderJavaScriptDetails(explanation.details)}
     ${renderFramesPerReason(frames)}`;
 }
-var DEFAULT_VIEW = (input, output, target) => {
-  render(html`
+var DEFAULT_VIEW2 = (input, output, target) => {
+  render2(html2`
     <style>${backForwardCacheView_css_default}</style>
-    <devtools-report .data=${{ reportTitle: i18nString(UIStrings2.backForwardCacheTitle) }} jslog=${VisualLogging.pane("back-forward-cache")}>
+    <devtools-report .data=${{ reportTitle: i18nString2(UIStrings3.backForwardCacheTitle) }} jslog=${VisualLogging.pane("back-forward-cache")}>
 
       ${renderMainFrameInformation(input.frame, input.frameTreeData, input.reasonToFramesMap, input.screenStatus, input.navigateAwayAndBack)}
     </devtools-report>
   `, target);
 };
-var BackForwardCacheView = class extends UI.Widget.Widget {
+var BackForwardCacheView = class extends UI2.Widget.Widget {
   #screenStatus = "Result";
   #historyIndex = 0;
   #view;
-  constructor(view = DEFAULT_VIEW) {
+  constructor(view = DEFAULT_VIEW2) {
     super({ useShadowDom: true, delegatesFocus: true });
     this.#view = view;
-    this.#getMainResourceTreeModel()?.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.requestUpdate, this);
-    this.#getMainResourceTreeModel()?.addEventListener(SDK.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, this.requestUpdate, this);
+    this.#getMainResourceTreeModel()?.addEventListener(SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.requestUpdate, this);
+    this.#getMainResourceTreeModel()?.addEventListener(SDK2.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, this.requestUpdate, this);
     this.requestUpdate();
   }
   #getMainResourceTreeModel() {
-    const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-    return mainTarget?.model(SDK.ResourceTreeModel.ResourceTreeModel) || null;
+    const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    return mainTarget?.model(SDK2.ResourceTreeModel.ResourceTreeModel) || null;
   }
   #getMainFrame() {
     return this.#getMainResourceTreeModel()?.mainFrame || null;
@@ -1162,21 +1403,21 @@ var BackForwardCacheView = class extends UI.Widget.Widget {
     this.#view(viewInput, void 0, this.contentElement);
   }
   #renderBackForwardCacheTestResult() {
-    SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.#renderBackForwardCacheTestResult, this);
+    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.FrameNavigated, this.#renderBackForwardCacheTestResult, this);
     this.#screenStatus = "Result";
     this.requestUpdate();
     void this.updateComplete.then(() => {
-      UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings2.testCompleted));
+      UI2.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings3.testCompleted));
       this.contentElement.focus();
     });
   }
   async #onNavigatedAway() {
-    SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.#onNavigatedAway, this);
+    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.FrameNavigated, this.#onNavigatedAway, this);
     await this.#waitAndGoBackInHistory(50);
   }
   async #waitAndGoBackInHistory(delay) {
-    const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-    const resourceTreeModel = mainTarget?.model(SDK.ResourceTreeModel.ResourceTreeModel);
+    const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    const resourceTreeModel = mainTarget?.model(SDK2.ResourceTreeModel.ResourceTreeModel);
     const historyResults = await resourceTreeModel?.navigationHistory();
     if (!resourceTreeModel || !historyResults) {
       return;
@@ -1184,13 +1425,13 @@ var BackForwardCacheView = class extends UI.Widget.Widget {
     if (historyResults.currentIndex === this.#historyIndex) {
       window.setTimeout(this.#waitAndGoBackInHistory.bind(this, delay * 2), delay);
     } else {
-      SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.#renderBackForwardCacheTestResult, this);
+      SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.FrameNavigated, this.#renderBackForwardCacheTestResult, this);
       resourceTreeModel.navigateToHistoryEntry(historyResults.entries[historyResults.currentIndex - 1]);
     }
   }
   async #navigateAwayAndBack() {
-    const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-    const resourceTreeModel = mainTarget?.model(SDK.ResourceTreeModel.ResourceTreeModel);
+    const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    const resourceTreeModel = mainTarget?.model(SDK2.ResourceTreeModel.ResourceTreeModel);
     const historyResults = await resourceTreeModel?.navigationHistory();
     if (!resourceTreeModel || !historyResults) {
       return;
@@ -1198,7 +1439,7 @@ var BackForwardCacheView = class extends UI.Widget.Widget {
     this.#historyIndex = historyResults.currentIndex;
     this.#screenStatus = "Running";
     this.requestUpdate();
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.#onNavigatedAway, this);
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.FrameNavigated, this.#onNavigatedAway, this);
     void resourceTreeModel.navigate("chrome://terms");
   }
   // Builds a subtree of the frame tree, conaining only frames with BFCache issues and their ancestors.
@@ -1214,7 +1455,7 @@ var BackForwardCacheView = class extends UI.Widget.Widget {
     if (explanationTree.url.length) {
       nodeUrlText = explanationTree.url;
     } else {
-      nodeUrlText = i18nString(UIStrings2.blankURLTitle, { PH1: nextBlankURLCount.blankCount });
+      nodeUrlText = i18nString2(UIStrings3.blankURLTitle, { PH1: nextBlankURLCount.blankCount });
       nextBlankURLCount.blankCount += 1;
     }
     for (const explanation of explanationTree.explanations) {
@@ -1244,7 +1485,7 @@ var BackForwardCacheView = class extends UI.Widget.Widget {
   #buildReasonToFramesMap(explanationTree, nextBlankURLCount, outputMap) {
     let url = explanationTree.url;
     if (url.length === 0) {
-      url = i18nString(UIStrings2.blankURLTitle, { PH1: nextBlankURLCount.blankCount });
+      url = i18nString2(UIStrings3.blankURLTitle, { PH1: nextBlankURLCount.blankCount });
       nextBlankURLCount.blankCount += 1;
     }
     explanationTree.explanations.forEach((explanation) => {
@@ -1266,17 +1507,17 @@ var BackForwardCacheView = class extends UI.Widget.Widget {
 var BounceTrackingMitigationsView_exports = {};
 __export(BounceTrackingMitigationsView_exports, {
   BounceTrackingMitigationsView: () => BounceTrackingMitigationsView,
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
-  i18nString: () => i18nString2
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  i18nString: () => i18nString3
 });
 import "./../../../ui/components/report_view/report_view.js";
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
 import "./../../../ui/kit/kit.js";
-import * as i18n5 from "./../../../core/i18n/i18n.js";
-import * as SDK2 from "./../../../core/sdk/sdk.js";
+import * as i18n7 from "./../../../core/i18n/i18n.js";
+import * as SDK3 from "./../../../core/sdk/sdk.js";
 import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
-import * as UI2 from "./../../../ui/legacy/legacy.js";
-import * as Lit from "./../../../ui/lit/lit.js";
+import * as UI3 from "./../../../ui/legacy/legacy.js";
+import * as Lit2 from "./../../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/bounceTrackingMitigationsView.css.js
@@ -1308,8 +1549,8 @@ devtools-data-grid {
 /*# sourceURL=${import.meta.resolve("./bounceTrackingMitigationsView.css")} */`;
 
 // gen/front_end/panels/application/components/BounceTrackingMitigationsView.js
-var { html: html2 } = Lit;
-var UIStrings3 = {
+var { html: html3 } = Lit2;
+var UIStrings4 = {
   /**
    * @description Title text in bounce tracking mitigations view of the Application panel.
    */
@@ -1345,49 +1586,49 @@ var UIStrings3 = {
    */
   featureDisabled: "Bounce tracking mitigations are disabled."
 };
-var str_3 = i18n5.i18n.registerUIStrings("panels/application/components/BounceTrackingMitigationsView.ts", UIStrings3);
-var i18nString2 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_4 = i18n7.i18n.registerUIStrings("panels/application/components/BounceTrackingMitigationsView.ts", UIStrings4);
+var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var renderForceRunButton = (input) => {
   const isMitigationRunning = input.screenStatus === "Running";
-  return html2`
+  return html3`
     <devtools-button
-      aria-label=${i18nString2(UIStrings3.forceRun)}
+      aria-label=${i18nString3(UIStrings4.forceRun)}
       .disabled=${isMitigationRunning}
       .spinner=${isMitigationRunning}
       .variant=${"primary"}
       @click=${input.runMitigations}
       jslog=${VisualLogging2.action("force-run").track({ click: true })}>
-      ${isMitigationRunning ? html2`
-        ${i18nString2(UIStrings3.runningMitigations)}` : `
-        ${i18nString2(UIStrings3.forceRun)}
+      ${isMitigationRunning ? html3`
+        ${i18nString3(UIStrings4.runningMitigations)}` : `
+        ${i18nString3(UIStrings4.forceRun)}
       `}
     </devtools-button>
   `;
 };
 var renderDeletedSitesOrNoSitesMessage = (input) => {
   if (!input.seenButtonClick) {
-    return Lit.nothing;
+    return Lit2.nothing;
   }
   if (input.trackingSites.length === 0) {
-    return html2`
+    return html3`
       <devtools-report-section>
-      ${input.screenStatus === "Running" ? html2`
-        ${i18nString2(UIStrings3.checkingPotentialTrackers)}` : `
-        ${i18nString2(UIStrings3.noPotentialBounceTrackersIdentified)}
+      ${input.screenStatus === "Running" ? html3`
+        ${i18nString3(UIStrings4.checkingPotentialTrackers)}` : `
+        ${i18nString3(UIStrings4.noPotentialBounceTrackersIdentified)}
       `}
       </devtools-report-section>
     `;
   }
-  return html2`
+  return html3`
     <devtools-report-section>
       <devtools-data-grid striped inline>
         <table>
           <tr>
             <th id="sites" weight="10" sortable>
-              ${i18nString2(UIStrings3.stateDeletedFor)}
+              ${i18nString3(UIStrings4.stateDeletedFor)}
             </th>
           </tr>
-          ${input.trackingSites.map((site) => html2`
+          ${input.trackingSites.map((site) => html3`
             <tr><td>${site}</td></tr>`)}
         </table>
       </devtools-data-grid>
@@ -1396,16 +1637,16 @@ var renderDeletedSitesOrNoSitesMessage = (input) => {
 };
 var renderMainFrameInformation2 = (input) => {
   if (input.screenStatus === "Initializing") {
-    return Lit.nothing;
+    return Lit2.nothing;
   }
   if (input.screenStatus === "Disabled") {
-    return html2`
+    return html3`
       <devtools-report-section>
-        ${i18nString2(UIStrings3.featureDisabled)}
+        ${i18nString3(UIStrings4.featureDisabled)}
       </devtools-report-section>
     `;
   }
-  return html2`
+  return html3`
     <devtools-report-section>
       ${renderForceRunButton(input)}
     </devtools-report-section>
@@ -1415,30 +1656,30 @@ var renderMainFrameInformation2 = (input) => {
     <devtools-report-section>
       <devtools-link href="https://privacycg.github.io/nav-tracking-mitigations/#bounce-tracking-mitigations" class="link"
       jslogcontext="learn-more">
-        ${i18nString2(UIStrings3.learnMore)}
+        ${i18nString3(UIStrings4.learnMore)}
       </devtools-link>
     </devtools-report-section>
   `;
 };
-var DEFAULT_VIEW2 = (input, _output, target) => {
-  Lit.render(html2`
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  Lit2.render(html3`
     <style>${bounceTrackingMitigationsView_css_default}</style>
-    <style>${UI2.inspectorCommonStyles}</style>
-    <devtools-report .data=${{ reportTitle: i18nString2(UIStrings3.bounceTrackingMitigationsTitle) }}
+    <style>${UI3.inspectorCommonStyles}</style>
+    <devtools-report .data=${{ reportTitle: i18nString3(UIStrings4.bounceTrackingMitigationsTitle) }}
                       jslog=${VisualLogging2.pane("bounce-tracking-mitigations")}>
       ${renderMainFrameInformation2(input)}
     </devtools-report>
   `, target, { container: { classes: ["overflow-auto"] } });
 };
-var BounceTrackingMitigationsView = class extends UI2.Widget.Widget {
+var BounceTrackingMitigationsView = class extends UI3.Widget.Widget {
   #trackingSites = [];
   #screenStatus = "Initializing";
   #seenButtonClick = false;
   #view;
-  constructor(element, view = DEFAULT_VIEW2) {
+  constructor(element, view = DEFAULT_VIEW3) {
     super(element, { useShadowDom: "pure" });
     this.#view = view;
-    const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!mainTarget) {
       this.#screenStatus = "Result";
     } else {
@@ -1461,7 +1702,7 @@ var BounceTrackingMitigationsView = class extends UI2.Widget.Widget {
     }, void 0, this.contentElement);
   }
   async #runMitigations() {
-    const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!mainTarget) {
       return;
     }
@@ -1485,15 +1726,15 @@ var BounceTrackingMitigationsView = class extends UI2.Widget.Widget {
 var CrashReportContextGrid_exports = {};
 __export(CrashReportContextGrid_exports, {
   CrashReportContextGrid: () => CrashReportContextGrid,
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
-  i18nString: () => i18nString3
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  i18nString: () => i18nString4
 });
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
 import * as Host from "./../../../core/host/host.js";
-import * as i18n7 from "./../../../core/i18n/i18n.js";
-import * as UI3 from "./../../../ui/legacy/legacy.js";
-import { html as html3, render as render3 } from "./../../../ui/lit/lit.js";
-var UIStrings4 = {
+import * as i18n9 from "./../../../core/i18n/i18n.js";
+import * as UI4 from "./../../../ui/legacy/legacy.js";
+import { html as html4, render as render4 } from "./../../../ui/lit/lit.js";
+var UIStrings5 = {
   /**
    * @description Text in Crash Report Context Items View of the Application panel
    */
@@ -1511,10 +1752,10 @@ var UIStrings4 = {
    */
   copyValue: "Copy value"
 };
-var str_4 = i18n7.i18n.registerUIStrings("panels/application/components/CrashReportContextGrid.ts", UIStrings4);
-var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var DEFAULT_VIEW3 = (input, output, target) => {
-  render3(html3`
+var str_5 = i18n9.i18n.registerUIStrings("panels/application/components/CrashReportContextGrid.ts", UIStrings5);
+var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var DEFAULT_VIEW4 = (input, output, target) => {
+  render4(html4`
       <style>
         :host {
           display: block;
@@ -1530,18 +1771,18 @@ var DEFAULT_VIEW3 = (input, output, target) => {
           text-overflow: ellipsis;
         }
       </style>
-      <style>${UI3.inspectorCommonStyles}</style>
+      <style>${UI4.inspectorCommonStyles}</style>
       <div>
         <devtools-data-grid striped inline>
           <table>
             <thead>
               <tr>
-                <th id="key" weight="50">${i18nString3(UIStrings4.key)}</th>
-                <th id="value" weight="50">${i18nString3(UIStrings4.value)}</th>
+                <th id="key" weight="50">${i18nString4(UIStrings5.key)}</th>
+                <th id="value" weight="50">${i18nString4(UIStrings5.value)}</th>
               </tr>
             </thead>
             <tbody>
-              ${input.entries.map((entry) => html3`
+              ${input.entries.map((entry) => html4`
                 <tr class=${input.selectedKey === entry.key ? "selected" : ""}
                     @select=${() => input.onSelect(entry.key)}
                     @contextmenu=${(e) => input.onContextMenu(e, entry.key, entry.value)}>
@@ -1555,13 +1796,13 @@ var DEFAULT_VIEW3 = (input, output, target) => {
       </div>
     `, target);
 };
-var CrashReportContextGrid = class extends UI3.Widget.Widget {
+var CrashReportContextGrid = class extends UI4.Widget.Widget {
   #entries = [];
   #filteredEntries = [];
   #selectedKey;
   #filters = [];
   #view;
-  constructor(element, view = DEFAULT_VIEW3) {
+  constructor(element, view = DEFAULT_VIEW4) {
     super(element, { useShadowDom: true });
     this.#view = view;
   }
@@ -1590,10 +1831,10 @@ var CrashReportContextGrid = class extends UI3.Widget.Widget {
   #onContextMenu(e, key, value) {
     const customEvent = e;
     const contextMenu = customEvent.detail;
-    contextMenu.defaultSection().appendItem(i18nString3(UIStrings4.copyKey), () => {
+    contextMenu.defaultSection().appendItem(i18nString4(UIStrings5.copyKey), () => {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(key);
     }, { jslogContext: "copy-key" });
-    contextMenu.defaultSection().appendItem(i18nString3(UIStrings4.copyValue), () => {
+    contextMenu.defaultSection().appendItem(i18nString4(UIStrings5.copyValue), () => {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(value);
     }, { jslogContext: "copy-value" });
   }
@@ -1611,14 +1852,14 @@ var CrashReportContextGrid = class extends UI3.Widget.Widget {
 // gen/front_end/panels/application/components/EndpointsGrid.js
 var EndpointsGrid_exports = {};
 __export(EndpointsGrid_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   EndpointsGrid: () => EndpointsGrid,
-  i18nString: () => i18nString4
+  i18nString: () => i18nString5
 });
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n9 from "./../../../core/i18n/i18n.js";
-import * as UI4 from "./../../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../../ui/lit/lit.js";
+import * as i18n11 from "./../../../core/i18n/i18n.js";
+import * as UI5 from "./../../../ui/legacy/legacy.js";
+import * as Lit3 from "./../../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/endpointsGrid.css.js
@@ -1656,7 +1897,7 @@ var endpointsGrid_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./endpointsGrid.css")} */`;
 
 // gen/front_end/panels/application/components/EndpointsGrid.js
-var UIStrings5 = {
+var UIStrings6 = {
   /**
    * @description Placeholder text when there are no Reporting API endpoints.
    *(https://developers.google.com/web/updates/2018/09/reportingapi#tldr)
@@ -1668,43 +1909,43 @@ var UIStrings5 = {
    */
   endpointsDescription: "Here you will find the list of endpoints that receive the reports"
 };
-var str_5 = i18n9.i18n.registerUIStrings("panels/application/components/EndpointsGrid.ts", UIStrings5);
-var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
-var { render: render4, html: html4 } = Lit2;
-var DEFAULT_VIEW4 = (input, output, target) => {
-  render4(html4`
+var str_6 = i18n11.i18n.registerUIStrings("panels/application/components/EndpointsGrid.ts", UIStrings6);
+var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
+var { render: render5, html: html5 } = Lit3;
+var DEFAULT_VIEW5 = (input, output, target) => {
+  render5(html5`
     <style>${endpointsGrid_css_default}</style>
-    <style>${UI4.inspectorCommonStyles}</style>
+    <style>${UI5.inspectorCommonStyles}</style>
     <div class="endpoints-container" jslog=${VisualLogging3.section("endpoints")}>
-      <div class="endpoints-header">${i18n9.i18n.lockedString("Endpoints")}</div>
-      ${input.endpoints.size > 0 ? html4`
+      <div class="endpoints-header">${i18n11.i18n.lockedString("Endpoints")}</div>
+      ${input.endpoints.size > 0 ? html5`
         <devtools-data-grid striped>
          <table>
           <tr>
-            <th id="origin" weight="30">${i18n9.i18n.lockedString("Origin")}</th>
-            <th id="name" weight="20">${i18n9.i18n.lockedString("Name")}</th>
-            <th id="url" weight="30">${i18n9.i18n.lockedString("URL")}</th>
+            <th id="origin" weight="30">${i18n11.i18n.lockedString("Origin")}</th>
+            <th id="name" weight="20">${i18n11.i18n.lockedString("Name")}</th>
+            <th id="url" weight="30">${i18n11.i18n.lockedString("URL")}</th>
           </tr>
-          ${Array.from(input.endpoints).map(([origin, endpointArray]) => endpointArray.map((endpoint) => html4`<tr>
+          ${Array.from(input.endpoints).map(([origin, endpointArray]) => endpointArray.map((endpoint) => html5`<tr>
                 <td>${origin}</td>
                 <td>${endpoint.groupName}</td>
                 <td>${endpoint.url}</td>
               </tr>`)).flat()}
           </table>
         </devtools-data-grid>
-      ` : html4`
+      ` : html5`
         <div class="empty-state">
-          <span class="empty-state-header">${i18nString4(UIStrings5.noEndpointsToDisplay)}</span>
-          <span class="empty-state-description">${i18nString4(UIStrings5.endpointsDescription)}</span>
+          <span class="empty-state-header">${i18nString5(UIStrings6.noEndpointsToDisplay)}</span>
+          <span class="empty-state-description">${i18nString5(UIStrings6.endpointsDescription)}</span>
         </div>
       `}
     </div>
   `, target);
 };
-var EndpointsGrid = class extends UI4.Widget.Widget {
+var EndpointsGrid = class extends UI5.Widget.Widget {
   endpoints = /* @__PURE__ */ new Map();
   #view;
-  constructor(element, view = DEFAULT_VIEW4) {
+  constructor(element, view = DEFAULT_VIEW5) {
     super(element);
     this.#view = view;
     this.requestUpdate();
@@ -1720,12 +1961,12 @@ var EndpointsGrid = class extends UI4.Widget.Widget {
 var InterestGroupAccessGrid_exports = {};
 __export(InterestGroupAccessGrid_exports, {
   InterestGroupAccessGrid: () => InterestGroupAccessGrid,
-  i18nString: () => i18nString5
+  i18nString: () => i18nString6
 });
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n11 from "./../../../core/i18n/i18n.js";
-import * as UI5 from "./../../../ui/legacy/legacy.js";
-import * as Lit3 from "./../../../ui/lit/lit.js";
+import * as i18n13 from "./../../../core/i18n/i18n.js";
+import * as UI6 from "./../../../ui/legacy/legacy.js";
+import * as Lit4 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/components/interestGroupAccessGrid.css.js
 var interestGroupAccessGrid_css_default = `/*
@@ -1759,8 +2000,8 @@ devtools-data-grid {
 /*# sourceURL=${import.meta.resolve("./interestGroupAccessGrid.css")} */`;
 
 // gen/front_end/panels/application/components/InterestGroupAccessGrid.js
-var { html: html5 } = Lit3;
-var UIStrings6 = {
+var { html: html6 } = Lit4;
+var UIStrings7 = {
   /**
    * @description Hover text for an info icon in the Interest Group Event panel
    * An interest group is an ad targeting group stored on the browser that can
@@ -1807,8 +2048,8 @@ var UIStrings6 = {
    */
   interestGroupDescription: "On this page you can inspect and analyze interest groups"
 };
-var str_6 = i18n11.i18n.registerUIStrings("panels/application/components/InterestGroupAccessGrid.ts", UIStrings6);
-var i18nString5 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
+var str_7 = i18n13.i18n.registerUIStrings("panels/application/components/InterestGroupAccessGrid.ts", UIStrings7);
+var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var InterestGroupAccessGrid = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #datastores = [];
@@ -1821,34 +2062,34 @@ var InterestGroupAccessGrid = class extends HTMLElement {
     this.#render();
   }
   #render() {
-    Lit3.render(html5`
+    Lit4.render(html6`
       <style>${interestGroupAccessGrid_css_default}</style>
-      <style>${UI5.inspectorCommonStyles}</style>
-      ${this.#datastores.length === 0 ? html5`
+      <style>${UI6.inspectorCommonStyles}</style>
+      ${this.#datastores.length === 0 ? html6`
           <div class="empty-state">
-            <span class="empty-state-header">${i18nString5(UIStrings6.noEvents)}</span>
-            <span class="empty-state-description">${i18nString5(UIStrings6.interestGroupDescription)}</span>
-          </div>` : html5`
+            <span class="empty-state-header">${i18nString6(UIStrings7.noEvents)}</span>
+            <span class="empty-state-description">${i18nString6(UIStrings7.interestGroupDescription)}</span>
+          </div>` : html6`
           <div>
             <span class="heading">Interest Groups</span>
             <devtools-icon class="info-icon medium" name="info"
-                          title=${i18nString5(UIStrings6.allInterestGroupStorageEvents)}>
+                          title=${i18nString6(UIStrings7.allInterestGroupStorageEvents)}>
             </devtools-icon>
             ${this.#renderGrid()}
           </div>`}
     `, this.#shadow, { host: this });
   }
   #renderGrid() {
-    return html5`
+    return html6`
       <devtools-data-grid striped inline>
         <table>
           <tr>
-            <th id="event-time" sortable weight="10">${i18nString5(UIStrings6.eventTime)}</td>
-            <th id="event-type" sortable weight="5">${i18nString5(UIStrings6.eventType)}</td>
-            <th id="event-group-owner" sortable weight="10">${i18nString5(UIStrings6.groupOwner)}</td>
-            <th id="event-group-name" sortable weight="10">${i18nString5(UIStrings6.groupName)}</td>
+            <th id="event-time" sortable weight="10">${i18nString6(UIStrings7.eventTime)}</td>
+            <th id="event-type" sortable weight="5">${i18nString6(UIStrings7.eventType)}</td>
+            <th id="event-group-owner" sortable weight="10">${i18nString6(UIStrings7.groupOwner)}</td>
+            <th id="event-group-name" sortable weight="10">${i18nString6(UIStrings7.groupName)}</td>
           </tr>
-          ${this.#datastores.map((event) => html5`
+          ${this.#datastores.map((event) => html6`
           <tr @select=${() => this.dispatchEvent(new CustomEvent("select", { detail: event }))}>
             <td>${new Date(1e3 * event.accessTime).toLocaleString()}</td>
             <td>${event.type}</td>
@@ -1871,12 +2112,12 @@ __export(PermissionsPolicySection_exports, {
 import "./../../../ui/kit/kit.js";
 import "./../../../ui/components/report_view/report_view.js";
 import * as Common2 from "./../../../core/common/common.js";
-import * as i18n13 from "./../../../core/i18n/i18n.js";
-import * as SDK3 from "./../../../core/sdk/sdk.js";
+import * as i18n15 from "./../../../core/i18n/i18n.js";
+import * as SDK4 from "./../../../core/sdk/sdk.js";
 import * as NetworkForward from "./../../network/forward/forward.js";
 import * as Buttons3 from "./../../../ui/components/buttons/buttons.js";
-import * as UI6 from "./../../../ui/legacy/legacy.js";
-import { html as html6, nothing as nothing3, render as render6 } from "./../../../ui/lit/lit.js";
+import * as UI7 from "./../../../ui/legacy/legacy.js";
+import { html as html7, nothing as nothing3, render as render7 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/permissionsPolicySection.css.js
@@ -1945,7 +2186,7 @@ var permissionsPolicySection_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./permissionsPolicySection.css")} */`;
 
 // gen/front_end/panels/application/components/PermissionsPolicySection.js
-var UIStrings7 = {
+var UIStrings8 = {
   /**
    * @description Label for a button. When clicked more details (for the content this button refers to) will be shown.
    */
@@ -1986,10 +2227,10 @@ var UIStrings7 = {
    */
   disabledByFencedFrame: "disabled inside a `fencedframe`"
 };
-var str_7 = i18n13.i18n.registerUIStrings("panels/application/components/PermissionsPolicySection.ts", UIStrings7);
-var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
+var str_8 = i18n15.i18n.registerUIStrings("panels/application/components/PermissionsPolicySection.ts", UIStrings8);
+var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
 function renderIconLink(iconName, title, clickHandler, jsLogContext) {
-  return html6`
+  return html7`
     <devtools-button
       .iconName=${iconName}
       title=${title}
@@ -2004,8 +2245,8 @@ function renderAllowed(allowed) {
   if (!allowed.length) {
     return nothing3;
   }
-  return html6`
-    <devtools-report-key>${i18nString6(UIStrings7.allowedFeatures)}</devtools-report-key>
+  return html7`
+    <devtools-report-key>${i18nString7(UIStrings8.allowedFeatures)}</devtools-report-key>
     <devtools-report-value>${allowed.map(({ feature }) => feature).join(", ")}</devtools-report-value>`;
 }
 function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNode, onRevealHeader) {
@@ -2013,8 +2254,8 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
     return nothing3;
   }
   if (!showDetails) {
-    return html6`
-      <devtools-report-key>${i18nString6(UIStrings7.disabledFeatures)}</devtools-report-key>
+    return html7`
+      <devtools-report-key>${i18nString7(UIStrings8.disabledFeatures)}</devtools-report-key>
       <devtools-report-value>
         ${data.map(({ policy }) => policy.feature).join(", ")}
         <devtools-button
@@ -2022,7 +2263,7 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
             .variant=${"outlined"}
             @click=${onToggleShowDetails}
             jslog=${VisualLogging4.action("show-disabled-features-details").track({ click: true })}>
-          ${i18nString6(UIStrings7.showDetails)}
+          ${i18nString7(UIStrings8.showDetails)}
         </devtools-button>
       </devtools-report-value>`;
   }
@@ -2030,16 +2271,16 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
     const blockReasonText = (() => {
       switch (blockReason) {
         case "IframeAttribute":
-          return i18nString6(UIStrings7.disabledByIframe);
+          return i18nString7(UIStrings8.disabledByIframe);
         case "Header":
-          return i18nString6(UIStrings7.disabledByHeader);
+          return i18nString7(UIStrings8.disabledByHeader);
         case "InFencedFrameTree":
-          return i18nString6(UIStrings7.disabledByFencedFrame);
+          return i18nString7(UIStrings8.disabledByFencedFrame);
         default:
           return "";
       }
     })();
-    return html6`
+    return html7`
       <div class="permissions-row">
         <div>
           <devtools-icon class="allowed-icon extra-large" name="cross-circle">
@@ -2048,13 +2289,13 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
         <div class="feature-name text-ellipsis">${policy.feature}</div>
         <div class="block-reason">${blockReasonText}</div>
         <div>
-          ${linkTargetDOMNode ? renderIconLink("code-circle", i18nString6(UIStrings7.clickToShowIframe), () => onRevealDOMNode(linkTargetDOMNode), "reveal-in-elements") : nothing3}
-          ${linkTargetRequest ? renderIconLink("arrow-up-down-circle", i18nString6(UIStrings7.clickToShowHeader), () => onRevealHeader(linkTargetRequest), "reveal-in-network") : nothing3}
+          ${linkTargetDOMNode ? renderIconLink("code-circle", i18nString7(UIStrings8.clickToShowIframe), () => onRevealDOMNode(linkTargetDOMNode), "reveal-in-elements") : nothing3}
+          ${linkTargetRequest ? renderIconLink("arrow-up-down-circle", i18nString7(UIStrings8.clickToShowHeader), () => onRevealHeader(linkTargetRequest), "reveal-in-network") : nothing3}
         </div>
       </div>`;
   });
-  return html6`
-    <devtools-report-key>${i18nString6(UIStrings7.disabledFeatures)}</devtools-report-key>
+  return html7`
+    <devtools-report-key>${i18nString7(UIStrings8.disabledFeatures)}</devtools-report-key>
     <devtools-report-value class="policies-list">
       ${featureRows}
       <div class="permissions-row">
@@ -2062,27 +2303,27 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
             .variant=${"outlined"}
             @click=${onToggleShowDetails}
             jslog=${VisualLogging4.action("hide-disabled-features-details").track({ click: true })}>
-          ${i18nString6(UIStrings7.hideDetails)}
+          ${i18nString7(UIStrings8.hideDetails)}
         </devtools-button>
       </div>
     </devtools-report-value>`;
 }
-var DEFAULT_VIEW5 = (input, output, target) => {
-  render6(html6`
+var DEFAULT_VIEW6 = (input, output, target) => {
+  render7(html7`
     <style>${permissionsPolicySection_css_default}</style>
     <devtools-report-section-header>
-      ${i18n13.i18n.lockedString("Permissions Policy")}
+      ${i18n15.i18n.lockedString("Permissions Policy")}
     </devtools-report-section-header>
     ${renderAllowed(input.allowed)}
-    ${input.allowed.length > 0 && input.disallowed.length > 0 ? html6`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
+    ${input.allowed.length > 0 && input.disallowed.length > 0 ? html7`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
     ${renderDisallowed(input.disallowed, input.showDetails, input.onToggleShowDetails, input.onRevealDOMNode, input.onRevealHeader)}
     <devtools-report-divider></devtools-report-divider>`, target);
 };
-var PermissionsPolicySection = class extends UI6.Widget.Widget {
+var PermissionsPolicySection = class extends UI7.Widget.Widget {
   #policies = [];
   #showDetails = false;
   #view;
-  constructor(element, view = DEFAULT_VIEW5) {
+  constructor(element, view = DEFAULT_VIEW6) {
     super(element, { useShadowDom: false });
     this.#view = view;
   }
@@ -2115,7 +2356,7 @@ var PermissionsPolicySection = class extends UI6.Widget.Widget {
     await Common2.Revealer.reveal(requestLocation);
   }
   async performUpdate() {
-    const frameManager = SDK3.FrameManager.FrameManager.instance();
+    const frameManager = SDK4.FrameManager.FrameManager.instance();
     const policies = this.#policies.sort((a, b) => a.feature.localeCompare(b.feature));
     const allowed = policies.filter((p) => p.allowed).sort((a, b) => a.feature.localeCompare(b.feature));
     const disallowed = policies.filter((p) => !p.allowed).sort((a, b) => a.feature.localeCompare(b.feature));
@@ -2145,13 +2386,13 @@ __export(ProtocolHandlersView_exports, {
 });
 import "./../../../ui/kit/kit.js";
 import * as Host2 from "./../../../core/host/host.js";
-import * as i18n15 from "./../../../core/i18n/i18n.js";
+import * as i18n17 from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
 import * as Buttons4 from "./../../../ui/components/buttons/buttons.js";
 import * as Input from "./../../../ui/components/input/input.js";
 import * as uiI18n from "./../../../ui/i18n/i18n.js";
-import * as UI7 from "./../../../ui/legacy/legacy.js";
-import { html as html7, i18nTemplate as unboundI18nTemplate, nothing as nothing4, render as render7 } from "./../../../ui/lit/lit.js";
+import * as UI8 from "./../../../ui/legacy/legacy.js";
+import { html as html8, i18nTemplate as unboundI18nTemplate, nothing as nothing4, render as render8 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/protocolHandlersView.css.js
@@ -2217,7 +2458,7 @@ input.devtools-text-input[type="text"]::placeholder {
 
 // gen/front_end/panels/application/components/ProtocolHandlersView.js
 var PROTOCOL_DOCUMENT_URL = "https://web.dev/url-protocol-handler/";
-var UIStrings8 = {
+var UIStrings9 = {
   /**
    * @description Status message for when protocol handlers are detected in the manifest
    * @example {protocolhandler/manifest.json} PH1
@@ -2258,18 +2499,18 @@ var UIStrings8 = {
    */
   textboxPlaceholder: "Enter URL"
 };
-var str_8 = i18n15.i18n.registerUIStrings("panels/application/components/ProtocolHandlersView.ts", UIStrings8);
-var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
-var i18nTemplate = unboundI18nTemplate.bind(void 0, str_8);
+var str_9 = i18n17.i18n.registerUIStrings("panels/application/components/ProtocolHandlersView.ts", UIStrings9);
+var i18nString8 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
+var i18nTemplate = unboundI18nTemplate.bind(void 0, str_9);
 function renderStatusMessage(protocolHandlers, manifestLink) {
-  const statusString = protocolHandlers.length > 0 ? UIStrings8.protocolDetected : UIStrings8.protocolNotDetected;
-  return html7`
+  const statusString = protocolHandlers.length > 0 ? UIStrings9.protocolDetected : UIStrings9.protocolNotDetected;
+  return html8`
     <div class="protocol-handlers-row status">
       <devtools-icon class="inline-icon"
                      name=${protocolHandlers.length > 0 ? "check-circle" : "info"}>
       </devtools-icon>
-      ${uiI18n.getFormatLocalizedStringTemplate(str_8, statusString, { PH1: html7`
-        <devtools-link href=${manifestLink} jslogcontext="manifest">${i18nString7(UIStrings8.manifest)}</devtools-link>
+      ${uiI18n.getFormatLocalizedStringTemplate(str_9, statusString, { PH1: html8`
+        <devtools-link href=${manifestLink} jslogcontext="manifest">${i18nString8(UIStrings9.manifest)}</devtools-link>
         ` })}
     </div>`;
 }
@@ -2277,45 +2518,45 @@ function renderProtocolTest(protocolHandlers, queryInputState, protocolSelectHan
   if (protocolHandlers.length === 0) {
     return nothing4;
   }
-  return html7`
+  return html8`
     <div class="protocol-handlers-row">
       <select class="protocol-select" @change=${protocolSelectHandler}
-              aria-label=${i18nString7(UIStrings8.dropdownLabel)}>
-        ${protocolHandlers.filter((p) => p.protocol).map(({ protocol }) => html7`
+              aria-label=${i18nString8(UIStrings9.dropdownLabel)}>
+        ${protocolHandlers.filter((p) => p.protocol).map(({ protocol }) => html8`
           <option value=${protocol} jslog=${VisualLogging5.item(protocol).track({ click: true })}>
             ${protocol}://
           </option>`)}
       </select>
       <input .value=${queryInputState} class="devtools-text-input" type="text"
-             @change=${queryInputChangeHandler} aria-label=${i18nString7(UIStrings8.textboxLabel)}
-             placeholder=${i18nString7(UIStrings8.textboxPlaceholder)} />
+             @change=${queryInputChangeHandler} aria-label=${i18nString8(UIStrings9.textboxLabel)}
+             placeholder=${i18nString8(UIStrings9.textboxPlaceholder)} />
       <devtools-button .variant=${"primary"} @click=${testProtocolClickHandler}>
-        ${i18nString7(UIStrings8.testProtocol)}
+        ${i18nString8(UIStrings9.testProtocol)}
       </devtools-button>
     </div>`;
 }
-var DEFAULT_VIEW6 = (input, _output, target) => {
-  render7(html7`
+var DEFAULT_VIEW7 = (input, _output, target) => {
+  render8(html8`
     <style>${protocolHandlersView_css_default}</style>
-    <style>${UI7.inspectorCommonStyles}</style>
+    <style>${UI8.inspectorCommonStyles}</style>
     <style>${Input.textInputStyles}</style>
     ${renderStatusMessage(input.protocolHandler, input.manifestLink)}
     <div class="protocol-handlers-row">
-      ${i18nTemplate(UIStrings8.needHelpReadOur, { PH1: html7`
+      ${i18nTemplate(UIStrings9.needHelpReadOur, { PH1: html8`
         <devtools-link href=${PROTOCOL_DOCUMENT_URL} class="devtools-link" autofocus jslogcontext="learn-more">
-          ${i18nString7(UIStrings8.protocolHandlerRegistrations)}
+          ${i18nString8(UIStrings9.protocolHandlerRegistrations)}
         </devtools-link>` })}
     </div>
     ${renderProtocolTest(input.protocolHandler, input.queryInputState, input.protocolSelectHandler, input.queryInputChangeHandler, input.testProtocolClickHandler)}
   `, target, { container: { classes: ["vbox"] } });
 };
-var ProtocolHandlersView = class extends UI7.Widget.Widget {
+var ProtocolHandlersView = class extends UI8.Widget.Widget {
   #protocolHandlers = [];
   #manifestLink = Platform.DevToolsPath.EmptyUrlString;
   #selectedProtocolState = "";
   #queryInputState = "";
   #view;
-  constructor(element, view = DEFAULT_VIEW6) {
+  constructor(element, view = DEFAULT_VIEW7) {
     super(element, { useShadowDom: false });
     this.#view = view;
   }
@@ -2365,16 +2606,16 @@ var ProtocolHandlersView = class extends UI7.Widget.Widget {
 // gen/front_end/panels/application/components/ReportsGrid.js
 var ReportsGrid_exports = {};
 __export(ReportsGrid_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW7,
+  DEFAULT_VIEW: () => DEFAULT_VIEW8,
   ReportsGrid: () => ReportsGrid,
-  i18nString: () => i18nString8
+  i18nString: () => i18nString9
 });
 import "./../../../ui/kit/kit.js";
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n17 from "./../../../core/i18n/i18n.js";
+import * as i18n19 from "./../../../core/i18n/i18n.js";
 import * as Root from "./../../../core/root/root.js";
-import * as UI8 from "./../../../ui/legacy/legacy.js";
-import * as Lit4 from "./../../../ui/lit/lit.js";
+import * as UI9 from "./../../../ui/legacy/legacy.js";
+import * as Lit5 from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/reportsGrid.css.js
@@ -2416,7 +2657,7 @@ var reportsGrid_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./reportsGrid.css")} */`;
 
 // gen/front_end/panels/application/components/ReportsGrid.js
-var UIStrings9 = {
+var UIStrings10 = {
   /**
    * @description Placeholder text when there are no Reporting API reports.
    *(https://developers.google.com/web/updates/2018/09/reportingapi#sending)
@@ -2447,41 +2688,41 @@ var UIStrings9 = {
    */
   generatedAt: "Generated at"
 };
-var str_9 = i18n17.i18n.registerUIStrings("panels/application/components/ReportsGrid.ts", UIStrings9);
-var i18nString8 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
-var { render: render8, html: html8 } = Lit4;
+var str_10 = i18n19.i18n.registerUIStrings("panels/application/components/ReportsGrid.ts", UIStrings10);
+var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
+var { render: render9, html: html9 } = Lit5;
 var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilities/web-apis/reporting-api";
-var DEFAULT_VIEW7 = (input, output, target) => {
-  render8(html8`
+var DEFAULT_VIEW8 = (input, output, target) => {
+  render9(html9`
     <style>${reportsGrid_css_default}</style>
-    <style>${UI8.inspectorCommonStyles}</style>
+    <style>${UI9.inspectorCommonStyles}</style>
     <div class="reporting-container" jslog=${VisualLogging6.section("reports")}>
-      <div class="reporting-header">${i18n17.i18n.lockedString("Reports")}</div>
-      ${input.reports.length > 0 ? html8`
+      <div class="reporting-header">${i18n19.i18n.lockedString("Reports")}</div>
+      ${input.reports.length > 0 ? html9`
         <devtools-data-grid striped>
           <table>
             <tr>
-              ${input.protocolMonitorExperimentEnabled ? html8`
-                <th id="id" weight="30">${i18n17.i18n.lockedString("ID")}</th>
+              ${input.protocolMonitorExperimentEnabled ? html9`
+                <th id="id" weight="30">${i18n19.i18n.lockedString("ID")}</th>
               ` : ""}
-              <th id="url" weight="30">${i18n17.i18n.lockedString("URL")}</th>
-              <th id="type" weight="20">${i18n17.i18n.lockedString("Type")}</th>
+              <th id="url" weight="30">${i18n19.i18n.lockedString("URL")}</th>
+              <th id="type" weight="20">${i18n19.i18n.lockedString("Type")}</th>
               <th id="status" weight="20">
                 <style>${reportsGrid_css_default}</style>
-                <span class="status-header">${i18nString8(UIStrings9.status)}</span>
+                <span class="status-header">${i18nString9(UIStrings10.status)}</span>
                 <devtools-link href="https://web.dev/reporting-api/#report-status"
                 jslogcontext="report-status">
                   <devtools-icon class="inline-icon medium" name="help" style="color: var(--icon-link);"
                   ></devtools-icon>
                 </devtools-link>
               </th>
-              <th id="destination" weight="20">${i18nString8(UIStrings9.destination)}</th>
-              <th id="timestamp" weight="20">${i18nString8(UIStrings9.generatedAt)}</th>
-              <th id="body" weight="20">${i18n17.i18n.lockedString("Body")}</th>
+              <th id="destination" weight="20">${i18nString9(UIStrings10.destination)}</th>
+              <th id="timestamp" weight="20">${i18nString9(UIStrings10.generatedAt)}</th>
+              <th id="body" weight="20">${i18n19.i18n.lockedString("Body")}</th>
             </tr>
-            ${input.reports.map((report) => html8`
+            ${input.reports.map((report) => html9`
               <tr @select=${() => input.onSelect(report.id)}>
-                ${input.protocolMonitorExperimentEnabled ? html8`<td>${report.id}</td>` : ""}
+                ${input.protocolMonitorExperimentEnabled ? html9`<td>${report.id}</td>` : ""}
                 <td>${report.initiatorUrl}</td>
                 <td>${report.type}</td>
                 <td>${report.status}</td>
@@ -2492,29 +2733,29 @@ var DEFAULT_VIEW7 = (input, output, target) => {
             `)}
           </table>
         </devtools-data-grid>
-      ` : html8`
+      ` : html9`
         <div class="empty-state">
-          <span class="empty-state-header">${i18nString8(UIStrings9.noReportsToDisplay)}</span>
+          <span class="empty-state-header">${i18nString9(UIStrings10.noReportsToDisplay)}</span>
           <div class="empty-state-description">
-            <span>${i18nString8(UIStrings9.reportingApiDescription)}</span>
+            <span>${i18nString9(UIStrings10.reportingApiDescription)}</span>
             <devtools-link
               class="devtools-link"
               href=${REPORTING_API_EXPLANATION_URL}
               jslogcontext="learn-more"
-            >${i18nString8(UIStrings9.learnMore)}</devtools-link>
+            >${i18nString9(UIStrings10.learnMore)}</devtools-link>
           </div>
         </div>
       `}
     </div>
   `, target);
 };
-var ReportsGrid = class extends UI8.Widget.Widget {
+var ReportsGrid = class extends UI9.Widget.Widget {
   reports = [];
   #protocolMonitorExperimentEnabled = false;
   #view;
   onReportSelected = () => {
   };
-  constructor(element, view = DEFAULT_VIEW7) {
+  constructor(element, view = DEFAULT_VIEW8) {
     super(element);
     this.#view = view;
     this.#protocolMonitorExperimentEnabled = Root.Runtime.experiments.isEnabled(Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR);
@@ -2535,8 +2776,8 @@ var ServiceWorkerRouterView_exports = {};
 __export(ServiceWorkerRouterView_exports, {
   ServiceWorkerRouterView: () => ServiceWorkerRouterView
 });
-import * as UI9 from "./../../../ui/legacy/legacy.js";
-import { html as html9, render as render9 } from "./../../../ui/lit/lit.js";
+import * as UI10 from "./../../../ui/legacy/legacy.js";
+import { html as html10, render as render10 } from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/components/serviceWorkerRouterView.css.js
 var serviceWorkerRouterView_css_default = `/*
@@ -2599,7 +2840,7 @@ var serviceWorkerRouterView_css_default = `/*
 
 // gen/front_end/panels/application/components/ServiceWorkerRouterView.js
 function renderRouterRule(rule) {
-  return html9`
+  return html10`
     <li class="router-rule">
       <div class="rule-id">Rule ${rule.id}</div>
       <ul class="item">
@@ -2614,17 +2855,17 @@ function renderRouterRule(rule) {
       </ul>
     </li>`;
 }
-var DEFAULT_VIEW8 = (input, _output, target) => {
-  render9(html9`
+var DEFAULT_VIEW9 = (input, _output, target) => {
+  render10(html10`
     <style>${serviceWorkerRouterView_css_default}</style>
     <ul class="router-rules">
       ${input.rules.map(renderRouterRule)}
     </ul>`, target);
 };
-var ServiceWorkerRouterView = class extends UI9.Widget.Widget {
+var ServiceWorkerRouterView = class extends UI10.Widget.Widget {
   #rules = [];
   #view;
-  constructor(element, view = DEFAULT_VIEW8) {
+  constructor(element, view = DEFAULT_VIEW9) {
     super(element, { useShadowDom: true });
     this.#view = view;
   }
@@ -2645,15 +2886,15 @@ var ServiceWorkerRouterView = class extends UI9.Widget.Widget {
 // gen/front_end/panels/application/components/SharedStorageAccessGrid.js
 var SharedStorageAccessGrid_exports = {};
 __export(SharedStorageAccessGrid_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW9,
+  DEFAULT_VIEW: () => DEFAULT_VIEW10,
   SharedStorageAccessGrid: () => SharedStorageAccessGrid,
-  i18nString: () => i18nString9
+  i18nString: () => i18nString10
 });
 import "./../../../ui/kit/kit.js";
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n19 from "./../../../core/i18n/i18n.js";
-import * as UI10 from "./../../../ui/legacy/legacy.js";
-import * as Lit5 from "./../../../ui/lit/lit.js";
+import * as i18n21 from "./../../../core/i18n/i18n.js";
+import * as UI11 from "./../../../ui/legacy/legacy.js";
+import * as Lit6 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/sharedStorageAccessGrid.css.js
@@ -2691,8 +2932,8 @@ var sharedStorageAccessGrid_css_default = `/*
 
 // gen/front_end/panels/application/components/SharedStorageAccessGrid.js
 var SHARED_STORAGE_EXPLANATION_URL = "https://developers.google.com/privacy-sandbox/private-advertising/shared-storage";
-var { render: render10, html: html10 } = Lit5;
-var UIStrings10 = {
+var { render: render11, html: html11 } = Lit6;
+var UIStrings11 = {
   /**
    * @description Text in Shared Storage Events View of the Application panel
    */
@@ -2751,54 +2992,54 @@ var UIStrings10 = {
    */
   learnMore: "Learn more"
 };
-var str_10 = i18n19.i18n.registerUIStrings("panels/application/components/SharedStorageAccessGrid.ts", UIStrings10);
-var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
-var DEFAULT_VIEW9 = (input, _output, target) => {
-  render10(html10`
+var str_11 = i18n21.i18n.registerUIStrings("panels/application/components/SharedStorageAccessGrid.ts", UIStrings11);
+var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
+var DEFAULT_VIEW10 = (input, _output, target) => {
+  render11(html11`
     <style>${sharedStorageAccessGrid_css_default}</style>
-    ${input.events.length === 0 ? html10`
+    ${input.events.length === 0 ? html11`
         <div class="empty-state" jslog=${VisualLogging7.section().context("empty-view")}>
-          <div class="empty-state-header">${i18nString9(UIStrings10.noEvents)}</div>
+          <div class="empty-state-header">${i18nString10(UIStrings11.noEvents)}</div>
           <div class="empty-state-description">
-            <span>${i18nString9(UIStrings10.sharedStorageDescription)}</span>
+            <span>${i18nString10(UIStrings11.sharedStorageDescription)}</span>
             <devtools-link
               class="devtools-link"
               href=${SHARED_STORAGE_EXPLANATION_URL}
               .jslogContext=${"learn-more"}
-            >${i18nString9(UIStrings10.learnMore)}</devtools-link>
+            >${i18nString10(UIStrings11.learnMore)}</devtools-link>
           </div>
-        </div>` : html10`
+        </div>` : html11`
         <div jslog=${VisualLogging7.section("events-table")}>
-          <span class="heading">${i18nString9(UIStrings10.sharedStorage)}</span>
+          <span class="heading">${i18nString10(UIStrings11.sharedStorage)}</span>
           <devtools-icon class="info-icon medium" name="info"
-                          title=${i18nString9(UIStrings10.allSharedStorageEvents)}>
+                          title=${i18nString10(UIStrings11.allSharedStorageEvents)}>
           </devtools-icon>
           <devtools-data-grid striped inline>
             <table>
               <thead>
                 <tr>
                   <th id="event-time" weight="10" sortable>
-                    ${i18nString9(UIStrings10.eventTime)}
+                    ${i18nString10(UIStrings11.eventTime)}
                   </th>
                   <th id="event-scope" weight="10" sortable>
-                    ${i18nString9(UIStrings10.eventScope)}
+                    ${i18nString10(UIStrings11.eventScope)}
                   </th>
                   <th id="event-method" weight="10" sortable>
-                    ${i18nString9(UIStrings10.eventMethod)}
+                    ${i18nString10(UIStrings11.eventMethod)}
                   </th>
                   <th id="event-owner-origin" weight="10" sortable>
-                    ${i18nString9(UIStrings10.ownerOrigin)}
+                    ${i18nString10(UIStrings11.ownerOrigin)}
                   </th>
                   <th id="event-owner-site" weight="10" sortable>
-                    ${i18nString9(UIStrings10.ownerSite)}
+                    ${i18nString10(UIStrings11.ownerSite)}
                   </th>
                   <th id="event-params" weight="10" sortable>
-                    ${i18nString9(UIStrings10.eventParams)}
+                    ${i18nString10(UIStrings11.eventParams)}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                ${input.events.map((event) => html10`
+                ${input.events.map((event) => html11`
                   <tr @select=${() => input.onSelect(event)}>
                     <td data-value=${event.accessTime}>
                       ${new Date(1e3 * event.accessTime).toLocaleString()}
@@ -2815,12 +3056,12 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           </devtools-data-grid>
         </div>`}`, target);
 };
-var SharedStorageAccessGrid = class extends UI10.Widget.Widget {
+var SharedStorageAccessGrid = class extends UI11.Widget.Widget {
   #view;
   #events = [];
   #onSelect = () => {
   };
-  constructor(element, view = DEFAULT_VIEW9) {
+  constructor(element, view = DEFAULT_VIEW10) {
     super(element, { useShadowDom: true });
     this.#view = view;
     this.performUpdate();
@@ -2850,9 +3091,9 @@ __export(SharedStorageMetadataView_exports, {
   SharedStorageMetadataView: () => SharedStorageMetadataView
 });
 import "./../../../ui/kit/kit.js";
-import * as i18n23 from "./../../../core/i18n/i18n.js";
+import * as i18n25 from "./../../../core/i18n/i18n.js";
 import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
-import * as Lit6 from "./../../../ui/lit/lit.js";
+import * as Lit7 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/components/sharedStorageMetadataView.css.js
 var sharedStorageMetadataView_css_default = `/*
@@ -2896,13 +3137,13 @@ __export(StorageMetadataView_exports, {
 import "./../../../ui/components/report_view/report_view.js";
 import "./../../../ui/kit/kit.js";
 import * as Common3 from "./../../../core/common/common.js";
-import * as i18n21 from "./../../../core/i18n/i18n.js";
-import * as SDK4 from "./../../../core/sdk/sdk.js";
+import * as i18n23 from "./../../../core/i18n/i18n.js";
+import * as SDK5 from "./../../../core/sdk/sdk.js";
 import * as Buttons5 from "./../../../ui/components/buttons/buttons.js";
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI11 from "./../../../ui/legacy/legacy.js";
-import { html as html11, nothing as nothing5, render as render11 } from "./../../../ui/lit/lit.js";
+import * as UI12 from "./../../../ui/legacy/legacy.js";
+import { html as html12, nothing as nothing5, render as render12 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/storageMetadataView.css.js
@@ -2919,7 +3160,7 @@ var storageMetadataView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./storageMetadataView.css")} */`;
 
 // gen/front_end/panels/application/components/StorageMetadataView.js
-var UIStrings11 = {
+var UIStrings12 = {
   /**
    * @description The origin of a URL (https://web.dev/same-site-same-origin/#origin).
    *(for a lot of languages this does not need to be translated, please translate only where necessary)
@@ -3012,8 +3253,8 @@ var UIStrings11 = {
    */
   bucketWillBeRemoved: "The selected storage bucket and contained data will be removed."
 };
-var str_11 = i18n21.i18n.registerUIStrings("panels/application/components/StorageMetadataView.ts", UIStrings11);
-var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
+var str_12 = i18n23.i18n.registerUIStrings("panels/application/components/StorageMetadataView.ts", UIStrings12);
+var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
 var StorageBucketRevealInfo = class {
   bucketInfo;
   constructor(bucketInfo) {
@@ -3027,7 +3268,7 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
   #storageBucket = null;
   #showOnlyBucket = false;
   setStorageKey(storageKey) {
-    this.#storageKey = SDK4.StorageKeyManager.parseStorageKey(storageKey);
+    this.#storageKey = SDK5.StorageKeyManager.parseStorageKey(storageKey);
     void this.render();
   }
   setStorageBucket(storageBucket) {
@@ -3045,9 +3286,9 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
   }
   render() {
     return RenderCoordinator.write("StorageMetadataView render", async () => {
-      render11(html11`
+      render12(html12`
         <style>${storageMetadataView_css_default}</style>
-        <devtools-report .data=${{ reportTitle: this.getTitle() ?? i18nString10(UIStrings11.loading) }}>
+        <devtools-report .data=${{ reportTitle: this.getTitle() ?? i18nString11(UIStrings12.loading) }}>
           ${await this.renderReportContent()}
         </devtools-report>`, this.#shadow, { host: this });
     });
@@ -3057,14 +3298,14 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       return;
     }
     const origin = this.#storageKey.origin;
-    const bucketName = this.#storageBucket?.bucket.name || i18nString10(UIStrings11.defaultBucket);
+    const bucketName = this.#storageBucket?.bucket.name || i18nString11(UIStrings12.defaultBucket);
     return this.#storageBucketsModel ? `${bucketName} - ${origin}` : origin;
   }
   key(content) {
-    return html11`<devtools-report-key>${content}</devtools-report-key>`;
+    return html12`<devtools-report-key>${content}</devtools-report-key>`;
   }
   value(content) {
-    return html11`<devtools-report-value>${content}</devtools-report-value>`;
+    return html12`<devtools-report-value>${content}</devtools-report-value>`;
   }
   async renderReportContent() {
     if (!this.#storageKey) {
@@ -3087,19 +3328,19 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       "0"
       /* SDK.StorageKeyManager.StorageKeyComponent.TOP_LEVEL_SITE */
     );
-    const thirdPartyReason = ancestorChainHasCrossSite ? i18nString10(UIStrings11.yesBecauseAncestorChainHasCrossSite) : hasNonce ? i18nString10(UIStrings11.yesBecauseKeyIsOpaque) : topLevelSiteIsOpaque ? i18nString10(UIStrings11.yesBecauseTopLevelIsOpaque) : topLevelSite && origin !== topLevelSite ? i18nString10(UIStrings11.yesBecauseOriginNotInTopLevelSite) : null;
+    const thirdPartyReason = ancestorChainHasCrossSite ? i18nString11(UIStrings12.yesBecauseAncestorChainHasCrossSite) : hasNonce ? i18nString11(UIStrings12.yesBecauseKeyIsOpaque) : topLevelSiteIsOpaque ? i18nString11(UIStrings12.yesBecauseTopLevelIsOpaque) : topLevelSite && origin !== topLevelSite ? i18nString11(UIStrings12.yesBecauseOriginNotInTopLevelSite) : null;
     const isIframeOrEmbedded = topLevelSite && origin !== topLevelSite;
-    return html11`
-        ${isIframeOrEmbedded ? html11`${this.key(i18nString10(UIStrings11.origin))}
-            ${this.value(html11`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}` : nothing5}
-        ${topLevelSite || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.topLevelSite)) : nothing5}
+    return html12`
+        ${isIframeOrEmbedded ? html12`${this.key(i18nString11(UIStrings12.origin))}
+            ${this.value(html12`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}` : nothing5}
+        ${topLevelSite || topLevelSiteIsOpaque ? this.key(i18nString11(UIStrings12.topLevelSite)) : nothing5}
         ${topLevelSite ? this.value(topLevelSite) : nothing5}
-        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.opaque)) : nothing5}
-        ${thirdPartyReason ? html11`
-          ${this.key(i18nString10(UIStrings11.isThirdParty))}${this.value(thirdPartyReason)}` : nothing5}
-        ${hasNonce || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.isOpaque)) : nothing5}
-        ${hasNonce ? this.value(i18nString10(UIStrings11.yes)) : nothing5}
-        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.yesBecauseTopLevelIsOpaque)) : nothing5}
+        ${topLevelSiteIsOpaque ? this.value(i18nString11(UIStrings12.opaque)) : nothing5}
+        ${thirdPartyReason ? html12`
+          ${this.key(i18nString11(UIStrings12.isThirdParty))}${this.value(thirdPartyReason)}` : nothing5}
+        ${hasNonce || topLevelSiteIsOpaque ? this.key(i18nString11(UIStrings12.isOpaque)) : nothing5}
+        ${hasNonce ? this.value(i18nString11(UIStrings12.yes)) : nothing5}
+        ${topLevelSiteIsOpaque ? this.value(i18nString11(UIStrings12.yesBecauseTopLevelIsOpaque)) : nothing5}
         ${this.#storageBucket ? this.#renderStorageBucketInfo() : nothing5}
         ${this.#storageBucketsModel ? this.#renderBucketControls() : nothing5}`;
   }
@@ -3111,16 +3352,16 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     const isDefault = !name;
     const renderBucketName = () => {
       if (isDefault) {
-        return html11`<span class="default-bucket">${i18nString10(UIStrings11.defaultBucket)}</span>`;
+        return html12`<span class="default-bucket">${i18nString11(UIStrings12.defaultBucket)}</span>`;
       }
       if (!this.#showOnlyBucket) {
-        return html11`${name}`;
+        return html12`${name}`;
       }
       const revealBucket = (e) => {
         e.preventDefault();
         void Common3.Revealer.reveal(new StorageBucketRevealInfo(this.#storageBucket));
       };
-      return html11`<devtools-link
+      return html12`<devtools-link
         @click=${revealBucket}
         title=${name}
         jslog=${VisualLogging8.action("storage-bucket").track({
@@ -3129,20 +3370,20 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       >${name}</devtools-link>`;
     };
     if (this.#showOnlyBucket) {
-      return html11`
-        ${this.key(i18nString10(UIStrings11.bucketName))}
+      return html12`
+        ${this.key(i18nString11(UIStrings12.bucketName))}
         ${this.value(renderBucketName())}`;
     }
-    return html11`
-      ${this.key(i18nString10(UIStrings11.bucketName))}
+    return html12`
+      ${this.key(i18nString11(UIStrings12.bucketName))}
       ${this.value(renderBucketName())}
-      ${this.key(i18nString10(UIStrings11.persistent))}
-      ${this.value(persistent ? i18nString10(UIStrings11.yes) : i18nString10(UIStrings11.no))}
-      ${this.key(i18nString10(UIStrings11.durability))}
+      ${this.key(i18nString11(UIStrings12.persistent))}
+      ${this.value(persistent ? i18nString11(UIStrings12.yes) : i18nString11(UIStrings12.no))}
+      ${this.key(i18nString11(UIStrings12.durability))}
       ${this.value(durability)}
-      ${this.key(i18nString10(UIStrings11.quota))}
-      ${this.value(i18n21.ByteUtilities.bytesToString(quota))}
-      ${this.key(i18nString10(UIStrings11.expiration))}
+      ${this.key(i18nString11(UIStrings12.quota))}
+      ${this.value(i18n23.ByteUtilities.bytesToString(quota))}
+      ${this.key(i18nString11(UIStrings12.expiration))}
       ${this.value(this.#getExpirationString())}`;
   }
   #getExpirationString() {
@@ -3151,18 +3392,18 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     const { expiration } = this.#storageBucket;
     if (expiration === 0) {
-      return i18nString10(UIStrings11.none);
+      return i18nString11(UIStrings12.none);
     }
     return new Date(expiration * 1e3).toLocaleString();
   }
   #renderBucketControls() {
-    return html11`
+    return html12`
     <devtools-report-divider></devtools-report-divider>
     <devtools-report-section>
-      <devtools-button aria-label=${i18nString10(UIStrings11.deleteBucket)}
+      <devtools-button aria-label=${i18nString11(UIStrings12.deleteBucket)}
                        .variant=${"outlined"}
                        @click=${this.#deleteBucket}>
-        ${i18nString10(UIStrings11.deleteBucket)}
+        ${i18nString11(UIStrings12.deleteBucket)}
       </devtools-button>
     </devtools-report-section>`;
   }
@@ -3170,7 +3411,7 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     if (!this.#storageBucketsModel || !this.#storageBucket) {
       throw new Error("Should not call #deleteBucket if #storageBucketsModel or #storageBucket is null.");
     }
-    const ok = await UI11.UIUtils.ConfirmDialog.show(i18nString10(UIStrings11.bucketWillBeRemoved), i18nString10(UIStrings11.confirmBucketDeletion, { PH1: this.#storageBucket.bucket.name || "" }), this, { jslogContext: "delete-bucket-confirmation" });
+    const ok = await UI12.UIUtils.ConfirmDialog.show(i18nString11(UIStrings12.bucketWillBeRemoved), i18nString11(UIStrings12.confirmBucketDeletion, { PH1: this.#storageBucket.bucket.name || "" }), this, { jslogContext: "delete-bucket-confirmation" });
     if (ok) {
       this.#storageBucketsModel.deleteBucket(this.#storageBucket.bucket);
     }
@@ -3179,8 +3420,8 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
 customElements.define("devtools-storage-metadata-view", StorageMetadataView);
 
 // gen/front_end/panels/application/components/SharedStorageMetadataView.js
-var { html: html12 } = Lit6;
-var UIStrings12 = {
+var { html: html13 } = Lit7;
+var UIStrings13 = {
   /**
    * @description Text in SharedStorage Metadata View of the Application panel
    */
@@ -3214,8 +3455,8 @@ var UIStrings12 = {
    */
   numBytesUsed: "Number of Bytes Used"
 };
-var str_12 = i18n23.i18n.registerUIStrings("panels/application/components/SharedStorageMetadataView.ts", UIStrings12);
-var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
+var str_13 = i18n25.i18n.registerUIStrings("panels/application/components/SharedStorageMetadataView.ts", UIStrings13);
+var i18nString12 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
 var SharedStorageMetadataView = class extends StorageMetadataView {
   #sharedStorageMetadataGetter;
   #creationTime = null;
@@ -3233,7 +3474,7 @@ var SharedStorageMetadataView = class extends StorageMetadataView {
     await this.render();
   }
   getTitle() {
-    return i18nString11(UIStrings12.sharedStorage);
+    return i18nString12(UIStrings13.sharedStorage);
   }
   async renderReportContent() {
     const metadata = await this.#sharedStorageMetadataGetter.getMetadata();
@@ -3241,31 +3482,31 @@ var SharedStorageMetadataView = class extends StorageMetadataView {
     this.#length = metadata?.length ?? 0;
     this.#bytesUsed = metadata?.bytesUsed ?? 0;
     this.#remainingBudget = metadata?.remainingBudget ?? 0;
-    return html12`
+    return html13`
       <style>${sharedStorageMetadataView_css_default}</style>
       ${await super.renderReportContent()}
-      ${this.key(i18nString11(UIStrings12.creation))}
+      ${this.key(i18nString12(UIStrings13.creation))}
       ${this.value(this.#renderDateForCreationTime())}
-      ${this.key(i18nString11(UIStrings12.numEntries))}
+      ${this.key(i18nString12(UIStrings13.numEntries))}
       ${this.value(String(this.#length))}
-      ${this.key(i18nString11(UIStrings12.numBytesUsed))}
+      ${this.key(i18nString12(UIStrings13.numBytesUsed))}
       ${this.value(String(this.#bytesUsed))}
-      ${this.key(html12`<span class="entropy-budget">${i18nString11(UIStrings12.entropyBudget)}<devtools-icon name="info" title=${i18nString11(UIStrings12.budgetExplanation)}></devtools-icon></span>`)}
-      ${this.value(html12`<span class="entropy-budget">${this.#remainingBudget}${this.#renderResetBudgetButton()}</span>`)}`;
+      ${this.key(html13`<span class="entropy-budget">${i18nString12(UIStrings13.entropyBudget)}<devtools-icon name="info" title=${i18nString12(UIStrings13.budgetExplanation)}></devtools-icon></span>`)}
+      ${this.value(html13`<span class="entropy-budget">${this.#remainingBudget}${this.#renderResetBudgetButton()}</span>`)}`;
   }
   #renderDateForCreationTime() {
     if (!this.#creationTime) {
-      return html12`${i18nString11(UIStrings12.notYetCreated)}`;
+      return html13`${i18nString12(UIStrings13.notYetCreated)}`;
     }
     const date = new Date(1e3 * this.#creationTime);
-    return html12`${date.toLocaleString()}`;
+    return html13`${date.toLocaleString()}`;
   }
   #renderResetBudgetButton() {
-    return html12`
+    return html13`
       <devtools-button .iconName=${"undo"}
                        .jslogContext=${"reset-entropy-budget"}
                        .size=${"SMALL"}
-                       .title=${i18nString11(UIStrings12.resetBudget)}
+                       .title=${i18nString12(UIStrings13.resetBudget)}
                        .variant=${"icon"}
                        @click=${this.#resetBudget.bind(this)}></devtools-button>
     `;
@@ -3277,15 +3518,15 @@ customElements.define("devtools-shared-storage-metadata-view", SharedStorageMeta
 var TrustTokensView_exports = {};
 __export(TrustTokensView_exports, {
   TrustTokensView: () => TrustTokensView,
-  i18nString: () => i18nString12
+  i18nString: () => i18nString13
 });
 import "./../../../ui/kit/kit.js";
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n25 from "./../../../core/i18n/i18n.js";
-import * as SDK5 from "./../../../core/sdk/sdk.js";
+import * as i18n27 from "./../../../core/i18n/i18n.js";
+import * as SDK6 from "./../../../core/sdk/sdk.js";
 import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
-import * as UI12 from "./../../../ui/legacy/legacy.js";
-import * as Lit7 from "./../../../ui/lit/lit.js";
+import * as UI13 from "./../../../ui/legacy/legacy.js";
+import * as Lit8 from "./../../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/trustTokensView.css.js
@@ -3327,8 +3568,8 @@ devtools-icon {
 
 // gen/front_end/panels/application/components/TrustTokensView.js
 var PRIVATE_STATE_TOKENS_EXPLANATION_URL = "https://developers.google.com/privacy-sandbox/protections/private-state-tokens";
-var { html: html13 } = Lit7;
-var UIStrings13 = {
+var { html: html14 } = Lit8;
+var UIStrings14 = {
   /**
    * @description Text for the issuer of an item
    */
@@ -3365,39 +3606,39 @@ var UIStrings13 = {
    */
   learnMore: "Learn more"
 };
-var str_13 = i18n25.i18n.registerUIStrings("panels/application/components/TrustTokensView.ts", UIStrings13);
-var i18nString12 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
+var str_14 = i18n27.i18n.registerUIStrings("panels/application/components/TrustTokensView.ts", UIStrings14);
+var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var REFRESH_INTERVAL_MS = 1e3;
 function renderGridOrNoDataMessage(input) {
   if (input.tokens.length === 0) {
-    return html13`
+    return html14`
         <div jslog=${VisualLogging9.pane("trust-tokens")}>
           <div class="empty-state" jslog=${VisualLogging9.section().context("empty-view")}>
-            <div class="empty-state-header">${i18nString12(UIStrings13.noTrustTokens)}</div>
+            <div class="empty-state-header">${i18nString13(UIStrings14.noTrustTokens)}</div>
             <div class="empty-state-description">
-              <span>${i18nString12(UIStrings13.trustTokensDescription)}</span>
+              <span>${i18nString13(UIStrings14.trustTokensDescription)}</span>
               <devtools-link
                 class="devtools-link"
                 href=${PRIVATE_STATE_TOKENS_EXPLANATION_URL}
                 .jslogContext=${"learn-more"}
-              >${i18nString12(UIStrings13.learnMore)}</devtools-link>
+              >${i18nString13(UIStrings14.learnMore)}</devtools-link>
             </div>
           </div>
         </div>
       `;
   }
-  return html13`
+  return html14`
       <div jslog=${VisualLogging9.pane("trust-tokens")}>
-        <span class="heading">${i18nString12(UIStrings13.trustTokens)}</span>
-        <devtools-icon name="info" title=${i18nString12(UIStrings13.allStoredTrustTokensAvailableIn)}></devtools-icon>
+        <span class="heading">${i18nString13(UIStrings14.trustTokens)}</span>
+        <devtools-icon name="info" title=${i18nString13(UIStrings14.allStoredTrustTokensAvailableIn)}></devtools-icon>
         <devtools-data-grid striped inline>
           <table>
             <tr>
-              <th id="issuer" weight="10" sortable>${i18nString12(UIStrings13.issuer)}</th>
-              <th id="count" weight="5" sortable>${i18nString12(UIStrings13.storedTokenCount)}</th>
+              <th id="issuer" weight="10" sortable>${i18nString13(UIStrings14.issuer)}</th>
+              <th id="count" weight="5" sortable>${i18nString13(UIStrings14.storedTokenCount)}</th>
               <th id="delete-button" weight="1" sortable></th>
             </tr>
-            ${input.tokens.filter((token) => token.count > 0).map((token) => html13`
+            ${input.tokens.filter((token) => token.count > 0).map((token) => html14`
                 <tr>
                   <td>${removeTrailingSlash(token.issuerOrigin)}</td>
                   <td>${token.count}</td>
@@ -3405,7 +3646,7 @@ function renderGridOrNoDataMessage(input) {
                     <devtools-button .iconName=${"bin"}
                                     .jslogContext=${"delete-all"}
                                     .size=${"SMALL"}
-                                    .title=${i18nString12(UIStrings13.deleteTrustTokens, { PH1: removeTrailingSlash(token.issuerOrigin) })}
+                                    .title=${i18nString13(UIStrings14.deleteTrustTokens, { PH1: removeTrailingSlash(token.issuerOrigin) })}
                                     .variant=${"icon"}
                                     @click=${() => input.deleteClickHandler(removeTrailingSlash(token.issuerOrigin))}></devtools-button>
                   </td>
@@ -3416,18 +3657,18 @@ function renderGridOrNoDataMessage(input) {
       </div>
     `;
 }
-var DEFAULT_VIEW10 = (input, output, target) => {
-  Lit7.render(html13`
+var DEFAULT_VIEW11 = (input, output, target) => {
+  Lit8.render(html14`
     <style>${trustTokensView_css_default}</style>
-    <style>${UI12.inspectorCommonStyles}</style>
+    <style>${UI13.inspectorCommonStyles}</style>
     ${renderGridOrNoDataMessage(input)}
   `, target);
 };
-var TrustTokensView = class extends UI12.Widget.VBox {
+var TrustTokensView = class extends UI13.Widget.VBox {
   #updateInterval = 0;
   #tokens = [];
   #view;
-  constructor(element, view = DEFAULT_VIEW10) {
+  constructor(element, view = DEFAULT_VIEW11) {
     super(element, { useShadowDom: true });
     this.#view = view;
   }
@@ -3442,7 +3683,7 @@ var TrustTokensView = class extends UI12.Widget.VBox {
     this.#updateInterval = 0;
   }
   async performUpdate() {
-    const mainTarget = SDK5.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainTarget = SDK6.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!mainTarget) {
       return;
     }
@@ -3452,7 +3693,7 @@ var TrustTokensView = class extends UI12.Widget.VBox {
     this.#view({ tokens: this.#tokens, deleteClickHandler: this.#deleteClickHandler.bind(this) }, void 0, this.contentElement);
   }
   #deleteClickHandler(issuerOrigin) {
-    const mainTarget = SDK5.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainTarget = SDK6.TargetManager.TargetManager.instance().primaryPageTarget();
     void mainTarget?.storageAgent().invoke_clearTrustTokens({ issuerOrigin });
   }
 };
@@ -3460,6 +3701,7 @@ function removeTrailingSlash(s) {
   return s.replace(/\/$/, "");
 }
 export {
+  AdsView_exports as AdsView,
   BackForwardCacheView_exports as BackForwardCacheView,
   BounceTrackingMitigationsView_exports as BounceTrackingMitigationsView,
   CrashReportContextGrid_exports as CrashReportContextGrid,

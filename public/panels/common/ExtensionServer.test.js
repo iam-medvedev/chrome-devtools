@@ -68,7 +68,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
             return target;
         });
         await Promise.all(targets);
-        const resources = await new Promise(r => context.chrome.devtools.inspectedWindow.getResources(r));
+        const resources = await context.chrome.devtools.inspectedWindow.getResources();
         assert.deepEqual(resources.map(r => r.url), ['https://example.com/', 'http://example.com']);
     });
     describe('Resource', () => {
@@ -170,6 +170,30 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         assert.isUndefined(unregistration.scheme);
         assert.isFunction(unregistration.handler);
         assert.isFunction(unregistration.shouldHandleOpenResource);
+    });
+});
+describeWithDevtoolsExtension('Extensions', {}, context => {
+    expectConsoleLogs({
+        error: [
+            'Extension server error: Invalid argument urlScheme: Scheme is forbidden',
+            'Extension server error: Invalid argument urlScheme: Scheme is forbidden'
+        ],
+    });
+    beforeEach(() => {
+        createTarget().setInspectedURL(Platform.DevToolsPath.urlString `http://example.com`);
+    });
+    it('cannot register an open resource handler for forbidden schemes', async () => {
+        const registerLinkHandlerSpy = sinon.spy(Components.Linkifier.Linkifier, 'registerLinkHandler');
+        context.chrome.devtools?.panels.setOpenResourceHandler(() => { }, 'chrome:');
+        context.chrome.devtools?.panels.setOpenResourceHandler(() => { }, 'file:');
+        // Wait for the messages to be processed by sending a dummy eval request
+        await new Promise(resolve => context.chrome.devtools?.inspectedWindow.eval('1', undefined, resolve));
+        sinon.assert.notCalled(registerLinkHandlerSpy);
+    });
+});
+describeWithDevtoolsExtension('Extensions', {}, context => {
+    beforeEach(() => {
+        createTarget().setInspectedURL(Platform.DevToolsPath.urlString `http://example.com`);
     });
     it('can register and unregister a scheme specific open resource handler', async () => {
         const registerLinkHandlerSpy = spyCall(Components.Linkifier.Linkifier, 'registerLinkHandler');
@@ -551,6 +575,29 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         const result = await new Promise(r => context.chrome.devtools?.inspectedWindow.eval('4', { frameURL: childFrameUrl, useContentScriptContext: true }, (result, error) => r({ result, error })));
         assert.deepEqual(result.result, 4);
     });
+    it('evaluates expression via Promise return', async () => {
+        const parentFrameUrl = allowedUrl;
+        const childFrameUrl = urlString `${`${allowedUrl}/2`}`;
+        const childExeContextOrigin = blockedUrl;
+        const parentFrame = await setUpFrame('parent', parentFrameUrl, undefined, parentFrameUrl);
+        const childFrame = await setUpFrame('child', childFrameUrl, parentFrame, childExeContextOrigin);
+        const runtimeModel = childFrame.resourceTreeModel()?.target().model(SDK.RuntimeModel.RuntimeModel);
+        assert.exists(runtimeModel);
+        runtimeModel.executionContextCreated({
+            id: 1,
+            origin: window.location.origin,
+            name: window.location.origin,
+            uniqueId: window.location.origin,
+            auxData: { frameId: childFrame.id, isDefault: false },
+        });
+        const contentScriptExecutionContext = runtimeModel.executionContext(1);
+        assert.exists(contentScriptExecutionContext);
+        sinon.stub(contentScriptExecutionContext, 'evaluate').returns(Promise.resolve({
+            object: SDK.RemoteObject.RemoteObject.fromLocalObject(4),
+        }));
+        const result = await context.chrome.devtools.inspectedWindow.eval('4', { frameURL: childFrameUrl, useContentScriptContext: true });
+        assert.strictEqual(result, 4);
+    });
     it('blocks evaluation on blocked sub-executioncontexts with explicit scriptExecutionContextOrigin', async () => {
         assert.isUndefined(context.chrome.devtools);
         const parentFrameUrl = allowedUrl;
@@ -599,10 +646,17 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         await createUISourceCode(project, blockedUrl);
         await createUISourceCode(project, allowedUrl);
         assert.exists(context.chrome.devtools);
-        const resources = await new Promise(r => context.chrome.devtools?.inspectedWindow.getResources(r));
+        const resources = await context.chrome.devtools.inspectedWindow.getResources();
         assert.deepEqual(resources.map(r => r.url), [allowedUrl]);
-        const resourceContents = await Promise.all(resources.map(resource => new Promise(r => resource.getContent((content, encoding) => r({ url: resource.url, content, encoding })))));
-        assert.deepEqual(resourceContents, [
+        const resourceContentsWithCallback = await Promise.all(resources.map(resource => new Promise(r => resource.getContent((content, encoding) => r({ url: resource.url, content, encoding })))));
+        assert.deepEqual(resourceContentsWithCallback, [
+            { url: allowedUrl, content: 'content', encoding: '' },
+        ]);
+        const resourceContentsWithPromise = await Promise.all(resources.map(async (resource) => {
+            const { content, encoding } = await resource.getContent();
+            return { url: resource.url, content, encoding };
+        }));
+        assert.deepEqual(resourceContentsWithPromise, [
             { url: allowedUrl, content: 'content', encoding: '' },
         ]);
     });
@@ -663,14 +717,18 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         await createUISourceCode(project, blockedUrl);
         await createUISourceCode(project, allowedUrl);
         assert.exists(context.chrome.devtools);
-        const resources = await new Promise(r => context.chrome.devtools?.inspectedWindow.getResources(r));
+        const resources = await context.chrome.devtools.inspectedWindow.getResources();
         assert.deepEqual(resources.map(r => r.url), [allowedUrl]);
         assert.deepEqual(project.uiSourceCodeForURL(allowedUrl)?.content(), 'content');
         assert.deepEqual(project.uiSourceCodeForURL(blockedUrl)?.content(), 'content');
-        const responses = await Promise.all(resources.map(resource => new Promise(r => resource.setContent('modified', true, r))));
-        assert.deepEqual(responses.map(response => response?.code), ['OK']);
-        assert.deepEqual(responses.map(response => response?.details), [[]]);
+        const responsesWithCallback = await Promise.all(resources.map(resource => new Promise(r => resource.setContent('modified', true, r))));
+        assert.deepEqual(responsesWithCallback.map(response => response?.code), ['OK']);
+        assert.deepEqual(responsesWithCallback.map(response => response?.details), [[]]);
         assert.deepEqual(project.uiSourceCodeForURL(allowedUrl)?.content(), 'modified');
+        assert.deepEqual(project.uiSourceCodeForURL(blockedUrl)?.content(), 'content');
+        // Test promise version
+        await Promise.all(resources.map(resource => resource.setContent('modified_again', true)));
+        assert.deepEqual(project.uiSourceCodeForURL(allowedUrl)?.content(), 'modified_again');
         assert.deepEqual(project.uiSourceCodeForURL(blockedUrl)?.content(), 'content');
     });
     it('blocks network.addRequestHeaders when runtime_blocked_hosts is set', async () => {
@@ -964,9 +1022,7 @@ describeWithDevtoolsExtension('validate attachSourceMapURL ', {}, context => {
         // Await the promise for sourceCode to be added.
         await uiSourceCodePromise;
         assert.exists(context.chrome.devtools);
-        const resources = await new Promise(r => {
-            context.chrome.devtools?.inspectedWindow.getResources(r);
-        });
+        const resources = await context.chrome.devtools.inspectedWindow.getResources();
         // Validate that resource is registered.
         assert.isTrue(resources && resources.length > 0);
         // Script should not have a source map url attached yet.

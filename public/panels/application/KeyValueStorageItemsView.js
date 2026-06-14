@@ -27,18 +27,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /* eslint no-return-assign: "off" */
+import '../../ui/components/buttons/buttons.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Geometry from '../../models/geometry/geometry.js';
+// eslint-disable-next-line @devtools/es-modules-import
+import dataGridAiButtonStyles from '../../ui/legacy/components/data_grid/dataGridAiButton.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives as LitDirectives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ApplicationComponents from './components/components.js';
 import { StorageItemsToolbar } from './StorageItemsToolbar.js';
+const STORAGE_FLOATING_BUTTON_ACTION_ID = 'ai-assistance.storage-floating-button';
 const { ARIAUtils } = UI;
 const { EmptyWidget } = UI.EmptyWidget;
 const { VBox, widget } = UI.Widget;
 const { Size } = Geometry;
-const { repeat } = LitDirectives;
+const { repeat, ifDefined } = LitDirectives;
 const UIStrings = {
     /**
      * @description Text that shows in the Application Panel if no value is selected for preview
@@ -109,6 +114,7 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
                   @deselect=${() => input.onSelect(null)}
                 >
                   <table>
+                    ${input.showAiButton ? html `<style>${dataGridAiButtonStyles}</style>` : nothing}
                     <tr>
                       <th id="key" sortable ?editable=${input.editable}>
                         ${i18nString(UIStrings.key)}
@@ -123,7 +129,15 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
                           @edit=${(e) => input.onEdit(item.key, item.value, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
                           @delete=${() => input.onDelete(item.key)}
                           selected=${(input.selectedKey === item.key) || nothing}>
-                        <td>${item.key}</td>
+                        <td>${input.showAiButton ? html `
+                            <span class="ai-button-container">
+                              <devtools-floating-button
+                                icon-name=${AIAssistance.AiUtils.getIconName()}
+                                title=${ifDefined(input.aiButtonTitle)}
+                                @click=${(e) => input.onAiButtonClick?.(item, e)}
+                              ></devtools-floating-button>
+                            </span>
+                          ` : nothing}${item.key}</td>
                         <td>${item.value.substr(0, MAX_VALUE_LENGTH)}</td>
                       </tr>`)}
                       <tr placeholder></tr>
@@ -171,15 +185,23 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
             preview: this.#preview,
             jslog: this.#jslog,
             classes: this.#classes,
+            showAiButton: this.isAiButtonEnabled(),
+            aiButtonTitle: this.isAiButtonEnabled() &&
+                UI.ActionRegistry.ActionRegistry.instance().hasAction(STORAGE_FLOATING_BUTTON_ACTION_ID) ?
+                UI.ActionRegistry.ActionRegistry.instance().getAction(STORAGE_FLOATING_BUTTON_ACTION_ID).title() :
+                undefined,
             onSelect: (item) => {
                 this.#toolbar?.setCanDeleteSelected(Boolean(item));
-                if (!item) {
-                    void this.#previewEntry(null);
-                }
-                else {
-                    void this.#previewEntry(item);
-                }
+                void this.#previewEntry(item);
                 this.selectedItemChanged(item);
+            },
+            onAiButtonClick: (item, event) => {
+                event.stopPropagation();
+                viewInput.onSelect(item);
+                const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
+                if (actionRegistry.hasAction(STORAGE_FLOATING_BUTTON_ACTION_ID)) {
+                    void actionRegistry.getAction(STORAGE_FLOATING_BUTTON_ACTION_ID).execute();
+                }
             },
             onSort: (ascending) => {
                 this.#isSortOrderAscending = ascending;
@@ -204,6 +226,9 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
             },
         };
         this.#view(viewInput, viewOutput, this.contentElement);
+    }
+    isAiButtonEnabled() {
+        return false;
     }
     get toolbar() {
         return this.#toolbar;

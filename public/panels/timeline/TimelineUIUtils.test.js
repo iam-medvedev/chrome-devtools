@@ -570,6 +570,18 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 { title: undefined, value: '(anonymous) @ localhost:8787/perf-details/app.js:1:12' }
             ]);
         });
+        it('renders details for SoftNavigationStart with an adjusted timestamp', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'soft-navs.json.gz');
+            const softNavStart = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isSoftNavigationStart);
+            assert.exists(softNavStart);
+            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, softNavStart, new Components.Linkifier.Linkifier(), false, null);
+            const rowData = getRowDataForDetailsElement(details);
+            const timestampRow = rowData.find(row => row.title === 'Timestamp');
+            assert.exists(timestampRow);
+            assert.isNotEmpty(timestampRow.value);
+            const urlRow = rowData.find(row => row.title === 'Url');
+            assert.exists(urlRow);
+        });
         it('renders details for performance.measure', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'user-timings-details.json.gz');
             const measure = parsedTrace.data.UserTimings.performanceMeasures[0];

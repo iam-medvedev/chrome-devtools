@@ -13,7 +13,7 @@ __export(DetailedErrorStackParser_exports, {
 });
 import * as Common from "./../../core/common/common.js";
 var CALL_FRAME_REGEX = /^\s*at\s+/;
-function parseRawFramesFromErrorStack(stack) {
+function parseRawFramesFromErrorStack(stack, resolveURL) {
   const lines = stack.split("\n");
   const firstAtLineIndex = findFramesStartLine(lines);
   const rawFrames = [];
@@ -53,57 +53,66 @@ function parseRawFramesFromErrorStack(stack) {
     let promiseIndex;
     let evalOrigin;
     const openParenIndex = lineContent.indexOf(" (");
+    let location = "";
     if (lineContent.endsWith(")") && openParenIndex !== -1) {
       functionName = lineContent.substring(0, openParenIndex).trim();
-      let location = lineContent.substring(openParenIndex + 2, lineContent.length - 1);
-      if (location.startsWith("eval at ")) {
-        isEval = true;
-        const commaIndex = location.lastIndexOf(", ");
-        let evalOriginStr = location;
-        if (commaIndex !== -1) {
-          evalOriginStr = location.substring(0, commaIndex);
-          location = location.substring(commaIndex + 2);
-        } else {
-          location = "";
-        }
-        if (evalOriginStr.startsWith("eval at ")) {
-          evalOriginStr = evalOriginStr.substring(8);
-        }
-        const innerOpenParen = evalOriginStr.indexOf(" (");
-        let evalFunctionName = evalOriginStr;
-        let evalLocation = "";
-        if (innerOpenParen !== -1) {
-          evalFunctionName = evalOriginStr.substring(0, innerOpenParen).trim();
-          evalLocation = evalOriginStr.substring(innerOpenParen + 2, evalOriginStr.length - 1);
-          evalOrigin = parseRawFramesFromErrorStack(`    at ${evalFunctionName} (${evalLocation})`)?.[0];
-        } else {
-          evalOrigin = parseRawFramesFromErrorStack(`    at ${evalFunctionName}`)?.[0];
-        }
-      }
-      if (location.startsWith("index ")) {
-        promiseIndex = parseInt(location.substring(6), 10);
-        url = "";
-      } else if (location === "<anonymous>" || location === "native") {
-        url = "";
-      } else if (location.includes(":wasm-function[")) {
-        isWasm = true;
-        const wasmMatch = /^(.*):wasm-function\[(\d+)\]:(0x[0-9a-fA-F]+)$/.exec(location);
-        if (wasmMatch) {
-          url = wasmMatch[1];
-          wasmFunctionIndex = parseInt(wasmMatch[2], 10);
-          columnNumber = parseInt(wasmMatch[3], 16);
-        }
-      } else {
-        const splitResult = Common.ParsedURL.ParsedURL.splitLineAndColumn(location);
-        url = splitResult.url;
-        lineNumber = splitResult.lineNumber ?? -1;
-        columnNumber = splitResult.columnNumber ?? -1;
-      }
+      location = lineContent.substring(openParenIndex + 2, lineContent.length - 1);
+    } else if (lineContent.startsWith("(") && lineContent.endsWith(")")) {
+      location = lineContent.substring(1, lineContent.length - 1);
     } else {
-      const splitResult = Common.ParsedURL.ParsedURL.splitLineAndColumn(lineContent);
-      url = splitResult.url;
+      location = lineContent;
+    }
+    if (location.startsWith("eval at ")) {
+      isEval = true;
+      const commaIndex = location.lastIndexOf(", ");
+      let evalOriginStr = location;
+      if (commaIndex !== -1) {
+        evalOriginStr = location.substring(0, commaIndex);
+        location = location.substring(commaIndex + 2);
+      } else {
+        location = "";
+      }
+      if (evalOriginStr.startsWith("eval at ")) {
+        evalOriginStr = evalOriginStr.substring(8);
+      }
+      const innerOpenParen = evalOriginStr.indexOf(" (");
+      let evalFunctionName = evalOriginStr;
+      let evalLocation = "";
+      if (innerOpenParen !== -1) {
+        evalFunctionName = evalOriginStr.substring(0, innerOpenParen).trim();
+        evalLocation = evalOriginStr.substring(innerOpenParen + 2, evalOriginStr.length - 1);
+        evalOrigin = parseRawFramesFromErrorStack(`    at ${evalFunctionName} (${evalLocation})`, resolveURL)?.[0];
+      } else {
+        evalOrigin = parseRawFramesFromErrorStack(`    at ${evalFunctionName}`, resolveURL)?.[0];
+      }
+    }
+    if (location.startsWith("index ")) {
+      promiseIndex = parseInt(location.substring(6), 10);
+      url = "";
+    } else if (location === "<anonymous>" || location === "native") {
+      url = "";
+    } else if (location.includes(":wasm-function[")) {
+      isWasm = true;
+      const wasmMatch = /^(.*):wasm-function\[(\d+)\]:(0x[0-9a-fA-F]+)$/.exec(location);
+      if (wasmMatch) {
+        url = wasmMatch[1];
+        wasmFunctionIndex = parseInt(wasmMatch[2], 10);
+        columnNumber = parseInt(wasmMatch[3], 16);
+        lineNumber = 0;
+      }
+    } else if (location) {
+      const splitResult = Common.ParsedURL.ParsedURL.splitLineAndColumn(location);
       lineNumber = splitResult.lineNumber ?? -1;
       columnNumber = splitResult.columnNumber ?? -1;
+      if (resolveURL && splitResult.url !== "<anonymous>" && splitResult.url !== "native") {
+        const resolved = resolveURL(splitResult.url);
+        if (!resolved) {
+          return null;
+        }
+        url = resolved;
+      } else {
+        url = splitResult.url;
+      }
     }
     if (functionName) {
       const aliasMatch = /(.*)\s+\[as\s+(.*)\]/.exec(functionName);
@@ -125,12 +134,12 @@ function parseRawFramesFromErrorStack(stack) {
       functionName,
       lineNumber,
       columnNumber,
+      isWasm,
       parsedFrameInfo: {
         isAsync,
         isConstructor,
         isEval,
         evalOrigin,
-        isWasm,
         wasmModuleName,
         wasmFunctionIndex,
         typeName,
@@ -154,11 +163,7 @@ function parseMessage(stack) {
 }
 function augmentRawFramesWithScriptIds(rawFrames, protocolStackTrace) {
   function augmentFrame(rawFrame) {
-    const isWasm = rawFrame.parsedFrameInfo?.isWasm;
     const protocolFrame = protocolStackTrace.callFrames.find((frame) => {
-      if (isWasm) {
-        return rawFrame.url === frame.url && rawFrame.columnNumber === frame.columnNumber;
-      }
       return rawFrame.url === frame.url && rawFrame.lineNumber === frame.lineNumber && rawFrame.columnNumber === frame.columnNumber;
     });
     if (protocolFrame) {
@@ -246,7 +251,9 @@ var FrameImpl = class {
   column;
   missingDebugInfo;
   rawName;
-  constructor(url, uiSourceCode, name, line, column, missingDebugInfo, rawName) {
+  isWasm;
+  isInline;
+  constructor(url, uiSourceCode, name, line, column, missingDebugInfo, rawName, isWasm, isInline) {
     this.url = url;
     this.uiSourceCode = uiSourceCode;
     this.name = name;
@@ -254,6 +261,8 @@ var FrameImpl = class {
     this.column = column;
     this.missingDebugInfo = missingDebugInfo;
     this.rawName = rawName;
+    this.isWasm = isWasm;
+    this.isInline = isInline;
   }
 };
 function createParsedErrorStackFrameImplFromEvalOrigin(evalOrigin, parsedFrameInfo) {
@@ -326,7 +335,10 @@ var ParsedErrorStackFrameImpl = class {
     return this.#evalOrigin;
   }
   get isWasm() {
-    return this.#parsedFrameInfo?.isWasm;
+    return this.#frame.isWasm;
+  }
+  get isInline() {
+    return this.#frame.isInline;
   }
   get wasmModuleName() {
     return this.#parsedFrameInfo?.wasmModuleName;
@@ -394,6 +406,12 @@ var DebuggableFrameImpl = class {
   }
   get rawName() {
     return this.#frame.rawName;
+  }
+  get isWasm() {
+    return this.#frame.isWasm;
+  }
+  get isInline() {
+    return this.#frame.isInline;
   }
   get sdkFrame() {
     return this.#sdkFrame;
@@ -551,14 +569,28 @@ var StackTraceModel = class extends SDK.SDKModel.SDKModel {
     return model;
   }
   async createFromProtocolRuntime(stackTrace, rawFramesToUIFrames) {
+    const debuggerModel = this.target().model(SDK.DebuggerModel.DebuggerModel);
+    const syncFrames = stackTrace.callFrames.map((frame) => {
+      const isWasm = debuggerModel?.isWasm(frame.scriptId) ?? false;
+      return { ...frame, isWasm };
+    });
     const [syncFragment, asyncFragments] = await Promise.all([
-      this.#createFragment(stackTrace.callFrames, rawFramesToUIFrames),
+      this.#createFragment(syncFrames, rawFramesToUIFrames),
       this.#createAsyncFragments(stackTrace, rawFramesToUIFrames)
     ]);
     return new StackTraceImpl(syncFragment, asyncFragments);
   }
   async createFromErrorStackLikeString(stack, rawFramesToUIFrames, exceptionDetails) {
-    const rawFrames = parseRawFramesFromErrorStack(stack);
+    const debuggerModel = this.target().model(SDK.DebuggerModel.DebuggerModel);
+    const baseURL = this.target().inspectedURL();
+    const resolveURL = (url) => {
+      let urlWithScheme = parseOrScriptMatch(debuggerModel, url);
+      if (!urlWithScheme && Common3.ParsedURL.ParsedURL.isRelativeURL(url)) {
+        urlWithScheme = parseOrScriptMatch(debuggerModel, Common3.ParsedURL.ParsedURL.completeURL(baseURL, url));
+      }
+      return urlWithScheme;
+    };
+    const rawFrames = parseRawFramesFromErrorStack(stack, resolveURL);
     if (!rawFrames) {
       return null;
     }
@@ -607,7 +639,8 @@ var StackTraceModel = class extends SDK.SDKModel.SDKModel {
       url: frame.script.sourceURL,
       functionName: frame.functionName,
       lineNumber: frame.location().lineNumber,
-      columnNumber: frame.location().columnNumber
+      columnNumber: frame.location().columnNumber,
+      isWasm: frame.script.isWasm()
     })), rawFramesToUIFrames);
     return new DebuggableFragmentImpl(fragment, pausedDetails.callFrames);
   }
@@ -620,7 +653,12 @@ var StackTraceModel = class extends SDK.SDKModel.SDKModel {
           continue;
         }
         const model = _a.#modelForTarget(target);
-        const asyncFragmentPromise = model.#createFragment(asyncStackTrace.callFrames, rawFramesToUIFrames).then((fragment) => new AsyncFragmentImpl(asyncStackTrace.description ?? "", fragment));
+        const targetDebuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        const asyncFrames = asyncStackTrace.callFrames.map((frame) => {
+          const isWasm = targetDebuggerModel?.isWasm(frame.scriptId) ?? false;
+          return { ...frame, isWasm };
+        });
+        const asyncFragmentPromise = model.#createFragment(asyncFrames, rawFramesToUIFrames).then((fragment) => new AsyncFragmentImpl(asyncStackTrace.description ?? "", fragment));
         asyncFragments.push(asyncFragmentPromise);
       }
     }
@@ -660,7 +698,8 @@ var StackTraceModel = class extends SDK.SDKModel.SDKModel {
     let i = 0;
     let evalI = 0;
     for (const node of fragment.node.getCallStack()) {
-      node.frames = uiFrames[i++].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, node.rawFrame.functionName));
+      const group = uiFrames[i++];
+      node.frames = group.map((frame, index) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, node.rawFrame.functionName, node.rawFrame.isWasm, index < group.length - 1));
       if (node.parsedFrameInfo?.evalOrigin) {
         node.evalOrigin = evalOrigins[evalI++];
       }
@@ -690,12 +729,32 @@ var StackTraceModel = class extends SDK.SDKModel.SDKModel {
 _a = StackTraceModel;
 async function translateEvalOrigin(rawFrame, rawFramesToUIFrames, target) {
   const uiFrames = await rawFramesToUIFrames([rawFrame], target);
-  const frames = uiFrames[0].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, rawFrame.functionName));
+  const group = uiFrames[0];
+  const frames = group.map((frame, index) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo, rawFrame.functionName, rawFrame.isWasm, index < group.length - 1));
   let parentEvalOrigin;
   if (rawFrame.parsedFrameInfo?.evalOrigin) {
     parentEvalOrigin = await translateEvalOrigin(rawFrame.parsedFrameInfo.evalOrigin, rawFramesToUIFrames, target);
   }
   return new EvalOrigin(frames, parentEvalOrigin);
+}
+function parseOrScriptMatch(debuggerModel, url) {
+  if (!url) {
+    return null;
+  }
+  if (Common3.ParsedURL.ParsedURL.isValidUrlString(url)) {
+    return url;
+  }
+  if (debuggerModel.scriptsForSourceURL(url).length) {
+    return url;
+  }
+  try {
+    const fileUrl = new URL(url, "file://");
+    if (debuggerModel.scriptsForSourceURL(fileUrl.href).length) {
+      return fileUrl.href;
+    }
+  } catch {
+  }
+  return null;
 }
 SDK.SDKModel.SDKModel.register(StackTraceModel, { capabilities: 0, autostart: false });
 export {

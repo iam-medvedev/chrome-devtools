@@ -309,16 +309,14 @@ async function getEmptyStateSuggestions(conversation) {
 function getMarkdownRenderer(conversation) {
     const context = conversation?.selectedContext;
     if (context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
-        if (!context.external) {
-            const focus = context.getItem();
-            return new PerformanceAgentMarkdownRenderer(focus.parsedTrace.data.Meta.mainFrameId, focus.lookupEvent.bind(focus));
-        }
+        const focus = context.getItem();
+        return new PerformanceAgentMarkdownRenderer(focus.parsedTrace.data.Meta.mainFrameId, focus.lookupEvent.bind(focus));
     }
-    else if (conversation?.type === "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */) {
+    if (conversation?.type === "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */) {
         // Handle historical conversations (can't linkify anything).
         return new PerformanceAgentMarkdownRenderer();
     }
-    else if (Greendev.Prototypes.instance().isEnabled('emulationCapabilities') &&
+    if (Greendev.Prototypes.instance().isEnabled('emulationCapabilities') &&
         conversation?.type === "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */ &&
         SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK.DOMModel.DOMModel)) {
         const domModel = SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK.DOMModel.DOMModel);
@@ -326,7 +324,7 @@ function getMarkdownRenderer(conversation) {
         const mainFrameId = resourceTreeModel?.mainFrame?.id;
         return new StylingAgentMarkdownRenderer(mainFrameId);
     }
-    else if (conversation?.type === "accessibility" /* AiAssistanceModel.AiHistoryStorage.ConversationType.ACCESSIBILITY */) {
+    if (conversation?.type === "accessibility" /* AiAssistanceModel.AiHistoryStorage.ConversationType.ACCESSIBILITY */) {
         const domModel = SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK.DOMModel.DOMModel);
         const mainDocumentURL = domModel?.existingDocument()?.documentURL;
         return new AccessibilityAgentMarkdownRenderer(mainDocumentURL);
@@ -473,11 +471,11 @@ function defaultView(input, output, target) {
     }
     // clang-format on
 }
-function createNodeContext(node) {
+function createDOMNodeContext(node) {
     if (!node) {
         return null;
     }
-    return new AiAssistanceModel.StylingAgent.NodeContext(node);
+    return new AiAssistanceModel.DOMNodeContext.DOMNodeContext(node);
 }
 function createFileContext(file) {
     if (!file) {
@@ -517,7 +515,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     // NodeJS debugging does not have Elements panel, thus this action might not exist.
     #toggleSearchElementAction;
     #aidaClient;
-    #conversationSummaryAgent;
+    #conversationSummary;
     #viewOutput = {};
     #serverSideLoggingEnabled = isAiAssistanceServerSideLoggingEnabled();
     #aiAssistanceEnabledSetting;
@@ -626,13 +624,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     markdownRenderer,
                     conversationMarkdown: this.#conversation.getConversationMarkdown(),
                     generateConversationSummary: async (markdown) => {
-                        if (!this.#conversationSummaryAgent) {
-                            this.#conversationSummaryAgent = new AiAssistanceModel.ConversationSummaryAgent.ConversationSummaryAgent({
+                        if (!this.#conversationSummary) {
+                            this.#conversationSummary = new AiAssistanceModel.ConversationSummary.ConversationSummary({
                                 aidaClient: this.#aidaClient,
                                 serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
                             });
                         }
-                        return await this.#conversationSummaryAgent.summarizeConversation(markdown);
+                        return await this.#conversationSummary.summarizeConversation(markdown);
                     },
                     onTextSubmit: async (text, imageInput, multimodalInputType) => {
                         const submit = () => {
@@ -919,7 +917,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#viewOutput.chatView?.focusTextInput();
         void this.#handleAidaAvailabilityChange();
         this.#selectedElement =
-            createNodeContext(selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode)));
+            createDOMNodeContext(selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode)));
         this.#selectedRequest =
             createRequestContext(UI.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest));
         this.#selectedPerformanceTrace =
@@ -980,7 +978,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (this.#selectedElement?.getItem() === ev.data) {
             return;
         }
-        this.#selectedElement = createNodeContext(selectedElementFilter(ev.data));
+        this.#selectedElement = createDOMNodeContext(selectedElementFilter(ev.data));
         this.#updateConversationState(this.#conversation);
     };
     #handleStorageItemFlavorChange = (ev) => {
@@ -1278,6 +1276,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 targetConversationType = "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */;
                 break;
             }
+            case 'ai-assistance.storage-floating-button': {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromApplicationPanelFloatingButton);
+                targetConversationType = "storage" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STORAGE */;
+                break;
+            }
+            case 'ai-assistance.application-panel-context': {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromApplicationPanel);
+                targetConversationType = "storage" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STORAGE */;
+                break;
+            }
         }
         if (!targetConversationType) {
             return;
@@ -1401,7 +1409,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (data instanceof AiAssistanceModel.FileAgent.FileContext) {
             this.#selectedFile = data;
         }
-        else if (data instanceof AiAssistanceModel.StylingAgent.NodeContext) {
+        else if (data instanceof AiAssistanceModel.DOMNodeContext.DOMNodeContext) {
             this.#selectedElement = data;
         }
         else if (data instanceof AiAssistanceModel.NetworkAgent.RequestContext) {
@@ -1755,7 +1763,9 @@ export class ActionDelegate {
             case 'drjones.network-panel-context':
             case 'drjones.performance-panel-context':
             case 'drjones.sources-floating-button':
-            case 'drjones.sources-panel-context': {
+            case 'drjones.sources-panel-context':
+            case 'ai-assistance.storage-floating-button':
+            case 'ai-assistance.application-panel-context': {
                 void (async () => {
                     const view = UI.ViewManager.ViewManager.instance().view(AiAssistancePanel.panelName);
                     if (!view) {

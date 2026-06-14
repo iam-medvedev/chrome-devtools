@@ -5122,7 +5122,7 @@ var GreenDevFloaty = class _GreenDevFloaty {
         });
       } else {
         this.#agent = new AiAssistance.StylingAgent.StylingAgent({ aidaClient });
-        this.#nodeContext = new AiAssistance.StylingAgent.NodeContext(this.#node);
+        this.#nodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(this.#node);
       }
     }
     this.#addMessageInternal(query, true);
@@ -5181,7 +5181,8 @@ ${footer}`;
         }
         const mainUrl = target.inspectedURL();
         const reactComponentProps = this.#backendNodeId ? await this.#agent.getReactComponentProps(this.#backendNodeId, false) : "Could not get the backendNodeId for the selected element.";
-        const elementContext = await AiAssistance.StylingAgent.StylingAgent.describeElement(this.#node);
+        const domNodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(this.#node);
+        const elementContext = await domNodeContext.describe();
         const context = `# Page URL
 
 ${mainUrl}
@@ -5319,7 +5320,6 @@ async function init() {
     ]);
     Object.assign(Root3.Runtime.hostConfig, config);
     safeRegisterExperiment(Root3.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, "Enable instrumentation breakpoints");
-    safeRegisterExperiment(Root3.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, "Use scope information from source maps");
     safeRegisterExperiment(Root3.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, "Protocol Monitor");
     const hostUnsyncedStorage = {
       register: (name) => Host3.InspectorFrontendHost.InspectorFrontendHostInstance.registerPreference(name, { synced: false }),

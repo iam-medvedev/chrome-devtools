@@ -2639,8 +2639,14 @@
   "models/trace/Styles.ts | signReply": {
     "message": "Sign reply"
   },
+  "models/trace/Styles.ts | softFirstContentfulPaint": {
+    "message": "Soft First Contentful Paint"
+  },
   "models/trace/Styles.ts | softLargestContentfulPaint": {
     "message": "Soft Largest Contentful Paint"
+  },
+  "models/trace/Styles.ts | softNavigationStart": {
+    "message": "Soft navigation start"
   },
   "models/trace/Styles.ts | streamingCompileTask": {
     "message": "Streaming compile task"
@@ -3410,6 +3416,12 @@
   "panels/application/ApplicationPanelSidebar.ts | documentNotAvailable": {
     "message": "No document detected"
   },
+  "panels/application/ApplicationPanelSidebar.ts | explainCookies": {
+    "message": "Explain cookies"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | explainStorage": {
+    "message": "Explain storage"
+  },
   "panels/application/ApplicationPanelSidebar.ts | extensionLocalStorage": {
     "message": "Local"
   },
@@ -3490,6 +3502,9 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | sessionStorageDescription": {
     "message": "On this page you can view, add, edit, and delete session storage key-value pairs."
+  },
+  "panels/application/ApplicationPanelSidebar.ts | startAChat": {
+    "message": "Start a chat"
   },
   "panels/application/ApplicationPanelSidebar.ts | storage": {
     "message": "Storage"
@@ -3868,6 +3883,21 @@
   },
   "panels/application/BounceTrackingMitigationsTreeElement.ts | bounceTrackingMitigations": {
     "message": "Bounce tracking mitigations"
+  },
+  "panels/application/components/AdsView.ts | average": {
+    "message": "(Average: {PH1})"
+  },
+  "panels/application/components/AdsView.ts | totalCpuUsage": {
+    "message": "Total CPU usage by ads"
+  },
+  "panels/application/components/AdsView.ts | totalNetworkUsage": {
+    "message": "Total network usage by ads"
+  },
+  "panels/application/components/AdsView.ts | viewportAdCount": {
+    "message": "Viewport ad count"
+  },
+  "panels/application/components/AdsView.ts | viewportAdDensity": {
+    "message": "Viewport ad density"
   },
   "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
     "message": "Pages that requested an AppBanner are not currently eligible for back/forward cache."
@@ -11027,6 +11057,9 @@
   "panels/network/NetworkLogView.ts | unblockS": {
     "message": "Unblock {PH1}"
   },
+  "panels/network/NetworkLogView.ts | unsupportedUrlScheme": {
+    "message": "{PH1} Unsupported URL scheme"
+  },
   "panels/network/NetworkLogView.ts | unthrottleS": {
     "message": "Stop throttling {PH1}"
   },
@@ -17683,6 +17716,9 @@
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | showMoreS": {
     "message": "Show more ({PH1})"
+  },
+  "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | sortPropertiesAlphabetically": {
+    "message": "Sort properties alphabetically"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | stringIsTooLargeToEdit": {
     "message": "<string is too large to edit>"

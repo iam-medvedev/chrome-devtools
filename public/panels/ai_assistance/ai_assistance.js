@@ -18,7 +18,7 @@ import * as Badges from "./../../models/badges/badges.js";
 import * as Greendev from "./../../models/greendev/greendev.js";
 import * as Workspace8 from "./../../models/workspace/workspace.js";
 import * as Buttons9 from "./../../ui/components/buttons/buttons.js";
-import * as Snackbars3 from "./../../ui/components/snackbars/snackbars.js";
+import * as Snackbars4 from "./../../ui/components/snackbars/snackbars.js";
 import * as UIHelpers2 from "./../../ui/helpers/helpers.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 import * as Lit10 from "./../../ui/lit/lit.js";
@@ -1849,7 +1849,7 @@ function getContextRemoveLabel(context) {
   if (context instanceof AiAssistanceModel4.FileAgent.FileContext) {
     return lockedString3(UIStringsNotTranslate3.removeContextFile);
   }
-  if (context instanceof AiAssistanceModel4.StylingAgent.NodeContext) {
+  if (context instanceof AiAssistanceModel4.DOMNodeContext.DOMNodeContext) {
     return lockedString3(UIStringsNotTranslate3.removeContextElement);
   }
   if (context instanceof AiAssistanceModel4.NetworkAgent.RequestContext) {
@@ -1992,7 +1992,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     disabled: !input.isContextSelected
   })}
                       >
-                        ${input.context instanceof AiAssistanceModel4.StylingAgent.NodeContext ? html5`
+                        ${input.context instanceof AiAssistanceModel4.DOMNodeContext.DOMNodeContext ? html5`
                               <devtools-widget
                                 class="title"
                                 ${widget2(PanelsCommon2.DOMLinkifier.DOMNodeLink, {
@@ -2455,6 +2455,7 @@ import * as TraceBounds from "./../../services/trace_bounds/trace_bounds.js";
 import * as Marked from "./../../third_party/marked/marked.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as Input3 from "./../../ui/components/input/input.js";
+import * as Snackbars2 from "./../../ui/components/snackbars/snackbars.js";
 import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as Lit5 from "./../../ui/lit/lit.js";
@@ -3096,6 +3097,12 @@ var chatMessage_css_default = `/*
       display: none;
     }
   }
+
+  .network-requests-widget {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-4);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("././components/chatMessage.css")} */`;
@@ -3136,9 +3143,9 @@ function getButtonLabel(input) {
   if (input.isLoading && !input.isExpanded && input.stepTitle) {
     labelBase = input.stepTitle;
   } else {
-    const action2 = input.isExpanded ? "Hide" : "Show";
+    const action3 = input.isExpanded ? "Hide" : "Show";
     const type = input.hasWidgets ? "AI walkthrough" : "thinking";
-    labelBase = `${action2} ${type}`;
+    labelBase = `${action3} ${type}`;
   }
   if (input.isLoading) {
     return `Loading: ${labelBase}`;
@@ -4055,6 +4062,14 @@ var UIStringsNotTranslate4 = {
    */
   characterSet: "Character set declaration",
   /**
+   * @description Title for the network requests list widget.
+   */
+  networkRequests: "Network requests",
+  /**
+   * @description Accessible label for the reveal button in the network requests list widget.
+   */
+  revealFirstNetworkRequest: "Reveal first network request in Network panel",
+  /**
    * @description Title for the source files list widget.
    */
   inspectedFileNames: "Inspected file names"
@@ -4635,7 +4650,12 @@ function renderWidgetResponse(response) {
     if (response === null) {
       return;
     }
-    void Common4.Revealer.reveal(response?.revealable);
+    Common4.Revealer.reveal(response?.revealable).catch((error) => {
+      if (!error.message) {
+        return;
+      }
+      Snackbars2.Snackbar.Snackbar.show({ message: error.message });
+    });
   }
   const classes = Lit5.Directives.classMap({
     "widget-and-revealer-container": true,
@@ -4778,6 +4798,65 @@ async function makeSourceFilesListWidget(widgetData) {
     jslogContext: "source-files-list-widget"
   };
 }
+var expandedNetworkRequestsWidgets = /* @__PURE__ */ new WeakSet();
+async function makeNetworkRequestsListWidget(widgetData) {
+  const requests = widgetData.data.requests;
+  if (requests.length === 0) {
+    return null;
+  }
+  const isExpanded = expandedNetworkRequestsWidgets.has(widgetData);
+  if (isExpanded) {
+    expandedNetworkRequestsWidgets.delete(widgetData);
+  }
+  const displayedRequests = isExpanded ? requests : requests.slice(0, 15);
+  const renderedWidget = html7`
+    <div class="network-requests-widget">
+      <devtools-data-grid striped inline>
+        <table>
+          <tr>
+            <th id="name" weight="4">${i18n9.i18n.lockedString("Name")}</th>
+            <th id="status" weight="1">${i18n9.i18n.lockedString("Status")}</th>
+            <th id="size" weight="1">${i18n9.i18n.lockedString("Size")}</th>
+            <th id="time" weight="1">${i18n9.i18n.lockedString("Time")}</th>
+          </tr>
+          ${displayedRequests.map((request) => html7`
+            <tr>
+              <td>${request.name()}</td>
+              <td>${request.statusCode}</td>
+              <td>${i18n9.ByteUtilities.formatBytesToKb(request.transferSize)}</td>
+              <td>${i18n9.TimeUtilities.secondsToString(request.duration)}</td>
+            </tr>
+          `)}
+        </table>
+      </devtools-data-grid>
+      ${!isExpanded && requests.length > 15 ? html7`
+        <div class="show-all-container">
+          <button class="show-all-widget-requests-button text-button"
+            jslog=${VisualLogging4.action("show-all-widget-requests-button").track({ click: true })}
+            @click=${(e) => {
+    expandedNetworkRequestsWidgets.add(widgetData);
+    const widgetEl = e.target.closest(".widget");
+    if (widgetEl) {
+      const widget6 = UI5.Widget.Widget.get(widgetEl);
+      if (widget6 && widget6.performUpdate) {
+        void widget6.performUpdate();
+      }
+    }
+  }}>
+            ${i18n9.i18n.lockedString(`Show all ${requests.length} network requests`)}
+          </button>
+        </div>
+      ` : Lit5.nothing}
+    </div>
+  `;
+  return {
+    renderedWidget,
+    title: lockedString5(UIStringsNotTranslate4.networkRequests),
+    revealable: requests[0],
+    accessibleRevealLabel: lockedString5(UIStringsNotTranslate4.revealFirstNetworkRequest),
+    jslogContext: "network-requests-list-widget"
+  };
+}
 function renderNetworkRequestPreview(networkRequest) {
   const filename = networkRequest.url.split("/").pop() || networkRequest.url;
   const size = i18n9.ByteUtilities.bytesToString(networkRequest.size);
@@ -4860,6 +4939,8 @@ function getWidgetSignature(widget6) {
       return `${widget6.name}:${widget6.data.request.requestId()}`;
     case "SOURCE_CODE":
       return `${widget6.name}:${widget6.data.url}:${widget6.data.line ?? ""}:${widget6.data.column ?? ""}`;
+    case "NETWORK_REQUESTS_LIST":
+      return `${widget6.name}:${widget6.data.requests.map((r) => r.requestId()).join(",")}`;
     default:
       Platform5.assertNever(widget6, "Unknown AiWidget name");
   }
@@ -4935,6 +5016,9 @@ async function renderWidgets(widgets, options = {}) {
         break;
       case "SOURCE_FILES_LIST":
         response = await makeSourceFilesListWidget(widgetData);
+        break;
+      case "NETWORK_REQUESTS_LIST":
+        response = await makeNetworkRequestsListWidget(widgetData);
         break;
       case "LIGHTHOUSE_REPORT":
         response = await makeLighthouseReportWidget(widgetData);
@@ -5888,7 +5972,7 @@ import "./../../ui/components/spinners/spinners.js";
 import * as Host4 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
-import * as Snackbars2 from "./../../ui/components/snackbars/snackbars.js";
+import * as Snackbars3 from "./../../ui/components/snackbars/snackbars.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Lit6 from "./../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
@@ -6143,7 +6227,7 @@ var ExportForAgentsDialog = class _ExportForAgentsDialog extends UI6.Widget.VBox
         onButtonClick = (event) => {
           event.preventDefault();
           Host4.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.#state.promptText);
-          const snackbar = Snackbars2.Snackbar.Snackbar.show({
+          const snackbar = Snackbars3.Snackbar.Snackbar.show({
             message: i18nString3(UIStrings3.copiedToClipboard)
           });
           snackbar.setAttribute("aria-label", i18nString3(UIStrings3.copiedToClipboard));
@@ -7681,18 +7765,19 @@ async function getEmptyStateSuggestions(conversation) {
 function getMarkdownRenderer(conversation) {
   const context = conversation?.selectedContext;
   if (context instanceof AiAssistanceModel8.PerformanceAgent.PerformanceTraceContext) {
-    if (!context.external) {
-      const focus = context.getItem();
-      return new PerformanceAgentMarkdownRenderer(focus.parsedTrace.data.Meta.mainFrameId, focus.lookupEvent.bind(focus));
-    }
-  } else if (conversation?.type === "drjones-performance-full") {
+    const focus = context.getItem();
+    return new PerformanceAgentMarkdownRenderer(focus.parsedTrace.data.Meta.mainFrameId, focus.lookupEvent.bind(focus));
+  }
+  if (conversation?.type === "drjones-performance-full") {
     return new PerformanceAgentMarkdownRenderer();
-  } else if (Greendev.Prototypes.instance().isEnabled("emulationCapabilities") && conversation?.type === "freestyler" && SDK6.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK6.DOMModel.DOMModel)) {
+  }
+  if (Greendev.Prototypes.instance().isEnabled("emulationCapabilities") && conversation?.type === "freestyler" && SDK6.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK6.DOMModel.DOMModel)) {
     const domModel = SDK6.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK6.DOMModel.DOMModel);
     const resourceTreeModel = domModel?.target().model(SDK6.ResourceTreeModel.ResourceTreeModel);
     const mainFrameId = resourceTreeModel?.mainFrame?.id;
     return new StylingAgentMarkdownRenderer(mainFrameId);
-  } else if (conversation?.type === "accessibility") {
+  }
+  if (conversation?.type === "accessibility") {
     const domModel = SDK6.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK6.DOMModel.DOMModel);
     const mainDocumentURL = domModel?.existingDocument()?.documentURL;
     return new AccessibilityAgentMarkdownRenderer(mainDocumentURL);
@@ -7827,11 +7912,11 @@ function defaultView(input, output, target) {
     `, target);
   }
 }
-function createNodeContext(node) {
+function createDOMNodeContext(node) {
   if (!node) {
     return null;
   }
-  return new AiAssistanceModel8.StylingAgent.NodeContext(node);
+  return new AiAssistanceModel8.DOMNodeContext.DOMNodeContext(node);
 }
 function createFileContext(file) {
   if (!file) {
@@ -7871,7 +7956,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
   // NodeJS debugging does not have Elements panel, thus this action might not exist.
   #toggleSearchElementAction;
   #aidaClient;
-  #conversationSummaryAgent;
+  #conversationSummary;
   #viewOutput = {};
   #serverSideLoggingEnabled = isAiAssistanceServerSideLoggingEnabled();
   #aiAssistanceEnabledSetting;
@@ -7975,13 +8060,13 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
           markdownRenderer,
           conversationMarkdown: this.#conversation.getConversationMarkdown(),
           generateConversationSummary: async (markdown) => {
-            if (!this.#conversationSummaryAgent) {
-              this.#conversationSummaryAgent = new AiAssistanceModel8.ConversationSummaryAgent.ConversationSummaryAgent({
+            if (!this.#conversationSummary) {
+              this.#conversationSummary = new AiAssistanceModel8.ConversationSummary.ConversationSummary({
                 aidaClient: this.#aidaClient,
                 serverSideLoggingEnabled: this.#serverSideLoggingEnabled
               });
             }
-            return await this.#conversationSummaryAgent.summarizeConversation(markdown);
+            return await this.#conversationSummary.summarizeConversation(markdown);
           },
           onTextSubmit: async (text, imageInput, multimodalInputType) => {
             const submit = () => {
@@ -8235,7 +8320,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     this.#viewOutput.chatView?.restoreScrollPosition();
     this.#viewOutput.chatView?.focusTextInput();
     void this.#handleAidaAvailabilityChange();
-    this.#selectedElement = createNodeContext(selectedElementFilter(UI11.Context.Context.instance().flavor(SDK6.DOMModel.DOMNode)));
+    this.#selectedElement = createDOMNodeContext(selectedElementFilter(UI11.Context.Context.instance().flavor(SDK6.DOMModel.DOMNode)));
     this.#selectedRequest = createRequestContext(UI11.Context.Context.instance().flavor(SDK6.NetworkRequest.NetworkRequest));
     this.#selectedPerformanceTrace = createPerformanceTraceContext(UI11.Context.Context.instance().flavor(AiAssistanceModel8.AIContext.AgentFocus));
     this.#selectedFile = createFileContext(UI11.Context.Context.instance().flavor(Workspace8.UISourceCode.UISourceCode));
@@ -8290,7 +8375,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     if (this.#selectedElement?.getItem() === ev.data) {
       return;
     }
-    this.#selectedElement = createNodeContext(selectedElementFilter(ev.data));
+    this.#selectedElement = createDOMNodeContext(selectedElementFilter(ev.data));
     this.#updateConversationState(this.#conversation);
   };
   #handleStorageItemFlavorChange = (ev) => {
@@ -8364,7 +8449,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
     const markdown = getResponseMarkdown(message);
     if (markdown) {
       Host7.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(markdown);
-      Snackbars3.Snackbar.Snackbar.show({
+      Snackbars4.Snackbar.Snackbar.show({
         message: i18nString6(UIStrings6.responseCopiedToClipboard)
       });
     }
@@ -8580,6 +8665,16 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
         targetConversationType = "drjones-file";
         break;
       }
+      case "ai-assistance.storage-floating-button": {
+        Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.AiAssistanceOpenedFromApplicationPanelFloatingButton);
+        targetConversationType = "storage";
+        break;
+      }
+      case "ai-assistance.application-panel-context": {
+        Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.AiAssistanceOpenedFromApplicationPanel);
+        targetConversationType = "storage";
+        break;
+      }
     }
     if (!targetConversationType) {
       return;
@@ -8701,7 +8796,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
   #handleConversationContextChange = (data) => {
     if (data instanceof AiAssistanceModel8.FileAgent.FileContext) {
       this.#selectedFile = data;
-    } else if (data instanceof AiAssistanceModel8.StylingAgent.NodeContext) {
+    } else if (data instanceof AiAssistanceModel8.DOMNodeContext.DOMNodeContext) {
       this.#selectedElement = data;
     } else if (data instanceof AiAssistanceModel8.NetworkAgent.RequestContext) {
       this.#selectedRequest = data;
@@ -9021,7 +9116,9 @@ var ActionDelegate = class {
       case "drjones.network-panel-context":
       case "drjones.performance-panel-context":
       case "drjones.sources-floating-button":
-      case "drjones.sources-panel-context": {
+      case "drjones.sources-panel-context":
+      case "ai-assistance.storage-floating-button":
+      case "ai-assistance.application-panel-context": {
         void (async () => {
           const view = UI11.ViewManager.ViewManager.instance().view(AiAssistancePanel.panelName);
           if (!view) {

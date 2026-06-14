@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AiAssistance from '../../models/ai_assistance/ai_assistance.js';
+import { getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
 import { createTarget, expectConsoleLogs, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 const { urlString } = Platform.DevToolsPath;
@@ -480,6 +485,129 @@ describeWithMockConnection('IndexedDBTreeElement live update', () => {
         model.dispatchEventToListeners(Application.IndexedDBModel.Events.DatabaseRemoved, { databaseId: db2Id, model });
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.strictEqual(indexedDBTreeElement.childCount(), 0);
+    });
+});
+describe('Ask-AI Hover Floating Button', () => {
+    setupLocaleHooks();
+    let universe;
+    let target;
+    let panel;
+    before(() => {
+        UI.ActionRegistration.registerActionExtension({
+            actionId: 'ai-assistance.storage-floating-button',
+            category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+            title: () => 'Ask Ai',
+        });
+    });
+    beforeEach(() => {
+        universe = new TestUniverse();
+        target = universe.createTarget({ url: urlString `http://example.com/` });
+        sinon.stub(target, 'inspectedURL').returns(urlString `http://example.com/`);
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
+        // Bridge legacy SDK and Settings singletons for legacy tree elements
+        const { targetManager, settings } = universe;
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(targetManager);
+        sinon.stub(Common.Settings.Settings, 'instance').returns(settings);
+        const actionRegistry = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
+        UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry });
+        panel = sinon.createStubInstance(Application.ResourcesPanel.ResourcesPanel);
+    });
+    it('adds hover Ask-AI button for DOMStorageTreeElement', () => {
+        const domStorageModel = target.model(SDK.DOMStorageModel.DOMStorageModel);
+        assert.exists(domStorageModel);
+        const domStorage = new SDK.DOMStorageModel.DOMStorage(domStorageModel, 'http://example.com/', true);
+        const treeElement = new Application.ApplicationPanelSidebar.DOMStorageTreeElement(panel, domStorage);
+        treeElement.onattach();
+        const floatingButton = treeElement.listItemElement.querySelector('devtools-floating-button');
+        assert.exists(floatingButton, 'Expected Ask-AI floating button on tree element');
+    });
+    it('adds hover Ask-AI button for CookieTreeElement', () => {
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        assert.exists(resourceTreeModel);
+        const frame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
+        frame.resourceTreeModel.returns(resourceTreeModel);
+        const cookieUrl = new Common.ParsedURL.ParsedURL('https://example.com/');
+        const treeElement = new Application.ApplicationPanelSidebar.CookieTreeElement(panel, frame, cookieUrl);
+        treeElement.onattach();
+        const floatingButton = treeElement.listItemElement.querySelector('devtools-floating-button') ||
+            treeElement.listItemElement.querySelector('button');
+        assert.exists(floatingButton, 'Expected Ask-AI floating button on tree element');
+    });
+});
+describe('Storage Agent Context Menu', () => {
+    setupLocaleHooks();
+    let universe;
+    let target;
+    let panel;
+    let actionExecutedStub;
+    before(() => {
+        actionExecutedStub = sinon.stub();
+        UI.ActionRegistration.registerActionExtension({
+            actionId: 'ai-assistance.application-panel-context',
+            category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+            title: () => 'Debug with AI',
+            contextTypes() {
+                return [AiAssistance.StorageItem.StorageItem];
+            },
+        });
+        universe = new TestUniverse();
+        target = universe.createTarget({ url: urlString `http://example.com/` });
+        panel = sinon.createStubInstance(Application.ResourcesPanel.ResourcesPanel);
+    });
+    beforeEach(() => {
+        actionExecutedStub.resetHistory();
+        sinon.stub(target, 'inspectedURL').returns(urlString `http://example.com/`);
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(universe.targetManager);
+        sinon.stub(Common.Settings.Settings, 'instance').returns(universe.settings);
+        const actionRegistry = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
+        UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry });
+    });
+    it('populates context menu with Debug with AI submenu and expected items for DOMStorageTreeElement', () => {
+        const domStorageModel = target.model(SDK.DOMStorageModel.DOMStorageModel);
+        assert.exists(domStorageModel);
+        const domStorage = new SDK.DOMStorageModel.DOMStorage(domStorageModel, 'http://example.com/', true);
+        const treeElement = new Application.ApplicationPanelSidebar.DOMStorageTreeElement(panel, domStorage);
+        treeElement.onattach();
+        const contextMenu = getContextMenuForElement(treeElement.listItemElement);
+        const footerSection = contextMenu.footerSection();
+        const debugWithAiItemInFooter = footerSection.items.find(item => item.buildDescriptor().label === 'Debug with AI');
+        assert.exists(debugWithAiItemInFooter, 'Expected Debug with AI context menu item in footer section');
+        const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
+        assert.exists(debugWithAiItem, 'Expected Debug with AI context menu item');
+        assert.deepEqual(debugWithAiItem.subItems?.map(item => item.label), ['Start a chat', 'Explain storage']);
+        // Test primary action execution (Start a chat)
+        const startChatSubItem = debugWithAiItem.subItems?.find(item => item.label === 'Start a chat');
+        assert.exists(startChatSubItem?.id);
+        contextMenu.invokeHandler(startChatSubItem.id);
+        const flavor = UI.Context.Context.instance().flavor(AiAssistance.StorageItem.StorageItem);
+        assert.exists(flavor);
+        assert.instanceOf(flavor, AiAssistance.StorageItem.DOMStorageItem);
+        assert.strictEqual(flavor.type, 'localStorage');
+    });
+    it('populates context menu with Debug with AI submenu and expected items for CookieTreeElement', () => {
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        assert.exists(resourceTreeModel);
+        const frame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
+        frame.resourceTreeModel.returns(resourceTreeModel);
+        const cookieUrl = new Common.ParsedURL.ParsedURL('https://example.com/');
+        const treeElement = new Application.ApplicationPanelSidebar.CookieTreeElement(panel, frame, cookieUrl);
+        treeElement.onattach();
+        const contextMenu = getContextMenuForElement(treeElement.listItemElement);
+        const footerSection = contextMenu.footerSection();
+        const debugWithAiItemInFooter = footerSection.items.find(item => item.buildDescriptor().label === 'Debug with AI');
+        assert.exists(debugWithAiItemInFooter, 'Expected Debug with AI context menu item in footer section');
+        const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
+        assert.exists(debugWithAiItem, 'Expected Debug with AI context menu item');
+        assert.deepEqual(debugWithAiItem.subItems?.map(item => item.label), ['Start a chat', 'Explain cookies']);
+        // Test secondary action execution (Explain cookies)
+        const explainCookiesSubItem = debugWithAiItem.subItems?.find(item => item.label === 'Explain cookies');
+        assert.exists(explainCookiesSubItem?.id);
+        contextMenu.invokeHandler(explainCookiesSubItem.id);
+        const flavor = UI.Context.Context.instance().flavor(AiAssistance.StorageItem.StorageItem);
+        assert.exists(flavor);
+        assert.instanceOf(flavor, AiAssistance.StorageItem.CookieItem);
+        assert.strictEqual(flavor.origin, 'https://example.com');
     });
 });
 //# sourceMappingURL=ApplicationPanelSidebar.test.js.map

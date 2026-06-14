@@ -1,3 +1,4 @@
+import '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components/components.js';
 import { StorageItemsToolbar } from './StorageItemsToolbar.js';
@@ -23,6 +24,12 @@ export interface ViewInput {
     onDeleteAll: () => void;
     jslog?: string;
     classes?: string[];
+    aiButtonTitle?: string;
+    showAiButton?: boolean;
+    onAiButtonClick?: (item: {
+        key: string;
+        value: string;
+    }, event: Event) => void;
 }
 interface ViewOutput {
     toolbar: StorageItemsToolbar;
@@ -38,6 +45,7 @@ export declare abstract class KeyValueStorageItemsView extends UI.Widget.VBox {
     constructor(title: string, id: string, editable: boolean, view?: View, metadataView?: ApplicationComponents.StorageMetadataView.StorageMetadataView, jslog?: string, classes?: string[]);
     wasShown(): void;
     performUpdate(): void;
+    protected isAiButtonEnabled(): boolean;
     protected get toolbar(): StorageItemsToolbar | undefined;
     refreshItems(): void;
     deleteAllItems(): void;

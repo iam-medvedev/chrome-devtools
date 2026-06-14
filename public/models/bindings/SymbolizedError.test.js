@@ -5,6 +5,7 @@ import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as StackTrace from '../stack_trace/stack_trace.js';
 import * as Bindings from './bindings.js';
@@ -142,6 +143,7 @@ describe('SymbolizedError', () => {
             type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
             subtype: "error" /* Protocol.Runtime.RemoteObjectSubtype.Error */,
             className: 'SyntaxError',
+            description: 'SyntaxError: Unexpected token',
             objectId: '1',
         });
         sinon.stub(errorRemoteObject, 'getAllProperties').resolves({ properties: [], internalProperties: [] });
@@ -157,7 +159,7 @@ describe('SymbolizedError', () => {
             return liveLocation;
         });
         const symbolizedError = await universe.debuggerWorkspaceBinding.createSymbolizedError(errorRemoteObject, exceptionDetails);
-        assert.instanceOf(symbolizedError, Bindings.SymbolizedError.SymbolizedSyntaxError);
+        assert.instanceOf(symbolizedError, Bindings.SymbolizedError.SymbolizedErrorObject);
         assert.strictEqual(symbolizedError.message, 'SyntaxError: Unexpected token');
     });
     it('returns null for a basic string RemoteObject', async () => {
@@ -362,8 +364,8 @@ describe('SymbolizedError', () => {
         symbolizedError.cause?.dispatchEventToListeners("UPDATED" /* Bindings.SymbolizedError.Events.UPDATED */);
         sinon.assert.notCalled(listener);
     });
-    describe('SymbolizedSyntaxError', () => {
-        it('can create a SymbolizedSyntaxError from exception details', async () => {
+    describe('SymbolizedErrorObject.createForSyntaxError', () => {
+        it('can create a SymbolizedErrorObject with syntaxErrorLocation from exception details', async () => {
             const target = universe.createTarget({});
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             assert.exists(debuggerModel);
@@ -389,10 +391,12 @@ describe('SymbolizedError', () => {
                 await updateDelegate(liveLocation);
                 return liveLocation;
             });
-            const symbolizedError = await Bindings.SymbolizedError.SymbolizedSyntaxError.fromExceptionDetails(target, universe.debuggerWorkspaceBinding, exceptionDetails);
-            assert.instanceOf(symbolizedError, Bindings.SymbolizedError.SymbolizedSyntaxError);
+            const stackTrace = StubStackTrace.create([]);
+            const message = 'SyntaxError: Unexpected token';
+            const cause = null;
+            const symbolizedError = await Bindings.SymbolizedError.SymbolizedErrorObject.createForSyntaxError(target, universe.debuggerWorkspaceBinding, message, exceptionDetails, stackTrace, cause);
             assert.strictEqual(symbolizedError.message, 'SyntaxError: Unexpected token');
-            assert.strictEqual(symbolizedError.uiLocation, uiLocation);
+            assert.strictEqual(symbolizedError.syntaxErrorLocation, uiLocation);
             sinon.assert.calledOnce(createLiveLocationStub);
         });
         it('throws if the exception is not a SyntaxError', async () => {
@@ -403,17 +407,18 @@ describe('SymbolizedError', () => {
                     className: 'TypeError',
                 },
             };
+            const stackTrace = StubStackTrace.create([]);
             let error = null;
             try {
-                await Bindings.SymbolizedError.SymbolizedSyntaxError.fromExceptionDetails(target, universe.debuggerWorkspaceBinding, exceptionDetails);
+                await Bindings.SymbolizedError.SymbolizedErrorObject.createForSyntaxError(target, universe.debuggerWorkspaceBinding, '', exceptionDetails, stackTrace, null);
             }
             catch (e) {
                 error = e;
             }
             assert.exists(error);
-            assert.strictEqual(error?.message, 'SymbolizedSyntaxError.fromExceptionDetails expects a SyntaxError');
+            assert.strictEqual(error?.message, 'SymbolizedErrorObject.createForSyntaxError expects a SyntaxError');
         });
-        it('returns null if scriptId is missing', async () => {
+        it('does not create live location if scriptId is missing', async () => {
             const target = universe.createTarget({});
             const exceptionDetails = {
                 exception: {
@@ -421,8 +426,11 @@ describe('SymbolizedError', () => {
                     className: 'SyntaxError',
                 },
             };
-            const result = await Bindings.SymbolizedError.SymbolizedSyntaxError.fromExceptionDetails(target, universe.debuggerWorkspaceBinding, exceptionDetails);
-            assert.isNull(result);
+            const stackTrace = StubStackTrace.create([]);
+            const createLiveLocationSpy = sinon.spy(universe.debuggerWorkspaceBinding, 'createLiveLocation');
+            const result = await Bindings.SymbolizedError.SymbolizedErrorObject.createForSyntaxError(target, universe.debuggerWorkspaceBinding, '', exceptionDetails, stackTrace, null);
+            assert.isNull(result.syntaxErrorLocation);
+            sinon.assert.notCalled(createLiveLocationSpy);
         });
         it('emits UPDATED when the live location updates', async () => {
             const target = universe.createTarget({});
@@ -451,14 +459,31 @@ describe('SymbolizedError', () => {
                 await updateDelegate(liveLocation);
                 return liveLocation;
             });
-            const symbolizedError = await Bindings.SymbolizedError.SymbolizedSyntaxError.fromExceptionDetails(target, universe.debuggerWorkspaceBinding, exceptionDetails);
-            assert.instanceOf(symbolizedError, Bindings.SymbolizedError.SymbolizedSyntaxError);
+            const stackTrace = StubStackTrace.create([]);
+            const message = 'SyntaxError: Unexpected token';
+            const symbolizedError = await Bindings.SymbolizedError.SymbolizedErrorObject.createForSyntaxError(target, universe.debuggerWorkspaceBinding, message, exceptionDetails, stackTrace, null);
             const updatedListener = sinon.stub();
             symbolizedError.addEventListener("UPDATED" /* Bindings.SymbolizedError.Events.UPDATED */, updatedListener);
             assert.exists(updateDelegateCallback);
             await updateDelegateCallback(liveLocation);
             sinon.assert.calledOnce(updatedListener);
         });
+    });
+    it('returns a SymbolizedErrorObject for a programmatic SyntaxError without exceptionDetails', async () => {
+        const target = universe.createTarget({});
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        assert.exists(runtimeModel);
+        const errorRemoteObject = runtimeModel.createRemoteObject({
+            type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+            subtype: "error" /* Protocol.Runtime.RemoteObjectSubtype.Error */,
+            className: 'SyntaxError',
+            description: 'SyntaxError: programmatic error\n    at http://example.com/script.js:10:5',
+            objectId: '1',
+        });
+        sinon.stub(errorRemoteObject, 'getAllProperties').resolves({ properties: [], internalProperties: [] });
+        const symbolizedError = await universe.debuggerWorkspaceBinding.createSymbolizedError(errorRemoteObject);
+        assert.instanceOf(symbolizedError, Bindings.SymbolizedError.SymbolizedErrorObject);
+        assert.strictEqual(symbolizedError.message, 'SyntaxError: programmatic error');
     });
 });
 //# sourceMappingURL=SymbolizedError.test.js.map

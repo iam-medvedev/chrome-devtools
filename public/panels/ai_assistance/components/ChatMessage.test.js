@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
@@ -11,6 +11,7 @@ import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../te
 import { makeFakeParsedTrace, microsecondsTraceWindow } from '../../../testing/TraceHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
+import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('ChatMessage', () => {
     function createComponent(props = {}) {
@@ -342,13 +343,13 @@ describeWithEnvironment('ChatMessage', () => {
         });
         sinon.assert.callCount(view, 1);
         {
-            expect(view.input.showRateButtons).equals(true);
-            expect(view.input.isShowingFeedbackForm).equals(false);
+            assert.isTrue(view.input.showRateButtons);
+            assert.isFalse(view.input.isShowingFeedbackForm);
             view.input.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
         sinon.assert.callCount(view, 2);
         {
-            expect(view.input.isShowingFeedbackForm).equals(true);
+            assert.isTrue(view.input.isShowingFeedbackForm);
         }
     });
     it('should not show the feedback form when canShowFeedbackForm is false', async () => {
@@ -357,12 +358,12 @@ describeWithEnvironment('ChatMessage', () => {
         });
         sinon.assert.callCount(view, 1);
         {
-            expect(view.input.isShowingFeedbackForm).equals(false);
+            assert.isFalse(view.input.isShowingFeedbackForm);
             view.input.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
         sinon.assert.callCount(view, 2);
         {
-            expect(view.input.isShowingFeedbackForm).equals(false);
+            assert.isFalse(view.input.isShowingFeedbackForm);
         }
     });
     it('should disable the submit button when the input is empty', async () => {
@@ -371,20 +372,20 @@ describeWithEnvironment('ChatMessage', () => {
         });
         sinon.assert.callCount(view, 1);
         {
-            expect(view.input.isSubmitButtonDisabled).equals(true);
+            assert.isTrue(view.input.isSubmitButtonDisabled);
             view.input.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
         sinon.assert.callCount(view, 2);
         {
-            expect(view.input.isShowingFeedbackForm).equals(true);
+            assert.isTrue(view.input.isShowingFeedbackForm);
             view.input.onInputChange('test');
         }
         {
-            expect(view.input.isSubmitButtonDisabled).equals(false);
+            assert.isFalse(view.input.isSubmitButtonDisabled);
             view.input.onSubmit(new SubmitEvent('submit'));
         }
         {
-            expect(view.input.isSubmitButtonDisabled).equals(true);
+            assert.isTrue(view.input.isSubmitButtonDisabled);
         }
     });
     it('shows no rate buttons when rpcId is not present', async () => {
@@ -396,7 +397,7 @@ describeWithEnvironment('ChatMessage', () => {
             },
         });
         sinon.assert.callCount(view, 1);
-        expect(view.input.showRateButtons).equals(false);
+        assert.isFalse(view.input.showRateButtons);
     });
     it('should show actions when it is not the last message and it is loading', async () => {
         const [view] = createComponent({
@@ -404,7 +405,7 @@ describeWithEnvironment('ChatMessage', () => {
             isLastMessage: false,
         });
         sinon.assert.callCount(view, 1);
-        expect(view.input.showActions).equals(true);
+        assert.isTrue(view.input.showActions);
     });
     it('should not show actions when it is the last message and it is loading', async () => {
         const [view] = createComponent({
@@ -412,7 +413,7 @@ describeWithEnvironment('ChatMessage', () => {
             isLastMessage: true,
         });
         sinon.assert.callCount(view, 1);
-        expect(view.input.showActions).equals(false);
+        assert.isFalse(view.input.showActions);
     });
     it('should not show suggestions when it is not the last message', async () => {
         const [view] = createComponent({
@@ -431,7 +432,7 @@ describeWithEnvironment('ChatMessage', () => {
             isLastMessage: false,
         });
         sinon.assert.callCount(view, 1);
-        expect(view.input.suggestions).equals(undefined);
+        assert.isUndefined(view.input.suggestions);
     });
     it('should show suggestions when it is the last message', async () => {
         const [view] = createComponent({
@@ -450,7 +451,7 @@ describeWithEnvironment('ChatMessage', () => {
             isLastMessage: true,
         });
         sinon.assert.callCount(view, 1);
-        expect(view.input.suggestions).deep.equals(['suggestion']);
+        assert.deepEqual(view.input.suggestions, ['suggestion']);
     });
     describe('Walkthrough Rendering', () => {
         beforeEach(() => {
@@ -1261,6 +1262,132 @@ describeWithEnvironment('ChatMessage', () => {
             // Verify that the remaining 2 files are nested inside details and have the "collapsed-file" class.
             const innerListItems = details?.querySelectorAll('.collapsed-file');
             assert.lengthOf(innerListItems ?? [], 2);
+        });
+        it('renders NETWORK_REQUESTS_LIST widget with less than 15 requests, not showing the expand button', async () => {
+            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
+            function createMockRequest(id) {
+                return {
+                    requestId: () => id,
+                    name: () => id,
+                    statusCode: 200,
+                    mimeType: 'text/html',
+                    transferSize: 1000,
+                    duration: 1,
+                };
+            }
+            const requests = [createMockRequest('req1'), createMockRequest('req2')];
+            const message = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'widget',
+                        widgets: [{
+                                name: 'NETWORK_REQUESTS_LIST',
+                                data: {
+                                    requests,
+                                },
+                            }],
+                    }],
+                rpcId: 99,
+                id: '1',
+            };
+            const targetElement = renderView({ message });
+            const widgetHeader = await waitFor('.widget-header', targetElement);
+            assert.isNotNull(widgetHeader);
+            assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'Network requests');
+            const widgetContainer = await waitFor('.network-requests-widget', targetElement);
+            assert.isNotNull(widgetContainer);
+            // Verify headers
+            const headers = Array.from(widgetContainer.querySelectorAll('table th')).map(th => th.id);
+            assert.deepEqual(headers, ['name', 'status', 'size', 'time']);
+            // Verify that all requests are displayed (table has 1 header row + 2 data rows = 3 rows)
+            const rows = widgetContainer.querySelectorAll('table tr');
+            assert.lengthOf(rows, 3);
+            // Verify that the expand button does NOT exist
+            const expandButton = widgetContainer.querySelector('button.show-all-widget-requests-button');
+            assert.isNull(expandButton);
+        });
+        it('renders NETWORK_REQUESTS_LIST widget with more than 15 requests, showing the expand button', async () => {
+            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
+            function createMockRequest(id) {
+                return {
+                    requestId: () => id,
+                    name: () => id,
+                    statusCode: 200,
+                    mimeType: 'text/html',
+                    transferSize: 1000,
+                    duration: 1,
+                };
+            }
+            const requests = Array.from({ length: 17 }, (_, i) => createMockRequest(`req${i + 1}`));
+            const message = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'widget',
+                        widgets: [{
+                                name: 'NETWORK_REQUESTS_LIST',
+                                data: {
+                                    requests,
+                                },
+                            }],
+                    }],
+                rpcId: 99,
+                id: '1',
+            };
+            const targetElement = renderView({ message });
+            const widgetHeader = await waitFor('.widget-header', targetElement);
+            assert.isNotNull(widgetHeader);
+            assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'Network requests');
+            const widgetContainer = await waitFor('.network-requests-widget', targetElement);
+            assert.isNotNull(widgetContainer);
+            // Verify headers
+            const headers = Array.from(widgetContainer.querySelectorAll('table th')).map(th => th.id);
+            assert.deepEqual(headers, ['name', 'status', 'size', 'time']);
+            // Verify that only the first 15 requests are displayed (table has 1 header row + 15 data rows = 16 rows)
+            const rowsBefore = widgetContainer.querySelectorAll('table tr');
+            assert.lengthOf(rowsBefore, 16);
+            // Verify that the expand button exists and has the correct text
+            const expandButton = querySelectorErrorOnMissing(widgetContainer, 'button.show-all-widget-requests-button');
+            assert.strictEqual(expandButton.textContent?.trim(), 'Show all 17 network requests');
+        });
+        it('shows a snackbar with the error message when reveal fails', async () => {
+            updateHostConfig({ devToolsAiAssistanceV2: { enabled: true } });
+            const root = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
+            const domModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
+            const target = sinon.createStubInstance(SDK.Target.Target);
+            root.domModel.returns(domModel);
+            domModel.target.returns(target);
+            root.backendNodeId.returns(1);
+            const messageWithNamedWidget = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [{
+                        type: 'widget',
+                        widgets: [{
+                                name: 'DOM_TREE',
+                                data: {
+                                    root,
+                                },
+                            }],
+                    }],
+                rpcId: 99,
+                id: '1',
+            };
+            const targetElement = renderView({
+                message: messageWithNamedWidget,
+            });
+            const widgetHeader = await waitFor('.widget-header', targetElement);
+            assert.isNotNull(widgetHeader);
+            const revealBtn = querySelectorErrorOnMissing(widgetHeader, 'devtools-button.widget-reveal-button');
+            const revealError = new Error('Node cannot be found in the current page.');
+            const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').rejects(revealError);
+            const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
+            revealBtn.click();
+            // Since it's async, we need to wait for the promise microtask queue to drain
+            await new Promise(resolve => setTimeout(resolve, 0));
+            sinon.assert.calledOnceWithExactly(snackbarShowStub, {
+                message: 'Node cannot be found in the current page.',
+            });
+            revealStub.restore();
+            snackbarShowStub.restore();
         });
     });
 });

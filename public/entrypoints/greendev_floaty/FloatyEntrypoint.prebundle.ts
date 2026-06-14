@@ -41,7 +41,7 @@ class GreenDevFloaty {
   #playButton!: HTMLButtonElement;
   #node?: SDK.DOMModel.DOMNode;
   #agent?: AiAssistance.GreenDevAgent.GreenDevAgent|AiAssistance.StylingAgent.StylingAgent;
-  #nodeContext?: AiAssistance.StylingAgent.NodeContext;
+  #nodeContext?: AiAssistance.DOMNodeContext.DOMNodeContext;
   #backendNodeId?: Protocol.DOM.BackendNodeId;
   #syncChannel: BroadcastChannel;
   #isFloatyWindow: boolean;
@@ -341,7 +341,7 @@ class GreenDevFloaty {
             });
       } else {
         this.#agent = new AiAssistance.StylingAgent.StylingAgent({aidaClient});
-        this.#nodeContext = new AiAssistance.StylingAgent.NodeContext(this.#node);
+        this.#nodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(this.#node);
       }
     }
 
@@ -428,7 +428,8 @@ class GreenDevFloaty {
             'Could not get the backendNodeId for the selected element.';
 
         // --- Get some context information about the selected node ---
-        const elementContext = await AiAssistance.StylingAgent.StylingAgent.describeElement(this.#node);
+        const domNodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(this.#node);
+        const elementContext = await domNodeContext.describe();
 
         // Now construct the full context.
         const context = `# Page URL
@@ -592,8 +593,6 @@ async function init(): Promise<void> {
 
     safeRegisterExperiment(
         Root.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, 'Enable instrumentation breakpoints');
-    safeRegisterExperiment(
-        Root.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, 'Use scope information from source maps');
     safeRegisterExperiment(Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, 'Protocol Monitor');
 
     const hostUnsyncedStorage: Common.Settings.SettingsBackingStore = {

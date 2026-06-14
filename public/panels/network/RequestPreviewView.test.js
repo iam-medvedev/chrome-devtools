@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -32,8 +32,8 @@ describe('RequestPreviewView', () => {
         const component = renderPreviewView(request);
         const widget = await component.showPreview();
         const frame = widget.contentElement.querySelector('iframe');
-        expect(frame).to.be.not.null;
-        expect(frame?.getAttribute('csp')).to.eql('default-src \'none\';img-src data:;style-src \'unsafe-inline\'');
+        assert.isNotNull(frame);
+        assert.strictEqual(frame?.getAttribute('csp'), 'default-src \'none\';img-src data:;style-src \'unsafe-inline\'');
         component.detach();
     });
     it('does add utf-8 charset to the data URL for the HTML preview for already decoded content', async () => {

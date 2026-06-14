@@ -13,9 +13,10 @@ import { FileAgent, FileContext } from './agents/FileAgent.js';
 import { NetworkAgent, RequestContext } from './agents/NetworkAgent.js';
 import { PerformanceAgent, PerformanceTraceContext } from './agents/PerformanceAgent.js';
 import { StorageAgent, StorageContext } from './agents/StorageAgent.js';
-import { NodeContext, StylingAgent } from './agents/StylingAgent.js';
+import { StylingAgent } from './agents/StylingAgent.js';
 import { AiAgent2 } from './AiAgent2.js';
 import { AiHistoryStorage } from './AiHistoryStorage.js';
+import { DOMNodeContext } from './contexts/DOMNodeContext.js';
 export const NOT_FOUND_IMAGE_DATA = '';
 export const CONTEXT_TITLE = 'Analyzing data';
 const MAX_TITLE_LENGTH = 80;
@@ -120,7 +121,7 @@ export class AiConversation {
             if (updateContext instanceof FileContext) {
                 this.#updateAgent("drjones-file" /* ConversationType.FILE */);
             }
-            else if (updateContext instanceof NodeContext) {
+            else if (updateContext instanceof DOMNodeContext) {
                 this.#updateAgent("freestyler" /* ConversationType.STYLING */);
             }
             else if (updateContext instanceof RequestContext) {
@@ -260,21 +261,24 @@ export class AiConversation {
             isExternal: this.#isExternal,
         };
     }
-    #updateAgent(type) {
-        if (this.#type === type) {
-            return;
-        }
-        this.#type = type;
-        // We need to filter out the function calls
-        // as the LLM tries to call the existing ones.
-        const history = this.#agent?.history
+    #filterHistoryForNewAgent() {
+        return this.#agent?.history
             .map(content => {
             return {
                 ...content,
                 parts: content.parts.filter(part => !('functionCall' in part) && !('functionResponse' in part)),
             };
         })
-            .filter(content => content.parts.length > 0);
+            .filter(content => content.parts.length > 0) ??
+            [];
+    }
+    #updateAgent(type) {
+        if (this.#type === type) {
+            return;
+        }
+        const isTransitioningFromStorage = this.#type === "storage" /* ConversationType.STORAGE */ && type !== "storage" /* ConversationType.STORAGE */;
+        const history = isTransitioningFromStorage ? [] : this.#filterHistoryForNewAgent();
+        this.#type = type;
         const options = {
             aidaClient: this.#aidaClient,
             serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled(),

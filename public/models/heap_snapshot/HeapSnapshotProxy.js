@@ -176,8 +176,6 @@ export class HeapSnapshotLoaderProxy extends HeapSnapshotProxyObject {
         const snapshotProxy = await this.callFactoryMethodPromise('buildSnapshot', HeapSnapshotProxy, [channel.port1]);
         secondWorker.dispose();
         this.dispose();
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // @ts-expect-error
         snapshotProxy.setProfileUid(this.profileUid);
         await snapshotProxy.updateStaticData();
         this.snapshotReceivedCallback(snapshotProxy);
@@ -207,6 +205,9 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     }
     nodeClassKey(snapshotObjectId) {
         return this.callMethodPromise('nodeClassKey', snapshotObjectId);
+    }
+    nodeIndexForId(nodeId) {
+        return this.callMethodPromise('nodeIndexForId', nodeId);
     }
     createEdgesProvider(nodeIndex) {
         return this.callFactoryMethod('createEdgesProvider', HeapSnapshotProviderProxy, nodeIndex);
@@ -267,6 +268,9 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     }
     getRetainingPaths(nodeIndex, maxDepth, maxNodes, maxSiblings) {
         return this.callMethodPromise('getRetainingPaths', nodeIndex, maxDepth, maxNodes, maxSiblings);
+    }
+    getDominatorsOf(nodeIndex) {
+        return this.callMethodPromise('getDominatorsOf', nodeIndex);
     }
     unignoreNodeInRetainersView(nodeIndex) {
         return this.callMethodPromise('unignoreNodeInRetainersView', nodeIndex);

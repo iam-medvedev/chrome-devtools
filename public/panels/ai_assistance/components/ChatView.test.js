@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import { cleanup, initializePersistenceImplForTests, setupAutomaticFileSystem } from '../../../testing/AiAssistanceHelpers.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
@@ -19,8 +20,11 @@ describeWithEnvironment('ChatView', () => {
     function getProp(options) {
         const noop = () => { };
         const messages = options.messages ?? [];
-        const context = sinon.createStubInstance(AiAssistanceModel.StylingAgent.NodeContext);
+        const context = sinon.createStubInstance(AiAssistanceModel.DOMNodeContext.DOMNodeContext);
         context.getTitle.returns('');
+        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        node.classNames.returns([]);
+        context.getItem.returns(node);
         return {
             onTextSubmit: noop,
             onInspectElementClick: noop,

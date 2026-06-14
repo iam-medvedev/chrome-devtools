@@ -94,7 +94,7 @@ describeWithMockConnection('NetworkLogView', () => {
             ],
         });
         const actual = await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix');
-        const expected = 'curl \'http://localhost\' \\\n  -H \'header-with-value: some value\' \\\n  -H \'no-value-header;\'';
+        const expected = 'curl --url \'http://localhost\' \\\n  -H \'header-with-value: some value\' \\\n  -H \'no-value-header;\'';
         assert.strictEqual(actual, expected);
     });
     // Note this isn't an ideal test as the internal headers are generated rather than explicitly added,
@@ -107,78 +107,78 @@ describeWithMockConnection('NetworkLogView', () => {
             ],
         });
         const actual = await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix');
-        const expected = 'curl \'http://localhost\'';
+        const expected = 'curl --url \'http://localhost\'';
         assert.strictEqual(actual, expected);
     });
     it('generates a valid curl command when header values contain double quotes', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'eva="Sg4="' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b \'eva=\"Sg4=\"\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -b ^"eva=^\\^"Sg4=^\\^"^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b \'eva=\"Sg4=\"\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" -b ^"eva=^\\^"Sg4=^\\^"^"');
     });
     it('generates a valid curl command for nameless cookies without an equal sign', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'namelesscookie' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -H \'cookie: namelesscookie\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -H ^"cookie: namelesscookie^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -H \'cookie: namelesscookie\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" -H ^"cookie: namelesscookie^"');
     });
     it('generates a valid curl command using -b for cookies with an equal sign', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'name=value' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b \'name=value\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -b ^"name=value^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b \'name=value\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" -b ^"name=value^"');
     });
     it('generates a valid curl command using -b for nameless cookies containing an equal sign', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: '\\\\attacker.com\\share\\leak=foo' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b \'\\\\attacker.com\\share\\leak=foo\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -b ^"^\\^\\^\\^\\attacker.com^\\^\\share^\\^\\leak=foo^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b \'\\\\attacker.com\\share\\leak=foo\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" -b ^"^\\^\\^\\^\\attacker.com^\\^\\share^\\^\\leak=foo^"');
     });
     it('generates a valid curl command when header values contain percentages', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'eva=%22Sg4%3D%22' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b \'eva=%22Sg4%3D%22\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -b ^"eva=^%^22Sg4^%^3D^%^22^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b \'eva=%22Sg4%3D%22\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" -b ^"eva=^%^22Sg4^%^3D^%^22^"');
     });
     it('generates a valid curl command when header values contain newline and ampersand', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'query=evil\n\n & cmd /c calc.exe \n\n' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b $\'query=evil\\n\\n & cmd /c calc.exe \\n\\n\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^\"http://localhost^\" -b ^\"query=evil^\n\n^\n\n ^& cmd /c calc.exe ^\n\n^\n\n^\"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b $\'query=evil\\n\\n & cmd /c calc.exe \\n\\n\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^\"http://localhost^\" -b ^\"query=evil^\n\n^\n\n ^& cmd /c calc.exe ^\n\n^\n\n^\"');
     });
     it('generates a valid curl command when header values contain CRLF', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'query=evil\r\n & cmd /c calc.exe \n\n' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b $\'query=evil\\r\\n & cmd /c calc.exe \\n\\n\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^\"http://localhost^\" -b ^\"query=evil^\n\n ^& cmd /c calc.exe ^\n\n^\n\n^\"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b $\'query=evil\\r\\n & cmd /c calc.exe \\n\\n\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^\"http://localhost^\" -b ^\"query=evil^\n\n ^& cmd /c calc.exe ^\n\n^\n\n^\"');
     });
     it('generates a valid curl command when header values contain tabs or form feed', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'query=evil\t\v\f\r\n & cmd /c calc.exe \n\n' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b $\'query=evil\\u0009\\u000b\\u000c\\r\\n & cmd /c calc.exe \\n\\n\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^\"http://localhost^\" -b ^\"query=evil   ^\n\n ^& cmd /c calc.exe ^\n\n^\n\n^\"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b $\'query=evil\\u0009\\u000b\\u000c\\r\\n & cmd /c calc.exe \\n\\n\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^\"http://localhost^\" -b ^\"query=evil   ^\n\n ^& cmd /c calc.exe ^\n\n^\n\n^\"');
     });
     it('generates a valid curl command when header values contain CR only', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
             requestHeaders: [{ name: 'cookie', value: 'query=evil\r & cmd /c calc.exe' }],
         });
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b $\'query=evil\\r & cmd /c calc.exe\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^\"http://localhost^\" -b ^\"query=evil^\n\n ^& cmd /c calc.exe^\"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b $\'query=evil\\r & cmd /c calc.exe\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^\"http://localhost^\" -b ^\"query=evil^\n\n ^& cmd /c calc.exe^\"');
     });
     it('generates a valid curl command for a POST request with data', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {});
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '123');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' --data-raw \'123\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" --data-raw ^"123^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' --data-raw \'123\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" --data-raw ^"123^"');
     });
     it('generates a valid curl command for a POST request with urlencoded data', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
@@ -186,8 +186,8 @@ describeWithMockConnection('NetworkLogView', () => {
         });
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '1&b');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' \\\n  -H \'Content-Type: application/x-www-form-urlencoded\' \\\n  --data-raw \'1&b\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" ^\n  -H ^"Content-Type: application/x-www-form-urlencoded^" ^\n  --data-raw ^"1^&b^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' \\\n  -H \'Content-Type: application/x-www-form-urlencoded\' \\\n  --data-raw \'1&b\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/x-www-form-urlencoded^" ^\n  --data-raw ^"1^&b^"');
     });
     it('generates a valid curl command for a POST request with JSON data', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
@@ -195,8 +195,8 @@ describeWithMockConnection('NetworkLogView', () => {
         });
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '{"a":1}');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' \\\n  -H \'Content-Type: application/json\' \\\n  --data-raw \'{"a":1}\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" ^\n  -H ^"Content-Type: application/json^" ^\n  --data-raw ^"^{^\\^"a^\\^":1^}^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' \\\n  -H \'Content-Type: application/json\' \\\n  --data-raw \'{"a":1}\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/json^" ^\n  --data-raw ^"^{^\\^"a^\\^":1^}^"');
     });
     it('generates a valid curl command for a POST request with binary data', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
@@ -204,8 +204,8 @@ describeWithMockConnection('NetworkLogView', () => {
         });
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '1234\r\n00\x02\x03\x04\x05\'"!');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' \\\n  -H \'Content-Type: application/binary\' \\\n  --data-raw $\'1234\\r\\n00\\u0002\\u0003\\u0004\\u0005\\\'"\\u0021\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"1234^\n\n00^ ^ ^ ^ \'^\\^"^!^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' \\\n  -H \'Content-Type: application/binary\' \\\n  --data-raw $\'1234\\r\\n00\\u0002\\u0003\\u0004\\u0005\\\'"\\u0021\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"1234^\n\n00^ ^ ^ ^ \'^\\^"^!^"');
     });
     it('generates a valid curl command for a POST request with binary data containing %', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
@@ -213,13 +213,18 @@ describeWithMockConnection('NetworkLogView', () => {
         });
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '%OS%\\r\\n%%OS%%\\r\\n"\\\\"\'$&!');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' \\\n  -H \'Content-Type: application/binary\' \\\n  --data-raw $\'%OS%\\\\r\\\\n%%OS%%\\\\r\\\\n"\\\\\\\\"\\\'$&\\u0021\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"^%^OS^%^\\^\\r^\\^\\n^%^%^OS^%^%^\\^\\r^\\^\\n^\\^"^\\^\\^\\^\\^\\^"\'^$^&^!^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' \\\n  -H \'Content-Type: application/binary\' \\\n  --data-raw $\'%OS%\\\\r\\\\n%%OS%%\\\\r\\\\n"\\\\\\\\"\\\'$&\\u0021\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"^%^OS^%^\\^\\r^\\^\\n^%^%^OS^%^%^\\^\\r^\\^\\n^\\^"^\\^\\^\\^\\^\\^"\'^$^&^!^"');
     });
     it('generates a valid curl command for a URL with special characters', async () => {
         const request = createNetworkRequest(urlString `http://example.com/?a=[]{}`, {});
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://example.com/?a=\\[\\]\\{\\}\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://example.com/?a=^\\[^\\]^\\{^\\}^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://example.com/?a=\\[\\]\\{\\}\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://example.com/?a=^\\[^\\]^\\{^\\}^"');
+    });
+    it('returns unsupported URL scheme for a URL starting with a dash', async () => {
+        const request = createNetworkRequest(urlString `-http://example.com/`, {});
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), '# Unsupported URL scheme');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), '# Unsupported URL scheme');
     });
     it('generates a valid curl command stripping pseudo-headers', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
@@ -229,14 +234,14 @@ describeWithMockConnection('NetworkLogView', () => {
             ],
         });
         const actual = await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix');
-        const expected = 'curl \'http://localhost\'';
+        const expected = 'curl --url \'http://localhost\'';
         assert.strictEqual(actual, expected);
     });
     it('generates a curl command with an unescaped method', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {});
         request.requestMethod = '|evilcommand|';
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -X \'|evilcommand|\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^"http://localhost^" -X ^"^|evilcommand^|^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -X \'|evilcommand|\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" -X ^"^|evilcommand^|^"');
     });
     it('generates a valid curl command for urlencoded data starting with @', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
@@ -244,8 +249,8 @@ describeWithMockConnection('NetworkLogView', () => {
         });
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '@/etc/passwd');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' \\\n  -H \'Content-Type: application/x-www-form-urlencoded\' \\\n  --data-raw \'@/etc/passwd\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^\"http://localhost^\" ^\n  -H ^\"Content-Type: application/x-www-form-urlencoded^\" ^\n  --data-raw ^\"^@/etc/passwd^\"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' \\\n  -H \'Content-Type: application/x-www-form-urlencoded\' \\\n  --data-raw \'@/etc/passwd\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^\"http://localhost^\" ^\n  -H ^\"Content-Type: application/x-www-form-urlencoded^\" ^\n  --data-raw ^\"^@/etc/passwd^\"');
     });
     const tests = (inScope) => () => {
         beforeEach(() => {
@@ -539,10 +544,10 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.strictEqual((networkColumnWidget).showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
     });
     function createOverrideRequests() {
-        const urlNotOverridden = urlString `url-not-overridden`;
-        const urlHeaderOverridden = urlString `url-header-overridden`;
-        const urlContentOverridden = urlString `url-content-overridden`;
-        const urlHeaderAndContentOverridden = urlString `url-header-und-content-overridden`;
+        const urlNotOverridden = urlString `https://url-not-overridden`;
+        const urlHeaderOverridden = urlString `https://url-header-overridden`;
+        const urlContentOverridden = urlString `https://url-content-overridden`;
+        const urlHeaderAndContentOverridden = urlString `https://url-header-and-content-overridden`;
         createNetworkRequest(urlNotOverridden, { target });
         const r2 = createNetworkRequest(urlHeaderOverridden, { target });
         const r3 = createNetworkRequest(urlContentOverridden, { target });
@@ -696,29 +701,29 @@ describeWithMockConnection('NetworkLogView', () => {
         contextMenu.invokeHandler(copyAllURLs.id());
         await expectCalled(copyText);
         sinon.assert.callCount(copyText, 1);
-        assert.deepEqual(copyText.lastCall.args, [`url-header-overridden
-url-header-und-content-overridden`]);
+        assert.deepEqual(copyText.lastCall.args, [`https://url-header-overridden
+https://url-header-and-content-overridden`]);
         copyText.resetHistory();
         const copyAllCurlCommands = findMenuItemWithLabel(footerSection, Host.Platform.isWin() ? 'Copy all listed as cURL (bash)' : 'Copy all listed as cURL');
         assert.isDefined(copyAllCurlCommands);
         contextMenu.invokeHandler(copyAllCurlCommands.id());
         await expectCalled(copyText);
         sinon.assert.callCount(copyText, 1);
-        assert.deepEqual(copyText.lastCall.args, [`curl 'url-header-overridden' ;
-curl 'url-header-und-content-overridden'`]);
+        assert.deepEqual(copyText.lastCall.args, [`curl --url 'https://url-header-overridden' ;
+curl --url 'https://url-header-and-content-overridden'`]);
         copyText.resetHistory();
         const copyAllFetchCall = findMenuItemWithLabel(footerSection, 'Copy all listed as fetch');
         assert.isDefined(copyAllFetchCall);
         contextMenu.invokeHandler(copyAllFetchCall.id());
         await expectCalled(copyText);
         sinon.assert.callCount(copyText, 1);
-        assert.deepEqual(copyText.lastCall.args, [`fetch("url-header-overridden", {
+        assert.deepEqual(copyText.lastCall.args, [`fetch("https://url-header-overridden", {
   "body": null,
   "method": "GET",
   "mode": "cors",
   "credentials": "omit"
 }); ;
-fetch("url-header-und-content-overridden", {
+fetch("https://url-header-and-content-overridden", {
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -730,49 +735,49 @@ fetch("url-header-und-content-overridden", {
         contextMenu.invokeHandler(copyAllPowerShell.id());
         await expectCalled(copyText);
         sinon.assert.callCount(copyText, 1);
-        assert.deepEqual(copyText.lastCall.args, [`Invoke-WebRequest -UseBasicParsing -Uri "url-header-overridden";\r
-Invoke-WebRequest -UseBasicParsing -Uri "url-header-und-content-overridden"`]);
+        assert.deepEqual(copyText.lastCall.args, [`Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-overridden";\r
+Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridden"`]);
         // Clear network filter
         networkLogView.setTextFilterValue('');
         copyText.resetHistory();
         contextMenu.invokeHandler(copyAllURLs.id());
         await expectCalled(copyText);
         sinon.assert.callCount(copyText, 1);
-        assert.deepEqual(copyText.lastCall.args, [`url-not-overridden
-url-header-overridden
-url-content-overridden
-url-header-und-content-overridden`]);
+        assert.deepEqual(copyText.lastCall.args, [`https://url-not-overridden
+https://url-header-overridden
+https://url-content-overridden
+https://url-header-and-content-overridden`]);
         copyText.resetHistory();
         contextMenu.invokeHandler(copyAllCurlCommands.id());
         await expectCalled(copyText);
         sinon.assert.callCount(copyText, 1);
-        assert.deepEqual(copyText.lastCall.args, [`curl 'url-not-overridden' ;
-curl 'url-header-overridden' ;
-curl 'url-content-overridden' ;
-curl 'url-header-und-content-overridden'`]);
+        assert.deepEqual(copyText.lastCall.args, [`curl --url 'https://url-not-overridden' ;
+curl --url 'https://url-header-overridden' ;
+curl --url 'https://url-content-overridden' ;
+curl --url 'https://url-header-and-content-overridden'`]);
         copyText.resetHistory();
         contextMenu.invokeHandler(copyAllFetchCall.id());
         await expectCalled(copyText);
         sinon.assert.callCount(copyText, 1);
-        assert.deepEqual(copyText.lastCall.args, [`fetch("url-not-overridden", {
+        assert.deepEqual(copyText.lastCall.args, [`fetch("https://url-not-overridden", {
   "body": null,
   "method": "GET",
   "mode": "cors",
   "credentials": "omit"
 }); ;
-fetch("url-header-overridden", {
+fetch("https://url-header-overridden", {
   "body": null,
   "method": "GET",
   "mode": "cors",
   "credentials": "omit"
 }); ;
-fetch("url-content-overridden", {
+fetch("https://url-content-overridden", {
   "body": null,
   "method": "GET",
   "mode": "cors",
   "credentials": "omit"
 }); ;
-fetch("url-header-und-content-overridden", {
+fetch("https://url-header-and-content-overridden", {
   "body": null,
   "method": "GET",
   "mode": "cors",
@@ -782,10 +787,10 @@ fetch("url-header-und-content-overridden", {
         contextMenu.invokeHandler(copyAllPowerShell.id());
         await expectCalled(copyText);
         sinon.assert.callCount(copyText, 1);
-        assert.deepEqual(copyText.lastCall.args, [`Invoke-WebRequest -UseBasicParsing -Uri "url-not-overridden";\r
-Invoke-WebRequest -UseBasicParsing -Uri "url-header-overridden";\r
-Invoke-WebRequest -UseBasicParsing -Uri "url-content-overridden";\r
-Invoke-WebRequest -UseBasicParsing -Uri "url-header-und-content-overridden"`]);
+        assert.deepEqual(copyText.lastCall.args, [`Invoke-WebRequest -UseBasicParsing -Uri "https://url-not-overridden";\r
+Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-overridden";\r
+Invoke-WebRequest -UseBasicParsing -Uri "https://url-content-overridden";\r
+Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridden"`]);
         copyText.resetHistory();
     });
     it('skips unknown columns without title in persistence setting', async () => {

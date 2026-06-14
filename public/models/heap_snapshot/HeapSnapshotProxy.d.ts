@@ -51,17 +51,18 @@ export declare class HeapSnapshotLoaderProxy extends HeapSnapshotProxyObject imp
 }
 export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     staticData: HeapSnapshotModel.StaticData | null;
-    profileUid?: string;
+    profileUid?: number;
     constructor(worker: HeapSnapshotWorkerProxy, objectId: number);
     search(searchConfig: HeapSnapshotModel.SearchConfig, filter: HeapSnapshotModel.NodeFilter): Promise<number[]>;
     interfaceDefinitions(): Promise<string>;
     aggregatesWithFilter(filter: HeapSnapshotModel.NodeFilter): Promise<Record<string, HeapSnapshotModel.AggregatedInfo>>;
     aggregatesForDiff(interfaceDefinitions: string): Promise<Record<string, HeapSnapshotModel.AggregateForDiff>>;
-    calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: Record<string, HeapSnapshotModel.AggregateForDiff>): Promise<Record<string, HeapSnapshotModel.Diff>>;
+    calculateSnapshotDiff(baseSnapshotId: number, baseSnapshotAggregates: Record<string, HeapSnapshotModel.AggregateForDiff>): Promise<Record<string, HeapSnapshotModel.Diff>>;
     nodeClassKey(snapshotObjectId: number): Promise<string | null>;
+    nodeIndexForId(nodeId: number): Promise<number | undefined>;
     createEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
-    createAddedNodesProvider(baseSnapshotId: string, classKey: string): HeapSnapshotProviderProxy;
+    createAddedNodesProvider(baseSnapshotId: number, classKey: string): HeapSnapshotProviderProxy;
     createDeletedNodesProvider(nodeIndexes: number[]): HeapSnapshotProviderProxy;
     createNodesProvider(filter: (...args: any[]) => boolean): HeapSnapshotProviderProxy;
     createNodesProviderForClass(classKey: string, nodeFilter: HeapSnapshotModel.NodeFilter): HeapSnapshotProviderProxy;
@@ -77,12 +78,13 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     getSamples(): Promise<HeapSnapshotModel.Samples | null>;
     ignoreNodeInRetainersView(nodeIndex: number): Promise<void>;
     getRetainingPaths(nodeIndex: number, maxDepth?: number, maxNodes?: number, maxSiblings?: number): Promise<HeapSnapshotModel.RetainingPaths>;
+    getDominatorsOf(nodeIndex: number): Promise<HeapSnapshotModel.DominatorChain>;
     unignoreNodeInRetainersView(nodeIndex: number): Promise<void>;
     unignoreAllNodesInRetainersView(): Promise<void>;
     areNodesIgnoredInRetainersView(): Promise<boolean>;
     get totalSize(): number;
-    get uid(): string | undefined;
-    setProfileUid(profileUid: string): void;
+    get uid(): number | undefined;
+    setProfileUid(profileUid: number): void;
     maxJSObjectId(): number;
 }
 export declare class HeapSnapshotProviderProxy extends HeapSnapshotProxyObject implements ChildrenProvider {
