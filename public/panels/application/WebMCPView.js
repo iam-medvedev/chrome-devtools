@@ -847,7 +847,6 @@ export const PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
             }
             const scriptLocationLink = linkifier.linkifyScriptLocation(details.error.runtimeModel().target(), link.scriptId || null, link.url, link.lineNumber, {
                 columnNumber: link.columnNumber,
-                inlineFrameIndex: 0,
                 showColumnNumber: true,
             });
             scriptLocationLink.tabIndex = -1;

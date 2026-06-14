@@ -286,13 +286,11 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     }
     reset() {
         this.profileTypes.forEach(type => type.reset());
-        delete this.visibleView;
+        this.closeVisibleView();
         this.profileGroups = {};
         this.updateToggleRecordAction(false);
         this.launcherView.profileFinished();
         this.sidebarTree.element.classList.remove('some-expandable');
-        this.launcherView.detach();
-        this.profileViews.removeChildren();
         this.profileViewToolbar.removeToolbarItems();
         this.profilesItemTreeElement.select();
         this.showLauncherView();

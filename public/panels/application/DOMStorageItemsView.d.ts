@@ -20,6 +20,7 @@ export declare class DOMStorageItemsView extends KeyValueStorageItemsView {
         key: string;
         value: string;
     } | null): void;
+    protected isAiButtonEnabled(): boolean;
     protected removeItem(key: string): void;
     protected setItem(key: string, value: string): void;
 }

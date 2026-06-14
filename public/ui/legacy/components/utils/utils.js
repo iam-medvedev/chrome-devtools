@@ -602,7 +602,6 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       showColumnNumber: Boolean(options?.showColumnNumber),
       className: options?.className,
       tabStop: options?.tabStop,
-      inlineFrameIndex: options?.inlineFrameIndex ?? 0,
       userMetric: options?.userMetric,
       jslogContext: options?.jslogContext || "script-location",
       omitOrigin: options?.omitOrigin
@@ -618,7 +617,7 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
     if (!debuggerModel) {
       return fallbackAnchor;
     }
-    const rawLocation = scriptId ? debuggerModel.createRawLocationByScriptId(scriptId, lineNumber || 0, columnNumber, linkifyURLOptions.inlineFrameIndex) : debuggerModel.createRawLocationByURL(sourceURL, lineNumber || 0, columnNumber, linkifyURLOptions.inlineFrameIndex);
+    const rawLocation = scriptId ? debuggerModel.createRawLocationByScriptId(scriptId, lineNumber || 0, columnNumber) : debuggerModel.createRawLocationByURL(sourceURL, lineNumber || 0, columnNumber);
     if (!rawLocation) {
       return fallbackAnchor;
     }
@@ -660,7 +659,6 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       className: options?.className,
       columnNumber: options?.columnNumber,
       showColumnNumber: Boolean(options?.showColumnNumber),
-      inlineFrameIndex: options?.inlineFrameIndex ?? 0,
       tabStop: options?.tabStop,
       userMetric: options?.userMetric,
       jslogContext: options?.jslogContext || "script-source-url"
@@ -671,15 +669,13 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
     return this.linkifyScriptLocation(rawLocation.debuggerModel.target(), rawLocation.scriptId, fallbackUrl, rawLocation.lineNumber, {
       columnNumber: rawLocation.columnNumber,
       className,
-      inlineFrameIndex: rawLocation.inlineFrameIndex,
       tabStop: options?.tabStop
     });
   }
   maybeLinkifyConsoleCallFrame(target, callFrame, options) {
     const linkifyOptions = {
       ...options,
-      columnNumber: callFrame.columnNumber,
-      inlineFrameIndex: options?.inlineFrameIndex ?? 0
+      columnNumber: callFrame.columnNumber
     };
     return this.maybeLinkifyScriptLocation(target, String(callFrame.scriptId), callFrame.url, callFrame.lineNumber, linkifyOptions);
   }
@@ -691,7 +687,6 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       showColumnNumber: Boolean(options?.showColumnNumber),
       className: options?.className,
       tabStop: options?.tabStop,
-      inlineFrameIndex: options?.inlineFrameIndex ?? 0,
       userMetric: options?.userMetric,
       jslogContext: options?.jslogContext || "script-location",
       omitOrigin: options?.omitOrigin
@@ -723,12 +718,16 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       showColumnNumber: Boolean(options?.showColumnNumber),
       className: options?.className,
       tabStop: options?.tabStop,
-      inlineFrameIndex: options?.inlineFrameIndex ?? 0,
       userMetric: options?.userMetric,
       jslogContext: options?.jslogContext || "script-location",
       omitOrigin: options?.omitOrigin
     };
-    const fallbackAnchor = _Linkifier.linkifyURL(frame.url, linkifyURLOptions);
+    const fallbackOptions = {
+      ...linkifyURLOptions,
+      showColumnNumber: frame.isWasm || Boolean(options?.showColumnNumber),
+      omitLineAndRenderColumnAsHex: frame.isWasm
+    };
+    const fallbackAnchor = _Linkifier.linkifyURL(frame.url, fallbackOptions);
     if (!frame.uiSourceCode) {
       const isIgnoreListed = (options?.ignoreListManager ?? Workspace.IgnoreListManager.IgnoreListManager.instance()).isUserIgnoreListedURL(frame.url);
       fallbackAnchor.classList.toggle("ignore-list-link", isIgnoreListed);
@@ -744,7 +743,6 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       lineNumber,
       columnNumber,
       showColumnNumber: false,
-      inlineFrameIndex: 0,
       maxLength: this.maxLength,
       preventClick: true,
       jslogContext: "script-source-url"
@@ -872,8 +870,7 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
   }
   static renderLinkifiedUrl(url, options) {
     options = options || {
-      showColumnNumber: false,
-      inlineFrameIndex: 0
+      showColumnNumber: false
     };
     const text = options.text;
     const className = options.className || "";
@@ -884,6 +881,10 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
     const maxLength = options.maxLength || UI.UIUtils.MaxLengthForDisplayedURLs;
     const bypassURLTrimming = options.bypassURLTrimming;
     const omitOrigin = options.omitOrigin;
+    const omitLineAndRenderColumnAsHex = options.omitLineAndRenderColumnAsHex;
+    if (omitLineAndRenderColumnAsHex && showColumnNumber === false) {
+      throw new Error("omitLineAndRenderColumnAsHex requires showColumnNumber to not be explicitly false");
+    }
     if (!url || Common2.ParsedURL.schemeIs(url, "javascript:")) {
       return html`<span class=${className}>${text || url || i18nString2(UIStrings2.unknown)}</span>`;
     }
@@ -894,7 +895,11 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
         linkText = url.replace(parsedUrl.origin, "");
       }
     }
-    if (typeof lineNumber === "number" && !text) {
+    if (omitLineAndRenderColumnAsHex && !text) {
+      if (typeof columnNumber === "number") {
+        linkText += ":0x" + columnNumber.toString(16);
+      }
+    } else if (typeof lineNumber === "number" && !text) {
       linkText += ":" + (lineNumber + 1);
       if (showColumnNumber && typeof columnNumber === "number") {
         linkText += ":" + (columnNumber + 1);
@@ -978,7 +983,6 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
           url: options.href || null,
           lineNumber: options.lineNumber ?? null,
           columnNumber: options.columnNumber ?? null,
-          inlineFrameIndex: 0,
           revealable: null,
           fallback: null,
           userMetric: options.userMetric
@@ -1162,7 +1166,7 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       }
     }
     for (const registration of linkHandlers.values().filter((r) => r.handler)) {
-      const { title, handler, shouldHandleOpenResource } = registration;
+      const { title, origin, handler, shouldHandleOpenResource } = registration;
       if (url && !shouldHandleOpenResource(url, specificSchemeHandlers)) {
         continue;
       }
@@ -1172,7 +1176,7 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
         jslogContext: "open-using",
         handler: handler.bind(null, contentProviderOrUrl, lineNumber, columnNumber)
       };
-      if (title === _Linkifier.linkHandlerSetting().get()) {
+      if (origin === _Linkifier.linkHandlerSetting().get()) {
         result.unshift(action);
       } else {
         result.push(action);
@@ -1408,7 +1412,6 @@ var DEFAULT_VIEW = (input, output, target) => {
     const link3 = Linkifier.linkifyStackTraceFrame(frame, {
       showColumnNumber: Boolean(input.showColumnNumber),
       tabStop: Boolean(input.tabStops),
-      inlineFrameIndex: 0,
       revealBreakpoint: previousStackFrameWasBreakpointCondition,
       maxLength: UI2.UIUtils.MaxLengthForDisplayedURLsInConsole,
       ignoreListManager: input.ignoreListManager

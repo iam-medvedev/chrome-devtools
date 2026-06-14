@@ -707,7 +707,6 @@ var MainImpl = class {
     });
     this.#migrateValueFromLegacyToHostExperiment(Root2.ExperimentNames.ExperimentName.PROTOCOL_MONITOR, protocolMonitorExperiment);
     Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.INSTRUMENTATION_BREAKPOINTS, "Instrumentation breakpoints");
-    Root2.Runtime.experiments.register(Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES, "Use scope information from source maps");
     Root2.Runtime.experiments.registerHostExperiment({
       name: Root2.ExperimentNames.ExperimentName.DURABLE_MESSAGES,
       title: "Durable Messages",
@@ -729,9 +728,6 @@ var MainImpl = class {
       isEnabled: Root2.Runtime.hostConfig.devToolsPlusButton?.enabled ?? false,
       requiresChromeRestart: false
     });
-    Root2.Runtime.experiments.enableExperimentsByDefault([
-      Root2.ExperimentNames.ExperimentName.USE_SOURCE_MAP_SCOPES
-    ]);
     const enabledExperiments = Root2.Runtime.Runtime.queryParam("enabledExperiments");
     if (enabledExperiments) {
       Root2.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(";"));

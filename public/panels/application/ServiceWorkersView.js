@@ -213,7 +213,7 @@ export class ServiceWorkersView extends UI.Widget.VBox {
         othersView.show(othersDiv);
         const othersSection = othersView.appendSection(i18nString(UIStrings.serviceWorkersFromOtherOrigins));
         const othersSectionRow = othersSection.appendRow();
-        const seeOthers = Link.create('chrome://serviceworker-internals', i18nString(UIStrings.seeAllRegistrations), undefined, 'view-all');
+        const seeOthers = Link.create('chrome://serviceworker-internals', i18nString(UIStrings.seeAllRegistrations), undefined, 'view-all', 0, /* allowPrivileged=*/ true);
         othersSectionRow.appendChild(seeOthers);
         this.toolbar.appendToolbarItem(MobileThrottling.ThrottlingManager.throttlingManager().createOfflineToolbarCheckbox());
         const updateOnReloadSetting = Common.Settings.Settings.instance().createSetting('service-worker-update-on-reload', false);

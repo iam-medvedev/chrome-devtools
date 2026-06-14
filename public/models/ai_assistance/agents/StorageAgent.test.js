@@ -2,18 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { createTarget } from '../../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
 import { getMainFrame, navigate } from '../../../testing/ResourceTreeHelpers.js';
+import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('StorageAgent', function () {
+describe('StorageAgent', function () {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
     let activeStorages = [];
     beforeEach(() => {
-        const target = createTarget();
+        universe = new TestUniverse();
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(universe.targetManager);
+        const target = universe.createTarget({ url: urlString `http://example.com/` });
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
         const domStorageModel = target.model(SDK.DOMStorageModel.DOMStorageModel);
         assert.exists(domStorageModel);
         const mockStorage = sinon.createStubInstance(SDK.DOMStorageModel.DOMStorage);
@@ -312,6 +323,49 @@ describeWithMockConnection('StorageAgent', function () {
         assert.strictEqual(actionResponse.code, 'listPageOrigins()');
         assert.include(actionResponse.output, 'https://example.com');
     });
+    it('can give a storage breakdown of primary target', async () => {
+        const cdpConnection = new MockCDPConnection();
+        cdpConnection.setSuccessHandler('Storage.getUsageAndQuota', (callParams) => {
+            assert.strictEqual(callParams.origin, 'https://example.com');
+            return {
+                usage: 1000,
+                quota: 10000,
+                overrideActive: false,
+                usageBreakdown: [
+                    { storageType: 'indexeddb', usage: 200 },
+                    { storageType: 'file_systems', usage: 0 },
+                    { storageType: 'service_workers', usage: 800 },
+                ],
+            };
+        });
+        const target = universe.createTarget({ url: 'https://example.com', connection: cdpConnection });
+        target.setInspectedURL(urlString `https://example.com`);
+        universe.targetManager.primaryPageTarget.returns(target);
+        const aidaClient = mockAidaClient([
+            [{
+                    functionCalls: [{ name: 'getStorageBreakdown', args: {} }],
+                    explanation: '',
+                }],
+            [{ explanation: 'Here is the breakdown.' }]
+        ]);
+        const agent = new AiAssistance.StorageAgent.StorageAgent({ aidaClient });
+        const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com');
+        const context = new AiAssistance.StorageAgent.StorageContext(item);
+        const responses = await Array.fromAsync(agent.run('get breakdown', { selected: context }));
+        const actionResponse = responses.find((r) => r.type === 'action');
+        assert.exists(actionResponse, 'Expected an action response');
+        assert.strictEqual(actionResponse.code, 'getStorageBreakdown()');
+        assert.exists(actionResponse.output);
+        const parsedOutput = JSON.parse(actionResponse.output);
+        assert.deepEqual(parsedOutput, {
+            totalUsage: i18n.ByteUtilities.bytesToString(1000),
+            totalQuota: i18n.ByteUtilities.bytesToString(10000),
+            usageBreakdown: [
+                { storageType: 'service_workers', usage: i18n.ByteUtilities.bytesToString(800) },
+                { storageType: 'indexeddb', usage: i18n.ByteUtilities.bytesToString(200) },
+            ],
+        });
+    });
     describe('findFrameForOrigin', () => {
         it('returns the frame if it belongs to the same page target and has the primary origin', () => {
             const PRIMARY_ORIGIN = 'https://example.com';
@@ -346,7 +400,11 @@ describeWithMockConnection('StorageAgent', function () {
             const primaryTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             assert.exists(primaryTarget);
             // 1. Create a new target representing a different page target
-            const differentTarget = SDK.TargetManager.TargetManager.instance().createTarget('different', 'different', SDK.Target.Type.FRAME, null);
+            const differentTarget = universe.createTarget({
+                id: 'different',
+                name: 'different',
+                type: SDK.Target.Type.FRAME,
+            });
             differentTarget.setInspectedURL(urlString `${DIFFERENT_ORIGIN}`);
             // 2. Create a main frame on the different target and navigate it
             const differentFrame = getMainFrame(differentTarget);
@@ -418,6 +476,83 @@ describeWithMockConnection('StorageAgent', function () {
             const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com');
             const context = new AiAssistance.StorageAgent.StorageContext(item);
             assert.strictEqual(context.getTitle(), 'cookies: https://example.com');
+        });
+    });
+    describe('Server-Side Logging Disabling on key/name/value access', () => {
+        beforeEach(() => {
+            const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+            const cookieModel = target?.model(SDK.CookieModel.CookieModel);
+            if (cookieModel) {
+                sinon.stub(cookieModel, 'getCookiesForDomain').resolves([]);
+            }
+        });
+        async function loggingIsDisabledDuringRun(aidaClient, item, prompt = 'test') {
+            const sideEffectPromise = Promise.withResolvers();
+            sideEffectPromise.resolve(true);
+            const agent = new AiAssistance.StorageAgent.StorageAgent({
+                aidaClient,
+                serverSideLoggingEnabled: true,
+                confirmSideEffectForTest: sinon.stub().returns(sideEffectPromise),
+            });
+            const context = new AiAssistance.StorageAgent.StorageContext(item);
+            await Array.fromAsync(agent.run(prompt, { selected: context }));
+            const call = aidaClient.doConversation.lastCall;
+            assert.exists(call);
+            return Boolean(call.args[0].metadata?.disable_user_content_logging);
+        }
+        it('turns off server-side logging if initial context has a defined cookie name', async () => {
+            const aidaClient = mockAidaClient([[{ explanation: 'test' }]]);
+            const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com', 'cookie1');
+            assert.isTrue(await loggingIsDisabledDuringRun(aidaClient, item));
+        });
+        it('does not turn off server-side logging if initial context has no specific key or name', async () => {
+            const aidaClient = mockAidaClient([[{ explanation: 'test' }]]);
+            const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com');
+            assert.isFalse(await loggingIsDisabledDuringRun(aidaClient, item));
+        });
+        it('turns off server-side logging immediately upon accessing cookie ', async () => {
+            const aidaClient = mockAidaClient([
+                [{ functionCalls: [{ name: 'listCookies', args: { origin: 'https://example.com' } }], explanation: '' }],
+                [{ explanation: 'Here are the cookies.' }],
+            ]);
+            const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com');
+            assert.isTrue(await loggingIsDisabledDuringRun(aidaClient, item, 'list cookies'));
+        });
+        it('turns off server-side logging immediately upon retrieving cookie values', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        functionCalls: [{ name: 'getCookieValues', args: { cookieNames: ['cookie1'], origin: 'https://example.com' } }],
+                        explanation: '',
+                    }],
+                [{ explanation: 'Here are the cookie values.' }],
+            ]);
+            const item = new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com');
+            assert.isTrue(await loggingIsDisabledDuringRun(aidaClient, item, 'get cookie'));
+        });
+        it('turns off server-side logging immediately upon listing storage keys', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        functionCalls: [{ name: 'listStorageKeys', args: { type: 'localStorage', origin: 'https://example.com' } }],
+                        explanation: '',
+                    }],
+                [{ explanation: 'Here are the storage keys.' }],
+            ]);
+            const item = new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage');
+            assert.isTrue(await loggingIsDisabledDuringRun(aidaClient, item, 'list keys'));
+        });
+        it('turns off server-side logging immediately upon retrieving storage values', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        functionCalls: [{
+                                name: 'getStorageValues',
+                                args: { type: 'localStorage', keys: ['key1'], origin: 'https://example.com' },
+                            }],
+                        explanation: '',
+                    }],
+                [{ explanation: 'Here are the storage values.' }],
+            ]);
+            const item = new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage');
+            assert.isTrue(await loggingIsDisabledDuringRun(aidaClient, item, 'get value'));
         });
     });
 });

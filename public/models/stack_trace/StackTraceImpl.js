@@ -64,7 +64,9 @@ export class FrameImpl {
     column;
     missingDebugInfo;
     rawName;
-    constructor(url, uiSourceCode, name, line, column, missingDebugInfo, rawName) {
+    isWasm;
+    isInline;
+    constructor(url, uiSourceCode, name, line, column, missingDebugInfo, rawName, isWasm, isInline) {
         this.url = url;
         this.uiSourceCode = uiSourceCode;
         this.name = name;
@@ -72,6 +74,8 @@ export class FrameImpl {
         this.column = column;
         this.missingDebugInfo = missingDebugInfo;
         this.rawName = rawName;
+        this.isWasm = isWasm;
+        this.isInline = isInline;
     }
 }
 /**
@@ -155,7 +159,10 @@ export class ParsedErrorStackFrameImpl {
         return this.#evalOrigin;
     }
     get isWasm() {
-        return this.#parsedFrameInfo?.isWasm;
+        return this.#frame.isWasm;
+    }
+    get isInline() {
+        return this.#frame.isInline;
     }
     get wasmModuleName() {
         return this.#parsedFrameInfo?.wasmModuleName;
@@ -235,6 +242,12 @@ export class DebuggableFrameImpl {
     }
     get rawName() {
         return this.#frame.rawName;
+    }
+    get isWasm() {
+        return this.#frame.isWasm;
+    }
+    get isInline() {
+        return this.#frame.isInline;
     }
     get sdkFrame() {
         return this.#sdkFrame;

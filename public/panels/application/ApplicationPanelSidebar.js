@@ -37,6 +37,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AiAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import { createIcon } from '../../ui/kit/kit.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
@@ -69,6 +70,18 @@ import { StorageView } from './StorageView.js';
 import { TrustTokensTreeElement } from './TrustTokensTreeElement.js';
 import { WebMCPTreeElement } from './WebMCPTreeElement.js';
 const UIStrings = {
+    /**
+     * @description Text of a context menu item to start a chat with AI
+     */
+    startAChat: 'Start a chat',
+    /**
+     * @description Text of a context menu item to explain contents of a local/session storage bucket with AI
+     */
+    explainStorage: 'Explain storage',
+    /**
+     * @description Text of a context menu item to explain web cookies with AI
+     */
+    explainCookies: 'Explain cookies',
     /**
      * @description Text in Application Panel Sidebar of the Application panel
      */
@@ -1446,13 +1459,42 @@ export class DOMStorageTreeElement extends ApplicationPanelTreeElement {
         this.resourcesPanel.showDOMStorage(this.domStorage);
         return false;
     }
+    /**
+     * Resolves the DOM storage partition context (`localStorage` or `sessionStorage`)
+     * associated with this tree element for AI assistance.
+     */
+    #getStorageItem() {
+        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        const mainPageOrigin = target?.inspectedURL() ? Common.ParsedURL.ParsedURL.extractOrigin(target.inspectedURL()) : '';
+        if (!mainPageOrigin || !this.domStorage.storageKey) {
+            return null;
+        }
+        const origin = SDK.StorageKeyManager.parseStorageKey(this.domStorage.storageKey).origin;
+        const storageType = this.domStorage.isLocalStorage ? 'localStorage' : 'sessionStorage';
+        return new AiAssistance.StorageItem.DOMStorageItem(mainPageOrigin, origin, this.domStorage.storageKey, storageType);
+    }
     onattach() {
         super.onattach();
         this.listItemElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), true);
+        const storageItem = this.#getStorageItem();
+        if (storageItem) {
+            this.createAiButton(storageItem);
+        }
     }
     handleContextMenuEvent(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), () => this.domStorage.clear(), { jslogContext: 'clear' });
+        const storageItem = this.#getStorageItem();
+        if (storageItem) {
+            const openAiAssistanceId = 'ai-assistance.application-panel-context';
+            if (UI.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
+                UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, storageItem);
+                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+                const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId);
+                submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
+                submenu.defaultSection().appendItem(i18nString(UIStrings.explainStorage), () => action.execute({ prompt: 'What is the purpose of this storage bucket?' }), { disabled: !action.enabled(), jslogContext: openAiAssistanceId + '.storage' });
+            }
+        }
         void contextMenu.show();
     }
 }
@@ -1515,13 +1557,40 @@ export class CookieTreeElement extends ApplicationPanelTreeElement {
     cookieDomain() {
         return this.#cookieDomain;
     }
+    /**
+     * Resolves the cookie domain security context associated with this tree element
+     * for AI assistance.
+     */
+    #getStorageItem() {
+        const primaryTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        const mainPageOrigin = primaryTarget?.inspectedURL() ? Common.ParsedURL.ParsedURL.extractOrigin(primaryTarget.inspectedURL()) : '';
+        if (!mainPageOrigin || !this.#cookieDomain) {
+            return null;
+        }
+        return new AiAssistance.StorageItem.CookieItem(mainPageOrigin, this.#cookieDomain);
+    }
     onattach() {
         super.onattach();
         this.listItemElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), true);
+        const storageItem = this.#getStorageItem();
+        if (storageItem) {
+            this.createAiButton(storageItem);
+        }
     }
     handleContextMenuEvent(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), () => this.resourcesPanel.clearCookies(this.target, this.#cookieDomain), { jslogContext: 'clear' });
+        const storageItem = this.#getStorageItem();
+        if (storageItem) {
+            const openAiAssistanceId = 'ai-assistance.application-panel-context';
+            if (UI.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
+                UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, storageItem);
+                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+                const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId);
+                submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
+                submenu.defaultSection().appendItem(i18nString(UIStrings.explainCookies), () => action.execute({ prompt: 'What is the purpose of these cookies?' }), { disabled: !action.enabled(), jslogContext: openAiAssistanceId + '.cookies' });
+            }
+        }
         void contextMenu.show();
     }
     onselect(selectedByUser) {

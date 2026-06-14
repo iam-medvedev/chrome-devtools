@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as Lantern from '../lantern.js';
 import { getComputationDataFromFixture, toLanternTrace } from '../testing/testing.js';
@@ -42,14 +42,14 @@ describe('Metrics: Lantern FCP', function () {
                 optimisticNodes.push(node);
             }
         });
-        expect(optimisticNodes.map(node => node.request.url)).to.deep.equal(['https://squoosh.app/']);
+        assert.deepEqual(optimisticNodes.map(node => node.request.url), ['https://squoosh.app/']);
         const pessimisticNodes = [];
         result.pessimisticGraph.traverse(node => {
             if (node.type === 'network') {
                 pessimisticNodes.push(node);
             }
         });
-        expect(pessimisticNodes.map(node => node.request.url)).to.deep.equal(['https://squoosh.app/']);
+        assert.deepEqual(pessimisticNodes.map(node => node.request.url), ['https://squoosh.app/']);
     });
 });
 //# sourceMappingURL=FirstContentfulPaint.test.js.map

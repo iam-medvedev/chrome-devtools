@@ -74,10 +74,14 @@ export declare class Diff {
     removedCount: number;
     addedSize: number;
     removedSize: number;
-    deletedIndexes: number[];
-    addedIndexes: number[];
     countDelta: number;
     sizeDelta: number;
+    addedIndexes: number[];
+    addedIds: number[];
+    addedSelfSizes: number[];
+    deletedIndexes: number[];
+    deletedIds: number[];
+    deletedSelfSizes: number[];
     constructor(name: string);
 }
 export declare class ComparatorConfig {
@@ -175,3 +179,11 @@ export interface RetainingPaths {
         siblings?: boolean;
     };
 }
+export interface DominatorNode {
+    nodeId: number;
+    nodeIndex: number;
+    nodeName: string;
+    retainedSize: number;
+    selfSize: number;
+}
+export type DominatorChain = DominatorNode[];

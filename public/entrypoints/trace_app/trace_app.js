@@ -6307,6 +6307,34 @@ UI11.ActionRegistration.registerActionExtension({
   },
   condition: (config) => isFileAgentFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config)
 });
+UI11.ActionRegistration.registerActionExtension({
+  actionId: "ai-assistance.storage-floating-button",
+  contextTypes() {
+    return [];
+  },
+  category: "GLOBAL",
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
+  configurableBindings: false,
+  async loadActionDelegate() {
+    const AiAssistance = await loadAiAssistanceModule();
+    return new AiAssistance.ActionDelegate();
+  },
+  condition: (config) => isStorageAgentFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config)
+});
+UI11.ActionRegistration.registerActionExtension({
+  actionId: "ai-assistance.application-panel-context",
+  contextTypes() {
+    return [];
+  },
+  category: "GLOBAL",
+  title: i18nAiBrandedString(UIStrings14.debugWithGemini, UIStrings14.debugWithAi),
+  configurableBindings: false,
+  async loadActionDelegate() {
+    const AiAssistance = await loadAiAssistanceModule();
+    return new AiAssistance.ActionDelegate();
+  },
+  condition: (config) => isStorageAgentFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config)
+});
 
 // gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.js
 import * as Common14 from "./../../core/common/common.js";

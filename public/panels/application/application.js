@@ -31,17 +31,23 @@ import * as i18n61 from "./../../core/i18n/i18n.js";
 import * as Platform10 from "./../../core/platform/platform.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK25 from "./../../core/sdk/sdk.js";
+import * as AiAssistance2 from "./../../models/ai_assistance/ai_assistance.js";
 import * as LegacyWrapper3 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import { createIcon as createIcon14 } from "./../../ui/kit/kit.js";
 import * as SourceFrame5 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI30 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/application/ApplicationPanelTreeElement.js
+import "./../../ui/components/buttons/buttons.js";
 import * as Common from "./../../core/common/common.js";
+import * as AiAssistance from "./../../models/ai_assistance/ai_assistance.js";
 import * as UI from "./../../ui/legacy/legacy.js";
+import * as Lit from "./../../ui/lit/lit.js";
+var { html } = Lit;
 var ApplicationPanelTreeElement = class _ApplicationPanelTreeElement extends UI.TreeOutline.TreeElement {
   resourcesPanel;
   customItemURL;
+  aiButtonContainer;
   constructor(resourcesPanel, title, expandable, jslogContext) {
     super(title, expandable, jslogContext);
     this.resourcesPanel = resourcesPanel;
@@ -78,6 +84,32 @@ var ApplicationPanelTreeElement = class _ApplicationPanelTreeElement extends UI.
   }
   showView(view) {
     this.resourcesPanel.showView(view);
+  }
+  createAiButton(storageItem) {
+    const STORAGE_FLOATING_BUTTON_ACTION_ID2 = "ai-assistance.storage-floating-button";
+    const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
+    if (!actionRegistry.hasAction(STORAGE_FLOATING_BUTTON_ACTION_ID2)) {
+      return;
+    }
+    const action6 = actionRegistry.getAction(STORAGE_FLOATING_BUTTON_ACTION_ID2);
+    if (!this.aiButtonContainer) {
+      this.aiButtonContainer = this.listItemElement.createChild("span", "ai-button-container");
+      const icon = AiAssistance.AiUtils.getIconName();
+      const onClick = (ev) => {
+        ev.stopPropagation();
+        UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, storageItem);
+        void action6.execute();
+      };
+      Lit.render(html`
+            <devtools-floating-button
+              icon-name=${icon}
+              title=${action6.title()}
+              jslogcontext="ask-ai"
+              @click=${onClick}
+              @mousedown=${(ev) => ev.stopPropagation()}>
+            </devtools-floating-button>
+          `, this.aiButtonContainer);
+    }
   }
 };
 var ExpandableApplicationPanelTreeElement = class extends ApplicationPanelTreeElement {
@@ -156,7 +188,7 @@ import * as SDK from "./../../core/sdk/sdk.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
-import { Directives, html, i18nTemplate, nothing, render } from "./../../ui/lit/lit.js";
+import { Directives, html as html2, i18nTemplate, nothing, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/appManifestView.css.js
@@ -672,7 +704,7 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("panels/application/AppManifestView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 function renderSectionHeader(text, output) {
-  return html`
+  return html2`
     <devtools-report-section-header
         ${ref((e) => {
     if (output && e instanceof HTMLElement) {
@@ -685,23 +717,23 @@ function renderSectionHeader(text, output) {
     </devtools-report-section-header>`;
 }
 function renderErrors(warnings, manifestErrors, imageErrors, output) {
-  return html`
+  return html2`
     ${renderSectionHeader(i18nString(UIStrings.errorsAndWarnings), output)}
     <div class="report-section" jslog=${VisualLogging.section("errors-and-warnings")}>
-      ${manifestErrors?.map((error) => html`<div class="report-row">
+      ${manifestErrors?.map((error) => html2`<div class="report-row">
           <devtools-icon
           name=${error.critical ? "cross-circle-filled" : "warning-filled"}
           style=${styleMap({ color: error.critical ? "var(--icon-error)" : "var(--icon-warning)" })}>
         </devtools-icon>
         ${error.message}</div>
       `)}
-      ${warnings?.map((warning) => html`<div class="report-row">${warning}</div>`)}
-      ${imageErrors?.map((error) => html`<div class="report-row">${error}</div>`)}
+      ${warnings?.map((warning) => html2`<div class="report-row">${warning}</div>`)}
+      ${imageErrors?.map((error) => html2`<div class="report-row">${error}</div>`)}
     </div>`;
 }
 function renderIdentity(identityData, onCopy, output) {
   const { name, shortName, description, appId, recommendedId, hasId } = identityData;
-  return html`${renderSectionHeader(i18nString(UIStrings.identity), output)}
+  return html2`${renderSectionHeader(i18nString(UIStrings.identity), output)}
   <div class="report-section" jslog=${VisualLogging.section("identity")}>
     <devtools-report-key>${i18nString(UIStrings.name)}</devtools-report-key>
     <devtools-report-value>${name}</devtools-report-value>
@@ -709,7 +741,7 @@ function renderIdentity(identityData, onCopy, output) {
     <devtools-report-value>${shortName}</devtools-report-value>
     <devtools-report-key>${i18nString(UIStrings.description)}</devtools-report-key>
     <devtools-report-value>${description}</devtools-report-value>
-    ${appId && recommendedId ? html`
+    ${appId && recommendedId ? html2`
       <devtools-report-key aria-label="App Id">${i18nString(UIStrings.computedAppId)}</devtools-report-key>
       <devtools-report-value jslog=${VisualLogging.section("identity")}>
         ${appId}
@@ -721,11 +753,11 @@ function renderIdentity(identityData, onCopy, output) {
                       ${ref(setFocusOnSection(i18nString(UIStrings.identity), output))}>
           ${i18nString(UIStrings.learnMore)}
         </devtools-link>
-        ${!hasId ? html`
+        ${!hasId ? html2`
           <div class="multiline-value">
             ${i18nTemplate(str_, UIStrings.appIdNote, {
-    PH1: html`<code>${recommendedId}</code>`,
-    PH2: html`<devtools-button class="inline-button" @click=${onCopy}
+    PH1: html2`<code>${recommendedId}</code>`,
+    PH2: html2`<devtools-button class="inline-button" @click=${onCopy}
                           .iconName=${"copy"}
                           .variant=${"icon"}
                           .size=${"SMALL"}
@@ -739,7 +771,7 @@ function renderIdentity(identityData, onCopy, output) {
 }
 function renderPresentation(presentationData, output) {
   const { startUrl, completeStartUrl, themeColor, backgroundColor, orientation, display, newNoteUrl, hasNewNoteUrl, completeNewNoteUrl } = presentationData;
-  return html`${renderSectionHeader(i18nString(UIStrings.presentation), output)}
+  return html2`${renderSectionHeader(i18nString(UIStrings.presentation), output)}
     <div class="report-section" jslog=${VisualLogging.section("presentation")}>
       <devtools-report-key>${i18nString(UIStrings.startUrl)}</devtools-report-key>
       <devtools-report-value>
@@ -750,16 +782,16 @@ function renderPresentation(presentationData, output) {
   })() : nothing}
       </devtools-report-value>
       <devtools-report-key>${i18nString(UIStrings.themeColor)}</devtools-report-key>
-      <devtools-report-value>${themeColor ? html`<devtools-color-swatch .color=${themeColor}></devtools-color-swatch>` : nothing}
+      <devtools-report-value>${themeColor ? html2`<devtools-color-swatch .color=${themeColor}></devtools-color-swatch>` : nothing}
       </devtools-report-value>
       <devtools-report-key>${i18nString(UIStrings.backgroundColor)}</devtools-report-key>
-      <devtools-report-value>${backgroundColor ? html`<devtools-color-swatch .color=${backgroundColor}></devtools-color-swatch>` : nothing}
+      <devtools-report-value>${backgroundColor ? html2`<devtools-color-swatch .color=${backgroundColor}></devtools-color-swatch>` : nothing}
       </devtools-report-value>
       <devtools-report-key>${i18nString(UIStrings.orientation)}</devtools-report-key>
       <devtools-report-value>${orientation}</devtools-report-value>
       <devtools-report-key>${i18nString(UIStrings.display)}</devtools-report-key>
       <devtools-report-value>${display}</devtools-report-value>
-      ${completeNewNoteUrl ? html`
+      ${completeNewNoteUrl ? html2`
         <devtools-report-key>${i18nString(UIStrings.newNoteUrl)}</devtools-report-key>
         <devtools-report-value>${hasNewNoteUrl ? linkifyURL(completeNewNoteUrl, { text: newNoteUrl, tabStop: true }) : nothing}
         </devtools-report-value>
@@ -768,7 +800,7 @@ function renderPresentation(presentationData, output) {
   `;
 }
 function renderProtocolHandlers(data, output) {
-  return html`${renderSectionHeader(i18nString(UIStrings.protocolHandlers), output)}
+  return html2`${renderSectionHeader(i18nString(UIStrings.protocolHandlers), output)}
     <div class="report-row">
       <devtools-widget ${widget(ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView, { protocolHandlers: data.protocolHandlers, manifestLink: data.manifestLink })}
         ${ref(setFocusOnSection(i18nString(UIStrings.protocolHandlers), output))}>
@@ -777,7 +809,7 @@ function renderProtocolHandlers(data, output) {
     <devtools-report-divider></devtools-report-divider>`;
 }
 function renderImage(imageSrc, imageUrl, naturalWidth) {
-  return html`
+  return html2`
     <div class="image-wrapper">
       <img src=${imageSrc} alt=${i18nString(UIStrings.imageFromS, { PH1: imageUrl })}
           width=${naturalWidth}>
@@ -791,7 +823,7 @@ function setFocusOnSection(section8, output) {
   };
 }
 function renderIcons(data, maskedIcons, onToggleIconMasked, output) {
-  return html`${renderSectionHeader(i18nString(UIStrings.icons), output)}
+  return html2`${renderSectionHeader(i18nString(UIStrings.icons), output)}
     <div class="report-section" jslog=${VisualLogging.section("icons")}>
       <div class="report-row">
         <devtools-checkbox class="mask-checkbox"
@@ -803,14 +835,14 @@ function renderIcons(data, maskedIcons, onToggleIconMasked, output) {
       </div>
       <div class="report-row">
         ${i18nTemplate(str_, UIStrings.needHelpReadOurS, {
-    PH1: html`
+    PH1: html2`
             <devtools-link href="https://web.dev/maskable-icon/" jslogcontext="learn-more">
               ${i18nString(UIStrings.documentationOnMaskableIcons)}
             </devtools-link>`
   })}
       </div>
       ${Array.from(data.icons).map(([title, images]) => {
-    return html`
+    return html2`
         <devtools-report-key>${title}</devtools-report-key>
         <devtools-report-value class=${classMap({ "show-mask": Boolean(maskedIcons) })}>
           ${images.filter((icon) => "imageSrc" in icon).map((icon) => renderImage(icon.imageSrc, icon.imageUrl, icon.naturalWidth))}
@@ -820,16 +852,16 @@ function renderIcons(data, maskedIcons, onToggleIconMasked, output) {
     </div>`;
 }
 function renderShortcuts(data) {
-  return html`${data.shortcuts.map((shortcut, index) => html`
+  return html2`${data.shortcuts.map((shortcut, index) => html2`
     ${renderSectionHeader(i18nString(UIStrings.shortcutS, { PH1: index + 1 }))}
     <div class="report-section" jslog=${VisualLogging.section("shortcuts")}>
       <devtools-report-key>${i18nString(UIStrings.name)}</devtools-report-key>
       <devtools-report-value>${shortcut.name}</devtools-report-value>
-      ${shortcut.shortName ? html`
+      ${shortcut.shortName ? html2`
         <devtools-report-key>${i18nString(UIStrings.shortName)}</devtools-report-key>
         <devtools-report-value>${shortcut.shortName}</devtools-report-value>
       ` : nothing}
-      ${shortcut.description ? html`
+      ${shortcut.description ? html2`
         <devtools-report-key>${i18nString(UIStrings.description)}</devtools-report-key>
         <devtools-report-value>${shortcut.description}</devtools-report-value>
       ` : nothing}
@@ -837,7 +869,7 @@ function renderShortcuts(data) {
       <devtools-report-value>
         ${linkifyURL(shortcut.shortcutUrl, { text: shortcut.url, tabStop: true, jslogContext: "shortcut" })}
       </devtools-report-value>
-      ${Array.from(shortcut.icons).map(([title, images]) => html`
+      ${Array.from(shortcut.icons).map(([title, images]) => html2`
         <devtools-report-key>${title}</devtools-report-key>
         <devtools-report-value>
           ${images.filter((icon) => "imageSrc" in icon).map((icon) => renderImage(icon.imageSrc, icon.imageUrl, icon.naturalWidth))}
@@ -846,16 +878,16 @@ function renderShortcuts(data) {
     </div>`)}`;
 }
 function renderScreenshots(data) {
-  return html`${data.screenshots.map(({ screenshot, processedImage }, index) => html`
+  return html2`${data.screenshots.map(({ screenshot, processedImage }, index) => html2`
     ${renderSectionHeader(i18nString(UIStrings.screenshotS, { PH1: index + 1 }))}
     <div class="report-section" jslog=${VisualLogging.section("screenshots")}>
-      ${screenshot.form_factor ? html`<devtools-report-key>${i18nString(UIStrings.formFactor)}</devtools-report-key>
+      ${screenshot.form_factor ? html2`<devtools-report-key>${i18nString(UIStrings.formFactor)}</devtools-report-key>
           <devtools-report-value>${screenshot.form_factor}</devtools-report-value>` : nothing}
-      ${screenshot.label ? html`<devtools-report-key>${i18nString(UIStrings.label)}</devtools-report-key>
+      ${screenshot.label ? html2`<devtools-report-key>${i18nString(UIStrings.label)}</devtools-report-key>
           <devtools-report-value>${screenshot.label}</devtools-report-value>` : nothing}
-      ${screenshot.platform ? html`<devtools-report-key>${i18nString(UIStrings.platform)}</devtools-report-key>
+      ${screenshot.platform ? html2`<devtools-report-key>${i18nString(UIStrings.platform)}</devtools-report-key>
           <devtools-report-value>${screenshot.platform}</devtools-report-value>` : nothing}
-      ${"imageSrc" in processedImage ? html`
+      ${"imageSrc" in processedImage ? html2`
         <devtools-report-key>${processedImage.title}</devtools-report-key>
         <devtools-report-value>
           ${renderImage(processedImage.imageSrc, processedImage.imageUrl, processedImage.naturalWidth)}
@@ -864,23 +896,23 @@ function renderScreenshots(data) {
   `)}`;
 }
 function renderInstallability(installabilityErrors) {
-  return html`${renderSectionHeader(i18nString(UIStrings.installability))}
-    ${getInstallabilityErrorMessages(installabilityErrors).map((content) => html`
+  return html2`${renderSectionHeader(i18nString(UIStrings.installability))}
+    ${getInstallabilityErrorMessages(installabilityErrors).map((content) => html2`
       <div class="report-row">
         ${content}
       </div>
     `)}`;
 }
 function renderWindowControlsSection(data, selectedPlatform, onSelectOs, onToggleWcoToolbar, output) {
-  return html`
+  return html2`
     ${renderSectionHeader(i18nString(UIStrings.windowControlsOverlay), output)}
     <div class="report-section" jslog=${VisualLogging.section("window-controls-overlay")}>
-      ${data?.hasWco && output ? html`
+      ${data?.hasWco && output ? html2`
         <div class="report-row">
           <devtools-icon class="inline-icon" name="check-circle"></devtools-icon>
           ${i18nTemplate(str_, UIStrings.wcoFound, {
-    PH1: html`<code class="wco">window-controls-overlay</code>`,
-    PH2: html`<code>
+    PH1: html2`<code class="wco">window-controls-overlay</code>`,
+    PH2: html2`<code>
               <devtools-link
                 href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
                 jslogcontext="display-override"
@@ -888,13 +920,13 @@ function renderWindowControlsSection(data, selectedPlatform, onSelectOs, onToggl
                 display-override
               </devtools-link>
             </code>`,
-    PH3: html`${Components.Linkifier.Linkifier.linkifyURL(data.url)}`
+    PH3: html2`${Components.Linkifier.Linkifier.linkifyURL(data.url)}`
   })}
         </div>
-        ${selectedPlatform && onSelectOs && onToggleWcoToolbar ? renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar) : nothing}` : html`
+        ${selectedPlatform && onSelectOs && onToggleWcoToolbar ? renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar) : nothing}` : html2`
           <div class="report-row">
             <devtools-icon class="inline-icon" name="info"></devtools-icon>
-            ${i18nTemplate(str_, UIStrings.wcoNotFound, { PH1: html`<code>
+            ${i18nTemplate(str_, UIStrings.wcoNotFound, { PH1: html2`<code>
                 <devtools-link
                     href="https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override"
                     jslogcontext="display-override"
@@ -904,7 +936,7 @@ function renderWindowControlsSection(data, selectedPlatform, onSelectOs, onToggl
               </code>` })}
           </div>`}
         <div class="report-row">
-          ${i18nTemplate(str_, UIStrings.wcoNeedHelpReadMore, { PH1: html`<devtools-link
+          ${i18nTemplate(str_, UIStrings.wcoNeedHelpReadMore, { PH1: html2`<devtools-link
               href="https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay"
               jslogcontext="customize-pwa-tittle-bar">
             ${i18nString(UIStrings.customizePwaTitleBar)}
@@ -1005,7 +1037,7 @@ function getInstallabilityErrorMessages(installabilityErrors) {
   return errorMessages;
 }
 function renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar) {
-  return html`<div class="report-row">
+  return html2`<div class="report-row">
       <devtools-checkbox @click=${(event) => onToggleWcoToolbar(event.target.checked)}
           title=${i18nString(UIStrings.selectWindowControlsOverlayEmulationOs)}>
         ${i18nString(UIStrings.selectWindowControlsOverlayEmulationOs)}
@@ -1034,14 +1066,14 @@ function renderWindowControls(selectedPlatform, onSelectOs, onToggleWcoToolbar) 
 }
 var DEFAULT_VIEW = (input, output, target) => {
   const { isEmpty, identityData, presentationData, protocolHandlersData, iconsData, shortcutsData, screenshotsData, installabilityErrors, warnings, errors, imageErrors, maskedIcons, windowControlsData, selectedPlatform, onSelectOs, onToggleWcoToolbar, onToggleIconMasked, onCopyId, url } = input;
-  render(html`
+  render2(html2`
     <style>${appManifestView_css_default}</style>
     <style>${UI2.inspectorCommonStyles}</style>
     ${isEmpty ? widget(UI2.EmptyWidget.EmptyWidget, {
     header: i18nString(UIStrings.noManifestDetected),
     text: i18nString(UIStrings.manifestDescription),
     link: "https://web.dev/add-manifest/"
-  }) : html`
+  }) : html2`
     <devtools-report .data=${{ reportTitle: i18nString(UIStrings.appManifest), reportUrl: url }}>
       ${renderErrors(warnings, errors, imageErrors, output)}
       ${installabilityErrors?.length ? renderInstallability(installabilityErrors) : nothing}
@@ -2922,7 +2954,7 @@ import * as CspEvaluator from "./../../third_party/csp_evaluator/csp_evaluator.j
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
-import { html as html3, nothing as nothing3, render as render3 } from "./../../ui/lit/lit.js";
+import { html as html4, nothing as nothing3, render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents4 from "./components/components.js";
 
@@ -3071,7 +3103,7 @@ import "./../../ui/legacy/legacy.js";
 import "./../../ui/components/adorners/adorners.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html2, nothing as nothing2, render as render2 } from "./../../ui/lit/lit.js";
+import { Directives as Directives2, html as html3, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/originTrialTokenRows.css.js
 var originTrialTokenRows_css_default = `/*
@@ -3212,13 +3244,13 @@ var str_6 = i18n11.i18n.registerUIStrings("panels/application/OriginTrialTreeVie
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 function renderOriginTrialTree(originTrial) {
   const success = originTrial.status === "Enabled";
-  return html2`
+  return html3`
     <li role="treeitem">
       ${originTrial.trialName}
       <devtools-adorner class="badge-${success ? "success" : "error"}">
         ${originTrial.status}
       </devtools-adorner>
-      ${originTrial.tokensWithStatus.length > 1 ? html2`
+      ${originTrial.tokensWithStatus.length > 1 ? html3`
         <devtools-adorner class="badge-secondary">
           ${i18nString6(UIStrings6.tokens, { PH1: originTrial.tokensWithStatus.length })}
         </devtools-adorner>` : nothing2}
@@ -3229,7 +3261,7 @@ function renderOriginTrialTree(originTrial) {
 }
 function renderTokenNode(token) {
   const success = token.status === "Success";
-  return html2`
+  return html3`
     <li role="treeitem">
       ${i18nString6(UIStrings6.token)}
       <devtools-adorner class="token-status-badge badge-${success ? "success" : "error"}">
@@ -3241,19 +3273,19 @@ function renderTokenNode(token) {
     </li>`;
 }
 function renderTokenDetails(token) {
-  return html2`
+  return html3`
     <li role="treeitem">
       ${widget2(OriginTrialTokenRows, { data: token })}
     </li>`;
 }
 function renderTokenDetailsNodes(token) {
-  return html2`
+  return html3`
     ${renderTokenDetails(token)}
     ${renderRawTokenTextNode(token.rawTokenText)}
   `;
 }
 function renderRawTokenTextNode(tokenText) {
-  return html2`
+  return html3`
     <li role="treeitem">
       ${i18nString6(UIStrings6.rawTokenText)}
       <ul role="group">
@@ -3267,7 +3299,7 @@ function renderRawTokenTextNode(tokenText) {
 }
 var ROWS_DEFAULT_VIEW = (input, _output, target) => {
   const success = input.tokenWithStatus.status === "Success";
-  render2(html2`
+  render3(html3`
     <style>
       ${originTrialTokenRows_css_default}
       ${originTrialTreeView_css_default}
@@ -3279,7 +3311,7 @@ var ROWS_DEFAULT_VIEW = (input, _output, target) => {
           ${input.tokenWithStatus.status}
         </devtools-adorner>
       </div>
-      ${input.parsedTokenDetails.map((field) => html2`
+      ${input.parsedTokenDetails.map((field) => html3`
         <div class="key">${field.name}</div>
         <div class="value">
           <div class=${classMap2({ "error-text": Boolean(field.value.hasError) })}>
@@ -3362,16 +3394,16 @@ var OriginTrialTokenRows = class extends UI7.Widget.Widget {
 };
 var DEFAULT_VIEW2 = (input, _output, target) => {
   if (!input.trials.length) {
-    render2(html2`
+    render3(html3`
       <span class="status-badge">
         <devtools-icon class="medium" name="clear"></devtools-icon>
         <span>${i18nString6(UIStrings6.noTrialTokens)}</span>
       </span>`, target);
     return;
   }
-  render2(html2`
+  render3(html3`
     <style>${originTrialTreeView_css_default}</style>
-    <devtools-tree .template=${html2`
+    <devtools-tree .template=${html3`
       <style>${originTrialTreeView_css_default}</style>
       <ul role="tree">
         ${input.trials.map(renderOriginTrialTree)}
@@ -3623,7 +3655,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
   if (!input.frame) {
     return;
   }
-  render3(html3`
+  render4(html4`
     <style>${frameDetailsReportView_css_default}</style>
     <devtools-report .data=${{ reportTitle: input.frame.displayName() }}
     jslog=${VisualLogging3.pane("frames")}>
@@ -3644,7 +3676,7 @@ function renderOriginTrial(trials) {
     return nothing3;
   }
   const data = { trials };
-  return html3`
+  return html4`
     <devtools-report-section-header>
       ${i18n13.i18n.lockedString("Origin trials")}
     </devtools-report-section-header>
@@ -3665,7 +3697,7 @@ function renderDocumentSection(input) {
   if (!input.frame) {
     return nothing3;
   }
-  return html3`
+  return html4`
       <devtools-report-section-header>${i18nString7(UIStrings7.document)}</devtools-report-section-header>
       <devtools-report-key>${i18nString7(UIStrings7.url)}</devtools-report-key>
       <devtools-report-value>
@@ -3693,7 +3725,7 @@ function maybeRenderUnreachableURL(unreachableUrl) {
   if (!unreachableUrl) {
     return nothing3;
   }
-  return html3`
+  return html4`
       <devtools-report-key>${i18nString7(UIStrings7.unreachableUrl)}</devtools-report-key>
       <devtools-report-value>
         <div class="inline-items">
@@ -3723,7 +3755,7 @@ function renderNetworkLinkForUnreachableURL(unreachableUrlString) {
 }
 function maybeRenderOrigin(securityOrigin) {
   if (securityOrigin && securityOrigin !== "://") {
-    return html3`
+    return html4`
         <devtools-report-key>${i18nString7(UIStrings7.origin)}</devtools-report-key>
         <devtools-report-value>
           <div class="text-ellipsis" title=${securityOrigin}>${securityOrigin}</div>
@@ -3734,7 +3766,7 @@ function maybeRenderOrigin(securityOrigin) {
 }
 function renderOwnerElement(linkTargetDOMNode) {
   if (linkTargetDOMNode) {
-    return html3`
+    return html4`
         <devtools-report-key>${i18nString7(UIStrings7.ownerElement)}</devtools-report-key>
         <devtools-report-value class="without-min-width">
           <div class="inline-items">
@@ -3747,7 +3779,7 @@ function renderOwnerElement(linkTargetDOMNode) {
 }
 function maybeRenderCreationStacktrace(stackTrace) {
   if (stackTrace) {
-    return html3`
+    return html4`
         <devtools-report-key title=${i18nString7(UIStrings7.creationStackTraceExplanation)}>${i18nString7(UIStrings7.creationStackTrace)}</devtools-report-key>
         <devtools-report-value jslog=${VisualLogging3.section("frame-creation-stack-trace")}>
           ${widget3(Components2.JSPresentationUtils.StackTracePreviewContent, { stackTrace, options: { expandable: true } })}
@@ -3779,11 +3811,11 @@ function maybeRenderAdStatus(adFrameType, adFrameStatus) {
     return nothing3;
   }
   const typeStrings = getAdFrameTypeStrings(adFrameType);
-  const rows = [html3`<div title=${typeStrings.description}>${typeStrings.value}</div>`];
+  const rows = [html4`<div title=${typeStrings.description}>${typeStrings.value}</div>`];
   for (const explanation of adFrameStatus?.explanations || []) {
-    rows.push(html3`<div>${getAdFrameExplanationString(explanation)}</div>`);
+    rows.push(html4`<div>${getAdFrameExplanationString(explanation)}</div>`);
   }
-  return html3`
+  return html4`
       <devtools-report-key>${i18nString7(UIStrings7.adStatus)}</devtools-report-key>
       <devtools-report-value class="ad-status-list" jslog=${VisualLogging3.section("ad-status")}>
         <devtools-expandable-list .data=${{ rows, title: i18nString7(UIStrings7.adStatus) }}>
@@ -3798,18 +3830,18 @@ function maybeRenderCreatorAdScriptAncestry(adFrameType, target, adScriptAncestr
     return nothing3;
   }
   const rows = adScriptAncestry.ancestryChain.map((adScriptId) => {
-    return html3`<div>
+    return html4`<div>
       ${widget3(Components2.Linkifier.ScriptLocationLink, { target, scriptId: adScriptId.scriptId, options: { jslogContext: "ad-script" } })}
     </div>`;
   });
   const shouldRenderFilterlistRule = adScriptAncestry.rootScriptFilterlistRule !== void 0;
-  return html3`
+  return html4`
       <devtools-report-key>${i18nString7(UIStrings7.creatorAdScriptAncestry)}</devtools-report-key>
       <devtools-report-value class="creator-ad-script-ancestry-list" jslog=${VisualLogging3.section("creator-ad-script-ancestry")}>
         <devtools-expandable-list .data=${{ rows, title: i18nString7(UIStrings7.creatorAdScriptAncestry) }}>
         </devtools-expandable-list>
       </devtools-report-value>
-      ${shouldRenderFilterlistRule ? html3`
+      ${shouldRenderFilterlistRule ? html4`
         <devtools-report-key>${i18nString7(UIStrings7.rootScriptFilterlistRule)}</devtools-report-key>
         <devtools-report-value jslog=${VisualLogging3.section("root-script-filterlist-rule")}>${adScriptAncestry.rootScriptFilterlistRule}</devtools-report-value>
       ` : nothing3}
@@ -3819,7 +3851,7 @@ function renderIsolationSection(input) {
   if (!input.frame) {
     return nothing3;
   }
-  return html3`
+  return html4`
       <devtools-report-section-header>${i18nString7(UIStrings7.securityIsolation)}</devtools-report-section-header>
       <devtools-report-key>${i18nString7(UIStrings7.secureContext)}</devtools-report-key>
       <devtools-report-value>
@@ -3836,7 +3868,7 @@ function renderIsolationSection(input) {
 function maybeRenderSecureContextExplanation(frame) {
   const explanation = getSecureContextExplanation(frame);
   if (explanation) {
-    return html3`<span class="inline-comment">${explanation}</span>`;
+    return html4`<span class="inline-comment">${explanation}</span>`;
   }
   return nothing3;
 }
@@ -3855,7 +3887,7 @@ function getSecureContextExplanation(frame) {
 }
 function maybeRenderCoopCoepCSPStatus(info) {
   if (info) {
-    return html3`
+    return html4`
           ${maybeRenderCrossOriginStatus(
       info.coep,
       i18n13.i18n.lockedString("Cross-Origin Embedder Policy (COEP)"),
@@ -3904,12 +3936,12 @@ function maybeRenderCrossOriginStatus(info, policyName, noneValue) {
   const isEnabled = info.value !== noneValue;
   const isReportOnly = !isEnabled && info.reportOnlyValue !== noneValue;
   const endpoint = isEnabled ? info.reportingEndpoint : info.reportOnlyReportingEndpoint;
-  return html3`
+  return html4`
       <devtools-report-key>${policyName}</devtools-report-key>
       <devtools-report-value>
         ${crossOriginValueToString(isEnabled ? info.value : info.reportOnlyValue)}
-        ${isReportOnly ? html3`<span class="inline-comment">report-only</span>` : nothing3}
-        ${endpoint ? html3`<span class="inline-name">${i18nString7(UIStrings7.reportingTo)}</span>${endpoint}` : nothing3}
+        ${isReportOnly ? html4`<span class="inline-comment">report-only</span>` : nothing3}
+        ${endpoint ? html4`<span class="inline-name">${i18nString7(UIStrings7.reportingTo)}</span>${endpoint}` : nothing3}
       </devtools-report-value>
     `;
 }
@@ -3917,7 +3949,7 @@ function renderEffectiveDirectives(directives) {
   const parsedDirectives = new CspEvaluator.CspParser.CspParser(directives).csp.directives;
   const result = [];
   for (const directive in parsedDirectives) {
-    result.push(html3`
+    result.push(html4`
           <div>
             <span class="bold">${directive}</span>
             ${": " + parsedDirectives[directive]?.join(", ")}
@@ -3926,9 +3958,9 @@ function renderEffectiveDirectives(directives) {
   return result;
 }
 function renderSingleCSP(cspInfo, divider) {
-  return html3`
+  return html4`
       <devtools-report-key>
-        ${cspInfo.isEnforced ? i18n13.i18n.lockedString("Content-Security-Policy") : html3`
+        ${cspInfo.isEnforced ? i18n13.i18n.lockedString("Content-Security-Policy") : html4`
           ${i18n13.i18n.lockedString("Content-Security-Policy-Report-Only")}
           <devtools-button
             .iconName=${"help"}
@@ -3946,16 +3978,16 @@ function renderSingleCSP(cspInfo, divider) {
         ${cspInfo.source === "HTTP" ? i18n13.i18n.lockedString("HTTP header") : i18n13.i18n.lockedString("Meta tag")}
         ${renderEffectiveDirectives(cspInfo.effectiveDirectives)}
       </devtools-report-value>
-      ${divider ? html3`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
+      ${divider ? html4`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
     `;
 }
 function renderCSPSection(cspInfos) {
-  return html3`
+  return html4`
       <devtools-report-divider></devtools-report-divider>
       <devtools-report-section-header>
         ${i18nString7(UIStrings7.contentSecurityPolicy)}
       </devtools-report-section-header>
-      ${cspInfos?.length ? cspInfos.map((cspInfo, index) => renderSingleCSP(cspInfo, index < cspInfos?.length - 1)) : html3`
+      ${cspInfos?.length ? cspInfos.map((cspInfo, index) => renderSingleCSP(cspInfo, index < cspInfos?.length - 1)) : html4`
         <devtools-report-key>
           ${i18n13.i18n.lockedString("Content-Security-Policy")}
         </devtools-report-key>
@@ -3969,7 +4001,7 @@ function renderApiAvailabilitySection(frame) {
   if (!frame) {
     return nothing3;
   }
-  return html3`
+  return html4`
       <devtools-report-section-header>
         ${i18nString7(UIStrings7.apiAvailability)}
       </devtools-report-section-header>
@@ -3997,15 +4029,15 @@ function renderSharedArrayBufferAvailability(frame) {
             return nothing3;
           case "NotIsolated":
             if (sabAvailable) {
-              return html3`
+              return html4`
                   <span class="inline-comment">
                     ${i18nString7(UIStrings7.willRequireCrossoriginIsolated)}
                   </span>`;
             }
-            return html3`<span class="inline-comment">${i18nString7(UIStrings7.requiresCrossoriginIsolated)}</span>`;
+            return html4`<span class="inline-comment">${i18nString7(UIStrings7.requiresCrossoriginIsolated)}</span>`;
           case "NotIsolatedFeatureDisabled":
             if (!sabTransferAvailable) {
-              return html3`
+              return html4`
                   <span class="inline-comment">
                     ${i18nString7(UIStrings7.transferRequiresCrossoriginIsolatedPermission)}
                     <code> cross-origin-isolated</code>
@@ -4025,7 +4057,7 @@ function renderSharedArrayBufferAvailability(frame) {
       );
       const availabilityText = sabTransferAvailable ? i18nString7(UIStrings7.availableTransferable) : sabAvailable ? i18nString7(UIStrings7.availableNotTransferable) : i18nString7(UIStrings7.unavailable);
       const tooltipText = sabTransferAvailable ? i18nString7(UIStrings7.sharedarraybufferConstructorIs) : sabAvailable ? i18nString7(UIStrings7.sharedarraybufferConstructorIsAvailable) : "";
-      return html3`
+      return html4`
           <devtools-report-key>SharedArrayBuffers</devtools-report-key>
           <devtools-report-value title=${tooltipText}>
             ${availabilityText}\xA0${renderHint(frame)}
@@ -4040,7 +4072,7 @@ function renderMeasureMemoryAvailability(frame) {
     const measureMemoryAvailable = frame.isCrossOriginIsolated();
     const availabilityText = measureMemoryAvailable ? i18nString7(UIStrings7.available) : i18nString7(UIStrings7.unavailable);
     const tooltipText = measureMemoryAvailable ? i18nString7(UIStrings7.thePerformanceAPI) : i18nString7(UIStrings7.thePerformancemeasureuseragentspecificmemory);
-    return html3`
+    return html4`
         <devtools-report-key>${i18nString7(UIStrings7.measureMemory)}</devtools-report-key>
         <devtools-report-value>
           <span title=${tooltipText}>${availabilityText}</span>\xA0<devtools-link class="link" href="https://web.dev/monitor-total-page-memory-usage/" jslogcontext="learn-more.monitor-memory-usage">${i18nString7(UIStrings7.learnMore)}</devtools-link>
@@ -4053,7 +4085,7 @@ function renderAdditionalInfoSection(frame) {
   if (!frame) {
     return nothing3;
   }
-  return html3`
+  return html4`
       <devtools-report-section-header
         title=${i18nString7(UIStrings7.thisAdditionalDebugging)}
       >${i18nString7(UIStrings7.additionalInformation)}</devtools-report-section-header>
@@ -4656,7 +4688,7 @@ import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
-import * as Lit from "./../../ui/lit/lit.js";
+import * as Lit2 from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents5 from "./components/components.js";
 
@@ -4746,7 +4778,7 @@ var indexedDBViews_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./indexedDBViews.css")} */`;
 
 // gen/front_end/panels/application/IndexedDBViews.js
-var { html: html4 } = Lit;
+var { html: html5 } = Lit2;
 var UIStrings8 = {
   /**
    * @description Text in Indexed DBViews of the Application panel
@@ -4877,9 +4909,9 @@ var IDBDatabaseView = class extends ApplicationComponents5.StorageMetadataView.S
   }
   async renderReportContent() {
     if (!this.database) {
-      return Lit.nothing;
+      return Lit2.nothing;
     }
-    return html4`
+    return html5`
       ${await super.renderReportContent()}
       ${this.key(i18nString8(UIStrings8.version))}
       ${this.value(this.database.version.toString())}
@@ -5943,7 +5975,7 @@ import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html5, render as render4 } from "./../../ui/lit/lit.js";
+import { Directives as Directives3, html as html6, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 import * as PreloadingComponents from "./preloading/components/components.js";
 
@@ -6600,7 +6632,7 @@ var PreloadingRuleSetView = class extends UI13.Widget.VBox {
       this.shouldPrettyPrint = !this.shouldPrettyPrint;
       this.updateRuleSetDetails();
     };
-    render4(html5`
+    render5(html6`
         <div class="empty-state">
           <span class="empty-state-header">${i18nString13(UIStrings13.noRulesDetected)}</span>
           <div class="empty-state-description">
@@ -6798,7 +6830,7 @@ var PreloadingAttemptView = class extends UI13.Widget.VBox {
     preloadingGridContainer.className = "preloading-grid-widget-container";
     preloadingGridContainer.style = "height: 100%";
     this.preloadingGrid.show(preloadingGridContainer, null, true);
-    render4(html5`
+    render5(html6`
         <div class="empty-state">
           <span class="empty-state-header">${i18nString13(UIStrings13.noPrefetchAttempts)}</span>
           <div class="empty-state-description">
@@ -7226,7 +7258,7 @@ import * as Platform5 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
-import { html as html6, render as render5 } from "./../../ui/lit/lit.js";
+import { html as html7, render as render6 } from "./../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents7 from "./components/components.js";
 var UIStrings15 = {
@@ -7251,7 +7283,7 @@ var str_15 = i18n29.i18n.registerUIStrings("panels/application/CrashReportContex
 var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var DEFAULT_VIEW4 = (input, _output, target) => {
   const { widget: widget10 } = UI14.Widget;
-  render5(html6`
+  render6(html7`
     <style>${UI14.inspectorCommonStyles}</style>
     <style>
       .crash-report-context-view {
@@ -7305,9 +7337,9 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
             @change=${(e) => input.onFilterChanged(e)} class="flex-auto">
         </devtools-toolbar-input>
       </devtools-toolbar>
-      ${input.frames.length > 0 ? html6`
+      ${input.frames.length > 0 ? html7`
         <div class="crash-report-context-view flex-auto">
-          ${input.frames.map((frame) => html6`
+          ${input.frames.map((frame) => html7`
             <div class="frame-section">
               <div class="frame-header">
                 <span class="frame-url" title="URL: ${frame.url}\nFrame ID: ${frame.frameId}">${frame.displayName}</span>
@@ -7327,7 +7359,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
             </div>
           `)}
         </div>
-      ` : html6`
+      ` : html7`
         ${widget10(UI14.EmptyWidget.EmptyWidget, {
     header: i18nString15(UIStrings15.noContext)
   })}
@@ -7418,7 +7450,7 @@ import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as SDK15 from "./../../core/sdk/sdk.js";
 import * as SourceFrame2 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
-import { html as html7, render as render6 } from "./../../ui/lit/lit.js";
+import { html as html8, render as render7 } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents8 from "./components/components.js";
 var { widget: widget5 } = UI15.Widget;
@@ -7453,10 +7485,10 @@ var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilities/web-apis/reporting-api";
 var DEFAULT_VIEW5 = (input, output, target) => {
   if (input.hasReports || input.hasEndpoints) {
-    render6(html7`
+    render7(html8`
       <style>${UI15.inspectorCommonStyles}</style>
       <devtools-split-view sidebar-position="second" sidebar-initial-size="150" jslog=${VisualLogging8.pane("reporting-api")}>
-        ${input.hasReports ? html7`
+        ${input.hasReports ? html8`
           <devtools-split-view slot="main" sidebar-position="second" sidebar-initial-size="150">
             <div slot="main">
               ${widget5(ApplicationComponents8.ReportsGrid.ReportsGrid, {
@@ -7471,7 +7503,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     })}
             </div>
           </devtools-split-view>
-        ` : html7`
+        ` : html8`
           <div slot="main">
             ${widget5(ApplicationComponents8.ReportsGrid.ReportsGrid, {
       reports: input.reports,
@@ -7487,7 +7519,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
       </devtools-split-view>
     `, target);
   } else {
-    render6(html7`
+    render7(html8`
       <devtools-widget ${widget5(UI15.EmptyWidget.EmptyWidget, {
       header: i18nString16(UIStrings16.noReportOrEndpoint),
       text: i18nString16(UIStrings16.reportingApiDescription),
@@ -7691,6 +7723,17 @@ devtools-icon.navigator-font-tree-item {
 
 .no-device-bound-session {
   font-style: italic;
+}
+
+.ai-button-container {
+  display: none;
+  position: absolute;
+  z-index: 999;
+  right: var(--sys-size-3);
+}
+
+.tree-outline li:hover .ai-button-container {
+  display: inline-flex;
 }
 
 /*# sourceURL=${import.meta.resolve("./resourcesSidebar.css")} */`;
@@ -9252,7 +9295,15 @@ var ServiceWorkersView = class extends UI20.Widget.VBox {
     othersView.show(othersDiv);
     const othersSection = othersView.appendSection(i18nString21(UIStrings21.serviceWorkersFromOtherOrigins));
     const othersSectionRow = othersSection.appendRow();
-    const seeOthers = Link.create("chrome://serviceworker-internals", i18nString21(UIStrings21.seeAllRegistrations), void 0, "view-all");
+    const seeOthers = Link.create(
+      "chrome://serviceworker-internals",
+      i18nString21(UIStrings21.seeAllRegistrations),
+      void 0,
+      "view-all",
+      0,
+      /* allowPrivileged=*/
+      true
+    );
     othersSectionRow.appendChild(seeOthers);
     this.toolbar.appendToolbarItem(MobileThrottling.ThrottlingManager.throttlingManager().createOfflineToolbarCheckbox());
     const updateOnReloadSetting = Common10.Settings.Settings.instance().createSetting("service-worker-update-on-reload", false);
@@ -10098,10 +10149,38 @@ var KeyValueStorageItemsView_exports = {};
 __export(KeyValueStorageItemsView_exports, {
   KeyValueStorageItemsView: () => KeyValueStorageItemsView
 });
+import "./../../ui/components/buttons/buttons.js";
 import * as i18n49 from "./../../core/i18n/i18n.js";
+import * as AIAssistance from "./../../models/ai_assistance/ai_assistance.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
+
+// gen/front_end/ui/legacy/components/data_grid/dataGridAiButton.css.js
+var dataGridAiButton_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.data-grid-data-grid-node .ai-button-container {
+  display: none;
+  float: right;
+
+  devtools-floating-button {
+    position: absolute;
+    z-index: 999;
+    margin-left: -17px;
+  }
+}
+
+.data-grid-data-grid-node:hover .ai-button-container {
+  display: inline-flex;
+}
+
+/*# sourceURL=${import.meta.resolve("./dataGridAiButton.css")} */`;
+
+// gen/front_end/panels/application/KeyValueStorageItemsView.js
 import * as UI23 from "./../../ui/legacy/legacy.js";
-import { Directives as LitDirectives, html as html9, nothing as nothing5, render as render8 } from "./../../ui/lit/lit.js";
+import { Directives as LitDirectives, html as html10, nothing as nothing5, render as render9 } from "./../../ui/lit/lit.js";
 import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents13 from "./components/components.js";
 
@@ -10117,7 +10196,7 @@ import * as i18n47 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as Buttons8 from "./../../ui/components/buttons/buttons.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../ui/lit/lit.js";
+import * as Lit3 from "./../../ui/lit/lit.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents12 from "./components/components.js";
 var UIStrings24 = {
@@ -10140,11 +10219,11 @@ var UIStrings24 = {
 };
 var str_24 = i18n47.i18n.registerUIStrings("panels/application/StorageItemsToolbar.ts", UIStrings24);
 var i18nString24 = i18n47.i18n.getLocalizedString.bind(void 0, str_24);
-var { html: html8, render: render7 } = Lit2;
+var { html: html9, render: render8 } = Lit3;
 var DEFAULT_VIEW6 = (input, _output, target) => {
-  render7(
+  render8(
     // clang-format off
-    html8`
+    html9`
       <devtools-toolbar class="top-resources-toolbar"
                         jslog=${VisualLogging13.toolbar()}>
         <devtools-button title=${i18nString24(UIStrings24.refresh)}
@@ -10279,11 +10358,12 @@ var StorageItemsToolbar = class extends Common13.ObjectWrapper.eventMixin(UI22.W
 };
 
 // gen/front_end/panels/application/KeyValueStorageItemsView.js
+var STORAGE_FLOATING_BUTTON_ACTION_ID = "ai-assistance.storage-floating-button";
 var { ARIAUtils: ARIAUtils8 } = UI23;
 var { EmptyWidget: EmptyWidget9 } = UI23.EmptyWidget;
 var { VBox, widget: widget6 } = UI23.Widget;
 var { Size } = Geometry;
-var { repeat } = LitDirectives;
+var { repeat, ifDefined } = LitDirectives;
 var UIStrings25 = {
   /**
    * @description Text that shows in the Application Panel if no value is selected for preview
@@ -10326,8 +10406,8 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
     metadataView ??= new ApplicationComponents13.StorageMetadataView.StorageMetadataView();
     if (!view) {
       view = (input, output, target) => {
-        render8(
-          html9`
+        render9(
+          html10`
             <devtools-widget
               ${widget6(StorageItemsToolbar, { metadataView })}
               class=flex-none
@@ -10352,6 +10432,7 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
                   @deselect=${() => input.onSelect(null)}
                 >
                   <table>
+                    ${input.showAiButton ? html10`<style>${dataGridAiButton_css_default}</style>` : nothing5}
                     <tr>
                       <th id="key" sortable ?editable=${input.editable}>
                         ${i18nString25(UIStrings25.key)}
@@ -10360,13 +10441,21 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
                         ${i18nString25(UIStrings25.value)}
                       </th>
                     </tr>
-                    ${repeat(input.items, (item2) => item2.key, (item2) => html9`
+                    ${repeat(input.items, (item2) => item2.key, (item2) => html10`
                       <tr data-key=${item2.key} data-value=${item2.value}
                           @select=${() => input.onSelect(item2)}
                           @edit=${(e) => input.onEdit(item2.key, item2.value, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
                           @delete=${() => input.onDelete(item2.key)}
                           selected=${input.selectedKey === item2.key || nothing5}>
-                        <td>${item2.key}</td>
+                        <td>${input.showAiButton ? html10`
+                            <span class="ai-button-container">
+                              <devtools-floating-button
+                                icon-name=${AIAssistance.AiUtils.getIconName()}
+                                title=${ifDefined(input.aiButtonTitle)}
+                                @click=${(e) => input.onAiButtonClick?.(item2, e)}
+                              ></devtools-floating-button>
+                            </span>
+                          ` : nothing5}${item2.key}</td>
                         <td>${item2.value.substr(0, MAX_VALUE_LENGTH)}</td>
                       </tr>`)}
                       <tr placeholder></tr>
@@ -10415,14 +10504,20 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
       preview: this.#preview,
       jslog: this.#jslog,
       classes: this.#classes,
+      showAiButton: this.isAiButtonEnabled(),
+      aiButtonTitle: this.isAiButtonEnabled() && UI23.ActionRegistry.ActionRegistry.instance().hasAction(STORAGE_FLOATING_BUTTON_ACTION_ID) ? UI23.ActionRegistry.ActionRegistry.instance().getAction(STORAGE_FLOATING_BUTTON_ACTION_ID).title() : void 0,
       onSelect: (item2) => {
         this.#toolbar?.setCanDeleteSelected(Boolean(item2));
-        if (!item2) {
-          void this.#previewEntry(null);
-        } else {
-          void this.#previewEntry(item2);
-        }
+        void this.#previewEntry(item2);
         this.selectedItemChanged(item2);
+      },
+      onAiButtonClick: (item2, event) => {
+        event.stopPropagation();
+        viewInput.onSelect(item2);
+        const actionRegistry = UI23.ActionRegistry.ActionRegistry.instance();
+        if (actionRegistry.hasAction(STORAGE_FLOATING_BUTTON_ACTION_ID)) {
+          void actionRegistry.getAction(STORAGE_FLOATING_BUTTON_ACTION_ID).execute();
+        }
       },
       onSort: (ascending) => {
         this.#isSortOrderAscending = ascending;
@@ -10447,6 +10542,9 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
       }
     };
     this.#view(viewInput, viewOutput, this.contentElement);
+  }
+  isAiButtonEnabled() {
+    return false;
   }
   get toolbar() {
     return this.#toolbar;
@@ -11629,7 +11727,7 @@ import * as Buttons9 from "./../../ui/components/buttons/buttons.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI28 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives4, html as html10, nothing as nothing6, render as render9 } from "./../../ui/lit/lit.js";
+import { Directives as Directives4, html as html11, nothing as nothing6, render as render10 } from "./../../ui/lit/lit.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 import * as ProtocolMonitor from "./../protocol_monitor/protocol_monitor.js";
 
@@ -12277,7 +12375,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     }, { jslogContext: "webmcp.copy-tool-description" });
     void contextMenu.show();
   };
-  render9(html10`
+  render10(html11`
     <style>${webMCPView_css_default}</style>
     <style>${UI28.FilterBar.filterStyles}</style>
     <devtools-split-view class="webmcp-view" direction="row" sidebar-position="second" name="webmcp-split-view">
@@ -12306,13 +12404,13 @@ var DEFAULT_VIEW7 = (input, output, target) => {
                              ?hidden=${!isFilterActive}></devtools-button>
           </devtools-toolbar>
         </div>
-        ${input.toolCalls.length > 0 ? html10`
+        ${input.toolCalls.length > 0 ? html11`
           <devtools-split-view name="webmcp-call-split-view"
                                direction="column"
                                sidebar-position="second"
                                sidebar-visibility=${input.selectedCall ? "show" : "hidden"}>
             <div slot="main" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
-              <devtools-data-grid striped .template=${html10`
+              <devtools-data-grid striped .template=${html11`
                 <table>
                   <style>${webMCPView_css_default}</style>
                   <tr>
@@ -12320,12 +12418,12 @@ var DEFAULT_VIEW7 = (input, output, target) => {
                       ${i18nString30(UIStrings30.name)}
                     </th>
                     <th id="status" weight="20">${i18nString30(UIStrings30.status)}</th>
-                            ${!input.selectedCall ? html10`
+                            ${!input.selectedCall ? html11`
                     <th id="input" weight="30">${i18nString30(UIStrings30.input)}</th>
                     <th id="output" weight="30">${i18nString30(UIStrings30.output)}</th>
                             ` : nothing6}
                   </tr>
-                      ${Directives4.repeat(input.toolCalls, (call) => call.invocationId + "-" + (call.result?.status ?? ""), (call) => html10`
+                      ${Directives4.repeat(input.toolCalls, (call) => call.invocationId + "-" + (call.result?.status ?? ""), (call) => html11`
                     <tr class=${Directives4.classMap({
     "status-error": call.result?.status === "Error",
     "status-cancelled": call.result?.status === "Canceled",
@@ -12378,11 +12476,11 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     );
   }}>
                         <div class="status-cell">
-                          ${iconName(call) ? html10`<devtools-icon class="small" name=${iconName(call)}></devtools-icon>` : ""}
+                          ${iconName(call) ? html11`<devtools-icon class="small" name=${iconName(call)}></devtools-icon>` : ""}
                           <span>${statusString(call)}</span>
                         </div>
                       </td>
-                      ${!input.selectedCall ? html10`
+                      ${!input.selectedCall ? html11`
                         <td @click=${(e) => {
     e.stopPropagation();
     input.onCallSelect(
@@ -12457,7 +12555,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
               <span class="toolbar-text">${i18nString30(UIStrings30.inProgressCount, { PH1: toolStats.totals.get(void 0) ?? 0 })}</span>
             </devtools-toolbar>
           </div>
-        ` : html10`
+        ` : html11`
         ${UI28.Widget.widget(UI28.EmptyWidget.EmptyWidget, {
     header: i18nString30(UIStrings30.noCallsPlaceholderTitle),
     text: i18nString30(UIStrings30.noCallsPlaceholder)
@@ -12471,21 +12569,21 @@ var DEFAULT_VIEW7 = (input, output, target) => {
                            sidebar-visibility=${input.selectedTool ? "show" : "hidden"}>
         <div slot="main" class="tool-list">
           <div class="section-title">${i18nString30(UIStrings30.toolRegistry)}</div>
-          ${tools.length === 0 ? html10`
+          ${tools.length === 0 ? html11`
           ${UI28.Widget.widget(UI28.EmptyWidget.EmptyWidget, {
     header: i18nString30(UIStrings30.noToolsPlaceholderTitle),
     text: i18nString30(UIStrings30.noToolsPlaceholder)
   })}
-          ` : html10`
+          ` : html11`
             <devtools-list class="square-corners">
-              ${tools.map((tool) => html10`
+              ${tools.map((tool) => html11`
                     <div class=${Directives4.classMap({ "tool-item": true, selected: tool === input.selectedTool?.tool })}
                          @click=${() => input.onToolSelect(tool)}
                          @contextmenu=${(e) => onToolContextMenu(e, tool)}>
                     <div class="tool-name-container">
                       <div class="tool-name source-code">${tool.name}</div>
                     <div class="tool-icons">
-                      ${getIconGroupsFromStats(toolStats.stats.get(tool)).map((group) => html10`
+                      ${getIconGroupsFromStats(toolStats.stats.get(tool)).map((group) => html11`
                         <icon-button
                           .data=${{
     groups: [group],
@@ -12511,7 +12609,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
             ></devtools-button>
             <span>${i18nString30(UIStrings30.toolDetails)}</span>
           </div>
-          ${input.selectedTool ? html10`
+          ${input.selectedTool ? html11`
             <div class="sidebar-tool-details">
               ${widget7(ToolDetailsWidget, { tool: input.selectedTool.tool })}
             </div>
@@ -12762,7 +12860,7 @@ var WebMCPView = class _WebMCPView extends UI28.Widget.VBox {
 };
 var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
   if (!input.valueObject && !input.valueString && !input.errorText && !input.exceptionDetails) {
-    render9(nothing6, target);
+    render10(nothing6, target);
     return;
   }
   const isParsable = input.valueObject !== void 0;
@@ -12776,7 +12874,7 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
     section8.listItemElement.classList.add("source-code", "object-properties-section");
     section8.childrenListElement.classList.add("source-code", "object-properties-section");
     section8.expand();
-    return html10`<devtools-tree .template=${html10`
+    return html11`<devtools-tree .template=${html11`
           <style>${ObjectUI2.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI2.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
           <ul role="tree">
@@ -12784,33 +12882,32 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
           </ul>
         `}></devtools-tree>`;
   };
-  const createSourceText = (text) => html10`<div class="payload-value source-code">${text}</div>`;
-  const createErrorText = (text) => html10`<div class="payload-value source-code error-text">${text}</div>`;
+  const createSourceText = (text) => html11`<div class="payload-value source-code">${text}</div>`;
+  const createErrorText = (text) => html11`<div class="payload-value source-code error-text">${text}</div>`;
   const createException = (details, linkifier = new Components4.Linkifier.Linkifier()) => {
     const renderFrame = (frame, index, array) => {
       const newline = index < array.length - 1 ? "\n" : "";
       const { line, link: link3, isCallFrame } = frame;
       if (!isCallFrame) {
-        return html10`<span>${line}${newline}</span>`;
+        return html11`<span>${line}${newline}</span>`;
       }
       if (!link3) {
-        return html10`<span class="formatted-builtin-stack-frame">${line}${newline}</span>`;
+        return html11`<span class="formatted-builtin-stack-frame">${line}${newline}</span>`;
       }
       const scriptLocationLink = linkifier.linkifyScriptLocation(details.error.runtimeModel().target(), link3.scriptId || null, link3.url, link3.lineNumber, {
         columnNumber: link3.columnNumber,
-        inlineFrameIndex: 0,
         showColumnNumber: true
       });
       scriptLocationLink.tabIndex = -1;
-      return html10`<span class="formatted-stack-frame">${link3.prefix}${scriptLocationLink}${link3.suffix}${newline}</span>`;
+      return html11`<span class="formatted-stack-frame">${link3.prefix}${scriptLocationLink}${link3.suffix}${newline}</span>`;
     };
-    return html10`
+    return html11`
       <div class="payload-value source-code error-text">
-        ${details.frames.length === 0 && details.description ? html10`<span>${details.description}\n</span>` : nothing6}
+        ${details.frames.length === 0 && details.description ? html11`<span>${details.description}\n</span>` : nothing6}
         <div>${details.frames.map(renderFrame)}</div>
-        ${details.cause ? html10`\n${i18nString30(UIStrings30.causedBy)}\n${createException(details.cause, linkifier)}` : nothing6}</div>`;
+        ${details.cause ? html11`\n${i18nString30(UIStrings30.causedBy)}\n${createException(details.cause, linkifier)}` : nothing6}</div>`;
   };
-  render9(html10`
+  render10(html11`
     <style>${webMCPView_css_default}</style>
     <div class="call-payload-view">
       <div class="call-payload-content">
@@ -12886,23 +12983,23 @@ var PayloadWidget = class extends UI28.Widget.Widget {
 };
 var TOOL_DETAILS_VIEW = (input, output, target) => {
   if (!input.tool) {
-    render9(nothing6, target);
+    render10(nothing6, target);
     return;
   }
   const tool = input.tool;
   const origin = input.origin;
-  render9(html10`
+  render10(html11`
     <style>${webMCPView_css_default}</style>
     <div class="tool-details-grid">
       <div class="label">Name</div>
       <div class="value source-code">${tool.name}</div>
       <div class="label">Description</div>
       <div class="value">${tool.description}</div>
-      ${tool.frame ? html10`
+      ${tool.frame ? html11`
       <div class="label">${i18nString30(UIStrings30.frame)}</div>
       <div class="value">${Components4.Linkifier.Linkifier.linkifyRevealable(tool.frame, tool.frame.displayName())}</div>
       ` : nothing6}
-      ${origin instanceof SDK24.DOMModel.DOMNode ? html10`
+      ${origin instanceof SDK24.DOMModel.DOMNode ? html11`
       <div class="label">Origin</div>
       <div class="value tool-origin-container">
         <span
@@ -12926,13 +13023,13 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
            .variant=${"icon"}
            @click=${() => input.revealNode(origin)}
            ></devtools-button>
-      </div>` : origin ? html10`
+      </div>` : origin ? html11`
       <div class="label">Origin</div>
       <div class="value stack-trace">
         ${widget7(Components4.JSPresentationUtils.StackTracePreviewContent, { stackTrace: origin, options: { expandable: true } })}
       </div>` : nothing6}
     </div>
-    ${input.isUnregistered ? html10`
+    ${input.isUnregistered ? html11`
       <div class="call-to-action">
         <div class="call-to-action-body">
           <div class="explanation">
@@ -13238,6 +13335,18 @@ var WebMCPTreeElement = class extends ApplicationPanelTreeElement {
 
 // gen/front_end/panels/application/ApplicationPanelSidebar.js
 var UIStrings31 = {
+  /**
+   * @description Text of a context menu item to start a chat with AI
+   */
+  startAChat: "Start a chat",
+  /**
+   * @description Text of a context menu item to explain contents of a local/session storage bucket with AI
+   */
+  explainStorage: "Explain storage",
+  /**
+   * @description Text of a context menu item to explain web cookies with AI
+   */
+  explainCookies: "Explain cookies",
   /**
    * @description Text in Application Panel Sidebar of the Application panel
    */
@@ -14595,13 +14704,42 @@ var DOMStorageTreeElement = class extends ApplicationPanelTreeElement {
     this.resourcesPanel.showDOMStorage(this.domStorage);
     return false;
   }
+  /**
+   * Resolves the DOM storage partition context (`localStorage` or `sessionStorage`)
+   * associated with this tree element for AI assistance.
+   */
+  #getStorageItem() {
+    const target = SDK25.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainPageOrigin = target?.inspectedURL() ? Common17.ParsedURL.ParsedURL.extractOrigin(target.inspectedURL()) : "";
+    if (!mainPageOrigin || !this.domStorage.storageKey) {
+      return null;
+    }
+    const origin = SDK25.StorageKeyManager.parseStorageKey(this.domStorage.storageKey).origin;
+    const storageType = this.domStorage.isLocalStorage ? "localStorage" : "sessionStorage";
+    return new AiAssistance2.StorageItem.DOMStorageItem(mainPageOrigin, origin, this.domStorage.storageKey, storageType);
+  }
   onattach() {
     super.onattach();
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
+    const storageItem = this.#getStorageItem();
+    if (storageItem) {
+      this.createAiButton(storageItem);
+    }
   }
   handleContextMenuEvent(event) {
     const contextMenu = new UI30.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString31(UIStrings31.clear), () => this.domStorage.clear(), { jslogContext: "clear" });
+    const storageItem = this.#getStorageItem();
+    if (storageItem) {
+      const openAiAssistanceId = "ai-assistance.application-panel-context";
+      if (UI30.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
+        UI30.Context.Context.instance().setFlavor(AiAssistance2.StorageItem.StorageItem, storageItem);
+        const action6 = UI30.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+        const submenu = contextMenu.footerSection().appendSubMenuItem(action6.title(), false, openAiAssistanceId);
+        submenu.defaultSection().appendAction(openAiAssistanceId, i18nString31(UIStrings31.startAChat));
+        submenu.defaultSection().appendItem(i18nString31(UIStrings31.explainStorage), () => action6.execute({ prompt: "What is the purpose of this storage bucket?" }), { disabled: !action6.enabled(), jslogContext: openAiAssistanceId + ".storage" });
+      }
+    }
     void contextMenu.show();
   }
 };
@@ -14664,13 +14802,40 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
   cookieDomain() {
     return this.#cookieDomain;
   }
+  /**
+   * Resolves the cookie domain security context associated with this tree element
+   * for AI assistance.
+   */
+  #getStorageItem() {
+    const primaryTarget = SDK25.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainPageOrigin = primaryTarget?.inspectedURL() ? Common17.ParsedURL.ParsedURL.extractOrigin(primaryTarget.inspectedURL()) : "";
+    if (!mainPageOrigin || !this.#cookieDomain) {
+      return null;
+    }
+    return new AiAssistance2.StorageItem.CookieItem(mainPageOrigin, this.#cookieDomain);
+  }
   onattach() {
     super.onattach();
     this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), true);
+    const storageItem = this.#getStorageItem();
+    if (storageItem) {
+      this.createAiButton(storageItem);
+    }
   }
   handleContextMenuEvent(event) {
     const contextMenu = new UI30.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(i18nString31(UIStrings31.clear), () => this.resourcesPanel.clearCookies(this.target, this.#cookieDomain), { jslogContext: "clear" });
+    const storageItem = this.#getStorageItem();
+    if (storageItem) {
+      const openAiAssistanceId = "ai-assistance.application-panel-context";
+      if (UI30.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
+        UI30.Context.Context.instance().setFlavor(AiAssistance2.StorageItem.StorageItem, storageItem);
+        const action6 = UI30.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+        const submenu = contextMenu.footerSection().appendSubMenuItem(action6.title(), false, openAiAssistanceId);
+        submenu.defaultSection().appendAction(openAiAssistanceId, i18nString31(UIStrings31.startAChat));
+        submenu.defaultSection().appendItem(i18nString31(UIStrings31.explainCookies), () => action6.execute({ prompt: "What is the purpose of these cookies?" }), { disabled: !action6.enabled(), jslogContext: openAiAssistanceId + ".cookies" });
+      }
+    }
     void contextMenu.show();
   }
   onselect(selectedByUser) {
@@ -15230,7 +15395,7 @@ import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as CookieTable from "./../../ui/legacy/components/cookie_table/cookie_table.js";
 import * as UI31 from "./../../ui/legacy/legacy.js";
-import { html as html11, render as render10 } from "./../../ui/lit/lit.js";
+import { html as html12, render as render11 } from "./../../ui/lit/lit.js";
 import * as VisualLogging18 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/cookieItemsView.css.js
@@ -15329,8 +15494,8 @@ var DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW = (input, output, target) => {
     selection.removeAllRanges();
     selection.addRange(range);
   }
-  render10(
-    html11`<style>${cookieItemsView_css_default}</style>
+  render11(
+    html12`<style>${cookieItemsView_css_default}</style>
     <div class="cookie-preview-widget">
       <div class="cookie-preview-widget-header">
         <span class="cookie-preview-widget-header-label">Cookie Value</span>
@@ -15382,8 +15547,8 @@ var CookiePreviewWidget = class extends UI31.Widget.VBox {
   }
 };
 var DEFAULT_VIEW8 = (input, output, target) => {
-  render10(
-    html11`<style>${cookieItemsView_css_default}</style>
+  render11(
+    html12`<style>${cookieItemsView_css_default}</style>
     <devtools-widget class="storage-view" ${widget8(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
       <devtools-widget ${widget8(StorageItemsToolbar, { filterRegex: null })}
         class=flex-none
@@ -15409,8 +15574,8 @@ var DEFAULT_VIEW8 = (input, output, target) => {
         </devtools-widget>
         <devtools-widget slot="sidebar" ${widget8(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}
           jslog=${VisualLogging18.pane("preview").track({ resize: true })}>
-          ${input.selectedCookie ? html11`<devtools-widget ${widget8(CookiePreviewWidget, { cookie: input.selectedCookie })}>
-                 </devtools-widget>` : html11`<devtools-widget ${widget8(UI31.EmptyWidget.EmptyWidget, {
+          ${input.selectedCookie ? html12`<devtools-widget ${widget8(CookiePreviewWidget, { cookie: input.selectedCookie })}>
+                 </devtools-widget>` : html12`<devtools-widget ${widget8(UI31.EmptyWidget.EmptyWidget, {
       header: i18nString32(UIStrings32.noCookieSelected),
       text: i18nString32(UIStrings32.selectACookieToPreviewItsValue)
     })}></devtools-widget>`}
@@ -15500,7 +15665,7 @@ var CookieItemsView = class extends UI31.Widget.VBox {
     this.updateAiAssistanceContext(cookie);
   }
   updateAiAssistanceContext(cookie) {
-    if (!cookie || cookie.httpOnly()) {
+    if (cookie && cookie.httpOnly()) {
       UI31.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, null);
       return;
     }
@@ -15510,7 +15675,7 @@ var CookieItemsView = class extends UI31.Widget.VBox {
       UI31.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, null);
       return;
     }
-    const storageItem = new AiAssistanceModel.StorageItem.CookieItem(mainPageOrigin, this.cookieDomain, cookie.name());
+    const storageItem = new AiAssistanceModel.StorageItem.CookieItem(mainPageOrigin, this.cookieDomain, cookie?.name());
     UI31.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, storageItem);
   }
   handleCookieSelected(selectedCookie) {
@@ -15593,7 +15758,7 @@ import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n65 from "./../../core/i18n/i18n.js";
 import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI32 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives5, html as html12, nothing as nothing7, render as render11 } from "./../../ui/lit/lit.js";
+import { Directives as Directives5, html as html13, nothing as nothing7, render as render12 } from "./../../ui/lit/lit.js";
 import * as VisualLogging19 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/deviceBoundSessionsView.css.js
@@ -16156,17 +16321,17 @@ var str_33 = i18n65.i18n.registerUIStrings("panels/application/DeviceBoundSessio
 var i18nString33 = i18n65.i18n.getLocalizedString.bind(void 0, str_33);
 var DEFAULT_VIEW9 = (input, _output, target) => {
   const { sessionAndEvents, preserveLogSetting, defaultTitle, defaultDescription, selectedEvent, onEventRowSelected } = input;
-  const toolbarHtml = preserveLogSetting ? html12`
+  const toolbarHtml = preserveLogSetting ? html13`
         <devtools-toolbar class="device-bound-sessions-toolbar">
         <devtools-checkbox title=${i18nString33(UIStrings33.doNotClearLogOnPageReload)} ${UI32.UIUtils.bindToSetting(preserveLogSetting)}>${i18nString33(UIStrings33.preserveLog)}</devtools-checkbox>
         </devtools-toolbar>
   ` : nothing7;
   if (!sessionAndEvents) {
     if (!defaultTitle || !defaultDescription) {
-      render11(nothing7, target);
+      render12(nothing7, target);
       return;
     }
-    render11(html12`
+    render12(html13`
       <style>${UI32.inspectorCommonStyles}</style>
       <style>${deviceBoundSessionsView_css_default}</style>
       ${toolbarHtml}
@@ -16177,7 +16342,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
   let sessionDetailsHtml;
   if (sessionAndEvents.session) {
     const { key, inclusionRules, cookieCravings } = sessionAndEvents.session;
-    sessionDetailsHtml = html12`
+    sessionDetailsHtml = html13`
         <devtools-report>
           <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.sessionConfig)}</devtools-report-section-header>
           <devtools-report-key>${i18nString33(UIStrings33.keySite)}</devtools-report-key>
@@ -16198,7 +16363,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           <devtools-report-key>${i18nString33(UIStrings33.includeSite)}</devtools-report-key>
           <devtools-report-value>${boolToString(inclusionRules.includeSite)}</devtools-report-value>
         </devtools-report>
-        ${inclusionRules.urlRules.length > 0 ? html12`
+        ${inclusionRules.urlRules.length > 0 ? html13`
           <div class="device-bound-session-grid-wrapper">
             <devtools-data-grid class="device-bound-session-url-rules-grid" striped inline name=${i18nString33(UIStrings33.scope)}>
               <table>
@@ -16210,7 +16375,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${inclusionRules.urlRules.map((rule) => html12`
+                  ${inclusionRules.urlRules.map((rule) => html13`
                     <tr>
                       <td>${ruleTypeToString(rule.ruleType)}</td>
                       <td>${rule.hostPattern}</td>
@@ -16223,7 +16388,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           </div>
         ` : nothing7}
         <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.cookieCravings)}</devtools-report-section-header>
-        ${cookieCravings.length > 0 ? html12`
+        ${cookieCravings.length > 0 ? html13`
           <div class="device-bound-session-grid-wrapper">
             <devtools-data-grid class="device-bound-session-cookie-cravings-grid" striped inline name=${i18nString33(UIStrings33.cookieCravings)}>
               <table>
@@ -16238,7 +16403,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${cookieCravings.map((craving) => html12`
+                  ${cookieCravings.map((craving) => html13`
                     <tr>
                       <td>${craving.name}</td>
                       <td>${craving.domain}</td>
@@ -16255,9 +16420,9 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
         ` : nothing7}`;
   }
   const events = [...sessionAndEvents.eventsById.values()];
-  const eventsHtml = html12`
+  const eventsHtml = html13`
       <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.events)}</devtools-report-section-header>
-          ${events.length > 0 && onEventRowSelected ? html12`
+          ${events.length > 0 && onEventRowSelected ? html13`
             <div class="device-bound-session-grid-wrapper">
                 <devtools-data-grid class="device-bound-session-events-grid" striped inline name=${i18nString33(UIStrings33.events)} ${Directives5.ref((el) => {
     if (!el || !(el instanceof HTMLElement)) {
@@ -16276,7 +16441,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                       <th id="details" sortable>${i18nString33(UIStrings33.result)}</th>
                     </tr>
                   </thead>
-                  <tbody>${events.map(({ event, timestamp }) => html12`
+                  <tbody>${events.map(({ event, timestamp }) => html13`
                       <tr @select=${() => onEventRowSelected(event)}>
                         <td>${getEventTypeString(event)}</td>
                         <td>${timestamp.toLocaleString()}</td>
@@ -16287,21 +16452,21 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                 </table>
               </devtools-data-grid>
             </div>
-          ` : html12`<div class="device-bound-session-no-events-wrapper">${i18nString33(UIStrings33.noEvents)}</div>`}`;
+          ` : html13`<div class="device-bound-session-no-events-wrapper">${i18nString33(UIStrings33.noEvents)}</div>`}`;
   const failedRequestDetailsGetter = (failedRequest) => {
     if (!failedRequest) {
       return nothing7;
     }
-    return html12`${failedRequest.requestUrl && html12`
+    return html13`${failedRequest.requestUrl && html13`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestUrl)}</devtools-report-key>
           <devtools-report-value>${failedRequest.requestUrl}</devtools-report-value>`}
-        ${failedRequest.netError && html12`
+        ${failedRequest.netError && html13`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestNetError)}</devtools-report-key>
           <devtools-report-value>${failedRequest.netError}</devtools-report-value>`}
-        ${failedRequest.responseError !== void 0 ? html12`
+        ${failedRequest.responseError !== void 0 ? html13`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestResponseCode)}</devtools-report-key>
           <devtools-report-value>${failedRequest.responseError}</devtools-report-value>` : nothing7}
-        ${failedRequest.responseErrorBody && html12`
+        ${failedRequest.responseErrorBody && html13`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestResponseBody)}</devtools-report-key>
           <devtools-report-value>
             ${widget9(SourceFrame6.JSONView.SearchableJsonView, {
@@ -16309,41 +16474,41 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
     })}
           </devtools-report-value>`}`;
   };
-  const creationEventDetails = selectedEvent?.creationEventDetails && html12`
+  const creationEventDetails = selectedEvent?.creationEventDetails && html13`
           <devtools-report-key>${i18nString33(UIStrings33.fetchResult)}</devtools-report-key>
           <devtools-report-value>${fetchResultToString(selectedEvent.creationEventDetails.fetchResult)}</devtools-report-value>
-            ${selectedEvent.creationEventDetails.newSession && html12`
+            ${selectedEvent.creationEventDetails.newSession && html13`
               <devtools-report-key>${i18nString33(UIStrings33.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString33(UIStrings33.yes)}</devtools-report-value>
             `}
           ${failedRequestDetailsGetter(selectedEvent.creationEventDetails.failedRequest)}
       `;
-  const refreshEventDetails = selectedEvent?.refreshEventDetails && html12`
+  const refreshEventDetails = selectedEvent?.refreshEventDetails && html13`
           <devtools-report-key>${i18nString33(UIStrings33.refreshResult)}</devtools-report-key>
           <devtools-report-value>${refreshResultToString(selectedEvent.refreshEventDetails.refreshResult)}</devtools-report-value>
           <devtools-report-key>${i18nString33(UIStrings33.causedAnyRequestDeferrals)}</devtools-report-key>
           <devtools-report-value>${boolToString(!selectedEvent.refreshEventDetails.wasFullyProactiveRefresh)}</devtools-report-value>
-            ${selectedEvent.refreshEventDetails.fetchResult && html12`
+            ${selectedEvent.refreshEventDetails.fetchResult && html13`
               <devtools-report-key>${i18nString33(UIStrings33.fetchResult)}</devtools-report-key>
               <devtools-report-value>${fetchResultToString(selectedEvent.refreshEventDetails.fetchResult)}</devtools-report-value>
             `}
-            ${selectedEvent.refreshEventDetails.newSession && html12`
+            ${selectedEvent.refreshEventDetails.newSession && html13`
               <devtools-report-key>${i18nString33(UIStrings33.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString33(UIStrings33.yes)}</devtools-report-value>
             `}
           ${failedRequestDetailsGetter(selectedEvent.refreshEventDetails.failedRequest)}
       `;
-  const challengeEventDetails = selectedEvent?.challengeEventDetails && html12`
+  const challengeEventDetails = selectedEvent?.challengeEventDetails && html13`
           <devtools-report-key>${i18nString33(UIStrings33.challengeResult)}</devtools-report-key>
           <devtools-report-value>${challengeResultToString(selectedEvent.challengeEventDetails.challengeResult)}</devtools-report-value>
           <devtools-report-key>${i18nString33(UIStrings33.challenge)}</devtools-report-key>
           <devtools-report-value>${selectedEvent.challengeEventDetails.challenge}</devtools-report-value>
           `;
-  const terminationEventDetails = selectedEvent?.terminationEventDetails && html12`
+  const terminationEventDetails = selectedEvent?.terminationEventDetails && html13`
           <devtools-report-key>${i18nString33(UIStrings33.deletionReason)}</devtools-report-key>
           <devtools-report-value>${deletionReasonToString(selectedEvent.terminationEventDetails.deletionReason)}</devtools-report-value>
           `;
-  const eventDetailsContentHtml = selectedEvent ? html12`
+  const eventDetailsContentHtml = selectedEvent ? html13`
         <devtools-report>
           <devtools-report-key>${i18nString33(UIStrings33.keySite)}</devtools-report-key>
           <devtools-report-value>${selectedEvent.site}</devtools-report-value>
@@ -16358,12 +16523,12 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           ${challengeEventDetails}
           ${terminationEventDetails}
         </devtools-report>
-    ` : html12`<div class="device-bound-session-no-event-details">${i18nString33(UIStrings33.selectEventToViewDetails)}</div>`;
-  const eventDetailsHtml = html12`
+    ` : html13`<div class="device-bound-session-no-event-details">${i18nString33(UIStrings33.selectEventToViewDetails)}</div>`;
+  const eventDetailsHtml = html13`
       <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.eventDetails)}</devtools-report-section-header>
       ${eventDetailsContentHtml}
   `;
-  render11(html12`
+  render12(html13`
         <style>${UI32.inspectorCommonStyles}</style>
         <style>${deviceBoundSessionsView_css_default}</style>
         ${toolbarHtml}
@@ -16823,6 +16988,9 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
     }
     const storageItem = new AiAssistanceModel2.StorageItem.DOMStorageItem(mainPageOrigin, origin, storageKey, storageType, item2 ? item2.key : void 0);
     UI33.Context.Context.instance().setFlavor(AiAssistanceModel2.StorageItem.StorageItem, storageItem);
+  }
+  isAiButtonEnabled() {
+    return UI33.ActionRegistry.ActionRegistry.instance().hasAction("ai-assistance.storage-floating-button");
   }
   removeItem(key) {
     this.domStorage?.removeItem(key);

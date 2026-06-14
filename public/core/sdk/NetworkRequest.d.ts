@@ -168,6 +168,8 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     responseHeaderValue(headerName: string): string | undefined;
     wasIntercepted(): boolean;
     setWasIntercepted(wasIntercepted: boolean): void;
+    isImportedHar(): boolean;
+    setIsImportedHar(isImportedHar: boolean): void;
     setEarlyHintsHeaders(headers: NameValue[]): void;
     get responseCookies(): Cookie[];
     set responseCookies(responseCookies: Cookie[]);
@@ -278,7 +280,6 @@ export interface EventTypes {
     [Events.REQUEST_HEADERS_CHANGED]: void;
     [Events.RESPONSE_HEADERS_CHANGED]: void;
     [Events.WEBSOCKET_FRAME_ADDED]: WebSocketFrame;
-    [Events.DIRECTSOCKET_CHUNK_ADDED]: DirectSocketChunk;
     [Events.DIRECTSOCKET_CHUNK_ADDED]: DirectSocketChunk;
     [Events.EVENT_SOURCE_MESSAGE_ADDED]: EventSourceMessage;
     [Events.TRUST_TOKEN_RESULT_ADDED]: void;

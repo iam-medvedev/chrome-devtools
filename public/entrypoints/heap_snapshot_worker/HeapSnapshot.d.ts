@@ -284,6 +284,7 @@ export declare abstract class HeapSnapshot {
     detachednessAndClassIndexArray?: Uint32Array;
     constructor(profile: Profile, progress: HeapSnapshotProgress);
     initialize(secondWorker: PlatformApi.HostRuntime.WorkerMessagePort): Promise<void>;
+    nodeIndexForId(nodeId: number): number | undefined;
     private startInitStep1InSecondThread;
     private startInitStep2InSecondThread;
     private startInitStep3InSecondThread;
@@ -368,7 +369,7 @@ export declare abstract class HeapSnapshot {
         map: Uint8Array;
         flag: number;
     } | null;
-    calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>): Record<string, HeapSnapshotModel.HeapSnapshotModel.Diff>;
+    calculateSnapshotDiff(baseSnapshotId: number, baseSnapshotAggregates: Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>): Record<string, HeapSnapshotModel.HeapSnapshotModel.Diff>;
     private calculateDiffForClass;
     private nodeForSnapshotObjectId;
     nodeClassKey(snapshotObjectId: number): string | null;
@@ -378,7 +379,8 @@ export declare abstract class HeapSnapshot {
     containmentEdgesFilter(): ((arg0: HeapSnapshotEdge) => boolean) | null;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotEdgesProvider;
     getRetainingPaths(nodeIndex: number, maxDepth?: number, maxNodes?: number, maxSiblings?: number): HeapSnapshotModel.HeapSnapshotModel.RetainingPaths;
-    createAddedNodesProvider(baseSnapshotId: string, classKey: string): HeapSnapshotNodesProvider;
+    getDominatorsOf(nodeIndex: number): HeapSnapshotModel.HeapSnapshotModel.DominatorChain;
+    createAddedNodesProvider(baseSnapshotId: number, classKey: string): HeapSnapshotNodesProvider;
     createDeletedNodesProvider(nodeIndexes: number[]): HeapSnapshotNodesProvider;
     createNodesProviderForClass(classKey: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotNodesProvider;
     private maxJsNodeId;

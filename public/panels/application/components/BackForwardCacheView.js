@@ -298,7 +298,7 @@ function maybeRenderReasonContext(explanation) {
         const link = 'chrome://extensions/?id=' + explanation.context;
         // clang-format off
         return html `${i18nString(UIStrings.blockingExtensionId)}
-      <devtools-link .href=${link}>${explanation.context}</devtools-link>`;
+      <devtools-link .href=${link} allow-privileged>${explanation.context}</devtools-link>`;
         // clang-format on
     }
     return nothing;
@@ -347,7 +347,6 @@ function maybeRenderJavaScriptDetails(details) {
         options: {
             columnNumber: detail.columnNumber,
             showColumnNumber: true,
-            inlineFrameIndex: 0,
             maxLength: maxLengthForDisplayedURLs,
         }
     })}`));

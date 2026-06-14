@@ -23,11 +23,11 @@ describe('DetailedErrorStackParser', () => {
                 functionName: 'functionName',
                 lineNumber: 9,
                 columnNumber: 4,
+                isWasm: false,
                 parsedFrameInfo: {
                     isAsync: false,
                     isConstructor: false,
                     isEval: false,
-                    isWasm: false,
                     wasmModuleName: undefined,
                     wasmFunctionIndex: undefined,
                     typeName: undefined,
@@ -41,11 +41,11 @@ describe('DetailedErrorStackParser', () => {
                 functionName: 'Class.methodName',
                 lineNumber: 19,
                 columnNumber: 0,
+                isWasm: false,
                 parsedFrameInfo: {
                     isAsync: false,
                     isConstructor: false,
                     isEval: false,
-                    isWasm: false,
                     wasmModuleName: undefined,
                     wasmFunctionIndex: undefined,
                     typeName: 'Class',
@@ -59,11 +59,11 @@ describe('DetailedErrorStackParser', () => {
                 functionName: 'Constructor',
                 lineNumber: 29,
                 columnNumber: 0,
+                isWasm: false,
                 parsedFrameInfo: {
                     isAsync: false,
                     isConstructor: true,
                     isEval: false,
-                    isWasm: false,
                     wasmModuleName: undefined,
                     wasmFunctionIndex: undefined,
                     typeName: undefined,
@@ -77,11 +77,11 @@ describe('DetailedErrorStackParser', () => {
                 functionName: 'asyncFunction',
                 lineNumber: 39,
                 columnNumber: 0,
+                isWasm: false,
                 parsedFrameInfo: {
                     isAsync: true,
                     isConstructor: false,
                     isEval: false,
-                    isWasm: false,
                     wasmModuleName: undefined,
                     wasmFunctionIndex: undefined,
                     typeName: undefined,
@@ -95,11 +95,11 @@ describe('DetailedErrorStackParser', () => {
                 functionName: '',
                 lineNumber: 49,
                 columnNumber: 0,
+                isWasm: false,
                 parsedFrameInfo: {
                     isAsync: false,
                     isConstructor: false,
                     isEval: false,
-                    isWasm: false,
                     wasmModuleName: undefined,
                     wasmFunctionIndex: undefined,
                     typeName: undefined,
@@ -161,17 +161,31 @@ describe('DetailedErrorStackParser', () => {
             assert.strictEqual(frames[0].parsedFrameInfo?.typeName, 'Type');
             assert.strictEqual(frames[0].parsedFrameInfo?.methodName, 'alias');
         });
-        it('parses wasm frames', () => {
+        it('parses wasm frames with function names', () => {
             const stack = `Error: foo
           at wasmModule.wasmFunc (http://www.example.org/script.js:wasm-function[123]:0xabc)`;
             const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
             assert.exists(frames);
             assert.lengthOf(frames, 1);
-            assert.isTrue(frames[0].parsedFrameInfo?.isWasm);
+            assert.isTrue(frames[0].isWasm);
             assert.strictEqual(frames[0].url, 'http://www.example.org/script.js');
             assert.strictEqual(frames[0].parsedFrameInfo?.wasmModuleName, 'wasmModule');
             assert.strictEqual(frames[0].parsedFrameInfo?.wasmFunctionIndex, 123);
             assert.strictEqual(frames[0].columnNumber, 0xabc);
+            assert.strictEqual(frames[0].lineNumber, 0);
+        });
+        it('parses wasm frames without function names', () => {
+            const stack = `Error: foo
+          at http://www.example.org/script.js:wasm-function[123]:0xabc`;
+            const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
+            assert.lengthOf(frames, 1);
+            assert.isTrue(frames[0].isWasm);
+            assert.strictEqual(frames[0].url, 'http://www.example.org/script.js');
+            assert.isUndefined(frames[0].parsedFrameInfo?.wasmModuleName);
+            assert.strictEqual(frames[0].parsedFrameInfo?.wasmFunctionIndex, 123);
+            assert.strictEqual(frames[0].columnNumber, 0xabc);
+            assert.strictEqual(frames[0].lineNumber, 0);
         });
         it('matches wasm protocol frames accurately with multiple frames', () => {
             const stack = `Error: foo
@@ -262,6 +276,41 @@ describe('DetailedErrorStackParser', () => {
             assert.strictEqual(frames[0].columnNumber, -1);
             assert.isTrue(StackTraceImpl.Trie.isBuiltinFrame(frames[0]));
         });
+        it('parses relative URLs enclosed in parentheses without function names', () => {
+            const stack = `Error: test
+          at (foo1.js:10:50)
+          at (../foo4.js:10:50)
+          at (./bar/foo6.js:10:50)`;
+            const mockResolveURL = (url) => {
+                return url;
+            };
+            const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack, mockResolveURL);
+            assert.exists(frames);
+            assert.lengthOf(frames, 3);
+            assert.strictEqual(frames[0].url, 'foo1.js');
+            assert.strictEqual(frames[0].functionName, '');
+            assert.strictEqual(frames[0].lineNumber, 9);
+            assert.strictEqual(frames[0].columnNumber, 49);
+            assert.strictEqual(frames[1].url, '../foo4.js');
+            assert.strictEqual(frames[1].functionName, '');
+            assert.strictEqual(frames[1].lineNumber, 9);
+            assert.strictEqual(frames[1].columnNumber, 49);
+            assert.strictEqual(frames[2].url, './bar/foo6.js');
+            assert.strictEqual(frames[2].functionName, '');
+            assert.strictEqual(frames[2].lineNumber, 9);
+            assert.strictEqual(frames[2].columnNumber, 49);
+        });
+        it('parses function names containing parentheses correctly', () => {
+            const stack = `Error: test
+          at Object.foo() (http://www.example.org/script.js:10:5)`;
+            const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
+            assert.exists(frames);
+            assert.lengthOf(frames, 1);
+            assert.strictEqual(frames[0].url, 'http://www.example.org/script.js');
+            assert.strictEqual(frames[0].functionName, 'Object.foo()');
+            assert.strictEqual(frames[0].lineNumber, 9);
+            assert.strictEqual(frames[0].columnNumber, 4);
+        });
         it('returns null if arbitrary text is interleaved between frames', () => {
             const stack = `Error: foo
           at functionName (http://www.example.org/script.js:10:5)
@@ -269,6 +318,44 @@ describe('DetailedErrorStackParser', () => {
           at http://www.example.org/script.js:50:1`;
             const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack);
             assert.isNull(frames);
+        });
+        it('returns null for broken stack traces with invalid URLs or formats', () => {
+            const brokenStacks = [
+                `Error: broken
+            at function_name(foob.js foob.js:30:1)`,
+                `Error: broken
+            at function_name(foob.js:20:30`,
+                `Error: broken
+            at function_name(foob:20.js:30   bla`,
+                `Error: broken
+            at function_name)foob.js:20:30(`,
+                `Error: broken
+            at function_name foob.js:20:30)`,
+                `Error: broken
+            at foob.js foob.js:40:70`,
+            ];
+            const mockResolveURL = (url) => {
+                if (url.includes('(') || url.includes(')') || url.includes('[') || url.includes(']')) {
+                    return null;
+                }
+                if (url.includes(' ')) {
+                    return null;
+                }
+                return url;
+            };
+            for (const stack of brokenStacks) {
+                const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(stack, mockResolveURL);
+                assert.isNull(frames, `Expected parsing to fail for stack: ${stack}`);
+            }
+            const validStack = `Error: valid
+          at function_name (foob.js:20:30)`;
+            const frames = StackTraceImpl.DetailedErrorStackParser.parseRawFramesFromErrorStack(validStack, mockResolveURL);
+            assert.exists(frames);
+            assert.lengthOf(frames, 1);
+            assert.strictEqual(frames[0].url, 'foob.js');
+            assert.strictEqual(frames[0].functionName, 'function_name');
+            assert.strictEqual(frames[0].lineNumber, 19);
+            assert.strictEqual(frames[0].columnNumber, 29);
         });
         it('allows and skips empty or whitespace-only lines interleaved between frames', () => {
             const stack = `Error: foo
@@ -309,11 +396,11 @@ describe('DetailedErrorStackParser', () => {
                 functionName: 'end',
                 lineNumber: 0,
                 columnNumber: 22,
+                isWasm: false,
                 parsedFrameInfo: {
                     isAsync: false,
                     isConstructor: false,
                     isEval: true,
-                    isWasm: false,
                     wasmModuleName: undefined,
                     wasmFunctionIndex: undefined,
                     typeName: undefined,
@@ -324,11 +411,11 @@ describe('DetailedErrorStackParser', () => {
                         functionName: '<anonymous>',
                         lineNumber: -1,
                         columnNumber: -1,
+                        isWasm: false,
                         parsedFrameInfo: {
                             isAsync: false,
                             isConstructor: false,
                             isEval: true,
-                            isWasm: false,
                             wasmModuleName: undefined,
                             wasmFunctionIndex: undefined,
                             typeName: undefined,
@@ -339,11 +426,11 @@ describe('DetailedErrorStackParser', () => {
                                 functionName: '<anonymous>',
                                 lineNumber: -1,
                                 columnNumber: -1,
+                                isWasm: false,
                                 parsedFrameInfo: {
                                     isAsync: false,
                                     isConstructor: false,
                                     isEval: true,
-                                    isWasm: false,
                                     wasmModuleName: undefined,
                                     wasmFunctionIndex: undefined,
                                     typeName: undefined,
@@ -354,11 +441,11 @@ describe('DetailedErrorStackParser', () => {
                                         functionName: 'evalCaller',
                                         lineNumber: 10,
                                         columnNumber: 44,
+                                        isWasm: false,
                                         parsedFrameInfo: {
                                             isAsync: false,
                                             isConstructor: false,
                                             isEval: false,
-                                            isWasm: false,
                                             wasmModuleName: undefined,
                                             wasmFunctionIndex: undefined,
                                             typeName: undefined,
@@ -465,12 +552,12 @@ more details
                 functionName: 'intermediate',
                 lineNumber: 19,
                 columnNumber: 0,
+                isWasm: false,
                 parsedFrameInfo: {
                     isAsync: false,
                     isConstructor: false,
                     isEval: true,
                     evalOrigin: nestedEvalOrigin,
-                    isWasm: false,
                 },
             };
             const frames = [
@@ -479,12 +566,12 @@ more details
                     functionName: 'eval',
                     lineNumber: 0,
                     columnNumber: 10,
+                    isWasm: false,
                     parsedFrameInfo: {
                         isAsync: false,
                         isConstructor: false,
                         isEval: true,
                         evalOrigin,
-                        isWasm: false,
                     },
                 },
             ];

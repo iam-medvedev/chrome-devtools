@@ -8,6 +8,7 @@ import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as Tracing from '../../services/tracing/tracing.js';
 import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
@@ -399,6 +400,15 @@ describeWithEnvironment('TimelinePanel', function () {
                 assert.strictEqual(totalSourceMapsWithChromExtensionProtocol?.length, 0);
             });
         });
+    });
+    it('correctly flags recording as fresh when stopped automatically', async function () {
+        const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
+        timeline['setState']("Recording" /* Timeline.TimelinePanel.State.RECORDING */);
+        await timeline.loadingStarted();
+        await timeline.loadingComplete(events, null, null);
+        const parsedTrace = traceModel.parsedTrace();
+        assert.isOk(parsedTrace);
+        assert.isTrue(Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
     });
 });
 //# sourceMappingURL=TimelinePanel.test.js.map

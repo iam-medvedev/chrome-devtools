@@ -42,6 +42,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/panels/application/components/AdsView.test.ts",
     "../../../../../../../front_end/panels/application/components/BackForwardCacheView.test.ts",
     "../../../../../../../front_end/panels/application/components/BounceTrackingMitigationsView.test.ts",
     "../../../../../../../front_end/panels/application/components/CrashReportContextGrid.test.ts",

@@ -2767,7 +2767,9 @@ var Action;
   Action2[Action2["AiCodeGenerationRequestTriggeredFromSources"] = 205] = "AiCodeGenerationRequestTriggeredFromSources";
   Action2[Action2["AiCodeCompletionFreCompletedFromConsole"] = 206] = "AiCodeCompletionFreCompletedFromConsole";
   Action2[Action2["AiCodeCompletionFreCompletedFromSources"] = 207] = "AiCodeCompletionFreCompletedFromSources";
-  Action2[Action2["MAX_VALUE"] = 208] = "MAX_VALUE";
+  Action2[Action2["AiAssistanceOpenedFromApplicationPanelFloatingButton"] = 208] = "AiAssistanceOpenedFromApplicationPanelFloatingButton";
+  Action2[Action2["AiAssistanceOpenedFromApplicationPanel"] = 209] = "AiAssistanceOpenedFromApplicationPanel";
+  Action2[Action2["MAX_VALUE"] = 210] = "MAX_VALUE";
 })(Action || (Action = {}));
 var PanelCodes;
 (function(PanelCodes2) {
@@ -3010,7 +3012,6 @@ var DevtoolsExperiments;
 (function(DevtoolsExperiments2) {
   DevtoolsExperiments2[DevtoolsExperiments2["protocol-monitor"] = 13] = "protocol-monitor";
   DevtoolsExperiments2[DevtoolsExperiments2["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
-  DevtoolsExperiments2[DevtoolsExperiments2["use-source-map-scopes"] = 76] = "use-source-map-scopes";
   DevtoolsExperiments2[DevtoolsExperiments2["durable-messages"] = 110] = "durable-messages";
   DevtoolsExperiments2[DevtoolsExperiments2["jpeg-xl"] = 111] = "jpeg-xl";
   DevtoolsExperiments2[DevtoolsExperiments2["plus-button"] = 112] = "plus-button";

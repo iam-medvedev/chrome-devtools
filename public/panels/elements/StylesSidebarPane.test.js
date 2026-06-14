@@ -737,6 +737,61 @@ describe('StylesSidebarPane', () => {
             assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.FunctionRuleSection);
             assert.strictEqual(sectionBlocks[1].sections[0].element.deepTextContent().replaceAll(/\s+/g, ' ').trim(), '--f(--x, --y) { @media (width > 400px) { @container --foo (width > 300px) { @supports (color: red) { result: var(--y); } } } result: var(--x);}');
         });
+        it('should add @functions with same name but different tree scope depths', async () => {
+            const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.id = 1;
+            node.backendNodeId.returns(1);
+            const parent = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            parent.id = 2;
+            parent.backendNodeId.returns(2);
+            node.parentNode = parent;
+            const grandparent = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            grandparent.id = 3;
+            grandparent.backendNodeId.returns(3);
+            parent.parentNode = grandparent;
+            node.getTreeRoot.returns(node);
+            const matchedStyles = await getMatchedStyles({
+                cssModel: stylesSidebarPane.cssModel(),
+                node,
+                functionRules: [
+                    {
+                        name: { text: '--f' },
+                        parameters: [],
+                        origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                        children: [{
+                                style: {
+                                    cssProperties: [{ name: 'result', value: 'red' }],
+                                    shorthandEntries: [],
+                                }
+                            }],
+                        originTreeScopeNodeId: 2,
+                    },
+                    {
+                        name: { text: '--f' },
+                        parameters: [],
+                        origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                        children: [{
+                                style: {
+                                    cssProperties: [{ name: 'result', value: 'blue' }],
+                                    shorthandEntries: [],
+                                }
+                            }],
+                        originTreeScopeNodeId: 3,
+                    }
+                ],
+            });
+            const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+            assert.lengthOf(sectionBlocks, 2);
+            assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@function');
+            assert.lengthOf(sectionBlocks[1].sections, 2);
+            assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.FunctionRuleSection);
+            assert.instanceOf(sectionBlocks[1].sections[1], Elements.StylePropertiesSection.FunctionRuleSection);
+            assert.strictEqual(sectionBlocks[1].sections[0].element.deepTextContent().replaceAll(/\s+/g, ' ').trim(), '--f() { result: red;}');
+            assert.strictEqual(sectionBlocks[1].sections[1].element.deepTextContent().replaceAll(/\s+/g, ' ').trim(), '--f() { result: blue;}');
+            assert.strictEqual(sectionBlocks[1].sections[0].treeScopeDistance(), 1);
+            assert.strictEqual(sectionBlocks[1].sections[1].treeScopeDistance(), 2);
+        });
         describe('Animation styles', () => {
             function mockGetAnimatedComputedStyles(response) {
                 setMockConnectionResponseHandler('CSS.getAnimatedStylesForNode', () => response);

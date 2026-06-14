@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { expect } from 'chai';
+import { assert } from 'chai';
 import * as Metrics from './metrics.js';
 const { calculateSumOfBlockingTime } = Metrics.TBTUtils;
 describe('TotalBlockingTime utils', () => {
@@ -12,8 +12,7 @@ describe('TotalBlockingTime utils', () => {
         ];
         const fcpTimeMs = 500;
         const interactiveTimeMs = 4000;
-        expect(calculateSumOfBlockingTime(events, fcpTimeMs, interactiveTimeMs))
-            .to.equal(0);
+        assert.strictEqual(calculateSumOfBlockingTime(events, fcpTimeMs, interactiveTimeMs), 0);
     });
     it('only looks at tasks within FCP and TTI', () => {
         const events = [
@@ -24,8 +23,7 @@ describe('TotalBlockingTime utils', () => {
         ];
         const fcpTimeMs = 1500;
         const interactiveTimeMs = 2500;
-        expect(calculateSumOfBlockingTime(events, fcpTimeMs, interactiveTimeMs))
-            .to.equal(150);
+        assert.strictEqual(calculateSumOfBlockingTime(events, fcpTimeMs, interactiveTimeMs), 150);
     });
     it('clips before finding blocking regions', () => {
         const fcpTimeMs = 150;
@@ -39,8 +37,7 @@ describe('TotalBlockingTime utils', () => {
             // blocking time.
             { start: 240, end: 460, duration: 120 },
         ];
-        expect(calculateSumOfBlockingTime(events, fcpTimeMs, interactiveTimeMs))
-            .to.equal(10); // 0ms + 10ms.
+        assert.strictEqual(calculateSumOfBlockingTime(events, fcpTimeMs, interactiveTimeMs), 10); // 0ms + 10ms.
     });
     // TTI can happen in the middle of a task, for example, if TTI is at FMP which occurs as part
     // of a larger task, or in the lantern case where we use estimate TTI using a different graph
@@ -48,22 +45,16 @@ describe('TotalBlockingTime utils', () => {
     it('clips properly if TTI falls in the middle of a task', () => {
         const fcpTimeMs = 1000;
         const interactiveTimeMs = 2000;
-        expect(calculateSumOfBlockingTime([{ start: 1951, end: 2100, duration: 149 }], fcpTimeMs, interactiveTimeMs))
-            .to.equal(0); // Duration after clipping is 49, which is < 50.
-        expect(calculateSumOfBlockingTime([{ start: 1950, end: 2100, duration: 150 }], fcpTimeMs, interactiveTimeMs))
-            .to.equal(0); // Duration after clipping is 50, so time after 50ms is 0ms.
-        expect(calculateSumOfBlockingTime([{ start: 1949, end: 2100, duration: 151 }], fcpTimeMs, interactiveTimeMs))
-            .to.equal(1); // Duration after clipping is 51, so time after 50ms is 1ms.
+        assert.strictEqual(calculateSumOfBlockingTime([{ start: 1951, end: 2100, duration: 149 }], fcpTimeMs, interactiveTimeMs), 0); // Duration after clipping is 49, which is < 50.
+        assert.strictEqual(calculateSumOfBlockingTime([{ start: 1950, end: 2100, duration: 150 }], fcpTimeMs, interactiveTimeMs), 0); // Duration after clipping is 50, so time after 50ms is 0ms.
+        assert.strictEqual(calculateSumOfBlockingTime([{ start: 1949, end: 2100, duration: 151 }], fcpTimeMs, interactiveTimeMs), 1); // Duration after clipping is 51, so time after 50ms is 1ms.
     });
     it('clips properly if FCP falls in the middle of a task', () => {
         const fcpTimeMs = 1000;
         const interactiveTimeMs = 2000;
-        expect(calculateSumOfBlockingTime([{ start: 900, end: 1049, duration: 149 }], fcpTimeMs, interactiveTimeMs))
-            .to.equal(0); // Duration after clipping is 49, which is < 50.
-        expect(calculateSumOfBlockingTime([{ start: 900, end: 1050, duration: 150 }], fcpTimeMs, interactiveTimeMs))
-            .to.equal(0); // Duration after clipping is 50, so time after 50ms is 0ms.
-        expect(calculateSumOfBlockingTime([{ start: 900, end: 1051, duration: 151 }], fcpTimeMs, interactiveTimeMs))
-            .to.equal(1); // Duration after clipping is 51, so time after 50ms is 1ms.
+        assert.strictEqual(calculateSumOfBlockingTime([{ start: 900, end: 1049, duration: 149 }], fcpTimeMs, interactiveTimeMs), 0); // Duration after clipping is 49, which is < 50.
+        assert.strictEqual(calculateSumOfBlockingTime([{ start: 900, end: 1050, duration: 150 }], fcpTimeMs, interactiveTimeMs), 0); // Duration after clipping is 50, so time after 50ms is 0ms.
+        assert.strictEqual(calculateSumOfBlockingTime([{ start: 900, end: 1051, duration: 151 }], fcpTimeMs, interactiveTimeMs), 1); // Duration after clipping is 51, so time after 50ms is 1ms.
     });
     // This can happen in the lantern metric case, where we use the optimistic
     // TTI and pessimistic FCP.
@@ -71,8 +62,7 @@ describe('TotalBlockingTime utils', () => {
         const fcpTimeMs = 2050;
         const interactiveTimeMs = 1050;
         const events = [{ start: 500, end: 3000, duration: 2500 }];
-        expect(calculateSumOfBlockingTime(events, fcpTimeMs, interactiveTimeMs))
-            .to.equal(0);
+        assert.strictEqual(calculateSumOfBlockingTime(events, fcpTimeMs, interactiveTimeMs), 0);
     });
 });
 //# sourceMappingURL=TBTUtils.test.js.map

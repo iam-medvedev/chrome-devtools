@@ -4677,6 +4677,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI4.Widge
   }
   updateToggle() {
     const isToggled = this.toggleAction.toggled();
+    this.sidebarPaneStack.notifyVisibilityChanged(isToggled);
     render4(html3`
       <div style="display: flex; align-items: center; gap: 8px;">
         <devtools-switch

@@ -15,6 +15,8 @@ describeWithEnvironment('FontView', () => {
         const contentData = new TextUtils.ContentData.ContentData('YmFzZTY0', true, 'text/plain', maliciousCharset);
         const contentProvider = new TextUtils.StaticContentProvider.StaticContentProvider(urlString `http://example.com/font.woff2`, Common.ResourceType.resourceTypes.Font, () => Promise.resolve(contentData));
         const fontView = new SourceFrame.FontView.FontView('text/plain', contentProvider);
+        fontView.element.style.width = '100px';
+        fontView.element.style.height = '100px';
         renderElementIntoDOM(fontView);
         // Wait for the content to be loaded and update requested.
         await fontView.updateComplete;

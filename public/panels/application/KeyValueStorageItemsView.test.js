@@ -2,13 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import * as i18n from '../../core/i18n/i18n.js';
 import { raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, setupActionRegistry } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 describeWithEnvironment('KeyValueStorageItemsView', () => {
+    before(() => {
+        UI.ActionRegistration.registerActionExtension({
+            actionId: 'ai-assistance.storage-floating-button',
+            category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+            title: i18n.i18n.lockedLazyString('Ask AI'),
+        });
+    });
+    setupActionRegistry();
     let keyValueStorageItemsView;
     let viewFunction;
     const MOCK_ITEMS = [
@@ -35,6 +44,9 @@ describeWithEnvironment('KeyValueStorageItemsView', () => {
         }
         createPreview(key, value) {
             return createPreviewFunc(key, value);
+        }
+        isAiButtonEnabled() {
+            return UI.ActionRegistry.ActionRegistry.instance().hasAction('ai-assistance.storage-floating-button');
         }
     }
     beforeEach(() => {
@@ -86,6 +98,16 @@ describeWithEnvironment('KeyValueStorageItemsView', () => {
         // Check preview was updated.
         await raf();
         assert.include(viewFunction.input.preview.element.innerText, `${key}:newValue`);
+    });
+    it('clicking Ask AI button triggers the action', () => {
+        const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
+        const action = actionRegistry.getAction('ai-assistance.storage-floating-button');
+        const executeStub = sinon.stub(action, 'execute');
+        keyValueStorageItemsView.performUpdate();
+        const dummyEvent = new Event('click');
+        viewFunction.input.onAiButtonClick?.(MOCK_ITEMS[0], dummyEvent);
+        sinon.assert.calledOnce(executeStub);
+        executeStub.restore();
     });
 });
 //# sourceMappingURL=KeyValueStorageItemsView.test.js.map

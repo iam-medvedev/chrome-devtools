@@ -6127,6 +6127,34 @@ UI15.ActionRegistration.registerActionExtension({
   },
   condition: (config) => isFileAgentFeatureAvailable(config) && !isPolicyRestricted2(config) && !isGeoRestricted2(config)
 });
+UI15.ActionRegistration.registerActionExtension({
+  actionId: "ai-assistance.storage-floating-button",
+  contextTypes() {
+    return [];
+  },
+  category: "GLOBAL",
+  title: i18nAiBrandedString(UIStrings17.debugWithGemini, UIStrings17.debugWithAi),
+  configurableBindings: false,
+  async loadActionDelegate() {
+    const AiAssistance = await loadAiAssistanceModule();
+    return new AiAssistance.ActionDelegate();
+  },
+  condition: (config) => isStorageAgentFeatureAvailable(config) && !isPolicyRestricted2(config) && !isGeoRestricted2(config)
+});
+UI15.ActionRegistration.registerActionExtension({
+  actionId: "ai-assistance.application-panel-context",
+  contextTypes() {
+    return [];
+  },
+  category: "GLOBAL",
+  title: i18nAiBrandedString(UIStrings17.debugWithGemini, UIStrings17.debugWithAi),
+  configurableBindings: false,
+  async loadActionDelegate() {
+    const AiAssistance = await loadAiAssistanceModule();
+    return new AiAssistance.ActionDelegate();
+  },
+  condition: (config) => isStorageAgentFeatureAvailable(config) && !isPolicyRestricted2(config) && !isGeoRestricted2(config)
+});
 
 // gen/front_end/entrypoints/shell/shell.prebundle.js
 import "./../main/main.js";

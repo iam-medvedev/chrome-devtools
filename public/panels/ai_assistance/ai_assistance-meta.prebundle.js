@@ -263,4 +263,32 @@ UI.ActionRegistration.registerActionExtension({
     },
     condition: config => isFileAgentFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config),
 });
+UI.ActionRegistration.registerActionExtension({
+    actionId: 'ai-assistance.storage-floating-button',
+    contextTypes() {
+        return [];
+    },
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+    title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
+    configurableBindings: false,
+    async loadActionDelegate() {
+        const AiAssistance = await loadAiAssistanceModule();
+        return new AiAssistance.ActionDelegate();
+    },
+    condition: config => isStorageAgentFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config),
+});
+UI.ActionRegistration.registerActionExtension({
+    actionId: 'ai-assistance.application-panel-context',
+    contextTypes() {
+        return [];
+    },
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+    title: i18nAiBrandedString(UIStrings.debugWithGemini, UIStrings.debugWithAi),
+    configurableBindings: false,
+    async loadActionDelegate() {
+        const AiAssistance = await loadAiAssistanceModule();
+        return new AiAssistance.ActionDelegate();
+    },
+    condition: config => isStorageAgentFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config),
+});
 //# sourceMappingURL=ai_assistance-meta.prebundle.js.map

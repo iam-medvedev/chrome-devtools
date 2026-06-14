@@ -1,7 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Utils from './utils.js';
@@ -161,13 +161,13 @@ describe('Treemap', () => {
                 ],
                 resourceBytes: 201,
             });
-            expect(node.name).to.equal(src);
-            expect(node.resourceBytes).to.equal(201);
+            assert.strictEqual(node.name, src);
+            assert.strictEqual(node.resourceBytes, 201);
             node = node.children[0];
-            expect(node.name).to.equal('some/prefix');
-            expect(node.resourceBytes).to.equal(201);
-            expect(node.children?.[0].name).to.equal('main.js');
-            expect(node.children?.[1].name).to.equal('not/a.js');
+            assert.strictEqual(node.name, 'some/prefix');
+            assert.strictEqual(node.resourceBytes, 201);
+            assert.strictEqual(node.children?.[0].name, 'main.js');
+            assert.strictEqual(node.children?.[1].name, 'not/a.js');
         });
         it('nodes have duplicates data', () => {
             const sourcesData = {

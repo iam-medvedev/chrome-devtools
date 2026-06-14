@@ -135,10 +135,16 @@ var Diff = class {
   removedCount = 0;
   addedSize = 0;
   removedSize = 0;
-  deletedIndexes = [];
-  addedIndexes = [];
   countDelta;
   sizeDelta;
+  // Data about added nodes
+  addedIndexes = [];
+  addedIds = [];
+  addedSelfSizes = [];
+  // Data about deleted nodes
+  deletedIndexes = [];
+  deletedIds = [];
+  deletedSelfSizes = [];
   constructor(name) {
     this.name = name;
   }
@@ -447,6 +453,9 @@ var HeapSnapshotProxy = class extends HeapSnapshotProxyObject {
   nodeClassKey(snapshotObjectId) {
     return this.callMethodPromise("nodeClassKey", snapshotObjectId);
   }
+  nodeIndexForId(nodeId) {
+    return this.callMethodPromise("nodeIndexForId", nodeId);
+  }
   createEdgesProvider(nodeIndex) {
     return this.callFactoryMethod("createEdgesProvider", HeapSnapshotProviderProxy, nodeIndex);
   }
@@ -506,6 +515,9 @@ var HeapSnapshotProxy = class extends HeapSnapshotProxyObject {
   }
   getRetainingPaths(nodeIndex, maxDepth, maxNodes, maxSiblings) {
     return this.callMethodPromise("getRetainingPaths", nodeIndex, maxDepth, maxNodes, maxSiblings);
+  }
+  getDominatorsOf(nodeIndex) {
+    return this.callMethodPromise("getDominatorsOf", nodeIndex);
   }
   unignoreNodeInRetainersView(nodeIndex) {
     return this.callMethodPromise("unignoreNodeInRetainersView", nodeIndex);

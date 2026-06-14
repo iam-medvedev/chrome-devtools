@@ -108,10 +108,16 @@ export class Diff {
     removedCount = 0;
     addedSize = 0;
     removedSize = 0;
-    deletedIndexes = [];
-    addedIndexes = [];
     countDelta;
     sizeDelta;
+    // Data about added nodes
+    addedIndexes = [];
+    addedIds = [];
+    addedSelfSizes = [];
+    // Data about deleted nodes
+    deletedIndexes = [];
+    deletedIds = [];
+    deletedSelfSizes = [];
     constructor(name) {
         this.name = name;
     }

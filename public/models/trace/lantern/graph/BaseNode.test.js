@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import * as Lantern from '../lantern.js';
 const { BaseNode, NetworkNode } = Lantern.Graph;
 function sortedById(nodeArray) {
@@ -74,7 +74,7 @@ describe('BaseNode', () => {
         });
         it('throw when trying to add a dependency on itself', () => {
             const nodeA = makeFakeNode('1');
-            expect(() => nodeA.addDependency(nodeA)).to.throw();
+            assert.throws(() => nodeA.addDependency(nodeA));
         });
     });
     describe('.isDependentOn', () => {
@@ -83,17 +83,17 @@ describe('BaseNode', () => {
             const nodes = Object.values(graph);
             const { nodeA, nodeB, nodeD, nodeF, nodeH } = graph;
             for (const node of nodes) {
-                expect(nodeA.isDependentOn(node)).equals(node === nodeA);
-                expect(nodeB.isDependentOn(node)).equals(node === nodeA || node === nodeB);
-                expect(nodeH.isDependentOn(node)).equals(node !== nodeF);
+                assert.strictEqual(nodeA.isDependentOn(node), node === nodeA);
+                assert.strictEqual(nodeB.isDependentOn(node), node === nodeA || node === nodeB);
+                assert.strictEqual(nodeH.isDependentOn(node), node !== nodeF);
             }
-            expect(nodeD.isDependentOn(nodeA)).equals(true);
-            expect(nodeD.isDependentOn(nodeB)).equals(true);
-            expect(nodeD.isDependentOn(nodeD)).equals(true);
-            expect(nodeD.isDependentOn(nodeH)).equals(false);
-            expect(nodeH.isDependentOn(nodeD)).equals(true);
-            expect(nodeF.isDependentOn(nodeH)).equals(false);
-            expect(nodeH.isDependentOn(nodeF)).equals(false);
+            assert.isTrue(nodeD.isDependentOn(nodeA));
+            assert.isTrue(nodeD.isDependentOn(nodeB));
+            assert.isTrue(nodeD.isDependentOn(nodeD));
+            assert.isFalse(nodeD.isDependentOn(nodeH));
+            assert.isTrue(nodeH.isDependentOn(nodeD));
+            assert.isFalse(nodeF.isDependentOn(nodeH));
+            assert.isFalse(nodeH.isDependentOn(nodeF));
         });
     });
     describe('.getRootNode', () => {

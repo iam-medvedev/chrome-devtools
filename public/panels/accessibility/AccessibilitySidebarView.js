@@ -125,6 +125,7 @@ export class AccessibilitySidebarView extends UI.Widget.VBox {
     }
     updateToggle() {
         const isToggled = this.toggleAction.toggled();
+        this.sidebarPaneStack.notifyVisibilityChanged(isToggled);
         // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
         render(html `
       <div style="display: flex; align-items: center; gap: 8px;">

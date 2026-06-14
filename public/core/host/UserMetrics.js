@@ -405,7 +405,9 @@ export var Action;
     Action[Action["AiCodeGenerationRequestTriggeredFromSources"] = 205] = "AiCodeGenerationRequestTriggeredFromSources";
     Action[Action["AiCodeCompletionFreCompletedFromConsole"] = 206] = "AiCodeCompletionFreCompletedFromConsole";
     Action[Action["AiCodeCompletionFreCompletedFromSources"] = 207] = "AiCodeCompletionFreCompletedFromSources";
-    Action[Action["MAX_VALUE"] = 208] = "MAX_VALUE";
+    Action[Action["AiAssistanceOpenedFromApplicationPanelFloatingButton"] = 208] = "AiAssistanceOpenedFromApplicationPanelFloatingButton";
+    Action[Action["AiAssistanceOpenedFromApplicationPanel"] = 209] = "AiAssistanceOpenedFromApplicationPanel";
+    Action[Action["MAX_VALUE"] = 210] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;
@@ -662,7 +664,6 @@ export var DevtoolsExperiments;
     /* eslint-disable @typescript-eslint/naming-convention */
     DevtoolsExperiments[DevtoolsExperiments["protocol-monitor"] = 13] = "protocol-monitor";
     DevtoolsExperiments[DevtoolsExperiments["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
-    DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
     DevtoolsExperiments[DevtoolsExperiments["durable-messages"] = 110] = "durable-messages";
     DevtoolsExperiments[DevtoolsExperiments["jpeg-xl"] = 111] = "jpeg-xl";
     DevtoolsExperiments[DevtoolsExperiments["plus-button"] = 112] = "plus-button";

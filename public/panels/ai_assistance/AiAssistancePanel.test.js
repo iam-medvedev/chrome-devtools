@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -34,7 +34,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
         await createNetworkPanelForMockConnection();
         Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
         Common.Settings.moduleSetting('ai-assistance-v2-opt-in-change-dialog-seen').set(true);
-        sinon.stub(AiAssistanceModel.StylingAgent.NodeContext.prototype, 'getSuggestions')
+        sinon.stub(AiAssistanceModel.DOMNodeContext.DOMNodeContext.prototype, 'getSuggestions')
             .returns(Promise.resolve([{ title: 'test suggestion' }]));
         const featureFlags = [
             'devToolsFreestyler',
@@ -247,7 +247,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                     const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
                         nodeType: Node.ELEMENT_NODE,
                     });
-                    return new AiAssistanceModel.StylingAgent.NodeContext(node);
+                    return new AiAssistanceModel.DOMNodeContext.DOMNodeContext(node);
                 },
                 action: 'freestyler.elements-floating-button',
             },
@@ -297,7 +297,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 const nextInput = await view.nextInput;
                 assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
                 assert.isTrue(nextInput.props.isContextSelected);
-                expect(nextInput.props.context?.getItem()).equals(contextItem);
+                assert.strictEqual(nextInput.props.context?.getItem(), contextItem);
             });
             it(`should update the selected ${test.name} context whenever flavor changes`, async () => {
                 const { panel, view } = await createAiAssistancePanel();
@@ -315,7 +315,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 nextInput = await view.nextInput;
                 assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
                 assert.isTrue(nextInput.props.isContextSelected);
-                expect(nextInput.props.context?.getItem()).equals(contextItem);
+                assert.strictEqual(nextInput.props.context?.getItem(), contextItem);
             });
             it(`should ignore ${test.name} flavor change after the panel was hidden`, async () => {
                 const { view, panel } = await createAiAssistancePanel();

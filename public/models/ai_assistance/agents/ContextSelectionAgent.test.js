@@ -13,13 +13,16 @@ import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Logs from '../../logs/logs.js';
 import * as Workspace from '../../workspace/workspace.js';
-import { ContextSelectionAgent, FileAgent, NetworkAgent, PerformanceAgent, StylingAgent, } from '../ai_assistance.js';
+import { ContextSelectionAgent, DOMNodeContext, FileAgent, NetworkAgent, PerformanceAgent, StorageAgent, StorageItem, } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('ContextSelectionAgent', function () {
     const snapshotTester = new SnapshotTester(this, import.meta);
     function mockHostConfig() {
         updateHostConfig({
             devToolsAiAssistanceContextSelectionAgent: {
+                enabled: true,
+            },
+            devToolsAiAssistanceStorageAgent: {
                 enabled: true,
             },
         });
@@ -345,6 +348,74 @@ describeWithMockConnection('ContextSelectionAgent', function () {
                 },
             ]);
         });
+        it('filters out HAR requests if the allowed origin is not the virtual HAR origin', async () => {
+            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId1', urlString `https://example.com/`, urlString `https://example.com/`, null);
+            request.setIsImportedHar(true);
+            request.statusCode = 200;
+            request.setIssueTime(0, 0);
+            request.endTime = 1;
+            const networkLog = Logs.NetworkLog.NetworkLog.instance();
+            sinon.stub(networkLog, 'requests').returns([request]);
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'listNetworkRequests',
+                                    args: {},
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+                allowedOrigin: () => ({ origin: 'https://example.com' }),
+            });
+            await Array.fromAsync(agent.run('test', { selected: null }));
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            const part = requestToAida.historical_contexts?.[2].parts[0];
+            assert(part && 'functionResponse' in part);
+            assert.deepEqual(part.functionResponse.response, {
+                error: 'No requests showing with origin https://example.com. Tell the user to start a new chat',
+                widgets: undefined,
+            });
+        });
+        it('includes HAR requests if the allowed origin is the virtual HAR origin', async () => {
+            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId1', urlString `https://example.com/`, urlString `https://example.com/`, null);
+            request.setIsImportedHar(true);
+            request.statusCode = 200;
+            request.setIssueTime(0, 0);
+            request.endTime = 1;
+            const networkLog = Logs.NetworkLog.NetworkLog.instance();
+            sinon.stub(networkLog, 'requests').returns([request]);
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'listNetworkRequests',
+                                    args: {},
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+                allowedOrigin: () => ({ origin: 'imported-har://example.com' }),
+            });
+            await Array.fromAsync(agent.run('test', { selected: null }));
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            const part = requestToAida.historical_contexts?.[2].parts[0];
+            assert(part && 'functionResponse' in part);
+            assert.deepEqual(part.functionResponse.response, {
+                result: [
+                    {
+                        id: 'requestId1',
+                        url: 'https://example.com/',
+                        statusCode: 200,
+                        duration: '1.00\xA0s',
+                        transferSize: '0.0\xA0kB',
+                    },
+                ],
+                widgets: undefined,
+            });
+        });
         it('returns error when there are no network requests', async () => {
             const networkLog = Logs.NetworkLog.NetworkLog.instance();
             sinon.stub(networkLog, 'requests').returns([]);
@@ -505,7 +576,7 @@ describeWithMockConnection('ContextSelectionAgent', function () {
             const contextChange = responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
             sinon.assert.calledOnce(onInspectElement);
             assert.exists(contextChange);
-            assert.instanceOf(contextChange.context, StylingAgent.NodeContext);
+            assert.instanceOf(contextChange.context, DOMNodeContext.DOMNodeContext);
             assert.strictEqual(contextChange.context.getItem(), node);
         });
     });
@@ -807,6 +878,38 @@ describeWithMockConnection('ContextSelectionAgent', function () {
                     },
                 },
             });
+        });
+        it('delegates to StorageAgent via analyzeStorage', async () => {
+            updateHostConfig({
+                devToolsAiAssistanceContextSelectionAgent: {
+                    enabled: true,
+                },
+                devToolsAiAssistanceStorageAgent: {
+                    enabled: true,
+                },
+            });
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'analyzeStorage',
+                                    args: {},
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+                allowedOrigin: () => ({ origin: 'https://example.com' }),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            const contextChange = responses.find(response => response.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
+            assert.exists(contextChange);
+            assert.instanceOf(contextChange.context, StorageAgent.StorageContext);
+            const storageContext = contextChange.context;
+            assert.strictEqual(storageContext.getItem().constructor, StorageItem.StorageItem);
+            assert.strictEqual(storageContext.getItem().origin, 'https://example.com');
+            assert.strictEqual(storageContext.getItem().primaryTargetOrigin, 'https://example.com');
+            assert.strictEqual(contextChange.description, 'User selected page storage');
         });
     });
 });

@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as AdsView from './AdsView.js';
 import * as BackForwardCacheView from './BackForwardCacheView.js';
 import * as BounceTrackingMitigationsView from './BounceTrackingMitigationsView.js';
 import * as CrashReportContextGrid from './CrashReportContextGrid.js';
@@ -14,5 +15,5 @@ import * as SharedStorageAccessGrid from './SharedStorageAccessGrid.js';
 import * as SharedStorageMetadataView from './SharedStorageMetadataView.js';
 import * as StorageMetadataView from './StorageMetadataView.js';
 import * as TrustTokensView from './TrustTokensView.js';
-export { BackForwardCacheView, BounceTrackingMitigationsView, CrashReportContextGrid, EndpointsGrid, InterestGroupAccessGrid, PermissionsPolicySection, ProtocolHandlersView, ReportsGrid, ServiceWorkerRouterView, SharedStorageAccessGrid, SharedStorageMetadataView, StorageMetadataView, TrustTokensView, };
+export { AdsView, BackForwardCacheView, BounceTrackingMitigationsView, CrashReportContextGrid, EndpointsGrid, InterestGroupAccessGrid, PermissionsPolicySection, ProtocolHandlersView, ReportsGrid, ServiceWorkerRouterView, SharedStorageAccessGrid, SharedStorageMetadataView, StorageMetadataView, TrustTokensView, };
 //# sourceMappingURL=components.prebundle.js.map

@@ -818,5 +818,74 @@ describe('HeapSnapshot', () => {
         };
         assert.strictEqual(JSON.stringify(referenceToCompare), JSON.stringify(resultToCompare));
     });
+    it('heapSnapshotNodeIndexForId', async () => {
+        const builder = new HeapSnapshotBuilder();
+        const root = builder.rootNode;
+        const zeroSizeNode = new HeapNode('ZeroSizeNode', 0, 'object', 42);
+        root.linkNode(zeroSizeNode, 'element');
+        const normalNode = new HeapNode('NormalNode', 100, 'object', 99);
+        root.linkNode(normalNode, 'element');
+        const snapshot = await builder.createJSHeapSnapshot();
+        const zeroSizeIndex = snapshot.nodeIndexForId(42);
+        assert.isDefined(zeroSizeIndex);
+        const resolvedZeroSizeNode = snapshot.createNode(zeroSizeIndex);
+        assert.strictEqual(resolvedZeroSizeNode.name(), 'ZeroSizeNode');
+        assert.strictEqual(resolvedZeroSizeNode.id(), 42);
+        const normalIndex = snapshot.nodeIndexForId(99);
+        assert.isDefined(normalIndex);
+        const resolvedNormalNode = snapshot.createNode(normalIndex);
+        assert.strictEqual(resolvedNormalNode.name(), 'NormalNode');
+        assert.strictEqual(resolvedNormalNode.id(), 99);
+        const nonExistentIndex = snapshot.nodeIndexForId(999);
+        assert.isUndefined(nonExistentIndex);
+    });
+    it('heapSnapshotGetDominatorsOf', async () => {
+        const builder = new HeapSnapshotBuilder();
+        const root = builder.rootNode;
+        // Create a chain: Root -> A -> B
+        const nodeA = new HeapNode('A', 10, 'object', 100);
+        const nodeB = new HeapNode('B', 20, 'object', 200);
+        root.linkNode(nodeA, 'property', 'a');
+        nodeA.linkNode(nodeB, 'property', 'b');
+        const snapshot = await builder.createJSHeapSnapshot();
+        const nodeAIndex = snapshot.nodeIndexForId(100);
+        const nodeBIndex = snapshot.nodeIndexForId(200);
+        const dominatorsB = snapshot.getDominatorsOf(nodeBIndex);
+        assert.lengthOf(dominatorsB, 3);
+        assert.strictEqual(dominatorsB[0].nodeIndex, nodeBIndex);
+        assert.strictEqual(dominatorsB[0].nodeName, 'B');
+        assert.strictEqual(dominatorsB[1].nodeIndex, nodeAIndex);
+        assert.strictEqual(dominatorsB[1].nodeName, 'A');
+        assert.strictEqual(dominatorsB[2].nodeIndex, 0);
+        assert.strictEqual(dominatorsB[2].nodeName, 'root');
+        const dominatorsA = snapshot.getDominatorsOf(nodeAIndex);
+        assert.lengthOf(dominatorsA, 2);
+        assert.strictEqual(dominatorsA[0].nodeIndex, nodeAIndex);
+        assert.strictEqual(dominatorsA[0].nodeName, 'A');
+        assert.strictEqual(dominatorsA[1].nodeIndex, 0);
+        assert.strictEqual(dominatorsA[1].nodeName, 'root');
+    });
+    it('heapSnapshotGetDominatorsOfDiamond', async () => {
+        const builder = new HeapSnapshotBuilder();
+        const root = builder.rootNode;
+        // Create a diamond: Root -> A -> C, Root -> B -> C
+        const nodeA = new HeapNode('A', 10, 'object', 100);
+        const nodeB = new HeapNode('B', 20, 'object', 200);
+        const nodeC = new HeapNode('C', 30, 'object', 300);
+        root.linkNode(nodeA, 'property', 'a');
+        root.linkNode(nodeB, 'property', 'b');
+        nodeA.linkNode(nodeC, 'property', 'c');
+        nodeB.linkNode(nodeC, 'property', 'c');
+        const snapshot = await builder.createJSHeapSnapshot();
+        const nodeCIndex = snapshot.nodeIndexForId(300);
+        const dominatorsC = snapshot.getDominatorsOf(nodeCIndex);
+        // Root dominates C, because both A and B lead to C.
+        // So the chain should be C -> Root.
+        assert.lengthOf(dominatorsC, 2);
+        assert.strictEqual(dominatorsC[0].nodeIndex, nodeCIndex);
+        assert.strictEqual(dominatorsC[0].nodeName, 'C');
+        assert.strictEqual(dominatorsC[1].nodeIndex, 0);
+        assert.strictEqual(dominatorsC[1].nodeName, 'root');
+    });
 });
 //# sourceMappingURL=HeapSnapshot.test.js.map

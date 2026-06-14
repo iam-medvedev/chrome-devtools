@@ -138,5 +138,16 @@ describe('DefaultScriptMapping', () => {
         assert.exists(uiSourceCode);
         assert.isTrue(uiSourceCode.isUnconditionallyIgnoreListed());
     });
+    it('registers Wasm scripts with application/wasm MIME type', async () => {
+        const script = await backend.addScript(target, {
+            content: '00 61 73 6d',
+            url: urlString `wasm://wasm/test`,
+            hasSourceURL: false,
+            scriptLanguage: "WebAssembly" /* Protocol.Debugger.ScriptLanguage.WebAssembly */,
+        }, null);
+        const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
+        assert.exists(uiSourceCode);
+        assert.strictEqual(uiSourceCode.mimeType(), 'application/wasm');
+    });
 });
 //# sourceMappingURL=DefaultScriptMapping.test.js.map

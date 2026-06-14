@@ -1,8 +1,30 @@
 import * as Common from '../../core/common/common.js';
-import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { IsolateSelector } from './IsolateSelector.js';
 import type { ProfileType } from './ProfileHeader.js';
 import type { ProfilesPanel } from './ProfilesPanel.js';
+interface ProfileTypeEntry {
+    profileType: ProfileType;
+    selected: boolean;
+    customContent: Element | null;
+}
+export interface ViewInput {
+    headerText: string;
+    profileTypes: ProfileTypeEntry[];
+    controlButtonText: string;
+    controlButtonDisabled: boolean;
+    controlButtonTooltip: string;
+    isProfiling: boolean;
+    isolateSelector: IsolateSelector | null;
+    onControlClick: () => void;
+    onLoadClick: () => void;
+    onProfileTypeChange: (profileType: ProfileType) => void;
+}
+export interface ViewOutput {
+    isolateSelector: IsolateSelector;
+}
+export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 declare const ProfileLauncherView_base: (new (...args: any[]) => {
     __events: Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends Events.PROFILE_TYPE_SELECTED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -16,28 +38,14 @@ export declare class ProfileLauncherView extends ProfileLauncherView_base {
     #private;
     readonly panel: ProfilesPanel;
     readonly selectedProfileTypeSetting: Common.Settings.Setting<string>;
-    profileTypeHeaderElement: HTMLElement;
-    readonly profileTypeSelectorForm: HTMLElement;
-    controlButton: Buttons.Button.Button;
-    readonly loadButton: Buttons.Button.Button;
-    recordButtonEnabled: boolean;
-    typeIdToOptionElementAndProfileType: Map<string, {
-        optionElement: HTMLInputElement;
-        profileType: ProfileType;
-    }>;
-    isProfiling?: boolean;
-    isInstantProfile?: boolean;
-    isEnabled?: boolean;
-    constructor(profilesPanel: ProfilesPanel);
-    loadButtonClicked(): void;
-    updateControls(): void;
+    constructor(profilesPanel: ProfilesPanel, view?: View);
+    wasShown(): void;
     profileStarted(): void;
     profileFinished(): void;
     updateProfileType(profileType: ProfileType, recordButtonEnabled: boolean): void;
     addProfileType(profileType: ProfileType): void;
     restoreSelectedProfileType(): void;
-    controlButtonClicked(): void;
-    profileTypeChanged(profileType: ProfileType): void;
+    performUpdate(): void;
 }
 export declare const enum Events {
     PROFILE_TYPE_SELECTED = "ProfileTypeSelected"

@@ -223,6 +223,7 @@ export declare class IDBIndexTreeElement extends ApplicationPanelTreeElement {
     clear(): void;
 }
 export declare class DOMStorageTreeElement extends ApplicationPanelTreeElement {
+    #private;
     private readonly domStorage;
     constructor(storagePanel: ResourcesPanel, domStorage: SDK.DOMStorageModel.DOMStorage);
     get itemURL(): Platform.DevToolsPath.UrlString;

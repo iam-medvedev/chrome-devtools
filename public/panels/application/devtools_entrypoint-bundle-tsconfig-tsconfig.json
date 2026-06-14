@@ -49,6 +49,9 @@
     },
     {
       "path": "../../ui/legacy/css_files-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/components/data_grid/css_files-tsconfig.json"
     }
   ]
 }

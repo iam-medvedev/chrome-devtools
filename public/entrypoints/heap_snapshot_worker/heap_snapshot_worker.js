@@ -1042,6 +1042,16 @@ var HeapSnapshot = class _HeapSnapshot {
     }
     this.#progress.updateStatus("Finished processing.");
   }
+  nodeIndexForId(nodeId) {
+    const nodesLength = this.nodes.length;
+    const { nodes, nodeFieldCount, nodeIdOffset } = this;
+    for (let nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
+      if (nodes.getValue(nodeIndex + nodeIdOffset) === nodeId) {
+        return nodeIndex;
+      }
+    }
+    return void 0;
+  }
   startInitStep1InSecondThread(secondWorker) {
     const resultsFromSecondWorker = new Promise((resolve, reject) => {
       const listener = (e) => {
@@ -2289,11 +2299,15 @@ var HeapSnapshot = class _HeapSnapshot {
       const nodeAId = baseIds[i];
       if (nodeAId < nodeB.id()) {
         diff.deletedIndexes.push(baseIndexes[i]);
+        diff.deletedIds.push(nodeAId);
+        diff.deletedSelfSizes.push(baseSelfSizes[i]);
         diff.removedCount++;
         diff.removedSize += baseSelfSizes[i];
         ++i;
       } else if (nodeAId > nodeB.id()) {
         diff.addedIndexes.push(indexes[j]);
+        diff.addedIds.push(nodeB.id());
+        diff.addedSelfSizes.push(nodeB.selfSize());
         diff.addedCount++;
         diff.addedSize += nodeB.selfSize();
         nodeB.nodeIndex = indexes[++j];
@@ -2304,12 +2318,16 @@ var HeapSnapshot = class _HeapSnapshot {
     }
     while (i < l) {
       diff.deletedIndexes.push(baseIndexes[i]);
+      diff.deletedIds.push(baseIds[i]);
+      diff.deletedSelfSizes.push(baseSelfSizes[i]);
       diff.removedCount++;
       diff.removedSize += baseSelfSizes[i];
       ++i;
     }
     while (j < m) {
       diff.addedIndexes.push(indexes[j]);
+      diff.addedIds.push(nodeB.id());
+      diff.addedSelfSizes.push(nodeB.selfSize());
       diff.addedCount++;
       diff.addedSize += nodeB.selfSize();
       nodeB.nodeIndex = indexes[++j];
@@ -2465,6 +2483,30 @@ var HeapSnapshot = class _HeapSnapshot {
     };
     const paths = buildForest(nodeIndex, 0);
     return { paths, limitsReached };
+  }
+  getDominatorsOf(nodeIndex) {
+    const chain = [];
+    let currentIndex = nodeIndex;
+    const rootIndex = this.rootNodeIndex;
+    while (currentIndex !== void 0) {
+      const node = this.createNode(currentIndex);
+      chain.push({
+        nodeId: node.id(),
+        nodeIndex: currentIndex,
+        nodeName: node.name(),
+        retainedSize: node.retainedSize(),
+        selfSize: node.selfSize()
+      });
+      if (currentIndex === rootIndex) {
+        break;
+      }
+      const nextIndex = node.dominatorIndex();
+      if (nextIndex === currentIndex) {
+        break;
+      }
+      currentIndex = nextIndex;
+    }
+    return chain;
   }
   createAddedNodesProvider(baseSnapshotId, classKey) {
     const snapshotDiff = this.#snapshotDiffs[baseSnapshotId];

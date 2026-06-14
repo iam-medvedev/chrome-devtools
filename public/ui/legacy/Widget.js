@@ -97,13 +97,31 @@ function cancelUpdate(widget) {
         nextUpdateQueue.delete(widget);
     }
 }
+function resolveOverallUpdatePromise() {
+    if (currentlyProcessed.size === 0 && (!currentUpdateQueue || currentUpdateQueue.size === 0) &&
+        nextUpdateQueue.size === 0 && !pendingAnimationFrame && overallUpdatePromise) {
+        overallUpdatePromise.resolve();
+        overallUpdatePromise = null;
+    }
+}
 function runNextUpdate() {
     pendingAnimationFrame = null;
     if (!currentUpdateQueue) {
         currentUpdateQueue = nextUpdateQueue;
         nextUpdateQueue = new Map();
     }
-    for (const [widget, { resolve }] of currentUpdateQueue) {
+    for (const [widget, update] of currentUpdateQueue) {
+        if (currentlyProcessed.has(widget)) {
+            const scheduledUpdate = nextUpdateQueue.get(widget);
+            if (!scheduledUpdate) {
+                nextUpdateQueue.set(widget, update);
+            }
+            else {
+                void scheduledUpdate.promise.then(update.resolve);
+            }
+            continue;
+        }
+        const { resolve } = update;
         currentlyProcessed.add(widget);
         void (async () => {
             try {
@@ -112,7 +130,18 @@ function runNextUpdate() {
                 await widget.performUpdate(controller.signal);
             }
             finally {
-                resolve();
+                currentlyProcessed.delete(widget);
+                const nextUpdate = nextUpdateQueue.get(widget);
+                if (nextUpdate) {
+                    void nextUpdate.promise.then(resolve);
+                    if (pendingAnimationFrame === null) {
+                        pendingAnimationFrame = requestAnimationFrame(runNextUpdate);
+                    }
+                }
+                else {
+                    resolve();
+                }
+                resolveOverallUpdatePromise();
             }
         })().catch(e => {
             if (e.name !== 'AbortError') {
@@ -127,11 +156,7 @@ function runNextUpdate() {
         }
         else {
             currentUpdateQueue = null;
-            currentlyProcessed.clear();
-            if (!pendingAnimationFrame && overallUpdatePromise) {
-                overallUpdatePromise.resolve();
-                overallUpdatePromise = null;
-            }
+            resolveOverallUpdatePromise();
         }
     });
 }
@@ -369,6 +394,7 @@ export class Widget {
     #externallyManaged;
     #updateComplete = UPDATE_COMPLETE;
     #updateController;
+    #updateState = "NORMAL" /* UpdateState.NORMAL */;
     constructor(elementOrOptions, options) {
         if (elementOrOptions instanceof HTMLElement) {
             this.element = elementOrOptions;
@@ -424,7 +450,7 @@ export class Widget {
         return widgetMap.get(node);
     }
     static get allUpdatesComplete() {
-        if (!pendingAnimationFrame && !currentUpdateQueue) {
+        if (!pendingAnimationFrame && !currentUpdateQueue && currentlyProcessed.size === 0) {
             return Promise.resolve();
         }
         if (!overallUpdatePromise) {
@@ -931,11 +957,16 @@ export class Widget {
     performUpdate(_signal) {
     }
     addUpdateController(controller) {
+        const wasInterrupted = this.#updateState === "INTERRUPTED" /* UpdateState.INTERRUPTED */;
         this.#updateController?.abort();
         this.#updateController = controller;
+        // Transition to SHIELDED if we are replacing a starved update, otherwise reset to NORMAL.
+        this.#updateState = wasInterrupted ? "SHIELDED" /* UpdateState.SHIELDED */ : "NORMAL" /* UpdateState.NORMAL */;
     }
     cancelUpdateController() {
         this.#updateController?.abort();
+        this.#updateController = undefined;
+        this.#updateState = "NORMAL" /* UpdateState.NORMAL */;
     }
     /**
      * Schedules an asynchronous update for this widget.
@@ -944,7 +975,13 @@ export class Widget {
      * frame.
      */
     requestUpdate() {
-        this.#updateController?.abort();
+        // If the state is SHIELDED, we skip the abort call entirely to break the starvation loop.
+        if (this.#updateState !== "SHIELDED" /* UpdateState.SHIELDED */) {
+            if (currentlyProcessed.has(this)) {
+                this.#updateState = "INTERRUPTED" /* UpdateState.INTERRUPTED */;
+            }
+            this.#updateController?.abort();
+        }
         this.#updateComplete = enqueueWidgetUpdate(this);
     }
     /**

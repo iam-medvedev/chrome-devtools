@@ -1,17 +1,9 @@
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import { AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestions, type FunctionCallHandlerResult, type MultimodalInput, MultimodalInputType, type RequestOptions } from './AiAgent.js';
+import { AiAgent, type ContextResponse, type ConversationContext, type FunctionCallHandlerResult, type MultimodalInput, MultimodalInputType, type RequestOptions } from './AiAgent.js';
 import { type ExecuteJsAgentOptions } from './ExecuteJavascript.js';
 export declare const AI_ASSISTANCE_FILTER_REGEX = "\\.ai-style-change-.*&";
-export declare class NodeContext extends ConversationContext<SDK.DOMModel.DOMNode> {
-    #private;
-    constructor(node: SDK.DOMModel.DOMNode);
-    getURL(): string;
-    getItem(): SDK.DOMModel.DOMNode;
-    getTitle(): string;
-    getSuggestions(): Promise<ConversationSuggestions | undefined>;
-}
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -24,13 +16,17 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     get executionMode(): Root.Runtime.HostConfigFreestylerExecutionMode;
     get options(): RequestOptions;
     get multimodalInputEnabled(): boolean;
-    preambleFeatures(): string[];
     constructor(opts: ExecuteJsAgentOptions);
-    static describeElement(element: SDK.DOMModel.DOMNode): Promise<string>;
+    /**
+     * Clears styling-agent-specific caches and state.
+     * Resets cached emulation data (screenshots, accessibility tree) and the
+     * instructions flag to ensure they are re-evaluated in subsequent queries.
+     */
+    clearCache(): void;
+    preambleFeatures(): string[];
     addElementAnnotation(elementId: string, annotationMessage: string): Promise<FunctionCallHandlerResult<unknown>>;
     activateDeviceEmulation(deviceName: string, visionDeficiency?: string): Promise<FunctionCallHandlerResult<unknown>>;
     popPendingMultimodalInput(): MultimodalInput | undefined;
     handleContextDetails(selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null): AsyncGenerator<ContextResponse, void, void>;
-    protected preRun(): Promise<void>;
     enhanceQuery(query: string, selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null, multimodalInputType?: MultimodalInputType): Promise<string>;
 }

@@ -4785,9 +4785,9 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeO
     property.setDisplayedStringForInvalidProperty(invalidString);
     return container;
   }
-  #getLinkableFunction(functionName, matchedStyles) {
+  #getLinkableFunction(functionName, matchedStyles, property) {
     const swatch = new InlineEditor2.LinkSwatch.LinkSwatch();
-    const registeredFunction = matchedStyles.getRegisteredFunction(functionName);
+    const { registeredFunction, treeScopeDistance } = matchedStyles.getRegisteredFunction(functionName, property);
     const isDefined = Boolean(registeredFunction);
     swatch.data = {
       jslogContext: "css-function",
@@ -4798,7 +4798,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeO
         if (!registeredFunction) {
           return;
         }
-        this.#stylesContainer.jumpToFunctionDefinition(registeredFunction);
+        this.#stylesContainer.jumpToFunctionDefinition(registeredFunction, treeScopeDistance);
       }
     };
     return swatch;
@@ -4814,7 +4814,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeO
     const stylesContainer = this.stylesContainer();
     const tooltipId = this.getTooltipId(`${functionName}-trace`);
     return html6`
-        <span tabIndex=-1 class=tracing-anchor aria-details=${tooltipId}>${functionName.startsWith("--") ? this.#getLinkableFunction(functionName, matchedStyles) : functionName}</span>
+        <span tabIndex=-1 class=tracing-anchor aria-details=${tooltipId}>${functionName.startsWith("--") ? this.#getLinkableFunction(functionName, matchedStyles, context.property) : functionName}</span>
         <devtools-tooltip
             id=${tooltipId}
             use-hotkey
@@ -6077,6 +6077,13 @@ var StylePropertiesSection = class _StylePropertiesSection {
   }
   getSectionIdx() {
     return this.sectionIdx;
+  }
+  treeScopeDistance() {
+    const treeScope = this.styleInternal.parentRule?.treeScope;
+    if (!treeScope) {
+      return -1;
+    }
+    return SDK7.CSSMatchedStyles.distanceToTreeScope(this.matchedStyles.node(), treeScope);
   }
   static createRuleOriginNode(matchedStyles, linkifier, rule) {
     if (!rule) {
@@ -7577,9 +7584,9 @@ var StylePropertyHighlighter = class {
     section5.showAllItems();
     PanelUtils.highlightElement(block.titleElement());
   }
-  findAndHighlightSection(sectionName, blockName) {
+  findAndHighlightSection(sectionName, blockName, treeScopeDistance = -1) {
     const block = this.styleSidebarPane.getSectionBlockByName(blockName);
-    const section5 = block?.sections.find((section6) => section6.headerText() === sectionName);
+    const section5 = block?.sections.find((section6) => section6.headerText() === sectionName && (treeScopeDistance === -1 || section6.treeScopeDistance() === treeScopeDistance));
     if (!section5 || !block) {
       return;
     }
@@ -8335,6 +8342,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
   #shouldRenderLazily = false;
   #lazyRenderObserver;
   #lazyRenderCallbacks = /* @__PURE__ */ new WeakMap();
+  #updateId = 0;
   constructor(computedStyleModel) {
     super(computedStyleModel, { delegatesFocus: true, useShadowDom: true, classes: ["flex-none"] });
     this.setMinimumSize(96, 26);
@@ -8419,14 +8427,14 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
       this.jumpToProperty("initial-value", valueSource.name, REGISTERED_PROPERTY_SECTION_NAME);
     }
   }
-  jumpToSection(sectionName, blockName) {
-    this.decorator.findAndHighlightSection(sectionName, blockName);
+  jumpToSection(sectionName, blockName, treeScopeDistance) {
+    this.decorator.findAndHighlightSection(sectionName, blockName, treeScopeDistance);
   }
   jumpToSectionBlock(section5) {
     this.decorator.findAndHighlightSectionBlock(section5);
   }
-  jumpToFunctionDefinition(functionName) {
-    this.jumpToSection(functionName, FUNCTION_SECTION_NAME);
+  jumpToFunctionDefinition(functionName, treeScopeDistance) {
+    this.jumpToSection(functionName, FUNCTION_SECTION_NAME, treeScopeDistance);
   }
   jumpToFontPaletteDefinition(paletteName) {
     this.jumpToSection(`@font-palette-values ${paletteName}`, i18nString6(UIStrings6.atRuleSection));
@@ -8643,8 +8651,14 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common5.ObjectWrapper.e
         /* Events.INITIAL_UPDATE_COMPLETED */
       );
     }
-    this.nodeStylesUpdatedForTest(this.node(), true);
-    this.dispatchEventToListeners("StylesUpdateCompleted", { hasMatchedStyles: this.hasMatchedStyles });
+    this.#updateId += 1;
+    const currentUpdateId = this.#updateId;
+    void UI10.Widget.Widget.allUpdatesComplete.then(() => {
+      if (this.#updateId === currentUpdateId) {
+        this.nodeStylesUpdatedForTest(this.node(), true);
+        this.dispatchEventToListeners("StylesUpdateCompleted", { hasMatchedStyles: this.hasMatchedStyles });
+      }
+    });
   }
   #getRegisteredPropertyDetails(matchedStyles, variableName) {
     const registration = matchedStyles.getRegisteredProperty(variableName);
@@ -10611,8 +10625,7 @@ var URLRenderer = class extends rendererBase(SDK9.CSSPropertyParserMatchers.URLM
       // so that we don't have to keep two versions (original vs. trimmed) of URL
       // at the same time, which complicates both StylesSidebarPane and StylePropertyTreeElement.
       bypassURLTrimming: true,
-      showColumnNumber: false,
-      inlineFrameIndex: 0
+      showColumnNumber: false
     }), hrefUrl || url);
     container.appendChild(link2);
     UI11.UIUtils.createTextChild(container, ")");
@@ -11409,8 +11422,7 @@ var AdoptedStyleSheetTreeElement = class _AdoptedStyleSheetTreeElement extends U
       documentElement.appendChild(Components5.Linkifier.Linkifier.linkifyURL(linkText, {
         text: linkText,
         preventClick: true,
-        showColumnNumber: false,
-        inlineFrameIndex: 0
+        showColumnNumber: false
       }));
       UI13.UIUtils.createTextChild(documentElement, ")");
     }
@@ -12462,8 +12474,7 @@ function renderTitle(node, isClosingTag, expanded, isExpandable, isXMLMimeType, 
       return html10`<span>#document (<span>${Components6.Linkifier.Linkifier.renderLinkifiedUrl(text, {
         text,
         preventClick: true,
-        showColumnNumber: false,
-        inlineFrameIndex: 0
+        showColumnNumber: false
       })}</span>)</span>`;
     }
     case Node.DOCUMENT_FRAGMENT_NODE: {
@@ -12540,7 +12551,6 @@ function renderLinkifiedValue(value5, node) {
     text: value5,
     preventClick: true,
     showColumnNumber: false,
-    inlineFrameIndex: 0,
     onRef: (link2) => {
       ImagePreviewPopover.setImageUrl(link2, rewrittenHref);
     }
@@ -21177,7 +21187,7 @@ var StandaloneStylesContainer = class extends Common18.ObjectWrapper.eventMixin(
   getVariableParserError(_matchedStyles, _variableName) {
     return null;
   }
-  jumpToFunctionDefinition(_functionName) {
+  jumpToFunctionDefinition(_functionName, _treeScopeDistance) {
   }
   continueEditingElement(_sectionIndex, _propertyIndex) {
   }

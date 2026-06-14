@@ -54,7 +54,6 @@ describeWithMockConnection('Linkifier', () => {
             const link = Components.Linkifier.Linkifier.linkifyURL(url, {
                 text: 'foo',
                 showColumnNumber: false,
-                inlineFrameIndex: 1,
             });
             assert.strictEqual(link.innerText, 'foo');
         });
@@ -63,7 +62,6 @@ describeWithMockConnection('Linkifier', () => {
             const link = Components.Linkifier.Linkifier.linkifyURL(url, {
                 text: '',
                 showColumnNumber: false,
-                inlineFrameIndex: 1,
             });
             assert.strictEqual(link.innerText, 'www.example.com');
         });
@@ -72,9 +70,28 @@ describeWithMockConnection('Linkifier', () => {
             const link = Components.Linkifier.Linkifier.linkifyURL(url, {
                 text: '',
                 showColumnNumber: false,
-                inlineFrameIndex: 1,
             });
             assert.strictEqual(link.innerText, '(unknown)');
+        });
+        it('omits line number and renders column number as hex if omitLineAndRenderColumnAsHex is true', async () => {
+            const url = urlString `http://www.example.com/script.js`;
+            const link = Components.Linkifier.Linkifier.linkifyURL(url, {
+                lineNumber: 10,
+                columnNumber: 33,
+                omitLineAndRenderColumnAsHex: true,
+            });
+            assert.strictEqual(link.innerText, 'www.example.com/script.js:0x21');
+        });
+        it('throws an error if omitLineAndRenderColumnAsHex is true and showColumnNumber is explicitly false', async () => {
+            const url = urlString `http://www.example.com/script.js`;
+            assert.throws(() => {
+                Components.Linkifier.Linkifier.linkifyURL(url, {
+                    lineNumber: 10,
+                    columnNumber: 33,
+                    omitLineAndRenderColumnAsHex: true,
+                    showColumnNumber: false,
+                });
+            }, 'omitLineAndRenderColumnAsHex requires showColumnNumber to not be explicitly false');
         });
     });
     it('creates an empty placeholder anchor if the debugger is disabled and no url exists', () => {
@@ -203,7 +220,7 @@ describeWithMockConnection('Linkifier', () => {
         assert.exists(debuggerModel);
         void debuggerModel.suspendModel();
         const lineNumber = 4;
-        const options = { columnNumber: 8, showColumnNumber: true, inlineFrameIndex: 0 };
+        const options = { columnNumber: 8, showColumnNumber: true };
         // Explicitly set url to empty string and let it resolve through the live location.
         const url = Platform.DevToolsPath.EmptyUrlString;
         const anchor = linkifier.maybeLinkifyScriptLocation(target, scriptId1, url, lineNumber, options);
@@ -331,7 +348,7 @@ describeWithMockConnection('Linkifier', () => {
             /* enabled */ true, /* isLogpoint */ true, "USER_ACTION" /* Breakpoints.BreakpointManager.BreakpointOrigin.USER_ACTION */);
             assert.exists(breakpoint);
             // Create a link that matches exactly the breakpoint location.
-            const anchor = linkifier.maybeLinkifyScriptLocation(target, script.scriptId, url, lineNumber, { inlineFrameIndex: 0, revealBreakpoint: true });
+            const anchor = linkifier.maybeLinkifyScriptLocation(target, script.scriptId, url, lineNumber, { revealBreakpoint: true });
             assert.exists(anchor);
             await debuggerWorkspaceBinding.pendingLiveLocationChangesPromise();
             // Assert that the linkinfo has the `BreakLocation` as its revealable.
@@ -394,7 +411,6 @@ describeWithMockConnection('Linkifier', () => {
                 liveLocation: null,
                 lineNumber: null,
                 columnNumber: null,
-                inlineFrameIndex: 0,
                 revealable: null,
                 fallback: null
             });
@@ -419,7 +435,6 @@ describeWithMockConnection('Linkifier', () => {
                 liveLocation: null,
                 lineNumber: null,
                 columnNumber: null,
-                inlineFrameIndex: 0,
                 revealable: null,
                 fallback: null
             });
@@ -457,7 +472,6 @@ describeWithMockConnection('Linkifier', () => {
                     liveLocation: null,
                     lineNumber: null,
                     columnNumber: null,
-                    inlineFrameIndex: 0,
                     revealable: null,
                     fallback: null
                 });
@@ -476,7 +490,6 @@ describeWithMockConnection('Linkifier', () => {
                     liveLocation: null,
                     lineNumber: null,
                     columnNumber: null,
-                    inlineFrameIndex: 0,
                     revealable: null,
                     fallback: null
                 });
@@ -495,7 +508,6 @@ describeWithMockConnection('Linkifier', () => {
                     liveLocation: null,
                     lineNumber: null,
                     columnNumber: null,
-                    inlineFrameIndex: 0,
                     revealable: null,
                     fallback: null
                 });
