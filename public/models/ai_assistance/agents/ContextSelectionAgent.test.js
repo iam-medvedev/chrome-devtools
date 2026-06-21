@@ -13,7 +13,7 @@ import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Logs from '../../logs/logs.js';
 import * as Workspace from '../../workspace/workspace.js';
-import { ContextSelectionAgent, DOMNodeContext, FileAgent, NetworkAgent, PerformanceAgent, StorageAgent, StorageItem, } from '../ai_assistance.js';
+import { ContextSelectionAgent, DOMNodeContext, FileContext, PerformanceAgent, RequestContext, StorageAgent, StorageItem, } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('ContextSelectionAgent', function () {
     const snapshotTester = new SnapshotTester(this, import.meta);
@@ -603,7 +603,7 @@ describeWithMockConnection('ContextSelectionAgent', function () {
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const contextChange = responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
             assert.exists(contextChange);
-            assert.instanceOf(contextChange.context, NetworkAgent.RequestContext);
+            assert.instanceOf(contextChange.context, RequestContext.RequestContext);
             assert.strictEqual(contextChange.context.getItem(), request);
             assert.exists(contextChange.widgets);
             assert.lengthOf(contextChange.widgets, 1);
@@ -713,7 +713,7 @@ describeWithMockConnection('ContextSelectionAgent', function () {
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const contextChange = responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
             assert.exists(contextChange);
-            assert.instanceOf(contextChange.context, FileAgent.FileContext);
+            assert.instanceOf(contextChange.context, FileContext.FileContext);
             assert.strictEqual(contextChange.context.getItem(), file);
             assert.exists(contextChange.widgets);
             assert.lengthOf(contextChange.widgets, 1);

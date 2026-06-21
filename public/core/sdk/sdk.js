@@ -72,7 +72,21 @@ var generatedProperties = [
       "block-ellipsis",
       "continue"
     ],
-    "name": "-alternative-webkit-line-clamp"
+    "name": "-alternative-line-clamp-shorthand"
+  },
+  {
+    "keywords": [
+      "none"
+    ],
+    "name": "-alternative-webkit-line-clamp-longhand"
+  },
+  {
+    "longhands": [
+      "max-lines",
+      "block-ellipsis",
+      "continue"
+    ],
+    "name": "-alternative-webkit-line-clamp-shorthand"
   },
   {
     "inherited": true,
@@ -154,6 +168,12 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "keywords": [
+      "auto",
+      "none",
+      "antialiased",
+      "subpixel-antialiased"
+    ],
     "name": "-webkit-font-smoothing"
   },
   {
@@ -174,6 +194,9 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "keywords": [
+      "auto"
+    ],
     "name": "-webkit-locale"
   },
   {
@@ -190,15 +213,27 @@ var generatedProperties = [
     "name": "-webkit-mask-box-image-outset"
   },
   {
+    "keywords": [
+      "repeat",
+      "stretch",
+      "space",
+      "round"
+    ],
     "name": "-webkit-mask-box-image-repeat"
   },
   {
     "name": "-webkit-mask-box-image-slice"
   },
   {
+    "keywords": [
+      "none"
+    ],
     "name": "-webkit-mask-box-image-source"
   },
   {
+    "keywords": [
+      "auto"
+    ],
     "name": "-webkit-mask-box-image-width"
   },
   {
@@ -231,10 +266,23 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "keywords": [
+      "none",
+      "horizontal"
+    ],
     "name": "-webkit-text-combine"
   },
   {
     "inherited": true,
+    "keywords": [
+      "none",
+      "blink",
+      "line-through",
+      "overline",
+      "underline",
+      "spelling-error",
+      "grammar-error"
+    ],
     "name": "-webkit-text-decorations-in-effect"
   },
   {
@@ -310,6 +358,8 @@ var generatedProperties = [
     "name": "accent-color"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "additive-symbols"
   },
   {
@@ -319,6 +369,20 @@ var generatedProperties = [
     "name": "align-items"
   },
   {
+    "keywords": [
+      "auto",
+      "normal",
+      "stretch",
+      "baseline",
+      "center",
+      "start",
+      "end",
+      "self-start",
+      "self-end",
+      "flex-start",
+      "flex-end",
+      "anchor-center"
+    ],
     "name": "align-self"
   },
   {
@@ -340,6 +404,7 @@ var generatedProperties = [
   },
   {
     "longhands": [
+      "-alternative-webkit-line-clamp-longhand",
       "-webkit-border-horizontal-spacing",
       "-webkit-border-vertical-spacing",
       "-webkit-box-align",
@@ -605,6 +670,7 @@ var generatedProperties = [
       "letter-spacing",
       "lighting-color",
       "line-break",
+      "line-clamp",
       "line-gap-override",
       "line-height",
       "list-style-image",
@@ -911,6 +977,9 @@ var generatedProperties = [
     "name": "animation-direction"
   },
   {
+    "keywords": [
+      "auto"
+    ],
     "name": "animation-duration"
   },
   {
@@ -992,9 +1061,27 @@ var generatedProperties = [
     "name": "app-region"
   },
   {
+    "keywords": [
+      "auto",
+      "none",
+      "checkbox",
+      "radio",
+      "button",
+      "listbox",
+      "menulist",
+      "menulist-button",
+      "meter",
+      "progress-bar",
+      "searchfield",
+      "textfield",
+      "textarea",
+      "base-select"
+    ],
     "name": "appearance"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "ascent-override"
   },
   {
@@ -1077,7 +1164,6 @@ var generatedProperties = [
   },
   {
     "keywords": [
-      "auto",
       "none"
     ],
     "name": "background-image"
@@ -1115,9 +1201,13 @@ var generatedProperties = [
     "name": "background-size"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "base-palette"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "base-url"
   },
   {
@@ -1202,9 +1292,26 @@ var generatedProperties = [
     "name": "border-block-end-color"
   },
   {
+    "keywords": [
+      "none",
+      "hidden",
+      "inset",
+      "groove",
+      "outset",
+      "ridge",
+      "dotted",
+      "dashed",
+      "solid",
+      "double"
+    ],
     "name": "border-block-end-style"
   },
   {
+    "keywords": [
+      "medium",
+      "thick",
+      "thin"
+    ],
     "name": "border-block-end-width"
   },
   {
@@ -1219,9 +1326,26 @@ var generatedProperties = [
     "name": "border-block-start-color"
   },
   {
+    "keywords": [
+      "none",
+      "hidden",
+      "inset",
+      "groove",
+      "outset",
+      "ridge",
+      "dotted",
+      "dashed",
+      "solid",
+      "double"
+    ],
     "name": "border-block-start-style"
   },
   {
+    "keywords": [
+      "medium",
+      "thick",
+      "thin"
+    ],
     "name": "border-block-start-width"
   },
   {
@@ -1305,6 +1429,13 @@ var generatedProperties = [
     "name": "border-end-start-radius"
   },
   {
+    "keywords": [
+      "none",
+      "repeat",
+      "stretch",
+      "space",
+      "round"
+    ],
     "longhands": [
       "border-image-source",
       "border-image-slice",
@@ -1371,9 +1502,26 @@ var generatedProperties = [
     "name": "border-inline-end-color"
   },
   {
+    "keywords": [
+      "none",
+      "hidden",
+      "inset",
+      "groove",
+      "outset",
+      "ridge",
+      "dotted",
+      "dashed",
+      "solid",
+      "double"
+    ],
     "name": "border-inline-end-style"
   },
   {
+    "keywords": [
+      "medium",
+      "thick",
+      "thin"
+    ],
     "name": "border-inline-end-width"
   },
   {
@@ -1388,9 +1536,26 @@ var generatedProperties = [
     "name": "border-inline-start-color"
   },
   {
+    "keywords": [
+      "none",
+      "hidden",
+      "inset",
+      "groove",
+      "outset",
+      "ridge",
+      "dotted",
+      "dashed",
+      "solid",
+      "double"
+    ],
     "name": "border-inline-start-style"
   },
   {
+    "keywords": [
+      "medium",
+      "thick",
+      "thin"
+    ],
     "name": "border-inline-start-width"
   },
   {
@@ -1948,6 +2113,9 @@ var generatedProperties = [
     "name": "contain"
   },
   {
+    "keywords": [
+      "none"
+    ],
     "name": "contain-intrinsic-block-size"
   },
   {
@@ -1957,6 +2125,9 @@ var generatedProperties = [
     "name": "contain-intrinsic-height"
   },
   {
+    "keywords": [
+      "none"
+    ],
     "name": "contain-intrinsic-inline-size"
   },
   {
@@ -1996,6 +2167,14 @@ var generatedProperties = [
     "name": "container-type"
   },
   {
+    "keywords": [
+      "none",
+      "normal",
+      "close-quote",
+      "no-close-quote",
+      "no-open-quote",
+      "open-quote"
+    ],
     "name": "content"
   },
   {
@@ -2400,6 +2579,8 @@ var generatedProperties = [
     "name": "d"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "descent-override"
   },
   {
@@ -2480,6 +2661,8 @@ var generatedProperties = [
     "name": "empty-cells"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "fallback"
   },
   {
@@ -2615,14 +2798,18 @@ var generatedProperties = [
     "name": "font"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "font-display"
   },
   {
     "inherited": true,
+    "is_descriptor": true,
     "name": "font-family"
   },
   {
     "inherited": true,
+    "is_descriptor": true,
     "keywords": [
       "normal"
     ],
@@ -2693,6 +2880,7 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "is_descriptor": true,
     "keywords": [
       "normal",
       "ultra-condensed",
@@ -2708,6 +2896,7 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "is_descriptor": true,
     "keywords": [
       "normal",
       "italic",
@@ -2750,6 +2939,7 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "is_descriptor": true,
     "longhands": [
       "font-variant-ligatures",
       "font-variant-caps",
@@ -2849,6 +3039,7 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "is_descriptor": true,
     "keywords": [
       "normal"
     ],
@@ -2856,6 +3047,7 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "is_descriptor": true,
     "keywords": [
       "normal",
       "bold",
@@ -3013,13 +3205,19 @@ var generatedProperties = [
   },
   {
     "keywords": [
-      "none"
+      "auto",
+      "none",
+      "min-content",
+      "max-content"
     ],
     "name": "grid-template-columns"
   },
   {
     "keywords": [
-      "none"
+      "auto",
+      "none",
+      "min-content",
+      "max-content"
     ],
     "name": "grid-template-rows"
   },
@@ -3034,6 +3232,8 @@ var generatedProperties = [
     "name": "hanging-punctuation"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "hash"
   },
   {
@@ -3046,10 +3246,15 @@ var generatedProperties = [
     "name": "height"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "hostname"
   },
   {
     "inherited": true,
+    "keywords": [
+      "auto"
+    ],
     "name": "hyphenate-character"
   },
   {
@@ -3080,6 +3285,10 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "keywords": [
+      "none",
+      "from-image"
+    ],
     "name": "image-orientation"
   },
   {
@@ -3095,6 +3304,8 @@ var generatedProperties = [
     "name": "image-rendering"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "inherits"
   },
   {
@@ -3107,6 +3318,8 @@ var generatedProperties = [
     "name": "initial-letter"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "initial-value"
   },
   {
@@ -3132,9 +3345,15 @@ var generatedProperties = [
     "name": "inset-block"
   },
   {
+    "keywords": [
+      "auto"
+    ],
     "name": "inset-block-end"
   },
   {
+    "keywords": [
+      "auto"
+    ],
     "name": "inset-block-start"
   },
   {
@@ -3145,9 +3364,15 @@ var generatedProperties = [
     "name": "inset-inline"
   },
   {
+    "keywords": [
+      "auto"
+    ],
     "name": "inset-inline-end"
   },
   {
+    "keywords": [
+      "auto"
+    ],
     "name": "inset-inline-start"
   },
   {
@@ -3193,6 +3418,22 @@ var generatedProperties = [
     "name": "justify-items"
   },
   {
+    "keywords": [
+      "auto",
+      "normal",
+      "stretch",
+      "baseline",
+      "center",
+      "start",
+      "end",
+      "self-start",
+      "self-end",
+      "flex-start",
+      "flex-end",
+      "left",
+      "right",
+      "anchor-center"
+    ],
     "name": "justify-self"
   },
   {
@@ -3227,14 +3468,18 @@ var generatedProperties = [
     "name": "line-break"
   },
   {
-    "longhands": [
-      "max-lines",
-      "block-ellipsis",
-      "continue"
+    "keywords": [
+      "none",
+      "auto",
+      "ellipsis",
+      "no-ellipsis",
+      "-webkit-legacy"
     ],
     "name": "line-clamp"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "line-gap-override"
   },
   {
@@ -3412,6 +3657,9 @@ var generatedProperties = [
     "name": "mask-composite"
   },
   {
+    "keywords": [
+      "none"
+    ],
     "name": "mask-image"
   },
   {
@@ -3436,6 +3684,11 @@ var generatedProperties = [
     "name": "mask-repeat"
   },
   {
+    "keywords": [
+      "auto",
+      "contain",
+      "cover"
+    ],
     "name": "mask-size"
   },
   {
@@ -3496,15 +3749,43 @@ var generatedProperties = [
     "name": "max-width"
   },
   {
+    "keywords": [
+      "auto",
+      "min-content",
+      "max-content",
+      "fit-content",
+      "stretch"
+    ],
     "name": "min-block-size"
   },
   {
+    "keywords": [
+      "auto",
+      "min-content",
+      "max-content",
+      "fit-content",
+      "stretch"
+    ],
     "name": "min-height"
   },
   {
+    "keywords": [
+      "auto",
+      "min-content",
+      "max-content",
+      "fit-content",
+      "stretch"
+    ],
     "name": "min-inline-size"
   },
   {
+    "keywords": [
+      "auto",
+      "min-content",
+      "max-content",
+      "fit-content",
+      "stretch"
+    ],
     "name": "min-width"
   },
   {
@@ -3530,9 +3811,13 @@ var generatedProperties = [
     "name": "mix-blend-mode"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "navigation"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "negative"
   },
   {
@@ -3611,6 +3896,21 @@ var generatedProperties = [
     "name": "orphans"
   },
   {
+    "keywords": [
+      "auto",
+      "none",
+      "inset",
+      "groove",
+      "ridge",
+      "outset",
+      "dotted",
+      "dashed",
+      "solid",
+      "double",
+      "medium",
+      "thick",
+      "thin"
+    ],
     "longhands": [
       "outline-color",
       "outline-style",
@@ -3719,9 +4019,16 @@ var generatedProperties = [
     "name": "overlay"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "override-colors"
   },
   {
+    "keywords": [
+      "auto",
+      "none",
+      "contain"
+    ],
     "longhands": [
       "overscroll-behavior-x",
       "overscroll-behavior-y"
@@ -3753,6 +4060,8 @@ var generatedProperties = [
     "name": "overscroll-behavior-y"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "pad"
   },
   {
@@ -3815,6 +4124,13 @@ var generatedProperties = [
     "name": "page-break-after"
   },
   {
+    "keywords": [
+      "auto",
+      "left",
+      "right",
+      "always",
+      "avoid"
+    ],
     "longhands": [
       "break-before"
     ],
@@ -3827,6 +4143,7 @@ var generatedProperties = [
     "name": "page-break-inside"
   },
   {
+    "is_descriptor": true,
     "keywords": [
       "none",
       "clamp",
@@ -3835,6 +4152,7 @@ var generatedProperties = [
     "name": "page-margin-safety"
   },
   {
+    "is_descriptor": true,
     "name": "page-orientation"
   },
   {
@@ -3854,9 +4172,13 @@ var generatedProperties = [
     "name": "path-length"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "pathname"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "pattern"
   },
   {
@@ -3907,6 +4229,8 @@ var generatedProperties = [
     "name": "pointer-events"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "port"
   },
   {
@@ -3984,6 +4308,8 @@ var generatedProperties = [
     "name": "position-visibility"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "prefix"
   },
   {
@@ -3995,6 +4321,8 @@ var generatedProperties = [
     "name": "print-color-adjust"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "protocol"
   },
   {
@@ -4009,6 +4337,8 @@ var generatedProperties = [
     "name": "r"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "range"
   },
   {
@@ -4038,6 +4368,8 @@ var generatedProperties = [
     "name": "resize"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "result"
   },
   {
@@ -4389,6 +4721,11 @@ var generatedProperties = [
     "name": "scroll-margin-top"
   },
   {
+    "keywords": [
+      "none",
+      "after",
+      "before"
+    ],
     "name": "scroll-marker-group"
   },
   {
@@ -4509,6 +4846,9 @@ var generatedProperties = [
     "name": "scroll-timeline-axis"
   },
   {
+    "keywords": [
+      "none"
+    ],
     "name": "scroll-timeline-name"
   },
   {
@@ -4537,15 +4877,14 @@ var generatedProperties = [
     "name": "scrollbar-width"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "search"
   },
   {
     "name": "shape-image-threshold"
   },
   {
-    "keywords": [
-      "none"
-    ],
     "name": "shape-margin"
   },
   {
@@ -4565,9 +4904,16 @@ var generatedProperties = [
     "name": "shape-rendering"
   },
   {
+    "keywords": [
+      "auto",
+      "portrait",
+      "landscape"
+    ],
     "name": "size"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "size-adjust"
   },
   {
@@ -4583,9 +4929,13 @@ var generatedProperties = [
     "name": "speak"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "speak-as"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "src"
   },
   {
@@ -4643,15 +4993,23 @@ var generatedProperties = [
     "name": "stroke-width"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "suffix"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "symbols"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "syntax"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "system"
   },
   {
@@ -4721,6 +5079,12 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "keywords": [
+      "auto",
+      "text",
+      "cap",
+      "ex"
+    ],
     "name": "text-box-edge"
   },
   {
@@ -4962,6 +5326,10 @@ var generatedProperties = [
     "name": "text-wrap-style"
   },
   {
+    "keywords": [
+      "none",
+      "all"
+    ],
     "name": "timeline-scope"
   },
   {
@@ -4996,12 +5364,23 @@ var generatedProperties = [
     "name": "timeline-trigger-active-range"
   },
   {
+    "keywords": [
+      "auto",
+      "normal"
+    ],
     "name": "timeline-trigger-active-range-end"
   },
   {
+    "keywords": [
+      "auto",
+      "normal"
+    ],
     "name": "timeline-trigger-active-range-start"
   },
   {
+    "keywords": [
+      "none"
+    ],
     "name": "timeline-trigger-name"
   },
   {
@@ -5114,6 +5493,8 @@ var generatedProperties = [
     "name": "trigger-scope"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "types"
   },
   {
@@ -5128,6 +5509,8 @@ var generatedProperties = [
     "name": "unicode-bidi"
   },
   {
+    "is_descriptor": true,
+    "is_property": false,
     "name": "unicode-range"
   },
   {
@@ -5171,9 +5554,15 @@ var generatedProperties = [
     "name": "view-timeline-axis"
   },
   {
+    "keywords": [
+      "auto"
+    ],
     "name": "view-timeline-inset"
   },
   {
+    "keywords": [
+      "none"
+    ],
     "name": "view-timeline-name"
   },
   {
@@ -5297,6 +5686,11 @@ var generatedProperties = [
   }
 ];
 var generatedPropertyValues = {
+  "-alternative-webkit-line-clamp-longhand": {
+    "values": [
+      "none"
+    ]
+  },
   "-webkit-box-align": {
     "values": [
       "stretch",
@@ -5332,6 +5726,14 @@ var generatedPropertyValues = {
       "justify"
     ]
   },
+  "-webkit-font-smoothing": {
+    "values": [
+      "auto",
+      "none",
+      "antialiased",
+      "subpixel-antialiased"
+    ]
+  },
   "-webkit-line-break": {
     "values": [
       "auto",
@@ -5346,10 +5748,50 @@ var generatedPropertyValues = {
       "none"
     ]
   },
+  "-webkit-locale": {
+    "values": [
+      "auto"
+    ]
+  },
+  "-webkit-mask-box-image-repeat": {
+    "values": [
+      "repeat",
+      "stretch",
+      "space",
+      "round"
+    ]
+  },
+  "-webkit-mask-box-image-source": {
+    "values": [
+      "none"
+    ]
+  },
+  "-webkit-mask-box-image-width": {
+    "values": [
+      "auto"
+    ]
+  },
   "-webkit-rtl-ordering": {
     "values": [
       "logical",
       "visual"
+    ]
+  },
+  "-webkit-text-combine": {
+    "values": [
+      "none",
+      "horizontal"
+    ]
+  },
+  "-webkit-text-decorations-in-effect": {
+    "values": [
+      "none",
+      "blink",
+      "line-through",
+      "overline",
+      "underline",
+      "spelling-error",
+      "grammar-error"
     ]
   },
   "-webkit-text-security": {
@@ -5378,6 +5820,22 @@ var generatedPropertyValues = {
     "values": [
       "auto",
       "currentcolor"
+    ]
+  },
+  "align-self": {
+    "values": [
+      "auto",
+      "normal",
+      "stretch",
+      "baseline",
+      "center",
+      "start",
+      "end",
+      "self-start",
+      "self-end",
+      "flex-start",
+      "flex-end",
+      "anchor-center"
     ]
   },
   "alignment-baseline": {
@@ -5420,6 +5878,11 @@ var generatedPropertyValues = {
       "reverse",
       "alternate",
       "alternate-reverse"
+    ]
+  },
+  "animation-duration": {
+    "values": [
+      "auto"
     ]
   },
   "animation-fill-mode": {
@@ -5477,6 +5940,24 @@ var generatedPropertyValues = {
       "none",
       "drag",
       "no-drag"
+    ]
+  },
+  "appearance": {
+    "values": [
+      "auto",
+      "none",
+      "checkbox",
+      "radio",
+      "button",
+      "listbox",
+      "menulist",
+      "menulist-button",
+      "meter",
+      "progress-bar",
+      "searchfield",
+      "textfield",
+      "textarea",
+      "base-select"
     ]
   },
   "aspect-ratio": {
@@ -5538,7 +6019,6 @@ var generatedPropertyValues = {
   },
   "background-image": {
     "values": [
-      "auto",
       "none"
     ]
   },
@@ -5581,6 +6061,48 @@ var generatedPropertyValues = {
       "auto"
     ]
   },
+  "border-block-end-style": {
+    "values": [
+      "none",
+      "hidden",
+      "inset",
+      "groove",
+      "outset",
+      "ridge",
+      "dotted",
+      "dashed",
+      "solid",
+      "double"
+    ]
+  },
+  "border-block-end-width": {
+    "values": [
+      "medium",
+      "thick",
+      "thin"
+    ]
+  },
+  "border-block-start-style": {
+    "values": [
+      "none",
+      "hidden",
+      "inset",
+      "groove",
+      "outset",
+      "ridge",
+      "dotted",
+      "dashed",
+      "solid",
+      "double"
+    ]
+  },
+  "border-block-start-width": {
+    "values": [
+      "medium",
+      "thick",
+      "thin"
+    ]
+  },
   "border-bottom-color": {
     "values": [
       "currentcolor"
@@ -5613,6 +6135,15 @@ var generatedPropertyValues = {
       "collapse"
     ]
   },
+  "border-image": {
+    "values": [
+      "none",
+      "repeat",
+      "stretch",
+      "space",
+      "round"
+    ]
+  },
   "border-image-repeat": {
     "values": [
       "stretch",
@@ -5629,6 +6160,48 @@ var generatedPropertyValues = {
   "border-image-width": {
     "values": [
       "auto"
+    ]
+  },
+  "border-inline-end-style": {
+    "values": [
+      "none",
+      "hidden",
+      "inset",
+      "groove",
+      "outset",
+      "ridge",
+      "dotted",
+      "dashed",
+      "solid",
+      "double"
+    ]
+  },
+  "border-inline-end-width": {
+    "values": [
+      "medium",
+      "thick",
+      "thin"
+    ]
+  },
+  "border-inline-start-style": {
+    "values": [
+      "none",
+      "hidden",
+      "inset",
+      "groove",
+      "outset",
+      "ridge",
+      "dotted",
+      "dashed",
+      "solid",
+      "double"
+    ]
+  },
+  "border-inline-start-width": {
+    "values": [
+      "medium",
+      "thick",
+      "thin"
     ]
   },
   "border-left-color": {
@@ -5982,7 +6555,17 @@ var generatedPropertyValues = {
       "block-size"
     ]
   },
+  "contain-intrinsic-block-size": {
+    "values": [
+      "none"
+    ]
+  },
   "contain-intrinsic-height": {
+    "values": [
+      "none"
+    ]
+  },
+  "contain-intrinsic-inline-size": {
     "values": [
       "none"
     ]
@@ -6004,6 +6587,16 @@ var generatedPropertyValues = {
       "size",
       "scroll-state",
       "anchored"
+    ]
+  },
+  "content": {
+    "values": [
+      "none",
+      "normal",
+      "close-quote",
+      "no-close-quote",
+      "no-open-quote",
+      "open-quote"
     ]
   },
   "content-visibility": {
@@ -6592,12 +7185,18 @@ var generatedPropertyValues = {
   },
   "grid-template-columns": {
     "values": [
-      "none"
+      "auto",
+      "none",
+      "min-content",
+      "max-content"
     ]
   },
   "grid-template-rows": {
     "values": [
-      "none"
+      "auto",
+      "none",
+      "min-content",
+      "max-content"
     ]
   },
   "hanging-punctuation": {
@@ -6614,6 +7213,11 @@ var generatedPropertyValues = {
       "fit-content",
       "min-content",
       "max-content"
+    ]
+  },
+  "hyphenate-character": {
+    "values": [
+      "auto"
     ]
   },
   "hyphenate-limit-chars": {
@@ -6634,6 +7238,12 @@ var generatedPropertyValues = {
       "running",
       "paused",
       "stopped"
+    ]
+  },
+  "image-orientation": {
+    "values": [
+      "none",
+      "from-image"
     ]
   },
   "image-rendering": {
@@ -6658,6 +7268,26 @@ var generatedPropertyValues = {
       "auto"
     ]
   },
+  "inset-block-end": {
+    "values": [
+      "auto"
+    ]
+  },
+  "inset-block-start": {
+    "values": [
+      "auto"
+    ]
+  },
+  "inset-inline-end": {
+    "values": [
+      "auto"
+    ]
+  },
+  "inset-inline-start": {
+    "values": [
+      "auto"
+    ]
+  },
   "interactivity": {
     "values": [
       "auto",
@@ -6674,6 +7304,24 @@ var generatedPropertyValues = {
     "values": [
       "auto",
       "isolate"
+    ]
+  },
+  "justify-self": {
+    "values": [
+      "auto",
+      "normal",
+      "stretch",
+      "baseline",
+      "center",
+      "start",
+      "end",
+      "self-start",
+      "self-end",
+      "flex-start",
+      "flex-end",
+      "left",
+      "right",
+      "anchor-center"
     ]
   },
   "left": {
@@ -6699,6 +7347,15 @@ var generatedPropertyValues = {
       "strict",
       "anywhere",
       "after-white-space"
+    ]
+  },
+  "line-clamp": {
+    "values": [
+      "none",
+      "auto",
+      "ellipsis",
+      "no-ellipsis",
+      "-webkit-legacy"
     ]
   },
   "line-height": {
@@ -6791,11 +7448,23 @@ var generatedPropertyValues = {
       "exclude"
     ]
   },
+  "mask-image": {
+    "values": [
+      "none"
+    ]
+  },
   "mask-mode": {
     "values": [
       "alpha",
       "luminance",
       "match-source"
+    ]
+  },
+  "mask-size": {
+    "values": [
+      "auto",
+      "contain",
+      "cover"
     ]
   },
   "mask-type": {
@@ -6839,6 +7508,42 @@ var generatedPropertyValues = {
   "max-width": {
     "values": [
       "none"
+    ]
+  },
+  "min-block-size": {
+    "values": [
+      "auto",
+      "min-content",
+      "max-content",
+      "fit-content",
+      "stretch"
+    ]
+  },
+  "min-height": {
+    "values": [
+      "auto",
+      "min-content",
+      "max-content",
+      "fit-content",
+      "stretch"
+    ]
+  },
+  "min-inline-size": {
+    "values": [
+      "auto",
+      "min-content",
+      "max-content",
+      "fit-content",
+      "stretch"
+    ]
+  },
+  "min-width": {
+    "values": [
+      "auto",
+      "min-content",
+      "max-content",
+      "fit-content",
+      "stretch"
     ]
   },
   "mix-blend-mode": {
@@ -6902,6 +7607,23 @@ var generatedPropertyValues = {
     "values": [
       "normal",
       "none"
+    ]
+  },
+  "outline": {
+    "values": [
+      "auto",
+      "none",
+      "inset",
+      "groove",
+      "ridge",
+      "outset",
+      "dotted",
+      "dashed",
+      "solid",
+      "double",
+      "medium",
+      "thick",
+      "thin"
     ]
   },
   "outline-color": {
@@ -6977,6 +7699,13 @@ var generatedPropertyValues = {
       "auto"
     ]
   },
+  "overscroll-behavior": {
+    "values": [
+      "auto",
+      "none",
+      "contain"
+    ]
+  },
   "overscroll-behavior-x": {
     "values": [
       "auto",
@@ -6996,6 +7725,15 @@ var generatedPropertyValues = {
   "page": {
     "values": [
       "auto"
+    ]
+  },
+  "page-break-before": {
+    "values": [
+      "auto",
+      "left",
+      "right",
+      "always",
+      "avoid"
     ]
   },
   "page-margin-safety": {
@@ -7257,6 +7995,13 @@ var generatedPropertyValues = {
       "nearest"
     ]
   },
+  "scroll-marker-group": {
+    "values": [
+      "none",
+      "after",
+      "before"
+    ]
+  },
   "scroll-padding-block-end": {
     "values": [
       "auto"
@@ -7329,6 +8074,11 @@ var generatedPropertyValues = {
       "auto"
     ]
   },
+  "scroll-timeline-name": {
+    "values": [
+      "none"
+    ]
+  },
   "scrollbar-color": {
     "values": [
       "auto"
@@ -7348,11 +8098,6 @@ var generatedPropertyValues = {
       "none"
     ]
   },
-  "shape-margin": {
-    "values": [
-      "none"
-    ]
-  },
   "shape-outside": {
     "values": [
       "none"
@@ -7364,6 +8109,13 @@ var generatedPropertyValues = {
       "optimizespeed",
       "crispedges",
       "geometricprecision"
+    ]
+  },
+  "size": {
+    "values": [
+      "auto",
+      "portrait",
+      "landscape"
     ]
   },
   "speak": {
@@ -7443,6 +8195,14 @@ var generatedPropertyValues = {
     "values": [
       "no-autospace",
       "normal"
+    ]
+  },
+  "text-box-edge": {
+    "values": [
+      "auto",
+      "text",
+      "cap",
+      "ex"
     ]
   },
   "text-box-trim": {
@@ -7597,6 +8357,29 @@ var generatedPropertyValues = {
       "stable"
     ]
   },
+  "timeline-scope": {
+    "values": [
+      "none",
+      "all"
+    ]
+  },
+  "timeline-trigger-active-range-end": {
+    "values": [
+      "auto",
+      "normal"
+    ]
+  },
+  "timeline-trigger-active-range-start": {
+    "values": [
+      "auto",
+      "normal"
+    ]
+  },
+  "timeline-trigger-name": {
+    "values": [
+      "none"
+    ]
+  },
   "timeline-trigger-source": {
     "values": [
       "none",
@@ -7707,6 +8490,16 @@ var generatedPropertyValues = {
       "text-top",
       "text-bottom",
       "middle"
+    ]
+  },
+  "view-timeline-inset": {
+    "values": [
+      "auto"
+    ]
+  },
+  "view-timeline-name": {
+    "values": [
+      "none"
     ]
   },
   "view-transition-class": {
@@ -9557,7 +10350,8 @@ var extraPropertyValues = /* @__PURE__ */ new Map([
       "superellipse(0.5)",
       "superellipse(infinity)"
     ])
-  ]
+  ],
+  ["outline-style", /* @__PURE__ */ new Set(["auto"])]
 ]);
 var Weight = /* @__PURE__ */ new Map([
   ["align-content", 57],
@@ -13131,6 +13925,8 @@ __export(CSSPropertyParserMatchers_exports, {
   URLMatcher: () => URLMatcher,
   VariableMatch: () => VariableMatch,
   VariableMatcher: () => VariableMatcher,
+  VariableNameMatch: () => VariableNameMatch,
+  VariableNameMatcher: () => VariableNameMatcher,
   defaultValueForCSSType: () => defaultValueForCSSType,
   isValidCSSType: () => isValidCSSType,
   localEvalCSS: () => localEvalCSS
@@ -13219,6 +14015,64 @@ var VariableMatcher = class extends matcherBase(VariableMatch) {
   matches(node, matching) {
     const match = new BaseVariableMatcher(() => null).matches(node, matching);
     return match ? new VariableMatch(match.text, match.node, match.name, match.fallback, match.matching, this.matchedStyles, this.style) : null;
+  }
+};
+var VariableNameMatch = class {
+  node;
+  text;
+  matchedStyles;
+  style;
+  constructor(node, text, matchedStyles, style) {
+    this.node = node;
+    this.text = text;
+    this.matchedStyles = matchedStyles;
+    this.style = style;
+  }
+  resolveVariable() {
+    return this.matchedStyles.computeCSSVariable(this.style, this.text);
+  }
+};
+var VariableNameMatcher = class extends matcherBase(VariableNameMatch) {
+  matchedStyles;
+  style;
+  // clang-format on
+  constructor(matchedStyles, style) {
+    super();
+    this.matchedStyles = matchedStyles;
+    this.style = style;
+  }
+  accepts() {
+    return true;
+  }
+  matches(node, matching) {
+    if (node.name !== "VariableName" && node.name !== "FeatureName" && node.name !== "KeywordQuery") {
+      return null;
+    }
+    const rawText = matching.ast.text(node);
+    if (!rawText.startsWith("--")) {
+      return null;
+    }
+    let cur = node.parent;
+    let foundStyleCall = null;
+    while (cur) {
+      if (cur.name === "CallExpression") {
+        return null;
+      }
+      if (cur.name === "CallQuery") {
+        const callee = cur.getChild("QueryCallee");
+        if (callee && matching.ast.text(callee) === "style") {
+          foundStyleCall = cur;
+          break;
+        }
+        return null;
+      }
+      cur = cur.parent;
+    }
+    if (!foundStyleCall) {
+      return null;
+    }
+    const text = node.name === "KeywordQuery" ? rawText.split(/\s|[>!=<:]/)[0] : rawText;
+    return new VariableNameMatch(node, text, this.matchedStyles, this.style);
   }
 };
 var AttributeMatch = class extends BaseVariableMatch {
@@ -17081,6 +17935,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
   propertyMatchers(style, computedStyles) {
     return [
       new VariableMatcher(this, style),
+      new VariableNameMatcher(this, style),
       new ColorMatcher(() => computedStyles?.get("color") ?? null),
       new ColorMixMatcher(),
       new ContrastColorMatcher(),
@@ -23611,10 +24466,10 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       this.dispatchEventToListeners(Events7.DiscardedAnonymousScriptSource, script);
     }
   }
-  createRawLocation(script, lineNumber, columnNumber, inlineFrameIndex) {
-    return this.createRawLocationByScriptId(script.scriptId, lineNumber, columnNumber, inlineFrameIndex);
+  createRawLocation(script, lineNumber, columnNumber) {
+    return this.createRawLocationByScriptId(script.scriptId, lineNumber, columnNumber);
   }
-  createRawLocationByURL(sourceURL, lineNumber, columnNumber, inlineFrameIndex) {
+  createRawLocationByURL(sourceURL, lineNumber, columnNumber) {
     for (const script of this.#scriptsBySourceURL.get(sourceURL) || []) {
       if (script.lineOffset > lineNumber || script.lineOffset === lineNumber && columnNumber !== void 0 && script.columnOffset > columnNumber) {
         continue;
@@ -23622,12 +24477,12 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       if (script.endLine < lineNumber || script.endLine === lineNumber && columnNumber !== void 0 && script.endColumn <= columnNumber) {
         continue;
       }
-      return new Location(this, script.scriptId, lineNumber, columnNumber, inlineFrameIndex);
+      return new Location(this, script.scriptId, lineNumber, columnNumber);
     }
     return null;
   }
-  createRawLocationByScriptId(scriptId, lineNumber, columnNumber, inlineFrameIndex) {
-    return new Location(this, scriptId, lineNumber, columnNumber, inlineFrameIndex);
+  createRawLocationByScriptId(scriptId, lineNumber, columnNumber) {
+    return new Location(this, scriptId, lineNumber, columnNumber);
   }
   createRawLocationsByStackTrace(stackTrace) {
     const rawLocations = [];
@@ -29422,22 +30277,6 @@ var UIStrings9 = {
   /**
    * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
-  exemptionReasonTPCDMetadata: "This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/dt-grace.",
-  /**
-   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
-   */
-  exemptionReasonTPCDDeprecationTrial: "This cookie is allowed by third-party cookie deprecation trial. Learn more: goo.gle/ps-dt.",
-  /**
-   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
-   */
-  exemptionReasonTopLevelTPCDDeprecationTrial: "This cookie is allowed by top-level third-party cookie deprecation trial. Learn more: goo.gle/ps-dt.",
-  /**
-   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
-   */
-  exemptionReasonTPCDHeuristics: "This cookie is allowed by third-party cookie heuristics. Learn more: goo.gle/hbe",
-  /**
-   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
-   */
   exemptionReasonEnterprisePolicy: "This cookie is allowed by Chrome Enterprise policy. Learn more: goo.gle/ce-3pc",
   /**
    * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
@@ -30717,14 +31556,6 @@ var cookieExemptionReasonToUiString = function(exemptionReason) {
   switch (exemptionReason) {
     case "UserSetting":
       return i18nString9(UIStrings9.exemptionReasonUserSetting);
-    case "TPCDMetadata":
-      return i18nString9(UIStrings9.exemptionReasonTPCDMetadata);
-    case "TopLevelTPCDDeprecationTrial":
-      return i18nString9(UIStrings9.exemptionReasonTopLevelTPCDDeprecationTrial);
-    case "TPCDDeprecationTrial":
-      return i18nString9(UIStrings9.exemptionReasonTPCDDeprecationTrial);
-    case "TPCDHeuristics":
-      return i18nString9(UIStrings9.exemptionReasonTPCDHeuristics);
     case "EnterprisePolicy":
       return i18nString9(UIStrings9.exemptionReasonEnterprisePolicy);
     case "StorageAccess":

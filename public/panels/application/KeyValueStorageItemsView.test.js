@@ -48,6 +48,12 @@ describeWithEnvironment('KeyValueStorageItemsView', () => {
         isAiButtonEnabled() {
             return UI.ActionRegistry.ActionRegistry.instance().hasAction('ai-assistance.storage-floating-button');
         }
+        populateContextMenu(item, contextMenu) {
+            super.populateContextMenu(item, contextMenu);
+        }
+        onAiButtonClick(item, event) {
+            super.onAiButtonClick(item, event);
+        }
     }
     beforeEach(() => {
         const container = new UI.Widget.VBox();
@@ -99,15 +105,20 @@ describeWithEnvironment('KeyValueStorageItemsView', () => {
         await raf();
         assert.include(viewFunction.input.preview.element.innerText, `${key}:newValue`);
     });
-    it('clicking Ask AI button triggers the action', () => {
-        const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
-        const action = actionRegistry.getAction('ai-assistance.storage-floating-button');
-        const executeStub = sinon.stub(action, 'execute');
+    it('clicking Ask AI button calls onAiButtonClick', () => {
+        const onAiButtonClickSpy = sinon.spy(keyValueStorageItemsView, 'onAiButtonClick');
         keyValueStorageItemsView.performUpdate();
         const dummyEvent = new Event('click');
         viewFunction.input.onAiButtonClick?.(MOCK_ITEMS[0], dummyEvent);
-        sinon.assert.calledOnce(executeStub);
-        executeStub.restore();
+        sinon.assert.calledOnceWithExactly(onAiButtonClickSpy, MOCK_ITEMS[0], dummyEvent);
+    });
+    it('right clicking calls populateContextMenu', () => {
+        const populateContextMenuSpy = sinon.spy(keyValueStorageItemsView, 'populateContextMenu');
+        keyValueStorageItemsView.performUpdate();
+        const dummyEvent = new Event('contextmenu');
+        const contextMenu = new UI.ContextMenu.ContextMenu(dummyEvent);
+        viewFunction.input.onContextMenu?.(MOCK_ITEMS[0], contextMenu);
+        sinon.assert.calledOnceWithExactly(populateContextMenuSpy, MOCK_ITEMS[0], contextMenu);
     });
 });
 //# sourceMappingURL=KeyValueStorageItemsView.test.js.map

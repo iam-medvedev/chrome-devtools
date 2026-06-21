@@ -133,6 +133,9 @@
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
+      "path": "../console/bundle-tsconfig.json"
+    },
+    {
       "path": "../mobile_throttling/bundle-tsconfig.json"
     },
     {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -49,6 +50,9 @@ describeWithEnvironment('AiAgent2', () => {
         const answerResponse = responses.find(r => r.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
         assert.isDefined(answerResponse);
         assert.propertyVal(answerResponse, 'text', 'This is the answer.');
+        sinon.assert.callCount(aidaClient.doConversation, 1);
+        const callArgs = aidaClient.doConversation.getCall(0).args[0];
+        assert.propertyVal(callArgs, 'client_feature', Host.AidaClient.ClientFeature.CHROME_DEVTOOLS_V2_AGENT);
     });
     it('handles learning skills correctly (UI step and AIDA response)', async () => {
         const aidaClient = mockAidaClient([
@@ -80,15 +84,28 @@ describeWithEnvironment('AiAgent2', () => {
         assert.property(responseObj, 'result');
         assert.isTrue(responseObj.result.includes(SKILLS.styling.instructions));
     });
-    it('injects skills manifest into the query on the first enhanceQuery call only', async () => {
+    it('injects skills manifest containing only unloaded skills', async () => {
         const aidaClient = mockAidaClient();
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        // Initially, styling and network are not loaded
         const firstQuery = await agent.enhanceQuery('test query');
-        assert.isTrue(firstQuery.includes('Available skills:'));
-        assert.isTrue(firstQuery.includes('styling: Helping with CSS and styling'));
+        assert.isTrue(firstQuery.includes('Available skills that are not yet loaded:'));
+        assert.isTrue(firstQuery.includes('styling: CSS, styling, layouts, positioning, computed styles, DOM tree structure, and page styles.'));
+        assert.isTrue(firstQuery.includes('network: Analyzing network traffic, network requests, HTTP/HTTPS headers, status codes, payload details, timing/performance, and request sizes.'));
         assert.isTrue(firstQuery.includes('User query: test query'));
+        // Load 'styling' skill
+        await agent.learnSkill(['styling']);
+        // Now, only 'network' skill is unloaded and should be injected
         const secondQuery = await agent.enhanceQuery('second query');
-        assert.strictEqual(secondQuery, 'second query');
+        assert.isTrue(secondQuery.includes('Available skills that are not yet loaded:'));
+        assert.isFalse(secondQuery.includes('styling:'));
+        assert.isTrue(secondQuery.includes('network: Analyzing network traffic, network requests, HTTP/HTTPS headers, status codes, payload details, timing/performance, and request sizes.'));
+        assert.isTrue(secondQuery.includes('User query: second query'));
+        // Load 'network' skill
+        await agent.learnSkill(['network']);
+        // Now all skills are loaded, manifest should NOT be injected
+        const thirdQuery = await agent.enhanceQuery('third query');
+        assert.strictEqual(thirdQuery, 'third query');
     });
     it('registers allowed tools of a skill dynamically upon learning', async () => {
         const aidaClient = mockAidaClient([
@@ -197,7 +214,7 @@ describeWithEnvironment('AiAgent2', () => {
         // @ts-expect-error
         const result = await agent.learnSkill(['non-existent-skill']);
         assert.isTrue(result.includes('Failed to load skill non-existent-skill'));
-        assert.isTrue(result.includes('Valid skills are: styling, dummy'));
+        assert.isTrue(result.includes('Valid skills are: styling, network, dummy'));
     });
     it('injects overridden skills manifest into the query', async () => {
         const aidaClient = mockAidaClient();
@@ -213,8 +230,8 @@ describeWithEnvironment('AiAgent2', () => {
             [dummySkill.name]: dummySkill,
         });
         const firstQuery = await agent.enhanceQuery('test query');
-        assert.isTrue(firstQuery.includes('Available skills:'));
-        assert.isTrue(firstQuery.includes('styling: Helping with CSS and styling'));
+        assert.isTrue(firstQuery.includes('Available skills that are not yet loaded:'));
+        assert.isTrue(firstQuery.includes('styling: CSS, styling, layouts, positioning, computed styles, DOM tree structure, and page styles.'));
         assert.isTrue(firstQuery.includes('dummy: A dummy skill for testing'));
         assert.isTrue(firstQuery.includes('User query: test query'));
     });
@@ -272,6 +289,42 @@ describeWithEnvironment('AiAgent2', () => {
         assert.isUndefined(actionResponses[1].output);
         assert.propertyVal(actionResponses[2], 'code', '$0.style.color = "red"');
         assert.propertyVal(actionResponses[2], 'output', 'success');
+    });
+    it('updates the learnSkills description dynamically to list only unloaded skills', async () => {
+        const aidaClient = mockAidaClient([
+            [{
+                    explanation: '',
+                    functionCalls: [{ name: 'learnSkills', args: { skills: ['styling'] } }],
+                }],
+            [{
+                    explanation: 'I will load network now.',
+                    functionCalls: [{ name: 'learnSkills', args: { skills: ['network'] } }],
+                }],
+            [{
+                    explanation: 'Everything is loaded.',
+                }],
+        ]);
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        await Array.fromAsync(agent.run('question', { selected: null }));
+        sinon.assert.callCount(aidaClient.doConversation, 3);
+        // Verify first call declarations: both styling and network are unloaded
+        const firstCallDeclarations = aidaClient.doConversation.getCall(0).args[0].function_declarations ?? [];
+        const firstLearnSkills = firstCallDeclarations.find(d => d.name === 'learnSkills');
+        assert.exists(firstLearnSkills);
+        assert.isTrue(firstLearnSkills?.description.includes('styling'));
+        assert.isTrue(firstLearnSkills?.description.includes('network'));
+        // Verify second call declarations: styling is loaded, only network is unloaded
+        const secondCallDeclarations = aidaClient.doConversation.getCall(1).args[0].function_declarations ?? [];
+        const secondLearnSkills = secondCallDeclarations.find(d => d.name === 'learnSkills');
+        assert.exists(secondLearnSkills);
+        assert.isFalse(secondLearnSkills?.description.includes('styling'));
+        assert.isTrue(secondLearnSkills?.description.includes('network'));
+        // Verify third call declarations: both styling and network are loaded, none should be in description
+        const thirdCallDeclarations = aidaClient.doConversation.getCall(2).args[0].function_declarations ?? [];
+        const thirdLearnSkills = thirdCallDeclarations.find(d => d.name === 'learnSkills');
+        assert.exists(thirdLearnSkills);
+        assert.isFalse(thirdLearnSkills?.description.includes('styling'));
+        assert.isFalse(thirdLearnSkills?.description.includes('network'));
     });
 });
 //# sourceMappingURL=AiAgent2.test.js.map

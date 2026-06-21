@@ -19,6 +19,10 @@ interface CookieItemsViewInput {
     onDeleteSelectedItems: () => void;
     onDeleteAllItems: () => void;
     onRefreshItems: () => void;
+    aiButtonIsEnabled: boolean;
+    onPopulateAiContextMenu: (cookie: SDK.Cookie.Cookie, contextMenu: UI.ContextMenu.ContextMenu) => void;
+    onAiButtonClick: (cookie: SDK.Cookie.Cookie, event: Event) => void;
+    aiButtonTitle?: string;
     selectedCookie: SDK.Cookie.Cookie | null;
 }
 interface CookieItemsViewOutput {
@@ -40,7 +44,6 @@ export declare class CookieItemsView extends UI.Widget.VBox {
     performUpdate(): void;
     wasShown(): void;
     private showPreview;
-    private updateAiAssistanceContext;
     private handleCookieSelected;
     private saveCookie;
     private deleteCookie;
@@ -53,5 +56,6 @@ export declare class CookieItemsView extends UI.Widget.VBox {
     deleteSelectedItem(): void;
     private onCookieListUpdate;
     refreshItems(): void;
+    private isAiButtonEnabled;
 }
 export {};

@@ -66,6 +66,10 @@ describeWithMockConnection('ScopeChainSidebarPane', () => {
         const flavor = StackTrace.StackTrace.DebuggableFrameFlavor.for(debuggableFrame);
         pane.flavorChanged(flavor);
         await view.nextInput;
+        // Wait for the scope chain update to trigger the view update.
+        while (!view.input.scopeChain) {
+            await view.nextInput;
+        }
         const { scopeChain } = view.input;
         assert.isNotNull(scopeChain);
         const localScope = scopeChain[0];

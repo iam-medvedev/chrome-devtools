@@ -128,6 +128,7 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
                           @select=${() => input.onSelect(item)}
                           @edit=${(e) => input.onEdit(item.key, item.value, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
                           @delete=${() => input.onDelete(item.key)}
+                          @contextmenu=${(e) => input.onContextMenu?.(item, e.detail)}
                           selected=${(input.selectedKey === item.key) || nothing}>
                         <td>${input.showAiButton ? html `
                             <span class="ai-button-container">
@@ -195,13 +196,13 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
                 void this.#previewEntry(item);
                 this.selectedItemChanged(item);
             },
-            onAiButtonClick: (item, event) => {
-                event.stopPropagation();
-                viewInput.onSelect(item);
-                const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
-                if (actionRegistry.hasAction(STORAGE_FLOATING_BUTTON_ACTION_ID)) {
-                    void actionRegistry.getAction(STORAGE_FLOATING_BUTTON_ACTION_ID).execute();
-                }
+            onAiButtonClick: this.isAiButtonEnabled() ?
+                (item, event) => {
+                    this.onAiButtonClick(item, event);
+                } :
+                undefined,
+            onContextMenu: (item, contextMenu) => {
+                this.populateContextMenu(item, contextMenu);
             },
             onSort: (ascending) => {
                 this.#isSortOrderAscending = ascending;
@@ -229,6 +230,10 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
     }
     isAiButtonEnabled() {
         return false;
+    }
+    populateContextMenu(_item, _contextMenu) {
+    }
+    onAiButtonClick(_item, _event) {
     }
     get toolbar() {
         return this.#toolbar;

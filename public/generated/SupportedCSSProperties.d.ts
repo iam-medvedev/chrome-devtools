@@ -1,40 +1,99 @@
 export const generatedProperties: ({
     longhands: string[];
     name: string;
+    keywords?: undefined;
     inherited?: undefined;
-    keywords?: undefined;
-} | {
-    inherited: boolean;
-    name: string;
-    longhands?: undefined;
-    keywords?: undefined;
-} | {
-    name: string;
-    longhands?: undefined;
-    inherited?: undefined;
-    keywords?: undefined;
+    is_descriptor?: undefined;
+    is_property?: undefined;
 } | {
     keywords: string[];
     name: string;
     longhands?: undefined;
     inherited?: undefined;
+    is_descriptor?: undefined;
+    is_property?: undefined;
+} | {
+    inherited: boolean;
+    name: string;
+    longhands?: undefined;
+    keywords?: undefined;
+    is_descriptor?: undefined;
+    is_property?: undefined;
+} | {
+    name: string;
+    longhands?: undefined;
+    keywords?: undefined;
+    inherited?: undefined;
+    is_descriptor?: undefined;
+    is_property?: undefined;
 } | {
     inherited: boolean;
     keywords: string[];
     name: string;
     longhands?: undefined;
+    is_descriptor?: undefined;
+    is_property?: undefined;
 } | {
     inherited: boolean;
     longhands: string[];
     name: string;
     keywords?: undefined;
+    is_descriptor?: undefined;
+    is_property?: undefined;
+} | {
+    is_descriptor: boolean;
+    is_property: boolean;
+    name: string;
+    longhands?: undefined;
+    keywords?: undefined;
+    inherited?: undefined;
 } | {
     keywords: string[];
     longhands: string[];
     name: string;
     inherited?: undefined;
+    is_descriptor?: undefined;
+    is_property?: undefined;
+} | {
+    inherited: boolean;
+    is_descriptor: boolean;
+    name: string;
+    longhands?: undefined;
+    keywords?: undefined;
+    is_property?: undefined;
+} | {
+    inherited: boolean;
+    is_descriptor: boolean;
+    keywords: string[];
+    name: string;
+    longhands?: undefined;
+    is_property?: undefined;
+} | {
+    inherited: boolean;
+    is_descriptor: boolean;
+    longhands: string[];
+    name: string;
+    keywords?: undefined;
+    is_property?: undefined;
+} | {
+    is_descriptor: boolean;
+    keywords: string[];
+    name: string;
+    longhands?: undefined;
+    inherited?: undefined;
+    is_property?: undefined;
+} | {
+    is_descriptor: boolean;
+    name: string;
+    longhands?: undefined;
+    keywords?: undefined;
+    inherited?: undefined;
+    is_property?: undefined;
 })[];
 export const generatedPropertyValues: {
+    "-alternative-webkit-line-clamp-longhand": {
+        values: string[];
+    };
     "-webkit-box-align": {
         values: string[];
     };
@@ -50,13 +109,34 @@ export const generatedPropertyValues: {
     "-webkit-box-pack": {
         values: string[];
     };
+    "-webkit-font-smoothing": {
+        values: string[];
+    };
     "-webkit-line-break": {
         values: string[];
     };
     "-webkit-line-clamp": {
         values: string[];
     };
+    "-webkit-locale": {
+        values: string[];
+    };
+    "-webkit-mask-box-image-repeat": {
+        values: string[];
+    };
+    "-webkit-mask-box-image-source": {
+        values: string[];
+    };
+    "-webkit-mask-box-image-width": {
+        values: string[];
+    };
     "-webkit-rtl-ordering": {
+        values: string[];
+    };
+    "-webkit-text-combine": {
+        values: string[];
+    };
+    "-webkit-text-decorations-in-effect": {
         values: string[];
     };
     "-webkit-text-security": {
@@ -69,6 +149,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "accent-color": {
+        values: string[];
+    };
+    "align-self": {
         values: string[];
     };
     "alignment-baseline": {
@@ -84,6 +167,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "animation-direction": {
+        values: string[];
+    };
+    "animation-duration": {
         values: string[];
     };
     "animation-fill-mode": {
@@ -108,6 +194,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "app-region": {
+        values: string[];
+    };
+    appearance: {
         values: string[];
     };
     "aspect-ratio": {
@@ -152,6 +241,18 @@ export const generatedPropertyValues: {
     "block-size": {
         values: string[];
     };
+    "border-block-end-style": {
+        values: string[];
+    };
+    "border-block-end-width": {
+        values: string[];
+    };
+    "border-block-start-style": {
+        values: string[];
+    };
+    "border-block-start-width": {
+        values: string[];
+    };
     "border-bottom-color": {
         values: string[];
     };
@@ -164,6 +265,9 @@ export const generatedPropertyValues: {
     "border-collapse": {
         values: string[];
     };
+    "border-image": {
+        values: string[];
+    };
     "border-image-repeat": {
         values: string[];
     };
@@ -171,6 +275,18 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "border-image-width": {
+        values: string[];
+    };
+    "border-inline-end-style": {
+        values: string[];
+    };
+    "border-inline-end-width": {
+        values: string[];
+    };
+    "border-inline-start-style": {
+        values: string[];
+    };
+    "border-inline-start-width": {
         values: string[];
     };
     "border-left-color": {
@@ -317,7 +433,13 @@ export const generatedPropertyValues: {
     contain: {
         values: string[];
     };
+    "contain-intrinsic-block-size": {
+        values: string[];
+    };
     "contain-intrinsic-height": {
+        values: string[];
+    };
+    "contain-intrinsic-inline-size": {
         values: string[];
     };
     "contain-intrinsic-width": {
@@ -327,6 +449,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "container-type": {
+        values: string[];
+    };
+    content: {
         values: string[];
     };
     "content-visibility": {
@@ -566,6 +691,9 @@ export const generatedPropertyValues: {
     height: {
         values: string[];
     };
+    "hyphenate-character": {
+        values: string[];
+    };
     "hyphenate-limit-chars": {
         values: string[];
     };
@@ -573,6 +701,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "image-animation": {
+        values: string[];
+    };
+    "image-orientation": {
         values: string[];
     };
     "image-rendering": {
@@ -584,6 +715,18 @@ export const generatedPropertyValues: {
     "inline-size": {
         values: string[];
     };
+    "inset-block-end": {
+        values: string[];
+    };
+    "inset-block-start": {
+        values: string[];
+    };
+    "inset-inline-end": {
+        values: string[];
+    };
+    "inset-inline-start": {
+        values: string[];
+    };
     interactivity: {
         values: string[];
     };
@@ -591,6 +734,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     isolation: {
+        values: string[];
+    };
+    "justify-self": {
         values: string[];
     };
     left: {
@@ -603,6 +749,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "line-break": {
+        values: string[];
+    };
+    "line-clamp": {
         values: string[];
     };
     "line-height": {
@@ -653,7 +802,13 @@ export const generatedPropertyValues: {
     "mask-composite": {
         values: string[];
     };
+    "mask-image": {
+        values: string[];
+    };
     "mask-mode": {
+        values: string[];
+    };
+    "mask-size": {
         values: string[];
     };
     "mask-type": {
@@ -680,6 +835,18 @@ export const generatedPropertyValues: {
     "max-width": {
         values: string[];
     };
+    "min-block-size": {
+        values: string[];
+    };
+    "min-height": {
+        values: string[];
+    };
+    "min-inline-size": {
+        values: string[];
+    };
+    "min-width": {
+        values: string[];
+    };
     "mix-blend-mode": {
         values: string[];
     };
@@ -702,6 +869,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "origin-trial-test-property": {
+        values: string[];
+    };
+    outline: {
         values: string[];
     };
     "outline-color": {
@@ -731,6 +901,9 @@ export const generatedPropertyValues: {
     overlay: {
         values: string[];
     };
+    "overscroll-behavior": {
+        values: string[];
+    };
     "overscroll-behavior-x": {
         values: string[];
     };
@@ -738,6 +911,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     page: {
+        values: string[];
+    };
+    "page-break-before": {
         values: string[];
     };
     "page-margin-safety": {
@@ -845,6 +1021,9 @@ export const generatedPropertyValues: {
     "scroll-initial-target": {
         values: string[];
     };
+    "scroll-marker-group": {
+        values: string[];
+    };
     "scroll-padding-block-end": {
         values: string[];
     };
@@ -881,6 +1060,9 @@ export const generatedPropertyValues: {
     "scroll-target-group": {
         values: string[];
     };
+    "scroll-timeline-name": {
+        values: string[];
+    };
     "scrollbar-color": {
         values: string[];
     };
@@ -890,13 +1072,13 @@ export const generatedPropertyValues: {
     "scrollbar-width": {
         values: string[];
     };
-    "shape-margin": {
-        values: string[];
-    };
     "shape-outside": {
         values: string[];
     };
     "shape-rendering": {
+        values: string[];
+    };
+    size: {
         values: string[];
     };
     speak: {
@@ -927,6 +1109,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "text-autospace": {
+        values: string[];
+    };
+    "text-box-edge": {
         values: string[];
     };
     "text-box-trim": {
@@ -992,6 +1177,18 @@ export const generatedPropertyValues: {
     "text-wrap-style": {
         values: string[];
     };
+    "timeline-scope": {
+        values: string[];
+    };
+    "timeline-trigger-active-range-end": {
+        values: string[];
+    };
+    "timeline-trigger-active-range-start": {
+        values: string[];
+    };
+    "timeline-trigger-name": {
+        values: string[];
+    };
     "timeline-trigger-source": {
         values: string[];
     };
@@ -1032,6 +1229,12 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "vertical-align": {
+        values: string[];
+    };
+    "view-timeline-inset": {
+        values: string[];
+    };
+    "view-timeline-name": {
         values: string[];
     };
     "view-transition-class": {

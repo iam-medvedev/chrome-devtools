@@ -699,6 +699,19 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.strictEqual(stylePropertyTreeElement.renderedPropertyText(), 'color: var(--blue, )');
         });
     });
+    describe('VariableNameRenderer', () => {
+        it('creates links for style queries in if() correctly', async () => {
+            addProperty('--b', '3');
+            const stylePropertyTreeElement = getTreeElement('color', 'if(style(--b: 3): red)');
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement?.querySelector('devtools-link-swatch'));
+        });
+        it('does not render inside function rules', async () => {
+            const stylePropertyTreeElement = await getTreeElementForFunctionRule('--func', 'if(style(--b: 3): red)');
+            stylePropertyTreeElement.updateTitle();
+            assert.notExists(stylePropertyTreeElement.valueElement?.querySelector('devtools-link-swatch'));
+        });
+    });
     describe('ColorRenderer', () => {
         it('correctly renders children of the color swatch', () => {
             const value = 'rgb(255, var(--zero), var(--zero))';
@@ -2021,6 +2034,32 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         assert.isFalse(treeElement.property.disabled);
         // Assert that the UI reflects the enabled state
         assert.isFalse(treeElement.listItemElement.classList.contains('disabled'));
+    });
+    it('does not render new properties lazily even if the styles container allows it', () => {
+        sinon.stub(stylesSidebarPane, 'shouldRenderLazily').returns(true);
+        const trackForLazyRenderingSpy = sinon.spy(stylesSidebarPane, 'trackForLazyRendering');
+        const stylePropertyTreeElement = getTreeElement('color', 'red');
+        const section = stylePropertyTreeElement.section();
+        section.propertiesTreeOutline.appendChild(stylePropertyTreeElement);
+        sinon.assert.notCalled(trackForLazyRenderingSpy);
+    });
+    it('renders existing properties lazily if the styles container allows it', () => {
+        sinon.stub(stylesSidebarPane, 'shouldRenderLazily').returns(true);
+        const trackForLazyRenderingSpy = sinon.spy(stylesSidebarPane, 'trackForLazyRendering');
+        const property = addProperty('color', 'red');
+        const section = new Elements.StylePropertiesSection.StylePropertiesSection(new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel), matchedStyles, property.ownerStyle, 0, null, null, null);
+        const stylePropertyTreeElement = new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
+            stylesContainer: stylesSidebarPane,
+            section,
+            matchedStyles,
+            property,
+            isShorthand: false,
+            inherited: false,
+            overloaded: false,
+            newProperty: false,
+        });
+        section.propertiesTreeOutline.appendChild(stylePropertyTreeElement);
+        sinon.assert.calledOnce(trackForLazyRenderingSpy);
     });
     it('applies overflow-wrap: break-word to tree outline list items for long values', () => {
         // Create a very long value without spaces that would otherwise overflow.

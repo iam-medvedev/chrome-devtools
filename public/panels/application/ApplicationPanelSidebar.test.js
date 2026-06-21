@@ -120,6 +120,16 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
         assert.isUndefined(sidebar.webMcpTreeElement);
     });
+    it('shows Ads panel only if the Ads panel config is enabled', async () => {
+        updateHostConfig({ devToolsAdsPanel: { enabled: true } });
+        Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
+        let sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
+        assert.exists(sidebar.adsTreeElement);
+        updateHostConfig({ devToolsAdsPanel: { enabled: false } });
+        Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
+        sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
+        assert.isUndefined(sidebar.adsTreeElement);
+    });
     it('shows cookies for all frames', async () => {
         Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
@@ -604,6 +614,55 @@ describe('Storage Agent Context Menu', () => {
         const explainCookiesSubItem = debugWithAiItem.subItems?.find(item => item.label === 'Explain cookies');
         assert.exists(explainCookiesSubItem?.id);
         contextMenu.invokeHandler(explainCookiesSubItem.id);
+        const flavor = UI.Context.Context.instance().flavor(AiAssistance.StorageItem.StorageItem);
+        assert.exists(flavor);
+        assert.instanceOf(flavor, AiAssistance.StorageItem.CookieItem);
+        assert.strictEqual(flavor.origin, 'https://example.com');
+    });
+});
+describe('Storage Agent Selection', () => {
+    setupLocaleHooks();
+    let universe;
+    let target;
+    let panel;
+    beforeEach(() => {
+        universe = new TestUniverse();
+        target = universe.createTarget({ url: urlString `http://example.com/` });
+        sinon.stub(target, 'inspectedURL').returns(urlString `http://example.com/`);
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(universe.targetManager);
+        sinon.stub(Common.Settings.Settings, 'instance').returns(universe.settings);
+        panel = sinon.createStubInstance(Application.ResourcesPanel.ResourcesPanel);
+    });
+    it('sets active StorageItem flavor on DOMStorageTreeElement selection', () => {
+        const domStorageModel = target.model(SDK.DOMStorageModel.DOMStorageModel);
+        assert.exists(domStorageModel);
+        const domStorage = new SDK.DOMStorageModel.DOMStorage(domStorageModel, 'http://example.com/', true);
+        const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
+        const treeElement = new Application.ApplicationPanelSidebar.DOMStorageTreeElement(panel, domStorage);
+        treeOutline.appendChild(treeElement);
+        // Clear flavor first
+        UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, null);
+        // Select the element
+        treeElement.select();
+        const flavor = UI.Context.Context.instance().flavor(AiAssistance.StorageItem.StorageItem);
+        assert.exists(flavor);
+        assert.instanceOf(flavor, AiAssistance.StorageItem.DOMStorageItem);
+        assert.strictEqual(flavor.type, 'localStorage');
+    });
+    it('sets active StorageItem flavor on CookieTreeElement selection', () => {
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        assert.exists(resourceTreeModel);
+        const frame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
+        frame.resourceTreeModel.returns(resourceTreeModel);
+        const cookieUrl = new Common.ParsedURL.ParsedURL('https://example.com/');
+        const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
+        const treeElement = new Application.ApplicationPanelSidebar.CookieTreeElement(panel, frame, cookieUrl);
+        treeOutline.appendChild(treeElement);
+        // Clear flavor first
+        UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, null);
+        // Select the element
+        treeElement.select();
         const flavor = UI.Context.Context.instance().flavor(AiAssistance.StorageItem.StorageItem);
         assert.exists(flavor);
         assert.instanceOf(flavor, AiAssistance.StorageItem.CookieItem);

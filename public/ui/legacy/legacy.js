@@ -11630,10 +11630,11 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
   #startEditing() {
     const truncatedTextPlaceholder = this.getAttribute("placeholder");
     const placeholder = this.#entrypoint.createChild("span");
+    const initialText = this.getAttribute("value") ?? this.#slot.deepInnerText();
     if (truncatedTextPlaceholder === null) {
-      placeholder.textContent = this.#slot.deepInnerText();
+      placeholder.textContent = initialText;
     } else {
-      placeholder.setTextContentTruncatedIfNeeded(this.#slot.deepInnerText(), truncatedTextPlaceholder);
+      placeholder.setTextContentTruncatedIfNeeded(initialText, truncatedTextPlaceholder);
     }
     this.#slot.remove();
     const proxy = this.#textPrompt.attachAndStartEditing(placeholder, (e) => this.#done(
@@ -11737,7 +11738,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   #title;
   queryRange;
   previousText;
-  currentSuggestion;
+  #currentSuggestion;
   completionRequestId;
   ghostTextElement;
   leftParenthesesIndices;
@@ -11766,7 +11767,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     this.#title = "";
     this.queryRange = null;
     this.previousText = "";
-    this.currentSuggestion = null;
+    this.#currentSuggestion = null;
     this.completionRequestId = 0;
     this.ghostTextElement = document.createElement("span");
     this.ghostTextElement.classList.add("auto-complete-text");
@@ -11883,10 +11884,10 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   }
   textWithCurrentSuggestion() {
     const text = this.text();
-    if (!this.queryRange || !this.currentSuggestion) {
+    if (!this.queryRange || !this.#currentSuggestion) {
       return text;
     }
-    const suggestion = this.currentSuggestion.text;
+    const suggestion = this.#currentSuggestion.text;
     return text.substring(0, this.queryRange.startColumn) + suggestion + text.substring(this.queryRange.endColumn);
   }
   text() {
@@ -12028,7 +12029,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
         }
         break;
       case "Escape":
-        if (this.isSuggestBoxVisible() || this.currentSuggestion) {
+        if (this.isSuggestBoxVisible() || this.#currentSuggestion) {
           this.clearAutocomplete();
           handled = true;
         }
@@ -12048,11 +12049,11 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     }
   }
   acceptSuggestionOnStopCharacters(key) {
-    if (!this.currentSuggestion || !this.queryRange || key.length !== 1 || !this.completionStopCharacters?.includes(key) || this.currentSuggestion.disableAcceptSuggestionOnStopCharacters) {
+    if (!this.#currentSuggestion || !this.queryRange || key.length !== 1 || !this.completionStopCharacters?.includes(key) || this.#currentSuggestion.disableAcceptSuggestionOnStopCharacters) {
       return false;
     }
     const query = this.text().substring(this.queryRange.startColumn, this.queryRange.endColumn);
-    if (query && this.currentSuggestion.text.startsWith(query + key)) {
+    if (query && this.#currentSuggestion.text.startsWith(query + key)) {
       this.queryRange.endColumn += 1;
       return this.acceptAutoComplete();
     }
@@ -12116,18 +12117,18 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
         /* Events.TEXT_CHANGED */
       );
     }
-    this.currentSuggestion = null;
+    this.#currentSuggestion = null;
   }
   onBlur() {
     this.clearAutocomplete();
   }
   refreshGhostText() {
-    if (this.currentSuggestion?.hideGhostText) {
+    if (this.#currentSuggestion?.hideGhostText) {
       this.ghostTextElement.remove();
       return;
     }
-    if (this.queryRange && this.currentSuggestion && this.isCaretAtEndOfPrompt() && this.currentSuggestion.text.startsWith(this.text().substring(this.queryRange.startColumn))) {
-      this.ghostTextElement.textContent = this.currentSuggestion.text.substring(this.queryRange.endColumn - this.queryRange.startColumn);
+    if (this.queryRange && this.#currentSuggestion && this.isCaretAtEndOfPrompt() && this.#currentSuggestion.text.startsWith(this.text().substring(this.queryRange.startColumn))) {
+      this.ghostTextElement.textContent = this.#currentSuggestion.text.substring(this.queryRange.endColumn - this.queryRange.startColumn);
       this.element().appendChild(this.ghostTextElement);
     } else {
       this.ghostTextElement.remove();
@@ -12226,7 +12227,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     }
   }
   applySuggestion(suggestion, isIntermediateSuggestion) {
-    this.currentSuggestion = suggestion;
+    this.#currentSuggestion = suggestion;
     this.refreshGhostText();
     if (isIntermediateSuggestion) {
       this.dispatchEventToListeners(
@@ -12242,8 +12243,8 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     if (!this.queryRange) {
       return false;
     }
-    const suggestionLength = this.currentSuggestion ? this.currentSuggestion.text.length : 0;
-    const selectionRange = this.currentSuggestion ? this.currentSuggestion.selectionRange : null;
+    const suggestionLength = this.#currentSuggestion ? this.#currentSuggestion.text.length : 0;
+    const selectionRange = this.#currentSuggestion ? this.#currentSuggestion.selectionRange : null;
     const endColumn = selectionRange ? selectionRange.endColumn : suggestionLength;
     const startColumn = selectionRange ? selectionRange.startColumn : suggestionLength;
     this.element().textContent = this.textWithCurrentSuggestion();
@@ -12373,6 +12374,9 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   }
   suggestBoxForTest() {
     return this.suggestBox;
+  }
+  currentSuggestion() {
+    return this.#currentSuggestion;
   }
 };
 var DefaultAutocompletionTimeout = 250;
@@ -22255,11 +22259,11 @@ var TreeOutlineInShadow = class extends TreeOutline {
   shadowRoot;
   disclosureElement;
   renderSelection;
-  constructor(variant = "Other", element) {
+  constructor(variant = "Other", element, delegatesFocus) {
     super();
     this.contentElement.classList.add("tree-outline");
     this.element = element ?? document.createElement("div");
-    this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: treeoutline_css_default });
+    this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: treeoutline_css_default, delegatesFocus });
     this.disclosureElement = this.shadowRoot.createChild("div", "tree-outline-disclosure");
     this.disclosureElement.appendChild(this.contentElement);
     this.renderSelection = true;
@@ -23198,6 +23202,7 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
   #userExpanded = false;
   #isProcessingAttribute = false;
   #previousOpenAttributeValue;
+  #refreshScheduled = false;
   static #elementToTreeElement = /* @__PURE__ */ new WeakMap();
   configElement;
   constructor(treeOutline, configElement) {
@@ -23238,6 +23243,16 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     } finally {
       this.#isProcessingAttribute = false;
     }
+  }
+  refreshSoon() {
+    if (this.#refreshScheduled) {
+      return;
+    }
+    this.#refreshScheduled = true;
+    queueMicrotask(() => {
+      this.#refreshScheduled = false;
+      this.refresh();
+    });
   }
   refresh() {
     const expandable = Boolean(this.configElement.querySelector('ul[role="group"]'));
@@ -23316,9 +23331,20 @@ function removeNode(node, preserveParentExpandable = false) {
 }
 var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemplate {
   static observedAttributes = ["navigation-variant", "hide-overflow", "dense", "show-selection-on-keyboard-focus"];
-  #treeOutline = new TreeOutlineInShadow(void 0, this);
+  #treeOutline = new TreeOutlineInShadow(void 0, this, true);
   constructor() {
     super();
+    this.addEventListener("focusin", (event) => {
+      const actualTarget = event.composedPath()[0];
+      if (actualTarget === this.#treeOutline.contentElement && !this.#treeOutline.selectedTreeElement && this.#treeOutline.firstChild()) {
+        this.#treeOutline.firstChild()?.select(
+          /* omitFocus */
+          true,
+          /* selectedByUser */
+          false
+        );
+      }
+    });
     this.#treeOutline.addEventListener(Events2.ElementSelected, (event) => {
       if (event.data instanceof TreeViewTreeElement) {
         event.data.listItemElement.dispatchEvent(new _TreeViewElement.SelectEvent());
@@ -23340,6 +23366,18 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
   }
   getInternalTreeOutlineForTest() {
     return this.#treeOutline;
+  }
+  focus() {
+    if (!this.#treeOutline.selectedTreeElement && this.#treeOutline.firstChild()) {
+      this.#treeOutline.firstChild()?.select(
+        /* omitFocus */
+        true,
+        /* selectedByUser */
+        false
+      );
+    } else {
+      this.#treeOutline.focus();
+    }
   }
   #getParentTreeElement(element) {
     const subtreeRoot = element.parentElement;
@@ -23368,7 +23406,7 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     if (!treeElement) {
       return;
     }
-    treeElement.refresh();
+    treeElement.refreshSoon();
     if (node === treeNode && attributeName === "selected" && hasBooleanAttribute(treeNode, "selected")) {
       treeElement.revealAndSelect(true);
     }

@@ -56,6 +56,7 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     pushMessagingTreeElement: BackgroundServiceTreeElement;
     reportingApiTreeElement: ReportingApiTreeElement;
     webMcpTreeElement?: WebMCPTreeElement;
+    adsTreeElement?: ApplicationPanelTreeElement;
     deviceBoundSessionsRootTreeElement: DeviceBoundSessionsRootTreeElement | undefined;
     deviceBoundSessionsModel: DeviceBoundSessionsModel | undefined;
     preloadingSummaryTreeElement: PreloadingSummaryTreeElement | undefined;

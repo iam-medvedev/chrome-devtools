@@ -176,11 +176,15 @@ models/ai_assistance/agents/PerformanceAgent.test.js
 models/ai_assistance/agents/StorageAgent.test.js
 models/ai_assistance/agents/StylingAgent.test.js
 models/ai_assistance/contexts/DOMNodeContext.test.js
+models/ai_assistance/contexts/FileContext.test.js
+models/ai_assistance/contexts/RequestContext.test.js
 models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIContext.test.js
 models/ai_assistance/performance/AIQueries.test.js
 models/ai_assistance/tools/ExecuteJavaScript.test.js
+models/ai_assistance/tools/GetNetworkRequestDetails.test.js
 models/ai_assistance/tools/GetStyles.test.js
+models/ai_assistance/tools/ListNetworkRequests.test.js
 models/ai_assistance/tools/ToolRegistry.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
 models/ai_code_generation/AiCodeGeneration.test.js
@@ -330,6 +334,7 @@ panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/ExportConversation.test.js
 panels/ai_assistance/PatchWidget.test.js
 panels/ai_assistance/SelectWorkspaceDialog.test.js
+panels/ai_assistance/components/AIv2MarkdownRenderer.test.js
 panels/ai_assistance/components/AccessibilityAgentMarkdownRenderer.test.js
 panels/ai_assistance/components/ChatInput.test.js
 panels/ai_assistance/components/ChatMessage.test.js
@@ -345,7 +350,9 @@ panels/animation/AnimationTimeline.test.js
 panels/application/AppManifestView.test.js
 panels/application/ApplicationPanelSidebar.test.js
 panels/application/BackgroundServiceView.test.js
+panels/application/CookieItemsView.test.js
 panels/application/CrashReportContextView.test.js
+panels/application/DOMStorageItemsView.test.js
 panels/application/DeviceBoundSessionsModel.test.js
 panels/application/DeviceBoundSessionsTreeElement.test.js
 panels/application/DeviceBoundSessionsView.test.js

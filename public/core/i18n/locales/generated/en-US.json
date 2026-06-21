@@ -392,18 +392,6 @@
   "core/sdk/NetworkRequest.ts | exemptionReasonTopLevelStorageAccessAPI": {
     "message": "This cookie is allowed by the top-level Storage Access API. Learn more: goo.gle/saa-top"
   },
-  "core/sdk/NetworkRequest.ts | exemptionReasonTopLevelTPCDDeprecationTrial": {
-    "message": "This cookie is allowed by top-level third-party cookie deprecation trial. Learn more: goo.gle/ps-dt."
-  },
-  "core/sdk/NetworkRequest.ts | exemptionReasonTPCDDeprecationTrial": {
-    "message": "This cookie is allowed by third-party cookie deprecation trial. Learn more: goo.gle/ps-dt."
-  },
-  "core/sdk/NetworkRequest.ts | exemptionReasonTPCDHeuristics": {
-    "message": "This cookie is allowed by third-party cookie heuristics. Learn more: goo.gle/hbe"
-  },
-  "core/sdk/NetworkRequest.ts | exemptionReasonTPCDMetadata": {
-    "message": "This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/dt-grace."
-  },
   "core/sdk/NetworkRequest.ts | exemptionReasonUserSetting": {
     "message": "This cookie is allowed by user preference."
   },
@@ -3389,6 +3377,9 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "Stop recording events"
   },
+  "panels/application/ApplicationPanelSidebar.ts | ads": {
+    "message": "Ads"
+  },
   "panels/application/ApplicationPanelSidebar.ts | application": {
     "message": "Application"
   },
@@ -4625,6 +4616,9 @@
   "panels/application/CookieItemsView.ts | clearFilteredCookies": {
     "message": "Clear filtered cookies"
   },
+  "panels/application/CookieItemsView.ts | explainCookie": {
+    "message": "Explain this cookie"
+  },
   "panels/application/CookieItemsView.ts | noCookieSelected": {
     "message": "No cookie selected"
   },
@@ -4642,6 +4636,9 @@
   },
   "panels/application/CookieItemsView.ts | showUrlDecoded": {
     "message": "Show URL-decoded"
+  },
+  "panels/application/CookieItemsView.ts | startAChat": {
+    "message": "Start a chat"
   },
   "panels/application/CrashReportContextView.ts | filterByText": {
     "message": "Filter by key or value"
@@ -5071,6 +5068,12 @@
   },
   "panels/application/DOMStorageItemsView.ts | domStorageItemsCleared": {
     "message": "DOM Storage Items cleared"
+  },
+  "panels/application/DOMStorageItemsView.ts | explainItem": {
+    "message": "Explain this item"
+  },
+  "panels/application/DOMStorageItemsView.ts | startAChat": {
+    "message": "Start a chat"
   },
   "panels/application/ExtensionStorageItemsView.ts | extensionStorageItems": {
     "message": "Extension Storage Items"
@@ -6334,9 +6337,6 @@
   },
   "panels/application/WebMCPView.ts | canceledCount": {
     "message": "{PH1} Canceled"
-  },
-  "panels/application/WebMCPView.ts | causedBy": {
-    "message": "Caused by:"
   },
   "panels/application/WebMCPView.ts | clearFilters": {
     "message": "Clear filters"
@@ -15239,9 +15239,6 @@
   "panels/sources/WatchExpressionsSidebarPane.ts | refreshWatchExpressions": {
     "message": "Refresh watch expressions"
   },
-  "panels/sources/WatchExpressionsSidebarPane.ts | watchExpressionDeleted": {
-    "message": "Watch expression deleted"
-  },
   "panels/timeline/AnimationsTrackAppender.ts | animations": {
     "message": "Animations"
   },
@@ -17545,6 +17542,9 @@
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | editableCookies": {
     "message": "Editable Cookies"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | httpOnlyCookiesCannotBeAdded": {
+    "message": "HttpOnly cookies cannot be added as context"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | na": {
     "message": "N/A"

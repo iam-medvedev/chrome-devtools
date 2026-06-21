@@ -13,6 +13,7 @@ import * as i18n from "./../../../core/i18n/i18n.js";
 import * as SDK from "./../../../core/sdk/sdk.js";
 import * as UI from "./../../../ui/legacy/legacy.js";
 import * as Lit from "./../../../ui/lit/lit.js";
+import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/adsView.css.js
 var adsView_css_default = `/*
@@ -26,6 +27,12 @@ var adsView_css_default = `/*
   display: flex;
   flex-direction: column;
   overflow: auto;
+}
+
+.ads-view-container {
+  display: flex;
+  flex-direction: column;
+  flex: auto;
 }
 
 .metrics-container {
@@ -131,34 +138,36 @@ var DEFAULT_VIEW = (input, output, target) => {
   };
   Lit.render(html`
     <style>${adsView_css_default}</style>
-    <dl class="metrics-container">
-      <div class="metric-box">
-        <dt class="metric-title">${i18nString(UIStrings.viewportAdDensity)}</dt>
-        <dd class="metric-value">
-          <span>${formatValue(metrics.viewportAdDensityByArea, true)}</span>
-          <span class="metric-average">${i18nString(UIStrings.average, { PH1: formatAverage(metrics.averageViewportAdDensityByArea, true) })}</span>
-        </dd>
-      </div>
-      <div class="metric-box">
-        <dt class="metric-title">${i18nString(UIStrings.viewportAdCount)}</dt>
-        <dd class="metric-value">
-          <span>${formatValue(metrics.viewportAdCount, false)}</span>
-          <span class="metric-average">${i18nString(UIStrings.average, { PH1: formatAverage(metrics.averageViewportAdCount, false) })}</span>
-        </dd>
-      </div>
-      <div class="metric-box">
-        <dt class="metric-title">${i18nString(UIStrings.totalCpuUsage)}</dt>
-        <dd class="metric-value">
-          <span>${formatCpu(metrics.totalAdCpuTime)}</span>
-        </dd>
-      </div>
-      <div class="metric-box">
-        <dt class="metric-title">${i18nString(UIStrings.totalNetworkUsage)}</dt>
-        <dd class="metric-value">
-          <span>${formatNetwork(metrics.totalAdNetworkBytes)}</span>
-        </dd>
-      </div>
-    </dl>
+    <div class="ads-view-container" jslog=${VisualLogging.pane("ads")}>
+      <dl class="metrics-container">
+        <div class="metric-box">
+          <dt class="metric-title">${i18nString(UIStrings.viewportAdDensity)}</dt>
+          <dd class="metric-value">
+            <span>${formatValue(metrics.viewportAdDensityByArea, true)}</span>
+            <span class="metric-average">${i18nString(UIStrings.average, { PH1: formatAverage(metrics.averageViewportAdDensityByArea, true) })}</span>
+          </dd>
+        </div>
+        <div class="metric-box">
+          <dt class="metric-title">${i18nString(UIStrings.viewportAdCount)}</dt>
+          <dd class="metric-value">
+            <span>${formatValue(metrics.viewportAdCount, false)}</span>
+            <span class="metric-average">${i18nString(UIStrings.average, { PH1: formatAverage(metrics.averageViewportAdCount, false) })}</span>
+          </dd>
+        </div>
+        <div class="metric-box">
+          <dt class="metric-title">${i18nString(UIStrings.totalCpuUsage)}</dt>
+          <dd class="metric-value">
+            <span>${formatCpu(metrics.totalAdCpuTime)}</span>
+          </dd>
+        </div>
+        <div class="metric-box">
+          <dt class="metric-title">${i18nString(UIStrings.totalNetworkUsage)}</dt>
+          <dd class="metric-value">
+            <span>${formatNetwork(metrics.totalAdNetworkBytes)}</span>
+          </dd>
+        </div>
+      </dl>
+    </div>
   `, target);
 };
 var AdsView = class extends UI.Widget.Widget {
@@ -262,7 +271,7 @@ import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as Components from "./../../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../../ui/legacy/legacy.js";
 import { html as html2, nothing, render as render2 } from "./../../../ui/lit/lit.js";
-import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/BackForwardCacheStrings.js
 import * as i18n3 from "./../../../core/i18n/i18n.js";
@@ -1159,7 +1168,7 @@ function renderMainFrameInformation(frame, frameTreeData, reasonToFramesMap, scr
         .spinner=${isTestRunning}
         .variant=${"primary"}
         @click=${navigateAwayAndBack}
-        jslog=${VisualLogging.action("back-forward-cache.run-test").track({ click: true })}>
+        jslog=${VisualLogging2.action("back-forward-cache.run-test").track({ click: true })}>
         ${isTestRunning ? html2`
           ${i18nString2(UIStrings3.runningTest)}` : `
           ${i18nString2(UIStrings3.runTest)}
@@ -1201,7 +1210,7 @@ function maybeRenderFrameTree(frameTreeData) {
     title = i18nString2(UIStrings3.issuesInMultipleFrames, { n: frameTreeData.issueCount, m: frameTreeData.frameCount });
   }
   return html2`
-    <devtools-report-key jslog=${VisualLogging.section("frames")}>${i18nString2(UIStrings3.framesTitle)}</devtools-report-key>
+    <devtools-report-key jslog=${VisualLogging2.section("frames")}>${i18nString2(UIStrings3.framesTitle)}</devtools-report-key>
     <devtools-report-value>
       <devtools-tree .template=${html2`
         <ul role="tree">
@@ -1291,15 +1300,15 @@ function renderFramesPerReason(frames) {
   }
   const rows = [html2`<div>${i18nString2(UIStrings3.framesPerIssue, { n: frames.length })}</div>`];
   rows.push(...frames.map((url) => html2`<div class="text-ellipsis" title=${url}
-    jslog=${VisualLogging.treeItem().track({ resize: true })}>${url}</div>`));
+    jslog=${VisualLogging2.treeItem().track({ resize: true })}>${url}</div>`));
   return html2`
       <div class="details-list"
-      jslog=${VisualLogging.tree("frames-per-issue")}>
+      jslog=${VisualLogging2.tree("frames-per-issue")}>
         <devtools-expandable-list .data=${{
     rows,
     title: i18nString2(UIStrings3.framesPerIssue, { n: frames.length })
   }}
-        jslog=${VisualLogging.treeItem().track({
+        jslog=${VisualLogging2.treeItem().track({
     resize: true
   })}></devtools-expandable-list>
       </div>
@@ -1360,7 +1369,7 @@ function renderReason(explanation, frames) {
 var DEFAULT_VIEW2 = (input, output, target) => {
   render2(html2`
     <style>${backForwardCacheView_css_default}</style>
-    <devtools-report .data=${{ reportTitle: i18nString2(UIStrings3.backForwardCacheTitle) }} jslog=${VisualLogging.pane("back-forward-cache")}>
+    <devtools-report .data=${{ reportTitle: i18nString2(UIStrings3.backForwardCacheTitle) }} jslog=${VisualLogging2.pane("back-forward-cache")}>
 
       ${renderMainFrameInformation(input.frame, input.frameTreeData, input.reasonToFramesMap, input.screenStatus, input.navigateAwayAndBack)}
     </devtools-report>
@@ -1518,7 +1527,7 @@ import * as SDK3 from "./../../../core/sdk/sdk.js";
 import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
 import * as UI3 from "./../../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/bounceTrackingMitigationsView.css.js
 var bounceTrackingMitigationsView_css_default = `/*
@@ -1597,7 +1606,7 @@ var renderForceRunButton = (input) => {
       .spinner=${isMitigationRunning}
       .variant=${"primary"}
       @click=${input.runMitigations}
-      jslog=${VisualLogging2.action("force-run").track({ click: true })}>
+      jslog=${VisualLogging3.action("force-run").track({ click: true })}>
       ${isMitigationRunning ? html3`
         ${i18nString3(UIStrings4.runningMitigations)}` : `
         ${i18nString3(UIStrings4.forceRun)}
@@ -1666,7 +1675,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
     <style>${bounceTrackingMitigationsView_css_default}</style>
     <style>${UI3.inspectorCommonStyles}</style>
     <devtools-report .data=${{ reportTitle: i18nString3(UIStrings4.bounceTrackingMitigationsTitle) }}
-                      jslog=${VisualLogging2.pane("bounce-tracking-mitigations")}>
+                      jslog=${VisualLogging3.pane("bounce-tracking-mitigations")}>
       ${renderMainFrameInformation2(input)}
     </devtools-report>
   `, target, { container: { classes: ["overflow-auto"] } });
@@ -1860,7 +1869,7 @@ import "./../../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n11 from "./../../../core/i18n/i18n.js";
 import * as UI5 from "./../../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/endpointsGrid.css.js
 var endpointsGrid_css_default = `/*
@@ -1916,7 +1925,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
   render5(html5`
     <style>${endpointsGrid_css_default}</style>
     <style>${UI5.inspectorCommonStyles}</style>
-    <div class="endpoints-container" jslog=${VisualLogging3.section("endpoints")}>
+    <div class="endpoints-container" jslog=${VisualLogging4.section("endpoints")}>
       <div class="endpoints-header">${i18n11.i18n.lockedString("Endpoints")}</div>
       ${input.endpoints.size > 0 ? html5`
         <devtools-data-grid striped>
@@ -2118,7 +2127,7 @@ import * as NetworkForward from "./../../network/forward/forward.js";
 import * as Buttons3 from "./../../../ui/components/buttons/buttons.js";
 import * as UI7 from "./../../../ui/legacy/legacy.js";
 import { html as html7, nothing as nothing3, render as render7 } from "./../../../ui/lit/lit.js";
-import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/permissionsPolicySection.css.js
 var permissionsPolicySection_css_default = `/*
@@ -2238,7 +2247,7 @@ function renderIconLink(iconName, title, clickHandler, jsLogContext) {
       .variant=${"icon"}
       .size=${"SMALL"}
       @click=${clickHandler}
-      jslog=${VisualLogging4.action().track({ click: true }).context(jsLogContext)}>
+      jslog=${VisualLogging5.action().track({ click: true }).context(jsLogContext)}>
     </devtools-button>`;
 }
 function renderAllowed(allowed) {
@@ -2262,7 +2271,7 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
             class="disabled-features-button"
             .variant=${"outlined"}
             @click=${onToggleShowDetails}
-            jslog=${VisualLogging4.action("show-disabled-features-details").track({ click: true })}>
+            jslog=${VisualLogging5.action("show-disabled-features-details").track({ click: true })}>
           ${i18nString7(UIStrings8.showDetails)}
         </devtools-button>
       </devtools-report-value>`;
@@ -2302,7 +2311,7 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
         <devtools-button
             .variant=${"outlined"}
             @click=${onToggleShowDetails}
-            jslog=${VisualLogging4.action("hide-disabled-features-details").track({ click: true })}>
+            jslog=${VisualLogging5.action("hide-disabled-features-details").track({ click: true })}>
           ${i18nString7(UIStrings8.hideDetails)}
         </devtools-button>
       </div>
@@ -2393,7 +2402,7 @@ import * as Input from "./../../../ui/components/input/input.js";
 import * as uiI18n from "./../../../ui/i18n/i18n.js";
 import * as UI8 from "./../../../ui/legacy/legacy.js";
 import { html as html8, i18nTemplate as unboundI18nTemplate, nothing as nothing4, render as render8 } from "./../../../ui/lit/lit.js";
-import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/protocolHandlersView.css.js
 var protocolHandlersView_css_default = `/*
@@ -2523,7 +2532,7 @@ function renderProtocolTest(protocolHandlers, queryInputState, protocolSelectHan
       <select class="protocol-select" @change=${protocolSelectHandler}
               aria-label=${i18nString8(UIStrings9.dropdownLabel)}>
         ${protocolHandlers.filter((p) => p.protocol).map(({ protocol }) => html8`
-          <option value=${protocol} jslog=${VisualLogging5.item(protocol).track({ click: true })}>
+          <option value=${protocol} jslog=${VisualLogging6.item(protocol).track({ click: true })}>
             ${protocol}://
           </option>`)}
       </select>
@@ -2616,7 +2625,7 @@ import * as i18n19 from "./../../../core/i18n/i18n.js";
 import * as Root from "./../../../core/root/root.js";
 import * as UI9 from "./../../../ui/legacy/legacy.js";
 import * as Lit5 from "./../../../ui/lit/lit.js";
-import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/reportsGrid.css.js
 var reportsGrid_css_default = `/*
@@ -2696,7 +2705,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
   render9(html9`
     <style>${reportsGrid_css_default}</style>
     <style>${UI9.inspectorCommonStyles}</style>
-    <div class="reporting-container" jslog=${VisualLogging6.section("reports")}>
+    <div class="reporting-container" jslog=${VisualLogging7.section("reports")}>
       <div class="reporting-header">${i18n19.i18n.lockedString("Reports")}</div>
       ${input.reports.length > 0 ? html9`
         <devtools-data-grid striped>
@@ -2895,7 +2904,7 @@ import "./../../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n21 from "./../../../core/i18n/i18n.js";
 import * as UI11 from "./../../../ui/legacy/legacy.js";
 import * as Lit6 from "./../../../ui/lit/lit.js";
-import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/sharedStorageAccessGrid.css.js
 var sharedStorageAccessGrid_css_default = `/*
@@ -2998,7 +3007,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
   render11(html11`
     <style>${sharedStorageAccessGrid_css_default}</style>
     ${input.events.length === 0 ? html11`
-        <div class="empty-state" jslog=${VisualLogging7.section().context("empty-view")}>
+        <div class="empty-state" jslog=${VisualLogging8.section().context("empty-view")}>
           <div class="empty-state-header">${i18nString10(UIStrings11.noEvents)}</div>
           <div class="empty-state-description">
             <span>${i18nString10(UIStrings11.sharedStorageDescription)}</span>
@@ -3009,7 +3018,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
             >${i18nString10(UIStrings11.learnMore)}</devtools-link>
           </div>
         </div>` : html11`
-        <div jslog=${VisualLogging7.section("events-table")}>
+        <div jslog=${VisualLogging8.section("events-table")}>
           <span class="heading">${i18nString10(UIStrings11.sharedStorage)}</span>
           <devtools-icon class="info-icon medium" name="info"
                           title=${i18nString10(UIStrings11.allSharedStorageEvents)}>
@@ -3144,7 +3153,7 @@ import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_w
 import * as RenderCoordinator from "./../../../ui/components/render_coordinator/render_coordinator.js";
 import * as UI12 from "./../../../ui/legacy/legacy.js";
 import { html as html12, nothing as nothing5, render as render12 } from "./../../../ui/lit/lit.js";
-import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging9 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/storageMetadataView.css.js
 var storageMetadataView_css_default = `/*
@@ -3364,7 +3373,7 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       return html12`<devtools-link
         @click=${revealBucket}
         title=${name}
-        jslog=${VisualLogging8.action("storage-bucket").track({
+        jslog=${VisualLogging9.action("storage-bucket").track({
         click: true
       })}
       >${name}</devtools-link>`;
@@ -3527,7 +3536,7 @@ import * as SDK6 from "./../../../core/sdk/sdk.js";
 import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
 import * as UI13 from "./../../../ui/legacy/legacy.js";
 import * as Lit8 from "./../../../ui/lit/lit.js";
-import * as VisualLogging9 from "./../../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging10 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/trustTokensView.css.js
 var trustTokensView_css_default = `/*
@@ -3612,8 +3621,8 @@ var REFRESH_INTERVAL_MS = 1e3;
 function renderGridOrNoDataMessage(input) {
   if (input.tokens.length === 0) {
     return html14`
-        <div jslog=${VisualLogging9.pane("trust-tokens")}>
-          <div class="empty-state" jslog=${VisualLogging9.section().context("empty-view")}>
+        <div jslog=${VisualLogging10.pane("trust-tokens")}>
+          <div class="empty-state" jslog=${VisualLogging10.section().context("empty-view")}>
             <div class="empty-state-header">${i18nString13(UIStrings14.noTrustTokens)}</div>
             <div class="empty-state-description">
               <span>${i18nString13(UIStrings14.trustTokensDescription)}</span>
@@ -3628,7 +3637,7 @@ function renderGridOrNoDataMessage(input) {
       `;
   }
   return html14`
-      <div jslog=${VisualLogging9.pane("trust-tokens")}>
+      <div jslog=${VisualLogging10.pane("trust-tokens")}>
         <span class="heading">${i18nString13(UIStrings14.trustTokens)}</span>
         <devtools-icon name="info" title=${i18nString13(UIStrings14.allStoredTrustTokensAvailableIn)}></devtools-icon>
         <devtools-data-grid striped inline>

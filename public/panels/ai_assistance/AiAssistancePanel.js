@@ -25,6 +25,7 @@ import * as NetworkPanel from '../network/network.js';
 import * as TimelinePanel from '../timeline/timeline.js';
 import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
 import { AccessibilityAgentMarkdownRenderer } from './components/AccessibilityAgentMarkdownRenderer.js';
+import { AIv2MarkdownRenderer, } from './components/AIv2MarkdownRenderer.js';
 import { ChatView, } from './components/ChatView.js';
 import { DisabledWidget } from './components/DisabledWidget.js';
 import { ExploreWidget } from './components/ExploreWidget.js';
@@ -300,13 +301,43 @@ async function getEmptyStateSuggestions(conversation) {
             return [
                 { title: 'How is localStorage used on this page?', jslogContext: 'storage-default' },
                 { title: 'How is sessionStorage used on this page?', jslogContext: 'storage-default' },
+                { title: 'What cookies are stored for this page?', jslogContext: 'storage-default' },
             ];
         }
         default:
             Platform.assertNever(conversation.type, 'Unknown conversation type');
     }
 }
+function createV2MarkdownRenderer(conversation) {
+    const options = {};
+    const primaryTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    const domModel = primaryTarget?.model(SDK.DOMModel.DOMModel);
+    const resourceTreeModel = primaryTarget?.model(SDK.ResourceTreeModel.ResourceTreeModel);
+    const context = conversation?.selectedContext;
+    if (context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
+        const focus = context.getItem();
+        options.mainFrameId = focus.parsedTrace.data.Meta.mainFrameId;
+        options.lookupTraceEvent = focus.lookupEvent.bind(focus);
+    }
+    else {
+        if (domModel) {
+            options.mainDocumentURL = domModel.existingDocument()?.documentURL;
+        }
+        if (resourceTreeModel) {
+            options.mainFrameId = resourceTreeModel.mainFrame?.id;
+        }
+    }
+    return new AIv2MarkdownRenderer(options);
+}
 function getMarkdownRenderer(conversation) {
+    if (conversation?.type === "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */ &&
+        conversation.isReadOnly) {
+        // Handle historical conversations (can't linkify anything).
+        return new PerformanceAgentMarkdownRenderer();
+    }
+    if (Root.Runtime.hostConfig.devToolsAiV2Architecture?.enabled && conversation && !conversation.isReadOnly) {
+        return createV2MarkdownRenderer(conversation);
+    }
     const context = conversation?.selectedContext;
     if (context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
         const focus = context.getItem();
@@ -481,7 +512,7 @@ function createFileContext(file) {
     if (!file) {
         return null;
     }
-    return new AiAssistanceModel.FileAgent.FileContext(file);
+    return new AiAssistanceModel.FileContext.FileContext(file);
 }
 function createAccessibilityContext(report) {
     if (!report) {
@@ -494,7 +525,7 @@ function createRequestContext(request) {
         return null;
     }
     const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-    return new AiAssistanceModel.NetworkAgent.RequestContext(request, calculator);
+    return new AiAssistanceModel.RequestContext.RequestContext(request, calculator);
 }
 function createPerformanceTraceContext(focus) {
     if (!focus) {
@@ -1001,7 +1032,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         if (Boolean(ev.data)) {
             const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-            this.#selectedRequest = new AiAssistanceModel.NetworkAgent.RequestContext(ev.data, calculator);
+            this.#selectedRequest = new AiAssistanceModel.RequestContext.RequestContext(ev.data, calculator);
         }
         else {
             this.#selectedRequest = null;
@@ -1021,7 +1052,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (!newFile || this.#selectedFile?.getItem() === newFile) {
             return;
         }
-        this.#selectedFile = new AiAssistanceModel.FileAgent.FileContext(ev.data);
+        this.#selectedFile = new AiAssistanceModel.FileContext.FileContext(ev.data);
         this.#updateConversationState(this.#conversation);
     };
     #handleLighthouseReportFlavorChange = (ev) => {
@@ -1197,11 +1228,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         const context = this.#conversation.selectedContext;
-        if (context instanceof AiAssistanceModel.NetworkAgent.RequestContext) {
+        if (context instanceof AiAssistanceModel.RequestContext.RequestContext) {
             const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(context.getItem(), "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */);
             return Common.Revealer.reveal(requestLocation);
         }
-        if (context instanceof AiAssistanceModel.FileAgent.FileContext) {
+        if (context instanceof AiAssistanceModel.FileContext.FileContext) {
             return Common.Revealer.reveal(context.getItem().uiLocation(0, 0));
         }
         if (context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
@@ -1406,13 +1437,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
     }
     #handleConversationContextChange = (data) => {
-        if (data instanceof AiAssistanceModel.FileAgent.FileContext) {
+        if (data instanceof AiAssistanceModel.FileContext.FileContext) {
             this.#selectedFile = data;
         }
         else if (data instanceof AiAssistanceModel.DOMNodeContext.DOMNodeContext) {
             this.#selectedElement = data;
         }
-        else if (data instanceof AiAssistanceModel.NetworkAgent.RequestContext) {
+        else if (data instanceof AiAssistanceModel.RequestContext.RequestContext) {
             this.#selectedRequest = data;
         }
         else if (data instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
