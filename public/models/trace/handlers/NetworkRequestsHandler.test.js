@@ -12,12 +12,7 @@ describe('NetworkRequestsHandler', function () {
         });
         it('calculates network requests correctly', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'load-simple.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const topLevelRequests = getAllNetworkRequestsByHost(Trace.Handlers.ModelHandlers.NetworkRequests.data().byTime, 'localhost:8080');
             assert.lengthOf(topLevelRequests, 4, 'Incorrect number of requests');
             // Page Request.
@@ -125,12 +120,7 @@ describe('NetworkRequestsHandler', function () {
         });
         it('calculates Websocket events correctly', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'network-websocket-messages.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const webSocketEvents = Trace.Handlers.ModelHandlers.NetworkRequests.data().webSocket;
             assert.lengthOf(webSocketEvents[0].events, 9, 'Incorrect number of events');
         });
@@ -159,12 +149,7 @@ describe('NetworkRequestsHandler', function () {
         });
         it('changes priority of the resouce', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'changing-priority.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
             const imageRequest = byTime.find(request => {
                 return request.args.data.url === 'https://via.placeholder.com/3000.jpg';
@@ -182,12 +167,7 @@ describe('NetworkRequestsHandler', function () {
         });
         it('calculates redirects correctly (navigations)', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'redirects.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
             assert.lengthOf(byTime, 2, 'Incorrect number of requests');
             assert.lengthOf(byTime[0].args.data.redirects, 0, 'Incorrect number of redirects (request 0)');
@@ -210,12 +190,7 @@ describe('NetworkRequestsHandler', function () {
         });
         it('calculates redirects correctly (subresources)', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'redirects-subresource-multiple.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
             assert.lengthOf(byTime, 2, 'Incorrect number of requests');
             assert.lengthOf(byTime[0].args.data.redirects, 0, 'Incorrect number of redirects (request 0)');
@@ -243,12 +218,7 @@ describe('NetworkRequestsHandler', function () {
         });
         it('calculate the initiator by `initiator` field correctly', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'network-requests-initiators.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const { incompleteInitiator: eventToInitiator, byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
             // Find the network request to test, it is initiated by `youtube.com`.
             const event = byTime.find(event => event.ts === 1491680762420);
@@ -265,12 +235,7 @@ describe('NetworkRequestsHandler', function () {
         });
         it('calculate the initiator by top frame correctly', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'network-requests-initiators.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const { incompleteInitiator: eventToInitiator, byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
             // Find the network request to test, it is initiated by `                `.
             const event = byTime.find(event => event.ts === 1491681999060);
@@ -290,12 +255,7 @@ describe('NetworkRequestsHandler', function () {
     describe('ThirdParty caches', () => {
         it('Correctly captures entities by network event', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'lantern/paul/trace.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const { entityMappings } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
             const syntheticNetworkEventsByEntity = new Map(Array.from(entityMappings.eventsByEntity.entries()).map(([entity, events]) => {
                 const syntheticNetworkEvents = events.filter(event => Trace.Types.Events.isSyntheticNetworkRequest(event));
@@ -363,12 +323,7 @@ describe('NetworkRequestsHandler', function () {
         });
         it('Correctly captures entities', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'lantern/paul/trace.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const { entityMappings } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
             const expectedEntities = [
                 'paulirish.com',
@@ -387,12 +342,7 @@ describe('NetworkRequestsHandler', function () {
     describe('preconnect links', () => {
         it('Correctly captures preconnect links', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'preconnect-advice.json.gz');
-            for (const event of traceEvents) {
-                Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
-                Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-            }
-            await Trace.Handlers.ModelHandlers.Meta.finalize();
-            await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+            await runHandlers(traceEvents);
             const linkPreconnectEvents = Trace.Handlers.ModelHandlers.NetworkRequests.data().linkPreconnectEvents;
             const actualLinks = linkPreconnectEvents.map(linkPreconnectEvent => linkPreconnectEvent.args.data.url);
             const expectedLinks = [
@@ -417,7 +367,99 @@ describe('NetworkRequestsHandler', function () {
         assert.isOk(request);
         assert.strictEqual(request.args.data.renderBlocking, 'blocking');
     });
+    describe('protocol allowlist and sanitization', () => {
+        beforeEach(() => {
+            Trace.Handlers.ModelHandlers.Meta.reset();
+        });
+        async function modifyRedirectEvent(testContext, eventPicker, newUrl) {
+            const rawEvents = await TraceLoader.rawEvents(testContext, 'redirects.json.gz');
+            const traceEvents = [...rawEvents].sort((a, b) => a.ts - b.ts);
+            const requestsById = new Map();
+            for (const event of traceEvents) {
+                if (Trace.Types.Events.isResourceSendRequest(event)) {
+                    const requestId = event.args.data.requestId;
+                    if (!requestsById.has(requestId)) {
+                        requestsById.set(requestId, []);
+                    }
+                    requestsById.get(requestId).push(event);
+                }
+            }
+            let modified = false;
+            for (const events of requestsById.values()) {
+                if (events.length > 1) {
+                    events.sort((a, b) => a.ts - b.ts);
+                    const eventToModify = eventPicker(events);
+                    const index = traceEvents.indexOf(eventToModify);
+                    if (index !== -1) {
+                        traceEvents[index] = updateResourceSendRequestData(eventToModify, { url: newUrl });
+                        modified = true;
+                        break;
+                    }
+                }
+            }
+            assert.isTrue(modified, 'Did not find a request with redirects to modify');
+            return traceEvents;
+        }
+        it('drops requests with disallowed protocols in finalSendRequest', async function () {
+            const traceEvents = await modifyRedirectEvent(this, events => events[events.length - 1], // Final SendRequest
+            'chrome://settings');
+            await runHandlers(traceEvents);
+            const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
+            assert.lengthOf(byTime, 1);
+        });
+        it('sanitizes disallowed protocols in redirects array', async function () {
+            const traceEvents = await modifyRedirectEvent(this, events => events[0], // First SendRequest (redirect)
+            'chrome://privileged');
+            await runHandlers(traceEvents);
+            const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
+            assert.lengthOf(byTime, 2);
+            assert.strictEqual(byTime[1].args.data.redirects[0].url, '');
+            assert.strictEqual(byTime[1].args.data.redirects[1].url, 'http://localhost:3000/bar');
+        });
+        it('sanitizes disallowed protocols in stackTrace', async function () {
+            const rawEvents = await TraceLoader.rawEvents(this, 'network-requests-initiators.json.gz');
+            const traceEvents = [...rawEvents];
+            for (let i = 0; i < traceEvents.length; i++) {
+                const event = traceEvents[i];
+                if (Trace.Types.Events.isResourceSendRequest(event) && event.args.data.stackTrace) {
+                    const hasPolymer = event.args.data.stackTrace.some(f => f.url.includes('desktop_polymer.js'));
+                    if (hasPolymer) {
+                        traceEvents[i] = updateResourceSendRequestData(event, {
+                            stackTrace: event.args.data.stackTrace.map(frame => frame.url.includes('desktop_polymer.js') ?
+                                { ...frame, url: 'chrome://privileged-script' } :
+                                frame),
+                        });
+                    }
+                }
+            }
+            await runHandlers(traceEvents);
+            const { byTime } = Trace.Handlers.ModelHandlers.NetworkRequests.data();
+            const event = byTime.find(event => event.ts === 1491681999060);
+            assert.exists(event);
+            assert.strictEqual(event.args.data.stackTrace[0].url, '');
+        });
+    });
 });
+async function runHandlers(events) {
+    for (const event of events) {
+        Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
+        Trace.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
+    }
+    await Trace.Handlers.ModelHandlers.Meta.finalize();
+    await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
+}
+function updateResourceSendRequestData(event, dataUpdates) {
+    return {
+        ...event,
+        args: {
+            ...event.args,
+            data: {
+                ...event.args.data,
+                ...dataUpdates,
+            },
+        },
+    };
+}
 function assertDataArgsStats(requests, url, stats) {
     const request = requests.find(request => request.args.data.url === url);
     assert.exists(request, `Unable to find request for URL ${url}`);

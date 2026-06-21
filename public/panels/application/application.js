@@ -2330,6 +2330,9 @@ var BounceTrackingMitigationsTreeElement = class extends ApplicationPanelTreeEle
   }
 };
 
+// gen/front_end/panels/application/ApplicationPanelSidebar.js
+import * as ApplicationComponents16 from "./components/components.js";
+
 // gen/front_end/panels/application/DeviceBoundSessionsModel.js
 var DeviceBoundSessionsModel_exports = {};
 __export(DeviceBoundSessionsModel_exports, {
@@ -10446,6 +10449,7 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
                           @select=${() => input.onSelect(item2)}
                           @edit=${(e) => input.onEdit(item2.key, item2.value, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
                           @delete=${() => input.onDelete(item2.key)}
+                          @contextmenu=${(e) => input.onContextMenu?.(item2, e.detail)}
                           selected=${input.selectedKey === item2.key || nothing5}>
                         <td>${input.showAiButton ? html10`
                             <span class="ai-button-container">
@@ -10511,13 +10515,11 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
         void this.#previewEntry(item2);
         this.selectedItemChanged(item2);
       },
-      onAiButtonClick: (item2, event) => {
-        event.stopPropagation();
-        viewInput.onSelect(item2);
-        const actionRegistry = UI23.ActionRegistry.ActionRegistry.instance();
-        if (actionRegistry.hasAction(STORAGE_FLOATING_BUTTON_ACTION_ID)) {
-          void actionRegistry.getAction(STORAGE_FLOATING_BUTTON_ACTION_ID).execute();
-        }
+      onAiButtonClick: this.isAiButtonEnabled() ? (item2, event) => {
+        this.onAiButtonClick(item2, event);
+      } : void 0,
+      onContextMenu: (item2, contextMenu) => {
+        this.populateContextMenu(item2, contextMenu);
       },
       onSort: (ascending) => {
         this.#isSortOrderAscending = ascending;
@@ -10545,6 +10547,10 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
   }
   isAiButtonEnabled() {
     return false;
+  }
+  populateContextMenu(_item, _contextMenu) {
+  }
+  onAiButtonClick(_item, _event) {
   }
   get toolbar() {
     return this.#toolbar;
@@ -11697,6 +11703,7 @@ __export(WebMCPTreeElement_exports, {
 });
 import { createIcon as createIcon13 } from "./../../ui/kit/kit.js";
 import * as UI29 from "./../../ui/legacy/legacy.js";
+import { html as html12, render as render11 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/WebMCPView.js
 var WebMCPView_exports = {};
@@ -11729,6 +11736,61 @@ import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI28 from "./../../ui/legacy/legacy.js";
 import { Directives as Directives4, html as html11, nothing as nothing6, render as render10 } from "./../../ui/lit/lit.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
+import * as Console2 from "./../console/console.js";
+
+// gen/front_end/panels/console/symbolizedErrorWidget.css.js
+var symbolizedErrorWidget_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.symbolized-error-widget {
+  white-space: pre-wrap;
+  word-break: break-all;
+
+  --display-formatted-stack-frame-default: block;
+  --display-ignored-formatted-stack-frame-local: var(--display-ignored-formatted-stack-frame, none);
+
+  &.show-hidden-rows {
+    --display-ignored-formatted-stack-frame-local: var(--display-formatted-stack-frame-default);
+  }
+}
+
+.symbolized-error-widget .formatted-stack-frame {
+  display: var(--display-formatted-stack-frame-default);
+
+  &:has(.ignore-list-link) {
+    display: var(--display-ignored-formatted-stack-frame-local);
+    opacity: 60%;
+
+    /* Subsequent builtin stack frames are also treated as ignored */
+    & + .formatted-builtin-stack-frame {
+      display: var(--display-ignored-formatted-stack-frame-local);
+      opacity: 60%;
+    }
+  }
+}
+
+.symbolized-error-widget .formatted-builtin-stack-frame {
+  display: var(--display-formatted-stack-frame-default);
+}
+
+.symbolized-error-widget-host {
+  display: inline;
+}
+
+.symbolized-error-header {
+  display: block;
+}
+
+.error-message-text {
+  display: inline;
+}
+
+/*# sourceURL=${import.meta.resolve("./symbolizedErrorWidget.css")} */`;
+
+// gen/front_end/panels/application/WebMCPView.js
 import * as ProtocolMonitor from "./../protocol_monitor/protocol_monitor.js";
 
 // gen/front_end/panels/application/webMCPView.css.js
@@ -12200,11 +12262,7 @@ var UIStrings30 = {
   /**
    * @description Notice to display when a tool has been unregistered
    */
-  toolUnregisteredNotice: "This tool has been unregistered",
-  /**
-   * @description Text preceding a nested error in a stack trace
-   */
-  causedBy: "Caused by:"
+  toolUnregisteredNotice: "This tool has been unregistered"
 };
 var str_30 = i18n59.i18n.registerUIStrings("panels/application/WebMCPView.ts", UIStrings30);
 var i18nString30 = i18n59.i18n.getLocalizedString.bind(void 0, str_30);
@@ -12532,7 +12590,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
                   ${widget7(PayloadWidget, {
     valueObject: input.selectedCall?.result?.output,
     errorText: input.selectedCall?.result?.errorText,
-    exceptionDetails: input.selectedCall?.result?.exceptionDetails
+    symbolizedError: input.selectedCall?.result?.symbolizedError
   })}>
                 </devtools-widget>
               </devtools-tabbed-pane>
@@ -12859,7 +12917,7 @@ var WebMCPView = class _WebMCPView extends UI28.Widget.VBox {
   }
 };
 var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
-  if (!input.valueObject && !input.valueString && !input.errorText && !input.exceptionDetails) {
+  if (!input.valueObject && !input.valueString && !input.errorText && !input.symbolizedError) {
     render10(nothing6, target);
     return;
   }
@@ -12884,34 +12942,24 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
   };
   const createSourceText = (text) => html11`<div class="payload-value source-code">${text}</div>`;
   const createErrorText = (text) => html11`<div class="payload-value source-code error-text">${text}</div>`;
-  const createException = (details, linkifier = new Components4.Linkifier.Linkifier()) => {
-    const renderFrame = (frame, index, array) => {
-      const newline = index < array.length - 1 ? "\n" : "";
-      const { line, link: link3, isCallFrame } = frame;
-      if (!isCallFrame) {
-        return html11`<span>${line}${newline}</span>`;
-      }
-      if (!link3) {
-        return html11`<span class="formatted-builtin-stack-frame">${line}${newline}</span>`;
-      }
-      const scriptLocationLink = linkifier.linkifyScriptLocation(details.error.runtimeModel().target(), link3.scriptId || null, link3.url, link3.lineNumber, {
-        columnNumber: link3.columnNumber,
-        showColumnNumber: true
-      });
-      scriptLocationLink.tabIndex = -1;
-      return html11`<span class="formatted-stack-frame">${link3.prefix}${scriptLocationLink}${link3.suffix}${newline}</span>`;
-    };
+  const createException = (error) => {
+    if (!error) {
+      return nothing6;
+    }
     return html11`
       <div class="payload-value source-code error-text">
-        ${details.frames.length === 0 && details.description ? html11`<span>${details.description}\n</span>` : nothing6}
-        <div>${details.frames.map(renderFrame)}</div>
-        ${details.cause ? html11`\n${i18nString30(UIStrings30.causedBy)}\n${createException(details.cause, linkifier)}` : nothing6}</div>`;
+        <devtools-widget
+          ${UI28.Widget.widget(Console2.SymbolizedErrorWidget.SymbolizedErrorWidget, { error })}
+        ></devtools-widget>
+      </div>
+    `;
   };
   render10(html11`
     <style>${webMCPView_css_default}</style>
+    <style>${symbolizedErrorWidget_css_default}</style>
     <div class="call-payload-view">
       <div class="call-payload-content">
-            ${isParsable ? createPayload(input.valueObject) : input.valueString !== void 0 ? createSourceText(input.valueString) : input.exceptionDetails ? createException(input.exceptionDetails) : input.errorText ? createErrorText(input.errorText) : nothing6}
+            ${isParsable ? createPayload(input.valueObject) : input.valueString !== void 0 ? createSourceText(input.valueString) : input.symbolizedError ? createException(input.symbolizedError) : input.errorText ? createErrorText(input.errorText) : nothing6}
       </div>
     </div>
   `, target);
@@ -12920,8 +12968,8 @@ var PayloadWidget = class extends UI28.Widget.Widget {
   #valueObject;
   #valueString;
   #errorText;
-  #exceptionDetailsPromise;
-  #exceptionDetails;
+  #symbolizedErrorPromise;
+  #symbolizedError;
   #view;
   constructor(element, view = PAYLOAD_DEFAULT_VIEW) {
     super(element);
@@ -12948,24 +12996,24 @@ var PayloadWidget = class extends UI28.Widget.Widget {
   get errorText() {
     return this.#errorText;
   }
-  async #updateExceptionDetails(exceptionDetailsPromise) {
-    if (this.#exceptionDetailsPromise === exceptionDetailsPromise) {
+  async #updateSymbolizedError(symbolizedErrorPromise) {
+    if (this.#symbolizedErrorPromise === symbolizedErrorPromise) {
       return;
     }
-    this.#exceptionDetailsPromise = exceptionDetailsPromise;
-    this.#exceptionDetails = void 0;
+    this.#symbolizedErrorPromise = symbolizedErrorPromise;
+    this.#symbolizedError = void 0;
     this.requestUpdate();
-    const exceptionDetails = await exceptionDetailsPromise;
-    if (this.#exceptionDetailsPromise === exceptionDetailsPromise) {
-      this.#exceptionDetails = exceptionDetails;
+    const symbolizedError = await symbolizedErrorPromise;
+    if (this.#symbolizedErrorPromise === symbolizedErrorPromise) {
+      this.#symbolizedError = symbolizedError || null;
       this.requestUpdate();
     }
   }
-  set exceptionDetails(exceptionDetailsPromise) {
-    void this.#updateExceptionDetails(exceptionDetailsPromise);
+  set symbolizedError(symbolizedErrorPromise) {
+    void this.#updateSymbolizedError(symbolizedErrorPromise);
   }
-  get exceptionDetails() {
-    return this.#exceptionDetailsPromise;
+  get symbolizedError() {
+    return this.#symbolizedErrorPromise;
   }
   wasShown() {
     super.wasShown();
@@ -12976,7 +13024,7 @@ var PayloadWidget = class extends UI28.Widget.Widget {
       valueObject: this.#valueObject,
       valueString: this.#valueString,
       errorText: this.#errorText,
-      exceptionDetails: this.#exceptionDetails
+      symbolizedError: this.#symbolizedError
     };
     this.#view(input, {}, this.contentElement);
   }
@@ -13318,6 +13366,12 @@ var WebMCPTreeElement = class extends ApplicationPanelTreeElement {
     super(storagePanel, "WebMCP", false, "web-mcp");
     const icon = createIcon13("document");
     this.setLeadingIcons([icon]);
+    const newBadge = UI29.UIUtils.maybeCreateNewBadge("web-mcp");
+    if (newBadge) {
+      const fragment = document.createDocumentFragment();
+      render11(html12`<div class="trailing-icons icons-container">${newBadge}</div>`, fragment);
+      this.listItemElement.appendChild(fragment);
+    }
   }
   get itemURL() {
     return "webMcp://";
@@ -13351,6 +13405,10 @@ var UIStrings31 = {
    * @description Text in Application Panel Sidebar of the Application panel
    */
   application: "Application",
+  /**
+   * @description Text in Application Panel Sidebar of the Application panel
+   */
+  ads: "Ads",
   /**
    * @description Text in Application Panel Sidebar of the Application panel
    */
@@ -13577,6 +13635,7 @@ var ApplicationPanelSidebar = class extends UI30.Widget.VBox {
   pushMessagingTreeElement;
   reportingApiTreeElement;
   webMcpTreeElement;
+  adsTreeElement;
   deviceBoundSessionsRootTreeElement;
   deviceBoundSessionsModel;
   preloadingSummaryTreeElement;
@@ -13620,6 +13679,24 @@ var ApplicationPanelSidebar = class extends UI30.Widget.VBox {
     if (Root2.Runtime.hostConfig.devToolsWebMCPSupport?.enabled) {
       this.webMcpTreeElement = new WebMCPTreeElement(panel);
       this.applicationTreeElement.appendChild(this.webMcpTreeElement);
+    }
+    if (Root2.Runtime.hostConfig.devToolsAdsPanel?.enabled) {
+      const adsTreeElement = new ApplicationPanelTreeElement(panel, i18nString31(UIStrings31.ads), false, "ads");
+      const icon = createIcon14("experiment");
+      adsTreeElement.setLeadingIcons([icon]);
+      adsTreeElement.itemURL = "ads://";
+      let adsView;
+      adsTreeElement.onselect = (selectedByUser) => {
+        ApplicationPanelTreeElement.prototype.onselect.call(adsTreeElement, selectedByUser);
+        if (!adsView) {
+          adsView = new ApplicationComponents16.AdsView.AdsView();
+        }
+        adsTreeElement.showView(adsView);
+        UI30.UIUserMetrics.UIUserMetrics.instance().panelShown("ads");
+        return false;
+      };
+      this.adsTreeElement = adsTreeElement;
+      this.applicationTreeElement.appendChild(this.adsTreeElement);
     }
     const storageSectionTitle = i18nString31(UIStrings31.storage);
     const storageTreeElement = this.addSidebarSection(storageSectionTitle, "storage");
@@ -14702,6 +14779,8 @@ var DOMStorageTreeElement = class extends ApplicationPanelTreeElement {
     super.onselect(selectedByUser);
     UI30.UIUserMetrics.UIUserMetrics.instance().panelShown("dom-storage");
     this.resourcesPanel.showDOMStorage(this.domStorage);
+    const storageItem = this.#getStorageItem();
+    UI30.Context.Context.instance().setFlavor(AiAssistance2.StorageItem.StorageItem, storageItem);
     return false;
   }
   /**
@@ -14842,6 +14921,8 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
     super.onselect(selectedByUser);
     this.resourcesPanel.showCookies(this.target, this.#cookieDomain);
     UI30.UIUserMetrics.UIUserMetrics.instance().panelShown(Host4.UserMetrics.PanelCodes[Host4.UserMetrics.PanelCodes.cookies]);
+    const storageItem = this.#getStorageItem();
+    UI30.Context.Context.instance().setFlavor(AiAssistance2.StorageItem.StorageItem, storageItem);
     return false;
   }
 };
@@ -15395,7 +15476,7 @@ import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as CookieTable from "./../../ui/legacy/components/cookie_table/cookie_table.js";
 import * as UI31 from "./../../ui/legacy/legacy.js";
-import { html as html12, render as render11 } from "./../../ui/lit/lit.js";
+import { html as html13, render as render12 } from "./../../ui/lit/lit.js";
 import * as VisualLogging18 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/cookieItemsView.css.js
@@ -15448,6 +15529,14 @@ var UIStrings32 = {
    */
   showUrlDecoded: "Show URL-decoded",
   /**
+   * @description Text of a context menu item to start a chat with AI
+   */
+  startAChat: "Start a chat",
+  /**
+   * @description Text of a context menu item to explain a web cookie with AI
+   */
+  explainCookie: "Explain this cookie",
+  /**
    * @description Text in Cookie Items View of the Application panel to indicate that no cookie has been selected for preview
    */
   noCookieSelected: "No cookie selected",
@@ -15494,8 +15583,8 @@ var DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW = (input, output, target) => {
     selection.removeAllRanges();
     selection.addRange(range);
   }
-  render11(
-    html12`<style>${cookieItemsView_css_default}</style>
+  render12(
+    html13`<style>${cookieItemsView_css_default}</style>
     <div class="cookie-preview-widget">
       <div class="cookie-preview-widget-header">
         <span class="cookie-preview-widget-header-label">Cookie Value</span>
@@ -15547,8 +15636,8 @@ var CookiePreviewWidget = class extends UI31.Widget.VBox {
   }
 };
 var DEFAULT_VIEW8 = (input, output, target) => {
-  render11(
-    html12`<style>${cookieItemsView_css_default}</style>
+  render12(
+    html13`<style>${cookieItemsView_css_default}</style>
     <devtools-widget class="storage-view" ${widget8(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
       <devtools-widget ${widget8(StorageItemsToolbar, { filterRegex: null })}
         class=flex-none
@@ -15568,14 +15657,18 @@ var DEFAULT_VIEW8 = (input, output, target) => {
       refreshCallback: input.onRefresh,
       selectedCallback: input.onSelect,
       deleteCallback: input.onDelete,
+      aiButtonIsEnabled: input.aiButtonIsEnabled,
+      onAiButtonClick: input.onAiButtonClick,
+      onPopulateAiContextMenu: input.onPopulateAiContextMenu,
+      aiButtonTitle: input.aiButtonTitle,
       editable: true
     })}
           ></devtools-widget>
         </devtools-widget>
         <devtools-widget slot="sidebar" ${widget8(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}
           jslog=${VisualLogging18.pane("preview").track({ resize: true })}>
-          ${input.selectedCookie ? html12`<devtools-widget ${widget8(CookiePreviewWidget, { cookie: input.selectedCookie })}>
-                 </devtools-widget>` : html12`<devtools-widget ${widget8(UI31.EmptyWidget.EmptyWidget, {
+          ${input.selectedCookie ? html13`<devtools-widget ${widget8(CookiePreviewWidget, { cookie: input.selectedCookie })}>
+                 </devtools-widget>` : html13`<devtools-widget ${widget8(UI31.EmptyWidget.EmptyWidget, {
       header: i18nString32(UIStrings32.noCookieSelected),
       text: i18nString32(UIStrings32.selectACookieToPreviewItsValue)
     })}></devtools-widget>`}
@@ -15617,7 +15710,6 @@ var CookieItemsView = class extends UI31.Widget.VBox {
     this.cookieDomain = domain;
     this.refreshItems();
     this.model.addEventListener("CookieListUpdated", this.onCookieListUpdate, this);
-    this.updateAiAssistanceContext(null);
   }
   performUpdate() {
     const that = this;
@@ -15647,14 +15739,17 @@ var CookieItemsView = class extends UI31.Widget.VBox {
       onDeleteSelectedItems: this.deleteSelectedItem.bind(this),
       onDeleteAllItems: this.deleteAllItems.bind(this),
       onRefreshItems: this.refreshItems.bind(this),
-      selectedCookie: this.selectedCookie
+      selectedCookie: this.selectedCookie,
+      aiButtonIsEnabled: this.isAiButtonEnabled(),
+      onPopulateAiContextMenu: this.#onPopulateAiContextMenu.bind(this),
+      onAiButtonClick: this.#onAiButtonClick.bind(this),
+      aiButtonTitle: this.isAiButtonEnabled() ? UI31.ActionRegistry.ActionRegistry.instance().getAction("ai-assistance.storage-floating-button").title() : void 0
     };
     this.view(input, output, this.contentElement);
   }
   wasShown() {
     super.wasShown();
     this.refreshItems();
-    this.updateAiAssistanceContext(this.selectedCookie);
   }
   showPreview(cookie) {
     if (cookie === this.selectedCookie) {
@@ -15662,9 +15757,8 @@ var CookieItemsView = class extends UI31.Widget.VBox {
     }
     this.selectedCookie = cookie;
     this.requestUpdate();
-    this.updateAiAssistanceContext(cookie);
   }
-  updateAiAssistanceContext(cookie) {
+  #updateAiAssistanceContext(cookie) {
     if (cookie && cookie.httpOnly()) {
       UI31.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, null);
       return;
@@ -15684,6 +15778,7 @@ var CookieItemsView = class extends UI31.Widget.VBox {
     }
     this.#toolbar.setCanDeleteSelected(Boolean(selectedCookie));
     this.showPreview(selectedCookie);
+    this.#updateAiAssistanceContext(selectedCookie);
   }
   async saveCookie(newCookie, oldCookie) {
     if (oldCookie && newCookie.key() !== oldCookie.key()) {
@@ -15729,6 +15824,7 @@ var CookieItemsView = class extends UI31.Widget.VBox {
    * This will only delete the currently visible cookies.
    */
   deleteAllItems() {
+    UI31.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, null);
     this.showPreview(null);
     void this.model.deleteCookies(this.shownCookies);
   }
@@ -15745,6 +15841,29 @@ var CookieItemsView = class extends UI31.Widget.VBox {
   refreshItems() {
     void this.model.getCookiesForDomain(this.cookieDomain, true).then(this.updateWithCookies.bind(this));
   }
+  isAiButtonEnabled() {
+    return UI31.ActionRegistry.ActionRegistry.instance().hasAction("ai-assistance.storage-floating-button");
+  }
+  #onPopulateAiContextMenu(cookie, contextMenu) {
+    const openAiAssistanceId = "ai-assistance.application-panel-context";
+    if (this.isAiButtonEnabled() && UI31.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
+      this.#updateAiAssistanceContext(cookie);
+      if (UI31.Context.Context.instance().flavor(AiAssistanceModel.StorageItem.StorageItem)) {
+        const action6 = UI31.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+        const submenu = contextMenu.footerSection().appendSubMenuItem(action6.title(), false, openAiAssistanceId);
+        submenu.defaultSection().appendAction(openAiAssistanceId, i18nString32(UIStrings32.startAChat));
+        submenu.defaultSection().appendItem(i18nString32(UIStrings32.explainCookie), () => action6.execute({ prompt: "What is the purpose of this cookie?" }), { disabled: !action6.enabled(), jslogContext: openAiAssistanceId + ".cookies" });
+      }
+    }
+  }
+  #onAiButtonClick(cookie, _event) {
+    this.#updateAiAssistanceContext(cookie);
+    const actionRegistry = UI31.ActionRegistry.ActionRegistry.instance();
+    const storageFloatingButtonId = "ai-assistance.storage-floating-button";
+    if (actionRegistry.hasAction(storageFloatingButtonId)) {
+      void actionRegistry.getAction(storageFloatingButtonId).execute();
+    }
+  }
 };
 
 // gen/front_end/panels/application/DeviceBoundSessionsView.js
@@ -15758,7 +15877,7 @@ import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n65 from "./../../core/i18n/i18n.js";
 import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI32 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives5, html as html13, nothing as nothing7, render as render12 } from "./../../ui/lit/lit.js";
+import { Directives as Directives5, html as html14, nothing as nothing7, render as render13 } from "./../../ui/lit/lit.js";
 import * as VisualLogging19 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/deviceBoundSessionsView.css.js
@@ -16321,17 +16440,17 @@ var str_33 = i18n65.i18n.registerUIStrings("panels/application/DeviceBoundSessio
 var i18nString33 = i18n65.i18n.getLocalizedString.bind(void 0, str_33);
 var DEFAULT_VIEW9 = (input, _output, target) => {
   const { sessionAndEvents, preserveLogSetting, defaultTitle, defaultDescription, selectedEvent, onEventRowSelected } = input;
-  const toolbarHtml = preserveLogSetting ? html13`
+  const toolbarHtml = preserveLogSetting ? html14`
         <devtools-toolbar class="device-bound-sessions-toolbar">
         <devtools-checkbox title=${i18nString33(UIStrings33.doNotClearLogOnPageReload)} ${UI32.UIUtils.bindToSetting(preserveLogSetting)}>${i18nString33(UIStrings33.preserveLog)}</devtools-checkbox>
         </devtools-toolbar>
   ` : nothing7;
   if (!sessionAndEvents) {
     if (!defaultTitle || !defaultDescription) {
-      render12(nothing7, target);
+      render13(nothing7, target);
       return;
     }
-    render12(html13`
+    render13(html14`
       <style>${UI32.inspectorCommonStyles}</style>
       <style>${deviceBoundSessionsView_css_default}</style>
       ${toolbarHtml}
@@ -16342,7 +16461,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
   let sessionDetailsHtml;
   if (sessionAndEvents.session) {
     const { key, inclusionRules, cookieCravings } = sessionAndEvents.session;
-    sessionDetailsHtml = html13`
+    sessionDetailsHtml = html14`
         <devtools-report>
           <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.sessionConfig)}</devtools-report-section-header>
           <devtools-report-key>${i18nString33(UIStrings33.keySite)}</devtools-report-key>
@@ -16363,7 +16482,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           <devtools-report-key>${i18nString33(UIStrings33.includeSite)}</devtools-report-key>
           <devtools-report-value>${boolToString(inclusionRules.includeSite)}</devtools-report-value>
         </devtools-report>
-        ${inclusionRules.urlRules.length > 0 ? html13`
+        ${inclusionRules.urlRules.length > 0 ? html14`
           <div class="device-bound-session-grid-wrapper">
             <devtools-data-grid class="device-bound-session-url-rules-grid" striped inline name=${i18nString33(UIStrings33.scope)}>
               <table>
@@ -16375,7 +16494,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${inclusionRules.urlRules.map((rule) => html13`
+                  ${inclusionRules.urlRules.map((rule) => html14`
                     <tr>
                       <td>${ruleTypeToString(rule.ruleType)}</td>
                       <td>${rule.hostPattern}</td>
@@ -16388,7 +16507,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           </div>
         ` : nothing7}
         <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.cookieCravings)}</devtools-report-section-header>
-        ${cookieCravings.length > 0 ? html13`
+        ${cookieCravings.length > 0 ? html14`
           <div class="device-bound-session-grid-wrapper">
             <devtools-data-grid class="device-bound-session-cookie-cravings-grid" striped inline name=${i18nString33(UIStrings33.cookieCravings)}>
               <table>
@@ -16403,7 +16522,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${cookieCravings.map((craving) => html13`
+                  ${cookieCravings.map((craving) => html14`
                     <tr>
                       <td>${craving.name}</td>
                       <td>${craving.domain}</td>
@@ -16420,9 +16539,9 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
         ` : nothing7}`;
   }
   const events = [...sessionAndEvents.eventsById.values()];
-  const eventsHtml = html13`
+  const eventsHtml = html14`
       <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.events)}</devtools-report-section-header>
-          ${events.length > 0 && onEventRowSelected ? html13`
+          ${events.length > 0 && onEventRowSelected ? html14`
             <div class="device-bound-session-grid-wrapper">
                 <devtools-data-grid class="device-bound-session-events-grid" striped inline name=${i18nString33(UIStrings33.events)} ${Directives5.ref((el) => {
     if (!el || !(el instanceof HTMLElement)) {
@@ -16441,7 +16560,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                       <th id="details" sortable>${i18nString33(UIStrings33.result)}</th>
                     </tr>
                   </thead>
-                  <tbody>${events.map(({ event, timestamp }) => html13`
+                  <tbody>${events.map(({ event, timestamp }) => html14`
                       <tr @select=${() => onEventRowSelected(event)}>
                         <td>${getEventTypeString(event)}</td>
                         <td>${timestamp.toLocaleString()}</td>
@@ -16452,21 +16571,21 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                 </table>
               </devtools-data-grid>
             </div>
-          ` : html13`<div class="device-bound-session-no-events-wrapper">${i18nString33(UIStrings33.noEvents)}</div>`}`;
+          ` : html14`<div class="device-bound-session-no-events-wrapper">${i18nString33(UIStrings33.noEvents)}</div>`}`;
   const failedRequestDetailsGetter = (failedRequest) => {
     if (!failedRequest) {
       return nothing7;
     }
-    return html13`${failedRequest.requestUrl && html13`
+    return html14`${failedRequest.requestUrl && html14`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestUrl)}</devtools-report-key>
           <devtools-report-value>${failedRequest.requestUrl}</devtools-report-value>`}
-        ${failedRequest.netError && html13`
+        ${failedRequest.netError && html14`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestNetError)}</devtools-report-key>
           <devtools-report-value>${failedRequest.netError}</devtools-report-value>`}
-        ${failedRequest.responseError !== void 0 ? html13`
+        ${failedRequest.responseError !== void 0 ? html14`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestResponseCode)}</devtools-report-key>
           <devtools-report-value>${failedRequest.responseError}</devtools-report-value>` : nothing7}
-        ${failedRequest.responseErrorBody && html13`
+        ${failedRequest.responseErrorBody && html14`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestResponseBody)}</devtools-report-key>
           <devtools-report-value>
             ${widget9(SourceFrame6.JSONView.SearchableJsonView, {
@@ -16474,41 +16593,41 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
     })}
           </devtools-report-value>`}`;
   };
-  const creationEventDetails = selectedEvent?.creationEventDetails && html13`
+  const creationEventDetails = selectedEvent?.creationEventDetails && html14`
           <devtools-report-key>${i18nString33(UIStrings33.fetchResult)}</devtools-report-key>
           <devtools-report-value>${fetchResultToString(selectedEvent.creationEventDetails.fetchResult)}</devtools-report-value>
-            ${selectedEvent.creationEventDetails.newSession && html13`
+            ${selectedEvent.creationEventDetails.newSession && html14`
               <devtools-report-key>${i18nString33(UIStrings33.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString33(UIStrings33.yes)}</devtools-report-value>
             `}
           ${failedRequestDetailsGetter(selectedEvent.creationEventDetails.failedRequest)}
       `;
-  const refreshEventDetails = selectedEvent?.refreshEventDetails && html13`
+  const refreshEventDetails = selectedEvent?.refreshEventDetails && html14`
           <devtools-report-key>${i18nString33(UIStrings33.refreshResult)}</devtools-report-key>
           <devtools-report-value>${refreshResultToString(selectedEvent.refreshEventDetails.refreshResult)}</devtools-report-value>
           <devtools-report-key>${i18nString33(UIStrings33.causedAnyRequestDeferrals)}</devtools-report-key>
           <devtools-report-value>${boolToString(!selectedEvent.refreshEventDetails.wasFullyProactiveRefresh)}</devtools-report-value>
-            ${selectedEvent.refreshEventDetails.fetchResult && html13`
+            ${selectedEvent.refreshEventDetails.fetchResult && html14`
               <devtools-report-key>${i18nString33(UIStrings33.fetchResult)}</devtools-report-key>
               <devtools-report-value>${fetchResultToString(selectedEvent.refreshEventDetails.fetchResult)}</devtools-report-value>
             `}
-            ${selectedEvent.refreshEventDetails.newSession && html13`
+            ${selectedEvent.refreshEventDetails.newSession && html14`
               <devtools-report-key>${i18nString33(UIStrings33.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString33(UIStrings33.yes)}</devtools-report-value>
             `}
           ${failedRequestDetailsGetter(selectedEvent.refreshEventDetails.failedRequest)}
       `;
-  const challengeEventDetails = selectedEvent?.challengeEventDetails && html13`
+  const challengeEventDetails = selectedEvent?.challengeEventDetails && html14`
           <devtools-report-key>${i18nString33(UIStrings33.challengeResult)}</devtools-report-key>
           <devtools-report-value>${challengeResultToString(selectedEvent.challengeEventDetails.challengeResult)}</devtools-report-value>
           <devtools-report-key>${i18nString33(UIStrings33.challenge)}</devtools-report-key>
           <devtools-report-value>${selectedEvent.challengeEventDetails.challenge}</devtools-report-value>
           `;
-  const terminationEventDetails = selectedEvent?.terminationEventDetails && html13`
+  const terminationEventDetails = selectedEvent?.terminationEventDetails && html14`
           <devtools-report-key>${i18nString33(UIStrings33.deletionReason)}</devtools-report-key>
           <devtools-report-value>${deletionReasonToString(selectedEvent.terminationEventDetails.deletionReason)}</devtools-report-value>
           `;
-  const eventDetailsContentHtml = selectedEvent ? html13`
+  const eventDetailsContentHtml = selectedEvent ? html14`
         <devtools-report>
           <devtools-report-key>${i18nString33(UIStrings33.keySite)}</devtools-report-key>
           <devtools-report-value>${selectedEvent.site}</devtools-report-value>
@@ -16523,12 +16642,12 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           ${challengeEventDetails}
           ${terminationEventDetails}
         </devtools-report>
-    ` : html13`<div class="device-bound-session-no-event-details">${i18nString33(UIStrings33.selectEventToViewDetails)}</div>`;
-  const eventDetailsHtml = html13`
+    ` : html14`<div class="device-bound-session-no-event-details">${i18nString33(UIStrings33.selectEventToViewDetails)}</div>`;
+  const eventDetailsHtml = html14`
       <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.eventDetails)}</devtools-report-section-header>
       ${eventDetailsContentHtml}
   `;
-  render12(html13`
+  render13(html14`
         <style>${UI32.inspectorCommonStyles}</style>
         <style>${deviceBoundSessionsView_css_default}</style>
         ${toolbarHtml}
@@ -16873,7 +16992,15 @@ var UIStrings34 = {
   /**
    * @description Text for announcing a DOM Storage key/value item has been deleted
    */
-  domStorageItemDeleted: "The storage item was deleted."
+  domStorageItemDeleted: "The storage item was deleted.",
+  /**
+   * @description Text of a context menu item to start a chat with AI
+   */
+  startAChat: "Start a chat",
+  /**
+   * @description Text of a context menu item to explain a storage item of a storage bucket with AI
+   */
+  explainItem: "Explain this item"
 };
 var str_34 = i18n67.i18n.registerUIStrings("panels/application/DOMStorageItemsView.ts", UIStrings34);
 var i18nString34 = i18n67.i18n.getLocalizedString.bind(void 0, str_34);
@@ -16922,7 +17049,6 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
       this.domStorage.addEventListener("DOMStorageItemUpdated", this.domStorageItemUpdated, this)
     ];
     this.refreshItems();
-    this.selectedItemChanged(null);
   }
   domStorageItemsCleared() {
     if (!this.isShowing()) {
@@ -16968,11 +17094,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
     const filteredItems = items.map((item2) => ({ key: item2[0], value: item2[1] })).filter((item2) => filterRegex?.test(`${item2.key} ${item2.value}`) ?? true);
     this.showItems(filteredItems);
   }
-  deleteAllItems() {
-    this.domStorage.clear();
-    this.domStorageItemsCleared();
-  }
-  selectedItemChanged(item2) {
+  #setAiStorageContext(item2) {
     const storageKey = this.domStorage.storageKey;
     if (!storageKey) {
       return;
@@ -16989,8 +17111,34 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
     const storageItem = new AiAssistanceModel2.StorageItem.DOMStorageItem(mainPageOrigin, origin, storageKey, storageType, item2 ? item2.key : void 0);
     UI33.Context.Context.instance().setFlavor(AiAssistanceModel2.StorageItem.StorageItem, storageItem);
   }
+  deleteAllItems() {
+    this.domStorage.clear();
+    this.domStorageItemsCleared();
+  }
+  selectedItemChanged(item2) {
+    this.#setAiStorageContext(item2);
+  }
   isAiButtonEnabled() {
     return UI33.ActionRegistry.ActionRegistry.instance().hasAction("ai-assistance.storage-floating-button");
+  }
+  populateContextMenu(item2, contextMenu) {
+    const openAiAssistanceId = "ai-assistance.application-panel-context";
+    const actionRegistry = UI33.ActionRegistry.ActionRegistry.instance();
+    if (actionRegistry.hasAction(openAiAssistanceId)) {
+      this.#setAiStorageContext(item2);
+      const action6 = actionRegistry.getAction(openAiAssistanceId);
+      const submenu = contextMenu.footerSection().appendSubMenuItem(action6.title(), false, openAiAssistanceId);
+      submenu.defaultSection().appendAction(openAiAssistanceId, i18nString34(UIStrings34.startAChat));
+      submenu.defaultSection().appendItem(i18nString34(UIStrings34.explainItem), () => action6.execute({ prompt: "Explain this storage item." }), { disabled: !action6.enabled(), jslogContext: openAiAssistanceId + ".storage" });
+    }
+  }
+  onAiButtonClick(item2, _event) {
+    this.#setAiStorageContext(item2);
+    const aiFloatingActionId = "ai-assistance.storage-floating-button";
+    const actionRegistry = UI33.ActionRegistry.ActionRegistry.instance();
+    if (actionRegistry.hasAction(aiFloatingActionId)) {
+      void actionRegistry.getAction(aiFloatingActionId).execute();
+    }
   }
   removeItem(key) {
     this.domStorage?.removeItem(key);

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Host from '../../core/host/host.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as WebMCP from '../../models/web_mcp/web_mcp.js';
@@ -17,7 +16,6 @@ import * as RenderCoordinator from '../../ui/components/render_coordinator/rende
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ProtocolMonitor from '../protocol_monitor/protocol_monitor.js';
 import * as Application from './application.js';
-const { urlString } = Platform.DevToolsPath;
 const { DEFAULT_VIEW, WebMCPView, filterToolCalls } = Application.WebMCPView;
 function createTool(name, description, frameId, target, backendNodeId, inputSchema = {
     type: 'object'
@@ -388,31 +386,10 @@ describeWithEnvironment('WebMCPView (View)', () => {
             result: new WebMCP.WebMCPModel.Result("Error" /* Protocol.WebMCP.InvocationStatus.Error */, undefined, undefined, undefined),
             cancel: () => { },
         };
-        const errorObject = sinon.createStubInstance(SDK.RemoteObject.RemoteObject);
-        const runtimeModel = sinon.createStubInstance(SDK.RuntimeModel.RuntimeModel);
-        runtimeModel.target.returns(sdkTarget);
-        errorObject.runtimeModel.returns(runtimeModel);
-        const mockExceptionDetails = {
-            error: errorObject,
-            description: 'TypeError: Cannot read properties of undefined (reading \'foo\')',
-            frames: [
-                { line: 'TypeError: Cannot read properties of undefined (reading \'foo\')' }, {
-                    line: '    at doSomething (app.js:10:5)',
-                    isCallFrame: true,
-                    link: {
-                        url: urlString `http://localhost/app.js`,
-                        lineNumber: 9,
-                        columnNumber: 4,
-                        prefix: '    at doSomething (',
-                        suffix: ')',
-                        enclosedInBraces: false,
-                        scriptId: '123',
-                    }
-                }
-            ],
-        };
+        const mockStackTrace = StubStackTrace.create(['http://localhost/app.js:doSomething:9:4']);
+        const mockSymbolizedError = new Bindings.SymbolizedError.SymbolizedErrorObject('TypeError: Cannot read properties of undefined (reading \'foo\')', mockStackTrace, null);
         assert.isDefined(selectedCall.result);
-        sinon.stub(selectedCall.result, 'exceptionDetails').get(() => Promise.resolve(mockExceptionDetails));
+        sinon.stub(selectedCall.result, 'symbolizedError').get(() => Promise.resolve(mockSymbolizedError));
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
             toolCalls: [selectedCall],

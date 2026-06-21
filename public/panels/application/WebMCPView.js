@@ -19,6 +19,8 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render, } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as Console from '../console/console.js';
+import symbolizedErrorWidgetStyles from '../console/symbolizedErrorWidget.css.js';
 import * as ProtocolMonitor from '../protocol_monitor/protocol_monitor.js';
 import webMCPViewStyles from './webMCPView.css.js';
 const UIStrings = {
@@ -174,10 +176,6 @@ const UIStrings = {
      * @description Notice to display when a tool has been unregistered
      */
     toolUnregisteredNotice: 'This tool has been unregistered',
-    /**
-     * @description Text preceding a nested error in a stack trace
-     */
-    causedBy: 'Caused by:',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/WebMCPView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -498,7 +496,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                   ${widget(PayloadWidget, {
         valueObject: input.selectedCall?.result?.output,
         errorText: input.selectedCall?.result?.errorText,
-        exceptionDetails: input.selectedCall?.result?.exceptionDetails,
+        symbolizedError: input.selectedCall?.result?.symbolizedError,
     })}>
                 </devtools-widget>
               </devtools-tabbed-pane>
@@ -810,7 +808,7 @@ export class WebMCPView extends UI.Widget.VBox {
     }
 }
 export const PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
-    if (!input.valueObject && !input.valueString && !input.errorText && !input.exceptionDetails) {
+    if (!input.valueObject && !input.valueString && !input.errorText && !input.symbolizedError) {
         render(nothing, target);
         return;
     }
@@ -835,38 +833,28 @@ export const PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
     };
     const createSourceText = (text) => html `<div class="payload-value source-code">${text}</div>`;
     const createErrorText = (text) => html `<div class="payload-value source-code error-text">${text}</div>`;
-    const createException = (details, linkifier = new Components.Linkifier.Linkifier()) => {
-        const renderFrame = (frame, index, array) => {
-            const newline = index < array.length - 1 ? '\n' : '';
-            const { line, link, isCallFrame } = frame;
-            if (!isCallFrame) {
-                return html `<span>${line}${newline}</span>`;
-            }
-            if (!link) {
-                return html `<span class="formatted-builtin-stack-frame">${line}${newline}</span>`;
-            }
-            const scriptLocationLink = linkifier.linkifyScriptLocation(details.error.runtimeModel().target(), link.scriptId || null, link.url, link.lineNumber, {
-                columnNumber: link.columnNumber,
-                showColumnNumber: true,
-            });
-            scriptLocationLink.tabIndex = -1;
-            return html `<span class="formatted-stack-frame">${link.prefix}${scriptLocationLink}${link.suffix}${newline}</span>`;
-        };
+    const createException = (error) => {
+        if (!error) {
+            return nothing;
+        }
         return html `
       <div class="payload-value source-code error-text">
-        ${details.frames.length === 0 && details.description ? html `<span>${details.description}\n</span>` : nothing}
-        <div>${details.frames.map(renderFrame)}</div>
-        ${details.cause ? html `\n${i18nString(UIStrings.causedBy)}\n${createException(details.cause, linkifier)}` :
-            nothing}</div>`;
+        <devtools-widget
+          ${UI.Widget.widget(Console.SymbolizedErrorWidget.SymbolizedErrorWidget, { error })}
+        ></devtools-widget>
+      </div>
+    `;
     };
     render(html `
     <style>${webMCPViewStyles}</style>
+    <style>${symbolizedErrorWidgetStyles}</style>
     <div class="call-payload-view">
       <div class="call-payload-content">
-            ${isParsable ? createPayload(input.valueObject) :
+            ${isParsable ?
+        createPayload(input.valueObject) :
         (input.valueString !== undefined ?
             createSourceText(input.valueString) :
-            (input.exceptionDetails ? createException(input.exceptionDetails) :
+            (input.symbolizedError ? createException(input.symbolizedError) :
                 (input.errorText ? createErrorText(input.errorText) : nothing)))}
       </div>
     </div>
@@ -876,8 +864,8 @@ export class PayloadWidget extends UI.Widget.Widget {
     #valueObject;
     #valueString;
     #errorText;
-    #exceptionDetailsPromise;
-    #exceptionDetails;
+    #symbolizedErrorPromise;
+    #symbolizedError;
     #view;
     constructor(element, view = PAYLOAD_DEFAULT_VIEW) {
         super(element);
@@ -904,24 +892,24 @@ export class PayloadWidget extends UI.Widget.Widget {
     get errorText() {
         return this.#errorText;
     }
-    async #updateExceptionDetails(exceptionDetailsPromise) {
-        if (this.#exceptionDetailsPromise === exceptionDetailsPromise) {
+    async #updateSymbolizedError(symbolizedErrorPromise) {
+        if (this.#symbolizedErrorPromise === symbolizedErrorPromise) {
             return;
         }
-        this.#exceptionDetailsPromise = exceptionDetailsPromise;
-        this.#exceptionDetails = undefined;
+        this.#symbolizedErrorPromise = symbolizedErrorPromise;
+        this.#symbolizedError = undefined;
         this.requestUpdate();
-        const exceptionDetails = await exceptionDetailsPromise;
-        if (this.#exceptionDetailsPromise === exceptionDetailsPromise) {
-            this.#exceptionDetails = exceptionDetails;
+        const symbolizedError = await symbolizedErrorPromise;
+        if (this.#symbolizedErrorPromise === symbolizedErrorPromise) {
+            this.#symbolizedError = symbolizedError || null;
             this.requestUpdate();
         }
     }
-    set exceptionDetails(exceptionDetailsPromise) {
-        void this.#updateExceptionDetails(exceptionDetailsPromise);
+    set symbolizedError(symbolizedErrorPromise) {
+        void this.#updateSymbolizedError(symbolizedErrorPromise);
     }
-    get exceptionDetails() {
-        return this.#exceptionDetailsPromise;
+    get symbolizedError() {
+        return this.#symbolizedErrorPromise;
     }
     wasShown() {
         super.wasShown();
@@ -932,7 +920,7 @@ export class PayloadWidget extends UI.Widget.Widget {
             valueObject: this.#valueObject,
             valueString: this.#valueString,
             errorText: this.#errorText,
-            exceptionDetails: this.#exceptionDetails,
+            symbolizedError: this.#symbolizedError,
         };
         this.#view(input, {}, this.contentElement);
     }

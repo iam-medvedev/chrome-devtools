@@ -16,6 +16,12 @@ export default `/*
   overflow: auto;
 }
 
+.ads-view-container {
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+}
+
 .metrics-container {
   flex: 0 0 auto;
   margin: 0 0 24px;

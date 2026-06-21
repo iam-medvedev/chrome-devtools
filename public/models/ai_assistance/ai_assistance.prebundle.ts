@@ -23,6 +23,8 @@ import * as AiUtils from './AiUtils.js';
 import * as BuiltInAi from './BuiltInAi.js';
 import * as ChangeManager from './ChangeManager.js';
 import * as DOMNodeContext from './contexts/DOMNodeContext.js';
+import * as FileContext from './contexts/FileContext.js';
+import * as RequestContext from './contexts/RequestContext.js';
 import * as ConversationSummary from './ConversationSummary.js';
 import * as FileFormatter from './data_formatters/FileFormatter.js';
 import * as LighthouseFormatter from './data_formatters/LighthouseFormatter.js';
@@ -40,7 +42,9 @@ import * as AIQueries from './performance/AIQueries.js';
 import * as PerformanceAnnotations from './PerformanceAnnotations.js';
 import * as StorageItem from './StorageItem.js';
 import * as ExecuteJavaScript from './tools/ExecuteJavaScript.js';
+import * as GetNetworkRequestDetails from './tools/GetNetworkRequestDetails.js';
 import * as GetStyles from './tools/GetStyles.js';
+import * as ListNetworkRequests from './tools/ListNetworkRequests.js';
 import * as Tool from './tools/Tool.js';
 import * as ToolRegistry from './tools/ToolRegistry.js';
 
@@ -66,13 +70,16 @@ export {
   ExecuteJavaScript,
   ExtensionScope,
   FileAgent,
+  FileContext,
   FileFormatter,
+  GetNetworkRequestDetails,
   GetStyles,
   GreenDevAgent,
   GreenDevAgentAntigravityCliSocketClient,
   GreenDevAgentGeminiCliSocketClient,
   Injected,
   LighthouseFormatter,
+  ListNetworkRequests,
   NetworkAgent,
   NetworkRequestFormatter,
   PatchAgent,
@@ -80,6 +87,7 @@ export {
   PerformanceAnnotations,
   PerformanceInsightFormatter,
   PerformanceTraceFormatter,
+  RequestContext,
   StorageAgent,
   StorageItem,
   StylingAgent,

@@ -132,13 +132,13 @@ describe('NetworkRequest', () => {
             exemptedResponseCookies: [{
                     cookie,
                     cookieLine: cookie.getCookieLine(),
-                    exemptionReason: "TPCDHeuristics" /* Protocol.Network.CookieExemptionReason.TPCDHeuristics */,
+                    exemptionReason: "UserSetting" /* Protocol.Network.CookieExemptionReason.UserSetting */,
                 }],
         });
         assert.deepEqual(request.responseCookies.map(cookie => cookie.getCookieLine()), ['name=value; Path=/; SameSite=None; Secure;']);
         assert.deepEqual(request.nonBlockedResponseCookies().map(cookie => cookie.getCookieLine()), ['name=value; Path=/; SameSite=None; Secure;']);
         assert.deepEqual(request.exemptedResponseCookies().map(cookie => cookie.cookie.getCookieLine()), ['name=value; Path=/; SameSite=None; Secure;']);
-        assert.deepEqual(request.exemptedResponseCookies().map(cookie => cookie.exemptionReason), ["TPCDHeuristics" /* Protocol.Network.CookieExemptionReason.TPCDHeuristics */]);
+        assert.deepEqual(request.exemptedResponseCookies().map(cookie => cookie.exemptionReason), ["UserSetting" /* Protocol.Network.CookieExemptionReason.UserSetting */]);
         request.addExtraRequestInfo({
             blockedRequestCookies: [],
             requestHeaders: [],
@@ -218,7 +218,7 @@ describeWithMockConnection('NetworkRequest', () => {
             exemptedResponseCookies: [{
                     cookie,
                     cookieLine: cookie.getCookieLine(),
-                    exemptionReason: "TPCDHeuristics" /* Protocol.Network.CookieExemptionReason.TPCDHeuristics */,
+                    exemptionReason: "UserSetting" /* Protocol.Network.CookieExemptionReason.UserSetting */,
                 }],
         });
         assert.isTrue(removeBlockedCookieSpy.calledOnceWith(cookie));

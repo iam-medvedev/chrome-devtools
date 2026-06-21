@@ -241,6 +241,9 @@ interface GdpProfilesAvailability {
 interface LiveEdit {
     enabled: boolean;
 }
+interface ExtensionsOnChromeUrls {
+    enabled: boolean;
+}
 interface DevToolsFlexibleLayout {
     verticalDrawerEnabled: boolean;
 }
@@ -267,6 +270,9 @@ interface DevToolsProtocolMonitor {
     enabled: boolean;
 }
 interface DevToolsWebMCPSupport {
+    enabled: boolean;
+}
+interface DevToolsAdsPanel {
     enabled: boolean;
 }
 interface DevToolsPlusButton {
@@ -326,8 +332,10 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsGeminiRebranding: HostConfigGeminiRebranding;
     devToolsProtocolMonitor: DevToolsProtocolMonitor;
     devToolsWebMCPSupport: DevToolsWebMCPSupport;
+    devToolsAdsPanel: DevToolsAdsPanel;
     devToolsUseGcaApi: UseGcaApi;
     devToolsPlusButton: DevToolsPlusButton;
+    extensionsOnChromeUrls: ExtensionsOnChromeUrls;
 }>;
 /**
  * The host configuration for this DevTools instance.

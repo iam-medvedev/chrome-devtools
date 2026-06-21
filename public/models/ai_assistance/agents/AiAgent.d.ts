@@ -260,6 +260,13 @@ export interface NetworkRequestsListAiWidget {
         requests: SDK.NetworkRequest.NetworkRequest[];
     };
 }
+export interface NetworkTrackAiWidget {
+    name: 'NETWORK_TRACK';
+    data: {
+        parsedTrace: Trace.TraceModel.ParsedTrace;
+        bounds: Trace.Types.Timing.TraceWindowMicro;
+    };
+}
 export interface LighthouseReportAiWidget {
     name: 'LIGHTHOUSE_REPORT';
     data: {
@@ -289,7 +296,7 @@ export interface SourceCodeAiWidget {
         column?: number;
     };
 }
-export type AiWidget = ComputedStyleAiWidget | CoreVitalsAiWidget | StylePropertiesAiWidget | DomTreeAiWidget | PerformanceTraceAiWidget | PerfInsightAiWidget | TimelineRangeSummaryAiWidget | BottomUpTreeAiWidget | SourceFileAiWidget | LighthouseReportAiWidget | TimelineEventSummaryAiWidget | NetworkRequestGeneralHeadersAiWidget | SourceCodeAiWidget | SourceFilesListAiWidget | NetworkRequestsListAiWidget;
+export type AiWidget = ComputedStyleAiWidget | CoreVitalsAiWidget | StylePropertiesAiWidget | DomTreeAiWidget | PerformanceTraceAiWidget | PerfInsightAiWidget | TimelineRangeSummaryAiWidget | BottomUpTreeAiWidget | SourceFileAiWidget | LighthouseReportAiWidget | TimelineEventSummaryAiWidget | NetworkRequestGeneralHeadersAiWidget | SourceCodeAiWidget | SourceFilesListAiWidget | NetworkRequestsListAiWidget | NetworkTrackAiWidget;
 export type FunctionCallHandlerResult<Result> = {
     requiresApproval: true;
     /**
@@ -320,7 +327,7 @@ export interface FunctionDeclaration<Args extends Record<string, unknown>, Retur
      * Description of function, this is send to the LLM
      * to explain what will the function do.
      */
-    description: string;
+    description: string | (() => string);
     /**
      * JSON schema like representation of the parameters
      * the function needs to be called with.

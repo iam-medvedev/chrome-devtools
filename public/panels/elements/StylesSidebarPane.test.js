@@ -1459,6 +1459,24 @@ describe('StylesSidebarPane', () => {
                 assert.strictEqual(triggerAiCodeCompletionStub.firstCall.args[1], 8);
                 clock.restore();
             });
+            it('cancels pending requests and clears suggestions on deletion', async () => {
+                const clock = sinon.useFakeTimers();
+                const triggerAiCodeCompletionStub = aiCodeCompletionProvider.triggerAiCodeCompletion.resolves();
+                cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
+                // First call triggerAiCodeCompletion by typing a letter
+                cssPropertyPrompt.setText('b');
+                cssPropertyPrompt.onInput(new Event('input'));
+                // Perform deletion
+                cssPropertyPrompt.setText('');
+                const deleteEvent = new InputEvent('input', { inputType: 'deleteContentBackward' });
+                cssPropertyPrompt.onInput(deleteEvent);
+                await clock.tickAsync(TextEditor.AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+                // Verify no request was made
+                sinon.assert.notCalled(triggerAiCodeCompletionStub);
+                // Verify active suggestion was cleared
+                assert.isUndefined(mockTreeItem.section().activeAiSuggestion);
+                clock.restore();
+            });
             it('triggerAiCodeCompletion calls the provider with correct arguments', () => {
                 const clock = sinon.useFakeTimers();
                 const triggerAiCodeCompletionStub = aiCodeCompletionProvider.triggerAiCodeCompletion.resolves();
@@ -1609,6 +1627,17 @@ color: pink !important;`;
                     cssPropertyPrompt.onKeyDown(tabEvent);
                     // On second Tab, the AI suggestion is committed.
                     sinon.assert.calledOnce(section.commitActiveAiSuggestion);
+                });
+                it('accepts traditional autocomplete suggestion on Tab when suggest box is hidden but inline suggestion is active', async () => {
+                    const cssPropertyPrompt = new CSSPropertyPrompt(mockTreeItem, true);
+                    cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);
+                    cssPropertyPrompt.setText('flex-g');
+                    await cssPropertyPrompt.complete(true);
+                    assert.isFalse(cssPropertyPrompt.isSuggestBoxVisible());
+                    assert.strictEqual(cssPropertyPrompt.currentSuggestion()?.text, 'flex-grow');
+                    const tabEvent = new KeyboardEvent('keydown', { key: 'Tab' });
+                    cssPropertyPrompt.onKeyDown(tabEvent);
+                    assert.strictEqual(cssPropertyPrompt.text(), 'flex-grow');
                 });
             });
             describe('updateAiCodeSuggestion', () => {

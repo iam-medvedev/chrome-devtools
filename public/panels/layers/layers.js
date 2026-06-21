@@ -7,43 +7,89 @@ var __export = (target, all) => {
 // gen/front_end/panels/layers/LayerPaintProfilerView.js
 var LayerPaintProfilerView_exports = {};
 __export(LayerPaintProfilerView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   LayerPaintProfilerView: () => LayerPaintProfilerView
 });
 import * as UI from "./../../ui/legacy/legacy.js";
+import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as LayerViewer from "./../layer_viewer/layer_viewer.js";
-var LayerPaintProfilerView = class extends UI.SplitWidget.SplitWidget {
-  logTreeView;
-  paintProfilerView;
-  constructor(showImageCallback) {
-    super(true, false);
-    this.element.setAttribute("jslog", `${VisualLogging.pane("layers.paint-profiler").track({ resize: true })}`);
-    this.logTreeView = new LayerViewer.PaintProfilerView.PaintProfilerCommandLogView();
-    this.setSidebarWidget(this.logTreeView);
-    this.paintProfilerView = new LayerViewer.PaintProfilerView.PaintProfilerView(showImageCallback);
-    this.setMainWidget(this.paintProfilerView);
-    this.paintProfilerView.addEventListener("WindowChanged", this.onWindowChanged, this);
-    this.logTreeView.focus();
+var { html, render } = Lit;
+var { widget } = UI.Widget;
+var DEFAULT_VIEW = (input, _output, target) => {
+  render(html`
+    <devtools-split-view direction="column" jslog=${VisualLogging.pane("layers.paint-profiler").track({ resize: true })}>
+      <devtools-widget slot="sidebar"
+          ${widget(LayerViewer.PaintProfilerView.PaintProfilerCommandLogView, {
+    commandLog: input.log,
+    selectionWindow: input.selectionWindow
+  })}>
+      </devtools-widget>
+      <devtools-widget slot="main"
+          ${widget(LayerViewer.PaintProfilerView.PaintProfilerView, {
+    showImageCallback: input.showImageCallback,
+    snapshotAndLog: { snapshot: input.snapshot, log: input.log },
+    scale: input.scale
+  })}
+          @WindowChanged=${(e) => input.onWindowChanged(e.detail)}>
+      </devtools-widget>
+    </devtools-split-view>
+  `, target);
+};
+var LayerPaintProfilerView = class extends UI.Widget.VBox {
+  #showImageCallback;
+  #snapshot = null;
+  #log = [];
+  #scale = 1;
+  #selectionWindow = null;
+  #view;
+  constructor(showImageCallback, view = DEFAULT_VIEW) {
+    super();
+    this.#showImageCallback = showImageCallback;
+    this.#view = view;
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const input = {
+      showImageCallback: this.#showImageCallback,
+      snapshot: this.#snapshot,
+      log: this.#log,
+      scale: this.#scale,
+      selectionWindow: this.#selectionWindow,
+      onWindowChanged: this.onWindowChanged
+    };
+    this.#view(input, void 0, this.contentElement);
   }
   reset() {
-    void this.paintProfilerView.setSnapshotAndLog(null, [], null);
+    if (this.#snapshot) {
+      this.#snapshot.release();
+    }
+    this.#snapshot = null;
+    this.#log = [];
+    this.#selectionWindow = null;
+    this.requestUpdate();
   }
   profile(snapshot) {
-    void snapshot.commandLog().then((log) => setSnapshotAndLog.call(this, snapshot, log));
-    function setSnapshotAndLog(snapshot2, log) {
-      this.logTreeView.setCommandLog(log || []);
-      void this.paintProfilerView.setSnapshotAndLog(snapshot2, log || [], null);
-      if (snapshot2) {
-        snapshot2.release();
+    void snapshot.commandLog().then((log) => {
+      if (this.#snapshot) {
+        this.#snapshot.release();
       }
-    }
+      this.#snapshot = snapshot;
+      this.#log = log || [];
+      this.requestUpdate();
+    });
   }
   setScale(scale) {
-    this.paintProfilerView.setScale(scale);
+    this.#scale = scale;
+    this.requestUpdate();
   }
-  onWindowChanged() {
-    this.logTreeView.updateWindow(this.paintProfilerView.selectionWindow());
-  }
+  onWindowChanged = (window) => {
+    this.#selectionWindow = window;
+    this.requestUpdate();
+  };
 };
 
 // gen/front_end/panels/layers/LayersPanel.js

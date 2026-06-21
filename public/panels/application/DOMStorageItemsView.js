@@ -50,6 +50,14 @@ const UIStrings = {
      * @description Text for announcing a DOM Storage key/value item has been deleted
      */
     domStorageItemDeleted: 'The storage item was deleted.',
+    /**
+     * @description Text of a context menu item to start a chat with AI
+     */
+    startAChat: 'Start a chat',
+    /**
+     * @description Text of a context menu item to explain a storage item of a storage bucket with AI
+     */
+    explainItem: 'Explain this item',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/DOMStorageItemsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -88,7 +96,6 @@ export class DOMStorageItemsView extends KeyValueStorageItemsView {
             this.domStorage.addEventListener("DOMStorageItemUpdated" /* SDK.DOMStorageModel.DOMStorage.Events.DOM_STORAGE_ITEM_UPDATED */, this.domStorageItemUpdated, this),
         ];
         this.refreshItems();
-        this.selectedItemChanged(null);
     }
     domStorageItemsCleared() {
         if (!this.isShowing()) {
@@ -135,12 +142,7 @@ export class DOMStorageItemsView extends KeyValueStorageItemsView {
             .filter(item => filterRegex?.test(`${item.key} ${item.value}`) ?? true);
         this.showItems(filteredItems);
     }
-    deleteAllItems() {
-        this.domStorage.clear();
-        // explicitly clear the view because the event won't be fired when it has no items
-        this.domStorageItemsCleared();
-    }
-    selectedItemChanged(item) {
+    #setAiStorageContext(item) {
         const storageKey = this.domStorage.storageKey;
         if (!storageKey) {
             return;
@@ -158,8 +160,35 @@ export class DOMStorageItemsView extends KeyValueStorageItemsView {
         const storageItem = new AiAssistanceModel.StorageItem.DOMStorageItem(mainPageOrigin, origin, storageKey, storageType, item ? item.key : undefined);
         UI.Context.Context.instance().setFlavor(AiAssistanceModel.StorageItem.StorageItem, storageItem);
     }
+    deleteAllItems() {
+        this.domStorage.clear();
+        // explicitly clear the view because the event won't be fired when it has no items
+        this.domStorageItemsCleared();
+    }
+    selectedItemChanged(item) {
+        this.#setAiStorageContext(item);
+    }
     isAiButtonEnabled() {
         return UI.ActionRegistry.ActionRegistry.instance().hasAction('ai-assistance.storage-floating-button');
+    }
+    populateContextMenu(item, contextMenu) {
+        const openAiAssistanceId = 'ai-assistance.application-panel-context';
+        const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
+        if (actionRegistry.hasAction(openAiAssistanceId)) {
+            this.#setAiStorageContext(item);
+            const action = actionRegistry.getAction(openAiAssistanceId);
+            const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId);
+            submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
+            submenu.defaultSection().appendItem(i18nString(UIStrings.explainItem), () => action.execute({ prompt: 'Explain this storage item.' }), { disabled: !action.enabled(), jslogContext: openAiAssistanceId + '.storage' });
+        }
+    }
+    onAiButtonClick(item, _event) {
+        this.#setAiStorageContext(item);
+        const aiFloatingActionId = 'ai-assistance.storage-floating-button';
+        const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
+        if (actionRegistry.hasAction(aiFloatingActionId)) {
+            void actionRegistry.getAction(aiFloatingActionId).execute();
+        }
     }
     removeItem(key) {
         this.domStorage?.removeItem(key);

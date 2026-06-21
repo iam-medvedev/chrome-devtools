@@ -41,6 +41,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             'devToolsAiAssistanceNetworkAgent',
             'devToolsAiAssistanceFileAgent',
             'devToolsAiAssistancePerformanceAgent',
+            'devToolsAiAssistanceStorageAgent',
             'devToolsAiAssistanceV2',
         ]
             .reduce((acc, flag) => {
@@ -256,7 +257,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 name: 'NetworkRequest',
                 createContext: () => {
                     const networkRequest = createNetworkRequest({ url: urlString `https://example.com`, documentURL: urlString `https://example.com` });
-                    return new AiAssistanceModel.NetworkAgent.RequestContext(networkRequest, sinon.createStubInstance(NetworkTimeCalculator.NetworkTransferDurationCalculator));
+                    return new AiAssistanceModel.RequestContext.RequestContext(networkRequest, sinon.createStubInstance(NetworkTimeCalculator.NetworkTransferDurationCalculator));
                 },
                 action: 'drjones.network-floating-button'
             },
@@ -279,7 +280,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                     const file = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode, {
                         url: urlString `https://www.example.com/app.js`,
                     });
-                    return new AiAssistanceModel.FileAgent.FileContext(file);
+                    return new AiAssistanceModel.FileContext.FileContext(file);
                 },
                 action: 'drjones.sources-panel-context',
             }
@@ -439,6 +440,20 @@ describeWithMockConnection('AI Assistance Panel', () => {
             nextInput = await view.nextInput;
             assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             assert.strictEqual(nextInput.props.context?.getItem(), initialNode, 'selectedContext should be initial node');
+        });
+    });
+    describe('storage suggestions', () => {
+        it('should show default suggestions when no context is attached', async () => {
+            await enableAllFeatureAndSetting();
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('ai-assistance.storage-floating-button');
+            const nextInput = await view.nextInput;
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assert.deepEqual(nextInput.props.emptyStateSuggestions, [
+                { title: 'How is localStorage used on this page?', jslogContext: 'storage-default' },
+                { title: 'How is sessionStorage used on this page?', jslogContext: 'storage-default' },
+                { title: 'What cookies are stored for this page?', jslogContext: 'storage-default' },
+            ]);
         });
     });
     describe('toggle search element action', () => {
@@ -1376,6 +1391,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
         it('starts a new chat when a predefined prompt for a cross origin request is sent', async () => {
             const networkRequest = createNetworkRequest({
                 url: urlString `https://a.test`,
+                documentURL: urlString `https://a.test`,
             });
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
             const { panel, view } = await createAiAssistancePanel({
@@ -1390,6 +1406,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             // Change context to https://b.test.
             const networkRequest2 = createNetworkRequest({
                 url: urlString `https://b.test`,
+                documentURL: urlString `https://b.test`,
             });
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest2);
             // A predefined prompt from the user on a different origin has been initiated.

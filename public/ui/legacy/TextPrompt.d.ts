@@ -23,6 +23,7 @@ import { SuggestBox, type SuggestBoxDelegate, type Suggestion } from './SuggestB
  * @attribute completions Sets the `id` of the <datalist> containing the autocomplete options.
  * @attribute placeholder Sets a placeholder that's shown in place of the text contents when editing if the text is too
  *            large.
+ * @attribute value Sets the initial text value that's edited when editing starts. If not provided, the slot's inner text is used.
  */
 export declare class TextPromptElement extends HTMLElement {
     #private;
@@ -70,7 +71,6 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private autocompletionTimeout;
     protected queryRange: TextUtils.TextRange.TextRange | null;
     private previousText;
-    private currentSuggestion;
     private completionRequestId;
     private ghostTextElement;
     private leftParenthesesIndices;
@@ -155,6 +155,7 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private tryMatchingLeftParenthesis;
     private updateLeftParenthesesIndices;
     suggestBoxForTest(): SuggestBox | undefined;
+    currentSuggestion(): Suggestion | null;
 }
 export declare const enum Events {
     TEXT_CHANGED = "TextChanged"

@@ -485,6 +485,10 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         const target = createTarget({ type: SDK.Target.Type.FRAME });
         target.setInspectedURL(allowedUrl);
         {
+            const result = await context.chrome.devtools.network.getHAR();
+            assert.hasAnyKeys(result, ['entries']);
+        }
+        {
             const result = await new Promise(cb => context.chrome.devtools?.network.getHAR(cb));
             assert.hasAnyKeys(result, ['entries']);
         }
@@ -516,6 +520,11 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         const frameId = 'frame-id';
         createRequest(networkManager, frameId, 'blocked-url-request-id', blockedUrl);
         createRequest(networkManager, frameId, 'allowed-url-request-id', allowedUrl);
+        {
+            const result = await context.chrome.devtools.network.getHAR();
+            assert.exists(result.entries.find(e => e.request.url === allowedUrl));
+            assert.notExists(result.entries.find(e => e.request.url === blockedUrl));
+        }
         {
             const result = await new Promise(cb => context.chrome.devtools?.network.getHAR(cb));
             assert.exists(result.entries.find(e => e.request.url === allowedUrl));
@@ -688,6 +697,26 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         request.finished = true;
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
     }
+    it('can get request content', async () => {
+        Logs.NetworkLog.NetworkLog.instance();
+        const frameId = 'frame-id';
+        const target = createTarget({ id: 'target' });
+        target.setInspectedURL(allowedUrl);
+        const networkManager = target.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(networkManager);
+        createRequest(networkManager, frameId, 'request-id', allowedUrl);
+        const harLog = await context.chrome.devtools.network.getHAR();
+        assert.lengthOf(harLog.entries, 1);
+        const request = harLog.entries[0];
+        const promise = request.getContent();
+        assert.exists(promise);
+        const contentData = await promise;
+        assert.deepEqual(contentData, { content: 'content', encoding: '' });
+        const callbackData = await new Promise(resolve => {
+            request.getContent((content, encoding) => resolve({ content, encoding }));
+        });
+        assert.deepEqual(callbackData, { content: 'content', encoding: '' });
+    });
     it('does not include blocked hosts in onRequestFinished event listener', async () => {
         const frameId = 'frame-id';
         const target = createTarget({ id: 'target' });
@@ -740,7 +769,7 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         networkApi.addRequestHeaders({ 'X-Test': '1' });
         // Round-trip a callback command on the same MessagePort to ensure the
         // addRequestHeaders message has been processed before we assert.
-        await new Promise(cb => context.chrome.devtools?.network.getHAR(cb));
+        await context.chrome.devtools.network.getHAR();
         sinon.assert.notCalled(setHeadersSpy);
     });
 });

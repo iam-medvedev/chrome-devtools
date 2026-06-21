@@ -30,7 +30,7 @@ describeWithEnvironment('AiConversation', () => {
     it('should be able to switch agent type based on context', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
         const conversation = new AiAssistance.AiConversation.AiConversation({ type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */ });
-        const networkRequest = new AiAssistance.NetworkAgent.RequestContext(createNetworkRequest(), new NetworkTimeCalculator.NetworkTransferTimeCalculator());
+        const networkRequest = new AiAssistance.RequestContext.RequestContext(createNetworkRequest(), new NetworkTimeCalculator.NetworkTransferTimeCalculator());
         conversation.setContext(networkRequest);
         assert(conversation.type === "drjones-network-request" /* AiAssistance.AiHistoryStorage.ConversationType.NETWORK */);
     });
@@ -71,7 +71,7 @@ describeWithEnvironment('AiConversation', () => {
         });
         await Array.fromAsync(conversation.run('test'));
         assert.exists(conversation.selectedContext);
-        assert.instanceOf(conversation.selectedContext, AiAssistance.FileAgent.FileContext);
+        assert.instanceOf(conversation.selectedContext, AiAssistance.FileContext.FileContext);
     });
     it('should yield UserQuery when run is called', async () => {
         const conversation = new AiAssistance.AiConversation.AiConversation({
@@ -204,7 +204,7 @@ describeWithEnvironment('AiConversation', () => {
         const secondRequest = aidaClient.doConversation.getCall(1).firstArg;
         assert.isFalse(hasFunctionCalls(secondRequest));
         assert.lengthOf(secondRequest.historical_contexts ?? [], 1);
-        conversation.setContext(new AiAssistance.NetworkAgent.RequestContext(networkRequest, new NetworkTimeCalculator.NetworkTransferTimeCalculator()));
+        conversation.setContext(new AiAssistance.RequestContext.RequestContext(networkRequest, new NetworkTimeCalculator.NetworkTransferTimeCalculator()));
         await Array.fromAsync(conversation.run('test query 2'));
         assert.lengthOf(aidaClient.doConversation.getCalls(), 4);
         const thirdRequest = aidaClient.doConversation.getCall(2).firstArg;
@@ -488,7 +488,7 @@ describeWithEnvironment('AiConversation', () => {
         sinon.stub(networkRequest, 'requestContentData')
             .resolves(new TextUtils.ContentData.ContentData('test content', false, 'text/plain'));
         sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requests').returns([networkRequest]);
-        conversation.setContext(new AiAssistance.NetworkAgent.RequestContext(networkRequest, new NetworkTimeCalculator.NetworkTransferTimeCalculator()));
+        conversation.setContext(new AiAssistance.RequestContext.RequestContext(networkRequest, new NetworkTimeCalculator.NetworkTransferTimeCalculator()));
         await Array.fromAsync(conversation.run('test network query'));
         assert.lengthOf(aidaClient.doConversation.getCalls(), 2);
         const secondRequest = aidaClient.doConversation.getCall(1).firstArg;

@@ -3,53 +3,26 @@
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
-import * as StackTrace from '../stack_trace/stack_trace.js';
 export class Result {
     status;
     output;
     errorText;
     // TODO(crbug.com/494516094) Clean this up if the target disappears?
     #exception;
-    #exceptionDetails;
+    #symbolizedError;
     constructor(status, output, errorText, exception) {
         this.status = status;
         this.errorText = errorText;
         this.#exception = exception;
         this.output = output;
     }
-    get exceptionDetails() {
-        if (!this.#exceptionDetails) {
-            this.#exceptionDetails = this.#resolveExceptionDetails(this.#exception);
+    get symbolizedError() {
+        if (!this.#symbolizedError) {
+            this.#symbolizedError = this.#exception ?
+                Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createSymbolizedError(this.#exception) :
+                Promise.resolve(null);
         }
-        return this.#exceptionDetails;
-    }
-    async #resolveExceptionDetails(errorObj) {
-        if (!errorObj) {
-            return undefined;
-        }
-        const error = SDK.RemoteObject.RemoteError.objectAsError(errorObj);
-        const [details, cause] = await Promise.all([error.exceptionDetails(), error.cause()]);
-        const description = error.errorStack;
-        const frames = StackTrace.ErrorStackParser.parseSourcePositionsFromErrorStack(errorObj.runtimeModel(), error.errorStack) || [];
-        if (details?.stackTrace) {
-            StackTrace.ErrorStackParser.augmentErrorStackWithScriptIds(frames, details.stackTrace);
-        }
-        if (cause?.subtype === 'error') {
-            return { error: errorObj, description, frames, cause: await this.#resolveExceptionDetails(cause) };
-        }
-        if (cause?.type === 'string') {
-            return {
-                error: errorObj,
-                description,
-                frames,
-                cause: {
-                    error: cause,
-                    description: cause.value,
-                    frames: [],
-                }
-            };
-        }
-        return { error: errorObj, description, frames };
+        return this.#symbolizedError;
     }
 }
 export class Tool {

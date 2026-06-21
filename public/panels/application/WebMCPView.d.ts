@@ -6,6 +6,7 @@ import '../../ui/legacy/legacy.js';
 import type { JSONSchema7 } from 'json-schema';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Bindings from '../../models/bindings/bindings.js';
 import type * as StackTrace from '../../models/stack_trace/stack_trace.js';
 import * as WebMCP from '../../models/web_mcp/web_mcp.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -82,7 +83,7 @@ export interface PayloadViewInput {
     valueObject?: unknown;
     valueString?: string;
     errorText?: string;
-    exceptionDetails?: WebMCP.WebMCPModel.ExceptionDetails;
+    symbolizedError?: Bindings.SymbolizedError.SymbolizedError | null;
 }
 export declare const PAYLOAD_DEFAULT_VIEW: (input: PayloadViewInput, output: object, target: HTMLElement) => void;
 export declare class PayloadWidget extends UI.Widget.Widget {
@@ -94,8 +95,8 @@ export declare class PayloadWidget extends UI.Widget.Widget {
     get valueString(): string | undefined;
     set errorText(errorText: string | undefined);
     get errorText(): string | undefined;
-    set exceptionDetails(exceptionDetailsPromise: Promise<WebMCP.WebMCPModel.ExceptionDetails | undefined> | undefined);
-    get exceptionDetails(): Promise<WebMCP.WebMCPModel.ExceptionDetails | undefined> | undefined;
+    set symbolizedError(symbolizedErrorPromise: Promise<Bindings.SymbolizedError.SymbolizedError | null> | undefined);
+    get symbolizedError(): Promise<Bindings.SymbolizedError.SymbolizedError | null> | undefined;
     wasShown(): void;
     performUpdate(): void;
 }

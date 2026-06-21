@@ -22,6 +22,10 @@ export interface ViewInput {
     onDelete: (key: string) => void;
     onDeleteSelected: () => void;
     onDeleteAll: () => void;
+    onContextMenu?: (item: {
+        key: string;
+        value: string;
+    }, contextMenu: UI.ContextMenu.ContextMenu) => void;
     jslog?: string;
     classes?: string[];
     aiButtonTitle?: string;
@@ -46,6 +50,14 @@ export declare abstract class KeyValueStorageItemsView extends UI.Widget.VBox {
     wasShown(): void;
     performUpdate(): void;
     protected isAiButtonEnabled(): boolean;
+    protected populateContextMenu(_item: {
+        key: string;
+        value: string;
+    }, _contextMenu: UI.ContextMenu.ContextMenu): void;
+    protected onAiButtonClick(_item: {
+        key: string;
+        value: string;
+    }, _event: Event): void;
     protected get toolbar(): StorageItemsToolbar | undefined;
     refreshItems(): void;
     deleteAllItems(): void;

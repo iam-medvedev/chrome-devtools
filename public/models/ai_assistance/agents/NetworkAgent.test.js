@@ -13,7 +13,7 @@ import * as RenderCoordinator from '../../../ui/components/render_coordinator/re
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
 import * as TextUtils from '../../text_utils/text_utils.js';
-import { NetworkAgent } from '../ai_assistance.js';
+import { NetworkAgent, RequestContext } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('NetworkAgent', function () {
     const snapshotTester = new SnapshotTester(this, import.meta);
@@ -42,27 +42,6 @@ describeWithMockConnection('NetworkAgent', function () {
                 aidaClient: {},
             });
             assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.temperature, 1);
-        });
-    });
-    describe('RequestContext', () => {
-        it('should return the origin of the documentURL', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString `https://www.example.com/path/to/page.html`, null, null, null);
-            const calculator = new NetworkTimeCalculator.NetworkTransferTimeCalculator();
-            const context = new NetworkAgent.RequestContext(request, calculator);
-            assert.strictEqual(context.getOrigin(), 'https://www.example.com');
-        });
-        it('should return the origin of the documentURL and strips the trailing slash', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString `https://www.example.com/`, null, null, null);
-            const calculator = new NetworkTimeCalculator.NetworkTransferTimeCalculator();
-            const context = new NetworkAgent.RequestContext(request, calculator);
-            assert.strictEqual(context.getOrigin(), 'https://www.example.com');
-        });
-        it('should return the virtual HAR origin if the request is imported from HAR', () => {
-            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', urlString `https://www.example.com/path`, urlString `https://www.example.com/`, null);
-            request.setIsImportedHar(true);
-            const calculator = new NetworkTimeCalculator.NetworkTransferTimeCalculator();
-            const context = new NetworkAgent.RequestContext(request, calculator);
-            assert.strictEqual(context.getOrigin(), 'imported-har://www.example.com');
         });
     });
     describe('run', () => {
@@ -135,7 +114,7 @@ describeWithMockConnection('NetworkAgent', function () {
                             },
                         }]]),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selected: new NetworkAgent.RequestContext(selectedNetworkRequest, calculator) }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: new RequestContext.RequestContext(selectedNetworkRequest, calculator) }));
             snapshotTester.assert(this, JSON.stringify(responses, null, 2));
         });
         it('yields a ContextResponse containing a NETWORK_REQUEST_GENERAL_HEADERS widget', async function () {
@@ -147,7 +126,7 @@ describeWithMockConnection('NetworkAgent', function () {
                             },
                         }]]),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selected: new NetworkAgent.RequestContext(selectedNetworkRequest, calculator) }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: new RequestContext.RequestContext(selectedNetworkRequest, calculator) }));
             const contextResponse = responses.find(r => r.type === "context" /* AiAgent.ResponseType.CONTEXT */);
             assert.exists(contextResponse);
             assert.exists(contextResponse.widgets);
@@ -165,7 +144,7 @@ describeWithMockConnection('NetworkAgent', function () {
                             },
                         }]]),
             });
-            await Array.fromAsync(agent.run('test', { selected: new NetworkAgent.RequestContext(selectedNetworkRequest, calculator) }));
+            await Array.fromAsync(agent.run('test', { selected: new RequestContext.RequestContext(selectedNetworkRequest, calculator) }));
             const historicalCtx = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts;
             snapshotTester.assert(this, JSON.stringify(historicalCtx, null, 2));
         });

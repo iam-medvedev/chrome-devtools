@@ -48,6 +48,7 @@ import { BackForwardCacheTreeElement } from './BackForwardCacheTreeElement.js';
 import { BackgroundServiceModel } from './BackgroundServiceModel.js';
 import { BackgroundServiceView } from './BackgroundServiceView.js';
 import { BounceTrackingMitigationsTreeElement } from './BounceTrackingMitigationsTreeElement.js';
+import * as ApplicationComponents from './components/components.js';
 import { DeviceBoundSessionsModel } from './DeviceBoundSessionsModel.js';
 import { RootTreeElement as DeviceBoundSessionsRootTreeElement } from './DeviceBoundSessionsTreeElement.js';
 import { ExtensionStorageModel, } from './ExtensionStorageModel.js';
@@ -86,6 +87,10 @@ const UIStrings = {
      * @description Text in Application Panel Sidebar of the Application panel
      */
     application: 'Application',
+    /**
+     * @description Text in Application Panel Sidebar of the Application panel
+     */
+    ads: 'Ads',
     /**
      * @description Text in Application Panel Sidebar of the Application panel
      */
@@ -312,6 +317,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     pushMessagingTreeElement;
     reportingApiTreeElement;
     webMcpTreeElement;
+    adsTreeElement;
     deviceBoundSessionsRootTreeElement;
     deviceBoundSessionsModel;
     preloadingSummaryTreeElement;
@@ -353,6 +359,24 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         if (Root.Runtime.hostConfig.devToolsWebMCPSupport?.enabled) {
             this.webMcpTreeElement = new WebMCPTreeElement(panel);
             this.applicationTreeElement.appendChild(this.webMcpTreeElement);
+        }
+        if (Root.Runtime.hostConfig.devToolsAdsPanel?.enabled) {
+            const adsTreeElement = new ApplicationPanelTreeElement(panel, i18nString(UIStrings.ads), false, 'ads');
+            const icon = createIcon('experiment');
+            adsTreeElement.setLeadingIcons([icon]);
+            adsTreeElement.itemURL = 'ads://';
+            let adsView;
+            adsTreeElement.onselect = (selectedByUser) => {
+                ApplicationPanelTreeElement.prototype.onselect.call(adsTreeElement, selectedByUser);
+                if (!adsView) {
+                    adsView = new ApplicationComponents.AdsView.AdsView();
+                }
+                adsTreeElement.showView(adsView);
+                UI.UIUserMetrics.UIUserMetrics.instance().panelShown('ads');
+                return false;
+            };
+            this.adsTreeElement = adsTreeElement;
+            this.applicationTreeElement.appendChild(this.adsTreeElement);
         }
         const storageSectionTitle = i18nString(UIStrings.storage);
         const storageTreeElement = this.addSidebarSection(storageSectionTitle, 'storage');
@@ -1457,6 +1481,8 @@ export class DOMStorageTreeElement extends ApplicationPanelTreeElement {
         super.onselect(selectedByUser);
         UI.UIUserMetrics.UIUserMetrics.instance().panelShown('dom-storage');
         this.resourcesPanel.showDOMStorage(this.domStorage);
+        const storageItem = this.#getStorageItem();
+        UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, storageItem);
         return false;
     }
     /**
@@ -1597,6 +1623,8 @@ export class CookieTreeElement extends ApplicationPanelTreeElement {
         super.onselect(selectedByUser);
         this.resourcesPanel.showCookies(this.target, this.#cookieDomain);
         UI.UIUserMetrics.UIUserMetrics.instance().panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.cookies]);
+        const storageItem = this.#getStorageItem();
+        UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, storageItem);
         return false;
     }
 }

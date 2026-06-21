@@ -21,6 +21,14 @@ export declare class DOMStorageItemsView extends KeyValueStorageItemsView {
         value: string;
     } | null): void;
     protected isAiButtonEnabled(): boolean;
+    protected populateContextMenu(item: {
+        key: string;
+        value: string;
+    }, contextMenu: UI.ContextMenu.ContextMenu): void;
+    protected onAiButtonClick(item: {
+        key: string;
+        value: string;
+    }, _event: Event): void;
     protected removeItem(key: string): void;
     protected setItem(key: string, value: string): void;
 }
