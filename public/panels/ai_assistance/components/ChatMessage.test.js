@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../models/text_utils/text_utils.js';
-import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
-import { getBaseTraceHandlerData, makeFakeParsedTrace, microsecondsTraceWindow } from '../../../testing/TraceHelpers.js';
-import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
+import { getBaseTraceHandlerData, makeFakeParsedTrace, microsecondsTraceWindow, } from '../../../testing/TraceHelpers.js';
+import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
 import * as AiAssistance from '../ai_assistance.js';
@@ -195,6 +196,8 @@ describeWithEnvironment('ChatMessage', () => {
                         root: {
                             backendNodeId: () => 1,
                         },
+                        title: 'Title',
+                        accessibleRevealLabel: 'Label',
                     },
                 };
                 assert.strictEqual(AiAssistance.ChatMessage.getWidgetSignature(widget), 'DOM_TREE:1');
@@ -469,14 +472,16 @@ describeWithEnvironment('ChatMessage', () => {
         });
         const stepMessage = {
             entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-            parts: [{
+            parts: [
+                {
                     type: 'step',
                     step: {
                         isLoading: false,
                         title: 'Step 1',
                         code: 'console.log("test")',
                     },
-                }],
+                },
+            ],
             rpcId: 99,
             id: '1',
         };
@@ -486,7 +491,7 @@ describeWithEnvironment('ChatMessage', () => {
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: false,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Show thinking');
@@ -499,7 +504,7 @@ describeWithEnvironment('ChatMessage', () => {
                     isExpanded: true,
                     activeSidebarMessage: stepMessage,
                     isInlined: false,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Hide thinking');
@@ -512,7 +517,7 @@ describeWithEnvironment('ChatMessage', () => {
                     isInlined: false,
                     isExpanded: false,
                     activeSidebarMessage: stepMessage,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Show thinking');
@@ -520,7 +525,8 @@ describeWithEnvironment('ChatMessage', () => {
         it('renders "Hide agent walkthrough" when the walkthrough is open and has widgets', () => {
             const widgetMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'step',
                         step: {
                             isLoading: false,
@@ -531,7 +537,8 @@ describeWithEnvironment('ChatMessage', () => {
                                 },
                             ],
                         },
-                    }],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -542,7 +549,7 @@ describeWithEnvironment('ChatMessage', () => {
                     isInlined: false,
                     isExpanded: true,
                     activeSidebarMessage: widgetMessage,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Hide agent walkthrough');
@@ -550,14 +557,16 @@ describeWithEnvironment('ChatMessage', () => {
         it('when the step is loading, the walkthrough CTA shows the title of the step', async () => {
             const loadingMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'step',
                         step: {
                             isLoading: true,
                             title: 'Investigating XYZ',
                             code: 'console.log("test")',
                         },
-                    }],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -567,7 +576,7 @@ describeWithEnvironment('ChatMessage', () => {
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: false,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Investigating XYZ');
@@ -575,14 +584,16 @@ describeWithEnvironment('ChatMessage', () => {
         it('accessible label shows the step title when loading', async () => {
             const loadingMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'step',
                         step: {
                             isLoading: true,
                             title: 'Investigating XYZ',
                             code: 'console.log("test")',
                         },
-                    }],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -592,7 +603,7 @@ describeWithEnvironment('ChatMessage', () => {
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: false,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.getAttribute('accessibleLabel'), 'Loading: Investigating XYZ');
@@ -604,7 +615,7 @@ describeWithEnvironment('ChatMessage', () => {
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: false,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.getAttribute('accessibleLabel'), 'Show thinking for prompt test prompt');
@@ -618,7 +629,7 @@ describeWithEnvironment('ChatMessage', () => {
                     isInlined: false,
                     isExpanded: true,
                     activeSidebarMessage: stepMessage,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.getAttribute('accessibleLabel'), 'Hide thinking for prompt test prompt');
@@ -626,14 +637,16 @@ describeWithEnvironment('ChatMessage', () => {
         it('accessible label appends "Loading: " when expanded and loading', async () => {
             const loadingMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'step',
                         step: {
                             isLoading: true,
                             title: 'Investigating XYZ',
                             code: 'console.log("test")',
                         },
-                    }],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -645,7 +658,7 @@ describeWithEnvironment('ChatMessage', () => {
                     isInlined: false,
                     isExpanded: true,
                     activeSidebarMessage: loadingMessage,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.getAttribute('accessibleLabel'), 'Loading: Hide thinking');
@@ -656,21 +669,23 @@ describeWithEnvironment('ChatMessage', () => {
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: true,
-                }
+                },
             });
             assert.isNull(target.querySelector('[data-show-walkthrough]'));
         });
         it('makes the walkthrough button "Show thinking" if there are no widgets', async () => {
             const messageNoWidgets = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'step',
                         step: {
                             isLoading: false,
                             title: 'Investigating XYZ',
                             code: 'console.log("test")',
                         },
-                    }],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -680,7 +695,7 @@ describeWithEnvironment('ChatMessage', () => {
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: false,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Show thinking');
@@ -688,7 +703,8 @@ describeWithEnvironment('ChatMessage', () => {
         it('makes the walkthrough button "Show agent walkthrough" if there are widgets', async () => {
             const messageWithWidget = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'step',
                         step: {
                             isLoading: false,
@@ -697,7 +713,8 @@ describeWithEnvironment('ChatMessage', () => {
                             // Don't need a proper widget for this test
                             widgets: [{}],
                         },
-                    }],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -707,7 +724,7 @@ describeWithEnvironment('ChatMessage', () => {
                 walkthrough: {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: false,
-                }
+                },
             });
             const button = querySelectorErrorOnMissing(target, '[data-show-walkthrough]');
             assert.strictEqual(button.innerText, 'Show agent walkthrough');
@@ -719,7 +736,7 @@ describeWithEnvironment('ChatMessage', () => {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: true,
                     isExpanded: true,
-                }
+                },
             });
             const walkthrough = target.querySelector('.walkthrough-container');
             assert.isNotNull(walkthrough);
@@ -731,7 +748,7 @@ describeWithEnvironment('ChatMessage', () => {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: false,
                     isExpanded: true,
-                }
+                },
             });
             const walkthrough = target.querySelector('.walkthrough-container');
             assert.isNull(walkthrough);
@@ -740,7 +757,8 @@ describeWithEnvironment('ChatMessage', () => {
             const sideEffectDescription = 'Proceed with cation!';
             const sideEffectMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'step',
                         step: {
                             isLoading: false,
@@ -751,7 +769,8 @@ describeWithEnvironment('ChatMessage', () => {
                                 onAnswer: () => { },
                             },
                         },
-                    }],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -762,7 +781,7 @@ describeWithEnvironment('ChatMessage', () => {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: false,
                     isExpanded: false,
-                }
+                },
             });
             assert.isNotNull(targetClosed.querySelector('.side-effect-container'));
             assert.include(targetClosed.querySelector('.side-effect-container')?.textContent, sideEffectDescription);
@@ -774,7 +793,7 @@ describeWithEnvironment('ChatMessage', () => {
                     isInlined: false,
                     isExpanded: true,
                     activeSidebarMessage: sideEffectMessage,
-                }
+                },
             });
             assert.isNotNull(targetOpen.querySelector('.side-effect-container'));
             assert.include(targetOpen.querySelector('.side-effect-container')?.textContent, sideEffectDescription);
@@ -783,7 +802,8 @@ describeWithEnvironment('ChatMessage', () => {
             const sideEffectDescription = 'Proceed with cation!';
             const sideEffectMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'step',
                         step: {
                             isLoading: false,
@@ -794,7 +814,8 @@ describeWithEnvironment('ChatMessage', () => {
                                 onAnswer: () => { },
                             },
                         },
-                    }],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -805,7 +826,7 @@ describeWithEnvironment('ChatMessage', () => {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: true,
                     isExpanded: false,
-                }
+                },
             });
             assert.isNotNull(targetClosed.querySelector('.side-effect-container'));
             assert.include(targetClosed.querySelector('.side-effect-container')?.textContent, sideEffectDescription);
@@ -817,7 +838,7 @@ describeWithEnvironment('ChatMessage', () => {
                     isInlined: true,
                     isExpanded: true,
                     inlineExpandedMessages: [sideEffectMessage],
-                }
+                },
             });
             assert.isNotNull(targetOpen.querySelector('.side-effect-container'));
             assert.include(targetOpen.querySelector('.side-effect-container')?.textContent, sideEffectDescription);
@@ -854,7 +875,7 @@ describeWithEnvironment('ChatMessage', () => {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: true,
                     isExpanded: false,
-                }
+                },
             });
             const answerBody = target.querySelector('.answer-body-wrapper');
             const sideEffect = target.querySelector('.side-effect-container');
@@ -867,7 +888,8 @@ describeWithEnvironment('ChatMessage', () => {
         it('does not force walkthrough expansion when there are side-effect steps', () => {
             const sideEffectMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'step',
                         step: {
                             isLoading: false,
@@ -878,7 +900,8 @@ describeWithEnvironment('ChatMessage', () => {
                                 onAnswer: () => { },
                             },
                         },
-                    }],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -888,14 +911,14 @@ describeWithEnvironment('ChatMessage', () => {
                     ...DEFAULT_WALKTHROUGH,
                     isInlined: true,
                     isExpanded: false,
-                }
+                },
             });
             const walkthrough = target.querySelector('.walkthrough-inline');
             if (walkthrough) {
                 assert.isFalse(walkthrough.hasAttribute('open'));
             }
         });
-        it('renders widget name and top reveal button when widgetName is provided', async () => {
+        it('renders widget title and reveal button label from widget data', async () => {
             const root = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
             const domModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
             const target = sinon.createStubInstance(SDK.Target.Target);
@@ -904,15 +927,21 @@ describeWithEnvironment('ChatMessage', () => {
             root.backendNodeId.returns(1);
             const messageWithNamedWidget = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'widget',
-                        widgets: [{
+                        widgets: [
+                            {
                                 name: 'DOM_TREE',
                                 data: {
                                     root,
+                                    title: 'Custom Title',
+                                    accessibleRevealLabel: 'Custom Reveal Label',
                                 },
-                            }],
-                    }],
+                            },
+                        ],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -922,10 +951,10 @@ describeWithEnvironment('ChatMessage', () => {
             // We need to wait for the async renderWidgets
             const widgetHeader = await waitFor('.widget-header', targetElement);
             assert.isNotNull(widgetHeader);
-            assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'LCP element');
+            assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'Custom Title');
             const revealButton = widgetHeader.querySelector('.widget-reveal-button');
             assert.isNotNull(revealButton);
-            assert.strictEqual(revealButton.getAttribute('accessibleLabel'), 'Reveal LCP element');
+            assert.strictEqual(revealButton.getAttribute('accessibleLabel'), 'Custom Reveal Label');
         });
         it('renders network request image using imageContent.asImagePreviewUrl()', async () => {
             const root = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
@@ -938,12 +967,16 @@ describeWithEnvironment('ChatMessage', () => {
             mockContentData.asImagePreviewUrl.returns('blob:http://localhost/123');
             const messageWithWidget = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'widget',
-                        widgets: [{
+                        widgets: [
+                            {
                                 name: 'DOM_TREE',
                                 data: {
                                     root,
+                                    title: 'Title',
+                                    accessibleRevealLabel: 'Label',
                                     networkRequest: {
                                         url: 'https://example.com/image.png',
                                         size: 100,
@@ -952,8 +985,10 @@ describeWithEnvironment('ChatMessage', () => {
                                         imageContent: mockContentData,
                                     },
                                 },
-                            }],
-                    }],
+                            },
+                        ],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -1199,18 +1234,25 @@ describeWithEnvironment('ChatMessage', () => {
                     url: () => `https://example.com/path/to/${name}`,
                 };
             }
-            const uiSourceCodes = [createMockFile('file1.js'), createMockFile('file2.js')];
+            const uiSourceCodes = [
+                createMockFile('file1.js'),
+                createMockFile('file2.js'),
+            ];
             const message = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'widget',
-                        widgets: [{
+                        widgets: [
+                            {
                                 name: 'SOURCE_FILES_LIST',
                                 data: {
                                     uiSourceCodes,
                                 },
-                            }],
-                    }],
+                            },
+                        ],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -1222,7 +1264,10 @@ describeWithEnvironment('ChatMessage', () => {
             const listItems = targetElement.querySelectorAll('.source-files-widget .visible-file');
             assert.lengthOf(listItems, 2);
             const fileNames = Array.from(listItems).map(item => item.textContent?.trim());
-            assert.deepEqual(fileNames, ['example.com/path/to/file1.js', 'example.com/path/to/file2.js']);
+            assert.deepEqual(fileNames, [
+                'example.com/path/to/file1.js',
+                'example.com/path/to/file2.js',
+            ]);
             // No details element since there are <= 10 files. We show collapse files list only if there are over 10 of them
             assert.isNull(targetElement.querySelector('.source-files-details'));
         });
@@ -1238,20 +1283,24 @@ describeWithEnvironment('ChatMessage', () => {
             const uiSourceCodes = Array.from({ length: 12 }, (_, i) => createMockFile(`file${i + 1}.js`));
             const message = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'widget',
-                        widgets: [{
+                        widgets: [
+                            {
                                 name: 'SOURCE_FILES_LIST',
                                 data: {
                                     uiSourceCodes,
                                 },
-                            }],
-                    }],
+                            },
+                        ],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
             const targetElement = renderView({ message });
-            const widgetHeader = await waitFor('.widget-header', targetElement);
+            const widgetHeader = (await waitFor('.widget-header', targetElement));
             assert.isNotNull(widgetHeader);
             assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'Inspected file names');
             // Header reveal button click should reveal the first file
@@ -1288,15 +1337,19 @@ describeWithEnvironment('ChatMessage', () => {
             const requests = [createMockRequest('req1'), createMockRequest('req2')];
             const message = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'widget',
-                        widgets: [{
+                        widgets: [
+                            {
                                 name: 'NETWORK_REQUESTS_LIST',
                                 data: {
                                     requests,
                                 },
-                            }],
-                    }],
+                            },
+                        ],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -1304,10 +1357,12 @@ describeWithEnvironment('ChatMessage', () => {
             const widgetHeader = await waitFor('.widget-header', targetElement);
             assert.isNotNull(widgetHeader);
             assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'Network requests');
-            const widgetContainer = await waitFor('.network-requests-widget', targetElement);
+            const widgetContainer = (await waitFor('.network-requests-widget', targetElement));
             assert.isNotNull(widgetContainer);
             // Verify headers
-            const headers = Array.from(widgetContainer.querySelectorAll('table th')).map(th => th.id);
+            const headers = Array
+                .from(widgetContainer.querySelectorAll('table th'))
+                .map(th => th.id);
             assert.deepEqual(headers, ['name', 'status', 'size', 'time']);
             // Verify that all requests are displayed (table has 1 header row + 2 data rows = 3 rows)
             const rows = widgetContainer.querySelectorAll('table tr');
@@ -1331,15 +1386,19 @@ describeWithEnvironment('ChatMessage', () => {
             const requests = Array.from({ length: 17 }, (_, i) => createMockRequest(`req${i + 1}`));
             const message = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'widget',
-                        widgets: [{
+                        widgets: [
+                            {
                                 name: 'NETWORK_REQUESTS_LIST',
                                 data: {
                                     requests,
                                 },
-                            }],
-                    }],
+                            },
+                        ],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
@@ -1347,10 +1406,12 @@ describeWithEnvironment('ChatMessage', () => {
             const widgetHeader = await waitFor('.widget-header', targetElement);
             assert.isNotNull(widgetHeader);
             assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'Network requests');
-            const widgetContainer = await waitFor('.network-requests-widget', targetElement);
+            const widgetContainer = (await waitFor('.network-requests-widget', targetElement));
             assert.isNotNull(widgetContainer);
             // Verify headers
-            const headers = Array.from(widgetContainer.querySelectorAll('table th')).map(th => th.id);
+            const headers = Array
+                .from(widgetContainer.querySelectorAll('table th'))
+                .map(th => th.id);
             assert.deepEqual(headers, ['name', 'status', 'size', 'time']);
             // Verify that only the first 15 requests are displayed (table has 1 header row + 15 data rows = 16 rows)
             const rowsBefore = widgetContainer.querySelectorAll('table tr');
@@ -1369,22 +1430,28 @@ describeWithEnvironment('ChatMessage', () => {
             root.backendNodeId.returns(1);
             const messageWithNamedWidget = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'widget',
-                        widgets: [{
+                        widgets: [
+                            {
                                 name: 'DOM_TREE',
                                 data: {
                                     root,
+                                    title: 'Title',
+                                    accessibleRevealLabel: 'Label',
                                 },
-                            }],
-                    }],
+                            },
+                        ],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };
             const targetElement = renderView({
                 message: messageWithNamedWidget,
             });
-            const widgetHeader = await waitFor('.widget-header', targetElement);
+            const widgetHeader = (await waitFor('.widget-header', targetElement));
             assert.isNotNull(widgetHeader);
             const revealBtn = querySelectorErrorOnMissing(widgetHeader, 'devtools-button.widget-reveal-button');
             const revealError = new Error('Node cannot be found in the current page.');
@@ -1405,16 +1472,20 @@ describeWithEnvironment('ChatMessage', () => {
             const bounds = microsecondsTraceWindow(100, 200);
             const message = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
-                parts: [{
+                parts: [
+                    {
                         type: 'widget',
-                        widgets: [{
+                        widgets: [
+                            {
                                 name: 'NETWORK_TRACK',
                                 data: {
                                     parsedTrace,
                                     bounds,
                                 },
-                            }],
-                    }],
+                            },
+                        ],
+                    },
+                ],
                 rpcId: 99,
                 id: '1',
             };

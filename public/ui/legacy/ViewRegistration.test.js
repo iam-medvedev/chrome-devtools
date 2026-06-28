@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as QuickOpen from './components/quick_open/quick_open.js';
 import * as UI from './legacy.js';
 class MockView extends UI.Widget.Widget {
@@ -39,7 +39,7 @@ describeWithEnvironment('ViewRegistration', () => {
                 return new MockView();
             },
         });
-        UI.ViewManager.ViewManager.instance({ forceNew: true, universe: { context: new Root.DevToolsContext.WritableDevToolsContext() } });
+        UI.ViewManager.ViewManager.instance({ forceNew: true, universe: new TestUniverse() });
     });
     it('retrieves a registered view', async () => {
         const preRegisteredView = UI.ViewManager.ViewManager.instance().view(viewId);

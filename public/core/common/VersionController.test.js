@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Root from '../root/root.js';
 import * as Common from './common.js';
 const InMemoryStorage = Common.Settings.InMemoryStorage;

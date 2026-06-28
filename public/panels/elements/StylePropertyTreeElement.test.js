@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -52,7 +53,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             getEnvironmentVariablesCallback: () => ({ environmentVariables })
         });
         sinon.stub(matchedStyles, 'availableCSSVariables').returns(Object.keys(mockVariableMap));
-        fakeComputeCSSVariable = sinon.stub(matchedStyles, 'computeCSSVariable').callsFake((_style, name) => {
+        fakeComputeCSSVariable = sinon.stub(matchedStyles, 'computeCSSVariable').callsFake((_style, name, _node) => {
             const value = mockVariableMap[name];
             if (!value) {
                 return null;

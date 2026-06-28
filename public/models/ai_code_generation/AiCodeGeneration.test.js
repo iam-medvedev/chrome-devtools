@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import { describeWithEnvironment, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import * as AiCodeGeneration from './ai_code_generation.js';

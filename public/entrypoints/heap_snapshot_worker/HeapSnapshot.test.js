@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import * as HeapSnapshotWorker from './heap_snapshot_worker.js';
 describe('HeapSnapshot', () => {
     class MockArray extends Uint32Array {
@@ -886,6 +887,90 @@ describe('HeapSnapshot', () => {
         assert.strictEqual(dominatorsC[0].nodeName, 'C');
         assert.strictEqual(dominatorsC[1].nodeIndex, 0);
         assert.strictEqual(dominatorsC[1].nodeName, 'root');
+    });
+    it('heapSnapshotRetainedByContext', async () => {
+        const builder = new HeapSnapshotBuilder();
+        const root = builder.rootNode;
+        const context1 = new HeapNode('system / Context', 10, 'hidden', 10);
+        const context2 = new HeapNode('system / Context / Foo', 20, 'hidden', 20);
+        const nodeA = new HeapNode('NodeA', 30, 'object', 30);
+        const nodeB = new HeapNode('NodeB', 40, 'object', 40);
+        const nodeC = new HeapNode('NodeC', 50, 'object', 50);
+        root.linkNode(context1, 'property', 'context1');
+        root.linkNode(context2, 'property', 'context2');
+        root.linkNode(nodeB, 'property', 'nodeB');
+        context1.linkNode(nodeA, 'property', 'a');
+        context2.linkNode(nodeB, 'property', 'b');
+        nodeC.setBuilder(builder);
+        const snapshot = await builder.createJSHeapSnapshot();
+        const filter = new HeapSnapshotModel.HeapSnapshotModel.NodeFilter();
+        filter.filterName = 'objectsRetainedByContexts';
+        const aggregates = snapshot.aggregatesWithFilter(filter);
+        const filteredNodeIndexes = new Set(Object.values(aggregates).flatMap(aggregate => aggregate.idxs));
+        const context1Index = snapshot.nodeIndexForId(10);
+        const context2Index = snapshot.nodeIndexForId(20);
+        const nodeAIndex = snapshot.nodeIndexForId(30);
+        const nodeBIndex = snapshot.nodeIndexForId(40);
+        const nodeCIndex = snapshot.nodeIndexForId(50);
+        // The three covered nodes should be context1, context2, and nodeA.
+        // nodeB is not covered because it is also reachable directly from root (not only via contexts).
+        // nodeC is not covered because it is unreachable from root.
+        assert.strictEqual(filteredNodeIndexes.size, 3, 'only three nodes should be covered');
+        assert.isTrue(filteredNodeIndexes.has(context1Index), 'context1 should be covered');
+        assert.isTrue(filteredNodeIndexes.has(context2Index), 'context2 should be covered');
+        assert.isTrue(filteredNodeIndexes.has(nodeAIndex), 'nodeA should be covered');
+        assert.isFalse(filteredNodeIndexes.has(nodeBIndex), 'nodeB should NOT be covered');
+        assert.isFalse(filteredNodeIndexes.has(nodeCIndex), 'nodeC (unreachable) should NOT be covered');
+    });
+    describe('getDuplicateStrings', () => {
+        it('finds duplicate strings and groups them', async () => {
+            const builder = new HeapSnapshotBuilder();
+            const root = builder.rootNode;
+            const str1a = new HeapNode('str1', 10, 'string');
+            const str1b = new HeapNode('str1', 10, 'string');
+            root.linkNode(str1a, 'element');
+            root.linkNode(str1b, 'element');
+            const str2a = new HeapNode('str2', 20, 'string');
+            const str2b = new HeapNode('str2', 20, 'string');
+            root.linkNode(str2a, 'element');
+            root.linkNode(str2b, 'element');
+            const str3 = new HeapNode('str3', 30, 'string');
+            root.linkNode(str3, 'element');
+            const snapshot = await builder.createJSHeapSnapshot();
+            const duplicates = snapshot.getDuplicateStrings();
+            assert.lengthOf(duplicates, 2);
+            assert.strictEqual(duplicates[0].value, 'str2');
+            assert.strictEqual(duplicates[0].count, 2);
+            assert.strictEqual(duplicates[0].totalSelfSize, 40);
+            assert.strictEqual(duplicates[0].totalRetainedSize, 40);
+            assert.lengthOf(duplicates[0].nodes, 2);
+            assert.strictEqual(duplicates[1].value, 'str1');
+            assert.strictEqual(duplicates[1].count, 2);
+            assert.strictEqual(duplicates[1].totalSelfSize, 20);
+            assert.strictEqual(duplicates[1].totalRetainedSize, 20);
+            assert.lengthOf(duplicates[1].nodes, 2);
+        });
+        function markTruncated(node) {
+            const truncNode = new HeapNode('bool', 0, 'number');
+            const valueNode = new HeapNode('true', 0, 'number');
+            node.linkNode(truncNode, 'internal', 'truncated');
+            truncNode.linkNode(valueNode, 'internal', 'value');
+        }
+        it('groups truncated strings by prefix and sets truncated flag', async () => {
+            const builder = new HeapSnapshotBuilder();
+            const root = builder.rootNode;
+            const str1a = new HeapNode('prefix...', 10, 'string');
+            root.linkNode(str1a, 'element');
+            markTruncated(str1a);
+            const str1b = new HeapNode('prefix...', 10, 'string');
+            root.linkNode(str1b, 'element');
+            const snapshot = await builder.createJSHeapSnapshot();
+            const duplicates = snapshot.getDuplicateStrings();
+            assert.lengthOf(duplicates, 1);
+            assert.strictEqual(duplicates[0].value, 'prefix...');
+            assert.isTrue(duplicates[0].truncated);
+            assert.strictEqual(duplicates[0].totalSelfSize, 20);
+        });
     });
 });
 //# sourceMappingURL=HeapSnapshot.test.js.map

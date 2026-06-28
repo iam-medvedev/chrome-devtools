@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
@@ -552,6 +553,38 @@ describeWithEnvironment('ContentProviderContextMenuProvider', () => {
         provider.appendApplicableItems({}, contextMenu, uiSourceCode);
         openInNewTabItem = findMenuItemWithLabel(contextMenu.revealSection(), 'Open in new tab');
         assert.isUndefined(openInNewTabItem);
+    });
+});
+describeWithEnvironment('LinkHandlerSettingUI', () => {
+    let registrations = [];
+    afterEach(() => {
+        for (const registration of registrations) {
+            Components.Linkifier.Linkifier.unregisterLinkHandler(registration);
+        }
+        registrations = [];
+    });
+    function registerHandler(registration) {
+        Components.Linkifier.Linkifier.registerLinkHandler(registration);
+        registrations.push(registration);
+    }
+    it('displays the title of the registered link handlers', () => {
+        const origin = urlString `chrome-extension://test-origin`;
+        const title = 'Test Link Handler';
+        const registration = {
+            title,
+            origin,
+            handler: () => { },
+            shouldHandleOpenResource: () => true,
+        };
+        registerHandler(registration);
+        const ui = Components.Linkifier.LinkHandlerSettingUI.instance({ forceNew: true });
+        const element = ui.settingElement();
+        const select = element.querySelector('select');
+        assert.exists(select);
+        const options = Array.from(select.options);
+        const testOption = options.find(option => option.value === origin);
+        assert.exists(testOption);
+        assert.strictEqual(testOption.text, title);
     });
 });
 //# sourceMappingURL=Linkifier.test.js.map

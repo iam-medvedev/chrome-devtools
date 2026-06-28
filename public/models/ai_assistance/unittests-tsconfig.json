@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "allowUmdGlobalAccess": true,
+    "allowSyntheticDefaultImports": true,
     "checkJs": true,
     "composite": true,
     "declaration": true,
@@ -36,8 +36,7 @@
       "../../../../../../node_modules"
     ],
     "types": [
-      "mocha",
-      "sinon"
+      "mocha"
     ],
     "useUnknownInCatchVariables": false
   },
@@ -64,6 +63,7 @@
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StorageAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StylingAgent.test.ts",
+    "../../../../../../front_end/models/ai_assistance/contexts/AccessibilityContext.test.ts",
     "../../../../../../front_end/models/ai_assistance/contexts/DOMNodeContext.test.ts",
     "../../../../../../front_end/models/ai_assistance/contexts/FileContext.test.ts",
     "../../../../../../front_end/models/ai_assistance/contexts/RequestContext.test.ts",
@@ -71,9 +71,11 @@
     "../../../../../../front_end/models/ai_assistance/performance/AIContext.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AIQueries.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ExecuteJavaScript.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetLighthouseAudits.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetNetworkRequestDetails.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetStyles.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ListNetworkRequests.test.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/ResolveLighthousePath.test.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ToolRegistry.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

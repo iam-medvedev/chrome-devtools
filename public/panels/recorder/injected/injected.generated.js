@@ -478,11 +478,21 @@
     }
   };
   var observedNodes = /* @__PURE__ */ new WeakSet();
-  var textChangeObserver = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      eraseFromCache(mutation.target);
+  var textChangeObserver;
+  var getTextChangeObserver = () => {
+    const MutationObserverImpl = globalThis.MutationObserver;
+    if (!MutationObserverImpl) {
+      throw new Error("MutationObserver is not available in this environment.");
     }
-  });
+    if (!textChangeObserver) {
+      textChangeObserver = new MutationObserverImpl((mutations) => {
+        for (const mutation of mutations) {
+          eraseFromCache(mutation.target);
+        }
+      });
+    }
+    return textChangeObserver;
+  };
   var createTextContent = (root) => {
     let value = textContentCache.get(root);
     if (value) {
@@ -521,7 +531,7 @@
         value.full += createTextContent(root.shadowRoot).full;
       }
       if (!observedNodes.has(root)) {
-        textChangeObserver.observe(root, {
+        getTextChangeObserver().observe(root, {
           childList: true,
           characterData: true,
           subtree: true

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
@@ -21,13 +22,25 @@ describeWithMockConnection('StylesPropertySection', () => {
         SDK.PageResourceLoader.PageResourceLoader.removeInstance();
     });
     it('contains specificity information', async () => {
-        const specificity = { a: 0, b: 1, c: 0 };
+        const specificity = {
+            a: 0,
+            b: 1,
+            c: 0,
+            components: [{ text: '.child', a: 0, b: 1, c: 0 }],
+        };
         const matchedStyles = await getMatchedStylesWithBlankRule({ cssModel: new SDK.CSSModel.CSSModel(createTarget()) });
         const section = new Elements.StylePropertiesSection.StylePropertiesSection(new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel), matchedStyles, matchedStyles.nodeStyles()[0], 0, new Map(), new Map(), null);
         section.renderSelectors([{ text: '.child', specificity }], [true], new WeakMap());
         const selectorElement = section.element.querySelector('.selector');
         assert.strictEqual(selectorElement?.textContent, '.child');
-        assert.deepEqual(section.element?.querySelector('devtools-tooltip')?.textContent?.trim(), 'Specificity: (0,1,0)');
+        const tooltip = section.element?.querySelector('devtools-tooltip');
+        assert.exists(tooltip);
+        const details = tooltip.querySelector('details');
+        assert.exists(details);
+        const summary = details.querySelector('summary');
+        assert.exists(summary);
+        assert.include(summary.textContent ?? '', 'Specificity: (0,1,0)');
+        assert.include(tooltip.textContent ?? '', '(b) Class-like: .child');
     });
     it('renders selectors correctly', async () => {
         const matchedStyles = await getMatchedStylesWithBlankRule({ cssModel: new SDK.CSSModel.CSSModel(createTarget()) });

@@ -444,6 +444,9 @@ var HeapSnapshotProxy = class extends HeapSnapshotProxyObject {
   aggregatesWithFilter(filter) {
     return this.callMethodPromise("aggregatesWithFilter", filter);
   }
+  getDuplicateStrings() {
+    return this.callMethodPromise("getDuplicateStrings");
+  }
   aggregatesForDiff(interfaceDefinitions) {
     return this.callMethodPromise("aggregatesForDiff", interfaceDefinitions);
   }

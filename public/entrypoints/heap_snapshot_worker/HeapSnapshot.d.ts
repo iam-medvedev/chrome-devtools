@@ -127,6 +127,9 @@ export declare class HeapSnapshotNode implements HeapSnapshotItem {
     isFlatConsString(): boolean;
     detachedness(): DOMLinkState;
     setDetachedness(detachedness: DOMLinkState): void;
+    findInternalEdgeTarget(name: string): HeapSnapshotNode | undefined;
+    nodeValueAsBool(): boolean | undefined;
+    nodeIsTruncatedString(): boolean;
 }
 export declare class HeapSnapshotNodeIterator implements HeapSnapshotItemIterator {
     #private;
@@ -258,6 +261,7 @@ export declare abstract class HeapSnapshot {
     nodeSyntheticType: number;
     nodeClosureType: number;
     nodeRegExpType: number;
+    nodeNumberType: number;
     edgeFieldsCount: number;
     edgeTypeOffset: number;
     edgeNameOffset: number;
@@ -301,6 +305,7 @@ export declare abstract class HeapSnapshot {
     private createFilter;
     search(searchConfig: HeapSnapshotModel.HeapSnapshotModel.SearchConfig, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): number[];
     aggregatesWithFilter(nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregatedInfo>;
+    getDuplicateStrings(): HeapSnapshotModel.HeapSnapshotModel.DuplicateStringGroup[];
     private createNodeIdFilter;
     private createAllocationStackFilter;
     private createNamedFilter;
@@ -310,6 +315,7 @@ export declare abstract class HeapSnapshot {
     allocationStack(nodeIndex: number): HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[] | null;
     aggregatesForDiff(interfaceDefinitions: string): Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>;
     isUserRoot(_node: HeapSnapshotNode): boolean;
+    isContextObject(_node: HeapSnapshotNode): boolean;
     calculateShallowSizes(): void;
     calculateDistances(isForRetainersView: boolean, filter?: ((arg0: HeapSnapshotNode, arg1: HeapSnapshotEdge) => boolean)): void;
     private bfs;
@@ -455,6 +461,7 @@ export declare class JSHeapSnapshot extends HeapSnapshot {
     calculateShallowSizes(): void;
     calculateDistances(isForRetainersView: boolean): void;
     isUserRoot(node: HeapSnapshotNode): boolean;
+    isContextObject(node: HeapSnapshotNode): boolean;
     userObjectsMapAndFlag(): {
         map: Uint8Array;
         flag: number;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import './data_grid.js';
 import { assert } from 'chai';
+import sinon from 'sinon';
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
@@ -30,7 +31,7 @@ describeWithEnvironment('DataGrid', () => {
     function getAlertAnnouncement(element) {
         element.blur();
         element.focus();
-        return liveAnnouncerAlertStub.args.map(arg => arg[0]);
+        return liveAnnouncerAlertStub.args.map((arg) => arg[0]);
     }
     beforeEach(() => {
         liveAnnouncerAlertStub = sinon.stub(UI.ARIAUtils.LiveAnnouncer, 'alert').returns();

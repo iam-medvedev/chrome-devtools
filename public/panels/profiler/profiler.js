@@ -5676,6 +5676,11 @@ var UIStrings9 = {
   objectsRetainedByDetachedDomNodes: "Objects retained by detached DOM nodes",
   /**
    * @description An option which will filter the heap snapshot to show only
+   * objects kept alive by contexts
+   */
+  objectsRetainedByContexts: "Objects retained by contexts",
+  /**
+   * @description An option which will filter the heap snapshot to show only
    * objects kept alive by the DevTools console
    */
   objectsRetainedByConsole: "Objects retained by DevTools Console",
@@ -6199,6 +6204,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI10.View.SimpleView {
   static ALWAYS_AVAILABLE_FILTERS = [
     { uiName: i18nString8(UIStrings9.duplicatedStrings), filterName: "duplicatedStrings" },
     { uiName: i18nString8(UIStrings9.objectsRetainedByDetachedDomNodes), filterName: "objectsRetainedByDetachedDomNodes" },
+    { uiName: i18nString8(UIStrings9.objectsRetainedByContexts), filterName: "objectsRetainedByContexts" },
     { uiName: i18nString8(UIStrings9.objectsRetainedByConsole), filterName: "objectsRetainedByConsole" },
     { uiName: i18nString8(UIStrings9.objectsRetainedByEventHandlers), filterName: "objectsRetainedByEventHandlers" }
   ];

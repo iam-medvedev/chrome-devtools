@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
 import * as QuickOpen from './quick_open.js';
 describe('QuickOpen', () => {
@@ -24,7 +25,7 @@ describe('QuickOpen', () => {
         sinon.stub(QuickOpen.FilteredListWidget.FilteredListWidget.prototype, 'showAsDialog');
         const setProviderStub = sinon.stub(QuickOpen.FilteredListWidget.FilteredListWidget.prototype, 'setProvider');
         const setProviderCalledPromise = new Promise(resolve => {
-            setProviderStub.callsFake(provider => {
+            setProviderStub.callsFake((provider) => {
                 if (provider !== null) {
                     resolve();
                 }

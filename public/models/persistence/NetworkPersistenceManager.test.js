@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -152,7 +153,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         sinon.stub(target.fetchAgent(), 'invoke_enable');
         await networkPersistenceManager.updateInterceptionPatternsForTests();
     });
-    it('merges request headers with override without overlap', async () => {
+    it('merges request headers with override without overlap', () => {
         const interceptedRequest = {
             request: {
                 url: 'https://www.example.com/',
@@ -166,10 +167,10 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
             { name: 'index-only', value: 'only added to index.html' },
             { name: 'server', value: 'DevTools mock server' },
         ];
-        const actual = await networkPersistenceManager.handleHeaderInterception(interceptedRequest);
+        const actual = networkPersistenceManager.handleHeaderInterception(interceptedRequest);
         assert.deepEqual(actual.sort((a, b) => (a.name.localeCompare(b.name))), expected);
     });
-    it('merges request headers with override with overlap', async () => {
+    it('merges request headers with override with overlap', () => {
         const interceptedRequest = {
             request: {
                 url: 'https://www.example.com/index.html',
@@ -184,10 +185,10 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
             { name: 'index-only', value: 'only added to index.html' },
             { name: 'server', value: 'DevTools mock server' },
         ];
-        const actual = await networkPersistenceManager.handleHeaderInterception(interceptedRequest);
+        const actual = networkPersistenceManager.handleHeaderInterception(interceptedRequest);
         assert.deepEqual(actual.sort((a, b) => (a.name.localeCompare(b.name))), expected);
     });
-    it('merges request headers with override with file type wildcard', async () => {
+    it('merges request headers with override with file type wildcard', () => {
         const interceptedRequest = {
             request: {
                 url: 'https://www.example.com/styles.css',
@@ -202,10 +203,10 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
             { name: 'css-only', value: 'only added to css files' },
             { name: 'server', value: 'DevTools mock server' },
         ];
-        const actual = await networkPersistenceManager.handleHeaderInterception(interceptedRequest);
+        const actual = networkPersistenceManager.handleHeaderInterception(interceptedRequest);
         assert.deepEqual(actual.sort((a, b) => (a.name.localeCompare(b.name))), expected);
     });
-    it('merges request headers with override with specific path', async () => {
+    it('merges request headers with override with specific path', () => {
         const interceptedRequest = {
             request: {
                 url: 'https://www.example.com/path/to/script.js',
@@ -220,10 +221,10 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
             { name: 'another-header', value: 'only added to specific path' },
             { name: 'server', value: 'DevTools mock server' },
         ];
-        const actual = await networkPersistenceManager.handleHeaderInterception(interceptedRequest);
+        const actual = networkPersistenceManager.handleHeaderInterception(interceptedRequest);
         assert.deepEqual(actual.sort((a, b) => (a.name.localeCompare(b.name))), expected);
     });
-    it('merges request headers only when domain matches', async () => {
+    it('merges request headers only when domain matches', () => {
         const interceptedRequest = {
             request: {
                 url: 'https://www.web.dev/index.html',
@@ -236,10 +237,23 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
             { name: 'age', value: 'overridden' },
             { name: 'server', value: 'DevTools mock server' },
         ];
-        const actual = await networkPersistenceManager.handleHeaderInterception(interceptedRequest);
+        const actual = networkPersistenceManager.handleHeaderInterception(interceptedRequest);
         assert.deepEqual(actual.sort((a, b) => (a.name.localeCompare(b.name))), expected);
     });
-    it('merges headers while leaving muliple headers with the same name unchanged', async () => {
+    it('does not merge global header overrides for requests to forbidden URLs', () => {
+        for (const url of ['https://chromewebstore.google.com/index.html', 'https://chrome.google.com/index.html',
+            'chrome://version']) {
+            const interceptedRequest = {
+                request: { url },
+                responseHeaders: [
+                    { name: 'server', value: 'DevTools mock server' },
+                ],
+            };
+            const actual = networkPersistenceManager.handleHeaderInterception(interceptedRequest);
+            assert.lengthOf(actual, 0);
+        }
+    });
+    it('merges headers while leaving multiple headers with the same name unchanged', () => {
         const interceptedRequest = {
             request: {
                 url: 'https://www.example.com/index.html',
@@ -257,10 +271,10 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
             { name: 'repeated', value: 'second' },
             { name: 'repeated', value: 'third' },
         ];
-        const actual = await networkPersistenceManager.handleHeaderInterception(interceptedRequest);
+        const actual = networkPersistenceManager.handleHeaderInterception(interceptedRequest);
         assert.deepEqual(actual.sort((a, b) => (a.name.localeCompare(b.name))), expected);
     });
-    it('merges headers and can override muliple headers with the same name', async () => {
+    it('merges headers and can override muliple headers with the same name', () => {
         const interceptedRequest = {
             request: {
                 url: 'https://www.example.com/repeated.html',
@@ -276,7 +290,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
             { name: 'repeated', value: 'first override' },
             { name: 'repeated', value: 'second override' },
         ];
-        const actual = await networkPersistenceManager.handleHeaderInterception(interceptedRequest);
+        const actual = networkPersistenceManager.handleHeaderInterception(interceptedRequest);
         assert.deepEqual(actual.sort((a, b) => (a.name.localeCompare(b.name))), expected);
     });
     it('translates URLs into raw and encoded paths', async () => {

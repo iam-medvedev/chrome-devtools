@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -32,8 +33,7 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
         const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
         renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
         await requestConditionsDrawer.updateComplete;
-        const blockedElement = requestConditionsDrawer.contentElement.querySelector('.blocked-urls');
-        const placeholder = blockedElement?.shadowRoot?.querySelector('.empty-state');
+        const placeholder = requestConditionsDrawer.contentElement.querySelector('.empty-state');
         assert.exists(placeholder);
         assert.deepEqual(placeholder.querySelector('.empty-state-header')?.textContent, 'Nothing throttled or blocked');
         assert.deepEqual(placeholder.querySelector('.empty-state-description > span')?.textContent, 'To throttle or block a network request, add a rule here manually or via the network panel\'s context menu. Learn more');
@@ -41,17 +41,16 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
     });
     it('Add pattern button triggers showing the editor view', async () => {
         const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
+        requestConditionsDrawer.contentElement.style.width = '400px';
         renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
         await requestConditionsDrawer.updateComplete;
-        const blockedElement = requestConditionsDrawer.contentElement.querySelector('.blocked-urls');
-        const list = blockedElement?.shadowRoot?.querySelector('.list');
-        const placeholder = list?.querySelector('.empty-state');
+        const placeholder = requestConditionsDrawer.contentElement.querySelector('.empty-state');
         const button = placeholder?.querySelector('devtools-button');
         assert.exists(button);
-        assert.isNull(list?.querySelector('.editor-content'));
+        assert.isNull(requestConditionsDrawer.contentElement.querySelector('devtools-prompt'));
         dispatchClickEvent(button);
         await requestConditionsDrawer.updateComplete;
-        assert.exists(list?.querySelector('.editor-content'));
+        assert.exists(requestConditionsDrawer.contentElement.querySelector('devtools-prompt'));
         await assertScreenshot('request_conditions/throttling_editor.png');
     });
     describe('affected counts', () => {
@@ -64,8 +63,9 @@ describeWithMockConnection(`RequestConditionsDrawer with individual request thro
             renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
             await requestConditionsDrawer.updateComplete;
             assert.exists(networkManager);
-            const list = requestConditionsDrawer.contentElement.querySelector('.blocked-urls')?.shadowRoot;
-            const countWidget = list?.querySelector('.blocked-url-count')?.getWidget();
+            const countWidget = requestConditionsDrawer.contentElement
+                .querySelector('.blocked-url-count')
+                ?.getWidget();
             assert.exists(countWidget);
             const updateStub = sinon.spy(countWidget, 'requestUpdate');
             const request = new SDK.NetworkRequest.NetworkRequest('', undefined, urlString `http://example.com`, urlString `http://example.com`, null, null, null);
@@ -105,15 +105,19 @@ describeWithMockConnection('RequestConditionsDrawer', () => {
         SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
     });
     describe('shows information for upgrading wildcard patterns to URLPatterns', () => {
-        it('shows the URLPattern breakdown', () => {
+        it('shows the URLPattern breakdown', async () => {
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
+            renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
             const index = 0;
-            const item = requestConditionsDrawer.renderItem(SDK.NetworkManager.RequestCondition.createFromSetting({
+            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: 'http://example.com/*bar',
                 enabled: true,
                 conditions: 'NO_THROTTLING',
-            }), 
-            /* editable=*/ true, index);
+            });
+            SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
+            await requestConditionsDrawer.updateComplete;
+            const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[index];
+            assert.exists(item);
             assert.notExists(item.querySelector('devtools-icon'));
             const hovered = item.querySelector(`[aria-details=url-pattern-${index}]`);
             assert.exists(hovered);
@@ -122,11 +126,15 @@ describeWithMockConnection('RequestConditionsDrawer', () => {
             assert.exists(tooltip);
             assert.strictEqual(tooltip.textContent, 'hash: *hostname: example.compassword: *pathname: /*barport: protocol: httpsearch: *username: *Learn more');
         });
-        it('shows a warning icon when a pattern was upgraded', () => {
+        it('shows a warning icon when a pattern was upgraded', async () => {
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
-            const index = 1;
-            const item = requestConditionsDrawer.renderItem(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com/*bar', enabled: true }), 
-            /* editable=*/ true, index);
+            renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
+            const index = 0;
+            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com/*bar', enabled: true });
+            SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
+            await requestConditionsDrawer.updateComplete;
+            const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[index];
+            assert.exists(item);
             const hovered = item.querySelector(`[aria-details=url-pattern-${index}]`);
             assert.exists(hovered);
             assert.strictEqual(hovered.textContent, '*://example.com/*bar*');
@@ -135,45 +143,59 @@ describeWithMockConnection('RequestConditionsDrawer', () => {
             assert.exists(tooltip);
             assert.strictEqual(tooltip.textContent, 'This pattern was upgraded from "example.com/*bar"');
         });
-        it('shows an error icon when a pattern is invalid', () => {
+        it('shows an error icon when a pattern is invalid', async () => {
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
-            const index = 3;
-            const item = requestConditionsDrawer.renderItem(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'ht tp://*', enabled: true }), 
-            /* editable=*/ true, index);
+            renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
+            const index = 0;
+            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'ht tp://*', enabled: true });
+            SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
+            await requestConditionsDrawer.updateComplete;
+            const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[index];
+            assert.exists(item);
             assert.isTrue(item.querySelector('input')?.disabled);
             assert.exists(item.querySelector('devtools-icon[name=cross-circle-filled]'));
             const tooltip = item.querySelector(`devtools-tooltip[id=url-pattern-error-${index}]`);
             assert.exists(tooltip);
             assert.strictEqual(tooltip.textContent, 'This pattern failed to parse as a URLPatternLearn more');
         });
-        it('shows an error icon when a pattern contains regexp groups', () => {
+        it('shows an error icon when a pattern contains regexp groups', async () => {
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
+            renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
             const index = 0;
-            const item = requestConditionsDrawer.renderItem(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'http://*/(\\d+)', enabled: true }), 
-            /* editable=*/ true, index);
+            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'http://*/(\\d+)', enabled: true });
+            SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
+            await requestConditionsDrawer.updateComplete;
+            const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[index];
+            assert.exists(item);
             assert.isTrue(item.querySelector('input')?.disabled);
             assert.exists(item.querySelector('devtools-icon[name=cross-circle-filled]'));
             const tooltip = item.querySelector(`devtools-tooltip[id=url-pattern-error-${index}]`);
             assert.exists(tooltip);
             assert.strictEqual(tooltip.textContent, 'RegExp groups are not allowedLearn more');
         });
-        it('shows an error message in the editor when the pattern is invalid or has regexp groups', () => {
+        it('shows an error message in the editor when the pattern is invalid or has regexp groups', async () => {
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
-            const regexpPatternEditor = requestConditionsDrawer.beginEdit(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'http://*/(\\d+)', enabled: true }));
-            regexpPatternEditor.requestValidation();
-            assert.strictEqual(regexpPatternEditor.element.querySelector('.list-widget-input-validation-error')?.textContent, 'RegExp groups are not allowed');
-            const invalidPatternEditor = requestConditionsDrawer.beginEdit(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'ht tp://*', enabled: true }));
-            invalidPatternEditor.requestValidation();
-            assert.strictEqual(invalidPatternEditor.element.querySelector('.list-widget-input-validation-error')?.textContent, 'This pattern failed to parse as a URLPattern');
+            renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
+            await requestConditionsDrawer.updateComplete;
+            requestConditionsDrawer.addPattern();
+            await requestConditionsDrawer.updateComplete;
+            const prompt = requestConditionsDrawer.contentElement.querySelector('devtools-prompt');
+            assert.exists(prompt);
+            assert.strictEqual(prompt?.validator?.('http://*/(\\d+)'), 'RegExp groups are not allowed');
+            assert.strictEqual(prompt?.validator?.('ht tp://*'), 'This pattern failed to parse as a URLPattern');
         });
     });
     it('can reorder the conditions', async () => {
         const increasePriority = sinon.stub(SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions, 'increasePriority');
         const decreasePriority = sinon.stub(SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions, 'decreasePriority');
         SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.conditionsEnabled = true;
-        const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer(undefined, sinon.stub());
+        const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
+        renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
         const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com/*bar', enabled: true });
-        const item = requestConditionsDrawer.renderItem(condition, /* editable=*/ true, 0);
+        SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
+        await requestConditionsDrawer.updateComplete;
+        const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[0];
+        assert.exists(item);
         const [increaseButton, decreaseButton] = item.querySelectorAll('devtools-button');
         increaseButton.click();
         sinon.assert.calledOnceWithExactly(increasePriority, condition);
@@ -184,6 +206,7 @@ describeWithMockConnection('RequestConditionsDrawer', () => {
     });
     it('highlights conditions', async () => {
         const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
+        renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
         UI.Context.Context.instance().setFlavor(Network.RequestConditionsDrawer.RequestConditionsDrawer, requestConditionsDrawer);
         const index = 0;
         const urlPattern = 'http://example.com/*bar';
@@ -194,7 +217,9 @@ describeWithMockConnection('RequestConditionsDrawer', () => {
         });
         conditions.ruleIds.add('abc');
         SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(conditions);
-        const item = requestConditionsDrawer.renderItem(conditions, /* editable=*/ true, index);
+        await requestConditionsDrawer.updateComplete;
+        const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[index];
+        assert.exists(item);
         const viewShown = expectCall(sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves());
         const highlighted = expectCall(sinon.stub(PanelUtils.PanelUtils, 'highlightElement'));
         void Network.RequestConditionsDrawer.RequestConditionsDrawer.reveal(new SDK.NetworkManager.AppliedNetworkConditions(SDK.NetworkManager.NoThrottlingConditions, 'abc', urlPattern));

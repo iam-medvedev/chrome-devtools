@@ -2434,8 +2434,10 @@ var environment = {
     get fs() {
       throw new Error("fs is not available in this environment");
     },
-    get ScreenRecorder() {
-      throw new Error("ScreenRecorder is not available in this environment");
+    ScreenRecorder: class {
+      constructor() {
+        throw new Error("ScreenRecorder is not available in this environment");
+      }
     }
   }
 };
@@ -2490,40 +2492,37 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
-var packageVersion = "25.1.0";
+var packageVersion = "25.2.1";
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/Debug.js
-var debugModule = null;
-async function importDebug() {
-  if (!debugModule) {
-    debugModule = (await import("node:util")).debuglog;
-  }
-  return debugModule;
-}
 var debug = (prefix) => {
   if (isNode) {
-    return async (...logArgs) => {
+    const nodeDebug = environment.value.debuglog?.(prefix);
+    if (!nodeDebug || !nodeDebug.enabled) {
+      return;
+    }
+    return (...logArgs) => {
       if (captureLogs) {
         capturedLogs.push(prefix + logArgs);
       }
-      (await importDebug())(prefix)(...logArgs);
+      nodeDebug(...logArgs);
     };
   }
+  const debugLevel = globalThis.__PUPPETEER_DEBUG;
+  if (!debugLevel) {
+    return;
+  }
+  const everythingShouldBeLogged = debugLevel === "*";
+  const prefixMatchesDebugLevel = everythingShouldBeLogged || /**
+   * If the debug level is `foo*`, that means we match any prefix that
+   * starts with `foo`. If the level is `foo`, we match only the prefix
+   * `foo`.
+   */
+  (debugLevel.endsWith("*") ? prefix.startsWith(debugLevel.slice(0, -1)) : prefix === debugLevel);
+  if (!prefixMatchesDebugLevel) {
+    return;
+  }
   return (...logArgs) => {
-    const debugLevel = globalThis.__PUPPETEER_DEBUG;
-    if (!debugLevel) {
-      return;
-    }
-    const everythingShouldBeLogged = debugLevel === "*";
-    const prefixMatchesDebugLevel = everythingShouldBeLogged || /**
-     * If the debug level is `foo*`, that means we match any prefix that
-     * starts with `foo`. If the level is `foo`, we match only the prefix
-     * `foo`.
-     */
-    (debugLevel.endsWith("*") ? prefix.startsWith(debugLevel) : prefix === debugLevel);
-    if (!prefixMatchesDebugLevel) {
-      return;
-    }
     console.log(`${prefix}:`, ...logArgs);
   };
 };
@@ -2631,6 +2630,8 @@ var paperFormats = {
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/util.js
 var debugError = debug("puppeteer:error");
+var debugCatchError = debugError ?? (() => {
+});
 var DEFAULT_VIEWPORT = Object.freeze({ width: 800, height: 600 });
 var SOURCE_URL = Symbol("Source URL for Puppeteer evaluation scripts");
 var PuppeteerURL = class _PuppeteerURL {
@@ -2739,7 +2740,7 @@ async function getReadableAsTypedArray(readable, path) {
     }
     return concat2;
   } catch (error) {
-    debugError(error);
+    debugError?.(error);
     return null;
   }
 }
@@ -2986,7 +2987,7 @@ var EventEmitter = class {
    * @internal
    */
   [disposeSymbol]() {
-    return void this[asyncDisposeSymbol]().catch(debugError);
+    return void this[asyncDisposeSymbol]().catch(debugCatchError);
   }
   /**
    * @internal
@@ -3145,7 +3146,7 @@ var Browser = class extends EventEmitter {
   }
   /** @internal */
   [disposeSymbol]() {
-    return void this[asyncDisposeSymbol]().catch(debugError);
+    return void this[asyncDisposeSymbol]().catch(debugCatchError);
   }
   /** @internal */
   async [asyncDisposeSymbol]() {
@@ -3438,7 +3439,7 @@ var BrowserContext = class extends EventEmitter {
   }
   /** @internal */
   [disposeSymbol]() {
-    return void this[asyncDisposeSymbol]().catch(debugError);
+    return void this[asyncDisposeSymbol]().catch(debugCatchError);
   }
   /** @internal */
   async [asyncDisposeSymbol]() {
@@ -3906,7 +3907,7 @@ var Locator = class extends EventEmitter {
       return this.emit(LocatorEvent.Action, void 0);
     }), mergeMap((handle) => {
       return from(handle.click(options)).pipe(catchError((err) => {
-        void handle.dispose().catch(debugError);
+        void handle.dispose().catch(debugCatchError);
         throw err;
       }));
     }), this.operators.retryAndRaceWithSignalAndTimer(signal, cause));
@@ -4034,7 +4035,7 @@ var Locator = class extends EventEmitter {
             throw new Error(`Element cannot be filled out.`);
         }
       })).pipe(catchError((err) => {
-        void handle.dispose().catch(debugError);
+        void handle.dispose().catch(debugCatchError);
         throw err;
       }));
     }), this.operators.retryAndRaceWithSignalAndTimer(signal, cause));
@@ -4049,7 +4050,7 @@ var Locator = class extends EventEmitter {
       return this.emit(LocatorEvent.Action, void 0);
     }), mergeMap((handle) => {
       return from(handle.hover()).pipe(catchError((err) => {
-        void handle.dispose().catch(debugError);
+        void handle.dispose().catch(debugCatchError);
         throw err;
       }));
     }), this.operators.retryAndRaceWithSignalAndTimer(signal, cause));
@@ -4071,7 +4072,7 @@ var Locator = class extends EventEmitter {
           el.scrollLeft = scrollLeft;
         }
       }, options?.scrollTop, options?.scrollLeft)).pipe(catchError((err) => {
-        void handle.dispose().catch(debugError);
+        void handle.dispose().catch(debugCatchError);
         throw err;
       }));
     }), this.operators.retryAndRaceWithSignalAndTimer(signal, cause));
@@ -5328,7 +5329,7 @@ var Page = (() => {
         if (viewport && viewport.deviceScaleFactor !== 0) {
           await this.setViewport({ ...viewport, deviceScaleFactor: 0 });
           stack.defer(() => {
-            void this.setViewport(viewport).catch(debugError);
+            void this.setViewport(viewport).catch(debugCatchError);
           });
         }
         return await this.mainFrame().isolatedRealm().evaluate(() => {
@@ -5410,7 +5411,7 @@ var Page = (() => {
                 ...scrollDimensions
               });
               stack.defer(async () => {
-                await this.setViewport(viewport).catch(debugError);
+                await this.setViewport(viewport).catch(debugCatchError);
               });
             }
           } else {
@@ -5789,7 +5790,7 @@ var Page = (() => {
     [(_screenshot_decorators = [guarded(function() {
       return this.browser();
     })], disposeSymbol)]() {
-      return void this[asyncDisposeSymbol]().catch(debugError);
+      return void this[asyncDisposeSymbol]().catch(debugCatchError);
     }
     /** @internal */
     async [asyncDisposeSymbol]() {
@@ -5896,6 +5897,20 @@ var WebWorker = class extends EventEmitter {
   async evaluateHandle(func, ...args) {
     func = withSourcePuppeteerURLIfNone(this.evaluateHandle.name, func);
     return await this.mainRealm().evaluateHandle(func, ...args);
+  }
+  /**
+   * Waits for the provided function, `workerFunction`, to return a truthy value when
+   * evaluated in the page's context.
+   *
+   * @param workerFunction - Function to be evaluated in browser context until it
+   * returns a truthy value.
+   * @param options - Options for configuring waiting behavior.
+   */
+  waitForFunction(workerFunction, options = {}, ...args) {
+    return this.mainRealm().waitForFunction(workerFunction, {
+      polling: 100,
+      ...options
+    }, ...args);
   }
   async close() {
     throw new UnsupportedOperation("WebWorker.close() is not supported");
@@ -6212,14 +6227,7 @@ var JSHandle = (() => {
      */
     async getProperties() {
       const propertyNames = await this.evaluate((object) => {
-        const enumerableProperties = [];
-        const descriptors = Object.getOwnPropertyDescriptors(object);
-        for (const propertyName in descriptors) {
-          if (descriptors[propertyName]?.enumerable) {
-            enumerableProperties.push(propertyName);
-          }
-        }
-        return enumerableProperties;
+        return Object.keys(object ?? {});
       });
       const map2 = /* @__PURE__ */ new Map();
       const results = await Promise.all(propertyNames.map((key) => {
@@ -6243,7 +6251,7 @@ var JSHandle = (() => {
     }
     /** @internal */
     [(_getProperty_decorators = [throwIfDisposed()], _getProperties_decorators = [throwIfDisposed()], disposeSymbol)]() {
-      return void this[asyncDisposeSymbol]().catch(debugError);
+      return void this[asyncDisposeSymbol]().catch(debugCatchError);
     }
     /** @internal */
     [asyncDisposeSymbol]() {
@@ -6382,13 +6390,13 @@ var Binding = class {
           const callbacks = globalThis[name].callbacks;
           callbacks.get(seq).reject(error2);
           callbacks.delete(seq);
-        }, this.#name, id, error.message, error.stack).catch(debugError);
+        }, this.#name, id, error.message, error.stack).catch(debugCatchError);
       } else {
         await context2.evaluate((name, seq, error2) => {
           const callbacks = globalThis[name].callbacks;
           callbacks.get(seq).reject(error2);
           callbacks.delete(seq);
-        }, this.#name, id, error).catch(debugError);
+        }, this.#name, id, error).catch(debugCatchError);
       }
     }
   }
@@ -6431,7 +6439,7 @@ var CallbackRegistry = class {
     try {
       request(callback.id);
     } catch (error) {
-      callback.promise.catch(debugError).finally(() => {
+      void callback.promise.catch(debugCatchError).finally(() => {
         this.#callbacks.delete(callback.id);
       });
       callback.reject(error);
@@ -6766,7 +6774,7 @@ var Connection = class extends EventEmitter {
         id,
         sessionId
       });
-      debugProtocolSend(stringifiedMessage);
+      debugProtocolSend?.(stringifiedMessage);
       this.#transport.send(stringifiedMessage);
     });
   }
@@ -6785,7 +6793,7 @@ var Connection = class extends EventEmitter {
         return setTimeout(r, this.#delay);
       });
     }
-    debugProtocolReceive(message);
+    debugProtocolReceive?.(message);
     const object = JSON.parse(message);
     if (object.method === "Target.attachedToTarget") {
       const sessionId = object.params.sessionId;
@@ -7031,7 +7039,7 @@ var JSCoverage = class {
       this.#scriptURLs.set(event.scriptId, event.url);
       this.#scriptSources.set(event.scriptId, response.scriptSource);
     } catch (error) {
-      debugError(error);
+      debugError?.(error);
     }
   }
   async stop() {
@@ -7121,7 +7129,7 @@ var CSSCoverage = class {
       this.#stylesheetURLs.set(header.styleSheetId, header.sourceURL);
       this.#stylesheetSources.set(header.styleSheetId, response.text);
     } catch (error) {
-      debugError(error);
+      debugError?.(error);
     }
   }
   async stop() {
@@ -7355,6 +7363,8 @@ var EmulationManager = (() => {
   let _private_emulateIdleState_descriptor;
   let _private_emulateTimezone_decorators;
   let _private_emulateTimezone_descriptor;
+  let _private_emulateLocale_decorators;
+  let _private_emulateLocale_descriptor;
   let _private_emulateVisionDeficiency_decorators;
   let _private_emulateVisionDeficiency_descriptor;
   let _private_emulateCpuThrottling_decorators;
@@ -7377,6 +7387,7 @@ var EmulationManager = (() => {
       _private_applyViewport_decorators = [invokeAtMostOnceForArguments];
       _private_emulateIdleState_decorators = [invokeAtMostOnceForArguments];
       _private_emulateTimezone_decorators = [invokeAtMostOnceForArguments];
+      _private_emulateLocale_decorators = [invokeAtMostOnceForArguments];
       _private_emulateVisionDeficiency_decorators = [invokeAtMostOnceForArguments];
       _private_emulateCpuThrottling_decorators = [invokeAtMostOnceForArguments];
       _private_emulateMediaFeatures_decorators = [invokeAtMostOnceForArguments];
@@ -7392,7 +7403,7 @@ var EmulationManager = (() => {
             client.send("Emulation.setTouchEmulationEnabled", {
               enabled: false
             })
-          ]).catch(debugError);
+          ]).catch(debugCatchError);
           return;
         }
         const { viewport } = viewportState;
@@ -7411,7 +7422,7 @@ var EmulationManager = (() => {
             screenOrientation
           }).catch((err) => {
             if (err.message.includes("Target does not support metrics override")) {
-              debugError(err);
+              debugError?.(err);
               return;
             }
             throw err;
@@ -7449,6 +7460,14 @@ var EmulationManager = (() => {
           throw error;
         }
       }, "#emulateTimezone") }, _private_emulateTimezone_decorators, { kind: "method", name: "#emulateTimezone", static: false, private: true, access: { has: (obj) => #emulateTimezone in obj, get: (obj) => obj.#emulateTimezone }, metadata: _metadata }, null, _instanceExtraInitializers);
+      __esDecorate3(this, _private_emulateLocale_descriptor = { value: __setFunctionName(async function(client, localeState) {
+        if (!localeState.active) {
+          return;
+        }
+        await client.send("Emulation.setLocaleOverride", {
+          locale: localeState.locale
+        });
+      }, "#emulateLocale") }, _private_emulateLocale_decorators, { kind: "method", name: "#emulateLocale", static: false, private: true, access: { has: (obj) => #emulateLocale in obj, get: (obj) => obj.#emulateLocale }, metadata: _metadata }, null, _instanceExtraInitializers);
       __esDecorate3(this, _private_emulateVisionDeficiency_descriptor = { value: __setFunctionName(async function(client, visionDeficiency) {
         if (!visionDeficiency.active) {
           return;
@@ -7530,6 +7549,9 @@ var EmulationManager = (() => {
     #timezoneState = new EmulatedState({
       active: false
     }, this, this.#emulateTimezone);
+    #localeState = new EmulatedState({
+      active: false
+    }, this, this.#emulateLocale);
     #visionDeficiencyState = new EmulatedState({
       active: false
     }, this, this.#emulateVisionDeficiency);
@@ -7576,7 +7598,7 @@ var EmulationManager = (() => {
         this.#secondaryClients.delete(client);
       });
       void Promise.all(this.#states.map((s) => {
-        return s.sync().catch(debugError);
+        return s.sync().catch(debugCatchError);
       }));
     }
     get javascriptEnabled() {
@@ -7618,6 +7640,15 @@ var EmulationManager = (() => {
     async emulateTimezone(timezoneId) {
       await this.#timezoneState.setState({
         timezoneId,
+        active: true
+      });
+    }
+    get #emulateLocale() {
+      return _private_emulateLocale_descriptor.value;
+    }
+    async emulateLocale(locale) {
+      await this.#localeState.setState({
+        locale,
         active: true
       });
     }
@@ -8201,7 +8232,7 @@ var CSSQueryHandler = class extends QueryHandler {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/generated/injected.js
-var source = '"use strict";var N=Object.defineProperty;var X=Object.getOwnPropertyDescriptor;var B=Object.getOwnPropertyNames;var Y=Object.prototype.hasOwnProperty;var l=(t,e)=>{for(var r in e)N(t,r,{get:e[r],enumerable:!0})},G=(t,e,r,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let s of B(e))!Y.call(t,s)&&s!==r&&N(t,s,{get:()=>e[s],enumerable:!(o=X(e,s))||o.enumerable});return t};var J=t=>G(N({},"__esModule",{value:!0}),t);var pe={};l(pe,{default:()=>he});module.exports=J(pe);var x=class extends Error{constructor(e,r){super(e,r),this.name=this.constructor.name}get[Symbol.toStringTag](){return this.constructor.name}},p=class extends x{};var c=class t{static create(e){return new t(e)}static async race(e){let r=new Set;try{let o=e.map(s=>s instanceof t?(s.#s&&r.add(s),s.valueOrThrow()):s);return await Promise.race(o)}finally{for(let o of r)o.reject(new Error("Timeout cleared"))}}#e=!1;#r=!1;#o;#t;#a=new Promise(e=>{this.#t=e});#s;#i;constructor(e){e&&e.timeout>0&&(this.#i=new p(e.message),this.#s=setTimeout(()=>{this.reject(this.#i)},e.timeout))}#l(e){clearTimeout(this.#s),this.#o=e,this.#t()}resolve(e){this.#r||this.#e||(this.#e=!0,this.#l(e))}reject(e){this.#r||this.#e||(this.#r=!0,this.#l(e))}resolved(){return this.#e}finished(){return this.#e||this.#r}value(){return this.#o}#n;valueOrThrow(){return this.#n||(this.#n=(async()=>{if(await this.#a,this.#r)throw this.#o;return this.#o})()),this.#n}};var L=new Map,W=t=>{let e=L.get(t);return e||(e=new Function(`return ${t}`)(),L.set(t,e),e)};var E={};l(E,{ariaQuerySelector:()=>z,ariaQuerySelectorAll:()=>b});var z=(t,e)=>globalThis.__ariaQuerySelector(t,e),b=async function*(t,e){yield*await globalThis.__ariaQuerySelectorAll(t,e)};var v={};l(v,{cssQuerySelector:()=>K,cssQuerySelectorAll:()=>Z});var K=(t,e)=>t.querySelector(e),Z=function(t,e){return t.querySelectorAll(e)};var A={};l(A,{CustomQuerySelectorRegistry:()=>y,customQuerySelectors:()=>P});var y=class{#e=new Map;register(e,r){if(!r.queryOne&&r.queryAll){let o=r.queryAll;r.queryOne=(s,i)=>{for(let n of o(s,i))return n;return null}}else if(r.queryOne&&!r.queryAll){let o=r.queryOne;r.queryAll=(s,i)=>{let n=o(s,i);return n?[n]:[]}}else if(!r.queryOne||!r.queryAll)throw new Error("At least one query method must be defined.");this.#e.set(e,{querySelector:r.queryOne,querySelectorAll:r.queryAll})}unregister(e){this.#e.delete(e)}get(e){return this.#e.get(e)}clear(){this.#e.clear()}},P=new y;var R={};l(R,{pierceQuerySelector:()=>ee,pierceQuerySelectorAll:()=>te});var ee=(t,e)=>{let r=null,o=s=>{let i=document.createTreeWalker(s,NodeFilter.SHOW_ELEMENT);do{let n=i.currentNode;n.shadowRoot&&o(n.shadowRoot),!(n instanceof ShadowRoot)&&n!==s&&!r&&n.matches(e)&&(r=n)}while(!r&&i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r},te=(t,e)=>{let r=[],o=s=>{let i=document.createTreeWalker(s,NodeFilter.SHOW_ELEMENT);do{let n=i.currentNode;n.shadowRoot&&o(n.shadowRoot),!(n instanceof ShadowRoot)&&n!==s&&n.matches(e)&&r.push(n)}while(i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r};var u=(t,e)=>{if(!t)throw new Error(e)};var w=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=new MutationObserver(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())}),this.#o.observe(this.#r,{childList:!0,subtree:!0,attributes:!0})}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(this.#o.disconnect(),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}},T=class{#e;#r;constructor(e){this.#e=e}async start(){let e=this.#r=c.create(),r=await this.#e();if(r){e.resolve(r);return}let o=async()=>{if(e.finished())return;let s=await this.#e();if(!s){window.requestAnimationFrame(o);return}e.resolve(s),await this.stop()};window.requestAnimationFrame(o)}async stop(){u(this.#r,"Polling never started."),this.#r.finished()||this.#r.reject(new Error("Polling stopped"))}result(){return u(this.#r,"Polling never started."),this.#r.valueOrThrow()}},S=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=setInterval(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())},this.#r)}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(clearInterval(this.#o),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}};var _={};l(_,{PCombinator:()=>H,pQuerySelector:()=>fe,pQuerySelectorAll:()=>$});var a=class{static async*map(e,r){for await(let o of e)yield await r(o)}static async*flatMap(e,r){for await(let o of e)yield*r(o)}static async collect(e){let r=[];for await(let o of e)r.push(o);return r}static async first(e){for await(let r of e)return r}};var C={};l(C,{textQuerySelectorAll:()=>m});var re=new Set(["checkbox","image","radio"]),oe=t=>t instanceof HTMLSelectElement||t instanceof HTMLTextAreaElement||t instanceof HTMLInputElement&&!re.has(t.type),se=new Set(["SCRIPT","STYLE"]),f=t=>!se.has(t.nodeName)&&!document.head?.contains(t),I=new WeakMap,F=t=>{for(;t;)I.delete(t),t instanceof ShadowRoot?t=t.host:t=t.parentNode},j=new WeakSet,ne=new MutationObserver(t=>{for(let e of t)F(e.target)}),d=t=>{let e=I.get(t);if(e||(e={full:"",immediate:[]},!f(t)))return e;let r="";if(oe(t))e.full=t.value,e.immediate.push(t.value),t.addEventListener("input",o=>{F(o.target)},{once:!0,capture:!0});else{for(let o=t.firstChild;o;o=o.nextSibling){if(o.nodeType===Node.TEXT_NODE){e.full+=o.nodeValue??"",r+=o.nodeValue??"";continue}r&&e.immediate.push(r),r="",o.nodeType===Node.ELEMENT_NODE&&(e.full+=d(o).full)}r&&e.immediate.push(r),t instanceof Element&&t.shadowRoot&&(e.full+=d(t.shadowRoot).full),j.has(t)||(ne.observe(t,{childList:!0,characterData:!0,subtree:!0}),j.add(t))}return I.set(t,e),e};var m=function*(t,e){let r=!1;for(let o of t.childNodes)if(o instanceof Element&&f(o)){let s;o.shadowRoot?s=m(o.shadowRoot,e):s=m(o,e);for(let i of s)yield i,r=!0}r||t instanceof Element&&f(t)&&d(t).full.includes(e)&&(yield t)};var k={};l(k,{checkVisibility:()=>le,pierce:()=>g,pierceAll:()=>O});var ie=["hidden","collapse"],le=(t,e)=>{if(!t)return e===!1;if(e===void 0)return t;let r=t.nodeType===Node.TEXT_NODE?t.parentElement:t,o=window.getComputedStyle(r),s=o&&!ie.includes(o.visibility)&&!ae(r);return e===s?t:!1};function ae(t){let e=t.getBoundingClientRect();return e.width===0||e.height===0}var ce=t=>"shadowRoot"in t&&t.shadowRoot instanceof ShadowRoot;function*g(t){ce(t)?yield t.shadowRoot:yield t}function*O(t){t=g(t).next().value,yield t;let e=[document.createTreeWalker(t,NodeFilter.SHOW_ELEMENT)];for(let r of e){let o;for(;o=r.nextNode();)o.shadowRoot&&(yield o.shadowRoot,e.push(document.createTreeWalker(o.shadowRoot,NodeFilter.SHOW_ELEMENT)))}}var D={};l(D,{xpathQuerySelectorAll:()=>q});var q=function*(t,e,r=-1){let s=(t.ownerDocument||document).evaluate(e,t,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE),i=[],n;for(;(n=s.iterateNext())&&(i.push(n),!(r&&i.length===r)););for(let h=0;h<i.length;h++)n=i[h],yield n,i[h]=null};var ue=/[-\\w\\P{ASCII}*]/u,H=(r=>(r.Descendent=">>>",r.Child=">>>>",r))(H||{}),V=t=>"querySelectorAll"in t,Q=class{#e;#r=[];#o=void 0;elements;constructor(e,r){this.elements=[e],this.#e=r,this.#t()}async run(){for(typeof this.#o=="string"&&this.#o.trimStart()===":scope"&&this.#t();this.#o!==void 0;this.#t()){let e=this.#o;typeof e=="string"?e[0]&&ue.test(e[0])?this.elements=a.flatMap(this.elements,async function*(r){V(r)&&(yield*r.querySelectorAll(e))}):this.elements=a.flatMap(this.elements,async function*(r){if(!r.parentElement){if(!V(r))return;yield*r.querySelectorAll(e);return}let o=0;for(let s of r.parentElement.children)if(++o,s===r)break;yield*r.parentElement.querySelectorAll(`:scope>:nth-child(${o})${e}`)}):this.elements=a.flatMap(this.elements,async function*(r){switch(e.name){case"text":yield*m(r,e.value);break;case"xpath":yield*q(r,e.value);break;case"aria":yield*b(r,e.value);break;default:let o=P.get(e.name);if(!o)throw new Error(`Unknown selector type: ${e.name}`);yield*o.querySelectorAll(r,e.value)}})}}#t(){if(this.#r.length!==0){this.#o=this.#r.shift();return}if(this.#e.length===0){this.#o=void 0;return}let e=this.#e.shift();switch(e){case">>>>":{this.elements=a.flatMap(this.elements,g),this.#t();break}case">>>":{this.elements=a.flatMap(this.elements,O),this.#t();break}default:this.#r=e,this.#t();break}}},M=class{#e=new WeakMap;calculate(e,r=[]){if(e===null)return r;e instanceof ShadowRoot&&(e=e.host);let o=this.#e.get(e);if(o)return[...o,...r];let s=0;for(let n=e.previousSibling;n;n=n.previousSibling)++s;let i=this.calculate(e.parentNode,[s]);return this.#e.set(e,i),[...i,...r]}},U=(t,e)=>{if(t.length+e.length===0)return 0;let[r=-1,...o]=t,[s=-1,...i]=e;return r===s?U(o,i):r<s?-1:1},de=async function*(t){let e=new Set;for await(let o of t)e.add(o);let r=new M;yield*[...e.values()].map(o=>[o,r.calculate(o)]).sort(([,o],[,s])=>U(o,s)).map(([o])=>o)},$=function(t,e){let r=JSON.parse(e);if(r.some(o=>{let s=0;return o.some(i=>(typeof i=="string"?++s:s=0,s>1))}))throw new Error("Multiple deep combinators found in sequence.");return de(a.flatMap(r,o=>{let s=new Q(t,o);return s.run(),s.elements}))},fe=async function(t,e){for await(let r of $(t,e))return r;return null};var me=Object.freeze({...E,...A,...R,..._,...C,...k,...D,...v,Deferred:c,createFunction:W,createTextContent:d,IntervalPoller:S,isSuitableNodeForTextMatching:f,MutationPoller:w,RAFPoller:T}),he=me;\n';
+var source = '"use strict";var N=Object.defineProperty;var B=Object.getOwnPropertyDescriptor;var Y=Object.getOwnPropertyNames;var G=Object.prototype.hasOwnProperty;var l=(t,e)=>{for(var r in e)N(t,r,{get:e[r],enumerable:!0})},J=(t,e,r,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let n of Y(e))!G.call(t,n)&&n!==r&&N(t,n,{get:()=>e[n],enumerable:!(o=B(e,n))||o.enumerable});return t};var z=t=>J(N({},"__esModule",{value:!0}),t);var ye={};l(ye,{default:()=>pe});module.exports=z(ye);var b=class extends Error{constructor(e,r){super(e,r),this.name=this.constructor.name}get[Symbol.toStringTag](){return this.constructor.name}},p=class extends b{};var c=class t{static create(e){return new t(e)}static async race(e){let r=new Set;try{let o=e.map(n=>n instanceof t?(n.#n&&r.add(n),n.valueOrThrow()):n);return await Promise.race(o)}finally{for(let o of r)o.reject(new Error("Timeout cleared"))}}#e=!1;#r=!1;#o;#t;#a=new Promise(e=>{this.#t=e});#n;#i;constructor(e){e&&e.timeout>0&&(this.#i=new p(e.message),this.#n=setTimeout(()=>{this.reject(this.#i)},e.timeout))}#l(e){clearTimeout(this.#n),this.#o=e,this.#t()}resolve(e){this.#r||this.#e||(this.#e=!0,this.#l(e))}reject(e){this.#r||this.#e||(this.#r=!0,this.#l(e))}resolved(){return this.#e}finished(){return this.#e||this.#r}value(){return this.#o}#s;valueOrThrow(){return this.#s||(this.#s=(async()=>{if(await this.#a,this.#r)throw this.#o;return this.#o})()),this.#s}};var W=new Map,j=t=>{let e=W.get(t);return e||(e=new Function(`return ${t}`)(),W.set(t,e),e)};var v={};l(v,{ariaQuerySelector:()=>K,ariaQuerySelectorAll:()=>x});var K=(t,e)=>globalThis.__ariaQuerySelector(t,e),x=async function*(t,e){yield*await globalThis.__ariaQuerySelectorAll(t,e)};var E={};l(E,{cssQuerySelector:()=>Z,cssQuerySelectorAll:()=>ee});var Z=(t,e)=>t.querySelector(e),ee=function(t,e){return t.querySelectorAll(e)};var A={};l(A,{CustomQuerySelectorRegistry:()=>y,customQuerySelectors:()=>P});var y=class{#e=new Map;register(e,r){if(!r.queryOne&&r.queryAll){let o=r.queryAll;r.queryOne=(n,i)=>{for(let s of o(n,i))return s;return null}}else if(r.queryOne&&!r.queryAll){let o=r.queryOne;r.queryAll=(n,i)=>{let s=o(n,i);return s?[s]:[]}}else if(!r.queryOne||!r.queryAll)throw new Error("At least one query method must be defined.");this.#e.set(e,{querySelector:r.queryOne,querySelectorAll:r.queryAll})}unregister(e){this.#e.delete(e)}get(e){return this.#e.get(e)}clear(){this.#e.clear()}},P=new y;var R={};l(R,{pierceQuerySelector:()=>te,pierceQuerySelectorAll:()=>re});var te=(t,e)=>{let r=null,o=n=>{let i=document.createTreeWalker(n,NodeFilter.SHOW_ELEMENT);do{let s=i.currentNode;s.shadowRoot&&o(s.shadowRoot),!(s instanceof ShadowRoot)&&s!==n&&!r&&s.matches(e)&&(r=s)}while(!r&&i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r},re=(t,e)=>{let r=[],o=n=>{let i=document.createTreeWalker(n,NodeFilter.SHOW_ELEMENT);do{let s=i.currentNode;s.shadowRoot&&o(s.shadowRoot),!(s instanceof ShadowRoot)&&s!==n&&s.matches(e)&&r.push(s)}while(i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r};var u=(t,e)=>{if(!t)throw new Error(e)};var w=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=new MutationObserver(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())}),this.#o.observe(this.#r,{childList:!0,subtree:!0,attributes:!0})}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(this.#o.disconnect(),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}},T=class{#e;#r;constructor(e){this.#e=e}async start(){let e=this.#r=c.create(),r=await this.#e();if(r){e.resolve(r);return}let o=async()=>{if(e.finished())return;let n=await this.#e();if(!n){window.requestAnimationFrame(o);return}e.resolve(n),await this.stop()};window.requestAnimationFrame(o)}async stop(){u(this.#r,"Polling never started."),this.#r.finished()||this.#r.reject(new Error("Polling stopped"))}result(){return u(this.#r,"Polling never started."),this.#r.valueOrThrow()}},S=class{#e;#r;#o;#t;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#t=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=setInterval(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())},this.#r)}async stop(){u(this.#t,"Polling never started."),this.#t.finished()||this.#t.reject(new Error("Polling stopped")),this.#o&&(clearInterval(this.#o),this.#o=void 0)}result(){return u(this.#t,"Polling never started."),this.#t.valueOrThrow()}};var L={};l(L,{PCombinator:()=>U,pQuerySelector:()=>me,pQuerySelectorAll:()=>X});var a=class{static async*map(e,r){for await(let o of e)yield await r(o)}static async*flatMap(e,r){for await(let o of e)yield*r(o)}static async collect(e){let r=[];for await(let o of e)r.push(o);return r}static async first(e){for await(let r of e)return r}};var O={};l(O,{textQuerySelectorAll:()=>m});var oe=new Set(["checkbox","image","radio"]),ne=t=>t instanceof HTMLSelectElement||t instanceof HTMLTextAreaElement||t instanceof HTMLInputElement&&!oe.has(t.type),se=new Set(["SCRIPT","STYLE"]),f=t=>!se.has(t.nodeName)&&!document.head?.contains(t),C=new WeakMap,V=t=>{for(;t;)C.delete(t),t instanceof ShadowRoot?t=t.host:t=t.parentNode},F=new WeakSet,I,ie=()=>{let t=globalThis.MutationObserver;if(!t)throw new Error("MutationObserver is not available in this environment.");return I||(I=new t(e=>{for(let r of e)V(r.target)})),I},d=t=>{let e=C.get(t);if(e||(e={full:"",immediate:[]},!f(t)))return e;let r="";if(ne(t))e.full=t.value,e.immediate.push(t.value),t.addEventListener("input",o=>{V(o.target)},{once:!0,capture:!0});else{for(let o=t.firstChild;o;o=o.nextSibling){if(o.nodeType===Node.TEXT_NODE){e.full+=o.nodeValue??"",r+=o.nodeValue??"";continue}r&&e.immediate.push(r),r="",o.nodeType===Node.ELEMENT_NODE&&(e.full+=d(o).full)}r&&e.immediate.push(r),t instanceof Element&&t.shadowRoot&&(e.full+=d(t.shadowRoot).full),F.has(t)||(ie().observe(t,{childList:!0,characterData:!0,subtree:!0}),F.add(t))}return C.set(t,e),e};var m=function*(t,e){let r=!1;for(let o of t.childNodes)if(o instanceof Element&&f(o)){let n;o.shadowRoot?n=m(o.shadowRoot,e):n=m(o,e);for(let i of n)yield i,r=!0}r||t instanceof Element&&f(t)&&d(t).full.includes(e)&&(yield t)};var M={};l(M,{checkVisibility:()=>ae,pierce:()=>g,pierceAll:()=>k});var le=["hidden","collapse"],ae=(t,e)=>{if(!t)return e===!1;if(e===void 0)return t;let r=t.nodeType===Node.TEXT_NODE?t.parentElement:t,o=window.getComputedStyle(r),n=o&&!le.includes(o.visibility)&&!ce(r);return e===n?t:!1};function ce(t){let e=t.getBoundingClientRect();return e.width===0||e.height===0}var ue=t=>"shadowRoot"in t&&t.shadowRoot instanceof ShadowRoot;function*g(t){ue(t)?yield t.shadowRoot:yield t}function*k(t){t=g(t).next().value,yield t;let e=[document.createTreeWalker(t,NodeFilter.SHOW_ELEMENT)];for(let r of e){let o;for(;o=r.nextNode();)o.shadowRoot&&(yield o.shadowRoot,e.push(document.createTreeWalker(o.shadowRoot,NodeFilter.SHOW_ELEMENT)))}}var D={};l(D,{xpathQuerySelectorAll:()=>q});var q=function*(t,e,r=-1){let n=(t.ownerDocument||document).evaluate(e,t,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE),i=[],s;for(;(s=n.iterateNext())&&(i.push(s),!(r&&i.length===r)););for(let h=0;h<i.length;h++)s=i[h],yield s,i[h]=null};var de=/[-\\w\\P{ASCII}*]/u,U=(r=>(r.Descendent=">>>",r.Child=">>>>",r))(U||{}),H=t=>"querySelectorAll"in t,Q=class{#e;#r=[];#o=void 0;elements;constructor(e,r){this.elements=[e],this.#e=r,this.#t()}async run(){for(typeof this.#o=="string"&&this.#o.trimStart()===":scope"&&this.#t();this.#o!==void 0;this.#t()){let e=this.#o;typeof e=="string"?e[0]&&de.test(e[0])?this.elements=a.flatMap(this.elements,async function*(r){H(r)&&(yield*r.querySelectorAll(e))}):this.elements=a.flatMap(this.elements,async function*(r){if(!r.parentElement){if(!H(r))return;yield*r.querySelectorAll(e);return}let o=0;for(let n of r.parentElement.children)if(++o,n===r)break;yield*r.parentElement.querySelectorAll(`:scope>:nth-child(${o})${e}`)}):this.elements=a.flatMap(this.elements,async function*(r){switch(e.name){case"text":yield*m(r,e.value);break;case"xpath":yield*q(r,e.value);break;case"aria":yield*x(r,e.value);break;default:let o=P.get(e.name);if(!o)throw new Error(`Unknown selector type: ${e.name}`);yield*o.querySelectorAll(r,e.value)}})}}#t(){if(this.#r.length!==0){this.#o=this.#r.shift();return}if(this.#e.length===0){this.#o=void 0;return}let e=this.#e.shift();switch(e){case">>>>":{this.elements=a.flatMap(this.elements,g),this.#t();break}case">>>":{this.elements=a.flatMap(this.elements,k),this.#t();break}default:this.#r=e,this.#t();break}}},_=class{#e=new WeakMap;calculate(e,r=[]){if(e===null)return r;e instanceof ShadowRoot&&(e=e.host);let o=this.#e.get(e);if(o)return[...o,...r];let n=0;for(let s=e.previousSibling;s;s=s.previousSibling)++n;let i=this.calculate(e.parentNode,[n]);return this.#e.set(e,i),[...i,...r]}},$=(t,e)=>{if(t.length+e.length===0)return 0;let[r=-1,...o]=t,[n=-1,...i]=e;return r===n?$(o,i):r<n?-1:1},fe=async function*(t){let e=new Set;for await(let o of t)e.add(o);let r=new _;yield*[...e.values()].map(o=>[o,r.calculate(o)]).sort(([,o],[,n])=>$(o,n)).map(([o])=>o)},X=function(t,e){let r=JSON.parse(e);if(r.some(o=>{let n=0;return o.some(i=>(typeof i=="string"?++n:n=0,n>1))}))throw new Error("Multiple deep combinators found in sequence.");return fe(a.flatMap(r,o=>{let n=new Q(t,o);return n.run(),n.elements}))},me=async function(t,e){for await(let r of X(t,e))return r;return null};var he=Object.freeze({...v,...A,...R,...L,...O,...M,...D,...E,Deferred:c,createFunction:j,createTextContent:d,IntervalPoller:S,isSuitableNodeForTextMatching:f,MutationPoller:w,RAFPoller:T}),pe=he;\n';
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/ScriptInjector.js
 var ScriptInjector = class {
@@ -11253,7 +11284,7 @@ async function releaseObject(client, remoteObject) {
     return;
   }
   await client.send("Runtime.releaseObject", { objectId: remoteObject.objectId }).catch((error) => {
-    debugError(error);
+    debugError?.(error);
   });
 }
 
@@ -11353,7 +11384,7 @@ var CdpElementHandle = (() => {
           objectId: this.id
         });
       } catch (error) {
-        debugError(error);
+        debugError?.(error);
         await super.scrollIntoView();
       }
     }
@@ -11563,7 +11594,7 @@ var ExecutionContext = class extends EventEmitter {
             return;
           }
         }
-        debugError(error);
+        debugError?.(error);
       }
     } catch (e_1) {
       env_1.error = e_1;
@@ -11595,7 +11626,7 @@ var ExecutionContext = class extends EventEmitter {
       const binding = this.#bindings.get(name);
       await binding?.run(this, seq, args, isTrivial);
     } catch (err) {
-      debugError(err);
+      debugError?.(err);
     }
   }
   get id() {
@@ -11634,7 +11665,7 @@ var ExecutionContext = class extends EventEmitter {
     try {
       await this.#addBinding(binding);
     } catch (err) {
-      debugError(err);
+      debugError?.(err);
     }
   }
   /**
@@ -11993,7 +12024,7 @@ var Accessibility = class {
             const iframeSnapshot = await frame.accessibility.snapshot(options);
             root2.iframeSnapshot = iframeSnapshot ?? void 0;
           } catch (error) {
-            debugError(error);
+            debugError?.(error);
           }
         } catch (e_1) {
           env_1.error = e_1;
@@ -12002,9 +12033,9 @@ var Accessibility = class {
           __disposeResources11(env_1);
         }
       }
-      for (const child of root2.children) {
-        await populateIframes(child);
-      }
+      await Promise.all(root2.children.map((child) => {
+        return populateIframes(child);
+      }));
     };
     let needle = defaultRoot;
     if (!defaultRoot) {
@@ -12679,6 +12710,7 @@ var CdpWebWorker = class extends WebWorker {
   #id;
   #targetType;
   #emitter;
+  #workerLoaded = new Deferred();
   get internalEmitter() {
     return this.#emitter;
   }
@@ -12692,6 +12724,9 @@ var CdpWebWorker = class extends WebWorker {
     this.#client.once("Runtime.executionContextCreated", async (event) => {
       this.#world.setContext(new ExecutionContext(client, event.context, this.#world));
     });
+    this.#client.once("Inspector.workerScriptLoaded", () => {
+      this.#workerLoaded.resolve();
+    });
     this.#world.emitter.on("consoleapicalled", async (event) => {
       try {
         const values = event.args.map((arg) => {
@@ -12701,7 +12736,7 @@ var CdpWebWorker = class extends WebWorker {
         const noWorkerListeners = this.listenerCount(WebWorkerEvent.Console) === 0;
         if (noInternalListeners && noWorkerListeners) {
           for (const value of values) {
-            void value.dispose().catch(debugError);
+            void value.dispose().catch(debugCatchError);
           }
           return;
         }
@@ -12711,15 +12746,17 @@ var CdpWebWorker = class extends WebWorker {
           this.emit(WebWorkerEvent.Console, consoleMessages);
         }
       } catch (err) {
-        debugError(err);
+        debugError?.(err);
       }
     });
     this.#client.on("Runtime.exceptionThrown", exceptionThrown);
     this.#client.once(CDPSessionEvent.Disconnected, () => {
       this.#world.dispose();
     });
-    networkManager?.addClient(this.#client).catch(debugError);
-    this.#client.send("Runtime.enable").catch(debugError);
+    networkManager?.addClient(this.#client).catch(debugCatchError ?? (() => {
+    }));
+    this.#client.send("Runtime.enable").catch(debugCatchError ?? (() => {
+    }));
   }
   mainRealm() {
     return this.#world;
@@ -12749,6 +12786,14 @@ var CdpWebWorker = class extends WebWorker {
           self.close();
         });
     }
+  }
+  async evaluate(func, ...args) {
+    await this.#workerLoaded.valueOrThrow();
+    return await super.evaluate(func, ...args);
+  }
+  async evaluateHandle(func, ...args) {
+    await this.#workerLoaded.valueOrThrow();
+    return await super.evaluateHandle(func, ...args);
   }
 };
 
@@ -13310,7 +13355,7 @@ var CdpFrame = (() => {
         this.#client.send("Runtime.addBinding", {
           name: CDP_BINDING_PREFIX + binding.name
         }),
-        this.evaluate(binding.initSource).catch(debugError)
+        this.evaluate(binding.initSource).catch(debugCatchError)
       ]);
     }
     async removeExposedFunctionBinding(binding) {
@@ -13323,7 +13368,7 @@ var CdpFrame = (() => {
         }),
         this.evaluate((name) => {
           globalThis[name] = void 0;
-        }, binding.name).catch(debugError)
+        }, binding.name).catch(debugCatchError)
       ]);
     }
     async waitForDevicePrompt(options = {}) {
@@ -13756,13 +13801,16 @@ var InterceptResolutionAction;
 })(InterceptResolutionAction || (InterceptResolutionAction = {}));
 function headersArray(headers) {
   const result = [];
-  for (const name in headers) {
+  for (const name of Object.keys(headers)) {
     const value = headers[name];
-    if (!Object.is(value, void 0)) {
-      const values = Array.isArray(value) ? value : [value];
-      result.push(...values.map((value2) => {
-        return { name, value: value2 + "" };
-      }));
+    if (value !== void 0) {
+      if (Array.isArray(value)) {
+        for (const v2 of value) {
+          result.push({ name, value: v2 + "" });
+        }
+      } else {
+        result.push({ name, value: value + "" });
+      }
     }
   }
   return result;
@@ -13853,7 +13901,7 @@ function handleError(error) {
   error.originalMessage.includes("invalid argument")) {
     throw error;
   }
-  debugError(error);
+  debugError?.(error);
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/HTTPRequest.js
@@ -13927,7 +13975,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
       });
       return result.postData;
     } catch (err) {
-      debugError(err);
+      debugError?.(err);
       return;
     }
   }
@@ -14418,6 +14466,7 @@ var NetworkManager = class extends EventEmitter {
   #userAgent;
   #userAgentMetadata;
   #platform;
+  #acceptLanguage;
   #handlers = [
     ["Fetch.requestPaused", this.#onRequestPaused],
     ["Fetch.authRequired", this.#onAuthRequired],
@@ -14431,7 +14480,7 @@ var NetworkManager = class extends EventEmitter {
     [CDPSessionEvent.Disconnected, this.#removeClient]
   ];
   #clients = /* @__PURE__ */ new Map();
-  #networkEnabled = true;
+  #networkEnabled;
   constructor(frameManager, networkEnabled) {
     super();
     this.#frameManager = frameManager;
@@ -14567,13 +14616,19 @@ var NetworkManager = class extends EventEmitter {
     this.#platform = platform;
     await this.#applyToAllClients(this.#applyUserAgent.bind(this));
   }
+  async setAcceptLanguage(acceptLanguage) {
+    this.#acceptLanguage = acceptLanguage;
+    await this.#applyToAllClients(this.#applyUserAgent.bind(this));
+  }
   async #applyUserAgent(client) {
-    if (this.#userAgent === void 0) {
+    const userAgent = this.#userAgent ?? await this.#frameManager.page().browser().userAgent();
+    if (userAgent === void 0) {
       return;
     }
     try {
       await client.send("Network.setUserAgentOverride", {
-        userAgent: this.#userAgent,
+        userAgent,
+        acceptLanguage: this.#acceptLanguage,
         userAgentMetadata: this.#userAgentMetadata,
         platform: this.#platform
       });
@@ -14668,10 +14723,10 @@ var NetworkManager = class extends EventEmitter {
       username: void 0,
       password: void 0
     };
-    client.send("Fetch.continueWithAuth", {
+    void client.send("Fetch.continueWithAuth", {
       requestId: event.requestId,
       authChallengeResponse: { response, username, password }
-    }).catch(debugError);
+    }).catch(debugCatchError);
   }
   /**
    * CDP may send a Fetch.requestPaused without or before a
@@ -14682,9 +14737,9 @@ var NetworkManager = class extends EventEmitter {
    */
   #onRequestPaused(client, event) {
     if (!this.#userRequestInterceptionEnabled && this.#protocolRequestInterceptionEnabled) {
-      client.send("Fetch.continueRequest", {
+      void client.send("Fetch.continueRequest", {
         requestId: event.requestId
-      }).catch(debugError);
+      }).catch(debugCatchError);
     }
     const { networkId: networkRequestId, requestId: fetchRequestId } = event;
     if (!networkRequestId) {
@@ -14773,7 +14828,7 @@ var NetworkManager = class extends EventEmitter {
       request = this.#networkEventManager.getRequest(event.requestId);
     }
     if (!request) {
-      debugError(new Error(`Request ${event.requestId} was served from cache but we could not find the corresponding request object`));
+      debugError?.(new Error(`Request ${event.requestId} was served from cache but we could not find the corresponding request object`));
       return;
     }
     this.emit(NetworkManagerEvent.RequestServedFromCache, request);
@@ -14794,7 +14849,7 @@ var NetworkManager = class extends EventEmitter {
     }
     const extraInfos = this.#networkEventManager.responseExtraInfo(responseReceived.requestId);
     if (extraInfos.length) {
-      debugError(new Error("Unexpected extraInfo events for request " + responseReceived.requestId));
+      debugError?.(new Error("Unexpected extraInfo events for request " + responseReceived.requestId));
     }
     if (responseReceived.response.fromDiskCache) {
       extraInfo = null;
@@ -14935,7 +14990,7 @@ var FrameManager = class extends EventEmitter {
     this.#timeoutSettings = timeoutSettings;
     this.setupEventListeners(this.#client);
     client.once(CDPSessionEvent.Disconnected, () => {
-      this.#onClientDisconnect().catch(debugError);
+      void this.#onClientDisconnect().catch(debugCatchError);
     });
   }
   /**
@@ -14985,7 +15040,7 @@ var FrameManager = class extends EventEmitter {
     }
     this.setupEventListeners(client);
     client.once(CDPSessionEvent.Disconnected, () => {
-      this.#onClientDisconnect().catch(debugError);
+      void this.#onClientDisconnect().catch(debugCatchError);
     });
     await this.initialize(client, frame);
     await this.#networkManager.addClient(client);
@@ -15115,7 +15170,7 @@ var FrameManager = class extends EventEmitter {
       }
       return frame._client().send("Page.removeScriptToEvaluateOnNewDocument", {
         identifier: identifier2
-      }).catch(debugError);
+      }).catch(debugCatchError);
     }));
   }
   onAttachedToTarget(target) {
@@ -15127,7 +15182,7 @@ var FrameManager = class extends EventEmitter {
       frame.updateClient(target._session());
     }
     this.setupEventListeners(target._session());
-    void this.initialize(target._session(), frame).catch(debugError);
+    void this.initialize(target._session(), frame).catch(debugCatchError);
   }
   _deviceRequestPromptManager(client) {
     let manager = this.#deviceRequestPromptManagerMap.get(client);
@@ -15230,7 +15285,7 @@ var FrameManager = class extends EventEmitter {
         frameId: frame._id,
         worldName: name,
         grantUniveralAccess: true
-      }).catch(debugError);
+      }).catch(debugCatchError);
     }));
     this.#isolatedWorlds.add(key);
   }
@@ -15288,7 +15343,7 @@ var FrameManager = class extends EventEmitter {
       } else if (this.#isExtensionOrigin(origin)) {
         const extId = this.#extractExtensionId(origin);
         if (!extId) {
-          debugError("Error while parsing extension id");
+          debugError?.("Error while parsing extension id");
           return;
         }
         if (frame.extensionWorlds[extId]) {
@@ -16453,7 +16508,7 @@ var WebMCPToolCall = class {
       this.input = JSON.parse(input);
     } catch (error) {
       this.input = {};
-      debugError(error);
+      debugError?.(error);
     }
   }
 };
@@ -16472,6 +16527,7 @@ var WebMCP = class extends EventEmitter {
       const frameTools = this.#tools.get(tool.frameId) ?? /* @__PURE__ */ new Map();
       if (!this.#tools.has(tool.frameId)) {
         this.#tools.set(tool.frameId, frameTools);
+        this.#listenToContextDestroyed(frame);
       }
       const addedTool = new WebMCPTool(this, tool, frame);
       frameTools.set(tool.name, addedTool);
@@ -16515,7 +16571,7 @@ var WebMCP = class extends EventEmitter {
     };
     this.emit("toolresponded", response);
   };
-  #onFrameNavigated = (frame) => {
+  #onContextDisposed = (frame) => {
     this.#pendingCalls.clear();
     const frameTools = this.#tools.get(frame._id);
     if (!frameTools) {
@@ -16527,6 +16583,11 @@ var WebMCP = class extends EventEmitter {
       this.emit("toolsremoved", { tools });
     }
   };
+  #listenToContextDestroyed(frame) {
+    frame.mainRealm().context?.once("disposed", () => {
+      this.#onContextDisposed(frame);
+    });
+  }
   /**
    * @internal
    */
@@ -16534,14 +16595,13 @@ var WebMCP = class extends EventEmitter {
     super();
     this.#client = client;
     this.#frameManager = frameManager;
-    this.#frameManager.on(FrameManagerEvent.FrameNavigated, this.#onFrameNavigated);
     this.#bindListeners();
   }
   /**
    * @internal
    */
   async initialize() {
-    return await this.#client.send("WebMCP.enable").catch(debugError);
+    return await this.#client.send("WebMCP.enable").catch(debugCatchError);
   }
   /**
    * @internal
@@ -16658,7 +16718,7 @@ var CdpPage = class _CdpPage extends Page {
         await page.setViewport(defaultViewport);
       } catch (err) {
         if (isErrorLike(err) && isTargetClosedError(err)) {
-          debugError(err);
+          debugError?.(err);
         } else {
           throw err;
         }
@@ -16744,11 +16804,11 @@ var CdpPage = class _CdpPage extends Page {
     this.#tabTargetClient.on(CDPSessionEvent.Swapped, this.#onActivation.bind(this));
     this.#tabTargetClient.on(CDPSessionEvent.Ready, this.#onSecondaryTarget.bind(this));
     this.#targetManager.on("targetGone", this.#onDetachedFromTarget);
-    this.#tabTarget._isClosedDeferred.valueOrThrow().then(() => {
+    void this.#tabTarget._isClosedDeferred.valueOrThrow().then(() => {
       this.#targetManager.off("targetGone", this.#onDetachedFromTarget);
       this.emit("close", void 0);
       this.#closed = true;
-    }).catch(debugError);
+    }).catch(debugCatchError);
     this.#setupPrimaryTargetListeners();
     this.#attachExistingTargets();
   }
@@ -16790,8 +16850,8 @@ var CdpPage = class _CdpPage extends Page {
     if (session.target()._subtype() !== "prerender") {
       return;
     }
-    this.#frameManager.registerSpeculativeSession(session).catch(debugError);
-    this.#emulationManager.registerSpeculativeSession(session).catch(debugError);
+    void this.#frameManager.registerSpeculativeSession(session).catch(debugCatchError);
+    void this.#emulationManager.registerSpeculativeSession(session).catch(debugCatchError);
   }
   /**
    * Sets up listeners for the primary target. The primary target can change
@@ -16839,7 +16899,7 @@ var CdpPage = class _CdpPage extends Page {
         const noListenersForConsoleOnWorker = worker.listenerCount(WebWorkerEvent.Console) === 0;
         if (noListenersForConsoleOnPage && noListenersForConsoleOnWorker) {
           for (const arg of message.args()) {
-            void arg.dispose().catch(debugError);
+            void arg.dispose().catch(debugCatchError);
           }
           return;
         }
@@ -16861,7 +16921,7 @@ var CdpPage = class _CdpPage extends Page {
       ]);
     } catch (err) {
       if (isErrorLike(err) && isTargetClosedError(err)) {
-        debugError(err);
+        debugError?.(err);
       } else {
         throw err;
       }
@@ -17229,7 +17289,7 @@ var CdpPage = class _CdpPage extends Page {
     if (!hasPageConsoleListeners) {
       if (!hasWorkerConsoleListeners) {
         for (const value of values) {
-          void value.dispose().catch(debugError);
+          void value.dispose().catch(debugCatchError);
         }
       }
       return;
@@ -17322,6 +17382,10 @@ var CdpPage = class _CdpPage extends Page {
   async emulateTimezone(timezoneId) {
     return await this.#emulationManager.emulateTimezone(timezoneId);
   }
+  async emulateLocale(locale) {
+    await this.#emulationManager.emulateLocale(locale);
+    await this.#frameManager.networkManager.setAcceptLanguage(locale);
+  }
   async emulateIdleState(overrides) {
     return await this.#emulationManager.emulateIdleState(overrides);
   }
@@ -17356,7 +17420,7 @@ var CdpPage = class _CdpPage extends Page {
       if (omitBackground && (type === "png" || type === "webp")) {
         await this.#emulationManager.setTransparentBackgroundColor();
         stack.defer(async () => {
-          await this.#emulationManager.resetDefaultBackgroundColor().catch(debugError);
+          await this.#emulationManager.resetDefaultBackgroundColor().catch(debugCatchError);
         });
       }
       let clip = userClip;
@@ -17787,22 +17851,20 @@ var CdpExtension = class extends Extension {
       const targetUrl = target.url();
       return target.type() === "service_worker" && targetUrl.startsWith("chrome-extension://" + this.id);
     });
-    const workers = [];
-    for (const target of extensionWorkers) {
+    const workers = await Promise.all(extensionWorkers.map(async (target) => {
       try {
-        const worker = await target.worker();
-        if (worker) {
-          workers.push(worker);
-        }
+        return await target.worker();
       } catch (err) {
         if (this.#canIgnoreError(err)) {
-          debugError(err);
-          continue;
+          debugError?.(err);
+          return null;
         }
         throw err;
       }
-    }
-    return workers;
+    }));
+    return workers.filter((worker) => {
+      return worker !== null;
+    });
   }
   async pages() {
     const targets = this.#browser.targets();
@@ -17815,7 +17877,7 @@ var CdpExtension = class extends Extension {
         return await target.asPage();
       } catch (err) {
         if (this.#canIgnoreError(err)) {
-          debugError(err);
+          debugError?.(err);
           return null;
         }
         throw err;
@@ -17997,7 +18059,7 @@ var PageTarget = class _PageTarget extends CdpTarget {
     this.#defaultViewport = defaultViewport ?? void 0;
   }
   _initialize() {
-    this._initializedDeferred.valueOrThrow().then(async (result) => {
+    void this._initializedDeferred.valueOrThrow().then(async (result) => {
       if (result === InitializationStatus.ABORTED) {
         return;
       }
@@ -18018,7 +18080,7 @@ var PageTarget = class _PageTarget extends CdpTarget {
       const popupPage = await this.page();
       openerPage.emit("popup", popupPage);
       return true;
-    }).catch(debugError);
+    }).catch(debugCatchError);
     this._checkIfInitialized();
   }
   async page() {
@@ -18986,10 +19048,10 @@ var TargetManager = class extends EventEmitter {
     }
   }
   #silentDetach = async (session, parentSession) => {
-    await session.send("Runtime.runIfWaitingForDebugger").catch(debugError);
+    await session.send("Runtime.runIfWaitingForDebugger").catch(debugCatchError);
     await parentSession.send("Target.detachFromTarget", {
       sessionId: session.id()
-    }).catch(debugError);
+    }).catch(debugCatchError);
   };
   #getParentTarget = (parentSession) => {
     return parentSession instanceof CdpCDPSession ? parentSession.target() : null;
@@ -19053,6 +19115,7 @@ var TargetManager = class extends EventEmitter {
       throw new Error(`Session ${event.sessionId} was not created.`);
     }
     if (!this.#connection.isAutoAttached(targetInfo.targetId)) {
+      await this.#maybeSetupNetworkConditions(session, targetInfo);
       return;
     }
     if (!this.#initialAttachDone && !this.isUrlAllowed(targetInfo.url)) {
@@ -19060,6 +19123,13 @@ var TargetManager = class extends EventEmitter {
       return;
     }
     if (targetInfo.type === "service_worker") {
+      if (!this.isUrlAllowed(targetInfo.url)) {
+        await Promise.all([
+          this.#maybeSetupNetworkConditions(session, targetInfo),
+          session.send("Runtime.runIfWaitingForDebugger")
+        ]).catch(debugCatchError);
+        return;
+      }
       await this.#silentDetach(session, parentSession);
       if (this.#attachedTargetsByTargetId.has(targetInfo.targetId) || this.#ignoredTargets.has(targetInfo.targetId) || !this.#discoveredTargetsByTargetId.has(targetInfo.targetId)) {
         return;
@@ -19111,9 +19181,9 @@ var TargetManager = class extends EventEmitter {
         autoAttach: true,
         filter: this.#discoveryFilter
       }),
-      this.#maybeSetupNetworkConditions(session),
+      this.#maybeSetupNetworkConditions(session, targetInfo),
       session.send("Runtime.runIfWaitingForDebugger")
-    ]).catch(debugError);
+    ]).catch(debugCatchError);
   };
   #finishInitializationIfReady(targetId) {
     if (targetId !== void 0) {
@@ -19170,7 +19240,7 @@ var TargetManager = class extends EventEmitter {
     }
     return result;
   }
-  #maybeSetupNetworkConditions = async (session) => {
+  #maybeSetupNetworkConditions = async (session, targetInfo) => {
     if (this.#blocklist.length === 0 && this.#allowlist.length === 0) {
       return;
     }
@@ -19202,10 +19272,16 @@ var TargetManager = class extends EventEmitter {
         uploadThroughput: -1
       });
     }
-    await session.send("Network.emulateNetworkConditionsByRule", {
+    const needsNetwork = targetInfo.type === "worker" || targetInfo.type === "service_worker" || targetInfo.type === "shared_worker";
+    const promises = [];
+    if (needsNetwork) {
+      promises.push(session.send("Network.enable"));
+    }
+    promises.push(session.send("Network.emulateNetworkConditionsByRule", {
       offline: this.#blocklist.length > 0 ? true : void 0,
       matchedNetworkConditions
-    });
+    }));
+    await Promise.all(promises).catch(debugCatchError);
   };
 };
 
@@ -19245,6 +19321,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   #targetManager;
   #handleDevToolsAsPage = false;
   #extensions = /* @__PURE__ */ new Map();
+  #version;
   constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, issuesEnabled = true, handleDevToolsAsPage = false, blocklist, allowlist) {
     super();
     this.#networkEnabled = networkEnabled;
@@ -19527,8 +19604,16 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   get connected() {
     return !this.#connection._closed;
   }
-  #getVersion() {
-    return this.#connection.send("Browser.getVersion");
+  async #getVersion() {
+    if (!this.#version) {
+      this.#version = Deferred.create();
+      try {
+        this.#version.resolve(await this.#connection.send("Browser.getVersion"));
+      } catch (error) {
+        this.#version.reject(error);
+      }
+    }
+    return await this.#version.valueOrThrow();
   }
   get debugInfo() {
     return {

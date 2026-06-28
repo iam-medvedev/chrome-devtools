@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
+import * as SDK from '../../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as ElementsComponents from './components.js';
 describe('CSSQuery', () => {
@@ -48,6 +50,31 @@ describe('CSSQuery', () => {
         const queryElement = component.shadowRoot.querySelector('.query');
         assert.isNotNull(queryElement, 'query element should exist');
         assert.strictEqual(queryElement.innerText, '@container --bar {', 'text content of query element should match query text');
+    });
+    it('renders links in style queries correctly', () => {
+        const component = new ElementsComponents.CSSQuery.CSSQuery();
+        renderElementIntoDOM(component);
+        const clickListener = sinon.spy();
+        component.data = {
+            queryPrefix: '@container',
+            queryText: 'style(--foo: bar)',
+            onLinkActivate: clickListener,
+            jslogContext: 'foo',
+        };
+        const matchedStyles = sinon.createStubInstance(SDK.CSSMatchedStyles.CSSMatchedStyles);
+        const style = sinon.createStubInstance(SDK.CSSStyleDeclaration.CSSStyleDeclaration);
+        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        const variableValue = {
+            value: 'bar',
+            declaration: {},
+        };
+        matchedStyles.computeCSSVariable.callsFake((_style, name) => name === '--foo' ? variableValue : null);
+        component.parseStyleQueries(matchedStyles, style, node, '');
+        const swatch = component.shadowRoot.querySelector('devtools-link-swatch');
+        assert.exists(swatch);
+        assert.strictEqual(swatch.data.text, '--foo');
+        swatch.data.onLinkActivate('--foo');
+        sinon.assert.calledOnce(clickListener);
     });
 });
 //# sourceMappingURL=CSSQuery.test.js.map

@@ -96,7 +96,6 @@ models/issues_manager/SharedDictionaryIssue.test.js
 models/issues_manager/StylesheetLoadingIssue.test.js
 models/issues_manager/UnencodedDigestIssue.test.js
 models/stack_trace/DetailedErrorStackParser.test.js
-models/stack_trace/ErrorStackParser.test.js
 models/stack_trace/StackTrace.test.js
 models/stack_trace/StackTraceImpl.test.js
 models/stack_trace/StackTraceModel.test.js
@@ -175,6 +174,7 @@ models/ai_assistance/agents/PatchAgent.test.js
 models/ai_assistance/agents/PerformanceAgent.test.js
 models/ai_assistance/agents/StorageAgent.test.js
 models/ai_assistance/agents/StylingAgent.test.js
+models/ai_assistance/contexts/AccessibilityContext.test.js
 models/ai_assistance/contexts/DOMNodeContext.test.js
 models/ai_assistance/contexts/FileContext.test.js
 models/ai_assistance/contexts/RequestContext.test.js
@@ -182,9 +182,11 @@ models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIContext.test.js
 models/ai_assistance/performance/AIQueries.test.js
 models/ai_assistance/tools/ExecuteJavaScript.test.js
+models/ai_assistance/tools/GetLighthouseAudits.test.js
 models/ai_assistance/tools/GetNetworkRequestDetails.test.js
 models/ai_assistance/tools/GetStyles.test.js
 models/ai_assistance/tools/ListNetworkRequests.test.js
+models/ai_assistance/tools/ResolveLighthousePath.test.js
 models/ai_assistance/tools/ToolRegistry.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
 models/ai_code_generation/AiCodeGeneration.test.js
@@ -439,6 +441,7 @@ panels/developer_resources/developer_resources.test.js
 panels/elements/AccessibilityTreeView.test.js
 panels/elements/AdoptedStyleSheetTreeElement.test.js
 panels/elements/CSSRuleValidator.test.js
+panels/elements/CSSSpecificityBreakdown.test.js
 panels/elements/CSSValueTraceView.test.js
 panels/elements/ClassesPaneWidget.test.js
 panels/elements/ColorSwatchPopoverIcon.test.js

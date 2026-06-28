@@ -2171,7 +2171,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     }
   })}
                               ></devtools-widget>` : html6`
-                          ${input.context instanceof AiAssistanceModel5.RequestContext.RequestContext ? PanelUtils.PanelUtils.getIconForNetworkRequest(input.context.getItem()) : input.context instanceof AiAssistanceModel5.FileContext.FileContext ? PanelUtils.PanelUtils.getIconForSourceFile(input.context.getItem()) : input.context instanceof AiAssistanceModel5.AccessibilityAgent.AccessibilityContext ? html6`<devtools-icon class="icon" name="performance" title="Lighthouse"></devtools-icon>` : input.context instanceof AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext ? html6`<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` : input.context instanceof AiAssistanceModel5.StorageAgent.StorageContext ? html6`<devtools-icon class="icon" name="table" title="Storage"></devtools-icon>` : Lit4.nothing}
+                          ${input.context instanceof AiAssistanceModel5.RequestContext.RequestContext ? PanelUtils.PanelUtils.getIconForNetworkRequest(input.context.getItem()) : input.context instanceof AiAssistanceModel5.FileContext.FileContext ? PanelUtils.PanelUtils.getIconForSourceFile(input.context.getItem()) : input.context instanceof AiAssistanceModel5.AccessibilityContext.AccessibilityContext ? html6`<devtools-icon class="icon" name="performance" title="Lighthouse"></devtools-icon>` : input.context instanceof AiAssistanceModel5.PerformanceAgent.PerformanceTraceContext ? html6`<devtools-icon class="icon" name="performance" title="Performance"></devtools-icon>` : input.context instanceof AiAssistanceModel5.StorageAgent.StorageContext ? html6`<devtools-icon class="icon" name="table" title="Storage"></devtools-icon>` : Lit4.nothing}
                             <span
                               role="button"
                               class="title"
@@ -4037,10 +4037,6 @@ var UIStringsNotTranslate4 = {
    */
   revealRenderBlockingBreakdown: "Reveal render-blocking requests",
   /**
-   * @description Accessible label for the reveal button in the LCP element widget.
-   */
-  revealLcpElement: "Reveal LCP element",
-  /**
    * @description Accessible label for the reveal button in the performance summary widget.
    */
   revealPerformanceSummary: "Reveal performance summary",
@@ -4104,10 +4100,6 @@ var UIStringsNotTranslate4 = {
    * @description Title for the 3rd parties widget.
    */
   thirdParties: "3rd parties",
-  /**
-   * @description Title for the LCP element widget.
-   */
-  lcpElement: "LCP element",
   /**
    * @description Title for the performance summary widget.
    */
@@ -5079,8 +5071,8 @@ async function makeDomTreeWidget(widgetData) {
   return {
     renderedWidget,
     revealable: new SDK4.DOMModel.DeferredDOMNode(root.domModel().target(), root.backendNodeId()),
-    accessibleRevealLabel: lockedString5(UIStringsNotTranslate4.revealLcpElement),
-    title: lockedString5(UIStringsNotTranslate4.lcpElement),
+    accessibleRevealLabel: widgetData.data.accessibleRevealLabel,
+    title: widgetData.data.title,
     jslogContext: "dom-snapshot"
   };
 }
@@ -8154,7 +8146,7 @@ function createAccessibilityContext(report) {
   if (!report) {
     return null;
   }
-  return new AiAssistanceModel9.AccessibilityAgent.AccessibilityContext(report.report);
+  return new AiAssistanceModel9.AccessibilityContext.AccessibilityContext(report.report);
 }
 function createRequestContext(request) {
   if (!request) {
@@ -9028,7 +9020,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI11.Panel.Panel {
       this.#selectedRequest = data;
     } else if (data instanceof AiAssistanceModel9.PerformanceAgent.PerformanceTraceContext) {
       this.#selectedPerformanceTrace = data;
-    } else if (data instanceof AiAssistanceModel9.AccessibilityAgent.AccessibilityContext) {
+    } else if (data instanceof AiAssistanceModel9.AccessibilityContext.AccessibilityContext) {
       this.#selectedAccessibility = data;
     } else if (data instanceof AiAssistanceModel9.StorageAgent.StorageContext) {
       this.#selectedStorage = data;

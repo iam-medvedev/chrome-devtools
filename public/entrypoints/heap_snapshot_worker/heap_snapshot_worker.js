@@ -678,6 +678,49 @@ var HeapSnapshotNode = class {
     value |= detachedness;
     this.#setDetachednessAndClassIndex(value);
   }
+  findInternalEdgeTarget(name) {
+    for (let iter = this.edges(); iter.hasNext(); iter.next()) {
+      const edge = iter.edge;
+      if (!edge.isInternal()) {
+        continue;
+      }
+      if (edge.name() === name) {
+        return edge.node();
+      }
+    }
+    return void 0;
+  }
+  // V8 represents boolean values in heap snapshots as a virtual node of type 'number'
+  // and name 'bool', which has an internal edge named 'value' pointing to a string node
+  // with name 'true' or 'false'.
+  // See V8's FindOrCreateBoolEntry in heap-snapshot-generator.cc.
+  nodeValueAsBool() {
+    if (this.rawType() !== this.snapshot.nodeNumberType) {
+      return void 0;
+    }
+    if (this.rawName() !== "bool") {
+      return void 0;
+    }
+    const valNode = this.findInternalEdgeTarget("value");
+    if (!valNode) {
+      return void 0;
+    }
+    const rawName = valNode.rawName();
+    if (rawName === "true") {
+      return true;
+    }
+    if (rawName === "false") {
+      return false;
+    }
+    return void 0;
+  }
+  nodeIsTruncatedString() {
+    const truncNode = this.findInternalEdgeTarget("truncated");
+    if (!truncNode) {
+      return false;
+    }
+    return truncNode.nodeValueAsBool() === true;
+  }
 };
 var HeapSnapshotNodeIterator = class {
   node;
@@ -893,6 +936,7 @@ var HeapSnapshot = class _HeapSnapshot {
   nodeSyntheticType;
   nodeClosureType;
   nodeRegExpType;
+  nodeNumberType;
   edgeFieldsCount;
   edgeTypeOffset;
   edgeNameOffset;
@@ -967,6 +1011,7 @@ var HeapSnapshot = class _HeapSnapshot {
     this.nodeSyntheticType = this.nodeTypes.indexOf("synthetic");
     this.nodeClosureType = this.nodeTypes.indexOf("closure");
     this.nodeRegExpType = this.nodeTypes.indexOf("regexp");
+    this.nodeNumberType = this.nodeTypes.indexOf("number");
     this.edgeFieldsCount = meta.edge_fields.length;
     this.edgeTypeOffset = meta.edge_fields.indexOf("type");
     this.edgeNameOffset = meta.edge_fields.indexOf("name_or_index");
@@ -1244,6 +1289,42 @@ var HeapSnapshot = class _HeapSnapshot {
     const key = filter ? filter.key : "allObjects";
     return this.getAggregatesByClassKey(false, key, filter);
   }
+  getDuplicateStrings() {
+    const filter = this.createNamedFilter("duplicatedStrings");
+    const groupsMap = /* @__PURE__ */ new Map();
+    const node = this.createNode(0);
+    for (let i = 0; i < this.nodeCount; ++i) {
+      node.nodeIndex = i * this.nodeFieldCount;
+      if (filter(node)) {
+        const name = node.name();
+        const truncated = node.nodeIsTruncatedString();
+        let group = groupsMap.get(name);
+        if (!group) {
+          group = {
+            value: name,
+            count: 0,
+            totalSelfSize: 0,
+            totalRetainedSize: 0,
+            nodes: [],
+            truncated
+          };
+          groupsMap.set(name, group);
+        } else if (truncated) {
+          group.truncated = true;
+        }
+        group.count++;
+        group.totalSelfSize += node.selfSize();
+        group.totalRetainedSize += node.retainedSize();
+        group.nodes.push({
+          id: node.id(),
+          selfSize: node.selfSize(),
+          retainedSize: node.retainedSize(),
+          distance: node.distance()
+        });
+      }
+    }
+    return Array.from(groupsMap.values()).sort((a, b) => b.totalRetainedSize - a.totalRetainedSize);
+  }
   createNodeIdFilter(minNodeId, maxNodeId) {
     function nodeIdFilter(node) {
       const id = node.id();
@@ -1298,6 +1379,12 @@ var HeapSnapshot = class _HeapSnapshot {
       }
     };
     switch (filterName) {
+      case "objectsRetainedByContexts":
+        traverse((_node, edge) => {
+          return !this.isContextObject(edge.node());
+        });
+        markUnreachableNodes();
+        return (node) => !getBit(node);
       case "objectsRetainedByDetachedDomNodes":
         traverse((_node, edge) => {
           return edge.node().detachedness() !== 2;
@@ -1438,6 +1525,9 @@ var HeapSnapshot = class _HeapSnapshot {
   }
   isUserRoot(_node) {
     return true;
+  }
+  isContextObject(_node) {
+    return false;
   }
   calculateShallowSizes() {
   }
@@ -3001,6 +3091,10 @@ var JSHeapSnapshot = class extends HeapSnapshot {
   }
   isUserRoot(node) {
     return node.isUserRoot() || node.isDocumentDOMTreesRoot();
+  }
+  isContextObject(node) {
+    const name = node.rawName();
+    return name === "system / Context" || name.startsWith("system / Context / ");
   }
   userObjectsMapAndFlag() {
     return { map: this.flags, flag: this.nodeFlags.pageObject };

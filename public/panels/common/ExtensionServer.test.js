@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -62,9 +63,12 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
             const target = createTarget({ url });
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
             assert.isNotNull(resourceTreeModel);
-            await resourceTreeModel.once(SDK.ResourceTreeModel.Events.CachedResourcesLoaded);
+            if (!resourceTreeModel.cachedResourcesLoaded()) {
+                await resourceTreeModel.once(SDK.ResourceTreeModel.Events.CachedResourcesLoaded);
+            }
             target.setInspectedURL(url);
-            resourceTreeModel.mainFrame?.addResource(new SDK.Resource.Resource(resourceTreeModel, null, url, url, null, null, Common.ResourceType.resourceTypes.Document, 'application/text', null, null));
+            const mainFrame = getMainFrame(target, { url });
+            mainFrame.addResource(new SDK.Resource.Resource(resourceTreeModel, null, url, url, null, null, Common.ResourceType.resourceTypes.Document, 'application/text', null, null));
             return target;
         });
         await Promise.all(targets);
@@ -140,6 +144,9 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
             const stubScript = sinon.createStubInstance(SDK.Script.Script);
             // @ts-expect-error
             stubScript.buildId = 'my-build-id';
+            stubScript.target.returns(target);
+            stubScript.contentURL.returns(urlString `http://example.com/index.js`);
+            stubScript.hasSourceURL = false;
             sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), 'scriptsForUISourceCode')
                 .returns([stubScript]);
             project.addUISourceCode(new Workspace.UISourceCode.UISourceCode(project, urlString `http://example.com/index.js`, Common.ResourceType.resourceTypes.Script));
@@ -531,6 +538,23 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
             assert.notExists(result.entries.find(e => e.request.url === blockedUrl));
         }
     });
+    it('does not include requests from blocked targets in the HAR entries even if request URL is allowed', async () => {
+        Logs.NetworkLog.NetworkLog.instance();
+        const parentFrameUrl = allowedUrl;
+        const childFrameUrl = blockedUrl;
+        const parentFrame = await setUpFrame('parent', parentFrameUrl);
+        const childFrame = await setUpFrame('child', childFrameUrl, parentFrame);
+        const childTarget = childFrame.resourceTreeModel()?.target();
+        assert.exists(childTarget);
+        childTarget.setInspectedURL(blockedUrl); // Explicitly set to blocked URL
+        const networkManager = childTarget.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(networkManager);
+        const frameId = 'child-frame-id';
+        const requestUrl = urlString `${allowedUrl}?fromBlockedTarget`;
+        createRequest(networkManager, frameId, 'request-from-blocked-target', requestUrl);
+        const result = await context.chrome.devtools.network.getHAR();
+        assert.notExists(result.entries.find(e => e.request.url === requestUrl));
+    });
     async function setUpFrame(name, url, parentFrame, executionContextOrigin) {
         const parentTarget = parentFrame?.resourceTreeModel()?.target();
         const target = createTarget({ id: `${name}-target-id`, parentTarget });
@@ -630,6 +654,29 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         '4', { frameURL: childFrameUrl, scriptExecutionContext: childExeContextOrigin }, (result, error) => r({ result, error })));
         assert.deepEqual(result.error?.details, ['Permission denied']);
     });
+    it('blocks evaluation on other extension execution contexts', async () => {
+        assert.isUndefined(context.chrome.devtools);
+        const parentFrameUrl = allowedUrl;
+        const parentFrame = await setUpFrame('parent', parentFrameUrl, undefined, parentFrameUrl);
+        // Yield to the microtask queue to allow the extension to be initialized.
+        await new Promise(r => setTimeout(r, 0));
+        // Create a non-default context with a different extension origin.
+        const otherExtensionOrigin = urlString `chrome-extension://other-extension`;
+        const runtimeModel = parentFrame.resourceTreeModel()?.target().model(SDK.RuntimeModel.RuntimeModel);
+        assert.exists(runtimeModel);
+        runtimeModel.executionContextCreated({
+            id: 1,
+            origin: otherExtensionOrigin,
+            name: otherExtensionOrigin,
+            uniqueId: otherExtensionOrigin,
+            auxData: { frameId: parentFrame.id, isDefault: false },
+        });
+        const result = await new Promise(r => context.chrome.devtools?.inspectedWindow.eval(
+        // The typings don't match the implementation, so we need to cast to any here to make ts happy.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        '4', { frameURL: parentFrameUrl, scriptExecutionContext: otherExtensionOrigin }, (result, error) => r({ result, error })));
+        assert.deepEqual(result.error?.details, ['Permission denied']);
+    });
     it('blocks evaluation on blocked sub-executioncontexts', async () => {
         assert.isUndefined(context.chrome.devtools);
         const parentFrameUrl = allowedUrl;
@@ -669,6 +716,25 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
             { url: allowedUrl, content: 'content', encoding: '' },
         ]);
     });
+    it('blocks getting resource contents on allowed urls if target is blocked', async () => {
+        const parentTarget = createTarget({ id: 'parent' });
+        parentTarget.setInspectedURL(allowedUrl);
+        const blockedTarget = createTarget({ id: 'blocked-target' });
+        blockedTarget.setInspectedURL(blockedUrl);
+        sinon.stub(blockedTarget, 'inspectedURL').returns(blockedUrl);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, { scriptsForUISourceCode: [] }));
+        const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), blockedTarget.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
+        Bindings.NetworkProject.NetworkProject.setTargetForProject(project, blockedTarget);
+        const uniqueAllowedUrl = urlString `${allowedUrl}?uniqueResourceTest`;
+        // Stub targetForUISourceCode to ensure it returns blockedTarget for our unique URL
+        const targetForUISourceCodeStub = sinon.stub(Bindings.NetworkProject.NetworkProject, 'targetForUISourceCode');
+        targetForUISourceCodeStub.returns(blockedTarget);
+        await createUISourceCode(project, uniqueAllowedUrl);
+        assert.exists(context.chrome.devtools);
+        const resources = await context.chrome.devtools.inspectedWindow.getResources();
+        assert.notExists(resources.find(r => r.url === uniqueAllowedUrl));
+    });
     it('allows arbitrary schemes in sourceURL comments, as long as the inspected target is allowed', async () => {
         const target = createTarget({ id: 'target' });
         target.setInspectedURL(allowedUrl);
@@ -689,8 +755,15 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         const resources = await new Promise(r => context.chrome.devtools?.inspectedWindow.getResources(r));
         assert.deepEqual(resources.map(r => r.url), [blockedUrl, allowedUrl]);
     });
+    const requestToManager = new Map();
     function createRequest(networkManager, frameId, requestId, url) {
+        if (!SDK.NetworkManager.NetworkManager.forRequest.isSinonProxy) {
+            requestToManager.clear();
+            sinon.stub(SDK.NetworkManager.NetworkManager, 'forRequest')
+                .callsFake(request => requestToManager.get(request) || null);
+        }
         const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, url, frameId, null, null, undefined);
+        requestToManager.set(request, networkManager);
         const dataProvider = () => Promise.resolve(new TextUtils.ContentData.ContentData('content', false, request.mimeType));
         request.setContentDataProvider(dataProvider);
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestStarted, { request, originalRequest: null });
@@ -736,6 +809,27 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         assert.lengthOf(requests, 1);
         assert.exists(requests.find(e => e.request.url === allowedUrl));
         assert.notExists(requests.find(e => e.request.url === blockedUrl));
+    });
+    it('does not include requests from blocked targets in onRequestFinished event listener even if request URL is allowed', async () => {
+        const frameId = 'frame-id';
+        const allowedTarget = createTarget({ id: 'allowed-target' });
+        allowedTarget.setInspectedURL(allowedUrl);
+        const blockedTarget = createTarget({ id: 'blocked-target' });
+        blockedTarget.setInspectedURL(blockedUrl);
+        const requestUrlFromBlocked = urlString `${allowedUrl}?fromBlockedTarget`;
+        const requestUrlFromAllowed = urlString `${allowedUrl}?fromAllowedTarget`;
+        const requests = [];
+        context.chrome.devtools?.network.onRequestFinished.addListener(r => requests.push(r));
+        await waitForFunction(() => PanelCommon.ExtensionServer.ExtensionServer.instance().hasSubscribers("network-request-finished" /* Extensions.ExtensionAPI.PrivateAPI.Events.NetworkRequestFinished */));
+        const networkManager = blockedTarget.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(networkManager);
+        createRequest(networkManager, frameId, 'request-from-blocked-target', requestUrlFromBlocked);
+        const allowedNetworkManager = allowedTarget.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(allowedNetworkManager);
+        createRequest(allowedNetworkManager, frameId, 'request-from-allowed-target', requestUrlFromAllowed);
+        await waitForFunction(() => requests.length >= 1);
+        assert.lengthOf(requests, 1);
+        assert.strictEqual(requests[0].request.url, requestUrlFromAllowed);
     });
     it('blocks setting resource contents on blocked urls', async () => {
         const target = createTarget({ id: 'target' });

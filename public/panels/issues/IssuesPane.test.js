@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Issues from './issues.js';

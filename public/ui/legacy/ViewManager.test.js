@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import { raf } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as UI from './legacy.js';
 describeWithEnvironment('ViewManager', () => {
     let viewManager;
@@ -76,7 +77,7 @@ describeWithEnvironment('ViewManager', () => {
                 },
             });
         }
-        viewManager = UI.ViewManager.ViewManager.instance({ forceNew: true, universe: { context: new Root.DevToolsContext.WritableDevToolsContext() } });
+        viewManager = UI.ViewManager.ViewManager.instance({ forceNew: true, universe: new TestUniverse() });
         locationResolver.createLocation("panel" /* UI.ViewManager.ViewLocationValues.PANEL */, true, 'view-1');
         locationResolver.createLocation("drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */, false, undefined);
     });

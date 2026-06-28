@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "allowSyntheticDefaultImports": true,
     "checkJs": true,
     "composite": true,
     "declaration": true,
@@ -58,6 +59,9 @@
     },
     {
       "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../services/tracing/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/code_highlighter/bundle-tsconfig.json"

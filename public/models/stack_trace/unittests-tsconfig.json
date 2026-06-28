@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "allowUmdGlobalAccess": true,
+    "allowSyntheticDefaultImports": true,
     "checkJs": true,
     "composite": true,
     "declaration": true,
@@ -36,14 +36,12 @@
       "../../../../../../node_modules"
     ],
     "types": [
-      "mocha",
-      "sinon"
+      "mocha"
     ],
     "useUnknownInCatchVariables": false
   },
   "files": [
     "../../../../../../front_end/models/stack_trace/DetailedErrorStackParser.test.ts",
-    "../../../../../../front_end/models/stack_trace/ErrorStackParser.test.ts",
     "../../../../../../front_end/models/stack_trace/StackTrace.test.ts",
     "../../../../../../front_end/models/stack_trace/StackTraceImpl.test.ts",
     "../../../../../../front_end/models/stack_trace/StackTraceModel.test.ts",
