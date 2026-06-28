@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import * as Host from './host.js';
@@ -15,15 +16,20 @@ describe('DispatchHttpRequestClient', () => {
         body: JSON.stringify({ foo: 'bar' }),
     };
     it('handles successful requests', async () => {
-        sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
+        sinon
+            .stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
             .callsFake(async (_, callback) => {
-            callback({ statusCode: 200, response: JSON.stringify({ result: 'ok' }) });
+            callback({
+                statusCode: 200,
+                response: JSON.stringify({ result: 'ok' }),
+            });
         });
         const result = await Host.DispatchHttpRequestClient.makeHttpRequest(defaultRequest);
         assert.deepEqual(result, { result: 'ok' });
     });
     it('handles 404 errors', async () => {
-        sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
+        sinon
+            .stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
             .callsFake(async (_, callback) => {
             callback({ error: 'Error', statusCode: 404 });
         });
@@ -37,7 +43,8 @@ describe('DispatchHttpRequestClient', () => {
         }
     });
     it('handles other HTTP errors', async () => {
-        sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
+        sinon
+            .stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
             .callsFake(async (_, callback) => {
             callback({ error: 'Error', statusCode: 500 });
         });
@@ -51,7 +58,8 @@ describe('DispatchHttpRequestClient', () => {
         }
     });
     it('handles invalid JSON response', async () => {
-        sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
+        sinon
+            .stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
             .callsFake(async (_, callback) => {
             callback({ statusCode: 200, response: 'invalid json' });
         });
@@ -66,10 +74,14 @@ describe('DispatchHttpRequestClient', () => {
     });
     it('aborts the request when the signal is aborted before request execution', async () => {
         const promiseWithResolvers = Promise.withResolvers();
-        sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
+        sinon
+            .stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
             .callsFake(async (_, callback) => {
             await promiseWithResolvers.promise;
-            callback({ statusCode: 200, response: JSON.stringify({ result: 'ok' }) });
+            callback({
+                statusCode: 200,
+                response: JSON.stringify({ result: 'ok' }),
+            });
         });
         const controller = new AbortController();
         controller.abort();
@@ -88,10 +100,14 @@ describe('DispatchHttpRequestClient', () => {
     });
     it('aborts the request when the signal is aborted during request execution', async () => {
         const promiseWithResolvers = Promise.withResolvers();
-        sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
+        sinon
+            .stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
             .callsFake(async (_, callback) => {
             await promiseWithResolvers.promise;
-            callback({ statusCode: 200, response: JSON.stringify({ result: 'ok' }) });
+            callback({
+                statusCode: 200,
+                response: JSON.stringify({ result: 'ok' }),
+            });
         });
         const controller = new AbortController();
         const result = Host.DispatchHttpRequestClient.makeHttpRequest(defaultRequest, { signal: controller.signal });

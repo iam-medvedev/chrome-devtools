@@ -128,7 +128,6 @@ Common.Settings.registerSettingExtension({
 // gen/front_end/panels/js_timeline/js_timeline-meta.js
 import * as Common2 from "./../../core/common/common.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 var UIStrings2 = {
   /**
@@ -189,7 +188,7 @@ UI2.ViewManager.registerViewExtension({
   isPreviewFeature: true,
   async loadView(universe) {
     const Timeline = await loadTimelineModule();
-    const resourceLoader = universe.context.get(SDK.PageResourceLoader.PageResourceLoader);
+    const { pageResourceLoader: resourceLoader } = universe;
     return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader });
   }
 });
@@ -301,7 +300,7 @@ Common2.Settings.registerSettingExtension({
 import * as Common3 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK from "./../../core/sdk/sdk.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as PanelCommon from "./../../panels/common/common.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
@@ -713,10 +712,10 @@ UI3.ViewManager.registerLocationResolver({
 UI3.ContextMenu.registerProvider({
   contextTypes() {
     return [
-      SDK2.NetworkRequest.NetworkRequest,
-      SDK2.Resource.Resource,
+      SDK.NetworkRequest.NetworkRequest,
+      SDK.Resource.Resource,
       Workspace.UISourceCode.UISourceCode,
-      SDK2.TraceObject.RevealableNetworkRequest
+      SDK.TraceObject.RevealableNetworkRequest
     ];
   },
   async loadProvider() {
@@ -727,7 +726,7 @@ UI3.ContextMenu.registerProvider({
 Common3.Revealer.registerRevealer({
   contextTypes() {
     return [
-      SDK2.NetworkRequest.NetworkRequest
+      SDK.NetworkRequest.NetworkRequest
     ];
   },
   destination: Common3.Revealer.RevealerDestination.NETWORK_PANEL,
@@ -767,7 +766,7 @@ Common3.Revealer.registerRevealer({
 });
 Common3.Revealer.registerRevealer({
   contextTypes() {
-    return [SDK2.NetworkManager.AppliedNetworkConditions];
+    return [SDK.NetworkManager.AppliedNetworkConditions];
   },
   destination: Common3.Revealer.RevealerDestination.NETWORK_PANEL,
   async loadRevealer() {

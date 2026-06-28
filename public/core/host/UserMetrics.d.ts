@@ -27,9 +27,6 @@ export declare class UserMetrics {
     visualLoggingProcessingDone(timeInMilliseconds: number): void;
     freestylerQueryLength(numberOfCharacters: number): void;
     freestylerEvalResponseSize(bytes: number): void;
-    performanceAINetworkSummaryResponseSize(bytes: number): void;
-    performanceAINetworkRequestDetailResponseSize(bytes: number): void;
-    performanceAIMainThreadActivityResponseSize(bytes: number): void;
     builtInAiAvailability(availability: BuiltInAiAvailability): void;
     consoleInsightTeaserGenerated(timeInMilliseconds: number): void;
     consoleInsightTeaserGeneratedMedium(timeInMilliseconds: number): void;
@@ -40,7 +37,6 @@ export declare class UserMetrics {
     consoleInsightTeaserAbortedBeforeFirstCharacter(timeInMilliseconds: number): void;
     consoleInsightLongTeaserGenerated(timeInMilliseconds: number): void;
     consoleInsightShortTeaserGenerated(timeInMilliseconds: number): void;
-    extensionEvalTarget(target: ExtensionEvalTarget): void;
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that
@@ -918,10 +914,4 @@ export declare const enum BuiltInAiAvailability {
     AVAILABLE_NO_GPU = 8,
     DISABLED_NO_GPU = 9,
     MAX_VALUE = 10
-}
-export declare const enum ExtensionEvalTarget {
-    WEB_PAGE = 0,
-    SAME_EXTENSION = 1,
-    OTHER_EXTENSION = 2,
-    MAX_VALUE = 3
 }

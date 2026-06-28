@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
-import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
 import { createNetworkRequest, mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
@@ -429,7 +429,6 @@ code
     });
     describe('function calls', () => {
         it('can call getNetworkTrackSummary', async function () {
-            const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAINetworkSummaryResponseSize');
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
             assert.isOk(parsedTrace.insights);
             const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
@@ -460,8 +459,6 @@ code
             });
             const formatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(context.getItem());
             const expectedRequestsOutput = formatter.formatNetworkTrackSummary(bounds);
-            const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(expectedRequestsOutput);
-            sinon.assert.calledWith(metricsSpy, expectedBytesSize);
             const expectedOutput = JSON.stringify({ summary: expectedRequestsOutput });
             const titleResponse = responses.find(response => response.type === "title" /* AiAgent.ResponseType.TITLE */);
             assert.exists(titleResponse);
@@ -626,7 +623,6 @@ code
             assert.strictEqual(actionResponse.output, 'Cannot use this tool on an imported file.');
         });
         it('can call getMainThreadTrackSummaryByLabel', async function () {
-            const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAIMainThreadActivityResponseSize');
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
             assert.isOk(parsedTrace.insights);
             const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
@@ -652,8 +648,6 @@ code
             const bounds = Trace.Insights.Common.insightBounds(lcpBreakdown, context.getItem().primaryInsightSet.bounds);
             const summary = await formatter.formatMainThreadTrackSummary(bounds);
             assert.isOk(summary);
-            const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(summary);
-            sinon.assert.calledWith(metricsSpy, expectedBytesSize);
             const expectedOutput = JSON.stringify({ summary });
             assert.exists(action);
             assert.exists(action.widgets);
@@ -971,6 +965,8 @@ code
             assert.exists(action.widgets);
             const domTreeWidget = action.widgets?.find(w => w.name === 'DOM_TREE');
             assert.exists(domTreeWidget);
+            assert.strictEqual(domTreeWidget.data.title, 'LCP element');
+            assert.strictEqual(domTreeWidget.data.accessibleRevealLabel, 'Reveal LCP element');
             assert.exists(domTreeWidget.data.networkRequest?.imageContent);
             assert.strictEqual(domTreeWidget.data.networkRequest?.imageContent?.base64, 'base64');
         });

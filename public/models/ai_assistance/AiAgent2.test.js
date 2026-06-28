@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
@@ -16,7 +17,20 @@ function getFunctionDeclarations(aidaClient, callIndex) {
     const callArgs = aidaClient.doConversation.getCall(callIndex).args[0];
     return callArgs.function_declarations ?? [];
 }
+/**
+ * Helper to mock the skills registry for an agent.
+ * Since the agent expects a full `Record<SkillName, Skill>`, but individual tests only
+ * need to mock a subset of skills, we use this helper to cast a partial set of skills
+ * to the full record type and assign it to the agent. This prevents tests from
+ * breaking when new skills are added to the global registry.
+ */
+function mockSkills(agent, skills) {
+    agent.getSkills = () => skills;
+}
 describeWithEnvironment('AiAgent2', () => {
+    it('registers all expected skills', () => {
+        assert.deepEqual(Object.keys(SKILLS).sort(), ['styling', 'network', 'accessibility'].sort());
+    });
     it('can learn a skill', async () => {
         const aidaClient = mockAidaClient();
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
@@ -36,10 +50,12 @@ describeWithEnvironment('AiAgent2', () => {
     it('handles invalid skill names gracefully', async () => {
         const aidaClient = mockAidaClient();
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        mockSkills(agent, {
+            styling: SKILLS.styling,
+        });
         // @ts-expect-error
         const result = await agent.learnSkill(['non-existent-skill']);
-        assert.isTrue(result.includes('Failed to load skill non-existent-skill'));
-        assert.isTrue(result.includes('Valid skills are: styling'));
+        assert.strictEqual(result, 'Failed to load skill non-existent-skill. Valid skills are: styling.');
     });
     it('can run a conversation flow', async () => {
         const aidaClient = mockAidaClient([[{
@@ -87,6 +103,10 @@ describeWithEnvironment('AiAgent2', () => {
     it('injects skills manifest containing only unloaded skills', async () => {
         const aidaClient = mockAidaClient();
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient });
+        mockSkills(agent, {
+            styling: SKILLS.styling,
+            network: SKILLS.network,
+        });
         // Initially, styling and network are not loaded
         const firstQuery = await agent.enhanceQuery('test query');
         assert.isTrue(firstQuery.includes('Available skills that are not yet loaded:'));
@@ -161,8 +181,8 @@ describeWithEnvironment('AiAgent2', () => {
             allowedTools: ['getStyles'],
             instructions: 'Dummy instructions.',
         };
-        agent.getSkills = () => ({
-            ...SKILLS,
+        mockSkills(agent, {
+            styling: SKILLS.styling,
             [dummySkill.name]: dummySkill,
         });
         // Learn both skills. It should not throw a duplicate function declaration error.
@@ -207,8 +227,9 @@ describeWithEnvironment('AiAgent2', () => {
             allowedTools: ['getStyles'],
             instructions: 'Dummy instructions.',
         };
-        agent.getSkills = () => ({
-            ...SKILLS,
+        mockSkills(agent, {
+            styling: SKILLS.styling,
+            network: SKILLS.network,
             [dummySkill.name]: dummySkill,
         });
         // @ts-expect-error
@@ -225,8 +246,8 @@ describeWithEnvironment('AiAgent2', () => {
             allowedTools: ['getStyles'],
             instructions: 'Dummy instructions.',
         };
-        agent.getSkills = () => ({
-            ...SKILLS,
+        mockSkills(agent, {
+            styling: SKILLS.styling,
             [dummySkill.name]: dummySkill,
         });
         const firstQuery = await agent.enhanceQuery('test query');

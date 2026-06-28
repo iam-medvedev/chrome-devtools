@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "allowSyntheticDefaultImports": true,
     "checkJs": true,
     "composite": true,
     "declaration": true,
@@ -61,6 +62,7 @@
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StorageAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StylingAgent.ts",
+    "../../../../../../front_end/models/ai_assistance/contexts/AccessibilityContext.ts",
     "../../../../../../front_end/models/ai_assistance/contexts/DOMNodeContext.ts",
     "../../../../../../front_end/models/ai_assistance/contexts/FileContext.ts",
     "../../../../../../front_end/models/ai_assistance/contexts/RequestContext.ts",
@@ -78,9 +80,11 @@
     "../../../../../../front_end/models/ai_assistance/skills/Skill.ts",
     "../../../../../../front_end/models/ai_assistance/skills/SkillRegistry.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ExecuteJavaScript.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/GetLighthouseAudits.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetNetworkRequestDetails.ts",
     "../../../../../../front_end/models/ai_assistance/tools/GetStyles.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ListNetworkRequests.ts",
+    "../../../../../../front_end/models/ai_assistance/tools/ResolveLighthousePath.ts",
     "../../../../../../front_end/models/ai_assistance/tools/Tool.ts",
     "../../../../../../front_end/models/ai_assistance/tools/ToolRegistry.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

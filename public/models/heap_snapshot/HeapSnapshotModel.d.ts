@@ -187,3 +187,16 @@ export interface DominatorNode {
     selfSize: number;
 }
 export type DominatorChain = DominatorNode[];
+export interface DuplicateStringGroup {
+    value: string;
+    count: number;
+    totalSelfSize: number;
+    totalRetainedSize: number;
+    nodes: Array<{
+        id: number;
+        selfSize: number;
+        retainedSize: number;
+        distance: number;
+    }>;
+    truncated?: boolean;
+}

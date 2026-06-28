@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
@@ -48,7 +49,7 @@ describeWithMockConnection('NodeChildTargetManager', () => {
         const target = SDK.TargetManager.TargetManager.instance().targetById('node js target');
         assert.exists(target);
         // Creating the target should have already sent a bunch of messages, like Debugger.enable
-        sinon.assert.calledWithMatch(sendStub, sinon.match(request => {
+        sinon.assert.calledWithMatch(sendStub, sinon.match((request) => {
             const { method } = JSON.parse(request.message);
             return method === 'Debugger.enable';
         }));

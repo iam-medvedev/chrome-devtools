@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -204,7 +205,7 @@ describeWithMockConnection('DeviceModeModel', () => {
             const isLateInYear = now.getMonth() >= 9;
             const expectedAndroidVersion = isLateInYear ? (year - 2010) : (year - 2011);
             const expectedPixelModel = isLateInYear ? (year - 2016) : (year - 2017);
-            const modernCall = setUserAgentOverride.getCalls().find(call => call.args[0].includes(`Pixel ${expectedPixelModel}`));
+            const modernCall = setUserAgentOverride.getCalls().find((call) => call.args[0].includes(`Pixel ${expectedPixelModel}`));
             assert.exists(modernCall, 'Modern User Agent was not applied');
             const userAgent = modernCall?.args[0];
             const metadata = modernCall?.args[1];

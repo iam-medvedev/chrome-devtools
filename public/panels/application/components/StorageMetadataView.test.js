@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import '../../../ui/kit/kit.js';
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';

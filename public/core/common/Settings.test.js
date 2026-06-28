@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from './common.js';
 const InMemoryStorage = Common.Settings.InMemoryStorage;
 const SettingsStorage = Common.Settings.SettingsStorage;
@@ -187,7 +188,7 @@ describe('Settings instance', () => {
         const changeStub = sinon.stub();
         setting.addChangeListener(changeStub);
         setting.set('new value');
-        sinon.assert.calledOnceWithMatch(changeStub, sinon.match(event => {
+        sinon.assert.calledOnceWithMatch(changeStub, sinon.match((event) => {
             return event.data === 'new value';
         }));
     });

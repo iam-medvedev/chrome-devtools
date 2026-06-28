@@ -1,8 +1,10 @@
 import { ExecuteJavaScriptTool } from './ExecuteJavaScript.js';
+import { GetLighthouseAuditsTool } from './GetLighthouseAudits.js';
 import { GetNetworkRequestDetailsTool } from './GetNetworkRequestDetails.js';
 import { GetStylesTool } from './GetStyles.js';
 import { ListNetworkRequestsTool } from './ListNetworkRequests.js';
-import { type AllToolsContext, type Tool, type ToolArgs } from './Tool.js';
+import { ResolveLighthousePathTool } from './ResolveLighthousePath.js';
+import { type AllToolsCapabilities, type Tool, type ToolArgs } from './Tool.js';
 /**
  * Plain object registry containing concrete instantiated tools.
  *
@@ -16,6 +18,8 @@ export declare const TOOLS: {
     getStyles: GetStylesTool;
     listNetworkRequests: ListNetworkRequestsTool;
     getNetworkRequestDetails: GetNetworkRequestDetailsTool;
+    getLighthouseAudits: GetLighthouseAuditsTool;
+    resolveLighthousePath: ResolveLighthousePathTool;
 };
 /**
  * Registry class for registering and querying AI Assistance Tools.
@@ -35,5 +39,5 @@ export declare class ToolRegistry {
      * @param name The string name of the tool to retrieve, used when the tool name is only known at runtime.
      * @returns The generic Tool interface, or undefined if not found.
      */
-    static get(name: string): Tool<ToolArgs, unknown, AllToolsContext> | undefined;
+    static get(name: string): Tool<ToolArgs, unknown, AllToolsCapabilities> | undefined;
 }
