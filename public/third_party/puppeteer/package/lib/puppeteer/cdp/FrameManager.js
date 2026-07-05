@@ -22,7 +22,6 @@ import { FrameTree } from './FrameTree.js';
 import { IsolatedWorld } from './IsolatedWorld.js';
 import { MAIN_WORLD, PUPPETEER_WORLD } from './IsolatedWorlds.js';
 import { NetworkManager } from './NetworkManager.js';
-const TIME_FOR_WAITING_FOR_SWAP = 100; // ms.
 const CHROME_EXTENSION_PREFIX = 'chrome-extension://';
 /**
  * A frame manager manages the frames for a given {@link Page | page}.
@@ -63,7 +62,7 @@ export class FrameManager extends EventEmitter {
         this.#timeoutSettings = timeoutSettings;
         this.setupEventListeners(this.#client);
         client.once(CDPSessionEvent.Disconnected, () => {
-            void this.#onClientDisconnect().catch(debugCatchError);
+            void this.#onClientDisconnect(client).catch(debugCatchError);
         });
     }
     /**
@@ -71,32 +70,43 @@ export class FrameManager extends EventEmitter {
      * disconnect means that the frame is removed or if it will be replaced by a
      * new frame. Therefore, we wait for a swap event.
      */
-    async #onClientDisconnect() {
+    async #onClientDisconnect(client) {
         const mainFrame = this._frameTree.getMainFrame();
         if (!mainFrame) {
             return;
         }
-        if (!this.#page.browser().connected) {
-            // If the browser is not connected we know
-            // that activation will not happen
+        // If the disconnected client is not the current one, it means a swap
+        // has already happened.
+        if (this.#client !== client) {
+            return;
+        }
+        if (!this.#page.browser().connected || this.#page.isClosed()) {
+            // If the browser is not connected or the page is closed, we know
+            // that activation will not happen.
             this.#removeFramesRecursively(mainFrame);
             return;
         }
         for (const child of mainFrame.childFrames()) {
             this.#removeFramesRecursively(child);
         }
-        const swapped = Deferred.create({
-            timeout: TIME_FOR_WAITING_FOR_SWAP,
-            message: 'Frame was not swapped',
-        });
-        mainFrame.once(FrameEvent.FrameSwappedByActivation, () => {
+        const swapped = Deferred.create();
+        const onFrameSwapped = () => {
             swapped.resolve();
-        });
+        };
+        const onPageClosed = () => {
+            swapped.reject(new Error('Page closed'));
+        };
+        mainFrame.once(FrameEvent.FrameSwappedByActivation, onFrameSwapped);
+        this.#page.once("close" /* PageEvent.Close */, onPageClosed);
         try {
             await swapped.valueOrThrow();
         }
         catch {
             this.#removeFramesRecursively(mainFrame);
+        }
+        finally {
+            mainFrame.off(FrameEvent.FrameSwappedByActivation, onFrameSwapped);
+            this.#page.off("close" /* PageEvent.Close */, onPageClosed);
         }
     }
     /**
@@ -116,7 +126,7 @@ export class FrameManager extends EventEmitter {
         }
         this.setupEventListeners(client);
         client.once(CDPSessionEvent.Disconnected, () => {
-            void this.#onClientDisconnect().catch(debugCatchError);
+            void this.#onClientDisconnect(client).catch(debugCatchError);
         });
         await this.initialize(client, frame);
         await this.#networkManager.addClient(client);

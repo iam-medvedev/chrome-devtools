@@ -8,10 +8,10 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistance from '../../models/ai_assistance/ai_assistance.js';
 import { getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
-import { createTarget, expectConsoleLogs, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, expectConsoleLogs, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
-import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { createResource, getMainFrame, mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
@@ -36,8 +36,9 @@ class SharedStorageTreeElementListener {
         }
     }
 }
-describeWithMockConnection('ApplicationPanelSidebar', () => {
+describeWithEnvironment('ApplicationPanelSidebar', () => {
     let target;
+    let tabTarget;
     const TEST_ORIGIN_A = 'http://www.example.com/';
     const TEST_SITE_A = 'http://example.com';
     const TEST_ORIGIN_B = 'http://www.example.org/';
@@ -104,12 +105,15 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
     beforeEach(() => {
         stubNoopSettings();
         SDK.ChildTargetManager.ChildTargetManager.install();
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+        const connection = new MockCDPConnection();
+        mockResourceTree(connection);
+        connection.setSuccessHandler('Storage.getSharedStorageEntries', () => ({}));
+        connection.setSuccessHandler('Storage.setSharedStorageTracking', () => ({}));
+        tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves(); // Silence console error
-        setMockConnectionResponseHandler('Storage.getSharedStorageEntries', () => ({}));
-        setMockConnectionResponseHandler('Storage.setSharedStorageTracking', () => ({}));
     });
     it('shows WebMCP only if the WebMCP config is enabled', async () => {
         updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
@@ -335,15 +339,19 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         sinon.assert.calledWith(addVisibleSiteSpy, 'https://device-bound-sessions.com');
     });
 });
-describeWithMockConnection('IDBDatabaseTreeElement', () => {
+describeWithEnvironment('IDBDatabaseTreeElement', () => {
+    let target;
     beforeEach(() => {
         stubNoopSettings();
+        const connection = new MockCDPConnection();
+        mockResourceTree(connection);
+        target = createTarget({ connection });
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
     });
     expectConsoleLogs({
         error: ['Error: No LanguageSelector instance exists yet.'],
     });
     it('only becomes selectable after database is updated', () => {
-        const target = createTarget();
         const model = target.model(Application.IndexedDBModel.IndexedDBModel);
         assert.exists(model);
         const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
@@ -354,13 +362,15 @@ describeWithMockConnection('IDBDatabaseTreeElement', () => {
         assert.isTrue(treeElement.selectable);
     });
 });
-describeWithMockConnection('ResourcesSection', () => {
+describeWithEnvironment('ResourcesSection', () => {
     const tests = (inScope) => () => {
         let target;
         beforeEach(() => {
             stubNoopSettings();
             SDK.FrameManager.FrameManager.instance({ forceNew: true });
-            target = createTarget();
+            const connection = new MockCDPConnection();
+            mockResourceTree(connection);
+            target = createTarget({ connection });
         });
         expectConsoleLogs({
             error: ['Error: No LanguageSelector instance exists yet.'],
@@ -396,14 +406,17 @@ describeWithMockConnection('ResourcesSection', () => {
     describe('in scope', tests(true));
     describe('out of scope', tests(false));
 });
-describeWithMockConnection('IndexedDBTreeElement live update', () => {
+describeWithEnvironment('IndexedDBTreeElement live update', () => {
     let target;
     let model;
     let sidebar;
     let indexedDBTreeElement;
     beforeEach(async () => {
         stubNoopSettings();
-        target = createTarget();
+        const connection = new MockCDPConnection();
+        mockResourceTree(connection);
+        target = createTarget({ connection });
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         model = target.model(Application.IndexedDBModel.IndexedDBModel);
         sinon.stub(model, 'refreshDatabase');
         sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves(); // Silence console error

@@ -73,9 +73,6 @@
       "path": "../../panels/emulation/meta-tsconfig.json"
     },
     {
-      "path": "../../panels/greendev/meta-tsconfig.json"
-    },
-    {
       "path": "../../panels/issues/meta-tsconfig.json"
     },
     {

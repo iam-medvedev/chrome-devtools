@@ -2492,7 +2492,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
-var packageVersion = "25.2.1";
+var packageVersion = "25.3.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/common/Debug.js
 var debug = (prefix) => {
@@ -3318,7 +3318,7 @@ var BrowserContext = class extends EventEmitter {
     super();
   }
   /**
-   * If defined, indicates an ongoing screenshot opereation.
+   * If defined, indicates an ongoing screenshot operation.
    */
   #pageScreenshotMutex;
   #screenshotOperationsCount = 0;
@@ -14183,13 +14183,13 @@ var SecurityDetails = class {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/util/httpUtils.js
-function normalizeHeaderValue(header) {
-  if (!header.includes("\n")) {
-    return header;
+function normalizeHeaderValue(name, value) {
+  if (!value.includes("\n")) {
+    return value;
   }
-  return header.split("\n").map((v2) => {
+  return value.split("\n").map((v2) => {
     return v2.trim();
-  }).filter(Boolean).join(", ");
+  }).filter(Boolean).join(name === "set-cookie" ? "\n " : ", ");
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/HTTPResponse.js
@@ -14218,7 +14218,8 @@ var CdpHTTPResponse = class extends HTTPResponse {
     this.#status = extraInfo ? extraInfo.statusCode : responsePayload.status;
     const headers = extraInfo ? extraInfo.headers : responsePayload.headers;
     for (const [key, value] of Object.entries(headers)) {
-      this.#headers[key.toLowerCase()] = normalizeHeaderValue(value);
+      const headerName = key.toLowerCase();
+      this.#headers[headerName] = normalizeHeaderValue(headerName, value);
     }
     this.#securityDetails = responsePayload.securityDetails ? new SecurityDetails(responsePayload.securityDetails) : null;
     this.#timing = responsePayload.timing || null;
@@ -14954,7 +14955,6 @@ var NetworkManager = class extends EventEmitter {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/puppeteer/cdp/FrameManager.js
-var TIME_FOR_WAITING_FOR_SWAP = 100;
 var CHROME_EXTENSION_PREFIX = "chrome-extension://";
 var FrameManager = class extends EventEmitter {
   #page;
@@ -14990,7 +14990,7 @@ var FrameManager = class extends EventEmitter {
     this.#timeoutSettings = timeoutSettings;
     this.setupEventListeners(this.#client);
     client.once(CDPSessionEvent.Disconnected, () => {
-      void this.#onClientDisconnect().catch(debugCatchError);
+      void this.#onClientDisconnect(client).catch(debugCatchError);
     });
   }
   /**
@@ -14998,29 +14998,37 @@ var FrameManager = class extends EventEmitter {
    * disconnect means that the frame is removed or if it will be replaced by a
    * new frame. Therefore, we wait for a swap event.
    */
-  async #onClientDisconnect() {
+  async #onClientDisconnect(client) {
     const mainFrame = this._frameTree.getMainFrame();
     if (!mainFrame) {
       return;
     }
-    if (!this.#page.browser().connected) {
+    if (this.#client !== client) {
+      return;
+    }
+    if (!this.#page.browser().connected || this.#page.isClosed()) {
       this.#removeFramesRecursively(mainFrame);
       return;
     }
     for (const child of mainFrame.childFrames()) {
       this.#removeFramesRecursively(child);
     }
-    const swapped = Deferred.create({
-      timeout: TIME_FOR_WAITING_FOR_SWAP,
-      message: "Frame was not swapped"
-    });
-    mainFrame.once(FrameEvent.FrameSwappedByActivation, () => {
+    const swapped = Deferred.create();
+    const onFrameSwapped = () => {
       swapped.resolve();
-    });
+    };
+    const onPageClosed = () => {
+      swapped.reject(new Error("Page closed"));
+    };
+    mainFrame.once(FrameEvent.FrameSwappedByActivation, onFrameSwapped);
+    this.#page.once("close", onPageClosed);
     try {
       await swapped.valueOrThrow();
     } catch {
       this.#removeFramesRecursively(mainFrame);
+    } finally {
+      mainFrame.off(FrameEvent.FrameSwappedByActivation, onFrameSwapped);
+      this.#page.off("close", onPageClosed);
     }
   }
   /**
@@ -15040,7 +15048,7 @@ var FrameManager = class extends EventEmitter {
     }
     this.setupEventListeners(client);
     client.once(CDPSessionEvent.Disconnected, () => {
-      void this.#onClientDisconnect().catch(debugCatchError);
+      void this.#onClientDisconnect(client).catch(debugCatchError);
     });
     await this.initialize(client, frame);
     await this.#networkManager.addClient(client);
@@ -16031,7 +16039,7 @@ var CdpMouse = class extends Mouse {
   get #state() {
     return Object.assign({ ...this.#_state }, ...this.#transactions);
   }
-  // Transactions can run in parallel, so we store each of thme in this array.
+  // Transactions can run in parallel, so we store each of them in this array.
   #transactions = [];
   #createTransaction() {
     const transaction = {};
@@ -19516,8 +19524,11 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     });
     return response.targetId;
   }
-  async installExtension(path) {
-    const { id } = await this.#connection.send("Extensions.loadUnpacked", { path });
+  async installExtension(path, options) {
+    const { id } = await this.#connection.send("Extensions.loadUnpacked", {
+      path,
+      enableInIncognito: options?.enabledInIncognito ?? false
+    });
     this.#extensions.delete(id);
     return id;
   }

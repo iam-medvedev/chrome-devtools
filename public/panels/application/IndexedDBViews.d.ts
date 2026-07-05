@@ -58,6 +58,7 @@ export declare class IDBDataView extends UI.View.SimpleView {
     update(objectStore?: ObjectStore | null, index?: Index | null): void;
     private parseKey;
     private updateData;
+    private populateDataGrid;
     private updateSummaryBar;
     private updatedDataForTests;
     private refreshButtonClicked;

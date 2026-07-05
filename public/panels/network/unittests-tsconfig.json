@@ -41,6 +41,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/network/LinkPreloadGenerator.test.ts",
     "../../../../../../front_end/panels/network/NetworkConfigView.test.ts",
     "../../../../../../front_end/panels/network/NetworkDataGridNode.test.ts",
     "../../../../../../front_end/panels/network/NetworkItemView.test.ts",

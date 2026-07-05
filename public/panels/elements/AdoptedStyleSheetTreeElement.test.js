@@ -5,10 +5,9 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Elements from './elements.js';
-describeWithMockConnection('AdoptedStyleSheetTreeElement highlighting', () => {
+describeWithEnvironment('AdoptedStyleSheetTreeElement highlighting', () => {
     let domModel;
     let treeOutline;
     let containerNode;

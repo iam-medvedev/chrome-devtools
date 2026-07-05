@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { makeInstantEvent } from '../../testing/TraceHelpers.js';
 import * as Tracing from './tracing.js';
 class FakeClient {
@@ -21,17 +21,19 @@ const fakeEvents = [
     makeInstantEvent('test-event-1', 1),
     makeInstantEvent('test-event-2', 2),
 ];
-describeWithMockConnection('TracingManager', () => {
+describeWithEnvironment('TracingManager', () => {
+    let connection;
     beforeEach(() => {
-        setMockConnectionResponseHandler('Tracing.start', () => {
+        connection = new MockCDPConnection();
+        connection.setSuccessHandler('Tracing.start', () => {
             return {};
         });
-        setMockConnectionResponseHandler('Tracing.end', () => {
+        connection.setSuccessHandler('Tracing.end', () => {
             return {};
         });
     });
     it('sends bufferUsage to the client', async () => {
-        const target = createTarget();
+        const target = createTarget({ connection });
         const manager = new Tracing.TracingManager.TracingManager(target);
         const client = new FakeClient();
         const bufferUsageSpy = sinon.spy(client, 'tracingBufferUsage');
@@ -40,7 +42,7 @@ describeWithMockConnection('TracingManager', () => {
         sinon.assert.calledWith(bufferUsageSpy, 10);
     });
     it('sends events to the client when they are collected and updates the client with progress', async () => {
-        const target = createTarget();
+        const target = createTarget({ connection });
         const manager = new Tracing.TracingManager.TracingManager(target);
         const client = new FakeClient();
         const eventsRetrievalProgressSpy = sinon.spy(client, 'eventsRetrievalProgress');
@@ -52,7 +54,7 @@ describeWithMockConnection('TracingManager', () => {
         assert.approximately(0.15, eventsRetrievalProgressSpy.args[0][0], 0.01);
     });
     it('notifies the client when tracing is complete', async () => {
-        const target = createTarget();
+        const target = createTarget({ connection });
         const manager = new Tracing.TracingManager.TracingManager(target);
         const client = new FakeClient();
         const tracingCompleteSpy = sinon.spy(client, 'tracingComplete');
@@ -63,7 +65,7 @@ describeWithMockConnection('TracingManager', () => {
         sinon.assert.calledOnce(tracingCompleteSpy);
     });
     it('errors if tracing is started twice', async () => {
-        const target = createTarget();
+        const target = createTarget({ connection });
         const manager = new Tracing.TracingManager.TracingManager(target);
         const client = new FakeClient();
         await manager.start(client, 'devtools-timeline');
@@ -79,7 +81,7 @@ describeWithMockConnection('TracingManager', () => {
         assert.isTrue(didThrow, 'Test did not throw an error as expected.');
     });
     it('errors if you try to stop when tracing is not active', async () => {
-        const target = createTarget();
+        const target = createTarget({ connection });
         const manager = new Tracing.TracingManager.TracingManager(target);
         assert.throws(() => {
             manager.stop();

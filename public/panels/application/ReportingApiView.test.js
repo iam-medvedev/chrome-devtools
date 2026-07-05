@@ -4,9 +4,9 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { cleanTestDOM } from '../../testing/DOMHooks.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
@@ -48,7 +48,7 @@ const reports = [
         status: "Queued" /* Protocol.Network.ReportStatus.Queued */,
     },
 ];
-describeWithMockConnection('ReportingApiView', () => {
+describeWithEnvironment('ReportingApiView', () => {
     const ORIGIN_1 = 'origin1';
     const ENDPOINTS_1 = [{ url: 'url1', groupName: 'group1' }];
     const ORIGIN_2 = 'origin2';
@@ -198,8 +198,10 @@ describeWithMockConnection('ReportingApiView', () => {
             target.style.width = '780px';
             target.style.height = '400px';
         });
-        afterEach(() => {
+        afterEach(async () => {
             stub.restore();
+            cleanTestDOM();
+            await raf();
         });
         it('updates report details', async () => {
             Application.ReportingApiView.DEFAULT_VIEW({

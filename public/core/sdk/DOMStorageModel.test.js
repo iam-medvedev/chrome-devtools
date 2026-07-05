@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as SDK from './sdk.js';
-describeWithMockConnection('DOMStorageModel', () => {
+describeWithEnvironment('DOMStorageModel', () => {
     let domStorageModel;
     let domStorage;
     let target;

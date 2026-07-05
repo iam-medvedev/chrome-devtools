@@ -5,9 +5,8 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { dispatchClickEvent, raf, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { createTarget } from '../../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
-import { getMainFrame, navigate, setMockResourceTree } from '../../../testing/ResourceTreeHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { getMainFrame, navigate } from '../../../testing/ResourceTreeHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as ApplicationComponents from './components.js';
 async function renderBackForwardCacheView() {
@@ -17,11 +16,10 @@ async function renderBackForwardCacheView() {
     await component.updateComplete;
     return component;
 }
-describeWithMockConnection('BackForwardCacheView', () => {
+describeWithEnvironment('BackForwardCacheView', () => {
     let target;
     let resourceTreeModel;
     beforeEach(async () => {
-        setMockResourceTree(false);
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });

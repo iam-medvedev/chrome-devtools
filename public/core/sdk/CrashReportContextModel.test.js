@@ -2,19 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as SDK from './sdk.js';
-describeWithMockConnection('CrashReportContextModel', () => {
+describeWithEnvironment('CrashReportContextModel', () => {
     let model;
+    let universe;
+    let connection;
     beforeEach(() => {
-        const target = createTarget();
+        universe = new TestUniverse();
+        connection = new MockCDPConnection();
+        const target = universe.createTarget({ connection });
         model = target.model(SDK.CrashReportContextModel.CrashReportContextModel);
         assert.exists(model);
     });
     it('can retrieve entries', async () => {
         const frameId = 'frame-1';
-        setMockConnectionResponseHandler('CrashReportContext.getEntries', () => {
+        connection.setSuccessHandler('CrashReportContext.getEntries', () => {
             return {
                 entries: [
                     { key: 'key1', value: 'value1', frameId },
@@ -33,7 +39,7 @@ describeWithMockConnection('CrashReportContextModel', () => {
         assert.strictEqual(entries[1].frameId, 'frame-1');
     });
     it('handles empty entries', async () => {
-        setMockConnectionResponseHandler('CrashReportContext.getEntries', () => {
+        connection.setSuccessHandler('CrashReportContext.getEntries', () => {
             return {
                 entries: [],
             };
@@ -43,9 +49,10 @@ describeWithMockConnection('CrashReportContextModel', () => {
         assert.lengthOf(entries, 0);
     });
     it('returns null on protocol error', async () => {
-        setMockConnectionResponseHandler('CrashReportContext.getEntries', () => {
+        connection.setFailureHandler('CrashReportContext.getEntries', () => {
             return {
-                getError: () => 'Feature disabled',
+                message: 'Feature disabled',
+                code: ProtocolClient.CDPConnection.CDPErrorStatus.DEVTOOLS_STUB_ERROR,
             };
         });
         const entries = await model.getEntries();

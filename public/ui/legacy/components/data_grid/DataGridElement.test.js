@@ -43,8 +43,14 @@ describeWithEnvironment('DataGrid', () => {
     });
     async function renderDataGrid(template) {
         render(template, container, { host: {} });
-        await RenderCoordinator.done({ waitForWork: true });
-        return container.querySelector('devtools-data-grid');
+        const element = container.querySelector('devtools-data-grid');
+        if (element?.getAttribute('row-height') === 'auto') {
+            await RenderCoordinator.done();
+        }
+        else {
+            await RenderCoordinator.done({ waitForWork: true });
+        }
+        return element;
     }
     async function renderDataGridContent(template) {
         return await renderDataGrid(html `<devtools-data-grid striped name="Display Name" .template=${template}></devtools-data-grid>`);
@@ -82,6 +88,30 @@ describeWithEnvironment('DataGrid', () => {
         const expectedRowData = 'Column 1: Value 1, Column 2: Value 2';
         const expectedGridDesc = 'Display Name Rows: 1, use the up and down arrow keys to navigate and interact with the rows of the table; Use browse mode to read cell by cell.';
         assert.isTrue(alerts[0] === expectedRowData || alerts[0] === expectedGridDesc, `Expected alert to be row data or grid description, got: ${alerts[0]}`);
+    });
+    it('supports row-height="auto"', async () => {
+        const element = await renderDataGrid(html `
+        <devtools-data-grid row-height="auto" name="Display Name">
+          <table>
+            <tr>
+              <th id="column-1">Column 1</th>
+              <th id="column-2">Column 2</th>
+            </tr>
+            <tr>
+              <td>Value 1</td>
+              <td>Value 2</td>
+            </tr>
+          </table>
+        </devtools-data-grid>`);
+        const shadowRoot = element.shadowRoot;
+        assert.isNotNull(shadowRoot);
+        const dataGridElement = shadowRoot.querySelector('.data-grid');
+        assert.isNotNull(dataGridElement);
+        assert.isTrue(dataGridElement.classList.contains('auto-row-height'));
+        sendKeydown(element, 'ArrowDown');
+        const alerts = getAlertAnnouncement(element);
+        const expectedRowData = 'Column 1: Value 1, Column 2: Value 2';
+        assert.isTrue(alerts.some(alert => alert.includes(expectedRowData)));
     });
     it('can update data from template', async () => {
         await renderDataGridWithData(html `

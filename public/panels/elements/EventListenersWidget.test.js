@@ -6,13 +6,12 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js'; // Added this
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 const { EventListenersWidget, DispatchFilterBy } = Elements.EventListenersWidget;
-describeWithMockConnection('EventListenersWidget', () => {
+describeWithEnvironment('EventListenersWidget', () => {
     let target;
     beforeEach(() => {
         target = createTarget();

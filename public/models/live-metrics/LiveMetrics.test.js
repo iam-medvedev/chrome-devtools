@@ -3,16 +3,19 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import * as LiveMetrics from './live-metrics.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
-describeWithMockConnection('LiveMetrics', () => {
+describeWithEnvironment('LiveMetrics', () => {
     let liveMetrics;
     let primaryTarget;
     let tabTarget;
     beforeEach(() => {
-        tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+        const connection = new MockCDPConnection([]);
+        mockResourceTree(connection);
+        tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
         primaryTarget = createTarget({
             parentTarget: tabTarget,
             type: SDK.Target.Type.FRAME,
@@ -24,7 +27,7 @@ describeWithMockConnection('LiveMetrics', () => {
             liveMetrics.setStatusForTesting({
                 lcp: {
                     value: 100,
-                    phases: {
+                    subparts: {
                         timeToFirstByte: 0,
                         resourceLoadDelay: 0,
                         resourceLoadTime: 0,
@@ -34,7 +37,7 @@ describeWithMockConnection('LiveMetrics', () => {
                 cls: { value: 0.1, clusterShiftIds: [] },
                 inp: {
                     value: 50,
-                    phases: { inputDelay: 0, processingDuration: 0, presentationDelay: 0 },
+                    subparts: { inputDelay: 0, processingDuration: 0, presentationDelay: 0 },
                     interactionId: 'interaction-1-1'
                 },
                 interactions: new Map([['interaction-1-1', { interactionId: 'interaction-1-1' }]]),
@@ -90,7 +93,7 @@ describeWithMockConnection('LiveMetrics', () => {
         const lcpEvent = (value) => ({
             name: 'LCP',
             value: value,
-            phases: {
+            subparts: {
                 timeToFirstByte: 0,
                 resourceLoadDelay: 0,
                 resourceLoadTime: 0,
@@ -137,7 +140,7 @@ describeWithMockConnection('LiveMetrics', () => {
                 duration: 100,
                 startTime: 0,
                 nextPaintTime: 100,
-                phases: { inputDelay: 10, processingDuration: 80, presentationDelay: 10 },
+                subparts: { inputDelay: 10, processingDuration: 80, presentationDelay: 10 },
                 longAnimationFrameTimings: [],
             };
             liveMetrics.setStatusForTesting({

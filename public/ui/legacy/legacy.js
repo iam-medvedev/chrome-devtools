@@ -2160,7 +2160,6 @@ __export(TabbedPane_exports, {
 import * as Common6 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
-import * as Annotations from "./../../models/annotations/annotations.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Buttons2 from "./../components/buttons/buttons.js";
 import { render } from "./../lit/lit.js";
@@ -3976,10 +3975,6 @@ var UIStrings4 = {
    */
   previewFeature: "Preview feature",
   /**
-   * @description Indicates that a tab contains annotation(s).
-   */
-  panelContainsAnnotation: "This panel has one or more annotations",
-  /**
    * @description Text to move a tab forwar.
    */
   moveTabRight: "Move right",
@@ -4069,11 +4064,6 @@ var TabbedPane = class extends Common6.ObjectWrapper.eventMixin(VBox) {
     this.currentDevicePixelRatio = window.devicePixelRatio;
     ZoomManager.instance().addEventListener("ZoomChanged", this.zoomChanged, this);
     this.makeTabSlider();
-    if (Annotations.AnnotationRepository.annotationsEnabled()) {
-      Annotations.AnnotationRepository.instance().addEventListener("AnnotationAdded", this.#onUpdateAnnotations, this);
-      Annotations.AnnotationRepository.instance().addEventListener("AnnotationDeleted", this.#onUpdateAnnotations, this);
-      Annotations.AnnotationRepository.instance().addEventListener("AllAnnotationsDeleted", this.#onUpdateAnnotations, this);
-    }
   }
   setAccessibleName(name) {
     setLabel(this.tabsElement, name);
@@ -4501,31 +4491,6 @@ var TabbedPane = class extends Common6.ObjectWrapper.eventMixin(VBox) {
   async waitForTabElementUpdate() {
     this.performUpdate();
   }
-  updateTabAnnotationIcons() {
-    if (!Annotations.AnnotationRepository.annotationsEnabled()) {
-      return;
-    }
-    const annotations = Annotations.AnnotationRepository.instance();
-    if (!annotations) {
-      return;
-    }
-    for (const tab of this.tabs) {
-      let primaryType = -1;
-      let secondaryType = -1;
-      switch (tab.id) {
-        case "elements":
-          primaryType = Annotations.AnnotationType.ELEMENT_NODE;
-          secondaryType = Annotations.AnnotationType.STYLE_RULE;
-          break;
-        case "network":
-          primaryType = Annotations.AnnotationType.NETWORK_REQUEST;
-          secondaryType = Annotations.AnnotationType.NETWORK_REQUEST_SUBPANEL_HEADERS;
-          break;
-      }
-      const showTabAnnotationIcon = annotations.getAnnotationDataByType(primaryType).length > 0 || annotations.getAnnotationDataByType(secondaryType).length > 0;
-      this.setTabAnnotationIcon(tab.id, showTabAnnotationIcon);
-    }
-  }
   performUpdate() {
     if (!this.isShowing()) {
       return;
@@ -4552,7 +4517,6 @@ var TabbedPane = class extends Common6.ObjectWrapper.eventMixin(VBox) {
     this.updateWidths();
     this.updateTabsDropDown();
     this.updateTabSlider();
-    this.updateTabAnnotationIcons();
   }
   adjustToolbarWidth() {
     if (!this.#rightToolbar || !this.measuredDropDownButtonWidth) {
@@ -4930,15 +4894,6 @@ var TabbedPane = class extends Common6.ObjectWrapper.eventMixin(VBox) {
     this.allowTabReorder = allow;
     this.automaticReorder = automatic;
   }
-  setTabAnnotationIcon(id2, iconVisible) {
-    const tab = this.tabsById.get(id2);
-    if (tab) {
-      tab.tabAnnotationIcon = iconVisible;
-    }
-  }
-  #onUpdateAnnotations() {
-    this.updateTabAnnotationIcons();
-  }
   keyDown(event) {
     if (!this.currentTab) {
       return;
@@ -4988,7 +4943,6 @@ var Events;
 var TabbedPaneTab = class {
   closeable;
   previewFeature = false;
-  #tabAnnotationIcon = false;
   tabbedPane;
   #id;
   #title;
@@ -5039,38 +4993,6 @@ var TabbedPaneTab = class {
   }
   set jslogContext(jslogContext) {
     this.#jslogContext = jslogContext;
-  }
-  get tabAnnotationIcon() {
-    return this.#tabAnnotationIcon;
-  }
-  set tabAnnotationIcon(iconVisible) {
-    if (this.#tabAnnotationIcon === iconVisible) {
-      return;
-    }
-    this.#tabAnnotationIcon = iconVisible;
-    if (!this.#tabElement) {
-      return;
-    }
-    const iconElement = this.#tabElement.querySelector(".spark");
-    if (iconVisible) {
-      if (!iconElement) {
-        const spark = this.createTabAnnotationIcon();
-        this.#tabElement.appendChild(spark);
-        const parentRect = this.#tabElement.parentElement?.getBoundingClientRect();
-        if (!parentRect) {
-          return;
-        }
-        const containerRect = this.tabElement.getBoundingClientRect();
-        const iconWidth = spark.getBoundingClientRect().width;
-        const x = containerRect.x - parentRect.x + containerRect.width - iconWidth;
-        spark.style.left = `${x}px`;
-      }
-    } else {
-      iconElement?.remove();
-    }
-    this.#tabElement.classList.toggle("ai", iconVisible);
-    delete this.measuredWidth;
-    this.tabbedPane.requestUpdate();
   }
   isCloseable() {
     return this.closeable;
@@ -5192,11 +5114,6 @@ var TabbedPaneTab = class {
       tabElement.appendChild(previewIcon);
       tabElement.classList.add("preview");
     }
-    if (this.tabAnnotationIcon) {
-      const tabAnnotationIcon = this.createTabAnnotationIcon();
-      tabElement.appendChild(tabAnnotationIcon);
-      tabElement.classList.add("ai");
-    }
     if (this.closeable) {
       const closeIcon = this.createCloseIconButton();
       tabElement.appendChild(closeIcon);
@@ -5216,15 +5133,6 @@ var TabbedPaneTab = class {
       }
     }
     return tabElement;
-  }
-  createTabAnnotationIcon() {
-    const tabAnnotationIcon = new Icon();
-    tabAnnotationIcon.name = "spark";
-    tabAnnotationIcon.classList.add("small");
-    tabAnnotationIcon.classList.add("spark");
-    tabAnnotationIcon.setAttribute("title", i18nString4(UIStrings4.panelContainsAnnotation));
-    tabAnnotationIcon.setAttribute("aria-label", i18nString4(UIStrings4.panelContainsAnnotation));
-    return tabAnnotationIcon;
   }
   createCloseIconButton() {
     const closeButton = new Buttons2.Button.Button();
@@ -6887,14 +6795,15 @@ var InspectorDrawerView = class {
     const wasDrawerVisible = this.isVisibleForEvents();
     this.tabbedPane.setAutoSelectFirstItemOnShow(!hasTargetDrawer);
     this.#splitWidget.showBoth();
+    this.#updatePresentation(this.isMinimized());
     this.#dispatchPaneVisibilityChangedIfNeeded(wasDrawerVisible);
   }
   hide() {
     const wasDrawerVisible = this.isVisibleForEvents();
     const wasMinimized = this.isMinimized();
     this.#splitWidget.hideSidebar(!wasMinimized);
+    this.#updatePresentation(false);
     if (wasMinimized) {
-      this.#updatePresentation(false);
       this.#splitWidget.setSidebarMinimized(false);
       this.#splitWidget.setResizable(true);
     }
@@ -6966,8 +6875,9 @@ var InspectorDrawerView = class {
     this.#minimizeExpandButton.setTitle(i18nString8(UIStrings8.minimizeDrawer));
   }
   #updatePresentation(minimized) {
+    const requireVerticalMinimumWidth = this.#splitWidget.isVertical() && this.#splitWidget.sidebarIsShowing() && !minimized;
+    this.#setInspectorMinimumSize(requireVerticalMinimumWidth ? this.#minimumSizes.inspectorWidthWhenVertical : this.#minimumSizes.inspectorWidthWhenHorizontal, this.#minimumSizes.inspectorHeight);
     const drawerIsVertical = this.#splitWidget.isVertical();
-    this.#setInspectorMinimumSize(drawerIsVertical ? this.#minimumSizes.inspectorWidthWhenVertical : this.#minimumSizes.inspectorWidthWhenHorizontal, this.#minimumSizes.inspectorHeight);
     this.updatePresentation({
       isVertical: drawerIsVertical,
       isMinimized: minimized,
@@ -7284,6 +7194,7 @@ var SplitWidget = class extends Common10.ObjectWrapper.eventMixin(Widget) {
   #showMode = "Both";
   #savedShowMode;
   #autoAdjustOrientation = false;
+  #zoomManager = ZoomManager.instance();
   constructor(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip, element) {
     super(element, { useShadowDom: true });
     this.element.classList.add("split-widget");
@@ -7565,18 +7476,18 @@ var SplitWidget = class extends Common10.ObjectWrapper.eventMixin(Widget) {
     return this.#resizerWidget.isEnabled();
   }
   setSidebarSize(size) {
-    const sizeDIP = ZoomManager.instance().cssToDIP(size);
+    const sizeDIP = this.#zoomManager.cssToDIP(size);
     this.#savedSidebarSizeDIP = sizeDIP;
     this.#saveSetting();
     this.#setSidebarSizeDIP(sizeDIP, false, true);
   }
   sidebarSize() {
     const sizeDIP = Math.max(0, this.#sidebarSizeDIP);
-    return ZoomManager.instance().dipToCSS(sizeDIP);
+    return this.#zoomManager.dipToCSS(sizeDIP);
   }
   totalSize() {
     const sizeDIP = Math.max(0, this.#totalSizeDIP());
-    return ZoomManager.instance().dipToCSS(sizeDIP);
+    return this.#zoomManager.dipToCSS(sizeDIP);
   }
   /**
    * Returns total size in DIP.
@@ -7587,7 +7498,7 @@ var SplitWidget = class extends Common10.ObjectWrapper.eventMixin(Widget) {
       this.#totalSizeCSS = this.#isVertical ? width : height;
       this.#totalSizeOtherDimensionCSS = this.#isVertical ? height : width;
     }
-    return ZoomManager.instance().cssToDIP(this.#totalSizeCSS);
+    return this.#zoomManager.cssToDIP(this.#totalSizeCSS);
   }
   #updateShowMode(showMode) {
     this.#showMode = showMode;
@@ -7608,7 +7519,7 @@ var SplitWidget = class extends Common10.ObjectWrapper.eventMixin(Widget) {
       this.#resizerElementSize = this.#isVertical ? this.#resizerElement.offsetWidth : this.#resizerElement.offsetHeight;
     }
     this.#removeAllLayoutProperties();
-    const sizeCSS = ZoomManager.instance().dipToCSS(sizeDIP);
+    const sizeCSS = this.#zoomManager.dipToCSS(sizeDIP);
     const sidebarSizeValue = sizeCSS + "px";
     const mainSizeValue = this.#totalSizeCSS - sizeCSS + "px";
     this.#sidebarElement.style.flexBasis = sidebarSizeValue;
@@ -7655,8 +7566,8 @@ var SplitWidget = class extends Common10.ObjectWrapper.eventMixin(Widget) {
     } else {
       animatedMarginPropertyName = this.#secondIsSidebar ? "margin-bottom" : "margin-top";
     }
-    const marginFrom = reverse ? "0" : "-" + ZoomManager.instance().dipToCSS(this.#sidebarSizeDIP) + "px";
-    const marginTo = reverse ? "-" + ZoomManager.instance().dipToCSS(this.#sidebarSizeDIP) + "px" : "0";
+    const marginFrom = reverse ? "0" : "-" + this.#zoomManager.dipToCSS(this.#sidebarSizeDIP) + "px";
+    const marginTo = reverse ? "-" + this.#zoomManager.dipToCSS(this.#sidebarSizeDIP) + "px" : "0";
     this.contentElement.style.setProperty(animatedMarginPropertyName, marginFrom);
     this.contentElement.style.setProperty("overflow", "hidden");
     if (!reverse) {
@@ -7708,7 +7619,7 @@ var SplitWidget = class extends Common10.ObjectWrapper.eventMixin(Widget) {
   }
   #applyConstraints(sidebarSize, userAction) {
     const totalSize = this.#totalSizeDIP();
-    const zoomFactor = this.#constraintsInDip ? 1 : ZoomManager.instance().zoomFactor();
+    const zoomFactor = this.#constraintsInDip ? 1 : this.#zoomManager.zoomFactor();
     let constraints = this.#sidebarWidget ? this.#sidebarWidget.constraints() : new Geometry3.Constraints();
     let minSidebarSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
     if (!minSidebarSize) {
@@ -7760,11 +7671,11 @@ var SplitWidget = class extends Common10.ObjectWrapper.eventMixin(Widget) {
   wasShown() {
     super.wasShown();
     this.#forceUpdateLayout();
-    ZoomManager.instance().addEventListener("ZoomChanged", this.onZoomChanged, this);
+    this.#zoomManager.addEventListener("ZoomChanged", this.onZoomChanged, this);
   }
   willHide() {
     super.willHide();
-    ZoomManager.instance().removeEventListener("ZoomChanged", this.onZoomChanged, this);
+    this.#zoomManager.removeEventListener("ZoomChanged", this.onZoomChanged, this);
   }
   onResize() {
     this.#maybeAutoAdjustOrientation();
@@ -7808,7 +7719,7 @@ var SplitWidget = class extends Common10.ObjectWrapper.eventMixin(Widget) {
   }
   #onResizeUpdate(event) {
     const offset = event.data.currentPosition - event.data.startPosition;
-    const offsetDIP = ZoomManager.instance().cssToDIP(offset);
+    const offsetDIP = this.#zoomManager.cssToDIP(offset);
     const newSizeDIP = this.#secondIsSidebar ? this.#resizeStartSizeDIP - offsetDIP : this.#resizeStartSizeDIP + offsetDIP;
     const constrainedSizeDIP = this.#applyConstraints(newSizeDIP, true);
     this.#savedSidebarSizeDIP = constrainedSizeDIP;
@@ -19114,6 +19025,7 @@ var ListWidget = class extends VBox {
   editElement;
   emptyPlaceholder;
   isTable;
+  headerElement = null;
   constructor(delegate, delegatesFocus = true, isTable = false) {
     super({ useShadowDom: true, delegatesFocus });
     this.registerRequiredCSS(listWidget_css_default);
@@ -19143,8 +19055,18 @@ var ListWidget = class extends VBox {
     this.elements = [];
     this.lastSeparator = false;
     this.list.removeChildren();
+    if (this.headerElement) {
+      this.list.appendChild(this.headerElement);
+    }
     this.updatePlaceholder();
     this.stopEditing();
+  }
+  setHeader(header) {
+    if (this.headerElement) {
+      this.headerElement.remove();
+    }
+    this.headerElement = header;
+    this.list.insertBefore(header, this.list.firstChild);
   }
   updateItem(index, newItem, editable, focusable = true, controlLabels = {}) {
     if (index < 0 || index >= this.#items.length) {
@@ -21758,7 +21680,7 @@ ol.tree-outline:not(.hide-selection-when-blurred) li.selected:focus {
     color: currentcolor;
   }
 
-  & *:not(devtools-icon) {
+  & *:not(devtools-icon, .new-badge) {
     color: inherit;
   }
 }

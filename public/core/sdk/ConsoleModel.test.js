@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { FRAME_URL, getInitializedResourceTreeModel, getMainFrame, navigate, } from '../../testing/ResourceTreeHelpers.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('ConsoleMessage', () => {
+describeWithEnvironment('ConsoleMessage', () => {
     const scriptId1 = '1';
     const scriptId2 = '2';
     function newMessage({ source = Common.Console.FrontendMessageSource.ConsoleAPI, message = 'Message', url, scriptId, executionContextId, stackTrace, }) {

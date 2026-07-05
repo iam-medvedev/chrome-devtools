@@ -207,11 +207,19 @@ const UIStrings = {
     /**
      *@description Explanation for an event outcome. Key refers to a cryptographic key.
      */
-    keyError: 'Key error',
+    signingKeyGenerationError: 'Signing key generation error',
+    /**
+     *@description Explanation for an event outcome. Key refers to a cryptographic key.
+     */
+    attestationKeyGenerationError: 'Attestation key generation error',
     /**
      *@description Explanation for an event outcome. Signing refers to cryptographic signing.
      */
     signingError: 'Signing error',
+    /**
+     *@description Explanation for an event outcome. Signing refers to cryptographic signing.
+     */
+    transientSigningError: 'Transient signing error',
     /**
      *@description Explanation for an event outcome.
      */
@@ -865,10 +873,14 @@ function fetchResultToString(fetchResult) {
     switch (fetchResult) {
         case "Success" /* Protocol.Network.DeviceBoundSessionFetchResult.Success */:
             return i18nString(UIStrings.success);
-        case "KeyError" /* Protocol.Network.DeviceBoundSessionFetchResult.KeyError */:
-            return i18nString(UIStrings.keyError);
+        case "SigningKeyGenerationError" /* Protocol.Network.DeviceBoundSessionFetchResult.SigningKeyGenerationError */:
+            return i18nString(UIStrings.signingKeyGenerationError);
+        case "AttestationKeyGenerationError" /* Protocol.Network.DeviceBoundSessionFetchResult.AttestationKeyGenerationError */:
+            return i18nString(UIStrings.attestationKeyGenerationError);
         case "SigningError" /* Protocol.Network.DeviceBoundSessionFetchResult.SigningError */:
             return i18nString(UIStrings.signingError);
+        case "TransientSigningError" /* Protocol.Network.DeviceBoundSessionFetchResult.TransientSigningError */:
+            return i18nString(UIStrings.transientSigningError);
         case "ServerRequestedTermination" /* Protocol.Network.DeviceBoundSessionFetchResult.ServerRequestedTermination */:
             return i18nString(UIStrings.serverRequestedTermination);
         case "InvalidSessionId" /* Protocol.Network.DeviceBoundSessionFetchResult.InvalidSessionId */:

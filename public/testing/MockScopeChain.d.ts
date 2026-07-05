@@ -1,3 +1,4 @@
+import * as ProtocolClient from '../core/protocol_client/protocol_client.js';
 import * as SDK from '../core/sdk/sdk.js';
 import * as Protocol from '../generated/protocol.js';
 import { type CommandHandlerResponse, MockCDPConnection } from './MockCDPConnection.js';
@@ -13,33 +14,6 @@ interface ScriptDescription {
     embedderName?: string;
     executionContextId?: number;
     scriptLanguage?: Protocol.Debugger.ScriptLanguage;
-}
-/**
- * @deprecated Use {@link MockDebuggerBackend} instead.
- */
-export declare class MockProtocolBackend {
-    #private;
-    constructor();
-    dispatchDebuggerPause(script: SDK.Script.Script, reason: Protocol.Debugger.PausedEventReason, functionName?: string, scopeChain?: Protocol.Debugger.Scope[]): void;
-    dispatchDebuggerPauseWithNoCallFrames(target: SDK.Target.Target, reason: Protocol.Debugger.PausedEventReason): void;
-    addScript(target: SDK.Target.Target, scriptDescription: ScriptDescription, sourceMap: {
-        url: string;
-        content: string | SDK.SourceMap.SourceMapV3;
-    } | null): Promise<SDK.Script.Script>;
-    createSimpleRemoteObject(properties: Array<{
-        name: string;
-        value?: number;
-    }>): Protocol.Runtime.RemoteObject;
-    createCallFrame(target: SDK.Target.Target, script: {
-        url: string;
-        content: string;
-    }, scopeDescriptor: string, sourceMap: {
-        url: string;
-        content: string;
-    } | null, scopeObjects?: Protocol.Runtime.RemoteObject[]): Promise<SDK.DebuggerModel.CallFrame>;
-    responderToBreakpointByUrlRequest(url: string, lineNumber: number): (response: Omit<Protocol.Debugger.SetBreakpointByUrlResponse, 'getError'>) => Promise<void>;
-    setBreakpointByUrlToFail(url: string, lineNumber: number): void;
-    breakpointRemovedPromise(breakpointId: Protocol.Debugger.BreakpointId): Promise<void>;
 }
 interface ScopePosition {
     type: Protocol.Debugger.ScopeType;
@@ -78,7 +52,7 @@ export declare class MockDebuggerBackend {
         url: string;
         content: string;
     } | null, scopeObjects?: Protocol.Runtime.RemoteObject[]): Promise<SDK.DebuggerModel.CallFrame>;
-    responderToBreakpointByUrlRequest(url: string, lineNumber: number): (response: CommandHandlerResponse<'Debugger.setBreakpointByUrl'>) => Promise<void>;
+    responderToBreakpointByUrlRequest(url: string, lineNumber: number): (response: CommandHandlerResponse<'Debugger.setBreakpointByUrl'> | ProtocolClient.CDPConnection.CommandResult<'Debugger.setBreakpointByUrl'>) => Promise<void>;
     setBreakpointByUrlToFail(url: string, lineNumber: number): void;
     breakpointRemovedPromise(breakpointId: Protocol.Debugger.BreakpointId): Promise<void>;
 }

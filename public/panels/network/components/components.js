@@ -152,7 +152,7 @@ div.raw-headers-row {
 }
 
 .inline-icon {
-  vertical-align: middle;
+  vertical-align: sub;
 }
 
 .header-grid-container {
@@ -577,7 +577,6 @@ __export(HeaderSectionRow_exports, {
   isValidHeaderName: () => isValidHeaderName
 });
 import "./../../../ui/kit/kit.js";
-import "./../../../ui/legacy/legacy.js";
 import * as Host2 from "./../../../core/host/host.js";
 import * as i18n3 from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
@@ -585,6 +584,7 @@ import * as SDK2 from "./../../../core/sdk/sdk.js";
 import * as ClientVariations from "./../../../third_party/chromium/client-variations/client-variations.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers2 from "./../../../ui/components/helpers/helpers.js";
+import * as UI2 from "./../../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js";
 
@@ -608,9 +608,8 @@ var HeaderSectionRow_css_default = `/*
   margin: var(--sys-size-3) 0;
 }
 
-.row.header-editable {
-  font-family: var(--monospace-font-family);
-  font-size: var(--monospace-font-size);
+.row:hover {
+  background-color: var(--sys-color-state-hover-on-subtle);
 }
 
 .header-name {
@@ -648,7 +647,8 @@ var HeaderSectionRow_css_default = `/*
   display: flex;
   overflow-wrap: anywhere;
   margin-inline-end: 14px;
-  font: var(--sys-typescale-body4-regular);
+  font-family: var(--monospace-font-family);
+  font-size: var(--monospace-font-size);
 }
 
 .header-badge-text {
@@ -676,10 +676,12 @@ var HeaderSectionRow_css_default = `/*
 }
 
 .call-to-action-body {
+  display: flex;
+  gap: var(--sys-size-4);
   padding: 6px 0;
-  margin-left: 9.5px;
+  margin-left: var(--sys-size-1);
   border-left: 2px solid var(--issue-color-yellow);
-  padding-left: 18px;
+  padding-left: 11px;
   line-height: 20px;
 }
 
@@ -708,7 +710,7 @@ var HeaderSectionRow_css_default = `/*
 }
 
 .inline-icon {
-  vertical-align: middle;
+  margin-top: var(--sys-size-2);
 }
 
 .row-flex-icon {
@@ -788,6 +790,10 @@ devtools-link .inline-icon {
 // gen/front_end/panels/network/components/HeaderSectionRow.js
 var { render: render3, html: html3 } = Lit2;
 var UIStrings2 = {
+  /**
+   * @description A context menu item to copy the value of a header.
+   */
+  copyValue: "Copy value",
   /**
    * @description Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel
    */
@@ -913,6 +919,7 @@ var HeaderSectionRow = class extends HTMLElement {
         <div
           class=${headerValueClasses}
           @copy=${() => Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.NetworkPanelCopyValue)}
+          @contextmenu=${this.#onContextMenu}
         >
           ${this.#renderHeaderValue()}
         </div>
@@ -1145,6 +1152,19 @@ var HeaderSectionRow = class extends HTMLElement {
     }
     event.preventDefault();
   }
+  #onContextMenu(event) {
+    if (!this.#header) {
+      return;
+    }
+    event.stopPropagation();
+    event.preventDefault();
+    const contextMenu = new UI2.ContextMenu.ContextMenu(event);
+    contextMenu.clipboardSection().appendItem(i18nString2(UIStrings2.copyValue), () => {
+      Host2.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.#header?.value || "");
+      Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.NetworkPanelCopyValue);
+    });
+    void contextMenu.show();
+  }
 };
 customElements.define("devtools-header-section-row", HeaderSectionRow);
 
@@ -1158,7 +1178,7 @@ __export(RequestHeaderSection_exports, {
 import "./../../../ui/kit/kit.js";
 import * as i18n5 from "./../../../core/i18n/i18n.js";
 import * as Platform2 from "./../../../core/platform/platform.js";
-import * as UI2 from "./../../../ui/legacy/legacy.js";
+import * as UI3 from "./../../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
 import * as NetworkForward from "./../forward/forward.js";
@@ -1190,10 +1210,12 @@ var RequestHeaderSection_css_default = `/*
   }
 
   .call-to-action-body {
+    display: flex;
+    gap: var(--sys-size-4);
     padding: 6px 0;
-    margin-left: 9.5px;
+    margin-left: var(--sys-size-1);
     border-left: 2px solid var(--issue-color-yellow);
-    padding-left: 18px;
+    padding-left: 11px;
     line-height: 20px;
   }
 
@@ -1222,7 +1244,7 @@ var RequestHeaderSection_css_default = `/*
   }
 
   .inline-icon {
-    vertical-align: middle;
+    margin-top: var(--sys-size-2);
   }
 
   @media (forced-colors: active) {
@@ -1283,16 +1305,15 @@ function renderProvisionalHeadersWarning(isRequestCached) {
   return html4`
     <div class="call-to-action">
       <div class="call-to-action-body">
+        <devtools-icon class="inline-icon medium" name='warning-filled'></devtools-icon>
         <div class="explanation" title=${cautionTitle}>
-          <devtools-icon class="inline-icon medium" name='warning-filled'>
-          </devtools-icon>
           ${cautionText} <devtools-link href="https://developer.chrome.com/docs/devtools/network/reference/#provisional-headers" class="link">${i18nString3(UIStrings3.learnMore)}</devtools-link>
         </div>
       </div>
     </div>
   `;
 }
-var RequestHeaderSection = class extends UI2.Widget.Widget {
+var RequestHeaderSection = class extends UI3.Widget.Widget {
   #request = null;
   #headers = [];
   #view;
@@ -1344,7 +1365,7 @@ import "./../../../ui/components/report_view/report_view.js";
 import "./../../../ui/kit/kit.js";
 import * as i18n7 from "./../../../core/i18n/i18n.js";
 import * as SDK3 from "./../../../core/sdk/sdk.js";
-import * as UI3 from "./../../../ui/legacy/legacy.js";
+import * as UI4 from "./../../../ui/legacy/legacy.js";
 import * as Lit4 from "./../../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
 
@@ -1522,7 +1543,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     </devtools-report>
   `, target);
 };
-var RequestTrustTokensView = class extends UI3.Widget.Widget {
+var RequestTrustTokensView = class extends UI4.Widget.Widget {
   #request = null;
   #view;
   constructor(element, view = DEFAULT_VIEW3) {
@@ -1643,7 +1664,7 @@ import * as TextUtils from "./../../../models/text_utils/text_utils.js";
 import * as NetworkForward2 from "./../forward/forward.js";
 import * as Sources from "./../../sources/sources.js";
 import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
-import * as UI4 from "./../../../ui/legacy/legacy.js";
+import * as UI5 from "./../../../ui/legacy/legacy.js";
 import { html as html6, nothing as nothing5, render as render6 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 
@@ -2097,7 +2118,7 @@ var ResponseHeaderSection = class extends ResponseHeaderSectionBase {
       Common2.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(true);
       await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(requestUrl);
     } else {
-      UI4.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async () => {
+      UI5.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async () => {
         await Sources.SourcesNavigator.OverridesNavigatorView.instance().setupNewWorkspace();
         await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(requestUrl);
       });

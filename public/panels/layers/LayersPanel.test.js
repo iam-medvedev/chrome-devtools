@@ -4,11 +4,10 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Layers from './layers.js';
-describeWithMockConnection('LayersPanel', () => {
+describeWithEnvironment('LayersPanel', () => {
     let target;
     let prerenderTarget;
     beforeEach(async () => {

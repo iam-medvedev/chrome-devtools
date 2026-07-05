@@ -5,8 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import { getValuesOfAllBodyRows, } from '../../../testing/DataGridHelpers.js';
 import { dispatchClickEvent, raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { createTarget } from '../../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as ApplicationComponents from './components.js';
 async function renderTrustTokensView() {
     const component = new ApplicationComponents.TrustTokensView.TrustTokensView();
@@ -25,7 +24,7 @@ function getInternalDataGridShadowRoot(component) {
     assert.isNotNull(dataGrid.shadowRoot);
     return dataGrid.shadowRoot;
 }
-describeWithMockConnection('TrustTokensView', () => {
+describeWithEnvironment('TrustTokensView', () => {
     let target;
     beforeEach(() => {
         target = createTarget();

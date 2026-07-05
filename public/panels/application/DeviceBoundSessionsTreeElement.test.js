@@ -5,11 +5,10 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-describeWithMockConnection('DeviceBoundSessionsTreeElement', () => {
+describeWithEnvironment('DeviceBoundSessionsTreeElement', () => {
     let model;
     let target;
     let mockPanel;

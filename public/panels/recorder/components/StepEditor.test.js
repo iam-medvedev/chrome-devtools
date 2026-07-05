@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './components.js';
 import { assert } from 'chai';
 import { dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
@@ -16,8 +17,7 @@ const triggerMicroTaskQueue = async (n = 1) => {
         await new Promise(resolve => setTimeout(resolve, 0));
     }
 };
-// Disabled due to flakiness
-describe.skip('[crbug.com/505637246]StepEditor', () => {
+describe('StepEditor', () => {
     setupLocaleHooks();
     async function renderEditor(step) {
         const editor = document.createElement('devtools-recorder-step-editor');

@@ -299,6 +299,8 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let timelinePanelInstance;
+// Total time to wait for source maps to load before giving up so trace processing can proceed.
+const SOURCE_MAP_LOAD_TIMEOUT_MS = 5000;
 export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Panel) {
     dropTarget;
     recordingOptionUIControls;
@@ -1810,11 +1812,17 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         // Add ModificationsManager listeners for annotations change to update the
         // Annotation Overlays.
         currentManager?.addEventListener(AnnotationModifiedEvent.eventName, this.#onAnnotationModifiedEventBound);
-        // To calculate the activity we might want to zoom in, we use the top-most main-thread track
-        const topMostMainThreadAppender = this.flameChart.getMainDataProvider().compatibilityTracksAppenderInstance().threadAppenders().at(0);
-        if (topMostMainThreadAppender) {
-            const zoomedInBounds = Trace.Extras.MainThreadActivity.calculateWindow(parsedTrace.data.Meta.traceBounds, topMostMainThreadAppender.getEntries());
-            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(zoomedInBounds);
+        // To calculate the activity we might want to zoom in, we use the top-most main-thread track.
+        // If the trace has an active breadcrumb that is not the initial full trace breadcrumb, we do
+        // not zoom in, but keep the window at the active breadcrumb bounds.
+        const breadcrumbs = currentManager?.getTimelineBreadcrumbs();
+        const hasActiveBreadcrumb = breadcrumbs ? breadcrumbs.activeBreadcrumb !== breadcrumbs.initialBreadcrumb : false;
+        if (!hasActiveBreadcrumb) {
+            const topMostMainThreadAppender = this.flameChart.getMainDataProvider().compatibilityTracksAppenderInstance().threadAppenders().at(0);
+            const zoomWindow = calculateAutoZoomWindow(parsedTrace.data.Meta.traceBounds, topMostMainThreadAppender?.getEntries());
+            if (zoomWindow) {
+                TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(zoomWindow);
+            }
         }
         // Add overlays for annotations loaded from the trace file
         const currModificationManager = ModificationsManager.activeManager();
@@ -2240,11 +2248,15 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             }
         };
         metadata.sourceMaps = [];
+        await this.#handleSourceMapPromise(parsedTrace, handleScript);
+    }
+    async #handleSourceMapPromise(parsedTrace, handleScript) {
         const promises = [];
         for (const script of parsedTrace?.data.Scripts.scripts.values() ?? []) {
             promises.push(handleScript(script));
         }
-        await Promise.all(promises);
+        const timeout = new Promise(resolve => setTimeout(resolve, SOURCE_MAP_LOAD_TIMEOUT_MS));
+        await Promise.race([Promise.allSettled(promises), timeout]);
     }
     #createSourceMapResolver(isFreshRecording, metadata) {
         const debuggerModelForFrameId = new Map();
@@ -2270,7 +2282,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             }
             return await debuggerModel.sourceMapManager().sourceMapForClientPromise(script);
         }
-        return async function resolveSourceMap(params) {
+        async function resolveSourceMap(params) {
             const { scriptId, scriptUrl, sourceUrl, sourceMapUrl, frame, cachedRawSourceMap } = params;
             if (cachedRawSourceMap) {
                 return new SDK.SourceMap.SourceMap(sourceUrl, sourceMapUrl ?? '', cachedRawSourceMap);
@@ -2317,6 +2329,10 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             };
             const payload = await SDK.SourceMapManager.tryLoadSourceMap(TimelinePanel.instance().#resourceLoader, sourceMapUrl, initiator);
             return payload ? new SDK.SourceMap.SourceMap(sourceUrl, sourceMapUrl, payload) : null;
+        }
+        const timeout = new Promise(resolve => setTimeout(() => resolve(null), SOURCE_MAP_LOAD_TIMEOUT_MS));
+        return function resolveSourceMapWithTimeout(params) {
+            return Promise.race([resolveSourceMap(params), timeout]);
         };
     }
     async #retainResourceContentsForEnhancedTrace(parsedTrace, metadata) {
@@ -2694,5 +2710,18 @@ export class SelectedInsight {
     constructor(insight) {
         this.insight = insight;
     }
+}
+/**
+ * Calculates the window to auto-zoom into when a trace is loaded.
+ * We only auto-zoom to the main thread activity if there is no active breadcrumb,
+ * as we want to preserve the active breadcrumb's window if one exists.
+ *
+ * @returns the window to zoom into, or null if no auto-zoom should be applied.
+ */
+export function calculateAutoZoomWindow(traceBounds, topMostMainThreadAppenderEntries) {
+    if (!topMostMainThreadAppenderEntries || topMostMainThreadAppenderEntries.length === 0) {
+        return null;
+    }
+    return Trace.Extras.MainThreadActivity.calculateWindow(traceBounds, topMostMainThreadAppenderEntries);
 }
 //# sourceMappingURL=TimelinePanel.js.map

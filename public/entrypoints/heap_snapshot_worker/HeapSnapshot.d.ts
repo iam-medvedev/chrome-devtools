@@ -125,10 +125,13 @@ export declare class HeapSnapshotNode implements HeapSnapshotItem {
     nextNodeIndex(): number;
     rawType(): number;
     isFlatConsString(): boolean;
-    detachedness(): DOMLinkState;
-    setDetachedness(detachedness: DOMLinkState): void;
+    detachedness(): HeapSnapshotModel.HeapSnapshotModel.DOMLinkState;
+    setDetachedness(detachedness: HeapSnapshotModel.HeapSnapshotModel.DOMLinkState): void;
     findInternalEdgeTarget(name: string): HeapSnapshotNode | undefined;
     nodeValueAsBool(): boolean | undefined;
+    nodeValueAsInt(): number | undefined;
+    nodeStringLength(): number | undefined;
+    nodeStringHash(): number | undefined;
     nodeIsTruncatedString(): boolean;
 }
 export declare class HeapSnapshotNodeIterator implements HeapSnapshotItemIterator {
@@ -228,14 +231,6 @@ export declare class SecondaryInitManager {
     private getNodeSelfSizes;
     private initialize;
 }
-/**
- * DOM node link state.
- */
-declare const enum DOMLinkState {
-    UNKNOWN = 0,
-    ATTACHED = 1,
-    DETACHED = 2
-}
 export declare abstract class HeapSnapshot {
     #private;
     nodes: Platform.TypedArrayUtilities.BigUint32Array;
@@ -286,9 +281,11 @@ export declare abstract class HeapSnapshot {
     dominatorsTree: Uint32Array;
     nodeDetachednessAndClassIndexOffset: number;
     detachednessAndClassIndexArray?: Uint32Array;
+    nodeNativeContextAttribution: Int32Array;
     constructor(profile: Profile, progress: HeapSnapshotProgress);
     initialize(secondWorker: PlatformApi.HostRuntime.WorkerMessagePort): Promise<void>;
     nodeIndexForId(nodeId: number): number | undefined;
+    getObjectInfo(nodeIndex: number): HeapSnapshotModel.HeapSnapshotModel.ObjectInfo;
     private startInitStep1InSecondThread;
     private startInitStep2InSecondThread;
     private startInitStep3InSecondThread;
@@ -309,6 +306,7 @@ export declare abstract class HeapSnapshot {
     private createNodeIdFilter;
     private createAllocationStackFilter;
     private createNamedFilter;
+    private createDuplicatedStringsFilter;
     getAggregatesByClassKey(sortedIndexes: boolean, key?: string, filter?: ((arg0: HeapSnapshotNode) => boolean)): Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregatedInfo>;
     allocationTracesTops(): HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode[];
     allocationNodeCallers(nodeId: number): HeapSnapshotModel.HeapSnapshotModel.AllocationNodeCallers;
@@ -332,6 +330,15 @@ export declare abstract class HeapSnapshot {
     static calculateDominatorsAndRetainedSizes(inputs: ArgumentsToComputeDominatorsAndRetainedSizes): Promise<DominatorsAndRetainedSizes>;
     static buildDominatedNodes(inputs: ArgumentsToBuildDominatedNodes): DominatedNodes;
     private calculateObjectNames;
+    private calculateNativeContextAttribution;
+    private calculateNativeContextSizes;
+    private buildInitEdgeTargets;
+    private inferFixedNativeContextForOrdinal;
+    private mergeNativeContextOwner;
+    private propagateNativeContextAttribution;
+    getNativeContextSizes(): HeapSnapshotModel.HeapSnapshotModel.NativeContextSizes;
+    nodeNativeContext(nodeIndex: number): number;
+    private isNativeContext;
     interfaceDefinitions(): string;
     private isPlainJSObject;
     private inferInterfaceDefinitions;

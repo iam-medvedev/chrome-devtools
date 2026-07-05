@@ -5,17 +5,18 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Accessibility from './accessibility.js';
-describeWithMockConnection('ARIAAttributesView', () => {
+describeWithEnvironment('ARIAAttributesView', () => {
     let node;
     beforeEach(() => {
-        setMockConnectionResponseHandler('Debugger.enable', () => ({}));
-        setMockConnectionResponseHandler('Storage.getStorageKey', () => ({}));
         stubNoopSettings();
-        const target = createTarget();
+        const connection = new MockCDPConnection();
+        connection.setSuccessHandler('Debugger.enable', () => ({}));
+        connection.setSuccessHandler('Storage.getStorageKey', () => ({}));
+        const target = createTarget({ connection });
         const domModel = target.model(SDK.DOMModel.DOMModel);
         node = new SDK.DOMModel.DOMNode(domModel);
         node.setAttributesPayload(['role', 'checkbox', 'aria-checked', 'true']);

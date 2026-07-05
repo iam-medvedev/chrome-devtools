@@ -21,7 +21,7 @@ type ViewOutput = unknown;
 type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class AutofillView extends UI.Widget.VBox {
     #private;
-    constructor(autofillManager?: AutofillManager.AutofillManager.AutofillManager, view?: View);
+    constructor(autofillManager: AutofillManager.AutofillManager.AutofillManager, view?: View);
     wasShown(): void;
     willHide(): void;
     performUpdate(): Promise<void> | void;

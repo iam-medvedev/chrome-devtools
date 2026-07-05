@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as TimelineComponents from './components.js';
-describeWithMockConnection('TimelineSummary', () => {
+describeWithEnvironment('TimelineSummary', () => {
     async function setupWidget() {
         const view = createViewFunctionStub(TimelineComponents.TimelineSummary.CategorySummary);
         const widget = new TimelineComponents.TimelineSummary.CategorySummary(undefined, view);

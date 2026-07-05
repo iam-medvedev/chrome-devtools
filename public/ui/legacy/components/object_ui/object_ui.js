@@ -48,6 +48,7 @@ var ObjectPropertiesSection_exports = {};
 __export(ObjectPropertiesSection_exports, {
   ArrayGroupTreeNode: () => ArrayGroupTreeNode,
   ArrayGroupingTreeElement: () => ArrayGroupingTreeElement,
+  EXPANDABLE_MAX_DEPTH: () => EXPANDABLE_MAX_DEPTH,
   EXPANDABLE_TEXT_DEFAULT_VIEW: () => EXPANDABLE_TEXT_DEFAULT_VIEW,
   ExpandableTextPropertyValue: () => ExpandableTextPropertyValue,
   InitialVisibleChildrenLimit: () => InitialVisibleChildrenLimit,
@@ -921,7 +922,10 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
     } else {
       this.options.expansionTracker?.collapse(this);
     }
-    this.#expanded = val;
+    if (this.#expanded !== val) {
+      this.#expanded = val;
+      this.dispatchEventToListeners("expanded-changed", val);
+    }
   }
   get readOnly() {
     return this.options.readOnly;
@@ -934,6 +938,9 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
   }
   set includeNullOrUndefinedValues(value) {
     this.setFilter({ includeNullOrUndefinedValues: value, regex: this.filter?.regex ?? null });
+  }
+  get canExpandRecursively() {
+    return true;
   }
   get sortPropertiesAlphabetically() {
     if (this.isWasm) {
@@ -951,11 +958,14 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
   }
   // Performs a pre-order tree traversal over the populated children. If any children need to be populated, callers must
   // do that while walking (pre-order visitation enables that).
-  *#walk(maxDepth = -1) {
+  *#walk(maxDepth = -1, filter) {
+    if (filter && !filter(this)) {
+      return;
+    }
     function* walkChildren(children) {
       if (children) {
         for (const child of children) {
-          yield* child.#walk(Math.max(-1, maxDepth - 1));
+          yield* child.#walk(Math.max(-1, maxDepth - 1), filter);
         }
       }
     }
@@ -967,7 +977,7 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common.ObjectWrapper.
     }
   }
   async expandRecursively(maxDepth) {
-    for (const node of this.#walk(maxDepth)) {
+    for (const node of this.#walk(maxDepth, (n) => n.canExpandRecursively)) {
       await node.populateChildrenIfNeeded();
       node.expanded = true;
     }
@@ -1223,6 +1233,9 @@ var ObjectTreeNode = class _ObjectTreeNode extends ObjectTreeNodeBase {
   }
   get isFiltered() {
     return Boolean(this.filter && !this.property.match(this.filter));
+  }
+  get canExpandRecursively() {
+    return this.property.name !== "[[Prototype]]";
   }
   get name() {
     return this.property.name;
@@ -1939,6 +1952,7 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
     this.property.addEventListener("value-changed", this.#updateValue, this);
     this.property.addEventListener("children-changed", this.#updateChildren, this);
     this.property.addEventListener("filter-changed", this.#updateFilter, this);
+    this.property.addEventListener("expanded-changed", this.#onExpandedChanged, this);
     this.toggleOnClick = true;
     this.linkifier = linkifier;
     this.maxNumPropertiesToShow = InitialVisibleChildrenLimit;
@@ -1951,11 +1965,27 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
     }
   }
   static async populate(treeElement, value, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder) {
-    const properties = await value.populateChildrenIfNeeded();
+    await _ObjectPropertyTreeElement.populateChildrenIfNeeded(value);
+    _ObjectPropertyTreeElement.populateImpl(treeElement, value, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder);
+  }
+  static async populateChildrenIfNeeded(value) {
+    const children = await value.populateChildrenIfNeeded();
+    await ArrayGroupingTreeElement.populateChildrenIfNeeded(children);
+  }
+  static populateImpl(treeElement, value, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder) {
+    for (const childNode of _ObjectPropertyTreeElement.createNodes(value, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder, (property) => treeElement instanceof _ObjectPropertyTreeElement && !ObjectPropertiesSection.isDisplayableProperty(property, treeElement.property?.property))) {
+      treeElement.appendChild(childNode);
+    }
+  }
+  static *createNodes(value, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder, isNotDisplayablePropertyCallback) {
+    const properties = value.children;
+    if (!properties) {
+      return;
+    }
     if (properties.arrayRanges) {
-      await ArrayGroupingTreeElement.populate(treeElement, properties, linkifier);
+      yield* ArrayGroupingTreeElement.createNodes(properties, linkifier, isNotDisplayablePropertyCallback);
     } else {
-      _ObjectPropertyTreeElement.populateWithProperties(treeElement, properties, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder);
+      yield* _ObjectPropertyTreeElement.createPropertyNodes(properties, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder, isNotDisplayablePropertyCallback);
     }
   }
   static *createPropertyNodes({ properties, internalProperties, accessors, arrayRanges }, skipProto, skipGettersAndSetters, linkifier, emptyPlaceholder, isNotDisplayablePropertyCallback) {
@@ -2097,6 +2127,14 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI2.Tre
   }
   #updateFilter() {
     this.hidden = this.property.isFiltered;
+  }
+  #onExpandedChanged(event) {
+    const expanded = event.data;
+    if (expanded) {
+      this.expand();
+    } else {
+      this.collapse();
+    }
   }
   getContextMenu(event) {
     const contextMenu = new UI2.ContextMenu.ContextMenu(event);
@@ -2267,28 +2305,47 @@ var ArrayGroupingTreeElement = class _ArrayGroupingTreeElement extends UI2.TreeO
     super(Platform2.StringUtilities.sprintf("[%d \u2026 %d]", child.range.fromIndex, child.range.toIndex), true);
     this.#child = child;
     this.#child.addEventListener("children-changed", this.onpopulate, this);
+    this.#child.addEventListener("expanded-changed", this.#onExpandedChanged, this);
     this.toggleOnClick = true;
     this.linkifier = linkifier;
     if (child.expanded) {
       this.expand();
     }
   }
-  static async populate(treeNode, children, linkifier) {
+  #onExpandedChanged(event) {
+    const expanded = event.data;
+    if (expanded) {
+      this.expand();
+    } else {
+      this.collapse();
+    }
+  }
+  static *createNodes(children, linkifier, isNotDisplayablePropertyCallback) {
     if (!children.arrayRanges) {
       return;
     }
     if (children.arrayRanges.length === 1) {
-      await ObjectPropertyTreeElement.populate(treeNode, children.arrayRanges[0], false, false, linkifier);
+      yield* ObjectPropertyTreeElement.createNodes(children.arrayRanges[0], false, false, linkifier, null, isNotDisplayablePropertyCallback);
     } else {
       for (const child of children.arrayRanges) {
         if (child.singular) {
-          await ObjectPropertyTreeElement.populate(treeNode, child, false, false, linkifier);
+          yield* ObjectPropertyTreeElement.createNodes(child, false, false, linkifier, null, isNotDisplayablePropertyCallback);
         } else {
-          treeNode.appendChild(new _ArrayGroupingTreeElement(child, linkifier));
+          yield new _ArrayGroupingTreeElement(child, linkifier);
         }
       }
     }
-    ObjectPropertyTreeElement.populateWithProperties(treeNode, children, false, false, linkifier);
+    yield* ObjectPropertyTreeElement.createPropertyNodes(children, false, false, linkifier, null, isNotDisplayablePropertyCallback);
+  }
+  static async populateChildrenIfNeeded(children) {
+    if (!children.arrayRanges) {
+      return;
+    }
+    if (children.arrayRanges.length === 1) {
+      await ObjectPropertyTreeElement.populateChildrenIfNeeded(children.arrayRanges[0]);
+    } else {
+      await Promise.all(children.arrayRanges.filter((child) => child.singular).map((child) => ObjectPropertyTreeElement.populateChildrenIfNeeded(child)));
+    }
   }
   onexpand() {
     this.#child.expanded = true;
@@ -2478,7 +2535,14 @@ var CustomPreviewSection = class _CustomPreviewSection {
     if (!Array.isArray(jsonML)) {
       return document.createTextNode(String(jsonML));
     }
-    return jsonML[0] === "object" ? this.layoutObjectTag(jsonML) : this.renderElement(jsonML);
+    if (jsonML[0] !== "object") {
+      return this.renderElement(jsonML);
+    }
+    if (jsonML.length !== 2) {
+      Common2.Console.Console.instance().error("Broken formatter: object reference must contain exactly two elements");
+      return document.createElement("span");
+    }
+    return this.layoutObjectTag(jsonML);
   }
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -264,8 +264,11 @@ export class CdpBrowser extends BrowserBase {
         });
         return response.targetId;
     }
-    async installExtension(path) {
-        const { id } = await this.#connection.send('Extensions.loadUnpacked', { path });
+    async installExtension(path, options) {
+        const { id } = await this.#connection.send('Extensions.loadUnpacked', {
+            path,
+            enableInIncognito: options?.enabledInIncognito ?? false,
+        });
         this.#extensions.delete(id);
         return id;
     }

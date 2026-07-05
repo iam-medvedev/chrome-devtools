@@ -4,11 +4,10 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Application from './application.js';
-describeWithMockConnection('ServiceWorkersView', () => {
+describeWithEnvironment('ServiceWorkersView', () => {
     let target;
     let view;
     beforeEach(() => {
@@ -21,7 +20,7 @@ describeWithMockConnection('ServiceWorkersView', () => {
     });
     it('shows service worker registrations', async () => {
         view = new Application.ServiceWorkersView.ServiceWorkersView();
-        renderElementIntoDOM(view);
+        renderElementIntoDOM(view, { includeCommonStyles: true });
         const serviceWorkersManager = target.model(SDK.ServiceWorkerManager.ServiceWorkerManager);
         assert.exists(serviceWorkersManager);
         const securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
@@ -38,6 +37,7 @@ describeWithMockConnection('ServiceWorkersView', () => {
         const sectionTitle = view.currentWorkersView.contentElement.querySelector('.report-section-title');
         assert.exists(sectionTitle);
         assert.strictEqual(sectionTitle.textContent, SCOPE_URL);
+        await assertScreenshot('application/service-workers-view-basic.png');
     });
     describe('router info', () => {
         const registrationId = 'fake-sw-id';

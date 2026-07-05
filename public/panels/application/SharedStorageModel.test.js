@@ -4,9 +4,9 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { getInitializedResourceTreeModel, getMainFrame, MAIN_FRAME_ID, navigate, } from '../../testing/ResourceTreeHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { getInitializedResourceTreeModel, getMainFrame, MAIN_FRAME_ID, mockResourceTree, navigate, } from '../../testing/ResourceTreeHelpers.js';
 import * as Resources from './application.js';
 class SharedStorageListener {
     #model;
@@ -68,7 +68,7 @@ class SharedStorageListener {
         }
     }
 }
-describeWithMockConnection('SharedStorageModel', () => {
+describeWithEnvironment('SharedStorageModel', () => {
     let sharedStorageModel;
     let target;
     let listener;
@@ -155,7 +155,9 @@ describeWithMockConnection('SharedStorageModel', () => {
         },
     ];
     beforeEach(async () => {
-        target = createTarget();
+        const connection = new MockCDPConnection([]);
+        mockResourceTree(connection);
+        target = createTarget({ connection });
         await getInitializedResourceTreeModel(target);
         sharedStorageModel = target.model(Resources.SharedStorageModel.SharedStorageModel);
         listener = new SharedStorageListener(sharedStorageModel);

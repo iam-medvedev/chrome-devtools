@@ -7,7 +7,7 @@ const Console = Common.Console.Console;
 describe('Console', () => {
     describe('addMessage', () => {
         it('adds messages', () => {
-            const console = Console.instance({ forceNew: true });
+            const console = new Console();
             console.addMessage('Foo', "info" /* Common.Console.MessageLevel.INFO */, true);
             const messages = console.messages();
             assert.lengthOf(messages, 1);
@@ -16,7 +16,7 @@ describe('Console', () => {
             assert.isTrue(messages[0].show);
         });
         it('stores messages', () => {
-            const console = Console.instance({ forceNew: true });
+            const console = new Console();
             console.addMessage('Foo', "info" /* Common.Console.MessageLevel.INFO */, true);
             console.addMessage('Baz', "warning" /* Common.Console.MessageLevel.WARNING */, true);
             console.addMessage('Bar', "error" /* Common.Console.MessageLevel.ERROR */, true);
@@ -25,7 +25,7 @@ describe('Console', () => {
             assert.lengthOf(messages, 4);
         });
         it('dispatches events to listeners', done => {
-            const console = Console.instance({ forceNew: true });
+            const console = new Console();
             const callback = ({ data }) => {
                 console.removeEventListener("messageAdded" /* Common.Console.Events.MESSAGE_ADDED */, callback);
                 assert.strictEqual(data.text, 'Foo');
@@ -37,7 +37,7 @@ describe('Console', () => {
     });
     describe('log', () => {
         it('adds messages with level Info', () => {
-            const console = Console.instance({ forceNew: true });
+            const console = new Console();
             console.log('Lorem Ipsum');
             const messages = console.messages();
             assert.lengthOf(messages, 1);
@@ -47,7 +47,7 @@ describe('Console', () => {
     });
     describe('warn', () => {
         it('adds messages with level Warning', () => {
-            const console = Console.instance({ forceNew: true });
+            const console = new Console();
             console.warn('Lorem Ipsum');
             const messages = console.messages();
             assert.lengthOf(messages, 1);
@@ -57,7 +57,7 @@ describe('Console', () => {
     });
     describe('error', () => {
         it('adds messages with level Error', () => {
-            const console = Console.instance({ forceNew: true });
+            const console = new Console();
             console.error('Lorem Ipsum');
             const messages = console.messages();
             assert.lengthOf(messages, 1);
@@ -65,7 +65,7 @@ describe('Console', () => {
             assert.strictEqual(messages[0].level, "error" /* Common.Console.MessageLevel.ERROR */);
         });
         it('can control whether to pop up the Console panel', () => {
-            const console = Console.instance({ forceNew: true });
+            const console = new Console();
             console.error('Bar', false);
             console.error('Baz', true);
             const messages = console.messages();

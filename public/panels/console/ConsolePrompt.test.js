@@ -6,8 +6,8 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
+import { dispatchEvent } from '../../testing/MockConnection.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
@@ -15,7 +15,7 @@ function compileScriptResponse(exception) {
     const exceptionDetails = exception ? { exception: { description: exception } } : undefined;
     return { exceptionDetails, getError: () => { } };
 }
-describeWithMockConnection('ConsoleContextSelector', () => {
+describeWithEnvironment('ConsoleContextSelector', () => {
     let target;
     let consolePrompt;
     let evaluateOnTarget;

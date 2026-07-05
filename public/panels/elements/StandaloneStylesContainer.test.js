@@ -7,17 +7,19 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { assertScreenshot, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
-import { createTarget, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import { spyCall } from '../../testing/ExpectStubCall.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { getMatchedStyles, getMatchedStylesWithProperties, ruleMatch, } from '../../testing/StyleHelpers.js';
 import * as Elements from './elements.js';
-describeWithMockConnection('StandaloneStylesContainer', () => {
+describeWithEnvironment('StandaloneStylesContainer', () => {
     let target;
     let cssModel;
     let node;
+    let connection;
     beforeEach(() => {
-        target = createTarget();
+        connection = new MockCDPConnection();
+        target = createTarget({ connection });
         const domModel = target.model(SDK.DOMModel.DOMModel);
         cssModel = domModel.cssModel();
         node = new SDK.DOMModel.DOMNode(domModel);
@@ -32,7 +34,7 @@ describeWithMockConnection('StandaloneStylesContainer', () => {
         });
     });
     async function setupContainer(properties = []) {
-        const matchedStyles = await getMatchedStylesWithProperties({ cssModel, node, properties, selector: 'div' });
+        const matchedStyles = await getMatchedStylesWithProperties({ cssModel, node, properties, selector: 'div', connection });
         sinon.stub(cssModel, 'cachedMatchedCascadeForNode').resolves(matchedStyles);
         const container = new Elements.StandaloneStylesContainer.StandaloneStylesContainer();
         renderElementIntoDOM(container);
@@ -102,7 +104,7 @@ describeWithMockConnection('StandaloneStylesContainer', () => {
                 styles: [],
             };
         });
-        setMockConnectionResponseHandler('CSS.setStyleTexts', setStyleTextsHandler);
+        connection.setSuccessHandler('CSS.setStyleTexts', setStyleTextsHandler);
         const treeElement = container.allSections()[0].propertiesTreeOutline.firstChild();
         await treeElement.applyStyleText('color: blue', true);
         sinon.assert.calledOnce(setStyleTextsHandler);
@@ -122,6 +124,7 @@ describeWithMockConnection('StandaloneStylesContainer', () => {
                 ruleMatch('.match', { color: 'red' }),
                 ruleMatch('.no-match', { color: 'blue' }),
             ],
+            connection,
         });
         sinon.stub(cssModel, 'cachedMatchedCascadeForNode').resolves(matchedStyles);
         const container = new Elements.StandaloneStylesContainer.StandaloneStylesContainer();
@@ -147,6 +150,7 @@ describeWithMockConnection('StandaloneStylesContainer', () => {
                 ruleMatch('.match', { color: 'red' }),
                 ruleMatch('.no-match', { color: 'blue' }),
             ],
+            connection,
         });
         sinon.stub(cssModel, 'cachedMatchedCascadeForNode').resolves(matchedStyles);
         const container = new Elements.StandaloneStylesContainer.StandaloneStylesContainer();

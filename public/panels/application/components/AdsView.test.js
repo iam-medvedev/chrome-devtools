@@ -4,11 +4,10 @@
 import { assert } from 'chai';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { createTarget } from '../../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as ApplicationComponents from './components.js';
-describeWithMockConnection('AdsView', () => {
+describeWithEnvironment('AdsView', () => {
     let target;
     let connection;
     beforeEach(() => {
@@ -21,6 +20,8 @@ describeWithMockConnection('AdsView', () => {
                 averageViewportAdCount: 2,
                 totalAdCpuTime: 150,
                 totalAdNetworkBytes: 2048,
+                updateAdFrames: [],
+                removeAdFrames: [],
             }
         }));
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
@@ -71,6 +72,8 @@ describeWithMockConnection('AdsView', () => {
                 averageViewportAdCount: 0,
                 totalAdCpuTime: 0,
                 totalAdNetworkBytes: 0,
+                updateAdFrames: [],
+                removeAdFrames: [],
             }
         }));
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, {

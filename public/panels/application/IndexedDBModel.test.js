@@ -4,12 +4,13 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as Resources from './application.js';
-describeWithMockConnection('IndexedDBModel', () => {
+describeWithEnvironment('IndexedDBModel', () => {
     let indexedDBModel;
     let target;
+    let connection;
     let indexedDBAgent;
     let manager;
     const testKey = 'test-storage-key/';
@@ -27,7 +28,8 @@ describeWithMockConnection('IndexedDBModel', () => {
     };
     const testDBId = new Resources.IndexedDBModel.DatabaseId(testStorageBucket, 'test-database');
     beforeEach(async () => {
-        target = createTarget();
+        connection = new MockCDPConnection();
+        target = createTarget({ connection });
         indexedDBModel = new Resources.IndexedDBModel.IndexedDBModel(target);
         indexedDBAgent = target.indexedDBAgent();
         manager = target.model(SDK.StorageBucketsModel.StorageBucketsModel);
@@ -40,7 +42,7 @@ describeWithMockConnection('IndexedDBModel', () => {
                     resolve(event.data.databaseId.name);
                 });
             });
-            setMockConnectionResponseHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
+            connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
             manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
             assert.isFalse(databaseAddedSpy.calledWithExactly(Resources.IndexedDBModel.Events.DatabaseAdded, { model: indexedDBModel, databaseId: testDBId }));
             indexedDBModel.enable();
@@ -88,7 +90,7 @@ describeWithMockConnection('IndexedDBModel', () => {
                 resolve();
             });
         });
-        setMockConnectionResponseHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
         indexedDBModel.enable();
         manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
         void indexedDBModel.refreshDatabaseNames();
@@ -135,8 +137,8 @@ describeWithMockConnection('IndexedDBModel', () => {
                 resolve();
             });
         });
-        setMockConnectionResponseHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
-        setMockConnectionResponseHandler('IndexedDB.requestDatabase', () => ({ databaseWithObjectStores: { name: 'test-database', version: 1, objectStores: [] } }));
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
+        connection.setSuccessHandler('IndexedDB.requestDatabase', () => ({ databaseWithObjectStores: { name: 'test-database', version: 1, objectStores: [] } }));
         indexedDBModel.enable();
         manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
         indexedDBModel.indexedDBListUpdated({ origin: '', storageKey: testKey, bucketId: '0' });
@@ -145,7 +147,7 @@ describeWithMockConnection('IndexedDBModel', () => {
     });
     it('gets databases added for storage key', async () => {
         const dbNames = ['test-database1', 'test-database2'];
-        setMockConnectionResponseHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: dbNames }));
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: dbNames }));
         indexedDBModel.enable();
         manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
         await indexedDBModel.refreshDatabaseNames();
@@ -154,7 +156,7 @@ describeWithMockConnection('IndexedDBModel', () => {
     });
     it('calls protocol method on deleteDatabase', () => {
         const deleteDBSpy = sinon.spy(indexedDBAgent, 'invoke_deleteDatabase');
-        setMockConnectionResponseHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
         indexedDBModel.enable();
         manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
         void indexedDBModel.deleteDatabase(testDBId);
@@ -162,11 +164,11 @@ describeWithMockConnection('IndexedDBModel', () => {
     });
     it('removes databases for storage key on clearForStorageKey', async () => {
         const dbNames = ['test-database1', 'test-database-2'];
-        setMockConnectionResponseHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: dbNames }));
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: dbNames }));
         indexedDBModel.enable();
         manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
         await indexedDBModel.refreshDatabaseNames();
-        clearMockConnectionResponseHandler('IndexedDB.requestDatabaseNames');
+        connection.setHandler('IndexedDB.requestDatabaseNames', null);
         indexedDBModel.clearForStorageKey(testKey);
         assert.isEmpty(indexedDBModel.databases());
     });

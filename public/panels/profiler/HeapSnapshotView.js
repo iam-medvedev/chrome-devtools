@@ -128,6 +128,32 @@ const UIStrings = {
      */
     objectsRetainedByEventHandlers: 'Objects retained by Event Handlers',
     /**
+     * @description An option which will filter the heap snapshot to show only
+     * objects attributed to a specific native context (roughly, a JavaScript
+     * realm such as a frame). PH1 is a name identifying the context
+     * (often a URL) which may be empty, PH2 is the id of the native context
+     * object, and PH3 is the context's attributed size.
+     * @example {https://example.com/ } PH1
+     * @example {1234} PH2
+     * @example {1.2 MB} PH3
+     */
+    objectsAttributedToNativeContextS: 'Native context {PH1}@{PH2} ({PH3})',
+    /**
+     * @description An option which will filter the heap snapshot to show only
+     * objects which are shared between multiple native contexts (roughly,
+     * JavaScript realms such as frames). PH1 is their total size.
+     * @example {1.2 MB} PH1
+     */
+    objectsSharedBetweenNativeContextsS: 'Objects shared between native contexts ({PH1})',
+    /**
+     * @description An option which will filter the heap snapshot to show only
+     * objects which could not be attributed to any single native context
+     * (roughly, a JavaScript realm such as a frame). PH1 is their
+     * total size.
+     * @example {1.2 MB} PH1
+     */
+    objectsNotAttributedToNativeContextS: 'Objects not attributed to a native context ({PH1})',
+    /**
      * @description Text for the summary view
      */
     summary: 'Summary',
@@ -265,6 +291,8 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     perspectiveSelect;
     baseSelect;
     filterSelect;
+    #filterOptions = [];
+    #nativeContextFilters = [];
     classNameFilter;
     selectedSizeText;
     resetRetainersButton;
@@ -471,6 +499,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     async populate() {
         const heapSnapshotProxy = await this.profile.loadPromise;
         void this.retrieveStatistics(heapSnapshotProxy);
+        void this.updateNativeContextFilters(heapSnapshotProxy);
         if (this.dataGrid) {
             void this.dataGrid.setDataSource(heapSnapshotProxy, 0);
         }
@@ -519,6 +548,47 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         ];
         this.statisticsView.setTotalAndRecords(statistics.total, records);
         return statistics;
+    }
+    async updateNativeContextFilters(heapSnapshotProxy) {
+        const sizes = await heapSnapshotProxy.getNativeContextSizes();
+        const filters = [];
+        // List the individual native contexts first, sorted by attributed size
+        // (largest first), then the shared and unattributed buckets.
+        const nativeContexts = sizes.nativeContexts.toSorted((a, b) => b.attributedSize - a.attributedSize);
+        for (const nativeContext of nativeContexts) {
+            // Drop the "system / NativeContext" boilerplate (and any "Detached "
+            // marker) so the label shows just the distinguishing part of the name
+            // (e.g. the URL). The remaining name (if any) is followed by the native
+            // context object id, e.g. "Native context https://example.com @1234".
+            let name = nativeContext.nodeName;
+            if (name.startsWith('Detached ')) {
+                name = name.substring('Detached '.length);
+            }
+            if (name.startsWith('system / NativeContext / ')) {
+                name = name.substring('system / NativeContext / '.length);
+            }
+            else if (name.startsWith('system / NativeContext')) {
+                name = name.substring('system / NativeContext'.length);
+            }
+            filters.push({
+                uiName: i18nString(UIStrings.objectsAttributedToNativeContextS, {
+                    PH1: name ? `${name} ` : '',
+                    PH2: nativeContext.nodeId,
+                    PH3: i18n.ByteUtilities.bytesToString(nativeContext.attributedSize),
+                }),
+                filterName: `nativeContext_${nativeContext.nodeIndex}`,
+            });
+        }
+        filters.push({
+            uiName: i18nString(UIStrings.objectsSharedBetweenNativeContextsS, { PH1: i18n.ByteUtilities.bytesToString(sizes.sharedSize) }),
+            filterName: 'sharedNativeContext',
+        });
+        filters.push({
+            uiName: i18nString(UIStrings.objectsNotAttributedToNativeContextS, { PH1: i18n.ByteUtilities.bytesToString(sizes.noAttributionSize) }),
+            filterName: 'noNativeContext',
+        });
+        this.#nativeContextFilters = filters;
+        this.updateFilterOptions();
     }
     onIdsRangeChanged(event) {
         const { minId, maxId } = event.data;
@@ -659,15 +729,9 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         { uiName: i18nString(UIStrings.objectsRetainedByEventHandlers), filterName: 'objectsRetainedByEventHandlers' },
     ];
     changeFilter() {
-        let selectedIndex = this.filterSelect.selectedIndex();
-        let filterName = undefined;
-        const indexOfFirstAlwaysAvailableFilter = this.filterSelect.size() - HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS.length;
-        if (selectedIndex >= indexOfFirstAlwaysAvailableFilter) {
-            filterName =
-                HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS[selectedIndex - indexOfFirstAlwaysAvailableFilter].filterName;
-            selectedIndex = 0;
-        }
-        const profileIndex = selectedIndex - 1;
+        const selectedOption = this.#filterOptions[this.filterSelect.selectedIndex()];
+        const profileIndex = selectedOption?.profileIndex ?? -1;
+        const filterName = selectedOption?.filterName;
         if (!this.dataGrid) {
             return;
         }
@@ -864,9 +928,19 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     updateFilterOptions() {
         const list = this.profiles();
         const selectedIndex = this.filterSelect.selectedIndex();
-        const originalSize = this.filterSelect.size();
+        const selectedOption = this.#filterOptions[selectedIndex];
+        const filterOptions = [];
+        const createOption = (filterOption) => {
+            filterOptions.push(filterOption);
+            const option = this.filterSelect.createOption(filterOption.uiName);
+            option.disabled = Boolean(filterOption.disabled);
+            return option;
+        };
+        const createSeparator = () => {
+            return createOption({ uiName: '\u2014'.repeat(18), profileIndex: -1, disabled: true });
+        };
         this.filterSelect.removeOptions();
-        this.filterSelect.createOption(i18nString(UIStrings.allObjects));
+        createOption({ uiName: i18nString(UIStrings.allObjects), profileIndex: -1 });
         for (let i = 0; i < list.length; ++i) {
             let title;
             if (!i) {
@@ -875,31 +949,25 @@ export class HeapSnapshotView extends UI.View.SimpleView {
             else {
                 title = i18nString(UIStrings.objectsAllocatedBetweenSAndS, { PH1: list[i - 1].title, PH2: list[i].title });
             }
-            this.filterSelect.createOption(title);
+            createOption({ uiName: title, profileIndex: i });
         }
-        // Create a dividing line using em dashes.
-        const dividerIndex = this.filterSelect.size();
-        const divider = this.filterSelect.createOption('\u2014'.repeat(18));
-        (divider).disabled = true;
+        createSeparator();
         for (const filter of HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS) {
-            this.filterSelect.createOption(filter.uiName);
+            createOption({ uiName: filter.uiName, profileIndex: -1, filterName: filter.filterName });
         }
-        const newSize = this.filterSelect.size();
-        if (selectedIndex > -1) {
-            const distanceFromEnd = originalSize - selectedIndex;
-            if (distanceFromEnd <= HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS.length) {
-                // If one of the always-available filters was selected, then select the
-                // same filter again even though its index may have changed.
-                this.filterSelect.setSelectedIndex(newSize - distanceFromEnd);
+        if (this.#nativeContextFilters.length > 0) {
+            createSeparator();
+            for (const filter of this.#nativeContextFilters) {
+                createOption({ uiName: filter.uiName, profileIndex: -1, filterName: filter.filterName });
             }
-            else if (selectedIndex >= dividerIndex) {
-                // If the select list is now shorter than it was, such that we can't
-                // keep the index unchanged, set it to -1, which causes it to be blank.
-                this.filterSelect.setSelectedIndex(-1);
-            }
-            else {
-                this.filterSelect.setSelectedIndex(selectedIndex);
-            }
+        }
+        this.#filterOptions = filterOptions;
+        if (selectedOption) {
+            const newSelectedIndex = this.#filterOptions.findIndex(option => {
+                return !option.disabled && option.profileIndex === selectedOption.profileIndex &&
+                    option.filterName === selectedOption.filterName;
+            });
+            this.filterSelect.setSelectedIndex(newSelectedIndex);
         }
     }
     updateControls() {

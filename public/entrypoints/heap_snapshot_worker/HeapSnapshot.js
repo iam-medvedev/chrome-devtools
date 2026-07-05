@@ -447,6 +447,28 @@ export class HeapSnapshotNode {
         }
         return undefined;
     }
+    nodeValueAsInt() {
+        if (this.rawType() !== this.snapshot.nodeNumberType) {
+            return undefined;
+        }
+        if (this.rawName() !== 'int') {
+            return undefined;
+        }
+        const valNode = this.findInternalEdgeTarget('value');
+        if (!valNode) {
+            return undefined;
+        }
+        const value = parseInt(valNode.rawName(), 10);
+        return isNaN(value) ? undefined : value;
+    }
+    nodeStringLength() {
+        const lengthNode = this.findInternalEdgeTarget('length');
+        return lengthNode ? lengthNode.nodeValueAsInt() : undefined;
+    }
+    nodeStringHash() {
+        const hashNode = this.findInternalEdgeTarget('hash');
+        return hashNode ? hashNode.nodeValueAsInt() : undefined;
+    }
     nodeIsTruncatedString() {
         const truncNode = this.findInternalEdgeTarget('truncated');
         if (!truncNode) {
@@ -637,6 +659,7 @@ export class SecondaryInitManager {
         }
     }
 }
+// Bitmask for accessing DOMLinkState in the detachedness field.
 const BITMASK_FOR_DOM_LINK_STATE = 3;
 // The class index is stored in the upper 30 bits of the detachedness field.
 const SHIFT_FOR_CLASS_INDEX = 2;
@@ -655,6 +678,12 @@ const MIN_OBJECT_COUNT_PER_INTERFACE = 2;
 // match at least 1 out of 1000 Objects in the heap. Otherwise, we end up with a
 // long tail of unpopular interfaces that don't help analysis.
 const MIN_OBJECT_PROPORTION_PER_INTERFACE = 1000;
+// Values in the nodeNativeContextAttribution array:
+// >= 0: The ordinal of the specific native context that owns the object.
+// -1 (NO_NATIVE_CONTEXT): The object is not reachable from any native context.
+// -2 (SHARED_NATIVE_CONTEXT): The object is reachable from multiple native contexts.
+const NO_NATIVE_CONTEXT = -1;
+const SHARED_NATIVE_CONTEXT = -2;
 export class HeapSnapshot {
     nodes;
     containmentEdges;
@@ -727,6 +756,9 @@ export class HeapSnapshot {
     #nodeDistancesForRetainersView;
     #edgeNamesThatAreNotWeakMaps;
     detachednessAndClassIndexArray;
+    nodeNativeContextAttribution;
+    #nativeContextSizes;
+    #nativeContextOrdinals;
     #interfaceNames = new Map();
     #interfaceDefinitions;
     constructor(profile, progress) {
@@ -812,8 +844,11 @@ export class HeapSnapshot {
         this.buildSamples();
         this.#progress.updateStatus('Building locations…');
         this.buildLocationMap();
+        this.#progress.updateStatus('Calculating native context attribution…');
+        this.calculateNativeContextAttribution();
         this.#progress.updateStatus('Calculating retained sizes…');
         await this.installResultsFromSecondThread(resultsFromSecondWorker);
+        this.calculateNativeContextSizes();
         this.#progress.updateStatus('Calculating statistics…');
         this.calculateStatistics();
         if (this.profile.snapshot.trace_function_count) {
@@ -847,6 +882,26 @@ export class HeapSnapshot {
             }
         }
         return undefined;
+    }
+    getObjectInfo(nodeIndex) {
+        const nodesLength = this.nodes.length;
+        const nodeFieldCount = this.nodeFieldCount;
+        if (!Number.isInteger(nodeIndex) || nodeIndex < 0 || nodeIndex >= nodesLength || nodeIndex % nodeFieldCount !== 0) {
+            throw new Error('Invalid nodeIndex ' + nodeIndex);
+        }
+        const node = this.createNode(nodeIndex);
+        return {
+            id: node.id(),
+            name: node.name(),
+            type: node.type(),
+            nodeIndex,
+            detachedness: node.detachedness(),
+            selfSize: node.selfSize(),
+            retainedSize: node.retainedSize(),
+            distance: node.distance(),
+            edgeCount: node.edgesCount(),
+            retainerCount: node.retainersCount(),
+        };
     }
     startInitStep1InSecondThread(secondWorker) {
         const resultsFromSecondWorker = new Promise((resolve, reject) => {
@@ -1059,46 +1114,76 @@ export class HeapSnapshot {
     }
     getDuplicateStrings() {
         const filter = this.createNamedFilter('duplicatedStrings');
-        const groupsMap = new Map();
+        const untruncatedGroups = new Map();
+        const truncatedGroups = new Map();
         const node = this.createNode(0);
         for (let i = 0; i < this.nodeCount; ++i) {
             node.nodeIndex = i * this.nodeFieldCount;
             if (filter(node)) {
                 const name = node.name();
                 const truncated = node.nodeIsTruncatedString();
-                // Note that there is exactly one group for each duplicated string value. So
-                // truncated strings might end up in the same group as non-truncated strings if the
-                // prefix matches the non-truncated string. This should be unlikely though and we
-                // don't handle this here to avoid that additional complexity.
-                let group = groupsMap.get(name);
-                if (!group) {
-                    group = {
-                        value: name,
-                        count: 0,
-                        totalSelfSize: 0,
-                        totalRetainedSize: 0,
-                        nodes: [],
-                        truncated,
-                    };
-                    groupsMap.set(name, group);
+                if (truncated) {
+                    const length = node.nodeStringLength();
+                    const hash = node.nodeStringHash();
+                    let groups = truncatedGroups.get(name);
+                    if (!groups) {
+                        groups = [];
+                        truncatedGroups.set(name, groups);
+                    }
+                    let group = groups.find(g => g.length === length && g.hash === hash);
+                    if (!group) {
+                        group = {
+                            value: name,
+                            count: 0,
+                            totalSelfSize: 0,
+                            totalRetainedSize: 0,
+                            nodes: [],
+                            truncated: true,
+                            length,
+                            hash,
+                        };
+                        groups.push(group);
+                    }
+                    group.count++;
+                    group.totalSelfSize += node.selfSize();
+                    group.totalRetainedSize += node.retainedSize();
+                    group.nodes.push({
+                        id: node.id(),
+                        selfSize: node.selfSize(),
+                        retainedSize: node.retainedSize(),
+                        distance: node.distance(),
+                    });
                 }
-                else if (truncated) {
-                    // Make sure the truncated flag is set in case the group was initially created by a
-                    // non-truncated string.
-                    group.truncated = true;
+                else {
+                    let group = untruncatedGroups.get(name);
+                    if (!group) {
+                        group = {
+                            value: name,
+                            count: 0,
+                            totalSelfSize: 0,
+                            totalRetainedSize: 0,
+                            nodes: [],
+                            truncated: false,
+                        };
+                        untruncatedGroups.set(name, group);
+                    }
+                    group.count++;
+                    group.totalSelfSize += node.selfSize();
+                    group.totalRetainedSize += node.retainedSize();
+                    group.nodes.push({
+                        id: node.id(),
+                        selfSize: node.selfSize(),
+                        retainedSize: node.retainedSize(),
+                        distance: node.distance(),
+                    });
                 }
-                group.count++;
-                group.totalSelfSize += node.selfSize();
-                group.totalRetainedSize += node.retainedSize();
-                group.nodes.push({
-                    id: node.id(),
-                    selfSize: node.selfSize(),
-                    retainedSize: node.retainedSize(),
-                    distance: node.distance(),
-                });
             }
         }
-        return Array.from(groupsMap.values()).sort((a, b) => b.totalRetainedSize - a.totalRetainedSize);
+        const allGroups = [
+            ...untruncatedGroups.values(),
+            ...Array.from(truncatedGroups.values()).flat(),
+        ];
+        return allGroups.sort((a, b) => b.totalRetainedSize - a.totalRetainedSize);
     }
     createNodeIdFilter(minNodeId, maxNodeId) {
         function nodeIdFilter(node) {
@@ -1167,7 +1252,7 @@ export class HeapSnapshot {
             case 'objectsRetainedByDetachedDomNodes':
                 // Traverse the graph, avoiding detached nodes.
                 traverse((_node, edge) => {
-                    return edge.node().detachedness() !== 2 /* DOMLinkState.DETACHED */;
+                    return edge.node().detachedness() !== 2 /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.DETACHED */;
                 });
                 markUnreachableNodes();
                 return (node) => !getBit(node);
@@ -1179,34 +1264,8 @@ export class HeapSnapshot {
                 });
                 markUnreachableNodes();
                 return (node) => !getBit(node);
-            case 'duplicatedStrings': {
-                const stringToNodeIndexMap = new Map();
-                const node = this.createNode(0);
-                for (let i = 0; i < this.nodeCount; ++i) {
-                    node.nodeIndex = i * this.nodeFieldCount;
-                    const rawType = node.rawType();
-                    if (rawType === this.nodeStringType || rawType === this.nodeConsStringType) {
-                        // Check whether the cons string is already "flattened", meaning
-                        // that one of its two parts is the empty string. If so, we should
-                        // skip it. We don't help anyone by reporting a flattened cons
-                        // string as a duplicate with its own content, since V8 controls
-                        // that behavior internally.
-                        if (node.isFlatConsString()) {
-                            continue;
-                        }
-                        const name = node.name();
-                        const alreadyVisitedNodeIndex = stringToNodeIndexMap.get(name);
-                        if (alreadyVisitedNodeIndex === undefined) {
-                            stringToNodeIndexMap.set(name, node.nodeIndex);
-                        }
-                        else {
-                            bitmap.setBit(alreadyVisitedNodeIndex / this.nodeFieldCount);
-                            bitmap.setBit(node.nodeIndex / this.nodeFieldCount);
-                        }
-                    }
-                }
-                return getBit;
-            }
+            case 'duplicatedStrings':
+                return this.createDuplicatedStringsFilter(bitmap);
             case 'objectsRetainedByEventHandlers': {
                 // This filter is based on the assumption that event handler functions are contained
                 // (directly or indirectly) by V8EventListener nodes. In particular, the callback_object_
@@ -1262,8 +1321,85 @@ export class HeapSnapshot {
                 markUnreachableNodes();
                 return (node) => !getBit(node);
             }
+            case 'sharedNativeContext':
+                return (node) => {
+                    const ordinal = node.nodeIndex / this.nodeFieldCount;
+                    return this.nodeNativeContextAttribution[ordinal] === SHARED_NATIVE_CONTEXT;
+                };
+            case 'noNativeContext':
+                return (node) => {
+                    const ordinal = node.nodeIndex / this.nodeFieldCount;
+                    return this.nodeNativeContextAttribution[ordinal] === NO_NATIVE_CONTEXT;
+                };
+            default:
+                if (filterName.startsWith('nativeContext_')) {
+                    const targetNodeIndex = Number(filterName.substring('nativeContext_'.length));
+                    const targetOrdinal = targetNodeIndex / this.nodeFieldCount;
+                    return (node) => {
+                        const ordinal = node.nodeIndex / this.nodeFieldCount;
+                        return this.nodeNativeContextAttribution[ordinal] === targetOrdinal;
+                    };
+                }
         }
         throw new Error('Invalid filter name');
+    }
+    createDuplicatedStringsFilter(bitmap) {
+        const untruncatedStringToNodeIndexMap = new Map();
+        const truncatedStringToNodeIndexesMap = new Map();
+        const node = this.createNode(0);
+        for (let i = 0; i < this.nodeCount; ++i) {
+            node.nodeIndex = i * this.nodeFieldCount;
+            const rawType = node.rawType();
+            if (rawType !== this.nodeStringType && rawType !== this.nodeConsStringType) {
+                continue;
+            }
+            // Check whether the cons string is already "flattened", meaning
+            // that one of its two parts is the empty string. If so, we should
+            // skip it. We don't help anyone by reporting a flattened cons
+            // string as a duplicate with its own content, since V8 controls
+            // that behavior internally.
+            if (node.isFlatConsString()) {
+                continue;
+            }
+            // Skip string node used e.g. for encoding int values in the heap
+            // snapshot. Real JS strings will have self size greater than 0.
+            if (node.selfSize() === 0) {
+                continue;
+            }
+            const name = node.name();
+            const truncated = node.nodeIsTruncatedString();
+            if (truncated) {
+                const length = node.nodeStringLength();
+                const hash = node.nodeStringHash();
+                let entries = truncatedStringToNodeIndexesMap.get(name);
+                if (!entries) {
+                    entries = [];
+                    truncatedStringToNodeIndexesMap.set(name, entries);
+                }
+                const match = entries.find(e => e.length === length && e.hash === hash);
+                if (match) {
+                    bitmap.setBit(match.nodeIndex / this.nodeFieldCount);
+                    bitmap.setBit(node.nodeIndex / this.nodeFieldCount);
+                }
+                else {
+                    entries.push({ nodeIndex: node.nodeIndex, length, hash });
+                }
+            }
+            else {
+                const alreadyVisitedNodeIndex = untruncatedStringToNodeIndexMap.get(name);
+                if (alreadyVisitedNodeIndex === undefined) {
+                    untruncatedStringToNodeIndexMap.set(name, node.nodeIndex);
+                }
+                else {
+                    bitmap.setBit(alreadyVisitedNodeIndex / this.nodeFieldCount);
+                    bitmap.setBit(node.nodeIndex / this.nodeFieldCount);
+                }
+            }
+        }
+        return (node) => {
+            const ordinal = node.nodeIndex / this.nodeFieldCount;
+            return bitmap.getBit(ordinal);
+        };
     }
     getAggregatesByClassKey(sortedIndexes, key, filter) {
         let aggregates;
@@ -1901,6 +2037,204 @@ export class HeapSnapshot {
             node.nodeIndex = node.nextNodeIndex();
         }
     }
+    calculateNativeContextAttribution() {
+        // Map from node ordinal to its attributed native context.
+        // Value is either a native context ordinal (>= 0), NO_NATIVE_CONTEXT, or SHARED_NATIVE_CONTEXT.
+        const attribution = new Int32Array(this.nodeCount).fill(NO_NATIVE_CONTEXT);
+        // First, try to infer a fixed native context for each object directly (e.g., via its map or direct links).
+        // These direct attributions are considered "fixed" and will not be overwritten by the subsequent propagation phase.
+        const isFixed = Platform.TypedArrayUtilities.createBitVector(this.nodeCount);
+        const edgeTargets = this.buildInitEdgeTargets();
+        this.#nativeContextOrdinals = [];
+        for (let ordinal = 0; ordinal < this.nodeCount; ordinal++) {
+            if (this.isNativeContext(ordinal)) {
+                this.#nativeContextOrdinals.push(ordinal);
+                attribution[ordinal] = ordinal;
+                isFixed.setBit(ordinal);
+            }
+            else {
+                const owner = this.inferFixedNativeContextForOrdinal(ordinal, edgeTargets);
+                if (owner >= 0) {
+                    attribution[ordinal] = owner;
+                    isFixed.setBit(ordinal);
+                }
+            }
+        }
+        // Propagate the fixed native context attributions to the rest of the nodes based on reachability.
+        this.propagateNativeContextAttribution(attribution, isFixed);
+        this.nodeNativeContextAttribution = attribution;
+    }
+    calculateNativeContextSizes() {
+        const nodeFieldCount = this.nodeFieldCount;
+        const node = this.createNode(0);
+        const nativeContexts = [];
+        const ordinalToInfo = new Map();
+        for (const ordinal of this.#nativeContextOrdinals) {
+            node.nodeIndex = ordinal * nodeFieldCount;
+            const info = {
+                nodeId: node.id(),
+                nodeIndex: node.nodeIndex,
+                nodeName: node.name(),
+                attributedSize: 0,
+                retainedSize: node.retainedSize(),
+                selfSize: node.selfSize(),
+            };
+            nativeContexts.push(info);
+            ordinalToInfo.set(ordinal, info);
+        }
+        let sharedSize = 0;
+        let noAttributionSize = 0;
+        const selfSizeOffset = this.nodeSelfSizeOffset;
+        const nodes = this.nodes;
+        for (let i = 0; i < this.nodeCount; ++i) {
+            const ownerOrdinal = this.nodeNativeContextAttribution[i];
+            const selfSize = nodes.getValue(i * nodeFieldCount + selfSizeOffset);
+            if (ownerOrdinal === SHARED_NATIVE_CONTEXT) {
+                sharedSize += selfSize;
+            }
+            else if (ownerOrdinal === NO_NATIVE_CONTEXT) {
+                noAttributionSize += selfSize;
+            }
+            else {
+                console.assert(ownerOrdinal >= 0, 'ownerOrdinal should be >= 0');
+                const info = ordinalToInfo.get(ownerOrdinal);
+                console.assert(info !== undefined, 'info should exist');
+                if (info) {
+                    info.attributedSize += selfSize;
+                }
+            }
+        }
+        this.#nativeContextSizes = {
+            nativeContexts,
+            sharedSize,
+            noAttributionSize,
+        };
+    }
+    // Precomputes and maps specific outgoing edge targets for every node in the heap.
+    // For each node ordinal, it stores the target ordinal of its:
+    // - 'native_context' edge (in the returned 'nativeContext' array)
+    // - 'map' edge (in the returned 'map' array)
+    // This allows fast O(1) lookups of these key edges during attribution.
+    buildInitEdgeTargets() {
+        const { nodeCount, nodeFieldCount, containmentEdges, edgeFieldsCount, edgeTypeOffset, edgeNameOffset, edgeToNodeOffset, edgeInternalType, firstEdgeIndexes, strings, } = this;
+        const nativeContext = new Int32Array(nodeCount).fill(-1);
+        const map = new Int32Array(nodeCount).fill(-1);
+        const nativeContextIdx = strings.indexOf('native_context');
+        const mapIdx = strings.indexOf('map');
+        for (let ordinal = 0; ordinal < nodeCount; ordinal++) {
+            const first = firstEdgeIndexes[ordinal];
+            const last = firstEdgeIndexes[ordinal + 1];
+            for (let edgeIndex = first; edgeIndex < last; edgeIndex += edgeFieldsCount) {
+                const edgeType = containmentEdges.getValue(edgeIndex + edgeTypeOffset);
+                if (edgeType !== edgeInternalType) {
+                    continue;
+                }
+                const nameIdx = containmentEdges.getValue(edgeIndex + edgeNameOffset);
+                const childNodeIndex = containmentEdges.getValue(edgeIndex + edgeToNodeOffset);
+                const childOrdinal = childNodeIndex / nodeFieldCount;
+                if (nameIdx === nativeContextIdx && nativeContext[ordinal] === -1 && this.isNativeContext(childOrdinal)) {
+                    nativeContext[ordinal] = childOrdinal;
+                }
+                else if (nameIdx === mapIdx && map[ordinal] === -1) {
+                    map[ordinal] = childOrdinal;
+                }
+            }
+        }
+        return { nativeContext, map };
+    }
+    // Infers the native context for a node by looking at its Map.
+    // In V8, objects point to their Map, and Maps point to their Meta-Map (the Map of the Map).
+    // To save space, individual Maps do not have a direct link to the NativeContext.
+    // Instead, the Meta-Map (which is unique per NativeContext) has a 'native_context' edge.
+    // Thus, we can find the NativeContext of an object by traversing:
+    // Object -> Map -> Meta-Map -> NativeContext.
+    inferFixedNativeContextForOrdinal(ordinal, edgeTargets) {
+        const mapOrdinal = edgeTargets.map[ordinal];
+        if (mapOrdinal >= 0) {
+            const metaMapOrdinal = edgeTargets.map[mapOrdinal];
+            if (metaMapOrdinal >= 0) {
+                const mapNativeContextOrdinal = edgeTargets.nativeContext[metaMapOrdinal];
+                if (mapNativeContextOrdinal >= 0) {
+                    return mapNativeContextOrdinal;
+                }
+            }
+        }
+        return NO_NATIVE_CONTEXT;
+    }
+    mergeNativeContextOwner(current, incoming) {
+        console.assert(incoming !== NO_NATIVE_CONTEXT, 'Incoming owner should not be NO_NATIVE_CONTEXT');
+        if (current === SHARED_NATIVE_CONTEXT || incoming === SHARED_NATIVE_CONTEXT) {
+            return SHARED_NATIVE_CONTEXT;
+        }
+        if (current === NO_NATIVE_CONTEXT) {
+            return incoming;
+        }
+        if (current === incoming) {
+            return current;
+        }
+        return SHARED_NATIVE_CONTEXT;
+    }
+    propagateNativeContextAttribution(attribution, isFixed) {
+        const { nodeCount, containmentEdges, edgeFieldsCount, edgeTypeOffset, edgeToNodeOffset, edgeShortcutType, edgeWeakType, nodeFieldCount, firstEdgeIndexes, } = this;
+        // Initialize the queue with all nodes that have a fixed (directly inferred) native context.
+        // Propagation will start from these "anchors".
+        const queue = [];
+        for (let ordinal = 0; ordinal < nodeCount; ordinal++) {
+            if (isFixed.getBit(ordinal)) {
+                queue.push(ordinal);
+            }
+        }
+        let queueIndex = 0;
+        while (queueIndex < queue.length) {
+            const ordinal = queue[queueIndex];
+            queueIndex++;
+            const current = attribution[ordinal];
+            console.assert(current !== NO_NATIVE_CONTEXT, 'Queue should not contain unattributed nodes');
+            const first = firstEdgeIndexes[ordinal];
+            const last = firstEdgeIndexes[ordinal + 1];
+            for (let edgeIndex = first; edgeIndex < last; edgeIndex += edgeFieldsCount) {
+                const edgeType = containmentEdges.getValue(edgeIndex + edgeTypeOffset);
+                if (edgeType === edgeShortcutType || edgeType === edgeWeakType) {
+                    continue;
+                }
+                const childNodeIndex = containmentEdges.getValue(edgeIndex + edgeToNodeOffset);
+                const childOrdinal = childNodeIndex / nodeFieldCount;
+                // Skip if it is a self-loop, or if the child node has a "fixed" attribution.
+                // Fixed attributions are directly inferred and cannot be overwritten by propagation.
+                if (childOrdinal === ordinal || isFixed.getBit(childOrdinal)) {
+                    continue;
+                }
+                // Merge the parent's native context owner into the child's owner.
+                // Nodes can be visited multiple times: first, a node might be attributed to a specific
+                // native context. If it is later reached by a different native context, the merge will
+                // transition its owner to SHARED_NATIVE_CONTEXT.
+                // If the owner changes (e.g., transitioning to SHARED), we queue the child again
+                // to propagate the updated owner to its retainees.
+                const merged = this.mergeNativeContextOwner(attribution[childOrdinal], current);
+                if (merged !== attribution[childOrdinal]) {
+                    attribution[childOrdinal] = merged;
+                    queue.push(childOrdinal);
+                }
+            }
+        }
+    }
+    getNativeContextSizes() {
+        return this.#nativeContextSizes;
+    }
+    nodeNativeContext(nodeIndex) {
+        const ordinal = nodeIndex / this.nodeFieldCount;
+        const nativeContextOrdinal = this.nodeNativeContextAttribution[ordinal];
+        if (nativeContextOrdinal < 0) {
+            return nativeContextOrdinal;
+        }
+        return nativeContextOrdinal * this.nodeFieldCount;
+    }
+    isNativeContext(nodeOrdinal) {
+        const nameIdx = this.nodes.getValue(nodeOrdinal * this.nodeFieldCount + this.nodeNameOffset);
+        const name = this.strings[nameIdx];
+        return name === 'system / NativeContext' || name.startsWith('system / NativeContext / ') ||
+            name === 'Detached system / NativeContext' || name.startsWith('Detached system / NativeContext / ');
+    }
     interfaceDefinitions() {
         return JSON.stringify(this.#interfaceDefinitions ?? []);
     }
@@ -2166,10 +2500,10 @@ export class HeapSnapshot {
             }
             node.nodeIndex = nodeIndex;
             node.setDetachedness(newState);
-            if (newState === 1 /* DOMLinkState.ATTACHED */) {
+            if (newState === 1 /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.ATTACHED */) {
                 attached.push(nodeOrdinal);
             }
-            else if (newState === 2 /* DOMLinkState.DETACHED */) {
+            else if (newState === 2 /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.DETACHED */) {
                 // Detached state: Rewire node name.
                 addDetachedPrefixToNodeName(snapshot, nodeIndex);
                 detached.push(nodeOrdinal);
@@ -2187,7 +2521,7 @@ export class HeapSnapshot {
             node.nodeIndex = nodeOrdinal * this.nodeFieldCount;
             const state = node.detachedness();
             // Bail out for objects that have no known state. For all other objects set that state.
-            if (state === 0 /* DOMLinkState.UNKNOWN */) {
+            if (state === 0 /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.UNKNOWN */) {
                 continue;
             }
             processNode(this, nodeOrdinal, state);
@@ -2195,7 +2529,7 @@ export class HeapSnapshot {
         // 2. If the parent is attached, then the child is also attached.
         while (attached.length !== 0) {
             const nodeOrdinal = attached.pop();
-            propagateState(this, nodeOrdinal, 1 /* DOMLinkState.ATTACHED */);
+            propagateState(this, nodeOrdinal, 1 /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.ATTACHED */);
         }
         // 3. If the parent is not attached, then the child inherits the parent's state.
         while (detached.length !== 0) {
@@ -2203,10 +2537,10 @@ export class HeapSnapshot {
             node.nodeIndex = nodeOrdinal * this.nodeFieldCount;
             const nodeState = node.detachedness();
             // Ignore if the node has been found through propagating forward attached state.
-            if (nodeState === 1 /* DOMLinkState.ATTACHED */) {
+            if (nodeState === 1 /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.ATTACHED */) {
                 continue;
             }
-            propagateState(this, nodeOrdinal, 2 /* DOMLinkState.DETACHED */);
+            propagateState(this, nodeOrdinal, 2 /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.DETACHED */);
         }
         console.timeEnd('propagateDOMState');
     }

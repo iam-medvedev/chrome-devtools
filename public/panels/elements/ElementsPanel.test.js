@@ -7,18 +7,21 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { expectCall, expectCalled } from '../../testing/ExpectStubCall.js';
-import { clearMockConnectionResponseHandler, describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { dispatchEvent } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
-describeWithMockConnection('ElementsPanel', () => {
+describeWithEnvironment('ElementsPanel', () => {
     let target;
+    let connection;
     beforeEach(() => {
         stubNoopSettings();
-        target = createTarget();
-        setMockConnectionResponseHandler('DOM.requestChildNodes', () => ({}));
-        setMockConnectionResponseHandler('DOM.getDocument', () => ({
+        connection = new MockCDPConnection();
+        target = createTarget({ connection });
+        connection.setSuccessHandler('DOM.requestChildNodes', () => ({}));
+        connection.setSuccessHandler('DOM.getDocument', () => ({
             root: {
                 nodeId: 1,
                 backendNodeId: 2,
@@ -43,7 +46,7 @@ describeWithMockConnection('ElementsPanel', () => {
                     }],
             },
         }));
-        setMockConnectionResponseHandler('DOM.copyTo', () => {
+        connection.setSuccessHandler('DOM.copyTo', () => {
             dispatchEvent(target, 'DOM.childNodeInserted', {
                 parentNodeId: 4,
                 previousNodeId: 6,
@@ -58,6 +61,9 @@ describeWithMockConnection('ElementsPanel', () => {
             });
             return { nodeId: 7 };
         });
+    });
+    afterEach(() => {
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
     });
     const createsTreeOutlines = (inScope) => () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
@@ -132,9 +138,9 @@ describeWithMockConnection('ElementsPanel', () => {
                         }],
                 },
             });
-            clearMockConnectionResponseHandler('DOM.getDocument');
-            setMockConnectionResponseHandler('DOM.getDocument', () => documentResponse(includeDivInDocument));
-            setMockConnectionResponseHandler('DOM.pushNodeByPathToFrontend', () => ({
+            connection.setHandler('DOM.getDocument', null);
+            connection.setSuccessHandler('DOM.getDocument', () => documentResponse(includeDivInDocument));
+            connection.setSuccessHandler('DOM.pushNodeByPathToFrontend', () => ({
                 nodeId: 8,
             }));
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
@@ -188,7 +194,7 @@ describeWithMockConnection('ElementsPanel', () => {
         }
     });
     it('searches in in scope models', () => {
-        const anotherTarget = createTarget();
+        const anotherTarget = createTarget({ connection });
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         const inScopeModel = target.model(SDK.DOMModel.DOMModel);
         assert.exists(inScopeModel);
@@ -200,6 +206,7 @@ describeWithMockConnection('ElementsPanel', () => {
         panel.performSearch({ query: 'foo' }, false);
         sinon.assert.called(inScopeSearch);
         sinon.assert.notCalled(outOfScopeSearch);
+        anotherTarget.dispose('test');
     });
     // Causes unit test execution to abort
     it('deleting a node unhides it if it was hidden', async () => {
@@ -280,13 +287,13 @@ describeWithMockConnection('ElementsPanel', () => {
         let computedStylesShowingStub;
         beforeEach(() => {
             computedStylesShowingStub = sinon.stub(ComputedStyleWidget.prototype, 'isShowing');
-            computedStyleNodeSpy = sinon.spy(ComputedStyleModel.prototype, 'node', ['get', 'set']);
             computedStyleFetchStylesSpy = sinon.stub(ComputedStyleModel.prototype, 'fetchComputedStyle').resolves(null);
             computedStyleFetchCascadeSpy = sinon.stub(ComputedStyleModel.prototype, 'fetchMatchedCascade').resolves(null);
             Common.Debouncer.enableTestOverride();
             const viewManager = UI.ViewManager.ViewManager.instance({ forceNew: true });
             sinon.stub(viewManager, 'showView');
             panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
+            computedStyleNodeSpy = sinon.spy(panel.stylesWidget.computedStyleModel(), 'node', ['get', 'set']);
             cssModel = sinon.createStubInstance(SDK.CSSModel.CSSModel, {
                 target: sinon.createStubInstance(SDK.Target.Target, {
                     model: null,
@@ -301,6 +308,8 @@ describeWithMockConnection('ElementsPanel', () => {
             node.id = 1;
         });
         afterEach(() => {
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
+            UI.Context.Context.instance().setFlavor(StylesSidebarPane, null);
             Common.Debouncer.disableTestOverride();
             panel.detach();
         });

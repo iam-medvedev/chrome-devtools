@@ -5,12 +5,29 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as Security from './security.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('SecurityPanelSidebarTree', () => {
+describe('createHighlightedUrl', () => {
+    it('renders a URL without a scheme separator as plain text', () => {
+        const highlightedUrl = Security.SecurityPanel.createHighlightedUrl(urlString `foo.bar`, "secure" /* Protocol.Security.SecurityState.Secure */);
+        assert.strictEqual(highlightedUrl.textContent, 'foo.bar');
+        assert.isFalse(highlightedUrl.classList.contains('highlighted-url'));
+    });
+    it('renders a URL with a highlighted scheme', () => {
+        const highlightedUrl = Security.SecurityPanel.createHighlightedUrl(urlString `https://foo.bar`, "secure" /* Protocol.Security.SecurityState.Secure */);
+        assert.strictEqual(highlightedUrl.textContent, 'https://foo.bar');
+        assert.isTrue(highlightedUrl.classList.contains('highlighted-url'));
+        const scheme = highlightedUrl.querySelector('.url-scheme-secure');
+        assert.isNotNull(scheme);
+        assert.strictEqual(scheme.textContent, 'https');
+        const schemeSeparator = highlightedUrl.querySelector('.url-scheme-separator');
+        assert.isNotNull(schemeSeparator);
+        assert.strictEqual(schemeSeparator.textContent, '://');
+    });
+});
+describeWithEnvironment('SecurityPanelSidebarTree', () => {
     describe('updateOrigin', () => {
         it('correctly updates the URL scheme highlighting', () => {
             const origin = urlString `https://foo.bar`;
@@ -24,7 +41,7 @@ describeWithMockConnection('SecurityPanelSidebarTree', () => {
         });
     });
 });
-describeWithMockConnection('SecurityPanel', () => {
+describeWithEnvironment('SecurityPanel', () => {
     let target;
     let prerenderTarget;
     beforeEach(() => {

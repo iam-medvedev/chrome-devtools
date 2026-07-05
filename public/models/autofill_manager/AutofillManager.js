@@ -4,22 +4,16 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-let autofillManagerInstance;
 export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
     #address = '';
     #filledFields = [];
     #matches = [];
     #autofillModel = null;
-    constructor() {
+    #frameManager;
+    constructor(targetManager, frameManager) {
         super();
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.AutofillModel.AutofillModel, "AddressFormFilled" /* SDK.AutofillModel.Events.ADDRESS_FORM_FILLED */, this.#addressFormFilled, this, { scoped: true });
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!autofillManagerInstance || forceNew) {
-            autofillManagerInstance = new AutofillManager();
-        }
-        return autofillManagerInstance;
+        this.#frameManager = frameManager;
+        targetManager.addModelListener(SDK.AutofillModel.AutofillModel, "AddressFormFilled" /* SDK.AutofillModel.Events.ADDRESS_FORM_FILLED */, this.#addressFormFilled, this, { scoped: true });
     }
     async #addressFormFilled({ data }) {
         this.#autofillModel = data.autofillModel;
@@ -44,7 +38,7 @@ export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     highlightFilledField(filledField) {
         const backendNodeId = filledField.fieldId;
-        const target = SDK.FrameManager.FrameManager.instance().getFrame(filledField.frameId)?.resourceTreeModel().target();
+        const target = this.#frameManager.getFrame(filledField.frameId)?.resourceTreeModel().target();
         if (target) {
             const deferredNode = new SDK.DOMModel.DeferredDOMNode(target, backendNodeId);
             const domModel = target.model(SDK.DOMModel.DOMModel);

@@ -344,7 +344,7 @@ var AutofillView = class extends UI.Widget.VBox {
   #filledFields = [];
   #matches = [];
   #highlightedMatches = [];
-  constructor(autofillManager = AutofillManager.AutofillManager.AutofillManager.instance(), view = DEFAULT_VIEW) {
+  constructor(autofillManager, view = DEFAULT_VIEW) {
     super({ useShadowDom: true });
     this.#autofillManager = autofillManager;
     this.#view = view;

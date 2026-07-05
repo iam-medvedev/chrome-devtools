@@ -4,14 +4,18 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../testing/ConsoleHelpers.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -19,7 +23,7 @@ import * as Console from './console.js';
 // The css files aren't exported by the bundle, so we need to import it directly.
 // eslint-disable-next-line @devtools/es-modules-import
 import consoleViewStyles from './consoleView.css.js';
-describeWithMockConnection('ConsoleViewMessage', () => {
+describeWithEnvironment('ConsoleViewMessage', () => {
     describe('anchor rendering', () => {
         it('links to the top frame for normal console message', () => {
             const target = createTarget();
@@ -212,7 +216,9 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             await UI.Widget.Widget.allUpdatesComplete;
         }
         async function createConsoleMessageWithIgnoreListing(ignoreListFn, withBuiltinFrames) {
-            const target = createTarget();
+            const connection = new MockCDPConnection([]);
+            mockResourceTree(connection);
+            const target = createTarget({ connection });
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
             const stackTrace = createStackTrace([
                 'USER_ID::userNestedFunction::http://example.com/script.js::40::15',
@@ -322,7 +328,9 @@ describeWithMockConnection('ConsoleViewMessage', () => {
         // are ignore-listed but the structured stack trace (console.error call
         // stack) has non-ignore-listed frames, the toggle should still appear.
         it('shows expandable list when all inline frames are ignored but structured trace has non-ignored frames', async () => {
-            const target = createTarget();
+            const connection = new MockCDPConnection([]);
+            mockResourceTree(connection);
+            const target = createTarget({ connection });
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
             const errorStackTrace = createStackTrace([
                 'USER_ID::userNestedFunction::http://example.com/script.js::40::15',
@@ -443,6 +451,90 @@ describeWithMockConnection('ConsoleViewMessage', () => {
             assertShowAllLink(element);
             assert.deepEqual(getStructuredCallFrames(element), COLLAPSED_STRUCTURED);
             assert.deepEqual(getCallFrames(element), COLLAPSED_UNSTRUCTURED_WITH_BUILTIN);
+        });
+    });
+    describe('ConsoleTableMessageView Context Menu', () => {
+        let copyTextStub;
+        beforeEach(() => {
+            copyTextStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
+        });
+        afterEach(() => {
+            copyTextStub.restore();
+        });
+        function createConsoleTableMessageView(rawMessage) {
+            const linkifier = sinon.createStubInstance(Components.Linkifier.Linkifier);
+            const requestResolver = sinon.createStubInstance(Logs.RequestResolver.RequestResolver);
+            const issuesResolver = sinon.createStubInstance(IssuesManager.IssueResolver.IssueResolver);
+            const message = new Console.ConsoleViewMessage.ConsoleTableMessageView(rawMessage, linkifier, requestResolver, issuesResolver, /* onResize */ () => { });
+            return { message, linkifier };
+        }
+        function setupMockTableMessageView() {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const preview = {
+                type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                overflow: false,
+                properties: [{
+                        name: '0',
+                        type: "object" /* Protocol.Runtime.PropertyPreviewType.Object */,
+                        valuePreview: {
+                            type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                            overflow: false,
+                            properties: [{ name: 'a', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '1' }]
+                        }
+                    }],
+            };
+            const mockRemoteObject = sinon.createStubInstance(SDK.RemoteObject.RemoteObject);
+            Object.defineProperty(mockRemoteObject, 'preview', { get: () => preview, configurable: true });
+            Object.defineProperty(mockRemoteObject, 'type', { get: () => 'object', configurable: true });
+            Object.defineProperty(mockRemoteObject, 'subtype', { get: () => undefined, configurable: true });
+            Object.defineProperty(mockRemoteObject, 'description', { get: () => 'Object', configurable: true });
+            Object.defineProperty(mockRemoteObject, 'hasChildren', { get: () => false, configurable: true });
+            mockRemoteObject.customPreview.returns(null);
+            const messageDetails = {
+                type: "table" /* Protocol.Runtime.ConsoleAPICalledEventType.Table */,
+                parameters: [mockRemoteObject],
+            };
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, null, '', messageDetails);
+            const { message } = createConsoleTableMessageView(rawMessage);
+            return message;
+        }
+        it('copies table as Markdown on context menu trigger', () => {
+            const message = setupMockTableMessageView();
+            message.toMessageElement(); // Render
+            const dataGrid = message.getDataGridForTest();
+            assert.exists(dataGrid);
+            const contextMenu = new UI.ContextMenu.ContextMenu(new MouseEvent('contextmenu'));
+            message.populateTableContextMenuForTest(contextMenu);
+            const clipboardSection = contextMenu.clipboardSection();
+            const copySubMenu = clipboardSection.items.find(item => item.buildDescriptor().label === 'Copy table as');
+            assert.exists(copySubMenu);
+            const subItems = copySubMenu.defaultSection().items;
+            const markdownItem = subItems.find(item => item.buildDescriptor().label === 'Copy as Markdown');
+            assert.exists(markdownItem);
+            contextMenu.invokeHandler(markdownItem.id());
+            const expectedMarkdown = '| \\(index\\) | a |\n' +
+                '| --- | --- |\n' +
+                '| 0 | 1 |';
+            sinon.assert.calledOnceWithExactly(copyTextStub, expectedMarkdown);
+        });
+        it('copies table as CSV on context menu trigger', () => {
+            const message = setupMockTableMessageView();
+            message.toMessageElement(); // Render
+            const dataGrid = message.getDataGridForTest();
+            assert.exists(dataGrid);
+            const contextMenu = new UI.ContextMenu.ContextMenu(new MouseEvent('contextmenu'));
+            message.populateTableContextMenuForTest(contextMenu);
+            const clipboardSection = contextMenu.clipboardSection();
+            const copySubMenu = clipboardSection.items.find(item => item.buildDescriptor().label === 'Copy table as');
+            assert.exists(copySubMenu);
+            const subItems = copySubMenu.defaultSection().items;
+            const csvItem = subItems.find(item => item.buildDescriptor().label === 'Copy as CSV');
+            assert.exists(csvItem);
+            contextMenu.invokeHandler(csvItem.id());
+            const expectedCSV = '(index),a\n' +
+                '0,1';
+            sinon.assert.calledOnceWithExactly(copyTextStub, expectedCSV);
         });
     });
 });

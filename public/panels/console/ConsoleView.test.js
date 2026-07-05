@@ -12,16 +12,16 @@ import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { findMenuItemWithLabel, getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
 import { dispatchPasteEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { expectCall, expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
-import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
+import { dispatchEvent } from '../../testing/MockConnection.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AiCodeCompletionSummaryToolbar } from '../common/common.js';
 import * as Console from './console.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('ConsoleView', () => {
+describeWithEnvironment('ConsoleView', () => {
     let consoleView;
     beforeEach(() => {
         registerNoopActions(['console.clear', 'console.clear.history', 'console.create-pin']);
@@ -422,11 +422,6 @@ describeWithMockConnection('ConsoleView', () => {
             assert.exists(consoleModel);
             messageTimestamp = 0;
             Common.Settings.Settings.instance().createSetting('console-group-similar', true).set(true);
-        });
-        afterEach(() => {
-            if (target) {
-                target.dispose('test cleanup');
-            }
         });
         for (const level of ["error" /* Protocol.Log.LogEntryLevel.Error */,
             "warning" /* Protocol.Log.LogEntryLevel.Warning */,

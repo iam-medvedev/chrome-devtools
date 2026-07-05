@@ -6,12 +6,13 @@ import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Application from './application.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('AppManifestView', () => {
+describeWithEnvironment('AppManifestView', () => {
     const FIXTURES_96X96_URL = `${new URL('./fixtures/96x96.png', import.meta.url)}`;
     const FIXTURES_320X320_URL = `${new URL('./fixtures/320x320.png', import.meta.url)}`;
     const FIXTURES_640X320_URL = `${new URL('./fixtures/640x320.png', import.meta.url)}`;
@@ -20,7 +21,9 @@ describeWithMockConnection('AppManifestView', () => {
     let viewFunction;
     beforeEach(() => {
         stubNoopSettings();
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+        const connection = new MockCDPConnection([]);
+        mockResourceTree(connection);
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
         viewFunction = createViewFunctionStub(Application.AppManifestView.AppManifestView);

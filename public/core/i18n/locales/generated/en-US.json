@@ -245,21 +245,6 @@
   "core/sdk/CPUProfilerModel.ts | profileD": {
     "message": "Profile {PH1}"
   },
-  "core/sdk/CPUThrottlingManager.ts | calibratedLowTierMobile": {
-    "message": "Low-tier mobile"
-  },
-  "core/sdk/CPUThrottlingManager.ts | calibratedMidTierMobile": {
-    "message": "Mid-tier mobile"
-  },
-  "core/sdk/CPUThrottlingManager.ts | calibrationErrorDeviceTooWeak": {
-    "message": "Device is not powerful enough"
-  },
-  "core/sdk/CPUThrottlingManager.ts | dSlowdown": {
-    "message": "{PH1}× slowdown"
-  },
-  "core/sdk/CPUThrottlingManager.ts | noThrottling": {
-    "message": "No throttling"
-  },
   "core/sdk/CSSStyleSheetHeader.ts | couldNotFindTheOriginalStyle": {
     "message": "Could not find the original style sheet."
   },
@@ -4676,6 +4661,9 @@
   "panels/application/DeviceBoundSessionsView.ts | allowedRefreshInitiators": {
     "message": "Allowed refresh initiators"
   },
+  "panels/application/DeviceBoundSessionsView.ts | attestationKeyGenerationError": {
+    "message": "Attestation key generation error"
+  },
   "panels/application/DeviceBoundSessionsView.ts | boundCookieSetForbidden": {
     "message": "Registration in a context that cannot set bound cookies"
   },
@@ -4856,9 +4844,6 @@
   "panels/application/DeviceBoundSessionsView.ts | invalidSessionParams": {
     "message": "Invalid session parameters"
   },
-  "panels/application/DeviceBoundSessionsView.ts | keyError": {
-    "message": "Key error"
-  },
   "panels/application/DeviceBoundSessionsView.ts | keyId": {
     "message": "ID"
   },
@@ -5015,6 +5000,9 @@
   "panels/application/DeviceBoundSessionsView.ts | signingError": {
     "message": "Signing error"
   },
+  "panels/application/DeviceBoundSessionsView.ts | signingKeyGenerationError": {
+    "message": "Signing key generation error"
+  },
   "panels/application/DeviceBoundSessionsView.ts | signingQuotaExceeded": {
     "message": "Signing quota exceeded"
   },
@@ -5047,6 +5035,9 @@
   },
   "panels/application/DeviceBoundSessionsView.ts | transientHttpError": {
     "message": "Transient HTTP error"
+  },
+  "panels/application/DeviceBoundSessionsView.ts | transientSigningError": {
+    "message": "Transient signing error"
   },
   "panels/application/DeviceBoundSessionsView.ts | type": {
     "message": "Type"
@@ -6770,6 +6761,21 @@
   "panels/common/common.ts | cancel": {
     "message": "Cancel"
   },
+  "panels/common/CPUThrottlingOption.ts | calibratedLowTierMobile": {
+    "message": "Low-tier mobile"
+  },
+  "panels/common/CPUThrottlingOption.ts | calibratedMidTierMobile": {
+    "message": "Mid-tier mobile"
+  },
+  "panels/common/CPUThrottlingOption.ts | calibrationErrorDeviceTooWeak": {
+    "message": "Device is not powerful enough"
+  },
+  "panels/common/CPUThrottlingOption.ts | dSlowdown": {
+    "message": "{PH1}× slowdown"
+  },
+  "panels/common/CPUThrottlingOption.ts | noThrottling": {
+    "message": "No throttling"
+  },
   "panels/common/DOMLinkifier.ts | node": {
     "message": "<node>"
   },
@@ -7204,6 +7210,15 @@
   },
   "panels/console/ConsoleViewMessage.ts | consoleWasCleared": {
     "message": "Console was cleared"
+  },
+  "panels/console/ConsoleViewMessage.ts | copyAsCsv": {
+    "message": "Copy as CSV"
+  },
+  "panels/console/ConsoleViewMessage.ts | copyAsMarkdown": {
+    "message": "Copy as Markdown"
+  },
+  "panels/console/ConsoleViewMessage.ts | copyTableAs": {
+    "message": "Copy table as"
   },
   "panels/console/ConsoleViewMessage.ts | deprecationS": {
     "message": "[Deprecation] {PH1}"
@@ -8513,9 +8528,6 @@
   "panels/emulation/DeviceModeToolbar.ts | addDeviceType": {
     "message": "Add device type"
   },
-  "panels/emulation/DeviceModeToolbar.ts | autoadjustZoom": {
-    "message": "Auto-adjust zoom"
-  },
   "panels/emulation/DeviceModeToolbar.ts | closeDevtools": {
     "message": "Close DevTools"
   },
@@ -8540,8 +8552,8 @@
   "panels/emulation/DeviceModeToolbar.ts | edit": {
     "message": "Edit…"
   },
-  "panels/emulation/DeviceModeToolbar.ts | fitToWindowPercentage": {
-    "message": "{PH1}% (fit to window)"
+  "panels/emulation/DeviceModeToolbar.ts | fitToWindow": {
+    "message": "Fit to window"
   },
   "panels/emulation/DeviceModeToolbar.ts | heightLeaveEmptyForFull": {
     "message": "Height (leave empty for full)"
@@ -10151,6 +10163,12 @@
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | cpuThrottlingPresets": {
     "message": "CPU throttling presets"
   },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | customProfiles": {
+    "message": "Custom profiles"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | defaultProfiles": {
+    "message": "Default profiles"
+  },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | dms": {
     "message": "{PH1} ms"
   },
@@ -10174,9 +10192,6 @@
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | needsCalibration": {
     "message": "Needs calibration"
-  },
-  "panels/mobile_throttling/ThrottlingSettingsTab.ts | networkThrottlingProfiles": {
-    "message": "Network throttling profiles"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | off": {
     "message": "Off"
@@ -10294,6 +10309,9 @@
   },
   "panels/network/components/HeaderSectionRow.ts | activeClientExperimentVariationIds": {
     "message": "Active client experiment variation IDs that trigger server-side behavior."
+  },
+  "panels/network/components/HeaderSectionRow.ts | copyValue": {
+    "message": "Copy value"
   },
   "panels/network/components/HeaderSectionRow.ts | decoded": {
     "message": "Decoded:"
@@ -10921,6 +10939,9 @@
   },
   "panels/network/NetworkLogView.ts | copyAsPowershell": {
     "message": "Copy as PowerShell"
+  },
+  "panels/network/NetworkLogView.ts | copyAsPreload": {
+    "message": "Copy as preload element"
   },
   "panels/network/NetworkLogView.ts | copyRequestHeaders": {
     "message": "Copy request headers"
@@ -12140,6 +12161,12 @@
   "panels/profiler/HeapSnapshotView.ts | objectsAllocatedBetweenSAndS": {
     "message": "Objects allocated between {PH1} and {PH2}"
   },
+  "panels/profiler/HeapSnapshotView.ts | objectsAttributedToNativeContextS": {
+    "message": "Native context {PH1}@{PH2} ({PH3})"
+  },
+  "panels/profiler/HeapSnapshotView.ts | objectsNotAttributedToNativeContextS": {
+    "message": "Objects not attributed to a native context ({PH1})"
+  },
   "panels/profiler/HeapSnapshotView.ts | objectsRetainedByConsole": {
     "message": "Objects retained by DevTools Console"
   },
@@ -12151,6 +12178,9 @@
   },
   "panels/profiler/HeapSnapshotView.ts | objectsRetainedByEventHandlers": {
     "message": "Objects retained by Event Handlers"
+  },
+  "panels/profiler/HeapSnapshotView.ts | objectsSharedBetweenNativeContextsS": {
+    "message": "Objects shared between native contexts ({PH1})"
   },
   "panels/profiler/HeapSnapshotView.ts | otherJSObjects": {
     "message": "Other JS objects"
@@ -12262,6 +12292,9 @@
   },
   "panels/profiler/ModuleUIStrings.ts | calculatingDistances": {
     "message": "Calculating distances…"
+  },
+  "panels/profiler/ModuleUIStrings.ts | calculatingNativeContextAttribution": {
+    "message": "Calculating native context attribution…"
   },
   "panels/profiler/ModuleUIStrings.ts | calculatingNodeFlags": {
     "message": "Calculating node flags…"
@@ -14072,9 +14105,6 @@
   "panels/settings/settings-meta.ts | experiments": {
     "message": "Experiments"
   },
-  "panels/settings/settings-meta.ts | greenDevProtoTypes": {
-    "message": "GreenDev"
-  },
   "panels/settings/settings-meta.ts | ignoreList": {
     "message": "Ignore list"
   },
@@ -14092,9 +14122,6 @@
   },
   "panels/settings/settings-meta.ts | showExperiments": {
     "message": "Show Experiments"
-  },
-  "panels/settings/settings-meta.ts | showGreenDev": {
-    "message": "Show GreenDev"
   },
   "panels/settings/settings-meta.ts | showIgnoreList": {
     "message": "Show Ignore list"
@@ -14116,9 +14143,6 @@
   },
   "panels/settings/SettingsScreen.ts | experimentsFound": {
     "message": "{n, plural, =1 {# experiment found} other {# experiments found}}"
-  },
-  "panels/settings/SettingsScreen.ts | greenDevUnstable": {
-    "message": "Warning: All these features are prototype and very unstable. They exist for user testing and are not designed to be relied on."
   },
   "panels/settings/SettingsScreen.ts | learnMore": {
     "message": "Learn more"
@@ -15653,9 +15677,6 @@
   "panels/timeline/components/LiveMetricsView.ts | percentDevices": {
     "message": "{PH1}% mobile, {PH2}% desktop"
   },
-  "panels/timeline/components/LiveMetricsView.ts | phase": {
-    "message": "Phase"
-  },
   "panels/timeline/components/LiveMetricsView.ts | presentationDelay": {
     "message": "Presentation delay"
   },
@@ -15682,6 +15703,9 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | showInpInteraction": {
     "message": "Go to the INP interaction."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | subpart": {
+    "message": "Subpart"
   },
   "panels/timeline/components/LiveMetricsView.ts | tablet": {
     "message": "Tablet"
@@ -15749,9 +15773,6 @@
   "panels/timeline/components/MetricCard.ts | percentage": {
     "message": "{PH1}%"
   },
-  "panels/timeline/components/MetricCard.ts | phase": {
-    "message": "Phase"
-  },
   "panels/timeline/components/MetricCard.ts | poor": {
     "message": "Poor"
   },
@@ -15778,6 +15799,9 @@
   },
   "panels/timeline/components/MetricCard.ts | recViewportLCP": {
     "message": "Screen size can influence what the LCP element is. Ensure you are testing common viewport sizes."
+  },
+  "panels/timeline/components/MetricCard.ts | subpart": {
+    "message": "Subpart"
   },
   "panels/timeline/components/MetricCard.ts | viewCardDetails": {
     "message": "View card details"
@@ -18292,9 +18316,6 @@
   },
   "ui/legacy/TabbedPane.ts | moveTabRight": {
     "message": "Move right"
-  },
-  "ui/legacy/TabbedPane.ts | panelContainsAnnotation": {
-    "message": "This panel has one or more annotations"
   },
   "ui/legacy/TabbedPane.ts | previewFeature": {
     "message": "Preview feature"

@@ -244,6 +244,18 @@ describeWithEnvironment('ObjectPropertyTreeElement', () => {
         contextMenu.invokeHandler(copyValueItem.id());
         sinon.assert.calledWith(copyText, 'bar');
     });
+    it('expands and collapses when the underlying node is expanded and collapsed', async () => {
+        const property = new SDK.RemoteObject.RemoteObjectProperty('name', SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: 'bar' }), true, true);
+        const node = new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(property, undefined, {
+            readOnly: false,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */
+        });
+        const treeElement = new ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement(node);
+        node.expanded = true;
+        assert.isTrue(treeElement.expanded);
+        node.expanded = false;
+        assert.isFalse(treeElement.expanded);
+    });
     it('does not edit readonly values', async () => {
         const property = new SDK.RemoteObject.RemoteObjectProperty('name', SDK.RemoteObject.RemoteObject.fromLocalObject(42), true, true);
         const container = document.createElement('div');
@@ -336,6 +348,50 @@ describeWithEnvironment('ObjectPropertyTreeElement', () => {
         expandButton.click();
         await assertScreenshot('object_ui/expanded_strings.png');
         assert.strictEqual(value.textContent, `"${longString}"`);
+    });
+});
+describeWithEnvironment('ArrayGroupingTreeElement', () => {
+    let target;
+    let runtimeModel;
+    beforeEach(() => {
+        target = createTarget();
+        runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+    });
+    it('expands and collapses when the underlying node is expanded and collapsed', async () => {
+        const rootObj = createDeepRemoteObjectMock(runtimeModel, {});
+        // Inject array behavior into rootObj to get arrayRanges
+        sinon.stub(rootObj, 'subtype').get(() => "array" /* Protocol.Runtime.RemoteObjectSubtype.Array */);
+        sinon.stub(rootObj, 'arrayLength').returns(1000);
+        sinon.stub(rootObj, 'callFunctionJSON').resolves({ ranges: [[0, 10, 11]] });
+        const root = new ObjectUI.ObjectPropertiesSection.ObjectTree(rootObj, {
+            readOnly: false,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+        });
+        const rootChildren = await root.populateChildrenIfNeeded();
+        const node = rootChildren.arrayRanges?.[0];
+        const treeElement = new ObjectUI.ObjectPropertiesSection.ArrayGroupingTreeElement(node);
+        node.expanded = true;
+        assert.isTrue(treeElement.expanded);
+        node.expanded = false;
+        assert.isFalse(treeElement.expanded);
+    });
+});
+describeWithEnvironment('ObjectTreeNode', () => {
+    it('prevents recursive expansion for [[Prototype]]', () => {
+        const property = new SDK.RemoteObject.RemoteObjectProperty('[[Prototype]]', SDK.RemoteObject.RemoteObject.fromLocalObject({}), true, true);
+        const node = new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(property, undefined, {
+            readOnly: false,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */
+        });
+        assert.isFalse(node.canExpandRecursively);
+    });
+    it('allows recursive expansion for regular properties', () => {
+        const property = new SDK.RemoteObject.RemoteObjectProperty('foo', SDK.RemoteObject.RemoteObject.fromLocalObject({}), true, true);
+        const node = new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(property, undefined, {
+            readOnly: false,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */
+        });
+        assert.isTrue(node.canExpandRecursively);
     });
 });
 describeWithEnvironment('ObjectTreeExpansionTracker', () => {
@@ -518,6 +574,54 @@ describeWithEnvironment('ObjectTreeExpansionTracker', () => {
         const { root: freshRoot } = await buildTestTree(tracker);
         await tracker.apply(freshRoot);
         assert.isFalse(freshRoot.expanded);
+    });
+    it('expands properties recursively', async () => {
+        const object = SDK.RemoteObject.RemoteObject.fromLocalObject({
+            foo: {
+                bar: {
+                    baz: {
+                        quux: {
+                            corge: 'plugh',
+                        },
+                    },
+                },
+                quuz: {
+                    garply: 'xyzzy',
+                    thud: {
+                        wibble: 'wobble',
+                    },
+                },
+            },
+        });
+        const section = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection(object, 'JSON');
+        const rootElement = section.objectTreeElement();
+        await rootElement.expandRecursively(10);
+        await new Promise(requestAnimationFrame);
+        assert.strictEqual(rootElement.childCount(), 1);
+        const foo = rootElement.childAt(0);
+        assert.isTrue(foo.expanded);
+        assert.strictEqual(foo.childCount(), 2);
+        const bar = foo.childAt(0);
+        const quuz = foo.childAt(1);
+        assert.isTrue(bar.expanded);
+        assert.isTrue(quuz.expanded);
+        assert.strictEqual(bar.childCount(), 1);
+        const baz = bar.childAt(0);
+        assert.isTrue(baz.expanded);
+        assert.strictEqual(baz.childCount(), 1);
+        const quux = baz.childAt(0);
+        assert.isTrue(quux.expanded);
+        assert.strictEqual(quux.childCount(), 1);
+        const corge = quux.childAt(0);
+        assert.isFalse(corge.expanded);
+        assert.strictEqual(quuz.childCount(), 2);
+        const garply = quuz.childAt(0);
+        const thud = quuz.childAt(1);
+        assert.isFalse(garply.expanded);
+        assert.isTrue(thud.expanded);
+        assert.strictEqual(thud.childCount(), 1);
+        const wibble = thud.childAt(0);
+        assert.isFalse(wibble.expanded);
     });
 });
 //# sourceMappingURL=ObjectPropertiesSection.test.js.map

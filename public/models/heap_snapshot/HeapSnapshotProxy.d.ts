@@ -55,12 +55,14 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     constructor(worker: HeapSnapshotWorkerProxy, objectId: number);
     search(searchConfig: HeapSnapshotModel.SearchConfig, filter: HeapSnapshotModel.NodeFilter): Promise<number[]>;
     interfaceDefinitions(): Promise<string>;
+    getNativeContextSizes(): Promise<HeapSnapshotModel.NativeContextSizes>;
     aggregatesWithFilter(filter: HeapSnapshotModel.NodeFilter): Promise<Record<string, HeapSnapshotModel.AggregatedInfo>>;
     getDuplicateStrings(): Promise<HeapSnapshotModel.DuplicateStringGroup[]>;
     aggregatesForDiff(interfaceDefinitions: string): Promise<Record<string, HeapSnapshotModel.AggregateForDiff>>;
     calculateSnapshotDiff(baseSnapshotId: number, baseSnapshotAggregates: Record<string, HeapSnapshotModel.AggregateForDiff>): Promise<Record<string, HeapSnapshotModel.Diff>>;
     nodeClassKey(snapshotObjectId: number): Promise<string | null>;
     nodeIndexForId(nodeId: number): Promise<number | undefined>;
+    getObjectInfo(nodeIndex: number): Promise<HeapSnapshotModel.ObjectInfo>;
     createEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createAddedNodesProvider(baseSnapshotId: number, classKey: string): HeapSnapshotProviderProxy;

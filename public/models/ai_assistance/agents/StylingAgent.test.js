@@ -6,15 +6,19 @@ import sinon from 'sinon';
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as Greendev from '../../../models/greendev/greendev.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { createStubbedDomNodeWithModels, getMatchedStyles, ruleMatch } from '../../../testing/StyleHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { StylingAgent, AiAgent } = AiAssistance;
 describeWithEnvironment('StylingAgent', function () {
     const snapshotTester = new SnapshotTester(this, import.meta);
+    let connection;
+    beforeEach(() => {
+        connection = new MockCDPConnection();
+    });
     function mockHostConfig(modelId, temperature, userTier, executionMode, multimodal) {
         updateHostConfig({
             devToolsFreestyler: {
@@ -46,6 +50,9 @@ describeWithEnvironment('StylingAgent', function () {
         element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         element.domModel.returns(domModel);
         element.backendNodeId.returns(99);
+        element.ownerDocument = {
+            documentURL: 'https://example.com',
+        };
     });
     describe('buildRequest', () => {
         beforeEach(() => {
@@ -551,13 +558,14 @@ describeWithEnvironment('StylingAgent', function () {
     describe('getStyles', () => {
         it('successfully returns computed and authored styles', async () => {
             const { node: resolvedNode, cssModel } = createStubbedDomNodeWithModels({ nodeId: 42 });
-            resolvedNode.ownerDocument = null;
-            element.ownerDocument = null;
+            resolvedNode.ownerDocument = {
+                documentURL: 'https://example.com',
+            };
             sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
             const computedStyleMap = new Map([['color', 'red']]);
             cssModel.getComputedStyle.resolves(computedStyleMap);
             const matchedPayload = [ruleMatch('div', { color: 'red' })];
-            const matchedStyles = getMatchedStyles({ cssModel, node: resolvedNode, matchedPayload });
+            const matchedStyles = await getMatchedStyles({ cssModel, node: resolvedNode, matchedPayload, connection });
             cssModel.getMatchedStyles.resolves(matchedStyles);
             const agent = new StylingAgent.StylingAgent({
                 aidaClient: mockAidaClient([
@@ -650,7 +658,6 @@ describeWithEnvironment('StylingAgent', function () {
             assert.strictEqual(actionStep.output, 'Error: Could not find the currently selected element.');
         });
         it('returns error when target node cannot be resolved', async () => {
-            element.ownerDocument = null;
             sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(null);
             const agent = new StylingAgent.StylingAgent({
                 aidaClient: mockAidaClient([
@@ -679,8 +686,9 @@ describeWithEnvironment('StylingAgent', function () {
         });
         it('returns error when computed styles fail', async () => {
             const { node: resolvedNode, cssModel } = createStubbedDomNodeWithModels({ nodeId: 42 });
-            resolvedNode.ownerDocument = null;
-            element.ownerDocument = null;
+            resolvedNode.ownerDocument = {
+                documentURL: 'https://example.com',
+            };
             sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
             cssModel.getComputedStyle.resolves(null);
             const agent = new StylingAgent.StylingAgent({
@@ -710,8 +718,9 @@ describeWithEnvironment('StylingAgent', function () {
         });
         it('returns error when matched styles fail', async () => {
             const { node: resolvedNode, cssModel } = createStubbedDomNodeWithModels({ nodeId: 42 });
-            resolvedNode.ownerDocument = null;
-            element.ownerDocument = null;
+            resolvedNode.ownerDocument = {
+                documentURL: 'https://example.com',
+            };
             sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(resolvedNode);
             const computedStyleMap = new Map([['color', 'red']]);
             cssModel.getComputedStyle.resolves(computedStyleMap);
@@ -740,28 +749,6 @@ describeWithEnvironment('StylingAgent', function () {
             const actionStep = responses.find(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
             assert.exists(actionStep);
             assert.strictEqual(actionStep.output, 'Error: Could not get authored styles.');
-        });
-    });
-    describe('clearCache', () => {
-        it('resets emulation instructions flag', async () => {
-            const greendevPrototypes = sinon.createStubInstance(Greendev.Prototypes);
-            greendevPrototypes.isEnabled.withArgs('emulationCapabilities').returns(true);
-            sinon.stub(Greendev.Prototypes, 'instance').returns(greendevPrototypes);
-            const agent = new StylingAgent.StylingAgent({
-                aidaClient: mockAidaClient(),
-            });
-            const context = new AiAssistance.DOMNodeContext.DOMNodeContext(element);
-            // First enhanceQuery should include instructions
-            const query1 = await agent.enhanceQuery('query1', context);
-            assert.include(query1, 'Emulation and Screenshots');
-            // Second enhanceQuery should NOT include instructions
-            const query2 = await agent.enhanceQuery('query2', context);
-            assert.notInclude(query2, 'Emulation and Screenshots');
-            // Call clearCache
-            agent.clearCache();
-            // Third enhanceQuery should include instructions again
-            const query3 = await agent.enhanceQuery('query3', context);
-            assert.include(query3, 'Emulation and Screenshots');
         });
     });
 });

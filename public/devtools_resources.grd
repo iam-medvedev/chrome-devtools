@@ -233,8 +233,6 @@
       <include file="Images/minus.svg" name="IMAGES_MINUS_SVG" resource_path="Images/minus.svg" type="BINDATA" compress="false"/>
       <include file="Images/mop.svg" name="IMAGES_MOP_SVG" resource_path="Images/mop.svg" type="BINDATA" compress="false"/>
       <include file="Images/mouse.svg" name="IMAGES_MOUSE_SVG" resource_path="Images/mouse.svg" type="BINDATA" compress="false"/>
-      <include file="Images/navigationControls.png" name="IMAGES_NAVIGATIONCONTROLS_PNG" resource_path="Images/navigationControls.png" type="BINDATA" compress="false"/>
-      <include file="Images/navigationControls_2x.png" name="IMAGES_NAVIGATIONCONTROLS_2X_PNG" resource_path="Images/navigationControls_2x.png" type="BINDATA" compress="false"/>
       <include file="Images/network-settings.svg" name="IMAGES_NETWORK_SETTINGS_SVG" resource_path="Images/network-settings.svg" type="BINDATA" compress="false"/>
       <include file="Images/node-stack-icon.svg" name="IMAGES_NODE_STACK_ICON_SVG" resource_path="Images/node-stack-icon.svg" type="BINDATA" compress="false"/>
       <include file="Images/nodeIcon.avif" name="IMAGES_NODEICON_AVIF" resource_path="Images/nodeIcon.avif" type="BINDATA" compress="false"/>
@@ -254,7 +252,6 @@
       <include file="Images/play.svg" name="IMAGES_PLAY_SVG" resource_path="Images/play.svg" type="BINDATA" compress="false"/>
       <include file="Images/plus.svg" name="IMAGES_PLUS_SVG" resource_path="Images/plus.svg" type="BINDATA" compress="false"/>
       <include file="Images/policy.svg" name="IMAGES_POLICY_SVG" resource_path="Images/policy.svg" type="BINDATA" compress="false"/>
-      <include file="Images/popoverArrows.png" name="IMAGES_POPOVERARROWS_PNG" resource_path="Images/popoverArrows.png" type="BINDATA" compress="false"/>
       <include file="Images/popup.svg" name="IMAGES_POPUP_SVG" resource_path="Images/popup.svg" type="BINDATA" compress="false"/>
       <include file="Images/preview_feature_video_thumbnail.svg" name="IMAGES_PREVIEW_FEATURE_VIDEO_THUMBNAIL_SVG" resource_path="Images/preview_feature_video_thumbnail.svg" type="BINDATA" compress="false"/>
       <include file="Images/profile.svg" name="IMAGES_PROFILE_SVG" resource_path="Images/profile.svg" type="BINDATA" compress="false"/>
@@ -389,9 +386,6 @@
       <include file="entrypoints/formatter_worker/FormatterActions.js" name="ENTRYPOINTS_FORMATTER_WORKER_FORMATTERACTIONS_JS" resource_path="entrypoints/formatter_worker/FormatterActions.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/formatter_worker/formatter_worker-entrypoint.js" name="ENTRYPOINTS_FORMATTER_WORKER_FORMATTER_WORKER_ENTRYPOINT_JS" resource_path="entrypoints/formatter_worker/formatter_worker-entrypoint.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/formatter_worker/formatter_worker.js" name="ENTRYPOINTS_FORMATTER_WORKER_FORMATTER_WORKER_JS" resource_path="entrypoints/formatter_worker/formatter_worker.js" type="BINDATA" compress="false"/>
-      <include file="entrypoints/greendev_floaty/FloatyEntrypoint.js" name="ENTRYPOINTS_GREENDEV_FLOATY_FLOATYENTRYPOINT_JS" resource_path="entrypoints/greendev_floaty/FloatyEntrypoint.js" type="BINDATA" compress="false"/>
-      <include file="entrypoints/greendev_floaty/floaty.css" name="ENTRYPOINTS_GREENDEV_FLOATY_FLOATY_CSS" resource_path="entrypoints/greendev_floaty/floaty.css" type="BINDATA" compress="false"/>
-      <include file="entrypoints/greendev_floaty/floaty.html" name="ENTRYPOINTS_GREENDEV_FLOATY_FLOATY_HTML" resource_path="entrypoints/greendev_floaty/floaty.html" type="BINDATA" compress="false"/>
       <include file="entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.js" name="ENTRYPOINTS_HEAP_SNAPSHOT_WORKER_HEAP_SNAPSHOT_WORKER_ENTRYPOINT_JS" resource_path="entrypoints/heap_snapshot_worker/heap_snapshot_worker-entrypoint.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/heap_snapshot_worker/heap_snapshot_worker.js" name="ENTRYPOINTS_HEAP_SNAPSHOT_WORKER_HEAP_SNAPSHOT_WORKER_JS" resource_path="entrypoints/heap_snapshot_worker/heap_snapshot_worker.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/inspector/inspector.js" name="ENTRYPOINTS_INSPECTOR_INSPECTOR_JS" resource_path="entrypoints/inspector/inspector.js" type="BINDATA" compress="false"/>
@@ -415,7 +409,6 @@
       <include file="models/ai_assistance/ai_assistance.js" name="MODELS_AI_ASSISTANCE_AI_ASSISTANCE_JS" resource_path="models/ai_assistance/ai_assistance.js" type="BINDATA" compress="false"/>
       <include file="models/ai_code_completion/ai_code_completion.js" name="MODELS_AI_CODE_COMPLETION_AI_CODE_COMPLETION_JS" resource_path="models/ai_code_completion/ai_code_completion.js" type="BINDATA" compress="false"/>
       <include file="models/ai_code_generation/ai_code_generation.js" name="MODELS_AI_CODE_GENERATION_AI_CODE_GENERATION_JS" resource_path="models/ai_code_generation/ai_code_generation.js" type="BINDATA" compress="false"/>
-      <include file="models/annotations/annotations.js" name="MODELS_ANNOTATIONS_ANNOTATIONS_JS" resource_path="models/annotations/annotations.js" type="BINDATA" compress="false"/>
       <include file="models/autofill_manager/autofill_manager.js" name="MODELS_AUTOFILL_MANAGER_AUTOFILL_MANAGER_JS" resource_path="models/autofill_manager/autofill_manager.js" type="BINDATA" compress="false"/>
       <include file="models/badges/badges.js" name="MODELS_BADGES_BADGES_JS" resource_path="models/badges/badges.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
@@ -428,7 +421,6 @@
       <include file="models/extensions/extensions.js" name="MODELS_EXTENSIONS_EXTENSIONS_JS" resource_path="models/extensions/extensions.js" type="BINDATA" compress="false"/>
       <include file="models/formatter/formatter.js" name="MODELS_FORMATTER_FORMATTER_JS" resource_path="models/formatter/formatter.js" type="BINDATA" compress="false"/>
       <include file="models/geometry/geometry.js" name="MODELS_GEOMETRY_GEOMETRY_JS" resource_path="models/geometry/geometry.js" type="BINDATA" compress="false"/>
-      <include file="models/greendev/greendev.js" name="MODELS_GREENDEV_GREENDEV_JS" resource_path="models/greendev/greendev.js" type="BINDATA" compress="false"/>
       <include file="models/har/har.js" name="MODELS_HAR_HAR_JS" resource_path="models/har/har.js" type="BINDATA" compress="false"/>
       <include file="models/heap_snapshot/heap_snapshot.js" name="MODELS_HEAP_SNAPSHOT_HEAP_SNAPSHOT_JS" resource_path="models/heap_snapshot/heap_snapshot.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COEPCOOPSANDBOXEDIFRAMECANNOTNAVIGATETOCOOPPAGE_MD" resource_path="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" type="BINDATA" compress="false"/>
@@ -772,8 +764,6 @@
       <include file="panels/event_listeners/event_listeners.js" name="PANELS_EVENT_LISTENERS_EVENT_LISTENERS_JS" resource_path="panels/event_listeners/event_listeners.js" type="BINDATA" compress="false"/>
       <include file="panels/explain/explain-meta.js" name="PANELS_EXPLAIN_EXPLAIN_META_JS" resource_path="panels/explain/explain-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/explain/explain.js" name="PANELS_EXPLAIN_EXPLAIN_JS" resource_path="panels/explain/explain.js" type="BINDATA" compress="false"/>
-      <include file="panels/greendev/greendev-meta.js" name="PANELS_GREENDEV_GREENDEV_META_JS" resource_path="panels/greendev/greendev-meta.js" type="BINDATA" compress="false"/>
-      <include file="panels/greendev/greendev.js" name="PANELS_GREENDEV_GREENDEV_JS" resource_path="panels/greendev/greendev.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/components/components.js" name="PANELS_ISSUES_COMPONENTS_COMPONENTS_JS" resource_path="panels/issues/components/components.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/issues-meta.js" name="PANELS_ISSUES_ISSUES_META_JS" resource_path="panels/issues/issues-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/issues.js" name="PANELS_ISSUES_ISSUES_JS" resource_path="panels/issues/issues.js" type="BINDATA" compress="false"/>

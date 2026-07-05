@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import * as Trace from '../../models/trace/trace.js';
 import { doubleRaf, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { allThreadEntriesInTrace } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
@@ -21,7 +21,13 @@ class MockViewDelegate {
     }
     element = document.createElement('div');
 }
-describeWithEnvironment('TimelineDetailsView', function () {
+describe('TimelineDetailsView', function () {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
     const mockViewDelegate = new MockViewDelegate();
     it('displays the details of a network request event correctly', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');

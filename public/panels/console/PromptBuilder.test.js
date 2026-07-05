@@ -11,9 +11,12 @@ import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../testing/ConsoleHelpers.js';
 import { raf } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
+import { deinitializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
+import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
 const { urlString } = Platform.DevToolsPath;
@@ -157,23 +160,24 @@ export const y = "";
         assert.isNull(Console.PromptBuilder.lineWhitespace(''));
         assert.strictEqual(Console.PromptBuilder.lineWhitespace('\t\ta'), '\t\t');
     });
-    describeWithMockConnection('buildPrompt', () => {
+    describe('buildPrompt', () => {
         let target;
         let backend;
+        setupRuntimeHooks();
+        setupSettingsHooks();
+        setupLocaleHooks();
         beforeEach(() => {
-            target = createTarget();
-            const targetManager = target.targetManager();
-            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-            const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-            Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-                forceNew: true,
-                resourceMapping,
-                targetManager,
-                ignoreListManager,
-                workspace,
-            });
-            backend = new MockProtocolBackend();
+            backend = new MockDebuggerBackend();
+            mockResourceTree(backend.cdpConnection);
+            target = backend.createTarget();
+            sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+                .returns(backend.universe.debuggerWorkspaceBinding);
+            sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(backend.universe.ignoreListManager);
+            sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(backend.universe.targetManager);
+        });
+        afterEach(async () => {
+            sinon.restore();
+            await deinitializeGlobalVars();
         });
         const PROMPT_PREFIX = 'Please explain the following console error or warning:';
         const RELATED_CODE_PREFIX = 'For the following code:';
@@ -463,10 +467,14 @@ export const y = "";
             assert.isNotTrue(sources.some(source => source.type === Console.PromptBuilder.SourceType.NETWORK_REQUEST));
         });
     });
-    describeWithMockConnection('getSearchQuery', () => {
+    describe('getSearchQuery', () => {
         let target;
+        let backend;
+        setupLocaleHooks();
+        setupSettingsHooks();
         beforeEach(() => {
-            target = createTarget();
+            backend = new MockDebuggerBackend();
+            target = backend.createTarget();
         });
         it('builds a simple search query', async () => {
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);

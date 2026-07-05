@@ -87,6 +87,9 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/protocol_client/bundle-tsconfig.json"
+    },
+    {
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {

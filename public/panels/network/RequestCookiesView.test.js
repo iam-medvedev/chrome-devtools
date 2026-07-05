@@ -5,13 +5,13 @@ import { assert } from 'chai';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Network from './network.js';
 const { RequestCookiesView } = Network;
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('RequestCookiesView', () => {
+describeWithEnvironment('RequestCookiesView', () => {
     setupLocaleHooks();
     const mockCookie = (name, value) => {
         return new SDK.Cookie.Cookie(name, value);

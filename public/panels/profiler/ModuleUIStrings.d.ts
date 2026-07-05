@@ -52,6 +52,10 @@ export declare const UIStrings: {
     /**
      * @description Text to indicate the status of a heap snapshot in the Performance Pane
      */
+    readonly calculatingNativeContextAttribution: "Calculating native context attribution…";
+    /**
+     * @description Text to indicate the status of a heap snapshot in the Performance Pane
+     */
     readonly finishedProcessing: "Finished processing.";
     /**
      * @description Text to indicate the status of a heap snapshot in the Performance Pane

@@ -60,6 +60,7 @@ describe('SettingRegistration', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
             settingRegistrations,
+            console: new Common.Console.Console(),
         });
         const setting = settings.moduleSetting(settingName);
         assert.isNotNull(setting);

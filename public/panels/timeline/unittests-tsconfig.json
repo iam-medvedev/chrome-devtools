@@ -110,6 +110,9 @@
       "path": "../../services/trace_bounds/bundle-tsconfig.json"
     },
     {
+      "path": "../../services/tracing/bundle-tsconfig.json"
+    },
+    {
       "path": "../../testing/testing-tsconfig.json"
     },
     {

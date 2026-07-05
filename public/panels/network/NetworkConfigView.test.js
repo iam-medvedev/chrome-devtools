@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
 describe('userAgentGroups', () => {
@@ -16,11 +16,12 @@ describe('userAgentGroups', () => {
         assert.isTrue(chromeUAs.every(v => v.value.includes('Chrome/%s')));
     });
 });
-describeWithMockConnection('NetworkConfigView', () => {
+describeWithEnvironment('NetworkConfigView', () => {
     it('supports enabling data saver emulation', async () => {
-        createTarget();
+        const connection = new MockCDPConnection();
+        const target = createTarget({ connection });
         const saveDataSpy = Promise.withResolvers();
-        setMockConnectionResponseHandler('Emulation.setDataSaverOverride', request => {
+        connection.setSuccessHandler('Emulation.setDataSaverOverride', request => {
             saveDataSpy.resolve(request);
             const { promise, resolve } = Promise.withResolvers();
             saveDataSpy.promise = promise;
@@ -42,7 +43,8 @@ describeWithMockConnection('NetworkConfigView', () => {
         };
         assert.deepEqual(await select(1), { dataSaverEnabled: true });
         assert.deepEqual(await select(2), { dataSaverEnabled: false });
-        assert.deepEqual(await select(0), {});
+        assert.deepEqual(await select(0), { dataSaverEnabled: undefined });
+        target.dispose('test');
     });
 });
 //# sourceMappingURL=NetworkConfigView.test.js.map

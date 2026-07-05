@@ -243,6 +243,7 @@ import * as SDK from "./../../../core/sdk/sdk.js";
 import * as UI2 from "./../../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js";
+import * as PanelsCommon from "./../../common/common.js";
 import * as MobileThrottling from "./../../mobile_throttling/mobile_throttling.js";
 
 // gen/front_end/panels/timeline/components/cpuThrottlingSelector.css.js
@@ -314,7 +315,7 @@ var str_2 = i18n3.i18n.registerUIStrings("panels/timeline/components/CPUThrottli
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var DEFAULT_VIEW = (input, _output, target) => {
   let recommendedInfoEl;
-  if (input.recommendedOption && input.currentOption === SDK.CPUThrottlingManager.NoThrottlingOption) {
+  if (input.recommendedOption && input.currentOption === PanelsCommon.CPUThrottlingOption.NoThrottlingOption) {
     recommendedInfoEl = html2`<devtools-icon
         title=${i18nString2(UIStrings2.recommendedThrottlingReason)}
         name=info></devtools-icon>`;
@@ -373,9 +374,10 @@ var CPUThrottlingSelector = class extends UI2.Widget.Widget {
   #groups = [];
   #calibratedThrottlingSetting;
   #view;
+  #cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
   constructor(element, view = DEFAULT_VIEW) {
     super(element);
-    this.#currentOption = SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingOption();
+    this.#currentOption = MobileThrottling.ThrottlingManager.throttlingManager().cpuThrottlingOption();
     this.#calibratedThrottlingSetting = Common.Settings.Settings.instance().createSetting(
       "calibrated-cpu-throttling",
       {},
@@ -391,17 +393,17 @@ var CPUThrottlingSelector = class extends UI2.Widget.Widget {
   }
   wasShown() {
     super.wasShown();
-    SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged", this.#onOptionChange, this);
+    this.#cpuThrottlingManager.addEventListener("RateChanged", this.#onOptionChange, this);
     this.#calibratedThrottlingSetting.addChangeListener(this.#onCalibratedSettingChanged, this);
     this.#onOptionChange();
   }
   willHide() {
     super.willHide();
     this.#calibratedThrottlingSetting.removeChangeListener(this.#onCalibratedSettingChanged, this);
-    SDK.CPUThrottlingManager.CPUThrottlingManager.instance().removeEventListener("RateChanged", this.#onOptionChange, this);
+    this.#cpuThrottlingManager.removeEventListener("RateChanged", this.#onOptionChange, this);
   }
   #onOptionChange() {
-    this.#currentOption = SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingOption();
+    this.#currentOption = MobileThrottling.ThrottlingManager.throttlingManager().cpuThrottlingOption();
     this.requestUpdate();
   }
   #onCalibratedSettingChanged() {
@@ -412,9 +414,9 @@ var CPUThrottlingSelector = class extends UI2.Widget.Widget {
     let option;
     if (typeof event.itemValue === "string") {
       if (event.itemValue === "low-tier-mobile") {
-        option = SDK.CPUThrottlingManager.CalibratedLowTierMobileThrottlingOption;
+        option = PanelsCommon.CPUThrottlingOption.CalibratedLowTierMobileThrottlingOption;
       } else if (event.itemValue === "mid-tier-mobile") {
-        option = SDK.CPUThrottlingManager.CalibratedMidTierMobileThrottlingOption;
+        option = PanelsCommon.CPUThrottlingOption.CalibratedMidTierMobileThrottlingOption;
       }
     } else {
       const rate = Number(event.itemValue);
@@ -2813,7 +2815,7 @@ import * as Buttons5 from "./../../../ui/components/buttons/buttons.js";
 import * as LegacyComponents from "./../../../ui/legacy/components/utils/utils.js";
 import * as UI9 from "./../../../ui/legacy/legacy.js";
 import * as Lit10 from "./../../../ui/lit/lit.js";
-import * as PanelsCommon from "./../../common/common.js";
+import * as PanelsCommon2 from "./../../common/common.js";
 var { html: html10 } = Lit10;
 var { widget: widget2 } = UI9.Widget;
 var DEFAULT_VIEW5 = (input, output, target) => {
@@ -2894,7 +2896,7 @@ var NodeLink = class extends UI9.Widget.Widget {
       this.#linkifiedNodeForBackendId.set(this.#backendNodeId, "NO_NODE_FOUND");
       return;
     }
-    const linkedNode = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, this.#options);
+    const linkedNode = PanelsCommon2.DOMLinkifier.Linkifier.instance().linkify(node, this.#options);
     this.#linkifiedNodeForBackendId.set(this.#backendNodeId, linkedNode);
     return linkedNode;
   }
@@ -3811,21 +3813,21 @@ details.environment-recs[open] > summary::before {
   }
 }
 
-.phase-table {
+.subpart-table {
   display: grid;
   column-gap: var(--sys-size-3);
   white-space: nowrap;
 }
 
-.phase-table-row {
+.subpart-table-row {
   display: contents;
 }
 
-.phase-table-value {
+.subpart-table-value {
   text-align: right;
 }
 
-.phase-table-header-row {
+.subpart-table-header-row {
   font-weight: var(--ref-typeface-weight-medium);
 }
 
@@ -4210,9 +4212,9 @@ var UIStrings14 = {
    */
   recDynamicContentCLS: "Dynamic content can influence what layout shifts happen.",
   /**
-   * @description Column header for table cell values representing the phase/component/stage/section of a larger duration.
+   * @description Column header for table cell values representing the subpart/component/stage/section of a larger duration.
    */
-  phase: "Phase",
+  subpart: "Subpart",
   /**
    * @description Tooltip text for a link that goes to documentation explaining the Largest Contentful Paint (LCP) metric. "LCP" is an acronym and should not be translated.
    */
@@ -4552,28 +4554,28 @@ var MetricCard = class extends HTMLElement {
       </div>
     `;
   }
-  #renderPhaseTable(phases) {
-    const hasFieldData = phases.every((phase) => phase[2] !== void 0);
+  #renderSubpartTable(subparts) {
+    const hasFieldData = subparts.every((subpart) => subpart[2] !== void 0);
     return html13`
       <hr class="divider">
-      <div class="phase-table" role="table">
-        <div class="phase-table-row phase-table-header-row" role="row">
-          <div role="columnheader" style="grid-column: 1">${i18nString13(UIStrings14.phase)}</div>
-          <div role="columnheader" class="phase-table-value" style="grid-column: 2">${i18nString13(UIStrings14.localValue)}</div>
+      <div class="subpart-table" role="table">
+        <div class="subpart-table-row subpart-table-header-row" role="row">
+          <div role="columnheader" style="grid-column: 1">${i18nString13(UIStrings14.subpart)}</div>
+          <div role="columnheader" class="subpart-table-value" style="grid-column: 2">${i18nString13(UIStrings14.localValue)}</div>
           ${hasFieldData ? html13`
             <div
               role="columnheader"
-              class="phase-table-value"
+              class="subpart-table-value"
               style="grid-column: 3"
               title=${i18nString13(UIStrings14.field75thPercentile)}>${i18nString13(UIStrings14.fieldP75)}</div>
           ` : nothing11}
         </div>
-        ${phases.map((phase) => html13`
-          <div class="phase-table-row" role="row">
-            <div role="cell">${phase[0]}</div>
-            <div role="cell" class="phase-table-value">${i18n27.TimeUtilities.preciseMillisToString(phase[1])}</div>
-            ${phase[2] !== void 0 ? html13`
-              <div role="cell" class="phase-table-value">${i18n27.TimeUtilities.preciseMillisToString(phase[2])}</div>
+        ${subparts.map((subpart) => html13`
+          <div class="subpart-table-row" role="row">
+            <div role="cell">${subpart[0]}</div>
+            <div role="cell" class="subpart-table-value">${i18n27.TimeUtilities.preciseMillisToString(subpart[1])}</div>
+            ${subpart[2] !== void 0 ? html13`
+              <div role="cell" class="subpart-table-value">${i18n27.TimeUtilities.preciseMillisToString(subpart[2])}</div>
             ` : nothing11}
           </div>
         `)}
@@ -4637,7 +4639,7 @@ var MetricCard = class extends HTMLElement {
                   ${this.#renderDetailedCompareString()}
                   <hr class="divider">
                   ${this.#renderFieldHistogram()}
-                  ${localValue && this.#data.phases ? this.#renderPhaseTable(this.#data.phases) : nothing11}
+                  ${localValue && this.#data.subparts ? this.#renderSubpartTable(this.#data.subparts) : nothing11}
                 </div>
               </div>
             </div>
@@ -4671,7 +4673,7 @@ import * as uiI18n4 from "./../../../ui/i18n/i18n.js";
 import * as UI11 from "./../../../ui/legacy/legacy.js";
 import * as Lit14 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
-import * as PanelsCommon2 from "./../../common/common.js";
+import * as PanelsCommon3 from "./../../common/common.js";
 
 // gen/front_end/panels/timeline/components/liveMetricsView.css.js
 var liveMetricsView_css_default = `/*
@@ -4851,7 +4853,7 @@ var liveMetricsView_css_default = `/*
 }
 
 .interaction {
-  --phase-table-margin: 120px;
+  --subpart-table-margin: 120px;
   --details-indicator-width: 18px;
 
   summary {
@@ -4876,7 +4878,7 @@ var liveMetricsView_css_default = `/*
 
 .interaction-type {
   font-weight: var(--ref-typeface-weight-medium);
-  width: calc(var(--phase-table-margin) - var(--details-indicator-width));
+  width: calc(var(--subpart-table-margin) - var(--details-indicator-width));
   flex-shrink: 0;
 }
 
@@ -5020,18 +5022,18 @@ devtools-link {
   }
 }
 
-.phase-table {
+.subpart-table {
   border-top: 1px solid var(--sys-color-divider);
   padding: 7px 4px;
-  margin-left: var(--phase-table-margin);
+  margin-left: var(--subpart-table-margin);
 }
 
-.phase-table-row {
+.subpart-table-row {
   display: flex;
   justify-content: space-between;
 }
 
-.phase-table-header-row {
+.subpart-table-header-row {
   font-weight: var(--ref-typeface-weight-medium);
   margin-bottom: 4px;
 }
@@ -5268,31 +5270,31 @@ var UIStrings15 = {
    */
   clearCurrentLog: "Clear the current log",
   /**
-   * @description Title for a page load phase that measures the time between when the page load starts and the time when the first byte of the initial document is downloaded.
+   * @description Title for a page load subpart that measures the time between when the page load starts and the time when the first byte of the initial document is downloaded.
    */
   timeToFirstByte: "Time to first byte",
   /**
-   * @description Title for a page load phase that measures the time between when the first byte of the initial document is downloaded and when the request for the largest image content starts.
+   * @description Title for a page load subpart that measures the time between when the first byte of the initial document is downloaded and when the request for the largest image content starts.
    */
   resourceLoadDelay: "Resource load delay",
   /**
-   * @description Title for a page load phase that measures the time between when the request for the largest image content starts and when it finishes.
+   * @description Title for a page load subpart that measures the time between when the request for the largest image content starts and when it finishes.
    */
   resourceLoadDuration: "Resource load duration",
   /**
-   * @description Title for a page load phase that measures the time between when the request for the largest image content finishes and when the largest image element is rendered on the page.
+   * @description Title for a page load subpart that measures the time between when the request for the largest image content finishes and when the largest image element is rendered on the page.
    */
   elementRenderDelay: "Element render delay",
   /**
-   * @description Title for a phase during a user interaction that measures the time between when the interaction starts and when the browser starts running interaction handlers.
+   * @description Title for a subpart during a user interaction that measures the time between when the interaction starts and when the browser starts running interaction handlers.
    */
   inputDelay: "Input delay",
   /**
-   * @description Title for a phase during a user interaction that measures the time between when the browser starts running interaction handlers and when the browser finishes running interaction handlers.
+   * @description Title for a subpart during a user interaction that measures the time between when the browser starts running interaction handlers and when the browser finishes running interaction handlers.
    */
   processingDuration: "Processing duration",
   /**
-   * @description Title for a phase during a user interaction that measures the time between when the browser finishes running interaction handlers and when the browser renders the next visual frame that shows the result of the interaction.
+   * @description Title for a subpart during a user interaction that measures the time between when the browser finishes running interaction handlers and when the browser renders the next visual frame that shows the result of the interaction.
    */
   presentationDelay: "Presentation delay",
   /**
@@ -5308,11 +5310,11 @@ var UIStrings15 = {
    */
   showClsCluster: "Go to worst layout shift cluster.",
   /**
-   * @description Column header for table cell values representing the phase/component/stage/section of a larger duration.
+   * @description Column header for table cell values representing the subpart/component/stage/section of a larger duration.
    */
-  phase: "Phase",
+  subpart: "Subpart",
   /**
-   * @description Column header for table cell values representing a phase duration (in milliseconds) that was measured in the developers local environment.
+   * @description Column header for table cell values representing a subpart duration (in milliseconds) that was measured in the developers local environment.
    */
   duration: "Local duration (ms)",
   /**
@@ -5330,7 +5332,7 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("panels/timeline/components/LiveMetricsView.ts", UIStrings15);
 var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-function getLcpFieldPhases(cruxManager) {
+function getLcpFieldSubparts(cruxManager) {
   const ttfb = cruxManager.getSelectedFieldMetricData("largest_contentful_paint_image_time_to_first_byte")?.percentiles?.p75;
   const loadDelay = cruxManager.getSelectedFieldMetricData("largest_contentful_paint_image_resource_load_delay")?.percentiles?.p75;
   const loadDuration = cruxManager.getSelectedFieldMetricData("largest_contentful_paint_image_resource_load_duration")?.percentiles?.p75;
@@ -5452,9 +5454,9 @@ function createMetricCardRef(cardData) {
 }
 function renderLcpCard(input) {
   const fieldData = input.cruxManager.getSelectedFieldMetricData("largest_contentful_paint");
-  const nodeLink2 = input.lcpValue?.nodeRef && PanelsCommon2.DOMLinkifier.Linkifier.instance().linkify(input.lcpValue?.nodeRef);
-  const phases = input.lcpValue?.phases;
-  const fieldPhases = getLcpFieldPhases(input.cruxManager);
+  const nodeLink2 = input.lcpValue?.nodeRef && PanelsCommon3.DOMLinkifier.Linkifier.instance().linkify(input.lcpValue?.nodeRef);
+  const subparts = input.lcpValue?.subparts;
+  const fieldSubparts = getLcpFieldSubparts(input.cruxManager);
   return html14`
     <devtools-metric-card ${createMetricCardRef({
     metric: "LCP",
@@ -5462,18 +5464,18 @@ function renderLcpCard(input) {
     fieldValue: fieldData?.percentiles?.p75,
     histogram: fieldData?.histogram,
     warnings: input.lcpValue?.warnings,
-    phases: phases && [
-      [i18nString14(UIStrings15.timeToFirstByte), phases.timeToFirstByte, fieldPhases?.timeToFirstByte],
-      [i18nString14(UIStrings15.resourceLoadDelay), phases.resourceLoadDelay, fieldPhases?.resourceLoadDelay],
-      [i18nString14(UIStrings15.resourceLoadDuration), phases.resourceLoadTime, fieldPhases?.resourceLoadTime],
-      [i18nString14(UIStrings15.elementRenderDelay), phases.elementRenderDelay, fieldPhases?.elementRenderDelay]
+    subparts: subparts && [
+      [i18nString14(UIStrings15.timeToFirstByte), subparts.timeToFirstByte, fieldSubparts?.timeToFirstByte],
+      [i18nString14(UIStrings15.resourceLoadDelay), subparts.resourceLoadDelay, fieldSubparts?.resourceLoadDelay],
+      [i18nString14(UIStrings15.resourceLoadDuration), subparts.resourceLoadTime, fieldSubparts?.resourceLoadTime],
+      [i18nString14(UIStrings15.elementRenderDelay), subparts.elementRenderDelay, fieldSubparts?.elementRenderDelay]
     ]
   })}>
       ${nodeLink2 ? html14`
           <div class="related-info" slot="extra-info">
             <span class="related-info-label">${i18nString14(UIStrings15.lcpElement)}</span>
             <span class="related-info-link">
-             ${widget3(PanelsCommon2.DOMLinkifier.DOMNodeLink, { node: input.lcpValue?.nodeRef })}
+             ${widget3(PanelsCommon3.DOMLinkifier.DOMNodeLink, { node: input.lcpValue?.nodeRef })}
             </span>
           </div>
         ` : nothing13}
@@ -5508,7 +5510,7 @@ function renderClsCard(input) {
 }
 function renderInpCard(input) {
   const fieldData = input.cruxManager.getSelectedFieldMetricData("interaction_to_next_paint");
-  const phases = input.inpValue?.phases;
+  const subparts = input.inpValue?.subparts;
   const interaction = input.inpValue && input.interactions.get(input.inpValue.interactionId);
   return html14`
     <devtools-metric-card ${createMetricCardRef({
@@ -5517,10 +5519,10 @@ function renderInpCard(input) {
     fieldValue: fieldData?.percentiles?.p75,
     histogram: fieldData?.histogram,
     warnings: input.inpValue?.warnings,
-    phases: phases && [
-      [i18nString14(UIStrings15.inputDelay), phases.inputDelay],
-      [i18nString14(UIStrings15.processingDuration), phases.processingDuration],
-      [i18nString14(UIStrings15.presentationDelay), phases.presentationDelay]
+    subparts: subparts && [
+      [i18nString14(UIStrings15.inputDelay), subparts.inputDelay],
+      [i18nString14(UIStrings15.processingDuration), subparts.processingDuration],
+      [i18nString14(UIStrings15.presentationDelay), subparts.presentationDelay]
     ]
   })}>
       ${interaction ? html14`
@@ -5560,7 +5562,7 @@ function renderRecordingSettings(input) {
   const fieldEnabled = input.cruxManager.getConfigSetting().get().enabled;
   const deviceRec = getDeviceRec(input.cruxManager) || i18nString14(UIStrings15.notEnoughData);
   const networkRec = getNetworkRecTitle(input.cruxManager) || i18nString14(UIStrings15.notEnoughData);
-  const recs = PanelsCommon2.ThrottlingUtils.getThrottlingRecommendations();
+  const recs = PanelsCommon3.ThrottlingUtils.getThrottlingRecommendations();
   return html14`
     <h3 class="card-title">${i18nString14(UIStrings15.environmentSettings)}</h3>
     <div class="device-toolbar-description">${md(i18nString14(UIStrings15.useDeviceToolbar))}</div>
@@ -5752,7 +5754,7 @@ function renderInteractionsLog(input, output) {
                   ${interaction.interactionType} ${isInp ? html14`<span class="interaction-inp-chip" title=${i18nString14(UIStrings15.inpInteraction)}>INP</span>` : nothing13}
                 </span>
                 <span class="interaction-node">
-                  ${widget3(PanelsCommon2.DOMLinkifier.DOMNodeLink, { node: interaction.nodeRef })}
+                  ${widget3(PanelsCommon3.DOMLinkifier.DOMNodeLink, { node: interaction.nodeRef })}
                 </span>
                 ${isP98Excluded ? html14`<devtools-icon
                   class="interaction-info"
@@ -5761,30 +5763,30 @@ function renderInteractionsLog(input, output) {
                 ></devtools-icon>` : nothing13}
                 <span class="interaction-duration">${metricValue}</span>
               </summary>
-              <div class="phase-table" role="table">
-                <div class="phase-table-row phase-table-header-row" role="row">
-                  <div role="columnheader">${i18nString14(UIStrings15.phase)}</div>
+              <div class="subpart-table" role="table">
+                <div class="subpart-table-row subpart-table-header-row" role="row">
+                  <div role="columnheader">${i18nString14(UIStrings15.subpart)}</div>
                   <div role="columnheader">
                     ${interaction.longAnimationFrameTimings.length ? html14`
-                      <button
-                        class="log-extra-details-button"
-                        title=${i18nString14(UIStrings15.logToConsole)}
-                        @click=${() => input.logExtraInteractionDetails(interaction)}
-                      >${i18nString14(UIStrings15.duration)}</button>
-                    ` : i18nString14(UIStrings15.duration)}
+                       <button
+                         class="log-extra-details-button"
+                         title=${i18nString14(UIStrings15.logToConsole)}
+                         @click=${() => input.logExtraInteractionDetails(interaction)}
+                       >${i18nString14(UIStrings15.duration)}</button>
+                     ` : i18nString14(UIStrings15.duration)}
                   </div>
                 </div>
-                <div class="phase-table-row" role="row">
+                <div class="subpart-table-row" role="row">
                   <div role="cell">${i18nString14(UIStrings15.inputDelay)}</div>
-                  <div role="cell">${Math.round(interaction.phases.inputDelay)}</div>
+                  <div role="cell">${Math.round(interaction.subparts.inputDelay)}</div>
                 </div>
-                <div class="phase-table-row" role="row">
+                <div class="subpart-table-row" role="row">
                   <div role="cell">${i18nString14(UIStrings15.processingDuration)}</div>
-                  <div role="cell">${Math.round(interaction.phases.processingDuration)}</div>
+                  <div role="cell">${Math.round(interaction.subparts.processingDuration)}</div>
                 </div>
-                <div class="phase-table-row" role="row">
+                <div class="subpart-table-row" role="row">
                   <div role="cell">${i18nString14(UIStrings15.presentationDelay)}</div>
-                  <div role="cell">${Math.round(interaction.phases.presentationDelay)}</div>
+                  <div role="cell">${Math.round(interaction.subparts.presentationDelay)}</div>
                 </div>
               </div>
             </details>
@@ -5828,7 +5830,7 @@ function renderLayoutShiftsLog(input, output) {
             <div class="layout-shift-nodes">
               ${layoutShift.affectedNodeRefs.map((node) => html14`
                 <div class="layout-shift-node">
-                  ${widget3(PanelsCommon2.DOMLinkifier.DOMNodeLink, { node })}
+                  ${widget3(PanelsCommon3.DOMLinkifier.DOMNodeLink, { node })}
                 </div>
               `)}
             </div>

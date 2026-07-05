@@ -3,17 +3,24 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as AutofillManager from './autofill_manager.js';
-describeWithMockConnection('AutofillManager', () => {
+describe('AutofillManager', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
     let target;
     let model;
     let autofillManager;
     beforeEach(() => {
-        target = createTarget();
+        universe = new TestUniverse();
+        target = universe.createTarget();
         model = target.model(SDK.AutofillModel.AutofillModel);
-        autofillManager = AutofillManager.AutofillManager.AutofillManager.instance({ forceNew: true });
+        autofillManager = universe.autofillManager;
     });
     describe('emits AddressFormFilled events', () => {
         const assertAutofillManagerEvent = async (inEvent, outEvent) => {

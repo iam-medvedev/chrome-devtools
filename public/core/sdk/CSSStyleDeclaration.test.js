@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as SDK from './sdk.js';
 function assertPropertValues(object, expectedKeyValuePairs) {
     for (const [key, value] of expectedKeyValuePairs) {
         assert.propertyVal(object, key, value);
     }
 }
-describeWithMockConnection('CSSStyleDeclaration', () => {
+describeWithEnvironment('CSSStyleDeclaration', () => {
     it('should correctly construct new CSSStyleDeclaration', () => {
         const target = createTarget();
         const cssModel = new SDK.CSSModel.CSSModel(target);

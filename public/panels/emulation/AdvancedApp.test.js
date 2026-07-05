@@ -5,11 +5,10 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Emulation from './emulation.js';
-describeWithMockConnection('AdvancedApp', () => {
+describeWithEnvironment('AdvancedApp', () => {
     beforeEach(async () => {
         await deinitializeGlobalVars();
         Common.Settings.registerSettingsForTest([

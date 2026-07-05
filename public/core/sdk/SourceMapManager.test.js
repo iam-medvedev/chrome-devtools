@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { setupPageResourceLoaderForSourceMap } from '../../testing/SourceMapHelpers.js';
@@ -19,7 +18,7 @@ const content = JSON.stringify({
         '/original-script.js',
     ],
 });
-describeWithMockConnection('SourceMapManager', () => {
+describeWithEnvironment('SourceMapManager', () => {
     it('uses url for a worker\'s source maps from frame', async () => {
         setupPageResourceLoaderForSourceMap(content);
         const frameUrl = urlString `https://frame-host/index.html`;

@@ -10,6 +10,8 @@ export declare class ServiceWorkersView extends UI.Widget.VBox implements SDK.Ta
     private readonly sectionToRegistration;
     private readonly eventListeners;
     constructor();
+    private createOthersOriginView;
+    private setupToolbar;
     modelAdded(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void;
     modelRemoved(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void;
     private getTimeStamp;
@@ -49,7 +51,7 @@ export declare class Section {
     private addVersion;
     private updateClientsField;
     private updateSourceField;
-    private update;
+    private performUpdate;
     private unregisterButtonClicked;
     private createUpdateCycleField;
     private maybeCreateRouterField;

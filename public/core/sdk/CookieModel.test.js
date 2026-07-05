@@ -4,16 +4,17 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createNetworkRequest } from '../../testing/MockNetworkLog.js';
-import { addChildFrame, createResource, DOMAIN, getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
+import { addChildFrame, createResource, DOMAIN, getMainFrame, mockResourceTree, navigate, } from '../../testing/ResourceTreeHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 const MAIN_FRAME_RESOURCE_DOMAIN = urlString `example.org`;
 const CHILD_FRAME_RESOURCE_DOMAIN = urlString `example.net`;
-describeWithMockConnection('CookieModel', () => {
+describeWithEnvironment('CookieModel', () => {
     const PROTOCOL_COOKIE = {
         domain: '.example.com',
         name: 'name',
@@ -46,9 +47,15 @@ describeWithMockConnection('CookieModel', () => {
         sourceScheme: "NonSecure" /* Protocol.Network.CookieSourceScheme.NonSecure */,
         partitionKey: { topLevelSite: 'https://example.net', hasCrossSiteAncestor: false },
     };
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     it('can retrieve cookies for domain', async () => {
+        const connection = new MockCDPConnection();
+        mockResourceTree(connection);
         // CDP Connection mock: for Network.getCookies, respond with a single cookie.
-        setMockConnectionResponseHandler('Network.getCookies', ({ urls } = { urls: [] }) => {
+        connection.setSuccessHandler('Network.getCookies', ({ urls } = { urls: [] }) => {
             urls ??= [];
             return {
                 cookies: [
@@ -56,7 +63,7 @@ describeWithMockConnection('CookieModel', () => {
                 ],
             };
         });
-        const target = createTarget();
+        const target = universe.createTarget({ connection });
         const mainFrame = getMainFrame(target);
         const resourceUrl = (domain) => urlString `${`https://${domain}/resource`}`;
         createResource(mainFrame, resourceUrl(MAIN_FRAME_RESOURCE_DOMAIN), 'text/html', '');
@@ -83,7 +90,9 @@ describeWithMockConnection('CookieModel', () => {
         }
     });
     it('can detect cookie list changes', async () => {
-        setMockConnectionResponseHandler('Network.getCookies', ({ urls } = { urls: [] }) => {
+        const connection = new MockCDPConnection();
+        mockResourceTree(connection);
+        connection.setSuccessHandler('Network.getCookies', ({ urls } = { urls: [] }) => {
             urls ??= [];
             return {
                 cookies: [
@@ -91,7 +100,7 @@ describeWithMockConnection('CookieModel', () => {
                 ],
             };
         });
-        const target = createTarget();
+        const target = universe.createTarget({ connection });
         const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest('1'));
         const mainFrame = getMainFrame(target);
         const model = target.model(SDK.CookieModel.CookieModel);
@@ -113,8 +122,10 @@ describeWithMockConnection('CookieModel', () => {
     });
     it('can detect cookie value changes', async () => {
         const cookie = { ...PROTOCOL_COOKIE };
-        setMockConnectionResponseHandler('Network.getCookies', () => ({ cookies: [cookie] }));
-        const target = createTarget();
+        const connection = new MockCDPConnection();
+        mockResourceTree(connection);
+        connection.setSuccessHandler('Network.getCookies', () => ({ cookies: [cookie] }));
+        const target = universe.createTarget({ connection });
         const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest('1'));
         const mainFrame = getMainFrame(target);
         const model = target.model(SDK.CookieModel.CookieModel);
@@ -130,8 +141,10 @@ describeWithMockConnection('CookieModel', () => {
     });
     it('does not refetch cookies while listening unless requested', async () => {
         const cookie = { ...PROTOCOL_COOKIE };
-        setMockConnectionResponseHandler('Network.getCookies', () => ({ cookies: [cookie] }));
-        const target = createTarget();
+        const connection = new MockCDPConnection();
+        mockResourceTree(connection);
+        connection.setSuccessHandler('Network.getCookies', () => ({ cookies: [cookie] }));
+        const target = universe.createTarget({ connection });
         const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest('1'));
         const mainFrame = getMainFrame(target);
         const model = target.model(SDK.CookieModel.CookieModel);
@@ -149,7 +162,9 @@ describeWithMockConnection('CookieModel', () => {
         assert.strictEqual(readCookie.value(), 'new value');
     });
     it('clears stored blocked cookies on primary page change', async () => {
-        const target = createTarget();
+        const connection = new MockCDPConnection();
+        mockResourceTree(connection);
+        const target = universe.createTarget({ connection });
         const cookieModel = new SDK.CookieModel.CookieModel(target);
         const cookie = new SDK.Cookie.Cookie('name', 'value');
         const blockedReason = {
@@ -165,28 +180,25 @@ describeWithMockConnection('CookieModel', () => {
     });
     it('can delete unpartitioned and partitioned cookies', async () => {
         let cookieArray = [PROTOCOL_COOKIE, PROTOCOL_COOKIE_PARTITIONED];
+        const connection = new MockCDPConnection();
+        mockResourceTree(connection);
         // CDP Connection mock.
-        setMockConnectionResponseHandler('Network.getCookies', () => {
+        connection.setSuccessHandler('Network.getCookies', () => {
             return {
                 cookies: cookieArray,
             };
         });
         // CDP Connection mock: simplified implementation for Network.deleteCookies, which deletes the matching cookie from `cookies`.
-        setMockConnectionResponseHandler('Network.deleteCookies', cookieToDelete => {
+        connection.setSuccessHandler('Network.deleteCookies', cookieToDelete => {
             cookieArray = cookieArray.filter(cookie => {
                 return !(cookie.name === cookieToDelete.name && cookie.domain === cookieToDelete.domain &&
                     cookie.path === cookieToDelete.path &&
                     cookie.partitionKey?.topLevelSite === cookieToDelete.partitionKey?.topLevelSite &&
                     cookie.partitionKey?.hasCrossSiteAncestor === cookieToDelete.partitionKey?.hasCrossSiteAncestor);
             });
-            const response = {
-                getError() {
-                    return undefined;
-                },
-            };
-            return Promise.resolve(response);
+            return {};
         });
-        const target = createTarget();
+        const target = universe.createTarget({ connection });
         const model = new SDK.CookieModel.CookieModel(target);
         const cookies = await model.getCookiesForDomain(`https://${DOMAIN}`);
         assert.isArray(cookies);

@@ -4,17 +4,19 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Application from './application.js';
-describeWithMockConnection('CrashReportContextView', () => {
+describeWithEnvironment('CrashReportContextView', () => {
     const FRAME_ID = 'frame-1';
     const ORIGIN = 'https://example.com';
     const URL = 'https://example.com/index.html';
     let target;
+    let connection;
     beforeEach(() => {
-        target = createTarget();
+        connection = new MockCDPConnection();
+        target = createTarget({ connection });
         target.model(SDK.CrashReportContextModel.CrashReportContextModel);
         target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     });
@@ -30,7 +32,7 @@ describeWithMockConnection('CrashReportContextView', () => {
             isMainFrame: () => true,
             displayName: () => URL,
         });
-        setMockConnectionResponseHandler('CrashReportContext.getEntries', () => ({
+        connection.setSuccessHandler('CrashReportContext.getEntries', () => ({
             entries: [
                 { key: 'user_id', value: '12345', frameId: FRAME_ID },
             ],
@@ -56,7 +58,7 @@ describeWithMockConnection('CrashReportContextView', () => {
             isMainFrame: () => false,
             displayName: () => 'https://frame2.com',
         });
-        setMockConnectionResponseHandler('CrashReportContext.getEntries', () => ({
+        connection.setSuccessHandler('CrashReportContext.getEntries', () => ({
             entries: [
                 { key: 'k1', value: 'v1', frameId: 'frame-1' },
                 { key: 'k2', value: 'v2', frameId: 'frame-2' },
@@ -71,7 +73,7 @@ describeWithMockConnection('CrashReportContextView', () => {
     it('handles unknown frames by showing a fallback URL', async () => {
         // Explicitly return null for the frame lookup
         sinon.stub(SDK.FrameManager.FrameManager.instance(), 'getFrame').returns(null);
-        setMockConnectionResponseHandler('CrashReportContext.getEntries', () => ({
+        connection.setSuccessHandler('CrashReportContext.getEntries', () => ({
             entries: [
                 { key: 'k1', value: 'v1', frameId: 'unknown-frame' },
             ],
@@ -96,7 +98,7 @@ describeWithMockConnection('CrashReportContextView', () => {
             isMainFrame: () => false,
             displayName: () => SHARED_URL,
         });
-        setMockConnectionResponseHandler('CrashReportContext.getEntries', () => ({
+        connection.setSuccessHandler('CrashReportContext.getEntries', () => ({
             entries: [
                 { key: 'k1', value: 'v1', frameId: 'frame-main' },
                 { key: 'k2', value: 'v2', frameId: 'frame-sub' },
@@ -118,7 +120,7 @@ describeWithMockConnection('CrashReportContextView', () => {
             isMainFrame: () => true,
             displayName: () => TITLE,
         });
-        setMockConnectionResponseHandler('CrashReportContext.getEntries', () => ({
+        connection.setSuccessHandler('CrashReportContext.getEntries', () => ({
             entries: [
                 { key: 'user_id', value: '12345', frameId: 'frame-1' },
             ],
@@ -129,7 +131,7 @@ describeWithMockConnection('CrashReportContextView', () => {
         assert.strictEqual(input.frames[0].displayName, TITLE);
     });
     it('renders a placeholder when no context is available', async () => {
-        setMockConnectionResponseHandler('CrashReportContext.getEntries', () => ({
+        connection.setSuccessHandler('CrashReportContext.getEntries', () => ({
             entries: [],
         }));
         const { view } = await createComponent();
@@ -137,6 +139,7 @@ describeWithMockConnection('CrashReportContextView', () => {
         assert.lengthOf(input.frames, 0);
     });
     it('handles refresh and filter correctly', async () => {
+        connection.setSuccessHandler('CrashReportContext.getEntries', () => ({ entries: [] }));
         const { view, component } = await createComponent();
         const input = await view.nextInput;
         assert.exists(input.onRefresh);

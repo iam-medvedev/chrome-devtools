@@ -5,10 +5,11 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TestPlugin } from '../../testing/LanguagePluginHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { protocolCallFrame, stringifyFrame } from '../../testing/StackTraceHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as StackTrace from '../stack_trace/stack_trace.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -66,19 +67,11 @@ describe('DebuggerLanguagePluginManager', () => {
                 return Promise.resolve(['https://script-host/script.js']);
             }
         }
+        let universe;
         beforeEach(() => {
-            target = createTarget();
-            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-            const targetManager = target.targetManager();
-            const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-            debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-                forceNew: true,
-                resourceMapping,
-                targetManager,
-                ignoreListManager,
-                workspace,
-            });
+            universe = new TestUniverse();
+            target = universe.createTarget();
+            debuggerWorkspaceBinding = universe.debuggerWorkspaceBinding;
             pluginManager = debuggerWorkspaceBinding.pluginManager;
         });
         function createAndRegisterScript() {

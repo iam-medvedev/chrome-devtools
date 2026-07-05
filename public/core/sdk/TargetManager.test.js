@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as Common from '../common/common.js';
@@ -15,17 +16,17 @@ const { urlString } = Platform.DevToolsPath;
 describe('TargetManager', () => {
     let targetManager;
     let inspectedURLChangedHostApi;
+    setupLocaleHooks();
     setupRuntimeHooks();
     setupSettingsHooks();
     beforeEach(() => {
-        targetManager = SDK.TargetManager.TargetManager.instance({ forceNew: true });
+        const context = new Root.DevToolsContext.WritableDevToolsContext();
+        context.set(Common.Settings.Settings, Common.Settings.Settings.instance());
+        targetManager = new SDK.TargetManager.TargetManager(context);
         // TODO(crbug.com/451502260): Add Node.js specific host bindings. For now, we don't execute
         //                            the InspectorFrontendHostStub, it only updates the document.title anyway.
         inspectedURLChangedHostApi =
             sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'inspectedURLChanged');
-    });
-    afterEach(() => {
-        Root.DevToolsContext.setGlobalInstance(null);
     });
     function resourceTreeModel(target) {
         const model = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -34,37 +35,37 @@ describe('TargetManager', () => {
     }
     it('allows observing targets', () => {
         const observer = sinon.spy(new SDK.TargetManager.Observer());
-        const target1 = createTarget();
+        const target1 = createTarget({ targetManager });
         targetManager.observeTargets(observer);
         assert.isTrue(observer.targetAdded.calledOnceWith(target1));
-        const target2 = createTarget();
+        const target2 = createTarget({ targetManager });
         sinon.assert.calledTwice(observer.targetAdded);
         sinon.assert.calledWith(observer.targetAdded, target2);
         target2.dispose('YOLO!');
         assert.isTrue(observer.targetRemoved.calledOnceWith(target2));
         targetManager.unobserveTargets(observer);
-        createTarget();
+        createTarget({ targetManager });
         sinon.assert.calledTwice(observer.targetAdded);
     });
     it('allows observing models', () => {
         const observer = sinon.spy(new SDK.TargetManager.SDKModelObserver());
-        const target1 = createTarget();
+        const target1 = createTarget({ targetManager });
         targetManager.observeModels(SDK.ResourceTreeModel.ResourceTreeModel, observer);
         assert.isTrue(observer.modelAdded.calledOnceWith(resourceTreeModel(target1)));
-        const target2 = createTarget();
+        const target2 = createTarget({ targetManager });
         sinon.assert.calledTwice(observer.modelAdded);
         sinon.assert.calledWith(observer.modelAdded, resourceTreeModel(target2));
         target2.dispose('YOLO!');
         assert.isTrue(observer.modelRemoved.calledOnceWith(resourceTreeModel(target2)));
         targetManager.unobserveModels(SDK.ResourceTreeModel.ResourceTreeModel, observer);
-        createTarget();
+        createTarget({ targetManager });
         sinon.assert.calledTwice(observer.modelAdded);
     });
     it('allows overriding which models to autostart', () => {
         const context = new Root.DevToolsContext.WritableDevToolsContext();
         context.set(Common.Settings.Settings, Common.Settings.Settings.instance());
-        const targetManager = new SDK.TargetManager.TargetManager(context, new Set([SDK.DebuggerModel.DebuggerModel]));
-        const target = createTarget({ targetManager });
+        const customTargetManager = new SDK.TargetManager.TargetManager(context, new Set([SDK.DebuggerModel.DebuggerModel]));
+        const target = createTarget({ targetManager: customTargetManager });
         assert.isTrue(target.models().has(SDK.DebuggerModel.DebuggerModel));
         assert.isFalse(target.models().has(SDK.DOMModel.DOMModel));
     });
@@ -72,12 +73,12 @@ describe('TargetManager', () => {
         const WillReloadPage = SDK.ResourceTreeModel.Events.WillReloadPage;
         const thisObject = {};
         const listener = sinon.spy();
-        const target1 = createTarget();
+        const target1 = createTarget({ targetManager });
         targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, WillReloadPage, listener, thisObject);
         resourceTreeModel(target1).dispatchEventToListeners(WillReloadPage);
         sinon.assert.calledOnce(listener);
         sinon.assert.calledOn(listener, thisObject);
-        const target2 = createTarget();
+        const target2 = createTarget({ targetManager });
         resourceTreeModel(target2).dispatchEventToListeners(WillReloadPage);
         sinon.assert.calledTwice(listener);
         sinon.assert.calledOn(listener, thisObject);
@@ -86,34 +87,34 @@ describe('TargetManager', () => {
         sinon.assert.calledTwice(listener);
     });
     it('allows observing targets in scope', () => {
-        const target1 = createTarget();
-        const target2 = createTarget();
+        const target1 = createTarget({ targetManager });
+        const target2 = createTarget({ targetManager });
         targetManager.setScopeTarget(target1);
         const observer = sinon.spy(new SDK.TargetManager.Observer());
         targetManager.observeTargets(observer, { scoped: true });
         assert.isTrue(observer.targetAdded.calledOnceWith(target1));
-        createTarget({ parentTarget: target2 });
+        createTarget({ targetManager, parentTarget: target2 });
         assert.isTrue(observer.targetAdded.calledOnceWith(target1));
-        const subtarget1 = createTarget({ parentTarget: target1 });
+        const subtarget1 = createTarget({ targetManager, parentTarget: target1 });
         sinon.assert.calledTwice(observer.targetAdded);
         sinon.assert.calledWith(observer.targetAdded, subtarget1);
     });
     it('allows observing models in scope', () => {
-        const target1 = createTarget();
-        const target2 = createTarget();
+        const target1 = createTarget({ targetManager });
+        const target2 = createTarget({ targetManager });
         targetManager.setScopeTarget(target1);
         const observer = sinon.spy(new SDK.TargetManager.SDKModelObserver());
         targetManager.observeModels(SDK.ResourceTreeModel.ResourceTreeModel, observer, { scoped: true });
         assert.isTrue(observer.modelAdded.calledOnceWith(resourceTreeModel(target1)));
-        createTarget({ parentTarget: target2 });
+        createTarget({ targetManager, parentTarget: target2 });
         sinon.assert.calledOnce(observer.modelAdded);
-        const subtarget1 = createTarget({ parentTarget: target1 });
+        const subtarget1 = createTarget({ targetManager, parentTarget: target1 });
         sinon.assert.calledTwice(observer.modelAdded);
         sinon.assert.calledWith(observer.modelAdded, resourceTreeModel(subtarget1));
     });
     it('calls second observers even if the first is changing the scope', () => {
-        const target1 = createTarget();
-        const target2 = createTarget();
+        const target1 = createTarget({ targetManager });
+        const target2 = createTarget({ targetManager });
         targetManager.setScopeTarget(target1);
         const observer1 = sinon.stub(new SDK.TargetManager.SDKModelObserver());
         observer1.modelRemoved.callsFake(() => targetManager.setScopeTarget(target2));
@@ -127,17 +128,17 @@ describe('TargetManager', () => {
     it('allows listening to models in scope', () => {
         const WillReloadPage = SDK.ResourceTreeModel.Events.WillReloadPage;
         const listener = sinon.spy();
-        const target1 = createTarget();
+        const target1 = createTarget({ targetManager });
         targetManager.setScopeTarget(target1);
         const thisObject = {};
         targetManager.addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, WillReloadPage, listener, thisObject, { scoped: true });
         resourceTreeModel(target1).dispatchEventToListeners(WillReloadPage);
         sinon.assert.calledOnce(listener);
         sinon.assert.calledOn(listener, thisObject);
-        const target2 = createTarget();
+        const target2 = createTarget({ targetManager });
         resourceTreeModel(target2).dispatchEventToListeners(WillReloadPage);
         sinon.assert.calledOnce(listener);
-        const subtarget1 = createTarget({ parentTarget: target1 });
+        const subtarget1 = createTarget({ targetManager, parentTarget: target1 });
         resourceTreeModel(subtarget1).dispatchEventToListeners(WillReloadPage);
         sinon.assert.calledTwice(listener);
         targetManager.setScopeTarget(target2);
@@ -147,8 +148,8 @@ describe('TargetManager', () => {
         sinon.assert.calledThrice(listener);
     });
     it('can transition between scopes', () => {
-        const target1 = createTarget();
-        const target2 = createTarget();
+        const target1 = createTarget({ targetManager });
+        const target2 = createTarget({ targetManager });
         const targetObserver = sinon.spy(new SDK.TargetManager.Observer());
         const modelObserver = sinon.spy(new SDK.TargetManager.SDKModelObserver());
         const scopeChangeListener = sinon.spy();
@@ -186,7 +187,7 @@ describe('TargetManager', () => {
         modelObserver.modelAdded.resetHistory();
         modelObserver.modelRemoved.resetHistory();
         scopeChangeListener.resetHistory();
-        const target3 = createTarget();
+        const target3 = createTarget({ targetManager });
         sinon.assert.notCalled(targetObserver.targetAdded);
         sinon.assert.notCalled(modelObserver.modelAdded);
         sinon.assert.notCalled(scopeChangeListener);
@@ -196,7 +197,7 @@ describe('TargetManager', () => {
         sinon.assert.called(scopeChangeListener);
     });
     it('short-cicuits setting the same scope target', () => {
-        const target1 = createTarget();
+        const target1 = createTarget({ targetManager });
         targetManager.setScopeTarget(target1);
         const targetObserver = sinon.spy(new SDK.TargetManager.Observer());
         const modelObserver = sinon.spy(new SDK.TargetManager.SDKModelObserver());
@@ -211,7 +212,7 @@ describe('TargetManager', () => {
         sinon.assert.notCalled(modelObserver.modelRemoved);
     });
     it('notifies about inspected URL change', () => {
-        const targets = [createTarget(), createTarget()];
+        const targets = [createTarget({ targetManager }), createTarget({ targetManager })];
         const inspectedURLChangedEventListener = sinon.spy();
         targetManager.addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, inspectedURLChangedEventListener);
         targetManager.setScopeTarget(null);

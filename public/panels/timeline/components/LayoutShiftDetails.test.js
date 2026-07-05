@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TimelineComponents from './components.js';
-describeWithMockConnection('LayoutShiftDetails', () => {
+describeWithEnvironment('LayoutShiftDetails', () => {
     it('correctly renders main shift details', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const shiftEvent = parsedTrace.data.LayoutShifts.clusters[0].worstShiftEvent;

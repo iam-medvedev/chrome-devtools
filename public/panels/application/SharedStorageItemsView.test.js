@@ -4,8 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { getCleanTextContentFromElements, raf } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -86,7 +85,7 @@ class SharedStorageItemsListener {
         }
     }
 }
-describeWithMockConnection('SharedStorageItemsView', function () {
+describeWithEnvironment('SharedStorageItemsView', function () {
     let target;
     let sharedStorageModel;
     let sharedStorage;

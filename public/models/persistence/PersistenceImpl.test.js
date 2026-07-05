@@ -5,9 +5,8 @@ import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, } from '../../testing/MockConnection.js';
-import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { createFileSystemFileForPersistenceTests } from '../../testing/PersistenceHelpers.js';
 import { createContentProviderUISourceCode, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
 import * as Bindings from '../bindings/bindings.js';
@@ -15,7 +14,7 @@ import * as Breakpoints from '../breakpoints/breakpoints.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Workspace from '../workspace/workspace.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('PersistenceImpl', () => {
+describeWithEnvironment('PersistenceImpl', () => {
     const FILE_SYSTEM_BREAK_ID = 'BREAK_ID';
     const FILE_SYSTEM_SCRIPT_ID = 'FILE_SYSTEM_SCRIPT';
     const NETWORK_BREAKPOINT_ID = 'BREAKPOINT_ID';
@@ -36,8 +35,8 @@ describeWithMockConnection('PersistenceImpl', () => {
         hasSourceURL: false,
     };
     beforeEach(() => {
-        backend = new MockProtocolBackend();
-        target = createTarget();
+        backend = new MockDebuggerBackend();
+        target = createTarget({ connection: backend.cdpConnection });
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
@@ -60,14 +59,16 @@ describeWithMockConnection('PersistenceImpl', () => {
     });
     async function setBreakpointOnFileSystem(fileSystemUiSourceCode, breakpointLine) {
         const fileSystemBreakpointResponse = backend.responderToBreakpointByUrlRequest(fileSystemUiSourceCode.url(), breakpointLine)({
-            breakpointId: FILE_SYSTEM_BREAK_ID,
-            locations: [
-                {
-                    scriptId: FILE_SYSTEM_SCRIPT_ID,
-                    lineNumber: breakpointLine,
-                    columnNumber: 0,
-                },
-            ],
+            result: {
+                breakpointId: FILE_SYSTEM_BREAK_ID,
+                locations: [
+                    {
+                        scriptId: FILE_SYSTEM_SCRIPT_ID,
+                        lineNumber: breakpointLine,
+                        columnNumber: 0,
+                    },
+                ],
+            },
         });
         // Set the breakpoint on the file system uiSourceCode.
         await breakpointManager.setBreakpoint(fileSystemUiSourceCode, breakpointLine, 0, ...DEFAULT_BREAKPOINT);
@@ -79,14 +80,16 @@ describeWithMockConnection('PersistenceImpl', () => {
         assert.exists(uiSourceCode);
         // Set the breakpoint response for our upcoming request to set the breakpoint on the network file.
         await backend.responderToBreakpointByUrlRequest(script.sourceURL, breakpointLine)({
-            breakpointId: NETWORK_BREAKPOINT_ID,
-            locations: [
-                {
-                    scriptId: script.scriptId,
-                    lineNumber: breakpointLine,
-                    columnNumber: 0,
-                },
-            ],
+            result: {
+                breakpointId: NETWORK_BREAKPOINT_ID,
+                locations: [
+                    {
+                        scriptId: script.scriptId,
+                        lineNumber: breakpointLine,
+                        columnNumber: 0,
+                    },
+                ],
+            },
         });
         return uiSourceCode;
     }
@@ -138,14 +141,16 @@ describeWithMockConnection('PersistenceImpl', () => {
         assert.exists(binding);
         // Set the breakpoint response for our upcoming request on the file system.
         const moveResponse = backend.responderToBreakpointByUrlRequest(fileSystemUiSourceCode.url(), breakpointLine)({
-            breakpointId: FILE_SYSTEM_BREAK_ID,
-            locations: [
-                {
-                    scriptId: FILE_SYSTEM_SCRIPT_ID,
-                    lineNumber: breakpointLine,
-                    columnNumber: 0,
-                },
-            ],
+            result: {
+                breakpointId: FILE_SYSTEM_BREAK_ID,
+                locations: [
+                    {
+                        scriptId: FILE_SYSTEM_SCRIPT_ID,
+                        lineNumber: breakpointLine,
+                        columnNumber: 0,
+                    },
+                ],
+            },
         });
         await persistence.removeBinding(binding);
         await moveResponse;

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as SDK from './sdk.js';
 describe('RemoteObject', () => {
     describe('fromLocalObject', () => {
@@ -321,16 +321,17 @@ describe('RemoteObjectProperty', () => {
         });
     });
 });
-describeWithMockConnection('ScopeRemoteObject', () => {
+describeWithEnvironment('ScopeRemoteObject', () => {
     it('preserves writability of properties', async () => {
-        setMockConnectionResponseHandler('Runtime.getProperties', () => ({
+        const connection = new MockCDPConnection();
+        connection.setSuccessHandler('Runtime.getProperties', () => ({
             result: [
                 { name: 'a', configurable: true, enumerable: true, writable: true },
                 { name: 'b', configurable: true, enumerable: true, writable: true },
                 { name: 'c', configurable: true, enumerable: true, writable: true }
             ]
         }));
-        const target = createTarget();
+        const target = createTarget({ connection });
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
         const scopeRef = new SDK.RemoteObject.ScopeRef(0, '0');
         const remoteObject = new SDK.RemoteObject.ScopeRemoteObject(runtimeModel, '0', scopeRef, "string" /* Protocol.Runtime.RemoteObjectType.String */, undefined, 'value');
@@ -338,7 +339,7 @@ describeWithMockConnection('ScopeRemoteObject', () => {
         assert.deepEqual(properties.properties?.map(p => p.writable), [true, true, true]);
     });
 });
-describeWithMockConnection('RemoteError', () => {
+describeWithEnvironment('RemoteError', () => {
     let target;
     let runtimeModel;
     beforeEach(() => {

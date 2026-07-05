@@ -510,6 +510,7 @@ describeWithEnvironment('Widget', () => {
             checkFocus(input3.id);
             mainWidget.focus();
             checkFocus(input3.id);
+            container.remove();
         });
         it('gives focus an autofocus element of a child widget', () => {
             const parent = new Widget();

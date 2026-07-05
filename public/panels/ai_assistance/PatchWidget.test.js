@@ -11,11 +11,10 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as PanelCommon from '../../panels/common/common.js';
 import { cleanup, createPatchWidget, createPatchWidgetWithDiffView, createTestFilesystem, initializePersistenceImplForTests, MockAidaAbortError, mockAidaClient, MockAidaFetchError, setupAutomaticFileSystem, } from '../../testing/AiAssistanceHelpers.js';
-import { updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as AiAssistance from './ai_assistance.js';
-describeWithMockConnection('PatchWidget', () => {
+describeWithEnvironment('PatchWidget', () => {
     let showFreDialogStub;
     beforeEach(() => {
         Common.Settings.moduleSetting('ai-assistance-patching-fre-completed').set(true);

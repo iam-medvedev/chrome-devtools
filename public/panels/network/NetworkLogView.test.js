@@ -15,21 +15,26 @@ import { assertScreenshot, dispatchClickEvent, raf, renderElementIntoDOM } from 
 import { createTarget, describeWithEnvironment, registerActions, registerNoopActions, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
-import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { dispatchEvent } from '../../testing/MockConnection.js';
 import { activate } from '../../testing/ResourceTreeHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('NetworkLogView', () => {
+describeWithEnvironment('NetworkLogView', () => {
     let target;
+    let tabTarget;
+    let connection;
     let networkLogView;
     let networkLog;
     beforeEach(() => {
-        setMockConnectionResponseHandler('Debugger.enable', () => ({}));
-        setMockConnectionResponseHandler('Storage.getStorageKey', () => ({}));
+        connection = new MockCDPConnection();
+        connection.setSuccessHandler('Debugger.enable', () => ({}));
+        connection.setSuccessHandler('Storage.getStorageKey', () => ({}));
         const dummyStorage = new Common.Settings.SettingsStorage({});
         for (const settingName of ['network-color-code-resource-types', 'network.group-by-frame']) {
+            Common.Settings.maybeRemoveSettingExtension(settingName);
             Common.Settings.registerSettingExtension({
                 settingName,
                 settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -42,6 +47,7 @@ describeWithMockConnection('NetworkLogView', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
             settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: Common.Console.Console.instance(),
         });
         registerNoopActions(['network.toggle-recording', 'inspector-main.reload']);
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
@@ -49,14 +55,16 @@ describeWithMockConnection('NetworkLogView', () => {
             shortcutsForAction: () => [],
         });
         networkLog = Logs.NetworkLog.NetworkLog.instance();
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+        tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
     });
     afterEach(() => {
         if (networkLogView) {
             networkLogView.detach();
         }
+        Logs.NetworkLog.NetworkLog.removeInstance();
     });
     let nextId = 0;
     function createNetworkRequest(url, options) {
@@ -841,6 +849,7 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
     });
     describe('Request blocking and throttling', () => {
         beforeEach(() => {
+            Common.Settings.Settings.instance().createSetting('network-blocked-urls', []).set([]);
             SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
         });
         async function invokeMenuItem(menu, action) {
@@ -933,9 +942,9 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
         });
     });
     it('displays throttled requests correctly', async () => {
-        setMockConnectionResponseHandler('Network.setBlockedURLs', () => ({}));
-        setMockConnectionResponseHandler('Network.overrideNetworkState', () => ({}));
-        setMockConnectionResponseHandler('Network.emulateNetworkConditionsByRule', params => params.matchedNetworkConditions.length > 0 ? { ruleIds: [ruleId] } : { ruleIds: [] });
+        connection.setSuccessHandler('Network.setBlockedURLs', () => ({}));
+        connection.setSuccessHandler('Network.overrideNetworkState', () => ({}));
+        connection.setSuccessHandler('Network.emulateNetworkConditionsByRule', params => params.matchedNetworkConditions.length > 0 ? { ruleIds: [ruleId] } : { ruleIds: [] });
         SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
         networkLogView = createNetworkLogView();
         const container = renderElementIntoDOM(document.createElement('div'), { includeCommonStyles: true });
@@ -995,7 +1004,7 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
         sinon.assert.calledOnceWithExactly(revealStub, appliedConditions, false);
     });
 });
-describeWithMockConnection('NetworkLogView placeholder', () => {
+describeWithEnvironment('NetworkLogView placeholder', () => {
     const START_RECORDING_ID = 'network.toggle-recording';
     const RELOAD_ID = 'inspector-main.reload';
     beforeEach(() => {

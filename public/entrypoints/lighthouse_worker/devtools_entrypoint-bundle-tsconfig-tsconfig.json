@@ -44,6 +44,9 @@
   "references": [
     {
       "path": "./lighthouse_worker-tsconfig.json"
+    },
+    {
+      "path": "../../third_party/lighthouse/lighthouse-tsconfig.json"
     }
   ]
 }

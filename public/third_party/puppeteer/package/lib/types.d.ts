@@ -559,7 +559,10 @@ export declare abstract class Browser extends EventEmitter<BrowserEvents> {
   /**
    * Installs an extension and returns the ID.
    */
-  abstract installExtension(path: string): Promise<string>;
+  abstract installExtension(
+    path: string,
+    options?: ExtensionInstallOptions,
+  ): Promise<string>;
   /**
    * Uninstalls an extension.
    */
@@ -919,7 +922,9 @@ export declare abstract class BrowserLauncher {
  * @public
  */
 export declare type CDPEvents = {
-  [Property in keyof ProtocolMapping.Events]: ProtocolMapping.Events[Property][0];
+  [
+    Property in keyof ProtocolMapping.Events
+  ]: ProtocolMapping.Events[Property][0];
 };
 
 /**
@@ -1042,10 +1047,7 @@ export declare interface ChromeHeadlessShellSettings {
  * @public
  */
 export declare type ChromeReleaseChannel =
-  | 'chrome'
-  | 'chrome-beta'
-  | 'chrome-canary'
-  | 'chrome-dev';
+  'chrome' | 'chrome-beta' | 'chrome-canary' | 'chrome-dev';
 
 /**
  * @public
@@ -2122,10 +2124,7 @@ export declare interface DownloadBehavior {
  * @public
  */
 export declare type DownloadPolicy =
-  | 'deny'
-  | 'allow'
-  | 'allowAndName'
-  | 'default';
+  'deny' | 'allow' | 'allowAndName' | 'default';
 
 /**
  * @public
@@ -2908,6 +2907,16 @@ export declare abstract class Extension {
    * @public
    */
   abstract triggerAction(page: Page): Promise<void>;
+}
+
+/**
+ * @public
+ */
+export declare interface ExtensionInstallOptions {
+  /**
+   * Whether to enable the extension in Incognito or OTR profiles in Chrome.
+   */
+  enabledInIncognito: boolean;
 }
 
 /**
@@ -4069,8 +4078,9 @@ export declare abstract class HTTPResponse {
    */
   abstract statusText(): string;
   /**
-   * An object with HTTP headers associated with the response. All
-   * header names are lower-case.
+   * An object with HTTP headers associated with the response. All header names
+   * are lower-case. Duplicate header values are combined into a single
+   * comma-separated list except for `Set-Cookie` that is separated by `\n`.
    */
   abstract headers(): Record<string, string>;
   /**
@@ -4989,6 +4999,11 @@ export declare interface LaunchOptions extends ConnectOptions {
    * load the provided paths as unpacked extensions.
    */
   enableExtensions?: boolean | string[];
+  /**
+   * List of extensions that will be enable in Incognito and off-the-record
+   * profiles.
+   */
+  extensionsEnabledInIncognito?: string[];
   /**
    * Close the browser process on `Ctrl+C`.
    * @defaultValue `true`
@@ -8046,8 +8061,7 @@ export declare const PredefinedNetworkConditions: Readonly<{
  * @public
  */
 export declare type Predicate<From, To extends From = From> =
-  | ((value: From) => value is To)
-  | ((value: From) => Awaitable<boolean>);
+  ((value: From) => value is To) | ((value: From) => Awaitable<boolean>);
 
 export {Protocol};
 
@@ -8076,10 +8090,7 @@ export declare class ProtocolError extends PuppeteerError {
  * @public
  */
 export declare type ProtocolLifeCycleEvent =
-  | 'load'
-  | 'DOMContentLoaded'
-  | 'networkIdle'
-  | 'networkAlmostIdle';
+  'load' | 'DOMContentLoaded' | 'networkIdle' | 'networkAlmostIdle';
 
 /**
  * @public
@@ -8176,6 +8187,7 @@ declare namespace Puppeteer_2 {
     ScreenInfo,
     WorkAreaInsets,
     AddScreenParams,
+    ExtensionInstallOptions,
     BrowserContextEvents,
     CDPEvents,
     CDPSessionEvents,
@@ -8250,8 +8262,6 @@ declare namespace Puppeteer_2 {
     NetworkConditions,
     InternalNetworkConditions,
     TracingOptions,
-    WebMCPAnnotation,
-    WebMCPInvocationStatus,
     WebMCPToolsAddedEvent,
     WebMCPToolsRemovedEvent,
     WebMCPToolCallResult,
@@ -9148,7 +9158,7 @@ export declare type SupportedWebDriverCapability = Exclude<
 /**
  * Target represents a
  * {@link https://chromedevtools.github.io/devtools-protocol/tot/Target/ | CDP target}.
- * In CDP a target is something that can be debugged such a frame, a page or a
+ * In CDP a target is something that can be debugged, such as a frame, a page or a
  * worker.
  * @public
  */
@@ -9552,34 +9562,6 @@ export declare class WebMCP extends EventEmitter<{
 }
 
 /**
- * Tool annotations
- *
- * @public
- */
-export declare interface WebMCPAnnotation {
-  /**
-   * A hint indicating that the tool does not modify any state.
-   */
-  readOnly?: boolean;
-  /**
-   * A hint indicating that the tool output may contain untrusted content, ex: UGC, 3rd
-   * party data.
-   */
-  untrustedContent?: boolean;
-  /**
-   * If the declarative tool was declared with the autosubmit attribute.
-   */
-  autosubmit?: boolean;
-}
-
-/**
- * Represents the status of a tool invocation.
- *
- * @public
- */
-export declare type WebMCPInvocationStatus = 'Completed' | 'Canceled' | 'Error';
-
-/**
  * Represents a registered WebMCP tool available on the page.
  *
  * @public
@@ -9604,7 +9586,7 @@ export declare class WebMCPTool extends EventEmitter<{
   /**
    * Optional annotations for the tool.
    */
-  annotations?: WebMCPAnnotation;
+  annotations?: Protocol.WebMCP.Annotation;
   /**
    * Frame the tool was defined for.
    */
@@ -9656,7 +9638,7 @@ export declare interface WebMCPToolCallResult {
   /**
    * Status of the invocation.
    */
-  status: WebMCPInvocationStatus;
+  status: Protocol.WebMCP.InvocationStatus;
   /**
    * Output or error delivered as delivered to the agent. Missing if `status` is anything
    * other than Completed.
@@ -9843,10 +9825,7 @@ export declare type WindowId = string;
  * @public
  */
 export declare type WindowState =
-  | 'normal'
-  | 'minimized'
-  | 'maximized'
-  | 'fullscreen';
+  'normal' | 'minimized' | 'maximized' | 'fullscreen';
 
 /**
  * @public

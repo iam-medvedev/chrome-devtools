@@ -958,6 +958,7 @@
         ...Main.Main.instanceForTest.createSettingsStorage(prefs),
         settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
         runSettingsMigration: false,
+        console: Common.Console.Console.instance(),
       });
 
       const localSetting = Common.Settings.Settings.instance().createLocalSetting('local', undefined);

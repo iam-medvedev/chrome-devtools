@@ -34,7 +34,6 @@ import * as i18n34 from "./../../core/i18n/i18n.js";
 import * as Platform10 from "./../../core/platform/platform.js";
 import * as Root5 from "./../../core/root/root.js";
 import * as SDK18 from "./../../core/sdk/sdk.js";
-import * as Annotations from "./../../models/annotations/annotations.js";
 import * as ComputedStyle3 from "./../../models/computed_style/computed_style.js";
 import * as PanelCommon from "./../common/common.js";
 import * as TreeOutline13 from "./../../ui/components/tree_outline/tree_outline.js";
@@ -67,16 +66,16 @@ var { html } = Lit;
 function isLeafNode(node) {
   return node.numChildren() === 0 && node.role()?.value !== "Iframe";
 }
-function getModel(frameId) {
-  const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
+function getModel(frameId, frameManager = SDK.FrameManager.FrameManager.instance()) {
+  const frame = frameManager.getFrame(frameId);
   const model = frame?.resourceTreeModel().target().model(SDK.AccessibilityModel.AccessibilityModel);
   if (!model) {
     throw new Error("Could not instantiate model for frameId");
   }
   return model;
 }
-async function getRootNode(frameId) {
-  const model = getModel(frameId);
+async function getRootNode(frameId, frameManager = SDK.FrameManager.FrameManager.instance()) {
+  const model = getModel(frameId, frameManager);
   const root = await model.requestRootNode(frameId);
   if (!root) {
     throw new Error("No accessibility root for frame");
@@ -95,30 +94,30 @@ function getFrameIdForNodeOrDocument(node) {
   }
   return frameId;
 }
-async function getNodeAndAncestorsFromDOMNode(domNode) {
+async function getNodeAndAncestorsFromDOMNode(domNode, frameManager = SDK.FrameManager.FrameManager.instance()) {
   let frameId = getFrameIdForNodeOrDocument(domNode);
-  const model = getModel(frameId);
+  const model = getModel(frameId, frameManager);
   const result = await model.requestAndLoadSubTreeToNode(domNode);
   if (!result) {
     throw new Error("Could not retrieve accessibility node for inspected DOM node");
   }
-  const outermostFrameId = SDK.FrameManager.FrameManager.instance().getOutermostFrame()?.id;
+  const outermostFrameId = frameManager.getOutermostFrame()?.id;
   if (!outermostFrameId) {
     return result;
   }
   while (frameId !== outermostFrameId) {
-    const node = await SDK.FrameManager.FrameManager.instance().getFrame(frameId)?.getOwnerDOMNodeOrDocument();
+    const node = await frameManager.getFrame(frameId)?.getOwnerDOMNodeOrDocument();
     if (!node) {
       break;
     }
     frameId = getFrameIdForNodeOrDocument(node);
-    const model2 = getModel(frameId);
+    const model2 = getModel(frameId, frameManager);
     const ancestors = await model2.requestAndLoadSubTreeToNode(node);
     result.push(...ancestors || []);
   }
   return result;
 }
-async function getChildren(node) {
+async function getChildren(node, frameManager = SDK.FrameManager.FrameManager.instance()) {
   if (node.role()?.value === "Iframe") {
     const domNode = await node.deferredDOMNode()?.resolvePromise();
     if (!domNode) {
@@ -128,12 +127,12 @@ async function getChildren(node) {
     if (!frameId) {
       throw new Error("No owner frameId on iframe node");
     }
-    const localRoot = await getRootNode(frameId);
+    const localRoot = await getRootNode(frameId, frameManager);
     return [localRoot];
   }
   return await node.accessibilityModel().requestAXChildren(node.id(), node.getFrameId() || void 0);
 }
-async function sdkNodeToAXTreeNodes(sdkNode) {
+async function sdkNodeToAXTreeNodes(sdkNode, frameManager = SDK.FrameManager.FrameManager.instance()) {
   const treeNodeData = sdkNode;
   if (isLeafNode(sdkNode)) {
     return [{
@@ -144,8 +143,8 @@ async function sdkNodeToAXTreeNodes(sdkNode) {
   return [{
     treeNodeData,
     children: async () => {
-      const childNodes = await getChildren(sdkNode);
-      const childTreeNodes = await Promise.all(childNodes.map((childNode) => sdkNodeToAXTreeNodes(childNode)));
+      const childNodes = await getChildren(sdkNode, frameManager);
+      const childTreeNodes = await Promise.all(childNodes.map((childNode) => sdkNodeToAXTreeNodes(childNode, frameManager)));
       return childTreeNodes.flat(1);
     },
     id: getNodeId(sdkNode)
@@ -189,10 +188,12 @@ var AccessibilityTreeView = class extends UI.Widget.VBox {
   accessibilityTreeComponent;
   inspectedDOMNode = null;
   root = null;
-  constructor(accessibilityTreeComponent) {
+  #frameManager;
+  constructor(accessibilityTreeComponent, frameManager = SDK2.FrameManager.FrameManager.instance()) {
     super();
     this.registerRequiredCSS(accessibilityTreeView_css_default);
     this.accessibilityTreeComponent = accessibilityTreeComponent;
+    this.#frameManager = frameManager;
     const container = this.contentElement.createChild("div");
     container.classList.add("accessibility-tree-view-container");
     container.setAttribute("jslog", `${VisualLogging.tree("full-accessibility")}`);
@@ -231,11 +232,11 @@ var AccessibilityTreeView = class extends UI.Widget.VBox {
   }
   async refreshAccessibilityTree() {
     if (!this.root) {
-      const frameId = SDK2.FrameManager.FrameManager.instance().getOutermostFrame()?.id;
+      const frameId = this.#frameManager.getOutermostFrame()?.id;
       if (!frameId) {
         throw new Error("No top frame");
       }
-      this.root = await getRootNode(frameId);
+      this.root = await getRootNode(frameId, this.#frameManager);
       if (!this.root) {
         throw new Error("No root");
       }
@@ -245,15 +246,15 @@ var AccessibilityTreeView = class extends UI.Widget.VBox {
   }
   async renderTree() {
     if (!this.root) {
-      const frameId = SDK2.FrameManager.FrameManager.instance().getOutermostFrame()?.id;
+      const frameId = this.#frameManager.getOutermostFrame()?.id;
       if (frameId) {
-        this.root = await getRootNode(frameId);
+        this.root = await getRootNode(frameId, this.#frameManager);
       }
     }
     if (!this.root) {
       return;
     }
-    const treeData = await sdkNodeToAXTreeNodes(this.root);
+    const treeData = await sdkNodeToAXTreeNodes(this.root, this.#frameManager);
     this.accessibilityTreeComponent.data = {
       defaultRenderer: accessibilityNodeRenderer,
       tree: treeData,
@@ -265,7 +266,7 @@ var AccessibilityTreeView = class extends UI.Widget.VBox {
   // Given a selected DOM node, asks the model to load the missing subtree from the root to the
   // selected node and then re-renders the tree.
   async loadSubTreeIntoAccessibilityModel(selectedNode) {
-    const ancestors = await getNodeAndAncestorsFromDOMNode(selectedNode);
+    const ancestors = await getNodeAndAncestorsFromDOMNode(selectedNode, this.#frameManager);
     const inspectedAXNode = ancestors.find((node) => node.backendDOMNodeId() === selectedNode.backendNodeId());
     if (!inspectedAXNode) {
       return;
@@ -306,7 +307,7 @@ var AccessibilityTreeView = class extends UI.Widget.VBox {
       void this.renderTree();
       return;
     }
-    const outermostFrameId = SDK2.FrameManager.FrameManager.instance().getOutermostFrame()?.id;
+    const outermostFrameId = this.#frameManager.getOutermostFrame()?.id;
     if (data.root?.getFrameId() !== outermostFrameId) {
       void this.renderTree();
       return;
@@ -15515,10 +15516,6 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
   };
   onDocumentUpdated = () => {
   };
-  onElementExpanded = () => {
-  };
-  onElementCollapsed = () => {
-  };
   #maxTreeDepth;
   #enableContextMenu = true;
   #showComments = true;
@@ -15696,11 +15693,9 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
       },
       onElementCollapsed: () => {
         this.#clearHighlightedNode();
-        this.onElementCollapsed();
       },
       onElementExpanded: () => {
         this.#clearHighlightedNode();
-        this.onElementExpanded();
       }
     }, this.#viewOutput, this.contentElement);
     if (firstRender && this.#viewOutput.elementsTreeOutline) {
@@ -17069,6 +17064,10 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common10.ObjectWrap
     const pickerIconPseudoElement = node.pickerIconPseudoElement();
     if (pickerIconPseudoElement) {
       visibleChildren.push(pickerIconPseudoElement);
+    }
+    const interestButtonPseudoElement = node.interestButtonPseudoElement();
+    if (interestButtonPseudoElement) {
+      visibleChildren.push(interestButtonPseudoElement);
     }
     const backdropPseudoElement = node.backdropPseudoElement();
     if (backdropPseudoElement) {
@@ -18754,16 +18753,11 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
     this.#domTreeWidget.onSelectedNodeChanged = this.selectedNodeChanged.bind(this);
     this.#domTreeWidget.onElementsTreeUpdated = this.updateBreadcrumbIfNeeded.bind(this);
     this.#domTreeWidget.onDocumentUpdated = this.documentUpdated.bind(this);
-    this.#domTreeWidget.onElementExpanded = this.handleElementExpanded.bind(this);
-    this.#domTreeWidget.onElementCollapsed = this.handleElementCollapsed.bind(this);
     this.#domTreeWidget.setWordWrap(Common13.Settings.Settings.instance().moduleSetting("dom-word-wrap").get());
     SDK18.TargetManager.TargetManager.instance().observeModels(SDK18.DOMModel.DOMModel, this, { scoped: true });
     SDK18.TargetManager.TargetManager.instance().addEventListener("NameChanged", (event) => this.targetNameChanged(event.data));
     Common13.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").addChangeListener(this.showUAShadowDOMChanged.bind(this));
     PanelCommon.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded", this.extensionSidebarPaneAdded, this);
-    if (Annotations.AnnotationRepository.annotationsEnabled()) {
-      PanelCommon.AnnotationManager.instance().initializePlacementForAnnotationType(Annotations.AnnotationType.ELEMENT_NODE, this.resolveInitialState.bind(this), this.#domTreeWidget.element);
-    }
   }
   // This is a debounced method because the user might be navigated from Styles tab to Computed Style tab and vice versa.
   // For that case, we want to only run this function once.
@@ -18784,16 +18778,6 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
     this.#computedStyleWidget.matchedStyles = matchedCascade;
     if (matchedCascade) {
       this.#computedStyleWidget.propertyTraces = this.#computedStyleModel.computePropertyTraces(matchedCascade);
-    }
-  }
-  handleElementExpanded() {
-    if (Annotations.AnnotationRepository.annotationsEnabled()) {
-      void PanelCommon.AnnotationManager.instance().resolveAnnotationsOfType(Annotations.AnnotationType.ELEMENT_NODE);
-    }
-  }
-  handleElementCollapsed() {
-    if (Annotations.AnnotationRepository.annotationsEnabled()) {
-      void PanelCommon.AnnotationManager.instance().resolveAnnotationsOfType(Annotations.AnnotationType.ELEMENT_NODE);
     }
   }
   showAccessibilityTree() {
@@ -18913,9 +18897,6 @@ ${node.simpleSelector()} {}`, false);
     UI21.Context.Context.instance().setFlavor(_ElementsPanel, this);
     this.#domTreeWidget.show(this.domTreeContainer);
     this.evaluateTrackingComputedStyleUpdatesForNode();
-    if (Annotations.AnnotationRepository.annotationsEnabled()) {
-      void PanelCommon.AnnotationManager.instance().resolveAnnotationsOfType(Annotations.AnnotationType.ELEMENT_NODE);
-    }
   }
   willHide() {
     SDK18.OverlayModel.OverlayModel.hideDOMNodeHighlight();
@@ -19556,45 +19537,6 @@ ${node.simpleSelector()} {}`, false);
   }
   copyStyles(node) {
     this.#domTreeWidget.copyStyles(node);
-  }
-  async resolveInitialState(parentElement, reveal, lookupId, anchor) {
-    if (!this.isShowing()) {
-      return null;
-    }
-    if (!anchor) {
-      const backendNodeId = Number(lookupId);
-      if (isNaN(backendNodeId)) {
-        return null;
-      }
-      const rootDOMNode = this.#domTreeWidget.rootDOMNode;
-      if (!rootDOMNode) {
-        return null;
-      }
-      const domModel = rootDOMNode.domModel();
-      const nodes = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([backendNodeId]));
-      if (!nodes) {
-        return null;
-      }
-      const foundNode = nodes.get(backendNodeId);
-      if (!foundNode) {
-        return null;
-      }
-      anchor = foundNode;
-    }
-    const element = this.#domTreeWidget.treeElementForNode(anchor);
-    if (!element) {
-      return null;
-    }
-    if (reveal) {
-      await Common13.Revealer.reveal(anchor);
-    }
-    const offsetToTagName = 22;
-    const yPadding = 5;
-    const targetRect = element.listItemElement.getBoundingClientRect();
-    const parentRect = parentElement.getBoundingClientRect();
-    const relativeX = targetRect.x - parentRect.x + offsetToTagName;
-    const relativeY = targetRect.y - parentRect.y + yPadding;
-    return { x: relativeX, y: relativeY };
   }
   static firstInspectElementCompletedForTest = function() {
   };

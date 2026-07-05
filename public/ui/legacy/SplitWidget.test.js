@@ -44,6 +44,7 @@ describeWithEnvironment('SplitWidget', () => {
         assert.exists(widget.mainWidget());
         assert.strictEqual(widget.mainWidget().contentElement.textContent.trim(), 'Main content');
         assert.strictEqual(widget.sidebarWidget().contentElement.textContent.trim(), 'Sidebar content');
+        widget.detach();
     });
 });
 //# sourceMappingURL=SplitWidget.test.js.map

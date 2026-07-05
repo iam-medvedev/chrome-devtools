@@ -953,53 +953,14 @@ UI3.Context.registerListener({
   }
 });
 
-// gen/front_end/panels/greendev/greendev-meta.js
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-var loadedGreenDevModule;
-async function loadGreenDevModule() {
-  if (!loadedGreenDevModule) {
-    loadedGreenDevModule = await import("./../../panels/greendev/greendev.js");
-  }
-  return loadedGreenDevModule;
-}
-UI4.ViewManager.registerViewExtension({
-  location: "panel",
-  id: "greendev",
-  title: i18n7.i18n.lockedLazyString("GreenDev"),
-  commandPrompt: i18n7.i18n.lockedLazyString("Show GreenDev"),
-  persistence: "closeable",
-  order: 100,
-  async loadView() {
-    const GreenDev = await loadGreenDevModule();
-    return GreenDev.GreenDevPanel.GreenDevPanel.instance();
-  },
-  condition: (config) => {
-    return Boolean(config?.devToolsGreenDevUi?.enabled);
-  }
-});
-var syncChannel = new BroadcastChannel("green-dev-sync");
-syncChannel.postMessage({ type: "main-window-alive" });
-syncChannel.onmessage = (event) => {
-  if (event.data.type === "activate-panel") {
-    console.error("[GreenDev] Meta: Received activate-panel broadcast");
-    void UI4.ViewManager.ViewManager.instance().showView("greendev").then(() => {
-      console.error("[GreenDev] Meta: View shown, broadcasting select-tab");
-      const replyChannel = new BroadcastChannel("green-dev-sync");
-      replyChannel.postMessage({ type: "select-tab", sessionId: event.data.sessionId });
-      replyChannel.close();
-    });
-  }
-};
-
 // gen/front_end/panels/network/network-meta.js
 import * as Common2 from "./../../core/common/common.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as PanelCommon from "./../../panels/common/common.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
+import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as NetworkForward from "./../../panels/network/forward/forward.js";
 var UIStrings4 = {
   /**
@@ -1126,9 +1087,9 @@ var UIStrings4 = {
    */
   allowToGenerateHarWithSensitiveDataDocumentation: "By default generated HAR logs are sanitized and don't include `Cookie`, `Set-Cookie`, or `Authorization` HTTP headers. When this setting is enabled, options to export/copy HAR with sensitive data are provided."
 };
-var str_4 = i18n9.i18n.registerUIStrings("panels/network/network-meta.ts", UIStrings4);
-var i18nLazyString4 = i18n9.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
-var i18nString = i18n9.i18n.getLocalizedString.bind(void 0, str_4);
+var str_4 = i18n7.i18n.registerUIStrings("panels/network/network-meta.ts", UIStrings4);
+var i18nLazyString4 = i18n7.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
+var i18nString = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var loadedNetworkModule;
 var isNode = Root3.Runtime.Runtime.isNode();
 async function loadNetworkModule() {
@@ -1143,7 +1104,7 @@ function maybeRetrieveContextTypes3(getClassCallBack) {
   }
   return getClassCallBack(loadedNetworkModule);
 }
-UI5.ViewManager.registerViewExtension({
+UI4.ViewManager.registerViewExtension({
   location: "panel",
   id: "network",
   commandPrompt: i18nLazyString4(UIStrings4.showNetwork),
@@ -1155,7 +1116,7 @@ UI5.ViewManager.registerViewExtension({
     return Network.NetworkPanel.NetworkPanel.instance();
   }
 });
-UI5.ViewManager.registerViewExtension({
+UI4.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "network.blocked-urls",
   commandPrompt: () => i18nString(UIStrings4.showRequestConditions),
@@ -1167,7 +1128,7 @@ UI5.ViewManager.registerViewExtension({
     return new Network.RequestConditionsDrawer.RequestConditionsDrawer();
   }
 });
-UI5.ViewManager.registerViewExtension({
+UI4.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "network.config",
   commandPrompt: i18nLazyString4(UIStrings4.showNetworkConditions),
@@ -1177,16 +1138,16 @@ UI5.ViewManager.registerViewExtension({
   tags: [
     i18nLazyString4(UIStrings4.diskCache),
     i18nLazyString4(UIStrings4.networkThrottling),
-    i18n9.i18n.lockedLazyString("useragent"),
-    i18n9.i18n.lockedLazyString("user agent"),
-    i18n9.i18n.lockedLazyString("user-agent")
+    i18n7.i18n.lockedLazyString("useragent"),
+    i18n7.i18n.lockedLazyString("user agent"),
+    i18n7.i18n.lockedLazyString("user-agent")
   ],
   async loadView() {
     const Network = await loadNetworkModule();
     return Network.NetworkConfigView.NetworkConfigView.instance();
   }
 });
-UI5.ViewManager.registerViewExtension({
+UI4.ViewManager.registerViewExtension({
   location: "network-sidebar",
   id: "network.search-network-tab",
   commandPrompt: i18nLazyString4(UIStrings4.showSearch),
@@ -1197,7 +1158,7 @@ UI5.ViewManager.registerViewExtension({
     return Network.NetworkPanel.SearchNetworkView.instance();
   }
 });
-UI5.ActionRegistration.registerActionExtension({
+UI4.ActionRegistration.registerActionExtension({
   actionId: "network.toggle-recording",
   category: "NETWORK",
   iconClass: "record-start",
@@ -1232,7 +1193,7 @@ UI5.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI5.ActionRegistration.registerActionExtension({
+UI4.ActionRegistration.registerActionExtension({
   actionId: "network.clear",
   category: "NETWORK",
   title: i18nLazyString4(UIStrings4.clear),
@@ -1254,7 +1215,7 @@ UI5.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI5.ActionRegistration.registerActionExtension({
+UI4.ActionRegistration.registerActionExtension({
   actionId: "network.hide-request-details",
   category: "NETWORK",
   title: i18nLazyString4(UIStrings4.hideRequestDetails),
@@ -1271,7 +1232,7 @@ UI5.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI5.ActionRegistration.registerActionExtension({
+UI4.ActionRegistration.registerActionExtension({
   actionId: "network.search",
   category: "NETWORK",
   title: i18nLazyString4(UIStrings4.search),
@@ -1301,7 +1262,7 @@ UI5.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI5.ActionRegistration.registerActionExtension({
+UI4.ActionRegistration.registerActionExtension({
   actionId: "network.add-network-request-blocking-pattern",
   category: "NETWORK",
   title: () => i18nString(UIStrings4.addNetworkRequestBlockingOrThrottlingPattern),
@@ -1314,7 +1275,7 @@ UI5.ActionRegistration.registerActionExtension({
     return new Network.RequestConditionsDrawer.ActionDelegate();
   }
 });
-UI5.ActionRegistration.registerActionExtension({
+UI4.ActionRegistration.registerActionExtension({
   actionId: "network.remove-all-network-request-blocking-patterns",
   category: "NETWORK",
   title: () => i18nString(UIStrings4.removeAllNetworkRequestBlockingOrThrottlingPatterns),
@@ -1335,7 +1296,7 @@ Common2.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false,
   tags: [
-    i18n9.i18n.lockedLazyString("HAR")
+    i18n7.i18n.lockedLazyString("HAR")
   ],
   options: [
     {
@@ -1397,7 +1358,7 @@ Common2.Settings.registerSettingExtension({
     }
   ]
 });
-UI5.ViewManager.registerLocationResolver({
+UI4.ViewManager.registerLocationResolver({
   name: "network-sidebar",
   category: "NETWORK",
   async loadResolver() {
@@ -1405,7 +1366,7 @@ UI5.ViewManager.registerLocationResolver({
     return Network.NetworkPanel.NetworkPanel.instance();
   }
 });
-UI5.ContextMenu.registerProvider({
+UI4.ContextMenu.registerProvider({
   contextTypes() {
     return [
       SDK3.NetworkRequest.NetworkRequest,
@@ -1472,8 +1433,8 @@ Common2.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/security/security-meta.js
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
 var UIStrings5 = {
   /**
    * @description Default Title of the security panel
@@ -1484,8 +1445,8 @@ var UIStrings5 = {
    */
   showSecurity: "Show Security"
 };
-var str_5 = i18n11.i18n.registerUIStrings("panels/security/security-meta.ts", UIStrings5);
-var i18nLazyString5 = i18n11.i18n.getLazilyComputedLocalizedString.bind(void 0, str_5);
+var str_5 = i18n9.i18n.registerUIStrings("panels/security/security-meta.ts", UIStrings5);
+var i18nLazyString5 = i18n9.i18n.getLazilyComputedLocalizedString.bind(void 0, str_5);
 var loadedSecurityModule;
 async function loadSecurityModule() {
   if (!loadedSecurityModule) {
@@ -1493,7 +1454,7 @@ async function loadSecurityModule() {
   }
   return loadedSecurityModule;
 }
-UI6.ViewManager.registerViewExtension({
+UI5.ViewManager.registerViewExtension({
   location: "panel",
   id: "security",
   title: () => i18nLazyString5(UIStrings5.security)(),
@@ -1508,9 +1469,9 @@ UI6.ViewManager.registerViewExtension({
 
 // gen/front_end/panels/emulation/emulation-meta.js
 import * as Common3 from "./../../core/common/common.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Root4 from "./../../core/root/root.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as UI6 from "./../../ui/legacy/legacy.js";
 var UIStrings6 = {
   /**
    * @description Title of an action in the emulation tool to toggle device mode
@@ -1562,8 +1523,8 @@ var UIStrings6 = {
    */
   hideDeviceFrame: "Hide device frame"
 };
-var str_6 = i18n13.i18n.registerUIStrings("panels/emulation/emulation-meta.ts", UIStrings6);
-var i18nLazyString6 = i18n13.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
+var str_6 = i18n11.i18n.registerUIStrings("panels/emulation/emulation-meta.ts", UIStrings6);
+var i18nLazyString6 = i18n11.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
 var loadedEmulationModule;
 async function loadEmulationModule() {
   if (!loadedEmulationModule) {
@@ -1571,7 +1532,7 @@ async function loadEmulationModule() {
   }
   return loadedEmulationModule;
 }
-UI7.ActionRegistration.registerActionExtension({
+UI6.ActionRegistration.registerActionExtension({
   category: "MOBILE",
   actionId: "emulation.toggle-device-mode",
   toggleable: true,
@@ -1593,7 +1554,7 @@ UI7.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI7.ActionRegistration.registerActionExtension({
+UI6.ActionRegistration.registerActionExtension({
   actionId: "emulation.capture-screenshot",
   category: "SCREENSHOT",
   async loadActionDelegate() {
@@ -1603,7 +1564,7 @@ UI7.ActionRegistration.registerActionExtension({
   condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.captureScreenshot)
 });
-UI7.ActionRegistration.registerActionExtension({
+UI6.ActionRegistration.registerActionExtension({
   actionId: "emulation.capture-full-height-screenshot",
   category: "SCREENSHOT",
   async loadActionDelegate() {
@@ -1613,7 +1574,7 @@ UI7.ActionRegistration.registerActionExtension({
   condition: Root4.Runtime.conditions.canDock,
   title: i18nLazyString6(UIStrings6.captureFullSizeScreenshot)
 });
-UI7.ActionRegistration.registerActionExtension({
+UI6.ActionRegistration.registerActionExtension({
   actionId: "emulation.capture-node-screenshot",
   category: "SCREENSHOT",
   async loadActionDelegate() {
@@ -1674,13 +1635,13 @@ Common3.Settings.registerSettingExtension({
   ],
   tags: [i18nLazyString6(UIStrings6.device)]
 });
-UI7.Toolbar.registerToolbarItem({
+UI6.Toolbar.registerToolbarItem({
   actionId: "emulation.toggle-device-mode",
   condition: Root4.Runtime.conditions.canDock,
   location: "main-toolbar-left",
   order: 1
 });
-UI7.AppProvider.registerAppProvider({
+UI6.AppProvider.registerAppProvider({
   async loadAppProvider() {
     const Emulation = await loadEmulationModule();
     return Emulation.AdvancedApp.AdvancedAppProvider.instance();
@@ -1688,12 +1649,12 @@ UI7.AppProvider.registerAppProvider({
   condition: Root4.Runtime.conditions.canDock,
   order: 0
 });
-UI7.ContextMenu.registerItem({
+UI6.ContextMenu.registerItem({
   location: "deviceModeMenu/save",
   order: 12,
   actionId: "emulation.capture-screenshot"
 });
-UI7.ContextMenu.registerItem({
+UI6.ContextMenu.registerItem({
   location: "deviceModeMenu/save",
   order: 13,
   actionId: "emulation.capture-full-height-screenshot"
@@ -1701,8 +1662,8 @@ UI7.ContextMenu.registerItem({
 
 // gen/front_end/panels/sensors/sensors-meta.js
 import * as Common4 from "./../../core/common/common.js";
-import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as UI8 from "./../../ui/legacy/legacy.js";
+import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as UI7 from "./../../ui/legacy/legacy.js";
 var UIStrings7 = {
   /**
    * @description Title of the Sensors tool. The sensors tool contains GPS, orientation sensors, touch
@@ -1813,8 +1774,8 @@ var UIStrings7 = {
    */
   critical: "Critical"
 };
-var str_7 = i18n15.i18n.registerUIStrings("panels/sensors/sensors-meta.ts", UIStrings7);
-var i18nLazyString7 = i18n15.i18n.getLazilyComputedLocalizedString.bind(void 0, str_7);
+var str_7 = i18n13.i18n.registerUIStrings("panels/sensors/sensors-meta.ts", UIStrings7);
+var i18nLazyString7 = i18n13.i18n.getLazilyComputedLocalizedString.bind(void 0, str_7);
 var loadedSensorsModule;
 async function loadEmulationModule2() {
   if (!loadedSensorsModule) {
@@ -1822,7 +1783,7 @@ async function loadEmulationModule2() {
   }
   return loadedSensorsModule;
 }
-UI8.ViewManager.registerViewExtension({
+UI7.ViewManager.registerViewExtension({
   location: "drawer-view",
   commandPrompt: i18nLazyString7(UIStrings7.showSensors),
   title: i18nLazyString7(UIStrings7.sensors),
@@ -1842,7 +1803,7 @@ UI8.ViewManager.registerViewExtension({
     i18nLazyString7(UIStrings7.deviceOrientation)
   ]
 });
-UI8.ViewManager.registerViewExtension({
+UI7.ViewManager.registerViewExtension({
   location: "settings-view",
   id: "emulation-locations",
   commandPrompt: i18nLazyString7(UIStrings7.showLocations),
@@ -2026,8 +1987,8 @@ Common4.Settings.registerSettingExtension({
 });
 
 // gen/front_end/panels/accessibility/accessibility-meta.js
-import * as i18n17 from "./../../core/i18n/i18n.js";
-import * as UI9 from "./../../ui/legacy/legacy.js";
+import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as UI8 from "./../../ui/legacy/legacy.js";
 var loadedAccessibilityModule;
 var UIStrings8 = {
   /**
@@ -2039,15 +2000,15 @@ var UIStrings8 = {
    */
   shoAccessibility: "Show Accessibility"
 };
-var str_8 = i18n17.i18n.registerUIStrings("panels/accessibility/accessibility-meta.ts", UIStrings8);
-var i18nLazyString8 = i18n17.i18n.getLazilyComputedLocalizedString.bind(void 0, str_8);
+var str_8 = i18n15.i18n.registerUIStrings("panels/accessibility/accessibility-meta.ts", UIStrings8);
+var i18nLazyString8 = i18n15.i18n.getLazilyComputedLocalizedString.bind(void 0, str_8);
 async function loadAccessibilityModule() {
   if (!loadedAccessibilityModule) {
     loadedAccessibilityModule = await import("./../../panels/accessibility/accessibility.js");
   }
   return loadedAccessibilityModule;
 }
-UI9.ViewManager.registerViewExtension({
+UI8.ViewManager.registerViewExtension({
   location: "elements-sidebar",
   id: "accessibility.view",
   title: i18nLazyString8(UIStrings8.accessibility),
@@ -2062,9 +2023,9 @@ UI9.ViewManager.registerViewExtension({
 
 // gen/front_end/panels/animation/animation-meta.js
 import * as Common5 from "./../../core/common/common.js";
-import * as i18n19 from "./../../core/i18n/i18n.js";
+import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as UI10 from "./../../ui/legacy/legacy.js";
+import * as UI9 from "./../../ui/legacy/legacy.js";
 var loadedAnimationModule;
 var UIStrings9 = {
   /**
@@ -2076,15 +2037,15 @@ var UIStrings9 = {
    */
   showAnimations: "Show Animations"
 };
-var str_9 = i18n19.i18n.registerUIStrings("panels/animation/animation-meta.ts", UIStrings9);
-var i18nLazyString9 = i18n19.i18n.getLazilyComputedLocalizedString.bind(void 0, str_9);
+var str_9 = i18n17.i18n.registerUIStrings("panels/animation/animation-meta.ts", UIStrings9);
+var i18nLazyString9 = i18n17.i18n.getLazilyComputedLocalizedString.bind(void 0, str_9);
 async function loadAnimationModule() {
   if (!loadedAnimationModule) {
     loadedAnimationModule = await import("./../../panels/animation/animation.js");
   }
   return loadedAnimationModule;
 }
-UI10.ViewManager.registerViewExtension({
+UI9.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "animations",
   title: i18nLazyString9(UIStrings9.animations),
@@ -2111,9 +2072,9 @@ Common5.Revealer.registerRevealer({
 
 // gen/front_end/panels/developer_resources/developer_resources-meta.js
 import * as Common6 from "./../../core/common/common.js";
-import * as i18n21 from "./../../core/i18n/i18n.js";
+import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
-import * as UI11 from "./../../ui/legacy/legacy.js";
+import * as UI10 from "./../../ui/legacy/legacy.js";
 var UIStrings10 = {
   /**
    * @description Title for developer resources panel
@@ -2124,8 +2085,8 @@ var UIStrings10 = {
    */
   showDeveloperResources: "Show Developer resources"
 };
-var str_10 = i18n21.i18n.registerUIStrings("panels/developer_resources/developer_resources-meta.ts", UIStrings10);
-var i18nLazyString10 = i18n21.i18n.getLazilyComputedLocalizedString.bind(void 0, str_10);
+var str_10 = i18n19.i18n.registerUIStrings("panels/developer_resources/developer_resources-meta.ts", UIStrings10);
+var i18nLazyString10 = i18n19.i18n.getLazilyComputedLocalizedString.bind(void 0, str_10);
 var loadedDeveloperResourcesModule;
 async function loadDeveloperResourcesModule() {
   if (!loadedDeveloperResourcesModule) {
@@ -2133,7 +2094,7 @@ async function loadDeveloperResourcesModule() {
   }
   return loadedDeveloperResourcesModule;
 }
-UI11.ViewManager.registerViewExtension({
+UI10.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "developer-resources",
   title: i18nLazyString10(UIStrings10.developerResources),
@@ -2157,8 +2118,8 @@ Common6.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/autofill/autofill-meta.js
-import * as i18n23 from "./../../core/i18n/i18n.js";
-import * as UI12 from "./../../ui/legacy/legacy.js";
+import * as i18n21 from "./../../core/i18n/i18n.js";
+import * as UI11 from "./../../ui/legacy/legacy.js";
 var UIStrings11 = {
   /**
    * @description Label for the autofill pane
@@ -2169,8 +2130,8 @@ var UIStrings11 = {
    */
   showAutofill: "Show Autofill"
 };
-var str_11 = i18n23.i18n.registerUIStrings("panels/autofill/autofill-meta.ts", UIStrings11);
-var i18nLazyString11 = i18n23.i18n.getLazilyComputedLocalizedString.bind(void 0, str_11);
+var str_11 = i18n21.i18n.registerUIStrings("panels/autofill/autofill-meta.ts", UIStrings11);
+var i18nLazyString11 = i18n21.i18n.getLazilyComputedLocalizedString.bind(void 0, str_11);
 var loadedAutofillModule;
 async function loadAutofillModule() {
   if (!loadedAutofillModule) {
@@ -2178,23 +2139,24 @@ async function loadAutofillModule() {
   }
   return loadedAutofillModule;
 }
-UI12.ViewManager.registerViewExtension({
+UI11.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "autofill-view",
   title: i18nLazyString11(UIStrings11.autofill),
   commandPrompt: i18nLazyString11(UIStrings11.showAutofill),
   order: 100,
   persistence: "closeable",
-  async loadView() {
+  async loadView(universe) {
     const Autofill = await loadAutofillModule();
-    return new Autofill.AutofillView.AutofillView();
+    const { autofillManager } = universe;
+    return new Autofill.AutofillView.AutofillView(autofillManager);
   }
 });
 
 // gen/front_end/entrypoints/inspector_main/inspector_main-meta.js
 import * as Common7 from "./../../core/common/common.js";
-import * as i18n25 from "./../../core/i18n/i18n.js";
-import * as UI13 from "./../../ui/legacy/legacy.js";
+import * as i18n23 from "./../../core/i18n/i18n.js";
+import * as UI12 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
   /**
    * @description Title of the Rendering tool. The rendering tool is a collection of settings that
@@ -2292,8 +2254,8 @@ var UIStrings12 = {
    */
   toggleCssPrefersColorSchemeMedia: "Toggle CSS media feature prefers-color-scheme"
 };
-var str_12 = i18n25.i18n.registerUIStrings("entrypoints/inspector_main/inspector_main-meta.ts", UIStrings12);
-var i18nLazyString12 = i18n25.i18n.getLazilyComputedLocalizedString.bind(void 0, str_12);
+var str_12 = i18n23.i18n.registerUIStrings("entrypoints/inspector_main/inspector_main-meta.ts", UIStrings12);
+var i18nLazyString12 = i18n23.i18n.getLazilyComputedLocalizedString.bind(void 0, str_12);
 var loadedInspectorMainModule;
 async function loadInspectorMainModule() {
   if (!loadedInspectorMainModule) {
@@ -2301,7 +2263,7 @@ async function loadInspectorMainModule() {
   }
   return loadedInspectorMainModule;
 }
-UI13.ViewManager.registerViewExtension({
+UI12.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "rendering",
   title: i18nLazyString12(UIStrings12.rendering),
@@ -2322,7 +2284,7 @@ UI13.ViewManager.registerViewExtension({
     i18nLazyString12(UIStrings12.colorVisionDeficiency)
   ]
 });
-UI13.ActionRegistration.registerActionExtension({
+UI12.ActionRegistration.registerActionExtension({
   category: "NAVIGATION",
   actionId: "inspector-main.reload",
   async loadActionDelegate() {
@@ -2346,7 +2308,7 @@ UI13.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI13.ActionRegistration.registerActionExtension({
+UI12.ActionRegistration.registerActionExtension({
   category: "NAVIGATION",
   actionId: "inspector-main.hard-reload",
   async loadActionDelegate() {
@@ -2377,7 +2339,7 @@ UI13.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI13.ActionRegistration.registerActionExtension({
+UI12.ActionRegistration.registerActionExtension({
   actionId: "rendering.toggle-prefers-color-scheme",
   category: "RENDERING",
   title: i18nLazyString12(UIStrings12.toggleCssPrefersColorSchemeMedia),
@@ -2431,7 +2393,7 @@ Common7.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-UI13.Toolbar.registerToolbarItem({
+UI12.Toolbar.registerToolbarItem({
   async loadItem() {
     const InspectorMain = await loadInspectorMainModule();
     return InspectorMain.InspectorMain.NodeIndicatorProvider.instance();
@@ -2439,7 +2401,7 @@ UI13.Toolbar.registerToolbarItem({
   order: 2,
   location: "main-toolbar-left"
 });
-UI13.Toolbar.registerToolbarItem({
+UI12.Toolbar.registerToolbarItem({
   async loadItem() {
     const InspectorMain = await loadInspectorMainModule();
     return InspectorMain.OutermostTargetSelector.OutermostTargetSelector.instance();
@@ -2450,9 +2412,9 @@ UI13.Toolbar.registerToolbarItem({
 
 // gen/front_end/panels/application/application-meta.js
 import * as Common8 from "./../../core/common/common.js";
-import * as i18n27 from "./../../core/i18n/i18n.js";
+import * as i18n25 from "./../../core/i18n/i18n.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
-import * as UI14 from "./../../ui/legacy/legacy.js";
+import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as PreloadingHelper from "./../../panels/application/preloading/helper/helper.js";
 var UIStrings13 = {
   /**
@@ -2484,8 +2446,8 @@ var UIStrings13 = {
    */
   stopRecordingEvents: "Stop recording events"
 };
-var str_13 = i18n27.i18n.registerUIStrings("panels/application/application-meta.ts", UIStrings13);
-var i18nLazyString13 = i18n27.i18n.getLazilyComputedLocalizedString.bind(void 0, str_13);
+var str_13 = i18n25.i18n.registerUIStrings("panels/application/application-meta.ts", UIStrings13);
+var i18nLazyString13 = i18n25.i18n.getLazilyComputedLocalizedString.bind(void 0, str_13);
 var loadedResourcesModule;
 async function loadResourcesModule() {
   if (!loadedResourcesModule) {
@@ -2499,7 +2461,7 @@ function maybeRetrieveContextTypes4(getClassCallBack) {
   }
   return getClassCallBack(loadedResourcesModule);
 }
-UI14.ViewManager.registerViewExtension({
+UI13.ViewManager.registerViewExtension({
   location: "panel",
   id: "resources",
   title: i18nLazyString13(UIStrings13.application),
@@ -2511,7 +2473,7 @@ UI14.ViewManager.registerViewExtension({
   },
   tags: [i18nLazyString13(UIStrings13.pwa)]
 });
-UI14.ActionRegistration.registerActionExtension({
+UI13.ActionRegistration.registerActionExtension({
   category: "RESOURCES",
   actionId: "resources.clear",
   title: i18nLazyString13(UIStrings13.clearSiteData),
@@ -2520,7 +2482,7 @@ UI14.ActionRegistration.registerActionExtension({
     return new Resources.StorageView.ActionDelegate();
   }
 });
-UI14.ActionRegistration.registerActionExtension({
+UI13.ActionRegistration.registerActionExtension({
   category: "RESOURCES",
   actionId: "resources.clear-incl-third-party-cookies",
   title: i18nLazyString13(UIStrings13.clearSiteDataIncludingThirdparty),
@@ -2529,7 +2491,7 @@ UI14.ActionRegistration.registerActionExtension({
     return new Resources.StorageView.ActionDelegate();
   }
 });
-UI14.ActionRegistration.registerActionExtension({
+UI13.ActionRegistration.registerActionExtension({
   actionId: "background-service.toggle-recording",
   iconClass: "record-start",
   toggleable: true,
@@ -2621,9 +2583,9 @@ Common8.Revealer.registerRevealer({
 
 // gen/front_end/panels/issues/issues-meta.js
 import * as Common9 from "./../../core/common/common.js";
-import * as i18n29 from "./../../core/i18n/i18n.js";
+import * as i18n27 from "./../../core/i18n/i18n.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
-import * as UI15 from "./../../ui/legacy/legacy.js";
+import * as UI14 from "./../../ui/legacy/legacy.js";
 var UIStrings14 = {
   /**
    * @description Label for the issues pane
@@ -2634,8 +2596,8 @@ var UIStrings14 = {
    */
   showIssues: "Show Issues"
 };
-var str_14 = i18n29.i18n.registerUIStrings("panels/issues/issues-meta.ts", UIStrings14);
-var i18nLazyString14 = i18n29.i18n.getLazilyComputedLocalizedString.bind(void 0, str_14);
+var str_14 = i18n27.i18n.registerUIStrings("panels/issues/issues-meta.ts", UIStrings14);
+var i18nLazyString14 = i18n27.i18n.getLazilyComputedLocalizedString.bind(void 0, str_14);
 var loadedIssuesModule;
 async function loadIssuesModule() {
   if (!loadedIssuesModule) {
@@ -2643,7 +2605,7 @@ async function loadIssuesModule() {
   }
   return loadedIssuesModule;
 }
-UI15.ViewManager.registerViewExtension({
+UI14.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "issues-pane",
   title: i18nLazyString14(UIStrings14.issues),
@@ -2669,8 +2631,8 @@ Common9.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/layers/layers-meta.js
-import * as i18n31 from "./../../core/i18n/i18n.js";
-import * as UI16 from "./../../ui/legacy/legacy.js";
+import * as i18n29 from "./../../core/i18n/i18n.js";
+import * as UI15 from "./../../ui/legacy/legacy.js";
 var UIStrings15 = {
   /**
    * @description Title of the Layers tool
@@ -2681,8 +2643,8 @@ var UIStrings15 = {
    */
   showLayers: "Show Layers"
 };
-var str_15 = i18n31.i18n.registerUIStrings("panels/layers/layers-meta.ts", UIStrings15);
-var i18nLazyString15 = i18n31.i18n.getLazilyComputedLocalizedString.bind(void 0, str_15);
+var str_15 = i18n29.i18n.registerUIStrings("panels/layers/layers-meta.ts", UIStrings15);
+var i18nLazyString15 = i18n29.i18n.getLazilyComputedLocalizedString.bind(void 0, str_15);
 var loadedLayersModule;
 async function loadLayersModule() {
   if (!loadedLayersModule) {
@@ -2690,7 +2652,7 @@ async function loadLayersModule() {
   }
   return loadedLayersModule;
 }
-UI16.ViewManager.registerViewExtension({
+UI15.ViewManager.registerViewExtension({
   location: "panel",
   id: "layers",
   title: i18nLazyString15(UIStrings15.layers),
@@ -2705,8 +2667,8 @@ UI16.ViewManager.registerViewExtension({
 
 // gen/front_end/panels/lighthouse/lighthouse-meta.js
 import * as Common10 from "./../../core/common/common.js";
-import * as i18n33 from "./../../core/i18n/i18n.js";
-import * as UI17 from "./../../ui/legacy/legacy.js";
+import * as i18n31 from "./../../core/i18n/i18n.js";
+import * as UI16 from "./../../ui/legacy/legacy.js";
 import * as Lighthouse from "./../../panels/lighthouse/lighthouse.js";
 var UIStrings16 = {
   /**
@@ -2714,8 +2676,8 @@ var UIStrings16 = {
    */
   showLighthouse: "Show `Lighthouse`"
 };
-var str_16 = i18n33.i18n.registerUIStrings("panels/lighthouse/lighthouse-meta.ts", UIStrings16);
-var i18nLazyString16 = i18n33.i18n.getLazilyComputedLocalizedString.bind(void 0, str_16);
+var str_16 = i18n31.i18n.registerUIStrings("panels/lighthouse/lighthouse-meta.ts", UIStrings16);
+var i18nLazyString16 = i18n31.i18n.getLazilyComputedLocalizedString.bind(void 0, str_16);
 var loadedLighthouseModule;
 async function loadLighthouseModule() {
   if (!loadedLighthouseModule) {
@@ -2723,10 +2685,10 @@ async function loadLighthouseModule() {
   }
   return loadedLighthouseModule;
 }
-UI17.ViewManager.registerViewExtension({
+UI16.ViewManager.registerViewExtension({
   location: "panel",
   id: "lighthouse",
-  title: i18n33.i18n.lockedLazyString("Lighthouse"),
+  title: i18n31.i18n.lockedLazyString("Lighthouse"),
   commandPrompt: i18nLazyString16(UIStrings16.showLighthouse),
   order: 90,
   async loadView() {
@@ -2734,8 +2696,8 @@ UI17.ViewManager.registerViewExtension({
     return Lighthouse2.LighthousePanel.LighthousePanel.instance();
   },
   tags: [
-    i18n33.i18n.lockedLazyString("lighthouse"),
-    i18n33.i18n.lockedLazyString("pwa")
+    i18n31.i18n.lockedLazyString("lighthouse"),
+    i18n31.i18n.lockedLazyString("pwa")
   ]
 });
 Common10.Revealer.registerRevealer({
@@ -2752,8 +2714,8 @@ Common10.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/media/media-meta.js
-import * as i18n35 from "./../../core/i18n/i18n.js";
-import * as UI18 from "./../../ui/legacy/legacy.js";
+import * as i18n33 from "./../../core/i18n/i18n.js";
+import * as UI17 from "./../../ui/legacy/legacy.js";
 var UIStrings17 = {
   /**
    * @description Text that appears on a button for the media resource type filter.
@@ -2768,8 +2730,8 @@ var UIStrings17 = {
    */
   showMedia: "Show Media"
 };
-var str_17 = i18n35.i18n.registerUIStrings("panels/media/media-meta.ts", UIStrings17);
-var i18nLazyString17 = i18n35.i18n.getLazilyComputedLocalizedString.bind(void 0, str_17);
+var str_17 = i18n33.i18n.registerUIStrings("panels/media/media-meta.ts", UIStrings17);
+var i18nLazyString17 = i18n33.i18n.getLazilyComputedLocalizedString.bind(void 0, str_17);
 var loadedMediaModule;
 async function loadMediaModule() {
   if (!loadedMediaModule) {
@@ -2777,7 +2739,7 @@ async function loadMediaModule() {
   }
   return loadedMediaModule;
 }
-UI18.ViewManager.registerViewExtension({
+UI17.ViewManager.registerViewExtension({
   location: "panel",
   id: "medias",
   title: i18nLazyString17(UIStrings17.media),
@@ -2796,8 +2758,8 @@ UI18.ViewManager.registerViewExtension({
 
 // gen/front_end/panels/mobile_throttling/mobile_throttling-meta.js
 import * as Common11 from "./../../core/common/common.js";
-import * as i18n37 from "./../../core/i18n/i18n.js";
-import * as UI19 from "./../../ui/legacy/legacy.js";
+import * as i18n35 from "./../../core/i18n/i18n.js";
+import * as UI18 from "./../../ui/legacy/legacy.js";
 var UIStrings18 = {
   /**
    * @description Text for throttling the network
@@ -2834,8 +2796,8 @@ var UIStrings18 = {
    */
   goOnline: "Go online"
 };
-var str_18 = i18n37.i18n.registerUIStrings("panels/mobile_throttling/mobile_throttling-meta.ts", UIStrings18);
-var i18nLazyString18 = i18n37.i18n.getLazilyComputedLocalizedString.bind(void 0, str_18);
+var str_18 = i18n35.i18n.registerUIStrings("panels/mobile_throttling/mobile_throttling-meta.ts", UIStrings18);
+var i18nLazyString18 = i18n35.i18n.getLazilyComputedLocalizedString.bind(void 0, str_18);
 var loadedMobileThrottlingModule;
 async function loadMobileThrottlingModule() {
   if (!loadedMobileThrottlingModule) {
@@ -2843,7 +2805,7 @@ async function loadMobileThrottlingModule() {
   }
   return loadedMobileThrottlingModule;
 }
-UI19.ViewManager.registerViewExtension({
+UI18.ViewManager.registerViewExtension({
   location: "settings-view",
   id: "throttling-conditions",
   title: i18nLazyString18(UIStrings18.throttling),
@@ -2859,7 +2821,7 @@ UI19.ViewManager.registerViewExtension({
   ],
   iconName: "performance"
 });
-UI19.ActionRegistration.registerActionExtension({
+UI18.ActionRegistration.registerActionExtension({
   actionId: "network-conditions.network-offline",
   category: "NETWORK",
   title: i18nLazyString18(UIStrings18.goOffline),
@@ -2872,7 +2834,7 @@ UI19.ActionRegistration.registerActionExtension({
     i18nLazyString18(UIStrings18.throttlingTag)
   ]
 });
-UI19.ActionRegistration.registerActionExtension({
+UI18.ActionRegistration.registerActionExtension({
   actionId: "network-conditions.network-low-end-mobile",
   category: "NETWORK",
   title: i18nLazyString18(UIStrings18.enableSlowGThrottling),
@@ -2885,7 +2847,7 @@ UI19.ActionRegistration.registerActionExtension({
     i18nLazyString18(UIStrings18.throttlingTag)
   ]
 });
-UI19.ActionRegistration.registerActionExtension({
+UI18.ActionRegistration.registerActionExtension({
   actionId: "network-conditions.network-mid-tier-mobile",
   category: "NETWORK",
   title: i18nLazyString18(UIStrings18.enableFastGThrottling),
@@ -2898,7 +2860,7 @@ UI19.ActionRegistration.registerActionExtension({
     i18nLazyString18(UIStrings18.throttlingTag)
   ]
 });
-UI19.ActionRegistration.registerActionExtension({
+UI18.ActionRegistration.registerActionExtension({
   actionId: "network-conditions.network-online",
   category: "NETWORK",
   title: i18nLazyString18(UIStrings18.goOnline),
@@ -2919,8 +2881,8 @@ Common11.Settings.registerSettingExtension({
 });
 
 // gen/front_end/panels/performance_monitor/performance_monitor-meta.js
-import * as i18n39 from "./../../core/i18n/i18n.js";
-import * as UI20 from "./../../ui/legacy/legacy.js";
+import * as i18n37 from "./../../core/i18n/i18n.js";
+import * as UI19 from "./../../ui/legacy/legacy.js";
 var UIStrings19 = {
   /**
    * @description Title of the 'Performance monitor' tool in the bottom drawer
@@ -2951,8 +2913,8 @@ var UIStrings19 = {
    */
   showPerformanceMonitor: "Show Performance monitor"
 };
-var str_19 = i18n39.i18n.registerUIStrings("panels/performance_monitor/performance_monitor-meta.ts", UIStrings19);
-var i18nLazyString19 = i18n39.i18n.getLazilyComputedLocalizedString.bind(void 0, str_19);
+var str_19 = i18n37.i18n.registerUIStrings("panels/performance_monitor/performance_monitor-meta.ts", UIStrings19);
+var i18nLazyString19 = i18n37.i18n.getLazilyComputedLocalizedString.bind(void 0, str_19);
 var loadedPerformanceMonitorModule;
 async function loadPerformanceMonitorModule() {
   if (!loadedPerformanceMonitorModule) {
@@ -2960,7 +2922,7 @@ async function loadPerformanceMonitorModule() {
   }
   return loadedPerformanceMonitorModule;
 }
-UI20.ViewManager.registerViewExtension({
+UI19.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "performance.monitor",
   title: i18nLazyString19(UIStrings19.performanceMonitor),
@@ -2982,9 +2944,9 @@ UI20.ViewManager.registerViewExtension({
 
 // gen/front_end/panels/timeline/timeline-meta.js
 import * as Common12 from "./../../core/common/common.js";
-import * as i18n41 from "./../../core/i18n/i18n.js";
+import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
-import * as UI21 from "./../../ui/legacy/legacy.js";
+import * as UI20 from "./../../ui/legacy/legacy.js";
 var UIStrings20 = {
   /**
    * @description Text for the performance of something
@@ -3051,8 +3013,8 @@ var UIStrings20 = {
    */
   timelineInvalidationTracking: "Invalidation tracking"
 };
-var str_20 = i18n41.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings20);
-var i18nLazyString20 = i18n41.i18n.getLazilyComputedLocalizedString.bind(void 0, str_20);
+var str_20 = i18n39.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings20);
+var i18nLazyString20 = i18n39.i18n.getLazilyComputedLocalizedString.bind(void 0, str_20);
 var loadedTimelineModule;
 async function loadTimelineModule() {
   if (!loadedTimelineModule) {
@@ -3066,7 +3028,7 @@ function maybeRetrieveContextTypes5(getClassCallBack) {
   }
   return getClassCallBack(loadedTimelineModule);
 }
-UI21.ViewManager.registerViewExtension({
+UI20.ViewManager.registerViewExtension({
   location: "panel",
   id: "timeline",
   title: i18nLazyString20(UIStrings20.performance),
@@ -3078,7 +3040,7 @@ UI21.ViewManager.registerViewExtension({
     return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader });
   }
 });
-UI21.ActionRegistration.registerActionExtension({
+UI20.ActionRegistration.registerActionExtension({
   actionId: "timeline.toggle-recording",
   category: "PERFORMANCE",
   iconClass: "record-start",
@@ -3113,7 +3075,7 @@ UI21.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI21.ActionRegistration.registerActionExtension({
+UI20.ActionRegistration.registerActionExtension({
   actionId: "timeline.record-reload",
   iconClass: "refresh",
   contextTypes() {
@@ -3136,7 +3098,7 @@ UI21.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI21.ActionRegistration.registerActionExtension({
+UI20.ActionRegistration.registerActionExtension({
   category: "PERFORMANCE",
   actionId: "timeline.save-to-file",
   contextTypes() {
@@ -3158,7 +3120,7 @@ UI21.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI21.ActionRegistration.registerActionExtension({
+UI20.ActionRegistration.registerActionExtension({
   category: "PERFORMANCE",
   actionId: "timeline.load-from-file",
   contextTypes() {
@@ -3180,7 +3142,7 @@ UI21.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI21.ActionRegistration.registerActionExtension({
+UI20.ActionRegistration.registerActionExtension({
   actionId: "timeline.jump-to-previous-frame",
   category: "PERFORMANCE",
   title: i18nLazyString20(UIStrings20.previousFrame),
@@ -3197,7 +3159,7 @@ UI21.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI21.ActionRegistration.registerActionExtension({
+UI20.ActionRegistration.registerActionExtension({
   actionId: "timeline.jump-to-next-frame",
   category: "PERFORMANCE",
   title: i18nLazyString20(UIStrings20.nextFrame),
@@ -3214,7 +3176,7 @@ UI21.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI21.ActionRegistration.registerActionExtension({
+UI20.ActionRegistration.registerActionExtension({
   actionId: "timeline.show-history",
   async loadActionDelegate() {
     const Timeline = await loadTimelineModule();
@@ -3236,7 +3198,7 @@ UI21.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI21.ActionRegistration.registerActionExtension({
+UI20.ActionRegistration.registerActionExtension({
   actionId: "timeline.previous-recording",
   category: "PERFORMANCE",
   async loadActionDelegate() {
@@ -3258,7 +3220,7 @@ UI21.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI21.ActionRegistration.registerActionExtension({
+UI20.ActionRegistration.registerActionExtension({
   actionId: "timeline.next-recording",
   category: "PERFORMANCE",
   async loadActionDelegate() {
@@ -3319,12 +3281,12 @@ Common12.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
-UI21.ContextMenu.registerItem({
+UI20.ContextMenu.registerItem({
   location: "timelineMenu/open",
   actionId: "timeline.load-from-file",
   order: 10
 });
-UI21.ContextMenu.registerItem({
+UI20.ContextMenu.registerItem({
   location: "timelineMenu/open",
   actionId: "timeline.save-to-file",
   order: 15
@@ -3401,8 +3363,8 @@ Common12.Revealer.registerRevealer({
 });
 
 // gen/front_end/panels/web_audio/web_audio-meta.js
-import * as i18n43 from "./../../core/i18n/i18n.js";
-import * as UI22 from "./../../ui/legacy/legacy.js";
+import * as i18n41 from "./../../core/i18n/i18n.js";
+import * as UI21 from "./../../ui/legacy/legacy.js";
 var UIStrings21 = {
   /**
    * @description Title of the WebAudio tool
@@ -3417,8 +3379,8 @@ var UIStrings21 = {
    */
   showWebaudio: "Show WebAudio"
 };
-var str_21 = i18n43.i18n.registerUIStrings("panels/web_audio/web_audio-meta.ts", UIStrings21);
-var i18nLazyString21 = i18n43.i18n.getLazilyComputedLocalizedString.bind(void 0, str_21);
+var str_21 = i18n41.i18n.registerUIStrings("panels/web_audio/web_audio-meta.ts", UIStrings21);
+var i18nLazyString21 = i18n41.i18n.getLazilyComputedLocalizedString.bind(void 0, str_21);
 var loadedWebAudioModule;
 async function loadWebAudioModule() {
   if (!loadedWebAudioModule) {
@@ -3426,7 +3388,7 @@ async function loadWebAudioModule() {
   }
   return loadedWebAudioModule;
 }
-UI22.ViewManager.registerViewExtension({
+UI21.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "web-audio",
   title: i18nLazyString21(UIStrings21.webaudio),
@@ -3441,8 +3403,8 @@ UI22.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/panels/webauthn/webauthn-meta.js
-import * as i18n45 from "./../../core/i18n/i18n.js";
-import * as UI23 from "./../../ui/legacy/legacy.js";
+import * as i18n43 from "./../../core/i18n/i18n.js";
+import * as UI22 from "./../../ui/legacy/legacy.js";
 var UIStrings22 = {
   /**
    * @description Title of WebAuthn tab in bottom drawer.
@@ -3453,8 +3415,8 @@ var UIStrings22 = {
    */
   showWebauthn: "Show WebAuthn"
 };
-var str_22 = i18n45.i18n.registerUIStrings("panels/webauthn/webauthn-meta.ts", UIStrings22);
-var i18nLazyString22 = i18n45.i18n.getLazilyComputedLocalizedString.bind(void 0, str_22);
+var str_22 = i18n43.i18n.registerUIStrings("panels/webauthn/webauthn-meta.ts", UIStrings22);
+var i18nLazyString22 = i18n43.i18n.getLazilyComputedLocalizedString.bind(void 0, str_22);
 var loadedWebauthnModule;
 async function loadWebauthnModule() {
   if (!loadedWebauthnModule) {
@@ -3462,7 +3424,7 @@ async function loadWebauthnModule() {
   }
   return loadedWebauthnModule;
 }
-UI23.ViewManager.registerViewExtension({
+UI22.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "webauthn-pane",
   title: i18nLazyString22(UIStrings22.webauthn),
@@ -3476,8 +3438,8 @@ UI23.ViewManager.registerViewExtension({
 });
 
 // gen/front_end/panels/layer_viewer/layer_viewer-meta.js
-import * as i18n47 from "./../../core/i18n/i18n.js";
-import * as UI24 from "./../../ui/legacy/legacy.js";
+import * as i18n45 from "./../../core/i18n/i18n.js";
+import * as UI23 from "./../../ui/legacy/legacy.js";
 var UIStrings23 = {
   /**
    * @description Text in the Shortcuts page to explain a keyboard shortcut (reset view in Layers Panel)
@@ -3516,9 +3478,9 @@ var UIStrings23 = {
    */
   panOrRotateRight: "Pan or rotate right"
 };
-var str_23 = i18n47.i18n.registerUIStrings("panels/layer_viewer/layer_viewer-meta.ts", UIStrings23);
-var i18nLazyString23 = i18n47.i18n.getLazilyComputedLocalizedString.bind(void 0, str_23);
-UI24.ActionRegistration.registerActionExtension({
+var str_23 = i18n45.i18n.registerUIStrings("panels/layer_viewer/layer_viewer-meta.ts", UIStrings23);
+var i18nLazyString23 = i18n45.i18n.getLazilyComputedLocalizedString.bind(void 0, str_23);
+UI23.ActionRegistration.registerActionExtension({
   actionId: "layers.reset-view",
   category: "LAYERS",
   title: i18nLazyString23(UIStrings23.resetView),
@@ -3528,7 +3490,7 @@ UI24.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI24.ActionRegistration.registerActionExtension({
+UI23.ActionRegistration.registerActionExtension({
   actionId: "layers.pan-mode",
   category: "LAYERS",
   title: i18nLazyString23(UIStrings23.switchToPanMode),
@@ -3538,7 +3500,7 @@ UI24.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI24.ActionRegistration.registerActionExtension({
+UI23.ActionRegistration.registerActionExtension({
   actionId: "layers.rotate-mode",
   category: "LAYERS",
   title: i18nLazyString23(UIStrings23.switchToRotateMode),
@@ -3548,7 +3510,7 @@ UI24.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI24.ActionRegistration.registerActionExtension({
+UI23.ActionRegistration.registerActionExtension({
   actionId: "layers.zoom-in",
   category: "LAYERS",
   title: i18nLazyString23(UIStrings23.zoomIn),
@@ -3561,7 +3523,7 @@ UI24.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI24.ActionRegistration.registerActionExtension({
+UI23.ActionRegistration.registerActionExtension({
   actionId: "layers.zoom-out",
   category: "LAYERS",
   title: i18nLazyString23(UIStrings23.zoomOut),
@@ -3574,7 +3536,7 @@ UI24.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI24.ActionRegistration.registerActionExtension({
+UI23.ActionRegistration.registerActionExtension({
   actionId: "layers.up",
   category: "LAYERS",
   title: i18nLazyString23(UIStrings23.panOrRotateUp),
@@ -3587,7 +3549,7 @@ UI24.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI24.ActionRegistration.registerActionExtension({
+UI23.ActionRegistration.registerActionExtension({
   actionId: "layers.down",
   category: "LAYERS",
   title: i18nLazyString23(UIStrings23.panOrRotateDown),
@@ -3600,7 +3562,7 @@ UI24.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI24.ActionRegistration.registerActionExtension({
+UI23.ActionRegistration.registerActionExtension({
   actionId: "layers.left",
   category: "LAYERS",
   title: i18nLazyString23(UIStrings23.panOrRotateLeft),
@@ -3613,7 +3575,7 @@ UI24.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI24.ActionRegistration.registerActionExtension({
+UI23.ActionRegistration.registerActionExtension({
   actionId: "layers.right",
   category: "LAYERS",
   title: i18nLazyString23(UIStrings23.panOrRotateRight),
@@ -3628,8 +3590,8 @@ UI24.ActionRegistration.registerActionExtension({
 });
 
 // gen/front_end/panels/recorder/recorder-meta.js
-import * as i18n49 from "./../../core/i18n/i18n.js";
-import * as UI25 from "./../../ui/legacy/legacy.js";
+import * as i18n47 from "./../../core/i18n/i18n.js";
+import * as UI24 from "./../../ui/legacy/legacy.js";
 var UIStrings24 = {
   /**
    * @description Title of the Recorder Panel
@@ -3656,8 +3618,8 @@ var UIStrings24 = {
    */
   toggleCode: "Toggle code view"
 };
-var str_24 = i18n49.i18n.registerUIStrings("panels/recorder/recorder-meta.ts", UIStrings24);
-var i18nLazyString24 = i18n49.i18n.getLazilyComputedLocalizedString.bind(void 0, str_24);
+var str_24 = i18n47.i18n.registerUIStrings("panels/recorder/recorder-meta.ts", UIStrings24);
+var i18nLazyString24 = i18n47.i18n.getLazilyComputedLocalizedString.bind(void 0, str_24);
 var loadedRecorderModule;
 async function loadRecorderModule() {
   if (!loadedRecorderModule) {
@@ -3675,8 +3637,8 @@ function maybeRetrieveContextTypes6(getClassCallBack, actionId) {
   return [];
 }
 var viewId = "chrome-recorder";
-UI25.ViewManager.defaultOptionsForTabs[viewId] = true;
-UI25.ViewManager.registerViewExtension({
+UI24.ViewManager.defaultOptionsForTabs[viewId] = true;
+UI24.ViewManager.registerViewExtension({
   location: "panel",
   id: viewId,
   commandPrompt: i18nLazyString24(UIStrings24.showRecorder),
@@ -3688,7 +3650,7 @@ UI25.ViewManager.registerViewExtension({
     return Recorder.RecorderPanel.RecorderPanel.instance();
   }
 });
-UI25.ActionRegistration.registerActionExtension({
+UI24.ActionRegistration.registerActionExtension({
   category: "RECORDER",
   actionId: "chrome-recorder.create-recording",
   title: i18nLazyString24(UIStrings24.createRecording),
@@ -3697,7 +3659,7 @@ UI25.ActionRegistration.registerActionExtension({
     return new Recorder.RecorderPanel.ActionDelegate();
   }
 });
-UI25.ActionRegistration.registerActionExtension({
+UI24.ActionRegistration.registerActionExtension({
   category: "RECORDER",
   actionId: "chrome-recorder.start-recording",
   title: i18nLazyString24(UIStrings24.startStopRecording),
@@ -3724,7 +3686,7 @@ UI25.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI25.ActionRegistration.registerActionExtension({
+UI24.ActionRegistration.registerActionExtension({
   category: "RECORDER",
   actionId: "chrome-recorder.replay-recording",
   title: i18nLazyString24(UIStrings24.replayRecording),
@@ -3751,7 +3713,7 @@ UI25.ActionRegistration.registerActionExtension({
     }
   ]
 });
-UI25.ActionRegistration.registerActionExtension({
+UI24.ActionRegistration.registerActionExtension({
   category: "RECORDER",
   actionId: "chrome-recorder.toggle-code-view",
   title: i18nLazyString24(UIStrings24.toggleCode),
@@ -3781,8 +3743,8 @@ UI25.ActionRegistration.registerActionExtension({
 
 // gen/front_end/panels/whats_new/whats_new-meta.js
 import * as Common13 from "./../../core/common/common.js";
-import * as i18n51 from "./../../core/i18n/i18n.js";
-import * as UI26 from "./../../ui/legacy/legacy.js";
+import * as i18n49 from "./../../core/i18n/i18n.js";
+import * as UI25 from "./../../ui/legacy/legacy.js";
 var UIStrings25 = {
   /**
    * @description Title of the 'What's New' tool in the bottom drawer
@@ -3813,8 +3775,8 @@ var UIStrings25 = {
    */
   doNotShowWhatsNewAfterEachUpdate: "Don't show what's new after each update"
 };
-var str_25 = i18n51.i18n.registerUIStrings("panels/whats_new/whats_new-meta.ts", UIStrings25);
-var i18nLazyString25 = i18n51.i18n.getLazilyComputedLocalizedString.bind(void 0, str_25);
+var str_25 = i18n49.i18n.registerUIStrings("panels/whats_new/whats_new-meta.ts", UIStrings25);
+var i18nLazyString25 = i18n49.i18n.getLazilyComputedLocalizedString.bind(void 0, str_25);
 var loadedHelpModule;
 async function loadWhatsNewModule() {
   if (!loadedHelpModule) {
@@ -3822,20 +3784,20 @@ async function loadWhatsNewModule() {
   }
   return loadedHelpModule;
 }
-UI26.ViewManager.maybeRemoveViewExtension("release-note");
-UI26.ActionRegistration.maybeRemoveActionExtension("help.release-notes");
-UI26.ActionRegistration.maybeRemoveActionExtension("help.report-issue");
+UI25.ViewManager.maybeRemoveViewExtension("release-note");
+UI25.ActionRegistration.maybeRemoveActionExtension("help.release-notes");
+UI25.ActionRegistration.maybeRemoveActionExtension("help.report-issue");
 Common13.Settings.maybeRemoveSettingExtension("help.show-release-note");
-UI26.ContextMenu.maybeRemoveItem({
+UI25.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
   actionId: "help.release-notes"
 });
-UI26.ContextMenu.maybeRemoveItem({
+UI25.ContextMenu.maybeRemoveItem({
   location: "mainMenuHelp/default",
   actionId: "help.report-issue"
 });
 Common13.Runnable.maybeRemoveLateInitializationRunnable("whats-new");
-UI26.ViewManager.registerViewExtension({
+UI25.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "release-note",
   title: i18nLazyString25(UIStrings25.whatsNew),
@@ -3847,7 +3809,7 @@ UI26.ViewManager.registerViewExtension({
     return new WhatsNew.ReleaseNoteView.ReleaseNoteView();
   }
 });
-UI26.ActionRegistration.registerActionExtension({
+UI25.ActionRegistration.registerActionExtension({
   category: "HELP",
   actionId: "help.release-notes",
   title: i18nLazyString25(UIStrings25.releaseNotes),
@@ -3856,7 +3818,7 @@ UI26.ActionRegistration.registerActionExtension({
     return WhatsNew.WhatsNew.ReleaseNotesActionDelegate.instance();
   }
 });
-UI26.ActionRegistration.registerActionExtension({
+UI25.ActionRegistration.registerActionExtension({
   category: "HELP",
   actionId: "help.report-issue",
   title: i18nLazyString25(UIStrings25.reportADevtoolsIssue),
@@ -3883,12 +3845,12 @@ Common13.Settings.registerSettingExtension({
     }
   ]
 });
-UI26.ContextMenu.registerItem({
+UI25.ContextMenu.registerItem({
   location: "mainMenuHelp/default",
   actionId: "help.release-notes",
   order: 10
 });
-UI26.ContextMenu.registerItem({
+UI25.ContextMenu.registerItem({
   location: "mainMenuHelp/default",
   actionId: "help.report-issue",
   order: 11
