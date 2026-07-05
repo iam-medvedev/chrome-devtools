@@ -5,19 +5,21 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('LighthouseProtocolService', () => {
+describeWithEnvironment('LighthouseProtocolService', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Lighthouse;
     let primaryTarget;
     let rootTarget;
     let suspendAllTargets;
     let resumeAllTargets;
+    let connection;
     beforeEach(async () => {
         Lighthouse = await import('./lighthouse.js');
-        rootTarget = createTarget({ type: SDK.Target.Type.TAB });
+        connection = new MockCDPConnection();
+        rootTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
         createTarget({ parentTarget: rootTarget, subtype: 'prerender' });
         primaryTarget = createTarget({ parentTarget: rootTarget });
         const targetManager = SDK.TargetManager.TargetManager.instance();
@@ -39,11 +41,12 @@ describeWithMockConnection('LighthouseProtocolService', () => {
         sinon.assert.calledOnce(suspendAllTargets);
     });
     it('attaches to to the root target', async () => {
-        const attachedToTargetStub = sinon.stub();
-        setMockConnectionResponseHandler('Target.attachToTarget', attachedToTargetStub);
+        const attachedToTargetStub = sinon.stub().returns({});
+        connection.setSuccessHandler('Target.attachToTarget', attachedToTargetStub);
         const service = new Lighthouse.LighthouseProtocolService.ProtocolService();
         await service.attach(urlString `https://example.com/page`);
-        sinon.assert.calledOnceWithExactly(attachedToTargetStub, { targetId: rootTarget.targetInfo()?.targetId, flatten: true });
+        sinon.assert.calledOnce(attachedToTargetStub);
+        sinon.assert.calledWith(attachedToTargetStub, { targetId: rootTarget.targetInfo()?.targetId, flatten: true });
     });
     it('resumes all targets', async () => {
         const service = new Lighthouse.LighthouseProtocolService.ProtocolService();
@@ -58,7 +61,7 @@ describeWithMockConnection('LighthouseProtocolService', () => {
         mockWorker.terminate = sinon.stub();
         const workerStub = sinon.stub(globalThis, 'Worker').returns(mockWorker);
         try {
-            setMockConnectionResponseHandler('Target.attachToTarget', () => ({ sessionId: 'mock-session-id' }));
+            connection.setSuccessHandler('Target.attachToTarget', () => ({ sessionId: 'mock-session-id' }));
             const service = new Lighthouse.LighthouseProtocolService.ProtocolService();
             await service.attach(urlString `https://example.com/page`);
             // Start a request. It will wait for the worker to be ready.

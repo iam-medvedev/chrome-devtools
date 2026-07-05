@@ -8,52 +8,56 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
-import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
-import { setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
+import { deinitializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { dispatchEvent } from '../../testing/MockConnection.js';
+import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { createContentProviderUISourceCodes } from '../../testing/UISourceCodeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('NetworkNavigatorView', () => {
+describe('NetworkNavigatorView', () => {
+    setupRuntimeHooks();
+    setupLocaleHooks();
     let workspace;
+    let backend;
     beforeEach(async () => {
-        setMockResourceTree(false);
+        backend = new MockDebuggerBackend();
+        workspace = backend.universe.workspace;
+        const targetManager = backend.universe.targetManager;
+        const debuggerWorkspaceBinding = backend.universe.debuggerWorkspaceBinding;
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
-        workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
+        sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(workspace);
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(targetManager);
+        sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(backend.universe.ignoreListManager);
+        sinon.stub(Common.Settings.Settings, 'instance').returns(backend.universe.settings);
         const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({
             forceNew: true,
             targetManager,
             workspace,
             debuggerWorkspaceBinding,
-            settings: Common.Settings.Settings.instance()
+            settings: backend.universe.settings,
         });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
     });
+    afterEach(async () => {
+        sinon.restore();
+        await deinitializeGlobalVars();
+    });
     describe('reveals main target', () => {
+        let tabTarget;
         let target;
         let project;
         beforeEach(async () => {
-            const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-            createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
-            target = createTarget({ parentTarget: tabTarget });
+            tabTarget = backend.createTarget({ type: SDK.Target.Type.TAB });
+            backend.createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
+            target = backend.createTarget({ parentTarget: tabTarget });
             ({ project } = createContentProviderUISourceCodes({
                 items: [
                     { url: urlString `http://example.com/`, mimeType: 'text/html' },
@@ -131,7 +135,7 @@ describeWithMockConnection('NetworkNavigatorView', () => {
         });
     });
     it('updates in scope change', () => {
-        const target = createTarget();
+        const target = backend.createTarget();
         const { project } = createContentProviderUISourceCodes({
             items: [
                 { url: urlString `http://example.com/`, mimeType: 'text/html' },
@@ -142,7 +146,7 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             projectType: Workspace.Workspace.projectTypes.Network,
             target,
         });
-        const anotherTarget = createTarget();
+        const anotherTarget = backend.createTarget();
         const { project: anotherProject } = createContentProviderUISourceCodes({
             items: [
                 { url: urlString `http://example.org/`, mimeType: 'text/html' },
@@ -165,11 +169,13 @@ describeWithMockConnection('NetworkNavigatorView', () => {
         assert.deepEqual(rootElement.firstChild()?.children().map(i => i.title), ['(index)', 'background.bmp']);
         project.removeProject();
         anotherProject.removeProject();
+        anotherTarget.dispose('test');
+        target.dispose('test');
     });
     describe('removing source codes selection throttling', () => {
         let target;
         beforeEach(() => {
-            target = createTarget();
+            target = backend.createTarget();
         });
         it('selects just once when removing multiple sibling source codes', () => {
             const { project } = createContentProviderUISourceCodes({
@@ -341,7 +347,6 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             otherProject.removeProject();
         });
         it('selects just once when excution-context-destroyed event removes sibling source codes', async () => {
-            const backend = new MockProtocolBackend();
             dispatchEvent(target, 'Runtime.executionContextCreated', {
                 context: {
                     id: 2,
@@ -382,15 +387,15 @@ describeWithMockConnection('NetworkNavigatorView', () => {
         let target;
         let resolveFn = null;
         beforeEach(() => {
-            target = createTarget();
+            backend.cdpConnection.setSuccessHandler('Debugger.setBlackboxPatterns', () => ({}));
+            backend.cdpConnection.setSuccessHandler('Debugger.setBlackboxExecutionContexts', () => ({}));
+            target = backend.createTarget();
             Workspace.IgnoreListManager.IgnoreListManager.instance().addChangeListener(() => {
                 if (resolveFn) {
                     resolveFn();
                     resolveFn = null;
                 }
             });
-            setMockConnectionResponseHandler('Debugger.setBlackboxPatterns', () => ({}));
-            setMockConnectionResponseHandler('Debugger.setBlackboxExecutionContexts', () => ({}));
         });
         const updatePatternSetting = async (settingValue) => {
             const setting = Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
@@ -433,6 +438,7 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             const mixedFolder = nodeExampleCom.childAt(1);
             assert.strictEqual(mixedFolder.tooltip, 'mixed');
             assert.strictEqual(ignoredFolder.tooltip, 'ignored (ignore listed)');
+            await disableIgnoreListing();
             project.removeProject();
         });
         it('updates folders when ignore listing rules change', async () => {
@@ -515,6 +521,7 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             otherProject.removeProject();
             assert.strictEqual(mixedFolder.tooltip, 'mixed (ignore listed)');
             assert.strictEqual(ignoredFolder.tooltip, 'ignored (ignore listed)');
+            await disableIgnoreListing();
             project.removeProject();
         });
     });

@@ -4,15 +4,12 @@
 import { assert } from 'chai';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Trace from '../../../models/trace/trace.js';
-import { createTarget } from '../../../testing/EnvironmentHelpers.js';
-import { clearAllMockConnectionResponseHandlers, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
 import { allThreadEntriesInTrace } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Utils from './utils.js';
-describeWithMockConnection('EntryNodes', function () {
-    beforeEach(async () => {
-        clearAllMockConnectionResponseHandlers();
-    });
+describeWithEnvironment('EntryNodes', function () {
     describe('nodeIdsForEvent', () => {
         it('identifies node ids for a Layout event', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
@@ -93,16 +90,17 @@ describeWithMockConnection('EntryNodes', function () {
             assert.isOk(layoutEvent);
             const nodeIds = Utils.EntryNodes.nodeIdsForEvent(parsedTrace, layoutEvent);
             assert.deepEqual(Array.from(nodeIds), [2]);
+            const connection = new MockCDPConnection();
             // Create a mock target, dom model, document and node, using the ID of 2 to match with the event above
-            const target = createTarget();
+            const target = createTarget({ connection });
             const domModel = target.model(SDK.DOMModel.DOMModel);
             assert.exists(domModel);
             const documentNode = { nodeId: nodeId(1) };
             const domNode = new SDK.DOMModel.DOMNode(domModel);
             domNode.id = nodeId(2);
             // Set related CDP methods responses to return our mock document and node.
-            setMockConnectionResponseHandler('DOM.pushNodesByBackendIdsToFrontend', () => ({ nodeIds: [domNode.id] }));
-            setMockConnectionResponseHandler('DOM.getDocument', () => ({ root: documentNode }));
+            connection.setSuccessHandler('DOM.pushNodesByBackendIdsToFrontend', () => ({ nodeIds: [domNode.id] }));
+            connection.setSuccessHandler('DOM.getDocument', () => ({ root: documentNode }));
             // Register the mock document and node in DOMModel, these use the mock responses set above.
             await domModel.requestDocument();
             domModel.registerNode(domNode);

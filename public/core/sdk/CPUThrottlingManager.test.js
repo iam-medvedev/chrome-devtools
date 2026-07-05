@@ -7,7 +7,6 @@ import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
-import * as SDK from './sdk.js';
 describe('CPUThrottlingManager', () => {
     setupSettingsHooks(); // For the MultitargetNetworkManager.
     setupRuntimeHooks();
@@ -19,14 +18,14 @@ describe('CPUThrottlingManager', () => {
             return { result: { value: 42, type: "number" /* Protocol.Runtime.RemoteObjectType.Number */ } };
         });
         universe.createTarget({ connection });
-        const manager = new SDK.CPUThrottlingManager.CPUThrottlingManager(universe.settings, universe.targetManager);
+        const manager = universe.cpuThrottlingManager;
         const concurrency = await manager.getHardwareConcurrency();
         assert.strictEqual(concurrency, 42);
     });
     it('can set the current hardwareConcurrency', async () => {
         const universe = new TestUniverse();
         const cdpStub = sinon.stub(universe.createTarget().emulationAgent(), 'invoke_setHardwareConcurrencyOverride').resolves();
-        const manager = new SDK.CPUThrottlingManager.CPUThrottlingManager(universe.settings, universe.targetManager);
+        const manager = universe.cpuThrottlingManager;
         manager.setHardwareConcurrency(5);
         sinon.assert.calledOnce(cdpStub);
         sinon.assert.calledWithExactly(cdpStub, { hardwareConcurrency: 5 });
@@ -34,7 +33,7 @@ describe('CPUThrottlingManager', () => {
     it('does not set concurrency to 0 or negative numbers', async () => {
         const universe = new TestUniverse();
         const cdpStub = sinon.stub(universe.createTarget().emulationAgent(), 'invoke_setHardwareConcurrencyOverride').resolves();
-        const manager = new SDK.CPUThrottlingManager.CPUThrottlingManager(universe.settings, universe.targetManager);
+        const manager = universe.cpuThrottlingManager;
         manager.setHardwareConcurrency(0);
         sinon.assert.notCalled(cdpStub);
         manager.setHardwareConcurrency(-1);

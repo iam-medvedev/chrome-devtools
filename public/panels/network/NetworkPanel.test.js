@@ -8,20 +8,21 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
-describeWithMockConnection('NetworkPanel', () => {
+describeWithEnvironment('NetworkPanel', () => {
     let target;
     let networkPanel;
     beforeEach(async () => {
-        target = createTarget();
+        const connection = new MockCDPConnection();
+        connection.setSuccessHandler('Tracing.start', () => ({}));
+        connection.setSuccessHandler('Tracing.end', () => ({}));
+        target = createTarget({ connection });
         networkPanel = await createNetworkPanelForMockConnection();
-        setMockConnectionResponseHandler('Tracing.start', () => ({}));
-        setMockConnectionResponseHandler('Tracing.end', () => ({}));
     });
     afterEach(async () => {
         await RenderCoordinator.done();
@@ -57,7 +58,7 @@ describeWithMockConnection('NetworkPanel', () => {
     describe('in scope', tracingTests(true));
     describe('out of scpe', tracingTests(false));
 });
-describeWithMockConnection('NetworkPanel', () => {
+describeWithEnvironment('NetworkPanel', () => {
     let networkPanel;
     beforeEach(async () => {
         registerNoopActions(['inspector-main.reload']);
@@ -72,6 +73,7 @@ describeWithMockConnection('NetworkPanel', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
             settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: Common.Console.Console.instance(),
         });
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });

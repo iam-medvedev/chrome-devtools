@@ -5,8 +5,7 @@ import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { activate, getMainFrame, LOADER_ID, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as Logs from '../logs/logs.js';
 const { urlString } = Platform.DevToolsPath;
@@ -282,7 +281,7 @@ describe('NetworkLog', () => {
         });
     });
 });
-describeWithMockConnection('NetworkLog', () => {
+describeWithEnvironment('NetworkLog', () => {
     it('clears on main frame navigation', () => {
         const networkLog = Logs.NetworkLog.NetworkLog.instance();
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });

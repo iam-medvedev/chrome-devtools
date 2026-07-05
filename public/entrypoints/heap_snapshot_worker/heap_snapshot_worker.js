@@ -714,6 +714,28 @@ var HeapSnapshotNode = class {
     }
     return void 0;
   }
+  nodeValueAsInt() {
+    if (this.rawType() !== this.snapshot.nodeNumberType) {
+      return void 0;
+    }
+    if (this.rawName() !== "int") {
+      return void 0;
+    }
+    const valNode = this.findInternalEdgeTarget("value");
+    if (!valNode) {
+      return void 0;
+    }
+    const value = parseInt(valNode.rawName(), 10);
+    return isNaN(value) ? void 0 : value;
+  }
+  nodeStringLength() {
+    const lengthNode = this.findInternalEdgeTarget("length");
+    return lengthNode ? lengthNode.nodeValueAsInt() : void 0;
+  }
+  nodeStringHash() {
+    const hashNode = this.findInternalEdgeTarget("hash");
+    return hashNode ? hashNode.nodeValueAsInt() : void 0;
+  }
   nodeIsTruncatedString() {
     const truncNode = this.findInternalEdgeTarget("truncated");
     if (!truncNode) {
@@ -901,6 +923,8 @@ var MIN_INTERFACE_PROPERTY_COUNT = 1;
 var MAX_INTERFACE_NAME_LENGTH = 120;
 var MIN_OBJECT_COUNT_PER_INTERFACE = 2;
 var MIN_OBJECT_PROPORTION_PER_INTERFACE = 1e3;
+var NO_NATIVE_CONTEXT = -1;
+var SHARED_NATIVE_CONTEXT = -2;
 var HeapSnapshot = class _HeapSnapshot {
   nodes;
   containmentEdges;
@@ -973,6 +997,9 @@ var HeapSnapshot = class _HeapSnapshot {
   #nodeDistancesForRetainersView;
   #edgeNamesThatAreNotWeakMaps;
   detachednessAndClassIndexArray;
+  nodeNativeContextAttribution;
+  #nativeContextSizes;
+  #nativeContextOrdinals;
   #interfaceNames = /* @__PURE__ */ new Map();
   #interfaceDefinitions;
   constructor(profile, progress) {
@@ -1061,8 +1088,11 @@ var HeapSnapshot = class _HeapSnapshot {
     this.buildSamples();
     this.#progress.updateStatus("Building locations\u2026");
     this.buildLocationMap();
+    this.#progress.updateStatus("Calculating native context attribution\u2026");
+    this.calculateNativeContextAttribution();
     this.#progress.updateStatus("Calculating retained sizes\u2026");
     await this.installResultsFromSecondThread(resultsFromSecondWorker);
+    this.calculateNativeContextSizes();
     this.#progress.updateStatus("Calculating statistics\u2026");
     this.calculateStatistics();
     if (this.profile.snapshot.trace_function_count) {
@@ -1096,6 +1126,26 @@ var HeapSnapshot = class _HeapSnapshot {
       }
     }
     return void 0;
+  }
+  getObjectInfo(nodeIndex) {
+    const nodesLength = this.nodes.length;
+    const nodeFieldCount = this.nodeFieldCount;
+    if (!Number.isInteger(nodeIndex) || nodeIndex < 0 || nodeIndex >= nodesLength || nodeIndex % nodeFieldCount !== 0) {
+      throw new Error("Invalid nodeIndex " + nodeIndex);
+    }
+    const node = this.createNode(nodeIndex);
+    return {
+      id: node.id(),
+      name: node.name(),
+      type: node.type(),
+      nodeIndex,
+      detachedness: node.detachedness(),
+      selfSize: node.selfSize(),
+      retainedSize: node.retainedSize(),
+      distance: node.distance(),
+      edgeCount: node.edgesCount(),
+      retainerCount: node.retainersCount()
+    };
   }
   startInitStep1InSecondThread(secondWorker) {
     const resultsFromSecondWorker = new Promise((resolve, reject) => {
@@ -1291,39 +1341,75 @@ var HeapSnapshot = class _HeapSnapshot {
   }
   getDuplicateStrings() {
     const filter = this.createNamedFilter("duplicatedStrings");
-    const groupsMap = /* @__PURE__ */ new Map();
+    const untruncatedGroups = /* @__PURE__ */ new Map();
+    const truncatedGroups = /* @__PURE__ */ new Map();
     const node = this.createNode(0);
     for (let i = 0; i < this.nodeCount; ++i) {
       node.nodeIndex = i * this.nodeFieldCount;
       if (filter(node)) {
         const name = node.name();
         const truncated = node.nodeIsTruncatedString();
-        let group = groupsMap.get(name);
-        if (!group) {
-          group = {
-            value: name,
-            count: 0,
-            totalSelfSize: 0,
-            totalRetainedSize: 0,
-            nodes: [],
-            truncated
-          };
-          groupsMap.set(name, group);
-        } else if (truncated) {
-          group.truncated = true;
+        if (truncated) {
+          const length = node.nodeStringLength();
+          const hash = node.nodeStringHash();
+          let groups = truncatedGroups.get(name);
+          if (!groups) {
+            groups = [];
+            truncatedGroups.set(name, groups);
+          }
+          let group = groups.find((g) => g.length === length && g.hash === hash);
+          if (!group) {
+            group = {
+              value: name,
+              count: 0,
+              totalSelfSize: 0,
+              totalRetainedSize: 0,
+              nodes: [],
+              truncated: true,
+              length,
+              hash
+            };
+            groups.push(group);
+          }
+          group.count++;
+          group.totalSelfSize += node.selfSize();
+          group.totalRetainedSize += node.retainedSize();
+          group.nodes.push({
+            id: node.id(),
+            selfSize: node.selfSize(),
+            retainedSize: node.retainedSize(),
+            distance: node.distance()
+          });
+        } else {
+          let group = untruncatedGroups.get(name);
+          if (!group) {
+            group = {
+              value: name,
+              count: 0,
+              totalSelfSize: 0,
+              totalRetainedSize: 0,
+              nodes: [],
+              truncated: false
+            };
+            untruncatedGroups.set(name, group);
+          }
+          group.count++;
+          group.totalSelfSize += node.selfSize();
+          group.totalRetainedSize += node.retainedSize();
+          group.nodes.push({
+            id: node.id(),
+            selfSize: node.selfSize(),
+            retainedSize: node.retainedSize(),
+            distance: node.distance()
+          });
         }
-        group.count++;
-        group.totalSelfSize += node.selfSize();
-        group.totalRetainedSize += node.retainedSize();
-        group.nodes.push({
-          id: node.id(),
-          selfSize: node.selfSize(),
-          retainedSize: node.retainedSize(),
-          distance: node.distance()
-        });
       }
     }
-    return Array.from(groupsMap.values()).sort((a, b) => b.totalRetainedSize - a.totalRetainedSize);
+    const allGroups = [
+      ...untruncatedGroups.values(),
+      ...Array.from(truncatedGroups.values()).flat()
+    ];
+    return allGroups.sort((a, b) => b.totalRetainedSize - a.totalRetainedSize);
   }
   createNodeIdFilter(minNodeId, maxNodeId) {
     function nodeIdFilter(node) {
@@ -1397,28 +1483,8 @@ var HeapSnapshot = class _HeapSnapshot {
         });
         markUnreachableNodes();
         return (node) => !getBit(node);
-      case "duplicatedStrings": {
-        const stringToNodeIndexMap = /* @__PURE__ */ new Map();
-        const node = this.createNode(0);
-        for (let i = 0; i < this.nodeCount; ++i) {
-          node.nodeIndex = i * this.nodeFieldCount;
-          const rawType = node.rawType();
-          if (rawType === this.nodeStringType || rawType === this.nodeConsStringType) {
-            if (node.isFlatConsString()) {
-              continue;
-            }
-            const name = node.name();
-            const alreadyVisitedNodeIndex = stringToNodeIndexMap.get(name);
-            if (alreadyVisitedNodeIndex === void 0) {
-              stringToNodeIndexMap.set(name, node.nodeIndex);
-            } else {
-              bitmap.setBit(alreadyVisitedNodeIndex / this.nodeFieldCount);
-              bitmap.setBit(node.nodeIndex / this.nodeFieldCount);
-            }
-          }
-        }
-        return getBit;
-      }
+      case "duplicatedStrings":
+        return this.createDuplicatedStringsFilter(bitmap);
       case "objectsRetainedByEventHandlers": {
         const node = this.createNode(0);
         const nodeFieldCount = this.nodeFieldCount;
@@ -1457,8 +1523,75 @@ var HeapSnapshot = class _HeapSnapshot {
         markUnreachableNodes();
         return (node2) => !getBit(node2);
       }
+      case "sharedNativeContext":
+        return (node) => {
+          const ordinal = node.nodeIndex / this.nodeFieldCount;
+          return this.nodeNativeContextAttribution[ordinal] === SHARED_NATIVE_CONTEXT;
+        };
+      case "noNativeContext":
+        return (node) => {
+          const ordinal = node.nodeIndex / this.nodeFieldCount;
+          return this.nodeNativeContextAttribution[ordinal] === NO_NATIVE_CONTEXT;
+        };
+      default:
+        if (filterName.startsWith("nativeContext_")) {
+          const targetNodeIndex = Number(filterName.substring("nativeContext_".length));
+          const targetOrdinal = targetNodeIndex / this.nodeFieldCount;
+          return (node) => {
+            const ordinal = node.nodeIndex / this.nodeFieldCount;
+            return this.nodeNativeContextAttribution[ordinal] === targetOrdinal;
+          };
+        }
     }
     throw new Error("Invalid filter name");
+  }
+  createDuplicatedStringsFilter(bitmap) {
+    const untruncatedStringToNodeIndexMap = /* @__PURE__ */ new Map();
+    const truncatedStringToNodeIndexesMap = /* @__PURE__ */ new Map();
+    const node = this.createNode(0);
+    for (let i = 0; i < this.nodeCount; ++i) {
+      node.nodeIndex = i * this.nodeFieldCount;
+      const rawType = node.rawType();
+      if (rawType !== this.nodeStringType && rawType !== this.nodeConsStringType) {
+        continue;
+      }
+      if (node.isFlatConsString()) {
+        continue;
+      }
+      if (node.selfSize() === 0) {
+        continue;
+      }
+      const name = node.name();
+      const truncated = node.nodeIsTruncatedString();
+      if (truncated) {
+        const length = node.nodeStringLength();
+        const hash = node.nodeStringHash();
+        let entries = truncatedStringToNodeIndexesMap.get(name);
+        if (!entries) {
+          entries = [];
+          truncatedStringToNodeIndexesMap.set(name, entries);
+        }
+        const match = entries.find((e) => e.length === length && e.hash === hash);
+        if (match) {
+          bitmap.setBit(match.nodeIndex / this.nodeFieldCount);
+          bitmap.setBit(node.nodeIndex / this.nodeFieldCount);
+        } else {
+          entries.push({ nodeIndex: node.nodeIndex, length, hash });
+        }
+      } else {
+        const alreadyVisitedNodeIndex = untruncatedStringToNodeIndexMap.get(name);
+        if (alreadyVisitedNodeIndex === void 0) {
+          untruncatedStringToNodeIndexMap.set(name, node.nodeIndex);
+        } else {
+          bitmap.setBit(alreadyVisitedNodeIndex / this.nodeFieldCount);
+          bitmap.setBit(node.nodeIndex / this.nodeFieldCount);
+        }
+      }
+    }
+    return (node2) => {
+      const ordinal = node2.nodeIndex / this.nodeFieldCount;
+      return bitmap.getBit(ordinal);
+    };
   }
   getAggregatesByClassKey(sortedIndexes, key, filter) {
     let aggregates;
@@ -2015,6 +2148,184 @@ var HeapSnapshot = class _HeapSnapshot {
       node.nodeIndex = node.nextNodeIndex();
     }
   }
+  calculateNativeContextAttribution() {
+    const attribution = new Int32Array(this.nodeCount).fill(NO_NATIVE_CONTEXT);
+    const isFixed = Platform.TypedArrayUtilities.createBitVector(this.nodeCount);
+    const edgeTargets = this.buildInitEdgeTargets();
+    this.#nativeContextOrdinals = [];
+    for (let ordinal = 0; ordinal < this.nodeCount; ordinal++) {
+      if (this.isNativeContext(ordinal)) {
+        this.#nativeContextOrdinals.push(ordinal);
+        attribution[ordinal] = ordinal;
+        isFixed.setBit(ordinal);
+      } else {
+        const owner = this.inferFixedNativeContextForOrdinal(ordinal, edgeTargets);
+        if (owner >= 0) {
+          attribution[ordinal] = owner;
+          isFixed.setBit(ordinal);
+        }
+      }
+    }
+    this.propagateNativeContextAttribution(attribution, isFixed);
+    this.nodeNativeContextAttribution = attribution;
+  }
+  calculateNativeContextSizes() {
+    const nodeFieldCount = this.nodeFieldCount;
+    const node = this.createNode(0);
+    const nativeContexts = [];
+    const ordinalToInfo = /* @__PURE__ */ new Map();
+    for (const ordinal of this.#nativeContextOrdinals) {
+      node.nodeIndex = ordinal * nodeFieldCount;
+      const info = {
+        nodeId: node.id(),
+        nodeIndex: node.nodeIndex,
+        nodeName: node.name(),
+        attributedSize: 0,
+        retainedSize: node.retainedSize(),
+        selfSize: node.selfSize()
+      };
+      nativeContexts.push(info);
+      ordinalToInfo.set(ordinal, info);
+    }
+    let sharedSize = 0;
+    let noAttributionSize = 0;
+    const selfSizeOffset = this.nodeSelfSizeOffset;
+    const nodes = this.nodes;
+    for (let i = 0; i < this.nodeCount; ++i) {
+      const ownerOrdinal = this.nodeNativeContextAttribution[i];
+      const selfSize = nodes.getValue(i * nodeFieldCount + selfSizeOffset);
+      if (ownerOrdinal === SHARED_NATIVE_CONTEXT) {
+        sharedSize += selfSize;
+      } else if (ownerOrdinal === NO_NATIVE_CONTEXT) {
+        noAttributionSize += selfSize;
+      } else {
+        console.assert(ownerOrdinal >= 0, "ownerOrdinal should be >= 0");
+        const info = ordinalToInfo.get(ownerOrdinal);
+        console.assert(info !== void 0, "info should exist");
+        if (info) {
+          info.attributedSize += selfSize;
+        }
+      }
+    }
+    this.#nativeContextSizes = {
+      nativeContexts,
+      sharedSize,
+      noAttributionSize
+    };
+  }
+  // Precomputes and maps specific outgoing edge targets for every node in the heap.
+  // For each node ordinal, it stores the target ordinal of its:
+  // - 'native_context' edge (in the returned 'nativeContext' array)
+  // - 'map' edge (in the returned 'map' array)
+  // This allows fast O(1) lookups of these key edges during attribution.
+  buildInitEdgeTargets() {
+    const { nodeCount, nodeFieldCount, containmentEdges, edgeFieldsCount, edgeTypeOffset, edgeNameOffset, edgeToNodeOffset, edgeInternalType, firstEdgeIndexes, strings } = this;
+    const nativeContext = new Int32Array(nodeCount).fill(-1);
+    const map = new Int32Array(nodeCount).fill(-1);
+    const nativeContextIdx = strings.indexOf("native_context");
+    const mapIdx = strings.indexOf("map");
+    for (let ordinal = 0; ordinal < nodeCount; ordinal++) {
+      const first = firstEdgeIndexes[ordinal];
+      const last = firstEdgeIndexes[ordinal + 1];
+      for (let edgeIndex = first; edgeIndex < last; edgeIndex += edgeFieldsCount) {
+        const edgeType = containmentEdges.getValue(edgeIndex + edgeTypeOffset);
+        if (edgeType !== edgeInternalType) {
+          continue;
+        }
+        const nameIdx = containmentEdges.getValue(edgeIndex + edgeNameOffset);
+        const childNodeIndex = containmentEdges.getValue(edgeIndex + edgeToNodeOffset);
+        const childOrdinal = childNodeIndex / nodeFieldCount;
+        if (nameIdx === nativeContextIdx && nativeContext[ordinal] === -1 && this.isNativeContext(childOrdinal)) {
+          nativeContext[ordinal] = childOrdinal;
+        } else if (nameIdx === mapIdx && map[ordinal] === -1) {
+          map[ordinal] = childOrdinal;
+        }
+      }
+    }
+    return { nativeContext, map };
+  }
+  // Infers the native context for a node by looking at its Map.
+  // In V8, objects point to their Map, and Maps point to their Meta-Map (the Map of the Map).
+  // To save space, individual Maps do not have a direct link to the NativeContext.
+  // Instead, the Meta-Map (which is unique per NativeContext) has a 'native_context' edge.
+  // Thus, we can find the NativeContext of an object by traversing:
+  // Object -> Map -> Meta-Map -> NativeContext.
+  inferFixedNativeContextForOrdinal(ordinal, edgeTargets) {
+    const mapOrdinal = edgeTargets.map[ordinal];
+    if (mapOrdinal >= 0) {
+      const metaMapOrdinal = edgeTargets.map[mapOrdinal];
+      if (metaMapOrdinal >= 0) {
+        const mapNativeContextOrdinal = edgeTargets.nativeContext[metaMapOrdinal];
+        if (mapNativeContextOrdinal >= 0) {
+          return mapNativeContextOrdinal;
+        }
+      }
+    }
+    return NO_NATIVE_CONTEXT;
+  }
+  mergeNativeContextOwner(current, incoming) {
+    console.assert(incoming !== NO_NATIVE_CONTEXT, "Incoming owner should not be NO_NATIVE_CONTEXT");
+    if (current === SHARED_NATIVE_CONTEXT || incoming === SHARED_NATIVE_CONTEXT) {
+      return SHARED_NATIVE_CONTEXT;
+    }
+    if (current === NO_NATIVE_CONTEXT) {
+      return incoming;
+    }
+    if (current === incoming) {
+      return current;
+    }
+    return SHARED_NATIVE_CONTEXT;
+  }
+  propagateNativeContextAttribution(attribution, isFixed) {
+    const { nodeCount, containmentEdges, edgeFieldsCount, edgeTypeOffset, edgeToNodeOffset, edgeShortcutType, edgeWeakType, nodeFieldCount, firstEdgeIndexes } = this;
+    const queue = [];
+    for (let ordinal = 0; ordinal < nodeCount; ordinal++) {
+      if (isFixed.getBit(ordinal)) {
+        queue.push(ordinal);
+      }
+    }
+    let queueIndex = 0;
+    while (queueIndex < queue.length) {
+      const ordinal = queue[queueIndex];
+      queueIndex++;
+      const current = attribution[ordinal];
+      console.assert(current !== NO_NATIVE_CONTEXT, "Queue should not contain unattributed nodes");
+      const first = firstEdgeIndexes[ordinal];
+      const last = firstEdgeIndexes[ordinal + 1];
+      for (let edgeIndex = first; edgeIndex < last; edgeIndex += edgeFieldsCount) {
+        const edgeType = containmentEdges.getValue(edgeIndex + edgeTypeOffset);
+        if (edgeType === edgeShortcutType || edgeType === edgeWeakType) {
+          continue;
+        }
+        const childNodeIndex = containmentEdges.getValue(edgeIndex + edgeToNodeOffset);
+        const childOrdinal = childNodeIndex / nodeFieldCount;
+        if (childOrdinal === ordinal || isFixed.getBit(childOrdinal)) {
+          continue;
+        }
+        const merged = this.mergeNativeContextOwner(attribution[childOrdinal], current);
+        if (merged !== attribution[childOrdinal]) {
+          attribution[childOrdinal] = merged;
+          queue.push(childOrdinal);
+        }
+      }
+    }
+  }
+  getNativeContextSizes() {
+    return this.#nativeContextSizes;
+  }
+  nodeNativeContext(nodeIndex) {
+    const ordinal = nodeIndex / this.nodeFieldCount;
+    const nativeContextOrdinal = this.nodeNativeContextAttribution[ordinal];
+    if (nativeContextOrdinal < 0) {
+      return nativeContextOrdinal;
+    }
+    return nativeContextOrdinal * this.nodeFieldCount;
+  }
+  isNativeContext(nodeOrdinal) {
+    const nameIdx = this.nodes.getValue(nodeOrdinal * this.nodeFieldCount + this.nodeNameOffset);
+    const name = this.strings[nameIdx];
+    return name === "system / NativeContext" || name.startsWith("system / NativeContext / ") || name === "Detached system / NativeContext" || name.startsWith("Detached system / NativeContext / ");
+  }
   interfaceDefinitions() {
     return JSON.stringify(this.#interfaceDefinitions ?? []);
   }
@@ -2267,7 +2578,7 @@ var HeapSnapshot = class _HeapSnapshot {
         this,
         nodeOrdinal,
         1
-        /* DOMLinkState.ATTACHED */
+        /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.ATTACHED */
       );
     }
     while (detached.length !== 0) {
@@ -2281,7 +2592,7 @@ var HeapSnapshot = class _HeapSnapshot {
         this,
         nodeOrdinal,
         2
-        /* DOMLinkState.DETACHED */
+        /* HeapSnapshotModel.HeapSnapshotModel.DOMLinkState.DETACHED */
       );
     }
     console.timeEnd("propagateDOMState");

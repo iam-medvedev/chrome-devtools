@@ -99,16 +99,14 @@ describeWithEnvironment('BreakpointEditDialog', function () {
         const { editor } = await getDialogAndEditor(0, 'x === 42', false, () => { });
         assert.strictEqual(editor.state.doc.sliceString(0), 'x === 42');
     });
-    // Flaky
-    it.skip('[crbug.com/505352053] focuses the editor input field after changing the breakpoint type', async () => {
+    it('focuses the editor input field after changing the breakpoint type', async () => {
         const { dialog, editor } = await getDialogAndEditor(0, '', false, () => { });
         renderElementIntoDOM(dialog.contentElement);
         setBreakpointType(dialog, "LOGPOINT" /* SDK.DebuggerModel.BreakpointType.LOGPOINT */);
         await dialog.updateComplete;
         assert.isTrue(editor.hasFocus);
     });
-    // Flaky
-    it.skip('[crbug.com/505352053] focuses the editor when focus() is called, even if it is not yet rendered', async () => {
+    it('focuses the editor when focus() is called, even if it is not yet rendered', async () => {
         const { dialog, editor } = await getDialogAndEditor(0, '', false, () => { });
         renderElementIntoDOM(dialog.contentElement);
         assert.isFalse(editor.hasFocus);

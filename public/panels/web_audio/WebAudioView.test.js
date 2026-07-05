@@ -4,8 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as WebAudio from './web_audio.js';
@@ -25,7 +24,7 @@ const context2 = {
     callbackBufferSize: 1024,
     maxOutputChannelCount: 2,
 };
-describeWithMockConnection('WebAudioView', () => {
+describeWithEnvironment('WebAudioView', () => {
     beforeEach(() => {
         UI.ActionRegistration.registerActionExtension({
             actionId: 'components.collect-garbage',

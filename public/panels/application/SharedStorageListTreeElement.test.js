@@ -5,12 +5,11 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { getMainFrame, MAIN_FRAME_ID, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-describeWithMockConnection('SharedStorageListTreeElement', function () {
+describeWithEnvironment('SharedStorageListTreeElement', function () {
     let target;
     let sharedStorageModel;
     let treeElement;

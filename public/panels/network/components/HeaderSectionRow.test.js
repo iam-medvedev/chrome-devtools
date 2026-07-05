@@ -8,6 +8,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import { dispatchCopyEvent, dispatchInputEvent, dispatchKeyDownEvent, dispatchPasteEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as NetworkComponents from './components.js';
 async function renderHeaderSectionRow(header) {
     const component = new NetworkComponents.HeaderSectionRow.HeaderSectionRow();
@@ -518,6 +519,29 @@ Learn more`);
         assert.strictEqual(headerEditedEventCount, 2);
         assert.strictEqual(headerNameFromEvent, editedHeaderName.trim());
         assert.strictEqual(headerValueFromEvent, editedHeaderValue.trim());
+    });
+    it('shows context menu and copies header value', async () => {
+        const headerData = {
+            name: Platform.StringUtilities.toLowerCaseString('some-header-name'),
+            value: 'someHeaderValue',
+            valueEditable: 0 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.DISABLED */,
+        };
+        const { component } = await renderHeaderSectionRow(headerData);
+        assert.isNotNull(component.shadowRoot);
+        const headerValue = component.shadowRoot.querySelector('.header-value');
+        assert.instanceOf(headerValue, HTMLElement);
+        const copyTextStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
+        const actionTakenStub = sinon.stub(Host.userMetrics, 'actionTaken');
+        const contextMenuShow = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+        const event = new MouseEvent('contextmenu');
+        headerValue.dispatchEvent(event);
+        sinon.assert.calledOnce(contextMenuShow);
+        const contextMenu = contextMenuShow.thisValues[0];
+        const copyValueItem = contextMenu.clipboardSection().items.find((item) => item.buildDescriptor().label === 'Copy value');
+        assert.exists(copyValueItem);
+        contextMenu.invokeHandler(copyValueItem.id());
+        sinon.assert.calledOnceWithExactly(copyTextStub, 'someHeaderValue');
+        sinon.assert.calledOnceWithExactly(actionTakenStub, Host.UserMetrics.Action.NetworkPanelCopyValue);
     });
 });
 //# sourceMappingURL=HeaderSectionRow.test.js.map

@@ -2,34 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
+import * as Formatter from '../../../models/formatter/formatter.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as SourceMapsResolver from '../../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
-import { createTarget } from '../../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, } from '../../../testing/MockConnection.js';
-import { MockProtocolBackend } from '../../../testing/MockScopeChain.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { MockDebuggerBackend } from '../../../testing/MockScopeChain.js';
+import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { encodeSourceMap } from '../../../testing/SourceMapEncoder.js';
 import { makeMockSamplesHandlerData, makeProfileCall, } from '../../../testing/TraceHelpers.js';
 import * as Utils from './utils.js';
 const { urlString } = Platform.DevToolsPath;
 export async function loadCodeLocationResolvingScenario() {
-    const target = createTarget();
-    const targetManager = SDK.TargetManager.TargetManager.instance();
-    const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
-    const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-    const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-    const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-        forceNew: true,
-        resourceMapping,
-        targetManager,
-        ignoreListManager,
-        workspace,
-    });
-    const backend = new MockProtocolBackend();
+    const backend = new MockDebuggerBackend();
+    const target = backend.createTarget();
+    sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+        .returns(backend.universe.debuggerWorkspaceBinding);
+    sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(backend.universe.ignoreListManager);
+    sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(backend.universe.workspace);
+    sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(backend.universe.targetManager);
+    sinon.stub(SDK.PageResourceLoader.PageResourceLoader, 'instance').returns(backend.universe.pageResourceLoader);
+    sinon.stub(Common.Settings.Settings, 'instance').returns(backend.universe.settings);
+    sinon.stub(Formatter.FormatterWorkerPool.FormatterWorkerPool.instance(), 'javaScriptScopeTree').resolves(null);
+    const debuggerWorkspaceBinding = backend.universe.debuggerWorkspaceBinding;
     // The following mock data creates a source mapping from two authored
     // scripts to a single complied script. One of the sources
     // (ignored.ts) is marked as ignore listed in the source map.
@@ -78,7 +79,13 @@ export async function loadCodeLocationResolvingScenario() {
         contentScriptId: contentScript.scriptId,
     };
 }
-describeWithMockConnection('isIgnoreListedEntry', () => {
+describe('isIgnoreListedEntry', () => {
+    setupRuntimeHooks();
+    setupSettingsHooks();
+    setupLocaleHooks();
+    afterEach(() => {
+        sinon.restore();
+    });
     it('uses url mappings to determine if an url is ignore listed', async () => {
         const { authoredScriptURL, genScriptURL, scriptId } = await loadCodeLocationResolvingScenario();
         const LINE_NUMBER = 0;
@@ -178,17 +185,14 @@ describeWithMockConnection('isIgnoreListedEntry', () => {
         ignoreContentScriptSetting.set(ignoreContentScriptSettingValue);
     });
     it('get the first matched rule for the ignored script', async () => {
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
+        const backend = new MockDebuggerBackend();
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(backend.universe.debuggerWorkspaceBinding);
+        sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(backend.universe.ignoreListManager);
+        sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(backend.universe.workspace);
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(backend.universe.targetManager);
+        sinon.stub(SDK.PageResourceLoader.PageResourceLoader, 'instance').returns(backend.universe.pageResourceLoader);
+        sinon.stub(Common.Settings.Settings, 'instance').returns(backend.universe.settings);
         ignoreRegex('youtube*');
         const url = urlString `https://www.youtube.com/s/desktop/2ebf714b/jsbin/desktop_polymer.vflset/desktop_polymer.js`;
         Workspace.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);

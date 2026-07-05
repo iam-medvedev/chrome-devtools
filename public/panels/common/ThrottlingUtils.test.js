@@ -37,9 +37,9 @@ describeWithEnvironment('ThrottlingUtils', () => {
         assert.strictEqual(result.networkConditions, SDK.NetworkManager.Slow4GConditions);
     });
     it('falls back to MidTier CPU throttling when calibrated throttling is unavailable', () => {
-        sinon.stub(SDK.CPUThrottlingManager.CalibratedMidTierMobileThrottlingOption, 'rate').returns(0);
+        sinon.stub(PanelsCommon.CPUThrottlingOption.CalibratedMidTierMobileThrottlingOption, 'rate').returns(0);
         const result = PanelsCommon.ThrottlingUtils.getThrottlingRecommendations();
-        assert.strictEqual(result.cpuOption, SDK.CPUThrottlingManager.MidTierThrottlingOption);
+        assert.strictEqual(result.cpuOption, PanelsCommon.CPUThrottlingOption.MidTierThrottlingOption);
     });
 });
 //# sourceMappingURL=ThrottlingUtils.test.js.map

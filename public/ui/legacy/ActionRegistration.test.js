@@ -23,6 +23,7 @@ describeWithEnvironment('ActionRegistration', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
             settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: Common.Console.Console.instance(),
         });
         UI.ActionRegistration.registerActionExtension({
             actionId: 'test-action',
@@ -39,7 +40,7 @@ describeWithEnvironment('ActionRegistration', () => {
         assert.lengthOf(list, 0);
     });
 });
-describeWithEnvironment('ActionRegistration', () => {
+describe('ActionRegistration', () => {
     let actionExecuted = false;
     const actionTitle = 'Mock action';
     const actionId = 'mock.action';

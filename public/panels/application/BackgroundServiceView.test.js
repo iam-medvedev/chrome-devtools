@@ -5,11 +5,10 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { dispatchClickEvent } from '../../testing/DOMHelpers.js';
-import { createTarget, registerActions } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, registerActions } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Resources from './application.js';
-describeWithMockConnection('BackgroundServiceView', () => {
+describeWithEnvironment('BackgroundServiceView', () => {
     const testKey = 'test-storage-key';
     const serviceName = "backgroundFetch" /* Protocol.BackgroundService.ServiceName.BackgroundFetch */;
     let target;

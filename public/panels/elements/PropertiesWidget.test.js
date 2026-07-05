@@ -6,19 +6,24 @@ import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 const NODE_ID = 1;
-describeWithMockConnection('PropertiesWidget', () => {
+describeWithEnvironment('PropertiesWidget', () => {
     let target;
+    let connection;
     beforeEach(() => {
         stubNoopSettings();
-        target = createTarget();
-        setMockConnectionResponseHandler('DOM.getDocument', () => ({ root: { nodeId: NODE_ID } }));
-        setMockConnectionResponseHandler('DOM.getNodesForSubtreeByStyle', () => ({ nodeIds: [] }));
+        connection = new MockCDPConnection();
+        target = createTarget({ connection });
+        connection.setSuccessHandler('DOM.getDocument', () => ({ root: { nodeId: NODE_ID } }));
+        connection.setSuccessHandler('DOM.getNodesForSubtreeByStyle', () => ({ nodeIds: [] }));
+    });
+    afterEach(() => {
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
     });
     const updatesUiOnEvent = (event, inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
@@ -57,7 +62,7 @@ describeWithMockConnection('PropertiesWidget', () => {
             subtype: "null" /* Protocol.Runtime.RemoteObjectSubtype.Null */,
             objectId: '1',
         });
-        setMockConnectionResponseHandler('Runtime.getProperties', () => ({
+        connection.setSuccessHandler('Runtime.getProperties', () => ({
             result: [
                 {
                     name: 'myGetter',
@@ -80,7 +85,7 @@ describeWithMockConnection('PropertiesWidget', () => {
                 value: null,
             },
         });
-        setMockConnectionResponseHandler('Runtime.callFunctionOn', callFunctionOn);
+        connection.setHandler('Runtime.callFunctionOn', callFunctionOn);
         sinon.stub(node, 'resolveToObject').withArgs('properties-sidebar-pane').resolves(object);
         const viewFunction = createViewFunctionStub(Elements.PropertiesWidget.PropertiesWidget);
         new Elements.PropertiesWidget.PropertiesWidget(viewFunction);

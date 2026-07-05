@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Elements from './elements.js';
-describeWithMockConnection('PlatformFontsWidget', () => {
+describeWithEnvironment('PlatformFontsWidget', () => {
     it('correctly displays font stats', async () => {
         const sharedModel = {};
         sharedModel.addEventListener = sinon.stub();

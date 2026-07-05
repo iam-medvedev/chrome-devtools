@@ -8,16 +8,19 @@ import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { deinitializeGlobalVars, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
-import * as Bindings from '../../bindings/bindings.js';
+import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as Logs from '../../logs/logs.js';
 import * as Workspace from '../../workspace/workspace.js';
-import { ContextSelectionAgent, DOMNodeContext, FileContext, PerformanceAgent, RequestContext, StorageAgent, StorageItem, } from '../ai_assistance.js';
+import { ContextSelectionAgent, DOMNodeContext, FileContext, PerformanceTraceContext, RequestContext, StorageAgent, StorageItem, } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('ContextSelectionAgent', function () {
+describe('ContextSelectionAgent', function () {
     const snapshotTester = new SnapshotTester(this, import.meta);
+    setupLocaleHooks();
+    setupSettingsHooks();
     function mockHostConfig() {
         updateHostConfig({
             devToolsAiAssistanceContextSelectionAgent: {
@@ -29,17 +32,11 @@ describeWithMockConnection('ContextSelectionAgent', function () {
         });
     }
     beforeEach(() => {
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
+        const universe = new TestUniverse();
+        sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(universe.ignoreListManager);
+    });
+    afterEach(async () => {
+        await deinitializeGlobalVars();
     });
     describe('buildRequest', () => {
         it('structure matches the snapshot', async function () {
@@ -118,7 +115,7 @@ describeWithMockConnection('ContextSelectionAgent', function () {
             sinon.assert.calledOnce(performanceRecordAndReload);
             const contextChange = responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
             assert.exists(contextChange);
-            assert.instanceOf(contextChange.context, PerformanceAgent.PerformanceTraceContext);
+            assert.instanceOf(contextChange.context, PerformanceTraceContext.PerformanceTraceContext);
             assert.strictEqual(contextChange.context.getItem().parsedTrace, trace);
         });
     });

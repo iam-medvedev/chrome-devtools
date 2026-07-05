@@ -176,8 +176,6 @@ export class DOMTreeWidget extends UI.Widget.Widget {
     onSelectedNodeChanged = () => { };
     onElementsTreeUpdated = () => { };
     onDocumentUpdated = () => { };
-    onElementExpanded = () => { };
-    onElementCollapsed = () => { };
     #maxTreeDepth;
     #enableContextMenu = true;
     #showComments = true;
@@ -359,11 +357,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
             },
             onElementCollapsed: () => {
                 this.#clearHighlightedNode();
-                this.onElementCollapsed();
             },
             onElementExpanded: () => {
                 this.#clearHighlightedNode();
-                this.onElementExpanded();
             },
         }, this.#viewOutput, this.contentElement);
         if (firstRender && this.#viewOutput.elementsTreeOutline) {
@@ -1782,6 +1778,10 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         const pickerIconPseudoElement = node.pickerIconPseudoElement();
         if (pickerIconPseudoElement) {
             visibleChildren.push(pickerIconPseudoElement);
+        }
+        const interestButtonPseudoElement = node.interestButtonPseudoElement();
+        if (interestButtonPseudoElement) {
+            visibleChildren.push(interestButtonPseudoElement);
         }
         const backdropPseudoElement = node.backdropPseudoElement();
         if (backdropPseudoElement) {

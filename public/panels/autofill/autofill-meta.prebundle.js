@@ -29,9 +29,10 @@ UI.ViewManager.registerViewExtension({
     commandPrompt: i18nLazyString(UIStrings.showAutofill),
     order: 100,
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
-    async loadView() {
+    async loadView(universe) {
         const Autofill = await loadAutofillModule();
-        return new Autofill.AutofillView.AutofillView();
+        const { autofillManager } = universe;
+        return new Autofill.AutofillView.AutofillView(autofillManager);
     },
 });
 //# sourceMappingURL=autofill-meta.prebundle.js.map

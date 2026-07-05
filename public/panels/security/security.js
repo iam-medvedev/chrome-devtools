@@ -1448,22 +1448,25 @@ function getSecurityStateIconForOverview(securityState, className) {
   }
   return createIcon(iconName, className);
 }
-function createHighlightedUrl(url, securityState) {
+function renderHighlightedUrl(url, securityState) {
   const schemeSeparator = "://";
   const index = url.indexOf(schemeSeparator);
   if (index === -1) {
-    const text = document.createElement("span");
-    text.textContent = url;
-    return text;
+    return html`<span>${url}</span>`;
   }
-  const highlightedUrl = document.createElement("span");
-  highlightedUrl.classList.add("highlighted-url");
   const scheme = url.substr(0, index);
   const content = url.substr(index + schemeSeparator.length);
-  highlightedUrl.createChild("span", "url-scheme-" + securityState).textContent = scheme;
-  highlightedUrl.createChild("span", "url-scheme-separator").textContent = schemeSeparator;
-  highlightedUrl.createChild("span").textContent = content;
-  return highlightedUrl;
+  return html`
+    <span class="highlighted-url">
+      <span class=${`url-scheme-${securityState}`}>${scheme}</span>
+      <span class="url-scheme-separator">${schemeSeparator}</span>
+      <span>${content}</span>
+    </span>`;
+}
+function createHighlightedUrl(url, securityState) {
+  const fragment = document.createDocumentFragment();
+  render(renderHighlightedUrl(url, securityState), fragment);
+  return fragment.firstElementChild;
 }
 var DEFAULT_VIEW = (input, output, target) => {
   render(html`
@@ -2122,21 +2125,20 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
   }
 };
 var SecurityOriginView = class extends UI3.Widget.VBox {
-  originLockIcon;
+  #origin;
+  #originDisplay;
   constructor(origin, originState) {
     super({ jslog: `${VisualLogging.pane("security.origin-view")}` });
     this.registerRequiredCSS(originView_css_default, lockIcon_css_default);
     this.setMinimumSize(200, 100);
+    this.#origin = origin;
     this.element.classList.add("security-origin-view");
     const titleSection = this.element.createChild("div", "title-section");
     const titleDiv = titleSection.createChild("div", "title-section-header");
     titleDiv.textContent = i18nString3(UIStrings3.origin);
     UI3.ARIAUtils.markAsHeading(titleDiv, 1);
-    const originDisplay = titleSection.createChild("div", "origin-display");
-    this.originLockIcon = originDisplay.createChild("span");
-    const icon = getSecurityStateIconForDetailedView(originState.securityState, `security-property security-property-${originState.securityState}`);
-    this.originLockIcon.appendChild(icon);
-    originDisplay.appendChild(createHighlightedUrl(origin, originState.securityState));
+    this.#originDisplay = titleSection.createChild("div", "origin-display");
+    this.#renderOriginDisplay(originState.securityState);
     const originNetworkDiv = titleSection.createChild("div", "view-network-button");
     const originNetworkButton = UI3.UIUtils.createTextButton(i18nString3(UIStrings3.viewRequestsInNetworkPanel), (event) => {
       event.consume();
@@ -2312,9 +2314,14 @@ var SecurityOriginView = class extends UI3.Widget.VBox {
     return sanDiv;
   }
   setSecurityState(newSecurityState) {
-    this.originLockIcon.removeChildren();
-    const icon = getSecurityStateIconForDetailedView(newSecurityState, `security-property security-property-${newSecurityState}`);
-    this.originLockIcon.appendChild(icon);
+    this.#renderOriginDisplay(newSecurityState);
+  }
+  #renderOriginDisplay(securityState) {
+    const icon = getSecurityStateIconForDetailedView(securityState, `security-property security-property-${securityState}`);
+    render(html`
+      ${icon}
+      ${renderHighlightedUrl(this.#origin, securityState)}
+    `, this.#originDisplay);
   }
 };
 var SecurityDetailsTable = class {

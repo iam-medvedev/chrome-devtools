@@ -4,10 +4,10 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, stubNoopSettings, waitFor, } from '../../testing/EnvironmentHelpers.js';
+import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { cleanTestDOM } from '../../testing/DOMHooks.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings, waitFor } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Animation from './animation.js';
 const TIME_ANIMATION_PAYLOAD = {
@@ -96,7 +96,7 @@ const waitForAll = async (selector, root) => {
     }
     return elements || null;
 };
-describeWithMockConnection('AnimationTimeline', () => {
+describeWithEnvironment('AnimationTimeline', () => {
     let target;
     let view;
     beforeEach(() => {
@@ -117,8 +117,10 @@ describeWithMockConnection('AnimationTimeline', () => {
             return stub.wrappedMethod(params);
         });
     });
-    afterEach(() => {
+    afterEach(async () => {
         view.detach();
+        cleanTestDOM();
+        await raf();
     });
     const updatesUiOnEvent = (inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
@@ -543,7 +545,7 @@ describeWithMockConnection('AnimationTimeline', () => {
         });
     });
 });
-describeWithMockConnection('AnimationTimeline', () => {
+describeWithEnvironment('AnimationTimeline', () => {
     it('shows placeholder showing that the panel is waiting for animations', async () => {
         const view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
         const placeholder = await waitFor('.animation-timeline-buffer-hint', view.element.shadowRoot);

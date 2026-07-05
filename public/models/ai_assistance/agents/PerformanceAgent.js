@@ -7,19 +7,16 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
-import * as Annotations from '../../annotations/annotations.js';
 import * as Logs from '../../logs/logs.js';
-import * as SourceMapScopes from '../../source_map_scopes/source_map_scopes.js';
 import * as TextUtils from '../../text_utils/text_utils.js';
 import * as Trace from '../../trace/trace.js';
-import { canResourceContentsBeReadForTrace, extractContextOrigin } from '../AiOrigins.js';
+import { canResourceContentsBeReadForTrace } from '../AiOrigins.js';
 import { sanitizeHeaders } from '../data_formatters/NetworkRequestFormatter.js';
 import { PerformanceInsightFormatter, } from '../data_formatters/PerformanceInsightFormatter.js';
 import { PerformanceTraceFormatter } from '../data_formatters/PerformanceTraceFormatter.js';
 import { debugLog } from '../debug.js';
 import { AICallTree } from '../performance/AICallTree.js';
-import { AgentFocus } from '../performance/AIContext.js';
-import { AiAgent, ConversationContext, } from './AiAgent.js';
+import { AiAgent, } from './AiAgent.js';
 const UIStringsNotTranslated = {
     /**
      * @description Shown when the agent is investigating network activity
@@ -36,34 +33,6 @@ const lockedString = i18n.i18n.lockedString;
  * TESTERS. Otherwise, a server-side preamble is used (see
  * chrome_preambles.gcl). Sync local changes with the server-side.
  */
-const GREEN_DEV_ANNOTATIONS_INSTRUCTIONS = `
-- CRITICAL: You also have access to functions called addElementAnnotation and addNeworkRequestAnnotation,
-which should be used to highlight elements and network requests (respectively).
-
-- CRITICAL: Each time an element or a network request is mentioned, you MUST ALSO call the functions
-  addElementAnnotation (for an element) or addNeworkRequestAnnotation (for a network request).
-- CRITICAL: Don't add more than one annotation per element or network request.
-- These functions should be called as soon as you identify the entity that needs to be highlighted.
-- In addition to this, the addElementAnnotation function should always be called for the LCP element, if known.
-- The annotationMessage should be descriptive and relevant to why the element or network request is being highlighted.
-`;
-const GREEN_DEV_FRESH_TRACE_ANNOTATIONS_INSTRUCTIONS = `
-When referring to an element for which you know the nodeId, always call the function addElementAnnotation, specifying
-the id and an annotation reason.
-When referring to a network request for which you know the eventKey for, always call the function
-addNetworkRequestAnnotation, specifying the id and an annotation reason.
-- CRITICAL: Each time you add an annotating link you MUST ALSO call the function addElementAnnotation.
-- CRITICAL: Each time you describe an element or network request as being problematic you MUST call the function
-addElementAnnotation and specify an annotation reason.
-- CRITICAL: Each time you describe a network request as being problematic you MUST call the function
-addNetworkRequestAnnotation and specify an annotation reason.
-- CRITICAL: If you spot ANY of the following problems:
-  - Render-blocking elements/network requests.
-  - Significant long task (especially on main thread).
-  - Layout shifts (e.g. due to unsized images).
-  ... then you MUST call addNetworkRequestAnnotation for ALL network requests and addaddElementAnnotation for all
-  elements described in your conclusion.
-`;
 /**
  * Preamble clocks in at ~1341 tokens.
  *   The prose is around 4.5 chars per token.
@@ -192,130 +161,6 @@ var ScorePriority;
     ScorePriority[ScorePriority["CRITICAL"] = 2] = "CRITICAL";
     ScorePriority[ScorePriority["DEFAULT"] = 1] = "DEFAULT";
 })(ScorePriority || (ScorePriority = {}));
-export class PerformanceTraceContext extends ConversationContext {
-    static fromParsedTrace(parsedTrace) {
-        return new PerformanceTraceContext(AgentFocus.fromParsedTrace(parsedTrace));
-    }
-    static fromInsight(parsedTrace, insight) {
-        return new PerformanceTraceContext(AgentFocus.fromInsight(parsedTrace, insight));
-    }
-    static fromCallTree(callTree) {
-        return new PerformanceTraceContext(AgentFocus.fromCallTree(callTree));
-    }
-    #focus;
-    constructor(focus) {
-        super();
-        this.#focus = focus;
-    }
-    getURL() {
-        const url = this.#focus.parsedTrace.data.Meta.mainFrameURL;
-        try {
-            new URL(url);
-            return url;
-        }
-        catch {
-            const { min, max } = this.#focus.parsedTrace.data.Meta.traceBounds;
-            return `trace-${min}-${max}`;
-        }
-    }
-    /**
-     * Returns the origin for a performance trace in the AI context.
-     *
-     * To prevent cross-origin prompt injection attacks, imported traces
-     * are isolated from live pages. We assign them a virtual origin
-     * (`imported-trace://${domain}`) so they do not share the origin of live pages
-     * (e.g., `https://${domain}`). This forces a conversation reset when transitioning
-     * between imported trace data and live pages.
-     */
-    getOrigin() {
-        const parsedTrace = this.#focus.parsedTrace;
-        const url = this.getURL();
-        const origin = extractContextOrigin(url);
-        const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace);
-        if (!isFresh) {
-            const parsed = Common.ParsedURL.ParsedURL.fromString(origin);
-            return `imported-trace://${parsed ? parsed.domain() : origin}`;
-        }
-        return origin;
-    }
-    getItem() {
-        return this.#focus;
-    }
-    getTitle() {
-        const focus = this.#focus;
-        let url = focus.primaryInsightSet?.url;
-        if (!url) {
-            url = new URL(focus.parsedTrace.data.Meta.mainFrameURL);
-        }
-        const parts = [`Trace: ${url.hostname}`];
-        if (focus.insight) {
-            parts.push(focus.insight.title);
-        }
-        if (focus.event) {
-            parts.push(Trace.Name.forEntry(focus.event));
-        }
-        if (focus.callTree) {
-            const node = focus.callTree.selectedNode ?? focus.callTree.rootNode;
-            parts.push(Trace.Name.forEntry(node.event));
-        }
-        return parts.join(' – ');
-    }
-    /**
-     * Presents the default suggestions that are shown when the user first clicks
-     * "Ask AI".
-     */
-    async getSuggestions() {
-        const focus = this.#focus;
-        if (focus.callTree) {
-            return [
-                { title: 'What\'s the purpose of this work?', jslogContext: 'performance-default' },
-                { title: 'Where is time being spent?', jslogContext: 'performance-default' },
-                { title: 'How can I optimize this?', jslogContext: 'performance-default' },
-            ];
-        }
-        if (focus.insight) {
-            return new PerformanceInsightFormatter(focus, focus.insight).getSuggestions();
-        }
-        const suggestions = [{ title: 'What performance issues exist with my page?', jslogContext: 'performance-default' }];
-        const insightSet = focus.primaryInsightSet;
-        if (insightSet) {
-            const lcp = Trace.Insights.Common.getLCP(insightSet);
-            const cls = Trace.Insights.Common.getCLS(insightSet);
-            const inp = Trace.Insights.Common.getINP(insightSet);
-            const ModelHandlers = Trace.Handlers.ModelHandlers;
-            const GOOD = "good" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */;
-            const poorMetrics = new Set();
-            if (lcp && ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(lcp.value) !== GOOD) {
-                suggestions.push({ title: 'How can I improve LCP?', jslogContext: 'performance-default' });
-                poorMetrics.add(Trace.Insights.Types.InsightKeys.LCP_BREAKDOWN);
-                poorMetrics.add(Trace.Insights.Types.InsightKeys.LCP_DISCOVERY);
-            }
-            if (inp && ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inp.value) !== GOOD) {
-                suggestions.push({ title: 'How can I improve INP?', jslogContext: 'performance-default' });
-                poorMetrics.add(Trace.Insights.Types.InsightKeys.INP_BREAKDOWN);
-            }
-            if (cls && ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(cls.value) !== GOOD) {
-                suggestions.push({ title: 'How can I improve CLS?', jslogContext: 'performance-default' });
-                poorMetrics.add(Trace.Insights.Types.InsightKeys.CLS_CULPRITS);
-            }
-            // Add up to 4 suggestions total (including those already added) from the top failing insights
-            // that aren't already covered by CWV suggestions.
-            const additionalSuggestionsRequired = Math.max(0, 4 - suggestions.length);
-            if (additionalSuggestionsRequired > 0) {
-                const failingInsightSuggestions = Object.values(insightSet.model)
-                    .filter(model => {
-                    return model.state !== 'pass' && Trace.Insights.Common.isInsightKey(model.insightKey) &&
-                        !poorMetrics.has(model.insightKey);
-                })
-                    .map(model => new PerformanceInsightFormatter(focus, model).getSuggestions().at(-1))
-                    .filter((suggestion) => !!suggestion)
-                    .slice(0, additionalSuggestionsRequired);
-                suggestions.push(...failingInsightSuggestions);
-            }
-        }
-        return suggestions;
-    }
-}
 // 16k Tokens * ~4 char per token.
 const MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
 const STATIC_LABEL_NAMES = {
@@ -377,14 +222,6 @@ export class PerformanceAgent extends AiAgent {
         text: freshTracePreamble,
         metadata: { source: 'devtools', score: ScorePriority.CRITICAL }
     };
-    #greenDevAnnotationsFact = {
-        text: GREEN_DEV_ANNOTATIONS_INSTRUCTIONS,
-        metadata: { source: 'devtools', score: ScorePriority.CRITICAL }
-    };
-    #greenDevFreshTraceAnnotationsFact = {
-        text: GREEN_DEV_FRESH_TRACE_ANNOTATIONS_INSTRUCTIONS,
-        metadata: { source: 'devtools', score: ScorePriority.CRITICAL }
-    };
     #networkDataDescriptionFact = {
         text: PerformanceTraceFormatter.networkDataFormatDescription,
         metadata: { source: 'devtools', score: ScorePriority.CRITICAL }
@@ -403,8 +240,6 @@ export class PerformanceAgent extends AiAgent {
         this.#networkDataDescriptionFact,
         this.#freshTraceExtraPreambleFact,
         this.#notExternalExtraPreambleFact,
-        this.#greenDevAnnotationsFact,
-        this.#greenDevFreshTraceAnnotationsFact,
     ]);
     /**
      * When we enhance the query with additional information, we need to know it
@@ -416,9 +251,7 @@ export class PerformanceAgent extends AiAgent {
         return Host.AidaClient.ClientFeature.CHROME_PERFORMANCE_FULL_AGENT;
     }
     get userTier() {
-        return Boolean(Root.Runtime.hostConfig.devToolsGreenDevUi?.enabled) ?
-            'TESTERS' :
-            Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
+        return Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
     }
     get options() {
         const temperature = Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
@@ -728,16 +561,9 @@ export class PerformanceAgent extends AiAgent {
     async #addFacts(context) {
         const focus = context.getItem();
         this.addFact(this.#notExternalExtraPreambleFact);
-        const annotationsEnabled = Annotations.AnnotationRepository.annotationsEnabled();
-        if (annotationsEnabled) {
-            this.addFact(this.#greenDevAnnotationsFact);
-        }
         const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(focus.parsedTrace);
         if (isFresh) {
             this.addFact(this.#freshTraceExtraPreambleFact);
-            if (annotationsEnabled) {
-                this.addFact(this.#greenDevFreshTraceAnnotationsFact);
-            }
         }
         this.addFact(this.#callFrameDataDescriptionFact);
         this.addFact(this.#networkDataDescriptionFact);
@@ -746,14 +572,7 @@ export class PerformanceAgent extends AiAgent {
             if (!target) {
                 throw new Error('missing target');
             }
-            this.#formatter = new PerformanceTraceFormatter(focus);
-            this.#formatter.resolveFunctionCode =
-                async (url, line, column) => {
-                    if (!target || !isFresh) {
-                        return null;
-                    }
-                    return await SourceMapScopes.FunctionCodeResolver.getFunctionCodeFromLocation(target, url, line, column, { contextLength: 200, contextLineLength: 5, appendProfileData: true });
-                };
+            this.#formatter = context.createFormatter();
             this.#createFactForTraceSummary();
             await this.#createFactForCriticalRequests();
             await this.#createFactForMainThreadBottomUpSummary();
@@ -1112,58 +931,6 @@ export class PerformanceAgent extends AiAgent {
                 return { result: { callTree }, widgets };
             },
         });
-        if (Annotations.AnnotationRepository.annotationsEnabled()) {
-            this.declareFunction('addElementAnnotation', {
-                description: 'Adds a visual annotation in the Elements panel, attached to a node with the specific UID provided. Use it to highlight nodes in the Elements panel and provide contextual suggestions to the user related to their queries.',
-                parameters: {
-                    type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
-                    description: '',
-                    nullable: false,
-                    properties: {
-                        elementId: {
-                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                            description: 'The UID of the element to annotate.',
-                            nullable: false,
-                        },
-                        annotationMessage: {
-                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                            description: 'The message the annotation should show to the user.',
-                            nullable: false,
-                        },
-                    },
-                    required: ['elementId', 'annotationMessage']
-                },
-                handler: async (params) => {
-                    return await this.addElementAnnotation(params.elementId, params.annotationMessage);
-                },
-            });
-            this.declareFunction('addNetworkRequestAnnotation', {
-                description: 'Adds a visual annotation in the Network panel, attached to the request with the specific UID provided. ' +
-                    'Use it to highlight requests in the Network panel and provide contextual suggestions to the user ' +
-                    'related to their queries.',
-                parameters: {
-                    type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
-                    description: '',
-                    nullable: false,
-                    properties: {
-                        eventKey: {
-                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                            description: 'The event key of the network request to annotate.',
-                            nullable: false,
-                        },
-                        annotationMessage: {
-                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                            description: 'The message the annotation should show to the user.',
-                            nullable: false,
-                        },
-                    },
-                    required: ['eventKey', 'annotationMessage']
-                },
-                handler: async (params) => {
-                    return await this.addNetworkRequestAnnotation(params.eventKey, params.annotationMessage);
-                },
-            });
-        }
         this.declareFunction('getFunctionCode', {
             description: 'Returns the code for a function defined at the given location. The result is annotated with the runtime performance of each line of code.',
             parameters: {
@@ -1271,7 +1038,7 @@ export class PerformanceAgent extends AiAgent {
                 // Then, check ResourceTreeModel, but only when it is valid. Don't want to
                 // use if viewing a loaded trace from DevTools attached to an unrelated
                 // page.
-                const script = parsedTrace.data.Scripts.scripts.find(script => script.url === url);
+                const script = parsedTrace.data.Scripts.scripts.find((script) => script.url === url);
                 if (script?.content !== undefined) {
                     content = script.content;
                 }
@@ -1288,6 +1055,9 @@ export class PerformanceAgent extends AiAgent {
                 }
                 else {
                     return { error: 'Resource not found' };
+                }
+                if (content === undefined) {
+                    return { error: 'Resource content not found' };
                 }
                 const key = `getResourceContent(${args.url})`;
                 this.#cacheFunctionResult(focus, key, content);
@@ -1392,37 +1162,6 @@ export class PerformanceAgent extends AiAgent {
             }
         }
         return null;
-    }
-    async addElementAnnotation(elementId, annotationMessage) {
-        if (!Annotations.AnnotationRepository.annotationsEnabled()) {
-            console.warn('Received agent request to add element annotation with annotations disabled');
-            return { error: 'Annotations are not currently enabled' };
-        }
-        // eslint-disable-next-line no-console
-        console.log(`AI AGENT EVENT: Performance Agent adding annotation for element ${elementId}: '${annotationMessage}'`);
-        Annotations.AnnotationRepository.instance().addElementsAnnotation(annotationMessage, elementId);
-        return { result: { success: true } };
-    }
-    async addNetworkRequestAnnotation(eventKey, annotationMessage) {
-        if (!Annotations.AnnotationRepository.annotationsEnabled()) {
-            console.warn('Received agent request to add network request annotation with annotations disabled');
-            return { error: 'Annotations are not currently enabled' };
-        }
-        // eslint-disable-next-line no-console
-        console.log(`AI AGENT EVENT: Performance Agent adding annotation for network request ${eventKey}: '${annotationMessage}'`);
-        let requestId = undefined;
-        const focus = this.context?.getItem();
-        if (focus) {
-            const event = focus.lookupEvent(eventKey);
-            if (event && Trace.Types.Events.isSyntheticNetworkRequest(event)) {
-                requestId = event.args.data.requestId;
-            }
-        }
-        if (!requestId) {
-            console.warn('Unable to lookup requestId for request with event key', eventKey);
-        }
-        Annotations.AnnotationRepository.instance().addNetworkRequestAnnotation(annotationMessage, requestId);
-        return { result: { success: true } };
     }
     async #getNetworkRequestImageData(lcpRequest) {
         const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();

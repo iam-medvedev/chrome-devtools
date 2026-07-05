@@ -185,7 +185,9 @@ var AdsView = class extends UI.Widget.Widget {
       viewportAdCount: 0,
       averageViewportAdCount: 0,
       totalAdCpuTime: 0,
-      totalAdNetworkBytes: 0
+      totalAdNetworkBytes: 0,
+      updateAdFrames: [],
+      removeAdFrames: []
     };
     this.requestUpdate();
   }
@@ -243,7 +245,9 @@ var AdsView = class extends UI.Widget.Widget {
       viewportAdCount: 0,
       averageViewportAdCount: 0,
       totalAdCpuTime: 0,
-      totalAdNetworkBytes: 0
+      totalAdNetworkBytes: 0,
+      updateAdFrames: [],
+      removeAdFrames: []
     };
     this.requestUpdate();
   }

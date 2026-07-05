@@ -5,12 +5,11 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { stripLitHtmlCommentNodes } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html } from '../../ui/lit/lit.js';
 import * as PanelsCommon from '../common/common.js';
-describeWithMockConnection('LighthouseReportRenderer', () => {
+describeWithEnvironment('LighthouseReportRenderer', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Lighthouse;
     let target;

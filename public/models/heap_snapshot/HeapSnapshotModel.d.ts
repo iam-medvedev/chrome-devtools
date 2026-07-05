@@ -199,4 +199,36 @@ export interface DuplicateStringGroup {
         distance: number;
     }>;
     truncated?: boolean;
+    length?: number;
+    hash?: number;
+}
+export interface NativeContextSize {
+    nodeId: number;
+    nodeIndex: number;
+    nodeName: string;
+    attributedSize: number;
+    retainedSize: number;
+    selfSize: number;
+}
+export interface NativeContextSizes {
+    nativeContexts: NativeContextSize[];
+    sharedSize: number;
+    noAttributionSize: number;
+}
+export declare const enum DOMLinkState {
+    UNKNOWN = 0,
+    ATTACHED = 1,
+    DETACHED = 2
+}
+export interface ObjectInfo {
+    id: number;
+    name: string;
+    type: string;
+    nodeIndex: number;
+    detachedness: DOMLinkState;
+    selfSize: number;
+    retainedSize: number;
+    distance: number;
+    edgeCount: number;
+    retainerCount: number;
 }

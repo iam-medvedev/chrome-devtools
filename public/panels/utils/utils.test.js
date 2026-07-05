@@ -173,6 +173,32 @@ describeWithEnvironment('panels/utils', () => {
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-json', iconImage);
         });
+        it('preserves specific icon for overridden stylesheet request', async () => {
+            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/styles.css`, urlString ``, null, null, null);
+            request.setResourceType(Common.ResourceType.resourceTypes.Stylesheet);
+            request.mimeType = 'text/css';
+            request.hasOverriddenContent = true;
+            const markerElement = renderIcon(request);
+            assert.strictEqual(markerElement.className, 'network-override-marker');
+            const iconElement = markerElement.querySelector('devtools-icon');
+            assert.isNotNull(iconElement);
+            assert.strictEqual(iconElement?.getAttribute('name'), 'file-stylesheet');
+            assert.strictEqual(iconElement?.getAttribute('title'), 'Request content is overridden');
+        });
+        it('preserves specific icon for overridden image request', async () => {
+            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/image.png`, urlString ``, null, null, null);
+            request.setResourceType(Common.ResourceType.resourceTypes.Image);
+            request.mimeType = 'image/png';
+            request.responseHeaders = [{ name: 'foo', value: 'overridden' }];
+            request.originalResponseHeaders = [{ name: 'foo', value: 'original' }];
+            const markerElement = renderIcon(request);
+            assert.strictEqual(markerElement.className, 'network-override-marker');
+            const iconElement = markerElement.querySelector('.image.icon');
+            assert.isNotNull(iconElement);
+            const imgElement = iconElement?.querySelector('img');
+            assert.isNotNull(imgElement);
+            assert.strictEqual(imgElement?.getAttribute('title'), 'Request headers are overridden');
+        });
     });
 });
 //# sourceMappingURL=utils.test.js.map

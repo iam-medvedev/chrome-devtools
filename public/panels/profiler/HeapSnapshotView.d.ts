@@ -12,6 +12,10 @@ import { type HeapSnapshotGridNode } from './HeapSnapshotGridNodes.js';
 import { HeapTimelineOverview, type IdsRangeChangedEvent, Samples } from './HeapTimelineOverview.js';
 import { type DataDisplayDelegate, ProfileHeader, ProfileType } from './ProfileHeader.js';
 import type { ProfileTypeRegistry } from './ProfileTypeRegistry.js';
+interface NamedFilter {
+    uiName: string;
+    filterName: string;
+}
 export declare class HeapSnapshotView extends UI.View.SimpleView implements DataDisplayDelegate, UI.SearchableView.Searchable {
     #private;
     searchResults: number[];
@@ -63,6 +67,7 @@ export declare class HeapSnapshotView extends UI.View.SimpleView implements Data
     linkifyObject(nodeIndex: number): Promise<Element | null>;
     populate(): Promise<void>;
     retrieveStatistics(heapSnapshotProxy: HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotProxy): Promise<HeapSnapshotModel.HeapSnapshotModel.Statistics>;
+    updateNativeContextFilters(heapSnapshotProxy: HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotProxy): Promise<void>;
     onIdsRangeChanged(event: Common.EventTarget.EventTargetEvent<IdsRangeChangedEvent>): void;
     toolbarItems(): Promise<UI.Toolbar.ToolbarItem[]>;
     willHide(): void;
@@ -78,10 +83,7 @@ export declare class HeapSnapshotView extends UI.View.SimpleView implements Data
     jumpToSearchResult(searchResultIndex: number): Promise<void>;
     refreshVisibleData(): void;
     changeBase(): void;
-    static readonly ALWAYS_AVAILABLE_FILTERS: ReadonlyArray<{
-        uiName: string;
-        filterName: string;
-    }>;
+    static readonly ALWAYS_AVAILABLE_FILTERS: readonly NamedFilter[];
     changeFilter(): void;
     profiles(): HeapProfileHeader[];
     selectionChanged(event: Common.EventTarget.EventTargetEvent<DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode>>): void;

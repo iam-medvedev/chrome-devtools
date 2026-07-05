@@ -4,13 +4,20 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
-describeWithMockConnection('Script', () => {
+describeWithEnvironment('Script', () => {
+    let universe;
+    let connection;
+    beforeEach(() => {
+        universe = new TestUniverse();
+        connection = new MockCDPConnection();
+    });
     describe('originalContentProvider', () => {
         it('doesn\'t strip //# sourceURL annotations', async () => {
-            const target = createTarget();
+            const target = universe.createTarget({ connection });
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             const url = 'webpack:///src/foo.js';
             const scriptId = '1';
@@ -18,7 +25,7 @@ describeWithMockConnection('Script', () => {
 console.log("foo");
 //# sourceURL=${url}
 `;
-            dispatchEvent(target, 'Debugger.scriptParsed', {
+            connection.dispatchEvent('Debugger.scriptParsed', {
                 scriptId,
                 url,
                 startLine: 2,
@@ -29,13 +36,10 @@ console.log("foo");
                 hash: '',
                 buildId: '',
                 hasSourceURL: true,
-            });
-            setMockConnectionResponseHandler('Debugger.getScriptSource', () => {
+            }, undefined);
+            connection.setSuccessHandler('Debugger.getScriptSource', () => {
                 return {
                     scriptSource,
-                    getError() {
-                        return undefined;
-                    },
                 };
             });
             const script = debuggerModel.scriptForId(scriptId);
@@ -46,9 +50,9 @@ console.log("foo");
     });
     describe('editSource', () => {
         function setupEditTest(scriptId, scriptSource = '') {
-            const target = createTarget();
+            const target = universe.createTarget({ connection });
             const model = target.model(SDK.DebuggerModel.DebuggerModel);
-            dispatchEvent(target, 'Debugger.scriptParsed', {
+            connection.dispatchEvent('Debugger.scriptParsed', {
                 scriptId: scriptId,
                 url: 'https://example.com/test.js',
                 startLine: 0,
@@ -59,11 +63,10 @@ console.log("foo");
                 hash: '',
                 buildId: '',
                 hasSourceURL: false,
-            });
-            setMockConnectionResponseHandler('Debugger.getScriptSource', () => {
+            }, undefined);
+            connection.setSuccessHandler('Debugger.getScriptSource', () => {
                 return {
                     scriptSource,
-                    getError: () => undefined,
                 };
             });
             const script = model.scriptForId(scriptId);
@@ -71,7 +74,7 @@ console.log("foo");
         }
         it('does not invoke the backend when new content and old content match', async () => {
             const { script } = setupEditTest('1', 'console.log("foo")');
-            setMockConnectionResponseHandler('Debugger.setScriptSource', () => {
+            connection.setHandler('Debugger.setScriptSource', () => {
                 throw new Error('Debugger.setScriptSource must not be called');
             });
             const { status } = await script.editSource('console.log("foo")');
@@ -79,7 +82,7 @@ console.log("foo");
         });
         it('updates the source content when the live edit succeeds', async () => {
             const { script } = setupEditTest('1', 'console.log("foo")');
-            setMockConnectionResponseHandler('Debugger.setScriptSource', () => {
+            connection.setSuccessHandler('Debugger.setScriptSource', () => {
                 return {
                     status: "Ok" /* Protocol.Debugger.SetScriptSourceResponseStatus.Ok */,
                 };
@@ -94,7 +97,7 @@ console.log("foo");
         it('does not update the source content when the live edit fails', async () => {
             const scriptContent = 'console.log("foo")';
             const { script } = setupEditTest('1', scriptContent);
-            setMockConnectionResponseHandler('Debugger.setScriptSource', () => {
+            connection.setSuccessHandler('Debugger.setScriptSource', () => {
                 return {
                     status: "CompileError" /* Protocol.Debugger.SetScriptSourceResponseStatus.CompileError */,
                 };
@@ -119,7 +122,7 @@ console.log("foo");
         });
         it('fires an event on the DebuggerModel after returning from the backend', async () => {
             const { script, model } = setupEditTest('1', 'console.log("foo")');
-            setMockConnectionResponseHandler('Debugger.setScriptSource', () => {
+            connection.setSuccessHandler('Debugger.setScriptSource', () => {
                 return {
                     status: "Ok" /* Protocol.Debugger.SetScriptSourceResponseStatus.Ok */,
                 };

@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Components from './components.js';
@@ -53,7 +53,7 @@ function createFieldSettingsDialog() {
     widget.contentElement.append(view);
     return view;
 }
-describeWithMockConnection('FieldSettingsDialog', () => {
+describeWithEnvironment('FieldSettingsDialog', () => {
     let cruxManager;
     let mockFieldData;
     let getFieldDataStub;

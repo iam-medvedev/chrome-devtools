@@ -12,8 +12,7 @@ import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createContentProviderUISourceCodes, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -135,7 +134,7 @@ describeWithEnvironment('SourcesView', () => {
         });
     });
 });
-describeWithMockConnection('SourcesView', () => {
+describeWithEnvironment('SourcesView', () => {
     let target1;
     let target2;
     beforeEach(() => {

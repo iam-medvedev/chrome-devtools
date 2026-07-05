@@ -3,12 +3,18 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as Platform from '../../../core/platform/platform.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars, } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithEnvironment('NetworkDependencyTree', function () {
+describe('NetworkDependencyTree', function () {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
     let insight;
     before(async function () {
         const { data, insights } = await processTrace(this, 'lcp-multiple-frames.json.gz');
@@ -103,6 +109,12 @@ describeWithEnvironment('NetworkDependencyTree', function () {
     });
 });
 describe('generatePreconnectedOrigins', () => {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
     describe('generatePreconnectedOriginsFromDom', () => {
         const mockParsedTrace = {
             NetworkRequests: {
@@ -213,7 +225,7 @@ describe('generatePreconnectedOrigins', () => {
                 }]);
         });
     });
-    describeWithEnvironment('PreconnectedOriginFromResponseHeader', function () {
+    describe('PreconnectedOriginFromResponseHeader', function () {
         let insight;
         let documentRequest;
         before(async function () {

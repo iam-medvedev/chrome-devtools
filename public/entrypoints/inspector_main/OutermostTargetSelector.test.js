@@ -3,17 +3,26 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as InspectorMain from './inspector_main.js';
-describeWithMockConnection('OutermostTargetSelector', () => {
+describeWithEnvironment('OutermostTargetSelector', () => {
     let tabTarget;
     let primaryTarget;
     let prerenderTarget;
     let selector;
     beforeEach(() => {
-        tabTarget = createTarget({ type: SDK.Target.Type.TAB, url: 'http://example.com/', name: 'tab' });
+        tabTarget = createTarget({
+            type: SDK.Target.Type.TAB,
+            url: 'http://example.com/',
+            name: 'tab',
+            connection: new MockCDPConnection([
+                ['Target.setAutoAttach', () => ({ result: {} })],
+                ['Target.setDiscoverTargets', () => ({ result: {} })],
+                ['Target.setRemoteLocations', () => ({ result: {} })],
+            ]),
+        });
         primaryTarget = createTarget({ parentTarget: tabTarget, url: 'http://example.com/', name: 'primary' });
         prerenderTarget = createTarget({ parentTarget: tabTarget, subtype: 'prerender', url: 'http://example.com/prerender1', name: 'prerender1' });
         selector = InspectorMain.OutermostTargetSelector.OutermostTargetSelector.instance({ forceNew: true });

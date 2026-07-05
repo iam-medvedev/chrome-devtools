@@ -4,8 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Resources from './application.js';
@@ -45,7 +44,7 @@ class ExtensionStorageItemsListener {
         this.#refreshed = true;
     }
 }
-describeWithMockConnection('ExtensionStorageItemsView', function () {
+describeWithEnvironment('ExtensionStorageItemsView', function () {
     let target;
     let extensionStorageModel;
     let extensionStorage;

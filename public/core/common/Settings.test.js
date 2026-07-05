@@ -76,6 +76,7 @@ describe('Settings instance', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
             settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: new Common.Console.Console(),
         });
         assert.isOk(settings);
     });
@@ -87,7 +88,8 @@ describe('Settings instance', () => {
             syncedStorage: null,
             globalStorage: null,
             localStorage: null,
-            settingRegistrations: null
+            settingRegistrations: null,
+            console: null,
         }));
     });
     it('stores synced settings in the correct storage', () => {
@@ -103,7 +105,8 @@ describe('Settings instance', () => {
             syncedStorage,
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
-            settingRegistrations: Common.SettingRegistration.getRegisteredSettings()
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: new Common.Console.Console(),
         });
         const dynamicSetting = settings.createSetting('dynamic-synced-setting', 'default val', "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         dynamicSetting.set('foo value');
@@ -128,7 +131,8 @@ describe('Settings instance', () => {
             syncedStorage: storage,
             globalStorage: storage,
             localStorage: storage,
-            settingRegistrations: Common.SettingRegistration.getRegisteredSettings()
+            settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: new Common.Console.Console(),
         });
         settings.createSetting('dynamic-local-setting', 42, "Local" /* Common.Settings.SettingStorageType.LOCAL */);
         settings.createSetting('dynamic-synced-setting', 'foo', "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
@@ -146,6 +150,7 @@ describe('Settings instance', () => {
                 globalStorage: settingsStorage,
                 localStorage: settingsStorage,
                 settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+                console: new Common.Console.Console(),
             });
             const testSetting = settings.createSetting('test', 'default val', "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
             const changes = [];
@@ -168,6 +173,7 @@ describe('Settings instance', () => {
             localStorage: storage,
             settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
             runSettingsMigration: false,
+            console: new Common.Console.Console(),
         });
         const testSetting = settings.createSetting('test-setting', 'some value');
         assert.strictEqual(testSetting.getIfNotDisabled(), 'some value');
@@ -183,6 +189,7 @@ describe('Settings instance', () => {
             globalStorage: storage,
             localStorage: storage,
             settingRegistrations: [],
+            console: new Common.Console.Console(),
         });
         const setting = settings.createSetting('test-setting', 'initial value');
         const changeStub = sinon.stub();
@@ -204,6 +211,7 @@ describe('Settings instance', () => {
                     settingName: 'test-setting',
                     defaultValue: false,
                 }],
+            console: new Common.Console.Console(),
         });
         const setting = settings.moduleSetting('test-setting');
         assert.isFalse(setting.get());

@@ -9,8 +9,9 @@ import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as EmulationModel from '../../../models/emulation/emulation.js';
 import * as LiveMetrics from '../../../models/live-metrics/live-metrics.js';
 import { doubleRaf, raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { createTarget, registerActions } from '../../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, registerActions } from '../../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
+import { mockResourceTree } from '../../../testing/ResourceTreeHelpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Components from './components.js';
 function renderLiveMetrics() {
@@ -122,7 +123,7 @@ function createMockFieldData() {
 function createInteractionsMap(interactions) {
     return new Map(interactions.map(interaction => [interaction.interactionId, interaction]));
 }
-describeWithMockConnection('LiveMetricsView', () => {
+describeWithEnvironment('LiveMetricsView', () => {
     const mockHandleAction = sinon.stub();
     beforeEach(async () => {
         mockHandleAction.reset();
@@ -145,6 +146,7 @@ describeWithMockConnection('LiveMetricsView', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
             settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: Common.Console.Console.instance({ forceNew: true }),
         });
         LiveMetrics.LiveMetrics.instance({ forceNew: true });
         CrUXManager.CrUXManager.instance({ forceNew: true });
@@ -155,7 +157,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         LiveMetrics.LiveMetrics.instance().setStatusForTesting({
             inp: {
                 value: 500,
-                phases: {
+                subparts: {
                     inputDelay: 100,
                     processingDuration: 300,
                     presentationDelay: 100,
@@ -170,7 +172,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'pointer',
                     interactionId: 'interaction-1-1',
                     eventNames: ['pointerup'],
-                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                    subparts: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
                     longAnimationFrameTimings: [],
                 },
                 {
@@ -180,7 +182,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'keyboard',
                     interactionId: 'interaction-1-2',
                     eventNames: ['keyup'],
-                    phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
+                    subparts: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
                     longAnimationFrameTimings: [],
                 },
             ]),
@@ -200,9 +202,10 @@ describeWithMockConnection('LiveMetricsView', () => {
         const durationEl1 = interactionsEls[0].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl1.textContent, '500 ms');
         assert.strictEqual(durationEl1.className, 'metric-value needs-improvement dim');
-        const phases1 = Array.from(interactionsEls[0].querySelectorAll('.phase-table-row:not(.phase-table-header-row)'))
+        const subparts1 = Array
+            .from(interactionsEls[0].querySelectorAll('.subpart-table-row:not(.subpart-table-header-row)'))
             .map(el => el.innerText);
-        assert.deepEqual(phases1, [
+        assert.deepEqual(subparts1, [
             'Input delay\n100',
             'Processing duration\n300',
             'Presentation delay\n100',
@@ -214,9 +217,10 @@ describeWithMockConnection('LiveMetricsView', () => {
         const durationEl2 = interactionsEls[1].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl2.textContent, '30 ms');
         assert.strictEqual(durationEl2.className, 'metric-value good dim');
-        const phases2 = Array.from(interactionsEls[1].querySelectorAll('.phase-table-row:not(.phase-table-header-row)'))
+        const subparts2 = Array
+            .from(interactionsEls[1].querySelectorAll('.subpart-table-row:not(.subpart-table-header-row)'))
             .map(el => el.innerText);
-        assert.deepEqual(phases2, [
+        assert.deepEqual(subparts2, [
             'Input delay\n10',
             'Processing duration\n10',
             'Presentation delay\n10',
@@ -227,7 +231,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         LiveMetrics.LiveMetrics.instance().setStatusForTesting({
             inp: {
                 value: 500,
-                phases: {
+                subparts: {
                     inputDelay: 100,
                     processingDuration: 300,
                     presentationDelay: 100,
@@ -242,7 +246,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'pointer',
                     interactionId: 'interaction-1-1',
                     eventNames: ['pointerup'],
-                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                    subparts: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
                     longAnimationFrameTimings: [{
                             renderStart: 0,
                             duration: 0,
@@ -256,7 +260,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'keyboard',
                     interactionId: 'interaction-1-2',
                     eventNames: ['keyup'],
-                    phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
+                    subparts: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
                     longAnimationFrameTimings: [],
                 },
             ]),
@@ -273,7 +277,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         LiveMetrics.LiveMetrics.instance().setStatusForTesting({
             inp: {
                 value: 50,
-                phases: {
+                subparts: {
                     inputDelay: 10,
                     processingDuration: 30,
                     presentationDelay: 10,
@@ -288,7 +292,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'keyboard',
                     interactionId: 'interaction-1-1',
                     eventNames: ['keyup'],
-                    phases: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
+                    subparts: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
                     longAnimationFrameTimings: [],
                 },
                 {
@@ -298,7 +302,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'pointer',
                     interactionId: 'interaction-1-2',
                     eventNames: ['pointerup'],
-                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                    subparts: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
                     longAnimationFrameTimings: [],
                 },
             ]),
@@ -387,7 +391,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         LiveMetrics.LiveMetrics.instance().setStatusForTesting({
             inp: {
                 value: 500,
-                phases: {
+                subparts: {
                     inputDelay: 100,
                     processingDuration: 300,
                     presentationDelay: 100,
@@ -402,7 +406,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'pointer',
                     interactionId: 'interaction-1-1',
                     eventNames: ['pointerup'],
-                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                    subparts: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
                     longAnimationFrameTimings: [],
                 },
                 {
@@ -412,7 +416,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'keyboard',
                     interactionId: 'interaction-1-2',
                     eventNames: ['keyup'],
-                    phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
+                    subparts: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
                     longAnimationFrameTimings: [],
                 },
             ]),
@@ -436,7 +440,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         LiveMetrics.LiveMetrics.instance().setStatusForTesting({
             inp: {
                 value: 500,
-                phases: {
+                subparts: {
                     inputDelay: 100,
                     processingDuration: 300,
                     presentationDelay: 100,
@@ -451,7 +455,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'keyboard',
                     interactionId: 'interaction-1-2',
                     eventNames: ['keyup'],
-                    phases: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
+                    subparts: { inputDelay: 10, processingDuration: 10, presentationDelay: 10 },
                     longAnimationFrameTimings: [],
                 },
             ]),
@@ -469,7 +473,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         LiveMetrics.LiveMetrics.instance().setStatusForTesting({
             inp: {
                 value: 50,
-                phases: {
+                subparts: {
                     inputDelay: 10,
                     processingDuration: 30,
                     presentationDelay: 10,
@@ -484,7 +488,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'keyboard',
                     interactionId: 'interaction-1-1',
                     eventNames: ['keyup'],
-                    phases: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
+                    subparts: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
                     longAnimationFrameTimings: [],
                 },
                 {
@@ -494,7 +498,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'pointer',
                     interactionId: 'interaction-1-2',
                     eventNames: ['pointerup'],
-                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                    subparts: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
                     longAnimationFrameTimings: [],
                 },
             ]),
@@ -519,7 +523,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         LiveMetrics.LiveMetrics.instance().setStatusForTesting({
             inp: {
                 value: 50,
-                phases: {
+                subparts: {
                     inputDelay: 10,
                     processingDuration: 30,
                     presentationDelay: 10,
@@ -534,7 +538,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'keyboard',
                     interactionId: 'interaction-1-1',
                     eventNames: ['keyup'],
-                    phases: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
+                    subparts: { inputDelay: 10, processingDuration: 30, presentationDelay: 10 },
                     longAnimationFrameTimings: [],
                 },
                 {
@@ -544,7 +548,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                     interactionType: 'pointer',
                     interactionId: 'interaction-1-2',
                     eventNames: ['pointerup'],
-                    phases: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
+                    subparts: { inputDelay: 100, processingDuration: 300, presentationDelay: 100 },
                     longAnimationFrameTimings: [],
                 },
             ]),
@@ -590,7 +594,9 @@ describeWithMockConnection('LiveMetricsView', () => {
         let target;
         let mockFieldData;
         beforeEach(async () => {
-            const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+            const connection = new MockCDPConnection([]);
+            mockResourceTree(connection);
+            const tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
             target = createTarget({ parentTarget: tabTarget });
             mockFieldData = {
                 'origin-ALL': null,

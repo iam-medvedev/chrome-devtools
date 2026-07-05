@@ -10,7 +10,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -23,7 +23,13 @@ let view;
 let protocolMonitor;
 let jsonEditor;
 let sendRawMessageStub;
-describeWithEnvironment('ProtocolMonitor', () => {
+describe('ProtocolMonitor', () => {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
     let originalSendRawMessage;
     beforeEach(() => {
         sendRawMessageStub = sinon.stub();

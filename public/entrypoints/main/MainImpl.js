@@ -42,16 +42,12 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Foundation from '../../foundation/foundation.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
-import * as AutofillManager from '../../models/autofill_manager/autofill_manager.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as LiveMetrics from '../../models/live-metrics/live-metrics.js';
-import * as Logs from '../../models/logs/logs.js';
 import * as Persistence from '../../models/persistence/persistence.js';
-import * as ProjectSettings from '../../models/project_settings/project_settings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as PanelCommon from '../../panels/common/common.js';
 import * as Snippets from '../../panels/snippets/snippets.js';
@@ -170,6 +166,12 @@ export class MainImpl {
         }
         console.timeEnd(label);
     }
+    static get universeForTest() {
+        if (!_a.instanceForTest) {
+            throw new Error('MainImpl not initialized yet!');
+        }
+        return _a.instanceForTest.#universe;
+    }
     async #loaded() {
         console.timeStamp('Main._loaded');
         Root.Runtime.Runtime.setPlatform(Host.Platform.platform());
@@ -189,6 +191,8 @@ export class MainImpl {
                 logSettingAccess: VisualLogging.logSettingAccess,
                 runSettingsMigration: !Host.InspectorFrontendHost.isUnderTest(),
             },
+            hostConfig: Root.Runtime.hostConfig,
+            inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
         };
         this.#universe = new Foundation.Universe.Universe(creationOptions);
         Root.DevToolsContext.setGlobalInstance(this.#universe.context);
@@ -361,7 +365,7 @@ export class MainImpl {
     async #createAppUI() {
         _a.time('Main._createAppUI');
         // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
-        const isolatedFileSystemManager = Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
+        const isolatedFileSystemManager = this.#universe.isolatedFileSystemManager;
         isolatedFileSystemManager.addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemError, event => Snackbar.Snackbar.Snackbar.show({ message: event.data }));
         const defaultThemeSetting = 'systemPreferred';
         const themeSetting = Common.Settings.Settings.instance().createSetting('ui-theme', defaultThemeSetting);
@@ -379,8 +383,6 @@ export class MainImpl {
         UI.ContextMenu.ContextMenu.installHandler(document);
         UI.ViewManager.ViewManager.instance({ forceNew: true, universe: this.#universe });
         // These instances need to be created early so they don't miss any events about requests/issues/etc.
-        Logs.NetworkLog.NetworkLog.instance();
-        Logs.LogManager.LogManager.instance();
         IssuesManager.IssuesManager.IssuesManager.instance({
             forceNew: true,
             ensureFirst: true,
@@ -388,7 +390,6 @@ export class MainImpl {
             hideIssueSetting: IssuesManager.IssuesManager.getHideIssueByCodeSetting(),
         });
         UI.DockController.DockController.instance({ forceNew: true, canDock });
-        SDK.DOMDebuggerModel.DOMDebuggerManager.instance({ forceNew: true });
         const targetManager = SDK.TargetManager.TargetManager.instance();
         targetManager.addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.#onSuspendStateChanged.bind(this));
         Workspace.FileManager.FileManager.instance({ forceNew: true });
@@ -399,44 +400,15 @@ export class MainImpl {
             const outermostTarget = data?.outermostTarget();
             targetManager.setScopeTarget(outermostTarget);
         });
-        Breakpoints.BreakpointManager.BreakpointManager.instance({
-            forceNew: true,
-            workspace: Workspace.Workspace.WorkspaceImpl.instance(),
-            targetManager,
-            debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
-            settings: Common.Settings.Settings.instance(),
-        });
         // @ts-expect-error e2e test global
         self.Extensions.extensionServer = PanelCommon.ExtensionServer.ExtensionServer.instance({ forceNew: true });
         new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, Workspace.Workspace.WorkspaceImpl.instance());
         isolatedFileSystemManager.addPlatformFileSystem('snippet://', new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
-        const persistenceImpl = Persistence.Persistence.PersistenceImpl.instance({
-            forceNew: true,
-            workspace: Workspace.Workspace.WorkspaceImpl.instance(),
-            breakpointManager: Breakpoints.BreakpointManager.BreakpointManager.instance(),
-        });
+        const persistenceImpl = Persistence.Persistence.PersistenceImpl.instance();
         const linkDecorator = new PanelCommon.PersistenceUtils.LinkDecorator(persistenceImpl);
         Components.Linkifier.Linkifier.setLinkDecorator(linkDecorator);
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
         new ExecutionContextSelector(targetManager, UI.Context.Context.instance());
-        const projectSettingsModel = ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.instance({
-            forceNew: true,
-            hostConfig: Root.Runtime.hostConfig,
-            pageResourceLoader: SDK.PageResourceLoader.PageResourceLoader.instance(),
-            targetManager,
-        });
-        const automaticFileSystemManager = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance({
-            forceNew: true,
-            inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
-            projectSettingsModel,
-        });
-        Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding.instance({
-            forceNew: true,
-            automaticFileSystemManager,
-            isolatedFileSystemManager,
-            workspace: Workspace.Workspace.WorkspaceImpl.instance(),
-        });
-        AutofillManager.AutofillManager.AutofillManager.instance();
         LiveMetrics.LiveMetrics.instance();
         CrUXManager.CrUXManager.instance();
         const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
@@ -493,7 +465,7 @@ export class MainImpl {
         }
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.RevealSourceLine, this.#revealSourceLine, this);
         const inspectorView = UI.InspectorView.InspectorView.instance();
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("LocalOverridesRequested" /* Persistence.NetworkPersistenceManager.Events.LOCAL_OVERRIDES_REQUESTED */, event => {
+        this.#universe.networkPersistenceManager.addEventListener("LocalOverridesRequested" /* Persistence.NetworkPersistenceManager.Events.LOCAL_OVERRIDES_REQUESTED */, event => {
             inspectorView.displaySelectOverrideFolderInfobar(event.data);
         });
         await inspectorView.createToolbars();

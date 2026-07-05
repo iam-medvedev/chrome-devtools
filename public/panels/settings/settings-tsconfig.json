@@ -66,9 +66,6 @@
       "path": "../../models/ai_assistance/bundle-tsconfig.json"
     },
     {
-      "path": "../../models/greendev/bundle-tsconfig.json"
-    },
-    {
       "path": "../../models/persistence/bundle-tsconfig.json"
     },
     {

@@ -5,8 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as BrowserDebugger from './browser_debugger.js';
@@ -30,7 +29,7 @@ class TestSidebarPane extends BrowserDebugger.CategorizedBreakpointsSidebarPane.
         return this.breakpointFromPausedDetails;
     }
 }
-describeWithMockConnection('CategorizedBreakpointsSidebarPane', () => {
+describeWithEnvironment('CategorizedBreakpointsSidebarPane', () => {
     it('sorts and groups the breakpoint', async () => {
         const pane = new TestSidebarPane();
         pane.update();

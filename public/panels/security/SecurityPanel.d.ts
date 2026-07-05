@@ -84,7 +84,7 @@ export declare class SecurityMainView extends UI.Widget.VBox {
     showNetworkFilter(filterKey: string, e: Event): void;
 }
 export declare class SecurityOriginView extends UI.Widget.VBox {
-    private readonly originLockIcon;
+    #private;
     constructor(origin: Platform.DevToolsPath.UrlString, originState: OriginState);
     private createSanDiv;
     setSecurityState(newSecurityState: Protocol.Security.SecurityState): void;

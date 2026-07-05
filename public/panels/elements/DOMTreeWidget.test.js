@@ -4,11 +4,10 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Elements from './elements.js';
-describeWithMockConnection('DOMTreeWidget', () => {
+describeWithEnvironment('DOMTreeWidget', () => {
     let target;
     beforeEach(() => {
         stubNoopSettings();

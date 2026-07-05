@@ -1,11 +1,13 @@
 import * as Common from '../../core/common/common.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
+import * as Foundation from '../../foundation/foundation.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class MainImpl {
     #private;
     constructor();
     static time(label: string): void;
     static timeEnd(label: string): void;
+    static get universeForTest(): Foundation.Universe.Universe;
     requestAndRegisterLocaleData(): Promise<void>;
     createSettingsStorage(prefs: Record<string, string>): {
         syncedStorage: Common.Settings.SettingsStorage;

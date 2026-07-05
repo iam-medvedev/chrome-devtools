@@ -2924,7 +2924,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
    */
   // If moved update release-please config
   // x-release-please-start-version
-  const packageVersion = '25.2.1';
+  const packageVersion = '25.3.0';
   // x-release-please-end
 
   /**
@@ -4147,7 +4147,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
     constructor() {
       super();
       /**
-       * If defined, indicates an ongoing screenshot opereation.
+       * If defined, indicates an ongoing screenshot operation.
        */
       _classPrivateFieldInitSpec(this, _pageScreenshotMutex, void 0);
       _classPrivateFieldInitSpec(this, _screenshotOperationsCount, 0);
@@ -12654,7 +12654,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
   /**
    * Target represents a
    * {@link https://chromedevtools.github.io/devtools-protocol/tot/Target/ | CDP target}.
-   * In CDP a target is something that can be debugged such a frame, a page or a
+   * In CDP a target is something that can be debugged, such as a frame, a page or a
    * worker.
    * @public
    */
@@ -17644,7 +17644,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
   function referrerPolicyToProtocol(referrerPolicy) {
     // See
     // https://chromedevtools.github.io/devtools-protocol/tot/Page/#type-ReferrerPolicy
-    // We need to conver from Web-facing phase to CDP's camelCase.
+    // We need to convert from Web-facing phase to CDP's camelCase.
     return referrerPolicy.replaceAll(/-./g, match => {
       return match[1].toUpperCase();
     });
@@ -18021,13 +18021,13 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
    *
    * @internal
    */
-  function normalizeHeaderValue(header) {
-    if (!header.includes('\n')) {
-      return header;
+  function normalizeHeaderValue(name, value) {
+    if (!value.includes('\n')) {
+      return value;
     }
-    return header.split('\n').map(v => {
+    return value.split('\n').map(v => {
       return v.trim();
-    }).filter(Boolean).join(', ');
+    }).filter(Boolean).join(name === 'set-cookie' ? '\n ' : ', ');
   }
 
   /**
@@ -18071,7 +18071,10 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       _classPrivateFieldSet(_status, this, _extraInfo ? _extraInfo.statusCode : responsePayload.status);
       const headers = _extraInfo ? _extraInfo.headers : responsePayload.headers;
       for (const [key, value] of Object.entries(headers)) {
-        _classPrivateFieldGet(_headers2, this)[key.toLowerCase()] = normalizeHeaderValue(value);
+        const headerName = key.toLowerCase();
+        // See https://www.rfc-editor.org/rfc/rfc9110.html#name-field-order for
+        // the set-cookie exception.
+        _classPrivateFieldGet(_headers2, this)[headerName] = normalizeHeaderValue(headerName, value);
       }
       _classPrivateFieldSet(_securityDetails, this, responsePayload.securityDetails ? new SecurityDetails(responsePayload.securityDetails) : null);
       _classPrivateFieldSet(_timing, this, responsePayload.timing || null);
@@ -18893,7 +18896,6 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       request.client = client;
     }
   }
-  const TIME_FOR_WAITING_FOR_SWAP = 100; // ms.
   const CHROME_EXTENSION_PREFIX = 'chrome-extension://';
   /**
    * A frame manager manages the frames for a given {@link Page | page}.
@@ -18921,7 +18923,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
     get client() {
       return _classPrivateFieldGet(_client10, this);
     }
-    constructor(client, page, timeoutSettings) {
+    constructor(_client11, page, timeoutSettings) {
       super();
       /**
        * Called when the frame's client is disconnected. We don't know if the
@@ -18945,13 +18947,13 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       _classPrivateFieldInitSpec(this, _frameNavigatedReceived, new Set());
       _classPrivateFieldInitSpec(this, _deviceRequestPromptManagerMap, new WeakMap());
       _classPrivateFieldInitSpec(this, _frameTreeHandled, void 0);
-      _classPrivateFieldSet(_client10, this, client);
+      _classPrivateFieldSet(_client10, this, _client11);
       _classPrivateFieldSet(_page, this, page);
       _classPrivateFieldSet(_networkManager, this, new NetworkManager(this, page.browser().isNetworkEnabled()));
       _classPrivateFieldSet(_timeoutSettings3, this, timeoutSettings);
       this.setupEventListeners(_classPrivateFieldGet(_client10, this));
-      client.once(exports.CDPSessionEvent.Disconnected, () => {
-        void _assertClassBrand(_FrameManager_brand, this, _onClientDisconnect).call(this).catch(debugCatchError);
+      _client11.once(exports.CDPSessionEvent.Disconnected, () => {
+        void _assertClassBrand(_FrameManager_brand, this, _onClientDisconnect).call(this, _client11).catch(debugCatchError);
       });
     }
     /**
@@ -18971,7 +18973,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       }
       this.setupEventListeners(client);
       client.once(exports.CDPSessionEvent.Disconnected, () => {
-        void _assertClassBrand(_FrameManager_brand, this, _onClientDisconnect).call(this).catch(debugCatchError);
+        void _assertClassBrand(_FrameManager_brand, this, _onClientDisconnect).call(this, client).catch(debugCatchError);
       });
       await this.initialize(client, frame);
       await _classPrivateFieldGet(_networkManager, this).addClient(client);
@@ -19137,31 +19139,41 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
   /**
    * @internal
    */
-  async function _onClientDisconnect() {
+  async function _onClientDisconnect(client) {
     const mainFrame = this._frameTree.getMainFrame();
     if (!mainFrame) {
       return;
     }
-    if (!_classPrivateFieldGet(_page, this).browser().connected) {
-      // If the browser is not connected we know
-      // that activation will not happen
+    // If the disconnected client is not the current one, it means a swap
+    // has already happened.
+    if (_classPrivateFieldGet(_client10, this) !== client) {
+      return;
+    }
+    if (!_classPrivateFieldGet(_page, this).browser().connected || _classPrivateFieldGet(_page, this).isClosed()) {
+      // If the browser is not connected or the page is closed, we know
+      // that activation will not happen.
       _assertClassBrand(_FrameManager_brand, this, _removeFramesRecursively).call(this, mainFrame);
       return;
     }
     for (const child of mainFrame.childFrames()) {
       _assertClassBrand(_FrameManager_brand, this, _removeFramesRecursively).call(this, child);
     }
-    const swapped = Deferred.create({
-      timeout: TIME_FOR_WAITING_FOR_SWAP,
-      message: 'Frame was not swapped'
-    });
-    mainFrame.once(exports.FrameEvent.FrameSwappedByActivation, () => {
+    const swapped = Deferred.create();
+    const onFrameSwapped = () => {
       swapped.resolve();
-    });
+    };
+    const onPageClosed = () => {
+      swapped.reject(new Error('Page closed'));
+    };
+    mainFrame.once(exports.FrameEvent.FrameSwappedByActivation, onFrameSwapped);
+    _classPrivateFieldGet(_page, this).once("close" /* PageEvent.Close */, onPageClosed);
     try {
       await swapped.valueOrThrow();
     } catch {
       _assertClassBrand(_FrameManager_brand, this, _removeFramesRecursively).call(this, mainFrame);
+    } finally {
+      mainFrame.off(exports.FrameEvent.FrameSwappedByActivation, onFrameSwapped);
+      _classPrivateFieldGet(_page, this).off("close" /* PageEvent.Close */, onPageClosed);
     }
   }
   function _onLifecycleEvent(event) {
@@ -20753,20 +20765,20 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
   /**
    * @internal
    */
-  var _client11 = /*#__PURE__*/new WeakMap();
+  var _client12 = /*#__PURE__*/new WeakMap();
   var _pressedKeys = /*#__PURE__*/new WeakMap();
   var _CdpKeyboard_brand = /*#__PURE__*/new WeakSet();
   class CdpKeyboard extends Keyboard {
     constructor(client) {
       super();
       _classPrivateMethodInitSpec(this, _CdpKeyboard_brand);
-      _classPrivateFieldInitSpec(this, _client11, void 0);
+      _classPrivateFieldInitSpec(this, _client12, void 0);
       _classPrivateFieldInitSpec(this, _pressedKeys, new Set());
       _defineProperty(this, "_modifiers", 0);
-      _classPrivateFieldSet(_client11, this, client);
+      _classPrivateFieldSet(_client12, this, client);
     }
     updateClient(client) {
-      _classPrivateFieldSet(_client11, this, client);
+      _classPrivateFieldSet(_client12, this, client);
     }
     async down(key, options = {
       text: undefined,
@@ -20777,7 +20789,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       _classPrivateFieldGet(_pressedKeys, this).add(description.code);
       this._modifiers |= _assertClassBrand(_CdpKeyboard_brand, this, _modifierBit).call(this, description.key);
       const text = options.text === undefined ? description.text : options.text;
-      await _classPrivateFieldGet(_client11, this).send('Input.dispatchKeyEvent', {
+      await _classPrivateFieldGet(_client12, this).send('Input.dispatchKeyEvent', {
         type: text ? 'keyDown' : 'rawKeyDown',
         modifiers: this._modifiers,
         windowsVirtualKeyCode: description.keyCode,
@@ -20795,7 +20807,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       const description = _assertClassBrand(_CdpKeyboard_brand, this, _keyDescriptionForString).call(this, key);
       this._modifiers &= ~_assertClassBrand(_CdpKeyboard_brand, this, _modifierBit).call(this, description.key);
       _classPrivateFieldGet(_pressedKeys, this).delete(description.code);
-      await _classPrivateFieldGet(_client11, this).send('Input.dispatchKeyEvent', {
+      await _classPrivateFieldGet(_client12, this).send('Input.dispatchKeyEvent', {
         type: 'keyUp',
         modifiers: this._modifiers,
         key: description.key,
@@ -20805,7 +20817,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       });
     }
     async sendCharacter(char) {
-      await _classPrivateFieldGet(_client11, this).send('Input.insertText', {
+      await _classPrivateFieldGet(_client12, this).send('Input.insertText', {
         text: char
       });
     }
@@ -20936,7 +20948,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
   /**
    * @internal
    */
-  var _client12 = /*#__PURE__*/new WeakMap();
+  var _client13 = /*#__PURE__*/new WeakMap();
   var _keyboard = /*#__PURE__*/new WeakMap();
   var _state2 = /*#__PURE__*/new WeakMap();
   var _CdpMouse_brand = /*#__PURE__*/new WeakSet();
@@ -20945,7 +20957,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
     constructor(client, keyboard) {
       super();
       _classPrivateMethodInitSpec(this, _CdpMouse_brand);
-      _classPrivateFieldInitSpec(this, _client12, void 0);
+      _classPrivateFieldInitSpec(this, _client13, void 0);
       _classPrivateFieldInitSpec(this, _keyboard, void 0);
       _classPrivateFieldInitSpec(this, _state2, {
         position: {
@@ -20954,13 +20966,13 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
         },
         buttons: 0 /* MouseButtonFlag.None */
       });
-      // Transactions can run in parallel, so we store each of thme in this array.
+      // Transactions can run in parallel, so we store each of them in this array.
       _classPrivateFieldInitSpec(this, _transactions, []);
-      _classPrivateFieldSet(_client12, this, client);
+      _classPrivateFieldSet(_client13, this, client);
       _classPrivateFieldSet(_keyboard, this, keyboard);
     }
     updateClient(client) {
-      _classPrivateFieldSet(_client12, this, client);
+      _classPrivateFieldSet(_client13, this, client);
     }
     async reset() {
       const actions = [];
@@ -20997,7 +21009,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
             buttons,
             position
           } = _classPrivateGetter(_CdpMouse_brand, this, _get_state);
-          return _classPrivateFieldGet(_client12, this).send('Input.dispatchMouseEvent', {
+          return _classPrivateFieldGet(_client13, this).send('Input.dispatchMouseEvent', {
             type: 'mouseMoved',
             modifiers: _classPrivateFieldGet(_keyboard, this)._modifiers,
             buttons,
@@ -21027,7 +21039,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
           buttons,
           position
         } = _classPrivateGetter(_CdpMouse_brand, this, _get_state);
-        return _classPrivateFieldGet(_client12, this).send('Input.dispatchMouseEvent', {
+        return _classPrivateFieldGet(_client13, this).send('Input.dispatchMouseEvent', {
           type: 'mousePressed',
           modifiers: _classPrivateFieldGet(_keyboard, this)._modifiers,
           clickCount,
@@ -21057,7 +21069,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
           buttons,
           position
         } = _classPrivateGetter(_CdpMouse_brand, this, _get_state);
-        return _classPrivateFieldGet(_client12, this).send('Input.dispatchMouseEvent', {
+        return _classPrivateFieldGet(_client13, this).send('Input.dispatchMouseEvent', {
           type: 'mouseReleased',
           modifiers: _classPrivateFieldGet(_keyboard, this)._modifiers,
           clickCount,
@@ -21111,7 +21123,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
         position,
         buttons
       } = _classPrivateGetter(_CdpMouse_brand, this, _get_state);
-      await _classPrivateFieldGet(_client12, this).send('Input.dispatchMouseEvent', {
+      await _classPrivateFieldGet(_client13, this).send('Input.dispatchMouseEvent', {
         type: 'mouseWheel',
         pointerType: 'mouse',
         modifiers: _classPrivateFieldGet(_keyboard, this)._modifiers,
@@ -21123,7 +21135,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
     }
     async drag(start, target) {
       const promise = new Promise(resolve => {
-        _classPrivateFieldGet(_client12, this).once('Input.dragIntercepted', event => {
+        _classPrivateFieldGet(_client13, this).once('Input.dragIntercepted', event => {
           return resolve(event.data);
         });
       });
@@ -21133,7 +21145,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       return await promise;
     }
     async dragEnter(target, data) {
-      await _classPrivateFieldGet(_client12, this).send('Input.dispatchDragEvent', {
+      await _classPrivateFieldGet(_client13, this).send('Input.dispatchDragEvent', {
         type: 'dragEnter',
         x: target.x,
         y: target.y,
@@ -21142,7 +21154,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       });
     }
     async dragOver(target, data) {
-      await _classPrivateFieldGet(_client12, this).send('Input.dispatchDragEvent', {
+      await _classPrivateFieldGet(_client13, this).send('Input.dispatchDragEvent', {
         type: 'dragOver',
         x: target.x,
         y: target.y,
@@ -21151,7 +21163,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       });
     }
     async drop(target, data) {
-      await _classPrivateFieldGet(_client12, this).send('Input.dispatchDragEvent', {
+      await _classPrivateFieldGet(_client13, this).send('Input.dispatchDragEvent', {
         type: 'drop',
         x: target.x,
         y: target.y,
@@ -21224,28 +21236,28 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
   var _started = /*#__PURE__*/new WeakMap();
   var _touchScreen = /*#__PURE__*/new WeakMap();
   var _touchPoint = /*#__PURE__*/new WeakMap();
-  var _client13 = /*#__PURE__*/new WeakMap();
+  var _client14 = /*#__PURE__*/new WeakMap();
   var _keyboard2 = /*#__PURE__*/new WeakMap();
   class CdpTouchHandle {
     constructor(client, touchScreen, keyboard, touchPoint) {
       _classPrivateFieldInitSpec(this, _started, false);
       _classPrivateFieldInitSpec(this, _touchScreen, void 0);
       _classPrivateFieldInitSpec(this, _touchPoint, void 0);
-      _classPrivateFieldInitSpec(this, _client13, void 0);
+      _classPrivateFieldInitSpec(this, _client14, void 0);
       _classPrivateFieldInitSpec(this, _keyboard2, void 0);
-      _classPrivateFieldSet(_client13, this, client);
+      _classPrivateFieldSet(_client14, this, client);
       _classPrivateFieldSet(_touchScreen, this, touchScreen);
       _classPrivateFieldSet(_keyboard2, this, keyboard);
       _classPrivateFieldSet(_touchPoint, this, touchPoint);
     }
     updateClient(client) {
-      _classPrivateFieldSet(_client13, this, client);
+      _classPrivateFieldSet(_client14, this, client);
     }
     async start() {
       if (_classPrivateFieldGet(_started, this)) {
         throw new TouchError('Touch has already started');
       }
-      await _classPrivateFieldGet(_client13, this).send('Input.dispatchTouchEvent', {
+      await _classPrivateFieldGet(_client14, this).send('Input.dispatchTouchEvent', {
         type: 'touchStart',
         touchPoints: [_classPrivateFieldGet(_touchPoint, this)],
         modifiers: _classPrivateFieldGet(_keyboard2, this)._modifiers
@@ -21255,14 +21267,14 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
     move(x, y) {
       _classPrivateFieldGet(_touchPoint, this).x = Math.round(x);
       _classPrivateFieldGet(_touchPoint, this).y = Math.round(y);
-      return _classPrivateFieldGet(_client13, this).send('Input.dispatchTouchEvent', {
+      return _classPrivateFieldGet(_client14, this).send('Input.dispatchTouchEvent', {
         type: 'touchMove',
         touchPoints: [_classPrivateFieldGet(_touchPoint, this)],
         modifiers: _classPrivateFieldGet(_keyboard2, this)._modifiers
       });
     }
     async end() {
-      await _classPrivateFieldGet(_client13, this).send('Input.dispatchTouchEvent', {
+      await _classPrivateFieldGet(_client14, this).send('Input.dispatchTouchEvent', {
         type: 'touchEnd',
         touchPoints: [_classPrivateFieldGet(_touchPoint, this)],
         modifiers: _classPrivateFieldGet(_keyboard2, this)._modifiers
@@ -21273,18 +21285,18 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
   /**
    * @internal
    */
-  var _client14 = /*#__PURE__*/new WeakMap();
+  var _client15 = /*#__PURE__*/new WeakMap();
   var _keyboard3 = /*#__PURE__*/new WeakMap();
   class CdpTouchscreen extends Touchscreen {
     constructor(client, keyboard) {
       super();
-      _classPrivateFieldInitSpec(this, _client14, void 0);
+      _classPrivateFieldInitSpec(this, _client15, void 0);
       _classPrivateFieldInitSpec(this, _keyboard3, void 0);
-      _classPrivateFieldSet(_client14, this, client);
+      _classPrivateFieldSet(_client15, this, client);
       _classPrivateFieldSet(_keyboard3, this, keyboard);
     }
     updateClient(client) {
-      _classPrivateFieldSet(_client14, this, client);
+      _classPrivateFieldSet(_client15, this, client);
       this.touches.forEach(t => {
         t.updateClient(client);
       });
@@ -21299,7 +21311,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
         force: 0.5,
         id
       };
-      const touch = new CdpTouchHandle(_classPrivateFieldGet(_client14, this), this, _classPrivateFieldGet(_keyboard3, this), touchPoint);
+      const touch = new CdpTouchHandle(_classPrivateFieldGet(_client15, this), this, _classPrivateFieldGet(_keyboard3, this), touchPoint);
       await touch.start();
       this.touches.push(touch);
       return touch;
@@ -21322,7 +21334,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
    *
    * @public
    */
-  var _client15 = /*#__PURE__*/new WeakMap();
+  var _client16 = /*#__PURE__*/new WeakMap();
   var _recording = /*#__PURE__*/new WeakMap();
   var _path2 = /*#__PURE__*/new WeakMap();
   class Tracing {
@@ -21330,16 +21342,16 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
      * @internal
      */
     constructor(client) {
-      _classPrivateFieldInitSpec(this, _client15, void 0);
+      _classPrivateFieldInitSpec(this, _client16, void 0);
       _classPrivateFieldInitSpec(this, _recording, false);
       _classPrivateFieldInitSpec(this, _path2, void 0);
-      _classPrivateFieldSet(_client15, this, client);
+      _classPrivateFieldSet(_client16, this, client);
     }
     /**
      * @internal
      */
     updateClient(client) {
-      _classPrivateFieldSet(_client15, this, client);
+      _classPrivateFieldSet(_client16, this, client);
     }
     /**
      * Starts a trace for the current page.
@@ -21369,7 +21381,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       });
       _classPrivateFieldSet(_path2, this, path);
       _classPrivateFieldSet(_recording, this, true);
-      await _classPrivateFieldGet(_client15, this).send('Tracing.start', {
+      await _classPrivateFieldGet(_client16, this).send('Tracing.start', {
         transferMode: 'ReturnAsStream',
         traceConfig: {
           excludedCategories,
@@ -21383,10 +21395,10 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
      */
     async stop() {
       const contentDeferred = Deferred.create();
-      _classPrivateFieldGet(_client15, this).once('Tracing.tracingComplete', async event => {
+      _classPrivateFieldGet(_client16, this).once('Tracing.tracingComplete', async event => {
         try {
           assert(event.stream, 'Missing "stream"');
-          const readable = await getReadableFromProtocolStream(_classPrivateFieldGet(_client15, this), event.stream);
+          const readable = await getReadableFromProtocolStream(_classPrivateFieldGet(_client16, this), event.stream);
           const typedArray = await getReadableAsTypedArray(readable, _classPrivateFieldGet(_path2, this));
           contentDeferred.resolve(typedArray ?? undefined);
         } catch (error) {
@@ -21397,7 +21409,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
           }
         }
       });
-      await _classPrivateFieldGet(_client15, this).send('Tracing.end');
+      await _classPrivateFieldGet(_client16, this).send('Tracing.end');
       _classPrivateFieldSet(_recording, this, false);
       return await contentDeferred.valueOrThrow();
     }
@@ -21552,7 +21564,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
    * @experimental
    * @public
    */
-  var _client16 = /*#__PURE__*/new WeakMap();
+  var _client17 = /*#__PURE__*/new WeakMap();
   var _frameManager2 = /*#__PURE__*/new WeakMap();
   var _tools = /*#__PURE__*/new WeakMap();
   var _pendingCalls = /*#__PURE__*/new WeakMap();
@@ -21569,7 +21581,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
     constructor(client, frameManager) {
       super();
       _classPrivateMethodInitSpec(this, _WebMCP_brand);
-      _classPrivateFieldInitSpec(this, _client16, void 0);
+      _classPrivateFieldInitSpec(this, _client17, void 0);
       _classPrivateFieldInitSpec(this, _frameManager2, void 0);
       _classPrivateFieldInitSpec(this, _tools, new Map());
       _classPrivateFieldInitSpec(this, _pendingCalls, new Map());
@@ -21645,7 +21657,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
           });
         }
       });
-      _classPrivateFieldSet(_client16, this, client);
+      _classPrivateFieldSet(_client17, this, client);
       _classPrivateFieldSet(_frameManager2, this, frameManager);
       _assertClassBrand(_WebMCP_brand, this, _bindListeners).call(this);
     }
@@ -21653,13 +21665,13 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
      * @internal
      */
     async initialize() {
-      return await _classPrivateFieldGet(_client16, this).send('WebMCP.enable').catch(debugCatchError);
+      return await _classPrivateFieldGet(_client17, this).send('WebMCP.enable').catch(debugCatchError);
     }
     /**
      * @internal
      */
     async invokeTool(tool, input) {
-      return await _classPrivateFieldGet(_client16, this).send('WebMCP.invokeTool', {
+      return await _classPrivateFieldGet(_client17, this).send('WebMCP.invokeTool', {
         frameId: tool.frame._id,
         toolName: tool.name,
         input
@@ -21677,11 +21689,11 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
      * @internal
      */
     updateClient(client) {
-      _classPrivateFieldGet(_client16, this).off('WebMCP.toolsAdded', _classPrivateFieldGet(_onToolsAdded, this));
-      _classPrivateFieldGet(_client16, this).off('WebMCP.toolsRemoved', _classPrivateFieldGet(_onToolsRemoved, this));
-      _classPrivateFieldGet(_client16, this).off('WebMCP.toolInvoked', _classPrivateFieldGet(_onToolInvoked, this));
-      _classPrivateFieldGet(_client16, this).off('WebMCP.toolResponded', _classPrivateFieldGet(_onToolResponded, this));
-      _classPrivateFieldSet(_client16, this, client);
+      _classPrivateFieldGet(_client17, this).off('WebMCP.toolsAdded', _classPrivateFieldGet(_onToolsAdded, this));
+      _classPrivateFieldGet(_client17, this).off('WebMCP.toolsRemoved', _classPrivateFieldGet(_onToolsRemoved, this));
+      _classPrivateFieldGet(_client17, this).off('WebMCP.toolInvoked', _classPrivateFieldGet(_onToolInvoked, this));
+      _classPrivateFieldGet(_client17, this).off('WebMCP.toolResponded', _classPrivateFieldGet(_onToolResponded, this));
+      _classPrivateFieldSet(_client17, this, client);
       _assertClassBrand(_WebMCP_brand, this, _bindListeners).call(this);
     }
   }
@@ -21697,10 +21709,10 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
     });
   }
   function _bindListeners() {
-    _classPrivateFieldGet(_client16, this).on('WebMCP.toolsAdded', _classPrivateFieldGet(_onToolsAdded, this));
-    _classPrivateFieldGet(_client16, this).on('WebMCP.toolsRemoved', _classPrivateFieldGet(_onToolsRemoved, this));
-    _classPrivateFieldGet(_client16, this).on('WebMCP.toolInvoked', _classPrivateFieldGet(_onToolInvoked, this));
-    _classPrivateFieldGet(_client16, this).on('WebMCP.toolResponded', _classPrivateFieldGet(_onToolResponded, this));
+    _classPrivateFieldGet(_client17, this).on('WebMCP.toolsAdded', _classPrivateFieldGet(_onToolsAdded, this));
+    _classPrivateFieldGet(_client17, this).on('WebMCP.toolsRemoved', _classPrivateFieldGet(_onToolsRemoved, this));
+    _classPrivateFieldGet(_client17, this).on('WebMCP.toolInvoked', _classPrivateFieldGet(_onToolInvoked, this));
+    _classPrivateFieldGet(_client17, this).on('WebMCP.toolResponded', _classPrivateFieldGet(_onToolResponded, this));
   }
   var __addDisposableResource$1 = undefined && undefined.__addDisposableResource || function (env, value, async) {
     if (value !== null && value !== void 0) {
@@ -24914,11 +24926,12 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
       });
       return response.targetId;
     }
-    async installExtension(path) {
+    async installExtension(path, options) {
       const {
         id
       } = await _classPrivateFieldGet(_connection5, this).send('Extensions.loadUnpacked', {
-        path
+        path,
+        enableInIncognito: options?.enabledInIncognito ?? false
       });
       _classPrivateFieldGet(_extensions, this).delete(id);
       return id;
@@ -27241,7 +27254,7 @@ var Puppeteer = function (exports, _PuppeteerURL, _LazyArg, _ARIAQueryHandler, _
   const PUPPETEER_REVISIONS = Object.freeze({
     chrome: '150.0.7871.24',
     'chrome-headless-shell': '150.0.7871.24',
-    firefox: 'stable_152.0.2'
+    firefox: 'stable_152.0.4'
   });
 
   /**

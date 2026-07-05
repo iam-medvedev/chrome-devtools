@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, initializeGlobalVars, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as LegacyUI from './legacy.js';
@@ -21,8 +21,10 @@ function getDrawerOrientationSettingByDock(dockMode) {
     const setting = Settings.instance().settingForTest(DRAWER_ORIENTATION_SETTING_NAME);
     return setting.get()[dockMode];
 }
-describeWithEnvironment('InspectorDrawerView', () => {
+describe('InspectorDrawerView', () => {
     setupSettingsHooks();
+    before(async () => await initializeGlobalVars());
+    after(async () => await deinitializeGlobalVars());
     function createInspectorViewWithDockState(dockState) {
         const dockController = LegacyUI.DockController.DockController.instance({ forceNew: true, canDock: true });
         dockController.setDockSide(dockState);
@@ -687,6 +689,45 @@ describeWithEnvironment('InspectorDrawerView', () => {
             assert.isTrue(inspectorView.isDrawerMinimized());
             inspectorView.toggleDrawerOrientation({ force: DrawerOrientation.VERTICAL });
             assert.isTrue(inspectorView.isDrawerMinimized());
+        });
+    });
+    describe('inspector minimum width', () => {
+        it('uses horizontal minimum width when vertical drawer is hidden', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            assert.isTrue(inspectorView.isDrawerOrientationVertical());
+            assert.isFalse(inspectorView.drawerVisible());
+            // 250px corresponds to MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER
+            // (minimum main panel width + slack for borders).
+            assert.strictEqual(inspectorView.constraints().minimum.width, 250);
+        });
+        it('uses vertical minimum width when vertical drawer is shown and expanded', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            inspectorView.showDrawer({ focus: false, hasTargetDrawer: false });
+            assert.isTrue(inspectorView.isDrawerOrientationVertical());
+            assert.isTrue(inspectorView.drawerVisible());
+            assert.isFalse(inspectorView.isDrawerMinimized());
+            // 530px corresponds to MIN_INSPECTOR_WIDTH_VERTICAL_DRAWER
+            // (minimum main panel width + minimum vertical drawer width + slack for borders).
+            assert.strictEqual(inspectorView.constraints().minimum.width, 530);
+        });
+        it('uses horizontal minimum width when vertical drawer is minimized', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            inspectorView.showDrawer({ focus: false, hasTargetDrawer: false });
+            inspectorView.setDrawerMinimized(true);
+            assert.isTrue(inspectorView.isDrawerOrientationVertical());
+            assert.isTrue(inspectorView.drawerVisible());
+            assert.isTrue(inspectorView.isDrawerMinimized());
+            // 250px corresponds to MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER
+            assert.strictEqual(inspectorView.constraints().minimum.width, 250);
+        });
+        it('uses horizontal minimum width when vertical drawer is closed after being open', () => {
+            const { inspectorView } = createInspectorViewWithDockState("bottom" /* DockState.BOTTOM */);
+            inspectorView.showDrawer({ focus: false, hasTargetDrawer: false });
+            // 530px corresponds to MIN_INSPECTOR_WIDTH_VERTICAL_DRAWER
+            assert.strictEqual(inspectorView.constraints().minimum.width, 530);
+            inspectorView.closeDrawer();
+            // 250px corresponds to MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER
+            assert.strictEqual(inspectorView.constraints().minimum.width, 250);
         });
     });
 });

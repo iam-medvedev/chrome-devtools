@@ -128,6 +128,9 @@
       "path": "../generated/protocol-tsconfig.json"
     },
     {
+      "path": "../models/ai_assistance/bundle-tsconfig.json"
+    },
+    {
       "path": "../models/bindings/bundle-tsconfig.json"
     },
     {
@@ -144,6 +147,9 @@
     },
     {
       "path": "../models/issues_manager/bundle-tsconfig.json"
+    },
+    {
+      "path": "../models/javascript_metadata/bundle-tsconfig.json"
     },
     {
       "path": "../models/logs/bundle-tsconfig.json"

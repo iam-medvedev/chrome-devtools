@@ -37,7 +37,6 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Annotations from '../../models/annotations/annotations.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HAR from '../../models/har/har.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -56,6 +55,7 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import { canPreloadRequest, generatePreloadLink } from './LinkPreloadGenerator.js';
 import { NetworkGroupNode, NetworkRequestNode, } from './NetworkDataGridNode.js';
 import { NetworkFrameGrouper } from './NetworkFrameGrouper.js';
 import networkLogViewStyles from './networkLogView.css.js';
@@ -268,6 +268,11 @@ const UIStrings = {
      * refers to the format the data will be copied as, which is compatible with the fetch web API.
      */
     copyAsFetch: 'Copy as `fetch`',
+    /**
+     * @description A context menu command in the Network panel, for copying a resource's link element
+     * to the clipboard. 'preload' refers to the HTML link relation format the data will be copied as.
+     */
+    copyAsPreload: 'Copy as preload element',
     /**
      * @description Text in Network Log View of the Network panel. An action that copies a command to
      * the developer's clipboard. The command allows the developer to replay this specific network
@@ -873,12 +878,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     summaryToolbar() {
         return this.summaryToolbarInternal;
-    }
-    getDataGrid() {
-        if (Annotations.AnnotationRepository.annotationsEnabled()) {
-            return this.dataGrid;
-        }
-        return null;
     }
     modelAdded(networkManager) {
         // TODO(allada) Remove dependency on networkManager and instead use NetworkLog and PageLoad for needed data.
@@ -1530,6 +1529,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyAsPowershell), this.copyPowerShellCommand.bind(this, request), { disabled: disableIfBlob, jslogContext: 'copy-as-powershell' });
             copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyAsFetch), this.copyFetchCall.bind(this, request, 0 /* FetchStyle.BROWSER */), { disabled: disableIfBlob, jslogContext: 'copy-as-fetch' });
             copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyAsNodejsFetch), this.copyFetchCall.bind(this, request, 1 /* FetchStyle.NODE_JS */), { disabled: disableIfBlob, jslogContext: 'copy-as-nodejs-fetch' });
+            this.appendCopyAsPreloadItem(copyMenu, request);
             if (Host.Platform.isWin()) {
                 copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsCurlCmd) : i18nString(UIStrings.copyAllAsCurlCmd), this.copyAllCurlCommand.bind(this, 'win'), { jslogContext: 'copy-all-as-curl-cmd' });
                 copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllListedAsCurlBash) : i18nString(UIStrings.copyAllAsCurlBash), this.copyAllCurlCommand.bind(this, 'unix'), { jslogContext: 'copy-all-as-curl-bash' });
@@ -1671,6 +1671,20 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(request => this.applyFilter(request));
         const commands = await this.generateAllCurlCommand(requests, platform);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
+    }
+    copyPreloadElement(request) {
+        const preloadLink = generatePreloadLink(request);
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(preloadLink);
+    }
+    appendCopyAsPreloadItem(copyMenu, request) {
+        const isHttpOrHttps = request.parsedURL.scheme === 'http' || request.parsedURL.scheme === 'https';
+        const isGetRequest = request.requestMethod === 'GET';
+        const networkManager = SDK.NetworkManager.NetworkManager.forRequest(request);
+        const resourceTreeModel = networkManager?.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
+        const isMainDocument = Boolean(resourceTreeModel?.mainFrame && resourceTreeModel.mainFrame.id === request.frameId &&
+            request.resourceType() === Common.ResourceType.resourceTypes.Document);
+        const disablePreload = !isHttpOrHttps || request.isBlobRequest() || !isGetRequest || isMainDocument || !canPreloadRequest(request);
+        copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyAsPreload), this.copyPreloadElement.bind(this, request), { disabled: disablePreload, jslogContext: 'copy-as-preload' });
     }
     async copyFetchCall(request, style) {
         const command = await this.generateFetchCall(request, style);

@@ -4,12 +4,13 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
-import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { cleanTestDOM } from '../../testing/DOMHooks.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-describeWithMockConnection('DeviceBoundSessionsView', () => {
+describeWithEnvironment('DeviceBoundSessionsView', () => {
     const mockSessionId = 'session-id-123';
     const mockSite = 'https://example.com';
     let toLocaleStringStub;
@@ -19,8 +20,10 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
             return original.call(this, 'en-US', { timeZone: 'UTC' });
         });
     });
-    afterEach(() => {
+    afterEach(async () => {
         toLocaleStringStub.restore();
+        cleanTestDOM();
+        await raf();
     });
     function createMockSession() {
         return {
@@ -94,7 +97,7 @@ describeWithMockConnection('DeviceBoundSessionsView', () => {
                 site: mockSite,
                 sessionId: mockSessionId,
                 succeeded: false,
-                creationEventDetails: { fetchResult: "KeyError" /* Protocol.Network.DeviceBoundSessionFetchResult.KeyError */ }
+                creationEventDetails: { fetchResult: "SigningKeyGenerationError" /* Protocol.Network.DeviceBoundSessionFetchResult.SigningKeyGenerationError */ }
             },
             timestamp: dates[0]
         });

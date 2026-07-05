@@ -82,6 +82,7 @@ describe('AiHistoryStorage', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
             settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: new Common.Console.Console(),
         });
     });
     function getStorage(maxStorageSize) {

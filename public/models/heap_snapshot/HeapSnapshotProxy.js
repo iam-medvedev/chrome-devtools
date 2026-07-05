@@ -194,6 +194,9 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     interfaceDefinitions() {
         return this.callMethodPromise('interfaceDefinitions');
     }
+    getNativeContextSizes() {
+        return this.callMethodPromise('getNativeContextSizes');
+    }
     aggregatesWithFilter(filter) {
         return this.callMethodPromise('aggregatesWithFilter', filter);
     }
@@ -211,6 +214,9 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     }
     nodeIndexForId(nodeId) {
         return this.callMethodPromise('nodeIndexForId', nodeId);
+    }
+    getObjectInfo(nodeIndex) {
+        return this.callMethodPromise('getObjectInfo', nodeIndex);
     }
     createEdgesProvider(nodeIndex) {
         return this.callFactoryMethod('createEdgesProvider', HeapSnapshotProviderProxy, nodeIndex);

@@ -58,7 +58,6 @@
     "../../../../../../front_end/core/sdk/DOMStorageModel.test.ts",
     "../../../../../../front_end/core/sdk/EmulationModel.test.ts",
     "../../../../../../front_end/core/sdk/EnhancedTracesParser.test.ts",
-    "../../../../../../front_end/core/sdk/FrameManager.test.ts",
     "../../../../../../front_end/core/sdk/NetworkRequest.test.ts",
     "../../../../../../front_end/core/sdk/OverlayColorGenerator.test.ts",
     "../../../../../../front_end/core/sdk/OverlayModel.test.ts",

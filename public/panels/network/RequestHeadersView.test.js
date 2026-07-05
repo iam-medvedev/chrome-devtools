@@ -8,8 +8,9 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Persistence from '../../models/persistence/persistence.js';
-import { assertScreenshot, dispatchCopyEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { assertScreenshot, dispatchCopyEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { cleanTestDOM } from '../../testing/DOMHooks.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createWorkspaceProject, setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import { recordedMetricsContain, resetRecordedMetrics, } from '../../testing/UserMetricsHelpers.js';
@@ -87,11 +88,15 @@ const getRowHighlightStatus = (container) => {
         return element?.classList.contains('header-highlight') || false;
     });
 };
-describeWithMockConnection('RequestHeadersView', () => {
+describeWithEnvironment('RequestHeadersView', () => {
     let component = null;
     beforeEach(() => {
         setUpEnvironment();
         resetRecordedMetrics();
+    });
+    afterEach(async () => {
+        cleanTestDOM();
+        await raf();
     });
     it('renders the General section', async () => {
         component = await renderHeadersComponent(defaultRequest);

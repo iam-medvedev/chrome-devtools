@@ -491,7 +491,7 @@ var LayersPanel = class _LayersPanel extends UI2.Panel.PanelWithSidebar {
     this.layerViewHost = new LayerViewer2.LayerViewHost.LayerViewHost();
     this.layerTreeOutline = new LayerViewer2.LayerTreeOutline.LayerTreeOutline(this.layerViewHost);
     this.layerTreeOutline.addEventListener("PaintProfilerRequested", this.onPaintProfileRequested, this);
-    this.panelSidebarElement().appendChild(this.layerTreeOutline.element);
+    this.layerTreeOutline.show(this.panelSidebarElement());
     this.setDefaultFocusedElement(this.layerTreeOutline.element);
     this.rightSplitWidget = new UI2.SplitWidget.SplitWidget(false, true, "layer-details-split-view-state");
     this.splitWidget().setMainWidget(this.rightSplitWidget);

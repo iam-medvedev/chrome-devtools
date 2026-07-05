@@ -8,7 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -30,7 +30,13 @@ async function getGroups(view) {
             urls: Object.fromEntries(group.urlGroups.entries().map(([title, { count }]) => ([title, count])))
         }]));
 }
-describeWithMockConnection('ConsoleSidebar', () => {
+describe('ConsoleSidebar', () => {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
     it('groups logs by URL', async () => {
         const view = createViewFunctionStub(Console.ConsoleSidebar.ConsoleSidebar);
         const sidebar = new Console.ConsoleSidebar.ConsoleSidebar(undefined, view);

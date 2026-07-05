@@ -4,10 +4,9 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
-describeWithMockConnection('LighthousePanel', () => {
+describeWithEnvironment('LighthousePanel', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Lighthouse;
     let target;

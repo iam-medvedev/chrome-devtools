@@ -8,8 +8,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { deinitializeGlobalVars, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { deinitializeGlobalVars, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import * as NetworkForward from './forward/forward.js';
 import * as Network from './network.js';
@@ -30,7 +29,7 @@ function getOverrideIndicator(view, tabId) {
     const statusDot = tab?.querySelector('.status-dot');
     return statusDot ? statusDot : null;
 }
-describeWithMockConnection('NetworkItemView', () => {
+describeWithEnvironment('NetworkItemView', () => {
     beforeEach(() => {
         setUpEnvironment();
     });

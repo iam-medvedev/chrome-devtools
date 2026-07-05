@@ -22,9 +22,8 @@ export default `/*
   margin: var(--sys-size-3) 0;
 }
 
-.row.header-editable {
-  font-family: var(--monospace-font-family);
-  font-size: var(--monospace-font-size);
+.row:hover {
+  background-color: var(--sys-color-state-hover-on-subtle);
 }
 
 .header-name {
@@ -62,7 +61,8 @@ export default `/*
   display: flex;
   overflow-wrap: anywhere;
   margin-inline-end: 14px;
-  font: var(--sys-typescale-body4-regular);
+  font-family: var(--monospace-font-family);
+  font-size: var(--monospace-font-size);
 }
 
 .header-badge-text {
@@ -90,10 +90,12 @@ export default `/*
 }
 
 .call-to-action-body {
+  display: flex;
+  gap: var(--sys-size-4);
   padding: 6px 0;
-  margin-left: 9.5px;
+  margin-left: var(--sys-size-1);
   border-left: 2px solid var(--issue-color-yellow);
-  padding-left: 18px;
+  padding-left: 11px;
   line-height: 20px;
 }
 
@@ -122,7 +124,7 @@ export default `/*
 }
 
 .inline-icon {
-  vertical-align: middle;
+  margin-top: var(--sys-size-2);
 }
 
 .row-flex-icon {

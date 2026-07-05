@@ -4,8 +4,8 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { raf } from '../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Resources from './application.js';
 var View = Resources.InterestGroupStorageView;
@@ -41,7 +41,7 @@ class InterestGroupDetailsGetterFails {
         return null;
     }
 }
-describeWithMockConnection('InterestGroupStorageView', () => {
+describeWithEnvironment('InterestGroupStorageView', () => {
     it('records events', () => {
         const view = new View.InterestGroupStorageView(new InterestGroupDetailsGetter());
         events.forEach(event => {

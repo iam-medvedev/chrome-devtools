@@ -5,13 +5,13 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { cleanTestDOM } from '../../testing/DOMHooks.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { spyCall } from '../../testing/ExpectStubCall.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
-describeWithMockConnection('LayoutPane', () => {
+describeWithEnvironment('LayoutPane', () => {
     let target;
     let domModel;
     let overlayModel;
@@ -23,6 +23,10 @@ describeWithMockConnection('LayoutPane', () => {
         getNodesByStyle = sinon.stub(domModel, 'getNodesByStyle').resolves([]);
         overlayModel = target.model(SDK.OverlayModel.OverlayModel);
         assert.exists(overlayModel);
+    });
+    afterEach(async () => {
+        cleanTestDOM();
+        await raf();
     });
     async function renderComponent() {
         const component = new Elements.LayoutPane.LayoutPane();

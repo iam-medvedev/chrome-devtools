@@ -1,1 +1,1 @@
-export {};
+import './components.js';

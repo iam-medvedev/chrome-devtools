@@ -4,14 +4,14 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
-import * as SDK from '../../core/sdk/sdk.js';
-import * as Bindings from '../../models/bindings/bindings.js';
+import * as Formatter from '../../models/formatter/formatter.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
-import { getInitializedResourceTreeModel } from '../../testing/ResourceTreeHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
+import { getInitializedResourceTreeModel, mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Coverage from './coverage.js';
 const { urlString } = Platform.DevToolsPath;
@@ -26,7 +26,10 @@ function lineRangesForContent(content) {
     }
     return ranges;
 }
-describeWithMockConnection('CoverageDeocrationManager', () => {
+describe('CoverageDeocrationManager', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
     let target;
     let backend;
     let debuggerBinding;
@@ -34,28 +37,24 @@ describeWithMockConnection('CoverageDeocrationManager', () => {
     let cssBinding;
     let coverageModel;
     beforeEach(async () => {
-        backend = new MockProtocolBackend();
-        target = createTarget();
-        workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        debuggerBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
-        cssBinding =
-            Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
-        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+        backend = new MockDebuggerBackend();
+        mockResourceTree(backend.cdpConnection);
+        target = backend.createTarget({ connection: backend.cdpConnection });
+        sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(backend.universe.workspace);
+        workspace = backend.universe.workspace;
+        debuggerBinding = backend.universe.debuggerWorkspaceBinding;
+        cssBinding = backend.universe.cssWorkspaceBinding;
+        backend.universe.targetManager.setScopeTarget(target);
         // Since we wanna mock 'usageForRange' we stub the whole instance. Otherwise we'd use half
         // a stub and half the real thing.
         coverageModel = sinon.createStubInstance(Coverage.CoverageModel.CoverageModel);
         // Wait for the resource tree model to load; otherwise, our uiSourceCodes could be asynchronously
         // invalidated during the test.
         await getInitializedResourceTreeModel(target);
+        sinon.stub(Formatter.FormatterWorkerPool.FormatterWorkerPool.instance(), 'javaScriptScopeTree').resolves(null);
+    });
+    afterEach(() => {
+        sinon.restore();
     });
     const URL = urlString `http://example.com/index.js`;
     describe('usageByLine (raw)', () => {

@@ -53,6 +53,7 @@
     "../../../../../../front_end/ui/legacy/InspectorDrawerView.test.ts",
     "../../../../../../front_end/ui/legacy/InspectorView.test.ts",
     "../../../../../../front_end/ui/legacy/KeyboardShortcut.test.ts",
+    "../../../../../../front_end/ui/legacy/ListControl.test.ts",
     "../../../../../../front_end/ui/legacy/ListModel.test.ts",
     "../../../../../../front_end/ui/legacy/ListWidget.test.ts",
     "../../../../../../front_end/ui/legacy/PlusButton.test.ts",

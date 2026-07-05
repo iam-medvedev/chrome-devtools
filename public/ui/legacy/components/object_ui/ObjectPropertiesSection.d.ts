@@ -7,6 +7,7 @@ import type * as Components from '../utils/utils.js';
 import objectPropertiesSectionStyles from './objectPropertiesSection.css.js';
 import objectValueStyles from './objectValue.css.js';
 export { objectPropertiesSectionStyles, objectValueStyles };
+export declare const EXPANDABLE_MAX_DEPTH = 100;
 interface NodeChildren {
     properties?: ObjectTreeNode[];
     internalProperties?: ObjectTreeNode[];
@@ -44,6 +45,7 @@ export declare abstract class ObjectTreeNodeBase extends Common.ObjectWrapper.Ob
     get propertiesMode(): ObjectPropertiesMode;
     get includeNullOrUndefinedValues(): boolean;
     set includeNullOrUndefinedValues(value: boolean);
+    get canExpandRecursively(): boolean;
     get sortPropertiesAlphabetically(): boolean;
     set sortPropertiesAlphabetically(value: boolean);
     expandRecursively(maxDepth: number): Promise<void>;
@@ -69,12 +71,14 @@ export declare namespace ObjectTreeNodeBase {
     const enum Events {
         VALUE_CHANGED = "value-changed",
         CHILDREN_CHANGED = "children-changed",
-        FILTER_CHANGED = "filter-changed"
+        FILTER_CHANGED = "filter-changed",
+        EXPANDED_CHANGED = "expanded-changed"
     }
     interface EventTypes {
         [Events.VALUE_CHANGED]: void;
         [Events.CHILDREN_CHANGED]: void;
         [Events.FILTER_CHANGED]: void;
+        [Events.EXPANDED_CHANGED]: boolean;
     }
 }
 export declare class ObjectTree extends ObjectTreeNodeBase {
@@ -102,6 +106,7 @@ export declare class ObjectTreeNode extends ObjectTreeNodeBase {
     constructor(property: SDK.RemoteObject.RemoteObjectProperty, parent: ObjectTreeNodeBase | undefined, options: ObjectTreeOptions, nonSyntheticParent?: SDK.RemoteObject.RemoteObject | undefined);
     get object(): SDK.RemoteObject.RemoteObject | undefined;
     get isFiltered(): boolean;
+    get canExpandRecursively(): boolean;
     get name(): string;
     get path(): string;
     selfOrParentIfInternal(): ObjectTreeNodeBase;
@@ -204,6 +209,9 @@ export declare class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElemen
     private readonly maxNumPropertiesToShow;
     constructor(property: ObjectTreeNode, linkifier?: Components.Linkifier.Linkifier);
     static populate(treeElement: UI.TreeOutline.TreeElement, value: ObjectTreeNodeBase, skipProto: boolean, skipGettersAndSetters: boolean, linkifier?: Components.Linkifier.Linkifier, emptyPlaceholder?: string | null): Promise<void>;
+    static populateChildrenIfNeeded(value: ObjectTreeNodeBase): Promise<void>;
+    static populateImpl(treeElement: UI.TreeOutline.TreeElement, value: ObjectTreeNodeBase, skipProto: boolean, skipGettersAndSetters: boolean, linkifier?: Components.Linkifier.Linkifier, emptyPlaceholder?: string | null): void;
+    static createNodes(value: ObjectTreeNodeBase, skipProto: boolean, skipGettersAndSetters: boolean, linkifier?: Components.Linkifier.Linkifier, emptyPlaceholder?: string | null, isNotDisplayablePropertyCallback?: (property: SDK.RemoteObject.RemoteObjectProperty) => boolean): Generator<UI.TreeOutline.TreeElement>;
     static createPropertyNodes({ properties, internalProperties, accessors, arrayRanges }: NodeChildren, skipProto: boolean, skipGettersAndSetters: boolean, linkifier?: Components.Linkifier.Linkifier, emptyPlaceholder?: string | null, isNotDisplayablePropertyCallback?: (property: SDK.RemoteObject.RemoteObjectProperty) => boolean): Generator<UI.TreeOutline.TreeElement>;
     static populateWithProperties(treeNode: UI.TreeOutline.TreeElement, children: NodeChildren, skipProto: boolean, skipGettersAndSetters: boolean, linkifier?: Components.Linkifier.Linkifier, emptyPlaceholder?: string | null): void;
     revertHighlightChanges(): void;
@@ -229,7 +237,8 @@ export declare class ArrayGroupingTreeElement extends UI.TreeOutline.TreeElement
     toggleOnClick: boolean;
     private readonly linkifier;
     constructor(child: ArrayGroupTreeNode, linkifier?: Components.Linkifier.Linkifier);
-    static populate(treeNode: UI.TreeOutline.TreeElement, children: NodeChildren, linkifier?: Components.Linkifier.Linkifier): Promise<void>;
+    static createNodes(children: NodeChildren, linkifier?: Components.Linkifier.Linkifier, isNotDisplayablePropertyCallback?: (property: SDK.RemoteObject.RemoteObjectProperty) => boolean): Generator<UI.TreeOutline.TreeElement>;
+    static populateChildrenIfNeeded(children: NodeChildren): Promise<void>;
     onexpand(): void;
     oncollapse(): void;
     onpopulate(): Promise<void>;

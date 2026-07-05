@@ -5,12 +5,12 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Accessibility from './accessibility.js';
 const NODE_ID = 1;
-describeWithMockConnection('AccessibilitySidebarView', () => {
+describeWithEnvironment('AccessibilitySidebarView', () => {
     let target;
     let view;
     beforeEach(() => {
@@ -22,9 +22,10 @@ describeWithMockConnection('AccessibilitySidebarView', () => {
             title: () => 'Toggle Accessibility Tree',
             toggleable: true,
         });
-        target = createTarget();
-        setMockConnectionResponseHandler('DOM.getDocument', () => ({ root: { nodeId: NODE_ID } }));
-        setMockConnectionResponseHandler('DOM.getNodesForSubtreeByStyle', () => ({ nodeIds: [] }));
+        const connection = new MockCDPConnection();
+        connection.setSuccessHandler('DOM.getDocument', () => ({ root: { nodeId: NODE_ID } }));
+        connection.setSuccessHandler('DOM.getNodesForSubtreeByStyle', () => ({ nodeIds: [] }));
+        target = createTarget({ connection });
     });
     afterEach(() => {
         UI.ActionRegistration.maybeRemoveActionExtension('elements.toggle-a11y-tree');

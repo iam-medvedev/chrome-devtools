@@ -5,9 +5,9 @@ import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Trace from '../../../models/trace/trace.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as TimelineComponents from './components.js';
-describeWithMockConnection('NetworkRequestTooltip', () => {
+describeWithEnvironment('NetworkRequestTooltip', () => {
     it('shows a throttling indicator', async () => {
         const networkRequest = sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest);
         sinon.stub(SDK.TraceObject.RevealableNetworkRequest, 'create')

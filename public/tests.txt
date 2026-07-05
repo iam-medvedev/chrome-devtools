@@ -54,6 +54,7 @@ core/sdk/AutofillModel.test.js
 core/sdk/CPUThrottlingManager.test.js
 core/sdk/CSSContainerQuery.test.js
 core/sdk/DebuggerModel.test.js
+core/sdk/FrameManager.test.js
 core/sdk/NetworkManager.test.js
 core/sdk/PageResourceLoader.test.js
 core/sdk/RuntimeModel.test.js
@@ -121,7 +122,6 @@ core/sdk/DOMModel.test.js
 core/sdk/DOMStorageModel.test.js
 core/sdk/EmulationModel.test.js
 core/sdk/EnhancedTracesParser.test.js
-core/sdk/FrameManager.test.js
 core/sdk/NetworkRequest.test.js
 core/sdk/OverlayColorGenerator.test.js
 core/sdk/OverlayModel.test.js
@@ -168,7 +168,6 @@ models/ai_assistance/agents/AccessibilityAgent.test.js
 models/ai_assistance/agents/AiAgent.test.js
 models/ai_assistance/agents/ContextSelectionAgent.test.js
 models/ai_assistance/agents/FileAgent.test.js
-models/ai_assistance/agents/GreenDevAgent.test.js
 models/ai_assistance/agents/NetworkAgent.test.js
 models/ai_assistance/agents/PatchAgent.test.js
 models/ai_assistance/agents/PerformanceAgent.test.js
@@ -177,16 +176,18 @@ models/ai_assistance/agents/StylingAgent.test.js
 models/ai_assistance/contexts/AccessibilityContext.test.js
 models/ai_assistance/contexts/DOMNodeContext.test.js
 models/ai_assistance/contexts/FileContext.test.js
+models/ai_assistance/contexts/PerformanceTraceContext.test.js
 models/ai_assistance/contexts/RequestContext.test.js
 models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIContext.test.js
 models/ai_assistance/performance/AIQueries.test.js
 models/ai_assistance/tools/ExecuteJavaScript.test.js
+models/ai_assistance/tools/GetElementAccessibilityDetails.test.js
 models/ai_assistance/tools/GetLighthouseAudits.test.js
 models/ai_assistance/tools/GetNetworkRequestDetails.test.js
 models/ai_assistance/tools/GetStyles.test.js
 models/ai_assistance/tools/ListNetworkRequests.test.js
-models/ai_assistance/tools/ResolveLighthousePath.test.js
+models/ai_assistance/tools/ResolveDevtoolsNodePath.test.js
 models/ai_assistance/tools/ToolRegistry.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
 models/ai_code_generation/AiCodeGeneration.test.js
@@ -474,6 +475,7 @@ panels/explain/components/ConsoleInsight.test.js
 panels/issues/AffectedSelectivePermissionsInterventionView.test.js
 panels/issues/IssueView.test.js
 panels/issues/IssuesPane.test.js
+panels/layer_viewer/LayerTreeOutline.test.js
 panels/layer_viewer/layer_viewer.test.js
 panels/layers/LayersPanel.test.js
 panels/lighthouse/LighthouseController.test.js
@@ -499,6 +501,7 @@ panels/media/TickingFlameChartHelpers.test.js
 panels/mobile_throttling/NetworkThrottlingSelector.test.js
 panels/mobile_throttling/ThrottlingManager.test.js
 panels/mobile_throttling/ThrottlingSettingsTab.test.js
+panels/network/LinkPreloadGenerator.test.js
 panels/network/NetworkConfigView.test.js
 panels/network/NetworkDataGridNode.test.js
 panels/network/NetworkItemView.test.js
@@ -734,6 +737,7 @@ ui/legacy/Infobar.test.js
 ui/legacy/InspectorDrawerView.test.js
 ui/legacy/InspectorView.test.js
 ui/legacy/KeyboardShortcut.test.js
+ui/legacy/ListControl.test.js
 ui/legacy/ListModel.test.js
 ui/legacy/ListWidget.test.js
 ui/legacy/PlusButton.test.js
@@ -759,6 +763,8 @@ ui/legacy/components/color_picker/Spectrum.test.js
 ui/legacy/components/cookie_table/CookiesTable.test.js
 ui/legacy/components/data_grid/DataGrid.test.js
 ui/legacy/components/data_grid/DataGridElement.test.js
+ui/legacy/components/data_grid/DataGridExporter.test.js
+ui/legacy/components/data_grid/ViewportDataGrid.test.js
 ui/legacy/components/inline_editor/AnimationTimingModel.test.js
 ui/legacy/components/inline_editor/AnimationTimingUI.test.js
 ui/legacy/components/inline_editor/BezierUI.test.js

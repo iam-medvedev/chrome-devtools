@@ -5,13 +5,20 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as i18n from '../../core/i18n/i18n.js';
 import { raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment, setupActionRegistry } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, initializeGlobalVars, setupActionRegistry } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-describeWithEnvironment('KeyValueStorageItemsView', () => {
-    before(() => {
+describe('KeyValueStorageItemsView', () => {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
+    beforeEach(() => {
+        UI.ActionRegistration.maybeRemoveActionExtension('ai-assistance.storage-floating-button');
         UI.ActionRegistration.registerActionExtension({
             actionId: 'ai-assistance.storage-floating-button',
             category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,

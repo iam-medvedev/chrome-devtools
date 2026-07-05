@@ -5,8 +5,10 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { expectCookie } from '../../testing/Cookies.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
@@ -166,13 +168,18 @@ describe('NetworkRequest', () => {
         assert.isFalse(request.hasOverriddenHeaders());
     });
 });
-describeWithMockConnection('NetworkRequest', () => {
+describeWithEnvironment('NetworkRequest (MockConnection)', () => {
     let networkManagerForRequestStub;
     let cookie;
     let addBlockedCookieSpy;
     let target;
+    let universe;
+    let connection;
     beforeEach(() => {
-        target = createTarget();
+        universe = new TestUniverse();
+        connection = new MockCDPConnection();
+        mockResourceTree(connection);
+        target = universe.createTarget({ connection });
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
         assert.exists(networkManager);
         networkManagerForRequestStub = sinon.stub(SDK.NetworkManager.NetworkManager, 'forRequest').returns(networkManager);
@@ -184,7 +191,7 @@ describeWithMockConnection('NetworkRequest', () => {
     });
     it('adds blocked response cookies to - and removes exempted cookies from cookieModel', async () => {
         const removeBlockedCookieSpy = sinon.spy(SDK.CookieModel.CookieModel.prototype, 'removeBlockedCookie');
-        setMockConnectionResponseHandler('Network.getCookies', () => ({ cookies: [] }));
+        connection.setSuccessHandler('Network.getCookies', () => ({ cookies: [] }));
         const cookieModel = target.model(SDK.CookieModel.CookieModel);
         assert.exists(cookieModel);
         const url = urlString `url`;
@@ -226,11 +233,16 @@ describeWithMockConnection('NetworkRequest', () => {
         assert.isEmpty(await cookieModel.getCookiesForDomain(''));
     });
 });
-describeWithMockConnection('ServerSentEvents', () => {
+describeWithEnvironment('ServerSentEvents', () => {
     let target;
     let networkManager;
+    let universe;
+    let connection;
     beforeEach(() => {
-        target = createTarget();
+        universe = new TestUniverse();
+        connection = new MockCDPConnection();
+        mockResourceTree(connection);
+        target = universe.createTarget({ connection });
         networkManager = target.model(SDK.NetworkManager.NetworkManager);
     });
     it('sends EventSourceMessageAdded events for EventSource text/event-stream', () => {
@@ -269,10 +281,7 @@ describeWithMockConnection('ServerSentEvents', () => {
         assert.deepEqual(networkEvents[1], { data: 'bar', eventId: 'barId', eventName: 'barName', time: 42 });
     });
     it('sends EventSourceMessageAdded events for raw text/event-stream', async () => {
-        setMockConnectionResponseHandler('Network.streamResourceContent', () => ({
-            getError() {
-                return undefined;
-            },
+        connection.setSuccessHandler('Network.streamResourceContent', () => ({
             bufferedData: '',
         }));
         networkManager.dispatcher.requestWillBeSent({
@@ -323,7 +332,7 @@ data: bar\n\n`;
         assert.deepInclude(networkEvents[1], { data: 'bar', eventId: 'barId', eventName: 'barName' });
     });
 });
-describeWithMockConnection('requestStreamingContent', () => {
+describeWithEnvironment('requestStreamingContent', () => {
     let target;
     let networkManager;
     beforeEach(() => {

@@ -5,8 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { SECURITY_ORIGIN } from '../../testing/ResourceTreeHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -32,7 +31,7 @@ class SharedStorageItemsListener {
         this.#refreshed = false;
     }
 }
-describeWithMockConnection('SharedStorageTreeElement', function () {
+describeWithEnvironment('SharedStorageTreeElement', function () {
     let target;
     let sharedStorageModel;
     let sharedStorage;

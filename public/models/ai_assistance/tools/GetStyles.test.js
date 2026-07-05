@@ -6,13 +6,16 @@ import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { assertIsError, assertIsResult, } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
 import { createStubbedDomNodeWithModels, getMatchedStyles, ruleMatch, } from '../../../testing/StyleHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('GetStylesTool', () => {
     let element;
     let target;
     let domModel;
+    let connection;
     beforeEach(() => {
+        connection = new MockCDPConnection();
         target = sinon.createStubInstance(SDK.Target.Target);
         target.model.returns(null);
         domModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
@@ -33,7 +36,7 @@ describeWithEnvironment('GetStylesTool', () => {
         const computedStyleMap = new Map([['color', 'red']]);
         cssModel.getComputedStyle.resolves(computedStyleMap);
         const matchedPayload = [ruleMatch('div', { color: 'red' })];
-        const matchedStyles = getMatchedStyles({ cssModel, node: resolvedNode, matchedPayload });
+        const matchedStyles = await getMatchedStyles({ cssModel, node: resolvedNode, matchedPayload, connection });
         cssModel.getMatchedStyles.resolves(matchedStyles);
         const tool = new AiAssistance.GetStyles.GetStylesTool();
         const context = {

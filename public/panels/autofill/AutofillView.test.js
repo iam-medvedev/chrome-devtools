@@ -8,10 +8,15 @@ import * as Host from '../../core/host/host.js';
 import * as AutofillManager from '../../models/autofill_manager/autofill_manager.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Autofill from './autofill.js';
 describeWithEnvironment('AutofillView', () => {
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     const frameId = 'frame#1';
     it('renders nothing if there\'s no last filled address form', async () => {
         const view = createViewFunctionStub(Autofill.AutofillView.AutofillView);
@@ -228,7 +233,7 @@ describeWithEnvironment('AutofillView', () => {
             const showViewStub = sinon.stub(viewManager, 'showView').resolves();
             const actionTakenStub = sinon.stub(Host.userMetrics, 'actionTaken');
             const view = createViewFunctionStub(Autofill.AutofillView.AutofillView);
-            const autofillManager = AutofillManager.AutofillManager.AutofillManager.instance({ forceNew: true });
+            const autofillManager = universe.autofillManager;
             const autofillView = new Autofill.AutofillView.AutofillView(autofillManager, view);
             renderElementIntoDOM(autofillView);
             return { manager: autofillManager, view: autofillView, showViewStub, actionTakenStub };

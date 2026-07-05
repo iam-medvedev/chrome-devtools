@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import * as UI from './legacy.js';
 describe('View', () => {
     describe('SimpleView', () => {
@@ -14,10 +14,11 @@ describe('View', () => {
             }), TypeError);
         });
     });
-    describeWithEnvironment('TabbedViewLocation', () => {
+    describe('TabbedViewLocation', () => {
         let tabbedLocation;
         let viewManager;
         before(async () => {
+            await initializeGlobalVars();
             ['first', 'second', 'third', 'fourth'].forEach(title => {
                 UI.ViewManager.registerViewExtension({
                     // @ts-expect-error
@@ -34,6 +35,7 @@ describe('View', () => {
             viewManager = UI.ViewManager.ViewManager.instance({ forceNew: true });
             tabbedLocation = viewManager.createTabbedLocation(() => { }, 'mock-location', true, true);
         });
+        after(async () => await deinitializeGlobalVars());
         it('Creates an empty tabbed location', () => {
             assert.deepEqual(tabbedLocation.tabbedPane().tabIds(), []);
         });

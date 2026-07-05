@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import * as Common from '../../../core/common/common.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from './components.js';
 function getLocalMetricValue(view) {
@@ -37,12 +37,12 @@ function getEnvironmentRecs(view) {
     const recs = Array.from(view.shadowRoot.querySelectorAll('.environment-recs li'));
     return recs.map(rec => rec.textContent);
 }
-function getPhaseTable(view) {
-    const phaseTable = view.shadowRoot.querySelector('.phase-table');
-    if (!phaseTable) {
+function getSubpartTable(view) {
+    const subpartTable = view.shadowRoot.querySelector('.subpart-table');
+    if (!subpartTable) {
         return null;
     }
-    const rowEls = Array.from(phaseTable.querySelectorAll('.phase-table-row:not(.phase-table-header-row)'));
+    const rowEls = Array.from(subpartTable.querySelectorAll('.subpart-table-row:not(.subpart-table-header-row)'));
     return rowEls.map(rowEl => Array.from(rowEl.querySelectorAll('[role="cell"]')).map(cellEl => cellEl.textContent));
 }
 function createMockHistogram() {
@@ -54,7 +54,7 @@ function createMockHistogram() {
         { start: 4000, density: 0.2 },
     ];
 }
-describeWithMockConnection('MetricCard', () => {
+describeWithEnvironment('MetricCard', () => {
     beforeEach(async () => {
         const dummyStorage = new Common.Settings.SettingsStorage({});
         Common.Settings.Settings.instance({
@@ -63,6 +63,7 @@ describeWithMockConnection('MetricCard', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
             settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+            console: new Common.Console.Console(),
         });
         CrUXManager.CrUXManager.instance({ forceNew: true });
         CrUXManager.CrUXManager.instance().getConfigSetting().set({ enabled: true, override: '' });
@@ -161,8 +162,8 @@ describeWithMockConnection('MetricCard', () => {
             'LCP warning',
         ]);
     });
-    describe('phase table', () => {
-        it('should not show if there is no phase data', async () => {
+    describe('subpart table', () => {
+        it('should not show if there is no subpart data', async () => {
             const view = new Components.MetricCard.MetricCard();
             view.data = {
                 metric: 'LCP',
@@ -172,51 +173,51 @@ describeWithMockConnection('MetricCard', () => {
             };
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
-            const phaseTable = getPhaseTable(view);
-            assert.isNull(phaseTable);
+            const subpartTable = getSubpartTable(view);
+            assert.isNull(subpartTable);
         });
-        it('should display phases in a table format', async () => {
+        it('should display subparts in a table format', async () => {
             const view = new Components.MetricCard.MetricCard();
             view.data = {
                 metric: 'LCP',
                 localValue: 100,
                 fieldValue: 200,
                 histogram: createMockHistogram(),
-                phases: [
+                subparts: [
                     ['TTFB', 500],
-                    ['Phase 1', 0],
-                    ['Phase 2', 123.783458345],
+                    ['Subpart 1', 0],
+                    ['Subpart 2', 123.783458345],
                 ],
             };
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
-            const phaseTable = getPhaseTable(view);
-            assert.deepEqual(phaseTable, [
+            const subpartTable = getSubpartTable(view);
+            assert.deepEqual(subpartTable, [
                 ['TTFB', '500 ms'],
-                ['Phase 1', '0 ms'],
-                ['Phase 2', '124 ms'],
+                ['Subpart 1', '0 ms'],
+                ['Subpart 2', '124 ms'],
             ]);
         });
-        it('should display field data phases in a table format', async () => {
+        it('should display field data subparts in a table format', async () => {
             const view = new Components.MetricCard.MetricCard();
             view.data = {
                 metric: 'LCP',
                 localValue: 100,
                 fieldValue: 200,
                 histogram: createMockHistogram(),
-                phases: [
+                subparts: [
                     ['TTFB', 500, 400],
-                    ['Phase 1', 0, 10],
-                    ['Phase 2', 123.783458345, 100],
+                    ['Subpart 1', 0, 10],
+                    ['Subpart 2', 123.783458345, 100],
                 ],
             };
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
-            const phaseTable = getPhaseTable(view);
-            assert.deepEqual(phaseTable, [
+            const subpartTable = getSubpartTable(view);
+            assert.deepEqual(subpartTable, [
                 ['TTFB', '500 ms', '400 ms'],
-                ['Phase 1', '0 ms', '10 ms'],
-                ['Phase 2', '124 ms', '100 ms'],
+                ['Subpart 1', '0 ms', '10 ms'],
+                ['Subpart 2', '124 ms', '100 ms'],
             ]);
         });
     });

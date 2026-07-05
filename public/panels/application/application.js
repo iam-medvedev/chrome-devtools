@@ -2955,6 +2955,7 @@ import * as PanelCommon from "./../common/common.js";
 import * as NetworkForward from "./../network/forward/forward.js";
 import * as CspEvaluator from "./../../third_party/csp_evaluator/csp_evaluator.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
+import * as UIHelpers from "./../../ui/helpers/helpers.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
 import { html as html4, nothing as nothing3, render as render4 } from "./../../ui/lit/lit.js";
@@ -3972,7 +3973,7 @@ function renderSingleCSP(cspInfo, divider) {
             .variant=${"icon"}
             .size=${"SMALL"}
             @click=${() => {
-    window.location.href = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only";
+    UIHelpers.openInNewTab("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only");
   }}
             jslog=${VisualLogging3.link("learn-more.csp-report-only").track({ click: true })}
             ></devtools-button>`}
@@ -5203,22 +5204,7 @@ var IDBDataView = class extends UI9.View.SimpleView {
     function callback(entries, hasMore) {
       this.clear();
       this.entries = entries;
-      let selectedNode = null;
-      for (let i = 0; i < entries.length; ++i) {
-        const data = {};
-        data["number"] = i + skipCount;
-        data["key"] = entries[i].key;
-        data["primary-key"] = entries[i].primaryKey;
-        data["value"] = entries[i].value;
-        const node = new IDBDataGridNode(data);
-        this.dataGrid.rootNode().appendChild(node);
-        if (data["number"] <= selected) {
-          selectedNode = node;
-        }
-      }
-      if (selectedNode) {
-        selectedNode.select();
-      }
+      this.populateDataGrid(entries, skipCount, selected);
       this.pageBackButton.setEnabled(Boolean(skipCount));
       this.pageForwardButton.setEnabled(hasMore);
       this.needsRefresh.setVisible(false);
@@ -5232,6 +5218,24 @@ var IDBDataView = class extends UI9.View.SimpleView {
       this.model.loadObjectStoreData(this.databaseId, this.objectStore.name, idbKeyRange, skipCount, pageSize, callback.bind(this));
     }
     void this.model.getMetadata(this.databaseId, this.objectStore).then(this.updateSummaryBar.bind(this));
+  }
+  populateDataGrid(entries, skipCount, selected) {
+    let selectedNode = null;
+    for (let i = 0; i < entries.length; ++i) {
+      const data = {};
+      data["number"] = i + skipCount;
+      data["key"] = entries[i].key;
+      data["primary-key"] = entries[i].primaryKey;
+      data["value"] = entries[i].value;
+      const node = new IDBDataGridNode(data);
+      this.dataGrid.rootNode().appendChild(node);
+      if (data["number"] <= selected) {
+        selectedNode = node;
+      }
+    }
+    if (selectedNode) {
+      selectedNode.select();
+    }
   }
   updateSummaryBar(metadata) {
     if (!this.summaryBarElement) {
@@ -9291,6 +9295,13 @@ var ServiceWorkersView = class extends UI20.Widget.VBox {
     this.manager = null;
     this.securityOriginManager = null;
     this.sectionToRegistration = /* @__PURE__ */ new WeakMap();
+    this.createOthersOriginView();
+    this.setupToolbar();
+    this.eventListeners = /* @__PURE__ */ new Map();
+    SDK19.TargetManager.TargetManager.instance().observeModels(SDK19.ServiceWorkerManager.ServiceWorkerManager, this);
+    this.updateListVisibility();
+  }
+  createOthersOriginView() {
     const othersDiv = this.contentElement.createChild("div", "service-workers-other-origin");
     othersDiv.setAttribute("jslog", `${VisualLogging11.section("other-origin")}`);
     const othersView = new UI20.ReportView.ReportView();
@@ -9308,6 +9319,8 @@ var ServiceWorkersView = class extends UI20.Widget.VBox {
       true
     );
     othersSectionRow.appendChild(seeOthers);
+  }
+  setupToolbar() {
     this.toolbar.appendToolbarItem(MobileThrottling.ThrottlingManager.throttlingManager().createOfflineToolbarCheckbox());
     const updateOnReloadSetting = Common10.Settings.Settings.instance().createSetting("service-worker-update-on-reload", false);
     updateOnReloadSetting.setTitle(i18nString21(UIStrings21.updateOnReload));
@@ -9317,9 +9330,6 @@ var ServiceWorkersView = class extends UI20.Widget.VBox {
     bypassServiceWorkerSetting.setTitle(i18nString21(UIStrings21.bypassForNetwork));
     const fallbackToNetwork = new UI20.Toolbar.ToolbarSettingCheckbox(bypassServiceWorkerSetting, i18nString21(UIStrings21.bypassTheServiceWorkerAndLoad));
     this.toolbar.appendToolbarItem(fallbackToNetwork);
-    this.eventListeners = /* @__PURE__ */ new Map();
-    SDK19.TargetManager.TargetManager.instance().observeModels(SDK19.ServiceWorkerManager.ServiceWorkerManager, this);
-    this.updateListVisibility();
   }
   modelAdded(serviceWorkerManager) {
     if (serviceWorkerManager.target() !== SDK19.TargetManager.TargetManager.instance().primaryPageTarget()) {
@@ -9560,10 +9570,10 @@ var Section = class {
   }
   scheduleUpdate() {
     if (throttleDisabledForDebugging) {
-      void this.update();
+      void this.performUpdate();
       return;
     }
-    void this.throttler.schedule(this.update.bind(this));
+    void this.throttler.schedule(this.performUpdate.bind(this));
   }
   addVersion(versionsStack, icon, label) {
     const installingEntry = versionsStack.createChild("div", "service-worker-version");
@@ -9609,7 +9619,7 @@ var Section = class {
       this.sourceField.createChild("div", "report-field-value-subtitle").textContent = i18nString21(UIStrings21.receivedS, { PH1: new Date(version.scriptResponseTime * 1e3).toLocaleString() });
     }
   }
-  update() {
+  performUpdate() {
     const fingerprint = this.registration.fingerprint();
     if (fingerprint === this.fingerprint) {
       return Promise.resolve();
@@ -16110,11 +16120,19 @@ var UIStrings33 = {
   /**
    *@description Explanation for an event outcome. Key refers to a cryptographic key.
    */
-  keyError: "Key error",
+  signingKeyGenerationError: "Signing key generation error",
+  /**
+   *@description Explanation for an event outcome. Key refers to a cryptographic key.
+   */
+  attestationKeyGenerationError: "Attestation key generation error",
   /**
    *@description Explanation for an event outcome. Signing refers to cryptographic signing.
    */
   signingError: "Signing error",
+  /**
+   *@description Explanation for an event outcome. Signing refers to cryptographic signing.
+   */
+  transientSigningError: "Transient signing error",
   /**
    *@description Explanation for an event outcome.
    */
@@ -16753,10 +16771,14 @@ function fetchResultToString(fetchResult) {
   switch (fetchResult) {
     case "Success":
       return i18nString33(UIStrings33.success);
-    case "KeyError":
-      return i18nString33(UIStrings33.keyError);
+    case "SigningKeyGenerationError":
+      return i18nString33(UIStrings33.signingKeyGenerationError);
+    case "AttestationKeyGenerationError":
+      return i18nString33(UIStrings33.attestationKeyGenerationError);
     case "SigningError":
       return i18nString33(UIStrings33.signingError);
+    case "TransientSigningError":
+      return i18nString33(UIStrings33.transientSigningError);
     case "ServerRequestedTermination":
       return i18nString33(UIStrings33.serverRequestedTermination);
     case "InvalidSessionId":

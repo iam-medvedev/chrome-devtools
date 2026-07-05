@@ -5,14 +5,20 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import { renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, initializeGlobalVars, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Main from './main.js';
 const CLICK_COUNT_LIMIT = 2;
 const DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS = 5000;
 const { GlobalAiButton } = Main.GlobalAiButton;
-describeWithEnvironment('GlobalAiButton', () => {
+describe('GlobalAiButton', () => {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
     let clock;
     beforeEach(() => {
         Common.Settings.Settings.instance().settingForTest('global-ai-button-click-count').set(0);

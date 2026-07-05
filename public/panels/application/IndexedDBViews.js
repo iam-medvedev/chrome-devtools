@@ -444,24 +444,7 @@ export class IDBDataView extends UI.View.SimpleView {
         function callback(entries, hasMore) {
             this.clear();
             this.entries = entries;
-            let selectedNode = null;
-            for (let i = 0; i < entries.length; ++i) {
-                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const data = {};
-                data['number'] = i + skipCount;
-                data['key'] = entries[i].key;
-                data['primary-key'] = entries[i].primaryKey;
-                data['value'] = entries[i].value;
-                const node = new IDBDataGridNode(data);
-                this.dataGrid.rootNode().appendChild(node);
-                if (data['number'] <= selected) {
-                    selectedNode = node;
-                }
-            }
-            if (selectedNode) {
-                selectedNode.select();
-            }
+            this.populateDataGrid(entries, skipCount, selected);
             this.pageBackButton.setEnabled(Boolean(skipCount));
             this.pageForwardButton.setEnabled(hasMore);
             this.needsRefresh.setVisible(false);
@@ -476,6 +459,26 @@ export class IDBDataView extends UI.View.SimpleView {
             this.model.loadObjectStoreData(this.databaseId, this.objectStore.name, idbKeyRange, skipCount, pageSize, callback.bind(this));
         }
         void this.model.getMetadata(this.databaseId, this.objectStore).then(this.updateSummaryBar.bind(this));
+    }
+    populateDataGrid(entries, skipCount, selected) {
+        let selectedNode = null;
+        for (let i = 0; i < entries.length; ++i) {
+            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data = {};
+            data['number'] = i + skipCount;
+            data['key'] = entries[i].key;
+            data['primary-key'] = entries[i].primaryKey;
+            data['value'] = entries[i].value;
+            const node = new IDBDataGridNode(data);
+            this.dataGrid.rootNode().appendChild(node);
+            if (data['number'] <= selected) {
+                selectedNode = node;
+            }
+        }
+        if (selectedNode) {
+            selectedNode.select();
+        }
     }
     updateSummaryBar(metadata) {
         if (!this.summaryBarElement) {

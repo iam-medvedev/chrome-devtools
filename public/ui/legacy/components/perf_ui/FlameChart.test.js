@@ -795,8 +795,7 @@ describeWithEnvironment('FlameChart', () => {
                 assert.deepEqual(chartInstance.coordinatesToGroupIndexAndHoverType(
                 /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 89), { groupIndex: -1, hoverType: "OUTSIDE_TRACKS" /* PerfUI.FlameChart.HoverType.OUTSIDE_TRACKS */ });
             });
-            // After https://crrev.com/c/7205876 this test starts failing.
-            it.skip('[crbug.com/465838131] returns the correct group index and the icon type for given coordinates', () => {
+            it('returns the correct group index and the icon type for given coordinates', () => {
                 const provider = new IndexAndCoordinatesConversionTestProvider();
                 const delegate = new MockFlameChartDelegate();
                 chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
@@ -1172,8 +1171,7 @@ describeWithEnvironment('FlameChart', () => {
         });
         await assertScreenshot('timeline/interactions_track_candystripe.png');
     });
-    // Flaky
-    it.skip('[crbug.com/474036476]: renders the frames track with screenshots', async function () {
+    it(`renders the frames track with screenshots`, async function () {
         const { flameChart } = await renderFlameChartIntoDOM(this, {
             dataProvider: 'MAIN',
             fileNameOrParsedTrace: 'web-dev-screenshot-source-ids.json.gz',
@@ -1196,10 +1194,10 @@ describeWithEnvironment('FlameChart', () => {
         });
         flameChart.toggleGroupExpand(0);
         await raf();
+        flameChart.blurCanvasForTesting();
         await assertScreenshot('timeline/frames_track_screenshots.png');
     });
-    // Flaky
-    it.skip('[crbug.com/474034100]: renders correctly with a vertical offset', async function () {
+    it('renders correctly with a vertical offset', async function () {
         const { flameChart, parsedTrace, dataProvider } = await renderFlameChartIntoDOM(this, {
             dataProvider: 'MAIN',
             fileNameOrParsedTrace: 'web-dev.json.gz',
@@ -1221,6 +1219,7 @@ describeWithEnvironment('FlameChart', () => {
         assert.isOk(index);
         flameChart.revealEntryVertically(index);
         await raf();
+        flameChart.blurCanvasForTesting();
         await assertScreenshot('timeline/flamechart_with_vertical_offset.png');
     });
     it('renders the animations track', async function () {
@@ -1482,6 +1481,85 @@ describeWithEnvironment('FlameChart', () => {
         }
         await renderFlameChartWithFakeProvider(new FakeProviderWithExtensionColors());
         await assertScreenshot('timeline/flamechart_extension_track_colors.png');
+    });
+    describe('calculatePopoverOffset', () => {
+        it('correctly places popover to the right when there is space', () => {
+            const offset = PerfUI.FlameChart.calculatePopoverOffset({
+                mouseX: 100,
+                mouseY: 100,
+                parentWidth: 1000,
+                parentHeight: 500,
+                infoWidth: 200,
+                infoHeight: 100,
+                offsetX: 10,
+                offsetY: 6,
+            });
+            // Mouse is at mouseX = 100, mouseY = 100.
+            // Popover fits to the right (100 + 10 + 200 = 310 <= 1000).
+            // Popover fits below the mouse (100 + 6 + 100 = 206 <= 500).
+            // It chooses the bottom-right quadrant: dx = 10, dy = 6.
+            // Target x = mouseX + dx = 100 + 10 = 110.
+            // Target y = mouseY + dy = 100 + 6 = 106.
+            assert.deepEqual(offset, { x: 110, y: 106 });
+        });
+        it('uses left-side position if popover does not fit on the right', () => {
+            const offset = PerfUI.FlameChart.calculatePopoverOffset({
+                mouseX: 950,
+                mouseY: 200,
+                parentWidth: 1000,
+                parentHeight: 500,
+                infoWidth: 300,
+                infoHeight: 100,
+                offsetX: 10,
+                offsetY: 6,
+            });
+            // Mouse is at mouseX = 950, mouseY = 200.
+            // Right-side positions (quadrants 0 and 1) do not fit because they overlap the mouse (mouseX 950 is inside the clamped popover span [700, 1000]).
+            // The loop moves to bottom-left (quadrant 2), which fits without overlap:
+            // dx = -offsetX - infoWidth = -10 - 300 = -310.
+            // Target x = mouseX + dx = 950 - 310 = 640 (which is within [0, 700] and the right edge 940 is to the left of mouseX 950).
+            // Target y = mouseY + dy = 200 + 6 = 206 (fits).
+            assert.deepEqual(offset, { x: 640, y: 206 });
+        });
+        it('clamps to the left edge (0) when using left-side position if it would otherwise exceed the left boundary', () => {
+            const offset = PerfUI.FlameChart.calculatePopoverOffset({
+                mouseX: 300,
+                mouseY: 200,
+                parentWidth: 500,
+                parentHeight: 500,
+                infoWidth: 300,
+                infoHeight: 100,
+                offsetX: 10,
+                offsetY: 6,
+            });
+            // Mouse is at mouseX = 300, mouseY = 200.
+            // Right-side positions (quadrants 0 and 1) do not fit because they overlap the mouse (mouseX 300 is inside the clamped popover span [200, 500]).
+            // The loop moves to bottom-left (quadrant 2):
+            // dx = -offsetX - infoWidth = -10 - 300 = -310.
+            // Target x = mouseX + dx = 300 - 310 = -10.
+            // Clamps x to the left boundary [0, 200] => x = 0.
+            // Since the clamped right edge (x + infoWidth = 300) is exactly at mouseX (300), it fits without overlap.
+            // Target y = mouseY + dy = 200 + 6 = 206.
+            assert.deepEqual(offset, { x: 0, y: 206 });
+        });
+        it('safely clamps without throwing if popover width exceeds parent width', () => {
+            const offset = PerfUI.FlameChart.calculatePopoverOffset({
+                mouseX: 100,
+                mouseY: 100,
+                parentWidth: 500,
+                parentHeight: 500,
+                infoWidth: 600,
+                infoHeight: 100,
+                offsetX: 10,
+                offsetY: 6,
+            });
+            // Mouse is at mouseX = 100, mouseY = 100.
+            // Popover width (600) is larger than parent width (500), so the standard upper clamp boundary (parentWidth - infoWidth = -100) is negative.
+            // The function ensures the upper bound is at least 0, clamping the popover to x = 0.
+            // In the second pass (pass = 1 / relaxed check), since the popover does not overlap the mouse vertically (popover y-span is [106, 206], which is below mouseY 100), it returns.
+            // Target x = 0, y = 106.
+            assert.deepEqual(offset, { x: 0, y: 106 });
+        });
     });
 });
 //# sourceMappingURL=FlameChart.test.js.map

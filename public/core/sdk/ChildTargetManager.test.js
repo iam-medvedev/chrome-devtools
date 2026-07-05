@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as SDK from './sdk.js';
 const TARGET_ID = 'TARGET_ID';
 const TITLE = 'TITLE';
@@ -23,7 +22,7 @@ let nextSessionId = 0;
 function createSessionId() {
     return ('SESSION_ID' + ++nextSessionId);
 }
-describeWithMockConnection('ChildTargetManager', () => {
+describeWithEnvironment('ChildTargetManager', () => {
     it('adds subtargets', async () => {
         const target = createTarget();
         const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(target);

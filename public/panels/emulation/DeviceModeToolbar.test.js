@@ -48,7 +48,6 @@ function createFakeSetting(defaultValue) {
 describeWithEnvironment('DeviceModeToolbar', () => {
     setupLocaleHooks();
     let tabTarget;
-    let prerenderTarget;
     let target;
     let deviceModeModel;
     let toolbar;
@@ -72,7 +71,7 @@ describeWithEnvironment('DeviceModeToolbar', () => {
             createLocalSetting: (_name, defaultValue) => createFakeSetting(defaultValue),
         });
         tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-        prerenderTarget = createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
+        createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
         deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         // Stub ThrottlingManager to avoid dependency on network condition settings.
@@ -88,9 +87,6 @@ describeWithEnvironment('DeviceModeToolbar', () => {
         await UI.Widget.Widget.allUpdatesComplete;
         toolbar?.detach();
         deviceModeModel?.dispose();
-        target?.dispose('test');
-        prerenderTarget?.dispose('test');
-        tabTarget?.dispose('test');
     });
     /**
      * Finds the rotate/screen-rotation toolbar button inside the toolbar element.
@@ -214,6 +210,21 @@ describeWithEnvironment('DeviceModeToolbar', () => {
         await toolbar.updateComplete;
         // It should have reverted to "Responsive"
         assert.strictEqual(select.value, 'Responsive');
+    });
+    it('shows "Fit to window" at top of zoom menu and no auto-adjust zoom button', async () => {
+        deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
+        toolbar.requestUpdate();
+        await toolbar.updateComplete;
+        // Ensure no auto-adjust zoom toolbar button exists.
+        const buttons = toolbar.element.querySelectorAll('devtools-button.toolbar-button');
+        const autoAdjustButton = [...buttons].find(b => b.title === 'Auto-adjust zoom');
+        assert.isUndefined(autoAdjustButton, 'Auto-adjust zoom button should be removed from toolbar');
+        // Check zoom dropdown menu options.
+        const selects = toolbar.element.querySelectorAll('select');
+        const zoomSelect = [...selects].find(s => s.getAttribute('aria-label') === 'Zoom');
+        assert.exists(zoomSelect, 'Zoom select should exist');
+        const options = [...zoomSelect.options].map(o => o.text);
+        assert.strictEqual(options[0], 'Fit to window', 'First option should be "Fit to window" without percentage');
     });
 });
 //# sourceMappingURL=DeviceModeToolbar.test.js.map

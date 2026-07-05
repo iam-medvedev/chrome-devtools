@@ -1,9 +1,15 @@
 import * as Common from '../core/common/common.js';
-import type * as Host from '../core/host/host.js';
+import * as Host from '../core/host/host.js';
 import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';
 import type * as Foundation from '../foundation/foundation.js';
+import * as AutofillManager from '../models/autofill_manager/autofill_manager.js';
 import * as Bindings from '../models/bindings/bindings.js';
+import * as Breakpoints from '../models/breakpoints/breakpoints.js';
+import * as JavaScriptMetadata from '../models/javascript_metadata/javascript_metadata.js';
+import * as Logs from '../models/logs/logs.js';
+import * as Persistence from '../models/persistence/persistence.js';
+import * as ProjectSettings from '../models/project_settings/project_settings.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import { createTarget } from './TargetHelpers.js';
 export interface CreationOptions extends Partial<Foundation.Universe.CreationOptions> {
@@ -33,14 +39,27 @@ export declare class TestUniverse implements Foundation.Universe.Universe {
      * Convenience shortcut for `createTarget({targetManager: testUniverse.targetManager})`
      */
     createTarget(options?: Parameters<typeof createTarget>[0]): SDK.Target.Target;
+    get autofillManager(): AutofillManager.AutofillManager.AutofillManager;
+    get automaticFileSystemManager(): Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager;
+    get automaticFileSystemWorkspaceBinding(): Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding;
+    get breakpointManager(): Breakpoints.BreakpointManager.BreakpointManager;
     get console(): Common.Console.Console;
     get context(): Root.DevToolsContext.DevToolsContext;
+    get cpuThrottlingManager(): SDK.CPUThrottlingManager.CPUThrottlingManager;
     get cssWorkspaceBinding(): Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding;
     get debuggerWorkspaceBinding(): Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding;
+    get domDebuggerManager(): SDK.DOMDebuggerModel.DOMDebuggerManager;
     get frameManager(): SDK.FrameManager.FrameManager;
     get ignoreListManager(): Workspace.IgnoreListManager.IgnoreListManager;
+    get logManager(): Logs.LogManager.LogManager;
+    get isolatedFileSystemManager(): Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager;
+    get javaScriptMetadata(): JavaScriptMetadata.JavaScriptMetadata.JavaScriptMetadataImpl;
     get multitargetNetworkManager(): SDK.NetworkManager.MultitargetNetworkManager;
+    get networkLog(): Logs.NetworkLog.NetworkLog;
+    get networkPersistenceManager(): Persistence.NetworkPersistenceManager.NetworkPersistenceManager;
     get pageResourceLoader(): SDK.PageResourceLoader.PageResourceLoader;
+    get persistence(): Persistence.Persistence.PersistenceImpl;
+    get projectSettingsModel(): ProjectSettings.ProjectSettingsModel.ProjectSettingsModel;
     get targetManager(): SDK.TargetManager.TargetManager;
     get settings(): Common.Settings.Settings;
     get workspace(): Workspace.Workspace.WorkspaceImpl;

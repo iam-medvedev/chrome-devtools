@@ -6,7 +6,6 @@ import sinon from 'sinon';
 import * as Formatter from '../../entrypoints/formatter_worker/formatter_worker.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
 import { stringifyFrame } from '../../testing/StackTraceHelpers.js';
 import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
@@ -267,7 +266,7 @@ describe('SourceMapScopesInfo', () => {
             assert.isTrue(info.hasVariablesAndBindings());
         });
     });
-    describeWithMockConnection('resolveMappedScopeChain', () => {
+    describeWithEnvironment('resolveMappedScopeChain', () => {
         function setUpCallFrameAndSourceMap(options) {
             const callFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
             const target = createTarget();
@@ -612,7 +611,7 @@ describe('SourceMapScopesInfo', () => {
             });
         });
     });
-    describeWithMockConnection('createFromAst', () => {
+    describeWithEnvironment('createFromAst', () => {
         it('creates scope info from a JavaScript AST with named mappings', () => {
             const generatedCode = `function f(n) { console.log(n); } function b() { f(42); }`;
             const ast = Formatter.ScopeParser.parseScopes(generatedCode)?.export();

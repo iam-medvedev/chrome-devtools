@@ -50,7 +50,7 @@ export class BrowserLauncher {
         return this.#browser;
     }
     async launch(options = {}) {
-        const { dumpio = false, enableExtensions = false, env = process.env, handleSIGINT = true, handleSIGTERM = true, handleSIGHUP = true, acceptInsecureCerts = false, networkEnabled = true, issuesEnabled = true, defaultViewport = DEFAULT_VIEWPORT, downloadBehavior, slowMo = 0, timeout = 30000, waitForInitialPage = true, protocolTimeout, handleDevToolsAsPage, idGenerator = createIncrementalIdGenerator(), blocklist, allowlist, } = options;
+        const { dumpio = false, enableExtensions = false, extensionsEnabledInIncognito = [], env = process.env, handleSIGINT = true, handleSIGTERM = true, handleSIGHUP = true, acceptInsecureCerts = false, networkEnabled = true, issuesEnabled = true, defaultViewport = DEFAULT_VIEWPORT, downloadBehavior, slowMo = 0, timeout = 30000, waitForInitialPage = true, protocolTimeout, handleDevToolsAsPage, idGenerator = createIncrementalIdGenerator(), blocklist, allowlist, } = options;
         let { protocol } = options;
         // Default to 'webDriverBiDi' for Firefox.
         if (this.#browser === 'firefox' && protocol === undefined) {
@@ -167,7 +167,9 @@ export class BrowserLauncher {
         if (Array.isArray(enableExtensions)) {
             await Promise.all([
                 enableExtensions.map(path => {
-                    return browser.installExtension(path);
+                    return browser.installExtension(path, {
+                        enabledInIncognito: extensionsEnabledInIncognito.includes(path),
+                    });
                 }),
             ]);
         }

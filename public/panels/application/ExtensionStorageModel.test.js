@@ -5,8 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Resources from './application.js';
 const { urlString } = Platform.DevToolsPath;
 class ExtensionStorageListener {
@@ -40,7 +39,7 @@ class ExtensionStorageListener {
         }
     }
 }
-describeWithMockConnection('ExtensionStorageModel', () => {
+describeWithEnvironment('ExtensionStorageModel', () => {
     let extensionStorageModel;
     let extensionStorage;
     let target;

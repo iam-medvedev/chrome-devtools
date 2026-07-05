@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { dispatchEvent } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
-describeWithMockConnection('ConsoleContextSelector', () => {
+describeWithEnvironment('ConsoleContextSelector', () => {
     let target;
     let subtarget;
     let targetContext;

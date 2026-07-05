@@ -3,9 +3,16 @@
 // found in the LICENSE file.
 /* eslint @devtools/enforce-test-universe-return-types: "error" */
 import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
 import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';
+import * as AutofillManager from '../models/autofill_manager/autofill_manager.js';
 import * as Bindings from '../models/bindings/bindings.js';
+import * as Breakpoints from '../models/breakpoints/breakpoints.js';
+import * as JavaScriptMetadata from '../models/javascript_metadata/javascript_metadata.js';
+import * as Logs from '../models/logs/logs.js';
+import * as Persistence from '../models/persistence/persistence.js';
+import * as ProjectSettings from '../models/project_settings/project_settings.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import { DEFAULT_SETTING_REGISTRATIONS_FOR_TEST } from './SettingsHelpers.js';
 import { createTarget } from './TargetHelpers.js';
@@ -31,6 +38,30 @@ export class TestUniverse {
     createTarget(options = {}) {
         return createTarget({ ...options, targetManager: this.targetManager });
     }
+    get autofillManager() {
+        if (!this.#context.has(AutofillManager.AutofillManager.AutofillManager)) {
+            this.#context.set(AutofillManager.AutofillManager.AutofillManager, new AutofillManager.AutofillManager.AutofillManager(this.targetManager, this.frameManager));
+        }
+        return this.#context.get(AutofillManager.AutofillManager.AutofillManager);
+    }
+    get automaticFileSystemManager() {
+        if (!this.#context.has(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager)) {
+            this.#context.set(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager, new Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager(this.#creationOptions?.inspectorFrontendHost ?? Host.InspectorFrontendHost.InspectorFrontendHostInstance, this.projectSettingsModel));
+        }
+        return this.#context.get(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager);
+    }
+    get automaticFileSystemWorkspaceBinding() {
+        if (!this.#context.has(Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding)) {
+            this.#context.set(Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding, new Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding(this.automaticFileSystemManager, this.isolatedFileSystemManager, this.workspace));
+        }
+        return this.#context.get(Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding);
+    }
+    get breakpointManager() {
+        if (!this.#context.has(Breakpoints.BreakpointManager.BreakpointManager)) {
+            this.#context.set(Breakpoints.BreakpointManager.BreakpointManager, new Breakpoints.BreakpointManager.BreakpointManager(this.targetManager, this.workspace, this.debuggerWorkspaceBinding, this.settings));
+        }
+        return this.#context.get(Breakpoints.BreakpointManager.BreakpointManager);
+    }
     get console() {
         if (!this.#context.has(Common.Console.Console)) {
             this.#context.set(Common.Console.Console, new Common.Console.Console());
@@ -40,6 +71,12 @@ export class TestUniverse {
     // eslint-disable-next-line @devtools/enforce-test-universe-return-types
     get context() {
         return this.#context;
+    }
+    get cpuThrottlingManager() {
+        if (!this.#context.has(SDK.CPUThrottlingManager.CPUThrottlingManager)) {
+            this.#context.set(SDK.CPUThrottlingManager.CPUThrottlingManager, new SDK.CPUThrottlingManager.CPUThrottlingManager(this.settings, this.targetManager));
+        }
+        return this.#context.get(SDK.CPUThrottlingManager.CPUThrottlingManager);
     }
     get cssWorkspaceBinding() {
         if (!this.#context.has(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding)) {
@@ -53,6 +90,12 @@ export class TestUniverse {
         }
         return this.#context.get(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
     }
+    get domDebuggerManager() {
+        if (!this.#context.has(SDK.DOMDebuggerModel.DOMDebuggerManager)) {
+            this.#context.set(SDK.DOMDebuggerModel.DOMDebuggerManager, new SDK.DOMDebuggerModel.DOMDebuggerManager(this.targetManager));
+        }
+        return this.#context.get(SDK.DOMDebuggerModel.DOMDebuggerManager);
+    }
     get frameManager() {
         if (!this.#context.has(SDK.FrameManager.FrameManager)) {
             this.#context.set(SDK.FrameManager.FrameManager, new SDK.FrameManager.FrameManager(this.targetManager));
@@ -65,12 +108,42 @@ export class TestUniverse {
         }
         return this.#context.get(Workspace.IgnoreListManager.IgnoreListManager);
     }
+    get logManager() {
+        if (!this.#context.has(Logs.LogManager.LogManager)) {
+            this.#context.set(Logs.LogManager.LogManager, new Logs.LogManager.LogManager(this.targetManager, this.networkLog));
+        }
+        return this.#context.get(Logs.LogManager.LogManager);
+    }
+    get isolatedFileSystemManager() {
+        if (!this.#context.has(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager)) {
+            this.#context.set(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager, new Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager(this.settings, this.console));
+        }
+        return this.#context.get(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager);
+    }
+    get javaScriptMetadata() {
+        if (!this.#context.has(JavaScriptMetadata.JavaScriptMetadata.JavaScriptMetadataImpl)) {
+            this.#context.set(JavaScriptMetadata.JavaScriptMetadata.JavaScriptMetadataImpl, new JavaScriptMetadata.JavaScriptMetadata.JavaScriptMetadataImpl());
+        }
+        return this.#context.get(JavaScriptMetadata.JavaScriptMetadata.JavaScriptMetadataImpl);
+    }
     get multitargetNetworkManager() {
         if (!this.#context.has(SDK.NetworkManager.MultitargetNetworkManager)) {
             const multitargetNetworkManager = new SDK.NetworkManager.MultitargetNetworkManager(this.targetManager);
             this.#context.set(SDK.NetworkManager.MultitargetNetworkManager, multitargetNetworkManager);
         }
         return this.#context.get(SDK.NetworkManager.MultitargetNetworkManager);
+    }
+    get networkLog() {
+        if (!this.#context.has(Logs.NetworkLog.NetworkLog)) {
+            this.#context.set(Logs.NetworkLog.NetworkLog, new Logs.NetworkLog.NetworkLog(this.targetManager, this.settings));
+        }
+        return this.#context.get(Logs.NetworkLog.NetworkLog);
+    }
+    get networkPersistenceManager() {
+        if (!this.#context.has(Persistence.NetworkPersistenceManager.NetworkPersistenceManager)) {
+            this.#context.set(Persistence.NetworkPersistenceManager.NetworkPersistenceManager, new Persistence.NetworkPersistenceManager.NetworkPersistenceManager(this.workspace, this.persistence, this.breakpointManager, this.targetManager, this.settings, this.isolatedFileSystemManager, this.multitargetNetworkManager));
+        }
+        return this.#context.get(Persistence.NetworkPersistenceManager.NetworkPersistenceManager);
     }
     get pageResourceLoader() {
         if (!this.#context.has(SDK.PageResourceLoader.PageResourceLoader)) {
@@ -81,6 +154,18 @@ export class TestUniverse {
             this.#context.set(SDK.PageResourceLoader.PageResourceLoader, pageResourceLoader);
         }
         return this.#context.get(SDK.PageResourceLoader.PageResourceLoader);
+    }
+    get persistence() {
+        if (!this.#context.has(Persistence.Persistence.PersistenceImpl)) {
+            this.#context.set(Persistence.Persistence.PersistenceImpl, new Persistence.Persistence.PersistenceImpl(this.workspace, this.breakpointManager));
+        }
+        return this.#context.get(Persistence.Persistence.PersistenceImpl);
+    }
+    get projectSettingsModel() {
+        if (!this.#context.has(ProjectSettings.ProjectSettingsModel.ProjectSettingsModel)) {
+            this.#context.set(ProjectSettings.ProjectSettingsModel.ProjectSettingsModel, new ProjectSettings.ProjectSettingsModel.ProjectSettingsModel(this.#creationOptions?.hostConfig ?? {}, this.pageResourceLoader, this.targetManager));
+        }
+        return this.#context.get(ProjectSettings.ProjectSettingsModel.ProjectSettingsModel);
     }
     get targetManager() {
         if (!this.#context.has(SDK.TargetManager.TargetManager)) {
@@ -95,6 +180,9 @@ export class TestUniverse {
                 get(ctor) {
                     if (ctor === Common.Settings.Settings.prototype.constructor) {
                         return universe.settings;
+                    }
+                    if (ctor === Common.Console.Console.prototype.constructor) {
+                        return universe.console;
                     }
                     if (ctor === SDK.FrameManager.FrameManager.prototype.constructor) {
                         return universe.frameManager;
@@ -113,11 +201,13 @@ export class TestUniverse {
     get settings() {
         if (!this.#context.has(Common.Settings.Settings)) {
             const storage = new Common.Settings.SettingsStorage({}, undefined, 'test');
-            const options = this.#creationOptions?.settingsCreationOptions ?? {
+            const options = {
                 syncedStorage: storage,
                 globalStorage: storage,
                 localStorage: storage,
                 settingRegistrations: DEFAULT_SETTING_REGISTRATIONS_FOR_TEST,
+                console: this.console,
+                ...this.#creationOptions?.settingsCreationOptions,
             };
             const settings = new Common.Settings.Settings(options);
             this.#context.set(Common.Settings.Settings, settings);

@@ -8,7 +8,7 @@ import * as Recorder from './models.js';
 let instance;
 describeWithEnvironment('ScreenshotStorage', () => {
     beforeEach(() => {
-        instance = Recorder.ScreenshotStorage.ScreenshotStorage.instance();
+        instance = Recorder.ScreenshotStorage.ScreenshotStorage.instance({ forceNew: true });
         instance.clear();
     });
     it('should return null if no screenshot has been stored for the given index', () => {

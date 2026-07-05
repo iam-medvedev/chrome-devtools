@@ -7,10 +7,8 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import { createWorkspaceProject, setUpEnvironment } from '../../testing/OverridesHelpers.js';
-import { setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -25,7 +23,7 @@ const setUpEnvironmentWithUISourceCode = (url, resourceType, project) => {
     workspace.addProject(project);
     return { workspace, project, uiSourceCode, networkPersistenceManager };
 };
-describeWithMockConnection('NetworkPersistenceManager', () => {
+describeWithEnvironment('NetworkPersistenceManager', () => {
     beforeEach(async () => {
         SDK.NetworkManager.MultitargetNetworkManager.dispose();
         const target = createTarget();
@@ -55,7 +53,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         assert.isTrue(actual, 'should complete override successfully');
     });
 });
-describeWithMockConnection('NetworkPersistenceManager', () => {
+describeWithEnvironment('NetworkPersistenceManager', () => {
     it('does not create interception patterns for forbidden URLs', async () => {
         SDK.NetworkManager.MultitargetNetworkManager.dispose();
         const target = createTarget();
@@ -88,11 +86,10 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         assert.isFalse(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(urlString `https://www.example.com/script.js`));
     });
 });
-describeWithMockConnection('NetworkPersistenceManager', () => {
+describeWithEnvironment('NetworkPersistenceManager', () => {
     let networkPersistenceManager;
     beforeEach(async () => {
         SDK.NetworkManager.MultitargetNetworkManager.dispose();
-        setMockResourceTree(false);
         const target = createTarget();
         networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, [
             {
@@ -653,7 +650,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         }, 0);
     });
 });
-describeWithMockConnection('NetworkPersistenceManager', () => {
+describeWithEnvironment('NetworkPersistenceManager', () => {
     beforeEach(() => {
         SDK.NetworkManager.MultitargetNetworkManager.dispose();
     });

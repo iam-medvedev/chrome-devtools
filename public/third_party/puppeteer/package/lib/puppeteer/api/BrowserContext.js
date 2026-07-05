@@ -54,7 +54,7 @@ export class BrowserContext extends EventEmitter {
         super();
     }
     /**
-     * If defined, indicates an ongoing screenshot opereation.
+     * If defined, indicates an ongoing screenshot operation.
      */
     #pageScreenshotMutex;
     #screenshotOperationsCount = 0;

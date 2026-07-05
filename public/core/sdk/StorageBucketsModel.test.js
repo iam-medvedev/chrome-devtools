@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as SDK from './sdk.js';
 class StorageBucketModelListener {
     #model;
@@ -40,7 +39,7 @@ class StorageBucketModelListener {
         });
     }
 }
-describeWithMockConnection('StorageBucketsModel', () => {
+describeWithEnvironment('StorageBucketsModel', () => {
     let storageKeyManager;
     let storageBucketsModel;
     let target;

@@ -7,8 +7,7 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { deinitializeGlobalVars, initializeGlobalVars, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { createStubbedDomNodeWithModels } from '../../testing/StyleHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
@@ -66,7 +65,13 @@ async function getDisplayedProperties(computedStyleWidget) {
     }
     return matchedPropertyNames;
 }
-describeWithMockConnection('ComputedStyleWidget', () => {
+describe('ComputedStyleWidget', () => {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
     let computedStyleWidget;
     beforeEach(() => {
         stubNoopSettings();

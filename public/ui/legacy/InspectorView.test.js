@@ -5,13 +5,15 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as LegacyUI from './legacy.js';
 const InspectorView = LegacyUI.InspectorView.InspectorView;
 const { DockState } = LegacyUI.DockController;
-describeWithEnvironment('InspectorView', () => {
+describe('InspectorView', () => {
     setupSettingsHooks();
+    before(async () => await initializeGlobalVars());
+    after(async () => await deinitializeGlobalVars());
     function createInspectorViewWithDockState(dockState) {
         const dockController = LegacyUI.DockController.DockController.instance({ forceNew: true, canDock: true });
         dockController.setDockSide(dockState);

@@ -5,11 +5,11 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { getCleanTextContentFromElements, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Application from './application.js';
-describeWithMockConnection('ServiceWorkerCacheView', function () {
+describeWithEnvironment('ServiceWorkerCacheView', function () {
     let target;
     let cacheStorageModel;
     let cache;
@@ -19,10 +19,11 @@ describeWithMockConnection('ServiceWorkerCacheView', function () {
         storageKey: testStorageKey,
     };
     beforeEach(() => {
-        target = createTarget();
+        const connection = new MockCDPConnection();
+        connection.setSuccessHandler('CacheStorage.requestEntries', () => ({ cacheDataEntries: [], returnCount: 0 }));
+        target = createTarget({ connection });
         cacheStorageModel = new SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel(target);
         cache = new SDK.ServiceWorkerCacheModel.Cache(cacheStorageModel, testStorageBucket, 'test-cache', 'id');
-        setMockConnectionResponseHandler('CacheStorage.requestEntries', () => ({ cacheDataEntries: [], returnCount: 0 }));
     });
     it('creates the expected view structure with toolbar, metadata, grid, and details pane', () => {
         const view = new Application.ServiceWorkerCacheViews.ServiceWorkerCacheView(cacheStorageModel, cache);
@@ -50,6 +51,7 @@ describeWithMockConnection('ServiceWorkerCacheView', function () {
             'https://example.org',
             'Yes, because the origin is outside of the top-level site',
         ]);
+        view.detach();
     });
     it('renders metadata with storage bucket info when found', async () => {
         const storageBucketsModel = target.model(SDK.StorageBucketsModel.StorageBucketsModel);
@@ -82,6 +84,7 @@ describeWithMockConnection('ServiceWorkerCacheView', function () {
             'Yes, because the origin is outside of the top-level site',
             'test-bucket',
         ]);
+        view.detach();
     });
 });
 //# sourceMappingURL=ServiceWorkerCacheViews.test.js.map

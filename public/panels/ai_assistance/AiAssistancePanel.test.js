@@ -14,10 +14,9 @@ import * as NetworkTimeCalculator from '../../models/network_time_calculator/net
 import * as Workspace from '../../models/workspace/workspace.js';
 import { cleanup, createAiAssistancePanel, createNetworkRequest, mockAidaClient, openHistoryContextMenu, stripId, } from '../../testing/AiAssistanceHelpers.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
-import { createTarget, describeWithEnvironment, registerNoopActions, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, deinitializeGlobalVars, describeWithEnvironment, initializeGlobalVars, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../testing/SnapshotTester.js';
@@ -27,7 +26,7 @@ import * as Network from '../network/network.js';
 import * as Timeline from '../timeline/timeline.js';
 import * as AiAssistancePanel from './ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithMockConnection('AI Assistance Panel', () => {
+describeWithEnvironment('AI Assistance Panel', () => {
     setupSettingsHooks();
     let viewManagerIsViewVisibleStub;
     async function enableAllFeatureAndSetting() {
@@ -288,7 +287,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                             },
                         },
                     };
-                    return AiAssistanceModel.PerformanceAgent.PerformanceTraceContext.fromParsedTrace(parsedTrace);
+                    return AiAssistanceModel.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(parsedTrace);
                 },
                 action: 'drjones.performance-panel-context',
             },
@@ -376,7 +375,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                     Meta: { mainFrameId: '', mainFrameURL: 'https://www.example.com' },
                 },
             };
-            const context = AiAssistanceModel.PerformanceAgent.PerformanceTraceContext.fromParsedTrace(fakeParsedTrace);
+            const context = AiAssistanceModel.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(fakeParsedTrace);
             UI.Context.Context.instance().setFlavor(AiAssistanceModel.AIContext.AgentFocus, context.getItem());
             void panel.handleAction('drjones.performance-panel-context');
             let nextInput = await view.nextInput;
@@ -2484,7 +2483,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
         });
     });
 });
-describeWithEnvironment('AiAssistancePanel.ActionDelegate', () => {
+describe('AiAssistancePanel.ActionDelegate', () => {
+    before(async () => {
+        await initializeGlobalVars();
+    });
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
     beforeEach(async () => {
         UI.ViewManager.ViewManager.instance({ forceNew: true });
         UI.InspectorView.InspectorView.instance({ forceNew: true });

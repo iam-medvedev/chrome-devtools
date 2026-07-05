@@ -11,8 +11,8 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, registerActions } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
+import { createTarget, describeWithEnvironment, registerActions } from '../../testing/EnvironmentHelpers.js';
+import { dispatchEvent } from '../../testing/MockConnection.js';
 import { html } from '../../ui/lit/lit.js';
 import * as PanelsCommon from '../common/common.js';
 import * as Elements from './elements.js';
@@ -128,7 +128,7 @@ describe('ElementsTreeElement', () => {
         await assertScreenshot('elements/gutter_decorations.png');
     });
 });
-describeWithMockConnection('ElementsTreeElement', () => {
+describeWithEnvironment('ElementsTreeElement', () => {
     const DEFAULT_LAYOUT_PROPERTIES = {
         isFlex: false,
         isGrid: false,
@@ -539,7 +539,7 @@ describeWithMockConnection('ElementsTreeElement', () => {
         assert.strictEqual(finalSpacesCount, initialSpacesCount);
     });
 });
-describeWithMockConnection('ElementsTreeElement highlighting', () => {
+describeWithEnvironment('ElementsTreeElement highlighting', () => {
     let domModel;
     let treeOutline;
     let containerNode;
@@ -834,7 +834,7 @@ describeWithMockConnection('ElementsTreeElement highlighting', () => {
         sinon.assert.calledWith(setNodeValueSpy, 'New Text');
     });
 });
-describeWithMockConnection('ElementsTreeElement in Snapshot Mode', () => {
+describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
     let target;
     let domModel;
     let treeOutline;

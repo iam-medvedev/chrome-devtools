@@ -10,7 +10,7 @@ import * as WebMCP from '../../models/web_mcp/web_mcp.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { findMenuItemWithLabel, getContextMenuForElement, getMenuForToolbarButton } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, deinitializeGlobalVars, initializeGlobalVars, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -40,7 +40,9 @@ const createDefaultViewInput = () => {
         onPaste: () => { },
     };
 };
-describeWithEnvironment('WebMCPView (View)', () => {
+describe('WebMCPView (View)', () => {
+    before(async () => await initializeGlobalVars());
+    after(async () => await deinitializeGlobalVars());
     it('calls onCallSelect with correct tab when clicking different columns', async () => {
         updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
         const sdkTarget = createTarget();
@@ -473,7 +475,9 @@ describeWithEnvironment('WebMCPView (View)', () => {
         sinon.assert.calledWith(onRevealTool, tool, { dir: '/tmp' });
     });
 });
-describeWithEnvironment('WebMCPView Presenter', () => {
+describe('WebMCPView Presenter', () => {
+    before(async () => await initializeGlobalVars());
+    after(async () => await deinitializeGlobalVars());
     let target;
     async function setup() {
         updateHostConfig({ devToolsWebMCPSupport: { enabled: true } });
@@ -787,7 +791,9 @@ describe('filterToolCalls', () => {
         assert.strictEqual(result[0].invocationId, '5');
     });
 });
-describeWithEnvironment('ToolDetailsWidget', () => {
+describe('ToolDetailsWidget', () => {
+    before(async () => await initializeGlobalVars());
+    after(async () => await deinitializeGlobalVars());
     beforeEach(() => {
         Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
     });
@@ -868,7 +874,9 @@ describeWithEnvironment('ToolDetailsWidget', () => {
         await assertScreenshot('application/webmcp_tool_details_unregistered.png');
     });
 });
-describeWithEnvironment('PayloadWidget (View)', () => {
+describe('PayloadWidget (View)', () => {
+    before(async () => await initializeGlobalVars());
+    after(async () => await deinitializeGlobalVars());
     const { PAYLOAD_DEFAULT_VIEW } = Application.WebMCPView;
     it('renders parsed JSON input', async () => {
         const target = document.createElement('div');
@@ -891,7 +899,9 @@ describeWithEnvironment('PayloadWidget (View)', () => {
         await assertScreenshot('application/webmcp_payload_unparsable.png');
     });
 });
-describeWithEnvironment('PayloadWidget', () => {
+describe('PayloadWidget', () => {
+    before(async () => await initializeGlobalVars());
+    after(async () => await deinitializeGlobalVars());
     const { PayloadWidget } = Application.WebMCPView;
     async function createWidget() {
         const view = createViewFunctionStub(PayloadWidget);
@@ -1111,7 +1121,9 @@ describe('parseToolSchema', () => {
         assert.isUndefined(parsed.parameters[0].typeRef);
     });
 });
-describeWithEnvironment('WebMCPView JSON Editor', () => {
+describe('WebMCPView JSON Editor', () => {
+    before(async () => await initializeGlobalVars());
+    after(async () => await deinitializeGlobalVars());
     const createDefaultViewInput = () => {
         return {
             filters: { text: '' },
