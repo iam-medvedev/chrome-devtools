@@ -123,7 +123,7 @@ async function maybeCreateLinkToElementsPanel(opener) {
         }
     });
     linkElement.addEventListener('mouseleave', () => {
-        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
     });
     return linkElement;
 }

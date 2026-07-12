@@ -133,8 +133,8 @@ export class WarningErrorCounterWidget extends UI.Widget.Widget {
         void UI.ViewManager.ViewManager.instance().showView('issues-pane');
     }
     async performUpdate() {
-        const errors = SDK.ConsoleModel.ConsoleModel.allErrors();
-        const warnings = SDK.ConsoleModel.ConsoleModel.allWarnings();
+        const errors = SDK.ConsoleModel.ConsoleModel.allErrors(SDK.TargetManager.TargetManager.instance());
+        const warnings = SDK.ConsoleModel.ConsoleModel.allWarnings(SDK.TargetManager.TargetManager.instance());
         const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         const issues = issuesManager.numberOfIssues();
         this.view({ compact: this.compact, errors, warnings, issues, showIssuesHandler: this.showIssues.bind(this) }, {}, this.contentElement);

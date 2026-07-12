@@ -6,33 +6,33 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     * @description Title of the 'What's New' tool in the bottom drawer
+     * @description Title of the What's new tool in the bottom drawer.
      */
-    whatsNew: 'What\'s new',
+    whatsNew: 'What’s new',
     /**
-     * @description Command for showing the 'What's New' tool in the bottom drawer
+     * @description Command for showing the What's new tool in the bottom drawer.
      */
-    showWhatsNew: 'Show what\'s new',
+    showWhatsNew: 'Show what’s new',
     /**
-     * @description Title of an action in the 'What's New' tool to release notes
+     * @description Title of an action in the What's new tool to open the release notes.
      */
     releaseNotes: 'Release notes',
     /**
-     * @description Title of an action in the 'What's New' tool to file an issue
+     * @description Title of an action in the What's new tool to file an issue.
      */
     reportADevtoolsIssue: 'Report a DevTools issue',
     /**
-     * @description A search term referring to a software defect (i.e. bug) that can be entered in the command menu
+     * @description A search term referring to a software defect (i.e. bug) that can be entered in the command menu.
      */
     bug: 'bug',
     /**
-     * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+     * @description Title of a setting under the Appearance category that can be invoked through the command menu.
      */
-    showWhatsNewAfterEachUpdate: 'Show what\'s new after each update',
+    showWhatsNewAfterEachUpdate: 'Show what’s new after each update',
     /**
-     * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+     * @description Title of a setting under the Appearance category that can be invoked through the command menu.
      */
-    doNotShowWhatsNewAfterEachUpdate: 'Don\'t show what\'s new after each update',
+    doNotShowWhatsNewAfterEachUpdate: 'Don’t show what’s new after each update',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/whats_new/whats_new-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);

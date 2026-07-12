@@ -32,11 +32,11 @@ const str_ = i18n.i18n.registerUIStrings('entrypoints/main/GlobalAiButton.ts', U
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS = 5000;
 const PROMOTION_END_DATE = new Date('2026-09-30');
-function getClickCountSetting() {
-    return Common.Settings.Settings.instance().createSetting('global-ai-button-click-count', 0, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
+function getClickCountSetting(settings) {
+    return settings.createSetting('global-ai-button-click-count', 0, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
 }
-function incrementClickCountSetting() {
-    const setting = getClickCountSetting();
+function incrementClickCountSetting(settings) {
+    const setting = getClickCountSetting(settings);
     setting.set(setting.get() + 1);
 }
 export var GlobalAiButtonState;
@@ -71,9 +71,15 @@ export class GlobalAiButton extends UI.Widget.Widget {
     #buttonState = GlobalAiButtonState.DEFAULT;
     #mouseOnMainToolbar = false;
     #returnToDefaultStateTimeout;
-    constructor(element, view) {
+    #settings;
+    #inspectorView;
+    #viewManager;
+    constructor(element, view, settings = Common.Settings.Settings.instance(), inspectorView = UI.InspectorView.InspectorView.instance(), viewManager = UI.ViewManager.ViewManager.instance()) {
         super(element);
         this.#view = view ?? DEFAULT_VIEW;
+        this.#settings = settings;
+        this.#inspectorView = inspectorView;
+        this.#viewManager = viewManager;
         this.requestUpdate();
         if (this.#shouldTriggerPromotion()) {
             this.#triggerPromotion();
@@ -93,12 +99,12 @@ export class GlobalAiButton extends UI.Widget.Widget {
         this.#mouseOnMainToolbar = false;
     };
     #addHoverEventListeners() {
-        UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().addEventListener('mouseenter', this.#handleMainToolbarMouseEnter);
-        UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().addEventListener('mouseleave', this.#handleMainToolbarMouseLeave);
+        this.#inspectorView.tabbedPane.headerElement().addEventListener('mouseenter', this.#handleMainToolbarMouseEnter);
+        this.#inspectorView.tabbedPane.headerElement().addEventListener('mouseleave', this.#handleMainToolbarMouseLeave);
     }
     #removeHoverEventListeners() {
-        UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().removeEventListener('mouseenter', this.#handleMainToolbarMouseEnter);
-        UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().removeEventListener('mouseleave', this.#handleMainToolbarMouseLeave);
+        this.#inspectorView.tabbedPane.headerElement().removeEventListener('mouseenter', this.#handleMainToolbarMouseEnter);
+        this.#inspectorView.tabbedPane.headerElement().removeEventListener('mouseleave', this.#handleMainToolbarMouseLeave);
     }
     // We only want to enable promotion when:
     // * The flag is enabled,
@@ -107,7 +113,7 @@ export class GlobalAiButton extends UI.Widget.Widget {
     #shouldTriggerPromotion() {
         const isFlagEnabled = Boolean(Root.Runtime.hostConfig.devToolsGlobalAiButton?.promotionEnabled);
         const isBeforeEndDate = (new Date()) < PROMOTION_END_DATE;
-        return isFlagEnabled && isBeforeEndDate && getClickCountSetting().get() < 2;
+        return isFlagEnabled && isBeforeEndDate && getClickCountSetting(this.#settings).get() < 2;
     }
     #triggerPromotion() {
         // Set up hover listeners for making sure that we don't return to default state from promotion state
@@ -137,19 +143,19 @@ export class GlobalAiButton extends UI.Widget.Widget {
         }, DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS);
     }
     #onClick() {
-        UI.ViewManager.ViewManager.instance().showViewInLocation('freestyler', 'drawer-view');
-        incrementClickCountSetting();
-        const hasExplicitUserPreference = UI.InspectorView.InspectorView.instance().isUserExplicitlyUpdatedDrawerOrientation();
+        this.#viewManager.showViewInLocation('freestyler', 'drawer-view');
+        incrementClickCountSetting(this.#settings);
+        const hasExplicitUserPreference = this.#inspectorView.isUserExplicitlyUpdatedDrawerOrientation();
         const isVerticalDrawerFeatureEnabled = Boolean(Root.Runtime.hostConfig.devToolsFlexibleLayout?.verticalDrawerEnabled);
         if (isVerticalDrawerFeatureEnabled && !hasExplicitUserPreference) {
             // This mimics what we're doing while showing the drawer via `ESC`.
             // There is a bug where opening the sidebar directly for the first time,
             // and triggering a drawer rotation without calling `showDrawer({focus: true})` makes the drawer disappear.
-            UI.InspectorView.InspectorView.instance().showDrawer({
+            this.#inspectorView.showDrawer({
                 focus: true,
                 hasTargetDrawer: false,
             });
-            UI.InspectorView.InspectorView.instance().toggleDrawerOrientation({ force: UI.InspectorView.DrawerOrientation.VERTICAL });
+            this.#inspectorView.toggleDrawerOrientation({ force: UI.InspectorView.DrawerOrientation.VERTICAL });
         }
     }
     performUpdate() {
@@ -159,25 +165,17 @@ export class GlobalAiButton extends UI.Widget.Widget {
         }, undefined, this.contentElement);
     }
 }
-let globalAiButtonToolbarProviderInstance;
 export class GlobalAiButtonToolbarProvider {
     #toolbarItem;
     #widgetElement;
-    constructor() {
+    constructor(settings = Common.Settings.Settings.instance(), inspectorView = UI.InspectorView.InspectorView.instance(), viewManager = UI.ViewManager.ViewManager.instance()) {
         this.#widgetElement = document.createElement('devtools-widget');
-        new GlobalAiButton(this.#widgetElement);
+        new GlobalAiButton(this.#widgetElement, undefined, settings, inspectorView, viewManager);
         this.#toolbarItem = new UI.Toolbar.ToolbarItemWithCompactLayout(this.#widgetElement);
         this.#toolbarItem.setVisible(false);
     }
     item() {
         return this.#toolbarItem;
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!globalAiButtonToolbarProviderInstance || forceNew) {
-            globalAiButtonToolbarProviderInstance = new GlobalAiButtonToolbarProvider();
-        }
-        return globalAiButtonToolbarProviderInstance;
     }
 }
 //# sourceMappingURL=GlobalAiButton.js.map

@@ -6,7 +6,7 @@ import { DeferredDOMNode, DOMModel, type DOMNode } from './DOMModel.js';
 import type { RemoteObject } from './RemoteObject.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
-import { TargetManager } from './TargetManager.js';
+import type { TargetManager } from './TargetManager.js';
 export interface HighlightColor {
     r: number;
     g: number;
@@ -29,6 +29,29 @@ export interface Hinge {
     contentColor: HighlightColor;
     outlineColor: HighlightColor;
 }
+export interface BaseDisplayCutout {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+    shape: Protocol.Overlay.DisplayCutoutShape;
+    contentColor?: HighlightColor;
+}
+export type DisplayCutout = BaseDisplayCutout & ({
+    shape: Protocol.Overlay.DisplayCutoutShape.Rectangle;
+} | {
+    shape: Protocol.Overlay.DisplayCutoutShape.Pill;
+    borderRadius: number;
+} | {
+    shape: Protocol.Overlay.DisplayCutoutShape.Notch;
+    upperRadius: number;
+    lowerRadius: number;
+} | {
+    shape: Protocol.Overlay.DisplayCutoutShape.Circle;
+    cx: number;
+    cy: number;
+    radius: number;
+});
 export declare const enum EmulatedOSType {
     WINDOWS = "Windows",
     MAC = "Mac",
@@ -39,11 +62,11 @@ export declare class OverlayModel extends SDKModel<EventTypes> implements Protoc
     overlayAgent: ProtocolProxyApi.OverlayApi;
     constructor(target: Target);
     static highlightObjectAsDOMNode(object: RemoteObject): void;
-    static hideDOMNodeHighlight(targetManager?: TargetManager): void;
-    static muteHighlight(targetManager?: TargetManager): Promise<void[]>;
-    static unmuteHighlight(targetManager?: TargetManager): Promise<void[]>;
-    static highlightRect(rect: HighlightRect, targetManager?: TargetManager): void;
-    static clearHighlight(targetManager?: TargetManager): void;
+    static hideDOMNodeHighlight(targetManager: TargetManager): void;
+    static muteHighlight(targetManager: TargetManager): Promise<void[]>;
+    static unmuteHighlight(targetManager: TargetManager): Promise<void[]>;
+    static highlightRect(rect: HighlightRect, targetManager: TargetManager): void;
+    static clearHighlight(targetManager: TargetManager): void;
     getDOMModel(): DOMModel;
     highlightRect({ x, y, width, height, color, outlineColor }: HighlightRect): Promise<Protocol.ProtocolResponseWithError>;
     clearHighlight(): Promise<Protocol.ProtocolResponseWithError>;
@@ -79,6 +102,7 @@ export declare class OverlayModel extends SDKModel<EventTypes> implements Protoc
     private delayedHideHighlight;
     highlightFrame(frameId: Protocol.Page.FrameId): void;
     showHingeForDualScreen(hinge: Hinge | null): void;
+    showDisplayCutout(cutout: DisplayCutout | null): void;
     setWindowControlsPlatform(selectedPlatform: EmulatedOSType): void;
     setWindowControlsThemeColor(themeColor: string): void;
     getWindowControlsConfig(): Protocol.Overlay.WindowControlsOverlayConfig;

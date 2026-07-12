@@ -139,6 +139,9 @@
     },
     {
       "path": "../workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "data_formatters/unittests-tsconfig.json"
     }
   ]
 }

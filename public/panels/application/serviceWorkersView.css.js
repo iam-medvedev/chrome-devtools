@@ -160,4 +160,12 @@ button.link:focus-visible {
   background-color: inherit;
 }
 
+devtools-icon.error-icon {
+  color: var(--sys-color-error-bright);
+  height: var(--sys-size-7);
+  margin-right: var(--sys-size-2);
+  vertical-align: bottom;
+  width: var(--sys-size-7);
+}
+
 /*# sourceURL=${import.meta.resolve('./serviceWorkersView.css')} */`;

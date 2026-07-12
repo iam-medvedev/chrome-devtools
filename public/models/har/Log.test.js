@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as HAR from './har.js';
@@ -151,6 +152,53 @@ describe('HAR', () => {
                     assert.strictEqual(entry.timings._workerRespondWithSettled, timingInfo.workerRespondWithSettled);
                     assert.strictEqual(entry.timings._workerRouterEvaluationStart, timingInfo.workerRouterEvaluationStart);
                     assert.strictEqual(entry.timings._workerCacheLookupStart, timingInfo.workerCacheLookupStart);
+                });
+                it('exports WebSocket messages', async () => {
+                    const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+                    request.setResourceType(Common.ResourceType.resourceTypes.WebSocket);
+                    const time = Date.now() / 1000;
+                    request.addFrame({
+                        type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                        text: 'text message',
+                        time,
+                        opCode: 1,
+                        mask: true,
+                    });
+                    request.addFrame({
+                        type: SDK.NetworkRequest.WebSocketFrameType.Receive,
+                        text: 'YmluYXJ5IG1lc3NhZ2U=',
+                        time: time + 1,
+                        opCode: 2,
+                        mask: false,
+                    });
+                    request.addFrame({
+                        type: SDK.NetworkRequest.WebSocketFrameType.Receive,
+                        text: 'last message',
+                        time: time + 2,
+                        opCode: 1,
+                        mask: false,
+                    });
+                    const entry = await build(request, { sanitize: false });
+                    assert.exists(entry._webSocketMessages);
+                    assert.lengthOf(entry._webSocketMessages, 3);
+                    assert.deepEqual(entry._webSocketMessages[0], {
+                        type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                        time,
+                        opcode: 1,
+                        data: 'text message',
+                    });
+                    assert.deepEqual(entry._webSocketMessages[1], {
+                        type: SDK.NetworkRequest.WebSocketFrameType.Receive,
+                        time: time + 1,
+                        opcode: 2,
+                        data: 'YmluYXJ5IG1lc3NhZ2U=',
+                    });
+                    assert.deepEqual(entry._webSocketMessages[2], {
+                        type: SDK.NetworkRequest.WebSocketFrameType.Receive,
+                        time: time + 2,
+                        opcode: 1,
+                        data: 'last message',
+                    });
                 });
             });
         });

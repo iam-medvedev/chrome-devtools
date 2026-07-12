@@ -5,11 +5,11 @@ import * as SDK from "./../../core/sdk/sdk.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   * @description Title for developer resources panel
+   * @description Title for the Developer resources panel.
    */
   developerResources: "Developer resources",
   /**
-   * @description Command for showing the developer resources panel
+   * @description Command for showing the Developer resources panel.
    */
   showDeveloperResources: "Show Developer resources"
 };

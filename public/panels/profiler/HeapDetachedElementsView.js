@@ -8,7 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { HeapDetachedElementsDataGrid, HeapDetachedElementsDataGridNode } from './HeapDetachedElementsDataGrid.js';
 import { ProfileType, } from './ProfileHeader.js';
-import { WritableProfileHeader } from './ProfileView.js';
+import { WritableProfileHeader } from './WritableProfileHeader.js';
 const UIStrings = {
     /**
      * @description Button text to obtain the detached elements retained by JS

@@ -6,11 +6,11 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   * @description Title of the CSS overview panel
+   * @description Title of the CSS overview panel.
    */
   cssOverview: "CSS overview",
   /**
-   * @description Title of the CSS overview panel
+   * @description Command for showing the CSS overview panel.
    */
   showCssOverview: "Show CSS overview"
 };
@@ -218,9 +218,10 @@ UI2.ViewManager.registerViewExtension({
   order: 10,
   persistence: "permanent",
   hasToolbar: false,
-  async loadView() {
+  async loadView(universe) {
     const Elements2 = await loadElementsModule();
-    return Elements2.ElementsPanel.ElementsPanel.instance();
+    const { targetManager, settings } = universe;
+    return Elements2.ElementsPanel.ElementsPanel.instance({ forceNew: null, targetManager, settings });
   }
 });
 UI2.ActionRegistration.registerActionExtension({
@@ -876,9 +877,9 @@ UI3.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString3(UIStrings3.showPage),
   order: 2,
   persistence: "permanent",
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return Sources.SourcesNavigator.NetworkNavigatorView.instance();
+    return Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: null, networkProjectManager: universe.networkProjectManager });
   }
 });
 UI3.ViewManager.registerViewExtension({
@@ -889,9 +890,9 @@ UI3.ViewManager.registerViewExtension({
   order: 4,
   persistence: "permanent",
   condition: () => !Root2.Runtime.Runtime.isTraceApp(),
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return Sources.SourcesNavigator.OverridesNavigatorView.instance();
+    return Sources.SourcesNavigator.OverridesNavigatorView.instance({ forceNew: null, networkProjectManager: universe.networkProjectManager });
   }
 });
 UI3.ViewManager.registerViewExtension({
@@ -902,9 +903,9 @@ UI3.ViewManager.registerViewExtension({
   order: 5,
   persistence: "permanent",
   condition: () => Root2.Runtime.getPathName() !== "/bundled/worker_app.html" && !Root2.Runtime.Runtime.isTraceApp(),
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return new Sources.SourcesNavigator.ContentScriptsNavigatorView();
+    return new Sources.SourcesNavigator.ContentScriptsNavigatorView(universe.networkProjectManager);
   }
 });
 UI3.ActionRegistration.registerActionExtension({
@@ -1437,11 +1438,11 @@ import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 var UIStrings5 = {
   /**
-   * @description Default Title of the security panel
+   * @description Title of the Security panel.
    */
   security: "Security",
   /**
-   * @description Default command to open the security panel
+   * @description Command in the Command Menu to show the Security panel.
    */
   showSecurity: "Show Security"
 };
@@ -1666,113 +1667,48 @@ import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 var UIStrings7 = {
   /**
-   * @description Title of the Sensors tool. The sensors tool contains GPS, orientation sensors, touch
-   * settings, etc.
+   * @description Title of the Sensors view. The Sensors view contains GPS, orientation sensors, touch
+   * settings, and more.
    */
   sensors: "Sensors",
   /**
-   * @description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of the Sensors view that can be searched in the command menu.
    */
   geolocation: "geolocation",
   /**
-   * @description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of the Sensors view that can be searched in the command menu.
    */
   timezones: "timezones",
   /**
-   * @description Text in Sensors View of the Device Toolbar
+   * @description Text in the Sensors view of the Device toolbar.
    */
   locale: "locale",
   /**
-   * @description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of the Sensors view that can be searched in the command menu.
    */
   locales: "locales",
   /**
-   * @description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of the Sensors view that can be searched in the command menu.
    */
   accelerometer: "accelerometer",
   /**
-   * @description A tag of Sensors tool that can be searched in the command menu. Refers to the
-   * orientation of a device (e.g. phone) in 3D space, e.g. tilted right/left.
+   * @description A tag of the Sensors view that can be searched in the command menu. Refers to the
+   * orientation of a device (for example, a phone) in 3D space, tilted right or left.
    */
   deviceOrientation: "device orientation",
   /**
-   * @description Title of Locations settings. Refers to geographic locations for GPS.
+   * @description Title of the Locations settings tab. Refers to geographic locations for GPS.
    */
   locations: "Locations",
   /**
-   * @description Text for the touch type to simulate on a device. Refers to touch input as opposed to
-   * mouse input.
-   */
-  touch: "Touch",
-  /**
-   * @description Text in Sensors View of the Device Toolbar. Refers to device-based touch input,
-   *which means the input type will be 'touch' only if the device normally has touch input e.g. a
-   *phone or tablet.
-   */
-  devicebased: "Device-based",
-  /**
-   * @description Text in Sensors View of the Device Toolbar. Means that touch input will be forced
-   *on, even if the device type e.g. desktop computer does not normally have touch input.
-   */
-  forceEnabled: "Force enabled",
-  /**
-   * @description Title of a section option in Sensors tab for idle emulation. This is a command, to
-   *emulate the state of the 'Idle Detector'.
-   */
-  emulateIdleDetectorState: "Emulate Idle Detector state",
-  /**
-   * @description Title of an option in Sensors tab idle emulation drop-down. Turns off emulation of idle state.
-   */
-  noIdleEmulation: "No idle emulation",
-  /**
-   * @description Title of an option in Sensors tab idle emulation drop-down.
-   */
-  userActiveScreenUnlocked: "User active, screen unlocked",
-  /**
-   * @description Title of an option in Sensors tab idle emulation drop-down.
-   */
-  userActiveScreenLocked: "User active, screen locked",
-  /**
-   * @description Title of an option in Sensors tab idle emulation drop-down.
-   */
-  userIdleScreenUnlocked: "User idle, screen unlocked",
-  /**
-   * @description Title of an option in Sensors tab idle emulation drop-down.
-   */
-  userIdleScreenLocked: "User idle, screen locked",
-  /**
-   * @description Command that opens the Sensors view/tool. The sensors tool contains GPS,
-   * orientation sensors, touch settings, etc.
+   * @description Command that opens the Sensors view. The Sensors view contains GPS,
+   * orientation sensors, touch settings, and more.
    */
   showSensors: "Show Sensors",
   /**
-   * @description Command that shows geographic locations.
+   * @description Command that shows the Locations settings tab.
    */
-  showLocations: "Show Locations",
-  /**
-   * @description Text for the CPU Pressure type to simulate on a device.
-   */
-  cpuPressure: "CPU Pressure",
-  /**
-   * @description Title of an option in Sensors tab cpu pressure emulation drop-down. Turns off emulation of cpu pressure state.
-   */
-  noPressureEmulation: "No override",
-  /**
-   * @description An option that appears in a drop-down that represents the nominal state.
-   */
-  nominal: "Nominal",
-  /**
-   * @description An option that appears in a drop-down that represents the fair state.
-   */
-  fair: "Fair",
-  /**
-   * @description An option that appears in a drop-down that represents the serious state.
-   */
-  serious: "Serious",
-  /**
-   * @description An option that appears in a drop-down that represents the critical state.
-   */
-  critical: "Critical"
+  showLocations: "Show Locations"
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/sensors/sensors-meta.ts", UIStrings7);
 var i18nLazyString7 = i18n13.i18n.getLazilyComputedLocalizedString.bind(void 0, str_7);
@@ -1899,92 +1835,6 @@ Common4.Settings.registerSettingExtension({
     }
   ]
 });
-Common4.Settings.registerSettingExtension({
-  title: i18nLazyString7(UIStrings7.cpuPressure),
-  reloadRequired: true,
-  settingName: "emulation.cpu-pressure",
-  settingType: "enum",
-  defaultValue: "none",
-  options: [
-    {
-      value: "none",
-      title: i18nLazyString7(UIStrings7.noPressureEmulation),
-      text: i18nLazyString7(UIStrings7.noPressureEmulation)
-    },
-    {
-      value: "nominal",
-      title: i18nLazyString7(UIStrings7.nominal),
-      text: i18nLazyString7(UIStrings7.nominal)
-    },
-    {
-      value: "fair",
-      title: i18nLazyString7(UIStrings7.fair),
-      text: i18nLazyString7(UIStrings7.fair)
-    },
-    {
-      value: "serious",
-      title: i18nLazyString7(UIStrings7.serious),
-      text: i18nLazyString7(UIStrings7.serious)
-    },
-    {
-      value: "critical",
-      title: i18nLazyString7(UIStrings7.critical),
-      text: i18nLazyString7(UIStrings7.critical)
-    }
-  ]
-});
-Common4.Settings.registerSettingExtension({
-  title: i18nLazyString7(UIStrings7.touch),
-  reloadRequired: true,
-  settingName: "emulation.touch",
-  settingType: "enum",
-  defaultValue: "none",
-  options: [
-    {
-      value: "none",
-      title: i18nLazyString7(UIStrings7.devicebased),
-      text: i18nLazyString7(UIStrings7.devicebased)
-    },
-    {
-      value: "force",
-      title: i18nLazyString7(UIStrings7.forceEnabled),
-      text: i18nLazyString7(UIStrings7.forceEnabled)
-    }
-  ]
-});
-Common4.Settings.registerSettingExtension({
-  title: i18nLazyString7(UIStrings7.emulateIdleDetectorState),
-  settingName: "emulation.idle-detection",
-  settingType: "enum",
-  defaultValue: "none",
-  options: [
-    {
-      value: "none",
-      title: i18nLazyString7(UIStrings7.noIdleEmulation),
-      text: i18nLazyString7(UIStrings7.noIdleEmulation)
-    },
-    {
-      value: '{"isUserActive":true,"isScreenUnlocked":true}',
-      title: i18nLazyString7(UIStrings7.userActiveScreenUnlocked),
-      text: i18nLazyString7(UIStrings7.userActiveScreenUnlocked)
-    },
-    {
-      value: '{"isUserActive":true,"isScreenUnlocked":false}',
-      title: i18nLazyString7(UIStrings7.userActiveScreenLocked),
-      text: i18nLazyString7(UIStrings7.userActiveScreenLocked)
-    },
-    {
-      value: '{"isUserActive":false,"isScreenUnlocked":true}',
-      title: i18nLazyString7(UIStrings7.userIdleScreenUnlocked),
-      text: i18nLazyString7(UIStrings7.userIdleScreenUnlocked)
-    },
-    {
-      value: '{"isUserActive":false,"isScreenUnlocked":false}',
-      title: i18nLazyString7(UIStrings7.userIdleScreenLocked),
-      text: i18nLazyString7(UIStrings7.userIdleScreenLocked)
-    }
-  ]
-});
 
 // gen/front_end/panels/accessibility/accessibility-meta.js
 import * as i18n15 from "./../../core/i18n/i18n.js";
@@ -2077,11 +1927,11 @@ import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
 var UIStrings10 = {
   /**
-   * @description Title for developer resources panel
+   * @description Title for the Developer resources panel.
    */
   developerResources: "Developer resources",
   /**
-   * @description Command for showing the developer resources panel
+   * @description Command for showing the Developer resources panel.
    */
   showDeveloperResources: "Show Developer resources"
 };
@@ -2242,13 +2092,6 @@ var UIStrings12 = {
    */
   doNotAutoOpen: "Do not auto-open DevTools for popups",
   /**
-   * @description Title of a setting under the Appearance category in Settings. When the webpage is
-   * paused by devtools, an overlay is shown on top of the page to indicate that it is paused. The
-   * overlay is a pause/unpause button and some text, which appears on top of the paused page. This
-   * setting turns off this overlay.
-   */
-  disablePaused: "Disable paused state overlay",
-  /**
    * @description Title of an action that toggle
    * "forces CSS prefers-color-scheme" color
    */
@@ -2385,18 +2228,10 @@ Common7.Settings.registerSettingExtension({
     }
   ]
 });
-Common7.Settings.registerSettingExtension({
-  category: "APPEARANCE",
-  storageType: "Synced",
-  title: i18nLazyString12(UIStrings12.disablePaused),
-  settingName: "disable-paused-state-overlay",
-  settingType: "boolean",
-  defaultValue: false
-});
 UI12.Toolbar.registerToolbarItem({
   async loadItem() {
     const InspectorMain = await loadInspectorMainModule();
-    return InspectorMain.InspectorMain.NodeIndicatorProvider.instance();
+    return new InspectorMain.InspectorMain.NodeIndicatorProvider();
   },
   order: 2,
   location: "main-toolbar-left"
@@ -2811,9 +2646,10 @@ UI18.ViewManager.registerViewExtension({
   title: i18nLazyString18(UIStrings18.throttling),
   commandPrompt: i18nLazyString18(UIStrings18.showThrottling),
   order: 35,
-  async loadView() {
+  async loadView(universe) {
     const MobileThrottling = await loadMobileThrottlingModule();
-    return new MobileThrottling.ThrottlingSettingsTab.ThrottlingSettingsTab();
+    const { settings } = universe;
+    return new MobileThrottling.ThrottlingSettingsTab.ThrottlingSettingsTab(settings);
   },
   settings: [
     "custom-network-conditions",
@@ -2885,31 +2721,31 @@ import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
 var UIStrings19 = {
   /**
-   * @description Title of the 'Performance monitor' tool in the bottom drawer
+   * @description Title of the 'Performance monitor' tool in the bottom drawer.
    */
   performanceMonitor: "Performance monitor",
   /**
-   * @description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance monitor that can be searched in the command menu.
    */
   performance: "performance",
   /**
-   * @description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance monitor that can be searched in the command menu.
    */
   systemMonitor: "system monitor",
   /**
-   * @description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance monitor that can be searched in the command menu.
    */
   monitor: "monitor",
   /**
-   * @description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance monitor that can be searched in the command menu.
    */
   activity: "activity",
   /**
-   * @description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance monitor that can be searched in the command menu.
    */
   metrics: "metrics",
   /**
-   * @description Command for showing the 'Performance monitor' tool in the bottom drawer
+   * @description Command for showing the 'Performance monitor' tool in the bottom drawer.
    */
   showPerformanceMonitor: "Show Performance monitor"
 };
@@ -3367,15 +3203,15 @@ import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
 var UIStrings21 = {
   /**
-   * @description Title of the WebAudio tool
+   * @description Title of the WebAudio tool.
    */
   webaudio: "WebAudio",
   /**
-   * @description A tags of WebAudio tool that can be searched in the command menu
+   * @description Tag of the WebAudio tool that can be searched in the command menu.
    */
   audio: "audio",
   /**
-   * @description Command for showing the WebAudio tool
+   * @description Command for showing the WebAudio tool.
    */
   showWebaudio: "Show WebAudio"
 };
@@ -3747,33 +3583,33 @@ import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as UI25 from "./../../ui/legacy/legacy.js";
 var UIStrings25 = {
   /**
-   * @description Title of the 'What's New' tool in the bottom drawer
+   * @description Title of the What's new tool in the bottom drawer.
    */
-  whatsNew: "What's new",
+  whatsNew: "What\u2019s new",
   /**
-   * @description Command for showing the 'What's New' tool in the bottom drawer
+   * @description Command for showing the What's new tool in the bottom drawer.
    */
-  showWhatsNew: "Show what's new",
+  showWhatsNew: "Show what\u2019s new",
   /**
-   * @description Title of an action in the 'What's New' tool to release notes
+   * @description Title of an action in the What's new tool to open the release notes.
    */
   releaseNotes: "Release notes",
   /**
-   * @description Title of an action in the 'What's New' tool to file an issue
+   * @description Title of an action in the What's new tool to file an issue.
    */
   reportADevtoolsIssue: "Report a DevTools issue",
   /**
-   * @description A search term referring to a software defect (i.e. bug) that can be entered in the command menu
+   * @description A search term referring to a software defect (i.e. bug) that can be entered in the command menu.
    */
   bug: "bug",
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the command menu.
    */
-  showWhatsNewAfterEachUpdate: "Show what's new after each update",
+  showWhatsNewAfterEachUpdate: "Show what\u2019s new after each update",
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the command menu.
    */
-  doNotShowWhatsNewAfterEachUpdate: "Don't show what's new after each update"
+  doNotShowWhatsNewAfterEachUpdate: "Don\u2019t show what\u2019s new after each update"
 };
 var str_25 = i18n49.i18n.registerUIStrings("panels/whats_new/whats_new-meta.ts", UIStrings25);
 var i18nLazyString25 = i18n49.i18n.getLazilyComputedLocalizedString.bind(void 0, str_25);
@@ -3867,5 +3703,5 @@ Common13.Runnable.registerLateInitializationRunnable({
 import * as Root5 from "./../../core/root/root.js";
 import * as Main from "./../main/main.js";
 self.runtime = Root5.Runtime.Runtime.instance({ forceNew: true });
-new Main.MainImpl.MainImpl();
+new Main.MainImpl.MainImpl({ supportsEmulation: true });
 //# sourceMappingURL=devtools_app.js.map

@@ -3,24 +3,24 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
-import * as LiveMetrics from './live-metrics.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
-describeWithEnvironment('LiveMetrics', () => {
+describe('LiveMetrics', () => {
     let liveMetrics;
     let primaryTarget;
-    let tabTarget;
-    beforeEach(() => {
+    beforeEach(async () => {
+        const universe = new TestUniverse();
         const connection = new MockCDPConnection([]);
         mockResourceTree(connection);
-        tabTarget = createTarget({ type: SDK.Target.Type.TAB, connection });
-        primaryTarget = createTarget({
+        const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB, connection });
+        primaryTarget = universe.createTarget({
             parentTarget: tabTarget,
             type: SDK.Target.Type.FRAME,
         });
-        liveMetrics = LiveMetrics.LiveMetrics.instance({ forceNew: true });
+        liveMetrics = universe.liveMetrics;
+        await liveMetrics.enable();
     });
     describe('prerender navigation', () => {
         it('resets metrics on prerender activation', async () => {

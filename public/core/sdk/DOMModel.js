@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import { CSSModel } from './CSSModel.js';
-import { FrameManager } from './FrameManager.js';
 import { OverlayModel } from './OverlayModel.js';
 import { RemoteObject } from './RemoteObject.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel } from './ResourceTreeModel.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
-import { TargetManager } from './TargetManager.js';
 /** Keep this list in sync with https://w3c.github.io/aria/#state_prop_def **/
 export const ARIA_ATTRIBUTES = new Set([
     'role',
@@ -80,6 +79,7 @@ export var DOMNodeEvents;
 })(DOMNodeEvents || (DOMNodeEvents = {}));
 export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
     #domModel;
+    #frameManager;
     #agent;
     ownerDocument;
     #isInShadowTree;
@@ -144,6 +144,7 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
     constructor(domModel) {
         super();
         this.#domModel = domModel;
+        this.#frameManager = domModel.target().targetManager().getFrameManager();
         this.#agent = this.#domModel.getAgent();
     }
     static create(domModel, doc, isInShadowTree, payload, retainedNodes) {
@@ -245,7 +246,7 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     async requestChildDocument(frameId, notInTarget) {
-        const frame = await FrameManager.instance().getOrWaitForFrame(frameId, notInTarget);
+        const frame = await this.#frameManager.getOrWaitForFrame(frameId, notInTarget);
         const childModel = frame.resourceTreeModel()?.target().model(DOMModel);
         return await (childModel?.requestDocument() || null);
     }
@@ -268,7 +269,7 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.isIframe() || !this.#frameOwnerFrameId) {
             return undefined;
         }
-        const frame = FrameManager.instance().getFrame(this.#frameOwnerFrameId);
+        const frame = this.#frameManager.getFrame(this.#frameOwnerFrameId);
         if (frame && frame.adFrameType() !== "none" /* Protocol.Page.AdFrameType.None */) {
             // The frame is ad-related, but provenance information is unavailable.
             return {};
@@ -834,6 +835,26 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
     isXMLNode() {
         return Boolean(this.#xmlVersion);
     }
+    isCustomElement() {
+        if (this.nodeType() !== Node.ELEMENT_NODE || this.isXMLNode()) {
+            return false;
+        }
+        const localName = this.localName() || this.nodeName().toLowerCase();
+        if (localName.includes('-')) {
+            const builtInExclusionList = [
+                'annotation-xml',
+                'color-profile',
+                'font-face',
+                'font-face-src',
+                'font-face-uri',
+                'font-face-format',
+                'font-face-name',
+                'missing-glyph',
+            ];
+            return !builtInExclusionList.includes(localName);
+        }
+        return this.getAttribute('is') !== undefined;
+    }
     setMarker(name, value) {
         if (value === null) {
             if (!this.#markers.has(name)) {
@@ -910,27 +931,31 @@ export class DOMNode extends Common.ObjectWrapper.ObjectWrapper {
         const { model } = await this.#agent.invoke_getBoxModel({ nodeId: this.id });
         return model;
     }
+    canInspectNode() {
+        if (this.ancestorUserAgentShadowRoot()) {
+            return false;
+        }
+        if (this.#pseudoType) {
+            return [
+                "before" /* Protocol.DOM.PseudoType.Before */,
+                "after" /* Protocol.DOM.PseudoType.After */,
+                "marker" /* Protocol.DOM.PseudoType.Marker */,
+                "scroll-marker" /* Protocol.DOM.PseudoType.ScrollMarker */,
+                "backdrop" /* Protocol.DOM.PseudoType.Backdrop */,
+                "view-transition" /* Protocol.DOM.PseudoType.ViewTransition */,
+                "view-transition-group" /* Protocol.DOM.PseudoType.ViewTransitionGroup */,
+                "view-transition-image-pair" /* Protocol.DOM.PseudoType.ViewTransitionImagePair */,
+                "view-transition-old" /* Protocol.DOM.PseudoType.ViewTransitionOld */,
+                "view-transition-new" /* Protocol.DOM.PseudoType.ViewTransitionNew */,
+            ].includes(this.#pseudoType);
+        }
+        return true;
+    }
     async setAsInspectedNode() {
-        let node = this;
-        if (node?.pseudoType()) {
-            node = node.parentNode;
+        if (!this.canInspectNode()) {
+            return;
         }
-        while (node) {
-            let ancestor = node.ancestorUserAgentShadowRoot();
-            if (!ancestor) {
-                break;
-            }
-            ancestor = node.ancestorShadowHost();
-            if (!ancestor) {
-                break;
-            }
-            // User #agent shadow root, keep climbing up.
-            node = ancestor;
-        }
-        if (!node) {
-            throw new Error('In DOMNode.setAsInspectedNode: node is expected to not be null.');
-        }
-        await this.#agent.invoke_setInspectedNode({ nodeId: node.id });
+        await this.#agent.invoke_setInspectedNode({ nodeId: this.id });
     }
     enclosingElementOrSelf() {
         let node = this;
@@ -1232,7 +1257,7 @@ export class DOMModel extends SDKModel {
     overlayModel() {
         return this.target().model(OverlayModel);
     }
-    static cancelSearch(targetManager = TargetManager.instance()) {
+    static cancelSearch(targetManager) {
         for (const domModel of targetManager.models(DOMModel)) {
             domModel.cancelSearch();
         }
@@ -1427,7 +1452,7 @@ export class DOMModel extends SDKModel {
         else {
             this.#document = null;
         }
-        DOMModelUndoStack.instance().dispose(this);
+        this.#undoStack().dispose(this);
         if (!this.parentModel()) {
             this.dispatchEventToListeners(Events.DocumentUpdated, this);
         }
@@ -1724,7 +1749,7 @@ export class DOMModel extends SDKModel {
         return this.agent.invoke_getElementByRelation({ nodeId, relation }).then(({ nodeId }) => nodeId);
     }
     markUndoableState(minorChange) {
-        void DOMModelUndoStack.instance().markUndoableState(this, minorChange || false);
+        void this.#undoStack().markUndoableState(this, minorChange || false);
     }
     async nodeForLocation(x, y, includeUserAgentShadowDOM) {
         const response = await this.agent.invoke_getNodeForLocation({ x, y, includeUserAgentShadowDOM });
@@ -1751,7 +1776,15 @@ export class DOMModel extends SDKModel {
     }
     dispose() {
         this.#resourceTreeModel?.removeEventListener(ResourceTreeModelEvents.DocumentOpened, this.onDocumentOpened, this);
-        DOMModelUndoStack.instance().dispose(this);
+        this.#undoStack().dispose(this);
+    }
+    // TODO(crbug.com/493763857): Remove fallback once all unit tests use TestUniverse.
+    #undoStack() {
+        const context = this.target().targetManager().context;
+        if ('has' in context && typeof context.has === 'function' && context.has(DOMModelUndoStack)) {
+            return context.get(DOMModelUndoStack);
+        }
+        return DOMModelUndoStack.instance();
     }
     parentModel() {
         const parentTarget = this.target().parentTarget();
@@ -1850,7 +1883,6 @@ class DOMDispatcher {
         this.#domModel.adRelatedStateUpdated(nodeId, adProvenance);
     }
 }
-let domModelUndoStackInstance = null;
 export class DOMModelUndoStack {
     #stack;
     #index;
@@ -1862,10 +1894,10 @@ export class DOMModelUndoStack {
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
-        if (!domModelUndoStackInstance || forceNew) {
-            domModelUndoStackInstance = new DOMModelUndoStack();
+        if (!Root.DevToolsContext.globalInstance().has(DOMModelUndoStack) || forceNew) {
+            Root.DevToolsContext.globalInstance().set(DOMModelUndoStack, new DOMModelUndoStack());
         }
-        return domModelUndoStackInstance;
+        return Root.DevToolsContext.globalInstance().get(DOMModelUndoStack);
     }
     async markUndoableState(model, minorChange) {
         // Both minor and major changes get into the #stack, but minor updates are coalesced.
@@ -1945,6 +1977,9 @@ export class DOMNodeSnapshot extends DOMNode {
     }
     moveTo(_targetNode, _anchorNode, _callback) {
     }
+    canInspectNode() {
+        return false;
+    }
     setAsInspectedNode() {
         return Promise.resolve();
     }
@@ -1971,6 +2006,9 @@ export class DOMDocumentSnapshot extends DOMDocument {
     copyTo(_targetNode, _anchorNode, _callback) {
     }
     moveTo(_targetNode, _anchorNode, _callback) {
+    }
+    canInspectNode() {
+        return false;
     }
     setAsInspectedNode() {
         return Promise.resolve();

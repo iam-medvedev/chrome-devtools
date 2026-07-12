@@ -502,9 +502,9 @@ UI.ViewManager.registerViewExtension({
   order: 3,
   persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   condition: () => !Root.Runtime.Runtime.isTraceApp(),
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return new Sources.SourcesNavigator.FilesNavigatorView();
+    return new Sources.SourcesNavigator.FilesNavigatorView(universe.networkProjectManager);
   },
 });
 
@@ -516,9 +516,9 @@ UI.ViewManager.registerViewExtension({
   order: 6,
   persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   condition: () => !Root.Runtime.Runtime.isTraceApp(),
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return new Sources.SourcesNavigator.SnippetsNavigatorView();
+    return new Sources.SourcesNavigator.SnippetsNavigatorView(universe.networkProjectManager);
   },
 });
 

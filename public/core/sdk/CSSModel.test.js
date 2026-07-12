@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import sinon from 'sinon';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
@@ -111,6 +112,16 @@ describe('CSSModel', () => {
             const target = universe.createTarget({ connection });
             const cssModel = target.model(SDK.CSSModel.CSSModel);
             assert.isNull(await cssModel.getStyleSheetText('id'));
+        });
+    });
+    describe('getLayoutPropertiesFromComputedStyle', () => {
+        it('correctly identifies display: contents', async () => {
+            const target = universe.createTarget();
+            const cssModel = target.model(SDK.CSSModel.CSSModel);
+            sinon.stub(cssModel, 'getComputedStyle').resolves(new Map([['display', 'contents']]));
+            const layoutProperties = await cssModel.getLayoutPropertiesFromComputedStyle(1);
+            assert.isNotNull(layoutProperties);
+            assert.isTrue(layoutProperties?.isContents);
         });
     });
 });

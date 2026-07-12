@@ -84,6 +84,13 @@ describeWithEnvironment('panels/utils', () => {
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('cross-circle-filled', iconImage);
         });
+        it('creates a warning icon for failed preloading request', async () => {
+            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, { type: "preload" /* Protocol.Network.InitiatorType.Preload */ });
+            request.statusCode = 404;
+            const iconElement = renderIcon(request);
+            const iconImage = iconElement.getAttribute('name');
+            assert.strictEqual('warning-filled', iconImage);
+        });
         it('show document icon', async () => {
             const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
             request.setResourceType(Common.ResourceType.resourceTypes.Document);

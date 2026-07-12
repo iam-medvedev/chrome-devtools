@@ -87,13 +87,6 @@ var UIStrings = {
    */
   doNotAutoOpen: "Do not auto-open DevTools for popups",
   /**
-   * @description Title of a setting under the Appearance category in Settings. When the webpage is
-   * paused by devtools, an overlay is shown on top of the page to indicate that it is paused. The
-   * overlay is a pause/unpause button and some text, which appears on top of the paused page. This
-   * setting turns off this overlay.
-   */
-  disablePaused: "Disable paused state overlay",
-  /**
    * @description Title of an action that toggle
    * "forces CSS prefers-color-scheme" color
    */
@@ -230,18 +223,10 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
-  category: "APPEARANCE",
-  storageType: "Synced",
-  title: i18nLazyString(UIStrings.disablePaused),
-  settingName: "disable-paused-state-overlay",
-  settingType: "boolean",
-  defaultValue: false
-});
 UI.Toolbar.registerToolbarItem({
   async loadItem() {
     const InspectorMain = await loadInspectorMainModule();
-    return InspectorMain.InspectorMain.NodeIndicatorProvider.instance();
+    return new InspectorMain.InspectorMain.NodeIndicatorProvider();
   },
   order: 2,
   location: "main-toolbar-left"

@@ -315,7 +315,7 @@ function getRegisteredActionExtensions() {
   return Array.from(registeredActions.values()).filter((action6) => {
     const settingName = action6.setting();
     try {
-      if (settingName && !Common2.Settings.moduleSetting(settingName).get()) {
+      if (settingName && !Common2.Settings.Settings.instance().moduleSetting(settingName).get()) {
         return false;
       }
     } catch (err) {
@@ -8494,7 +8494,7 @@ var InspectorView = class _InspectorView extends VBox {
     if (!KeyboardShortcut.eventHasCtrlEquivalentKey(event) || event.altKey || event.shiftKey) {
       return;
     }
-    const panelShortcutEnabled = Common11.Settings.moduleSetting("shortcut-panel-switch").get();
+    const panelShortcutEnabled = Common11.Settings.Settings.instance().moduleSetting("shortcut-panel-switch").get();
     if (panelShortcutEnabled) {
       let panelIndex = -1;
       if (event.keyCode > 48 && event.keyCode < 58) {
@@ -14413,6 +14413,11 @@ devtools-toolbar {
     }
   }
 
+  & > devtools-link,
+  & > .devtools-link {
+    cursor: pointer;
+  }
+
   .status-buttons {
     padding: 0 var(--sys-size-2);
     gap: var(--sys-size-2);
@@ -20216,6 +20221,9 @@ var Section2 = class extends VBox {
   getFieldElement() {
     return this.fieldList;
   }
+  getHeaderElement() {
+    return this.headerElement;
+  }
   appendFieldWithCustomView(customElement) {
     this.fieldList.append(customElement);
   }
@@ -22541,6 +22549,19 @@ var TreeElement = class {
       this.ensureSelection();
     }
     render10(icons, this.leadingIconsElement);
+  }
+  setTrailingIcons(icons) {
+    if (!this.trailingIconsElement && !icons.length) {
+      return;
+    }
+    if (!this.trailingIconsElement) {
+      this.trailingIconsElement = document.createElement("div");
+      this.trailingIconsElement.classList.add("trailing-icons");
+      this.trailingIconsElement.classList.add("icons-container");
+      this.listItemNode.appendChild(this.trailingIconsElement);
+      this.ensureSelection();
+    }
+    render10(icons, this.trailingIconsElement);
   }
   get tooltip() {
     return this.tooltipInternal;

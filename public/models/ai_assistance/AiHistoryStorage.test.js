@@ -11,19 +11,16 @@ describe('AiHistoryStorage', () => {
         id: 'id1',
         type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */,
         history: [],
-        isExternal: false,
     };
     const agent2 = {
         id: 'id2',
         type: "drjones-file" /* AiAssistance.AiHistoryStorage.ConversationType.FILE */,
         history: [],
-        isExternal: false,
     };
     const agent3 = {
         id: 'id3',
         type: "drjones-network-request" /* AiAssistance.AiHistoryStorage.ConversationType.NETWORK */,
         history: [],
-        isExternal: false,
     };
     const agent4 = {
         id: 'id4',
@@ -47,7 +44,6 @@ describe('AiHistoryStorage', () => {
                 imageInput: undefined,
             },
         ],
-        isExternal: false,
     };
     const serializedImage1 = {
         id: 'image-id1',
@@ -95,7 +91,6 @@ describe('AiHistoryStorage', () => {
                 id: 'id1',
                 type: 'freestyler',
                 history: [],
-                isExternal: false,
             }]);
         await storage.upsertHistoryEntry(agent2);
         assert.deepEqual(storage.getHistory(), [
@@ -103,15 +98,58 @@ describe('AiHistoryStorage', () => {
                 id: 'id1',
                 type: 'freestyler',
                 history: [],
-                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
-                isExternal: false,
             },
         ]);
+    });
+    it('should cap history entries to MAX_CONVERSATIONS_COUNT and evict oldest and clean up their images', async () => {
+        const storage = getStorage();
+        await storage.upsertImage(serializedImage1);
+        const oldestConv = {
+            id: 'oldest-id',
+            type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */,
+            history: [
+                {
+                    type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
+                    query: 'oldest text',
+                    imageId: 'image-id1',
+                    imageInput: undefined,
+                },
+            ],
+        };
+        await storage.upsertHistoryEntry(oldestConv);
+        await storage.upsertImage(serializedImage2);
+        const newerConvWithImage = {
+            id: 'newer-id-with-image',
+            type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */,
+            history: [
+                {
+                    type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
+                    query: 'newer text',
+                    imageId: 'image-id2',
+                    imageInput: undefined,
+                },
+            ],
+        };
+        await storage.upsertHistoryEntry(newerConvWithImage);
+        assert.deepEqual(storage.getImageHistory(), [serializedImage1, serializedImage2]);
+        // Insert dummy entries to trigger eviction
+        for (let i = 0; i < AiAssistance.AiHistoryStorage.MAX_CONVERSATIONS_COUNT - 1; i++) {
+            await storage.upsertHistoryEntry({
+                id: `dummy-id-${i}`,
+                type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */,
+                history: [],
+            });
+        }
+        const history = storage.getHistory();
+        assert.lengthOf(history, 50);
+        assert.isUndefined(history.find(c => c.id === 'oldest-id'));
+        assert.isDefined(history.find(c => c.id === 'newer-id-with-image'));
+        assert.deepEqual(storage.getImageHistory(), [serializedImage2]);
     });
     it('should update history entries correctly', async () => {
         const storage = getStorage();
@@ -136,13 +174,11 @@ describe('AiHistoryStorage', () => {
                         query: 'text',
                     },
                 ],
-                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
-                isExternal: false,
             },
         ]);
         await storage.upsertHistoryEntry(agent3);
@@ -156,19 +192,16 @@ describe('AiHistoryStorage', () => {
                         query: 'text',
                     },
                 ],
-                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
-                isExternal: false,
             },
             {
                 id: 'id3',
                 type: 'drjones-network-request',
                 history: [],
-                isExternal: false,
             },
         ]);
         assert.deepEqual(storage.getImageHistory(), []);
@@ -185,19 +218,16 @@ describe('AiHistoryStorage', () => {
                         query: 'text',
                     },
                 ],
-                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
-                isExternal: false,
             },
             {
                 id: 'id3',
                 type: 'drjones-network-request',
                 history: [],
-                isExternal: false,
             },
             {
                 id: 'id4',
@@ -221,7 +251,6 @@ describe('AiHistoryStorage', () => {
                         imageInput: undefined,
                     },
                 ],
-                isExternal: false,
             },
         ]);
         assert.deepEqual(storage.getImageHistory(), [
@@ -248,13 +277,11 @@ describe('AiHistoryStorage', () => {
                 id: 'id1',
                 type: 'freestyler',
                 history: [],
-                isExternal: false,
             },
             {
                 id: 'id3',
                 type: 'drjones-network-request',
                 history: [],
-                isExternal: false,
             },
         ]);
     });
@@ -272,19 +299,16 @@ describe('AiHistoryStorage', () => {
                 id: 'id1',
                 type: 'freestyler',
                 history: [],
-                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
-                isExternal: false,
             },
             {
                 id: 'id3',
                 type: 'drjones-network-request',
                 history: [],
-                isExternal: false,
             },
         ]);
         assert.deepEqual(storage.getImageHistory(), []);
@@ -479,7 +503,6 @@ describe('AiHistoryStorage', () => {
                             query: 'text',
                             imageId: 'image-id1',
                         }],
-                    isExternal: false,
                 });
                 assert.deepEqual(historyWithoutImages[1], {
                     id: 'id2',
@@ -490,7 +513,6 @@ describe('AiHistoryStorage', () => {
                             imageInput: undefined,
                             imageId: 'image-id2',
                         }],
-                    isExternal: false,
                 });
             });
             it('should have empty image data for image not present in history', async () => {

@@ -3,24 +3,24 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
-import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 describe('Target', () => {
+    let universe;
     let browserTarget;
     let tabTarget;
     let mainFrameTargetUnderTab;
     let subframeTarget;
     setupRuntimeHooks();
-    setupSettingsHooks();
     beforeEach(() => {
-        browserTarget = createTarget({ type: SDK.Target.Type.BROWSER });
-        tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-        mainFrameTargetUnderTab = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
-        subframeTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTargetUnderTab });
+        universe = new TestUniverse();
+        browserTarget = universe.createTarget({ type: SDK.Target.Type.BROWSER });
+        tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
+        mainFrameTargetUnderTab = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
+        subframeTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTargetUnderTab });
     });
     it('has capabilities based on the type', () => {
         assert.isTrue(tabTarget.hasAllCapabilities(32 /* SDK.Target.Capability.TARGET */ | 128 /* SDK.Target.Capability.TRACING */));
@@ -30,24 +30,24 @@ describe('Target', () => {
         assert.isFalse(subframeTarget.hasAllCapabilities(4096 /* SDK.Target.Capability.DEVICE_EMULATION */));
     });
     it('should grant STORAGE capability to top-level workers', () => {
-        const serviceWorker = createTarget({ type: SDK.Target.Type.ServiceWorker, parentTarget: browserTarget });
-        const sharedWorker = createTarget({ type: SDK.Target.Type.SHARED_WORKER, parentTarget: browserTarget });
-        const dedicatedWorker = createTarget({ type: SDK.Target.Type.Worker, parentTarget: browserTarget });
+        const serviceWorker = universe.createTarget({ type: SDK.Target.Type.ServiceWorker, parentTarget: browserTarget });
+        const sharedWorker = universe.createTarget({ type: SDK.Target.Type.SHARED_WORKER, parentTarget: browserTarget });
+        const dedicatedWorker = universe.createTarget({ type: SDK.Target.Type.Worker, parentTarget: browserTarget });
         assert.isTrue(serviceWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'top-level service worker');
         assert.isTrue(sharedWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'top-level shared worker');
         assert.isTrue(dedicatedWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'top-level dedicated worker');
     });
     it('should NOT grant STORAGE capability to frame-attached workers', () => {
         const frameTarget = mainFrameTargetUnderTab;
-        const serviceWorker = createTarget({ type: SDK.Target.Type.ServiceWorker, parentTarget: frameTarget });
-        const sharedWorker = createTarget({ type: SDK.Target.Type.SHARED_WORKER, parentTarget: frameTarget });
-        const dedicatedWorker = createTarget({ type: SDK.Target.Type.Worker, parentTarget: frameTarget });
+        const serviceWorker = universe.createTarget({ type: SDK.Target.Type.ServiceWorker, parentTarget: frameTarget });
+        const sharedWorker = universe.createTarget({ type: SDK.Target.Type.SHARED_WORKER, parentTarget: frameTarget });
+        const dedicatedWorker = universe.createTarget({ type: SDK.Target.Type.Worker, parentTarget: frameTarget });
         assert.isFalse(serviceWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'frame-attached service worker');
         assert.isFalse(sharedWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'frame-attached shared worker');
         assert.isFalse(dedicatedWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'frame-attached dedicated worker');
     });
     it('notifies about inspected URL change', () => {
-        const inspectedURLChanged = sinon.spy(SDK.TargetManager.TargetManager.instance(), 'onInspectedURLChange');
+        const inspectedURLChanged = sinon.spy(universe.targetManager, 'onInspectedURLChange');
         subframeTarget.setInspectedURL(urlString `https://example.com/`);
         sinon.assert.calledOnce(inspectedURLChanged);
         mainFrameTargetUnderTab.setInspectedURL(urlString `https://example.com/`);
@@ -57,23 +57,23 @@ describe('Target', () => {
         assert.isNull(tabTarget.outermostTarget());
         assert.strictEqual(mainFrameTargetUnderTab.outermostTarget(), mainFrameTargetUnderTab);
         assert.strictEqual(subframeTarget.outermostTarget(), mainFrameTargetUnderTab);
-        assert.strictEqual(createTarget({ type: SDK.Target.Type.Worker, parentTarget: subframeTarget }).outermostTarget(), mainFrameTargetUnderTab);
-        const nodeTarget = createTarget({ type: SDK.Target.Type.NODE });
+        assert.strictEqual(universe.createTarget({ type: SDK.Target.Type.Worker, parentTarget: subframeTarget }).outermostTarget(), mainFrameTargetUnderTab);
+        const nodeTarget = universe.createTarget({ type: SDK.Target.Type.NODE });
         assert.strictEqual(nodeTarget.outermostTarget(), nodeTarget);
-        const browserTarget = createTarget({ type: SDK.Target.Type.BROWSER });
+        const browserTarget = universe.createTarget({ type: SDK.Target.Type.BROWSER });
         assert.isNull(browserTarget.outermostTarget());
-        const serviceWorkerTarget = createTarget({ type: SDK.Target.Type.ServiceWorker, parentTarget: browserTarget });
+        const serviceWorkerTarget = universe.createTarget({ type: SDK.Target.Type.ServiceWorker, parentTarget: browserTarget });
         assert.strictEqual(serviceWorkerTarget.outermostTarget(), serviceWorkerTarget);
     });
     it('tries to resume itself if it was crashed and is then recovered', () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         target.setHasCrashed(true);
         const spy = sinon.spy(target, 'resume');
         target.setHasCrashed(false);
         sinon.assert.calledOnce(spy);
     });
     it('does not resume itself if it was not already crashed', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         target.setHasCrashed(true);
         const spy = sinon.spy(target, 'resume');
         // Call this twice, but ensure we only call the spy once.
@@ -82,13 +82,13 @@ describe('Target', () => {
         sinon.assert.callCount(spy, 1);
     });
     it('marks a crashed target as suspended', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         target.setHasCrashed(true);
         await target.suspend();
         assert.isTrue(target.suspended());
     });
     it('marks a crashed, suspended target as resumed', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         target.setHasCrashed(true);
         await target.suspend();
         assert.isTrue(target.suspended());

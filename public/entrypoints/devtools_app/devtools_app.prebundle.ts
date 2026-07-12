@@ -33,4 +33,4 @@ import * as Main from '../main/main.js';
 
 // @ts-expect-error Exposed for legacy layout tests
 self.runtime = Root.Runtime.Runtime.instance({forceNew: true});
-new Main.MainImpl.MainImpl();
+new Main.MainImpl.MainImpl({supportsEmulation: true});

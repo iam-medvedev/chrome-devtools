@@ -6,6 +6,7 @@ import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as AIAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import * as TextUtils from '../../../models/text_utils/text_utils.js';
 import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
@@ -1495,6 +1496,18 @@ describeWithEnvironment('ChatMessage', () => {
             assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'Network activity');
             const devtoolsWidget = await waitFor('devtools-performance-agent-network-track', targetElement);
             assert.isNotNull(devtoolsWidget);
+        });
+        it('renders quota error message', async () => {
+            const message = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [],
+                error: "quota" /* AIAssistanceModel.AiAgent.ErrorType.QUOTA */,
+                id: '1',
+            };
+            const targetElement = renderView({ message });
+            const errorP = targetElement.querySelector('.error');
+            assert.isNotNull(errorP);
+            assert.strictEqual(errorP?.textContent, 'You reached your limit for AI assistance requests. Try again later.');
         });
     });
 });

@@ -6,11 +6,15 @@ import type * as Foundation from '../foundation/foundation.js';
 import * as AutofillManager from '../models/autofill_manager/autofill_manager.js';
 import * as Bindings from '../models/bindings/bindings.js';
 import * as Breakpoints from '../models/breakpoints/breakpoints.js';
+import * as CrUXManager from '../models/crux-manager/crux-manager.js';
+import * as Emulation from '../models/emulation/emulation.js';
 import * as JavaScriptMetadata from '../models/javascript_metadata/javascript_metadata.js';
+import * as LiveMetrics from '../models/live-metrics/live-metrics.js';
 import * as Logs from '../models/logs/logs.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as ProjectSettings from '../models/project_settings/project_settings.js';
 import * as Workspace from '../models/workspace/workspace.js';
+import * as WorkspaceDiff from '../models/workspace_diff/workspace_diff.js';
 import { createTarget } from './TargetHelpers.js';
 export interface CreationOptions extends Partial<Foundation.Universe.CreationOptions> {
     pageResourceLoaderOptions?: {
@@ -34,6 +38,7 @@ export interface CreationOptions extends Partial<Foundation.Universe.CreationOpt
  */
 export declare class TestUniverse implements Foundation.Universe.Universe {
     #private;
+    readonly supportsEmulation = true;
     constructor(options?: CreationOptions);
     /**
      * Convenience shortcut for `createTarget({targetManager: testUniverse.targetManager})`
@@ -46,21 +51,34 @@ export declare class TestUniverse implements Foundation.Universe.Universe {
     get console(): Common.Console.Console;
     get context(): Root.DevToolsContext.DevToolsContext;
     get cpuThrottlingManager(): SDK.CPUThrottlingManager.CPUThrottlingManager;
+    get cruxManager(): CrUXManager.CrUXManager;
     get cssWorkspaceBinding(): Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding;
     get debuggerWorkspaceBinding(): Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding;
+    get deviceModeModel(): Emulation.DeviceModeModel.DeviceModeModel;
     get domDebuggerManager(): SDK.DOMDebuggerModel.DOMDebuggerManager;
+    get domModelUndoStack(): SDK.DOMModel.DOMModelUndoStack;
+    get emulatedDevicesList(): Emulation.EmulatedDevices.EmulatedDevicesList;
+    get eventBreakpointsManager(): SDK.EventBreakpointsModel.EventBreakpointsManager;
+    get fileManager(): Workspace.FileManager.FileManager;
+    get fileSystemWorkspaceBinding(): Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding;
     get frameManager(): SDK.FrameManager.FrameManager;
+    get gdpClient(): Host.GdpClient.GdpClient;
+    get hostConfigTracker(): Host.AidaClient.HostConfigTracker;
     get ignoreListManager(): Workspace.IgnoreListManager.IgnoreListManager;
+    get isolateManager(): SDK.IsolateManager.IsolateManager;
     get logManager(): Logs.LogManager.LogManager;
     get isolatedFileSystemManager(): Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager;
     get javaScriptMetadata(): JavaScriptMetadata.JavaScriptMetadata.JavaScriptMetadataImpl;
+    get liveMetrics(): LiveMetrics.LiveMetrics;
     get multitargetNetworkManager(): SDK.NetworkManager.MultitargetNetworkManager;
     get networkLog(): Logs.NetworkLog.NetworkLog;
     get networkPersistenceManager(): Persistence.NetworkPersistenceManager.NetworkPersistenceManager;
+    get networkProjectManager(): Bindings.NetworkProject.NetworkProjectManager;
     get pageResourceLoader(): SDK.PageResourceLoader.PageResourceLoader;
     get persistence(): Persistence.Persistence.PersistenceImpl;
     get projectSettingsModel(): ProjectSettings.ProjectSettingsModel.ProjectSettingsModel;
     get targetManager(): SDK.TargetManager.TargetManager;
     get settings(): Common.Settings.Settings;
     get workspace(): Workspace.Workspace.WorkspaceImpl;
+    get workspaceDiff(): WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl;
 }

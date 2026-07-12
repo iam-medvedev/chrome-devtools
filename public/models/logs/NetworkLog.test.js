@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { activate, getMainFrame, LOADER_ID, navigate } from '../../testing/ResourceTreeHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Logs from '../logs/logs.js';
 const { urlString } = Platform.DevToolsPath;
 function url(input) {
@@ -281,13 +281,15 @@ describe('NetworkLog', () => {
         });
     });
 });
-describeWithEnvironment('NetworkLog', () => {
+describe('NetworkLog', () => {
+    setupLocaleHooks();
     it('clears on main frame navigation', () => {
-        const networkLog = Logs.NetworkLog.NetworkLog.instance();
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-        const mainFrameTarget = createTarget({ parentTarget: tabTarget });
+        const universe = new TestUniverse();
+        const networkLog = universe.networkLog;
+        const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
+        const mainFrameTarget = universe.createTarget({ parentTarget: tabTarget });
         const mainFrame = getMainFrame(mainFrameTarget);
-        const subframe = getMainFrame(createTarget({ parentTarget: mainFrameTarget }));
+        const subframe = getMainFrame(universe.createTarget({ parentTarget: mainFrameTarget }));
         let networkLogResetEvents = 0;
         networkLog.addEventListener(Logs.NetworkLog.Events.Reset, () => ++networkLogResetEvents);
         navigate(subframe);
@@ -299,11 +301,12 @@ describeWithEnvironment('NetworkLog', () => {
         let networkLog;
         let target;
         beforeEach(() => {
-            Common.Settings.Settings.instance().moduleSetting('network-log.preserve-log').set(false);
-            target = createTarget();
+            const universe = new TestUniverse();
+            universe.settings.moduleSetting('network-log.preserve-log').set(false);
+            target = universe.createTarget();
             const networkManager = target.model(SDK.NetworkManager.NetworkManager);
             assert.exists(networkManager);
-            networkLog = Logs.NetworkLog.NetworkLog.instance();
+            networkLog = universe.networkLog;
             const networkDispatcher = new SDK.NetworkManager.NetworkDispatcher(networkManager);
             const requestWillBeSentEvent1 = { requestId: 'mockId1', request: { url: 'example.com' }, loaderId: LOADER_ID };
             networkDispatcher.requestWillBeSent(requestWillBeSentEvent1);

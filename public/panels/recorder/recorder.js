@@ -221,12 +221,19 @@ devtools-recording-list-view {
 var RecorderEvents_exports = {};
 __export(RecorderEvents_exports, {
   RecordingStateChangedEvent: () => RecordingStateChangedEvent,
-  ReplayFinishedEvent: () => ReplayFinishedEvent
+  ReplayFinishedEvent: () => ReplayFinishedEvent,
+  SetRecordingFinishedEvent: () => SetRecordingFinishedEvent
 });
 var ReplayFinishedEvent = class _ReplayFinishedEvent extends Event {
   static eventName = "replayfinished";
   constructor() {
     super(_ReplayFinishedEvent.eventName, { bubbles: true, composed: true });
+  }
+};
+var SetRecordingFinishedEvent = class _SetRecordingFinishedEvent extends Event {
+  static eventName = "setrecordingfinished";
+  constructor() {
+    super(_SetRecordingFinishedEvent.eventName, { bubbles: true, composed: true });
   }
 };
 var RecordingStateChangedEvent = class _RecordingStateChangedEvent extends Event {
@@ -813,6 +820,7 @@ var RecorderController = class RecorderController2 extends LitElement {
       /* Pages.RECORDING_PAGE */
     );
     this.#clearError();
+    this.dispatchEvent(new SetRecordingFinishedEvent());
   }
   // Used by e2e tests to inspect the current recording.
   getUserFlow() {

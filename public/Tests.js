@@ -496,8 +496,8 @@
 
   TestSuite.prototype.testConsoleOnNavigateBack = function() {
     function filteredMessages() {
-      return SDK.ConsoleModel.ConsoleModel.allMessagesUnordered().filter(
-          a => a.source !== Protocol.Log.LogEntrySource.Violation);
+      return SDK.ConsoleModel.ConsoleModel.allMessagesUnordered(SDK.TargetManager.TargetManager.instance())
+          .filter(a => a.source !== Protocol.Log.LogEntrySource.Violation);
     }
 
     if (filteredMessages().length === 1) {
@@ -710,7 +710,7 @@
     SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.ConsoleModel.ConsoleModel, SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
 
-    const messages = SDK.ConsoleModel.ConsoleModel.allMessagesUnordered();
+    const messages = SDK.ConsoleModel.ConsoleModel.allMessagesUnordered(SDK.TargetManager.TargetManager.instance());
     if (messages.length) {
       const text = messages[0].messageText;
       this.assertEquals('ready', text);
@@ -761,7 +761,7 @@
       this.releaseControl();
     });
 
-    Common.Settings.moduleSetting('active-keybind-set').set('vsCode');
+    Common.Settings.Settings.instance().moduleSetting('active-keybind-set').set('vsCode');
   };
 
   TestSuite.prototype.testDispatchKeyEventDoesNotCrash = function() {
@@ -976,7 +976,7 @@
   TestSuite.prototype.testWindowInitializedOnNavigateBack = function() {
     const test = this;
     test.takeControl();
-    const messages = SDK.ConsoleModel.ConsoleModel.allMessagesUnordered();
+    const messages = SDK.ConsoleModel.ConsoleModel.allMessagesUnordered(SDK.TargetManager.TargetManager.instance());
     if (messages.length === 1) {
       checkMessages();
     } else {
@@ -985,7 +985,7 @@
     }
 
     function checkMessages() {
-      const messages = SDK.ConsoleModel.ConsoleModel.allMessagesUnordered();
+      const messages = SDK.ConsoleModel.ConsoleModel.allMessagesUnordered(SDK.TargetManager.TargetManager.instance());
       test.assertEquals(1, messages.length);
       test.assertTrue(messages[0].messageText.indexOf('Uncaught') === -1);
       test.releaseControl();
@@ -1062,7 +1062,7 @@
   };
 
   TestSuite.prototype.waitForTestResultsInConsole = function() {
-    const messages = SDK.ConsoleModel.ConsoleModel.allMessagesUnordered();
+    const messages = SDK.ConsoleModel.ConsoleModel.allMessagesUnordered(SDK.TargetManager.TargetManager.instance());
     for (let i = 0; i < messages.length; ++i) {
       const text = messages[i].messageText;
       if (text === 'PASS') {

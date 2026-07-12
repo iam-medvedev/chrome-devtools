@@ -233,35 +233,35 @@ devtools-button.link-icon {
 // gen/front_end/panels/settings/SettingsScreen.js
 var UIStrings = {
   /**
-   * @description Name of the Settings view
+   * @description Name of the Settings view.
    */
   settings: "Settings",
   /**
-   * @description Text for keyboard shortcuts
+   * @description Text for keyboard shortcuts.
    */
   shortcuts: "Shortcuts",
   /**
-   * @description Text of button in Settings Screen of the Settings
+   * @description Text of button in Settings screen of the Settings.
    */
   restoreDefaultsAndReload: "Restore defaults and reload",
   /**
-   * @description Card header in Experiments settings tab that list all available stable experiments that can be turned on or off.
+   * @description Card header in Experiments settings tab that lists all available stable experiments that can be turned on or off.
    */
   experiments: "Experiments",
   /**
-   * @description Number of experiments from the filtered list of experiements
+   * @description Number of experiments from the filtered list of experiments.
    */
   experimentsFound: "{n, plural, =1 {# experiment found} other {# experiments found}}",
   /**
-   * @description Message shown in the experiments panel to warn users about any possible unstable features.
+   * @description Message shown in the experiments tab to warn users about any possible unstable features.
    */
   theseExperimentsCouldBeUnstable: "Warning: These experiments could be unstable or unreliable.",
   /**
-   * @description Message to display if a setting change requires a reload of DevTools
+   * @description Message to display if a setting change requires a reload of DevTools.
    */
   settingsChangedReloadDevTools: "Settings changed. To apply, reload DevTools.",
   /**
-   * @description Message to display if a setting change requires a reload of DevTools
+   * @description Message to display if a setting change requires a restart of Chrome.
    */
   settingsChangedRestartChrome: "Settings changed. To apply, restart Chrome.",
   /**
@@ -270,15 +270,15 @@ var UIStrings = {
    */
   noResults: "No experiments match the filter",
   /**
-   * @description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation.
    */
   learnMore: "Learn more",
   /**
-   * @description Text that is usually a hyperlink to a feedback form
+   * @description Text that is usually a hyperlink to a feedback form.
    */
   sendFeedback: "Send feedback",
   /**
-   * @description Placeholder text in search bar
+   * @description Placeholder text in search bar.
    */
   searchExperiments: "Search experiments"
 };
@@ -726,6 +726,7 @@ import "./../../ui/kit/kit.js";
 import * as Common2 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
+import * as Platform2 from "./../../core/platform/platform.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
@@ -935,207 +936,223 @@ var aiSettingsTab_css_default = `/*
 var { html: html2, nothing, render: render2, Directives: { ifDefined, classMap } } = Lit;
 var UIStrings2 = {
   /**
-   * @description Header text for for a list of things to consider in the context of generative AI features
+   * @description Header text for a list of things to consider in the context of generative AI features.
    */
   boostYourProductivity: "Boost your productivity with AI",
   /**
-   * @description Text announcing a list of facts to consider (when using a GenAI feature)
+   * @description Text announcing a list of facts to consider when using a generative AI feature.
    */
   thingsToConsider: "Things to consider",
   /**
-   * @description Text describing a fact to consider when using AI features
+   * @description Text describing a fact to consider when using AI features.
    */
   experimentalFeatures: "These features use generative AI and may provide inaccurate or offensive information that doesn\u2019t represent Google\u2019s views",
   /**
-   * @description Text describing a fact to consider when using AI features
+   * @description Text describing a fact to consider when using AI features.
    */
   sendsDataToGoogle: "These features send relevant data to Google. Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information.",
   /**
-   * @description Text describing a fact to consider when using AI features
+   * @description Text describing a fact to consider when using AI features.
    */
   sendsDataToGoogleNoLogging: "Your content will not be used by human reviewers to improve AI. Your organization may change these settings at any time.",
   /**
-   * @description Text describing a fact to consider when using AI features
+   * @description Text describing a fact to consider when using AI features.
    */
   dataCollection: "Depending on your region, Google may refrain from data collection",
   /**
-   * @description Text describing a fact to consider when using AI features
+   * @description Text describing a fact to consider when using AI features.
    */
   dataCollectionNoLogging: "Depending on your Google account management and/or region, Google may refrain from data collection",
   /**
-   * @description Text describing the 'Console Insights' feature
+   * @description Text describing the Console insights feature.
    */
   helpUnderstandConsole: "Helps you understand and fix console warnings and errors",
   /**
-   * @description Text describing the 'Auto Annotations' feature
+   * @description Text describing the auto annotations feature.
    */
   aIAnnotationsFeatureDescription: "Automatically generate titles for performance trace annotations",
   /**
-   * @description Text explaining AI feature helps annotate a performance trace with auto-generated labels
+   * @description Text explaining that the AI feature helps annotate a performance trace with auto-generated labels.
    */
   helpAnnotatePerformance: "Helps you annotate your performance trace with auto-generated labels",
   /**
-   * @description Label for a button to expand an accordion
+   * @description Label for a button to expand an accordion.
    */
   showMore: "Show more",
   /**
-   * @description Label for a button to collapse an accordion
+   * @description Label for a button to collapse an accordion.
    */
   showLess: "Show less",
   /**
-   * @description Header for a list of feature attributes. 'When (the feature is turned) on, you'll be able to …'
+   * @description Header for a list of feature attributes. 'When on, you’ll be able to …'.
    */
   whenOn: "When on",
   /**
-   * @description Description of the console insights feature
+   * @description Description of the Console insights feature.
    */
   explainConsole: "Get explanations for console warnings and errors",
   /**
-   * @description Description of the console insights feature ('these issues' refers to console warnings and errors)
+   * @description Description of the Console insights feature ('these issues' refers to Console warnings and errors).
    */
   receiveSuggestions: "Receive suggestions and code samples to address these issues",
   /**
-   * @description Explainer for which data is being sent by the console insights feature
+   * @description Explainer for which data is being sent by the Console insights feature.
    */
   consoleInsightsSendsData: "To generate explanations, the console message, associated stack trace, related source code, and the associated network headers are sent to Google. This data may be seen by human reviewers to improve this feature.",
   /**
-   * @description Explainer for which data is being sent by the console insights feature
+   * @description Explainer for which data is being sent by the Console insights feature without logging.
    */
   consoleInsightsSendsDataNoLogging: "To generate explanations, the console message, associated stack trace, related source code, and the associated network headers are sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
-   * @description Reference to the terms of service and privacy notice
+   * @description Reference to the terms of service and privacy notice.
    * @example {Google Terms of Service} PH1
    * @example {Privacy Notice} PH2
    */
   termsOfServicePrivacyNotice: "Use of these features is subject to the {PH1} and {PH2}",
   /**
-   * @description Text describing the 'AI assistance' feature
+   * @description Text describing the AI assistance feature.
    */
   helpUnderstandStyling: "Get help with understanding CSS styles",
   /**
-   * @description Text describing the 'AI assistance' feature
+   * @description Text describing the AI assistance feature.
    */
-  helpUnderstandStylingAndNetworkRequest: "Get help with understanding CSS styles, and network requests",
+  helpUnderstandStylingAndNetworkRequest: "Get help with understanding CSS styles and network requests",
   /**
-   * @description Text describing the 'AI assistance' feature
+   * @description Text describing the AI assistance feature.
    */
   helpUnderstandStylingNetworkAndFile: "Get help with understanding CSS styles, network requests, and files",
   /**
-   * @description Text describing the 'AI assistance' feature
+   * @description Text describing the AI assistance feature.
    */
   helpUnderstandStylingNetworkPerformanceAndFile: "Get help with understanding CSS styles, network requests, performance, and files",
   /**
-   * @description Text describing the 'AI assistance' feature when V2 is enabled
+   * @description Text describing the AI assistance feature when V2 is enabled.
    */
   aiAssistanceDescriptionV2: "Get context-aware help on the inspected page",
   /**
-   * @description First item in the description of the AI assistance feature when V2 is enabled
+   * @description First item in the description of the AI assistance feature when V2 is enabled.
    */
   aiAssistanceWhenOnItem1V2: "Debug styling, network, performance, source code, accessibility and storage issues with DevTools AI assistance",
   /**
-   * @description Second item in the description of the AI assistance feature when V2 is enabled
+   * @description Second item in the description of the AI assistance feature when V2 is enabled.
    */
-  aiAssistanceWhenOnItem2V2: "Follow the agent's reasoning step-by-step and quickly jump to the relevant source data",
+  aiAssistanceWhenOnItem2V2: "Follow the agent\u2019s reasoning step-by-step and quickly jump to the relevant source data",
   /**
-   * @description Explainer for which data is being sent by the AI assistance feature when V2 is enabled
+   * @description Explainer for which data is being sent by the AI assistance feature when V2 is enabled.
    */
   aiAssistanceThingsToConsiderV2: "To generate explanations, chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
   /**
-   * @description Explainer for which data is being sent by the AI assistance feature when V2 is enabled and logging is disabled
+   * @description Explainer for which data is being sent by the AI assistance feature when V2 is enabled and logging is disabled.
    */
   aiAssistanceThingsToConsiderNoLoggingV2: "To generate explanations, chat messages, data accessible for this site via DevTools panels and Web APIs, and items you select such as network requests, files, and performance traces are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google\u2019s AI models. This is an experimental AI feature and won\u2019t always get it right.",
   /**
-   * @description Text describing the 'Code suggestions' feature
+   * @description Text describing the code suggestions feature.
    */
   helpUnderstandCodeSuggestions: "Write code faster with AI-powered suggestions",
   /**
-   * @description Text which is a hyperlink to more documentation
+   * @description Text which is a hyperlink to more documentation.
    */
   learnMore: "Learn more",
   /**
-   * @description Description of the AI assistance feature
+   * @description Description of the AI assistance feature.
    */
   explainStyling: "Understand CSS styles with AI-powered insights",
   /**
-   * @description Description of the AI assistance feature
+   * @description Description of the AI assistance feature.
    */
-  explainStylingAndNetworkRequest: "Understand CSS styles, and network activity with AI-powered insights",
+  explainStylingAndNetworkRequest: "Understand CSS styles and network activity with AI-powered insights",
   /**
-   * @description Description of the AI assistance feature
+   * @description Description of the AI assistance feature.
    */
   explainStylingNetworkAndFile: "Understand CSS styles, network activity, and file origins with AI-powered insights",
   /**
-   * @description Description of the AI assistance feature
+   * @description Description of the AI assistance feature.
    */
   explainStylingNetworkPerformanceAndFile: "Understand CSS styles, network activity, performance bottlenecks, and file origins with AI-powered insights",
   /**
-   * @description Description of the AI assistance feature
+   * @description Description of the AI assistance feature.
    */
   receiveStylingSuggestions: "Improve your development workflow with contextual explanations and suggestions",
   /**
-   * @description Explainer for which data is being sent by the AI assistance feature
+   * @description Explainer for which data is being sent by the AI assistance feature.
    */
   freestylerSendsData: "To generate explanations, your chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google. This data may be seen by human reviewers to improve this feature. Don\u2019t use on pages with personal or sensitive information.",
   /**
-   * @description Explainer for which data is being sent by the AI assistance feature
+   * @description Explainer for which data is being sent by the AI assistance feature without logging.
    */
   freestylerSendsDataNoLogging: "To generate explanations, your chat messages, any data the inspected page can see using Web APIs, and the items you select such as files, network requests, and performance traces are sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
-   * @description Explainer for which data is being sent by the AI generated annotations feature
+   * @description Explainer for which data is being sent by the AI-generated annotations feature.
    */
   generatedAiAnnotationsSendData: "To generate annotation suggestions, your performance trace is sent to Google. This data may be seen by human reviewers to improve this feature.",
   /**
-   * @description Explainer for which data is being sent by the AI assistance feature
+   * @description Explainer for which data is being sent by the AI-generated annotations feature without logging.
    */
   generatedAiAnnotationsSendDataNoLogging: "To generate annotation suggestions, your performance trace is sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
-   * @description Description of the 'Code suggestions' feature
+   * @description Description of the code suggestions feature.
    */
   asYouTypeCodeSuggestions: "As you type in the Console or Sources panel, you\u2019ll get code suggestions. Press Tab to accept one.",
   /**
-   * @description First item in the description of the 'Code suggestions' feature [updated]
+   * @description First item in the description of the code suggestions feature.
    */
   asYouTypeRelevantDataIsBeingSentToGoogle: "As you type, relevant data is being sent to Google to generate code suggestions. Press Tab to accept.",
   /**
-   * @description Second item in the description of the 'Code suggestions' feature [new]
+   * @description Second item in the description of the code suggestions feature.
    */
   describeCodeInComment: "In Console or Sources, describe the code you need in a comment, then press Ctrl+I to generate it.",
   /**
-   * @description Second item in the description of the 'Code suggestions' feature [new]
+   * @description Second item in the description of the code suggestions feature for macOS.
    */
   describeCodeInCommentForMacOs: "In Console or Sources, describe the code you need in a comment, then press Cmd+I to generate it.",
   /**
-   * @description Explainer for which data is being sent for the 'Code suggestions' feature
+   * @description Explainer for which data is being sent for the code suggestions feature.
    */
   codeSuggestionsSendData: "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature.",
   /**
-   * @description Explainer for which data is being sent for the 'Code suggestions' feature when logging is not enabled
+   * @description Explainer for which data is being sent for the code suggestions feature without logging.
    */
   codeSuggestionsSendDataNoLogging: "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
-   * @description Label for a link to the terms of service
+   * @description Label for a link to the terms of service.
    */
   termsOfService: "Google Terms of Service",
   /**
-   * @description Label for a link to the privacy notice
+   * @description Label for a link to the privacy notice.
    */
   privacyNotice: "Google Privacy Policy",
   /**
-   * @description Label for a toggle to enable the Console Insights feature
+   * @description Label for a toggle to enable the Console insights feature.
    */
   enableConsoleInsights: "Enable `Console insights`",
   /**
-   * @description Label for a toggle to enable the AI assistance feature
+   * @description Label for a toggle to enable the AI assistance feature.
    */
   enableAiAssistance: "Enable AI assistance",
   /**
-   * @description Label for a toggle to enable the AI annotation feature
+   * @description Label for a toggle to enable the AI annotation feature.
    */
   enableAiSuggestedAnnotations: "Enable AI suggestions for performance panel annotations",
   /**
-   * @description Label for a toggle to enable the AI code suggestions feature
+   * @description Label for a toggle to enable the AI code suggestions feature.
    */
-  enableAiCodeSuggestions: "Enable AI code suggestions"
+  enableAiCodeSuggestions: "Enable AI code suggestions",
+  /**
+   * @description Message shown to the user if the age check isn’t successful.
+   */
+  ageRestricted: "This feature is only available to users 18 years or older.",
+  /**
+   * @description The error message when the user isn’t logged in to Chrome.
+   */
+  notLoggedIn: "This feature is only available when you sign in to Chrome with your Google account.",
+  /**
+   * @description Message shown when the user is offline.
+   */
+  offline: "This feature is only available with an active internet connection.",
+  /**
+   * @description Text informing the user that AI assistance isn’t available in Incognito mode or Guest mode.
+   */
+  notAvailableInIncognitoMode: "AI assistance isn\u2019t available in Incognito mode or Guest mode."
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/settings/AISettingsTab.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -1285,10 +1302,34 @@ var AISettingsTab = class extends UI2.Widget.VBox {
     this.#initSettings();
     this.#view = view ?? AI_SETTINGS_TAB_DEFAULT_VIEW;
   }
+  #getDisabledReasons() {
+    const preconditions = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
+    const mappedReasons = [];
+    for (const precondition of preconditions) {
+      switch (precondition) {
+        case "is-off-the-record":
+          mappedReasons.push(i18nString2(UIStrings2.notAvailableInIncognitoMode));
+          break;
+        case "no-account-email":
+        case "sync-is-paused":
+          mappedReasons.push(i18nString2(UIStrings2.notLoggedIn));
+          break;
+        case "no-internet":
+          mappedReasons.push(i18nString2(UIStrings2.offline));
+          break;
+        case "age-restricted":
+          mappedReasons.push(i18nString2(UIStrings2.ageRestricted));
+          break;
+        default:
+          Platform2.assertNever(precondition, `Unknown precondition: ${precondition}`);
+      }
+    }
+    const settingDisabledReasons = Common2.Settings.Settings.instance().moduleSetting("ai-assistance-enabled").disabledReasons();
+    return [...mappedReasons, ...settingDisabledReasons];
+  }
   performUpdate() {
-    const disabledReasons = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
     const viewInput = {
-      disabledReasons,
+      disabledReasons: this.#getDisabledReasons(),
       sharedDisclaimerBulletPoints: this.#getSharedDisclaimerBulletPoints(),
       settingToParams: this.#settingToParams,
       expandSetting: this.#expandSetting.bind(this),
@@ -1531,7 +1572,7 @@ __export(EditFileSystemView_exports, {
 });
 import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
+import * as Platform3 from "./../../core/platform/platform.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import { Directives, html as html3, render as render3 } from "./../../ui/lit/lit.js";
 
@@ -1571,11 +1612,11 @@ var editFileSystemView_css_default = `/*
 var { styleMap } = Directives;
 var UIStrings3 = {
   /**
-   * @description Text in Edit File System View of the Workspace settings in Settings to indicate that the following string is a folder URL
+   * @description Text in edit file system view of the Workspace settings in Settings to indicate that the following string is a folder URL.
    */
   url: "URL",
   /**
-   * @description Text in Edit File System View of the Workspace settings in Settings
+   * @description Text in edit file system view of the Workspace settings in Settings.
    */
   excludedFolders: "Excluded sub-folders",
   /**
@@ -1661,7 +1702,7 @@ var EditFileSystemView = class _EditFileSystemView extends UI3.Widget.VBox {
   }
   performUpdate() {
     const input = {
-      fileSystemPath: this.#fileSystem?.path() ?? Platform2.DevToolsPath.urlString``,
+      fileSystemPath: this.#fileSystem?.path() ?? Platform3.DevToolsPath.urlString``,
       excludedFolderPaths: this.#excludedFolderPaths,
       onCreate: (e) => this.#onCreate(e.detail.url),
       onEdit: (e) => this.#onEdit(e.currentTarget.dataset.index ?? "-1", e.detail.valueBeforeEditing, e.detail.newText),
@@ -1853,73 +1894,73 @@ var frameworkIgnoreListSettingsTab_css_default = `/*
 // gen/front_end/panels/settings/FrameworkIgnoreListSettingsTab.js
 var UIStrings4 = {
   /**
-   * @description Header text content in Framework Ignore List Settings Tab of the Settings for enabling or disabling ignore listing
+   * @description Header text content in Framework Ignore List settings tab of the Settings for enabling or disabling ignore listing.
    */
   frameworkIgnoreList: "Ignore listing",
   /**
-   * @description Checkbox label in Framework Ignore List Settings Tab of the Settings
+   * @description Checkbox label in Framework Ignore List settings tab of the Settings.
    */
   ignoreListingDescription: "When enabled, the debugger will skip over ignore-listed scripts and will ignore exceptions that only affect them and the Performance panel will collapse matching flamechart items.",
   /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
+   * @description Text in Framework Ignore List settings tab of the Settings.
    */
   ignoreListContentScripts: "Content scripts injected by extensions",
   /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
+   * @description Text in Framework Ignore List settings tab of the Settings.
    */
   ignoreListAnonymousScripts: "Anonymous scripts from eval or console",
   /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
+   * @description Text in Framework Ignore List settings tab of the Settings.
    */
   automaticallyIgnoreListKnownThirdPartyScripts: "Known third-party scripts from source maps",
   /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
+   * @description Text in Framework Ignore List settings tab of the Settings.
    */
   ignoreListing: "Ignore listing",
   /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
+   * @description Text in Framework Ignore List settings tab of the Settings.
    */
   enableIgnoreListingTooltip: "Uncheck to disable all ignore listing",
   /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
+   * @description Text in Framework Ignore List settings tab of the Settings.
    */
   generalExclusionRules: "General exclusion rules",
   /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
+   * @description Text in Framework Ignore List settings tab of the Settings.
    */
   customExclusionRules: "Custom exclusion rules",
   /**
-   * @description Text of the add pattern button in Framework Ignore List Settings Tab of the Settings
+   * @description Text of the add pattern button in Framework Ignore List settings tab of the Settings.
    */
   addPattern: "Add regex rule",
   /**
-   * @description Aria accessible name in Framework Ignore List Settings Tab of the Settings
+   * @description ARIA accessible name in Framework Ignore List settings tab of the Settings.
    */
-  addFilenamePattern: "Add a regular expression rule for the script's URL",
+  addFilenamePattern: "Add a regular expression rule for the script\u2019s URL",
   /**
-   * @description Pattern title in Framework Ignore List Settings Tab of the Settings
+   * @description Pattern title in Framework Ignore List settings tab of the Settings.
    * @example {ad.*?} PH1
    */
   ignoreScriptsWhoseNamesMatchS: "Ignore scripts whose names match ''{PH1}''",
   /**
-   * @description Aria accessible name in Framework Ignore List Settings Tab of the Settings. It labels the input
+   * @description ARIA accessible name in Framework Ignore List settings tab of the Settings. It labels the input
    * field used to add new or edit existing regular expressions that match file names to ignore in the debugger.
    */
-  pattern: "Add a regular expression rule for the script's URL",
+  pattern: "Add a regular expression rule for the script\u2019s URL",
   /**
-   * @description Error message in Framework Ignore List settings pane that declares pattern must not be empty
+   * @description Error message in Framework Ignore List settings tab that declares the pattern must not be empty.
    */
-  patternCannotBeEmpty: "Rule can't be empty",
+  patternCannotBeEmpty: "Rule can\u2019t be empty",
   /**
-   * @description Error message in Framework Ignore List settings pane that declares pattern already exits
+   * @description Error message in Framework Ignore List settings tab that declares the pattern already exists.
    */
   patternAlreadyExists: "Rule already exists",
   /**
-   * @description Error message in Framework Ignore List settings pane that declares pattern must be a valid regular expression
+   * @description Error message in Framework Ignore List settings tab that declares the pattern must be a valid regular expression.
    */
   patternMustBeAValidRegular: "Rule must be a valid regular expression",
   /**
-   * @description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation.
    */
   learnMore: "Learn more"
 };
@@ -2101,7 +2142,7 @@ __export(KeybindsSettingsTab_exports, {
 import * as Common4 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Platform4 from "./../../core/platform/platform.js";
+import * as Platform5 from "./../../core/platform/platform.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import { createIcon as createIcon2, Link as Link2 } from "./../../ui/kit/kit.js";
 import * as SettingsUI5 from "./../../ui/legacy/components/settings_ui/settings_ui.js";
@@ -2334,7 +2375,7 @@ button.text-button {
 // gen/front_end/panels/settings/KeybindsSettingsTab.js
 var UIStrings5 = {
   /**
-   * @description Text for keyboard shortcuts
+   * @description Text for keyboard shortcuts.
    */
   shortcuts: "Shortcuts",
   /**
@@ -2342,58 +2383,57 @@ var UIStrings5 = {
    */
   matchShortcutsFromPreset: "Shortcut preset",
   /**
-   * @description Screen reader label for list of keyboard shortcuts in settings
+   * @description Screen reader label for list of keyboard shortcuts in Settings.
    */
   keyboardShortcutsList: "Keyboard shortcuts list",
   /**
-   * @description Screen reader label for an icon denoting a shortcut that has been changed from its default
+   * @description Screen reader label for an icon denoting a shortcut that has been changed from its default.
    */
   shortcutModified: "Shortcut modified",
   /**
-   * @description Screen reader label for an empty shortcut cell in custom shortcuts settings tab
+   * @description Screen reader label for an empty shortcut cell in custom shortcuts settings tab.
    */
   noShortcutForAction: "No shortcut for action",
   /**
-   * @description Link text in the settings pane to add another shortcut for an action
+   * @description Link text in the settings tab to add another shortcut for an action.
    */
   addAShortcut: "Add a shortcut",
   /**
-   * @description Placeholder text in the settings pane when adding a new shortcut.
-   * Explaining that key strokes are going to be recoded.
+   * @description Placeholder text in the settings tab when adding a new shortcut, explaining that keystrokes are going to be recorded.
    */
-  recordingKeys: "Recoding keys",
+  recordingKeys: "Recording keys",
   /**
-   * @description Label for a button in the settings pane that confirms changes to a keyboard shortcut
+   * @description Label for a button in the settings tab that confirms changes to a keyboard shortcut.
    */
   confirmChanges: "Confirm changes",
   /**
-   * @description Label for a button in the settings pane that discards changes to the shortcut being edited
+   * @description Label for a button in the settings tab that discards changes to the shortcut being edited.
    */
   discardChanges: "Discard changes",
   /**
-   * @description Label for a button in the settings pane that removes a keyboard shortcut.
+   * @description Label for a button in the settings tab that removes a keyboard shortcut.
    */
   removeShortcut: "Remove shortcut",
   /**
-   * @description Label for a button in the settings pane that edits a keyboard shortcut
+   * @description Label for a button in the settings tab that edits a keyboard shortcut.
    */
   editShortcut: "Edit shortcut",
   /**
-   * @description Message shown in settings when the user inputs a modifier-only shortcut such as Ctrl+Shift.
+   * @description Message shown in Settings when the user inputs a modifier-only shortcut such as Ctrl+Shift.
    */
-  shortcutsCannotContainOnly: "Shortcuts cannot contain only modifier keys.",
+  shortcutsCannotContainOnly: "Shortcuts can\u2019t contain only modifier keys.",
   /**
-   * @description Messages shown in shortcuts settings when the user inputs a shortcut that is already in use.
+   * @description Message shown in shortcuts settings when the user inputs a shortcut that is already in use.
    * @example {Performance} PH1
    * @example {Start/stop recording} PH2
    */
   thisShortcutIsInUseByS: "This shortcut is in use by {PH1}: {PH2}.",
   /**
-   * @description Message shown in settings when to restore default shortcuts.
+   * @description Message shown in Settings when restoring default shortcuts.
    */
   RestoreDefaultShortcuts: "Restore default shortcuts",
   /**
-   * @description Message shown in settings to show the full list of keyboard shortcuts.
+   * @description Message shown in Settings to show the full list of keyboard shortcuts.
    */
   FullListOfDevtoolsKeyboard: "Full list of DevTools keyboard shortcuts and gestures",
   /**
@@ -2401,20 +2441,20 @@ var UIStrings5 = {
    */
   ResetShortcutsForAction: "Reset shortcuts for action",
   /**
-   * @description Screen reader announcement for shortcut removed
+   * @description Screen reader announcement for shortcut removed.
    * @example {Start/stop recording} PH1
    */
   shortcutRemoved: "{PH1} Shortcut removed",
   /**
-   * @description Screen reader announcement for shortcut restored to default
+   * @description Screen reader announcement for shortcut restored to default.
    */
   shortcutChangesRestored: "Changes to shortcut restored to default",
   /**
-   * @description Screen reader announcement for applied short cut changes
+   * @description Screen reader announcement for applied shortcut changes.
    */
   shortcutChangesApplied: "Changes to shortcut applied",
   /**
-   * @description Screen reader announcement for discarded short cut changes
+   * @description Screen reader announcement for discarded shortcut changes.
    */
   shortcutChangesDiscarded: "Changes to shortcut discarded"
 };
@@ -2684,7 +2724,7 @@ var ShortcutListItem = class {
       UI5.ARIAUtils.LiveAnnouncer.alert(i18nString5(UIStrings5.shortcutChangesDiscarded));
     }));
     this.element.addEventListener("keydown", (event) => {
-      if (Platform4.KeyboardUtilities.isEscKey(event)) {
+      if (Platform5.KeyboardUtilities.isEscKey(event)) {
         this.settingsTab.stopEditing(this.item);
         event.consume(true);
       }
@@ -2960,23 +3000,23 @@ var workspaceSettingsTab_css_default = `/*
 // gen/front_end/panels/settings/WorkspaceSettingsTab.js
 var UIStrings6 = {
   /**
-   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Text of a DOM element in Workspace settings tab of the Workspace settings in Settings.
    */
   workspace: "Workspace",
   /**
-   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Text of a DOM element in Workspace settings tab of the Workspace settings in Settings.
    */
   mappingsAreInferredAutomatically: "Mappings are inferred automatically.",
   /**
-   * @description Text of the add button in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Text of the add button in Workspace settings tab of the Workspace settings in Settings.
    */
   addFolder: "Add folder",
   /**
-   * @description Label element text content in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Label element text content in Workspace settings tab of the Workspace settings in Settings.
    */
   folderExcludePattern: "Exclude from workspace",
   /**
-   * @description Label for an item to remove something
+   * @description Label for an item to remove something.
    */
   remove: "Remove"
 };

@@ -51,7 +51,7 @@ function buildGroupStyle(extra) {
   };
   return Object.assign(defaultGroupStyle, extra);
 }
-function buildTrackHeader(jslogContext, startLevel, name, style, selectable, expanded, showStackContextMenu) {
+function buildTrackHeader(jslogContext, startLevel, name, style, selectable, expanded, showStackContextMenu, fullTrackName, url) {
   const group = {
     startLevel,
     name,
@@ -62,6 +62,12 @@ function buildTrackHeader(jslogContext, startLevel, name, style, selectable, exp
   };
   if (jslogContext !== null) {
     group.jslogContext = jslogContext;
+  }
+  if (fullTrackName !== void 0) {
+    group.fullTrackName = fullTrackName;
+  }
+  if (url !== void 0) {
+    group.url = url;
   }
   return group;
 }
@@ -381,6 +387,7 @@ import * as Host3 from "./../../core/host/host.js";
 import * as Platform16 from "./../../core/platform/platform.js";
 import * as Trace36 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver7 from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
+import * as Workspace8 from "./../../models/workspace/workspace.js";
 import * as ThemeSupport27 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as TimelineComponents7 from "./components/components.js";
 
@@ -1845,7 +1852,9 @@ var ThreadAppender = class {
       true,
       this.#expanded,
       /* showStackContextMenu= */
-      true
+      true,
+      this.trackName(),
+      this.#url || void 0
     );
     this.#compatibilityBuilder.registerTrackForGroup(group, this);
   }
@@ -2121,7 +2130,7 @@ import * as Root4 from "./../../core/root/root.js";
 import * as AIAssistance2 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Trace34 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver5 from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
-import * as Workspace4 from "./../../models/workspace/workspace.js";
+import * as Workspace6 from "./../../models/workspace/workspace.js";
 import * as PerfUI17 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport25 from "./../../ui/legacy/theme_support/theme_support.js";
@@ -2288,7 +2297,7 @@ import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as AIAssistance from "./../../models/ai_assistance/ai_assistance.js";
 import * as CrUXManager5 from "./../../models/crux-manager/crux-manager.js";
 import * as Trace33 from "./../../models/trace/trace.js";
-import * as Workspace3 from "./../../models/workspace/workspace.js";
+import * as Workspace5 from "./../../models/workspace/workspace.js";
 import * as TraceBounds15 from "./../../services/trace_bounds/trace_bounds.js";
 import * as PerfUI16 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
@@ -2903,6 +2912,7 @@ import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Trace23 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver3 from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
+import * as Workspace3 from "./../../models/workspace/workspace.js";
 import * as TraceBounds11 from "./../../services/trace_bounds/trace_bounds.js";
 import * as Tracing3 from "./../../services/tracing/tracing.js";
 import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_highlighter.js";
@@ -7280,7 +7290,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     }
   }
   #setupNavigationSetting() {
-    const currentNavSetting = Common10.Settings.moduleSetting("flamechart-selected-navigation").get();
+    const currentNavSetting = Common10.Settings.Settings.instance().moduleSetting("flamechart-selected-navigation").get();
     const hideTheDialogForTests = localStorage.getItem("hide-shortcuts-dialog-for-test");
     const userHadShortcutsDialogOpenedOnce = this.#userHadShortcutsDialogOpenedOnce.get();
     this.#shortcutsDialog.prependElement(this.#navigationRadioButtons);
@@ -7301,14 +7311,14 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         /* isNavClassic */
         false
       ) };
-      Common10.Settings.moduleSetting("flamechart-selected-navigation").set("modern");
+      Common10.Settings.Settings.instance().moduleSetting("flamechart-selected-navigation").set("modern");
     });
     this.#classicNavRadioButton.radio.addEventListener("change", () => {
       this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(
         /* isNavClassic */
         true
       ) };
-      Common10.Settings.moduleSetting("flamechart-selected-navigation").set("classic");
+      Common10.Settings.Settings.instance().moduleSetting("flamechart-selected-navigation").set("classic");
     });
     this.#navigationRadioButtons.appendChild(this.#modernNavRadioButton.label);
     this.#navigationRadioButtons.appendChild(this.#classicNavRadioButton.label);
@@ -7316,7 +7326,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     return this.#navigationRadioButtons;
   }
   #updateNavigationSettingSelection() {
-    const currentNavSetting = Common10.Settings.moduleSetting("flamechart-selected-navigation").get();
+    const currentNavSetting = Common10.Settings.Settings.instance().moduleSetting("flamechart-selected-navigation").get();
     if (currentNavSetting === "classic") {
       this.#classicNavRadioButton.radio.checked = true;
       Host2.userMetrics.navigationSettingAtFirstTimelineLoad(
@@ -8189,7 +8199,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     }
     if (this.#traceEngineModel.size() === 1) {
       this.#setupNavigationSetting();
-      if (Common10.Settings.moduleSetting("flamechart-selected-navigation").get() === "classic") {
+      if (Common10.Settings.Settings.instance().moduleSetting("flamechart-selected-navigation").get() === "classic") {
         Host2.userMetrics.navigationSettingAtFirstTimelineLoad(
           0
           /* Host.UserMetrics.TimelineNavigationSetting.CLASSIC_AT_SESSION_FIRST_TRACE */
@@ -9816,7 +9826,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       }
       case "ProfileCall": {
         const profileCall = event;
-        const resolvedURL = SourceMapsResolver3.SourceMapsResolver.resolvedURLForEntry(parsedTrace, profileCall);
+        const resolvedURL = SourceMapsResolver3.SourceMapsResolver.resolvedURLForEntry(parsedTrace, profileCall, Workspace3.Workspace.WorkspaceImpl.instance());
         if (!resolvedURL) {
           break;
         }
@@ -10635,7 +10645,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     return Common11.ParsedURL.schemeIs(url, "about:") ? `"${Platform11.StringUtilities.trimMiddle(frame.name, trimAt)}"` : frame.url.slice(0, trimAt);
   }
   static getOriginWithEntity(entityMapper, parsedTrace, event) {
-    const resolvedURL = SourceMapsResolver3.SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
+    const resolvedURL = SourceMapsResolver3.SourceMapsResolver.resolvedURLForEntry(parsedTrace, event, Workspace3.Workspace.WorkspaceImpl.instance());
     if (!resolvedURL) {
       return null;
     }
@@ -15518,7 +15528,8 @@ var timelineFlameChartView_css_default = `/*
   pointer-events: none;
   padding: var(--sys-size-3) var(--sys-size-4);
   border-radius: var(--sys-shape-corner-extra-small);
-  white-space: nowrap;
+  white-space: pre-wrap;
+  word-break: break-all;
   max-width: 80%;
   box-shadow: var(--sys-elevation-level2);
 }
@@ -16620,7 +16631,7 @@ var TimelineFlameChartView = class extends Common16.ObjectWrapper.eventMixin(UI1
     ModificationsManager.activeManager()?.updateAnnotation(this.#linkSelectionAnnotation);
   }
   onEntryHovered(commonEvent) {
-    SDK14.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    SDK14.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK14.TargetManager.TargetManager.instance());
     const entryIndex = commonEvent.data;
     const event = this.mainDataProvider.eventByIndex(entryIndex);
     if (!event || !this.#parsedTrace) {
@@ -16649,12 +16660,12 @@ var TimelineFlameChartView = class extends Common16.ObjectWrapper.eventMixin(UI1
   willHide() {
     super.willHide();
     this.#networkPersistedGroupConfigSetting.removeChangeListener(this.resizeToPreferredHeights, this);
-    Workspace3.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.#boundRefreshAfterIgnoreList);
+    Workspace5.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.#boundRefreshAfterIgnoreList);
   }
   wasShown() {
     super.wasShown();
     this.#networkPersistedGroupConfigSetting.addChangeListener(this.resizeToPreferredHeights, this);
-    Workspace3.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.#boundRefreshAfterIgnoreList);
+    Workspace5.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.#boundRefreshAfterIgnoreList);
     if (this.needsResizeToPreferredHeights) {
       this.resizeToPreferredHeights();
     }
@@ -17339,20 +17350,20 @@ var TimelineFlameChartDataProvider = class extends Common17.ObjectWrapper.Object
     if (!this.parsedTrace || Trace34.Types.Events.isLegacyTimelineFrame(entry)) {
       return contextMenu;
     }
-    const url = SourceMapsResolver5.SourceMapsResolver.resolvedURLForEntry(this.parsedTrace, entry);
+    const url = SourceMapsResolver5.SourceMapsResolver.resolvedURLForEntry(this.parsedTrace, entry, Workspace6.Workspace.WorkspaceImpl.instance());
     if (!url) {
       return contextMenu;
     }
     if (Utils7.IgnoreList.isIgnoreListedEntry(entry)) {
       contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.removeScriptFromIgnoreList), () => {
-        Workspace4.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
+        Workspace6.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
         this.#onIgnoreListChanged();
       }, {
         jslogContext: "remove-from-ignore-list"
       });
     } else {
       contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.addScriptToIgnoreList), () => {
-        Workspace4.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
+        Workspace6.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
         this.#onIgnoreListChanged();
       }, {
         jslogContext: "add-to-ignore-list"
@@ -18837,7 +18848,7 @@ var CompatibilityTracksAppender = class {
     if (track.setPopoverInfo) {
       track.setPopoverInfo(event, info);
     }
-    const url = URL.parse(info.url ?? SourceMapsResolver7.SourceMapsResolver.resolvedURLForEntry(this.#parsedTrace, event) ?? "");
+    const url = URL.parse(info.url ?? SourceMapsResolver7.SourceMapsResolver.resolvedURLForEntry(this.#parsedTrace, event, Workspace8.Workspace.WorkspaceImpl.instance()) ?? "");
     if (url) {
       const MAX_PATH_LENGTH = 45;
       const path = Platform16.StringUtilities.trimMiddle(url.href.replace(url.origin, ""), MAX_PATH_LENGTH);

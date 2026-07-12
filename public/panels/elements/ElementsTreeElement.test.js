@@ -43,10 +43,12 @@ function getBaseViewInput() {
         showScrollSnapAdorner: false,
         scrollSnapAdornerActive: false,
         showSlotAdorner: false,
+        showCustomElementAdorner: false,
         showStartingStyleAdorner: false,
         startingStyleAdornerActive: false,
         onStartingStyleAdornerClick: () => { },
         onSlotAdornerClick: () => { },
+        onCustomElementAdornerClick: () => { },
         topLayerIndex: -1,
         onViewSourceAdornerClick: () => { },
         onGutterClick: () => { },
@@ -59,6 +61,7 @@ function getBaseViewInput() {
         onTopLayerAdornerClick: () => { },
         isHovered: false,
         isSelected: false,
+        canInspect: false,
         showAiButton: false,
         onAiButtonClick: () => { },
         decorations: [],
@@ -985,6 +988,41 @@ describeWithEnvironment('ElementsTreeElement in Snapshot Mode', () => {
             const revealSpy = sinon.spy(Common.Revealer.RevealerRegistry.instance(), 'reveal');
             slotAdorner.dispatchEvent(new Event('click'));
             sinon.assert.called(revealSpy);
+        });
+    });
+    describe('selected hint', () => {
+        it('renders selected hint when selected and inspectable', () => {
+            const domTarget = document.createElement('div');
+            renderElementIntoDOM(domTarget);
+            Elements.ElementsTreeElement.DEFAULT_VIEW({
+                ...getBaseViewInput(),
+                isSelected: true,
+                canInspect: true,
+            }, {}, domTarget);
+            const hint = domTarget.querySelector('.selected-hint');
+            assert.exists(hint);
+        });
+        it('does not render selected hint when selected but not inspectable', () => {
+            const domTarget = document.createElement('div');
+            renderElementIntoDOM(domTarget);
+            Elements.ElementsTreeElement.DEFAULT_VIEW({
+                ...getBaseViewInput(),
+                isSelected: true,
+                canInspect: false,
+            }, {}, domTarget);
+            const hint = domTarget.querySelector('.selected-hint');
+            assert.isNull(hint);
+        });
+        it('does not render selected hint when not selected', () => {
+            const domTarget = document.createElement('div');
+            renderElementIntoDOM(domTarget);
+            Elements.ElementsTreeElement.DEFAULT_VIEW({
+                ...getBaseViewInput(),
+                isSelected: false,
+                canInspect: true,
+            }, {}, domTarget);
+            const hint = domTarget.querySelector('.selected-hint');
+            assert.isNull(hint);
         });
     });
 });

@@ -28,7 +28,13 @@ var Result = class {
   }
   get symbolizedError() {
     if (!this.#symbolizedError) {
-      this.#symbolizedError = this.#exception ? Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createSymbolizedError(this.#exception) : Promise.resolve(null);
+      if (this.#exception) {
+        const target = this.#exception.runtimeModel().target();
+        const debuggerWorkspaceBinding = target.targetManager().context.get(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
+        this.#symbolizedError = debuggerWorkspaceBinding.createSymbolizedError(this.#exception);
+      } else {
+        this.#symbolizedError = Promise.resolve(null);
+      }
     }
     return this.#symbolizedError;
   }
@@ -40,7 +46,10 @@ var Tool = class {
   constructor(tool, target) {
     this.#target = new WeakRef(target);
     this.#protocolTool = tool;
-    this.#stackTrace = tool.stackTrace && Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createStackTraceFromProtocolRuntime(tool.stackTrace, target);
+    if (tool.stackTrace) {
+      const debuggerWorkspaceBinding = target.targetManager().context.get(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
+      this.#stackTrace = debuggerWorkspaceBinding.createStackTraceFromProtocolRuntime(tool.stackTrace, target);
+    }
   }
   get stackTrace() {
     return this.#stackTrace;
@@ -61,6 +70,13 @@ var Tool = class {
       }
     }
     return typeof rawSchema === "object" && rawSchema !== null ? rawSchema : {};
+  }
+  get flags() {
+    const annotations = this.#protocolTool.annotations;
+    if (!annotations) {
+      return [];
+    }
+    return Object.keys(annotations).filter((key) => annotations[key] === true).sort();
   }
   get frame() {
     return this.#target.deref()?.model(SDK.ResourceTreeModel.ResourceTreeModel)?.frameForId(this.#protocolTool.frameId) ?? void 0;

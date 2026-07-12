@@ -138,6 +138,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     preflightInitiatorRequest(): NetworkRequest | null;
     setPreflightInitiatorRequest(preflightInitiatorRequest: NetworkRequest | null): void;
     isPreflightRequest(): boolean;
+    isPreloadRequest(): boolean;
     redirectDestination(): NetworkRequest | null;
     setRedirectDestination(redirectDestination: NetworkRequest | null): void;
     requestHeaders(): NameValue[];
@@ -255,6 +256,8 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     isSameSite(): boolean | null;
     setIsAdRelated(isAdRelated: boolean): void;
     isAdRelated(): boolean;
+    setIsLinkPreload(isLinkPreload: boolean): void;
+    isLinkPreload(): boolean;
     getAssociatedData(key: string): object | null;
     setAssociatedData(key: string, data: object): void;
     deleteAssociatedData(key: string): void;

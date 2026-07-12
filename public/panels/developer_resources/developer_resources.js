@@ -65,64 +65,63 @@ var developerResourcesListView_css_default = `/*
 // gen/front_end/panels/developer_resources/DeveloperResourcesListView.js
 var UIStrings = {
   /**
-   * @description Text for the status of something
+   * @description Column header in the Developer resources panel showing the load status (pending, success, or failure) of a resource.
    */
   status: "Status",
   /**
-   * @description Text for web URLs
+   * @description Column header in the Developer resources panel showing the URL of the developer resource.
    */
   url: "URL",
   /**
-   * @description Text for the initiator of something
+   * @description Column header in the Developer resources panel showing the initiator (such as an extension or script) that requested the resource.
    */
   initiator: "Initiator",
   /**
-   * @description Text in Coverage List View of the Coverage tab
+   * @description Column header in the Developer resources panel showing the total size of a resource in bytes.
    */
-  totalBytes: "Total Bytes",
+  totalBytes: "Total bytes",
   /**
-   * @description Column header. The column contains the time it took to load a resource.
+   * @description Column header in the Developer resources panel showing the time it took to load a resource.
    */
   duration: "Duration",
   /**
-   * @description Text for errors
+   * @description Column header in the Developer resources panel showing the error message when loading a resource fails.
    */
   error: "Error",
   /**
-   * @description Title for the Developer resources tab
+   * @description Accessible name for the data grid in the Developer resources panel.
    */
   developerResources: "Developer resources",
   /**
-   * @description Text for a context menu entry
+   * @description Context menu item in the Developer resources panel for copying the selected resource's URL to the clipboard.
    */
   copyUrl: "Copy URL",
   /**
-   * @description Text for a context menu entry. Command to copy a URL to the clipboard. The initiator
-   * of a request is the entity that caused this request to be sent.
+   * @description Context menu item in the Developer resources panel for copying the initiator's URL to the clipboard. The initiator of a request is the entity that caused this request to be sent.
    */
   copyInitiatorUrl: "Copy initiator URL",
   /**
-   * @description Text for the status column of a list view
+   * @description Status text in the Developer resources panel indicating that a resource is currently loading.
    */
-  pending: "pending",
+  pending: "Pending",
   /**
-   * @description Text for the status column of a list view
+   * @description Status text in the Developer resources panel indicating that a resource loaded successfully.
    */
-  success: "success",
+  success: "Success",
   /**
-   * @description Text for the status column of a list view
+   * @description Status text in the Developer resources panel indicating that a resource failed to load.
    */
-  failure: "failure",
+  failure: "Failure",
   /**
-   * @description Accessible text for the value in bytes in memory allocation.
+   * @description Accessible label in the Developer resources panel for the size of a resource in bytes.
    */
   sBytes: "{n, plural, =1 {# byte} other {# bytes}}",
   /**
-   * @description Number of resource(s) match
+   * @description Screen reader announcement in the Developer resources panel indicating how many resources match the current text filter.
    */
   numberOfResourceMatch: "{n, plural, =1 {# resource matches} other {# resources match}}",
   /**
-   * @description No resource matches
+   * @description Screen reader announcement in the Developer resources panel when no resources match the current text filter.
    */
   noResourceMatches: "No resource matches"
 };
@@ -278,7 +277,7 @@ var DeveloperResourcesListView = class extends UI.Widget.VBox {
         }
       },
       onInitiatorMouseLeave: () => {
-        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
       }
     };
     const output = {};
@@ -339,30 +338,29 @@ var { widget } = UI2.Widget;
 var { bindToSetting } = UI2.UIUtils;
 var UIStrings2 = {
   /**
-   * @description Placeholder for a search field in a toolbar
+   * @description Placeholder text for the text filter input field in the toolbar of the Developer resources panel.
    */
   filterByText: "Filter by URL and error",
   /**
-   * @description Tooltip for a checkbox in the toolbar of the developer resources view. The
+   * @description Tooltip for a checkbox in the toolbar of the Developer resources panel. The
    * inspected target is the webpage that DevTools is debugging/inspecting/attached to.
    */
-  loadHttpsDeveloperResources: "Load `HTTP(S)` developer resources through the website you inspect, not through DevTools",
+  loadHttpsDeveloperResources: "Load HTTP(S) developer resources through the website you inspect, not through DevTools",
   /**
-   * @description Text for a checkbox in the toolbar of the developer resources view. The target is
+   * @description Text for a checkbox in the toolbar of the Developer resources panel. The target is
    * the webpage that DevTools is debugging/inspecting/attached to. This setting makes it so
    * developer resources are requested from the webpage itself, and not from the DevTools
    * application.
    */
   enableLoadingThroughTarget: "Load through website",
   /**
-   * @description Text for resources load status
+   * @description Status bar message in the Developer resources panel showing the total number of resources and how many are currently loading.
    * @example {1} PH1
    * @example {1} PH2
    */
   resourcesCurrentlyLoading: "{PH1} resources, {PH2} currently loading",
   /**
-   * @description Status text that appears to tell the developer how many resources were loaded in
-   * total. Resources are files related to the webpage.
+   * @description Status bar message in the Developer resources panel showing the total number of loaded resources. Resources are files related to the webpage.
    */
   resources: "{n, plural, =1 {# resource} other {# resources}}"
 };

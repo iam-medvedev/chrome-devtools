@@ -17,7 +17,7 @@ import * as AiAssistance from './ai_assistance.js';
 describeWithEnvironment('PatchWidget', () => {
     let showFreDialogStub;
     beforeEach(() => {
-        Common.Settings.moduleSetting('ai-assistance-patching-fre-completed').set(true);
+        Common.Settings.Settings.instance().moduleSetting('ai-assistance-patching-fre-completed').set(true);
         showFreDialogStub = sinon.stub(PanelCommon.FreDialog, 'show');
         initializePersistenceImplForTests();
         setupAutomaticFileSystem();
@@ -38,7 +38,7 @@ describeWithEnvironment('PatchWidget', () => {
         });
         describe('enterprise text cases', () => {
             it('should FRE text include no logging case when the enterprise policy value is ALLOW_WITHOUT_LOGGING', async () => {
-                Common.Settings.moduleSetting('ai-assistance-patching-fre-completed').set(false);
+                Common.Settings.Settings.instance().moduleSetting('ai-assistance-patching-fre-completed').set(false);
                 updateHostConfig({
                     devToolsFreestyler: {
                         enabled: true,
@@ -53,7 +53,7 @@ describeWithEnvironment('PatchWidget', () => {
                 assert.exists(showFreDialogStub.lastCall.args[0].reminderItems.find(reminderItem => reminderItem.content.toString().includes('This data will not be used to improve Google’s AI models.')));
             });
             it('should FRE text not include no logging case when the enterprise policy value is ALLOW_WITHOUT_LOGGING', async () => {
-                Common.Settings.moduleSetting('ai-assistance-patching-fre-completed').set(false);
+                Common.Settings.Settings.instance().moduleSetting('ai-assistance-patching-fre-completed').set(false);
                 updateHostConfig({
                     devToolsFreestyler: {
                         enabled: true,
@@ -68,7 +68,7 @@ describeWithEnvironment('PatchWidget', () => {
                 assert.notExists(showFreDialogStub.lastCall.args[0].reminderItems.find(reminderItem => reminderItem.content.toString().includes('This data will not be used to improve Google’s AI models.')));
             });
             it('should tooltip text include no logging case when the enterprise policy value is ALLOW_WITHOUT_LOGGING', async () => {
-                Common.Settings.moduleSetting('ai-assistance-patching-fre-completed').set(false);
+                Common.Settings.Settings.instance().moduleSetting('ai-assistance-patching-fre-completed').set(false);
                 updateHostConfig({
                     devToolsFreestyler: {
                         enabled: true,
@@ -80,7 +80,7 @@ describeWithEnvironment('PatchWidget', () => {
                 assert.include(view.input.applyToWorkspaceTooltipText, 'This data will not be used to improve Google’s AI models.');
             });
             it('should tooltip text not include no logging case when the enterprise policy value is ALLOW', async () => {
-                Common.Settings.moduleSetting('ai-assistance-patching-fre-completed').set(false);
+                Common.Settings.Settings.instance().moduleSetting('ai-assistance-patching-fre-completed').set(false);
                 updateHostConfig({
                     devToolsFreestyler: {
                         enabled: true,
@@ -93,14 +93,14 @@ describeWithEnvironment('PatchWidget', () => {
             });
         });
         it('should show FRE dialog on applyToWorkspace click if the setting is false', async () => {
-            Common.Settings.moduleSetting('ai-assistance-patching-fre-completed').set(false);
+            Common.Settings.Settings.instance().moduleSetting('ai-assistance-patching-fre-completed').set(false);
             const { view, widget } = await createPatchWidget();
             widget.changeSummary = 'body { background-color: red; }';
             view.input.onApplyToWorkspace();
             assert.isTrue(showFreDialogStub.called, 'Expected FreDialog to be shown but it\'s not shown');
         });
         it('should not show FRE dialog on applyToWorkspace click if the setting is true', async () => {
-            Common.Settings.moduleSetting('ai-assistance-patching-fre-completed').set(true);
+            Common.Settings.Settings.instance().moduleSetting('ai-assistance-patching-fre-completed').set(true);
             const { view, widget } = await createPatchWidget();
             widget.changeSummary = 'body { background-color: red; }';
             view.input.onApplyToWorkspace();

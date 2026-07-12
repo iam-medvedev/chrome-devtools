@@ -176,6 +176,10 @@ const UIStrings = {
      * @description Notice to display when a tool has been unregistered
      */
     toolUnregisteredNotice: 'This tool has been unregistered',
+    /**
+     * @description Label for a list of tool flags or attributes
+     */
+    flags: 'Flags',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/WebMCPView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -933,6 +937,12 @@ const TOOL_DETAILS_VIEW = (input, output, target) => {
     }
     const tool = input.tool;
     const origin = input.origin;
+    const flags = tool.flags;
+    const formatter = new Intl.ListFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, {
+        style: 'short',
+        type: 'unit',
+    });
+    const formattedFlags = formatter.format(flags);
     render(html `
     <style>${webMCPViewStyles}</style>
     <div class="tool-details-grid">
@@ -940,6 +950,10 @@ const TOOL_DETAILS_VIEW = (input, output, target) => {
       <div class="value source-code">${tool.name}</div>
       <div class="label">Description</div>
       <div class="value">${tool.description}</div>
+      ${flags.length > 0 ? html `
+      <div class="label">${i18nString(UIStrings.flags)}</div>
+      <div class="value">${formattedFlags}</div>
+      ` : nothing}
       ${tool.frame ? html `
       <div class="label">${i18nString(UIStrings.frame)}</div>
       <div class="value">${Components.Linkifier.Linkifier.linkifyRevealable(tool.frame, tool.frame.displayName())}</div>
@@ -1031,7 +1045,7 @@ export class ToolDetailsWidget extends UI.Widget.Widget {
         node.highlight();
     };
     #clearHighlight = () => {
-        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
     };
     #revealNode = (node) => {
         void Common.Revealer.reveal(node);

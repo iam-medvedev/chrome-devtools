@@ -4,8 +4,9 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithEnvironment, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as EmulationModel from '../emulation/emulation.js';
 describe('Insets', () => {
     it('can be instantiated without issues', () => {
@@ -69,29 +70,30 @@ describe('Rect', () => {
         assert.strictEqual(result.height, 8, 'height value was not set correctly');
     });
 });
-describeWithEnvironment('DeviceModeModel', () => {
+describe('DeviceModeModel', () => {
+    setupLocaleHooks();
     let target;
+    let universe;
+    let deviceModeModel;
     beforeEach(() => {
-        stubNoopSettings();
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-        createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
-        target = createTarget({ parentTarget: tabTarget });
+        universe = new TestUniverse();
+        deviceModeModel = universe.deviceModeModel;
+        const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
+        universe.createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
+        target = universe.createTarget({ parentTarget: tabTarget });
     });
     it('shows hinge on main frame resize', () => {
-        EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         const setShowHinge = sinon.spy(target.overlayAgent(), 'invoke_setShowHinge');
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameResized);
         sinon.assert.calledOnce(setShowHinge);
     });
     it('shows hinge on main frame navigation', () => {
-        EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         const setShowHinge = sinon.spy(target.overlayAgent(), 'invoke_setShowHinge');
         navigate(getMainFrame(target));
         sinon.assert.calledOnce(setShowHinge);
     });
     it('tracks screen orientation lock state from emulation model events', () => {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
         assert.isNotNull(emulationModel);
         // Initially not locked.
@@ -107,7 +109,6 @@ describeWithEnvironment('DeviceModeModel', () => {
         assert.isFalse(deviceModeModel.isScreenOrientationLocked());
     });
     it('dispatches UPDATED event when screen orientation lock changes', () => {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
         assert.isNotNull(emulationModel);
         const updatedSpy = sinon.spy();
@@ -121,7 +122,6 @@ describeWithEnvironment('DeviceModeModel', () => {
         sinon.assert.calledTwice(updatedSpy);
     });
     it('resets screen orientation lock state when emulation model is removed', () => {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
         assert.isNotNull(emulationModel);
         // Lock orientation.
@@ -135,8 +135,7 @@ describeWithEnvironment('DeviceModeModel', () => {
         assert.isFalse(deviceModeModel.isScreenOrientationLocked());
     });
     it('clears user agent and metadata when switching to a device with empty UA', () => {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
-        const setUserAgentOverride = sinon.spy(SDK.NetworkManager.MultitargetNetworkManager.instance(), 'setUserAgentOverride');
+        const setUserAgentOverride = sinon.spy(universe.multitargetNetworkManager, 'setUserAgentOverride');
         try {
             const mobileDevice = new EmulationModel.EmulatedDevices.EmulatedDevice();
             mobileDevice.userAgent = 'test-mobile-ua';
@@ -213,7 +212,6 @@ describeWithEnvironment('DeviceModeModel', () => {
         return device;
     }
     it('sends the active mode safe-area insets when emulating a device', () => {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         const em = target.model(SDK.EmulationModel.EmulationModel);
         assert.exists(em);
         deviceModeModel.modelAdded(em);
@@ -229,7 +227,6 @@ describeWithEnvironment('DeviceModeModel', () => {
         }
     });
     it('sends the landscape safe-area insets when emulating the horizontal mode', () => {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         const em = target.model(SDK.EmulationModel.EmulationModel);
         assert.exists(em);
         deviceModeModel.modelAdded(em);
@@ -245,7 +242,6 @@ describeWithEnvironment('DeviceModeModel', () => {
         }
     });
     it('clears the safe-area override for a device without safe-area data', () => {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         const em = target.model(SDK.EmulationModel.EmulationModel);
         assert.exists(em);
         deviceModeModel.modelAdded(em);
@@ -269,7 +265,6 @@ describeWithEnvironment('DeviceModeModel', () => {
         }
     });
     it('does not change device metrics when safe-area insets are present', () => {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
         const em = target.model(SDK.EmulationModel.EmulationModel);
         assert.exists(em);
         deviceModeModel.modelAdded(em);
@@ -292,8 +287,7 @@ describeWithEnvironment('DeviceModeModel', () => {
         }
     });
     it('uses modern default mobile user agent and metadata', () => {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
-        const setUserAgentOverride = sinon.stub(SDK.NetworkManager.MultitargetNetworkManager.instance(), 'setUserAgentOverride');
+        const setUserAgentOverride = sinon.stub(universe.multitargetNetworkManager, 'setUserAgentOverride');
         try {
             const em = target.model(SDK.EmulationModel.EmulationModel);
             assert.exists(em);
@@ -346,6 +340,28 @@ describeWithEnvironment('DeviceModeModel', () => {
         }
         finally {
             clock.restore();
+        }
+    });
+    it('returns whether device frame can be shown for current mode', () => {
+        try {
+            assert.isFalse(deviceModeModel.canShowDeviceFrame(), 'Should be false initially');
+            const deviceWithFrame = new EmulationModel.EmulatedDevices.EmulatedDevice();
+            deviceWithFrame.vertical = { width: 400, height: 800, outlineInsets: null, outlineImage: 'test.png', hinge: null };
+            const mode = {
+                title: 'default',
+                orientation: EmulationModel.EmulatedDevices.Vertical,
+                insets: new EmulationModel.DeviceModeModel.Insets(0, 0, 0, 0),
+                image: null,
+            };
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, deviceWithFrame, mode);
+            assert.isTrue(deviceModeModel.canShowDeviceFrame(), 'Should be true when outlineImage is present');
+            const deviceWithoutFrame = new EmulationModel.EmulatedDevices.EmulatedDevice();
+            deviceWithoutFrame.vertical = { width: 400, height: 800, outlineInsets: null, outlineImage: null, hinge: null };
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, deviceWithoutFrame, mode);
+            assert.isFalse(deviceModeModel.canShowDeviceFrame(), 'Should be false when outlineImage is null');
+        }
+        finally {
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
         }
     });
 });

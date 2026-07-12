@@ -126,7 +126,7 @@ describe('DebuggerLanguagePluginManager', () => {
             const target = backend.createTarget();
             const debuggerWorkspaceBinding = sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
             const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
-            const pluginManager = new Bindings.DebuggerLanguagePlugins.DebuggerLanguagePluginManager(target.targetManager(), workspace, debuggerWorkspaceBinding);
+            const pluginManager = new Bindings.DebuggerLanguagePlugins.DebuggerLanguagePluginManager(target.targetManager(), workspace, debuggerWorkspaceBinding, target.targetManager().getConsole());
             return { target, backend, pluginManager, debuggerWorkspaceBinding };
         }
         it('returns false if no plugin is registered for the top-most frame', async () => {

@@ -142,14 +142,14 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         sinon.assert.calledOnce(action);
     });
     it('shows FRE dialog on "Tell me more" click', async () => {
-        Common.Settings.settingForTest('console-insights-enabled').set(false);
+        Common.Settings.Settings.instance().settingForTest('console-insights-enabled').set(false);
         const show = sinon.stub(PanelCommon.FreDialog, 'show');
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
         new Console.ConsoleInsightTeaser.ConsoleInsightTeaser('test-uuid', consoleViewMessage, undefined, view);
         const input = await view.nextInput;
         await input.onTellMeMoreClick(new Event('click'));
         sinon.assert.calledOnce(show);
-        Common.Settings.settingForTest('console-insights-enabled').set(true);
+        Common.Settings.Settings.instance().settingForTest('console-insights-enabled').set(true);
         show.restore();
     });
     it('disables teasers on "Dont show" change', async () => {
@@ -161,10 +161,10 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
                 checked: true,
             },
         };
-        assert.isTrue(Common.Settings.moduleSetting('console-insight-teasers-enabled').get());
+        assert.isTrue(Common.Settings.Settings.instance().moduleSetting('console-insight-teasers-enabled').get());
         input.dontShowChanged(event);
-        assert.isFalse(Common.Settings.moduleSetting('console-insight-teasers-enabled').get());
-        Common.Settings.settingForTest('console-insight-teasers-enabled').set(true);
+        assert.isFalse(Common.Settings.Settings.instance().moduleSetting('console-insight-teasers-enabled').get());
+        Common.Settings.Settings.instance().settingForTest('console-insight-teasers-enabled').set(true);
     });
     it('updates its view if teaser generation is slow', async () => {
         const consoleViewMessage = setupBuiltInAi(async function* () {

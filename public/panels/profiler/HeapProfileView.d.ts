@@ -3,14 +3,24 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
+import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { BottomUpProfileDataGridTree } from './BottomUpProfileDataGrid.js';
 import { HeapTimelineOverview, type IdsRangeChangedEvent } from './HeapTimelineOverview.js';
-import type { Formatter, ProfileDataGridNode } from './ProfileDataGrid.js';
-import { ProfileFlameChartDataProvider } from './ProfileFlameChartDataProvider.js';
+import { type Formatter, type ProfileDataGridNode, ProfileDataGridTree } from './ProfileDataGrid.js';
+import { ProfileFlameChart, ProfileFlameChartDataProvider } from './ProfileFlameChartDataProvider.js';
 import { type ProfileHeader, ProfileType } from './ProfileHeader.js';
-import { ProfileView, WritableProfileHeader } from './ProfileView.js';
-export declare class HeapProfileView extends ProfileView implements UI.SearchableView.Searchable {
+import { TopDownProfileDataGridTree } from './TopDownProfileDataGrid.js';
+import { WritableProfileHeader } from './WritableProfileHeader.js';
+export declare const maxLinkLength = 30;
+export declare const enum ViewTypes {
+    FLAME = "Flame",
+    TREE = "Tree",
+    HEAVY = "Heavy"
+}
+export declare class HeapProfileView extends UI.View.SimpleView implements UI.SearchableView.Searchable {
     profileHeader: SamplingHeapProfileHeader;
     readonly profileType: SamplingHeapProfileTypeBase;
     adjustedTotal: number;
@@ -22,6 +32,24 @@ export declare class HeapProfileView extends ProfileView implements UI.Searchabl
     totalTime: number;
     lastOrdinal: number;
     readonly timelineOverview: HeapTimelineOverview;
+    profileInternal: CPUProfile.ProfileTreeModel.ProfileTreeModel | null;
+    searchableViewInternal: UI.SearchableView.SearchableView;
+    dataGrid: DataGrid.DataGrid.DataGridImpl<unknown>;
+    viewSelectComboBox: UI.Toolbar.ToolbarComboBox;
+    focusButton: UI.Toolbar.ToolbarButton;
+    excludeButton: UI.Toolbar.ToolbarButton;
+    resetButton: UI.Toolbar.ToolbarButton;
+    readonly linkifierInternal: Components.Linkifier.Linkifier;
+    nodeFormatter: Formatter;
+    viewType: Common.Settings.Setting<ViewTypes>;
+    bottomUpProfileDataGridTree?: BottomUpProfileDataGridTree | null;
+    topDownProfileDataGridTree?: TopDownProfileDataGridTree | null;
+    currentSearchResultIndex?: number;
+    dataProvider?: ProfileFlameChartDataProvider;
+    flameChart?: ProfileFlameChart;
+    visibleView?: ProfileFlameChart | DataGrid.DataGrid.DataGridWidget<unknown>;
+    searchableElement?: ProfileDataGridTree | ProfileFlameChart;
+    profileDataGridTree?: ProfileDataGridTree;
     constructor(profileHeader: SamplingHeapProfileHeader);
     toolbarItems(): Promise<UI.Toolbar.ToolbarItem[]>;
     onIdsRangeChanged(event: Common.EventTarget.EventTargetEvent<IdsRangeChangedEvent>): void;
@@ -29,6 +57,38 @@ export declare class HeapProfileView extends ProfileView implements UI.Searchabl
     onStatsUpdate(event: Common.EventTarget.EventTargetEvent<Protocol.HeapProfiler.SamplingHeapProfile | null>): void;
     columnHeader(columnId: string): Common.UIString.LocalizedString;
     createFlameChartDataProvider(): ProfileFlameChartDataProvider;
+    static buildPopoverTable(popoverInfo: Array<{
+        title: string;
+        value: string;
+    }>): Element;
+    setProfile(profile: CPUProfile.ProfileTreeModel.ProfileTreeModel): void;
+    profile(): CPUProfile.ProfileTreeModel.ProfileTreeModel | null;
+    initialize(nodeFormatter: Formatter): void;
+    focus(): void;
+    selectRange(timeLeft: number, timeRight: number): void;
+    getBottomUpProfileDataGridTree(): ProfileDataGridTree;
+    getTopDownProfileDataGridTree(): ProfileDataGridTree;
+    populateContextMenu(contextMenu: UI.ContextMenu.ContextMenu, gridNode: DataGrid.DataGrid.DataGridNode<unknown>): void;
+    willHide(): void;
+    refresh(): void;
+    refreshVisibleData(): void;
+    searchableView(): UI.SearchableView.SearchableView;
+    supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
+    supportsRegexSearch(): boolean;
+    onSearchCanceled(): void;
+    performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;
+    jumpToNextSearchResult(): void;
+    jumpToPreviousSearchResult(): void;
+    linkifier(): Components.Linkifier.Linkifier;
+    ensureFlameChartCreated(): void;
+    onEntryInvoked(event: Common.EventTarget.EventTargetEvent<number>): Promise<void>;
+    changeView(): void;
+    nodeSelected(selected: boolean): void;
+    focusClicked(): void;
+    excludeClicked(): void;
+    resetClicked(): void;
+    sortProfile(): void;
 }
 declare const SamplingHeapProfileTypeBase_base: (new (...args: any[]) => {
     __events: Common.ObjectWrapper.ObjectWrapper<SamplingHeapProfileType.EventTypes>;

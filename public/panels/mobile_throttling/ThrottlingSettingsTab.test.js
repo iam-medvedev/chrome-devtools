@@ -5,7 +5,8 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { dispatchClickEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as MobileThrottling from './mobile_throttling.js';
 const { ThrottlingSettingsTab } = MobileThrottling.ThrottlingSettingsTab;
@@ -20,12 +21,15 @@ function makeFakeNetworkConditions(index) {
         packetReordering: false
     };
 }
-describeWithEnvironment('ThrottlingSettingsTab', () => {
+describe('ThrottlingSettingsTab', () => {
+    setupLocaleHooks();
     it('can add custom network conditions and sets the key correctly', async () => {
-        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting();
+        const universe = new TestUniverse();
+        const settings = universe.settings;
+        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting(settings);
         assert.lengthOf(customConditionsSetting.get(), 0);
         const addNewItemStub = sinon.stub(UI.ListWidget.ListWidget.prototype, 'addNewItem');
-        const widget = new ThrottlingSettingsTab();
+        const widget = new ThrottlingSettingsTab(settings);
         renderElementIntoDOM(widget);
         await raf();
         const addButton = widget.contentElement.querySelector('.add-conditions-button');
@@ -37,14 +41,16 @@ describeWithEnvironment('ThrottlingSettingsTab', () => {
         assert.strictEqual(newConditions.key, 'USER_CUSTOM_SETTING_1');
     });
     it('uses the right key when custom conditions already exist', async () => {
-        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting();
+        const universe = new TestUniverse();
+        const settings = universe.settings;
+        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting(settings);
         customConditionsSetting.set([
             makeFakeNetworkConditions(0),
             // purposefully add a larger key than the index
             makeFakeNetworkConditions(4),
         ]);
         const addNewItemStub = sinon.stub(UI.ListWidget.ListWidget.prototype, 'addNewItem');
-        const widget = new ThrottlingSettingsTab();
+        const widget = new ThrottlingSettingsTab(settings);
         renderElementIntoDOM(widget);
         await raf();
         const addButton = widget.contentElement.querySelector('.add-conditions-button');
@@ -56,12 +62,14 @@ describeWithEnvironment('ThrottlingSettingsTab', () => {
         assert.strictEqual(newConditions.key, 'USER_CUSTOM_SETTING_6');
     });
     it('still increments the key even if an old condition is deleted', async () => {
-        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting();
+        const universe = new TestUniverse();
+        const settings = universe.settings;
+        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting(settings);
         const fakeConditions1 = makeFakeNetworkConditions(0);
         const fakeConditions2 = makeFakeNetworkConditions(1);
         customConditionsSetting.set([fakeConditions1, fakeConditions2]);
         const addNewItemStub = sinon.stub(UI.ListWidget.ListWidget.prototype, 'addNewItem');
-        const widget = new ThrottlingSettingsTab();
+        const widget = new ThrottlingSettingsTab(settings);
         renderElementIntoDOM(widget);
         await raf();
         // Before we add a new one, delete an old one.
@@ -77,12 +85,14 @@ describeWithEnvironment('ThrottlingSettingsTab', () => {
         assert.strictEqual(newConditions.key, 'USER_CUSTOM_SETTING_3');
     });
     it('can handle double digit indexes', async () => {
-        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting();
+        const universe = new TestUniverse();
+        const settings = universe.settings;
+        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting(settings);
         const fakeConditions1 = makeFakeNetworkConditions(0);
         const fakeConditions2 = makeFakeNetworkConditions(9);
         customConditionsSetting.set([fakeConditions1, fakeConditions2]);
         const addNewItemStub = sinon.stub(UI.ListWidget.ListWidget.prototype, 'addNewItem');
-        const widget = new ThrottlingSettingsTab();
+        const widget = new ThrottlingSettingsTab(settings);
         renderElementIntoDOM(widget);
         await raf();
         const addButton = widget.contentElement.querySelector('.add-conditions-button');
@@ -103,9 +113,11 @@ describeWithEnvironment('ThrottlingSettingsTab', () => {
             'Packet Queue Length',
             'Packet Reordering',
         ];
-        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting();
+        const universe = new TestUniverse();
+        const settings = universe.settings;
+        const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting(settings);
         customConditionsSetting.set([makeFakeNetworkConditions(0)]);
-        const widget = new ThrottlingSettingsTab();
+        const widget = new ThrottlingSettingsTab(settings);
         renderElementIntoDOM(widget);
         widget.wasShown();
         await raf();

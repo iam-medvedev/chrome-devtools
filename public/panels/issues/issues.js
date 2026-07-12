@@ -177,7 +177,7 @@ var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
         void frame2.highlight();
       }
     };
-    frameCell.onmouseleave = () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    frameCell.onmouseleave = () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
     return frameCell;
   }
   createRequestCell(affectedRequest, options = {}) {
@@ -1450,7 +1450,7 @@ var AffectedDirectivesView = class extends AffectedResourcesView {
         }
       };
       const onElementRevealIconMouseLeave = () => {
-        SDK2.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+        SDK2.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK2.TargetManager.TargetManager.instance());
       };
       elementsPanelLinkComponent.data = { onElementRevealIconClick, onElementRevealIconMouseEnter, onElementRevealIconMouseLeave };
     }

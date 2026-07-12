@@ -156,38 +156,38 @@ var syncSection_css_default = `/*
 // gen/front_end/panels/settings/components/SyncSection.js
 var UIStrings = {
   /**
-   * @description Text shown to the user in the Settings UI. 'This setting' refers
+   * @description Text shown to the user in Settings. ‘This setting’ refers
    * to a checkbox that is disabled.
    */
   syncDisabled: "To turn this setting on, you must enable Chrome sync.",
   /**
-   * @description Text shown to the user in the Settings UI. Explains why the checkbox
-   * for saving DevTools settings to the user's Google account is inactive.
+   * @description Text shown to the user in Settings. Explains why the checkbox
+   * for saving DevTools settings to the user’s Google account is inactive.
    */
   preferencesSyncDisabled: "You need to first enable saving `Chrome` settings in your `Google` account.",
   /**
-   * @description Label for the account email address. Shown in the DevTools Settings UI in
+   * @description Label for the account email address. Shown in DevTools Settings in
    * front of the email address currently used for Chrome Sync.
    */
   signedIn: "Signed into Chrome as:",
   /**
-   * @description Label for the account settings. Shown in the DevTools Settings UI in
-   * case the user is not logged in to Chrome.
+   * @description Label for the account settings. Shown in DevTools Settings when
+   * the user is not logged in to Chrome.
    */
-  notSignedIn: "You're not signed into Chrome.",
+  notSignedIn: "You\u2019re not signed into Chrome.",
   /**
    * @description Label for the Google Developer Program profile status that corresponds to
-   * standard plan (No subscription).
+   * the standard plan (no subscription).
    */
   gdpStandardPlan: "Standard plan",
   /**
    * @description Label for the Google Developer Program subscription status that corresponds to
-   * `PREMIUM_ANNUAL` plan.
+   * the `PREMIUM_ANNUAL` plan.
    */
   gdpPremiumSubscription: "Premium",
   /**
    * @description Label for the Google Developer Program subscription status that corresponds to
-   * `PRO_ANNUAL` plan.
+   * the `PRO_ANNUAL` plan.
    */
   gdpProSubscription: "Pro",
   /**
@@ -196,7 +196,7 @@ var UIStrings = {
    */
   gdpUnknownSubscription: "Unknown plan",
   /**
-   * @description Label for Sign-Up button for the Google Developer Program profiles.
+   * @description Label for sign-up button for Google Developer Program profiles.
    */
   signUp: "Sign up",
   /**
@@ -204,7 +204,7 @@ var UIStrings = {
    */
   viewProfile: "View profile",
   /**
-   * @description Text for tooltip shown on hovering over "Relevant Data" in the disclaimer text for AI code completion.
+   * @description Text for tooltip shown on hovering over “Relevant data” in the disclaimer text for GDP badges.
    */
   tooltipDisclaimerText: "When you qualify for a badge, the badge\u2019s identifier and the type of activity you did to earn it are sent to Google",
   /**
@@ -364,7 +364,7 @@ var SyncSection = class extends UI.Widget.Widget {
     super(element);
     this.#view = view;
     this.#receiveBadgesSetting = Common.Settings.Settings.instance().moduleSetting("receive-gdp-badges");
-    this.#syncSetting = Common.Settings.moduleSetting("sync-preferences");
+    this.#syncSetting = Common.Settings.Settings.instance().moduleSetting("sync-preferences");
   }
   wasShown() {
     super.wasShown();

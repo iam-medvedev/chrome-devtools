@@ -167,6 +167,12 @@ describe('NetworkRequest', () => {
         request.originalResponseHeaders = [{ name: 'duplicate', value: 'first' }, { name: 'duplicate', value: 'second' }];
         assert.isFalse(request.hasOverriddenHeaders());
     });
+    it('determines whether the request is a preload request', () => {
+        const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', urlString `url`, urlString `documentURL`, null);
+        assert.isFalse(request.isPreloadRequest());
+        const preloadRequest = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', urlString `url`, urlString `documentURL`, { type: "preload" /* Protocol.Network.InitiatorType.Preload */ });
+        assert.isTrue(preloadRequest.isPreloadRequest());
+    });
 });
 describeWithEnvironment('NetworkRequest (MockConnection)', () => {
     let networkManagerForRequestStub;
@@ -437,6 +443,50 @@ describeWithEnvironment('requestStreamingContent', () => {
         assert.isFalse(TextUtils.StreamingContentData.isError(maybeStreamingContent));
         const streamingContent = maybeStreamingContent;
         assert.strictEqual(streamingContent.mimeType, 'text/html');
+    });
+    describe('WebSocketFrame', () => {
+        it('adds sent and received frames and dispatches WEBSOCKET_FRAME_ADDED event', () => {
+            const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', urlString `ws://example.com`, urlString `documentURL`, null);
+            const addedFrames = [];
+            request.addEventListener(SDK.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, event => {
+                addedFrames.push(event.data);
+            });
+            request.addProtocolFrame({
+                opcode: 1,
+                mask: true,
+                payloadData: 'send-message',
+            }, 1, true);
+            request.addProtocolFrame({
+                opcode: 1,
+                mask: false,
+                payloadData: 'receive-message',
+            }, 2, false);
+            request.addProtocolFrameError('websocket error', 3);
+            assert.lengthOf(addedFrames, 3);
+            assert.deepEqual(request.frames(), [
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                    text: 'send-message',
+                    time: request.pseudoWallTime(1),
+                    opCode: 1,
+                    mask: true,
+                },
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Receive,
+                    text: 'receive-message',
+                    time: request.pseudoWallTime(2),
+                    opCode: 1,
+                    mask: false,
+                },
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Error,
+                    text: 'websocket error',
+                    time: request.pseudoWallTime(3),
+                    opCode: -1,
+                    mask: false,
+                },
+            ]);
+        });
     });
 });
 //# sourceMappingURL=NetworkRequest.test.js.map

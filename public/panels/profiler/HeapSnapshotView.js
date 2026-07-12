@@ -9,6 +9,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -721,13 +722,18 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         // Then perform the search again with the same query and callback.
         this.performSearch(this.currentSearch, false);
     }
-    static ALWAYS_AVAILABLE_FILTERS = [
-        { uiName: i18nString(UIStrings.duplicatedStrings), filterName: 'duplicatedStrings' },
-        { uiName: i18nString(UIStrings.objectsRetainedByDetachedDomNodes), filterName: 'objectsRetainedByDetachedDomNodes' },
-        { uiName: i18nString(UIStrings.objectsRetainedByContexts), filterName: 'objectsRetainedByContexts' },
-        { uiName: i18nString(UIStrings.objectsRetainedByConsole), filterName: 'objectsRetainedByConsole' },
-        { uiName: i18nString(UIStrings.objectsRetainedByEventHandlers), filterName: 'objectsRetainedByEventHandlers' },
-    ];
+    static get alwaysAvailableFilters() {
+        return [
+            { uiName: i18nString(UIStrings.duplicatedStrings), filterName: 'duplicatedStrings' },
+            {
+                uiName: i18nString(UIStrings.objectsRetainedByDetachedDomNodes),
+                filterName: 'objectsRetainedByDetachedDomNodes'
+            },
+            { uiName: i18nString(UIStrings.objectsRetainedByContexts), filterName: 'objectsRetainedByContexts' },
+            { uiName: i18nString(UIStrings.objectsRetainedByConsole), filterName: 'objectsRetainedByConsole' },
+            { uiName: i18nString(UIStrings.objectsRetainedByEventHandlers), filterName: 'objectsRetainedByEventHandlers' },
+        ];
+    }
     changeFilter() {
         const selectedOption = this.#filterOptions[this.filterSelect.selectedIndex()];
         const profileIndex = selectedOption?.profileIndex ?? -1;
@@ -952,7 +958,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
             createOption({ uiName: title, profileIndex: i });
         }
         createSeparator();
-        for (const filter of HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS) {
+        for (const filter of HeapSnapshotView.alwaysAvailableFilters) {
             createOption({ uiName: filter.uiName, profileIndex: -1, filterName: filter.filterName });
         }
         if (this.#nativeContextFilters.length > 0) {
@@ -1551,7 +1557,7 @@ export class HeapProfileHeader extends ProfileHeader {
     }
     async saveToFile() {
         await this.loadPromise;
-        const fileOutputStream = new Bindings.FileUtils.FileOutputStream();
+        const fileOutputStream = new Bindings.FileUtils.FileOutputStream(Workspace.FileManager.FileManager.instance());
         this.fileName = this.fileName ||
             'Heap-' + Platform.DateUtilities.toISO8601Compact(new Date()) + this.profileType().fileExtension();
         const onOpen = async (accepted) => {

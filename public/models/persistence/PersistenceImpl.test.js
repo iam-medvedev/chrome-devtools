@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import * as Common from '../../core/common/common.js';
+import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { createFileSystemFileForPersistenceTests } from '../../testing/PersistenceHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { createContentProviderUISourceCode, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
-import * as Bindings from '../bindings/bindings.js';
 import * as Breakpoints from '../breakpoints/breakpoints.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Workspace from '../workspace/workspace.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithEnvironment('PersistenceImpl', () => {
+describe('PersistenceImpl', () => {
+    setupLocaleHooks();
+    setupRuntimeHooks();
     const FILE_SYSTEM_BREAK_ID = 'BREAK_ID';
     const FILE_SYSTEM_SCRIPT_ID = 'FILE_SYSTEM_SCRIPT';
     const NETWORK_BREAKPOINT_ID = 'BREAKPOINT_ID';
@@ -36,26 +38,11 @@ describeWithEnvironment('PersistenceImpl', () => {
     };
     beforeEach(() => {
         backend = new MockDebuggerBackend();
-        target = createTarget({ connection: backend.cdpConnection });
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
-        breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({
-            forceNew: true,
-            targetManager,
-            workspace,
-            debuggerWorkspaceBinding,
-            settings: Common.Settings.Settings.instance()
-        });
-        Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(backend.universe.targetManager);
+        breakpointManager = backend.universe.breakpointManager;
+        // Eagerly instantiate persistence so it registers listeners on the workspace before we add files.
+        void backend.universe.persistence;
+        target = backend.createTarget();
     });
     async function setBreakpointOnFileSystem(fileSystemUiSourceCode, breakpointLine) {
         const fileSystemBreakpointResponse = backend.responderToBreakpointByUrlRequest(fileSystemUiSourceCode.url(), breakpointLine)({
@@ -76,7 +63,7 @@ describeWithEnvironment('PersistenceImpl', () => {
     }
     async function attachNetworkScript(breakpointLine) {
         const script = await backend.addScript(target, SCRIPT_DESCRIPTION, null);
-        const uiSourceCode = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiSourceCodeForScript(script);
+        const uiSourceCode = backend.universe.debuggerWorkspaceBinding.uiSourceCodeForScript(script);
         assert.exists(uiSourceCode);
         // Set the breakpoint response for our upcoming request to set the breakpoint on the network file.
         await backend.responderToBreakpointByUrlRequest(script.sourceURL, breakpointLine)({
@@ -104,7 +91,7 @@ describeWithEnvironment('PersistenceImpl', () => {
             fileSystemPath,
             fileSystemFileUrl,
             type: Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT
-        }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target);
+        }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target, backend.universe);
         const breakpointLine = 0;
         // Set the breakpoint response for our upcoming request.
         await setBreakpointOnFileSystem(fileSystemUiSourceCode, breakpointLine);
@@ -124,7 +111,7 @@ describeWithEnvironment('PersistenceImpl', () => {
             fileSystemPath,
             fileSystemFileUrl,
             type: Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT
-        }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target);
+        }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target, backend.universe);
         const breakpointLine = 0;
         // Set the breakpoint response for our upcoming request.
         await setBreakpointOnFileSystem(fileSystemUiSourceCode, breakpointLine);
@@ -136,7 +123,7 @@ describeWithEnvironment('PersistenceImpl', () => {
         assertBreakLocationUiSourceCodes([networkUiSourceCode]);
         // Prepare to remove the binding. This will cause the breakpoint from the network to be copied
         // over to the file system uiSourceCode.
-        const persistence = Persistence.Persistence.PersistenceImpl.instance();
+        const persistence = backend.universe.persistence;
         const binding = persistence.binding(fileSystemUiSourceCode);
         assert.exists(binding);
         // Set the breakpoint response for our upcoming request on the file system.
@@ -167,12 +154,13 @@ describeWithEnvironment('PersistenceImpl', () => {
             mimeType: 'text/javascript',
             projectType: Workspace.Workspace.projectTypes.Network,
             metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, origContent.length),
+            universe: backend.universe,
         });
         // Modify the content of the network UISourceCode.
         const content = origContent.replace(/foo/g, 'bar');
         networkUISourceCode.addRevision(content);
         // Add a filesystem version of 'script.js' with the original content.
-        const mappingPromise = Persistence.Persistence.PersistenceImpl.instance().once(Persistence.Persistence.Events.BindingCreated);
+        const mappingPromise = backend.universe.persistence.once(Persistence.Persistence.Events.BindingCreated);
         const localUrl = urlString `file:///var/www/script.js`;
         const { uiSourceCode } = createFileSystemUISourceCode({
             url: localUrl,
@@ -180,6 +168,7 @@ describeWithEnvironment('PersistenceImpl', () => {
             content: origContent,
             autoMapping: true,
             metadata: new Workspace.UISourceCode.UISourceCodeMetadata(null, origContent.length),
+            universe: backend.universe,
         });
         const { network, fileSystem } = await mappingPromise;
         assert.strictEqual(network, networkUISourceCode);

@@ -4,7 +4,9 @@ import * as Foundation from '../../foundation/foundation.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class MainImpl {
     #private;
-    constructor();
+    constructor(opts?: {
+        supportsEmulation: boolean;
+    });
     static time(label: string): void;
     static timeEnd(label: string): void;
     static get universeForTest(): Foundation.Universe.Universe;
@@ -26,17 +28,11 @@ export declare class SearchActionDelegate implements UI.ActionRegistration.Actio
 export declare class MainMenuItem implements UI.Toolbar.Provider {
     #private;
     constructor();
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): MainMenuItem;
     item(): UI.Toolbar.ToolbarItem | null;
 }
 export declare class SettingsButtonProvider implements UI.Toolbar.Provider {
     #private;
-    private constructor();
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): SettingsButtonProvider;
+    constructor();
     item(): UI.Toolbar.ToolbarItem | null;
 }
 export declare class PauseListener {

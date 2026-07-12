@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 import './components.js';
 import { assert } from 'chai';
-import { dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import * as Models from '../models/models.js';
 import { installMocksForRecordingPlayer } from '../testing/RecorderHelpers.js';
+import * as Components from './components.js';
 function getStepEditedPromise(editor) {
-    return getEventPromise(editor, 'stepedited')
+    return getEventPromise(editor.element, 'stepedited')
         .then(({ data }) => data);
 }
 const triggerMicroTaskQueue = async (n = 1) => {
@@ -20,14 +21,15 @@ const triggerMicroTaskQueue = async (n = 1) => {
 describe('StepEditor', () => {
     setupLocaleHooks();
     async function renderEditor(step) {
-        const editor = document.createElement('devtools-recorder-step-editor');
+        const editor = new Components.StepEditor.StepEditor();
         editor.step = structuredClone(step);
         renderElementIntoDOM(editor, {});
+        await triggerMicroTaskQueue();
         await editor.updateComplete;
         return editor;
     }
     function getInputByAttribute(editor, attribute) {
-        const input = editor.renderRoot.querySelector(`.attribute[data-attribute="${attribute}"] devtools-suggestion-input`);
+        const input = editor.contentElement.querySelector(`.attribute[data-attribute="${attribute}"] devtools-suggestion-input`);
         if (!input) {
             throw new Error(`${attribute} devtools-suggestion-input not found`);
         }
@@ -35,34 +37,34 @@ describe('StepEditor', () => {
     }
     function getAllInputValues(editor) {
         const result = [];
-        const inputs = editor.renderRoot.querySelectorAll('devtools-suggestion-input');
+        const inputs = editor.contentElement.querySelectorAll('devtools-suggestion-input');
         for (const input of inputs) {
             result.push(input.value);
         }
         return result;
     }
     async function addOptionalField(editor, attribute) {
-        const button = editor.renderRoot.querySelector(`devtools-button.add-row[data-attribute="${attribute}"]`);
+        const button = editor.contentElement.querySelector(`devtools-button.add-row[data-attribute="${attribute}"]`);
         assert.instanceOf(button, HTMLElement);
         button.click();
         await triggerMicroTaskQueue();
         await editor.updateComplete;
     }
     async function deleteOptionalField(editor, attribute) {
-        const button = editor.renderRoot.querySelector(`devtools-button.delete-row[data-attribute="${attribute}"]`);
+        const button = editor.contentElement.querySelector(`devtools-button.delete-row[data-attribute="${attribute}"]`);
         assert.instanceOf(button, HTMLElement);
         button.click();
         await triggerMicroTaskQueue();
         await editor.updateComplete;
     }
     async function clickFrameLevelButton(editor, className) {
-        const button = editor.renderRoot.querySelector(`.attribute[data-attribute="frame"] devtools-button${className}`);
+        const button = editor.contentElement.querySelector(`.attribute[data-attribute="frame"] devtools-button${className}`);
         assert.instanceOf(button, HTMLElement);
         button.click();
         await editor.updateComplete;
     }
     async function clickSelectorLevelButton(editor, path, className) {
-        const button = editor.renderRoot.querySelector(`[data-selector-path="${path.join('.')}"] devtools-button${className}`);
+        const button = editor.contentElement.querySelector(`[data-selector-path="${path.join('.')}"] devtools-button${className}`);
         assert.instanceOf(button, HTMLElement);
         button.click();
         await editor.updateComplete;
@@ -83,6 +85,15 @@ describe('StepEditor', () => {
     }
     beforeEach(() => {
         installMocksForRecordingPlayer();
+    });
+    it('should render correctly (screenshot)', async () => {
+        await renderEditor({
+            type: Models.Schema.StepType.Click,
+            selectors: [['.cls']],
+            offsetX: 1,
+            offsetY: 1,
+        });
+        await assertScreenshot('recorder/StepEditor_click.png');
     });
     it('should edit step type', async () => {
         const editor = await renderEditor({
@@ -107,6 +118,7 @@ describe('StepEditor', () => {
             selectors: ['.cls'],
             value: 'Value',
         });
+        await editor.updateComplete;
         assert.deepEqual(getAllInputValues(editor), [
             'change',
             '.cls',
@@ -138,6 +150,7 @@ describe('StepEditor', () => {
             offsetX: 1,
             offsetY: 1,
         });
+        await editor.updateComplete;
         assert.deepEqual(getAllInputValues(editor), [
             'click',
             '.cls',
@@ -299,7 +312,7 @@ describe('StepEditor', () => {
                 frame: [0, 0],
             });
             assert.deepEqual(getAllInputValues(editor), ['scroll', '0', '0']);
-            assert.isTrue(editor.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="frame.1"]'));
+            assert.isTrue(editor.element.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="frame.1"]'));
         }
         {
             const step = getStepEditedPromise(editor);
@@ -309,7 +322,7 @@ describe('StepEditor', () => {
                 frame: [0],
             });
             assert.deepEqual(getAllInputValues(editor), ['scroll', '0']);
-            assert.isTrue(editor.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="frame.0"]'));
+            assert.isTrue(editor.element.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="frame.0"]'));
         }
     });
     it('should add/remove selector parts', async () => {
@@ -329,7 +342,7 @@ describe('StepEditor', () => {
                 '.part1',
                 '.cls',
             ]);
-            assert.isTrue(editor.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="selectors.0.1"]'));
+            assert.isTrue(editor.element.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="selectors.0.1"]'));
         }
         {
             const step = getStepEditedPromise(editor);
@@ -339,7 +352,7 @@ describe('StepEditor', () => {
                 selectors: ['.cls'],
             });
             assert.deepEqual(getAllInputValues(editor), ['scroll', '.cls']);
-            assert.isTrue(editor.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="selectors.0.0"]'));
+            assert.isTrue(editor.element.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="selectors.0.0"]'));
         }
     });
     it('should add/remove selectors', async () => {
@@ -359,7 +372,7 @@ describe('StepEditor', () => {
                 '.part1',
                 '.cls',
             ]);
-            assert.isTrue(editor.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="selectors.1.0"]'));
+            assert.isTrue(editor.element.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="selectors.1.0"]'));
         }
         {
             const step = getStepEditedPromise(editor);
@@ -369,7 +382,7 @@ describe('StepEditor', () => {
                 selectors: ['.part1'],
             });
             assert.deepEqual(getAllInputValues(editor), ['scroll', '.part1']);
-            assert.isTrue(editor.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="selectors.0.0"]'));
+            assert.isTrue(editor.element.shadowRoot?.activeElement?.matches('devtools-suggestion-input[data-path="selectors.0.0"]'));
         }
     });
     it('should become readonly if disabled', async () => {
@@ -379,7 +392,7 @@ describe('StepEditor', () => {
         });
         editor.disabled = true;
         await editor.updateComplete;
-        for (const input of editor.renderRoot.querySelectorAll('devtools-suggestion-input')) {
+        for (const input of editor.contentElement.querySelectorAll('devtools-suggestion-input')) {
             assert.isTrue(input.disabled);
         }
     });
@@ -459,12 +472,13 @@ describe('StepEditor', () => {
         });
         {
             const step = getStepEditedPromise(editor);
-            editor.renderRoot.querySelectorAll('.add-attribute-assertion')[0]?.click();
+            editor.contentElement.querySelectorAll('.add-attribute-assertion')[0]?.click();
             assert.deepEqual(await step, {
                 type: Models.Schema.StepType.WaitForElement,
                 selectors: ['.part1'],
                 attributes: { a: 'b', attribute: 'value' },
             });
+            await editor.updateComplete;
             assert.deepEqual(getAllInputValues(editor), [
                 'waitForElement',
                 '.part1',
@@ -476,12 +490,13 @@ describe('StepEditor', () => {
         }
         {
             const step = getStepEditedPromise(editor);
-            editor.renderRoot.querySelectorAll('.remove-attribute-assertion')[1]?.click();
+            editor.contentElement.querySelectorAll('.remove-attribute-assertion')[1]?.click();
             assert.deepEqual(await step, {
                 type: Models.Schema.StepType.WaitForElement,
                 selectors: ['.part1'],
                 attributes: { a: 'b' },
             });
+            await editor.updateComplete;
             assert.deepEqual(getAllInputValues(editor), [
                 'waitForElement',
                 '.part1',

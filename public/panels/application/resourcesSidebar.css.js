@@ -81,4 +81,9 @@ devtools-icon.navigator-font-tree-item {
   display: inline-flex;
 }
 
+.tree-outline li.ads-tree-element .trailing-icons {
+  margin-left: auto;
+  margin-right: var(--sys-size-2);
+}
+
 /*# sourceURL=${import.meta.resolve('./resourcesSidebar.css')} */`;

@@ -198,7 +198,7 @@ var releaseNoteView_css_default = `/*
 // gen/front_end/panels/whats_new/ReleaseNoteView.js
 var UIStrings = {
   /**
-   * @description Text that is usually a hyperlink to more documentation
+   * @description Text on a button in the What's new tool that opens a link with more documentation about new features.
    */
   seeFeatures: "See all new features"
 };

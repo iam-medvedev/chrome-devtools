@@ -283,6 +283,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     directSocketInfo;
     #directSocketChunks = [];
     #isAdRelated;
+    #isLinkPreload;
     #appliedNetworkConditionsId;
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         super();
@@ -295,6 +296,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#initiator = initiator;
         this.#hasUserGesture = hasUserGesture;
         this.#isAdRelated = false;
+        this.#isLinkPreload = false;
     }
     static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
@@ -721,6 +723,10 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     isPreflightRequest() {
         return (this.#initiator !== null && this.#initiator !== undefined &&
             this.#initiator.type === "preflight" /* Protocol.Network.InitiatorType.Preflight */);
+    }
+    isPreloadRequest() {
+        return (this.#initiator !== null && this.#initiator !== undefined &&
+            this.#initiator.type === "preload" /* Protocol.Network.InitiatorType.Preload */);
     }
     redirectDestination() {
         return this.#redirectDestination;
@@ -1404,6 +1410,12 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     isAdRelated() {
         return this.#isAdRelated;
+    }
+    setIsLinkPreload(isLinkPreload) {
+        this.#isLinkPreload = isLinkPreload;
+    }
+    isLinkPreload() {
+        return this.#isLinkPreload;
     }
     getAssociatedData(key) {
         return this.#associatedData.get(key) || null;

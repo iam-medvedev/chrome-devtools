@@ -45,7 +45,7 @@ import { ProfileLauncherView } from './ProfileLauncherView.js';
 import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
 import profilesPanelStyles from './profilesPanel.css.js';
 import profilesSidebarTreeStyles from './profilesSidebarTree.css.js';
-import { WritableProfileHeader } from './ProfileView.js';
+import { WritableProfileHeader } from './WritableProfileHeader.js';
 const UIStrings = {
     /**
      * @description Text in Profiles Panel of a profiler tool
@@ -114,12 +114,18 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     typeIdToSidebarSection;
     fileSelectorElement;
     selectedProfileType;
-    static registry = {
-        heapSnapshotProfileType: new HeapSnapshotProfileType(),
-        trackingHeapSnapshotProfileType: new TrackingHeapSnapshotProfileType(),
-        samplingHeapProfileType: new SamplingHeapProfileType(),
-        detachedElementProfileType: new DetachedElementsProfileType(),
-    };
+    static #registry = null;
+    static get registry() {
+        if (!ProfilesPanel.#registry) {
+            ProfilesPanel.#registry = {
+                heapSnapshotProfileType: new HeapSnapshotProfileType(),
+                trackingHeapSnapshotProfileType: new TrackingHeapSnapshotProfileType(),
+                samplingHeapProfileType: new SamplingHeapProfileType(),
+                detachedElementProfileType: new DetachedElementsProfileType(),
+            };
+        }
+        return ProfilesPanel.#registry;
+    }
     constructor(name, recordingActionId) {
         super(name);
         this.registerRequiredCSS(objectValueStyles, profilesPanelStyles, heapProfilerStyles);

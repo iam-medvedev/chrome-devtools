@@ -24,6 +24,7 @@
       <include file="Images/accelerometer-top.png" name="IMAGES_ACCELEROMETER_TOP_PNG" resource_path="Images/accelerometer-top.png" type="BINDATA" compress="false"/>
       <include file="Images/account-tree.svg" name="IMAGES_ACCOUNT_TREE_SVG" resource_path="Images/account-tree.svg" type="BINDATA" compress="false"/>
       <include file="Images/add-photo.svg" name="IMAGES_ADD_PHOTO_SVG" resource_path="Images/add-photo.svg" type="BINDATA" compress="false"/>
+      <include file="Images/ads.svg" name="IMAGES_ADS_SVG" resource_path="Images/ads.svg" type="BINDATA" compress="false"/>
       <include file="Images/ai-explorer-badge.svg" name="IMAGES_AI_EXPLORER_BADGE_SVG" resource_path="Images/ai-explorer-badge.svg" type="BINDATA" compress="false"/>
       <include file="Images/align-content-center.svg" name="IMAGES_ALIGN_CONTENT_CENTER_SVG" resource_path="Images/align-content-center.svg" type="BINDATA" compress="false"/>
       <include file="Images/align-content-end.svg" name="IMAGES_ALIGN_CONTENT_END_SVG" resource_path="Images/align-content-end.svg" type="BINDATA" compress="false"/>

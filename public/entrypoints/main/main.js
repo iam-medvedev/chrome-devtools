@@ -287,16 +287,16 @@ var str_ = i18n.i18n.registerUIStrings("entrypoints/main/GlobalAiButton.ts", UIS
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS = 5e3;
 var PROMOTION_END_DATE = /* @__PURE__ */ new Date("2026-09-30");
-function getClickCountSetting() {
-  return Common.Settings.Settings.instance().createSetting(
+function getClickCountSetting(settings) {
+  return settings.createSetting(
     "global-ai-button-click-count",
     0,
     "Synced"
     /* Common.Settings.SettingStorageType.SYNCED */
   );
 }
-function incrementClickCountSetting() {
-  const setting = getClickCountSetting();
+function incrementClickCountSetting(settings) {
+  const setting = getClickCountSetting(settings);
   setting.set(setting.get() + 1);
 }
 var GlobalAiButtonState;
@@ -327,9 +327,15 @@ var GlobalAiButton = class extends UI.Widget.Widget {
   #buttonState = GlobalAiButtonState.DEFAULT;
   #mouseOnMainToolbar = false;
   #returnToDefaultStateTimeout;
-  constructor(element, view) {
+  #settings;
+  #inspectorView;
+  #viewManager;
+  constructor(element, view, settings = Common.Settings.Settings.instance(), inspectorView = UI.InspectorView.InspectorView.instance(), viewManager = UI.ViewManager.ViewManager.instance()) {
     super(element);
     this.#view = view ?? DEFAULT_VIEW;
+    this.#settings = settings;
+    this.#inspectorView = inspectorView;
+    this.#viewManager = viewManager;
     this.requestUpdate();
     if (this.#shouldTriggerPromotion()) {
       this.#triggerPromotion();
@@ -349,12 +355,12 @@ var GlobalAiButton = class extends UI.Widget.Widget {
     this.#mouseOnMainToolbar = false;
   };
   #addHoverEventListeners() {
-    UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().addEventListener("mouseenter", this.#handleMainToolbarMouseEnter);
-    UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().addEventListener("mouseleave", this.#handleMainToolbarMouseLeave);
+    this.#inspectorView.tabbedPane.headerElement().addEventListener("mouseenter", this.#handleMainToolbarMouseEnter);
+    this.#inspectorView.tabbedPane.headerElement().addEventListener("mouseleave", this.#handleMainToolbarMouseLeave);
   }
   #removeHoverEventListeners() {
-    UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().removeEventListener("mouseenter", this.#handleMainToolbarMouseEnter);
-    UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().removeEventListener("mouseleave", this.#handleMainToolbarMouseLeave);
+    this.#inspectorView.tabbedPane.headerElement().removeEventListener("mouseenter", this.#handleMainToolbarMouseEnter);
+    this.#inspectorView.tabbedPane.headerElement().removeEventListener("mouseleave", this.#handleMainToolbarMouseLeave);
   }
   // We only want to enable promotion when:
   // * The flag is enabled,
@@ -363,7 +369,7 @@ var GlobalAiButton = class extends UI.Widget.Widget {
   #shouldTriggerPromotion() {
     const isFlagEnabled = Boolean(Root.Runtime.hostConfig.devToolsGlobalAiButton?.promotionEnabled);
     const isBeforeEndDate = /* @__PURE__ */ new Date() < PROMOTION_END_DATE;
-    return isFlagEnabled && isBeforeEndDate && getClickCountSetting().get() < 2;
+    return isFlagEnabled && isBeforeEndDate && getClickCountSetting(this.#settings).get() < 2;
   }
   #triggerPromotion() {
     this.#buttonState = GlobalAiButtonState.PROMOTION;
@@ -386,16 +392,16 @@ var GlobalAiButton = class extends UI.Widget.Widget {
     }, DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS);
   }
   #onClick() {
-    UI.ViewManager.ViewManager.instance().showViewInLocation("freestyler", "drawer-view");
-    incrementClickCountSetting();
-    const hasExplicitUserPreference = UI.InspectorView.InspectorView.instance().isUserExplicitlyUpdatedDrawerOrientation();
+    this.#viewManager.showViewInLocation("freestyler", "drawer-view");
+    incrementClickCountSetting(this.#settings);
+    const hasExplicitUserPreference = this.#inspectorView.isUserExplicitlyUpdatedDrawerOrientation();
     const isVerticalDrawerFeatureEnabled = Boolean(Root.Runtime.hostConfig.devToolsFlexibleLayout?.verticalDrawerEnabled);
     if (isVerticalDrawerFeatureEnabled && !hasExplicitUserPreference) {
-      UI.InspectorView.InspectorView.instance().showDrawer({
+      this.#inspectorView.showDrawer({
         focus: true,
         hasTargetDrawer: false
       });
-      UI.InspectorView.InspectorView.instance().toggleDrawerOrientation({ force: UI.InspectorView.DrawerOrientation.VERTICAL });
+      this.#inspectorView.toggleDrawerOrientation({ force: UI.InspectorView.DrawerOrientation.VERTICAL });
     }
   }
   performUpdate() {
@@ -405,25 +411,17 @@ var GlobalAiButton = class extends UI.Widget.Widget {
     }, void 0, this.contentElement);
   }
 };
-var globalAiButtonToolbarProviderInstance;
-var GlobalAiButtonToolbarProvider = class _GlobalAiButtonToolbarProvider {
+var GlobalAiButtonToolbarProvider = class {
   #toolbarItem;
   #widgetElement;
-  constructor() {
+  constructor(settings = Common.Settings.Settings.instance(), inspectorView = UI.InspectorView.InspectorView.instance(), viewManager = UI.ViewManager.ViewManager.instance()) {
     this.#widgetElement = document.createElement("devtools-widget");
-    new GlobalAiButton(this.#widgetElement);
+    new GlobalAiButton(this.#widgetElement, void 0, settings, inspectorView, viewManager);
     this.#toolbarItem = new UI.Toolbar.ToolbarItemWithCompactLayout(this.#widgetElement);
     this.#toolbarItem.setVisible(false);
   }
   item() {
     return this.#toolbarItem;
-  }
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!globalAiButtonToolbarProviderInstance || forceNew) {
-      globalAiButtonToolbarProviderInstance = new _GlobalAiButtonToolbarProvider();
-    }
-    return globalAiButtonToolbarProviderInstance;
   }
 };
 
@@ -452,7 +450,6 @@ import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as CrUXManager from "./../../models/crux-manager/crux-manager.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
-import * as LiveMetrics from "./../../models/live-metrics/live-metrics.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as PanelCommon from "./../../panels/common/common.js";
@@ -557,8 +554,10 @@ var MainImpl = class {
   #readyForTestPromise = Promise.withResolvers();
   #veStartPromise;
   #universe;
-  constructor() {
+  #supportsEmulation = false;
+  constructor(opts) {
     _a.instanceForTest = this;
+    this.#supportsEmulation = opts?.supportsEmulation ?? false;
     void this.#loaded();
   }
   static time(label) {
@@ -599,7 +598,8 @@ var MainImpl = class {
         runSettingsMigration: !Host.InspectorFrontendHost.isUnderTest()
       },
       hostConfig: Root2.Runtime.hostConfig,
-      inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance
+      inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
+      supportsEmulation: this.#supportsEmulation
     };
     this.#universe = new Foundation.Universe.Universe(creationOptions);
     Root2.DevToolsContext.setGlobalInstance(this.#universe.context);
@@ -771,8 +771,6 @@ var MainImpl = class {
     UI2.DockController.DockController.instance({ forceNew: true, canDock });
     const targetManager = SDK2.TargetManager.TargetManager.instance();
     targetManager.addEventListener("SuspendStateChanged", this.#onSuspendStateChanged.bind(this));
-    Workspace.FileManager.FileManager.instance({ forceNew: true });
-    Bindings.NetworkProject.NetworkProjectManager.instance();
     new Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager();
     targetManager.setScopeTarget(targetManager.primaryPageTarget());
     UI2.Context.Context.instance().addFlavorChangeListener(SDK2.Target.Target, ({ data }) => {
@@ -780,14 +778,13 @@ var MainImpl = class {
       targetManager.setScopeTarget(outermostTarget);
     });
     self.Extensions.extensionServer = PanelCommon.ExtensionServer.ExtensionServer.instance({ forceNew: true });
-    new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, Workspace.Workspace.WorkspaceImpl.instance());
     isolatedFileSystemManager.addPlatformFileSystem("snippet://", new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
-    const persistenceImpl = Persistence.Persistence.PersistenceImpl.instance();
-    const linkDecorator = new PanelCommon.PersistenceUtils.LinkDecorator(persistenceImpl);
+    const linkDecorator = new PanelCommon.PersistenceUtils.LinkDecorator(this.#universe.persistence);
     Components.Linkifier.Linkifier.setLinkDecorator(linkDecorator);
-    Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
     new ExecutionContextSelector(targetManager, UI2.Context.Context.instance());
-    LiveMetrics.LiveMetrics.instance();
+    this.#universe.domDebuggerManager.initialize();
+    this.#universe.cpuThrottlingManager.initialize();
+    void this.#universe.liveMetrics.enable();
     CrUXManager.CrUXManager.instance();
     const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
     builtInAi.addEventListener("downloadedAndSessionCreated", () => Snackbar.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.aiModelDownloaded) }));
@@ -1012,8 +1009,7 @@ var SearchActionDelegate = class {
     return false;
   }
 };
-var mainMenuItemInstance;
-var MainMenuItem = class _MainMenuItem {
+var MainMenuItem = class {
   #item;
   constructor() {
     this.#item = new UI2.Toolbar.ToolbarMenuButton(
@@ -1027,13 +1023,6 @@ var MainMenuItem = class _MainMenuItem {
     );
     this.#item.element.classList.add("main-menu");
     this.#item.setTitle(i18nString2(UIStrings2.customizeAndControlDevtools));
-  }
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!mainMenuItemInstance || forceNew) {
-      mainMenuItemInstance = new _MainMenuItem();
-    }
-    return mainMenuItemInstance;
   }
   item() {
     return this.#item;
@@ -1202,18 +1191,10 @@ var MainMenuItem = class _MainMenuItem {
     helpSubMenu.appendItemsAtLocation("mainMenuHelp");
   }
 };
-var settingsButtonProviderInstance;
-var SettingsButtonProvider = class _SettingsButtonProvider {
+var SettingsButtonProvider = class {
   #settingsButton;
   constructor() {
     this.#settingsButton = UI2.Toolbar.Toolbar.createActionButton("settings.show");
-  }
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!settingsButtonProviderInstance || forceNew) {
-      settingsButtonProviderInstance = new _SettingsButtonProvider();
-    }
-    return settingsButtonProviderInstance;
   }
   item() {
     return this.#settingsButton;
@@ -1271,15 +1252,7 @@ var SimpleApp = class {
     rootView.focus();
   }
 };
-var simpleAppProviderInstance;
-var SimpleAppProvider = class _SimpleAppProvider {
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!simpleAppProviderInstance || forceNew) {
-      simpleAppProviderInstance = new _SimpleAppProvider();
-    }
-    return simpleAppProviderInstance;
-  }
+var SimpleAppProvider = class {
   createApp() {
     return new SimpleApp();
   }

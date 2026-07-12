@@ -566,11 +566,5 @@ export class RegExpSetting extends Setting {
         return this.#regex;
     }
 }
-export function moduleSetting(settingName) {
-    return Settings.instance().moduleSetting(settingName);
-}
-export function settingForTest(settingName) {
-    return Settings.instance().settingForTest(settingName);
-}
 export { getLocalizedSettingsCategory, maybeRemoveSettingExtension, registerSettingExtension, registerSettingsForTest, resetSettings, };
 //# sourceMappingURL=Settings.js.map

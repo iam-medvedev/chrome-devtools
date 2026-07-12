@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import sinon from 'sinon';
-import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { createResource, getMainFrame } from '../../testing/ResourceHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
-import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Workspace from './workspace.js';
@@ -45,7 +42,6 @@ function notNull(val) {
 }
 describe('IgnoreListManager', () => {
     setupLocaleHooks();
-    setupSettingsHooks();
     setupRuntimeHooks();
     let universe;
     let debuggerModel;
@@ -128,15 +124,9 @@ describe('IgnoreListManager', () => {
     const ALL_URLS = [...sourceMap.sources, ...SCRIPTS.map(({ sourceURL }) => sourceURL)];
     beforeEach(async () => {
         universe = new TestUniverse();
-        const { targetManager, workspace, settings } = universe;
+        const { debuggerWorkspaceBinding, workspace } = universe;
         const target = universe.createTarget({ url });
         ignoreListManager = universe.ignoreListManager;
-        // Stub globals so legacy helpers use TestUniverse components
-        sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(workspace);
-        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(targetManager);
-        sinon.stub(Common.Settings.Settings, 'instance').returns(settings);
-        sinon.stub(SDK.PageResourceLoader.PageResourceLoader, 'instance').returns(universe.pageResourceLoader);
-        const debuggerWorkspaceBinding = universe.debuggerWorkspaceBinding;
         // Inject the HTML document resource.
         createResource(getMainFrame(target), url, 'text/html', '');
         uiSourceCode = notNull(workspace.uiSourceCodeForURL(url));
@@ -172,12 +162,11 @@ describe('IgnoreListManager', () => {
     function getFolderContextMenu(url) {
         const items = [];
         const callbacks = new Map();
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const options = {
             isContentScript: url === contentScriptFolderUrl,
             isKnownThirdParty: url === sourceMapThirdPartyFolderUrl,
             isCurrentlyIgnoreListed: ALL_URLS.every(scriptUrl => !scriptUrl.startsWith(url) ||
-                ignoreListManager.isUserOrSourceMapIgnoreListedUISourceCode(notNull(workspace.uiSourceCodeForURL(scriptUrl)))),
+                ignoreListManager.isUserOrSourceMapIgnoreListedUISourceCode(notNull(universe.workspace.uiSourceCodeForURL(scriptUrl)))),
         };
         for (const { text, callback } of ignoreListManager.getIgnoreListFolderContextMenuItems(url, options)) {
             items.push(text);

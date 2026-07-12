@@ -23,11 +23,11 @@ describeWithEnvironment('ConsoleInsight', () => {
     });
     afterEach(() => {
         component?.detach();
-        Common.Settings.settingForTest('console-insights-enabled').set(true);
-        Common.Settings.settingForTest('console-insights-onboarding-finished').set(true);
+        Common.Settings.Settings.instance().settingForTest('console-insights-enabled').set(true);
+        Common.Settings.Settings.instance().settingForTest('console-insights-onboarding-finished').set(true);
     });
     it('shows opt-in teaser when setting is turned off', async () => {
-        Common.Settings.settingForTest('console-insights-enabled').set(false);
+        Common.Settings.Settings.instance().settingForTest('console-insights-enabled').set(false);
         const { view, component } = await createConsoleInsightWidget();
         assert.strictEqual(view.input.state.type, "loading" /* Explain.State.LOADING */);
         component.wasShown();
@@ -61,7 +61,7 @@ describeWithEnvironment('ConsoleInsight', () => {
         assert.strictEqual(nextInput.state.type, "insight" /* Explain.State.INSIGHT */);
     });
     it('shows opt-in teaser when setting is disabled via disabledCondition', async () => {
-        const setting = Common.Settings.settingForTest('console-insights-enabled');
+        const setting = Common.Settings.Settings.instance().settingForTest('console-insights-enabled');
         setting.setRegistration({
             settingName: 'console-insights-enabled',
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -82,7 +82,7 @@ describeWithEnvironment('ConsoleInsight', () => {
         });
     });
     it('shows reminder on first run of console insights', async () => {
-        Common.Settings.settingForTest('console-insights-onboarding-finished').set(false);
+        Common.Settings.Settings.instance().settingForTest('console-insights-onboarding-finished').set(false);
         const { view, component } = await createConsoleInsightWidget();
         assert.strictEqual(view.input.state.type, "loading" /* Explain.State.LOADING */);
         component.wasShown();

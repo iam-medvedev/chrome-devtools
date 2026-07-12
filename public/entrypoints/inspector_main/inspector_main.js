@@ -489,8 +489,7 @@ var NodeIndicator = class extends UI2.Widget.Widget {
     this.#view(input, {}, this.contentElement);
   }
 };
-var nodeIndicatorProviderInstance;
-var NodeIndicatorProvider = class _NodeIndicatorProvider {
+var NodeIndicatorProvider = class {
   #toolbarItem;
   #widgetElement;
   constructor() {
@@ -501,13 +500,6 @@ var NodeIndicatorProvider = class _NodeIndicatorProvider {
   }
   item() {
     return this.#toolbarItem;
-  }
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!nodeIndicatorProviderInstance || forceNew) {
-      nodeIndicatorProviderInstance = new _NodeIndicatorProvider();
-    }
-    return nodeIndicatorProviderInstance;
   }
 };
 var SourcesPanelIndicator = class {

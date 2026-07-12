@@ -227,9 +227,10 @@ UI2.ViewManager.registerViewExtension({
   title: i18nLazyString2(UIStrings2.throttling),
   commandPrompt: i18nLazyString2(UIStrings2.showThrottling),
   order: 35,
-  async loadView() {
+  async loadView(universe) {
     const MobileThrottling = await loadMobileThrottlingModule();
-    return new MobileThrottling.ThrottlingSettingsTab.ThrottlingSettingsTab();
+    const { settings } = universe;
+    return new MobileThrottling.ThrottlingSettingsTab.ThrottlingSettingsTab(settings);
   },
   settings: [
     "custom-network-conditions",
@@ -831,9 +832,9 @@ UI4.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString4(UIStrings4.showNode),
   order: 2,
   persistence: "permanent",
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return Sources.SourcesNavigator.NetworkNavigatorView.instance();
+    return Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: null, networkProjectManager: universe.networkProjectManager });
   }
 });
 Common4.Runnable.registerEarlyInitializationRunnable(JsMainImpl.instance);

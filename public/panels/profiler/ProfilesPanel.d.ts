@@ -24,7 +24,7 @@ export declare class ProfilesPanel extends UI.Panel.PanelWithSidebar implements 
     typeIdToSidebarSection: Record<string, ProfileTypeSidebarSection>;
     fileSelectorElement: HTMLInputElement;
     selectedProfileType?: ProfileType;
-    static registry: ProfileTypeRegistry;
+    static get registry(): ProfileTypeRegistry;
     constructor(name: string, recordingActionId: string);
     get profileTypes(): ProfileType[];
     onKeyDown(event: KeyboardEvent): void;

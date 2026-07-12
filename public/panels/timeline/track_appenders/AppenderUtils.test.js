@@ -47,6 +47,13 @@ describeWithEnvironment('AppenderUtils', () => {
             /* expanded= */ true, /* showStackContextMenu= */ true);
             assert.deepEqual(builtHeader, trackHeader);
         });
+        it('sets fullTrackName and url optional properties correctly', () => {
+            const builtHeader = Timeline.AppenderUtils.buildTrackHeader("animations" /* Timeline.CompatibilityTracksAppender.VisualLoggingTrackName.ANIMATIONS */, 
+            /* startLevel= */ 0, 'Header Name', Timeline.AppenderUtils.buildGroupStyle(), /* selectable= */ true, 
+            /* expanded= */ true, /* showStackContextMenu= */ true, 'Full description text', 'https://example.com');
+            assert.strictEqual(builtHeader.fullTrackName, 'Full description text');
+            assert.strictEqual(builtHeader.url, 'https://example.com');
+        });
     });
     describe('getDurationWithSelf', () => {
         // Helper method. Treat input as milliseconds

@@ -134,24 +134,24 @@ var nodeConnectionsPanel_css_default = `/*
 // gen/front_end/entrypoints/node_app/app/NodeConnectionsPanel.js
 var UIStrings = {
   /**
-   * @description Text in Node Connections Panel of the Sources panel when debugging a Node.js app
+   * @description Text in Node connections panel of the Sources panel when debugging a Node.js app.
    */
   nodejsDebuggingGuide: "Node.js debugging guide",
   /**
-   * @description Text in Node Connections Panel of the Sources panel when debugging a Node.js app
+   * @description Text in Node connections panel of the Sources panel when debugging a Node.js app.
    * @example {Node.js debugging guide} PH1
    */
   specifyNetworkEndpointAnd: "Specify network endpoint and DevTools will connect to it automatically. Read {PH1} to learn more.",
   /**
-   * @description Placeholder text content in Node Connections Panel of the Sources panel when debugging a Node.js app
+   * @description Placeholder text content in Node connections panel of the Sources panel when debugging a Node.js app.
    */
   noConnectionsSpecified: "No connections specified",
   /**
-   * @description Text of add network target button in Node Connections Panel of the Sources panel when debugging a Node.js app
+   * @description Text of add network target button in Node connections panel of the Sources panel when debugging a Node.js app.
    */
   addConnection: "Add connection",
   /**
-   * @description Text in Node Connections Panel of the Sources panel when debugging a Node.js app
+   * @description Text in Node connections panel of the Sources panel when debugging a Node.js app.
    */
   networkAddressEgLocalhost: "Network address (e.g. localhost:9229)"
 };
@@ -197,7 +197,7 @@ var NodeConnectionsView = class extends UI.Widget.VBox {
     this.#callback = callback;
     this.element.classList.add("network-discovery-view");
     const networkDiscoveryFooter = this.element.createChild("div", "network-discovery-footer");
-    const documentationLink = Link.create("https://nodejs.org/en/docs/inspector/", i18nString(UIStrings.nodejsDebuggingGuide), void 0, "node-js-debugging");
+    const documentationLink = Link.create("https://nodejs.org/learn/getting-started/debugging", i18nString(UIStrings.nodejsDebuggingGuide), void 0, "node-js-debugging");
     networkDiscoveryFooter.appendChild(uiI18n.getFormatLocalizedString(str_, UIStrings.specifyNetworkEndpointAnd, { PH1: documentationLink }));
     this.#list = new UI.ListWidget.ListWidget(this);
     this.#list.registerRequiredCSS(nodeConnectionsPanel_css_default);
@@ -296,16 +296,16 @@ import * as SDK from "./../../../core/sdk/sdk.js";
 import * as Components from "./../../../ui/legacy/components/utils/utils.js";
 var UIStrings2 = {
   /**
-   * @description Text that refers to the main target
+   * @description Text that refers to the main target.
    */
   main: "Main",
   /**
-   * @description Text in Node Main of the Sources panel when debugging a Node.js app
+   * @description Text in Node main of the Sources panel when debugging a Node.js app.
    * @example {example.com} PH1
    */
   nodejsS: "Node.js: {PH1}",
   /**
-   * @description Text in DevTools window title when debugging a Node.js app
+   * @description Text in DevTools window title when debugging a Node.js app.
    * @example {example.com} PH1
    */
   NodejsTitleS: "DevTools - Node.js: {PH1}"

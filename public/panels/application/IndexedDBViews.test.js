@@ -185,13 +185,20 @@ describeWithEnvironment('IDBDataGridNode', () => {
     it('creates a read-only object properties section for value column', async () => {
         const remoteObject = SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: 'bar' });
         const node = new Application.IndexedDBViews.IDBDataGridNode({ value: remoteObject });
-        node.createCell('value');
-        assert.exists(node.valueObjectPresentation);
-        const rootElement = node.valueObjectPresentation.objectTreeElement();
+        const cell = node.createCell('value');
+        const widgetElement = cell.firstElementChild;
+        assert.exists(widgetElement);
+        const widget = UI.Widget.Widget.get(widgetElement);
+        assert.exists(widget);
+        await UI.Widget.Widget.allUpdatesComplete;
+        const presentation = ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(widgetElement.firstElementChild);
+        assert.exists(presentation);
+        const rootElement = presentation.objectTreeElement();
         await rootElement.onpopulate();
         const child = rootElement.childAt(0);
         assert.instanceOf(child, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
         assert.isFalse(child.editable);
+        await UI.Widget.Widget.allUpdatesComplete;
     });
 });
 describeWithEnvironment('IDBDataView', () => {
@@ -226,7 +233,6 @@ describeWithEnvironment('IDBDataView', () => {
         component.element.style.height = '200px';
         component.element.style.width = '600px';
         component.update(objectStore);
-        component.focus();
         // Verify toolbar elements exist
         const toolbar = component.element.querySelector('devtools-toolbar');
         assert.isNotNull(toolbar);
@@ -236,6 +242,7 @@ describeWithEnvironment('IDBDataView', () => {
         // Verify row rendered
         const rows = dataGrid?.querySelectorAll('.data-grid-data-grid-node');
         assert.strictEqual(rows?.length, 3);
+        await UI.Widget.Widget.allUpdatesComplete;
         await assertScreenshot('application/idb_data_view_baseline.png');
     });
 });

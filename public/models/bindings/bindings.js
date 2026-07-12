@@ -574,9 +574,9 @@ var _a;
 var StackTraceModel = class extends SDK.SDKModel.SDKModel {
   #trie = new Trie();
   #mutex = new Common3.Mutex.Mutex();
-  /** @returns the {@link StackTraceModel} for the target, or the model for the primaryPageTarget when passing null/undefined */
+  /** @returns the {@link StackTraceModel} for the target. Throws if the target or its model cannot be found. */
   static #modelForTarget(target) {
-    const model = (target ?? SDK.TargetManager.TargetManager.instance().primaryPageTarget())?.model(_a);
+    const model = target?.model(_a);
     if (!model) {
       throw new Error("Unable to find StackTraceModel");
     }
@@ -666,7 +666,7 @@ var StackTraceModel = class extends SDK.SDKModel.SDKModel {
         if (asyncStackTrace.callFrames.length === 0) {
           continue;
         }
-        const model = _a.#modelForTarget(target);
+        const model = _a.#modelForTarget(target ?? this.target().targetManager().primaryPageTarget());
         const targetDebuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         const asyncFrames = asyncStackTrace.callFrames.map((frame) => {
           const isWasm = targetDebuggerModel?.isWasm(frame.scriptId) ?? false;
@@ -923,6 +923,9 @@ var NetworkProjectManager = class _NetworkProjectManager extends Common4.ObjectW
       Root.DevToolsContext.globalInstance().set(_NetworkProjectManager, new _NetworkProjectManager());
     }
     return Root.DevToolsContext.globalInstance().get(_NetworkProjectManager);
+  }
+  static removeInstance() {
+    Root.DevToolsContext.globalInstance().delete(_NetworkProjectManager);
   }
 };
 var NetworkProject = class _NetworkProject {
@@ -2171,12 +2174,14 @@ var CSSWorkspaceBinding = class _CSSWorkspaceBinding {
 };
 var ModelInfo = class {
   #eventListeners;
+  #cssWorkspaceBinding;
   #resourceMapping;
   #stylesSourceMapping;
   #sassSourceMapping;
   #locations;
   #unboundLocations;
   constructor(cssModel, resourceMapping, cssWorkspaceBinding) {
+    this.#cssWorkspaceBinding = cssWorkspaceBinding;
     this.#eventListeners = [
       cssModel.addEventListener(SDK7.CSSModel.Events.StyleSheetAdded, (event) => {
         void this.styleSheetAdded(event);
@@ -2196,7 +2201,7 @@ var ModelInfo = class {
     return this.#locations;
   }
   async createLiveLocation(rawLocation, updateDelegate, locationPool) {
-    const location = new LiveLocation(rawLocation, this, updateDelegate, locationPool);
+    const location = new LiveLocation(rawLocation, this, this.#cssWorkspaceBinding, updateDelegate, locationPool);
     const header = rawLocation.header();
     if (header) {
       location.setHeader(header);
@@ -2279,13 +2284,15 @@ var LiveLocation = class extends LiveLocationWithPool {
   #lineNumber;
   #columnNumber;
   #info;
+  #cssWorkspaceBinding;
   #header;
-  constructor(rawLocation, info, updateDelegate, locationPool) {
+  constructor(rawLocation, info, cssWorkspaceBinding, updateDelegate, locationPool) {
     super(updateDelegate, locationPool);
     this.url = rawLocation.url;
     this.#lineNumber = rawLocation.lineNumber;
     this.#columnNumber = rawLocation.columnNumber;
     this.#info = info;
+    this.#cssWorkspaceBinding = cssWorkspaceBinding;
     this.#header = null;
   }
   header() {
@@ -2299,7 +2306,7 @@ var LiveLocation = class extends LiveLocationWithPool {
       return null;
     }
     const rawLocation = new SDK7.CSSModel.CSSLocation(this.#header, this.#lineNumber, this.#columnNumber);
-    return CSSWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
+    return this.#cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
   }
   dispose() {
     super.dispose();
@@ -2648,15 +2655,17 @@ var ExtensionRemoteObject = class extends SDK8.RemoteObject.RemoteObject {
 var DebuggerLanguagePluginManager = class {
   #workspace;
   #debuggerWorkspaceBinding;
+  #console;
   #plugins;
   #debuggerModelToData;
   #rawModuleHandles;
   callFrameByStopId = /* @__PURE__ */ new Map();
   stopIdByCallFrame = /* @__PURE__ */ new Map();
   nextStopId = 0n;
-  constructor(targetManager, workspace, debuggerWorkspaceBinding) {
+  constructor(targetManager, workspace, debuggerWorkspaceBinding, console2) {
     this.#workspace = workspace;
     this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+    this.#console = console2;
     this.#plugins = [];
     this.#debuggerModelToData = /* @__PURE__ */ new Map();
     targetManager.observeModels(SDK8.DebuggerModel.DebuggerModel, this);
@@ -2729,7 +2738,7 @@ var DebuggerLanguagePluginManager = class {
       const scripts = rawModuleHandle.scripts.filter((script) => script.debuggerModel !== debuggerModel);
       if (scripts.length === 0) {
         rawModuleHandle.plugin.removeRawModule(rawModuleId).catch((error) => {
-          Common10.Console.Console.instance().error(
+          this.#console.error(
             i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }),
             /* show=*/
             false
@@ -2830,7 +2839,7 @@ var DebuggerLanguagePluginManager = class {
         return uiSourceCode.uiLocation(sourceLocation.lineNumber, sourceLocation.columnNumber >= 0 ? sourceLocation.columnNumber : void 0);
       }
     } catch (error) {
-      Common10.Console.Console.instance().error(
+      this.#console.error(
         i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }),
         /* show=*/
         false
@@ -2853,7 +2862,7 @@ var DebuggerLanguagePluginManager = class {
       return Promise.resolve(null);
     }
     return Promise.all(locationPromises).then((locations) => locations.flat()).catch((error) => {
-      Common10.Console.Console.instance().error(
+      this.#console.error(
         i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }),
         /* show=*/
         false
@@ -2991,7 +3000,7 @@ var DebuggerLanguagePluginManager = class {
       let rawModuleHandle = this.#rawModuleHandles.get(rawModuleId);
       if (!rawModuleHandle) {
         const sourceFileURLsPromise = (async () => {
-          const console2 = Common10.Console.Console.instance();
+          const console2 = this.#console;
           const url = script.sourceURL;
           const symbolsUrl = script.debugSymbols?.externalURL || "";
           if (symbolsUrl) {
@@ -3094,7 +3103,7 @@ var DebuggerLanguagePluginManager = class {
       }
       return Array.from(scopes.values());
     } catch (error) {
-      Common10.Console.Console.instance().error(
+      this.#console.error(
         i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }),
         /* show=*/
         false
@@ -3124,7 +3133,7 @@ var DebuggerLanguagePluginManager = class {
       }
       return functionInfo;
     } catch (error) {
-      Common10.Console.Console.instance().warn(i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+      this.#console.warn(i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }));
       return { frames: [] };
     }
   }
@@ -3150,7 +3159,7 @@ var DebuggerLanguagePluginManager = class {
         end: new SDK8.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.endOffset) + (script.codeOffset() || 0))
       }));
     } catch (error) {
-      Common10.Console.Console.instance().warn(i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+      this.#console.warn(i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }));
       return [];
     }
   }
@@ -3176,7 +3185,7 @@ var DebuggerLanguagePluginManager = class {
         end: new SDK8.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.endOffset) + (script.codeOffset() || 0))
       }));
     } catch (error) {
-      Common10.Console.Console.instance().warn(i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+      this.#console.warn(i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }));
       return [];
     }
   }
@@ -3259,7 +3268,6 @@ __export(DebuggerWorkspaceBinding_exports, {
   DebuggerWorkspaceBinding: () => DebuggerWorkspaceBinding,
   Location: () => Location
 });
-import * as Common14 from "./../../core/common/common.js";
 import * as Platform6 from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
@@ -3930,16 +3938,18 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
   pluginManager;
   ignoreListManager;
   workspace;
+  #settings;
   constructor(resourceMapping, targetManager, ignoreListManager, workspace) {
     this.resourceMapping = resourceMapping;
     this.resourceMapping.debuggerWorkspaceBinding = this;
     this.ignoreListManager = ignoreListManager;
     this.workspace = workspace;
+    this.#settings = targetManager.settings;
     this.#debuggerModelToData = /* @__PURE__ */ new Map();
     targetManager.observeModels(SDK12.DebuggerModel.DebuggerModel, this);
     this.ignoreListManager.addEventListener("IGNORED_SCRIPT_RANGES_UPDATED", (event) => this.updateLocations(event.data));
     this.#liveLocationPromises = /* @__PURE__ */ new Set();
-    this.pluginManager = new DebuggerLanguagePluginManager(targetManager, resourceMapping.workspace, this);
+    this.pluginManager = new DebuggerLanguagePluginManager(targetManager, resourceMapping.workspace, this, targetManager.getConsole());
   }
   setFunctionRanges(uiSourceCode, ranges) {
     for (const modelData of this.#debuggerModelToData.values()) {
@@ -4272,7 +4282,7 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
       return false;
     }
     const functionLocation = frame.functionLocation();
-    if (!autoSteppingContext || debuggerPausedDetails.reason !== "step" || !functionLocation || !frame.script.isWasm() || !Common14.Settings.moduleSetting("wasm-auto-stepping").get() || !this.pluginManager.hasPluginForScript(frame.script)) {
+    if (!autoSteppingContext || debuggerPausedDetails.reason !== "step" || !functionLocation || !frame.script.isWasm() || !this.#settings.moduleSetting("wasm-auto-stepping").get() || !this.pluginManager.hasPluginForScript(frame.script)) {
       return true;
     }
     const uiLocation = await this.pluginManager.rawLocationToUILocation(frame.location());
@@ -4493,7 +4503,7 @@ __export(FileUtils_exports, {
   ChunkedFileReader: () => ChunkedFileReader,
   FileOutputStream: () => FileOutputStream
 });
-import * as Common15 from "./../../core/common/common.js";
+import * as Common14 from "./../../core/common/common.js";
 import * as TextUtils7 from "./../text_utils/text_utils.js";
 import * as Workspace19 from "./../workspace/workspace.js";
 var ChunkedFileReader = class {
@@ -4526,7 +4536,7 @@ var ChunkedFileReader = class {
     }
     if (this.#file?.type.endsWith("gzip")) {
       const fileStream = this.#file.stream();
-      const stream = Common15.Gzip.decompressStream(fileStream);
+      const stream = Common14.Gzip.decompressStream(fileStream);
       this.#streamReader = stream.getReader();
     } else {
       this.#reader = new FileReader();
@@ -4626,31 +4636,33 @@ var ChunkedFileReader = class {
   }
 };
 var FileOutputStream = class {
+  #fileManager;
   #writeCallbacks;
   #fileName;
   #closed;
-  constructor() {
+  constructor(fileManager) {
+    this.#fileManager = fileManager;
     this.#writeCallbacks = [];
   }
   async open(fileName) {
     this.#closed = false;
     this.#writeCallbacks = [];
     this.#fileName = fileName;
-    const saveResponse = await Workspace19.FileManager.FileManager.instance().save(
+    const saveResponse = await this.#fileManager.save(
       this.#fileName,
       TextUtils7.ContentData.EMPTY_TEXT_CONTENT_DATA,
       /* forceSaveAs=*/
       true
     );
     if (saveResponse) {
-      Workspace19.FileManager.FileManager.instance().addEventListener("AppendedToURL", this.onAppendDone, this);
+      this.#fileManager.addEventListener("AppendedToURL", this.onAppendDone, this);
     }
     return Boolean(saveResponse);
   }
   write(data) {
     return new Promise((resolve) => {
       this.#writeCallbacks.push(resolve);
-      Workspace19.FileManager.FileManager.instance().append(this.#fileName, data);
+      this.#fileManager.append(this.#fileName, data);
     });
   }
   async close() {
@@ -4658,8 +4670,8 @@ var FileOutputStream = class {
     if (this.#writeCallbacks.length) {
       return;
     }
-    Workspace19.FileManager.FileManager.instance().removeEventListener("AppendedToURL", this.onAppendDone, this);
-    Workspace19.FileManager.FileManager.instance().close(this.#fileName);
+    this.#fileManager.removeEventListener("AppendedToURL", this.onAppendDone, this);
+    this.#fileManager.close(this.#fileName);
   }
   onAppendDone(event) {
     if (event.data !== this.#fileName) {
@@ -4675,8 +4687,8 @@ var FileOutputStream = class {
     if (!this.#closed) {
       return;
     }
-    Workspace19.FileManager.FileManager.instance().removeEventListener("AppendedToURL", this.onAppendDone, this);
-    Workspace19.FileManager.FileManager.instance().close(this.#fileName);
+    this.#fileManager.removeEventListener("AppendedToURL", this.onAppendDone, this);
+    this.#fileManager.close(this.#fileName);
   }
 };
 
@@ -4727,7 +4739,7 @@ var PresentationConsoleMessageManager = class {
   #sourceFrameMessageManager = new PresentationSourceFrameMessageManager();
   constructor() {
     SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.ConsoleModel.ConsoleModel, SDK13.ConsoleModel.Events.MessageAdded, (event) => this.consoleMessageAdded(event.data));
-    SDK13.ConsoleModel.ConsoleModel.allMessagesUnordered().forEach(this.consoleMessageAdded, this);
+    SDK13.ConsoleModel.ConsoleModel.allMessagesUnordered(SDK13.TargetManager.TargetManager.instance()).forEach(this.consoleMessageAdded, this);
     SDK13.TargetManager.TargetManager.instance().addModelListener(SDK13.ConsoleModel.ConsoleModel, SDK13.ConsoleModel.Events.ConsoleCleared, () => this.#sourceFrameMessageManager.clear());
   }
   consoleMessageAdded(consoleMessage) {
@@ -4924,7 +4936,7 @@ var ResourceMapping_exports = {};
 __export(ResourceMapping_exports, {
   ResourceMapping: () => ResourceMapping
 });
-import * as Common16 from "./../../core/common/common.js";
+import * as Common15 from "./../../core/common/common.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Formatter2 from "./../formatter/formatter.js";
 import * as TextUtils9 from "./../text_utils/text_utils.js";
@@ -5267,16 +5279,16 @@ var ModelInfo2 = class {
   }
   acceptsResource(resource) {
     const resourceType = resource.resourceType();
-    if (resourceType !== Common16.ResourceType.resourceTypes.Image && resourceType !== Common16.ResourceType.resourceTypes.Font && resourceType !== Common16.ResourceType.resourceTypes.Document && resourceType !== Common16.ResourceType.resourceTypes.Manifest && resourceType !== Common16.ResourceType.resourceTypes.Fetch && resourceType !== Common16.ResourceType.resourceTypes.XHR) {
+    if (resourceType !== Common15.ResourceType.resourceTypes.Image && resourceType !== Common15.ResourceType.resourceTypes.Font && resourceType !== Common15.ResourceType.resourceTypes.Document && resourceType !== Common15.ResourceType.resourceTypes.Manifest && resourceType !== Common15.ResourceType.resourceTypes.Fetch && resourceType !== Common15.ResourceType.resourceTypes.XHR) {
       return false;
     }
-    if (resourceType === Common16.ResourceType.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith("image")) {
+    if (resourceType === Common15.ResourceType.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith("image")) {
       return false;
     }
-    if (resourceType === Common16.ResourceType.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes("font")) {
+    if (resourceType === Common15.ResourceType.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes("font")) {
       return false;
     }
-    if ((resourceType === Common16.ResourceType.resourceTypes.Image || resourceType === Common16.ResourceType.resourceTypes.Font) && Common16.ParsedURL.schemeIs(resource.contentURL(), "data:")) {
+    if ((resourceType === Common15.ResourceType.resourceTypes.Image || resourceType === Common15.ResourceType.resourceTypes.Font) && Common15.ParsedURL.schemeIs(resource.contentURL(), "data:")) {
       return false;
     }
     return true;
@@ -5326,7 +5338,7 @@ var ModelInfo2 = class {
     this.#bindings.clear();
   }
   dispose() {
-    Common16.EventTarget.removeEventListeners(this.#eventListeners);
+    Common15.EventTarget.removeEventListeners(this.#eventListeners);
     for (const binding of this.#bindings.values()) {
       binding.dispose();
     }
@@ -5476,7 +5488,7 @@ var TempFile_exports = {};
 __export(TempFile_exports, {
   TempFile: () => TempFile
 });
-import * as Common17 from "./../../core/common/common.js";
+import * as Common16 from "./../../core/common/common.js";
 var TempFile = class {
   #lastBlob = null;
   write(pieces) {
@@ -5493,7 +5505,7 @@ var TempFile = class {
   }
   async readRange(startOffset, endOffset) {
     if (!this.#lastBlob) {
-      Common17.Console.Console.instance().error("Attempt to read a temp file that was never written");
+      Common16.Console.Console.instance().error("Attempt to read a temp file that was never written");
       return "";
     }
     const blob = typeof startOffset === "number" || typeof endOffset === "number" ? this.#lastBlob.slice(startOffset, endOffset) : this.#lastBlob;
@@ -5505,7 +5517,7 @@ var TempFile = class {
         reader.readAsText(blob);
       });
     } catch (error) {
-      Common17.Console.Console.instance().error("Failed to read from temp file: " + error.message);
+      Common16.Console.Console.instance().error("Failed to read from temp file: " + error.message);
     }
     return reader.result;
   }
