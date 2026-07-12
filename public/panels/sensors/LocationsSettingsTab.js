@@ -12,8 +12,8 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import locationsSettingsTabStyles from './locationsSettingsTab.css.js';
 const UIStrings = {
     /**
-     * @description Title in the Locations Settings Tab, where custom geographic locations that the user
-     *has entered are stored.
+     * @description Title in the Locations settings tab, where custom geographic locations that the user
+     * has entered are stored.
      */
     locations: 'Locations',
     /**
@@ -21,15 +21,15 @@ const UIStrings = {
      */
     locationName: 'Location name',
     /**
-     * @description Abbreviation of latitude in Locations Settings Tab of the Device Toolbar
+     * @description Abbreviation of latitude in the Locations settings tab of the Device toolbar.
      */
     lat: 'Lat',
     /**
-     * @description Abbreviation of longitude in Locations Settings Tab of the Device Toolbar
+     * @description Abbreviation of longitude in the Locations settings tab of the Device toolbar.
      */
     long: 'Long',
     /**
-     * @description Text in Sensors View of the Device Toolbar
+     * @description Text in the Sensors view of the Device toolbar.
      */
     timezoneId: 'Timezone ID',
     /**
@@ -49,61 +49,61 @@ const UIStrings = {
      */
     accuracy: 'Accuracy',
     /**
-     * @description Error message in the Locations settings pane that declares the location name input must not be empty
+     * @description Error message in the Locations settings tab that declares the location name input must not be empty.
      */
-    locationNameCannotBeEmpty: 'Location name cannot be empty',
+    locationNameCannotBeEmpty: 'Location name can’t be empty',
     /**
-     * @description Error message in the Locations settings pane that declares the maximum length of the location name
+     * @description Error message in the Locations settings tab that declares the maximum length of the location name.
      * @example {50} PH1
      */
     locationNameMustBeLessThanS: 'Location name must be less than {PH1} characters',
     /**
-     * @description Error message in the Locations settings pane that declares that the value for the latitude input must be a number
+     * @description Error message in the Locations settings tab that declares that the value for the latitude input must be a number.
      */
     latitudeMustBeANumber: 'Latitude must be a number',
     /**
-     * @description Error message in the Locations settings pane that declares the minimum value for the latitude input
+     * @description Error message in the Locations settings tab that declares the minimum value for the latitude input.
      * @example {-90} PH1
      */
     latitudeMustBeGreaterThanOrEqual: 'Latitude must be greater than or equal to {PH1}',
     /**
-     * @description Error message in the Locations settings pane that declares the maximum value for the latitude input
+     * @description Error message in the Locations settings tab that declares the maximum value for the latitude input.
      * @example {90} PH1
      */
     latitudeMustBeLessThanOrEqualToS: 'Latitude must be less than or equal to {PH1}',
     /**
-     * @description Error message in the Locations settings pane that declares that the value for the longitude input must be a number
+     * @description Error message in the Locations settings tab that declares that the value for the longitude input must be a number.
      */
     longitudeMustBeANumber: 'Longitude must be a number',
     /**
-     * @description Error message in the Locations settings pane that declares the minimum value for the longitude input
+     * @description Error message in the Locations settings tab that declares the minimum value for the longitude input.
      * @example {-180} PH1
      */
     longitudeMustBeGreaterThanOr: 'Longitude must be greater than or equal to {PH1}',
     /**
-     * @description Error message in the Locations settings pane that declares the maximum value for the longitude input
+     * @description Error message in the Locations settings tab that declares the maximum value for the longitude input.
      * @example {180} PH1
      */
     longitudeMustBeLessThanOrEqualTo: 'Longitude must be less than or equal to {PH1}',
     /**
-     * @description Error message in the Locations settings pane that declares timezone ID input invalid
+     * @description Error message in the Locations settings tab that declares timezone ID input invalid.
      */
     timezoneIdMustContainAlphabetic: 'Timezone ID must contain alphabetic characters',
     /**
-     * @description Error message in the Locations settings pane that declares locale input invalid
+     * @description Error message in the Locations settings tab that declares locale input invalid.
      */
     localeMustContainAlphabetic: 'Locale must contain alphabetic characters',
     /**
-     * @description Error message in the Locations settings pane that declares that the value for the accuracy input must be a number
+     * @description Error message in the Locations settings tab that declares that the value for the accuracy input must be a number.
      */
     accuracyMustBeANumber: 'Accuracy must be a number',
     /**
-     * @description Error message in the Locations settings pane that declares the minimum value for the accuracy input
+     * @description Error message in the Locations settings tab that declares the minimum value for the accuracy input.
      * @example {0} PH1
      */
     accuracyMustBeGreaterThanOrEqual: 'Accuracy must be greater than or equal to {PH1}',
     /**
-     * @description Text of add locations button in Locations Settings Tab of the Device Toolbar
+     * @description Text of add locations button in the Locations settings tab of the Device toolbar.
      */
     addLocation: 'Add location',
 };

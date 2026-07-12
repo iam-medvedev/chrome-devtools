@@ -10,15 +10,7 @@ export class SimpleApp {
         rootView.focus();
     }
 }
-let simpleAppProviderInstance;
 export class SimpleAppProvider {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!simpleAppProviderInstance || forceNew) {
-            simpleAppProviderInstance = new SimpleAppProvider();
-        }
-        return simpleAppProviderInstance;
-    }
     createApp() {
         return new SimpleApp();
     }

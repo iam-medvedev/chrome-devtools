@@ -22,11 +22,8 @@ export declare class NodeIndicator extends UI.Widget.Widget {
 }
 export declare class NodeIndicatorProvider implements UI.Toolbar.Provider {
     #private;
-    private constructor();
+    constructor();
     item(): UI.Toolbar.ToolbarItem | null;
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): NodeIndicatorProvider;
 }
 export declare class SourcesPanelIndicator {
     constructor();

@@ -93,6 +93,9 @@ describeWithEnvironment('ThreadAppender', function () {
             'Thread pool worker 1',
         ];
         assert.deepEqual(flameChartData.groups.map(g => g.name), expectedTrackNames);
+        const mainGroup = flameChartData.groups[0];
+        assert.strictEqual(mainGroup.fullTrackName, 'Main — https://output.jsbin.com/zajamil/quiet');
+        assert.strictEqual(mainGroup.url, 'https://output.jsbin.com/zajamil/quiet');
     });
     it('builds flamechart groups for nested tracks correctly', async function () {
         const { flameChartData } = await renderThreadAppendersFromTrace(this, 'cls-single-frame.json.gz');

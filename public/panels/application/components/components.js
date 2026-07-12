@@ -131,7 +131,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     }).format(val);
   };
   const formatCpu = (val) => {
-    return i18n.TimeUtilities.preciseMillisToString(val, 1);
+    return i18n.TimeUtilities.millisToString(val);
   };
   const formatNetwork = (val) => {
     return i18n.ByteUtilities.bytesToString(val);
@@ -3394,8 +3394,10 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       ${this.value(persistent ? i18nString11(UIStrings12.yes) : i18nString11(UIStrings12.no))}
       ${this.key(i18nString11(UIStrings12.durability))}
       ${this.value(durability)}
-      ${this.key(i18nString11(UIStrings12.quota))}
-      ${this.value(i18n23.ByteUtilities.bytesToString(quota))}
+      ${quota !== 0 ? html12`
+        ${this.key(i18nString11(UIStrings12.quota))}
+        ${this.value(i18n23.ByteUtilities.bytesToString(quota))}
+      ` : nothing5}
       ${this.key(i18nString11(UIStrings12.expiration))}
       ${this.value(this.#getExpirationString())}`;
   }

@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
-import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { createSettingsForTest } from '../../testing/SettingsHelpers.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
@@ -18,11 +18,11 @@ describe('TargetManager', () => {
     let inspectedURLChangedHostApi;
     setupLocaleHooks();
     setupRuntimeHooks();
-    setupSettingsHooks();
     beforeEach(() => {
         const context = new Root.DevToolsContext.WritableDevToolsContext();
-        context.set(Common.Settings.Settings, Common.Settings.Settings.instance());
+        context.set(Common.Settings.Settings, createSettingsForTest());
         targetManager = new SDK.TargetManager.TargetManager(context);
+        context.set(SDK.NetworkManager.MultitargetNetworkManager, new SDK.NetworkManager.MultitargetNetworkManager(targetManager));
         // TODO(crbug.com/451502260): Add Node.js specific host bindings. For now, we don't execute
         //                            the InspectorFrontendHostStub, it only updates the document.title anyway.
         inspectedURLChangedHostApi =
@@ -63,8 +63,9 @@ describe('TargetManager', () => {
     });
     it('allows overriding which models to autostart', () => {
         const context = new Root.DevToolsContext.WritableDevToolsContext();
-        context.set(Common.Settings.Settings, Common.Settings.Settings.instance());
+        context.set(Common.Settings.Settings, createSettingsForTest());
         const customTargetManager = new SDK.TargetManager.TargetManager(context, new Set([SDK.DebuggerModel.DebuggerModel]));
+        context.set(SDK.NetworkManager.MultitargetNetworkManager, new SDK.NetworkManager.MultitargetNetworkManager(customTargetManager));
         const target = createTarget({ targetManager: customTargetManager });
         assert.isTrue(target.models().has(SDK.DebuggerModel.DebuggerModel));
         assert.isFalse(target.models().has(SDK.DOMModel.DOMModel));

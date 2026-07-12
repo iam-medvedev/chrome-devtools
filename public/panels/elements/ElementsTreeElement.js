@@ -41,6 +41,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Badges from '../../models/badges/badges.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
@@ -133,6 +134,11 @@ const UIStrings = {
      * @description Text to paste an element, paste should be used as a verb
      */
     paste: 'Paste',
+    /**
+     * @description Context menu item in the Edit as HTML editor that selects the editor's entire
+     * contents. "Select all" should be used as a verb.
+     */
+    selectAll: 'Select all',
     /**
      * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
      */
@@ -291,6 +297,11 @@ const UIStrings = {
      * @description Label of an adorner next to the html node in the Elements panel.
      */
     viewSourceCode: 'View source code',
+    /**
+     * @description Label of an adorner in the Elements panel. When clicked, it reveals
+     * the definition of the custom element in the Sources panel.
+     */
+    showCustomElementDefinition: 'Show custom element definition',
     /**
      * @description Context menu item in Elements panel to assess visibility of an element via AI.
      */
@@ -777,7 +788,8 @@ export const DEFAULT_VIEW = (input, output, target) => {
     const hasAdorners = !!input.adProvenance || input.showContainerAdorner || input.showFlexAdorner ||
         input.showGridAdorner || input.showGridLanesAdorner || input.showMediaAdorner || input.showPopoverAdorner ||
         input.showTopLayerAdorner || input.showViewSourceAdorner || input.showScrollAdorner ||
-        input.showScrollSnapAdorner || input.showSlotAdorner || input.showStartingStyleAdorner;
+        input.showScrollSnapAdorner || input.showSlotAdorner || input.showStartingStyleAdorner ||
+        input.showCustomElementAdorner;
     const gutterContainerClasses = {
         'has-decorations': input.decorations.length || input.descendantDecorations.length,
         'gutter-container': true,
@@ -810,6 +822,18 @@ export const DEFAULT_VIEW = (input, output, target) => {
           @click=${input.onViewSourceAdornerClick}
           ${adornerRef()}>
           <span>${ElementsComponents.AdornerManager.RegisteredAdorners.VIEW_SOURCE}</span>
+        </devtools-adorner>` : nothing}
+        ${input.showCustomElementAdorner ? html `<devtools-adorner
+          class="custom-element clickable"
+          role=button
+          tabindex=0
+          .name=${ElementsComponents.AdornerManager.RegisteredAdorners.CUSTOM_ELEMENT}
+          jslog=${VisualLogging.adorner(ElementsComponents.AdornerManager.RegisteredAdorners.CUSTOM_ELEMENT).track({ click: true })}
+          aria-label=${i18nString(UIStrings.showCustomElementDefinition)}
+          @click=${input.onCustomElementAdornerClick}
+          @keydown=${handleAdornerKeydown(input.onCustomElementAdornerClick)}
+          ${adornerRef()}>
+          <span>${ElementsComponents.AdornerManager.RegisteredAdorners.CUSTOM_ELEMENT}</span>
         </devtools-adorner>` : nothing}
         ${input.showContainerAdorner ? html `<devtools-adorner
           class=clickable
@@ -959,7 +983,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
           <span>${ElementsComponents.AdornerManager.RegisteredAdorners.SCROLL_SNAP}</span>
         </devtools-adorner>` : nothing}
       </div>` : nothing}
-      ${input.isSelected ? html `
+      ${input.isSelected && input.canInspect ? html `
         <span class="selected-hint ${input.editorState ? 'hidden' : ''}" title=${i18nString(UIStrings.useSInTheConsoleToReferToThis, { PH1: '$0' })} aria-hidden="true"></span>
       ` : nothing}
       ${input.showAiButton ? html `
@@ -996,6 +1020,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     #hovered;
     editing;
     #editorRef;
+    // True while the Edit as HTML editor's own context menu is open, so that the
+    // focusout caused by the menu taking focus does not commit the edit.
+    #editAsHtmlMenuOpen = false;
     #editorState = null;
     #editorWidth = null;
     expandAllButtonElement;
@@ -1151,6 +1178,8 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             showScrollSnapAdorner: Boolean(this.#layout?.hasScroll) && !this.isClosingTag(),
             scrollSnapAdornerActive: this.#scrollSnapAdornerActive,
             showSlotAdorner: Boolean(this.nodeInternal.assignedSlot) && !this.isClosingTag(),
+            showCustomElementAdorner: this.node().isCustomElement() && !this.isClosingTag(),
+            onCustomElementAdornerClick: this.treeOutline?.disableEdits ? () => { } : (event) => void this.#onCustomElementAdornerClick(event),
             showStartingStyleAdorner: this.nodeInternal.affectedByStartingStyles() && !this.isClosingTag(),
             startingStyleAdornerActive: this.#startingStyleAdornerActive,
             onStartingStyleAdornerClick: this.treeOutline?.disableEdits ? () => { } : (event) => this.#onStartingStyleAdornerClick(event),
@@ -1165,11 +1194,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             topLayerIndex: this.node().topLayerIndex(),
             onViewSourceAdornerClick: this.treeOutline?.disableEdits ? () => { } : this.revealHTMLInSources.bind(this),
             onGutterClick: this.showContextMenu.bind(this),
-            onContainerAdornerClick: this.treeOutline?.disableEdits ? () => { } : (event) => this.#onContainerAdornerClick(event),
-            onFlexAdornerClick: this.treeOutline?.disableEdits ? () => { } :
-                (event) => this.#onFlexAdornerClick(event),
-            onGridAdornerClick: this.treeOutline?.disableEdits ? () => { } :
-                (event) => this.#onGridAdornerClick(event),
+            onContainerAdornerClick: this.treeOutline?.disableEdits ? () => { } :
+                (event) => this.#onContainerAdornerClick(event),
+            onFlexAdornerClick: this.treeOutline?.disableEdits ? () => { } : (event) => this.#onFlexAdornerClick(event),
+            onGridAdornerClick: this.treeOutline?.disableEdits ? () => { } : (event) => this.#onGridAdornerClick(event),
             onMediaAdornerClick: this.treeOutline?.disableEdits ? () => { } :
                 (event) => this.#onMediaAdornerClick(event),
             onPopoverAdornerClick: this.treeOutline?.disableEdits ? () => { } :
@@ -1184,6 +1212,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 },
             isHovered: this.#hovered,
             isSelected: this.selected,
+            canInspect: this.node().canInspectNode(),
             showAiButton: Boolean(this.#hovered || this.selected) && this.node().nodeType() === Node.ELEMENT_NODE &&
                 this.isAiButtonEnabled() && this.treeOutline?.showAIButton,
             aiButtonTitle: this.isAiButtonEnabled() ?
@@ -1295,6 +1324,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     }
     isClosingTag() {
         return !isOpeningTag(this.tagTypeContext);
+    }
+    isDisplayContents() {
+        return Boolean(this.#layout?.isContents);
     }
     node() {
         return this.nodeInternal;
@@ -1495,10 +1527,12 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             showScrollSnapAdorner: false,
             scrollSnapAdornerActive: false,
             showSlotAdorner: false,
+            showCustomElementAdorner: false,
             showStartingStyleAdorner: false,
             startingStyleAdornerActive: false,
             onStartingStyleAdornerClick: () => { },
             onSlotAdornerClick: () => { },
+            onCustomElementAdornerClick: () => { },
             topLayerIndex: -1,
             onViewSourceAdornerClick: () => { },
             onGutterClick: () => { },
@@ -1511,6 +1545,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             onTopLayerAdornerClick: () => { },
             isHovered: false,
             isSelected: false,
+            canInspect: false,
             showAiButton: false,
             onAiButtonClick: () => { },
             decorations: [],
@@ -2220,7 +2255,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 }),
                 CodeMirror.EditorView.domEventHandlers({
                     focusout: event => {
-                        if (!this.#editorRef) {
+                        if (!this.#editorRef || this.#editAsHtmlMenuOpen) {
                             return;
                         }
                         // The relatedTarget is null when no element gains focus, e.g. switching windows.
@@ -2228,6 +2263,41 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                         if (relatedTarget && !relatedTarget.isSelfOrDescendant(this.#editorRef)) {
                             this.editing?.commit();
                         }
+                    },
+                    contextmenu: (event, view) => {
+                        // The editor virtualizes its content, so the browser's native
+                        // "Select all" only reaches the rendered lines. Show a menu whose
+                        // "Select all" spans the whole document, like Ctrl/Cmd+A.
+                        event.consume(true);
+                        const { from, to, empty } = view.state.selection.main;
+                        const copy = () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(view.state.sliceDoc(from, to));
+                        const contextMenu = new UI.ContextMenu.ContextMenu(event, {
+                            onSoftMenuClosed: () => {
+                                this.#editAsHtmlMenuOpen = false;
+                            },
+                        });
+                        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.cut), () => {
+                            copy();
+                            view.dispatch({ changes: { from, to, insert: '' } });
+                            view.focus();
+                        }, { disabled: empty, jslogContext: 'cut' });
+                        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copy), () => {
+                            copy();
+                            view.focus();
+                        }, { disabled: empty, jslogContext: 'copy' });
+                        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.paste), () => {
+                            void navigator.clipboard.readText().then(text => {
+                                view.dispatch(view.state.replaceSelection(text));
+                                view.focus();
+                            });
+                        }, { jslogContext: 'paste' });
+                        contextMenu.editSection().appendItem(i18nString(UIStrings.selectAll), () => {
+                            view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
+                            view.focus();
+                        }, { jslogContext: 'select-all' });
+                        this.#editAsHtmlMenuOpen = true;
+                        void contextMenu.show();
+                        return true;
                     },
                 }),
             ],
@@ -2678,6 +2748,42 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
         this.#startingStyleAdornerActive = !this.#startingStyleAdornerActive;
         this.performUpdate();
+    }
+    async #onCustomElementAdornerClick(event) {
+        event.stopPropagation();
+        const node = this.node();
+        const object = await node.resolveToObject('');
+        if (!object) {
+            return;
+        }
+        let constructorObject = null;
+        try {
+            const result = await object.callFunction(function () {
+                const selector = this.getAttribute('is') || this.tagName.toLowerCase();
+                return (typeof customElements !== 'undefined' && customElements.get(selector)) || this.constructor;
+            });
+            constructorObject = result.object;
+        }
+        finally {
+            object.release();
+        }
+        if (!constructorObject) {
+            return;
+        }
+        try {
+            if (constructorObject.type === 'function') {
+                const functionDetails = await SDK.RemoteObject.RemoteFunction.objectAsFunction(constructorObject).targetFunctionDetails();
+                if (functionDetails?.location) {
+                    const uiLocation = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(functionDetails.location);
+                    if (uiLocation) {
+                        void Common.Revealer.reveal(uiLocation);
+                    }
+                }
+            }
+        }
+        finally {
+            constructorObject.release();
+        }
     }
 }
 export const InitialChildrenLimit = 500;

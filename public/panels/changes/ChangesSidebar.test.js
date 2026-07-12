@@ -58,6 +58,7 @@ describeWithEnvironment('ChangesSidebar', () => {
             settings: Common.Settings.Settings.instance()
         });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
+        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
         const workspaceDiff = new WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl(workspace);
         const viewFunction = createViewFunctionStub(Changes.ChangesSidebar.ChangesSidebar);
         const sidebar = new Changes.ChangesSidebar.ChangesSidebar(undefined, viewFunction);

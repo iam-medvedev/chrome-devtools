@@ -1015,11 +1015,11 @@ describe('TreeOutline', () => {
                     tree: basicTreeData,
                 });
                 await RenderCoordinator.done();
-                const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
+                const productsNode = getVisibleTreeNodeByText(shadowRoot, 'Products');
                 const treeItemSelectedEvent = getEventPromise(component, 'itemselected');
-                dispatchClickEvent(officeNode);
+                dispatchClickEvent(productsNode);
                 const event = await treeItemSelectedEvent;
-                assert.deepEqual(event.data, { node: basicTreeData[0] });
+                assert.deepEqual(event.data, { node: basicTreeData[1] });
             });
             it('emits an event when the user navigates to the node with their keyboard', async () => {
                 const { component, shadowRoot } = await renderTreeOutline({
@@ -1029,8 +1029,8 @@ describe('TreeOutline', () => {
                 const officeNode = getVisibleTreeNodeByText(shadowRoot, 'Offices');
                 dispatchClickEvent(officeNode);
                 await RenderCoordinator.done();
-                dispatchKeyDownEvent(officeNode, { key: 'ArrowDown', bubbles: true });
                 const treeItemSelectedEvent = getEventPromise(component, 'itemselected');
+                dispatchKeyDownEvent(officeNode, { key: 'ArrowDown', bubbles: true });
                 await RenderCoordinator.done();
                 const event = await treeItemSelectedEvent;
                 assert.deepEqual(event.data, { node: basicTreeData[1] });

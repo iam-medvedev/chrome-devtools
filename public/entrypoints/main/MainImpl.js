@@ -46,7 +46,6 @@ import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import * as LiveMetrics from '../../models/live-metrics/live-metrics.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as PanelCommon from '../../panels/common/common.js';
@@ -150,8 +149,10 @@ export class MainImpl {
     #readyForTestPromise = Promise.withResolvers();
     #veStartPromise;
     #universe;
-    constructor() {
+    #supportsEmulation = false;
+    constructor(opts) {
         _a.instanceForTest = this;
+        this.#supportsEmulation = opts?.supportsEmulation ?? false;
         void this.#loaded();
     }
     static time(label) {
@@ -193,6 +194,7 @@ export class MainImpl {
             },
             hostConfig: Root.Runtime.hostConfig,
             inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
+            supportsEmulation: this.#supportsEmulation,
         };
         this.#universe = new Foundation.Universe.Universe(creationOptions);
         Root.DevToolsContext.setGlobalInstance(this.#universe.context);
@@ -392,8 +394,6 @@ export class MainImpl {
         UI.DockController.DockController.instance({ forceNew: true, canDock });
         const targetManager = SDK.TargetManager.TargetManager.instance();
         targetManager.addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.#onSuspendStateChanged.bind(this));
-        Workspace.FileManager.FileManager.instance({ forceNew: true });
-        Bindings.NetworkProject.NetworkProjectManager.instance();
         new Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager();
         targetManager.setScopeTarget(targetManager.primaryPageTarget());
         UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, ({ data }) => {
@@ -402,14 +402,13 @@ export class MainImpl {
         });
         // @ts-expect-error e2e test global
         self.Extensions.extensionServer = PanelCommon.ExtensionServer.ExtensionServer.instance({ forceNew: true });
-        new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, Workspace.Workspace.WorkspaceImpl.instance());
         isolatedFileSystemManager.addPlatformFileSystem('snippet://', new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
-        const persistenceImpl = Persistence.Persistence.PersistenceImpl.instance();
-        const linkDecorator = new PanelCommon.PersistenceUtils.LinkDecorator(persistenceImpl);
+        const linkDecorator = new PanelCommon.PersistenceUtils.LinkDecorator(this.#universe.persistence);
         Components.Linkifier.Linkifier.setLinkDecorator(linkDecorator);
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
         new ExecutionContextSelector(targetManager, UI.Context.Context.instance());
-        LiveMetrics.LiveMetrics.instance();
+        this.#universe.domDebuggerManager.initialize();
+        this.#universe.cpuThrottlingManager.initialize();
+        void this.#universe.liveMetrics.enable();
         CrUXManager.CrUXManager.instance();
         const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
         builtInAi.addEventListener("downloadedAndSessionCreated" /* AiAssistanceModel.BuiltInAi.Events.DOWNLOADED_AND_SESSION_CREATED */, () => Snackbar.Snackbar.Snackbar.show({ message: i18nString(UIStrings.aiModelDownloaded) }));
@@ -647,7 +646,6 @@ export class SearchActionDelegate {
         return false;
     }
 }
-let mainMenuItemInstance;
 export class MainMenuItem {
     #item;
     constructor() {
@@ -655,13 +653,6 @@ export class MainMenuItem {
         /* useSoftMenu */ true, 'main-menu', 'dots-vertical');
         this.#item.element.classList.add('main-menu');
         this.#item.setTitle(i18nString(UIStrings.customizeAndControlDevtools));
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!mainMenuItemInstance || forceNew) {
-            mainMenuItemInstance = new MainMenuItem();
-        }
-        return mainMenuItemInstance;
     }
     item() {
         return this.#item;
@@ -805,18 +796,10 @@ export class MainMenuItem {
         helpSubMenu.appendItemsAtLocation('mainMenuHelp');
     }
 }
-let settingsButtonProviderInstance;
 export class SettingsButtonProvider {
     #settingsButton;
     constructor() {
         this.#settingsButton = UI.Toolbar.Toolbar.createActionButton('settings.show');
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!settingsButtonProviderInstance || forceNew) {
-            settingsButtonProviderInstance = new SettingsButtonProvider();
-        }
-        return settingsButtonProviderInstance;
     }
     item() {
         return this.#settingsButton;

@@ -16,7 +16,7 @@ import * as ProfileLauncherView from './ProfileLauncherView.js';
 import * as ProfileSidebarTreeElement from './ProfileSidebarTreeElement.js';
 import * as ProfilesPanel from './ProfilesPanel.js';
 import * as ProfileTypeRegistry from './ProfileTypeRegistry.js';
-import * as ProfileView from './ProfileView.js';
 import * as TopDownProfileDataGrid from './TopDownProfileDataGrid.js';
-export { BottomUpProfileDataGrid, HeapProfilerPanel, HeapProfileView, HeapSnapshotDataGrids, HeapSnapshotGridNodes, HeapSnapshotView, HeapTimelineOverview, IsolateSelector, ProfileDataGrid, ProfileFlameChart, ProfileHeader, ProfileLauncherView, ProfileSidebarTreeElement, ProfilesPanel, ProfileTypeRegistry, ProfileView, TopDownProfileDataGrid, };
+import * as WritableProfileHeader from './WritableProfileHeader.js';
+export { BottomUpProfileDataGrid, HeapProfilerPanel, HeapProfileView, HeapSnapshotDataGrids, HeapSnapshotGridNodes, HeapSnapshotView, HeapTimelineOverview, IsolateSelector, ProfileDataGrid, ProfileFlameChart, ProfileHeader, ProfileLauncherView, ProfileSidebarTreeElement, ProfilesPanel, ProfileTypeRegistry, TopDownProfileDataGrid, WritableProfileHeader, };
 //# sourceMappingURL=profiler.prebundle.js.map

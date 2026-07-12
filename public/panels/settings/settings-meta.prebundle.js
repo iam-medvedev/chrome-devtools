@@ -8,59 +8,59 @@ import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     * @description Text for keyboard shortcuts
+     * @description Text for keyboard shortcuts.
      */
     shortcuts: 'Shortcuts',
     /**
-     * @description Text in Settings Screen of the Settings
+     * @description Text in Settings.
      */
     preferences: 'Preferences',
     /**
-     * @description Text in Settings Screen of the Settings
+     * @description Text in Settings.
      */
     experiments: 'Experiments',
     /**
-     * @description Title of Ignore list settings
+     * @description Title of Ignore list settings.
      */
     ignoreList: 'Ignore list',
     /**
-     * @description Command for showing the keyboard shortcuts in Settings
+     * @description Command for showing the keyboard shortcuts in Settings.
      */
     showShortcuts: 'Show Shortcuts',
     /**
-     * @description Command for showing the preference tab in the Settings Screen
+     * @description Command for showing the Preferences tab in Settings.
      */
     showPreferences: 'Show Preferences',
     /**
-     * @description Command for showing the experiments tab in the Settings Screen
+     * @description Command for showing the Experiments tab in Settings.
      */
     showExperiments: 'Show Experiments',
     /**
-     * @description Command for showing the Ignore list settings
+     * @description Command for showing the Ignore list settings.
      */
     showIgnoreList: 'Show Ignore list',
     /**
-     * @description Name of the Settings view
+     * @description Name of the Settings view.
      */
     settings: 'Settings',
     /**
-     * @description Text for the documentation of something
+     * @description Text for the documentation of something.
      */
     documentation: 'Documentation',
     /**
-     * @description Text for AI innovation settings
+     * @description Text for AI innovations settings.
      */
     aiInnovations: 'AI innovations',
     /**
-     * @description Command for showing the AI innovation settings
+     * @description Command for showing the AI innovations settings.
      */
     showAiInnovations: 'Show AI innovations',
     /**
-     * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+     * @description Text of a DOM element in Workspace settings tab of the Workspace settings in Settings.
      */
     workspace: 'Workspace',
     /**
-     * @description Command for showing the Workspace tool in Settings
+     * @description Command for showing the Workspace tool in Settings.
      */
     showWorkspace: 'Show Workspace settings',
 };

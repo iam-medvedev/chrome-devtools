@@ -156,8 +156,6 @@ export declare const enum SettingStorageType {
      */
     SESSION = "Session"
 }
-export declare function moduleSetting(settingName: string): Setting<unknown>;
-export declare function settingForTest(settingName: string): Setting<unknown>;
 export { getLocalizedSettingsCategory, maybeRemoveSettingExtension, RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, SettingExtensionOption, SettingRegistration, SettingType, };
 export interface Serializer<I, O> {
     stringify: (value: I) => string;

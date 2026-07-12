@@ -11,7 +11,6 @@ import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createWorkspaceProject } from '../../testing/OverridesHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
-import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
@@ -20,7 +19,6 @@ const { urlString } = Platform.DevToolsPath;
 const LONG_URL_PART = 'LoremIpsumDolorSitAmetConsecteturAdipiscingElitPhasellusVitaeOrciInAugueCondimentumTinciduntUtEgetDolorQuisqueEfficiturUltricesTinciduntVivamusVelitPurusCommodoQuisErosSitAmetTemporMalesuadaNislNullamTtempusVulputateAugueEgetScelerisqueLacusVestibulumNon/index.html';
 describe('NetworkManager', () => {
     setupLocaleHooks();
-    setupSettingsHooks();
     setupRuntimeHooks();
     describe('request post data', () => {
         async function createPostRequestWithHeaders(headers, universe, connection) {
@@ -47,7 +45,6 @@ describe('NetworkManager', () => {
         it('decodes gzip-compressed request form data', async () => {
             const universe = new TestUniverse();
             const connection = new MockCDPConnection();
-            SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true, targetManager: universe.targetManager });
             const expectedPostData = 'a=1&b=hello+world';
             const compressedPostData = await Common.Gzip.compress(expectedPostData);
             const encodedPostData = btoa(String.fromCharCode(...new Uint8Array(compressedPostData)));
@@ -1020,17 +1017,16 @@ describe('MultitargetNetworkManager', () => {
     let universe;
     beforeEach(() => {
         universe = new TestUniverse();
-        SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true, targetManager: universe.targetManager });
     });
     describe('Trust Token done event', () => {
         it('is not lost when arriving before the corresponding requestWillBeSent event', () => {
-            // 1) Setup a NetworkManager and listen to "RequestStarted" events.
-            const networkManager = new Common.ObjectWrapper.ObjectWrapper();
+            const target = universe.createTarget({});
+            const networkManager = target.model(SDK.NetworkManager.NetworkManager);
             const startedRequests = [];
             networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, event => {
                 startedRequests.push(event.data.request);
             });
-            const networkDispatcher = new SDK.NetworkManager.NetworkDispatcher(networkManager);
+            const networkDispatcher = networkManager.dispatcher;
             // 2) Fire a trust token event, followed by a requestWillBeSent event.
             const mockEvent = { requestId: 'mockId' };
             networkDispatcher.trustTokenOperationDone(mockEvent);
@@ -1043,7 +1039,7 @@ describe('MultitargetNetworkManager', () => {
     it('handles worker requests originating from the frame target', async () => {
         const target = universe.createTarget({});
         const workerTarget = universe.createTarget({ type: SDK.Target.Type.Worker });
-        const multiTargetNetworkManager = SDK.NetworkManager.MultitargetNetworkManager.instance();
+        const multiTargetNetworkManager = universe.multitargetNetworkManager;
         const initialNetworkManager = target.model(SDK.NetworkManager.NetworkManager);
         assert.strictEqual(multiTargetNetworkManager.inflightMainResourceRequests.size, 0);
         const requestId = 'mockId';
@@ -1072,10 +1068,10 @@ describe('MultitargetNetworkManager', () => {
         assert.isTrue(expectedCall.calledOnceWith({ origin: 'https://example.com' }));
     });
     it('blocking settings are consistent after change', async () => {
-        const multitargetNetworkManager = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
+        const multitargetNetworkManager = universe.multitargetNetworkManager;
         let eventCounter = 0;
         multitargetNetworkManager.addEventListener("BlockedPatternsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */, () => eventCounter++);
-        const blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
+        const blockingEnabledSetting = universe.settings.moduleSetting('request-blocking-enabled');
         // Change blocking setting via Common.Settings.Settings.
         assert.isFalse(multitargetNetworkManager.isBlocking());
         assert.isFalse(multitargetNetworkManager.requestConditions.conditionsEnabled);
@@ -1083,7 +1079,7 @@ describe('MultitargetNetworkManager', () => {
         assert.strictEqual(eventCounter, 1);
         assert.isFalse(multitargetNetworkManager.isBlocking());
         assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
-        multitargetNetworkManager.requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com', enabled: true }));
+        multitargetNetworkManager.requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com', enabled: true }, universe.settings));
         assert.strictEqual(eventCounter, 2);
         assert.isTrue(multitargetNetworkManager.isBlocking());
         assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
@@ -1102,7 +1098,7 @@ describe('MultitargetNetworkManager', () => {
         assert.strictEqual(eventCounter, 5);
         assert.isFalse(multitargetNetworkManager.isBlocking());
         assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
-        multitargetNetworkManager.requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com', enabled: true }));
+        multitargetNetworkManager.requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com', enabled: true }, universe.settings));
         assert.strictEqual(eventCounter, 6);
         assert.isTrue(multitargetNetworkManager.isBlocking());
         assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
@@ -1116,10 +1112,10 @@ describe('MultitargetNetworkManager', () => {
         assert.isFalse(multitargetNetworkManager.requestConditions.conditionsEnabled);
     });
     it('blocking settings allow deleting an item in the middle of the list', () => {
-        const conditions = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true }).requestConditions;
-        const condition1 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url1', enabled: true });
-        const condition2 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url2', enabled: true });
-        const condition3 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url3', enabled: true });
+        const conditions = universe.multitargetNetworkManager.requestConditions;
+        const condition1 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url1', enabled: true }, universe.settings);
+        const condition2 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url2', enabled: true }, universe.settings);
+        const condition3 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url3', enabled: true }, universe.settings);
         conditions.add(condition1, condition2, condition3);
         assert.deepEqual(conditions.conditions.toArray(), [condition1, condition2, condition3]);
         conditions.delete(condition2);
@@ -1128,7 +1124,7 @@ describe('MultitargetNetworkManager', () => {
     it('applies global conditions if request conditions are disabled', () => {
         const connection = new MockCDPConnection();
         universe.createTarget({ connection });
-        const manager = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true, targetManager: universe.targetManager });
+        const manager = universe.multitargetNetworkManager;
         const rules = [];
         connection.setSuccessHandler('Network.emulateNetworkConditionsByRule', request => {
             rules.push(request);
@@ -1146,7 +1142,7 @@ describe('MultitargetNetworkManager', () => {
         }));
     });
     it('calls the request conditions model for global throttling if individual request throttling is enabled', () => {
-        const manager = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true, targetManager: universe.targetManager });
+        const manager = universe.multitargetNetworkManager;
         manager.setNetworkConditions(SDK.NetworkManager.Slow4GConditions);
         const targetManager = new SDK.NetworkManager.NetworkManager(universe.createTarget({}));
         const emulateNetworkConditions = sinon.stub(targetManager.target().networkAgent(), 'invoke_emulateNetworkConditions');
@@ -1161,9 +1157,9 @@ describe('MultitargetNetworkManager', () => {
     });
     it('can reorder the conditions', () => {
         const requestConditions = new SDK.NetworkManager.RequestConditions(universe.settings);
-        const condition1 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url1', enabled: true });
-        const condition2 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url2', enabled: true });
-        const condition3 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url3', enabled: true });
+        const condition1 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url1', enabled: true }, universe.settings);
+        const condition2 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url2', enabled: true }, universe.settings);
+        const condition3 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url3', enabled: true }, universe.settings);
         requestConditions.add(condition1, condition2, condition3);
         const changedEventStub = sinon.stub();
         requestConditions.addEventListener("request-conditions-changed" /* SDK.NetworkManager.RequestConditions.Events.REQUEST_CONDITIONS_CHANGED */, changedEventStub);
@@ -1222,22 +1218,20 @@ describe('RequestURLPattern', () => {
 });
 describe('RequestConditions', () => {
     setupLocaleHooks();
-    setupSettingsHooks();
     setupRuntimeHooks();
-    function getSetting(values) {
-        Common.Settings.Settings.instance().clearAll();
-        Common.Settings.Settings.instance().getRegistry().clear();
-        return Common.Settings.Settings.instance().createSetting('network-blocked-patterns', values);
-    }
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
     it('loads settings with url pattern', () => {
-        getSetting([
+        universe.settings.createSetting('network-blocked-patterns', []).set([
             {
                 enabled: true,
                 urlPattern: '*://example.com',
                 conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */,
             },
         ]);
-        const conditions = new SDK.NetworkManager.RequestConditions(Common.Settings.Settings.instance());
+        const conditions = new SDK.NetworkManager.RequestConditions(universe.settings);
         const condition = conditions.conditions.next().value;
         assert.exists(condition);
         assert.isUndefined(condition.wildcardURL);
@@ -1245,27 +1239,29 @@ describe('RequestConditions', () => {
         assert.exists(condition.originalOrUpgradedURLPattern);
     });
     it('loads settings with url', () => {
-        getSetting([{ enabled: true, url: 'foo' }]);
-        const conditions = new SDK.NetworkManager.RequestConditions(Common.Settings.Settings.instance());
+        universe.settings.createSetting('network-blocked-patterns', []).set([
+            { enabled: true, url: 'foo' }
+        ]);
+        const conditions = new SDK.NetworkManager.RequestConditions(universe.settings);
         const condition = conditions.conditions.next().value;
         assert.exists(condition);
         assert.strictEqual(condition.wildcardURL, 'foo');
         assert.strictEqual(condition.constructorString, '*://foo*');
     });
     it('stores settings correctly', () => {
-        const setting = getSetting([]);
-        const conditions = new SDK.NetworkManager.RequestConditions(Common.Settings.Settings.instance());
+        const setting = universe.settings.createSetting('network-blocked-patterns', []);
+        const conditions = new SDK.NetworkManager.RequestConditions(universe.settings);
         const patternCondition = SDK.NetworkManager.RequestCondition.createFromSetting({
             enabled: true,
             urlPattern: '*://example.com',
             conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */,
-        });
+        }, universe.settings);
         assert.strictEqual(patternCondition.conditions, SDK.NetworkManager.NoThrottlingConditions);
         conditions.add(patternCondition);
         const wildcardCondition = SDK.NetworkManager.RequestCondition.createFromSetting({
             enabled: true,
             url: 'foo',
-        });
+        }, universe.settings);
         conditions.add(wildcardCondition);
         assert.strictEqual(wildcardCondition.conditions, SDK.NetworkManager.BlockingConditions);
         assert.deepEqual(setting.get()[0], {
@@ -1276,12 +1272,12 @@ describe('RequestConditions', () => {
         assert.deepEqual(setting.get()[1], { enabled: true, url: 'foo' });
     });
     it('upgrades url to url pattern', () => {
-        const setting = getSetting([]);
-        const conditions = new SDK.NetworkManager.RequestConditions(Common.Settings.Settings.instance());
+        const setting = universe.settings.createSetting('network-blocked-patterns', []);
+        const conditions = new SDK.NetworkManager.RequestConditions(universe.settings);
         const condition = SDK.NetworkManager.RequestCondition.createFromSetting({
             enabled: true,
             url: 'foo',
-        });
+        }, universe.settings);
         conditions.add(condition);
         condition.conditions = SDK.NetworkManager.NoThrottlingConditions;
         assert.deepEqual(setting.get()[0], {
@@ -1302,46 +1298,50 @@ describe('RequestConditions', () => {
             return { universe, agent, setBlockedURLs, emulateNetworkConditions, emulateNetworkConditionsByRule };
         }
         it('applies blocking, global, and local throttling if individual request throttling is enabled', () => {
-            const { agent, setBlockedURLs, emulateNetworkConditions, emulateNetworkConditionsByRule } = stubAgent();
-            const conditions = new SDK.NetworkManager.RequestConditions(Common.Settings.Settings.instance());
+            const { universe, agent, setBlockedURLs, emulateNetworkConditions, emulateNetworkConditionsByRule } = stubAgent();
+            // Stub the background applyConditions on the multitarget manager's requestConditions
+            // to avoid settings listener side effects during this test.
+            sinon.stub(universe.multitargetNetworkManager.requestConditions, 'applyConditions');
+            const conditions = new SDK.NetworkManager.RequestConditions(universe.settings);
             conditions.conditionsEnabled = true;
-            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'foo', enabled: true }));
-            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'bar', enabled: false }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'foo', enabled: true }, universe.settings));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'bar', enabled: false }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://nothrottle:*',
                 enabled: true,
                 conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */
-            }));
+            }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://block:*',
                 enabled: true,
                 conditions: "BLOCKING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.BLOCKING */
-            }));
+            }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://throttle:*',
                 enabled: true,
                 conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */
-            }));
+            }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://disabled_nothrottle:*',
                 enabled: false,
                 conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */
-            }));
+            }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://disabled_block:*',
                 enabled: false,
                 conditions: "BLOCKING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.BLOCKING */
-            }));
+            }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://disabled_throttle:*',
                 enabled: false,
                 conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */
-            }));
+            }, universe.settings));
             conditions.applyConditions(false, null, agent);
             sinon.assert.notCalled(emulateNetworkConditions);
             sinon.assert.calledOnce(emulateNetworkConditionsByRule);
             assert.deepEqual(emulateNetworkConditionsByRule.args[0][0], {
                 offline: false,
+                emulateOfflineServiceWorker: false,
                 matchedNetworkConditions: [{
                         urlPattern: '*://throttle:*',
                         latency: 2000,
@@ -1351,6 +1351,7 @@ describe('RequestConditions', () => {
                         packetQueueLength: undefined,
                         packetReordering: undefined,
                         connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
+                        offline: false,
                     }]
             });
             sinon.assert.calledOnceWithExactly(setBlockedURLs, {
@@ -1368,6 +1369,7 @@ describe('RequestConditions', () => {
             sinon.assert.calledOnce(emulateNetworkConditionsByRule);
             assert.deepEqual(emulateNetworkConditionsByRule.args[0][0], {
                 offline: true,
+                emulateOfflineServiceWorker: true,
                 matchedNetworkConditions: [
                     {
                         urlPattern: '*://throttle:*',
@@ -1378,6 +1380,7 @@ describe('RequestConditions', () => {
                         packetQueueLength: undefined,
                         packetReordering: undefined,
                         connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
+                        offline: true,
                     },
                     {
                         urlPattern: '',
@@ -1388,6 +1391,7 @@ describe('RequestConditions', () => {
                         packetQueueLength: undefined,
                         packetReordering: undefined,
                         connectionType: "cellular4g" /* Protocol.Network.ConnectionType.Cellular4g */,
+                        offline: true,
                     }
                 ]
             });
@@ -1401,21 +1405,20 @@ describe('RequestConditions', () => {
         });
         it('disables throttling and blocking when the effect gets disabled globally', () => {
             const { universe, setBlockedURLs, emulateNetworkConditions, emulateNetworkConditionsByRule } = stubAgent();
-            const conditions = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true, targetManager: universe.targetManager })
-                .requestConditions;
+            const conditions = universe.multitargetNetworkManager.requestConditions;
             conditions.conditionsEnabled = true;
-            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'foo', enabled: true }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'foo', enabled: true }, universe.settings));
             conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
                 urlPattern: '*://throttle:*',
                 enabled: true,
                 conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */
-            }));
+            }, universe.settings));
             emulateNetworkConditions.resetHistory();
             emulateNetworkConditionsByRule.resetHistory();
             setBlockedURLs.resetHistory();
             conditions.conditionsEnabled = false;
             sinon.assert.notCalled(emulateNetworkConditions);
-            sinon.assert.calledOnceWithExactly(emulateNetworkConditionsByRule, { offline: false, matchedNetworkConditions: [] });
+            sinon.assert.calledOnceWithExactly(emulateNetworkConditionsByRule, { offline: false, emulateOfflineServiceWorker: false, matchedNetworkConditions: [] });
             sinon.assert.calledOnceWithExactly(setBlockedURLs, { urlPatterns: [] });
             emulateNetworkConditions.resetHistory();
             emulateNetworkConditionsByRule.resetHistory();
@@ -1424,6 +1427,7 @@ describe('RequestConditions', () => {
             sinon.assert.notCalled(emulateNetworkConditions);
             sinon.assert.calledOnceWithExactly(emulateNetworkConditionsByRule, {
                 offline: false,
+                emulateOfflineServiceWorker: false,
                 matchedNetworkConditions: [{
                         urlPattern: '*://throttle:*',
                         latency: 2000,
@@ -1433,6 +1437,7 @@ describe('RequestConditions', () => {
                         packetQueueLength: undefined,
                         packetReordering: undefined,
                         connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
+                        offline: false,
                     }]
             });
             sinon.assert.calledOnceWithExactly(setBlockedURLs, {
@@ -1444,7 +1449,7 @@ describe('RequestConditions', () => {
         });
         it('correctly maps ruleIds to conditions', async () => {
             const { universe, agent, emulateNetworkConditionsByRule } = stubAgent();
-            const multitargetNetworkManager = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true, targetManager: universe.targetManager });
+            const multitargetNetworkManager = universe.multitargetNetworkManager;
             const requestConditions = multitargetNetworkManager.requestConditions;
             const ruleId = 'mock-rule-id-1';
             emulateNetworkConditionsByRule.resolves({ ruleIds: [ruleId], getError: () => undefined });
@@ -1452,7 +1457,7 @@ describe('RequestConditions', () => {
                 urlPattern: '*://example.com:*',
                 enabled: true,
                 conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
-            });
+            }, universe.settings);
             requestConditions.add(throttlingCondition);
             requestConditions.conditionsEnabled = true;
             await requestConditions.applyConditions(false, null, agent);
@@ -1495,16 +1500,13 @@ describe('NetworkDispatcher', () => {
     };
     const loadingFinishedEvent = { requestId: 'mockId', timestamp: 42, encodedDataLength: 42 };
     describe('request', () => {
+        let universe;
         let networkDispatcher;
         beforeEach(() => {
-            const networkManager = new Common.ObjectWrapper.ObjectWrapper();
-            networkManager.target = () => ({
-                model: () => null,
-                targetManager: () => ({
-                    settings: Common.Settings.Settings.instance(),
-                }),
-            });
-            networkDispatcher = new SDK.NetworkManager.NetworkDispatcher(networkManager);
+            universe = new TestUniverse();
+            const target = universe.createTarget({});
+            const networkManager = target.model(SDK.NetworkManager.NetworkManager);
+            networkDispatcher = networkManager.dispatcher;
         });
         it('is preserved after loadingFinished', () => {
             networkDispatcher.requestWillBeSent(requestWillBeSentEvent);
@@ -1616,7 +1618,7 @@ describe('NetworkDispatcher', () => {
             networkDispatcher.responseReceived(mockResponseReceivedEventWithHeaders({ 'test-header': 'second' }));
             assert.deepEqual(networkDispatcher.requestForId('mockId')?.responseHeaders, [{ name: 'test-header', value: 'first' }]);
             // ResponseReceived does overwrite response headers if request is marked as intercepted.
-            SDK.NetworkManager.MultitargetNetworkManager.instance().dispatchEventToListeners("RequestIntercepted" /* SDK.NetworkManager.MultitargetNetworkManager.Events.REQUEST_INTERCEPTED */, 'mockId');
+            universe.multitargetNetworkManager.dispatchEventToListeners("RequestIntercepted" /* SDK.NetworkManager.MultitargetNetworkManager.Events.REQUEST_INTERCEPTED */, 'mockId');
             networkDispatcher.responseReceived(mockResponseReceivedEventWithHeaders({ 'test-header': 'third' }));
             assert.deepEqual(networkDispatcher.requestForId('mockId')?.responseHeaders, [{ name: 'test-header', value: 'third' }]);
         });
@@ -1681,15 +1683,172 @@ describe('NetworkDispatcher', () => {
             ]);
         });
     });
+    describe('webSocket', () => {
+        let universe;
+        let networkManager;
+        let networkDispatcher;
+        beforeEach(() => {
+            universe = new TestUniverse();
+            const target = universe.createTarget({});
+            networkManager = target.model(SDK.NetworkManager.NetworkManager);
+            networkDispatcher = networkManager.dispatcher;
+        });
+        it('dispatches RequestUpdated and updates frames when WebSocketFrames are sent and received', () => {
+            const requestId = 'mock-ws-id';
+            networkDispatcher.webSocketCreated({
+                requestId,
+                url: 'ws://localhost:8880/echo',
+                initiator: { type: "script" /* Protocol.Network.InitiatorType.Script */ },
+            });
+            const request = networkManager.requestForId(requestId);
+            assert.exists(request);
+            assert.strictEqual(request.resourceType(), Common.ResourceType.resourceTypes.WebSocket);
+            const requestUpdatedEvents = [];
+            networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, event => {
+                requestUpdatedEvents.push(event.data);
+            });
+            networkDispatcher.webSocketFrameSent({
+                requestId,
+                timestamp: 1,
+                response: { opcode: 1, mask: true, payloadData: 'test' },
+            });
+            assert.lengthOf(requestUpdatedEvents, 1);
+            assert.strictEqual(requestUpdatedEvents[0], request);
+            assert.deepEqual(request.frames(), [
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                    text: 'test',
+                    time: request.pseudoWallTime(1),
+                    opCode: 1,
+                    mask: true,
+                },
+            ]);
+            networkDispatcher.webSocketFrameSent({
+                requestId,
+                timestamp: 2,
+                response: { opcode: 1, mask: true, payloadData: 'exit' },
+            });
+            assert.lengthOf(requestUpdatedEvents, 2);
+            assert.deepEqual(request.frames(), [
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                    text: 'test',
+                    time: request.pseudoWallTime(1),
+                    opCode: 1,
+                    mask: true,
+                },
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                    text: 'exit',
+                    time: request.pseudoWallTime(2),
+                    opCode: 1,
+                    mask: true,
+                },
+            ]);
+            networkDispatcher.webSocketFrameReceived({
+                requestId,
+                timestamp: 3,
+                response: { opcode: 1, mask: false, payloadData: 'test' },
+            });
+            assert.lengthOf(requestUpdatedEvents, 3);
+            assert.deepEqual(request.frames(), [
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                    text: 'test',
+                    time: request.pseudoWallTime(1),
+                    opCode: 1,
+                    mask: true,
+                },
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                    text: 'exit',
+                    time: request.pseudoWallTime(2),
+                    opCode: 1,
+                    mask: true,
+                },
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Receive,
+                    text: 'test',
+                    time: request.pseudoWallTime(3),
+                    opCode: 1,
+                    mask: false,
+                },
+            ]);
+            networkDispatcher.webSocketFrameReceived({
+                requestId,
+                timestamp: 4,
+                response: { opcode: 1, mask: false, payloadData: 'exit' },
+            });
+            assert.lengthOf(requestUpdatedEvents, 4);
+            assert.deepEqual(request.frames(), [
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                    text: 'test',
+                    time: request.pseudoWallTime(1),
+                    opCode: 1,
+                    mask: true,
+                },
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Send,
+                    text: 'exit',
+                    time: request.pseudoWallTime(2),
+                    opCode: 1,
+                    mask: true,
+                },
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Receive,
+                    text: 'test',
+                    time: request.pseudoWallTime(3),
+                    opCode: 1,
+                    mask: false,
+                },
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Receive,
+                    text: 'exit',
+                    time: request.pseudoWallTime(4),
+                    opCode: 1,
+                    mask: false,
+                },
+            ]);
+        });
+        it('dispatches RequestUpdated when webSocketFrameError occurs', () => {
+            const requestId = 'mock-ws-id';
+            networkDispatcher.webSocketCreated({
+                requestId,
+                url: 'ws://localhost:8880/echo',
+                initiator: { type: "script" /* Protocol.Network.InitiatorType.Script */ },
+            });
+            const request = networkManager.requestForId(requestId);
+            assert.exists(request);
+            const requestUpdatedEvents = [];
+            networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, event => {
+                requestUpdatedEvents.push(event.data);
+            });
+            networkDispatcher.webSocketFrameError({
+                requestId,
+                timestamp: 1,
+                errorMessage: 'connection failed',
+            });
+            assert.lengthOf(requestUpdatedEvents, 1);
+            assert.deepEqual(request.frames(), [
+                {
+                    type: SDK.NetworkRequest.WebSocketFrameType.Error,
+                    text: 'connection failed',
+                    time: request.pseudoWallTime(1),
+                    opCode: -1,
+                    mask: false,
+                },
+            ]);
+        });
+    });
 });
 describe('InterceptedRequest', () => {
     setupLocaleHooks();
-    setupSettingsHooks();
     setupRuntimeHooks();
     let target;
     let fulfillRequestSpy;
     async function checkRequestOverride(target, request, requestId, responseStatusCode, responseHeaders, responseBody, expectedOverriddenResponse, expectedSetCookieHeaders = []) {
-        const multitargetNetworkManager = SDK.NetworkManager.MultitargetNetworkManager.instance();
+        const multitargetNetworkManager = universe.multitargetNetworkManager;
         const fetchAgent = target.fetchAgent();
         const fulfilledRequest = new Promise(resolve => {
             multitargetNetworkManager.addEventListener("RequestFulfilled" /* SDK.NetworkManager.MultitargetNetworkManager.Events.REQUEST_FULFILLED */, resolve);
@@ -1701,7 +1860,7 @@ describe('InterceptedRequest', () => {
         // which receives its header information via mojo which in turn filters out
         // 'set-cookie' headers.
         const filteredResponseHeaders = responseHeaders.filter(header => header.name !== 'set-cookie');
-        const interceptedRequest = new SDK.NetworkManager.InterceptedRequest(fetchAgent, request, "Document" /* Protocol.Network.ResourceType.Document */, requestId, networkRequest, responseStatusCode, filteredResponseHeaders);
+        const interceptedRequest = new SDK.NetworkManager.InterceptedRequest(multitargetNetworkManager, fetchAgent, request, "Document" /* Protocol.Network.ResourceType.Document */, requestId, networkRequest, responseStatusCode, filteredResponseHeaders);
         interceptedRequest.responseBody = async () => {
             return new TextUtils.ContentData.ContentData(responseBody, false, 'text/html');
         };
@@ -1921,12 +2080,12 @@ describe('InterceptedRequest', () => {
         const fetchAgent = target.fetchAgent();
         const continueRequestSpy = sinon.spy(fetchAgent, 'invoke_continueRequest');
         const networkRequest = SDK.NetworkRequest.NetworkRequest.create(requestId, urlString `${request.url}`, urlString `${request.url}`, null, null, null);
-        const interceptedRequest = new SDK.NetworkManager.InterceptedRequest(fetchAgent, request, "Document" /* Protocol.Network.ResourceType.Document */, requestId, networkRequest);
+        const interceptedRequest = new SDK.NetworkManager.InterceptedRequest(universe.multitargetNetworkManager, fetchAgent, request, "Document" /* Protocol.Network.ResourceType.Document */, requestId, networkRequest);
         interceptedRequest.responseBody = async () => {
             return new TextUtils.ContentData.ContentData('interceptedRequest content', false, 'text/html');
         };
         sinon.assert.notCalled(continueRequestSpy);
-        await SDK.NetworkManager.MultitargetNetworkManager.instance().requestIntercepted(interceptedRequest);
+        await universe.multitargetNetworkManager.requestIntercepted(interceptedRequest);
         sinon.assert.notCalled(fulfillRequestSpy);
         sinon.assert.calledOnce(continueRequestSpy);
     });
@@ -1963,7 +2122,7 @@ describe('InterceptedRequest', () => {
             const networkProject = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(universe.workspace, 'testing-network', Workspace.Workspace.projectTypes.Network, 'Override network project', false);
             const uiSourceCode = networkProject.createUISourceCode(urlString `https://www.example.com/utf16.html`, Common.ResourceType.resourceTypes.Document);
             networkProject.addUISourceCode(uiSourceCode);
-            const interceptedRequest = new SDK.NetworkManager.InterceptedRequest(fetchAgent, request, "Document" /* Protocol.Network.ResourceType.Document */, requestId, networkRequest, 200, [{ name: 'content-type', value: 'text/html; charset-utf-16' }]);
+            const interceptedRequest = new SDK.NetworkManager.InterceptedRequest(universe.multitargetNetworkManager, fetchAgent, request, "Document" /* Protocol.Network.ResourceType.Document */, requestId, networkRequest, 200, [{ name: 'content-type', value: 'text/html; charset-utf-16' }]);
             interceptedRequest.responseBody = async () => {
                 // Very simple HTML doc base64 encoded.
                 return new TextUtils.ContentData.ContentData('//48ACEARABPAEMAVABZAFAARQAgAGgAdABtAGwAPgAKADwAcAA+AEkA8QB0AOsAcgBuAOIAdABpAPQAbgDgAGwAaQB6AOYAdABpAPgAbgADJjTYBt88AC8AcAA+AAoA', true, 'text/html', 'utf-16');

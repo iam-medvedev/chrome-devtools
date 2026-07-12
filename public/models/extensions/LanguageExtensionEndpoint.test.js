@@ -5,6 +5,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../bindings/bindings.js';
 import * as Extensions from './extensions.js';
 const { urlString } = Platform.DevToolsPath;
 for (const allowFileAccess of [true, false]) {
@@ -12,7 +13,8 @@ for (const allowFileAccess of [true, false]) {
         let endpoint;
         beforeEach(() => {
             const channel = new MessageChannel();
-            endpoint = new Extensions.LanguageExtensionEndpoint.LanguageExtensionEndpoint(allowFileAccess, '', '', { language: 'lang', symbol_types: ["SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */] }, channel.port1);
+            const pluginManager = sinon.createStubInstance(Bindings.DebuggerLanguagePlugins.DebuggerLanguagePluginManager);
+            endpoint = new Extensions.LanguageExtensionEndpoint.LanguageExtensionEndpoint(allowFileAccess, '', '', { language: 'lang', symbol_types: ["SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */] }, channel.port1, pluginManager);
         });
         it('canAccessURL respects allowFileAccess correctly', () => {
             assert.isTrue(endpoint.canAccessURL('http://example.com'));

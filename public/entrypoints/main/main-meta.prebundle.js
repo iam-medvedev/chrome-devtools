@@ -864,27 +864,27 @@ UI.Toolbar.registerToolbarItem({
         const isPolicyRestricted = config?.aidaAvailability?.blockedByEnterprisePolicy === true;
         return Boolean(isFlagEnabled && !isGeoRestricted && !isPolicyRestricted);
     },
-    async loadItem() {
+    loadItem: Common.Lazy.lazy(async () => {
         const Main = await loadMainModule();
-        return Main.GlobalAiButton.GlobalAiButtonToolbarProvider.instance();
-    },
+        return new Main.GlobalAiButton.GlobalAiButtonToolbarProvider();
+    }),
     order: 98,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
 });
 UI.Toolbar.registerToolbarItem({
-    async loadItem() {
+    loadItem: Common.Lazy.lazy(async () => {
         const Main = await loadMainModule();
-        return Main.MainImpl.SettingsButtonProvider.instance();
-    },
+        return new Main.MainImpl.SettingsButtonProvider();
+    }),
     order: 99,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
 });
 UI.Toolbar.registerToolbarItem({
     condition: () => !Root.Runtime.Runtime.isTraceApp(),
-    async loadItem() {
+    loadItem: Common.Lazy.lazy(async () => {
         const Main = await loadMainModule();
-        return Main.MainImpl.MainMenuItem.instance();
-    },
+        return new Main.MainImpl.MainMenuItem();
+    }),
     order: 100,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
 });
@@ -898,7 +898,7 @@ UI.Toolbar.registerToolbarItem({
 UI.AppProvider.registerAppProvider({
     async loadAppProvider() {
         const Main = await loadMainModule();
-        return Main.SimpleApp.SimpleAppProvider.instance();
+        return new Main.SimpleApp.SimpleAppProvider();
     },
     order: 10,
 });

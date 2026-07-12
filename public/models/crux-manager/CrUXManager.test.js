@@ -7,11 +7,11 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
-import { createTarget, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
-import * as CrUXManager from './crux-manager.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 const { urlString } = Platform.DevToolsPath;
 export function mockResponse(scopes = null) {
     return {
@@ -50,6 +50,7 @@ async function triggerMicroTaskQueue() {
     await new Promise(resolve => setTimeout(resolve, 0));
 }
 describe('CrUXManager', () => {
+    let universe;
     let cruxManager;
     let target;
     let resourceTreeModel;
@@ -58,52 +59,36 @@ describe('CrUXManager', () => {
     setupRuntimeHooks();
     setupSettingsHooks();
     setupLocaleHooks();
-    beforeEach(async () => {
-        SDK.TargetManager.TargetManager.instance({ forceNew: true });
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-        target = createTarget({ parentTarget: tabTarget });
-        target.setInspectedURL(urlString `https://example.com/inspected`);
-        resourceTreeModel =
-            target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        cruxManager = CrUXManager.CrUXManager.instance({ forceNew: true });
-        mockFetch = sinon.stub(globalThis, 'fetch');
-        mockConsoleError = sinon.stub(console, 'error');
-        EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
-    });
-    afterEach(() => {
-        mockFetch?.restore();
-        mockConsoleError?.restore();
-        cruxManager?.getConfigSetting().set({ enabled: false });
+    beforeEach(() => {
+        universe = new TestUniverse();
     });
     describe('storing the user consent', () => {
         it('uses global storage if the user is not in an OffTheRecord profile', async () => {
             updateHostConfig({ isOffTheRecord: false });
             const dummyStorage = new Common.Settings.SettingsStorage({});
             const globalStorage = new Common.Settings.SettingsStorage({});
-            Common.Settings.Settings.instance({
-                forceNew: true,
-                syncedStorage: dummyStorage,
-                globalStorage,
-                localStorage: dummyStorage,
-                settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
-                console: new Common.Console.Console(),
-            });
-            const manager = CrUXManager.CrUXManager.instance({ forceNew: true });
+            const manager = new TestUniverse({
+                settingsCreationOptions: {
+                    syncedStorage: dummyStorage,
+                    globalStorage,
+                    localStorage: dummyStorage,
+                    settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+                },
+            }).cruxManager;
             manager.getConfigSetting().set({ enabled: true });
             assert.isTrue(globalStorage.has(manager.getConfigSetting().name));
         });
         it('uses session storage if the user is in an OffTheRecord profile', async () => {
             updateHostConfig({ isOffTheRecord: true });
             const dummyStorage = new Common.Settings.SettingsStorage({});
-            Common.Settings.Settings.instance({
-                forceNew: true,
-                syncedStorage: dummyStorage,
-                globalStorage: dummyStorage,
-                localStorage: dummyStorage,
-                settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
-                console: new Common.Console.Console(),
-            });
-            const manager = CrUXManager.CrUXManager.instance({ forceNew: true });
+            const manager = new TestUniverse({
+                settingsCreationOptions: {
+                    syncedStorage: dummyStorage,
+                    globalStorage: dummyStorage,
+                    localStorage: dummyStorage,
+                    settingRegistrations: Common.SettingRegistration.getRegisteredSettings(),
+                },
+            }).cruxManager;
             manager.getConfigSetting().set({ enabled: true });
             // SessionStorage is created and managed internally to the Settings
             // class, and is a private instance variable, so we cannot actually
@@ -114,13 +99,23 @@ describe('CrUXManager', () => {
         });
     });
     it('isEnabled() returns if the user has consented)', async () => {
-        const manager = CrUXManager.CrUXManager.instance({ forceNew: true });
+        const manager = new TestUniverse().cruxManager;
         manager.getConfigSetting().set({ enabled: true });
         assert.isTrue(manager.isEnabled());
         manager.getConfigSetting().set({ enabled: false });
         assert.isFalse(manager.isEnabled());
     });
     describe('getFieldDataForPage', () => {
+        beforeEach(() => {
+            cruxManager = universe.cruxManager;
+            mockFetch = sinon.stub(globalThis, 'fetch');
+            mockConsoleError = sinon.stub(console, 'error');
+        });
+        afterEach(() => {
+            mockFetch?.restore();
+            mockConsoleError?.restore();
+            cruxManager?.getConfigSetting().set({ enabled: false });
+        });
         it('should request data for all scopes', async () => {
             mockFetch.callsFake(async () => new Response(JSON.stringify(mockResponse()), {
                 status: 200,
@@ -310,6 +305,13 @@ describe('CrUXManager', () => {
     describe('getFieldDataForCurrentPage', () => {
         let getFieldDataMock;
         beforeEach(() => {
+            cruxManager = universe.cruxManager;
+            const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
+            target = universe.createTarget({ parentTarget: tabTarget });
+            target.setInspectedURL(urlString `https://example.com/inspected`);
+            resourceTreeModel =
+                target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
             getFieldDataMock = sinon.stub(cruxManager, 'getFieldDataForPage');
             getFieldDataMock.resolves({
                 'origin-ALL': mockResponse({ pageScope: 'origin', deviceScope: 'ALL' }),
@@ -326,15 +328,18 @@ describe('CrUXManager', () => {
         });
         afterEach(() => {
             getFieldDataMock.restore();
+            cruxManager?.getConfigSetting().set({ enabled: false });
         });
         it('should use main document URL if available', async () => {
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {
                 url: 'https://example.com/main/',
                 isPrimaryFrame: () => true,
+                isOutermostFrame: () => true,
             });
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {
                 url: 'https://example.com/frame/',
                 isPrimaryFrame: () => false,
+                isOutermostFrame: () => false,
             });
             const result = await cruxManager.getFieldDataForCurrentPageForTesting();
             assert.deepEqual(result.warnings, []);
@@ -445,6 +450,12 @@ describe('CrUXManager', () => {
         let getFieldDataMock;
         let eventBodies = [];
         beforeEach(() => {
+            cruxManager = universe.cruxManager;
+            const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
+            target = universe.createTarget({ parentTarget: tabTarget });
+            target.setInspectedURL(urlString `https://example.com/inspected`);
+            resourceTreeModel =
+                target.model(SDK.ResourceTreeModel.ResourceTreeModel);
             eventBodies = [];
             cruxManager.addEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, event => {
                 eventBodies.push(event.data);
@@ -465,6 +476,7 @@ describe('CrUXManager', () => {
         });
         afterEach(() => {
             getFieldDataMock.restore();
+            cruxManager?.getConfigSetting().set({ enabled: false });
         });
         it('should update when enabled setting changes', async () => {
             const setting = cruxManager.getConfigSetting();
@@ -489,6 +501,7 @@ describe('CrUXManager', () => {
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {
                 url: 'https://example.com/main/',
                 isPrimaryFrame: () => true,
+                isOutermostFrame: () => true,
             });
             await triggerMicroTaskQueue();
             sinon.assert.callCount(getFieldDataMock, 2);
@@ -517,6 +530,7 @@ describe('CrUXManager', () => {
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {
                 url: 'https://example.com/main/',
                 isPrimaryFrame: () => true,
+                isOutermostFrame: () => true,
             });
             await triggerMicroTaskQueue();
             sinon.assert.callCount(getFieldDataMock, 0);

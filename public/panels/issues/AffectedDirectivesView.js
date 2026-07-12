@@ -101,7 +101,7 @@ export class AffectedDirectivesView extends AffectedResourcesView {
                 }
             };
             const onElementRevealIconMouseLeave = () => {
-                SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+                SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
             };
             elementsPanelLinkComponent
                 .data = { onElementRevealIconClick, onElementRevealIconMouseEnter, onElementRevealIconMouseLeave };

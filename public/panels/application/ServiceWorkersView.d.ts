@@ -25,7 +25,7 @@ export declare class ServiceWorkersView extends UI.Widget.VBox implements SDK.Ta
     private isRegistrationVisible;
     private updateListVisibility;
 }
-export declare class Section {
+export declare class Section extends UI.Widget.VBox {
     private manager;
     section: UI.ReportView.Section;
     registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration;
@@ -34,37 +34,28 @@ export declare class Section {
     private readonly syncTagNameSetting;
     private readonly periodicSyncTagNameSetting;
     private readonly updateCycleView;
-    private readonly routerView;
-    private readonly networkRequests;
-    private readonly updateButton;
-    private readonly deleteButton;
-    private sourceField;
-    private readonly statusField;
-    private readonly clientsField;
     private readonly clientInfoCache;
     private readonly throttler;
-    private updateCycleField?;
-    private routerField?;
     constructor(manager: SDK.ServiceWorkerManager.ServiceWorkerManager, section: UI.ReportView.Section, registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration);
-    private createSyncNotificationField;
+    private renderHeaderButtons;
+    private renderSyncNotificationField;
     scheduleUpdate(): void;
-    private addVersion;
-    private updateClientsField;
-    private updateSourceField;
-    private performUpdate;
+    private renderVersion;
+    private renderClientsField;
+    private renderSourceField;
+    private renderStatusField;
+    performUpdate(): Promise<void>;
     private unregisterButtonClicked;
-    private createUpdateCycleField;
-    private maybeCreateRouterField;
+    private renderUpdateCycleField;
+    private renderRouterField;
     private updateButtonClicked;
     private networkRequestsClicked;
     private push;
     private sync;
     private periodicSync;
-    private onClientInfo;
-    private updateClientInfo;
+    private renderClientInfo;
     private activateTarget;
     private startButtonClicked;
     private skipButtonClicked;
     private stopButtonClicked;
-    private wrapWidget;
 }

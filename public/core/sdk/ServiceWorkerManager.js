@@ -63,20 +63,24 @@ export class ServiceWorkerManager extends SDKModel {
     #registrations = new Map();
     #enabled = false;
     #forceUpdateSetting;
+    #networkManager;
     constructor(target) {
         super(target);
+        this.#networkManager = target.targetManager().getNetworkManager();
         target.registerServiceWorkerDispatcher(new ServiceWorkerDispatcher(this));
         this.#agent = target.serviceWorkerAgent();
         void this.enable();
-        this.#forceUpdateSetting = this.target()
-            .targetManager()
-            .context.get(Common.Settings.Settings)
-            .createSetting('service-worker-update-on-reload', false);
+        this.#forceUpdateSetting = target.targetManager().settings.createSetting('service-worker-update-on-reload', false);
         if (this.#forceUpdateSetting.get()) {
             this.forceUpdateSettingChanged();
         }
         this.#forceUpdateSetting.addChangeListener(this.forceUpdateSettingChanged, this);
+        this.#networkManager.addEventListener("ConditionsChanged" /* MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, this.forceUpdateSettingChanged, this);
         new ServiceWorkerContextNamer(target, this);
+    }
+    dispose() {
+        this.#networkManager.removeEventListener("ConditionsChanged" /* MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, this.forceUpdateSettingChanged, this);
+        super.dispose();
     }
     async enable() {
         if (this.#enabled) {
@@ -212,7 +216,7 @@ export class ServiceWorkerManager extends SDKModel {
         this.dispatchEventToListeners("RegistrationErrorAdded" /* Events.REGISTRATION_ERROR_ADDED */, { registration, error: payload });
     }
     forceUpdateSettingChanged() {
-        const forceUpdateOnPageLoad = this.#forceUpdateSetting.get();
+        const forceUpdateOnPageLoad = this.#forceUpdateSetting.get() && !this.#networkManager.isOffline();
         void this.#agent.invoke_setForceUpdateOnPageLoad({ forceUpdateOnPageLoad });
     }
 }

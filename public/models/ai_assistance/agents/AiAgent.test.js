@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Host from '../../../core/host/host.js';
-import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
+import { mockAidaClient, MockAidaQuotaError } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 function mockConversationContext() {
@@ -288,6 +288,21 @@ describeWithEnvironment('AiAgent', () => {
                 {
                     type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
                     error: "unknown" /* AiAssistance.AiAgent.ErrorType.UNKNOWN */,
+                },
+            ]);
+        });
+        it('should yield quota error when aida throws AidaQuotaError', async () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient([[MockAidaQuotaError]]),
+            });
+            const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
+            assert.deepEqual(responses, [
+                {
+                    type: "querying" /* AiAssistance.AiAgent.ResponseType.QUERYING */,
+                },
+                {
+                    type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
+                    error: "quota" /* AiAssistance.AiAgent.ErrorType.QUOTA */,
                 },
             ]);
         });

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -66,7 +67,7 @@ describeWithEnvironment(`RequestConditionsDrawer with individual request throttl
             const target = createTarget({ connection });
             SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
             const networkManager = target.model(SDK.NetworkManager.NetworkManager);
-            SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*', enabled: true }));
+            SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*', enabled: true }, Common.Settings.Settings.instance()));
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
             renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
             await requestConditionsDrawer.updateComplete;
@@ -96,7 +97,7 @@ describeWithEnvironment(`RequestConditionsDrawer with individual request throttl
         it('are updated upon Reset event', async () => {
             const viewFunction = createViewFunctionStub(Network.RequestConditionsDrawer.AffectedCountWidget);
             const widget = new Network.RequestConditionsDrawer.AffectedCountWidget(undefined, viewFunction);
-            widget.condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*', enabled: true });
+            widget.condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*', enabled: true }, Common.Settings.Settings.instance());
             widget.lookUpRequestCount = sinon.stub();
             await viewFunction.nextInput;
             renderElementIntoDOM(widget);
@@ -126,7 +127,7 @@ describeWithEnvironment('RequestConditionsDrawer', () => {
                 urlPattern: 'http://example.com/*bar',
                 enabled: true,
                 conditions: 'NO_THROTTLING',
-            });
+            }, Common.Settings.Settings.instance());
             SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
             await requestConditionsDrawer.updateComplete;
             const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[index];
@@ -143,7 +144,7 @@ describeWithEnvironment('RequestConditionsDrawer', () => {
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
             renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
             const index = 0;
-            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com/*bar', enabled: true });
+            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com/*bar', enabled: true }, Common.Settings.Settings.instance());
             SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
             await requestConditionsDrawer.updateComplete;
             const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[index];
@@ -160,7 +161,7 @@ describeWithEnvironment('RequestConditionsDrawer', () => {
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
             renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
             const index = 0;
-            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'ht tp://*', enabled: true });
+            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'ht tp://*', enabled: true }, Common.Settings.Settings.instance());
             SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
             await requestConditionsDrawer.updateComplete;
             const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[index];
@@ -175,7 +176,7 @@ describeWithEnvironment('RequestConditionsDrawer', () => {
             const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
             renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
             const index = 0;
-            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'http://*/(\\d+)', enabled: true });
+            const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'http://*/(\\d+)', enabled: true }, Common.Settings.Settings.instance());
             SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
             await requestConditionsDrawer.updateComplete;
             const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[index];
@@ -204,7 +205,7 @@ describeWithEnvironment('RequestConditionsDrawer', () => {
         SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.conditionsEnabled = true;
         const requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
         renderElementIntoDOM(requestConditionsDrawer, { includeCommonStyles: true });
-        const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com/*bar', enabled: true });
+        const condition = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com/*bar', enabled: true }, Common.Settings.Settings.instance());
         SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(condition);
         await requestConditionsDrawer.updateComplete;
         const item = requestConditionsDrawer.contentElement.querySelectorAll('.blocked-url')[0];
@@ -227,7 +228,7 @@ describeWithEnvironment('RequestConditionsDrawer', () => {
             urlPattern,
             enabled: true,
             conditions: 'NO_THROTTLING',
-        });
+        }, Common.Settings.Settings.instance());
         conditions.ruleIds.add('abc');
         SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(conditions);
         await requestConditionsDrawer.updateComplete;

@@ -10,11 +10,10 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Lit from '../../ui/lit/lit.js';
+import { html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ApplicationComponents from './components/components.js';
 import indexedDBViewsStyles from './indexedDBViews.css.js';
-const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text in Indexed DBViews of the Application panel
@@ -145,7 +144,7 @@ export class IDBDatabaseView extends ApplicationComponents.StorageMetadataView.S
     }
     async renderReportContent() {
         if (!this.database) {
-            return Lit.nothing;
+            return nothing;
         }
         return html `
       ${await super.renderReportContent()}
@@ -211,27 +210,26 @@ export class IDBDataView extends UI.View.SimpleView {
     databaseId;
     isIndex;
     refreshObjectStoreCallback;
-    refreshButton;
-    deleteSelectedButton;
-    clearButton;
-    needsRefresh;
     clearingObjectStore;
     pageSize;
     skipCount;
     // Used in Web Tests
     entries;
+    #hasMore = false;
+    #selectedRowNumber = -1;
+    #needsRefreshVisible = false;
+    #clearButtonEnabled = true;
+    #metadata = null;
+    #lastRenderedEntries = null;
+    #keyFilter = '';
     objectStore;
     index;
-    keyInput;
     dataGrid;
     lastPageSize;
     lastSkipCount;
-    pageBackButton;
-    pageForwardButton;
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lastKey;
-    summaryBarElement;
     constructor(model, databaseId, objectStore, index, refreshObjectStoreCallback) {
         super({
             title: i18nString(UIStrings.idb),
@@ -239,40 +237,17 @@ export class IDBDataView extends UI.View.SimpleView {
             jslog: `${VisualLogging.pane('indexed-db-data-view')}`,
         });
         this.registerRequiredCSS(indexedDBViewsStyles);
+        this.registerRequiredCSS(DataGrid.dataGridStyles);
         this.model = model;
         this.databaseId = databaseId;
         this.isIndex = Boolean(index);
         this.refreshObjectStoreCallback = refreshObjectStoreCallback;
         this.element.classList.add('indexed-db-data-view', 'storage-view');
-        this.refreshButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refresh), 'refresh');
-        this.refreshButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.refreshButtonClicked, this);
-        this.refreshButton.element.setAttribute('jslog', `${VisualLogging.action('refresh').track({ click: true })}`);
-        this.deleteSelectedButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteSelected), 'bin');
-        this.deleteSelectedButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, _event => {
-            void this.deleteButtonClicked(null);
-        });
-        this.deleteSelectedButton.element.setAttribute('jslog', `${VisualLogging.action('delete-selected').track({ click: true })}`);
-        this.clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearObjectStore), 'clear');
-        this.clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
-            void this.clearButtonClicked();
-        }, this);
-        this.clearButton.element.setAttribute('jslog', `${VisualLogging.action('clear-all').track({ click: true })}`);
-        const refreshIcon = UI.UIUtils.createIconLabel({
-            title: i18nString(UIStrings.dataMayBeStale),
-            iconName: 'warning',
-            color: 'var(--icon-warning)',
-            width: '20px',
-            height: '20px',
-        });
-        this.needsRefresh = new UI.Toolbar.ToolbarItem(refreshIcon);
-        this.needsRefresh.setVisible(false);
-        this.needsRefresh.setTitle(i18nString(UIStrings.someEntriesMayHaveBeenModified));
         this.clearingObjectStore = false;
-        this.createEditorToolbar();
         this.pageSize = 50;
         this.skipCount = 0;
-        this.update(objectStore, index);
         this.entries = [];
+        this.update(objectStore, index);
     }
     createDataGrid() {
         const keyPath = this.isIndex && this.index ? this.index.keyPath : this.objectStore.keyPath;
@@ -308,66 +283,106 @@ export class IDBDataView extends UI.View.SimpleView {
             refreshCallback: this.updateData.bind(this, true),
         });
         dataGrid.setStriped(true);
-        dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, () => {
-            this.updateToolbarEnablement();
+        dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, event => {
+            const node = event.data;
+            this.#selectedRowNumber = node.data['number'];
+            this.performUpdate();
+        }, this);
+        dataGrid.addEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DESELECTED_NODE */, () => {
+            this.#selectedRowNumber = -1;
+            this.performUpdate();
         }, this);
         return dataGrid;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     keyColumnHeaderFragment(prefix, keyPath) {
         const keyColumnHeaderFragment = document.createDocumentFragment();
-        UI.UIUtils.createTextChild(keyColumnHeaderFragment, prefix);
-        if (keyPath === null) {
-            return keyColumnHeaderFragment;
-        }
-        UI.UIUtils.createTextChild(keyColumnHeaderFragment, ' (' + i18nString(UIStrings.keyPath));
-        if (Array.isArray(keyPath)) {
-            UI.UIUtils.createTextChild(keyColumnHeaderFragment, '[');
-            for (let i = 0; i < keyPath.length; ++i) {
-                if (i !== 0) {
-                    UI.UIUtils.createTextChild(keyColumnHeaderFragment, ', ');
-                }
-                keyColumnHeaderFragment.appendChild(this.keyPathStringFragment(keyPath[i]));
-            }
-            UI.UIUtils.createTextChild(keyColumnHeaderFragment, ']');
-        }
-        else {
-            const keyPathString = keyPath;
-            keyColumnHeaderFragment.appendChild(this.keyPathStringFragment(keyPathString));
-        }
-        UI.UIUtils.createTextChild(keyColumnHeaderFragment, ')');
+        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+        render(this.renderKeyColumnHeader(prefix, keyPath), keyColumnHeaderFragment);
         return keyColumnHeaderFragment;
     }
-    keyPathStringFragment(keyPathString) {
-        const keyPathStringFragment = document.createDocumentFragment();
-        UI.UIUtils.createTextChild(keyPathStringFragment, '"');
-        const keyPathSpan = keyPathStringFragment.createChild('span', 'source-code indexed-db-key-path');
-        keyPathSpan.textContent = keyPathString;
-        UI.UIUtils.createTextChild(keyPathStringFragment, '"');
-        return keyPathStringFragment;
+    renderKeyColumnHeader(prefix, keyPath) {
+        if (keyPath === undefined || keyPath === null || keyPath === '') {
+            return html `${prefix}`;
+        }
+        return html `
+      ${prefix} (${i18nString(UIStrings.keyPath)}${Array.isArray(keyPath) ?
+            html `[${keyPath.map((path, i) => html `${i > 0 ? ', ' : ''}${this.renderKeyPathString(path)}`)}]` :
+            this.renderKeyPathString(keyPath)})`;
     }
-    createEditorToolbar() {
-        const editorToolbar = this.element.createChild('devtools-toolbar', 'data-view-toolbar');
-        editorToolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        editorToolbar.appendToolbarItem(this.refreshButton);
-        editorToolbar.appendToolbarItem(this.clearButton);
-        editorToolbar.appendToolbarItem(this.deleteSelectedButton);
-        editorToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator());
-        this.pageBackButton =
-            new UI.Toolbar.ToolbarButton(i18nString(UIStrings.showPreviousPage), 'triangle-left', undefined, 'prev-page');
-        this.pageBackButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.pageBackButtonClicked, this);
-        editorToolbar.appendToolbarItem(this.pageBackButton);
-        this.pageForwardButton =
-            new UI.Toolbar.ToolbarButton(i18nString(UIStrings.showNextPage), 'triangle-right', undefined, 'next-page');
-        this.pageForwardButton.setEnabled(false);
-        this.pageForwardButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.pageForwardButtonClicked, this);
-        editorToolbar.appendToolbarItem(this.pageForwardButton);
-        this.keyInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByKey), 0.5);
-        this.keyInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.updateData.bind(this, false));
-        editorToolbar.appendToolbarItem(this.keyInput);
-        editorToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator());
-        editorToolbar.appendToolbarItem(this.needsRefresh);
+    renderKeyPathString(keyPathString) {
+        return html `"<span class="source-code indexed-db-key-path">${keyPathString}</span>"`;
+    }
+    renderToolbar() {
+        // clang-format off
+        return html `
+      <devtools-toolbar class="data-view-toolbar" jslog=${VisualLogging.toolbar()}>
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${'refresh'}
+          .title=${i18nString(UIStrings.refresh)}
+          jslog=${VisualLogging.action('refresh').track({ click: true })}
+          @click=${() => this.refreshButtonClicked()}
+          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+        ></devtools-button>
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${'clear'}
+          .title=${i18nString(UIStrings.clearObjectStore)}
+          jslog=${VisualLogging.action('clear-all').track({ click: true })}
+          @click=${() => this.clearButtonClicked()}
+          .disabled=${this.isIndex || !this.#clearButtonEnabled}
+          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}>
+        </devtools-button>
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${'bin'}
+          .title=${i18nString(UIStrings.deleteSelected)}
+          jslog=${VisualLogging.action('delete-selected').track({ click: true })}
+          @click=${() => this.deleteButtonClicked(null)}
+          .disabled=${!this.dataGrid || this.dataGrid.rootNode().children.length === 0 || this.#selectedRowNumber === -1}
+          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}>
+        </devtools-button>
+
+        <div class="toolbar-divider"></div>
+
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${'triangle-left'}
+          .title=${i18nString(UIStrings.showPreviousPage)}
+          .disabled=${this.skipCount <= 0}
+          @click=${() => this.pageBackButtonClicked()}
+          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}>
+        </devtools-button>
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${'triangle-right'}
+          .title=${i18nString(UIStrings.showNextPage)}
+          .disabled=${!this.#hasMore}
+          @click=${() => this.pageForwardButtonClicked()}
+          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}>
+        </devtools-button>
+
+        <devtools-toolbar-input
+          type="filter"
+          placeholder=${i18nString(UIStrings.filterByKey)}
+          class="key-filter-input"
+          .value=${this.#keyFilter}
+          @change=${(e) => {
+            this.#keyFilter = e.detail;
+            this.updateData(false);
+        }}>
+        </devtools-toolbar-input>
+
+        ${this.#needsRefreshVisible ? html `
+          <div class="toolbar-divider"></div>
+          <div class="toolbar-item stale-data-warning" title=${i18nString(UIStrings
+            .someEntriesMayHaveBeenModified)}>
+            <devtools-icon name="warning" class="warning-icon"></devtools-icon>
+            <span>${i18nString(UIStrings.dataMayBeStale)}</span>
+          </div>
+        ` : nothing}
+      </devtools-toolbar>`;
+        // clang-format on
     }
     pageBackButtonClicked() {
         this.skipCount = Math.max(0, this.skipCount - this.pageSize);
@@ -379,19 +394,26 @@ export class IDBDataView extends UI.View.SimpleView {
     }
     populateContextMenu(contextMenu, gridNode) {
         const node = gridNode;
-        if (node.valueObjectPresentation) {
-            contextMenu.revealSection().appendItem(i18nString(UIStrings.expandRecursively), () => {
-                if (!node.valueObjectPresentation) {
-                    return;
+        const value = node.data['value'];
+        if (value && value.hasChildren) {
+            const cell = node.element().querySelector('.value-column');
+            if (cell) {
+                const widgetElement = cell.firstElementChild;
+                if (widgetElement) {
+                    const widget = UI.Widget.Widget.get(widgetElement);
+                    if (widget instanceof ObjectPropertiesSectionWidget) {
+                        const objectUi = widget.objectPropertiesSection;
+                        if (objectUi) {
+                            contextMenu.revealSection().appendItem(i18nString(UIStrings.expandRecursively), () => {
+                                void objectUi.objectTreeElement().expandRecursively();
+                            }, { jslogContext: 'expand-recursively' });
+                            contextMenu.revealSection().appendItem(i18nString(UIStrings.collapse), () => {
+                                objectUi.objectTreeElement().collapse();
+                            }, { jslogContext: 'collapse' });
+                        }
+                    }
                 }
-                void node.valueObjectPresentation.objectTreeElement().expandRecursively();
-            }, { jslogContext: 'expand-recursively' });
-            contextMenu.revealSection().appendItem(i18nString(UIStrings.collapse), () => {
-                if (!node.valueObjectPresentation) {
-                    return;
-                }
-                node.valueObjectPresentation.objectTreeElement().collapse();
-            }, { jslogContext: 'collapse' });
+            }
         }
     }
     refreshData() {
@@ -408,9 +430,9 @@ export class IDBDataView extends UI.View.SimpleView {
         }
         this.dataGrid = this.createDataGrid();
         this.dataGrid.setRowContextMenuCallback(this.populateContextMenu.bind(this));
-        this.dataGrid.asWidget().show(this.element);
         this.skipCount = 0;
         this.updateData(true);
+        this.performUpdate();
     }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -425,12 +447,11 @@ export class IDBDataView extends UI.View.SimpleView {
         return result;
     }
     updateData(force) {
-        const key = this.parseKey(this.keyInput.value());
+        const key = this.parseKey(this.#keyFilter);
         const pageSize = this.pageSize;
         let skipCount = this.skipCount;
-        let selected = this.dataGrid.selectedNode ? this.dataGrid.selectedNode.data['number'] : 0;
-        selected = Math.max(selected, this.skipCount); // Page forward should select top entry
-        this.clearButton.setEnabled(!this.isIndex);
+        const selected = this.#selectedRowNumber !== -1 ? this.#selectedRowNumber : 0;
+        this.#selectedRowNumber = Math.max(selected, this.skipCount); // Page forward should select top entry
         if (!force && this.lastKey === key && this.lastPageSize === pageSize && this.lastSkipCount === skipCount) {
             return;
         }
@@ -442,13 +463,10 @@ export class IDBDataView extends UI.View.SimpleView {
         this.lastPageSize = pageSize;
         this.lastSkipCount = skipCount;
         function callback(entries, hasMore) {
-            this.clear();
             this.entries = entries;
-            this.populateDataGrid(entries, skipCount, selected);
-            this.pageBackButton.setEnabled(Boolean(skipCount));
-            this.pageForwardButton.setEnabled(hasMore);
-            this.needsRefresh.setVisible(false);
-            this.updateToolbarEnablement();
+            this.#hasMore = hasMore;
+            this.#needsRefreshVisible = false;
+            this.performUpdate();
             this.updatedDataForTests();
         }
         const idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
@@ -458,43 +476,54 @@ export class IDBDataView extends UI.View.SimpleView {
         else {
             this.model.loadObjectStoreData(this.databaseId, this.objectStore.name, idbKeyRange, skipCount, pageSize, callback.bind(this));
         }
-        void this.model.getMetadata(this.databaseId, this.objectStore).then(this.updateSummaryBar.bind(this));
+        void this.model.getMetadata(this.databaseId, this.objectStore).then(metadata => {
+            this.#metadata = metadata;
+            this.performUpdate();
+        });
     }
-    populateDataGrid(entries, skipCount, selected) {
+    populateDataGrid() {
+        if (this.entries === this.#lastRenderedEntries) {
+            return;
+        }
+        this.dataGrid.rootNode().removeChildren();
         let selectedNode = null;
-        for (let i = 0; i < entries.length; ++i) {
+        for (let i = 0; i < this.entries.length; ++i) {
             // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data = {};
-            data['number'] = i + skipCount;
-            data['key'] = entries[i].key;
-            data['primary-key'] = entries[i].primaryKey;
-            data['value'] = entries[i].value;
+            data['number'] = i + this.skipCount;
+            data['key'] = this.entries[i].key;
+            data['primary-key'] = this.entries[i].primaryKey;
+            data['value'] = this.entries[i].value;
             const node = new IDBDataGridNode(data);
             this.dataGrid.rootNode().appendChild(node);
-            if (data['number'] <= selected) {
+            if (data['number'] <= this.#selectedRowNumber) {
                 selectedNode = node;
             }
         }
+        this.#lastRenderedEntries = this.entries;
         if (selectedNode) {
             selectedNode.select();
         }
+        else {
+            this.#selectedRowNumber = -1;
+        }
     }
-    updateSummaryBar(metadata) {
-        if (!this.summaryBarElement) {
-            this.summaryBarElement = this.element.createChild('div', 'object-store-summary-bar');
-        }
-        this.summaryBarElement.removeChildren();
+    renderSummaryBar() {
+        const metadata = this.#metadata;
         if (!metadata) {
-            return;
+            return nothing;
         }
-        const separator = '\u2002\u2758\u2002';
-        const span = this.summaryBarElement.createChild('span');
-        span.textContent = i18nString(UIStrings.totalEntriesS, { PH1: String(metadata.entriesCount) });
-        if (this.objectStore.autoIncrement) {
-            span.textContent += separator;
-            span.textContent += i18nString(UIStrings.keyGeneratorValueS, { PH1: String(metadata.keyGeneratorValue) });
-        }
+        // clang-format off
+        return html `
+      <div class="object-store-summary-bar">
+        <span>${i18nString(UIStrings.totalEntriesS, { PH1: String(metadata.entriesCount) })}</span>
+        ${this.objectStore.autoIncrement ? html `
+          <span class="separator">\u2758</span>
+          <span>${i18nString(UIStrings.keyGeneratorValueS, { PH1: String(metadata.keyGeneratorValue) })}</span>`
+            : nothing}
+      </div>`;
+        // clang-format on
     }
     updatedDataForTests() {
         // Sniffed in tests.
@@ -505,11 +534,13 @@ export class IDBDataView extends UI.View.SimpleView {
     async clearButtonClicked() {
         const ok = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.objectStoreWillBeCleared), i18nString(UIStrings.confirmClearObjectStore, { PH1: this.objectStore.name }), this.element, { jslogContext: 'clear-object-store-confirmation' });
         if (ok) {
-            this.clearButton.setEnabled(false);
+            this.#clearButtonEnabled = false;
+            this.performUpdate();
             this.clearingObjectStore = true;
             await this.model.clearObjectStore(this.databaseId, this.objectStore.name);
             this.clearingObjectStore = false;
-            this.clearButton.setEnabled(true);
+            this.#clearButtonEnabled = true;
+            this.performUpdate();
             this.updateData(true);
         }
     }
@@ -518,7 +549,8 @@ export class IDBDataView extends UI.View.SimpleView {
         if (this.clearingObjectStore) {
             return;
         }
-        this.needsRefresh.setVisible(true);
+        this.#needsRefreshVisible = true;
+        this.performUpdate();
     }
     async resolveArrayKey(key) {
         const { properties } = await key.getOwnProperties(false /* generatePreview */);
@@ -556,39 +588,89 @@ export class IDBDataView extends UI.View.SimpleView {
         this.refreshObjectStoreCallback();
     }
     clear() {
-        this.dataGrid.rootNode().removeChildren();
         this.entries = [];
+        this.performUpdate();
     }
-    updateToolbarEnablement() {
-        const empty = !this.dataGrid || this.dataGrid.rootNode().children.length === 0;
-        this.deleteSelectedButton.setEnabled(!empty && this.dataGrid.selectedNode !== null);
+    performUpdate() {
+        this.populateDataGrid();
+        // clang-format off
+        // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+        render(html `
+      ${this.renderToolbar()}
+      <div class="data-grid-container">
+        ${this.dataGrid ? this.dataGrid.element : nothing}
+      </div>
+      ${this.renderSummaryBar()}
+    `, this.element);
+        // clang-format on
+    }
+    wasShown() {
+        super.wasShown();
+        this.dataGrid?.wasShown();
+    }
+    willHide() {
+        super.willHide();
+        this.dataGrid?.willHide();
+    }
+    elementsToRestoreScrollPositionsFor() {
+        if (this.dataGrid) {
+            return [this.dataGrid.scrollContainer];
+        }
+        return [];
+    }
+    onResize() {
+        super.onResize();
+        this.dataGrid?.onResize();
+    }
+}
+class ObjectPropertiesSectionWidget extends UI.Widget.Widget {
+    #value = null;
+    #objectPropSection = null;
+    set value(value) {
+        if (this.#value === value) {
+            return;
+        }
+        this.#value = value;
+        this.requestUpdate();
+    }
+    get objectPropertiesSection() {
+        return this.#objectPropSection;
+    }
+    performUpdate() {
+        const value = this.#value;
+        if (!value) {
+            this.contentElement.removeChildren();
+            this.#objectPropSection = null;
+            return;
+        }
+        this.contentElement.removeChildren();
+        this.#objectPropSection = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.defaultObjectPropertiesSection(value, undefined /* linkifier */, true /* skipProto */, true /* readOnly */);
+        if (value.hasChildren) {
+            this.contentElement.appendChild(this.#objectPropSection.element);
+        }
+        else {
+            this.contentElement.appendChild(this.#objectPropSection.titleElement);
+        }
     }
 }
 export class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode {
     selectable;
-    valueObjectPresentation;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(data) {
         super(data, false);
         this.selectable = true;
-        this.valueObjectPresentation = null;
     }
     createCell(columnIdentifier) {
         const cell = super.createCell(columnIdentifier);
         const value = this.data[columnIdentifier];
         switch (columnIdentifier) {
-            case 'value': {
-                cell.removeChildren();
-                const objectPropSection = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.defaultObjectPropertiesSection(value, undefined /* linkifier */, true /* skipProto */, true /* readOnly */);
-                cell.appendChild(objectPropSection.element);
-                this.valueObjectPresentation = objectPropSection;
-                break;
-            }
+            case 'value':
             case 'key':
             case 'primary-key': {
                 cell.removeChildren();
-                const objectElement = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.defaultObjectPresentation(value, undefined /* linkifier */, true /* skipProto */, true /* readOnly */);
-                cell.appendChild(objectElement);
+                const widget = new ObjectPropertiesSectionWidget();
+                widget.value = value;
+                widget.show(cell, null, true);
                 break;
             }
         }

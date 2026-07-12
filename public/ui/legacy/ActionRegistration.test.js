@@ -32,10 +32,10 @@ describeWithEnvironment('ActionRegistration', () => {
         });
         let list = UI.ActionRegistration.getRegisteredActionExtensions();
         assert.lengthOf(list, 0);
-        Common.Settings.moduleSetting('test-setting').set(true);
+        Common.Settings.Settings.instance().moduleSetting('test-setting').set(true);
         list = UI.ActionRegistration.getRegisteredActionExtensions();
         assert.lengthOf(list, 1);
-        Common.Settings.moduleSetting('test-setting').set(false);
+        Common.Settings.Settings.instance().moduleSetting('test-setting').set(false);
         list = UI.ActionRegistration.getRegisteredActionExtensions();
         assert.lengthOf(list, 0);
     });

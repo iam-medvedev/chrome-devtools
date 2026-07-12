@@ -322,6 +322,98 @@ describeWithEnvironment('DOMModel', () => {
                 assert.strictEqual(domNode.simpleSelector(), '::view-transition-new(root)');
             });
         });
+        describe('isCustomElement', () => {
+            let target;
+            let model;
+            beforeEach(() => {
+                target = createTarget();
+                const modelBeforeAssertion = target.model(SDK.DOMModel.DOMModel);
+                assert.exists(modelBeforeAssertion);
+                model = modelBeforeAssertion;
+            });
+            afterEach(() => {
+                target.dispose('NO_REASON');
+            });
+            it('should return true for a custom element with a hyphen in localName', () => {
+                const domNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 2,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'my-widget',
+                    localName: 'my-widget',
+                    nodeValue: '',
+                });
+                assert.isTrue(domNode.isCustomElement());
+            });
+            it('should return true for an element with an is attribute', () => {
+                const domNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 2,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'button',
+                    localName: 'button',
+                    attributes: ['is', 'my-button'],
+                    nodeValue: '',
+                });
+                assert.isTrue(domNode.isCustomElement());
+            });
+            it('should return false for excluded built-in elements with hyphens like font-face-src', () => {
+                const domNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 2,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'font-face-src',
+                    localName: 'font-face-src',
+                    nodeValue: '',
+                });
+                assert.isFalse(domNode.isCustomElement());
+            });
+            it('should return false for excluded built-in elements with hyphens like annotation-xml', () => {
+                const domNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 3,
+                    backendNodeId: 4,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'annotation-xml',
+                    localName: 'annotation-xml',
+                    nodeValue: '',
+                });
+                assert.isFalse(domNode.isCustomElement());
+            });
+            it('should return false for XML elements with hyphens', () => {
+                const domNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 2,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'custom-xml-tag',
+                    localName: 'custom-xml-tag',
+                    xmlVersion: '1.0',
+                    nodeValue: '',
+                });
+                assert.isFalse(domNode.isCustomElement());
+            });
+            it('should return false for standard HTML tags without hyphens or is attribute', () => {
+                const domNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 2,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'div',
+                    localName: 'div',
+                    nodeValue: '',
+                });
+                assert.isFalse(domNode.isCustomElement());
+            });
+            it('should return false for non-element nodes', () => {
+                const domNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 2,
+                    nodeType: Node.TEXT_NODE,
+                    nodeName: '#text',
+                    localName: '',
+                    nodeValue: 'some text',
+                });
+                assert.isFalse(domNode.isCustomElement());
+            });
+        });
     });
     describe('document.open() URL update (crbug.com/370690261)', () => {
         it('updates iframe contentDocument URL and dispatches DocumentURLChanged event', async () => {
@@ -904,6 +996,247 @@ describeWithEnvironment('DOMModel', () => {
             });
             assert.lengthOf(parentNode.children() || [], 1);
             assert.lengthOf(snapshot.children() || [], 0);
+        });
+    });
+    describe('setAsInspectedNode', () => {
+        it('does not send setInspectedNode command for non-inspectable pseudo elements', async () => {
+            const target = createTarget();
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            assert.exists(domModel.agent);
+            const DOCUMENT_NODE_ID = 1;
+            const ELEMENT_NODE_ID = 2;
+            const PSEUDO_NODE_ID = 3;
+            domModel.setDocumentForTest({
+                nodeId: DOCUMENT_NODE_ID,
+                backendNodeId: 1,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                childNodeCount: 1,
+                children: [
+                    {
+                        nodeId: ELEMENT_NODE_ID,
+                        backendNodeId: 2,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'div',
+                        localName: 'div',
+                        nodeValue: '',
+                        pseudoElements: [
+                            {
+                                nodeId: PSEUDO_NODE_ID,
+                                backendNodeId: 3,
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: '::first-line',
+                                localName: '::first-line',
+                                nodeValue: '',
+                                pseudoType: "first-line" /* ProtocolModule.DOM.PseudoType.FirstLine */,
+                            },
+                        ],
+                    },
+                ],
+            });
+            const spy = sinon.spy(domModel.agent, 'invoke_setInspectedNode');
+            const pseudoNode = domModel.nodeForId(PSEUDO_NODE_ID);
+            assert.exists(pseudoNode);
+            await pseudoNode.setAsInspectedNode();
+            sinon.assert.notCalled(spy);
+        });
+        it('sends setInspectedNode command for inspectable pseudo elements', async () => {
+            const target = createTarget();
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            assert.exists(domModel.agent);
+            const DOCUMENT_NODE_ID = 1;
+            const ELEMENT_NODE_ID = 2;
+            const PSEUDO_NODE_ID = 3;
+            domModel.setDocumentForTest({
+                nodeId: DOCUMENT_NODE_ID,
+                backendNodeId: 1,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                childNodeCount: 1,
+                children: [
+                    {
+                        nodeId: ELEMENT_NODE_ID,
+                        backendNodeId: 2,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'div',
+                        localName: 'div',
+                        nodeValue: '',
+                        pseudoElements: [
+                            {
+                                nodeId: PSEUDO_NODE_ID,
+                                backendNodeId: 3,
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: '::before',
+                                localName: '::before',
+                                nodeValue: '',
+                                pseudoType: "before" /* ProtocolModule.DOM.PseudoType.Before */,
+                            },
+                        ],
+                    },
+                ],
+            });
+            const spy = sinon.spy(domModel.agent, 'invoke_setInspectedNode');
+            const pseudoNode = domModel.nodeForId(PSEUDO_NODE_ID);
+            assert.exists(pseudoNode);
+            await pseudoNode.setAsInspectedNode();
+            sinon.assert.calledOnceWithExactly(spy, { nodeId: PSEUDO_NODE_ID });
+        });
+        it('does not send setInspectedNode command for UA shadow roots and their children', async () => {
+            const target = createTarget();
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            assert.exists(domModel.agent);
+            const DOCUMENT_NODE_ID = 1;
+            const HOST_NODE_ID = 2;
+            const UA_SHADOW_ROOT_ID = 3;
+            const UA_SHADOW_CHILD_ID = 4;
+            domModel.setDocumentForTest({
+                nodeId: DOCUMENT_NODE_ID,
+                backendNodeId: 1,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                childNodeCount: 1,
+                children: [
+                    {
+                        nodeId: HOST_NODE_ID,
+                        backendNodeId: 2,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'div',
+                        localName: 'div',
+                        nodeValue: '',
+                        shadowRoots: [
+                            {
+                                nodeId: UA_SHADOW_ROOT_ID,
+                                backendNodeId: 3,
+                                nodeType: Node.DOCUMENT_FRAGMENT_NODE,
+                                nodeName: '#shadow-root',
+                                localName: '',
+                                nodeValue: '',
+                                shadowRootType: "user-agent" /* ProtocolModule.DOM.ShadowRootType.UserAgent */,
+                                children: [{
+                                        nodeId: UA_SHADOW_CHILD_ID,
+                                        backendNodeId: 4,
+                                        nodeType: Node.ELEMENT_NODE,
+                                        nodeName: 'span',
+                                        localName: 'span',
+                                        nodeValue: '',
+                                    }]
+                            },
+                        ],
+                    },
+                ],
+            });
+            const spy = sinon.spy(domModel.agent, 'invoke_setInspectedNode');
+            const uaShadowRoot = domModel.nodeForId(UA_SHADOW_ROOT_ID);
+            assert.exists(uaShadowRoot);
+            await uaShadowRoot.setAsInspectedNode();
+            sinon.assert.notCalled(spy);
+            const uaShadowChild = domModel.nodeForId(UA_SHADOW_CHILD_ID);
+            assert.exists(uaShadowChild);
+            await uaShadowChild.setAsInspectedNode();
+            sinon.assert.notCalled(spy);
+        });
+    });
+    describe('canInspectNode', () => {
+        let domModel;
+        const DOCUMENT_NODE_ID = 1;
+        const ELEMENT_NODE_ID = 2;
+        const PSEUDO_NODE_ID = 3;
+        const NON_INSPECTABLE_PSEUDO_NODE_ID = 6;
+        const UA_SHADOW_ROOT_ID = 4;
+        const UA_SHADOW_CHILD_ID = 5;
+        beforeEach(() => {
+            const target = createTarget();
+            domModel = target.model(SDK.DOMModel.DOMModel);
+            domModel.setDocumentForTest({
+                nodeId: DOCUMENT_NODE_ID,
+                backendNodeId: 1,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                childNodeCount: 1,
+                children: [
+                    {
+                        nodeId: ELEMENT_NODE_ID,
+                        backendNodeId: 2,
+                        nodeType: Node.ELEMENT_NODE,
+                        nodeName: 'div',
+                        localName: 'div',
+                        nodeValue: '',
+                        pseudoElements: [
+                            {
+                                nodeId: PSEUDO_NODE_ID,
+                                backendNodeId: 3,
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: '::before',
+                                localName: '::before',
+                                nodeValue: '',
+                                pseudoType: "before" /* ProtocolModule.DOM.PseudoType.Before */,
+                            },
+                            {
+                                nodeId: NON_INSPECTABLE_PSEUDO_NODE_ID,
+                                backendNodeId: 6,
+                                nodeType: Node.ELEMENT_NODE,
+                                nodeName: '::first-line',
+                                localName: '::first-line',
+                                nodeValue: '',
+                                pseudoType: "first-line" /* ProtocolModule.DOM.PseudoType.FirstLine */,
+                            },
+                        ],
+                        shadowRoots: [
+                            {
+                                nodeId: UA_SHADOW_ROOT_ID,
+                                backendNodeId: 4,
+                                nodeType: Node.DOCUMENT_FRAGMENT_NODE,
+                                nodeName: '#shadow-root',
+                                localName: '',
+                                nodeValue: '',
+                                shadowRootType: "user-agent" /* ProtocolModule.DOM.ShadowRootType.UserAgent */,
+                                children: [{
+                                        nodeId: UA_SHADOW_CHILD_ID,
+                                        backendNodeId: 5,
+                                        nodeType: Node.ELEMENT_NODE,
+                                        nodeName: 'span',
+                                        localName: 'span',
+                                        nodeValue: '',
+                                    }]
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+        it('returns true for normal elements', () => {
+            const elementNode = domModel.nodeForId(ELEMENT_NODE_ID);
+            assert.exists(elementNode);
+            assert.isTrue(elementNode.canInspectNode());
+        });
+        it('returns true for inspectable pseudo elements', () => {
+            const pseudoNode = domModel.nodeForId(PSEUDO_NODE_ID);
+            assert.exists(pseudoNode);
+            assert.isTrue(pseudoNode.canInspectNode());
+        });
+        it('returns false for non-inspectable pseudo elements', () => {
+            const pseudoNode = domModel.nodeForId(NON_INSPECTABLE_PSEUDO_NODE_ID);
+            assert.exists(pseudoNode);
+            assert.isFalse(pseudoNode.canInspectNode());
+        });
+        it('returns false for user agent shadow roots', () => {
+            const uaShadowRoot = domModel.nodeForId(UA_SHADOW_ROOT_ID);
+            assert.exists(uaShadowRoot);
+            assert.isFalse(uaShadowRoot.canInspectNode());
+        });
+        it('returns false for nodes inside user agent shadow roots', () => {
+            const uaShadowChild = domModel.nodeForId(UA_SHADOW_CHILD_ID);
+            assert.exists(uaShadowChild);
+            assert.isFalse(uaShadowChild.canInspectNode());
+        });
+        it('returns false for snapshots', async () => {
+            const elementNode = domModel.nodeForId(ELEMENT_NODE_ID);
+            assert.exists(elementNode);
+            const snapshot = await elementNode.takeSnapshot();
+            assert.isFalse(snapshot.canInspectNode());
         });
     });
 });

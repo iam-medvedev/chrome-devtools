@@ -85,4 +85,32 @@ export default `/*
   overflow: hidden;
 }
 
+.object-store-summary-bar .separator {
+  padding: 0 0.5em;
+}
+
+.key-filter-input {
+  flex-grow: 0.5;
+}
+
+.stale-data-warning {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.stale-data-warning .warning-icon {
+  --icon-color: var(--icon-warning);
+
+  width: 20px;
+  height: 20px;
+}
+
+.data-grid-container {
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 /*# sourceURL=${import.meta.resolve('./indexedDBViews.css')} */`;

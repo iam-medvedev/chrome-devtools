@@ -256,7 +256,7 @@ describeWithEnvironment('AiConversation', () => {
                 id: 'requestId1',
                 url: `${origin}/foo`,
                 statusCode: 200,
-                duration: '1.00\xA0s',
+                duration: '1\xA0s',
                 transferSize: '0.0\xA0kB',
             },
         ]);

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
@@ -359,11 +358,11 @@ describe('StorageAgent', function () {
         assert.exists(actionResponse.output);
         const parsedOutput = JSON.parse(actionResponse.output);
         assert.deepEqual(parsedOutput, {
-            totalUsage: i18n.ByteUtilities.bytesToString(1000),
-            totalQuota: i18n.ByteUtilities.bytesToString(10000),
+            totalUsage: AiAssistance.UnitFormatters.bytes(1000),
+            totalQuota: AiAssistance.UnitFormatters.bytes(10000),
             usageBreakdown: [
-                { storageType: 'service_workers', usage: i18n.ByteUtilities.bytesToString(800) },
-                { storageType: 'indexeddb', usage: i18n.ByteUtilities.bytesToString(200) },
+                { storageType: 'service_workers', usage: AiAssistance.UnitFormatters.bytes(800) },
+                { storageType: 'indexeddb', usage: AiAssistance.UnitFormatters.bytes(200) },
             ],
         });
     });

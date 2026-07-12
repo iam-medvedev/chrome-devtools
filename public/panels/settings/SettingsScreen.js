@@ -21,35 +21,35 @@ import * as PanelComponents from './components/components.js';
 import settingsScreenStyles from './settingsScreen.css.js';
 const UIStrings = {
     /**
-     * @description Name of the Settings view
+     * @description Name of the Settings view.
      */
     settings: 'Settings',
     /**
-     * @description Text for keyboard shortcuts
+     * @description Text for keyboard shortcuts.
      */
     shortcuts: 'Shortcuts',
     /**
-     * @description Text of button in Settings Screen of the Settings
+     * @description Text of button in Settings screen of the Settings.
      */
     restoreDefaultsAndReload: 'Restore defaults and reload',
     /**
-     * @description Card header in Experiments settings tab that list all available stable experiments that can be turned on or off.
+     * @description Card header in Experiments settings tab that lists all available stable experiments that can be turned on or off.
      */
     experiments: 'Experiments',
     /**
-     * @description Number of experiments from the filtered list of experiements
+     * @description Number of experiments from the filtered list of experiments.
      */
     experimentsFound: '{n, plural, =1 {# experiment found} other {# experiments found}}',
     /**
-     * @description Message shown in the experiments panel to warn users about any possible unstable features.
+     * @description Message shown in the experiments tab to warn users about any possible unstable features.
      */
     theseExperimentsCouldBeUnstable: 'Warning: These experiments could be unstable or unreliable.',
     /**
-     * @description Message to display if a setting change requires a reload of DevTools
+     * @description Message to display if a setting change requires a reload of DevTools.
      */
     settingsChangedReloadDevTools: 'Settings changed. To apply, reload DevTools.',
     /**
-     * @description Message to display if a setting change requires a reload of DevTools
+     * @description Message to display if a setting change requires a restart of Chrome.
      */
     settingsChangedRestartChrome: 'Settings changed. To apply, restart Chrome.',
     /**
@@ -58,15 +58,15 @@ const UIStrings = {
      */
     noResults: 'No experiments match the filter',
     /**
-     * @description Text that is usually a hyperlink to more documentation
+     * @description Text that is usually a hyperlink to more documentation.
      */
     learnMore: 'Learn more',
     /**
-     * @description Text that is usually a hyperlink to a feedback form
+     * @description Text that is usually a hyperlink to a feedback form.
      */
     sendFeedback: 'Send feedback',
     /**
-     * @description Placeholder text in search bar
+     * @description Placeholder text in search bar.
      */
     searchExperiments: 'Search experiments',
 };

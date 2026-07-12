@@ -31,7 +31,7 @@ const UIStrings = {
   enableAiAssistance: 'Enable AI assistance',
   /**
    * @description Text of a context menu item to redirect to the AI assistance panel with
-   * the current context
+   * the current context.
    */
   debugWithAi: 'Debug with AI',
   /**
@@ -47,7 +47,7 @@ const UIStrings = {
    */
   enableGemini: 'Enable Gemini',
   /**
-   * @description Text of a context menu item to redirect to the Gemini panel with the current context
+   * @description Text of a context menu item to redirect to the Gemini panel with the current context.
    */
   debugWithGemini: 'Debug with Gemini',
   /**
@@ -56,7 +56,7 @@ const UIStrings = {
    */
   wrongLocale: 'To use this feature, set your language preference to English in DevTools settings.',
   /**
-   * @description Message shown to the user if the user's region is not
+   * @description Message shown to the user if the user’s region is not
    * supported.
    */
   geoRestricted: 'This feature is unavailable in your region.',

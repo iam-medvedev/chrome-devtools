@@ -3,13 +3,25 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { FRAME_URL, getInitializedResourceTreeModel, getMainFrame, navigate, } from '../../testing/ResourceTreeHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
-describeWithEnvironment('ConsoleMessage', () => {
+describe('ConsoleMessage', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse({
+            overrideAutoStartModels: new Set([SDK.ConsoleModel.ConsoleModel]),
+        });
+    });
     const scriptId1 = '1';
     const scriptId2 = '2';
     function newMessage({ source = Common.Console.FrontendMessageSource.ConsoleAPI, message = 'Message', url, scriptId, executionContextId, stackTrace, }) {
@@ -64,11 +76,11 @@ describeWithEnvironment('ConsoleMessage', () => {
         assert.isFalse(a.isEqual(b));
     });
     it('logs a message on main frame navigation', async () => {
-        Common.Settings.Settings.instance().moduleSetting('preserve-console-log').set(true);
-        const consoleLog = sinon.spy(Common.Console.Console.instance(), 'log');
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-        const mainFrameTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
-        const subframeTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
+        universe.settings.moduleSetting('preserve-console-log').set(true);
+        const consoleLog = sinon.spy(universe.console, 'log');
+        const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
+        const mainFrameTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
+        const subframeTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
         await getInitializedResourceTreeModel(subframeTarget);
         navigate(getMainFrame(subframeTarget));
         sinon.assert.notCalled(consoleLog);
@@ -78,11 +90,11 @@ describeWithEnvironment('ConsoleMessage', () => {
         assert.isTrue(consoleLog.calledOnceWith(`Navigated to ${FRAME_URL}`));
     });
     it('logs a message on main frame navigation via bfcache', async () => {
-        Common.Settings.Settings.instance().moduleSetting('preserve-console-log').set(true);
-        const consoleLog = sinon.spy(Common.Console.Console.instance(), 'log');
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-        const mainFrameTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
-        const subframeTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
+        universe.settings.moduleSetting('preserve-console-log').set(true);
+        const consoleLog = sinon.spy(universe.console, 'log');
+        const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
+        const mainFrameTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
+        const subframeTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
         await getInitializedResourceTreeModel(subframeTarget);
         navigate(getMainFrame(subframeTarget), {}, "BackForwardCacheRestore" /* Protocol.Page.NavigationType.BackForwardCacheRestore */);
         sinon.assert.notCalled(consoleLog);
@@ -92,7 +104,7 @@ describeWithEnvironment('ConsoleMessage', () => {
         assert.isTrue(consoleLog.calledOnceWith(`Navigation to ${FRAME_URL} was restored from back/forward cache (see https://web.dev/bfcache/)`));
     });
     it('discards duplicate console messages with identical timestamps', async () => {
-        const target = createTarget({ type: SDK.Target.Type.FRAME });
+        const target = universe.createTarget({ type: SDK.Target.Type.FRAME });
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
         assert.exists(runtimeModel);
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -117,10 +129,10 @@ describeWithEnvironment('ConsoleMessage', () => {
         sinon.assert.calledWith(addMessage.secondCall, sinon.match({ messageText: 'log me' }));
     });
     it('clears when main frame global object cleared', async () => {
-        Common.Settings.Settings.instance().moduleSetting('preserve-console-log').set(false);
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-        const mainFrameTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
-        const subframeTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
+        universe.settings.moduleSetting('preserve-console-log').set(false);
+        const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
+        const mainFrameTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
+        const subframeTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
         const clearGlobalObjectOnTarget = (target) => {
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
             assert.exists(resourceTreeModel);

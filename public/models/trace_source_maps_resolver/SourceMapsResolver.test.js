@@ -93,6 +93,19 @@ function parsedTraceFromProfileCalls(profileCalls) {
     return { data };
 }
 describeWithEnvironment('SourceMapsResolver', () => {
+    beforeEach(() => {
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping,
+            targetManager,
+            workspace,
+            ignoreListManager,
+        });
+    });
     describe('function name resolving', () => {
         let target;
         let script;
@@ -171,14 +184,14 @@ describeWithEnvironment('SourceMapsResolver', () => {
             const mapperWithMappings = new Trace.EntityMapper.EntityMapper(parsedTraceWithMappings);
             let resolver = new SourceMapsResolver(parsedTraceWithMappings, mapperWithMappings);
             await resolver.install();
-            let sourceMappedURL = SourceMapsResolver.resolvedURLForEntry(parsedTraceWithMappings, profileCallWithMappings);
+            let sourceMappedURL = SourceMapsResolver.resolvedURLForEntry(parsedTraceWithMappings, profileCallWithMappings, Workspace.Workspace.WorkspaceImpl.instance());
             assert.strictEqual(sourceMappedURL, authoredScriptURL);
             // For a profile call without mappings, it must return the original URL
             const parsedTraceWithoutMappings = parsedTraceFromProfileCalls([profileCallWithNoMappings]);
             const mapperWithoutMappings = new Trace.EntityMapper.EntityMapper(parsedTraceWithoutMappings);
             resolver = new SourceMapsResolver(parsedTraceWithoutMappings, mapperWithoutMappings);
             await resolver.install();
-            sourceMappedURL = SourceMapsResolver.resolvedURLForEntry(parsedTraceWithoutMappings, profileCallWithNoMappings);
+            sourceMappedURL = SourceMapsResolver.resolvedURLForEntry(parsedTraceWithoutMappings, profileCallWithNoMappings, Workspace.Workspace.WorkspaceImpl.instance());
             assert.strictEqual(sourceMappedURL, genScriptURL);
         });
     });

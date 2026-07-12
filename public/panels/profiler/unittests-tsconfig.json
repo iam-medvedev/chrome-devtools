@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "allowUmdGlobalAccess": true,
+    "allowSyntheticDefaultImports": true,
     "checkJs": true,
     "composite": true,
     "declaration": true,
@@ -36,17 +36,12 @@
       "../../../../../../node_modules"
     ],
     "types": [
-      "mocha",
-      "chai",
-      "sinon",
-      "karma-chai-sinon"
+      "mocha"
     ],
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/panels/profiler/HeapDetachedElementsView.test.ts",
     "../../../../../../front_end/panels/profiler/HeapProfileView.test.ts",
-    "../../../../../../front_end/panels/profiler/HeapSnapshotView.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts"
@@ -54,6 +49,15 @@
   "references": [
     {
       "path": "./bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../generated/protocol-tsconfig.json"
     },
     {
       "path": "../../testing/testing-tsconfig.json"

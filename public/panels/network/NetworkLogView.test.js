@@ -88,6 +88,20 @@ describeWithEnvironment('NetworkLogView', () => {
         }
         return request;
     }
+    function createWebSocketRequest(url, options = {}) {
+        const effectiveTarget = options.target || target;
+        const networkManager = effectiveTarget.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(networkManager);
+        let request;
+        const onRequestStarted = (event) => {
+            request = event.data.request;
+        };
+        networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
+        dispatchEvent(effectiveTarget, 'Network.webSocketCreated', { requestId: `request${++nextId}`, url });
+        networkManager.removeEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
+        assert.exists(request);
+        return request;
+    }
     function createEnvironment() {
         const filterBar = new UI.FilterBar.FilterBar('network-panel', true);
         networkLogView = createNetworkLogView(filterBar);
@@ -630,6 +644,36 @@ describeWithEnvironment('NetworkLogView', () => {
             urlHeaderAndContentOverridden,
         ]);
     });
+    it('can apply filter - is:preloaded', async () => {
+        const urlPreloaded = urlString `https://example.com/preloaded`;
+        const urlNotPreloaded = urlString `https://example.com/not-preloaded`;
+        const requestPreloaded = createNetworkRequest(urlPreloaded, { target });
+        requestPreloaded.setIsLinkPreload(true);
+        createNetworkRequest(urlNotPreloaded, { target });
+        const filterBar = new UI.FilterBar.FilterBar('network-panel', true);
+        networkLogView = createNetworkLogView(filterBar);
+        networkLogView.setTextFilterValue('is:preloaded');
+        renderElementIntoDOM(networkLogView);
+        const rootNode = networkLogView.columns().dataGrid().rootNode();
+        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [
+            urlPreloaded,
+        ]);
+    });
+    it('can apply negated filter - -is:preloaded', async () => {
+        const urlPreloaded = urlString `https://example.com/preloaded`;
+        const urlNotPreloaded = urlString `https://example.com/not-preloaded`;
+        const requestPreloaded = createNetworkRequest(urlPreloaded, { target });
+        requestPreloaded.setIsLinkPreload(true);
+        createNetworkRequest(urlNotPreloaded, { target });
+        const filterBar = new UI.FilterBar.FilterBar('network-panel', true);
+        networkLogView = createNetworkLogView(filterBar);
+        networkLogView.setTextFilterValue('-is:preloaded');
+        renderElementIntoDOM(networkLogView);
+        const rootNode = networkLogView.columns().dataGrid().rootNode();
+        assert.deepEqual(rootNode.children.map(n => n.request()?.url()), [
+            urlNotPreloaded,
+        ]);
+    });
     function createRequestsWithAndWithoutTestHeader() {
         const urlWithTestHeader = urlString `https://example.com/request-with-test-header`;
         const urlWithoutTestHeader = urlString `https://example.com/request-without-test-header`;
@@ -877,7 +921,7 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
         it('can unblock a request URL', async () => {
             const showView = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView');
             const conditions = SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions;
-            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*://foo.com/bar', enabled: true }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*://foo.com/bar', enabled: true }, Common.Settings.Settings.instance()));
             await invokeMenuItem('Block requests', 'Unblock *://foo.com/bar');
             assert.strictEqual(conditions.count, 0);
             sinon.assert.calledOnceWithExactly(showView, 'network.blocked-urls');
@@ -895,7 +939,7 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
         it('can unblock a request domain', async () => {
             const showView = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView');
             const conditions = SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions;
-            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*://foo.com', enabled: true }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*://foo.com', enabled: true }, Common.Settings.Settings.instance()));
             await invokeMenuItem('Block requests', 'Unblock *://foo.com');
             assert.strictEqual(conditions.count, 0);
             sinon.assert.calledOnceWithExactly(showView, 'network.blocked-urls');
@@ -920,7 +964,7 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
         });
         it('can change from blocking to throttling', async () => {
             const showView = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView');
-            SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*://foo.com/bar', enabled: true }));
+            SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: '*://foo.com/bar', enabled: true }, Common.Settings.Settings.instance()));
             await invokeMenuItem('Throttle requests', 'Throttle request URL');
             assert.isTrue(SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.conditionsEnabled);
             const conditions = SDK.NetworkManager.MultitargetNetworkManager.instance().requestConditions.conditions.toArray();
@@ -1003,6 +1047,27 @@ Invoke-WebRequest -UseBasicParsing -Uri "https://url-header-and-content-overridd
         icons[1].click();
         sinon.assert.calledOnceWithExactly(revealStub, appliedConditions, false);
     });
+    it('preserves selection when a WebSocket frame is received', async () => {
+        const { rootNode, networkLogView } = createEnvironment();
+        const request = createWebSocketRequest('ws://localhost:8880/echo');
+        await RenderCoordinator.done();
+        const dataGrid = networkLogView.columns().dataGrid();
+        const node = rootNode.children.find(n => n.request() === request);
+        assert.exists(node);
+        node.select();
+        assert.strictEqual(dataGrid.selectedNode, node);
+        dispatchEvent(target, 'Network.webSocketFrameReceived', {
+            requestId: request.requestId(),
+            timestamp: 0,
+            response: {
+                opcode: 1,
+                mask: false,
+                payloadData: 'test',
+            },
+        });
+        await RenderCoordinator.done();
+        assert.strictEqual(dataGrid.selectedNode, node);
+    });
 });
 describeWithEnvironment('NetworkLogView placeholder', () => {
     const START_RECORDING_ID = 'network.toggle-recording';
@@ -1073,6 +1138,17 @@ describeWithEnvironment('NetworkLogView', () => {
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem);
         assert.deepEqual(debugWithAiItem?.subItems?.map(item => item.label), ['Start a chat', 'Explain purpose', 'Explain slowness', 'Explain failures', 'Assess security headers']);
+    });
+    it('configures visual logging for preloaded column in header context menu', () => {
+        stubNoopSettings();
+        SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
+        const networkLogView = createNetworkLogView(new UI.FilterBar.FilterBar('network-test'));
+        renderElementIntoDOM(networkLogView);
+        const nameHeaderCell = networkLogView.columns().dataGrid().element.querySelector('th.name-column');
+        assert.instanceOf(nameHeaderCell, HTMLTableCellElement);
+        const contextMenu = getContextMenuForElement(nameHeaderCell);
+        const preloadedItem = contextMenu.buildDescriptor().subItems?.find(item => item.jslogContext === 'is-preloaded');
+        assert.exists(preloadedItem);
     });
 });
 function testPlaceholderText(networkLogView, expectedHeaderText, expectedDescriptionText) {

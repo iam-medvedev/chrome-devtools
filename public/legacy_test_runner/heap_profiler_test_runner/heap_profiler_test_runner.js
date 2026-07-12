@@ -367,8 +367,8 @@ HeapProfilerTestRunner.startProfilerTest = function(callback) {
   TestRunner.addSniffer(
       Profiler.HeapProfilerPanel.HeapProfilerPanel.instance(), 'addProfileHeader',
       HeapProfilerTestRunner.profileHeaderAdded, true);
-  TestRunner.addSniffer(
-      Profiler.ProfileView.ProfileView.prototype, 'refresh', HeapProfilerTestRunner.profileViewRefresh, true);
+  TestRunner.addSniffer(Profiler.HeapProfileView.HeapProfileView.prototype, 'refresh',
+                        HeapProfilerTestRunner.profileViewRefresh, true);
   TestRunner.addSniffer(
       Profiler.HeapSnapshotView.HeapSnapshotView.prototype, 'show', HeapProfilerTestRunner.snapshotViewShown, true);
 

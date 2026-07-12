@@ -34,7 +34,7 @@ describeWithEnvironment('ListNetworkRequestsTool', () => {
                 id: 'requestId',
                 url: 'https://example.com/',
                 statusCode: 200,
-                duration: '2.00\xA0s',
+                duration: '2\xA0s',
                 transferSize: '3.0\xA0kB',
             },
         ]);
@@ -60,7 +60,7 @@ describeWithEnvironment('ListNetworkRequestsTool', () => {
                 id: 'requestId1',
                 url: 'https://example.com/',
                 statusCode: 200,
-                duration: '0\xA0ms',
+                duration: '0\xA0s',
                 transferSize: '0.0\xA0kB',
             },
         ]);

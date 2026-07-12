@@ -592,5 +592,38 @@ describeWithEnvironment('ElementsTreeOutline', () => {
             assert.isFalse(container.classList.contains('elements-tree-truncated'), 'Container should not have truncated class after click');
         });
     });
+    it('passes selectorList "*" when highlighting display: contents element on mousemove', () => {
+        const childPayload = {
+            nodeId: 2,
+            parentId: 1,
+            backendNodeId: 2,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            childNodeCount: 0,
+            attributes: [],
+        };
+        const rootNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+            nodeId: 1,
+            backendNodeId: 1,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'BODY',
+            localName: 'body',
+            nodeValue: '',
+            childNodeCount: 1,
+            children: [childPayload],
+            attributes: [],
+        });
+        assert.isNotNull(rootNode);
+        treeOutline.rootDOMNode = rootNode;
+        const childNode = rootNode.children()[0];
+        const treeElement = treeOutline.findTreeElement(childNode);
+        assert.isNotNull(treeElement);
+        sinon.stub(treeElement, 'isDisplayContents').returns(true);
+        const highlightSpy = sinon.spy(model.overlayModel(), 'highlightInOverlay');
+        treeOutline['highlightTreeElement'](treeElement, true);
+        sinon.assert.calledWith(highlightSpy, sinon.match({ node: childNode, selectorList: '*' }), 'all', true);
+    });
 });
 //# sourceMappingURL=ElementsTreeOutline.test.js.map

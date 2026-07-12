@@ -1702,10 +1702,25 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
     describe('MathFunctionRenderer', () => {
         it('strikes out non-selected values', async () => {
             connection.setHandler('CSS.resolveValues', null);
-            connection.setSuccessHandler('CSS.resolveValues', (request) => ({
-                results: request.values.map(value => value.startsWith('min') ? '4px' :
-                    value.trim().replaceAll(/(em|pt)$/g, 'px'))
-            }));
+            connection.setSuccessHandler('CSS.resolveValues', (request) => {
+                const stripCalc = (v) => {
+                    const match = v.match(/^calc\((.*)\)$/);
+                    return match ? match[1] : v;
+                };
+                return {
+                    results: request.values.map(value => {
+                        // The first value passed is the entire function expression (e.g. min(5em, 4px, 8pt)).
+                        // We mock the browser resolving the whole function's result to '4px'.
+                        if (value.startsWith('min')) {
+                            return '4px';
+                        }
+                        // Subsequent values are the individual arguments wrapped in calc() (e.g. calc(5em)).
+                        // We strip calc() to simulate the mock browser resolving the inner unit values to px.
+                        const innerValue = stripCalc(value.trim());
+                        return innerValue.replaceAll(/(em|pt)$/g, 'px');
+                    })
+                };
+            });
             const strikeOutSpy = sinon.spy(Elements.StylePropertyTreeElement.MathFunctionRenderer.prototype, 'applyMathFunction');
             const stylePropertyTreeElement = getTreeElement('width', 'min(5em, 4px, 8pt)');
             stylePropertyTreeElement.updateTitle();
@@ -1714,6 +1729,42 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const args = stylePropertyTreeElement.valueElement?.querySelectorAll(':scope > span > span:not(.tracing-anchor)');
             assert.lengthOf(args, 3);
             assert.deepEqual(Array.from(args.values()).map(arg => arg.classList.contains('inactive-value')), [true, false, true]);
+        });
+        it('does not strike out active values inside math functions when arithmetic is used', async () => {
+            connection.setHandler('CSS.resolveValues', null);
+            connection.setSuccessHandler('CSS.resolveValues', (request) => {
+                return {
+                    results: request.values.map(val => {
+                        const trimmed = val.trim();
+                        // The first value passed is the entire max() expression.
+                        // We mock the browser resolving it to '8px'.
+                        if (trimmed.startsWith('max(')) {
+                            return '8px';
+                        }
+                        // Subsequent values are the individual arguments. If they are properly wrapped in calc()
+                        // they resolve successfully. Otherwise, they are invalid standalone values and return "".
+                        if (trimmed === 'calc(48px - 40px)') {
+                            return '8px';
+                        }
+                        if (trimmed === '48px - 40px') {
+                            // Simulate backend failing to parse standalone math expression (without calc())
+                            return '';
+                        }
+                        if (trimmed === 'calc(0px)' || trimmed === '0px') {
+                            return '0px';
+                        }
+                        return '';
+                    })
+                };
+            });
+            const strikeOutSpy = sinon.spy(Elements.StylePropertyTreeElement.MathFunctionRenderer.prototype, 'applyMathFunction');
+            const stylePropertyTreeElement = getTreeElement('margin-block', 'max(48px - 40px, 0px)');
+            stylePropertyTreeElement.updateTitle();
+            sinon.assert.calledOnce(strikeOutSpy);
+            await strikeOutSpy.returnValues[0];
+            const args = stylePropertyTreeElement.valueElement?.querySelectorAll(':scope > span > span:not(.tracing-anchor)');
+            assert.lengthOf(args, 2);
+            assert.deepEqual(Array.from(args.values()).map(arg => arg.classList.contains('inactive-value')), [false, true]);
         });
         it('shows a value tracing tooltip on the calc function', async () => {
             for (const property of ['calc(1px + 2px)', 'min(1px, 2px)', 'max(3px, 1px)']) {
@@ -1848,6 +1899,78 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                 'area-name-c',
                 'auto',
                 'none',
+                'inherit',
+                'initial',
+                'revert',
+                'revert-layer',
+                'revert-rule',
+                'unset',
+            ]);
+        });
+        it('includes image function keyword suggestions for background-image', async () => {
+            setParentComputedStyle({});
+            const stylePropertyTreeElement = getTreeElement('background-image', '');
+            await stylePropertyTreeElement.onpopulate();
+            stylePropertyTreeElement.updateTitle();
+            stylePropertyTreeElement.startEditingValue();
+            const autocompletions = await suggestions();
+            assert.includeMembers(autocompletions.map(({ text }) => text), [
+                'conic-gradient(from 45deg, red, orange, yellow, green, teal, blue, purple)',
+                'repeating-conic-gradient(black 0deg 25%, white 0deg 50%)',
+                'image-set(url("") 1x, url("") 2x)',
+                'cross-fade(url("") 50%, url("") 50%)',
+            ]);
+        });
+        it('includes auto keyword suggestions for border-image-width', async () => {
+            setParentComputedStyle({});
+            const stylePropertyTreeElement = getTreeElement('border-image-width', '');
+            await stylePropertyTreeElement.onpopulate();
+            stylePropertyTreeElement.updateTitle();
+            stylePropertyTreeElement.startEditingValue();
+            const autocompletions = await suggestions();
+            assert.includeMembers(autocompletions.map(({ text }) => text), [
+                'auto',
+            ]);
+        });
+        it('includes fill keyword suggestions for border-image-slice', async () => {
+            setParentComputedStyle({});
+            const stylePropertyTreeElement = getTreeElement('border-image-slice', '');
+            await stylePropertyTreeElement.onpopulate();
+            stylePropertyTreeElement.updateTitle();
+            stylePropertyTreeElement.startEditingValue();
+            const autocompletions = await suggestions();
+            assert.includeMembers(autocompletions.map(({ text }) => text), [
+                'fill',
+            ]);
+        });
+        it('includes border-image keyword suggestions', async () => {
+            setParentComputedStyle({});
+            const stylePropertyTreeElement = getTreeElement('border-image', '');
+            await stylePropertyTreeElement.onpopulate();
+            stylePropertyTreeElement.updateTitle();
+            stylePropertyTreeElement.startEditingValue();
+            const autocompletions = await suggestions();
+            assert.includeMembers(autocompletions.map(({ text }) => text), [
+                'auto',
+                'fill',
+                'image-set(url("") 1x, url("") 2x)',
+                'cross-fade(url("") 50%, url("") 50%)',
+            ]);
+        });
+        it('includes text-wrap keyword suggestions', async () => {
+            setParentComputedStyle({});
+            const stylePropertyTreeElement = getTreeElement('text-wrap', '');
+            await stylePropertyTreeElement.onpopulate();
+            stylePropertyTreeElement.updateTitle();
+            stylePropertyTreeElement.startEditingValue();
+            const autocompletions = await suggestions();
+            assert.deepEqual(autocompletions.map(({ text }) => text), [
+                'auto',
+                'balance',
+                'nowrap',
+                'pretty',
+                'stable',
+                'wrap',
                 'inherit',
                 'initial',
                 'revert',

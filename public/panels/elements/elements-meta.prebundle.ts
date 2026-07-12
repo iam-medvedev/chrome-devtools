@@ -186,9 +186,10 @@ UI.ViewManager.registerViewExtension({
   order: 10,
   persistence: UI.ViewManager.ViewPersistence.PERMANENT,
   hasToolbar: false,
-  async loadView() {
+  async loadView(universe) {
     const Elements = await loadElementsModule();
-    return Elements.ElementsPanel.ElementsPanel.instance();
+    const {targetManager, settings} = universe;
+    return Elements.ElementsPanel.ElementsPanel.instance({forceNew: null, targetManager, settings});
   },
 });
 

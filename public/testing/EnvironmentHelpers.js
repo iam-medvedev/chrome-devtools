@@ -14,7 +14,6 @@ import * as Formatter from '../models/formatter/formatter.js';
 import * as IssuesManager from '../models/issues_manager/issues_manager.js';
 import * as Logs from '../models/logs/logs.js';
 import * as Persistence from '../models/persistence/persistence.js';
-import * as ProjectSettings from '../models/project_settings/project_settings.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import { deinitializeGlobalLocaleVars, initializeGlobalLocaleVars } from './LocaleHelpers.js';
 import { cleanupRuntime, setupRuntime } from './RuntimeHelpers.js';
@@ -69,22 +68,26 @@ export async function deinitializeGlobalVars() {
     }
     // Remove instances.
     deinitializeGlobalLocaleVars();
+    Host.GdpClient.GdpClient.removeInstance();
+    Host.AidaClient.HostConfigTracker.removeInstance();
     Logs.NetworkLog.NetworkLog.removeInstance();
     SDK.TargetManager.TargetManager.removeInstance();
     SDK.CPUThrottlingManager.CPUThrottlingManager.removeInstance();
     SDK.FrameManager.FrameManager.removeInstance();
     SDK.EventBreakpointsModel.EventBreakpointsManager.removeInstance();
+    SDK.PageResourceLoader.PageResourceLoader.removeInstance();
     Common.Settings.Settings.removeInstance();
     Common.Revealer.RevealerRegistry.removeInstance();
     Common.Console.Console.removeInstance();
     Workspace.Workspace.WorkspaceImpl.removeInstance();
+    Workspace.FileManager.FileManager.removeInstance();
     Workspace.IgnoreListManager.IgnoreListManager.removeInstance();
     Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.removeInstance();
     Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.removeInstance();
+    Bindings.NetworkProject.NetworkProjectManager.removeInstance();
     IssuesManager.IssuesManager.IssuesManager.removeInstance();
     Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.removeInstance();
     Persistence.NetworkPersistenceManager.NetworkPersistenceManager.removeInstance();
-    ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.removeInstance();
     Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
     EmulationModel.DeviceModeModel.DeviceModeModel.removeInstance();
     cleanupSettings();

@@ -64,7 +64,7 @@ const DEFAULT_VIEW = (input, output, target) => {
             .format(val);
     };
     const formatCpu = (val) => {
-        return i18n.TimeUtilities.preciseMillisToString(val, 1);
+        return i18n.TimeUtilities.millisToString(val);
     };
     const formatNetwork = (val) => {
         return i18n.ByteUtilities.bytesToString(val);

@@ -9,11 +9,15 @@ import * as SDK from '../core/sdk/sdk.js';
 import * as AutofillManager from '../models/autofill_manager/autofill_manager.js';
 import * as Bindings from '../models/bindings/bindings.js';
 import * as Breakpoints from '../models/breakpoints/breakpoints.js';
+import * as CrUXManager from '../models/crux-manager/crux-manager.js';
+import * as Emulation from '../models/emulation/emulation.js';
 import * as JavaScriptMetadata from '../models/javascript_metadata/javascript_metadata.js';
+import * as LiveMetrics from '../models/live-metrics/live-metrics.js';
 import * as Logs from '../models/logs/logs.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as ProjectSettings from '../models/project_settings/project_settings.js';
 import * as Workspace from '../models/workspace/workspace.js';
+import * as WorkspaceDiff from '../models/workspace_diff/workspace_diff.js';
 import { DEFAULT_SETTING_REGISTRATIONS_FOR_TEST } from './SettingsHelpers.js';
 import { createTarget } from './TargetHelpers.js';
 /**
@@ -29,6 +33,7 @@ import { createTarget } from './TargetHelpers.js';
 export class TestUniverse {
     #context = new Root.DevToolsContext.WritableDevToolsContext();
     #creationOptions;
+    supportsEmulation = true;
     constructor(options) {
         this.#creationOptions = options;
     }
@@ -78,6 +83,12 @@ export class TestUniverse {
         }
         return this.#context.get(SDK.CPUThrottlingManager.CPUThrottlingManager);
     }
+    get cruxManager() {
+        if (!this.#context.has(CrUXManager.CrUXManager)) {
+            this.#context.set(CrUXManager.CrUXManager, new CrUXManager.CrUXManager(this.targetManager, this.settings));
+        }
+        return this.#context.get(CrUXManager.CrUXManager);
+    }
     get cssWorkspaceBinding() {
         if (!this.#context.has(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding)) {
             this.#context.set(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, new Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding(this.#resourceMapping, this.targetManager));
@@ -90,11 +101,47 @@ export class TestUniverse {
         }
         return this.#context.get(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
     }
+    get deviceModeModel() {
+        if (!this.#context.has(Emulation.DeviceModeModel.DeviceModeModel)) {
+            this.#context.set(Emulation.DeviceModeModel.DeviceModeModel, new Emulation.DeviceModeModel.DeviceModeModel(this.targetManager, this.settings, this.multitargetNetworkManager));
+        }
+        return this.#context.get(Emulation.DeviceModeModel.DeviceModeModel);
+    }
     get domDebuggerManager() {
         if (!this.#context.has(SDK.DOMDebuggerModel.DOMDebuggerManager)) {
             this.#context.set(SDK.DOMDebuggerModel.DOMDebuggerManager, new SDK.DOMDebuggerModel.DOMDebuggerManager(this.targetManager));
         }
         return this.#context.get(SDK.DOMDebuggerModel.DOMDebuggerManager);
+    }
+    get domModelUndoStack() {
+        if (!this.#context.has(SDK.DOMModel.DOMModelUndoStack)) {
+            this.#context.set(SDK.DOMModel.DOMModelUndoStack, new SDK.DOMModel.DOMModelUndoStack());
+        }
+        return this.#context.get(SDK.DOMModel.DOMModelUndoStack);
+    }
+    get emulatedDevicesList() {
+        if (!this.#context.has(Emulation.EmulatedDevices.EmulatedDevicesList)) {
+            this.#context.set(Emulation.EmulatedDevices.EmulatedDevicesList, new Emulation.EmulatedDevices.EmulatedDevicesList(this.settings));
+        }
+        return this.#context.get(Emulation.EmulatedDevices.EmulatedDevicesList);
+    }
+    get eventBreakpointsManager() {
+        if (!this.#context.has(SDK.EventBreakpointsModel.EventBreakpointsManager)) {
+            this.#context.set(SDK.EventBreakpointsModel.EventBreakpointsManager, new SDK.EventBreakpointsModel.EventBreakpointsManager(this.targetManager));
+        }
+        return this.#context.get(SDK.EventBreakpointsModel.EventBreakpointsManager);
+    }
+    get fileManager() {
+        if (!this.#context.has(Workspace.FileManager.FileManager)) {
+            this.#context.set(Workspace.FileManager.FileManager, new Workspace.FileManager.FileManager());
+        }
+        return this.#context.get(Workspace.FileManager.FileManager);
+    }
+    get fileSystemWorkspaceBinding() {
+        if (!this.#context.has(Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding)) {
+            this.#context.set(Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding, new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(this.isolatedFileSystemManager, this.workspace));
+        }
+        return this.#context.get(Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding);
     }
     get frameManager() {
         if (!this.#context.has(SDK.FrameManager.FrameManager)) {
@@ -102,11 +149,29 @@ export class TestUniverse {
         }
         return this.#context.get(SDK.FrameManager.FrameManager);
     }
+    get gdpClient() {
+        if (!this.#context.has(Host.GdpClient.GdpClient)) {
+            this.#context.set(Host.GdpClient.GdpClient, new Host.GdpClient.GdpClient());
+        }
+        return this.#context.get(Host.GdpClient.GdpClient);
+    }
+    get hostConfigTracker() {
+        if (!this.#context.has(Host.AidaClient.HostConfigTracker)) {
+            this.#context.set(Host.AidaClient.HostConfigTracker, new Host.AidaClient.HostConfigTracker());
+        }
+        return this.#context.get(Host.AidaClient.HostConfigTracker);
+    }
     get ignoreListManager() {
         if (!this.#context.has(Workspace.IgnoreListManager.IgnoreListManager)) {
             this.#context.set(Workspace.IgnoreListManager.IgnoreListManager, new Workspace.IgnoreListManager.IgnoreListManager(this.settings, this.targetManager));
         }
         return this.#context.get(Workspace.IgnoreListManager.IgnoreListManager);
+    }
+    get isolateManager() {
+        if (!this.#context.has(SDK.IsolateManager.IsolateManager)) {
+            this.#context.set(SDK.IsolateManager.IsolateManager, new SDK.IsolateManager.IsolateManager(this.targetManager));
+        }
+        return this.#context.get(SDK.IsolateManager.IsolateManager);
     }
     get logManager() {
         if (!this.#context.has(Logs.LogManager.LogManager)) {
@@ -126,6 +191,12 @@ export class TestUniverse {
         }
         return this.#context.get(JavaScriptMetadata.JavaScriptMetadata.JavaScriptMetadataImpl);
     }
+    get liveMetrics() {
+        if (!this.#context.has(LiveMetrics.LiveMetrics)) {
+            this.#context.set(LiveMetrics.LiveMetrics, new LiveMetrics.LiveMetrics(this.targetManager, this.deviceModeModel));
+        }
+        return this.#context.get(LiveMetrics.LiveMetrics);
+    }
     get multitargetNetworkManager() {
         if (!this.#context.has(SDK.NetworkManager.MultitargetNetworkManager)) {
             const multitargetNetworkManager = new SDK.NetworkManager.MultitargetNetworkManager(this.targetManager);
@@ -144,6 +215,12 @@ export class TestUniverse {
             this.#context.set(Persistence.NetworkPersistenceManager.NetworkPersistenceManager, new Persistence.NetworkPersistenceManager.NetworkPersistenceManager(this.workspace, this.persistence, this.breakpointManager, this.targetManager, this.settings, this.isolatedFileSystemManager, this.multitargetNetworkManager));
         }
         return this.#context.get(Persistence.NetworkPersistenceManager.NetworkPersistenceManager);
+    }
+    get networkProjectManager() {
+        if (!this.#context.has(Bindings.NetworkProject.NetworkProjectManager)) {
+            this.#context.set(Bindings.NetworkProject.NetworkProjectManager, new Bindings.NetworkProject.NetworkProjectManager());
+        }
+        return this.#context.get(Bindings.NetworkProject.NetworkProjectManager);
     }
     get pageResourceLoader() {
         if (!this.#context.has(SDK.PageResourceLoader.PageResourceLoader)) {
@@ -187,8 +264,20 @@ export class TestUniverse {
                     if (ctor === SDK.FrameManager.FrameManager.prototype.constructor) {
                         return universe.frameManager;
                     }
+                    if (ctor === SDK.DOMModel.DOMModelUndoStack.prototype.constructor) {
+                        return universe.domModelUndoStack;
+                    }
                     if (ctor === SDK.PageResourceLoader.PageResourceLoader.prototype.constructor) {
                         return universe.pageResourceLoader;
+                    }
+                    if (ctor === SDK.IsolateManager.IsolateManager.prototype.constructor) {
+                        return universe.isolateManager;
+                    }
+                    if (ctor === SDK.NetworkManager.MultitargetNetworkManager.prototype.constructor) {
+                        return universe.multitargetNetworkManager;
+                    }
+                    if (ctor === Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.prototype.constructor) {
+                        return universe.debuggerWorkspaceBinding;
                     }
                     throw new Error(`Class ${ctor.name} not set-up as a dependency for SDKModels in TestUniverse.ts. Add it to LazyContext#get in TestUniverse.ts`);
                 }
@@ -205,7 +294,7 @@ export class TestUniverse {
                 syncedStorage: storage,
                 globalStorage: storage,
                 localStorage: storage,
-                settingRegistrations: DEFAULT_SETTING_REGISTRATIONS_FOR_TEST,
+                settingRegistrations: [...DEFAULT_SETTING_REGISTRATIONS_FOR_TEST],
                 console: this.console,
                 ...this.#creationOptions?.settingsCreationOptions,
             };
@@ -219,6 +308,12 @@ export class TestUniverse {
             this.#context.set(Workspace.Workspace.WorkspaceImpl, new Workspace.Workspace.WorkspaceImpl());
         }
         return this.#context.get(Workspace.Workspace.WorkspaceImpl);
+    }
+    get workspaceDiff() {
+        if (!this.#context.has(WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl)) {
+            this.#context.set(WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl, new WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl(this.workspace, this.persistence, this.networkPersistenceManager));
+        }
+        return this.#context.get(WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl);
     }
     get #resourceMapping() {
         if (!this.#context.has(Bindings.ResourceMapping.ResourceMapping)) {

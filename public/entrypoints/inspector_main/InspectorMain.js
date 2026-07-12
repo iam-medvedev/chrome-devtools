@@ -168,7 +168,6 @@ export class NodeIndicator extends UI.Widget.Widget {
         this.#view(input, {}, this.contentElement);
     }
 }
-let nodeIndicatorProviderInstance;
 export class NodeIndicatorProvider {
     #toolbarItem;
     #widgetElement;
@@ -180,13 +179,6 @@ export class NodeIndicatorProvider {
     }
     item() {
         return this.#toolbarItem;
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!nodeIndicatorProviderInstance || forceNew) {
-            nodeIndicatorProviderInstance = new NodeIndicatorProvider();
-        }
-        return nodeIndicatorProviderInstance;
     }
 }
 export class SourcesPanelIndicator {

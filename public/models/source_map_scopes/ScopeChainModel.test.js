@@ -5,33 +5,28 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as Workspace from '../../models/workspace/workspace.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SourceMapScopes from './source_map_scopes.js';
-describeWithEnvironment('ScopeChainModel', () => {
+describe('ScopeChainModel', () => {
+    let universe;
     let clock;
     let stubPluginManager;
     beforeEach(() => {
         clock = sinon.useFakeTimers();
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
+        universe = new TestUniverse();
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(universe.debuggerWorkspaceBinding);
         stubPluginManager = sinon.createStubInstance(Bindings.DebuggerLanguagePlugins.DebuggerLanguagePluginManager, { resolveScopeChain: Promise.resolve(null) });
-        sinon.stub(debuggerWorkspaceBinding, 'pluginManager').value(stubPluginManager);
+        sinon.stub(universe.debuggerWorkspaceBinding, 'pluginManager').value(stubPluginManager);
     });
-    afterEach(() => {
+    afterEach(async () => {
         clock.restore();
+        await deinitializeGlobalVars();
+        sinon.restore();
     });
     it('emits an event after it was constructed with the scope chain', async () => {
-        const target = createTarget();
+        const target = universe.createTarget();
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         const fakeFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
         fakeFrame.debuggerModel = debuggerModel;
@@ -48,7 +43,7 @@ describeWithEnvironment('ScopeChainModel', () => {
         // Stub out the pluginManagers `resolveScopeChain` with a promise that we control.
         const { promise, resolve } = Promise.withResolvers();
         stubPluginManager.resolveScopeChain.returns(promise);
-        const target = createTarget();
+        const target = universe.createTarget();
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         const fakeFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
         fakeFrame.debuggerModel = debuggerModel;

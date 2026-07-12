@@ -6488,7 +6488,7 @@ export declare namespace DigitalCredentials {
     /**
      * The type of virtual wallet action.
      */
-    const enum VirtualWalletBehavior {
+    const enum VirtualWalletAction {
         Respond = "respond",
         Decline = "decline",
         Wait = "wait",
@@ -6496,19 +6496,23 @@ export declare namespace DigitalCredentials {
     }
     interface SetVirtualWalletBehaviorRequest {
         /**
-         * The behavior of the virtual wallet.
+         * The action of the virtual wallet.
          */
-        behavior: VirtualWalletBehavior;
+        action: VirtualWalletAction;
         /**
-         * The protocol identifier (e.g. "openid4vp"). Required when |behavior| is
+         * The protocol identifier (e.g. "openid4vp"). Required when |action| is
          * "respond", forbidden otherwise.
          */
         protocol?: string;
         /**
          * The response data object returned by the wallet.
-         * Required when |behavior| is "respond", forbidden otherwise.
+         * Required when |action| is "respond", forbidden otherwise.
          */
         response?: any;
+        /**
+         * The frame to scope the virtual wallet behavior to.
+         */
+        frameId?: Page.FrameId;
     }
 }
 /**
@@ -11237,7 +11241,10 @@ export declare namespace Network {
         InvalidFederatedSessionProviderFailedToRestoreKey = "InvalidFederatedSessionProviderFailedToRestoreKey",
         FailedToUnwrapKey = "FailedToUnwrapKey",
         SessionDeletedDuringRefresh = "SessionDeletedDuringRefresh",
-        CrossOriginRegistrationSiteNotIncluded = "CrossOriginRegistrationSiteNotIncluded"
+        CrossOriginRegistrationSiteNotIncluded = "CrossOriginRegistrationSiteNotIncluded",
+        InvalidPreProvisionedKeyInitiatorMissing = "InvalidPreProvisionedKeyInitiatorMissing",
+        PreProvisionedKeyAccessNotGranted = "PreProvisionedKeyAccessNotGranted",
+        PreProvisionedKeyNotFound = "PreProvisionedKeyNotFound"
     }
     /**
      * Details about a failed device bound session network request.

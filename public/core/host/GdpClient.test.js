@@ -12,6 +12,7 @@ describe('GdpClient', () => {
     setupLocaleHooks();
     setupRuntimeHooks();
     let dispatchHttpRequestStub;
+    let gdpClient;
     beforeEach(() => {
         updateHostConfig({
             devToolsGdpProfiles: {
@@ -30,7 +31,7 @@ describe('GdpClient', () => {
                     statusCode: 200,
                 });
             });
-        Host.GdpClient.GdpClient.instance({ forceNew: true });
+        gdpClient = new Host.GdpClient.GdpClient();
     });
     it('should cache requests to getProfile when profile exists', async () => {
         dispatchHttpRequestStub.callsFake((_, cb) => {
@@ -39,8 +40,8 @@ describe('GdpClient', () => {
                 statusCode: 200,
             });
         });
-        await Host.GdpClient.GdpClient.instance().getProfile();
-        await Host.GdpClient.GdpClient.instance().getProfile();
+        await gdpClient.getProfile();
+        await gdpClient.getProfile();
         sinon.assert.calledOnce(dispatchHttpRequestStub);
     });
     it('should cache requests in getProfile when profile doesn\'t exist', async () => {
@@ -56,8 +57,8 @@ describe('GdpClient', () => {
                 statusCode: 200,
             });
         });
-        await Host.GdpClient.GdpClient.instance().getProfile();
-        await Host.GdpClient.GdpClient.instance().getProfile();
+        await gdpClient.getProfile();
+        await gdpClient.getProfile();
         sinon.assert.calledTwice(dispatchHttpRequestStub);
     });
     it('should clear cache after creating a profile', async () => {
@@ -67,10 +68,10 @@ describe('GdpClient', () => {
                 statusCode: 404,
             });
         });
-        await Host.GdpClient.GdpClient.instance().getProfile();
-        await Host.GdpClient.GdpClient.instance().createProfile({ user: 'test', emailPreference: Host.GdpClient.EmailPreference.ENABLED });
-        await Host.GdpClient.GdpClient.instance().getProfile();
-        await Host.GdpClient.GdpClient.instance().getProfile();
+        await gdpClient.getProfile();
+        await gdpClient.createProfile({ user: 'test', emailPreference: Host.GdpClient.EmailPreference.ENABLED });
+        await gdpClient.getProfile();
+        await gdpClient.getProfile();
         sinon.assert.calledThrice(dispatchHttpRequestStub);
     });
     it('`getAwardedBadgeNames` should normalize the badge names', async () => {
@@ -84,7 +85,7 @@ describe('GdpClient', () => {
                 statusCode: 200,
             });
         });
-        const result = await Host.GdpClient.GdpClient.instance().getAwardedBadgeNames({ names: [] });
+        const result = await gdpClient.getAwardedBadgeNames({ names: [] });
         assert.deepEqual(result, new Set(['/profiles/me/awards/some-badge']));
     });
     describe('when the integration is disabled', () => {
@@ -94,7 +95,8 @@ describe('GdpClient', () => {
                     enabled: false,
                 },
             });
-            const profileResult = await Host.GdpClient.GdpClient.instance({ forceNew: true }).getProfile();
+            gdpClient = new Host.GdpClient.GdpClient();
+            const profileResult = await gdpClient.getProfile();
             assert.isNull(profileResult);
             sinon.assert.notCalled(dispatchHttpRequestStub);
         });
@@ -107,7 +109,7 @@ describe('GdpClient', () => {
                     return;
                 }
             });
-            const result = await Host.GdpClient.GdpClient.instance().getProfile();
+            const result = await gdpClient.getProfile();
             assert.isNull(result);
             sinon.assert.calledOnce(dispatchHttpRequestStub);
         });
@@ -118,7 +120,7 @@ describe('GdpClient', () => {
                     response: 'this is not a json',
                 });
             });
-            const result = await Host.GdpClient.GdpClient.instance().getProfile();
+            const result = await gdpClient.getProfile();
             assert.isNull(result);
         });
         it('should return null when there isn\'t a profile and checkEligibility call returned an error', async () => {
@@ -129,7 +131,7 @@ describe('GdpClient', () => {
                 }
                 cb({ statusCode: 503, error: '' });
             });
-            const result = await Host.GdpClient.GdpClient.instance().getProfile();
+            const result = await gdpClient.getProfile();
             assert.isNull(result);
             sinon.assert.calledTwice(dispatchHttpRequestStub);
         });
@@ -140,7 +142,7 @@ describe('GdpClient', () => {
                     return;
                 }
             });
-            const result = await Host.GdpClient.GdpClient.instance().getProfile();
+            const result = await gdpClient.getProfile();
             assert.deepEqual(result, {
                 profile: { name: 'test/profile-id' },
                 isEligible: true,
@@ -160,7 +162,8 @@ describe('GdpClient', () => {
                     statusCode: 200,
                 });
             });
-            const result = await Host.GdpClient.GdpClient.instance({ forceNew: true }).getProfile();
+            gdpClient = new Host.GdpClient.GdpClient();
+            const result = await gdpClient.getProfile();
             assert.deepEqual(result, {
                 profile: null,
                 isEligible: true,

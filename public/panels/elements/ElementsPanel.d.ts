@@ -51,14 +51,18 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     private stylesViewToReveal?;
     private nodeInsertedTaskRunner;
     private cssStyleTrackerByCSSModel;
+    get settings(): Common.Settings.Settings;
+    get targetManager(): SDK.TargetManager.TargetManager;
     getTreeOutlineForTesting(): ElementsTreeOutline | undefined;
-    constructor();
+    constructor(targetManager?: SDK.TargetManager.TargetManager, settings?: Common.Settings.Settings);
     private evaluateTrackingComputedStyleUpdatesForNode;
     private showAccessibilityTree;
     private showDOMTree;
     toggleAccessibilityTree(): void;
     static instance(opts?: {
         forceNew: boolean | null;
+        targetManager?: SDK.TargetManager.TargetManager;
+        settings?: Common.Settings.Settings;
     } | undefined): ElementsPanel;
     revealProperty(cssProperty: SDK.CSSProperty.CSSProperty): Promise<void>;
     resolveLocation(_locationName: string): UI.View.ViewLocation | null;
@@ -66,7 +70,7 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     modelAdded(domModel: SDK.DOMModel.DOMModel): void;
     modelRemoved(domModel: SDK.DOMModel.DOMModel): void;
     private handleNodeInserted;
-    private targetNameChanged;
+    private onPrimaryPageChanged;
     private updateTreeOutlineVisibleWidth;
     focus(): void;
     searchableView(): UI.SearchableView.SearchableView;

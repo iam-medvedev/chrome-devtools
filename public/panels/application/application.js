@@ -134,8 +134,8 @@ var ExpandableApplicationPanelTreeElement = class extends ApplicationPanelTreeEl
   set itemURL(value) {
     super.itemURL = value;
   }
-  setLink(link3) {
-    this.categoryLink = link3;
+  setLink(link2) {
+    this.categoryLink = link2;
   }
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
@@ -776,9 +776,9 @@ function renderPresentation(presentationData, output) {
       <devtools-report-key>${i18nString(UIStrings.startUrl)}</devtools-report-key>
       <devtools-report-value>
       ${completeStartUrl ? (() => {
-    const link3 = linkifyURL(completeStartUrl, { text: startUrl, tabStop: true, jslogContext: "start-url" });
-    output.focusOnSection.set(i18nString(UIStrings.presentation), () => link3.focus());
-    return link3;
+    const link2 = linkifyURL(completeStartUrl, { text: startUrl, tabStop: true, jslogContext: "start-url" });
+    output.focusOnSection.set(i18nString(UIStrings.presentation), () => link2.focus());
+    return link2;
   })() : nothing}
       </devtools-report-value>
       <devtools-report-key>${i18nString(UIStrings.themeColor)}</devtools-report-key>
@@ -1708,6 +1708,7 @@ import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
+import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
 
@@ -2235,7 +2236,7 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
    */
   async saveToFile() {
     const fileName = `${this.serviceName}-${Platform2.DateUtilities.toISO8601Compact(/* @__PURE__ */ new Date())}.json`;
-    const stream = new Bindings.FileUtils.FileOutputStream();
+    const stream = new Bindings.FileUtils.FileOutputStream(Workspace.FileManager.FileManager.instance());
     const accepted = await stream.open(fileName);
     if (!accepted) {
       return;
@@ -2950,7 +2951,7 @@ import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
+import * as Workspace2 from "./../../models/workspace/workspace.js";
 import * as PanelCommon from "./../common/common.js";
 import * as NetworkForward from "./../network/forward/forward.js";
 import * as CspEvaluator from "./../../third_party/csp_evaluator/csp_evaluator.js";
@@ -4188,7 +4189,7 @@ var FrameDetailsReportView = class extends UI8.Widget.Widget {
     this.#view(input, void 0, this.contentElement);
   }
   #uiSourceCodeForFrame(frame) {
-    for (const project of Workspace.Workspace.WorkspaceImpl.instance().projects()) {
+    for (const project of Workspace2.Workspace.WorkspaceImpl.instance().projects()) {
       const projectTarget = Bindings2.NetworkProject.NetworkProject.getTargetForProject(project);
       if (projectTarget && projectTarget === frame.resourceTreeModel().target()) {
         const uiSourceCode = project.uiSourceCodeForURL(frame.url);
@@ -4692,7 +4693,7 @@ import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
-import * as Lit2 from "./../../ui/lit/lit.js";
+import { html as html5, nothing as nothing4, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents5 from "./components/components.js";
 
@@ -4779,10 +4780,37 @@ var indexedDBViews_css_default = `/*
   overflow: hidden;
 }
 
+.object-store-summary-bar .separator {
+  padding: 0 0.5em;
+}
+
+.key-filter-input {
+  flex-grow: 0.5;
+}
+
+.stale-data-warning {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.stale-data-warning .warning-icon {
+  --icon-color: var(--icon-warning);
+
+  width: 20px;
+  height: 20px;
+}
+
+.data-grid-container {
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 /*# sourceURL=${import.meta.resolve("./indexedDBViews.css")} */`;
 
 // gen/front_end/panels/application/IndexedDBViews.js
-var { html: html5 } = Lit2;
 var UIStrings8 = {
   /**
    * @description Text in Indexed DBViews of the Application panel
@@ -4913,7 +4941,7 @@ var IDBDatabaseView = class extends ApplicationComponents5.StorageMetadataView.S
   }
   async renderReportContent() {
     if (!this.database) {
-      return Lit2.nothing;
+      return nothing4;
     }
     return html5`
       ${await super.renderReportContent()}
@@ -4975,27 +5003,26 @@ var IDBDataView = class extends UI9.View.SimpleView {
   databaseId;
   isIndex;
   refreshObjectStoreCallback;
-  refreshButton;
-  deleteSelectedButton;
-  clearButton;
-  needsRefresh;
   clearingObjectStore;
   pageSize;
   skipCount;
   // Used in Web Tests
   entries;
+  #hasMore = false;
+  #selectedRowNumber = -1;
+  #needsRefreshVisible = false;
+  #clearButtonEnabled = true;
+  #metadata = null;
+  #lastRenderedEntries = null;
+  #keyFilter = "";
   objectStore;
   index;
-  keyInput;
   dataGrid;
   lastPageSize;
   lastSkipCount;
-  pageBackButton;
-  pageForwardButton;
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lastKey;
-  summaryBarElement;
   constructor(model, databaseId, objectStore, index, refreshObjectStoreCallback) {
     super({
       title: i18nString8(UIStrings8.idb),
@@ -5003,40 +5030,17 @@ var IDBDataView = class extends UI9.View.SimpleView {
       jslog: `${VisualLogging4.pane("indexed-db-data-view")}`
     });
     this.registerRequiredCSS(indexedDBViews_css_default);
+    this.registerRequiredCSS(DataGrid3.dataGridStyles);
     this.model = model;
     this.databaseId = databaseId;
     this.isIndex = Boolean(index);
     this.refreshObjectStoreCallback = refreshObjectStoreCallback;
     this.element.classList.add("indexed-db-data-view", "storage-view");
-    this.refreshButton = new UI9.Toolbar.ToolbarButton(i18nString8(UIStrings8.refresh), "refresh");
-    this.refreshButton.addEventListener("Click", this.refreshButtonClicked, this);
-    this.refreshButton.element.setAttribute("jslog", `${VisualLogging4.action("refresh").track({ click: true })}`);
-    this.deleteSelectedButton = new UI9.Toolbar.ToolbarButton(i18nString8(UIStrings8.deleteSelected), "bin");
-    this.deleteSelectedButton.addEventListener("Click", (_event) => {
-      void this.deleteButtonClicked(null);
-    });
-    this.deleteSelectedButton.element.setAttribute("jslog", `${VisualLogging4.action("delete-selected").track({ click: true })}`);
-    this.clearButton = new UI9.Toolbar.ToolbarButton(i18nString8(UIStrings8.clearObjectStore), "clear");
-    this.clearButton.addEventListener("Click", () => {
-      void this.clearButtonClicked();
-    }, this);
-    this.clearButton.element.setAttribute("jslog", `${VisualLogging4.action("clear-all").track({ click: true })}`);
-    const refreshIcon = UI9.UIUtils.createIconLabel({
-      title: i18nString8(UIStrings8.dataMayBeStale),
-      iconName: "warning",
-      color: "var(--icon-warning)",
-      width: "20px",
-      height: "20px"
-    });
-    this.needsRefresh = new UI9.Toolbar.ToolbarItem(refreshIcon);
-    this.needsRefresh.setVisible(false);
-    this.needsRefresh.setTitle(i18nString8(UIStrings8.someEntriesMayHaveBeenModified));
     this.clearingObjectStore = false;
-    this.createEditorToolbar();
     this.pageSize = 50;
     this.skipCount = 0;
-    this.update(objectStore, index);
     this.entries = [];
+    this.update(objectStore, index);
   }
   createDataGrid() {
     const keyPath = this.isIndex && this.index ? this.index.keyPath : this.objectStore.keyPath;
@@ -5072,63 +5076,100 @@ var IDBDataView = class extends UI9.View.SimpleView {
       refreshCallback: this.updateData.bind(this, true)
     });
     dataGrid.setStriped(true);
-    dataGrid.addEventListener("SelectedNode", () => {
-      this.updateToolbarEnablement();
+    dataGrid.addEventListener("SelectedNode", (event) => {
+      const node = event.data;
+      this.#selectedRowNumber = node.data["number"];
+      this.performUpdate();
+    }, this);
+    dataGrid.addEventListener("DeselectedNode", () => {
+      this.#selectedRowNumber = -1;
+      this.performUpdate();
     }, this);
     return dataGrid;
   }
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyColumnHeaderFragment(prefix, keyPath) {
     const keyColumnHeaderFragment = document.createDocumentFragment();
-    UI9.UIUtils.createTextChild(keyColumnHeaderFragment, prefix);
-    if (keyPath === null) {
-      return keyColumnHeaderFragment;
-    }
-    UI9.UIUtils.createTextChild(keyColumnHeaderFragment, " (" + i18nString8(UIStrings8.keyPath));
-    if (Array.isArray(keyPath)) {
-      UI9.UIUtils.createTextChild(keyColumnHeaderFragment, "[");
-      for (let i = 0; i < keyPath.length; ++i) {
-        if (i !== 0) {
-          UI9.UIUtils.createTextChild(keyColumnHeaderFragment, ", ");
-        }
-        keyColumnHeaderFragment.appendChild(this.keyPathStringFragment(keyPath[i]));
-      }
-      UI9.UIUtils.createTextChild(keyColumnHeaderFragment, "]");
-    } else {
-      const keyPathString = keyPath;
-      keyColumnHeaderFragment.appendChild(this.keyPathStringFragment(keyPathString));
-    }
-    UI9.UIUtils.createTextChild(keyColumnHeaderFragment, ")");
+    render5(this.renderKeyColumnHeader(prefix, keyPath), keyColumnHeaderFragment);
     return keyColumnHeaderFragment;
   }
-  keyPathStringFragment(keyPathString) {
-    const keyPathStringFragment = document.createDocumentFragment();
-    UI9.UIUtils.createTextChild(keyPathStringFragment, '"');
-    const keyPathSpan = keyPathStringFragment.createChild("span", "source-code indexed-db-key-path");
-    keyPathSpan.textContent = keyPathString;
-    UI9.UIUtils.createTextChild(keyPathStringFragment, '"');
-    return keyPathStringFragment;
+  renderKeyColumnHeader(prefix, keyPath) {
+    if (keyPath === void 0 || keyPath === null || keyPath === "") {
+      return html5`${prefix}`;
+    }
+    return html5`
+      ${prefix} (${i18nString8(UIStrings8.keyPath)}${Array.isArray(keyPath) ? html5`[${keyPath.map((path, i) => html5`${i > 0 ? ", " : ""}${this.renderKeyPathString(path)}`)}]` : this.renderKeyPathString(keyPath)})`;
   }
-  createEditorToolbar() {
-    const editorToolbar = this.element.createChild("devtools-toolbar", "data-view-toolbar");
-    editorToolbar.setAttribute("jslog", `${VisualLogging4.toolbar()}`);
-    editorToolbar.appendToolbarItem(this.refreshButton);
-    editorToolbar.appendToolbarItem(this.clearButton);
-    editorToolbar.appendToolbarItem(this.deleteSelectedButton);
-    editorToolbar.appendToolbarItem(new UI9.Toolbar.ToolbarSeparator());
-    this.pageBackButton = new UI9.Toolbar.ToolbarButton(i18nString8(UIStrings8.showPreviousPage), "triangle-left", void 0, "prev-page");
-    this.pageBackButton.addEventListener("Click", this.pageBackButtonClicked, this);
-    editorToolbar.appendToolbarItem(this.pageBackButton);
-    this.pageForwardButton = new UI9.Toolbar.ToolbarButton(i18nString8(UIStrings8.showNextPage), "triangle-right", void 0, "next-page");
-    this.pageForwardButton.setEnabled(false);
-    this.pageForwardButton.addEventListener("Click", this.pageForwardButtonClicked, this);
-    editorToolbar.appendToolbarItem(this.pageForwardButton);
-    this.keyInput = new UI9.Toolbar.ToolbarFilter(i18nString8(UIStrings8.filterByKey), 0.5);
-    this.keyInput.addEventListener("TextChanged", this.updateData.bind(this, false));
-    editorToolbar.appendToolbarItem(this.keyInput);
-    editorToolbar.appendToolbarItem(new UI9.Toolbar.ToolbarSeparator());
-    editorToolbar.appendToolbarItem(this.needsRefresh);
+  renderKeyPathString(keyPathString) {
+    return html5`"<span class="source-code indexed-db-key-path">${keyPathString}</span>"`;
+  }
+  renderToolbar() {
+    return html5`
+      <devtools-toolbar class="data-view-toolbar" jslog=${VisualLogging4.toolbar()}>
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${"refresh"}
+          .title=${i18nString8(UIStrings8.refresh)}
+          jslog=${VisualLogging4.action("refresh").track({ click: true })}
+          @click=${() => this.refreshButtonClicked()}
+          .variant=${"toolbar"}
+        ></devtools-button>
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${"clear"}
+          .title=${i18nString8(UIStrings8.clearObjectStore)}
+          jslog=${VisualLogging4.action("clear-all").track({ click: true })}
+          @click=${() => this.clearButtonClicked()}
+          .disabled=${this.isIndex || !this.#clearButtonEnabled}
+          .variant=${"toolbar"}>
+        </devtools-button>
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${"bin"}
+          .title=${i18nString8(UIStrings8.deleteSelected)}
+          jslog=${VisualLogging4.action("delete-selected").track({ click: true })}
+          @click=${() => this.deleteButtonClicked(null)}
+          .disabled=${!this.dataGrid || this.dataGrid.rootNode().children.length === 0 || this.#selectedRowNumber === -1}
+          .variant=${"toolbar"}>
+        </devtools-button>
+
+        <div class="toolbar-divider"></div>
+
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${"triangle-left"}
+          .title=${i18nString8(UIStrings8.showPreviousPage)}
+          .disabled=${this.skipCount <= 0}
+          @click=${() => this.pageBackButtonClicked()}
+          .variant=${"toolbar"}>
+        </devtools-button>
+        <devtools-button
+          class="toolbar-button"
+          .iconName=${"triangle-right"}
+          .title=${i18nString8(UIStrings8.showNextPage)}
+          .disabled=${!this.#hasMore}
+          @click=${() => this.pageForwardButtonClicked()}
+          .variant=${"toolbar"}>
+        </devtools-button>
+
+        <devtools-toolbar-input
+          type="filter"
+          placeholder=${i18nString8(UIStrings8.filterByKey)}
+          class="key-filter-input"
+          .value=${this.#keyFilter}
+          @change=${(e) => {
+      this.#keyFilter = e.detail;
+      this.updateData(false);
+    }}>
+        </devtools-toolbar-input>
+
+        ${this.#needsRefreshVisible ? html5`
+          <div class="toolbar-divider"></div>
+          <div class="toolbar-item stale-data-warning" title=${i18nString8(UIStrings8.someEntriesMayHaveBeenModified)}>
+            <devtools-icon name="warning" class="warning-icon"></devtools-icon>
+            <span>${i18nString8(UIStrings8.dataMayBeStale)}</span>
+          </div>
+        ` : nothing4}
+      </devtools-toolbar>`;
   }
   pageBackButtonClicked() {
     this.skipCount = Math.max(0, this.skipCount - this.pageSize);
@@ -5140,19 +5181,26 @@ var IDBDataView = class extends UI9.View.SimpleView {
   }
   populateContextMenu(contextMenu, gridNode) {
     const node = gridNode;
-    if (node.valueObjectPresentation) {
-      contextMenu.revealSection().appendItem(i18nString8(UIStrings8.expandRecursively), () => {
-        if (!node.valueObjectPresentation) {
-          return;
+    const value = node.data["value"];
+    if (value && value.hasChildren) {
+      const cell = node.element().querySelector(".value-column");
+      if (cell) {
+        const widgetElement = cell.firstElementChild;
+        if (widgetElement) {
+          const widget11 = UI9.Widget.Widget.get(widgetElement);
+          if (widget11 instanceof ObjectPropertiesSectionWidget) {
+            const objectUi = widget11.objectPropertiesSection;
+            if (objectUi) {
+              contextMenu.revealSection().appendItem(i18nString8(UIStrings8.expandRecursively), () => {
+                void objectUi.objectTreeElement().expandRecursively();
+              }, { jslogContext: "expand-recursively" });
+              contextMenu.revealSection().appendItem(i18nString8(UIStrings8.collapse), () => {
+                objectUi.objectTreeElement().collapse();
+              }, { jslogContext: "collapse" });
+            }
+          }
         }
-        void node.valueObjectPresentation.objectTreeElement().expandRecursively();
-      }, { jslogContext: "expand-recursively" });
-      contextMenu.revealSection().appendItem(i18nString8(UIStrings8.collapse), () => {
-        if (!node.valueObjectPresentation) {
-          return;
-        }
-        node.valueObjectPresentation.objectTreeElement().collapse();
-      }, { jslogContext: "collapse" });
+      }
     }
   }
   refreshData() {
@@ -5169,9 +5217,9 @@ var IDBDataView = class extends UI9.View.SimpleView {
     }
     this.dataGrid = this.createDataGrid();
     this.dataGrid.setRowContextMenuCallback(this.populateContextMenu.bind(this));
-    this.dataGrid.asWidget().show(this.element);
     this.skipCount = 0;
     this.updateData(true);
+    this.performUpdate();
   }
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -5185,12 +5233,11 @@ var IDBDataView = class extends UI9.View.SimpleView {
     return result;
   }
   updateData(force) {
-    const key = this.parseKey(this.keyInput.value());
+    const key = this.parseKey(this.#keyFilter);
     const pageSize = this.pageSize;
     let skipCount = this.skipCount;
-    let selected = this.dataGrid.selectedNode ? this.dataGrid.selectedNode.data["number"] : 0;
-    selected = Math.max(selected, this.skipCount);
-    this.clearButton.setEnabled(!this.isIndex);
+    const selected = this.#selectedRowNumber !== -1 ? this.#selectedRowNumber : 0;
+    this.#selectedRowNumber = Math.max(selected, this.skipCount);
     if (!force && this.lastKey === key && this.lastPageSize === pageSize && this.lastSkipCount === skipCount) {
       return;
     }
@@ -5202,13 +5249,10 @@ var IDBDataView = class extends UI9.View.SimpleView {
     this.lastPageSize = pageSize;
     this.lastSkipCount = skipCount;
     function callback(entries, hasMore) {
-      this.clear();
       this.entries = entries;
-      this.populateDataGrid(entries, skipCount, selected);
-      this.pageBackButton.setEnabled(Boolean(skipCount));
-      this.pageForwardButton.setEnabled(hasMore);
-      this.needsRefresh.setVisible(false);
-      this.updateToolbarEnablement();
+      this.#hasMore = hasMore;
+      this.#needsRefreshVisible = false;
+      this.performUpdate();
       this.updatedDataForTests();
     }
     const idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
@@ -5217,41 +5261,48 @@ var IDBDataView = class extends UI9.View.SimpleView {
     } else {
       this.model.loadObjectStoreData(this.databaseId, this.objectStore.name, idbKeyRange, skipCount, pageSize, callback.bind(this));
     }
-    void this.model.getMetadata(this.databaseId, this.objectStore).then(this.updateSummaryBar.bind(this));
+    void this.model.getMetadata(this.databaseId, this.objectStore).then((metadata) => {
+      this.#metadata = metadata;
+      this.performUpdate();
+    });
   }
-  populateDataGrid(entries, skipCount, selected) {
+  populateDataGrid() {
+    if (this.entries === this.#lastRenderedEntries) {
+      return;
+    }
+    this.dataGrid.rootNode().removeChildren();
     let selectedNode = null;
-    for (let i = 0; i < entries.length; ++i) {
+    for (let i = 0; i < this.entries.length; ++i) {
       const data = {};
-      data["number"] = i + skipCount;
-      data["key"] = entries[i].key;
-      data["primary-key"] = entries[i].primaryKey;
-      data["value"] = entries[i].value;
+      data["number"] = i + this.skipCount;
+      data["key"] = this.entries[i].key;
+      data["primary-key"] = this.entries[i].primaryKey;
+      data["value"] = this.entries[i].value;
       const node = new IDBDataGridNode(data);
       this.dataGrid.rootNode().appendChild(node);
-      if (data["number"] <= selected) {
+      if (data["number"] <= this.#selectedRowNumber) {
         selectedNode = node;
       }
     }
+    this.#lastRenderedEntries = this.entries;
     if (selectedNode) {
       selectedNode.select();
+    } else {
+      this.#selectedRowNumber = -1;
     }
   }
-  updateSummaryBar(metadata) {
-    if (!this.summaryBarElement) {
-      this.summaryBarElement = this.element.createChild("div", "object-store-summary-bar");
-    }
-    this.summaryBarElement.removeChildren();
+  renderSummaryBar() {
+    const metadata = this.#metadata;
     if (!metadata) {
-      return;
+      return nothing4;
     }
-    const separator = "\u2002\u2758\u2002";
-    const span = this.summaryBarElement.createChild("span");
-    span.textContent = i18nString8(UIStrings8.totalEntriesS, { PH1: String(metadata.entriesCount) });
-    if (this.objectStore.autoIncrement) {
-      span.textContent += separator;
-      span.textContent += i18nString8(UIStrings8.keyGeneratorValueS, { PH1: String(metadata.keyGeneratorValue) });
-    }
+    return html5`
+      <div class="object-store-summary-bar">
+        <span>${i18nString8(UIStrings8.totalEntriesS, { PH1: String(metadata.entriesCount) })}</span>
+        ${this.objectStore.autoIncrement ? html5`
+          <span class="separator">\u2758</span>
+          <span>${i18nString8(UIStrings8.keyGeneratorValueS, { PH1: String(metadata.keyGeneratorValue) })}</span>` : nothing4}
+      </div>`;
   }
   updatedDataForTests() {
   }
@@ -5261,11 +5312,13 @@ var IDBDataView = class extends UI9.View.SimpleView {
   async clearButtonClicked() {
     const ok = await UI9.UIUtils.ConfirmDialog.show(i18nString8(UIStrings8.objectStoreWillBeCleared), i18nString8(UIStrings8.confirmClearObjectStore, { PH1: this.objectStore.name }), this.element, { jslogContext: "clear-object-store-confirmation" });
     if (ok) {
-      this.clearButton.setEnabled(false);
+      this.#clearButtonEnabled = false;
+      this.performUpdate();
       this.clearingObjectStore = true;
       await this.model.clearObjectStore(this.databaseId, this.objectStore.name);
       this.clearingObjectStore = false;
-      this.clearButton.setEnabled(true);
+      this.#clearButtonEnabled = true;
+      this.performUpdate();
       this.updateData(true);
     }
   }
@@ -5273,7 +5326,8 @@ var IDBDataView = class extends UI9.View.SimpleView {
     if (this.clearingObjectStore) {
       return;
     }
-    this.needsRefresh.setVisible(true);
+    this.#needsRefreshVisible = true;
+    this.performUpdate();
   }
   async resolveArrayKey(key) {
     const { properties } = await key.getOwnProperties(
@@ -5313,51 +5367,91 @@ var IDBDataView = class extends UI9.View.SimpleView {
     this.refreshObjectStoreCallback();
   }
   clear() {
-    this.dataGrid.rootNode().removeChildren();
     this.entries = [];
+    this.performUpdate();
   }
-  updateToolbarEnablement() {
-    const empty = !this.dataGrid || this.dataGrid.rootNode().children.length === 0;
-    this.deleteSelectedButton.setEnabled(!empty && this.dataGrid.selectedNode !== null);
+  performUpdate() {
+    this.populateDataGrid();
+    render5(html5`
+      ${this.renderToolbar()}
+      <div class="data-grid-container">
+        ${this.dataGrid ? this.dataGrid.element : nothing4}
+      </div>
+      ${this.renderSummaryBar()}
+    `, this.element);
+  }
+  wasShown() {
+    super.wasShown();
+    this.dataGrid?.wasShown();
+  }
+  willHide() {
+    super.willHide();
+    this.dataGrid?.willHide();
+  }
+  elementsToRestoreScrollPositionsFor() {
+    if (this.dataGrid) {
+      return [this.dataGrid.scrollContainer];
+    }
+    return [];
+  }
+  onResize() {
+    super.onResize();
+    this.dataGrid?.onResize();
+  }
+};
+var ObjectPropertiesSectionWidget = class extends UI9.Widget.Widget {
+  #value = null;
+  #objectPropSection = null;
+  set value(value) {
+    if (this.#value === value) {
+      return;
+    }
+    this.#value = value;
+    this.requestUpdate();
+  }
+  get objectPropertiesSection() {
+    return this.#objectPropSection;
+  }
+  performUpdate() {
+    const value = this.#value;
+    if (!value) {
+      this.contentElement.removeChildren();
+      this.#objectPropSection = null;
+      return;
+    }
+    this.contentElement.removeChildren();
+    this.#objectPropSection = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.defaultObjectPropertiesSection(
+      value,
+      void 0,
+      true,
+      true
+      /* readOnly */
+    );
+    if (value.hasChildren) {
+      this.contentElement.appendChild(this.#objectPropSection.element);
+    } else {
+      this.contentElement.appendChild(this.#objectPropSection.titleElement);
+    }
   }
 };
 var IDBDataGridNode = class extends DataGrid3.DataGrid.DataGridNode {
   selectable;
-  valueObjectPresentation;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data) {
     super(data, false);
     this.selectable = true;
-    this.valueObjectPresentation = null;
   }
   createCell(columnIdentifier) {
     const cell = super.createCell(columnIdentifier);
     const value = this.data[columnIdentifier];
     switch (columnIdentifier) {
-      case "value": {
-        cell.removeChildren();
-        const objectPropSection = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.defaultObjectPropertiesSection(
-          value,
-          void 0,
-          true,
-          true
-          /* readOnly */
-        );
-        cell.appendChild(objectPropSection.element);
-        this.valueObjectPresentation = objectPropSection;
-        break;
-      }
+      case "value":
       case "key":
       case "primary-key": {
         cell.removeChildren();
-        const objectElement = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.defaultObjectPresentation(
-          value,
-          void 0,
-          true,
-          true
-          /* readOnly */
-        );
-        cell.appendChild(objectElement);
+        const widget11 = new ObjectPropertiesSectionWidget();
+        widget11.value = value;
+        widget11.show(cell, null, true);
         break;
       }
     }
@@ -5818,7 +5912,7 @@ async function maybeCreateLinkToElementsPanel(opener) {
     }
   });
   linkElement.addEventListener("mouseleave", () => {
-    SDK11.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    SDK11.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK11.TargetManager.TargetManager.instance());
   });
   return linkElement;
 }
@@ -5982,7 +6076,7 @@ import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html6, render as render5 } from "./../../ui/lit/lit.js";
+import { Directives as Directives3, html as html6, render as render6 } from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 import * as PreloadingComponents from "./preloading/components/components.js";
 
@@ -6639,7 +6733,7 @@ var PreloadingRuleSetView = class extends UI13.Widget.VBox {
       this.shouldPrettyPrint = !this.shouldPrettyPrint;
       this.updateRuleSetDetails();
     };
-    render5(html6`
+    render6(html6`
         <div class="empty-state">
           <span class="empty-state-header">${i18nString13(UIStrings13.noRulesDetected)}</span>
           <div class="empty-state-description">
@@ -6692,10 +6786,10 @@ var PreloadingRuleSetView = class extends UI13.Widget.VBox {
   }
   updateRuleSetDetails() {
     const ruleSet = this.getRuleSet();
-    const widget10 = this.ruleSetDetailsRef.value?.getWidget();
-    if (widget10) {
-      widget10.shouldPrettyPrint = this.shouldPrettyPrint;
-      widget10.ruleSet = ruleSet;
+    const widget11 = this.ruleSetDetailsRef.value?.getWidget();
+    if (widget11) {
+      widget11.shouldPrettyPrint = this.shouldPrettyPrint;
+      widget11.ruleSet = ruleSet;
     }
     if (ruleSet === null) {
       this.hsplit.setAttribute("sidebar-visibility", "hidden");
@@ -6837,7 +6931,7 @@ var PreloadingAttemptView = class extends UI13.Widget.VBox {
     preloadingGridContainer.className = "preloading-grid-widget-container";
     preloadingGridContainer.style = "height: 100%";
     this.preloadingGrid.show(preloadingGridContainer, null, true);
-    render5(html6`
+    render6(html6`
         <div class="empty-state">
           <span class="empty-state-header">${i18nString13(UIStrings13.noPrefetchAttempts)}</span>
           <div class="empty-state-description">
@@ -7265,7 +7359,7 @@ import * as Platform5 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
-import { html as html7, render as render6 } from "./../../ui/lit/lit.js";
+import { html as html7, render as render7 } from "./../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents7 from "./components/components.js";
 var UIStrings15 = {
@@ -7289,8 +7383,8 @@ var UIStrings15 = {
 var str_15 = i18n29.i18n.registerUIStrings("panels/application/CrashReportContextView.ts", UIStrings15);
 var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var DEFAULT_VIEW4 = (input, _output, target) => {
-  const { widget: widget10 } = UI14.Widget;
-  render6(html7`
+  const { widget: widget11 } = UI14.Widget;
+  render7(html7`
     <style>${UI14.inspectorCommonStyles}</style>
     <style>
       .crash-report-context-view {
@@ -7353,7 +7447,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
               </div>
               <div class="grid-container">
                 <devtools-widget
-                  ${widget10(ApplicationComponents7.CrashReportContextGrid.CrashReportContextGrid, {
+                  ${widget11(ApplicationComponents7.CrashReportContextGrid.CrashReportContextGrid, {
     data: {
       entries: frame.entries.map((e) => ({ key: e.key, value: e.value })),
       selectedKey: input.selectedKey || void 0,
@@ -7367,7 +7461,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
           `)}
         </div>
       ` : html7`
-        ${widget10(UI14.EmptyWidget.EmptyWidget, {
+        ${widget11(UI14.EmptyWidget.EmptyWidget, {
     header: i18nString15(UIStrings15.noContext)
   })}
       `}
@@ -7457,7 +7551,7 @@ import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as SDK15 from "./../../core/sdk/sdk.js";
 import * as SourceFrame2 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
-import { html as html8, render as render7 } from "./../../ui/lit/lit.js";
+import { html as html8, render as render8 } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents8 from "./components/components.js";
 var { widget: widget5 } = UI15.Widget;
@@ -7492,7 +7586,7 @@ var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilities/web-apis/reporting-api";
 var DEFAULT_VIEW5 = (input, output, target) => {
   if (input.hasReports || input.hasEndpoints) {
-    render7(html8`
+    render8(html8`
       <style>${UI15.inspectorCommonStyles}</style>
       <devtools-split-view sidebar-position="second" sidebar-initial-size="150" jslog=${VisualLogging8.pane("reporting-api")}>
         ${input.hasReports ? html8`
@@ -7526,7 +7620,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
       </devtools-split-view>
     `, target);
   } else {
-    render7(html8`
+    render8(html8`
       <devtools-widget ${widget5(UI15.EmptyWidget.EmptyWidget, {
       header: i18nString16(UIStrings16.noReportOrEndpoint),
       text: i18nString16(UIStrings16.reportingApiDescription),
@@ -7741,6 +7835,11 @@ devtools-icon.navigator-font-tree-item {
 
 .tree-outline li:hover .ai-button-container {
   display: inline-flex;
+}
+
+.tree-outline li.ads-tree-element .trailing-icons {
+  margin-left: auto;
+  margin-right: var(--sys-size-2);
 }
 
 /*# sourceURL=${import.meta.resolve("./resourcesSidebar.css")} */`;
@@ -8514,6 +8613,7 @@ import * as Buttons7 from "./../../ui/components/buttons/buttons.js";
 import { Link } from "./../../ui/kit/kit.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives4, html as html9, nothing as nothing5, render as render9 } from "./../../ui/lit/lit.js";
 import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
 import * as ApplicationComponents10 from "./components/components.js";
@@ -8674,6 +8774,14 @@ button.link {
 
 button.link:focus-visible {
   background-color: inherit;
+}
+
+devtools-icon.error-icon {
+  color: var(--sys-color-error-bright);
+  height: var(--sys-size-7);
+  margin-right: var(--sys-size-2);
+  vertical-align: bottom;
+  width: var(--sys-size-7);
 }
 
 /*# sourceURL=${import.meta.resolve("./serviceWorkersView.css")} */`;
@@ -9266,6 +9374,8 @@ var UIStrings21 = {
 };
 var str_21 = i18n41.i18n.registerUIStrings("panels/application/ServiceWorkersView.ts", UIStrings21);
 var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
+var { until } = Directives4;
+var { widget: widget6 } = UI20.Widget;
 var throttleDisabledForDebugging = false;
 var setThrottleDisabledForDebugging = (enable) => {
   throttleDisabledForDebugging = enable;
@@ -9398,7 +9508,7 @@ var ServiceWorkersView = class extends UI20.Widget.VBox {
     }
     for (const section8 of movedSections) {
       const registration = section8.registration;
-      this.removeRegistrationFromList(registration);
+      this.removeRegistrationFromList(registration, true);
       this.updateRegistration(registration, true);
     }
     this.currentWorkersView.sortSections((aSection, bSection) => {
@@ -9448,8 +9558,10 @@ var ServiceWorkersView = class extends UI20.Widget.VBox {
     }
   }
   getReportViewForOrigin(origin) {
-    if (this.securityOriginManager && (this.securityOriginManager.securityOrigins().includes(origin) || this.securityOriginManager.unreachableMainSecurityOrigin() === origin)) {
-      return this.currentWorkersView;
+    if (this.securityOriginManager) {
+      if (this.securityOriginManager.securityOrigins().includes(origin) || this.securityOriginManager.unreachableMainSecurityOrigin() === origin) {
+        return this.currentWorkersView;
+      }
     }
     return null;
   }
@@ -9476,13 +9588,15 @@ var ServiceWorkersView = class extends UI20.Widget.VBox {
   registrationDeleted(event) {
     this.removeRegistrationFromList(event.data);
   }
-  removeRegistrationFromList(registration) {
+  removeRegistrationFromList(registration, skipVisibilityUpdate = false) {
     const section8 = this.sections.get(registration);
     if (section8) {
       section8.section.detach();
     }
     this.sections.delete(registration);
-    this.updateSectionVisibility();
+    if (!skipVisibilityUpdate) {
+      this.updateSectionVisibility();
+    }
   }
   isRegistrationVisible(registration) {
     if (!registration.scopeURL) {
@@ -9494,7 +9608,7 @@ var ServiceWorkersView = class extends UI20.Widget.VBox {
     this.contentElement.classList.toggle("service-worker-list-empty", this.sections.size === 0);
   }
 };
-var Section = class {
+var Section = class extends UI20.Widget.VBox {
   manager;
   section;
   registration;
@@ -9503,18 +9617,10 @@ var Section = class {
   syncTagNameSetting;
   periodicSyncTagNameSetting;
   updateCycleView;
-  routerView;
-  networkRequests;
-  updateButton;
-  deleteButton;
-  sourceField;
-  statusField;
-  clientsField;
   clientInfoCache;
   throttler;
-  updateCycleField;
-  routerField;
   constructor(manager, section8, registration) {
+    super();
     this.manager = manager;
     this.section = section8;
     this.registration = registration;
@@ -9523,101 +9629,191 @@ var Section = class {
     this.syncTagNameSetting = Common10.Settings.Settings.instance().createLocalSetting("sync-tag-name", "test-tag-from-devtools");
     this.periodicSyncTagNameSetting = Common10.Settings.Settings.instance().createLocalSetting("periodic-sync-tag-name", "test-tag-from-devtools");
     this.updateCycleView = new ServiceWorkerUpdateCycleView(registration);
-    this.routerView = new ApplicationComponents10.ServiceWorkerRouterView.ServiceWorkerRouterView();
-    this.networkRequests = new Buttons7.Button.Button();
-    this.networkRequests.data = {
-      variant: "text",
-      title: i18nString21(UIStrings21.networkRequests),
-      jslogContext: "show-network-requests"
-    };
-    this.networkRequests.textContent = i18nString21(UIStrings21.networkRequests);
-    this.networkRequests.addEventListener("click", this.networkRequestsClicked.bind(this));
-    this.section.appendButtonToHeader(this.networkRequests);
-    this.updateButton = UI20.UIUtils.createTextButton(i18nString21(UIStrings21.update), this.updateButtonClicked.bind(this), { variant: "text", title: i18nString21(UIStrings21.update), jslogContext: "update" });
-    this.section.appendButtonToHeader(this.updateButton);
-    this.deleteButton = UI20.UIUtils.createTextButton(i18nString21(UIStrings21.unregister), this.unregisterButtonClicked.bind(this), {
-      variant: "text",
-      title: i18nString21(UIStrings21.unregisterServiceWorker),
-      jslogContext: "unregister"
-    });
-    this.section.appendButtonToHeader(this.deleteButton);
-    this.sourceField = this.wrapWidget(this.section.appendField(i18nString21(UIStrings21.source)));
-    this.statusField = this.wrapWidget(this.section.appendField(i18nString21(UIStrings21.status)));
-    this.clientsField = this.wrapWidget(this.section.appendField(i18nString21(UIStrings21.clients)));
-    this.createSyncNotificationField(i18nString21(UIStrings21.pushString), this.pushNotificationDataSetting.get(), i18nString21(UIStrings21.pushData), this.push.bind(this), "push-message");
-    this.createSyncNotificationField(i18nString21(UIStrings21.syncString), this.syncTagNameSetting.get(), i18nString21(UIStrings21.syncTag), this.sync.bind(this), "sync-tag");
-    this.createSyncNotificationField(i18nString21(UIStrings21.periodicSync), this.periodicSyncTagNameSetting.get(), i18nString21(UIStrings21.periodicSyncTag), (tag) => this.periodicSync(tag), "periodic-sync-tag");
-    this.createUpdateCycleField();
-    this.maybeCreateRouterField();
+    this.registerRequiredCSS(serviceWorkersView_css_default, serviceWorkerUpdateCycleView_css_default);
+    this.show(this.section.getFieldElement());
     this.clientInfoCache = /* @__PURE__ */ new Map();
     this.throttler = new Common10.Throttler.Throttler(500);
   }
-  createSyncNotificationField(label, initialValue, placeholder, callback, jslogContext) {
-    const form = this.wrapWidget(this.section.appendField(label)).createChild("form", "service-worker-editor-with-button");
-    const editor = UI20.UIUtils.createInput("source-code service-worker-notification-editor");
-    editor.setAttribute("jslog", `${VisualLogging11.textField().track({ change: true }).context(jslogContext)}`);
-    form.appendChild(editor);
-    const button = UI20.UIUtils.createTextButton(label, void 0, { jslogContext });
-    button.type = "submit";
-    form.appendChild(button);
-    editor.value = initialValue;
-    editor.placeholder = placeholder;
-    UI20.ARIAUtils.setLabel(editor, label);
-    form.addEventListener("submit", (e) => {
+  renderHeaderButtons() {
+    return html9`
+      <devtools-button .data=${{
+      variant: "text",
+      title: i18nString21(UIStrings21.networkRequests),
+      jslogContext: "show-network-requests"
+    }}
+          .disabled=${this.registration.isDeleted}
+          @click=${this.networkRequestsClicked.bind(this)}>
+        ${i18nString21(UIStrings21.networkRequests)}
+      </devtools-button>
+      <devtools-button .data=${{
+      variant: "text",
+      title: i18nString21(UIStrings21.update),
+      jslogContext: "update"
+    }}
+          .disabled=${this.registration.isDeleted}
+          @click=${this.updateButtonClicked.bind(this)}>
+        ${i18nString21(UIStrings21.update)}
+      </devtools-button>
+      <devtools-button .data=${{
+      variant: "text",
+      title: i18nString21(UIStrings21.unregisterServiceWorker),
+      jslogContext: "unregister"
+    }}
+          .disabled=${this.registration.isDeleted}
+          @click=${this.unregisterButtonClicked.bind(this)}>
+        ${i18nString21(UIStrings21.unregister)}
+      </devtools-button>`;
+  }
+  renderSyncNotificationField(label, initialValue, placeholder, callback, jslogContext) {
+    return html9`
+      <div class="report-field">
+      <div class="report-field-name">${label}</div>
+        <div class="report-field-value">
+        <form class="service-worker-editor-with-button" @submit=${(e) => {
+      const { editor } = e.target;
       callback(editor.value || "");
       e.consume(true);
-    });
+    }}>
+          <input name="editor" class="source-code service-worker-notification-editor harmony-input" type="text"
+            .value=${initialValue}
+            placeholder=${placeholder}
+            aria-label=${label}
+            .spellcheck=${false}
+            jslog=${VisualLogging11.textField().track({ change: true }).context(jslogContext)}
+          >
+          <devtools-button .data=${{
+      type: "submit",
+      variant: "outlined",
+      jslogContext
+    }}>
+            ${label}
+          </devtools-button>
+        </form>
+        </div>
+      </div>`;
   }
   scheduleUpdate() {
     if (throttleDisabledForDebugging) {
       void this.performUpdate();
       return;
     }
-    void this.throttler.schedule(this.performUpdate.bind(this));
+    void this.throttler.schedule(() => {
+      this.requestUpdate();
+      return this.updateComplete;
+    });
   }
-  addVersion(versionsStack, icon, label) {
-    const installingEntry = versionsStack.createChild("div", "service-worker-version");
-    installingEntry.createChild("div", icon);
-    const statusString = installingEntry.createChild("span", "service-worker-version-string");
-    statusString.textContent = label;
-    UI20.ARIAUtils.markAsAlert(statusString);
-    return installingEntry;
+  renderVersion(icon, label, content = nothing5) {
+    return html9`
+      <div class="service-worker-version">
+        <div class=${icon}></div>
+        <span class="service-worker-version-string" role="alert" aria-live="polite">
+          ${label}
+        </span>
+        ${content}
+      </div>`;
   }
-  updateClientsField(version) {
-    this.clientsField.removeChildren();
-    this.section.setFieldVisible(i18nString21(UIStrings21.clients), Boolean(version.controlledClients.length));
-    for (const client of version.controlledClients) {
-      const clientLabelText = this.clientsField.createChild("div", "service-worker-client");
-      const info = this.clientInfoCache.get(client);
-      if (info) {
-        this.updateClientInfo(clientLabelText, info);
-      }
-      void this.manager.target().targetAgent().invoke_getTargetInfo({ targetId: client }).then(this.onClientInfo.bind(this, clientLabelText));
+  renderClientsField(version) {
+    if (!version?.controlledClients?.length) {
+      return html9`<div class="report-field">
+        <div class="report-field-name">${i18nString21(UIStrings21.clients)}</div>
+        <div class="report-field-value"></div>
+      </div>`;
     }
+    return html9`<div class="report-field">
+        <div class="report-field-name">${i18nString21(UIStrings21.clients)}</div>
+        <div class="report-field-value">
+        ${version.controlledClients.map((client) => html9`
+          <div class="service-worker-client">
+            ${until(this.renderClientInfo(client))}
+         </div>`)}
+      </div>
+    </div>`;
   }
-  updateSourceField(version) {
-    this.sourceField.removeChildren();
+  renderSourceField(version) {
+    if (!version) {
+      return html9`<div class="report-field">
+        <div class="report-field-name">${i18nString21(UIStrings21.source)}</div>
+        <div class="report-field-value"></div>
+      </div>`;
+    }
     const fileName = Common10.ParsedURL.ParsedURL.extractName(version.scriptURL);
-    const name = this.sourceField.createChild("div", "report-field-value-filename");
-    const link3 = Components3.Linkifier.Linkifier.linkifyURL(version.scriptURL, { text: fileName });
-    link3.tabIndex = 0;
-    link3.setAttribute("jslog", `${VisualLogging11.link("source-location").track({ click: true })}`);
-    name.appendChild(link3);
-    if (this.registration.errors.length) {
-      const errorsLabel = UI20.UIUtils.createIconLabel({
-        title: String(this.registration.errors.length),
-        iconName: "cross-circle-filled",
-        color: "var(--icon-error)"
-      });
-      errorsLabel.classList.add("devtools-link", "link");
-      errorsLabel.tabIndex = 0;
-      UI20.ARIAUtils.setLabel(errorsLabel, i18nString21(UIStrings21.sRegistrationErrors, { PH1: this.registration.errors.length }));
-      self.onInvokeElement(errorsLabel, () => Common10.Console.Console.instance().show());
-      name.appendChild(errorsLabel);
-    }
-    if (version.scriptResponseTime !== void 0) {
-      this.sourceField.createChild("div", "report-field-value-subtitle").textContent = i18nString21(UIStrings21.receivedS, { PH1: new Date(version.scriptResponseTime * 1e3).toLocaleString() });
-    }
+    return html9`<div class="report-field">
+      <div class="report-field-name">${i18nString21(UIStrings21.source)}</div>
+      <div class="report-field-value">
+        <div class="report-field-value-filename">
+          ${Components3.Linkifier.Linkifier.renderLinkifiedUrl(version.scriptURL, {
+      text: fileName,
+      tabStop: true,
+      jslogContext: "source-location"
+    })}
+          ${this.registration.errors.length ? html9`
+            <button
+                class="devtools-link link"
+                tabindex="0"
+                aria-label=${i18nString21(UIStrings21.sRegistrationErrors, { PH1: this.registration.errors.length })}
+                @click=${() => Common10.Console.Console.instance().show()}>
+              <devtools-icon name="cross-circle-filled" class="error-icon">
+              </devtools-icon>
+              ${this.registration.errors.length}
+            </button>` : nothing5}
+        </div>
+        ${version.scriptResponseTime !== void 0 ? html9`
+          <div class="report-field-value-subtitle">
+            ${i18nString21(UIStrings21.receivedS, { PH1: new Date(version.scriptResponseTime * 1e3).toLocaleString() })}
+          </div>
+        ` : nothing5}
+      </div>
+    </div>`;
+  }
+  renderStatusField(active, waiting, installing, redundant) {
+    return html9`<div class="report-field">
+      <div class="report-field-name">${i18nString21(UIStrings21.status)}</div>
+      <div class="report-field-value">
+        <div class="service-worker-version-stack">
+          <div class="service-worker-version-stack-bar"></div>
+          ${active ? this.renderVersion("service-worker-active-circle", i18nString21(UIStrings21.sActivatedAndIsS, {
+      PH1: active.id,
+      PH2: SDK19.ServiceWorkerManager.ServiceWorkerVersion.RunningStatus[active.currentState.runningStatus]()
+    }), active.isRunning() || active.isStarting() ? html9`
+                <devtools-button .data=${{
+      jslogContext: "stop",
+      variant: "outlined"
+      /* Buttons.Button.Variant.OUTLINED */
+    }}
+                                @click=${this.stopButtonClicked.bind(this, active.id)}>
+                    ${i18nString21(UIStrings21.stopString)}
+                </devtools-button>` : active.isStartable() ? html9`
+                <devtools-button .data=${{
+      jslogContext: "start",
+      variant: "outlined"
+      /* Buttons.Button.Variant.OUTLINED */
+    }}
+                                @click=${this.startButtonClicked.bind(this)}>
+                    ${i18nString21(UIStrings21.startString)}
+                </devtools-button>` : nothing5) : redundant ? this.renderVersion("service-worker-redundant-circle", i18nString21(UIStrings21.sIsRedundant, { PH1: redundant.id })) : nothing5}
+          ${waiting ? this.renderVersion("service-worker-waiting-circle", i18nString21(UIStrings21.sWaitingToActivate, { PH1: waiting.id }), html9`
+                <devtools-button .data=${{
+      jslogContext: "skip-waiting",
+      title: i18n41.i18n.lockedString("skipWaiting"),
+      variant: "outlined"
+      /* Buttons.Button.Variant.OUTLINED */
+    }}
+                    @click=${this.skipButtonClicked.bind(this)}>
+                  ${i18n41.i18n.lockedString("skipWaiting")}
+                </devtools-button>
+                ${waiting.scriptResponseTime !== void 0 ? html9`
+                  <div class="service-worker-subtitle">
+                    ${i18nString21(UIStrings21.receivedS, { PH1: new Date(waiting.scriptResponseTime * 1e3).toLocaleString() })}
+                  </div>
+                ` : nothing5}
+            `) : nothing5}
+          ${installing ? this.renderVersion("service-worker-installing-circle", i18nString21(UIStrings21.sTryingToInstall, { PH1: installing.id }), installing.scriptResponseTime !== void 0 ? html9`
+              <div class="service-worker-subtitle">
+                ${i18nString21(UIStrings21.receivedS, { PH1: new Date(installing.scriptResponseTime * 1e3).toLocaleString() })}
+              </div>` : nothing5) : nothing5}
+        </div>
+      </div>
+    </div>`;
   }
   performUpdate() {
     const fingerprint = this.registration.fingerprint();
@@ -9625,7 +9821,7 @@ var Section = class {
       return Promise.resolve();
     }
     this.fingerprint = fingerprint;
-    this.section.setHeaderButtonsState(this.registration.isDeleted);
+    render9(this.renderHeaderButtons(), this.section.getHeaderElement());
     const versions = this.registration.versionsByMode();
     const scopeURL = this.registration.scopeURL;
     const title = this.registration.isDeleted ? i18nString21(UIStrings21.sDeleted, { PH1: scopeURL }) : scopeURL;
@@ -9646,57 +9842,32 @@ var Section = class {
       "redundant"
       /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.REDUNDANT */
     );
-    this.statusField.removeChildren();
-    const versionsStack = this.statusField.createChild("div", "service-worker-version-stack");
-    versionsStack.createChild("div", "service-worker-version-stack-bar");
-    if (active) {
-      this.updateSourceField(active);
-      const localizedRunningStatus = SDK19.ServiceWorkerManager.ServiceWorkerVersion.RunningStatus[active.currentState.runningStatus]();
-      const activeEntry = this.addVersion(versionsStack, "service-worker-active-circle", i18nString21(UIStrings21.sActivatedAndIsS, { PH1: active.id, PH2: localizedRunningStatus }));
-      if (active.isRunning() || active.isStarting()) {
-        const stopButton = UI20.UIUtils.createTextButton(i18nString21(UIStrings21.stopString), this.stopButtonClicked.bind(this, active.id), { jslogContext: "stop" });
-        activeEntry.appendChild(stopButton);
-      } else if (active.isStartable()) {
-        const startButton = UI20.UIUtils.createTextButton(i18nString21(UIStrings21.startString), this.startButtonClicked.bind(this), { jslogContext: "start" });
-        activeEntry.appendChild(startButton);
-      }
-      this.updateClientsField(active);
-      this.maybeCreateRouterField();
-    } else if (redundant) {
-      this.updateSourceField(redundant);
-      this.addVersion(versionsStack, "service-worker-redundant-circle", i18nString21(UIStrings21.sIsRedundant, { PH1: redundant.id }));
-      this.updateClientsField(redundant);
-    }
-    if (waiting) {
-      const waitingEntry = this.addVersion(versionsStack, "service-worker-waiting-circle", i18nString21(UIStrings21.sWaitingToActivate, { PH1: waiting.id }));
-      const skipWaitingButton = UI20.UIUtils.createTextButton(i18n41.i18n.lockedString("skipWaiting"), this.skipButtonClicked.bind(this), {
-        title: i18n41.i18n.lockedString("skipWaiting"),
-        jslogContext: "skip-waiting"
-      });
-      waitingEntry.appendChild(skipWaitingButton);
-      if (waiting.scriptResponseTime !== void 0) {
-        waitingEntry.createChild("div", "service-worker-subtitle").textContent = i18nString21(UIStrings21.receivedS, { PH1: new Date(waiting.scriptResponseTime * 1e3).toLocaleString() });
-      }
-    }
-    if (installing) {
-      const installingEntry = this.addVersion(versionsStack, "service-worker-installing-circle", i18nString21(UIStrings21.sTryingToInstall, { PH1: installing.id }));
-      if (installing.scriptResponseTime !== void 0) {
-        installingEntry.createChild("div", "service-worker-subtitle").textContent = i18nString21(UIStrings21.receivedS, {
-          PH1: new Date(installing.scriptResponseTime * 1e3).toLocaleString()
-        });
-      }
-    }
+    render9(html9`
+           ${this.renderSourceField(active ?? redundant)}
+           ${this.renderStatusField(active, waiting, installing, redundant)}
+           ${this.renderClientsField(active ?? redundant)}
+           ${this.renderSyncNotificationField(i18nString21(UIStrings21.pushString), this.pushNotificationDataSetting.get(), i18nString21(UIStrings21.pushData), this.push.bind(this), "push-message")}
+           ${this.renderSyncNotificationField(i18nString21(UIStrings21.syncString), this.syncTagNameSetting.get(), i18nString21(UIStrings21.syncTag), this.sync.bind(this), "sync-tag")}
+           ${this.renderSyncNotificationField(i18nString21(UIStrings21.periodicSync), this.periodicSyncTagNameSetting.get(), i18nString21(UIStrings21.periodicSyncTag), (tag) => this.periodicSync(tag), "periodic-sync-tag")}
+           ${this.renderUpdateCycleField()}
+           ${this.renderRouterField()}
+    `, this.contentElement);
     this.updateCycleView.refresh();
     return Promise.resolve();
   }
   unregisterButtonClicked() {
     this.manager.deleteRegistration(this.registration.id);
   }
-  createUpdateCycleField() {
-    this.updateCycleField = this.wrapWidget(this.section.appendField(i18nString21(UIStrings21.updateCycle)));
-    this.updateCycleField.appendChild(this.updateCycleView.tableElement);
+  renderUpdateCycleField() {
+    return html9`
+      <div class="report-field">
+        <div class="report-field-name">${i18nString21(UIStrings21.updateCycle)}</div>
+        <div class="report-field-value">
+          ${this.updateCycleView.tableElement}
+        </div>
+      </div>`;
   }
-  maybeCreateRouterField() {
+  renderRouterField() {
     const versions = this.registration.versionsByMode();
     const active = versions.get(
       "active"
@@ -9704,17 +9875,15 @@ var Section = class {
     );
     const title = i18nString21(UIStrings21.routers);
     if (active?.routerRules && active.routerRules.length > 0) {
-      if (!this.routerField) {
-        this.routerField = this.wrapWidget(this.section.appendField(title));
-      }
-      if (!this.routerField.lastElementChild) {
-        this.routerView.show(this.routerField);
-      }
-      this.routerView.rules = active.routerRules;
-    } else {
-      this.section.removeField(title);
-      this.routerField = void 0;
+      return html9`
+        <div class="report-field">
+          <div class="report-field-name">${title}</div>
+          <div class="report-field-value">
+            ${widget6(ApplicationComponents10.ServiceWorkerRouterView.ServiceWorkerRouterView, { rules: active.routerRules })}
+          </div>
+        </div>`;
     }
+    return nothing5;
   }
   updateButtonClicked() {
     void this.manager.updateRegistration(this.registration.id);
@@ -9740,34 +9909,34 @@ var Section = class {
     this.periodicSyncTagNameSetting.set(tag);
     void this.manager.dispatchPeriodicSyncEvent(this.registration.id, tag);
   }
-  onClientInfo(element, targetInfoResponse) {
-    const targetInfo = targetInfoResponse.targetInfo;
+  async renderClientInfo(clientId) {
+    let targetInfo = this.clientInfoCache.get(clientId);
     if (!targetInfo) {
-      return;
+      const response = await this.manager.target().targetAgent().invoke_getTargetInfo({ targetId: clientId });
+      if (!response.targetInfo) {
+        return nothing5;
+      }
+      targetInfo = response.targetInfo;
+      this.clientInfoCache.set(clientId, targetInfo);
     }
-    this.clientInfoCache.set(targetInfo.targetId, targetInfo);
-    this.updateClientInfo(element, targetInfo);
-  }
-  updateClientInfo(element, targetInfo) {
-    if (targetInfo.type !== "page" && targetInfo.type === "iframe") {
-      const clientString2 = element.createChild("span", "service-worker-client-string");
-      UI20.UIUtils.createTextChild(clientString2, i18nString21(UIStrings21.workerS, { PH1: targetInfo.url }));
-      return;
+    if (targetInfo.type !== "page" && targetInfo.type !== "iframe") {
+      return html9`<span class="service-worker-client-string">
+        ${i18nString21(UIStrings21.workerS, { PH1: targetInfo.url })}
+      </span>`;
     }
-    element.removeChildren();
-    const clientString = element.createChild("span", "service-worker-client-string");
-    UI20.UIUtils.createTextChild(clientString, targetInfo.url);
-    const focusButton = new Buttons7.Button.Button();
-    focusButton.data = {
+    return html9`
+      <span class="service-worker-client-string">${targetInfo.url}</span>
+      <devtools-button
+        .data=${{
       iconName: "select-element",
       variant: "icon",
       size: "SMALL",
       title: i18nString21(UIStrings21.focus),
       jslogContext: "client-focus"
-    };
-    focusButton.className = "service-worker-client-focus-link";
-    focusButton.addEventListener("click", this.activateTarget.bind(this, targetInfo.targetId));
-    element.appendChild(focusButton);
+    }}
+        class="service-worker-client-focus-link"
+        @click=${this.activateTarget.bind(this, targetInfo.targetId)}
+      ></devtools-button>`;
   }
   activateTarget(targetId) {
     void this.manager.target().targetAgent().invoke_activateTarget({ targetId });
@@ -9780,19 +9949,6 @@ var Section = class {
   }
   stopButtonClicked(versionId) {
     void this.manager.stopWorker(versionId);
-  }
-  wrapWidget(container) {
-    const shadowRoot = UI20.UIUtils.createShadowRootWithCoreStyles(container, {
-      cssFile: [
-        serviceWorkersView_css_default,
-        /* These styles are for the timing table in serviceWorkerUpdateCycleView but this is the widget that it is rendered
-           * inside so we are registering the files here. */
-        serviceWorkerUpdateCycleView_css_default
-      ]
-    });
-    const contentElement = document.createElement("div");
-    shadowRoot.appendChild(contentElement);
-    return contentElement;
   }
 };
 
@@ -10193,7 +10349,7 @@ var dataGridAiButton_css_default = `/*
 
 // gen/front_end/panels/application/KeyValueStorageItemsView.js
 import * as UI23 from "./../../ui/legacy/legacy.js";
-import { Directives as LitDirectives, html as html10, nothing as nothing5, render as render9 } from "./../../ui/lit/lit.js";
+import { Directives as LitDirectives, html as html11, nothing as nothing6, render as render11 } from "./../../ui/lit/lit.js";
 import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents13 from "./components/components.js";
 
@@ -10209,7 +10365,7 @@ import * as i18n47 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as Buttons8 from "./../../ui/components/buttons/buttons.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
-import * as Lit3 from "./../../ui/lit/lit.js";
+import * as Lit2 from "./../../ui/lit/lit.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents12 from "./components/components.js";
 var UIStrings24 = {
@@ -10232,11 +10388,11 @@ var UIStrings24 = {
 };
 var str_24 = i18n47.i18n.registerUIStrings("panels/application/StorageItemsToolbar.ts", UIStrings24);
 var i18nString24 = i18n47.i18n.getLocalizedString.bind(void 0, str_24);
-var { html: html9, render: render8 } = Lit3;
+var { html: html10, render: render10 } = Lit2;
 var DEFAULT_VIEW6 = (input, _output, target) => {
-  render8(
+  render10(
     // clang-format off
-    html9`
+    html10`
       <devtools-toolbar class="top-resources-toolbar"
                         jslog=${VisualLogging13.toolbar()}>
         <devtools-button title=${i18nString24(UIStrings24.refresh)}
@@ -10372,9 +10528,9 @@ var StorageItemsToolbar = class extends Common13.ObjectWrapper.eventMixin(UI22.W
 
 // gen/front_end/panels/application/KeyValueStorageItemsView.js
 var STORAGE_FLOATING_BUTTON_ACTION_ID = "ai-assistance.storage-floating-button";
-var { ARIAUtils: ARIAUtils8 } = UI23;
+var { ARIAUtils: ARIAUtils7 } = UI23;
 var { EmptyWidget: EmptyWidget9 } = UI23.EmptyWidget;
-var { VBox, widget: widget6 } = UI23.Widget;
+var { VBox, widget: widget7 } = UI23.Widget;
 var { Size } = Geometry;
 var { repeat, ifDefined } = LitDirectives;
 var UIStrings25 = {
@@ -10419,10 +10575,10 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
     metadataView ??= new ApplicationComponents13.StorageMetadataView.StorageMetadataView();
     if (!view) {
       view = (input, output, target) => {
-        render9(
-          html10`
+        render11(
+          html11`
             <devtools-widget
-              ${widget6(StorageItemsToolbar, { metadataView })}
+              ${widget7(StorageItemsToolbar, { metadataView })}
               class=flex-none
               @Refresh=${input.onRefresh}
               @DeleteAll=${input.onDeleteAll}
@@ -10434,7 +10590,7 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
             <devtools-split-view sidebar-position="second" name="${id}-split-view-state">
                <devtools-widget
                   slot="main"
-                  ${widget6(VBox, { minimumSize: new Size(0, 50) })}>
+                  ${widget7(VBox, { minimumSize: new Size(0, 50) })}>
                 <devtools-data-grid
                   .name=${`${id}-datagrid-with-preview`}
                   striped
@@ -10445,7 +10601,7 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
                   @deselect=${() => input.onSelect(null)}
                 >
                   <table>
-                    ${input.showAiButton ? html10`<style>${dataGridAiButton_css_default}</style>` : nothing5}
+                    ${input.showAiButton ? html11`<style>${dataGridAiButton_css_default}</style>` : nothing6}
                     <tr>
                       <th id="key" sortable ?editable=${input.editable}>
                         ${i18nString25(UIStrings25.key)}
@@ -10454,14 +10610,14 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
                         ${i18nString25(UIStrings25.value)}
                       </th>
                     </tr>
-                    ${repeat(input.items, (item2) => item2.key, (item2) => html10`
+                    ${repeat(input.items, (item2) => item2.key, (item2) => html11`
                       <tr data-key=${item2.key} data-value=${item2.value}
                           @select=${() => input.onSelect(item2)}
                           @edit=${(e) => input.onEdit(item2.key, item2.value, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
                           @delete=${() => input.onDelete(item2.key)}
                           @contextmenu=${(e) => input.onContextMenu?.(item2, e.detail)}
-                          selected=${input.selectedKey === item2.key || nothing5}>
-                        <td>${input.showAiButton ? html10`
+                          selected=${input.selectedKey === item2.key || nothing6}>
+                        <td>${input.showAiButton ? html11`
                             <span class="ai-button-container">
                               <devtools-floating-button
                                 icon-name=${AIAssistance.AiUtils.getIconName()}
@@ -10469,7 +10625,7 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
                                 @click=${(e) => input.onAiButtonClick?.(item2, e)}
                               ></devtools-floating-button>
                             </span>
-                          ` : nothing5}${item2.key}</td>
+                          ` : nothing6}${item2.key}</td>
                         <td>${item2.value.substr(0, MAX_VALUE_LENGTH)}</td>
                       </tr>`)}
                       <tr placeholder></tr>
@@ -10478,7 +10634,7 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
               </devtools-widget>
               <devtools-widget
                   slot="sidebar"
-                  ${widget6(VBox, { minimumSize: new Size(0, 50) })}
+                  ${widget7(VBox, { minimumSize: new Size(0, 50) })}
                   jslog=${VisualLogging14.pane("preview").track({ resize: true })}>
                ${input.preview?.element}
               </devtools-widget>
@@ -10619,7 +10775,7 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
     }
     this.performUpdate();
     this.#toolbar?.setCanDeleteSelected(Boolean(this.#selectedKey));
-    ARIAUtils8.LiveAnnouncer.alert(i18nString25(UIStrings25.numberEntries, { PH1: this.#items.length }));
+    ARIAUtils7.LiveAnnouncer.alert(i18nString25(UIStrings25.numberEntries, { PH1: this.#items.length }));
   }
   deleteSelectedItem() {
     if (!this.#selectedKey) {
@@ -11713,7 +11869,7 @@ __export(WebMCPTreeElement_exports, {
 });
 import { createIcon as createIcon13 } from "./../../ui/kit/kit.js";
 import * as UI29 from "./../../ui/legacy/legacy.js";
-import { html as html12, render as render11 } from "./../../ui/lit/lit.js";
+import { html as html13, render as render13 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/WebMCPView.js
 var WebMCPView_exports = {};
@@ -11744,7 +11900,7 @@ import * as Buttons9 from "./../../ui/components/buttons/buttons.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI28 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives4, html as html11, nothing as nothing6, render as render10 } from "./../../ui/lit/lit.js";
+import { Directives as Directives5, html as html12, nothing as nothing7, render as render12 } from "./../../ui/lit/lit.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 import * as Console2 from "./../console/console.js";
 
@@ -12272,11 +12428,15 @@ var UIStrings30 = {
   /**
    * @description Notice to display when a tool has been unregistered
    */
-  toolUnregisteredNotice: "This tool has been unregistered"
+  toolUnregisteredNotice: "This tool has been unregistered",
+  /**
+   * @description Label for a list of tool flags or attributes
+   */
+  flags: "Flags"
 };
 var str_30 = i18n59.i18n.registerUIStrings("panels/application/WebMCPView.ts", UIStrings30);
 var i18nString30 = i18n59.i18n.getLocalizedString.bind(void 0, str_30);
-var { widget: widget7 } = UI28.Widget;
+var { widget: widget8 } = UI28.Widget;
 function filterToolCalls(toolCalls, filterState) {
   let filtered = [...toolCalls];
   const statusTypes = filterState.statusTypes;
@@ -12443,7 +12603,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     }, { jslogContext: "webmcp.copy-tool-description" });
     void contextMenu.show();
   };
-  render10(html11`
+  render12(html12`
     <style>${webMCPView_css_default}</style>
     <style>${UI28.FilterBar.filterStyles}</style>
     <devtools-split-view class="webmcp-view" direction="row" sidebar-position="second" name="webmcp-split-view">
@@ -12472,13 +12632,13 @@ var DEFAULT_VIEW7 = (input, output, target) => {
                              ?hidden=${!isFilterActive}></devtools-button>
           </devtools-toolbar>
         </div>
-        ${input.toolCalls.length > 0 ? html11`
+        ${input.toolCalls.length > 0 ? html12`
           <devtools-split-view name="webmcp-call-split-view"
                                direction="column"
                                sidebar-position="second"
                                sidebar-visibility=${input.selectedCall ? "show" : "hidden"}>
             <div slot="main" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
-              <devtools-data-grid striped .template=${html11`
+              <devtools-data-grid striped .template=${html12`
                 <table>
                   <style>${webMCPView_css_default}</style>
                   <tr>
@@ -12486,13 +12646,13 @@ var DEFAULT_VIEW7 = (input, output, target) => {
                       ${i18nString30(UIStrings30.name)}
                     </th>
                     <th id="status" weight="20">${i18nString30(UIStrings30.status)}</th>
-                            ${!input.selectedCall ? html11`
+                            ${!input.selectedCall ? html12`
                     <th id="input" weight="30">${i18nString30(UIStrings30.input)}</th>
                     <th id="output" weight="30">${i18nString30(UIStrings30.output)}</th>
-                            ` : nothing6}
+                            ` : nothing7}
                   </tr>
-                      ${Directives4.repeat(input.toolCalls, (call) => call.invocationId + "-" + (call.result?.status ?? ""), (call) => html11`
-                    <tr class=${Directives4.classMap({
+                      ${Directives5.repeat(input.toolCalls, (call) => call.invocationId + "-" + (call.result?.status ?? ""), (call) => html12`
+                    <tr class=${Directives5.classMap({
     "status-error": call.result?.status === "Error",
     "status-cancelled": call.result?.status === "Canceled",
     selected: call === input.selectedCall
@@ -12544,11 +12704,11 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     );
   }}>
                         <div class="status-cell">
-                          ${iconName(call) ? html11`<devtools-icon class="small" name=${iconName(call)}></devtools-icon>` : ""}
+                          ${iconName(call) ? html12`<devtools-icon class="small" name=${iconName(call)}></devtools-icon>` : ""}
                           <span>${statusString(call)}</span>
                         </div>
                       </td>
-                      ${!input.selectedCall ? html11`
+                      ${!input.selectedCall ? html12`
                         <td @click=${(e) => {
     e.stopPropagation();
     input.onCallSelect(
@@ -12565,7 +12725,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
       /* TabId.OUTPUT */
     );
   }}>${call.result?.output ? JSON.stringify(call.result.output) : call.result?.errorText ?? ""}</td>
-                        ` : nothing6}
+                        ` : nothing7}
                     </tr>
                   `)}
                   </table>`}>
@@ -12585,19 +12745,19 @@ var DEFAULT_VIEW7 = (input, output, target) => {
                   id=${"webmcp.tool-details"}
                   ?selected=${input.selectedTab === "webmcp.tool-details"}
                   title=${i18nString30(UIStrings30.toolDetails)}
-                  ${widget7(ToolDetailsWidget, { tool: input.selectedCall?.tool, isUnregistered: input.selectedCall ? !input.tools.includes(input.selectedCall.tool) : false })}>
+                  ${widget8(ToolDetailsWidget, { tool: input.selectedCall?.tool, isUnregistered: input.selectedCall ? !input.tools.includes(input.selectedCall.tool) : false })}>
                 </devtools-widget>
                 <devtools-widget
                   id=${"webmcp.call-inputs"}
                   ?selected=${input.selectedTab === "webmcp.call-inputs"}
                   title=${i18nString30(UIStrings30.input)}
-                  ${widget7(PayloadWidget, parsePayload(input.selectedCall?.input))}>
+                  ${widget8(PayloadWidget, parsePayload(input.selectedCall?.input))}>
                 </devtools-widget>
                 <devtools-widget
                   id=${"webmcp.call-outputs"}
                   ?selected=${input.selectedTab === "webmcp.call-outputs"}
                   title=${i18nString30(UIStrings30.output)}
-                  ${widget7(PayloadWidget, {
+                  ${widget8(PayloadWidget, {
     valueObject: input.selectedCall?.result?.output,
     errorText: input.selectedCall?.result?.errorText,
     symbolizedError: input.selectedCall?.result?.symbolizedError
@@ -12623,7 +12783,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
               <span class="toolbar-text">${i18nString30(UIStrings30.inProgressCount, { PH1: toolStats.totals.get(void 0) ?? 0 })}</span>
             </devtools-toolbar>
           </div>
-        ` : html11`
+        ` : html12`
         ${UI28.Widget.widget(UI28.EmptyWidget.EmptyWidget, {
     header: i18nString30(UIStrings30.noCallsPlaceholderTitle),
     text: i18nString30(UIStrings30.noCallsPlaceholder)
@@ -12637,21 +12797,21 @@ var DEFAULT_VIEW7 = (input, output, target) => {
                            sidebar-visibility=${input.selectedTool ? "show" : "hidden"}>
         <div slot="main" class="tool-list">
           <div class="section-title">${i18nString30(UIStrings30.toolRegistry)}</div>
-          ${tools.length === 0 ? html11`
+          ${tools.length === 0 ? html12`
           ${UI28.Widget.widget(UI28.EmptyWidget.EmptyWidget, {
     header: i18nString30(UIStrings30.noToolsPlaceholderTitle),
     text: i18nString30(UIStrings30.noToolsPlaceholder)
   })}
-          ` : html11`
+          ` : html12`
             <devtools-list class="square-corners">
-              ${tools.map((tool) => html11`
-                    <div class=${Directives4.classMap({ "tool-item": true, selected: tool === input.selectedTool?.tool })}
+              ${tools.map((tool) => html12`
+                    <div class=${Directives5.classMap({ "tool-item": true, selected: tool === input.selectedTool?.tool })}
                          @click=${() => input.onToolSelect(tool)}
                          @contextmenu=${(e) => onToolContextMenu(e, tool)}>
                     <div class="tool-name-container">
                       <div class="tool-name source-code">${tool.name}</div>
                     <div class="tool-icons">
-                      ${getIconGroupsFromStats(toolStats.stats.get(tool)).map((group) => html11`
+                      ${getIconGroupsFromStats(toolStats.stats.get(tool)).map((group) => html12`
                         <icon-button
                           .data=${{
     groups: [group],
@@ -12677,9 +12837,9 @@ var DEFAULT_VIEW7 = (input, output, target) => {
             ></devtools-button>
             <span>${i18nString30(UIStrings30.toolDetails)}</span>
           </div>
-          ${input.selectedTool ? html11`
+          ${input.selectedTool ? html12`
             <div class="sidebar-tool-details">
-              ${widget7(ToolDetailsWidget, { tool: input.selectedTool.tool })}
+              ${widget8(ToolDetailsWidget, { tool: input.selectedTool.tool })}
             </div>
             <div class="section-title">
               <span>${i18nString30(UIStrings30.runTool)}</span>
@@ -12694,7 +12854,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
             </div>
             <devtools-widget
               class="json-editor-widget"
-              ${widget7(ProtocolMonitor.JSONEditor.JSONEditor, {
+              ${widget8(ProtocolMonitor.JSONEditor.JSONEditor, {
     displayTargetSelector: false,
     displayCommandInput: false,
     displayToolbar: false,
@@ -12725,7 +12885,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
       });
     }
   }}>Run tool</devtools-button>
-          ` : nothing6}
+          ` : nothing7}
         </div>
       </devtools-split-view>
     </devtools-split-view>
@@ -12928,7 +13088,7 @@ var WebMCPView = class _WebMCPView extends UI28.Widget.VBox {
 };
 var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
   if (!input.valueObject && !input.valueString && !input.errorText && !input.symbolizedError) {
-    render10(nothing6, target);
+    render12(nothing7, target);
     return;
   }
   const isParsable = input.valueObject !== void 0;
@@ -12942,7 +13102,7 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
     section8.listItemElement.classList.add("source-code", "object-properties-section");
     section8.childrenListElement.classList.add("source-code", "object-properties-section");
     section8.expand();
-    return html11`<devtools-tree .template=${html11`
+    return html12`<devtools-tree .template=${html12`
           <style>${ObjectUI2.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI2.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
           <ul role="tree">
@@ -12950,13 +13110,13 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
           </ul>
         `}></devtools-tree>`;
   };
-  const createSourceText = (text) => html11`<div class="payload-value source-code">${text}</div>`;
-  const createErrorText = (text) => html11`<div class="payload-value source-code error-text">${text}</div>`;
+  const createSourceText = (text) => html12`<div class="payload-value source-code">${text}</div>`;
+  const createErrorText = (text) => html12`<div class="payload-value source-code error-text">${text}</div>`;
   const createException = (error) => {
     if (!error) {
-      return nothing6;
+      return nothing7;
     }
-    return html11`
+    return html12`
       <div class="payload-value source-code error-text">
         <devtools-widget
           ${UI28.Widget.widget(Console2.SymbolizedErrorWidget.SymbolizedErrorWidget, { error })}
@@ -12964,12 +13124,12 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
       </div>
     `;
   };
-  render10(html11`
+  render12(html12`
     <style>${webMCPView_css_default}</style>
     <style>${symbolizedErrorWidget_css_default}</style>
     <div class="call-payload-view">
       <div class="call-payload-content">
-            ${isParsable ? createPayload(input.valueObject) : input.valueString !== void 0 ? createSourceText(input.valueString) : input.symbolizedError ? createException(input.symbolizedError) : input.errorText ? createErrorText(input.errorText) : nothing6}
+            ${isParsable ? createPayload(input.valueObject) : input.valueString !== void 0 ? createSourceText(input.valueString) : input.symbolizedError ? createException(input.symbolizedError) : input.errorText ? createErrorText(input.errorText) : nothing7}
       </div>
     </div>
   `, target);
@@ -13041,23 +13201,33 @@ var PayloadWidget = class extends UI28.Widget.Widget {
 };
 var TOOL_DETAILS_VIEW = (input, output, target) => {
   if (!input.tool) {
-    render10(nothing6, target);
+    render12(nothing7, target);
     return;
   }
   const tool = input.tool;
   const origin = input.origin;
-  render10(html11`
+  const flags = tool.flags;
+  const formatter = new Intl.ListFormat(i18n59.DevToolsLocale.DevToolsLocale.instance().locale, {
+    style: "short",
+    type: "unit"
+  });
+  const formattedFlags = formatter.format(flags);
+  render12(html12`
     <style>${webMCPView_css_default}</style>
     <div class="tool-details-grid">
       <div class="label">Name</div>
       <div class="value source-code">${tool.name}</div>
       <div class="label">Description</div>
       <div class="value">${tool.description}</div>
-      ${tool.frame ? html11`
+      ${flags.length > 0 ? html12`
+      <div class="label">${i18nString30(UIStrings30.flags)}</div>
+      <div class="value">${formattedFlags}</div>
+      ` : nothing7}
+      ${tool.frame ? html12`
       <div class="label">${i18nString30(UIStrings30.frame)}</div>
       <div class="value">${Components4.Linkifier.Linkifier.linkifyRevealable(tool.frame, tool.frame.displayName())}</div>
-      ` : nothing6}
-      ${origin instanceof SDK24.DOMModel.DOMNode ? html11`
+      ` : nothing7}
+      ${origin instanceof SDK24.DOMModel.DOMNode ? html12`
       <div class="label">Origin</div>
       <div class="value tool-origin-container">
         <span
@@ -13081,13 +13251,13 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
            .variant=${"icon"}
            @click=${() => input.revealNode(origin)}
            ></devtools-button>
-      </div>` : origin ? html11`
+      </div>` : origin ? html12`
       <div class="label">Origin</div>
       <div class="value stack-trace">
-        ${widget7(Components4.JSPresentationUtils.StackTracePreviewContent, { stackTrace: origin, options: { expandable: true } })}
-      </div>` : nothing6}
+        ${widget8(Components4.JSPresentationUtils.StackTracePreviewContent, { stackTrace: origin, options: { expandable: true } })}
+      </div>` : nothing7}
     </div>
-    ${input.isUnregistered ? html11`
+    ${input.isUnregistered ? html12`
       <div class="call-to-action">
         <div class="call-to-action-body">
           <div class="explanation">
@@ -13096,7 +13266,7 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
           </div>
         </div>
       </div>
-    ` : nothing6}
+    ` : nothing7}
   `, target);
 };
 var ToolDetailsWidget = class extends UI28.Widget.Widget {
@@ -13143,7 +13313,7 @@ var ToolDetailsWidget = class extends UI28.Widget.Widget {
     node.highlight();
   };
   #clearHighlight = () => {
-    SDK24.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    SDK24.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK24.TargetManager.TargetManager.instance());
   };
   #revealNode = (node) => {
     void Common16.Revealer.reveal(node);
@@ -13379,7 +13549,7 @@ var WebMCPTreeElement = class extends ApplicationPanelTreeElement {
     const newBadge = UI29.UIUtils.maybeCreateNewBadge("web-mcp");
     if (newBadge) {
       const fragment = document.createDocumentFragment();
-      render11(html12`<div class="trailing-icons icons-container">${newBadge}</div>`, fragment);
+      render13(html13`<div class="trailing-icons icons-container">${newBadge}</div>`, fragment);
       this.listItemElement.appendChild(fragment);
     }
   }
@@ -13419,6 +13589,10 @@ var UIStrings31 = {
    * @description Text in Application Panel Sidebar of the Application panel
    */
   ads: "Ads",
+  /**
+   * @description Tooltip for the experimental icon in the Ads panel
+   */
+  experimental: "Experimental",
   /**
    * @description Text in Application Panel Sidebar of the Application panel
    */
@@ -13692,8 +13866,12 @@ var ApplicationPanelSidebar = class extends UI30.Widget.VBox {
     }
     if (Root2.Runtime.hostConfig.devToolsAdsPanel?.enabled) {
       const adsTreeElement = new ApplicationPanelTreeElement(panel, i18nString31(UIStrings31.ads), false, "ads");
-      const icon = createIcon14("experiment");
+      adsTreeElement.listItemElement.classList.add("ads-tree-element");
+      const icon = createIcon14("ads");
       adsTreeElement.setLeadingIcons([icon]);
+      const experimentIcon = createIcon14("experiment", "medium");
+      UI30.Tooltip.Tooltip.install(experimentIcon, i18nString31(UIStrings31.experimental));
+      adsTreeElement.setTrailingIcons([experimentIcon]);
       adsTreeElement.itemURL = "ads://";
       let adsView;
       adsTreeElement.onselect = (selectedByUser) => {
@@ -14950,8 +15128,8 @@ var StorageCategoryView = class extends UI30.Widget.VBox {
   setHeadline(header) {
     this.emptyWidget.header = header;
   }
-  setLink(link3) {
-    this.emptyWidget.link = link3;
+  setLink(link2) {
+    this.emptyWidget.link = link2;
   }
 };
 var ResourcesSection = class {
@@ -15223,7 +15401,7 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
     UI30.UIUserMetrics.UIUserMetrics.instance().panelShown("frame-details");
     this.showView(this.view);
     this.listItemElement.classList.remove("hovered");
-    SDK25.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    SDK25.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK25.TargetManager.TargetManager.instance());
     return false;
   }
   set hovered(hovered) {
@@ -15232,7 +15410,7 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
       void this.frame.highlight();
     } else {
       this.listItemElement.classList.remove("hovered");
-      SDK25.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+      SDK25.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK25.TargetManager.TargetManager.instance());
     }
   }
   appendResource(resource) {
@@ -15486,7 +15664,7 @@ import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as CookieTable from "./../../ui/legacy/components/cookie_table/cookie_table.js";
 import * as UI31 from "./../../ui/legacy/legacy.js";
-import { html as html13, render as render12 } from "./../../ui/lit/lit.js";
+import { html as html14, render as render14 } from "./../../ui/lit/lit.js";
 import * as VisualLogging18 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/cookieItemsView.css.js
@@ -15579,7 +15757,7 @@ var UIStrings32 = {
 var str_32 = i18n63.i18n.registerUIStrings("panels/application/CookieItemsView.ts", UIStrings32);
 var i18nString32 = i18n63.i18n.getLocalizedString.bind(void 0, str_32);
 var { Size: Size2 } = Geometry2;
-var { widget: widget8 } = UI31.Widget;
+var { widget: widget9 } = UI31.Widget;
 var DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW = (input, output, target) => {
   const cookieValue = input.cookie ? input.showDecoded ? decodeURIComponent(input.cookie.value()) : input.cookie.value() : "";
   function handleDblClickOnCookieValue(event) {
@@ -15593,8 +15771,8 @@ var DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW = (input, output, target) => {
     selection.removeAllRanges();
     selection.addRange(range);
   }
-  render12(
-    html13`<style>${cookieItemsView_css_default}</style>
+  render14(
+    html14`<style>${cookieItemsView_css_default}</style>
     <div class="cookie-preview-widget">
       <div class="cookie-preview-widget-header">
         <span class="cookie-preview-widget-header-label">Cookie Value</span>
@@ -15646,10 +15824,10 @@ var CookiePreviewWidget = class extends UI31.Widget.VBox {
   }
 };
 var DEFAULT_VIEW8 = (input, output, target) => {
-  render12(
-    html13`<style>${cookieItemsView_css_default}</style>
-    <devtools-widget class="storage-view" ${widget8(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
-      <devtools-widget ${widget8(StorageItemsToolbar, { filterRegex: null })}
+  render14(
+    html14`<style>${cookieItemsView_css_default}</style>
+    <devtools-widget class="storage-view" ${widget9(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
+      <devtools-widget ${widget9(StorageItemsToolbar, { filterRegex: null })}
         class=flex-none
         @Refresh=${input.onRefreshItems}
         @DeleteAll=${input.onDeleteAllItems}
@@ -15659,8 +15837,8 @@ var DEFAULT_VIEW8 = (input, output, target) => {
     })}
       ></devtools-widget>
       <devtools-split-view sidebar-position="second" name="cookie-items-split-view-state">
-        <devtools-widget slot="main" ${widget8(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
-          <devtools-widget slot="main" ${widget8(CookieTable.CookiesTable.CookiesTable, {
+        <devtools-widget slot="main" ${widget9(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}>
+          <devtools-widget slot="main" ${widget9(CookieTable.CookiesTable.CookiesTable, {
       cookieDomain: input.cookieDomain,
       cookiesData: input.cookiesData,
       saveCallback: input.onSaveCookie,
@@ -15675,10 +15853,10 @@ var DEFAULT_VIEW8 = (input, output, target) => {
     })}
           ></devtools-widget>
         </devtools-widget>
-        <devtools-widget slot="sidebar" ${widget8(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}
+        <devtools-widget slot="sidebar" ${widget9(UI31.Widget.VBox, { minimumSize: new Size2(0, 50) })}
           jslog=${VisualLogging18.pane("preview").track({ resize: true })}>
-          ${input.selectedCookie ? html13`<devtools-widget ${widget8(CookiePreviewWidget, { cookie: input.selectedCookie })}>
-                 </devtools-widget>` : html13`<devtools-widget ${widget8(UI31.EmptyWidget.EmptyWidget, {
+          ${input.selectedCookie ? html14`<devtools-widget ${widget9(CookiePreviewWidget, { cookie: input.selectedCookie })}>
+                 </devtools-widget>` : html14`<devtools-widget ${widget9(UI31.EmptyWidget.EmptyWidget, {
       header: i18nString32(UIStrings32.noCookieSelected),
       text: i18nString32(UIStrings32.selectACookieToPreviewItsValue)
     })}></devtools-widget>`}
@@ -15887,7 +16065,7 @@ import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n65 from "./../../core/i18n/i18n.js";
 import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI32 from "./../../ui/legacy/legacy.js";
-import { Directives as Directives5, html as html14, nothing as nothing7, render as render13 } from "./../../ui/lit/lit.js";
+import { Directives as Directives6, html as html15, nothing as nothing8, render as render15 } from "./../../ui/lit/lit.js";
 import * as VisualLogging19 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/deviceBoundSessionsView.css.js
@@ -15922,7 +16100,7 @@ var deviceBoundSessionsView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./deviceBoundSessionsView.css")} */`;
 
 // gen/front_end/panels/application/DeviceBoundSessionsView.js
-var { widget: widget9 } = UI32.Widget;
+var { widget: widget10 } = UI32.Widget;
 var UIStrings33 = {
   /**
    *@description Label for a site, e.g. https://example.com/.
@@ -16458,28 +16636,28 @@ var str_33 = i18n65.i18n.registerUIStrings("panels/application/DeviceBoundSessio
 var i18nString33 = i18n65.i18n.getLocalizedString.bind(void 0, str_33);
 var DEFAULT_VIEW9 = (input, _output, target) => {
   const { sessionAndEvents, preserveLogSetting, defaultTitle, defaultDescription, selectedEvent, onEventRowSelected } = input;
-  const toolbarHtml = preserveLogSetting ? html14`
+  const toolbarHtml = preserveLogSetting ? html15`
         <devtools-toolbar class="device-bound-sessions-toolbar">
         <devtools-checkbox title=${i18nString33(UIStrings33.doNotClearLogOnPageReload)} ${UI32.UIUtils.bindToSetting(preserveLogSetting)}>${i18nString33(UIStrings33.preserveLog)}</devtools-checkbox>
         </devtools-toolbar>
-  ` : nothing7;
+  ` : nothing8;
   if (!sessionAndEvents) {
     if (!defaultTitle || !defaultDescription) {
-      render13(nothing7, target);
+      render15(nothing8, target);
       return;
     }
-    render13(html14`
+    render15(html15`
       <style>${UI32.inspectorCommonStyles}</style>
       <style>${deviceBoundSessionsView_css_default}</style>
       ${toolbarHtml}
-      <devtools-widget ${widget9(UI32.EmptyWidget.EmptyWidget, { header: defaultTitle, text: defaultDescription })} jslog=${VisualLogging19.pane("device-bound-sessions-empty")}></devtools-widget>
+      <devtools-widget ${widget10(UI32.EmptyWidget.EmptyWidget, { header: defaultTitle, text: defaultDescription })} jslog=${VisualLogging19.pane("device-bound-sessions-empty")}></devtools-widget>
     `, target, { container: { attributes: { jslog: `${VisualLogging19.pane("device-bound-sessions")}` } } });
     return;
   }
   let sessionDetailsHtml;
   if (sessionAndEvents.session) {
     const { key, inclusionRules, cookieCravings } = sessionAndEvents.session;
-    sessionDetailsHtml = html14`
+    sessionDetailsHtml = html15`
         <devtools-report>
           <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.sessionConfig)}</devtools-report-section-header>
           <devtools-report-key>${i18nString33(UIStrings33.keySite)}</devtools-report-key>
@@ -16500,7 +16678,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           <devtools-report-key>${i18nString33(UIStrings33.includeSite)}</devtools-report-key>
           <devtools-report-value>${boolToString(inclusionRules.includeSite)}</devtools-report-value>
         </devtools-report>
-        ${inclusionRules.urlRules.length > 0 ? html14`
+        ${inclusionRules.urlRules.length > 0 ? html15`
           <div class="device-bound-session-grid-wrapper">
             <devtools-data-grid class="device-bound-session-url-rules-grid" striped inline name=${i18nString33(UIStrings33.scope)}>
               <table>
@@ -16512,7 +16690,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${inclusionRules.urlRules.map((rule) => html14`
+                  ${inclusionRules.urlRules.map((rule) => html15`
                     <tr>
                       <td>${ruleTypeToString(rule.ruleType)}</td>
                       <td>${rule.hostPattern}</td>
@@ -16523,9 +16701,9 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
               </table>
             </devtools-data-grid>
           </div>
-        ` : nothing7}
+        ` : nothing8}
         <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.cookieCravings)}</devtools-report-section-header>
-        ${cookieCravings.length > 0 ? html14`
+        ${cookieCravings.length > 0 ? html15`
           <div class="device-bound-session-grid-wrapper">
             <devtools-data-grid class="device-bound-session-cookie-cravings-grid" striped inline name=${i18nString33(UIStrings33.cookieCravings)}>
               <table>
@@ -16540,7 +16718,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                   </tr>
                 </thead>
                 <tbody>
-                  ${cookieCravings.map((craving) => html14`
+                  ${cookieCravings.map((craving) => html15`
                     <tr>
                       <td>${craving.name}</td>
                       <td>${craving.domain}</td>
@@ -16554,14 +16732,14 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
               </table>
             </devtools-data-grid>
           </div>
-        ` : nothing7}`;
+        ` : nothing8}`;
   }
   const events = [...sessionAndEvents.eventsById.values()];
-  const eventsHtml = html14`
+  const eventsHtml = html15`
       <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.events)}</devtools-report-section-header>
-          ${events.length > 0 && onEventRowSelected ? html14`
+          ${events.length > 0 && onEventRowSelected ? html15`
             <div class="device-bound-session-grid-wrapper">
-                <devtools-data-grid class="device-bound-session-events-grid" striped inline name=${i18nString33(UIStrings33.events)} ${Directives5.ref((el) => {
+                <devtools-data-grid class="device-bound-session-events-grid" striped inline name=${i18nString33(UIStrings33.events)} ${Directives6.ref((el) => {
     if (!el || !(el instanceof HTMLElement)) {
       return;
     }
@@ -16578,7 +16756,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                       <th id="details" sortable>${i18nString33(UIStrings33.result)}</th>
                     </tr>
                   </thead>
-                  <tbody>${events.map(({ event, timestamp }) => html14`
+                  <tbody>${events.map(({ event, timestamp }) => html15`
                       <tr @select=${() => onEventRowSelected(event)}>
                         <td>${getEventTypeString(event)}</td>
                         <td>${timestamp.toLocaleString()}</td>
@@ -16589,63 +16767,63 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
                 </table>
               </devtools-data-grid>
             </div>
-          ` : html14`<div class="device-bound-session-no-events-wrapper">${i18nString33(UIStrings33.noEvents)}</div>`}`;
+          ` : html15`<div class="device-bound-session-no-events-wrapper">${i18nString33(UIStrings33.noEvents)}</div>`}`;
   const failedRequestDetailsGetter = (failedRequest) => {
     if (!failedRequest) {
-      return nothing7;
+      return nothing8;
     }
-    return html14`${failedRequest.requestUrl && html14`
+    return html15`${failedRequest.requestUrl && html15`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestUrl)}</devtools-report-key>
           <devtools-report-value>${failedRequest.requestUrl}</devtools-report-value>`}
-        ${failedRequest.netError && html14`
+        ${failedRequest.netError && html15`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestNetError)}</devtools-report-key>
           <devtools-report-value>${failedRequest.netError}</devtools-report-value>`}
-        ${failedRequest.responseError !== void 0 ? html14`
+        ${failedRequest.responseError !== void 0 ? html15`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestResponseCode)}</devtools-report-key>
-          <devtools-report-value>${failedRequest.responseError}</devtools-report-value>` : nothing7}
-        ${failedRequest.responseErrorBody && html14`
+          <devtools-report-value>${failedRequest.responseError}</devtools-report-value>` : nothing8}
+        ${failedRequest.responseErrorBody && html15`
           <devtools-report-key>${i18nString33(UIStrings33.failedRequestResponseBody)}</devtools-report-key>
           <devtools-report-value>
-            ${widget9(SourceFrame6.JSONView.SearchableJsonView, {
+            ${widget10(SourceFrame6.JSONView.SearchableJsonView, {
       jsonObject: tryParseJson(failedRequest.responseErrorBody)
     })}
           </devtools-report-value>`}`;
   };
-  const creationEventDetails = selectedEvent?.creationEventDetails && html14`
+  const creationEventDetails = selectedEvent?.creationEventDetails && html15`
           <devtools-report-key>${i18nString33(UIStrings33.fetchResult)}</devtools-report-key>
           <devtools-report-value>${fetchResultToString(selectedEvent.creationEventDetails.fetchResult)}</devtools-report-value>
-            ${selectedEvent.creationEventDetails.newSession && html14`
+            ${selectedEvent.creationEventDetails.newSession && html15`
               <devtools-report-key>${i18nString33(UIStrings33.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString33(UIStrings33.yes)}</devtools-report-value>
             `}
           ${failedRequestDetailsGetter(selectedEvent.creationEventDetails.failedRequest)}
       `;
-  const refreshEventDetails = selectedEvent?.refreshEventDetails && html14`
+  const refreshEventDetails = selectedEvent?.refreshEventDetails && html15`
           <devtools-report-key>${i18nString33(UIStrings33.refreshResult)}</devtools-report-key>
           <devtools-report-value>${refreshResultToString(selectedEvent.refreshEventDetails.refreshResult)}</devtools-report-value>
           <devtools-report-key>${i18nString33(UIStrings33.causedAnyRequestDeferrals)}</devtools-report-key>
           <devtools-report-value>${boolToString(!selectedEvent.refreshEventDetails.wasFullyProactiveRefresh)}</devtools-report-value>
-            ${selectedEvent.refreshEventDetails.fetchResult && html14`
+            ${selectedEvent.refreshEventDetails.fetchResult && html15`
               <devtools-report-key>${i18nString33(UIStrings33.fetchResult)}</devtools-report-key>
               <devtools-report-value>${fetchResultToString(selectedEvent.refreshEventDetails.fetchResult)}</devtools-report-value>
             `}
-            ${selectedEvent.refreshEventDetails.newSession && html14`
+            ${selectedEvent.refreshEventDetails.newSession && html15`
               <devtools-report-key>${i18nString33(UIStrings33.updatedSessionConfig)}</devtools-report-key>
               <devtools-report-value>${i18nString33(UIStrings33.yes)}</devtools-report-value>
             `}
           ${failedRequestDetailsGetter(selectedEvent.refreshEventDetails.failedRequest)}
       `;
-  const challengeEventDetails = selectedEvent?.challengeEventDetails && html14`
+  const challengeEventDetails = selectedEvent?.challengeEventDetails && html15`
           <devtools-report-key>${i18nString33(UIStrings33.challengeResult)}</devtools-report-key>
           <devtools-report-value>${challengeResultToString(selectedEvent.challengeEventDetails.challengeResult)}</devtools-report-value>
           <devtools-report-key>${i18nString33(UIStrings33.challenge)}</devtools-report-key>
           <devtools-report-value>${selectedEvent.challengeEventDetails.challenge}</devtools-report-value>
           `;
-  const terminationEventDetails = selectedEvent?.terminationEventDetails && html14`
+  const terminationEventDetails = selectedEvent?.terminationEventDetails && html15`
           <devtools-report-key>${i18nString33(UIStrings33.deletionReason)}</devtools-report-key>
           <devtools-report-value>${deletionReasonToString(selectedEvent.terminationEventDetails.deletionReason)}</devtools-report-value>
           `;
-  const eventDetailsContentHtml = selectedEvent ? html14`
+  const eventDetailsContentHtml = selectedEvent ? html15`
         <devtools-report>
           <devtools-report-key>${i18nString33(UIStrings33.keySite)}</devtools-report-key>
           <devtools-report-value>${selectedEvent.site}</devtools-report-value>
@@ -16660,18 +16838,18 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           ${challengeEventDetails}
           ${terminationEventDetails}
         </devtools-report>
-    ` : html14`<div class="device-bound-session-no-event-details">${i18nString33(UIStrings33.selectEventToViewDetails)}</div>`;
-  const eventDetailsHtml = html14`
+    ` : html15`<div class="device-bound-session-no-event-details">${i18nString33(UIStrings33.selectEventToViewDetails)}</div>`;
+  const eventDetailsHtml = html15`
       <devtools-report-section-header role="heading" aria-level="2">${i18nString33(UIStrings33.eventDetails)}</devtools-report-section-header>
       ${eventDetailsContentHtml}
   `;
-  render13(html14`
+  render15(html15`
         <style>${UI32.inspectorCommonStyles}</style>
         <style>${deviceBoundSessionsView_css_default}</style>
         ${toolbarHtml}
         <devtools-split-view sidebar-position="second">
           <div slot="main" class="device-bound-session-view-wrapper" role="region" aria-label=${i18nString33(UIStrings33.sessionDetails)}>
-            ${sessionDetailsHtml || nothing7}
+            ${sessionDetailsHtml || nothing8}
             ${eventsHtml}
           </div>
           <div slot="sidebar" class="device-bound-session-sidebar" role="region" aria-label=${i18nString33(UIStrings33.eventDetails)}>

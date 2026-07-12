@@ -495,9 +495,9 @@ UI.ViewManager.registerViewExtension({
   order: 3,
   persistence: "permanent",
   condition: () => !Root.Runtime.Runtime.isTraceApp(),
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return new Sources.SourcesNavigator.FilesNavigatorView();
+    return new Sources.SourcesNavigator.FilesNavigatorView(universe.networkProjectManager);
   }
 });
 UI.ViewManager.registerViewExtension({
@@ -508,9 +508,9 @@ UI.ViewManager.registerViewExtension({
   order: 6,
   persistence: "permanent",
   condition: () => !Root.Runtime.Runtime.isTraceApp(),
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return new Sources.SourcesNavigator.SnippetsNavigatorView();
+    return new Sources.SourcesNavigator.SnippetsNavigatorView(universe.networkProjectManager);
   }
 });
 UI.ViewManager.registerViewExtension({
@@ -2162,7 +2162,7 @@ import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 var UIStrings3 = {
   /**
-   * @description Title of the Console tool
+   * @description Title of the Console tool.
    */
   console: "Console",
   /**
@@ -2174,61 +2174,61 @@ var UIStrings3 = {
    */
   toggleConsole: "Toggle Console",
   /**
-   * @description Text to clear the console
+   * @description Text to clear the console.
    */
   clearConsole: "Clear console",
   /**
-   * @description Title of an action in the console tool to clear
+   * @description Title of an action in the Console tool to clear.
    */
   clearConsoleHistory: "Clear console history",
   /**
-   * @description Title of an action in the console tool to create pin. A live expression is code that the user can enter into the console and it will be pinned in the UI. Live expressions are constantly evaluated as the user interacts with the console (hence 'live').
+   * @description Title of an action in the Console tool to create pin. A live expression is code that the user can enter into the Console and it will be pinned in the UI. Live expressions are constantly evaluated as the user interacts with the Console (hence 'live').
    */
   createLiveExpression: "Create live expression",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
   networkMessages: "Network messages",
   /**
-   * @description Title of an option under the Console category that can be invoked through the Command Menu
+   * @description Title of an option under the Console category that can be invoked through the command menu.
    */
   hideNetworkMessages: "Hide network messages",
   /**
-   * @description Title of an option under the Console category that can be invoked through the Command Menu
+   * @description Title of an option under the Console category that can be invoked through the command menu.
    */
   showNetworkMessages: "Show network messages",
   /**
-   * @description Alternative title text of a setting in Console View of the Console panel
+   * @description Alternative title text of a setting in Console view of the Console panel.
    */
   selectedContextOnly: "Selected context only",
   /**
-   * @description Tooltip text that appears on the setting when hovering over it in Console View of the Console panel
+   * @description Tooltip text that appears on the setting when hovering over it in Console view of the Console panel.
    */
   onlyShowMessagesFromTheCurrent: "Only show messages from the current context (`top`, `iframe`, `worker`, extension)",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
   showMessagesFromAllContexts: "Show messages from all contexts",
   /**
-   * @description Title of a setting under the Console category
+   * @description Title of a setting under the Console category.
    */
   timestamps: "Timestamps",
   /**
-   * @description Title of an option under the Console category that can be invoked through the Command Menu
+   * @description Title of an option under the Console category that can be invoked through the command menu.
    */
   showTimestamps: "Show timestamps",
   /**
-   * @description Title of an option under the Console category that can be invoked through the Command Menu
+   * @description Title of an option under the Console category that can be invoked through the command menu.
    */
   hideTimestamps: "Hide timestamps",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
   autocompleteFromHistory: "Autocomplete from history",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
-  doNotAutocompleteFromHistory: "Do not autocomplete from history",
+  doNotAutocompleteFromHistory: "Don\u2019t autocomplete from history",
   /**
    * @description Title of a setting under the Console category that controls whether to accept autocompletion with Enter.
    */
@@ -2236,51 +2236,51 @@ var UIStrings3 = {
   /**
    * @description Title of a setting under the Console category that controls whether to accept autocompletion with Enter.
    */
-  doNotAutocompleteOnEnter: "Do not accept autocomplete suggestion on Enter",
+  doNotAutocompleteOnEnter: "Don\u2019t accept autocomplete suggestion on Enter",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
   groupSimilarMessages: "Group similar messages",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
-  doNotGroupSimilarMessages: "Don't group similar messages",
+  doNotGroupSimilarMessages: "Don\u2019t group similar messages",
   /**
-   * @description Title of a setting under the Console category in Settings
+   * @description Title of a setting under the Console category in Settings.
    */
   corsErrorsInConsole: "CORS errors in console",
   /**
-   * @description Title of an option under the Console category that can be invoked through the Command Menu
+   * @description Title of an option under the Console category that can be invoked through the command menu.
    */
   showCorsErrorsInConsole: "Show CORS errors in console",
   /**
-   * @description Title of an option under the Console category that can be invoked through the Command Menu
+   * @description Title of an option under the Console category that can be invoked through the command menu.
    */
-  doNotShowCorsErrorsIn: "Don't show CORS errors in console",
+  doNotShowCorsErrorsIn: "Don\u2019t show CORS errors in console",
   /**
-   * @description Title of a setting under the Console category in Settings
+   * @description Title of a setting under the Console category in Settings.
    */
   eagerEvaluation: "Eager evaluation",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
-  eagerlyEvaluateConsolePromptText: "Eagerly evaluate console prompt text",
+  eagerlyEvaluateConsolePromptText: "Eagerly evaluate Console prompt text",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
-  doNotEagerlyEvaluateConsole: "Do not eagerly evaluate console prompt text",
+  doNotEagerlyEvaluateConsole: "Don\u2019t eagerly evaluate Console prompt text",
   /**
-   * @description Allows code that is executed in the console to do things that usually are only allowed if triggered by a user action
+   * @description Allows code that is executed in the Console to do things that usually are only allowed if triggered by a user action.
    */
   evaluateTriggersUserActivation: "Treat code evaluation as user action",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
   treatEvaluationAsUserActivation: "Treat evaluation as user activation",
   /**
-   * @description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the command menu.
    */
-  doNotTreatEvaluationAsUser: "Do not treat evaluation as user activation",
+  doNotTreatEvaluationAsUser: "Don\u2019t treat evaluation as user activation",
   /**
    * @description Title of a setting under the Console category in Settings that controls whether `console.trace()` messages appear expanded by default.
    */
@@ -2288,7 +2288,7 @@ var UIStrings3 = {
   /**
    * @description Title of a setting under the Console category in Settings that controls whether `console.trace()` messages appear collapsed by default.
    */
-  collapseConsoleTraceMessagesByDefault: "Do not automatically expand `console.trace()` messages",
+  collapseConsoleTraceMessagesByDefault: "Don\u2019t automatically expand `console.trace()` messages",
   /**
    * @description Title of a setting under the Console category in Settings that controls whether AI summaries should
    * be shown for console warnings/errors.
@@ -2596,23 +2596,23 @@ import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 var UIStrings4 = {
   /**
-   * @description Title of the 'Coverage' tool in the bottom drawer
+   * @description Title of the Coverage tool in the bottom drawer.
    */
   coverage: "Coverage",
   /**
-   * @description Command for showing the 'Coverage' tool in the bottom drawer
+   * @description Command for showing the Coverage tool in the bottom drawer.
    */
   showCoverage: "Show Coverage",
   /**
-   * @description Title of an action under the Performance category that can be invoked through the Command Menu
+   * @description Title of an action under the Performance category that can be invoked through the Command Menu.
    */
   instrumentCoverage: "Instrument coverage",
   /**
-   * @description Title of an action under the Performance category that can be invoked through the Command Menu
+   * @description Title of an action under the Performance category that can be invoked through the Command Menu.
    */
   stopInstrumentingCoverageAndShow: "Stop instrumenting coverage and show results",
   /**
-   * @description Title of an action in the coverage tool to start with reload
+   * @description Title of an action in the Coverage tool to start with reload.
    */
   startInstrumentingCoverageAnd: "Start instrumenting coverage and reload page",
   /**
@@ -2812,7 +2812,7 @@ import * as Root2 from "./../../core/root/root.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
 var UIStrings7 = {
   /**
-   * @description Title of the Devices tab/tool. Devices refers to e.g. phones/tablets.
+   * @description Title of the Devices tab/tool. Devices refers to e.g., phones/tablets.
    */
   devices: "Devices",
   /**
@@ -2847,59 +2847,59 @@ UI7.ViewManager.registerViewExtension({
 });
 var UIStrings22 = {
   /**
-   * @description Text for keyboard shortcuts
+   * @description Text for keyboard shortcuts.
    */
   shortcuts: "Shortcuts",
   /**
-   * @description Text in Settings Screen of the Settings
+   * @description Text in Settings.
    */
   preferences: "Preferences",
   /**
-   * @description Text in Settings Screen of the Settings
+   * @description Text in Settings.
    */
   experiments: "Experiments",
   /**
-   * @description Title of Ignore list settings
+   * @description Title of Ignore list settings.
    */
   ignoreList: "Ignore list",
   /**
-   * @description Command for showing the keyboard shortcuts in Settings
+   * @description Command for showing the keyboard shortcuts in Settings.
    */
   showShortcuts: "Show Shortcuts",
   /**
-   * @description Command for showing the preference tab in the Settings Screen
+   * @description Command for showing the Preferences tab in Settings.
    */
   showPreferences: "Show Preferences",
   /**
-   * @description Command for showing the experiments tab in the Settings Screen
+   * @description Command for showing the Experiments tab in Settings.
    */
   showExperiments: "Show Experiments",
   /**
-   * @description Command for showing the Ignore list settings
+   * @description Command for showing the Ignore list settings.
    */
   showIgnoreList: "Show Ignore list",
   /**
-   * @description Name of the Settings view
+   * @description Name of the Settings view.
    */
   settings: "Settings",
   /**
-   * @description Text for the documentation of something
+   * @description Text for the documentation of something.
    */
   documentation: "Documentation",
   /**
-   * @description Text for AI innovation settings
+   * @description Text for AI innovations settings.
    */
   aiInnovations: "AI innovations",
   /**
-   * @description Command for showing the AI innovation settings
+   * @description Command for showing the AI innovations settings.
    */
   showAiInnovations: "Show AI innovations",
   /**
-   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Text of a DOM element in Workspace settings tab of the Workspace settings in Settings.
    */
   workspace: "Workspace",
   /**
-   * @description Command for showing the Workspace tool in Settings
+   * @description Command for showing the Workspace tool in Settings.
    */
   showWorkspace: "Show Workspace settings"
 };
@@ -3101,7 +3101,7 @@ var UIStrings8 = {
    */
   protocolMonitor: "Protocol monitor",
   /**
-   * @description Command for showing the 'Protocol monitor' tool in the bottom drawer
+   * @description Command in the command menu for showing the 'Protocol monitor' tool in the bottom drawer.
    */
   showProtocolMonitor: "Show Protocol monitor"
 };
@@ -4124,27 +4124,27 @@ UI9.Toolbar.registerToolbarItem({
     const isPolicyRestricted3 = config?.aidaAvailability?.blockedByEnterprisePolicy === true;
     return Boolean(isFlagEnabled && !isGeoRestricted3 && !isPolicyRestricted3);
   },
-  async loadItem() {
+  loadItem: Common7.Lazy.lazy(async () => {
     const Main = await loadMainModule();
-    return Main.GlobalAiButton.GlobalAiButtonToolbarProvider.instance();
-  },
+    return new Main.GlobalAiButton.GlobalAiButtonToolbarProvider();
+  }),
   order: 98,
   location: "main-toolbar-right"
 });
 UI9.Toolbar.registerToolbarItem({
-  async loadItem() {
+  loadItem: Common7.Lazy.lazy(async () => {
     const Main = await loadMainModule();
-    return Main.MainImpl.SettingsButtonProvider.instance();
-  },
+    return new Main.MainImpl.SettingsButtonProvider();
+  }),
   order: 99,
   location: "main-toolbar-right"
 });
 UI9.Toolbar.registerToolbarItem({
   condition: () => !Root4.Runtime.Runtime.isTraceApp(),
-  async loadItem() {
+  loadItem: Common7.Lazy.lazy(async () => {
     const Main = await loadMainModule();
-    return Main.MainImpl.MainMenuItem.instance();
-  },
+    return new Main.MainImpl.MainMenuItem();
+  }),
   order: 100,
   location: "main-toolbar-right"
 });
@@ -4158,7 +4158,7 @@ UI9.Toolbar.registerToolbarItem({
 UI9.AppProvider.registerAppProvider({
   async loadAppProvider() {
     const Main = await loadMainModule();
-    return Main.SimpleApp.SimpleAppProvider.instance();
+    return new Main.SimpleApp.SimpleAppProvider();
   },
   order: 10
 });
@@ -4500,6 +4500,71 @@ var UIStrings14 = {
    */
   noEmulation: "No emulation",
   /**
+   * @description Text for the CPU Pressure type to simulate on a device.
+   */
+  cpuPressure: "CPU Pressure",
+  /**
+   * @description Title of an option in Sensors tab cpu pressure emulation drop-down. Turns off emulation of cpu pressure state.
+   */
+  noPressureEmulation: "No override",
+  /**
+   * @description An option that appears in a drop-down that represents the nominal state.
+   */
+  nominal: "Nominal",
+  /**
+   * @description An option that appears in a drop-down that represents the fair state.
+   */
+  fair: "Fair",
+  /**
+   * @description An option that appears in a drop-down that represents the serious state.
+   */
+  serious: "Serious",
+  /**
+   * @description An option that appears in a drop-down that represents the critical state.
+   */
+  critical: "Critical",
+  /**
+   * @description Text for the touch type to simulate on a device. Refers to touch input as opposed to
+   * mouse input.
+   */
+  touch: "Touch",
+  /**
+   * @description Text in Sensors View of the Device Toolbar. Means that touch input will be forced
+   *on, even if the device type e.g. desktop computer does not normally have touch input.
+   */
+  forceEnabled: "Force enabled",
+  /**
+   * @description Text in Sensors View of the Device Toolbar. Refers to device-based touch input,
+   *which means the input type will be 'touch' only if the device normally has touch input e.g. a
+   *phone or tablet.
+   */
+  devicebased: "Device-based",
+  /**
+   * @description Title of a section option in Sensors tab for idle emulation. This is a command, to
+   *emulate the state of the 'Idle Detector'.
+   */
+  emulateIdleDetectorState: "Emulate Idle Detector state",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down. Turns off emulation of idle state.
+   */
+  noIdleEmulation: "No idle emulation",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userActiveScreenUnlocked: "User active, screen unlocked",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userActiveScreenLocked: "User active, screen locked",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userIdleScreenUnlocked: "User idle, screen unlocked",
+  /**
+   * @description Title of an option in Sensors tab idle emulation drop-down.
+   */
+  userIdleScreenLocked: "User idle, screen locked",
+  /**
    * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   emulateCssPrintMediaType: "Emulate CSS print media type",
@@ -4750,7 +4815,14 @@ var UIStrings14 = {
   /**
    * @description Title of a setting under the Elements category in Settings.
    */
-  apca: "Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines"
+  apca: "Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines",
+  /**
+   * @description Title of a setting under the Appearance category in Settings. When the webpage is
+   * paused by devtools, an overlay is shown on top of the page to indicate that it is paused. The
+   * overlay is a pause/unpause button and some text, which appears on top of the paused page. This
+   * setting turns off this overlay.
+   */
+  disablePaused: "Disable paused state overlay"
 };
 var str_14 = i18n28.i18n.registerUIStrings("core/sdk/sdk-meta.ts", UIStrings14);
 var i18nLazyString14 = i18n28.i18n.getLazilyComputedLocalizedString.bind(void 0, str_14);
@@ -5094,6 +5166,92 @@ Common9.Settings.registerSettingExtension({
     i18nLazyString14(UIStrings14.query)
   ],
   title: i18nLazyString14(UIStrings14.emulateCssMediaType)
+});
+Common9.Settings.registerSettingExtension({
+  title: i18nLazyString14(UIStrings14.cpuPressure),
+  reloadRequired: true,
+  settingName: "emulation.cpu-pressure",
+  settingType: "enum",
+  defaultValue: "none",
+  options: [
+    {
+      value: "none",
+      title: i18nLazyString14(UIStrings14.noPressureEmulation),
+      text: i18nLazyString14(UIStrings14.noPressureEmulation)
+    },
+    {
+      value: "nominal",
+      title: i18nLazyString14(UIStrings14.nominal),
+      text: i18nLazyString14(UIStrings14.nominal)
+    },
+    {
+      value: "fair",
+      title: i18nLazyString14(UIStrings14.fair),
+      text: i18nLazyString14(UIStrings14.fair)
+    },
+    {
+      value: "serious",
+      title: i18nLazyString14(UIStrings14.serious),
+      text: i18nLazyString14(UIStrings14.serious)
+    },
+    {
+      value: "critical",
+      title: i18nLazyString14(UIStrings14.critical),
+      text: i18nLazyString14(UIStrings14.critical)
+    }
+  ]
+});
+Common9.Settings.registerSettingExtension({
+  title: i18nLazyString14(UIStrings14.touch),
+  reloadRequired: true,
+  settingName: "emulation.touch",
+  settingType: "enum",
+  defaultValue: "none",
+  options: [
+    {
+      value: "none",
+      title: i18nLazyString14(UIStrings14.devicebased),
+      text: i18nLazyString14(UIStrings14.devicebased)
+    },
+    {
+      value: "force",
+      title: i18nLazyString14(UIStrings14.forceEnabled),
+      text: i18nLazyString14(UIStrings14.forceEnabled)
+    }
+  ]
+});
+Common9.Settings.registerSettingExtension({
+  title: i18nLazyString14(UIStrings14.emulateIdleDetectorState),
+  settingName: "emulation.idle-detection",
+  settingType: "enum",
+  defaultValue: "none",
+  options: [
+    {
+      value: "none",
+      title: i18nLazyString14(UIStrings14.noIdleEmulation),
+      text: i18nLazyString14(UIStrings14.noIdleEmulation)
+    },
+    {
+      value: '{"isUserActive":true,"isScreenUnlocked":true}',
+      title: i18nLazyString14(UIStrings14.userActiveScreenUnlocked),
+      text: i18nLazyString14(UIStrings14.userActiveScreenUnlocked)
+    },
+    {
+      value: '{"isUserActive":true,"isScreenUnlocked":false}',
+      title: i18nLazyString14(UIStrings14.userActiveScreenLocked),
+      text: i18nLazyString14(UIStrings14.userActiveScreenLocked)
+    },
+    {
+      value: '{"isUserActive":false,"isScreenUnlocked":true}',
+      title: i18nLazyString14(UIStrings14.userIdleScreenUnlocked),
+      text: i18nLazyString14(UIStrings14.userIdleScreenUnlocked)
+    },
+    {
+      value: '{"isUserActive":false,"isScreenUnlocked":false}',
+      title: i18nLazyString14(UIStrings14.userIdleScreenLocked),
+      text: i18nLazyString14(UIStrings14.userIdleScreenLocked)
+    }
+  ]
 });
 Common9.Settings.registerSettingExtension({
   category: "RENDERING",
@@ -5567,6 +5725,14 @@ Common9.Settings.registerSettingExtension({
   settingType: "boolean",
   defaultValue: false
 });
+Common9.Settings.registerSettingExtension({
+  category: "APPEARANCE",
+  storageType: "Synced",
+  title: i18nLazyString14(UIStrings14.disablePaused),
+  settingName: "disable-paused-state-overlay",
+  settingType: "boolean",
+  defaultValue: false
+});
 
 // gen/front_end/models/workspace/workspace-meta.js
 import * as Common10 from "./../../core/common/common.js";
@@ -5871,7 +6037,7 @@ var UIStrings17 = {
   enableAiAssistance: "Enable AI assistance",
   /**
    * @description Text of a context menu item to redirect to the AI assistance panel with
-   * the current context
+   * the current context.
    */
   debugWithAi: "Debug with AI",
   /**
@@ -5887,7 +6053,7 @@ var UIStrings17 = {
    */
   enableGemini: "Enable Gemini",
   /**
-   * @description Text of a context menu item to redirect to the Gemini panel with the current context
+   * @description Text of a context menu item to redirect to the Gemini panel with the current context.
    */
   debugWithGemini: "Debug with Gemini",
   /**
@@ -5896,7 +6062,7 @@ var UIStrings17 = {
    */
   wrongLocale: "To use this feature, set your language preference to English in DevTools settings.",
   /**
-   * @description Message shown to the user if the user's region is not
+   * @description Message shown to the user if the user’s region is not
    * supported.
    */
   geoRestricted: "This feature is unavailable in your region.",

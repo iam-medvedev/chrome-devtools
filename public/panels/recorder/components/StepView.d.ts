@@ -1,10 +1,9 @@
 import '../../../ui/kit/kit.js';
-import './StepEditor.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import type * as Converters from '../converters/converters.js';
 import * as Models from '../models/models.js';
-import type { StepEditedEvent } from './StepEditor.js';
+import { type StepEditedEvent } from './StepEditor.js';
 export declare const enum State {
     DEFAULT = "default",
     SUCCESS = "success",

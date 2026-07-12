@@ -1741,13 +1741,21 @@ __export(StepView_exports, {
   StepView: () => StepView
 });
 import "./../../../ui/kit/kit.js";
+import * as i18n13 from "./../../../core/i18n/i18n.js";
+import * as Platform4 from "./../../../core/platform/platform.js";
+import * as Menus from "./../../../ui/components/menus/menus.js";
+import * as UI8 from "./../../../ui/legacy/legacy.js";
+import * as Lit9 from "./../../../ui/lit/lit.js";
+import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
+import * as Models6 from "./../models/models.js";
 
 // gen/front_end/panels/recorder/components/StepEditor.js
 var StepEditor_exports = {};
 __export(StepEditor_exports, {
   EditorState: () => EditorState,
   StepEditedEvent: () => StepEditedEvent,
-  StepEditor: () => StepEditor
+  StepEditor: () => StepEditor,
+  renderStepEditor: () => renderStepEditor
 });
 import * as i18n11 from "./../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../core/platform/platform.js";
@@ -2167,14 +2175,7 @@ var immutableDeepAssign = (object, assignments) => {
 };
 
 // gen/front_end/panels/recorder/components/StepEditor.js
-var __decorate = function(decorators, target, key2, desc) {
-  var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key2) : desc, d;
-  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key2, desc);
-  else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key2, r) : d(target, key2)) || r;
-  return c > 3 && r && Object.defineProperty(target, key2, r), r;
-};
-var { html: html7, Decorators, Directives, LitElement } = Lit7;
-var { customElement, property, state } = Decorators;
+var { html: html7, render: render7, Directives } = Lit7;
 var { live } = Directives;
 var { widget: widget2 } = UI6.Widget;
 var typeConverters = Object.freeze({
@@ -2415,19 +2416,19 @@ var cleanUndefineds = (value2) => {
 var EditorState = class {
   static #puppeteer = new Util2.SharedObject.SharedObject(() => Models5.RecordingPlayer.RecordingPlayer.connectPuppeteer(), ({ browser }) => Models5.RecordingPlayer.RecordingPlayer.disconnectPuppeteer(browser));
   static async default(type) {
-    const state2 = { type };
-    const attributes = attributesByType[state2.type];
+    const state = { type };
+    const attributes = attributesByType[state.type];
     let promise = Promise.resolve();
     for (const attribute of attributes.required) {
       promise = Promise.all([
         promise,
-        (async () => Object.assign(state2, {
-          [attribute]: await this.defaultByAttribute(state2, attribute)
+        (async () => Object.assign(state, {
+          [attribute]: await this.defaultByAttribute(state, attribute)
         }))()
       ]);
     }
     await promise;
-    return Object.freeze(state2);
+    return Object.freeze(state);
   }
   static async defaultByAttribute(_state, attribute) {
     return await this.#puppeteer.run((puppeteer) => {
@@ -2443,10 +2444,10 @@ var EditorState = class {
           return puppeteer.page.url() || defaultValuesByAttribute.url;
         }
         case "height": {
-          return puppeteer.page.evaluate(() => visualViewport.height) || defaultValuesByAttribute.height;
+          return puppeteer.page.evaluate(() => visualViewport.height).then((h) => h || defaultValuesByAttribute.height);
         }
         case "width": {
-          return puppeteer.page.evaluate(() => visualViewport.width) || defaultValuesByAttribute.width;
+          return puppeteer.page.evaluate(() => visualViewport.width).then((w) => w || defaultValuesByAttribute.width);
         }
         default: {
           return defaultValuesByAttribute[attribute];
@@ -2455,40 +2456,40 @@ var EditorState = class {
     });
   }
   static fromStep(step) {
-    const state2 = structuredClone(step);
+    const state = structuredClone(step);
     for (const key2 of ["parameters", "properties"]) {
       if (key2 in step && step[key2] !== void 0) {
-        state2[key2] = JSON.stringify(step[key2]);
+        state[key2] = JSON.stringify(step[key2]);
       }
     }
     if ("attributes" in step && step.attributes) {
-      state2.attributes = [];
+      state.attributes = [];
       for (const [name, value2] of Object.entries(step.attributes)) {
-        state2.attributes.push({ name, value: value2 });
+        state.attributes.push({ name, value: value2 });
       }
     }
     if ("selectors" in step) {
-      state2.selectors = step.selectors.map((selector) => {
+      state.selectors = step.selectors.map((selector) => {
         if (typeof selector === "string") {
           return [selector];
         }
         return [...selector];
       });
     }
-    return deepFreeze(state2);
+    return deepFreeze(state);
   }
-  static toStep(state2) {
-    const step = structuredClone(state2);
+  static toStep(state) {
+    const step = structuredClone(state);
     for (const key2 of ["parameters", "properties"]) {
-      const value2 = state2[key2];
+      const value2 = state[key2];
       if (value2) {
         Object.assign(step, { [key2]: JSON.parse(value2) });
       }
     }
-    if (state2.attributes) {
-      if (state2.attributes.length !== 0) {
+    if (state.attributes) {
+      if (state.attributes.length !== 0) {
         const attributes = {};
-        for (const { name, value: value2 } of state2.attributes) {
+        for (const { name, value: value2 } of state.attributes) {
           Object.assign(attributes, { [name]: value2 });
         }
         Object.assign(step, { attributes });
@@ -2496,8 +2497,8 @@ var EditorState = class {
         delete step.attributes;
       }
     }
-    if (state2.selectors) {
-      const selectors = state2.selectors.filter((selector) => selector.length > 0).map((selector) => {
+    if (state.selectors) {
+      const selectors = state.selectors.filter((selector) => selector.length > 0).map((selector) => {
         if (selector.length === 1) {
           return selector[0];
         }
@@ -2509,39 +2510,62 @@ var EditorState = class {
         delete step.selectors;
       }
     }
-    if (state2.frame?.length === 0 && "frame" in step) {
+    if (state.frame?.length === 0 && "frame" in step) {
       delete step.frame;
     }
     return cleanUndefineds(Models5.SchemaUtils.parseStep(step));
   }
 };
-var StepEditor = class StepEditor2 extends LitElement {
-  #renderedAttributes = /* @__PURE__ */ new Set();
-  constructor() {
-    super();
-    this.state = { type: Models5.Schema.StepType.WaitForElement };
-    this.isTypeEditable = true;
-    this.disabled = false;
+var StepEditor = class extends UI6.Widget.Widget {
+  #state;
+  #error;
+  #isTypeEditable = true;
+  #disabled = false;
+  constructor(element) {
+    super(element, { useShadowDom: true });
+    this.#state = { type: Models5.Schema.StepType.WaitForElement };
   }
-  createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener("keydown", this.#handleKeyDownEvent);
-    return root;
+  set isTypeEditable(value2) {
+    this.#isTypeEditable = value2;
+    this.requestUpdate();
+  }
+  set disabled(value2) {
+    this.#disabled = value2;
+    this.requestUpdate();
   }
   set step(step) {
-    this.state = deepFreeze(EditorState.fromStep(step));
-    this.error = void 0;
+    this.#state = deepFreeze(EditorState.fromStep(step));
+    this.#error = void 0;
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const input = {
+      state: this.#state,
+      disabled: this.#disabled,
+      error: this.#error,
+      isTypeEditable: this.#isTypeEditable,
+      handleInputBlur: this.#handleInputBlur,
+      handleTypeInputBlur: this.#handleTypeInputBlur,
+      handleAddRowClickEvent: this.#handleAddRowClickEvent,
+      handleDeleteRowClick: this.#handleDeleteRowClick,
+      handleSelectorPicked: this.#handleSelectorPicked,
+      handleAttributeRequested: this.#handleAttributeRequested,
+      handleAddOrRemoveClick: this.#handleAddOrRemoveClick,
+      handleKeyDownEvent: this.#handleKeyDownEvent
+    };
+    render7(renderStepEditor(input), this.contentElement, { container: { listeners: { keydown: this.#handleKeyDownEvent } } });
   }
   #commit(updatedState) {
     try {
-      this.dispatchEvent(new StepEditedEvent(EditorState.toStep(updatedState)));
-      this.state = updatedState;
+      this.element.dispatchEvent(new StepEditedEvent(EditorState.toStep(updatedState)));
+      this.#state = updatedState;
     } catch (error) {
-      this.error = error.message;
+      this.#error = error.message;
     }
+    this.requestUpdate();
   }
   #handleSelectorPicked = (data) => {
-    this.#commit(immutableDeepAssign(this.state, {
+    this.#commit(immutableDeepAssign(this.#state, {
       target: data.target,
       frame: data.frame,
       selectors: data.selectors.map((selector) => typeof selector === "string" ? [selector] : selector),
@@ -2550,20 +2574,31 @@ var StepEditor = class StepEditor2 extends LitElement {
     }));
   };
   #handleAttributeRequested = (send) => {
-    this.dispatchEvent(new RequestSelectorAttributeEvent(send));
+    this.element.dispatchEvent(new RequestSelectorAttributeEvent(send));
   };
   #handleAddOrRemoveClick = (assignments, query) => (event) => {
     event.preventDefault();
     event.stopPropagation();
-    this.#commit(immutableDeepAssign(this.state, assignments));
+    this.#commit(immutableDeepAssign(this.#state, assignments));
     this.#ensureFocus(query);
+  };
+  #handleDeleteRowClick = (attribute) => (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    this.#commit(immutableDeepAssign(this.#state, { [attribute]: void 0 }));
+  };
+  #ensureFocus = (query) => {
+    void this.updateComplete.then(() => {
+      const node = this.contentElement.querySelector(query);
+      node?.focus();
+    });
   };
   #handleKeyDownEvent = (event) => {
     assert(event instanceof KeyboardEvent);
     if (event.target instanceof SuggestionInput.SuggestionInput.SuggestionInput && event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
-      const elements = this.renderRoot.querySelectorAll("devtools-suggestion-input");
+      const elements = this.contentElement.querySelectorAll("devtools-suggestion-input");
       const element = [...elements].findIndex((value2) => value2 === event.target);
       if (element >= 0 && element + 1 < elements.length) {
         elements[element + 1].focus();
@@ -2583,7 +2618,7 @@ var StepEditor = class StepEditor2 extends LitElement {
     if (!assignments) {
       return;
     }
-    this.#commit(immutableDeepAssign(this.state, assignments));
+    this.#commit(immutableDeepAssign(this.#state, assignments));
   };
   #handleTypeInputBlur = async (event) => {
     assert(event.target instanceof SuggestionInput.SuggestionInput.SuggestionInput);
@@ -2591,11 +2626,12 @@ var StepEditor = class StepEditor2 extends LitElement {
       return;
     }
     const value2 = event.target.value;
-    if (value2 === this.state.type) {
+    if (value2 === this.#state.type) {
       return;
     }
     if (!Object.values(Models5.Schema.StepType).includes(value2)) {
-      this.error = i18nString6(UIStrings6.unknownActionType);
+      this.#error = i18nString6(UIStrings6.unknownActionType);
+      this.requestUpdate();
       return;
     }
     this.#commit(await EditorState.default(value2));
@@ -2604,78 +2640,77 @@ var StepEditor = class StepEditor2 extends LitElement {
     event.preventDefault();
     event.stopPropagation();
     const attribute = event.target.dataset.attribute;
-    this.#commit(immutableDeepAssign(this.state, {
-      [attribute]: await EditorState.defaultByAttribute(this.state, attribute)
+    this.#commit(immutableDeepAssign(this.#state, {
+      [attribute]: await EditorState.defaultByAttribute(this.#state, attribute)
     }));
     this.#ensureFocus(`[data-attribute=${attribute}].attribute devtools-suggestion-input`);
   };
-  #renderInlineButton(opts) {
-    if (this.disabled) {
-      return;
-    }
-    return html7`
-      <devtools-button
-        title=${opts.title}
-        .accessibleLabel=${opts.title}
-        .size=${"SMALL"}
-        .iconName=${opts.iconName}
-        .variant=${"icon"}
-        jslog=${VisualLogging6.action(opts.class).track({
-      click: true
-    })}
-        class="inline-button ${opts.class}"
-        @click=${opts.onClick}
-      ></devtools-button>
-    `;
+};
+function renderInlineButton(input, opts) {
+  if (input.disabled) {
+    return;
   }
-  #renderDeleteButton(attribute) {
-    if (this.disabled) {
-      return;
-    }
-    const attributes = attributesByType[this.state.type];
-    const optional = [...attributes.optional].includes(attribute);
-    if (!optional || this.disabled) {
-      return;
-    }
-    return html7`<devtools-button
+  return html7`
+    <devtools-button
+      title=${opts.title}
+      .accessibleLabel=${opts.title}
       .size=${"SMALL"}
-      .iconName=${"bin"}
+      .iconName=${opts.iconName}
       .variant=${"icon"}
-      .title=${i18nString6(UIStrings6.deleteRow)}
-      class="inline-button delete-row"
-      data-attribute=${attribute}
-      jslog=${VisualLogging6.action("delete").track({ click: true })}
-      @click=${(event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      this.#commit(immutableDeepAssign(this.state, { [attribute]: void 0 }));
-    }}
-    ></devtools-button>`;
+      jslog=${VisualLogging6.action(opts.class).track({
+    click: true
+  })}
+      class="inline-button ${opts.class}"
+      @click=${opts.onClick}
+    ></devtools-button>
+  `;
+}
+function renderDeleteButton(input, attribute) {
+  if (input.disabled) {
+    return;
   }
-  #renderTypeRow(editable) {
-    this.#renderedAttributes.add("type");
+  const attributes = attributesByType[input.state.type];
+  const optional = [...attributes.optional].includes(attribute);
+  if (!optional || input.disabled) {
+    return;
+  }
+  return html7`<devtools-button
+    .size=${"SMALL"}
+    .iconName=${"bin"}
+    .variant=${"icon"}
+    .title=${i18nString6(UIStrings6.deleteRow)}
+    class="inline-button delete-row"
+    data-attribute=${attribute}
+    jslog=${VisualLogging6.action("delete").track({ click: true })}
+    @click=${input.handleDeleteRowClick(attribute)}
+  ></devtools-button>`;
+}
+function renderStepEditor(input) {
+  const renderedAttributes = /* @__PURE__ */ new Set();
+  function renderTypeRow(editable) {
+    renderedAttributes.add("type");
     return html7`<div class="row attribute" data-attribute="type" jslog=${VisualLogging6.treeItem("type").track({ resize: true })}>
       <div id="type">type<span class="separator">:</span></div>
       <devtools-suggestion-input
         aria-labelledby="type"
-        .disabled=${!editable || this.disabled}
+        .disabled=${!editable || input.disabled}
         .options=${Object.values(Models5.Schema.StepType)}
         .placeholder=${defaultValuesByAttribute.type}
-        .value=${live(this.state.type)}
-        @blur=${this.#handleTypeInputBlur}
+        .value=${live(input.state.type)}
+        @blur=${input.handleTypeInputBlur}
       ></devtools-suggestion-input>
     </div>`;
   }
-  #renderRow(attribute) {
-    this.#renderedAttributes.add(attribute);
-    const attributeValue = this.state[attribute]?.toString();
+  function renderRow(attribute) {
+    renderedAttributes.add(attribute);
+    const attributeValue = input.state[attribute]?.toString();
     if (attributeValue === void 0) {
       return;
     }
     return html7`<div class="row attribute" data-attribute=${attribute} jslog=${VisualLogging6.treeItem(Platform3.StringUtilities.toKebabCase(attribute)).track({ resize: true })}>
       <div id=${attribute}>${attribute}<span class="separator">:</span></div>
       <devtools-suggestion-input
-        .disabled=${this.disabled}
+        .disabled=${input.disabled}
         aria-labelledby=${attribute}
         .placeholder=${defaultValuesByAttribute[attribute].toString()}
         .value=${live(attributeValue)}
@@ -2689,43 +2724,43 @@ var StepEditor = class StepEditor2 extends LitElement {
           return "";
       }
     })()}
-        @blur=${this.#handleInputBlur({
+        @blur=${input.handleInputBlur({
       attribute,
       from(value2) {
-        if (this.state[attribute] === void 0) {
+        if (input.state[attribute] === void 0 || input.state[attribute] === value2) {
           return;
         }
         return { [attribute]: value2 };
       }
     })}
       ></devtools-suggestion-input>
-      ${this.#renderDeleteButton(attribute)}
+      ${renderDeleteButton(input, attribute)}
     </div>`;
   }
-  #renderFrameRow() {
-    this.#renderedAttributes.add("frame");
-    if (this.state.frame === void 0) {
+  function renderFrameRow() {
+    renderedAttributes.add("frame");
+    if (input.state.frame === void 0) {
       return;
     }
     return html7`
       <div class="attribute" data-attribute="frame" jslog=${VisualLogging6.treeItem("frame").track({ resize: true })}>
         <div class="row">
           <div id="frame">frame<span class="separator">:</span></div>
-          ${this.#renderDeleteButton("frame")}
+          ${renderDeleteButton(input, "frame")}
         </div>
-        ${this.state.frame.map((frame, index, frames) => {
+        ${input.state.frame.map((frame, index, frames) => {
       return html7`
             <div class="padded row">
               <devtools-suggestion-input
                 aria-labelledby="frame"
-                .disabled=${this.disabled}
+                .disabled=${input.disabled}
                 .placeholder=${defaultValuesByAttribute.frame[0].toString()}
                 .value=${live(frame.toString())}
                 data-path=${`frame.${index}`}
-                @blur=${this.#handleInputBlur({
+                @blur=${input.handleInputBlur({
         attribute: "frame",
         from(value2) {
-          if (this.state.frame?.[index] === void 0) {
+          if (input.state.frame?.[index] === void 0 || input.state.frame[index] === value2) {
             return;
           }
           return {
@@ -2734,21 +2769,21 @@ var StepEditor = class StepEditor2 extends LitElement {
         }
       })}
               ></devtools-suggestion-input>
-              ${this.#renderInlineButton({
+              ${renderInlineButton(input, {
         class: "add-frame",
         title: i18nString6(UIStrings6.addFrameIndex),
         iconName: "plus",
-        onClick: this.#handleAddOrRemoveClick({
+        onClick: input.handleAddOrRemoveClick({
           frame: new ArrayAssignments({
             [index + 1]: new InsertAssignment(defaultValuesByAttribute.frame[0])
           })
         }, `devtools-suggestion-input[data-path="frame.${index + 1}"]`)
       })}
-              ${this.#renderInlineButton({
+              ${renderInlineButton(input, {
         class: "remove-frame",
         title: i18nString6(UIStrings6.removeFrameIndex),
         iconName: "minus",
-        onClick: this.#handleAddOrRemoveClick({
+        onClick: input.handleAddOrRemoveClick({
           frame: new ArrayAssignments({ [index]: void 0 })
         }, `devtools-suggestion-input[data-path="frame.${Math.min(index, frames.length - 2)}"]`)
       })}
@@ -2758,39 +2793,39 @@ var StepEditor = class StepEditor2 extends LitElement {
       </div>
     `;
   }
-  #renderSelectorsRow() {
-    this.#renderedAttributes.add("selectors");
-    if (this.state.selectors === void 0) {
+  function renderSelectorsRow() {
+    renderedAttributes.add("selectors");
+    if (input.state.selectors === void 0) {
       return;
     }
     return html7`<div class="attribute" data-attribute="selectors" jslog=${VisualLogging6.treeItem("selectors")}>
       <div class="row">
         <div>selectors<span class="separator">:</span></div>
         ${widget2(SelectorPicker, {
-      disabled: this.disabled,
-      onSelectorPicked: this.#handleSelectorPicked,
-      onAttributeRequested: this.#handleAttributeRequested
+      disabled: input.disabled,
+      onSelectorPicked: input.handleSelectorPicked,
+      onAttributeRequested: input.handleAttributeRequested
     })}
-        ${this.#renderDeleteButton("selectors")}
+        ${renderDeleteButton(input, "selectors")}
       </div>
-      ${this.state.selectors.map((selector, index, selectors) => {
+      ${input.state.selectors.map((selector, index, selectors) => {
       return html7`<div class="padded row" data-selector-path=${index}>
             <div id="selector-${index}">selector #${index + 1}<span class="separator">:</span></div>
-            ${this.#renderInlineButton({
+            ${renderInlineButton(input, {
         class: "add-selector",
         title: i18nString6(UIStrings6.addSelector),
         iconName: "plus",
-        onClick: this.#handleAddOrRemoveClick({
+        onClick: input.handleAddOrRemoveClick({
           selectors: new ArrayAssignments({
             [index + 1]: new InsertAssignment(structuredClone(defaultValuesByAttribute.selectors[0]))
           })
         }, `devtools-suggestion-input[data-path="selectors.${index + 1}.0"]`)
       })}
-            ${this.#renderInlineButton({
+            ${renderInlineButton(input, {
         class: "remove-selector",
         title: i18nString6(UIStrings6.removeSelector),
         iconName: "minus",
-        onClick: this.#handleAddOrRemoveClick({ selectors: new ArrayAssignments({ [index]: void 0 }) }, `devtools-suggestion-input[data-path="selectors.${Math.min(index, selectors.length - 2)}.0"]`)
+        onClick: input.handleAddOrRemoveClick({ selectors: new ArrayAssignments({ [index]: void 0 }) }, `devtools-suggestion-input[data-path="selectors.${Math.min(index, selectors.length - 2)}.0"]`)
       })}
           </div>
           ${selector.map((part, partIndex, parts) => {
@@ -2800,14 +2835,14 @@ var StepEditor = class StepEditor2 extends LitElement {
             >
               <devtools-suggestion-input
                 aria-labelledby="selector-${index}"
-                .disabled=${this.disabled}
+                .disabled=${input.disabled}
                 .placeholder=${defaultValuesByAttribute.selectors[0][0]}
                 .value=${live(part)}
                 data-path=${`selectors.${index}.${partIndex}`}
-                @blur=${this.#handleInputBlur({
+                @blur=${input.handleInputBlur({
           attribute: "selectors",
           from(value2) {
-            if (this.state.selectors?.[index]?.[partIndex] === void 0) {
+            if (input.state.selectors?.[index]?.[partIndex] === void 0 || input.state.selectors[index][partIndex] === value2) {
               return;
             }
             return {
@@ -2820,11 +2855,11 @@ var StepEditor = class StepEditor2 extends LitElement {
           }
         })}
               ></devtools-suggestion-input>
-              ${this.#renderInlineButton({
+              ${renderInlineButton(input, {
           class: "add-selector-part",
           title: i18nString6(UIStrings6.addSelectorPart),
           iconName: "plus",
-          onClick: this.#handleAddOrRemoveClick({
+          onClick: input.handleAddOrRemoveClick({
             selectors: new ArrayAssignments({
               [index]: new ArrayAssignments({
                 [partIndex + 1]: new InsertAssignment(defaultValuesByAttribute.selectors[0][0])
@@ -2832,11 +2867,11 @@ var StepEditor = class StepEditor2 extends LitElement {
             })
           }, `devtools-suggestion-input[data-path="selectors.${index}.${partIndex + 1}"]`)
         })}
-              ${this.#renderInlineButton({
+              ${renderInlineButton(input, {
           class: "remove-selector-part",
           title: i18nString6(UIStrings6.removeSelectorPart),
           iconName: "minus",
-          onClick: this.#handleAddOrRemoveClick({
+          onClick: input.handleAddOrRemoveClick({
             selectors: new ArrayAssignments({
               [index]: new ArrayAssignments({
                 [partIndex]: void 0
@@ -2849,17 +2884,17 @@ var StepEditor = class StepEditor2 extends LitElement {
     })}
     </div>`;
   }
-  #renderAssertedEvents() {
-    this.#renderedAttributes.add("assertedEvents");
-    if (this.state.assertedEvents === void 0) {
+  function renderAssertedEvents() {
+    renderedAttributes.add("assertedEvents");
+    if (input.state.assertedEvents === void 0) {
       return;
     }
     return html7`<div class="attribute" data-attribute="assertedEvents" jslog=${VisualLogging6.treeItem("asserted-events")}>
       <div class="row">
         <div>asserted events<span class="separator">:</span></div>
-        ${this.#renderDeleteButton("assertedEvents")}
+        ${renderDeleteButton(input, "assertedEvents")}
       </div>
-      ${this.state.assertedEvents.map((event, index) => {
+      ${input.state.assertedEvents.map((event, index) => {
       return html7` <div class="padded row" jslog=${VisualLogging6.treeItem("event-type")}>
             <div id="event-type">type<span class="separator">:</span></div>
             <div aria-labelledby="event-type">${event.type}</div>
@@ -2868,13 +2903,13 @@ var StepEditor = class StepEditor2 extends LitElement {
             <div id="event-title">title<span class="separator">:</span></div>
             <devtools-suggestion-input
               aria-labelledby="event-title"
-              .disabled=${this.disabled}
+              .disabled=${input.disabled}
               .placeholder=${defaultValuesByAttribute.assertedEvents[0].title}
               .value=${live(event.title ?? "")}
-              @blur=${this.#handleInputBlur({
+              @blur=${input.handleInputBlur({
         attribute: "assertedEvents",
         from(value2) {
-          if (this.state.assertedEvents?.[index]?.title === void 0) {
+          if (input.state.assertedEvents?.[index]?.title === void 0 || input.state.assertedEvents[index].title === value2) {
             return;
           }
           return {
@@ -2890,13 +2925,13 @@ var StepEditor = class StepEditor2 extends LitElement {
             <div>url<span class="separator">:</span></div>
             <devtools-suggestion-input
               aria-labelledby="event-url"
-              .disabled=${this.disabled}
+              .disabled=${input.disabled}
               .placeholder=${defaultValuesByAttribute.assertedEvents[0].url}
               .value=${live(event.url ?? "")}
-              @blur=${this.#handleInputBlur({
+              @blur=${input.handleInputBlur({
         attribute: "url",
         from(value2) {
-          if (this.state.assertedEvents?.[index]?.url === void 0) {
+          if (input.state.assertedEvents?.[index]?.url === void 0 || input.state.assertedEvents[index].url === value2) {
             return;
           }
           return {
@@ -2911,28 +2946,28 @@ var StepEditor = class StepEditor2 extends LitElement {
     })}
     </div> `;
   }
-  #renderAttributesRow() {
-    this.#renderedAttributes.add("attributes");
-    if (this.state.attributes === void 0) {
+  function renderAttributesRow() {
+    renderedAttributes.add("attributes");
+    if (input.state.attributes === void 0) {
       return;
     }
     return html7`<div class="attribute" data-attribute="attributes" jslog=${VisualLogging6.treeItem("attributes")}>
       <div class="row">
         <div>attributes<span class="separator">:</span></div>
-        ${this.#renderDeleteButton("attributes")}
+        ${renderDeleteButton(input, "attributes")}
       </div>
-      ${this.state.attributes.map(({ name, value: value2 }, index, attributes) => {
+      ${input.state.attributes.map(({ name, value: value2 }, index, attributes) => {
       return html7`<div class="padded row" jslog=${VisualLogging6.treeItem("attribute")}>
           <devtools-suggestion-input
-            .disabled=${this.disabled}
+            .disabled=${input.disabled}
             .placeholder=${defaultValuesByAttribute.attributes[0].name}
             .value=${live(name)}
             data-path=${`attributes.${index}.name`}
             jslog=${VisualLogging6.key().track({ change: true })}
-            @blur=${this.#handleInputBlur({
+            @blur=${input.handleInputBlur({
         attribute: "attributes",
         from(name2) {
-          if (this.state.attributes?.[index]?.name === void 0) {
+          if (input.state.attributes?.[index]?.name === void 0 || input.state.attributes[index].name === name2) {
             return;
           }
           return {
@@ -2943,14 +2978,14 @@ var StepEditor = class StepEditor2 extends LitElement {
           ></devtools-suggestion-input>
           <span class="separator">:</span>
           <devtools-suggestion-input
-            .disabled=${this.disabled}
+            .disabled=${input.disabled}
             .placeholder=${defaultValuesByAttribute.attributes[0].value}
             .value=${live(value2)}
             data-path=${`attributes.${index}.value`}
-            @blur=${this.#handleInputBlur({
+            @blur=${input.handleInputBlur({
         attribute: "attributes",
         from(value3) {
-          if (this.state.attributes?.[index]?.value === void 0) {
+          if (input.state.attributes?.[index]?.value === void 0 || input.state.attributes[index].value === value3) {
             return;
           }
           return {
@@ -2959,11 +2994,11 @@ var StepEditor = class StepEditor2 extends LitElement {
         }
       })}
           ></devtools-suggestion-input>
-          ${this.#renderInlineButton({
+          ${renderInlineButton(input, {
         class: "add-attribute-assertion",
         title: i18nString6(UIStrings6.addSelectorPart),
         iconName: "plus",
-        onClick: this.#handleAddOrRemoveClick({
+        onClick: input.handleAddOrRemoveClick({
           attributes: new ArrayAssignments({
             [index + 1]: new InsertAssignment((() => {
               {
@@ -2981,25 +3016,25 @@ var StepEditor = class StepEditor2 extends LitElement {
           })
         }, `devtools-suggestion-input[data-path="attributes.${index + 1}.name"]`)
       })}
-          ${this.#renderInlineButton({
+          ${renderInlineButton(input, {
         class: "remove-attribute-assertion",
         title: i18nString6(UIStrings6.removeSelectorPart),
         iconName: "minus",
-        onClick: this.#handleAddOrRemoveClick({ attributes: new ArrayAssignments({ [index]: void 0 }) }, `devtools-suggestion-input[data-path="attributes.${Math.min(index, attributes.length - 2)}.value"]`)
+        onClick: input.handleAddOrRemoveClick({ attributes: new ArrayAssignments({ [index]: void 0 }) }, `devtools-suggestion-input[data-path="attributes.${Math.min(index, attributes.length - 2)}.value"]`)
       })}
         </div>`;
     })}
     </div>`;
   }
-  #renderAddRowButtons() {
-    const attributes = attributesByType[this.state.type];
-    return [...attributes.optional].filter((attr) => this.state[attr] === void 0).map((attr) => {
+  function renderAddRowButtons() {
+    const attributes = attributesByType[input.state.type];
+    return [...attributes.optional].filter((attr) => input.state[attr] === void 0).map((attr) => {
       return html7`<devtools-button
           .variant=${"outlined"}
           class="add-row"
           data-attribute=${attr}
           jslog=${VisualLogging6.action(`add-${Platform3.StringUtilities.toKebabCase(attr)}`)}
-          @click=${this.#handleAddRowClickEvent}
+          @click=${input.handleAddRowClickEvent}
         >
           ${i18nString6(UIStrings6.addAttribute, {
         attributeName: attr
@@ -3007,80 +3042,47 @@ var StepEditor = class StepEditor2 extends LitElement {
         </devtools-button>`;
     });
   }
-  #ensureFocus = (query) => {
-    void this.updateComplete.then(() => {
-      const node = this.renderRoot.querySelector(query);
-      node?.focus();
-    });
-  };
-  render() {
-    this.#renderedAttributes = /* @__PURE__ */ new Set();
-    const result = html7`
-      <style>${stepEditor_css_default}</style>
-      <div class="wrapper" jslog=${VisualLogging6.tree("step-editor")} >
-        ${this.#renderTypeRow(this.isTypeEditable)} ${this.#renderRow("target")}
-        ${this.#renderFrameRow()} ${this.#renderSelectorsRow()}
-        ${this.#renderRow("deviceType")} ${this.#renderRow("button")}
-        ${this.#renderRow("url")} ${this.#renderRow("x")}
-        ${this.#renderRow("y")} ${this.#renderRow("offsetX")}
-        ${this.#renderRow("offsetY")} ${this.#renderRow("value")}
-        ${this.#renderRow("key")} ${this.#renderRow("operator")}
-        ${this.#renderRow("count")} ${this.#renderRow("expression")}
-        ${this.#renderRow("duration")} ${this.#renderAssertedEvents()}
-        ${this.#renderRow("timeout")} ${this.#renderRow("width")}
-        ${this.#renderRow("height")} ${this.#renderRow("deviceScaleFactor")}
-        ${this.#renderRow("isMobile")} ${this.#renderRow("hasTouch")}
-        ${this.#renderRow("isLandscape")} ${this.#renderRow("download")}
-        ${this.#renderRow("upload")} ${this.#renderRow("latency")}
-        ${this.#renderRow("name")} ${this.#renderRow("parameters")}
-        ${this.#renderRow("visible")} ${this.#renderRow("properties")}
-        ${this.#renderAttributesRow()}
-        ${this.error ? html7`
-              <div class="error">
-                ${i18nString6(UIStrings6.notSaved, {
-      error: this.error
-    })}
-              </div>
-            ` : void 0}
-        ${!this.disabled ? html7`<div
-              class="row-buttons wrapped gap row regular-font no-margin"
-            >
-              ${this.#renderAddRowButtons()}
-            </div>` : void 0}
-      </div>
-    `;
-    for (const key2 of Object.keys(dataTypeByAttribute)) {
-      if (!this.#renderedAttributes.has(key2)) {
-        throw new Error(`The editable attribute ${key2} does not have UI`);
-      }
+  const result = html7`
+    <style>${stepEditor_css_default}</style>
+    <div class="wrapper" jslog=${VisualLogging6.tree("step-editor")} >
+      ${renderTypeRow(input.isTypeEditable)} ${renderRow("target")}
+      ${renderFrameRow()} ${renderSelectorsRow()}
+      ${renderRow("deviceType")} ${renderRow("button")}
+      ${renderRow("url")} ${renderRow("x")}
+      ${renderRow("y")} ${renderRow("offsetX")}
+      ${renderRow("offsetY")} ${renderRow("value")}
+      ${renderRow("key")} ${renderRow("operator")}
+      ${renderRow("count")} ${renderRow("expression")}
+      ${renderRow("duration")} ${renderAssertedEvents()}
+      ${renderRow("timeout")} ${renderRow("width")}
+      ${renderRow("height")} ${renderRow("deviceScaleFactor")}
+      ${renderRow("isMobile")} ${renderRow("hasTouch")}
+      ${renderRow("isLandscape")} ${renderRow("download")}
+      ${renderRow("upload")} ${renderRow("latency")}
+      ${renderRow("name")} ${renderRow("parameters")}
+      ${renderRow("visible")} ${renderRow("properties")}
+      ${renderAttributesRow()}
+      ${input.error ? html7`
+            <div class="error">
+              ${i18nString6(UIStrings6.notSaved, {
+    error: input.error
+  })}
+            </div>
+          ` : void 0}
+      ${!input.disabled ? html7`<div
+            class="row-buttons wrapped gap row regular-font no-margin"
+          >
+            ${renderAddRowButtons()}
+          </div>` : void 0}
+    </div>
+  `;
+  for (const key2 of Object.keys(dataTypeByAttribute)) {
+    if (!renderedAttributes.has(key2)) {
+      throw new Error(`The editable attribute ${key2} does not have UI`);
     }
-    return result;
   }
-};
-__decorate([
-  state()
-], StepEditor.prototype, "state", void 0);
-__decorate([
-  state()
-], StepEditor.prototype, "error", void 0);
-__decorate([
-  property({ type: Boolean })
-], StepEditor.prototype, "isTypeEditable", void 0);
-__decorate([
-  property({ type: Boolean })
-], StepEditor.prototype, "disabled", void 0);
-StepEditor = __decorate([
-  customElement("devtools-recorder-step-editor")
-], StepEditor);
-
-// gen/front_end/panels/recorder/components/StepView.js
-import * as i18n13 from "./../../../core/i18n/i18n.js";
-import * as Platform4 from "./../../../core/platform/platform.js";
-import * as Menus from "./../../../ui/components/menus/menus.js";
-import * as UI8 from "./../../../ui/legacy/legacy.js";
-import * as Lit9 from "./../../../ui/lit/lit.js";
-import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
-import * as Models6 from "./../models/models.js";
+  return result;
+}
 
 // gen/front_end/panels/recorder/components/stepView.css.js
 var stepView_css_default = `/*
@@ -3889,18 +3891,18 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
           ${renderStepActions(input)}
         </div>
         <div class="details">
-          ${input.step && html9`<devtools-recorder-step-editor
+          ${input.step && html9`<devtools-widget ${widget3(StepEditor, {
+    step: input.step,
+    disabled: input.isPlaying
+  })}
             class=${input.isSelected ? "is-selected" : ""}
-            .step=${input.step}
-            .disabled=${input.isPlaying}
-            @stepedited=${input.stepEdited}>
-          </devtools-recorder-step-editor>`}
-          ${input.section?.causingStep && html9`<devtools-recorder-step-editor
-            .step=${input.section.causingStep}
-            .isTypeEditable=${false}
-            .disabled=${input.isPlaying}
-            @stepedited=${input.stepEdited}>
-          </devtools-recorder-step-editor>`}
+            @stepedited=${input.stepEdited}></devtools-widget>`}
+          ${input.section?.causingStep && html9`<devtools-widget ${widget3(StepEditor, {
+    step: input.section.causingStep,
+    isTypeEditable: false,
+    disabled: input.isPlaying
+  })}
+            @stepedited=${input.stepEdited}></devtools-widget>`}
         </div>
         ${input.error && html9`
           <div class="error" role="alert">
@@ -3957,9 +3959,9 @@ var StepView = class extends UI8.Widget.Widget {
     this.#viewInput.section = section4;
     this.requestUpdate();
   }
-  set state(state2) {
+  set state(state) {
     const prevState = this.#viewInput.state;
-    this.#viewInput.state = state2;
+    this.#viewInput.state = state;
     this.performUpdate();
     if (this.#viewInput.state !== prevState && this.#viewInput.state === "current" && !this.#viewInput.isVisible) {
       this.element.scrollIntoView();

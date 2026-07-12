@@ -61,7 +61,7 @@ describeWithEnvironment('GdpSignUpDialog', () => {
             userBadgesInitializeStub = sinon.stub(Badges.UserBadges.instance(), 'initialize').resolves();
             userBadgesRecordActionStub = sinon.stub(Badges.UserBadges.instance(), 'recordAction');
             snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
-            Common.Settings.settingForTest('receive-gdp-badges').set(false);
+            Common.Settings.Settings.instance().settingForTest('receive-gdp-badges').set(false);
         });
         it('handles successful sign up', async () => {
             const { createProfileStub, createProfilePromise, resolveCreateProfile } = stubCreateProfileWithResolvers();
@@ -73,7 +73,7 @@ describeWithEnvironment('GdpSignUpDialog', () => {
             await createProfilePromise;
             // Wait for `Badges.UserBadges.instance().initialize` to resolve.
             await new Promise(resolve => setTimeout(resolve, 0));
-            assert.isTrue(Common.Settings.settingForTest('receive-gdp-badges').get());
+            assert.isTrue(Common.Settings.Settings.instance().settingForTest('receive-gdp-badges').get());
             sinon.assert.calledOnceWithExactly(createProfileStub, { user: 'Test User', emailPreference: Host.GdpClient.EmailPreference.DISABLED });
             sinon.assert.calledOnce(userBadgesInitializeStub);
             sinon.assert.calledOnceWithExactly(userBadgesRecordActionStub, Badges.BadgeAction.GDP_SIGN_UP_COMPLETE);
@@ -91,7 +91,7 @@ describeWithEnvironment('GdpSignUpDialog', () => {
             await createProfilePromise;
             // Wait for `Badges.UserBadges.instance().initialize` to resolve.
             await new Promise(resolve => setTimeout(resolve, 0));
-            assert.isTrue(Common.Settings.settingForTest('receive-gdp-badges').get());
+            assert.isTrue(Common.Settings.Settings.instance().settingForTest('receive-gdp-badges').get());
             sinon.assert.calledOnceWithExactly(createProfileStub, { user: 'Test User', emailPreference: Host.GdpClient.EmailPreference.ENABLED });
             sinon.assert.calledOnce(userBadgesInitializeStub);
             sinon.assert.calledOnceWithExactly(userBadgesRecordActionStub, Badges.BadgeAction.GDP_SIGN_UP_COMPLETE);
@@ -107,7 +107,7 @@ describeWithEnvironment('GdpSignUpDialog', () => {
             await createProfilePromise;
             // Wait for `Badges.UserBadges.instance().initialize` to resolve.
             await new Promise(resolve => setTimeout(resolve, 0));
-            assert.isFalse(Common.Settings.settingForTest('receive-gdp-badges').get());
+            assert.isFalse(Common.Settings.Settings.instance().settingForTest('receive-gdp-badges').get());
             sinon.assert.calledOnce(createProfileStub);
             sinon.assert.calledOnce(snackbarShowStub);
             sinon.assert.notCalled(userBadgesInitializeStub);

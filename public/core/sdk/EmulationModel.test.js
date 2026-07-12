@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import * as Common from '../common/common.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
-describeWithEnvironment('EmulationModel', () => {
+describe('EmulationModel', () => {
+    setupRuntimeHooks();
+    setupLocaleHooks();
     it('should track screen orientation lock state from CDP events', () => {
-        const parentTarget = createTarget();
-        const target = createTarget({ parentTarget });
+        const universe = new TestUniverse();
+        const parentTarget = universe.createTarget();
+        const target = universe.createTarget({ parentTarget });
         const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
         assert.isNotNull(emulationModel);
         // Initially not locked.
@@ -26,8 +30,9 @@ describeWithEnvironment('EmulationModel', () => {
         assert.isNull(emulationModel.lockedOrientation());
     });
     it('should dispatch SCREEN_ORIENTATION_LOCK_CHANGED event', () => {
-        const parentTarget = createTarget();
-        const target = createTarget({ parentTarget });
+        const universe = new TestUniverse();
+        const parentTarget = universe.createTarget();
+        const target = universe.createTarget({ parentTarget });
         const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
         assert.isNotNull(emulationModel);
         const eventSpy = sinon.spy();
@@ -38,8 +43,9 @@ describeWithEnvironment('EmulationModel', () => {
         assert.deepEqual(eventSpy.firstCall.args[0].data, { locked: true, orientation });
     });
     it('should `emulateTouch` enable touch emulation', async () => {
-        const parentTarget = createTarget();
-        const target = createTarget({ parentTarget });
+        const universe = new TestUniverse();
+        const parentTarget = universe.createTarget();
+        const target = universe.createTarget({ parentTarget });
         const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
         const emulationAgent = target.emulationAgent();
         const spySetTouchEmulationEnabled = sinon.stub(emulationAgent, 'invoke_setTouchEmulationEnabled');
@@ -52,8 +58,9 @@ describeWithEnvironment('EmulationModel', () => {
         sinon.assert.calledWith(spySetTouchEmulationEnabled, { enabled: true, maxTouchPoints: 1 });
     });
     it('should `emulateTouch` not enable touch emulation when `setTouchEmulationAllowed` is called with false', async () => {
-        const parentTarget = createTarget();
-        const target = createTarget({ parentTarget });
+        const universe = new TestUniverse();
+        const parentTarget = universe.createTarget();
+        const target = universe.createTarget({ parentTarget });
         const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
         const emulationAgent = target.emulationAgent();
         const spySetTouchEmulationEnabled = sinon.stub(emulationAgent, 'invoke_setTouchEmulationEnabled');
@@ -66,18 +73,21 @@ describeWithEnvironment('EmulationModel', () => {
         sinon.assert.notCalled(spySetEmitTouchEventsForMouse);
     });
     it('updates disabled image types when JPEG XL format disabling is toggled', () => {
-        const parentTarget = createTarget();
-        const target = createTarget({ parentTarget });
+        const universe = new TestUniverse();
+        const parentTarget = universe.createTarget();
+        const target = universe.createTarget({ parentTarget });
+        target.model(SDK.EmulationModel.EmulationModel);
         const emulationAgent = target.emulationAgent();
         const spySetDisabledImageTypes = sinon.stub(emulationAgent, 'invoke_setDisabledImageTypes');
-        const jpegXlFormatDisabledSetting = Common.Settings.Settings.instance().moduleSetting('jpeg-xl-format-disabled');
+        const jpegXlFormatDisabledSetting = universe.settings.moduleSetting('jpeg-xl-format-disabled');
         jpegXlFormatDisabledSetting.set(true);
         sinon.assert.calledOnce(spySetDisabledImageTypes);
         sinon.assert.calledWith(spySetDisabledImageTypes, { imageTypes: ["jxl" /* Protocol.Emulation.DisabledImageType.Jxl */] });
     });
     it('`setSafeAreaInsets` forwards insets to setSafeAreaInsetsOverride', async () => {
-        const parentTarget = createTarget();
-        const target = createTarget({ parentTarget });
+        const universe = new TestUniverse();
+        const parentTarget = universe.createTarget();
+        const target = universe.createTarget({ parentTarget });
         const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
         assert.isNotNull(emulationModel);
         const spy = sinon.stub(target.emulationAgent(), 'invoke_setSafeAreaInsetsOverride');
@@ -85,8 +95,9 @@ describeWithEnvironment('EmulationModel', () => {
         sinon.assert.calledOnceWithExactly(spy, { insets: { top: 59, left: 0, bottom: 34, right: 0 } });
     });
     it('`setSafeAreaInsets` with empty insets clears the override', async () => {
-        const parentTarget = createTarget();
-        const target = createTarget({ parentTarget });
+        const universe = new TestUniverse();
+        const parentTarget = universe.createTarget();
+        const target = universe.createTarget({ parentTarget });
         const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
         assert.isNotNull(emulationModel);
         const spy = sinon.stub(target.emulationAgent(), 'invoke_setSafeAreaInsetsOverride');

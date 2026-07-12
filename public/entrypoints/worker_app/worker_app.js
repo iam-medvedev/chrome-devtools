@@ -179,9 +179,9 @@ UI.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString(UIStrings.showPage),
   order: 2,
   persistence: "permanent",
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return Sources.SourcesNavigator.NetworkNavigatorView.instance();
+    return Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: null, networkProjectManager: universe.networkProjectManager });
   }
 });
 UI.ViewManager.registerViewExtension({
@@ -192,9 +192,9 @@ UI.ViewManager.registerViewExtension({
   order: 4,
   persistence: "permanent",
   condition: () => !Root.Runtime.Runtime.isTraceApp(),
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return Sources.SourcesNavigator.OverridesNavigatorView.instance();
+    return Sources.SourcesNavigator.OverridesNavigatorView.instance({ forceNew: null, networkProjectManager: universe.networkProjectManager });
   }
 });
 UI.ViewManager.registerViewExtension({
@@ -205,9 +205,9 @@ UI.ViewManager.registerViewExtension({
   order: 5,
   persistence: "permanent",
   condition: () => Root.Runtime.getPathName() !== "/bundled/worker_app.html" && !Root.Runtime.Runtime.isTraceApp(),
-  async loadView() {
+  async loadView(universe) {
     const Sources = await loadSourcesModule();
-    return new Sources.SourcesNavigator.ContentScriptsNavigatorView();
+    return new Sources.SourcesNavigator.ContentScriptsNavigatorView(universe.networkProjectManager);
   }
 });
 UI.ActionRegistration.registerActionExtension({
@@ -263,11 +263,11 @@ import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 var UIStrings2 = {
   /**
-   * @description Title for developer resources panel
+   * @description Title for the Developer resources panel.
    */
   developerResources: "Developer resources",
   /**
-   * @description Command for showing the developer resources panel
+   * @description Command for showing the Developer resources panel.
    */
   showDeveloperResources: "Show Developer resources"
 };
@@ -559,9 +559,10 @@ UI5.ViewManager.registerViewExtension({
   title: i18nLazyString5(UIStrings5.throttling),
   commandPrompt: i18nLazyString5(UIStrings5.showThrottling),
   order: 35,
-  async loadView() {
+  async loadView(universe) {
     const MobileThrottling2 = await loadMobileThrottlingModule();
-    return new MobileThrottling2.ThrottlingSettingsTab.ThrottlingSettingsTab();
+    const { settings } = universe;
+    return new MobileThrottling2.ThrottlingSettingsTab.ThrottlingSettingsTab(settings);
   },
   settings: [
     "custom-network-conditions",

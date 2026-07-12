@@ -149,25 +149,25 @@ li.devices-edit-client-hints-field {
 // gen/front_end/panels/settings/emulation/DevicesSettingsTab.js
 var UIStrings = {
   /**
-   * @description Title for a section of the UI that shows all of the custom devices the user can emulate, in the Device Toolbar.
+   * @description Title for a section of the UI that shows all of the custom devices the user can emulate, in the device toolbar.
    */
   customDevices: "Custom devices",
   /**
-   * @description Title for a section of the UI that shows all of the default devices the user can emulate, in the Device Toolbar.
+   * @description Title for a section of the UI that shows all of the default devices the user can emulate, in the device toolbar.
    */
   defaultDevices: "Default devices",
   /**
-   * @description Button to add a custom device (e.g. phone, tablet) the Device Toolbar.
+   * @description Button to add a custom device (e.g., phone, tablet) to the device toolbar.
    */
   addCustomDevice: "Add custom device",
   /**
-   * @description Label/title for UI to add a new custom device type. Device means mobile/tablet etc.
+   * @description Label/title for UI to add a new custom device type. Device means mobile/tablet, etc.
    */
   device: "Device",
   /**
    * @description Placeholder for text input for the name of a custom device.
    */
-  deviceName: "Device Name",
+  deviceName: "Device name",
   /**
    * @description Placeholder text for text input for the width of a custom device in pixels.
    */
@@ -181,32 +181,32 @@ var UIStrings = {
    */
   devicePixelRatio: "Device pixel ratio",
   /**
-   * @description Label in the Devices settings pane for the user agent string input of a custom device
+   * @description Label in the Devices settings tab for the user agent string input of a custom device.
    */
   userAgentString: "User agent string",
   /**
-   * @description Tooltip text for a drop-down in the Devices settings pane, for the 'user agent type' input of a custom device.
-   * 'Type' refers to different options e.g. mobile or desktop.
+   * @description Tooltip text for a drop-down in the Devices settings tab for the user agent type input of a custom device.
+   * 'Type' refers to different options, such as mobile or desktop.
    */
   userAgentType: "User agent type",
   /**
-   * @description Error message in the Devices settings pane that declares the maximum length of the device name input
+   * @description Error message in the Devices settings tab that declares the maximum length of the device name input.
    * @example {50} PH1
    */
   deviceNameMustBeLessThanS: "Device name must be less than {PH1} characters.",
   /**
-   * @description Error message in the Devices settings pane that declares that the device name input must not be empty
+   * @description Error message in the Devices settings tab that declares that the device name input must not be empty.
    */
-  deviceNameCannotBeEmpty: "Device name cannot be empty.",
+  deviceNameCannotBeEmpty: "Device name can\u2019t be empty.",
   /**
    * @description Success message for screen readers when device is added.
    * @example {TestDevice} PH1
    */
   deviceAddedOrUpdated: "Device {PH1} successfully added/updated.",
   /**
-   * @description Error message in the Devices settings pane shown when the user agent string is empty.
+   * @description Error message in the Devices settings tab shown when the user agent string is empty.
    */
-  userAgentStringCannotBeEmpty: "User agent string cannot be empty."
+  userAgentStringCannotBeEmpty: "User agent string can\u2019t be empty."
 };
 var str_ = i18n.i18n.registerUIStrings("panels/settings/emulation/DevicesSettingsTab.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);

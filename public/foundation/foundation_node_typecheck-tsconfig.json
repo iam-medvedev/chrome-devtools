@@ -69,7 +69,16 @@
       "path": "../models/breakpoints/bundle-tsconfig.json"
     },
     {
+      "path": "../models/crux-manager/bundle-tsconfig.json"
+    },
+    {
+      "path": "../models/emulation/bundle-tsconfig.json"
+    },
+    {
       "path": "../models/javascript_metadata/bundle-tsconfig.json"
+    },
+    {
+      "path": "../models/live-metrics/bundle-tsconfig.json"
     },
     {
       "path": "../models/logs/bundle-tsconfig.json"
@@ -82,6 +91,9 @@
     },
     {
       "path": "../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../models/workspace_diff/bundle-tsconfig.json"
     }
   ]
 }
