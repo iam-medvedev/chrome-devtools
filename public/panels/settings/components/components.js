@@ -156,25 +156,25 @@ var syncSection_css_default = `/*
 // gen/front_end/panels/settings/components/SyncSection.js
 var UIStrings = {
   /**
-   * @description Text shown to the user in Settings. ‘This setting’ refers
+   * @description Text shown to the user in Settings. ‘This setting' refers
    * to a checkbox that is disabled.
    */
   syncDisabled: "To turn this setting on, you must enable Chrome sync.",
   /**
    * @description Text shown to the user in Settings. Explains why the checkbox
-   * for saving DevTools settings to the user’s Google account is inactive.
+   * for saving DevTools settings to the user's Google account is inactive.
    */
   preferencesSyncDisabled: "You need to first enable saving `Chrome` settings in your `Google` account.",
   /**
    * @description Label for the account email address. Shown in DevTools Settings in
    * front of the email address currently used for Chrome Sync.
    */
-  signedIn: "Signed into Chrome as:",
+  signedIn: "Signed in to Chrome as:",
   /**
    * @description Label for the account settings. Shown in DevTools Settings when
    * the user is not logged in to Chrome.
    */
-  notSignedIn: "You\u2019re not signed into Chrome.",
+  notSignedIn: "You\u2019re not signed in to Chrome.",
   /**
    * @description Label for the Google Developer Program profile status that corresponds to
    * the standard plan (no subscription).

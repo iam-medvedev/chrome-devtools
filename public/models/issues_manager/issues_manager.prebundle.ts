@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as AttributionReportingIssue from './AttributionReportingIssue.js';
 import * as CheckFormsIssuesTrigger from './CheckFormsIssuesTrigger.js';
 import * as ClientHintIssue from './ClientHintIssue.js';
 import * as ConnectionAllowlistIssue from './ConnectionAllowlistIssue.js';
@@ -21,6 +20,7 @@ import * as Issue from './Issue.js';
 import * as IssueAggregator from './IssueAggregator.js';
 import * as IssueResolver from './IssueResolver.js';
 import * as IssuesManager from './IssuesManager.js';
+import * as LazyLoadImageIssue from './LazyLoadImageIssue.js';
 import * as MarkdownIssueDescription from './MarkdownIssueDescription.js';
 import * as MixedContentIssue from './MixedContentIssue.js';
 import * as PartitioningBlobURLIssue from './PartitioningBlobURLIssue.js';
@@ -37,7 +37,6 @@ import * as StylesheetLoadingIssue from './StylesheetLoadingIssue.js';
 import * as UnencodedDigestIssue from './UnencodedDigestIssue.js';
 
 export {
-  AttributionReportingIssue,
   CheckFormsIssuesTrigger,
   ClientHintIssue,
   ConnectionAllowlistIssue,
@@ -56,6 +55,7 @@ export {
   IssueAggregator,
   IssueResolver,
   IssuesManager,
+  LazyLoadImageIssue,
   MarkdownIssueDescription,
   MixedContentIssue,
   PartitioningBlobURLIssue,

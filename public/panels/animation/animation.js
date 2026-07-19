@@ -608,76 +608,74 @@ text.animation-timeline-grid-label {
 // gen/front_end/panels/animation/AnimationTimeline.js
 var UIStrings = {
   /**
-   * @description Timeline hint text content in Animation Timeline of the Animation Inspector if no effect
-   * is shown.
+   * @description Timeline hint text content in the animation timeline of the Animations panel if no effect is shown.
    * Animation effects are the visual effects of an animation on the page.
    */
   noEffectSelected: "No animation effect selected",
   /**
-   * @description Timeline hint text content in Animation Timeline of the Animation Inspector that instructs
-   * users to select an effect.
+   * @description Timeline hint text content in the animation timeline of the Animations panel that instructs users to select an effect.
    * Animation effects are the visual effects of an animation on the page.
    */
   selectAnEffectAboveToInspectAnd: "Select an effect above to inspect and modify",
   /**
-   * @description Text to clear everything
+   * @description Text to clear everything.
    */
   clearAll: "Clear all",
   /**
-   * @description Tooltip text that appears when hovering over largeicon pause button in Animation Timeline of the Animation Inspector
+   * @description Tooltip text that appears when hovering over largeicon pause button in the animation timeline of the Animations panel.
    */
   pauseAll: "Pause all",
   /**
-   * @description Title of the playback rate button listbox
+   * @description Title of the playback rate button listbox.
    */
   playbackRates: "Playback rates",
   /**
-   * @description Text in Animation Timeline of the Animation Inspector
+   * @description Text in the animation timeline of the Animations panel.
    * @example {50} PH1
    */
   playbackRatePlaceholder: "{PH1}%",
   /**
-   * @description Text of an item that pause the running task
+   * @description Text of an item that pauses the running task.
    */
   pause: "Pause",
   /**
-   * @description Button title in Animation Timeline of the Animation Inspector
+   * @description Button title in the animation timeline of the Animations panel.
    * @example {50%} PH1
    */
   setSpeedToS: "Set speed to {PH1}",
   /**
-   * @description Title of Animation Previews listbox
+   * @description Title of Animation previews listbox.
    */
   animationPreviews: "Animation previews",
   /**
-   * @description Empty buffer hint text content in Animation Timeline of the Animation Inspector.
+   * @description Empty buffer hint text content in the animation timeline of the Animations panel.
    */
   waitingForAnimations: "Currently waiting for animations",
   /**
-   * @description Empty buffer hint text content in Animation Timeline of the Animation Inspector that explains the panel.
+   * @description Empty buffer hint text content in the animation timeline of the Animations panel that explains the panel.
    */
   animationDescription: "On this page you can inspect and modify animations.",
   /**
-   * @description Tooltip text that appears when hovering over largeicon replay animation button in Animation Timeline of the Animation Inspector
+   * @description Tooltip text that appears when hovering over largeicon replay animation button in the animation timeline of the Animations panel.
    */
   replayTimeline: "Replay timeline",
   /**
-   * @description Text in Animation Timeline of the Animation Inspector
+   * @description Text in the animation timeline of the Animations panel.
    */
   resumeAll: "Resume all",
   /**
-   * @description Title of control button in animation timeline of the animation inspector
+   * @description Title of control button in the animation timeline of the Animations panel.
    */
   playTimeline: "Play timeline",
   /**
-   * @description Title of control button in animation timeline of the animation inspector
+   * @description Title of control button in the animation timeline of the Animations panel.
    */
   pauseTimeline: "Pause timeline",
   /**
-   * @description Title of a specific Animation Preview
+   * @description Title of a specific animation preview.
    * @example {1} PH1
    */
-  animationPreviewS: "Animation Preview {PH1}"
+  animationPreviewS: "Animation preview {PH1}"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/animation/AnimationTimeline.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -1637,15 +1635,15 @@ var AnimationGroupRevealer = class {
 // gen/front_end/panels/animation/AnimationUI.js
 var UIStrings2 = {
   /**
-   * @description Title of the first and last points of an animation
+   * @description Title of the first and last points of an animation.
    */
-  animationEndpointSlider: "Animation Endpoint slider",
+  animationEndpointSlider: "Animation endpoint slider",
   /**
-   * @description Title of an Animation Keyframe point
+   * @description Title of an animation keyframe point.
    */
-  animationKeyframeSlider: "Animation Keyframe slider",
+  animationKeyframeSlider: "Animation keyframe slider",
   /**
-   * @description Title of an animation keyframe group
+   * @description Title of an animation keyframe group.
    * @example {anilogo} PH1
    */
   sSlider: "{PH1} slider"

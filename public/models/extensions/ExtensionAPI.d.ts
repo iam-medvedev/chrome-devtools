@@ -387,6 +387,9 @@ export declare namespace PrivateAPI {
         };
     }
     export type RecorderExtensionRequests = StringifyRequest | StringifyStepRequest | ReplayRequest;
+    export interface Network extends PublicAPI.Chrome.DevTools.Network {
+        addRequestHeaders(headers: Record<string, string>): void;
+    }
     export {};
 }
 declare global {
@@ -448,9 +451,6 @@ declare namespace APIImpl {
             arguments: unknown[];
         }): void;
     }
-    interface Network extends PublicAPI.Chrome.DevTools.Network {
-        addRequestHeaders(headers: Record<string, string>): void;
-    }
     interface Request extends PublicAPI.Chrome.DevTools.Request, HAR.Log.EntryDTO {
         _id: number;
     }
@@ -463,7 +463,8 @@ declare namespace APIImpl {
         _id: string | null;
     }
     interface ExtensionSidebarPane extends ExtensionView, PublicAPI.Chrome.DevTools.ExtensionSidebarPane {
-        setExpression(expression: string, rootTitle?: string, evaluteOptions?: PrivateAPI.EvaluateOptions, callback?: () => unknown): void;
+        setExpression(expression: string, rootTitle?: string, evaluateOptions?: PrivateAPI.EvaluateOptions): Promise<void>;
+        setExpression(expression: string, rootTitle?: string, evaluateOptions?: PrivateAPI.EvaluateOptions, callback?: () => unknown): void;
     }
     interface PanelWithSidebar extends ExtensionView, PublicAPI.Chrome.DevTools.PanelWithSidebar {
         _hostPanelName: string;

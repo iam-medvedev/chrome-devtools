@@ -117,6 +117,65 @@ describeWithEnvironment('ComputedStyleModel', () => {
         sinon.assert.calledOnce(getComputedStyleStub);
         assert.isNull(styles);
     });
+    describe('onDOMModelChanged', () => {
+        let cssModel;
+        let domModel;
+        let parentNode;
+        let fooNode;
+        let siblingNode;
+        let childNode;
+        let childOfSiblingNode;
+        let modelChangedListener;
+        beforeEach(() => {
+            cssModel = domNode1.domModel().cssModel();
+            assert.isOk(cssModel);
+            domModel = domNode1.domModel();
+            parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            fooNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            siblingNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            childNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            childOfSiblingNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            fooNode.domModel.returns(domModel);
+            // Hierarchical structure:
+            // parent
+            //   foo
+            //     child
+            //   sibling
+            //     child-of-sibling
+            fooNode.parentNode =
+                parentNode;
+            siblingNode.parentNode =
+                parentNode;
+            childNode.parentNode =
+                fooNode;
+            childOfSiblingNode.parentNode =
+                siblingNode;
+            parentNode.isAncestor.withArgs(fooNode).returns(true);
+            fooNode.isAncestor.returns(false);
+            siblingNode.isAncestor.returns(false);
+            childNode.isAncestor.returns(false);
+            childOfSiblingNode.isAncestor.returns(false);
+            computedStyleModel.node = fooNode;
+            modelChangedListener = sinon.spy();
+            computedStyleModel.addEventListener("CSSModelChanged" /* ComputedStyle.ComputedStyleModel.Events.CSS_MODEL_CHANGED */, modelChangedListener);
+        });
+        it('emits CSS_MODEL_CHANGED when a sibling node is mutated', () => {
+            domModel.dispatchEventToListeners(SDK.DOMModel.Events.DOMMutated, siblingNode);
+            sinon.assert.calledOnce(modelChangedListener);
+        });
+        it('does not emit CSS_MODEL_CHANGED when a sibling\'s child node is mutated', () => {
+            domModel.dispatchEventToListeners(SDK.DOMModel.Events.DOMMutated, childOfSiblingNode);
+            sinon.assert.notCalled(modelChangedListener);
+        });
+        it('emits CSS_MODEL_CHANGED when a parent node is mutated', () => {
+            domModel.dispatchEventToListeners(SDK.DOMModel.Events.DOMMutated, parentNode);
+            sinon.assert.calledOnce(modelChangedListener);
+        });
+        it('does not emit CSS_MODEL_CHANGED when a child node is mutated', () => {
+            domModel.dispatchEventToListeners(SDK.DOMModel.Events.DOMMutated, childNode);
+            sinon.assert.notCalled(modelChangedListener);
+        });
+    });
     describe('computePropertyTraces', () => {
         it('should return a map of property traces from the matched styles', async () => {
             const mockMatchedStyles = await getMatchedStyles({

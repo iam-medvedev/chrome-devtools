@@ -3,6 +3,7 @@ import type * as PlatformApi from '../../core/platform/api/api.js';
 import type { ChildrenProvider } from './ChildrenProvider.js';
 import type * as HeapSnapshotModel from './HeapSnapshotModel.js';
 export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper<HeapSnapshotWorkerProxy.EventTypes> {
+    #private;
     readonly eventHandler: (arg0: string, arg1: string) => void;
     nextObjectId: number;
     nextCallId: number;
@@ -11,7 +12,8 @@ export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.Object
     readonly worker: PlatformApi.HostRuntime.Worker;
     interval?: number;
     readonly workerUrl?: string;
-    constructor(eventHandler: (arg0: string, arg1: string) => void, workerUrl?: string);
+    constructor(eventHandler: (arg0: string, arg1: string) => void, console: Common.Console.Console, workerUrl?: string);
+    get console(): Common.Console.Console;
     createLoader(profileUid: number, snapshotReceivedCallback: (arg0: HeapSnapshotProxy) => void): HeapSnapshotLoaderProxy;
     dispose(): void;
     disposeObject(objectId: number): void;

@@ -37,10 +37,14 @@ export function createContentProviderUISourceCode(options) {
 class TestPlatformFileSystem extends Persistence.PlatformFileSystem.PlatformFileSystem {
     #mimeType;
     #autoMapping;
+    #files = new Set();
     constructor(path, type, mimeType, autoMapping) {
         super(path, type, false);
         this.#mimeType = mimeType;
         this.#autoMapping = autoMapping;
+    }
+    addFileForSearch(url) {
+        this.#files.add(url);
     }
     tooltipForURL(_url) {
         return 'tooltip-for-url';
@@ -48,8 +52,14 @@ class TestPlatformFileSystem extends Persistence.PlatformFileSystem.PlatformFile
     supportsAutomapping() {
         return this.#autoMapping;
     }
+    contentType(_path) {
+        return Common.ResourceType.ResourceType.fromMimeType(this.#mimeType);
+    }
     mimeFromPath(_path) {
         return this.#mimeType;
+    }
+    searchInPath(_query, _progress) {
+        return Promise.resolve([...this.#files]);
     }
 }
 class TestFileSystem extends Persistence.FileSystemWorkspaceBinding.FileSystem {
@@ -76,6 +86,7 @@ export function createFileSystemUISourceCode(options) {
     const type = options.type || '';
     const content = options.content || '';
     const platformFileSystem = new TestPlatformFileSystem(fileSystemPath, type || Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT, options.mimeType, Boolean(options.autoMapping));
+    platformFileSystem.addFileForSearch(options.url);
     const metadata = options.metadata || new Workspace.UISourceCode.UISourceCodeMetadata(null, null);
     const project = new TestFileSystem({ fileSystemWorkspaceBinding, platformFileSystem, workspace, content, metadata });
     const uiSourceCode = project.createUISourceCode(options.url, Common.ResourceType.ResourceType.fromMimeType(options.mimeType));

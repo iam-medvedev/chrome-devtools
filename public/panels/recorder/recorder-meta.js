@@ -3,27 +3,27 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   * @description Title of the Recorder Panel
+   * @description Title of the Recorder panel.
    */
   recorder: "Recorder",
   /**
-   * @description Title of the Recorder Panel
+   * @description Command for showing the Recorder panel.
    */
   showRecorder: "Show Recorder",
   /**
-   * @description Title of start/stop recording action in command menu
+   * @description Title of the start/stop recording action in the command menu.
    */
-  startStopRecording: "Start/Stop recording",
+  startStopRecording: "Start/stop recording",
   /**
-   * @description Title of create a new recording action in command menu
+   * @description Title of the create new recording action in the command menu.
    */
   createRecording: "Create a new recording",
   /**
-   * @description Title of start a new recording action in command menu
+   * @description Title of the replay recording action in the command menu.
    */
   replayRecording: "Replay recording",
   /**
-   * @description Title for toggling code action in command menu
+   * @description Title for the toggle code action in the command menu.
    */
   toggleCode: "Toggle code view"
 };

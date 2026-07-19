@@ -59,6 +59,7 @@
     "../../../../../../front_end/panels/sources/ScopeChainSidebarPane.test.ts",
     "../../../../../../front_end/panels/sources/SourcesNavigator.test.ts",
     "../../../../../../front_end/panels/sources/SourcesPanel.test.ts",
+    "../../../../../../front_end/panels/sources/SourcesSearchScope.test.ts",
     "../../../../../../front_end/panels/sources/SourcesView.test.ts",
     "../../../../../../front_end/panels/sources/TabbedEditorContainer.test.ts",
     "../../../../../../front_end/panels/sources/ThreadsSidebarPane.test.ts",

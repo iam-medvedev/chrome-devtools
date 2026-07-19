@@ -43,7 +43,7 @@ describeWithEnvironment(`RequestConditionsDrawer with individual request throttl
         const placeholder = requestConditionsDrawer.contentElement.querySelector('.empty-state');
         assert.exists(placeholder);
         assert.deepEqual(placeholder.querySelector('.empty-state-header')?.textContent, 'Nothing throttled or blocked');
-        assert.deepEqual(placeholder.querySelector('.empty-state-description > span')?.textContent, 'To throttle or block a network request, add a rule here manually or via the network panel\'s context menu. Learn more');
+        assert.deepEqual(placeholder.querySelector('.empty-state-description > span')?.textContent, 'To throttle or block a network request, add a rule here manually or via the network panel’s context menu. Learn more');
         await assertScreenshot('request_conditions/throttling_placeholder.png');
         requestConditionsDrawer.detach();
     });

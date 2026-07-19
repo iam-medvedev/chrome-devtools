@@ -276,8 +276,6 @@ describeWithEnvironment('ApplicationPanelSidebar', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.strictEqual(expectedCall.called, inScope);
     };
-    it('adds interest group event on in scope event', testUiUpdate("InterestGroupAccess" /* Application.InterestGroupStorageModel.Events.INTEREST_GROUP_ACCESS */, Application.InterestGroupStorageModel.InterestGroupStorageModel, 'interestGroupTreeElement.addEvent', true));
-    it('does not add interest group event on out of scope event', testUiUpdate("InterestGroupAccess" /* Application.InterestGroupStorageModel.Events.INTEREST_GROUP_ACCESS */, Application.InterestGroupStorageModel.InterestGroupStorageModel, 'interestGroupTreeElement.addEvent', false));
     it('adds DOM storage on in scope event', testUiUpdate("DOMStorageAdded" /* SDK.DOMStorageModel.Events.DOM_STORAGE_ADDED */, SDK.DOMStorageModel.DOMStorageModel, 'sessionStorageListTreeElement.appendChild', true));
     it('does not add DOM storage on out of scope event', testUiUpdate("DOMStorageAdded" /* SDK.DOMStorageModel.Events.DOM_STORAGE_ADDED */, SDK.DOMStorageModel.DOMStorageModel, 'sessionStorageListTreeElement.appendChild', false));
     it('adds indexed DB on in scope event', testUiUpdate(Application.IndexedDBModel.Events.DatabaseAdded, Application.IndexedDBModel.IndexedDBModel, 'indexedDBListTreeElement.appendChild', true));

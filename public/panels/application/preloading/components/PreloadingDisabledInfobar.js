@@ -50,7 +50,7 @@ const UIStrings = {
     /**
      * @description Description in dialog
      */
-    descriptionDisabledByDataSaver: 'Speculative loading is disabled because of the operating system\'s Data Saver mode.',
+    descriptionDisabledByDataSaver: 'Speculative loading is disabled because of the operating system’s Data Saver mode.',
     /**
      * @description Header in dialog
      */
@@ -58,7 +58,7 @@ const UIStrings = {
     /**
      * @description Description in dialog
      */
-    descriptionDisabledByBatterySaver: 'Speculative loading is disabled because of the operating system\'s Battery Saver mode.',
+    descriptionDisabledByBatterySaver: 'Speculative loading is disabled because of the operating system’s Battery Saver mode.',
     /**
      * @description Header in dialog
      */

@@ -6,13 +6,13 @@ import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as Formatter from '../../models/formatter/formatter.js';
 import * as Trace from '../../models/trace/trace.js';
-import * as Workspace from '../../models/workspace/workspace.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TestPlugin } from '../../testing/LanguagePluginHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
-import { loadBasicSourceMapExample } from '../../testing/SourceMapHelpers.js';
 import { makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as TraceSourceMapsResolver from './trace_source_maps_resolver.js';
@@ -20,13 +20,9 @@ const { SourceMapsResolver, SourceMappingsUpdated } = TraceSourceMapsResolver;
 const { urlString } = Platform.DevToolsPath;
 const MINIFIED_FUNCTION_NAME = 'minified';
 const AUTHORED_FUNCTION_NAME = 'someFunction';
-export async function loadCodeLocationResolvingScenario() {
-    const backend = new MockDebuggerBackend();
+export async function loadCodeLocationResolvingScenario(backend) {
     const target = backend.createTarget();
-    const { debuggerWorkspaceBinding, targetManager, workspace } = backend.universe;
-    sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(targetManager);
-    sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(workspace);
-    sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance').returns(debuggerWorkspaceBinding);
+    const { debuggerWorkspaceBinding } = backend.universe;
     // The following mock data creates a source mapping from two authored
     // scripts to a single complied script. One of the sources
     // (ignored.ts) is marked as ignore listed in the source map.
@@ -92,19 +88,18 @@ function parsedTraceFromProfileCalls(profileCalls) {
     };
     return { data };
 }
-describeWithEnvironment('SourceMapsResolver', () => {
-    beforeEach(() => {
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            workspace,
-            ignoreListManager,
-        });
+describe('SourceMapsResolver', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    let backend;
+    beforeEach(async () => {
+        backend = new MockDebuggerBackend();
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(backend.universe.debuggerWorkspaceBinding);
+    });
+    afterEach(() => {
+        sinon.restore();
+        Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
     });
     describe('function name resolving', () => {
         let target;
@@ -112,8 +107,16 @@ describeWithEnvironment('SourceMapsResolver', () => {
         let parsedTrace;
         let profileCallForNameResolving;
         beforeEach(async function () {
-            target = createTarget();
-            script = (await loadBasicSourceMapExample(target)).script;
+            target = backend.createTarget();
+            const scriptInfo = {
+                url: 'file:///gen.js',
+                content: 'function n(){o("hi");console.log("done")}function o(n){const o=performance.now();while(performance.now()-o<n);}n();o(200);\n//# sourceMappingURL=gen.js.map',
+            };
+            const sourceMapInfo = {
+                url: 'file:///gen.js.map',
+                content: encodeSourceMap(['0:51 => main.js:0:9@someFunction']),
+            };
+            script = await backend.addScript(target, scriptInfo, sourceMapInfo);
             profileCallForNameResolving =
                 makeProfileCall('function', 10, 100, Trace.Types.Events.ProcessID(1), Trace.Types.Events.ThreadID(1));
             profileCallForNameResolving.callFrame = {
@@ -121,12 +124,12 @@ describeWithEnvironment('SourceMapsResolver', () => {
                 functionName: 'minified',
                 lineNumber: 0,
                 scriptId: script.scriptId,
-                url: 'file://gen.js',
+                url: 'file:///gen.js',
             };
             parsedTrace = parsedTraceFromProfileCalls([profileCallForNameResolving]);
         });
         it('renames nodes from the profile models when the corresponding scripts and source maps have loaded', async function () {
-            const resolver = new SourceMapsResolver(parsedTrace);
+            const resolver = new SourceMapsResolver(parsedTrace, undefined, backend.universe.debuggerWorkspaceBinding, backend.universe.targetManager);
             // Test the node's name is minified before the script and source maps load.
             assert.strictEqual(Trace.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(parsedTrace.data.Samples, profileCallForNameResolving), MINIFIED_FUNCTION_NAME);
             await resolver.install();
@@ -149,16 +152,16 @@ describeWithEnvironment('SourceMapsResolver', () => {
                     return true;
                 }
             }
-            const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+            const { pluginManager } = backend.universe.debuggerWorkspaceBinding;
             pluginManager.addPlugin(new Plugin());
-            const resolver = new SourceMapsResolver(parsedTrace);
+            const resolver = new SourceMapsResolver(parsedTrace, undefined, backend.universe.debuggerWorkspaceBinding, backend.universe.targetManager);
             await resolver.install();
             assert.strictEqual(Trace.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(parsedTrace.data.Samples, profileCallForNameResolving), PLUGIN_FUNCTION_NAME);
         });
     });
     describe('code location resolving', () => {
         it('correctly stores url mappings using source maps', async () => {
-            const { authoredScriptURL, genScriptURL, scriptId } = await loadCodeLocationResolvingScenario();
+            const { authoredScriptURL, genScriptURL, scriptId } = await loadCodeLocationResolvingScenario(backend);
             const profileCallWithMappings = makeProfileCall('function', 10, 100, Trace.Types.Events.ProcessID(1), Trace.Types.Events.ThreadID(1));
             const LINE_NUMBER = 0;
             const COLUMN_NUMBER = 9;
@@ -182,16 +185,16 @@ describeWithEnvironment('SourceMapsResolver', () => {
             // For a profile call with mappings, it must return the mapped script.
             const parsedTraceWithMappings = parsedTraceFromProfileCalls([profileCallWithMappings]);
             const mapperWithMappings = new Trace.EntityMapper.EntityMapper(parsedTraceWithMappings);
-            let resolver = new SourceMapsResolver(parsedTraceWithMappings, mapperWithMappings);
+            let resolver = new SourceMapsResolver(parsedTraceWithMappings, mapperWithMappings, backend.universe.debuggerWorkspaceBinding, backend.universe.targetManager);
             await resolver.install();
-            let sourceMappedURL = SourceMapsResolver.resolvedURLForEntry(parsedTraceWithMappings, profileCallWithMappings, Workspace.Workspace.WorkspaceImpl.instance());
+            let sourceMappedURL = SourceMapsResolver.resolvedURLForEntry(parsedTraceWithMappings, profileCallWithMappings, backend.universe.workspace);
             assert.strictEqual(sourceMappedURL, authoredScriptURL);
             // For a profile call without mappings, it must return the original URL
             const parsedTraceWithoutMappings = parsedTraceFromProfileCalls([profileCallWithNoMappings]);
             const mapperWithoutMappings = new Trace.EntityMapper.EntityMapper(parsedTraceWithoutMappings);
-            resolver = new SourceMapsResolver(parsedTraceWithoutMappings, mapperWithoutMappings);
+            resolver = new SourceMapsResolver(parsedTraceWithoutMappings, mapperWithoutMappings, backend.universe.debuggerWorkspaceBinding, backend.universe.targetManager);
             await resolver.install();
-            sourceMappedURL = SourceMapsResolver.resolvedURLForEntry(parsedTraceWithoutMappings, profileCallWithNoMappings, Workspace.Workspace.WorkspaceImpl.instance());
+            sourceMappedURL = SourceMapsResolver.resolvedURLForEntry(parsedTraceWithoutMappings, profileCallWithNoMappings, backend.universe.workspace);
             assert.strictEqual(sourceMappedURL, genScriptURL);
         });
     });
@@ -199,7 +202,7 @@ describeWithEnvironment('SourceMapsResolver', () => {
         it('does not dispatch a SourceMappingsUpdated event if relevant mappings were not updated', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
             const listener = sinon.spy();
-            const sourceMapsResolver = new SourceMapsResolver(parsedTrace);
+            const sourceMapsResolver = new SourceMapsResolver(parsedTrace, undefined, backend.universe.debuggerWorkspaceBinding, backend.universe.targetManager);
             sourceMapsResolver.addEventListener(SourceMappingsUpdated.eventName, listener);
             await sourceMapsResolver.install();
             sinon.assert.notCalled(listener);
@@ -207,7 +210,7 @@ describeWithEnvironment('SourceMapsResolver', () => {
     });
     describe('updating entity mapping', () => {
         it('correctly updates mapping for event that maps to a script', async function () {
-            const { scriptId } = await loadCodeLocationResolvingScenario();
+            const { scriptId } = await loadCodeLocationResolvingScenario(backend);
             const profileCall = makeProfileCall('function', 10, 100, Trace.Types.Events.ProcessID(1), Trace.Types.Events.ThreadID(1));
             const LINE_NUMBER = 0;
             const COLUMN_NUMBER = 9;
@@ -245,7 +248,7 @@ describeWithEnvironment('SourceMapsResolver', () => {
             mapper.mappings().entityByEvent.set(profileCallUnmapped, testEntity);
             mapper.mappings().eventsByEntity.set(testEntity, [profileCall, profileCallUnmapped]);
             mapper.mappings().createdEntityCache.set('example-domain.com', testEntity);
-            const resolver = new SourceMapsResolver(parsedTrace, mapper);
+            const resolver = new SourceMapsResolver(parsedTrace, mapper, backend.universe.debuggerWorkspaceBinding, backend.universe.targetManager);
             // This should update the entities
             await resolver.install();
             const afterEntityOfEvent = mapper.entityForEvent(profileCall);

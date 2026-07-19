@@ -71,8 +71,9 @@ UI.ViewManager.registerViewExtension({
   isPreviewFeature: true,
   async loadView(universe) {
     const Timeline = await loadTimelineModule();
-    const {pageResourceLoader: resourceLoader} = universe;
-    return Timeline.TimelinePanel.TimelinePanel.instance({forceNew: true, resourceLoader});
+    const {pageResourceLoader: resourceLoader, targetManager, isolateManager} = universe;
+    return Timeline.TimelinePanel.TimelinePanel.instance(
+        {forceNew: true, resourceLoader, targetManager, isolateManager});
   },
 });
 

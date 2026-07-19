@@ -4,16 +4,14 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/issues/AffectedSelectivePermissionsInterventionView.js
-var AffectedSelectivePermissionsInterventionView_exports = {};
-__export(AffectedSelectivePermissionsInterventionView_exports, {
-  AffectedSelectivePermissionsInterventionView: () => AffectedSelectivePermissionsInterventionView
+// gen/front_end/panels/issues/AffectedLazyLoadImagesView.js
+var AffectedLazyLoadImagesView_exports = {};
+__export(AffectedLazyLoadImagesView_exports, {
+  AffectedLazyLoadImagesView: () => AffectedLazyLoadImagesView,
+  DEFAULT_VIEW: () => DEFAULT_VIEW
 });
 import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Bindings from "./../../models/bindings/bindings.js";
-import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import { Directives, html, nothing, render as render2 } from "./../../ui/lit/lit.js";
+import { html, render as render2 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/issues/AffectedResourcesView.js
 import * as Common from "./../../core/common/common.js";
@@ -36,7 +34,7 @@ var UIStrings = {
   /**
    * @description Tooltip for button linking to the Elements panel
    */
-  clickToRevealTheFramesDomNodeIn: "Click to reveal the frame's DOM node in the Elements panel",
+  clickToRevealTheFramesDomNodeIn: "Click to reveal the frame\u2019s DOM node in the Elements panel",
   /**
    * @description Replacement text for a link to an HTML element which is not available (anymore).
    */
@@ -70,7 +68,7 @@ var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
     this.affectedResourcesCountElement = this.createAffectedResourcesCounter();
     this.affectedResources = this.createAffectedResources();
     this.#affectedResourcesCount = 0;
-    this.requestResolver = new Logs.RequestResolver.RequestResolver();
+    this.requestResolver = new Logs.RequestResolver.RequestResolver(Logs.NetworkLog.NetworkLog.instance());
     this.#frameListeners = [];
     this.#unresolvedFrameIds = /* @__PURE__ */ new Set();
   }
@@ -247,8 +245,66 @@ var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
   }
 };
 
-// gen/front_end/panels/issues/AffectedSelectivePermissionsInterventionView.js
+// gen/front_end/panels/issues/AffectedLazyLoadImagesView.js
 var UIStrings2 = {
+  /**
+   * @description Noun for singular or plural number of affected element resource indication in issue view.
+   */
+  nElements: "{n, plural, =1 {# element} other {# elements}}"
+};
+var str_2 = i18n3.i18n.registerUIStrings("panels/issues/AffectedLazyLoadImagesView.ts", UIStrings2);
+var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var DEFAULT_VIEW = async (input, _output, target) => {
+  const templates = [];
+  for (const issue of input.issues) {
+    for (const element of issue.elements()) {
+      templates.push(html`<tr>
+        ${await input.createElementCell(element, input.issueCategory)}
+      </tr>`);
+    }
+  }
+  render2(html`${templates}`, target);
+};
+var AffectedLazyLoadImagesView = class extends AffectedResourcesView {
+  #view;
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW) {
+    super(parent, issue, jslogContext);
+    this.#view = view;
+  }
+  update() {
+    this.requestResolver.clear();
+    void this.#render();
+  }
+  getResourceNameWithCount(count) {
+    return i18nString2(UIStrings2.nElements, { n: count });
+  }
+  async #render() {
+    const issues = this.issue.getLazyLoadImageIssues();
+    let count = 0;
+    for (const issue of issues) {
+      count += issue.elementCount();
+    }
+    this.updateAffectedResourceCount(count);
+    const input = {
+      issues,
+      issueCategory: this.issue.getCategory(),
+      createElementCell: this.createElementCell.bind(this)
+    };
+    await this.#view(input, {}, this.affectedResources);
+  }
+};
+
+// gen/front_end/panels/issues/AffectedSelectivePermissionsInterventionView.js
+var AffectedSelectivePermissionsInterventionView_exports = {};
+__export(AffectedSelectivePermissionsInterventionView_exports, {
+  AffectedSelectivePermissionsInterventionView: () => AffectedSelectivePermissionsInterventionView
+});
+import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as Bindings from "./../../models/bindings/bindings.js";
+import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
+import * as UI2 from "./../../ui/legacy/legacy.js";
+import { Directives, html as html2, nothing, render as render3 } from "./../../ui/lit/lit.js";
+var UIStrings3 = {
   /**
    * @description Label for number of affected resources indication in issue view
    */
@@ -274,21 +330,21 @@ var UIStrings2 = {
    */
   loading: "loading\u2026"
 };
-var str_2 = i18n3.i18n.registerUIStrings("panels/issues/AffectedSelectivePermissionsInterventionView.ts", UIStrings2);
-var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var str_3 = i18n5.i18n.registerUIStrings("panels/issues/AffectedSelectivePermissionsInterventionView.ts", UIStrings3);
+var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var { widget } = UI2.Widget;
 var AffectedSelectivePermissionsInterventionView = class extends AffectedResourcesView {
   #linkifier = new Components2.Linkifier.Linkifier();
   getResourceNameWithCount(count) {
-    return i18nString2(UIStrings2.nViolations, { n: count });
+    return i18nString3(UIStrings3.nViolations, { n: count });
   }
   #render() {
     const issues = Array.from(this.issue.getSelectivePermissionsInterventionIssues());
-    render2(html`
+    render3(html2`
       <tr>
-        <td class="affected-resource-header">${i18nString2(UIStrings2.api)}</td>
-        <td class="affected-resource-header">${i18nString2(UIStrings2.script)}</td>
-        <td class="affected-resource-header">${i18nString2(UIStrings2.adAncestry)}</td>
+        <td class="affected-resource-header">${i18nString3(UIStrings3.api)}</td>
+        <td class="affected-resource-header">${i18nString3(UIStrings3.script)}</td>
+        <td class="affected-resource-header">${i18nString3(UIStrings3.adAncestry)}</td>
       </tr>
       ${issues.map((issue) => this.#renderDetail(issue))}
     `, this.affectedResources, { host: this });
@@ -297,19 +353,19 @@ var AffectedSelectivePermissionsInterventionView = class extends AffectedResourc
   #renderDetail(issue) {
     const details = issue.details();
     const issuesModel = issue.model();
-    const stackTracePromise = details.stackTrace && issuesModel ? this.#resolveStackTrace(details.stackTrace, issuesModel) : Promise.resolve(html`<span>${i18nString2(UIStrings2.unknown)}</span>`);
+    const stackTracePromise = details.stackTrace && issuesModel ? this.#resolveStackTrace(details.stackTrace, issuesModel) : Promise.resolve(html2`<span>${i18nString3(UIStrings3.unknown)}</span>`);
     const target = issuesModel ? issuesModel.target() : null;
-    return html`
+    return html2`
       <tr class="affected-resource-directive">
         <td>${details.apiName}</td>
-        <td>${Directives.until(stackTracePromise, html`<span>${i18nString2(UIStrings2.loading)}</span>`)}</td>
+        <td>${Directives.until(stackTracePromise, html2`<span>${i18nString3(UIStrings3.loading)}</span>`)}</td>
         <td class="affected-resource-cell">
           <div class="ad-ancestry-list">
             ${(details.adAncestry?.ancestryChain || []).map((script) => {
       const link4 = this.#linkifier.linkifyScriptLocation(target, script.scriptId, "", 0);
-      return html`<div>${link4}</div>`;
+      return html2`<div>${link4}</div>`;
     })}
-            ${details.adAncestry?.rootScriptFilterlistRule ? html`<div>Rule: ${details.adAncestry.rootScriptFilterlistRule}</div>` : nothing}
+            ${details.adAncestry?.rootScriptFilterlistRule ? html2`<div>Rule: ${details.adAncestry.rootScriptFilterlistRule}</div>` : nothing}
           </div>
         </td>
       </tr>
@@ -318,7 +374,7 @@ var AffectedSelectivePermissionsInterventionView = class extends AffectedResourc
   async #resolveStackTrace(stackTrace, issuesModel) {
     const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
     const stackTraceTranslated = await debuggerWorkspaceBinding.createStackTraceFromProtocolRuntime(stackTrace, issuesModel.target());
-    return html`${widget(Components2.JSPresentationUtils.StackTracePreviewContent, {
+    return html2`${widget(Components2.JSPresentationUtils.StackTracePreviewContent, {
       stackTrace: stackTraceTranslated,
       options: { expandable: true }
     })}`;
@@ -347,20 +403,20 @@ import "./../../ui/legacy/legacy.js";
 import * as Common6 from "./../../core/common/common.js";
 import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
-import * as IssuesManager12 from "./../../models/issues_manager/issues_manager.js";
+import * as IssuesManager11 from "./../../models/issues_manager/issues_manager.js";
 import * as IssueCounter5 from "./../../ui/components/issue_counter/issue_counter.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/issues/HiddenIssuesRow.js
 import "./../../ui/components/adorners/adorners.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
-import { html as html2, render as render3 } from "./../../ui/lit/lit.js";
+import { html as html3, render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
-var UIStrings3 = {
+var UIStrings4 = {
   /**
    * @description Title for the hidden issues row
    */
@@ -370,30 +426,30 @@ var UIStrings3 = {
    */
   unhideAll: "Unhide all"
 };
-var str_3 = i18n5.i18n.registerUIStrings("panels/issues/HiddenIssuesRow.ts", UIStrings3);
-var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
-var DEFAULT_VIEW = (input, _output, target) => {
+var str_4 = i18n7.i18n.registerUIStrings("panels/issues/HiddenIssuesRow.ts", UIStrings4);
+var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var DEFAULT_VIEW2 = (input, _output, target) => {
   const stopPropagationForEnter = (event) => {
     if (event.key === "Enter") {
       event.stopImmediatePropagation();
     }
   };
-  render3(html2`
+  render4(html3`
   <div class="header">
     <devtools-adorner class="aggregated-issues-count" .name=${"countWrapper"}>
       <span>${input.count}</span>
     </devtools-adorner>
-    <div class="title">${i18nString3(UIStrings3.hiddenIssues)}</div>
+    <div class="title">${i18nString4(UIStrings4.hiddenIssues)}</div>
     <devtools-button class="unhide-all-issues-button"
                      jslog=${VisualLogging2.action().track({ click: true }).context("issues.unhide-all-hiddes")}
                      @click=${input.onUnhideAllIssues}
                      @keydown=${stopPropagationForEnter}
-                     .variant=${"outlined"}>${i18nString3(UIStrings3.unhideAll)}</devtools-button>
+                     .variant=${"outlined"}>${i18nString4(UIStrings4.unhideAll)}</devtools-button>
   </div>`, target);
 };
 var HiddenIssuesRow = class extends UI3.TreeOutline.TreeElement {
   #view;
-  constructor(view = DEFAULT_VIEW) {
+  constructor(view = DEFAULT_VIEW2) {
     super(void 0, true, "hidden-issues");
     this.#view = view;
     this.toggleOnClick = true;
@@ -415,7 +471,7 @@ var HiddenIssuesRow = class extends UI3.TreeOutline.TreeElement {
 
 // gen/front_end/panels/issues/IssueKindView.js
 import * as Common2 from "./../../core/common/common.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as IssuesManager3 from "./../../models/issues_manager/issues_manager.js";
 import * as Adorners from "./../../ui/components/adorners/adorners.js";
@@ -423,7 +479,7 @@ import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter
 import { Icon as Icon2 } from "./../../ui/kit/kit.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as Components3 from "./components/components.js";
-var UIStrings4 = {
+var UIStrings5 = {
   /**
    * @description Menu entry for hiding all current Page Errors.
    */
@@ -437,8 +493,8 @@ var UIStrings4 = {
    */
   hideAllCurrentImprovements: "Hide all current Improvements"
 };
-var str_4 = i18n7.i18n.registerUIStrings("panels/issues/IssueKindView.ts", UIStrings4);
-var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var str_5 = i18n9.i18n.registerUIStrings("panels/issues/IssueKindView.ts", UIStrings5);
+var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 function getGroupIssuesByKindSetting() {
   return Common2.Settings.Settings.instance().createSetting("group-issues-by-kind", false);
 }
@@ -482,11 +538,11 @@ var IssueKindView = class extends UI4.TreeOutline.TreeElement {
   getHideAllCurrentKindString() {
     switch (this.#kind) {
       case "PageError":
-        return i18nString4(UIStrings4.hideAllCurrentPageErrors);
+        return i18nString5(UIStrings5.hideAllCurrentPageErrors);
       case "Improvement":
-        return i18nString4(UIStrings4.hideAllCurrentImprovements);
+        return i18nString5(UIStrings5.hideAllCurrentImprovements);
       case "BreakingChange":
-        return i18nString4(UIStrings4.hideAllCurrentBreakingChanges);
+        return i18nString5(UIStrings5.hideAllCurrentBreakingChanges);
     }
   }
   #appendHeader() {
@@ -1049,23 +1105,23 @@ __export(IssueView_exports, {
   IssueView: () => IssueView
 });
 import * as Common5 from "./../../core/common/common.js";
-import * as Host7 from "./../../core/host/host.js";
+import * as Host6 from "./../../core/host/host.js";
 import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
-import * as IssuesManager10 from "./../../models/issues_manager/issues_manager.js";
+import * as IssuesManager9 from "./../../models/issues_manager/issues_manager.js";
 import * as NetworkForward3 from "./../network/forward/forward.js";
 import * as Adorners2 from "./../../ui/components/adorners/adorners.js";
 import * as IssueCounter3 from "./../../ui/components/issue_counter/issue_counter.js";
 import * as MarkdownView from "./../../ui/components/markdown_view/markdown_view.js";
 import { Icon as Icon3 } from "./../../ui/kit/kit.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
-import { html as html4, render as render5 } from "./../../ui/lit/lit.js";
+import { html as html5, render as render6 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/issues/AffectedBlockedByResponseView.js
 import * as Host2 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as IssuesManager5 from "./../../models/issues_manager/issues_manager.js";
-var UIStrings5 = {
+var UIStrings6 = {
   /**
    * @description Noun for singular or plural network requests. Label for the affected resources section in the issue view.
    */
@@ -1083,14 +1139,14 @@ var UIStrings5 = {
    */
   blockedResource: "Blocked Resource"
 };
-var str_5 = i18n9.i18n.registerUIStrings("panels/issues/AffectedBlockedByResponseView.ts", UIStrings5);
-var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var str_6 = i18n11.i18n.registerUIStrings("panels/issues/AffectedBlockedByResponseView.ts", UIStrings6);
+var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 var AffectedBlockedByResponseView = class extends AffectedResourcesView {
   #appendDetails(details) {
     const header = document.createElement("tr");
-    this.appendColumnTitle(header, i18nString5(UIStrings5.requestC));
-    this.appendColumnTitle(header, i18nString5(UIStrings5.parentFrame));
-    this.appendColumnTitle(header, i18nString5(UIStrings5.blockedResource));
+    this.appendColumnTitle(header, i18nString6(UIStrings6.requestC));
+    this.appendColumnTitle(header, i18nString6(UIStrings6.parentFrame));
+    this.appendColumnTitle(header, i18nString6(UIStrings6.blockedResource));
     this.affectedResources.appendChild(header);
     let count = 0;
     for (const detail of details) {
@@ -1100,7 +1156,7 @@ var AffectedBlockedByResponseView = class extends AffectedResourcesView {
     this.updateAffectedResourceCount(count);
   }
   getResourceNameWithCount(count) {
-    return i18nString5(UIStrings5.nRequests, { n: count });
+    return i18nString6(UIStrings6.nRequests, { n: count });
   }
   #appendDetail(details) {
     const element = document.createElement("tr");
@@ -1138,10 +1194,10 @@ var AffectedBlockedByResponseView = class extends AffectedResourcesView {
 // gen/front_end/panels/issues/AffectedCookiesView.js
 import * as Common3 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as NetworkForward from "./../network/forward/forward.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
-var UIStrings6 = {
+var UIStrings7 = {
   /**
    * @description Noun, singular or plural. Label for the kind and number of affected resources associated with a DevTools issue. A cookie is a small piece of data that a server sends to the user's web browser. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
    */
@@ -1167,16 +1223,16 @@ var UIStrings6 = {
    */
   filterSetCookieTitle: "Show network requests that include this `Set-Cookie` header in the network panel"
 };
-var str_6 = i18n11.i18n.registerUIStrings("panels/issues/AffectedCookiesView.ts", UIStrings6);
-var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
+var str_7 = i18n13.i18n.registerUIStrings("panels/issues/AffectedCookiesView.ts", UIStrings7);
+var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var AffectedCookiesView = class extends AffectedResourcesView {
   getResourceNameWithCount(count) {
-    return i18nString6(UIStrings6.nCookies, { n: count });
+    return i18nString7(UIStrings7.nCookies, { n: count });
   }
   #appendAffectedCookies(cookies) {
     const header = document.createElement("tr");
-    this.appendColumnTitle(header, i18nString6(UIStrings6.name));
-    this.appendColumnTitle(header, i18nString6(UIStrings6.domain) + " & " + i18nString6(UIStrings6.path), "affected-resource-cookie-info-header");
+    this.appendColumnTitle(header, i18nString7(UIStrings7.name));
+    this.appendColumnTitle(header, i18nString7(UIStrings7.domain) + " & " + i18nString7(UIStrings7.path), "affected-resource-cookie-info-header");
     this.affectedResources.appendChild(header);
     let count = 0;
     for (const cookie of cookies) {
@@ -1231,7 +1287,7 @@ var AffectedCookiesView = class extends AffectedResourcesView {
 };
 var AffectedRawCookieLinesView = class extends AffectedResourcesView {
   getResourceNameWithCount(count) {
-    return i18nString6(UIStrings6.nRawCookieLines, { n: count });
+    return i18nString7(UIStrings7.nRawCookieLines, { n: count });
   }
   update() {
     this.clear();
@@ -1245,7 +1301,7 @@ var AffectedRawCookieLinesView = class extends AffectedResourcesView {
         const link4 = document.createElement("button");
         link4.classList.add("link", "devtools-link");
         link4.textContent = cookie.rawCookieLine;
-        link4.title = i18nString6(UIStrings6.filterSetCookieTitle);
+        link4.title = i18nString7(UIStrings7.filterSetCookieTitle);
         link4.tabIndex = 0;
         link4.setAttribute("jslog", `${VisualLogging3.link("issues.filter-network-requests-by-raw-cookie").track({ click: true })}`);
         link4.addEventListener("click", () => {
@@ -1269,18 +1325,18 @@ var AffectedRawCookieLinesView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedDescendantsWithinSelectElementView.js
-import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as i18n17 from "./../../core/i18n/i18n.js";
 
 // gen/front_end/panels/issues/AffectedElementsView.js
-import * as i18n13 from "./../../core/i18n/i18n.js";
-var UIStrings7 = {
+import * as i18n15 from "./../../core/i18n/i18n.js";
+var UIStrings8 = {
   /**
    * @description Noun for singular or plural number of affected element resource indication in issue view.
    */
   nElements: "{n, plural, =1 {# element} other {# elements}}"
 };
-var str_7 = i18n13.i18n.registerUIStrings("panels/issues/AffectedElementsView.ts", UIStrings7);
-var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
+var str_8 = i18n15.i18n.registerUIStrings("panels/issues/AffectedElementsView.ts", UIStrings8);
+var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
 var AffectedElementsView = class extends AffectedResourcesView {
   async #appendAffectedElements(affectedElements) {
     let count = 0;
@@ -1291,7 +1347,7 @@ var AffectedElementsView = class extends AffectedResourcesView {
     this.updateAffectedResourceCount(count);
   }
   getResourceNameWithCount(count) {
-    return i18nString7(UIStrings7.nElements, { n: count });
+    return i18nString8(UIStrings8.nElements, { n: count });
   }
   async #appendAffectedElement(element) {
     const cellElement = await this.createElementCell(element, this.issue.getCategory());
@@ -1306,7 +1362,7 @@ var AffectedElementsView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedDescendantsWithinSelectElementView.js
-var UIStrings8 = {
+var UIStrings9 = {
   /**
    * @description Noun for singular or plural number of affected descendant nodes indication in issue view.
    */
@@ -1316,15 +1372,15 @@ var UIStrings8 = {
    */
   disallowedNode: "Disallowed descendant"
 };
-var str_8 = i18n15.i18n.registerUIStrings("panels/issues/AffectedDescendantsWithinSelectElementView.ts", UIStrings8);
-var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
+var str_9 = i18n17.i18n.registerUIStrings("panels/issues/AffectedDescendantsWithinSelectElementView.ts", UIStrings9);
+var i18nString9 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
 var AffectedDescendantsWithinSelectElementView = class extends AffectedElementsView {
   #runningUpdatePromise = Promise.resolve();
   update() {
     this.#runningUpdatePromise = this.#runningUpdatePromise.then(this.#doUpdate.bind(this));
   }
   getResourceName(count) {
-    return i18nString8(UIStrings8.nDescendants, { n: count });
+    return i18nString9(UIStrings9.nDescendants, { n: count });
   }
   async #doUpdate() {
     this.clear();
@@ -1335,7 +1391,7 @@ var AffectedDescendantsWithinSelectElementView = class extends AffectedElementsV
     row.classList.add("affected-resource-select-element-descendant");
     const details = issue.details();
     const target = issue.model()?.target() || null;
-    row.appendChild(await this.createElementCell({ nodeName: i18nString8(UIStrings8.disallowedNode), backendNodeId: details.nodeId, target }, issue.getCategory()));
+    row.appendChild(await this.createElementCell({ nodeName: i18nString9(UIStrings9.disallowedNode), backendNodeId: details.nodeId, target }, issue.getCategory()));
     this.affectedResources.appendChild(row);
   }
   async #appendDisallowedSelectDescendants(issues) {
@@ -1351,12 +1407,12 @@ var AffectedDescendantsWithinSelectElementView = class extends AffectedElementsV
 // gen/front_end/panels/issues/AffectedDirectivesView.js
 import * as Common4 from "./../../core/common/common.js";
 import * as Host4 from "./../../core/host/host.js";
-import * as i18n17 from "./../../core/i18n/i18n.js";
+import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as IssuesManager6 from "./../../models/issues_manager/issues_manager.js";
 import * as IssuesComponents from "./components/components.js";
-var UIStrings9 = {
+var UIStrings10 = {
   /**
    * @description Singular or plural label for number of affected CSP (content security policy,
    * see https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) directives in issue view.
@@ -1395,22 +1451,22 @@ var UIStrings9 = {
    */
   resourceC: "Resource"
 };
-var str_9 = i18n17.i18n.registerUIStrings("panels/issues/AffectedDirectivesView.ts", UIStrings9);
-var i18nString9 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
+var str_10 = i18n19.i18n.registerUIStrings("panels/issues/AffectedDirectivesView.ts", UIStrings10);
+var i18nString10 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
 var AffectedDirectivesView = class extends AffectedResourcesView {
   #appendStatus(element, isReportOnly) {
     const status = document.createElement("td");
     if (isReportOnly) {
       status.classList.add("affected-resource-report-only-status");
-      status.textContent = i18nString9(UIStrings9.reportonly);
+      status.textContent = i18nString10(UIStrings10.reportonly);
     } else {
       status.classList.add("affected-resource-blocked-status");
-      status.textContent = i18nString9(UIStrings9.blocked);
+      status.textContent = i18nString10(UIStrings10.blocked);
     }
     element.appendChild(status);
   }
   getResourceNameWithCount(count) {
-    return i18nString9(UIStrings9.nDirectives, { n: count });
+    return i18nString10(UIStrings10.nDirectives, { n: count });
   }
   #appendViolatedDirective(element, directive) {
     const violatedDirective = document.createElement("td");
@@ -1427,7 +1483,7 @@ var AffectedDirectivesView = class extends AffectedResourcesView {
     const elementsPanelLinkComponent = new IssuesComponents.ElementsPanelLink.ElementsPanelLink();
     if (nodeId) {
       const violatingNodeId = nodeId;
-      elementsPanelLinkComponent.title = i18nString9(UIStrings9.clickToRevealTheViolatingDomNode);
+      elementsPanelLinkComponent.title = i18nString10(UIStrings10.clickToRevealTheViolatingDomNode);
       const onElementRevealIconClick = () => {
         const target = model.getTargetIfNotDisposed();
         if (target) {
@@ -1462,26 +1518,26 @@ var AffectedDirectivesView = class extends AffectedResourcesView {
   #appendAffectedContentSecurityPolicyDetails(cspIssues) {
     const header = document.createElement("tr");
     if (this.issue.code() === IssuesManager6.ContentSecurityPolicyIssue.inlineViolationCode) {
-      this.appendColumnTitle(header, i18nString9(UIStrings9.directiveC));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.element));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.sourceLocation));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.status));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.directiveC));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.element));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.sourceLocation));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.status));
     } else if (this.issue.code() === IssuesManager6.ContentSecurityPolicyIssue.urlViolationCode) {
-      this.appendColumnTitle(header, i18nString9(UIStrings9.resourceC), "affected-resource-directive-info-header");
-      this.appendColumnTitle(header, i18nString9(UIStrings9.status));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.directiveC));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.sourceLocation));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.resourceC), "affected-resource-directive-info-header");
+      this.appendColumnTitle(header, i18nString10(UIStrings10.status));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.directiveC));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.sourceLocation));
     } else if (this.issue.code() === IssuesManager6.ContentSecurityPolicyIssue.evalViolationCode) {
-      this.appendColumnTitle(header, i18nString9(UIStrings9.sourceLocation));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.directiveC));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.status));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.sourceLocation));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.directiveC));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.status));
     } else if (this.issue.code() === IssuesManager6.ContentSecurityPolicyIssue.trustedTypesSinkViolationCode) {
-      this.appendColumnTitle(header, i18nString9(UIStrings9.sourceLocation));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.status));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.sourceLocation));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.status));
     } else if (this.issue.code() === IssuesManager6.ContentSecurityPolicyIssue.trustedTypesPolicyViolationCode) {
-      this.appendColumnTitle(header, i18nString9(UIStrings9.sourceLocation));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.directiveC));
-      this.appendColumnTitle(header, i18nString9(UIStrings9.status));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.sourceLocation));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.directiveC));
+      this.appendColumnTitle(header, i18nString10(UIStrings10.status));
     } else {
       this.updateAffectedResourceCount(0);
       return;
@@ -1535,9 +1591,9 @@ var AffectedDirectivesView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedDocumentsInQuirksModeView.js
-import * as i18n19 from "./../../core/i18n/i18n.js";
+import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
-var UIStrings10 = {
+var UIStrings11 = {
   /**
    * @description Noun for singular or plural number of affected document nodes indication in issue view.
    */
@@ -1555,15 +1611,15 @@ var UIStrings10 = {
    */
   mode: "Mode"
 };
-var str_10 = i18n19.i18n.registerUIStrings("panels/issues/AffectedDocumentsInQuirksModeView.ts", UIStrings10);
-var i18nString10 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
+var str_11 = i18n21.i18n.registerUIStrings("panels/issues/AffectedDocumentsInQuirksModeView.ts", UIStrings11);
+var i18nString11 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
 var AffectedDocumentsInQuirksModeView = class extends AffectedElementsView {
   #runningUpdatePromise = Promise.resolve();
   update() {
     this.#runningUpdatePromise = this.#runningUpdatePromise.then(this.#doUpdate.bind(this));
   }
   getResourceName(count) {
-    return i18nString10(UIStrings10.nDocuments, { n: count });
+    return i18nString11(UIStrings11.nDocuments, { n: count });
   }
   async #doUpdate() {
     this.clear();
@@ -1581,9 +1637,9 @@ var AffectedDocumentsInQuirksModeView = class extends AffectedElementsView {
   }
   async #appendQuirksModeDocuments(issues) {
     const header = document.createElement("tr");
-    this.appendColumnTitle(header, i18nString10(UIStrings10.documentInTheDOMTree));
-    this.appendColumnTitle(header, i18nString10(UIStrings10.mode));
-    this.appendColumnTitle(header, i18nString10(UIStrings10.url));
+    this.appendColumnTitle(header, i18nString11(UIStrings11.documentInTheDOMTree));
+    this.appendColumnTitle(header, i18nString11(UIStrings11.mode));
+    this.appendColumnTitle(header, i18nString11(UIStrings11.url));
     this.affectedResources.appendChild(header);
     let count = 0;
     for (const issue of issues) {
@@ -1595,8 +1651,8 @@ var AffectedDocumentsInQuirksModeView = class extends AffectedElementsView {
 };
 
 // gen/front_end/panels/issues/AffectedHeavyAdView.js
-import * as i18n21 from "./../../core/i18n/i18n.js";
-var UIStrings11 = {
+import * as i18n23 from "./../../core/i18n/i18n.js";
+var UIStrings12 = {
   /**
    * @description Label for number of affected resources indication in issue view
    */
@@ -1638,14 +1694,14 @@ var UIStrings11 = {
    */
   networkLimit: "Network limit"
 };
-var str_11 = i18n21.i18n.registerUIStrings("panels/issues/AffectedHeavyAdView.ts", UIStrings11);
-var i18nString11 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
+var str_12 = i18n23.i18n.registerUIStrings("panels/issues/AffectedHeavyAdView.ts", UIStrings12);
+var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
 var AffectedHeavyAdView = class extends AffectedResourcesView {
   #appendAffectedHeavyAds(heavyAds) {
     const header = document.createElement("tr");
-    this.appendColumnTitle(header, i18nString11(UIStrings11.limitExceeded));
-    this.appendColumnTitle(header, i18nString11(UIStrings11.resolutionStatus));
-    this.appendColumnTitle(header, i18nString11(UIStrings11.frameUrl));
+    this.appendColumnTitle(header, i18nString12(UIStrings12.limitExceeded));
+    this.appendColumnTitle(header, i18nString12(UIStrings12.resolutionStatus));
+    this.appendColumnTitle(header, i18nString12(UIStrings12.frameUrl));
     this.affectedResources.appendChild(header);
     let count = 0;
     for (const heavyAd of heavyAds) {
@@ -1655,25 +1711,25 @@ var AffectedHeavyAdView = class extends AffectedResourcesView {
     this.updateAffectedResourceCount(count);
   }
   getResourceNameWithCount(count) {
-    return i18nString11(UIStrings11.nResources, { n: count });
+    return i18nString12(UIStrings12.nResources, { n: count });
   }
   #statusToString(status) {
     switch (status) {
       case "HeavyAdBlocked":
-        return i18nString11(UIStrings11.removed);
+        return i18nString12(UIStrings12.removed);
       case "HeavyAdWarning":
-        return i18nString11(UIStrings11.warned);
+        return i18nString12(UIStrings12.warned);
     }
     return "";
   }
   #limitToString(status) {
     switch (status) {
       case "CpuPeakLimit":
-        return i18nString11(UIStrings11.cpuPeakLimit);
+        return i18nString12(UIStrings12.cpuPeakLimit);
       case "CpuTotalLimit":
-        return i18nString11(UIStrings11.cpuTotalLimit);
+        return i18nString12(UIStrings12.cpuTotalLimit);
       case "NetworkTotalLimit":
-        return i18nString11(UIStrings11.networkLimit);
+        return i18nString12(UIStrings12.networkLimit);
     }
     return "";
   }
@@ -1700,9 +1756,9 @@ var AffectedHeavyAdView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedMetadataAllowedSitesView.js
-import * as i18n23 from "./../../core/i18n/i18n.js";
+import * as i18n25 from "./../../core/i18n/i18n.js";
 import { Link } from "./../../ui/kit/kit.js";
-var UIStrings12 = {
+var UIStrings13 = {
   /**
    * @description Label for the the number of affected `Allowed Sites` associated with a
    *DevTools issue. In this context, `Allowed` refers to permission to access cookies
@@ -1712,11 +1768,11 @@ var UIStrings12 = {
    */
   nAllowedSites: "{n, plural, =1 {1 website allowed to access cookies} other {# websites allowed to access cookies}}"
 };
-var str_12 = i18n23.i18n.registerUIStrings("panels/issues/AffectedMetadataAllowedSitesView.ts", UIStrings12);
-var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
+var str_13 = i18n25.i18n.registerUIStrings("panels/issues/AffectedMetadataAllowedSitesView.ts", UIStrings13);
+var i18nString13 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
 var AffectedMetadataAllowedSitesView = class extends AffectedResourcesView {
   getResourceNameWithCount(count) {
-    return i18nString12(UIStrings12.nAllowedSites, { n: count });
+    return i18nString13(UIStrings13.nAllowedSites, { n: count });
   }
   update() {
     this.clear();
@@ -1748,8 +1804,8 @@ var AffectedMetadataAllowedSitesView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedPartitioningBlobURLView.js
-import * as i18n25 from "./../../core/i18n/i18n.js";
-var UIStrings13 = {
+import * as i18n27 from "./../../core/i18n/i18n.js";
+var UIStrings14 = {
   /**
    * @description Description for Partitioning BlobURL issue when PartitioningBlobURLInfo is BlockedCrossPartitionFetching.
    * @example {blob:https://web-platform.test:8444/example} url
@@ -1770,11 +1826,11 @@ var UIStrings13 = {
    */
   noBlobURLAvailable: "No Blob URL available for this issue."
 };
-var str_13 = i18n25.i18n.registerUIStrings("panels/issues/AffectedPartitioningBlobURLView.ts", UIStrings13);
-var i18nString13 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
+var str_14 = i18n27.i18n.registerUIStrings("panels/issues/AffectedPartitioningBlobURLView.ts", UIStrings14);
+var i18nString14 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var AffectedPartitioningBlobURLView = class extends AffectedResourcesView {
   getResourceNameWithCount(count) {
-    return i18nString13(UIStrings13.blobURLCount, { count });
+    return i18nString14(UIStrings14.blobURLCount, { count });
   }
   update() {
     this.clear();
@@ -1787,10 +1843,10 @@ var AffectedPartitioningBlobURLView = class extends AffectedResourcesView {
         let description;
         switch (partitioningBlobURLInfo) {
           case "BlockedCrossPartitionFetching":
-            description = i18nString13(UIStrings13.blockedCrossPartitionFetching, { url: blobURL });
+            description = i18nString14(UIStrings14.blockedCrossPartitionFetching, { url: blobURL });
             break;
           case "EnforceNoopenerForNavigation":
-            description = i18nString13(UIStrings13.enforceNoopenerForNavigation, { url: blobURL });
+            description = i18nString14(UIStrings14.enforceNoopenerForNavigation, { url: blobURL });
             break;
         }
         const descriptionElement = document.createElement("div");
@@ -1799,7 +1855,7 @@ var AffectedPartitioningBlobURLView = class extends AffectedResourcesView {
         count++;
       } else {
         const noURLMessage = document.createElement("div");
-        noURLMessage.textContent = i18nString13(UIStrings13.noBlobURLAvailable);
+        noURLMessage.textContent = i18nString14(UIStrings14.noBlobURLAvailable);
         this.affectedResources.appendChild(noURLMessage);
       }
     }
@@ -1808,23 +1864,23 @@ var AffectedPartitioningBlobURLView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedPermissionElementsView.js
-import * as i18n27 from "./../../core/i18n/i18n.js";
-import { html as html3, render as render4 } from "./../../ui/lit/lit.js";
-var UIStrings14 = {
+import * as i18n29 from "./../../core/i18n/i18n.js";
+import { html as html4, render as render5 } from "./../../ui/lit/lit.js";
+var UIStrings15 = {
   /**
    * @description Noun for singular or plural number of affected element resource indication in issue view.
    */
   nElements: "{n, plural, =1 {# element} other {# elements}}"
 };
-var str_14 = i18n27.i18n.registerUIStrings("panels/issues/AffectedPermissionElementsView.ts", UIStrings14);
-var i18nString14 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
+var str_15 = i18n29.i18n.registerUIStrings("panels/issues/AffectedPermissionElementsView.ts", UIStrings15);
+var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var AffectedPermissionElementsView = class extends AffectedElementsView {
   update() {
     this.clear();
     void this.#appendAffectedElements(this.issue.getPermissionElementIssues());
   }
   getResourceNameWithCount(count) {
-    return i18nString14(UIStrings14.nElements, { n: count });
+    return i18nString15(UIStrings15.nElements, { n: count });
   }
   async #appendAffectedElements(issues) {
     let count = 0;
@@ -1832,20 +1888,20 @@ var AffectedPermissionElementsView = class extends AffectedElementsView {
     for (const issue of issues) {
       for (const element of issue.elements()) {
         count++;
-        templates.push(html3`<tr>
+        templates.push(html4`<tr>
           ${await this.createElementCell(element, this.issue.getCategory())}
         </tr>`);
       }
     }
-    render4(html3`${templates}`, this.affectedResources);
+    render5(html4`${templates}`, this.affectedResources);
     this.updateAffectedResourceCount(count);
   }
 };
 
 // gen/front_end/panels/issues/AffectedSharedArrayBufferIssueDetailsView.js
-import * as i18n29 from "./../../core/i18n/i18n.js";
+import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as IssuesManager7 from "./../../models/issues_manager/issues_manager.js";
-var UIStrings15 = {
+var UIStrings16 = {
   /**
    * @description Label for number of affected resources indication in issue view
    */
@@ -1887,20 +1943,20 @@ var UIStrings15 = {
    */
   status: "Status"
 };
-var str_15 = i18n29.i18n.registerUIStrings("panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts", UIStrings15);
-var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
+var str_16 = i18n31.i18n.registerUIStrings("panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts", UIStrings16);
+var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var AffectedSharedArrayBufferIssueDetailsView = class extends AffectedResourcesView {
   getResourceNameWithCount(count) {
-    return i18nString15(UIStrings15.nViolations, { n: count });
+    return i18nString16(UIStrings16.nViolations, { n: count });
   }
   #appendStatus(element, isWarning) {
     const status = document.createElement("td");
     if (isWarning) {
       status.classList.add("affected-resource-report-only-status");
-      status.textContent = i18nString15(UIStrings15.warning);
+      status.textContent = i18nString16(UIStrings16.warning);
     } else {
       status.classList.add("affected-resource-blocked-status");
-      status.textContent = i18nString15(UIStrings15.blocked);
+      status.textContent = i18nString16(UIStrings16.blocked);
     }
     element.appendChild(status);
   }
@@ -1908,21 +1964,21 @@ var AffectedSharedArrayBufferIssueDetailsView = class extends AffectedResourcesV
     const status = document.createElement("td");
     switch (type) {
       case "CreationIssue":
-        status.textContent = i18nString15(UIStrings15.instantiation);
-        status.title = i18nString15(UIStrings15.aSharedarraybufferWas);
+        status.textContent = i18nString16(UIStrings16.instantiation);
+        status.title = i18nString16(UIStrings16.aSharedarraybufferWas);
         break;
       case "TransferIssue":
-        status.textContent = i18nString15(UIStrings15.transfer);
-        status.title = i18nString15(UIStrings15.sharedarraybufferWasTransferedTo);
+        status.textContent = i18nString16(UIStrings16.transfer);
+        status.title = i18nString16(UIStrings16.sharedarraybufferWasTransferedTo);
         break;
     }
     element.appendChild(status);
   }
   #appendDetails(sabIssues) {
     const header = document.createElement("tr");
-    this.appendColumnTitle(header, i18nString15(UIStrings15.sourceLocation));
-    this.appendColumnTitle(header, i18nString15(UIStrings15.trigger));
-    this.appendColumnTitle(header, i18nString15(UIStrings15.status));
+    this.appendColumnTitle(header, i18nString16(UIStrings16.sourceLocation));
+    this.appendColumnTitle(header, i18nString16(UIStrings16.trigger));
+    this.appendColumnTitle(header, i18nString16(UIStrings16.status));
     this.affectedResources.appendChild(header);
     let count = 0;
     for (const sabIssue of sabIssues) {
@@ -1948,17 +2004,17 @@ var AffectedSharedArrayBufferIssueDetailsView = class extends AffectedResourcesV
 };
 
 // gen/front_end/panels/issues/AffectedSourcesView.js
-import * as i18n31 from "./../../core/i18n/i18n.js";
+import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
-var UIStrings16 = {
+var UIStrings17 = {
   /**
    * @description Singular or Plural label for number of affected sources (consisting of (source) file name + line number) in issue view
    */
   nSources: "{n, plural, =1 {# source} other {# sources}}"
 };
-var str_16 = i18n31.i18n.registerUIStrings("panels/issues/AffectedSourcesView.ts", UIStrings16);
-var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
+var str_17 = i18n33.i18n.registerUIStrings("panels/issues/AffectedSourcesView.ts", UIStrings17);
+var i18nString17 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var AffectedSourcesView = class extends AffectedResourcesView {
   #appendAffectedSources(affectedSources) {
     let count = 0;
@@ -1969,7 +2025,7 @@ var AffectedSourcesView = class extends AffectedResourcesView {
     this.updateAffectedResourceCount(count);
   }
   getResourceNameWithCount(count) {
-    return i18nString16(UIStrings16.nSources, { n: count });
+    return i18nString17(UIStrings17.nSources, { n: count });
   }
   #appendAffectedSource({ url, lineNumber, columnNumber }) {
     const cellElement = document.createElement("td");
@@ -1989,8 +2045,8 @@ var AffectedSourcesView = class extends AffectedResourcesView {
 };
 
 // gen/front_end/panels/issues/AffectedTrackingSitesView.js
-import * as i18n33 from "./../../core/i18n/i18n.js";
-var UIStrings17 = {
+import * as i18n35 from "./../../core/i18n/i18n.js";
+var UIStrings18 = {
   /**
    * @description Label for the the number of affected `Potentially-tracking Sites` associated with a
    *DevTools issue. In this context, `tracking` refers to bounce tracking and `Site` is equivalent
@@ -2000,11 +2056,11 @@ var UIStrings17 = {
    */
   nTrackingSites: "{n, plural, =1 {1 potentially tracking website} other {# potentially tracking websites}}"
 };
-var str_17 = i18n33.i18n.registerUIStrings("panels/issues/AffectedTrackingSitesView.ts", UIStrings17);
-var i18nString17 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
+var str_18 = i18n35.i18n.registerUIStrings("panels/issues/AffectedTrackingSitesView.ts", UIStrings18);
+var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
 var AffectedTrackingSitesView = class extends AffectedResourcesView {
   getResourceNameWithCount(count) {
-    return i18nString17(UIStrings17.nTrackingSites, { n: count });
+    return i18nString18(UIStrings18.nTrackingSites, { n: count });
   }
   update() {
     this.clear();
@@ -2021,174 +2077,14 @@ var AffectedTrackingSitesView = class extends AffectedResourcesView {
   }
 };
 
-// gen/front_end/panels/issues/AttributionReportingIssueDetailsView.js
-import * as Host5 from "./../../core/host/host.js";
-import * as i18n35 from "./../../core/i18n/i18n.js";
-import * as IssuesManager8 from "./../../models/issues_manager/issues_manager.js";
-var UIStrings18 = {
-  /**
-   * @description Label for number of rows in the issue details table.
-   */
-  nViolations: "{n, plural, =1 {# violation} other {# violations}}",
-  /**
-   * @description Noun, label for the column showing the associated HTML element in the issue details table.
-   */
-  element: "Element",
-  /**
-   * @description Noun, label for the column showing the invalid header value in the issue details table.
-   */
-  invalidHeaderValue: "Invalid Header Value",
-  /**
-   * @description Noun, label for the column showing the associated network request in the issue details table.
-   */
-  request: "Request",
-  /**
-   * @description Label for the column showing the invalid URL used in an HTML anchor element ("a link").
-   * A origin is (roughly said) the front part of a URL.
-   */
-  untrustworthyOrigin: "Untrustworthy origin"
-};
-var str_18 = i18n35.i18n.registerUIStrings("panels/issues/AttributionReportingIssueDetailsView.ts", UIStrings18);
-var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
-var AttributionReportingIssueDetailsView = class extends AffectedResourcesView {
-  getResourceNameWithCount(count) {
-    return i18nString18(UIStrings18.nViolations, { n: count });
-  }
-  update() {
-    this.clear();
-    const issues = this.issue.getAttributionReportingIssues();
-    const issue = issues.values().next();
-    if (issue.done) {
-      this.updateAffectedResourceCount(0);
-    } else {
-      this.#appendDetails(issue.value.code(), issues);
-    }
-  }
-  #appendDetails(issueCode, issues) {
-    const header = document.createElement("tr");
-    switch (issueCode) {
-      case "AttributionReportingIssue::InvalidRegisterSourceHeader":
-      case "AttributionReportingIssue::InvalidRegisterTriggerHeader":
-      case "AttributionReportingIssue::InvalidRegisterOsSourceHeader":
-      case "AttributionReportingIssue::InvalidRegisterOsTriggerHeader":
-      case "AttributionReportingIssue::OsSourceIgnored":
-      case "AttributionReportingIssue::OsTriggerIgnored":
-      case "AttributionReportingIssue::SourceIgnored":
-      case "AttributionReportingIssue::TriggerIgnored":
-      case "AttributionReportingIssue::InvalidInfoHeader":
-      case "AttributionReportingIssue::NavigationRegistrationUniqueScopeAlreadySet":
-        this.appendColumnTitle(header, i18nString18(UIStrings18.request));
-        this.appendColumnTitle(header, i18nString18(UIStrings18.invalidHeaderValue));
-        break;
-      case "AttributionReportingIssue::InsecureContext":
-      case "AttributionReportingIssue::UntrustworthyReportingOrigin":
-        this.appendColumnTitle(header, i18nString18(UIStrings18.element));
-        this.appendColumnTitle(header, i18nString18(UIStrings18.request));
-        this.appendColumnTitle(header, i18nString18(UIStrings18.untrustworthyOrigin));
-        break;
-      case "AttributionReportingIssue::PermissionPolicyDisabled":
-        this.appendColumnTitle(header, i18nString18(UIStrings18.element));
-        this.appendColumnTitle(header, i18nString18(UIStrings18.request));
-        break;
-      case "AttributionReportingIssue::SourceAndTriggerHeaders":
-      case "AttributionReportingIssue::WebAndOsHeaders":
-      case "AttributionReportingIssue::NoWebOrOsSupport":
-      case "AttributionReportingIssue::NoRegisterSourceHeader":
-      case "AttributionReportingIssue::NoRegisterTriggerHeader":
-      case "AttributionReportingIssue::NoRegisterOsSourceHeader":
-      case "AttributionReportingIssue::NoRegisterOsTriggerHeader":
-        this.appendColumnTitle(header, i18nString18(UIStrings18.request));
-        break;
-      case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation":
-        this.appendColumnTitle(header, i18nString18(UIStrings18.element));
-        break;
-    }
-    this.affectedResources.appendChild(header);
-    let count = 0;
-    for (const issue of issues) {
-      count++;
-      void this.#appendDetail(issueCode, issue);
-    }
-    this.updateAffectedResourceCount(count);
-  }
-  async #appendDetail(issueCode, issue) {
-    const element = document.createElement("tr");
-    element.classList.add("affected-resource-directive");
-    const details = issue.details();
-    switch (issueCode) {
-      case "AttributionReportingIssue::InvalidRegisterSourceHeader":
-      case "AttributionReportingIssue::InvalidRegisterTriggerHeader":
-      case "AttributionReportingIssue::InvalidRegisterOsSourceHeader":
-      case "AttributionReportingIssue::InvalidRegisterOsTriggerHeader":
-      case "AttributionReportingIssue::OsSourceIgnored":
-      case "AttributionReportingIssue::OsTriggerIgnored":
-      case "AttributionReportingIssue::SourceIgnored":
-      case "AttributionReportingIssue::TriggerIgnored":
-      case "AttributionReportingIssue::InvalidInfoHeader":
-      case "AttributionReportingIssue::NavigationRegistrationUniqueScopeAlreadySet":
-        this.#appendRequestOrEmptyCell(element, details.request);
-        this.appendIssueDetailCell(element, details.invalidParameter || "");
-        break;
-      case "AttributionReportingIssue::InsecureContext":
-      case "AttributionReportingIssue::UntrustworthyReportingOrigin":
-        await this.#appendElementOrEmptyCell(element, issue);
-        this.#appendRequestOrEmptyCell(element, details.request);
-        this.appendIssueDetailCell(element, details.invalidParameter || "");
-        break;
-      case "AttributionReportingIssue::PermissionPolicyDisabled":
-        await this.#appendElementOrEmptyCell(element, issue);
-        this.#appendRequestOrEmptyCell(element, details.request);
-        break;
-      case "AttributionReportingIssue::SourceAndTriggerHeaders":
-      case "AttributionReportingIssue::WebAndOsHeaders":
-      case "AttributionReportingIssue::NoWebOrOsSupport":
-      case "AttributionReportingIssue::NoRegisterSourceHeader":
-      case "AttributionReportingIssue::NoRegisterTriggerHeader":
-      case "AttributionReportingIssue::NoRegisterOsSourceHeader":
-      case "AttributionReportingIssue::NoRegisterOsTriggerHeader":
-        this.#appendRequestOrEmptyCell(element, details.request);
-        break;
-      case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation":
-        await this.#appendElementOrEmptyCell(element, issue);
-        break;
-    }
-    this.affectedResources.appendChild(element);
-  }
-  async #appendElementOrEmptyCell(parent, issue) {
-    const details = issue.details();
-    if (details.violatingNodeId !== void 0) {
-      const target = issue.model()?.target() || null;
-      parent.appendChild(await this.createElementCell({ backendNodeId: details.violatingNodeId, target, nodeName: "Attribution source element" }, issue.getCategory()));
-    } else {
-      this.appendIssueDetailCell(parent, "");
-    }
-  }
-  #appendRequestOrEmptyCell(parent, request) {
-    if (!request) {
-      this.appendIssueDetailCell(parent, "");
-      return;
-    }
-    const opts = {
-      additionalOnClickAction() {
-        Host5.userMetrics.issuesPanelResourceOpened(
-          "AttributionReporting",
-          "Request"
-          /* AffectedItem.REQUEST */
-        );
-      }
-    };
-    parent.appendChild(this.createRequestCell(request, opts));
-  }
-};
-
 // gen/front_end/panels/issues/IssueView.js
 import * as Components5 from "./components/components.js";
 
 // gen/front_end/panels/issues/CorsIssueDetailsView.js
-import * as Host6 from "./../../core/host/host.js";
+import * as Host5 from "./../../core/host/host.js";
 import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
-import * as IssuesManager9 from "./../../models/issues_manager/issues_manager.js";
+import * as IssuesManager8 from "./../../models/issues_manager/issues_manager.js";
 import * as NetworkForward2 from "./../network/forward/forward.js";
 var UIStrings19 = {
   /**
@@ -2270,7 +2166,7 @@ var UIStrings19 = {
   /**
    * @description Content for the problem column in the affected resources table for a CORS issue that indicates that the HTTP status the preflight request was not successful.
    */
-  preflightInvalidStatus: "HTTP status of preflight request didn't indicate success",
+  preflightInvalidStatus: "HTTP status of preflight request didn\u2019t indicate success",
   /**
    * @description Title for a column in the affected resources for a CORS issue showing the origin that was allowed according to CORS headers.
    */
@@ -2456,7 +2352,7 @@ var CorsIssueDetailsView = class _CorsIssueDetailsView extends AffectedResources
     };
     const opts = {
       additionalOnClickAction() {
-        Host6.userMetrics.issuesPanelResourceOpened(
+        Host5.userMetrics.issuesPanelResourceOpened(
           "Cors",
           "Request"
           /* AffectedItem.REQUEST */
@@ -2736,7 +2632,7 @@ var AffectedRequestsView = class extends AffectedResourcesView {
       element.appendChild(this.createRequestCell(affectedRequest, {
         networkTab: tab,
         additionalOnClickAction() {
-          Host7.userMetrics.issuesPanelResourceOpened(
+          Host6.userMetrics.issuesPanelResourceOpened(
             category,
             "Request"
             /* AffectedItem.REQUEST */
@@ -2803,7 +2699,7 @@ var AffectedMixedContentView = class _AffectedMixedContentView extends AffectedR
       element.appendChild(this.createRequestCell(mixedContent.request, {
         networkTab,
         additionalOnClickAction() {
-          Host7.userMetrics.issuesPanelResourceOpened(
+          Host6.userMetrics.issuesPanelResourceOpened(
             "MixedContent",
             "Request"
             /* AffectedItem.REQUEST */
@@ -2869,13 +2765,13 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
       new CorsIssueDetailsView(this, this.#issue, "cors-details"),
       new GenericIssueDetailsView(this, this.#issue, "generic-details"),
       new AffectedDocumentsInQuirksModeView(this, this.#issue, "affected-documents"),
-      new AttributionReportingIssueDetailsView(this, this.#issue, "attribution-reporting-details"),
       new AffectedRawCookieLinesView(this, this.#issue, "affected-raw-cookies"),
       new AffectedTrackingSitesView(this, this.#issue, "tracking-sites-details"),
       new AffectedMetadataAllowedSitesView(this, this.#issue, "metadata-allowed-sites-details"),
       new AffectedDescendantsWithinSelectElementView(this, this.#issue, "disallowed-select-descendants-details"),
       new AffectedPartitioningBlobURLView(this, this.#issue, "partitioning-blob-url-details"),
       new AffectedPermissionElementsView(this, this.#issue, "permission-element-elements"),
+      new AffectedLazyLoadImagesView(this, this.#issue, "lazy-load-image-details"),
       new AffectedSelectivePermissionsInterventionView(this, this.#issue, "selective-permissions-intervention-details")
     ];
     this.#hiddenIssuesMenu = new Components5.HideIssuesMenu.HideIssuesMenu();
@@ -2966,10 +2862,10 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
   onexpand() {
     const category = this.#issue.getCategory();
     if (category === "Cookie") {
-      const cookieIssueSubCategory = IssuesManager10.CookieIssue.CookieIssue.getSubCategory(this.#issue.code());
-      Host7.userMetrics.issuesPanelIssueExpanded(cookieIssueSubCategory);
+      const cookieIssueSubCategory = IssuesManager9.CookieIssue.CookieIssue.getSubCategory(this.#issue.code());
+      Host6.userMetrics.issuesPanelIssueExpanded(cookieIssueSubCategory);
     } else {
-      Host7.userMetrics.issuesPanelIssueExpanded(category);
+      Host6.userMetrics.issuesPanelIssueExpanded(category);
     }
     if (this.#needsUpdateOnExpand) {
       this.#doUpdate();
@@ -2985,7 +2881,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
     if (this.#issueKindIcon) {
       const kind = this.#issue.getKind();
       this.#issueKindIcon.name = IssueCounter3.IssueCounter.getIssueKindIconName(kind);
-      this.#issueKindIcon.title = IssuesManager10.Issue.getIssueKindDescription(kind);
+      this.#issueKindIcon.title = IssuesManager9.Issue.getIssueKindDescription(kind);
     }
     if (this.#aggregatedIssuesCount) {
       this.#aggregatedIssuesCount.textContent = `${this.#issue.getAggregatedIssuesCount()}`;
@@ -2995,7 +2891,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
       const data = {
         menuItemLabel: this.#issue.isHidden() ? i18nString21(UIStrings21.unhideIssuesLikeThis) : i18nString21(UIStrings21.hideIssuesLikeThis),
         menuItemAction: () => {
-          const setting = IssuesManager10.IssuesManager.getHideIssueByCodeSetting();
+          const setting = IssuesManager9.IssuesManager.getHideIssueByCodeSetting();
           const values = setting.get();
           values[this.#issue.code()] = this.#issue.isHidden() ? "Unhidden" : "Hidden";
           setting.set(values);
@@ -3044,7 +2940,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
     const linkList = linkWrapper.listItemElement.createChild("ul", "link-list");
     for (const description of this.#description.links) {
       const linkListItem = linkList.createChild("li");
-      render5(html4`<devtools-link class="link devtools-link" href=${description.link} jslogcontext="learn-more">${i18nString21(UIStrings21.learnMoreS, { PH1: description.linkTitle })}</devtools-link>`, linkListItem);
+      render6(html5`<devtools-link class="link devtools-link" href=${description.link} jslogcontext="learn-more">${i18nString21(UIStrings21.learnMoreS, { PH1: description.linkTitle })}</devtools-link>`, linkListItem);
     }
     this.appendChild(linkWrapper);
   }
@@ -3151,11 +3047,6 @@ var UIStrings22 = {
    */
   issuesPanelDescription: "On this page you can find warnings from the browser.",
   /**
-   * @description Category title for the different 'Attribution Reporting API' issues. The
-   * Attribution Reporting API is a newly proposed web API (see https://github.com/WICG/conversion-measurement-api).
-   */
-  attributionReporting: "Attribution Reporting `API`",
-  /**
    * @description Category title for the different 'Quirks Mode' issues. Quirks Mode refers
    *              to the legacy browser modes that displays web content according to outdated
    *              browser behaviors.
@@ -3202,8 +3093,6 @@ var IssueCategoryView = class extends UI6.TreeOutline.TreeElement {
         return i18nString22(UIStrings22.lowTextContrast);
       case "Cors":
         return i18nString22(UIStrings22.cors);
-      case "AttributionReporting":
-        return i18nString22(UIStrings22.attributionReporting);
       case "QuirksMode":
         return i18nString22(UIStrings22.quirksMode);
       case "Generic":
@@ -3265,8 +3154,8 @@ var IssuesPane = class extends UI6.Widget.VBox {
     this.#noIssuesMessageDiv = new UI6.EmptyWidget.EmptyWidget("", i18nString22(UIStrings22.issuesPanelDescription));
     this.#noIssuesMessageDiv.link = ISSUES_PANEL_EXPLANATION_URL;
     this.#noIssuesMessageDiv.show(this.contentElement);
-    this.#issuesManager = IssuesManager12.IssuesManager.IssuesManager.instance();
-    this.#aggregator = new IssuesManager12.IssueAggregator.IssueAggregator(this.#issuesManager);
+    this.#issuesManager = IssuesManager11.IssuesManager.IssuesManager.instance();
+    this.#aggregator = new IssuesManager11.IssueAggregator.IssueAggregator(this.#issuesManager);
     this.#aggregator.addEventListener("AggregatedIssueUpdated", this.#issueUpdated, this);
     this.#aggregator.addEventListener("FullUpdateRequired", this.#onFullUpdate, this);
     this.#hiddenIssuesRow.hidden = this.#issuesManager.numberOfHiddenIssues() === 0;
@@ -3298,7 +3187,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
       this.#fullUpdate(true);
     });
     groupByKindSettingCheckbox.setVisible(true);
-    const thirdPartySetting = IssuesManager12.Issue.getShowThirdPartyIssuesSetting();
+    const thirdPartySetting = IssuesManager11.Issue.getShowThirdPartyIssuesSetting(Common6.Settings.Settings.instance());
     this.#showThirdPartyCheckbox = new UI6.Toolbar.ToolbarSettingCheckbox(thirdPartySetting, i18nString22(UIStrings22.includeCookieIssuesCausedBy), i18nString22(UIStrings22.includeThirdpartyCookieIssues));
     rightToolbar.appendToolbarItem(this.#showThirdPartyCheckbox);
     rightToolbar.appendSeparator();
@@ -3308,11 +3197,11 @@ var IssuesPane = class extends UI6.Widget.VBox {
         this.focus();
       },
       tooltipCallback: () => {
-        const issueEnumeration = IssueCounter5.IssueCounter.getIssueCountsEnumeration(IssuesManager12.IssuesManager.IssuesManager.instance(), false);
+        const issueEnumeration = IssueCounter5.IssueCounter.getIssueCountsEnumeration(IssuesManager11.IssuesManager.IssuesManager.instance(), false);
         issueCounter.title = issueEnumeration;
       },
       displayMode: "ShowAlways",
-      issuesManager: IssuesManager12.IssuesManager.IssuesManager.instance()
+      issuesManager: IssuesManager11.IssuesManager.IssuesManager.instance()
     };
     issueCounter.id = "console-issues-counter";
     issueCounter.setAttribute("jslog", `${VisualLogging5.counter("issues")}`);
@@ -3335,7 +3224,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
         console.warn("Could not find description for issue code:", issue.code());
         return;
       }
-      const markdownDescription = await IssuesManager12.MarkdownIssueDescription.createIssueDescriptionFromMarkdown(description);
+      const markdownDescription = await IssuesManager11.MarkdownIssueDescription.createIssueDescriptionFromMarkdown(description);
       issueView = new IssueView(issue, markdownDescription);
       this.#issueViews.set(issue.aggregationKey(), issueView);
       const parent = this.#getIssueViewParent(issue);
@@ -3511,6 +3400,7 @@ var IssueRevealer = class {
   }
 };
 export {
+  AffectedLazyLoadImagesView_exports as AffectedLazyLoadImagesView,
   AffectedSelectivePermissionsInterventionView_exports as AffectedSelectivePermissionsInterventionView,
   IssueRevealer_exports as IssueRevealer,
   IssueView_exports as IssueView,

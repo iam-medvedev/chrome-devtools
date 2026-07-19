@@ -188,5 +188,13 @@ span {
 }
 `);
     });
+    it('formats font shorthand with line-height slash and unquoted url path without inserting extra space after slash', () => {
+        const formattedCode = formatCSS('p { font: 16px/1.5em sans-serif; background: url(images/bg.png); }');
+        assert.strictEqual(formattedCode, `p {
+  font: 16px/1.5em sans-serif;
+  background: url(images/bg.png);
+}
+`);
+    });
 });
 //# sourceMappingURL=CSSFormatter.test.js.map

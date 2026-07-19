@@ -25,7 +25,7 @@ const UIStrings = {
      * @description Explanation for how to populate the autofill panel with data. Shown when there is
      * no data available.
      */
-    toStartDebugging: 'To start debugging autofill, use Chrome\'s autofill menu to fill an address form.',
+    toStartDebugging: 'To start debugging autofill, use Chrome’s autofill menu to fill an address form.',
     /**
      * @description Column header for column containing form field values
      */

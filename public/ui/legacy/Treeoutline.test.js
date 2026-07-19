@@ -336,7 +336,7 @@ describe('TreeViewElement', () => {
             ?.click();
         sinon.assert.calledOnce(onClick);
     });
-    it('handles adding tree elements in the moddile', async () => {
+    it('handles adding tree elements in the middle', async () => {
         const makeTemplate = (items) => {
             return html `
         <ul role="tree">
@@ -349,15 +349,41 @@ describe('TreeViewElement', () => {
         </ul>
       `;
         };
-        const component = await makeTree(html `<devtools-tree .template=${makeTemplate(['second child'])}></devtools-tree>`);
-        component.template = makeTemplate(['first child', 'second child']);
+        const component = await makeTree(html `<devtools-tree .template=${makeTemplate(['first child', 'third child'])}></devtools-tree>`);
+        component.template = makeTemplate(['first child', 'second child', 'third child']);
         await new Promise(resolve => setTimeout(resolve, 0));
         const treeOutline = component.getInternalTreeOutlineForTest();
         const children = treeOutline.rootElement().childAt(0).children();
-        assert.lengthOf(children, 3);
+        assert.lengthOf(children, 4);
         assert.strictEqual(children[0].titleElement.textContent?.trim(), 'first child');
         assert.strictEqual(children[1].titleElement.textContent?.trim(), 'second child');
-        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'extra node');
+        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'third child');
+        assert.strictEqual(children[3].titleElement.textContent?.trim(), 'extra node');
+    });
+    it('handles batching multiple tree elements inserted in the middle', async () => {
+        const makeTemplate = (items) => {
+            return html `
+        <ul role="tree">
+          <li role="treeitem">node
+            <ul role="group">
+              ${items.map(item => html `<li role="treeitem">${item}</li>`)}
+              <li role="treeitem">extra node</li>
+            </ul>
+          </li>
+        </ul>
+      `;
+        };
+        const component = await makeTree(html `<devtools-tree .template=${makeTemplate(['first child', 'fourth child'])}></devtools-tree>`);
+        component.template = makeTemplate(['first child', 'second child', 'third child', 'fourth child']);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const children = treeOutline.rootElement().childAt(0).children();
+        assert.lengthOf(children, 5);
+        assert.strictEqual(children[0].titleElement.textContent?.trim(), 'first child');
+        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'second child');
+        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'third child');
+        assert.strictEqual(children[3].titleElement.textContent?.trim(), 'fourth child');
+        assert.strictEqual(children[4].titleElement.textContent?.trim(), 'extra node');
     });
     it('marks a node as expandable even if it has empty subtree', async () => {
         const component = await makeTree(html `<devtools-tree .template=${html `
@@ -498,6 +524,9 @@ class TestTreeNode {
     }
     children() {
         return this.#children;
+    }
+    treeNodeChildren() {
+        return this.children();
     }
     match(regex) {
         const matches = this.contents.matchAll(regex);

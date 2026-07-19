@@ -31,17 +31,17 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as LinearMemoryInspectorComponents from "./components/components.js";
 var UIStrings = {
   /**
-   * @description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
-   *             Inspection hereby refers to viewing, navigating and understanding the memory through this tool.
+   * @description Label in the Memory inspector panel that serves as a placeholder if no inspections are open (i.e., nothing to see here).
+   *             Inspection here refers to viewing, navigating, and understanding the memory through this panel.
    */
   noOpenInspections: "No open inspections",
   /**
-   * @description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
-   *             Inspection hereby refers to viewing, navigating and understanding the memory through this tool.
+   * @description Label in the Memory inspector panel that serves as a placeholder if no inspections are open (i.e., nothing to see here).
+   *             Inspection here refers to viewing, navigating, and understanding the memory through this panel.
    */
   memoryInspectorExplanation: "On this page you can inspect binary data.",
   /**
-   * @description Label in the Linear Memory inspector tool for a link.
+   * @description Label in the Memory inspector panel for a link.
    */
   learnMore: "Learn more"
 };
@@ -204,11 +204,11 @@ var LinearMemoryInspectorView = class extends UI.Widget.VBox {
 // gen/front_end/panels/linear_memory_inspector/LinearMemoryInspectorController.js
 var UIStrings2 = {
   /**
-   * @description Error message that shows up in the console if a buffer to be opened in the linear memory inspector cannot be found.
+   * @description Error message that shows up in the console if a buffer to be opened in the Memory inspector panel cannot be found.
    */
-  couldNotOpenLinearMemory: "Could not open linear memory inspector: failed locating buffer.",
+  couldNotOpenLinearMemory: "Could not open Memory inspector: buffer not found.",
   /**
-   * @description A context menu item in the Scope View of the Sources Panel
+   * @description A context menu item in the Scope view of the Sources panel.
    */
   openInMemoryInspectorPanel: "Open in Memory inspector panel"
 };

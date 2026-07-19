@@ -9,6 +9,8 @@ var AdsView_exports = {};
 __export(AdsView_exports, {
   AdsView: () => AdsView
 });
+import "./../../../ui/legacy/components/data_grid/data_grid.js";
+import * as Common from "./../../../core/common/common.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as SDK from "./../../../core/sdk/sdk.js";
 import * as UI from "./../../../ui/legacy/legacy.js";
@@ -77,11 +79,61 @@ var adsView_css_default = `/*
   color: var(--sys-color-on-surface-subtle);
 }
 
+.metrics-title,
+.ad-frames-title,
+.settings-title {
+  color: var(--sys-color-on-surface);
+  flex: 0 0 auto;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.ad-frames-data-grid {
+  flex: auto;
+}
+
+.ad-frames-container {
+  border: 1px solid var(--sys-color-divider);
+  display: flex;
+  flex: auto;
+  flex-direction: column;
+  margin-bottom: 24px;
+  height: 300px;
+  min-height: 150px;
+  position: relative;
+  resize: vertical;
+  overflow: hidden;
+}
+
+devtools-checkbox.setting-container {
+  /*
+   * Apply negative margins here to offset the default devtools-checkbox style
+   * to align this component with the rest of the Ads panel layout.
+   */
+  margin: 0 0 -6px -6px;
+}
+
+.setting-text-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-explanation {
+  color: var(--sys-color-token-subtle);
+  white-space: break-spaces;
+  margin-top: 0;
+}
+
 /*# sourceURL=${import.meta.resolve("./adsView.css")} */`;
 
 // gen/front_end/panels/application/components/AdsView.js
 var { html } = Lit;
+var { bindToSetting } = UI.UIUtils;
 var UIStrings = {
+  /**
+   * @description Title for the metrics table.
+   */
+  metrics: "Metrics",
   /**
    * @description Title for a metric showing the percentage of the viewport covered by ads.
    */
@@ -102,56 +154,117 @@ var UIStrings = {
    * @description Subtext showing the average value of a metric.
    * @example {5.00%} PH1
    */
-  average: "(Average: {PH1})"
+  average: "(Average: {PH1})",
+  /**
+   * @description Title for the ad iframes table.
+   * @example {3} PH1
+   */
+  adIframesTitle: "Ad iframes (total {PH1})",
+  /**
+   * @description Text to display when a value is not available.
+   */
+  notAvailable: "N/A",
+  /**
+   * @description Text to display when a frame has no name/id.
+   */
+  unnamed: "<unnamed>",
+  /**
+   * @description Title for the Element Id column in the ad iframes table.
+   */
+  elementId: "Element ID",
+  /**
+   * @description Title for the Initial origin column in the ad iframes table.
+   */
+  initialOrigin: "Initial origin",
+  /**
+   * @description Title for the CPU column in the ad iframes table.
+   */
+  cpu: "CPU",
+  /**
+   * @description Title for the Network column in the ad iframes table.
+   */
+  network: "Network",
+  /**
+   * @description Accessible name for the ad iframes table.
+   */
+  adIframes: "Ad iframes",
+  /**
+   * @description Title for the settings section.
+   */
+  settings: "Settings",
+  /**
+   * @description The name of a checkbox setting. This setting highlights the
+   * rendering elements for ads that are found on the page.
+   */
+  highlightAds: "Highlight ads",
+  /**
+   * @description Explanation text for the 'Highlight ads' setting.
+   */
+  highlightsElementsRedDetectedToBe: "Highlights elements (red) detected to be ads."
 };
 var str_ = i18n.i18n.registerUIStrings("panels/application/components/AdsView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var formatMetric = (val, formatter) => {
+  if (val === void 0 || val === -1) {
+    return i18nString(UIStrings.notAvailable);
+  }
+  return formatter(val);
+};
+var formatCpu = (val) => {
+  return formatMetric(val, (v) => i18n.TimeUtilities.millisToString(v));
+};
+var formatNetwork = (val) => {
+  return formatMetric(val, (v) => i18n.ByteUtilities.bytesToString(v));
+};
 var DEFAULT_VIEW = (input, output, target) => {
   const metrics = input.metrics;
   const formatValue = (val, isPercentage) => {
-    if (isPercentage) {
-      return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, {
-        style: "percent",
-        maximumFractionDigits: 0
-      }).format(val / 100);
-    }
-    return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale).format(val);
+    return formatMetric(val, (v) => {
+      if (isPercentage) {
+        return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, {
+          style: "percent",
+          maximumFractionDigits: 0
+        }).format(v / 100);
+      }
+      return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale).format(v);
+    });
   };
   const formatAverage = (val, isPercentage) => {
-    if (isPercentage) {
+    return formatMetric(val, (v) => {
+      if (isPercentage) {
+        return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, {
+          style: "percent",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }).format(v / 100);
+      }
       return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, {
-        style: "percent",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(val / 100);
-    }
-    return new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(val);
-  };
-  const formatCpu = (val) => {
-    return i18n.TimeUtilities.millisToString(val);
-  };
-  const formatNetwork = (val) => {
-    return i18n.ByteUtilities.bytesToString(val);
+      }).format(v);
+    });
   };
   Lit.render(html`
     <style>${adsView_css_default}</style>
     <div class="ads-view-container" jslog=${VisualLogging.pane("ads")}>
+      <div class="metrics-title">${i18nString(UIStrings.metrics)}</div>
       <dl class="metrics-container">
         <div class="metric-box">
           <dt class="metric-title">${i18nString(UIStrings.viewportAdDensity)}</dt>
           <dd class="metric-value">
             <span>${formatValue(metrics.viewportAdDensityByArea, true)}</span>
-            <span class="metric-average">${i18nString(UIStrings.average, { PH1: formatAverage(metrics.averageViewportAdDensityByArea, true) })}</span>
+            <span class="metric-average">${i18nString(UIStrings.average, {
+    PH1: formatAverage(metrics.averageViewportAdDensityByArea, true)
+  })}</span>
           </dd>
         </div>
         <div class="metric-box">
           <dt class="metric-title">${i18nString(UIStrings.viewportAdCount)}</dt>
           <dd class="metric-value">
             <span>${formatValue(metrics.viewportAdCount, false)}</span>
-            <span class="metric-average">${i18nString(UIStrings.average, { PH1: formatAverage(metrics.averageViewportAdCount, false) })}</span>
+            <span class="metric-average">${i18nString(UIStrings.average, {
+    PH1: formatAverage(metrics.averageViewportAdCount, false)
+  })}</span>
           </dd>
         </div>
         <div class="metric-box">
@@ -167,6 +280,35 @@ var DEFAULT_VIEW = (input, output, target) => {
           </dd>
         </div>
       </dl>
+      <div class="ad-frames-title">${i18nString(UIStrings.adIframesTitle, { PH1: input.adFrames.length })}</div>
+      <div class="ad-frames-container">
+        <devtools-data-grid striped resize="last" class="ad-frames-data-grid" name=${i18nString(UIStrings.adIframes)}>
+          <table>
+            <tr>
+              <th id="elementId" weight="1">${i18nString(UIStrings.elementId)}</th>
+              <th id="initialOrigin" weight="2">${i18nString(UIStrings.initialOrigin)}</th>
+              <th id="cpuTime" weight="1">${i18nString(UIStrings.cpu)}</th>
+              <th id="networkBytes" weight="1">${i18nString(UIStrings.network)}</th>
+            </tr>
+            ${input.adFrames.map((frame) => html`
+              <tr>
+                <td title=${frame.elementId}>${frame.elementId}</td>
+                <td title=${frame.initialOrigin}>${frame.initialOrigin}</td>
+                <td title=${frame.cpuTime}>${frame.cpuTime}</td>
+                <td title=${frame.networkBytes}>${frame.networkBytes}</td>
+              </tr>
+            `)}
+          </table>
+        </devtools-data-grid>
+      </div>
+      <div class="settings-title">${i18nString(UIStrings.settings)}</div>
+      <devtools-checkbox class="setting-container"
+          ${bindToSetting(Common.Settings.Settings.instance().moduleSetting("show-ad-highlights"))}>
+        <div class="setting-text-container">
+          <div class="setting-label">${i18nString(UIStrings.highlightAds)}</div>
+          <div class="setting-explanation">${i18nString(UIStrings.highlightsElementsRedDetectedToBe)}</div>
+        </div>
+      </devtools-checkbox>
     </div>
   `, target);
 };
@@ -176,6 +318,9 @@ var AdsView = class extends UI.Widget.Widget {
   #isPolling = false;
   #pollSessionId = 0;
   #view;
+  #adFrames = /* @__PURE__ */ new Map();
+  #adIframeElementIds = /* @__PURE__ */ new Map();
+  #fetchingElementIds = /* @__PURE__ */ new Set();
   constructor(view = DEFAULT_VIEW) {
     super({ useShadowDom: true });
     this.#view = view;
@@ -230,6 +375,7 @@ var AdsView = class extends UI.Widget.Widget {
         }
         if (!response.getError()) {
           this.#currentMetrics = response.metrics;
+          this.#processAdFrames(response.metrics);
           this.requestUpdate();
         }
       }
@@ -237,6 +383,48 @@ var AdsView = class extends UI.Widget.Widget {
     if (this.#isPolling && this.#pollSessionId === sessionId) {
       this.#pollTimer = window.setTimeout(() => this.#pollMetrics(sessionId), 500);
     }
+  }
+  #processAdFrames(metrics) {
+    for (const frameId of metrics.removeAdFrames || []) {
+      this.#adFrames.delete(frameId);
+      this.#adIframeElementIds.delete(frameId);
+    }
+    for (const frame of metrics.updateAdFrames || []) {
+      const frameId = frame.frameId;
+      const existingFrame = this.#adFrames.get(frameId) || {};
+      const newFrame = { ...existingFrame, ...frame };
+      this.#adFrames.set(frameId, newFrame);
+    }
+    for (const frameId of this.#adFrames.keys()) {
+      if (!this.#adIframeElementIds.has(frameId) && !this.#fetchingElementIds.has(frameId)) {
+        this.#fetchingElementIds.add(frameId);
+        void this.#fetchIframeElementId(frameId).then((elementId) => {
+          if (this.#adFrames.has(frameId) && elementId !== void 0) {
+            this.#adIframeElementIds.set(frameId, elementId);
+          }
+        }).catch(() => {
+        }).finally(() => {
+          this.#fetchingElementIds.delete(frameId);
+          this.requestUpdate();
+        });
+      }
+    }
+  }
+  async #fetchIframeElementId(frameId) {
+    const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
+    if (!frame) {
+      return void 0;
+    }
+    const domModel = frame.resourceTreeModel().target().model(SDK.DOMModel.DOMModel);
+    if (!domModel) {
+      return void 0;
+    }
+    const deferredNode = await domModel.getOwnerNodeForFrame(frameId);
+    if (deferredNode) {
+      const node = await deferredNode.resolvePromise();
+      return node?.getAttribute("id") || null;
+    }
+    return null;
   }
   #onPrimaryPageChanged() {
     this.#currentMetrics = {
@@ -249,11 +437,25 @@ var AdsView = class extends UI.Widget.Widget {
       updateAdFrames: [],
       removeAdFrames: []
     };
+    this.#adFrames.clear();
+    this.#adIframeElementIds.clear();
+    this.#fetchingElementIds.clear();
     this.requestUpdate();
   }
   performUpdate() {
+    const adFramesArray = [];
+    for (const [frameId, frame] of this.#adFrames) {
+      const elementIdText = this.#adIframeElementIds.has(frameId) ? this.#adIframeElementIds.get(frameId) || i18nString(UIStrings.unnamed) : "";
+      adFramesArray.push({
+        elementId: elementIdText,
+        initialOrigin: frame.initialOrigin || "",
+        cpuTime: formatCpu(frame.cpuTime),
+        networkBytes: formatNetwork(frame.networkBytes)
+      });
+    }
     const viewInput = {
-      metrics: this.#currentMetrics
+      metrics: this.#currentMetrics,
+      adFrames: adFramesArray
     };
     this.#view(viewInput, void 0, this.contentElement);
   }
@@ -268,7 +470,7 @@ import "./../../../ui/components/expandable_list/expandable_list.js";
 import "./../../../ui/components/report_view/report_view.js";
 import "./../../../ui/legacy/legacy.js";
 import "./../../../ui/kit/kit.js";
-import * as Common from "./../../../core/common/common.js";
+import * as Common2 from "./../../../core/common/common.js";
 import * as i18n5 from "./../../../core/i18n/i18n.js";
 import * as SDK2 from "./../../../core/sdk/sdk.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
@@ -1053,7 +1255,7 @@ var UIStrings3 = {
    * @description Status text for the status of the back/forward cache status indicating that
    * the back/forward cache was not used and a normal navigation occurred instead.
    */
-  normalNavigation: "Not served from back/forward cache: to trigger back/forward cache, use Chrome's back/forward buttons, or use the test button below to automatically navigate away and back.",
+  normalNavigation: "Not served from back/forward cache: to trigger back/forward cache, use Chrome\u2019s back/forward buttons, or use the test button below to automatically navigate away and back.",
   /**
    * @description Status text for the status of the back/forward cache status indicating that
    * the back/forward cache was used to restore the page instead of reloading it.
@@ -1159,7 +1361,7 @@ function renderMainFrameInformation(frame, frameTreeData, reasonToFramesMap, scr
       </devtools-report-value>`;
   }
   const isTestRunning = screenStatus === "Running";
-  const isTestingForbidden = Common.ParsedURL.schemeIs(frame.url, "devtools:");
+  const isTestingForbidden = Common2.ParsedURL.schemeIs(frame.url, "devtools:");
   return html2`
     ${renderBackForwardCacheStatus(frame.backForwardCacheDetails.restoredFromCache)}
     <devtools-report-key>${i18nString2(UIStrings3.url)}</devtools-report-key>
@@ -1970,152 +2172,6 @@ var EndpointsGrid = class extends UI5.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/application/components/InterestGroupAccessGrid.js
-var InterestGroupAccessGrid_exports = {};
-__export(InterestGroupAccessGrid_exports, {
-  InterestGroupAccessGrid: () => InterestGroupAccessGrid,
-  i18nString: () => i18nString6
-});
-import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n13 from "./../../../core/i18n/i18n.js";
-import * as UI6 from "./../../../ui/legacy/legacy.js";
-import * as Lit4 from "./../../../ui/lit/lit.js";
-
-// gen/front_end/panels/application/components/interestGroupAccessGrid.css.js
-var interestGroupAccessGrid_css_default = `/*
- * Copyright 2021 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-:host {
-  display: flex;
-  padding: 20px;
-  height: 100%;
-}
-
-.heading {
-  font-size: 15px;
-}
-
-devtools-data-grid {
-  margin-top: 20px;
-}
-
-.info-icon {
-  vertical-align: text-bottom;
-  height: 14px;
-}
-
-.no-events-message {
-  margin-top: 20px;
-}
-
-/*# sourceURL=${import.meta.resolve("./interestGroupAccessGrid.css")} */`;
-
-// gen/front_end/panels/application/components/InterestGroupAccessGrid.js
-var { html: html6 } = Lit4;
-var UIStrings7 = {
-  /**
-   * @description Hover text for an info icon in the Interest Group Event panel
-   * An interest group is an ad targeting group stored on the browser that can
-   * be used to show a certain set of advertisements in the future as the
-   * outcome of a FLEDGE auction.
-   */
-  allInterestGroupStorageEvents: "All interest group storage events.",
-  /**
-   * @description Text in InterestGroupStorage Items View of the Application panel
-   * Date and time of an Interest Group storage event in a locale-
-   * dependent format.
-   */
-  eventTime: "Event Time",
-  /**
-   * @description Text in InterestGroupStorage Items View of the Application panel
-   * Type of interest group event such as 'join', 'bid', 'win', or 'leave'.
-   */
-  eventType: "Access Type",
-  /**
-   * @description Text in InterestGroupStorage Items View of the Application panel
-   * Owner of the interest group. The origin that controls the
-   * content of information associated with the interest group such as which
-   * ads get displayed.
-   */
-  groupOwner: "Owner",
-  /**
-   * @description Text in InterestGroupStorage Items View of the Application panel
-   * Name of the interest group. The name is unique per-owner and identifies the
-   * interest group.
-   */
-  groupName: "Name",
-  /**
-   * @description Text shown when no interest groups are detected.
-   * An interest group is an ad targeting group stored on the browser that can
-   * be used to show a certain set of advertisements in the future as the
-   * outcome of a FLEDGE auction.
-   */
-  noEvents: "No interest group events detected",
-  /**
-   * @description Text shown when no interest groups are detected and explains what this page is about.
-   * An interest group is an ad targeting group stored on the browser that can
-   * be used to show a certain set of advertisements in the future as the
-   * outcome of a FLEDGE auction.
-   */
-  interestGroupDescription: "On this page you can inspect and analyze interest groups"
-};
-var str_7 = i18n13.i18n.registerUIStrings("panels/application/components/InterestGroupAccessGrid.ts", UIStrings7);
-var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-var InterestGroupAccessGrid = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #datastores = [];
-  connectedCallback() {
-    this.#render();
-  }
-  // eslint-disable-next-line @devtools/set-data-type-reference
-  set data(data) {
-    this.#datastores = data;
-    this.#render();
-  }
-  #render() {
-    Lit4.render(html6`
-      <style>${interestGroupAccessGrid_css_default}</style>
-      <style>${UI6.inspectorCommonStyles}</style>
-      ${this.#datastores.length === 0 ? html6`
-          <div class="empty-state">
-            <span class="empty-state-header">${i18nString6(UIStrings7.noEvents)}</span>
-            <span class="empty-state-description">${i18nString6(UIStrings7.interestGroupDescription)}</span>
-          </div>` : html6`
-          <div>
-            <span class="heading">Interest Groups</span>
-            <devtools-icon class="info-icon medium" name="info"
-                          title=${i18nString6(UIStrings7.allInterestGroupStorageEvents)}>
-            </devtools-icon>
-            ${this.#renderGrid()}
-          </div>`}
-    `, this.#shadow, { host: this });
-  }
-  #renderGrid() {
-    return html6`
-      <devtools-data-grid striped inline>
-        <table>
-          <tr>
-            <th id="event-time" sortable weight="10">${i18nString6(UIStrings7.eventTime)}</td>
-            <th id="event-type" sortable weight="5">${i18nString6(UIStrings7.eventType)}</td>
-            <th id="event-group-owner" sortable weight="10">${i18nString6(UIStrings7.groupOwner)}</td>
-            <th id="event-group-name" sortable weight="10">${i18nString6(UIStrings7.groupName)}</td>
-          </tr>
-          ${this.#datastores.map((event) => html6`
-          <tr @select=${() => this.dispatchEvent(new CustomEvent("select", { detail: event }))}>
-            <td>${new Date(1e3 * event.accessTime).toLocaleString()}</td>
-            <td>${event.type}</td>
-            <td>${event.ownerOrigin}</td>
-            <td>${event.name}</td>
-          </tr>
-        `)}
-        </table>
-      </devtools-data-grid>`;
-  }
-};
-customElements.define("devtools-interest-group-access-grid", InterestGroupAccessGrid);
-
 // gen/front_end/panels/application/components/PermissionsPolicySection.js
 var PermissionsPolicySection_exports = {};
 __export(PermissionsPolicySection_exports, {
@@ -2124,13 +2180,13 @@ __export(PermissionsPolicySection_exports, {
 });
 import "./../../../ui/kit/kit.js";
 import "./../../../ui/components/report_view/report_view.js";
-import * as Common2 from "./../../../core/common/common.js";
-import * as i18n15 from "./../../../core/i18n/i18n.js";
+import * as Common3 from "./../../../core/common/common.js";
+import * as i18n13 from "./../../../core/i18n/i18n.js";
 import * as SDK4 from "./../../../core/sdk/sdk.js";
 import * as NetworkForward from "./../../network/forward/forward.js";
 import * as Buttons3 from "./../../../ui/components/buttons/buttons.js";
-import * as UI7 from "./../../../ui/legacy/legacy.js";
-import { html as html7, nothing as nothing3, render as render7 } from "./../../../ui/lit/lit.js";
+import * as UI6 from "./../../../ui/legacy/legacy.js";
+import { html as html6, nothing as nothing3, render as render6 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/permissionsPolicySection.css.js
@@ -2199,7 +2255,7 @@ var permissionsPolicySection_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./permissionsPolicySection.css")} */`;
 
 // gen/front_end/panels/application/components/PermissionsPolicySection.js
-var UIStrings8 = {
+var UIStrings7 = {
   /**
    * @description Label for a button. When clicked more details (for the content this button refers to) will be shown.
    */
@@ -2240,10 +2296,10 @@ var UIStrings8 = {
    */
   disabledByFencedFrame: "disabled inside a `fencedframe`"
 };
-var str_8 = i18n15.i18n.registerUIStrings("panels/application/components/PermissionsPolicySection.ts", UIStrings8);
-var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
+var str_7 = i18n13.i18n.registerUIStrings("panels/application/components/PermissionsPolicySection.ts", UIStrings7);
+var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 function renderIconLink(iconName, title, clickHandler, jsLogContext) {
-  return html7`
+  return html6`
     <devtools-button
       .iconName=${iconName}
       title=${title}
@@ -2258,8 +2314,8 @@ function renderAllowed(allowed) {
   if (!allowed.length) {
     return nothing3;
   }
-  return html7`
-    <devtools-report-key>${i18nString7(UIStrings8.allowedFeatures)}</devtools-report-key>
+  return html6`
+    <devtools-report-key>${i18nString6(UIStrings7.allowedFeatures)}</devtools-report-key>
     <devtools-report-value>${allowed.map(({ feature }) => feature).join(", ")}</devtools-report-value>`;
 }
 function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNode, onRevealHeader) {
@@ -2267,8 +2323,8 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
     return nothing3;
   }
   if (!showDetails) {
-    return html7`
-      <devtools-report-key>${i18nString7(UIStrings8.disabledFeatures)}</devtools-report-key>
+    return html6`
+      <devtools-report-key>${i18nString6(UIStrings7.disabledFeatures)}</devtools-report-key>
       <devtools-report-value>
         ${data.map(({ policy }) => policy.feature).join(", ")}
         <devtools-button
@@ -2276,7 +2332,7 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
             .variant=${"outlined"}
             @click=${onToggleShowDetails}
             jslog=${VisualLogging5.action("show-disabled-features-details").track({ click: true })}>
-          ${i18nString7(UIStrings8.showDetails)}
+          ${i18nString6(UIStrings7.showDetails)}
         </devtools-button>
       </devtools-report-value>`;
   }
@@ -2284,16 +2340,16 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
     const blockReasonText = (() => {
       switch (blockReason) {
         case "IframeAttribute":
-          return i18nString7(UIStrings8.disabledByIframe);
+          return i18nString6(UIStrings7.disabledByIframe);
         case "Header":
-          return i18nString7(UIStrings8.disabledByHeader);
+          return i18nString6(UIStrings7.disabledByHeader);
         case "InFencedFrameTree":
-          return i18nString7(UIStrings8.disabledByFencedFrame);
+          return i18nString6(UIStrings7.disabledByFencedFrame);
         default:
           return "";
       }
     })();
-    return html7`
+    return html6`
       <div class="permissions-row">
         <div>
           <devtools-icon class="allowed-icon extra-large" name="cross-circle">
@@ -2302,13 +2358,13 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
         <div class="feature-name text-ellipsis">${policy.feature}</div>
         <div class="block-reason">${blockReasonText}</div>
         <div>
-          ${linkTargetDOMNode ? renderIconLink("code-circle", i18nString7(UIStrings8.clickToShowIframe), () => onRevealDOMNode(linkTargetDOMNode), "reveal-in-elements") : nothing3}
-          ${linkTargetRequest ? renderIconLink("arrow-up-down-circle", i18nString7(UIStrings8.clickToShowHeader), () => onRevealHeader(linkTargetRequest), "reveal-in-network") : nothing3}
+          ${linkTargetDOMNode ? renderIconLink("code-circle", i18nString6(UIStrings7.clickToShowIframe), () => onRevealDOMNode(linkTargetDOMNode), "reveal-in-elements") : nothing3}
+          ${linkTargetRequest ? renderIconLink("arrow-up-down-circle", i18nString6(UIStrings7.clickToShowHeader), () => onRevealHeader(linkTargetRequest), "reveal-in-network") : nothing3}
         </div>
       </div>`;
   });
-  return html7`
-    <devtools-report-key>${i18nString7(UIStrings8.disabledFeatures)}</devtools-report-key>
+  return html6`
+    <devtools-report-key>${i18nString6(UIStrings7.disabledFeatures)}</devtools-report-key>
     <devtools-report-value class="policies-list">
       ${featureRows}
       <div class="permissions-row">
@@ -2316,23 +2372,23 @@ function renderDisallowed(data, showDetails, onToggleShowDetails, onRevealDOMNod
             .variant=${"outlined"}
             @click=${onToggleShowDetails}
             jslog=${VisualLogging5.action("hide-disabled-features-details").track({ click: true })}>
-          ${i18nString7(UIStrings8.hideDetails)}
+          ${i18nString6(UIStrings7.hideDetails)}
         </devtools-button>
       </div>
     </devtools-report-value>`;
 }
 var DEFAULT_VIEW6 = (input, output, target) => {
-  render7(html7`
+  render6(html6`
     <style>${permissionsPolicySection_css_default}</style>
     <devtools-report-section-header>
-      ${i18n15.i18n.lockedString("Permissions Policy")}
+      ${i18n13.i18n.lockedString("Permissions Policy")}
     </devtools-report-section-header>
     ${renderAllowed(input.allowed)}
-    ${input.allowed.length > 0 && input.disallowed.length > 0 ? html7`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
+    ${input.allowed.length > 0 && input.disallowed.length > 0 ? html6`<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : nothing3}
     ${renderDisallowed(input.disallowed, input.showDetails, input.onToggleShowDetails, input.onRevealDOMNode, input.onRevealHeader)}
     <devtools-report-divider></devtools-report-divider>`, target);
 };
-var PermissionsPolicySection = class extends UI7.Widget.Widget {
+var PermissionsPolicySection = class extends UI6.Widget.Widget {
   #policies = [];
   #showDetails = false;
   #view;
@@ -2358,7 +2414,7 @@ var PermissionsPolicySection = class extends UI7.Widget.Widget {
     this.showDetails = !this.showDetails;
   }
   async #revealDOMNode(linkTargetDOMNode) {
-    await Common2.Revealer.reveal(linkTargetDOMNode);
+    await Common3.Revealer.reveal(linkTargetDOMNode);
   }
   async #revealHeader(linkTargetRequest) {
     if (!linkTargetRequest) {
@@ -2366,7 +2422,7 @@ var PermissionsPolicySection = class extends UI7.Widget.Widget {
     }
     const headerName = linkTargetRequest.responseHeaderValue("permissions-policy") ? "permissions-policy" : "feature-policy";
     const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.responseHeaderMatch(linkTargetRequest, { name: headerName, value: "" });
-    await Common2.Revealer.reveal(requestLocation);
+    await Common3.Revealer.reveal(requestLocation);
   }
   async performUpdate() {
     const frameManager = SDK4.FrameManager.FrameManager.instance();
@@ -2399,13 +2455,13 @@ __export(ProtocolHandlersView_exports, {
 });
 import "./../../../ui/kit/kit.js";
 import * as Host2 from "./../../../core/host/host.js";
-import * as i18n17 from "./../../../core/i18n/i18n.js";
+import * as i18n15 from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
 import * as Buttons4 from "./../../../ui/components/buttons/buttons.js";
 import * as Input from "./../../../ui/components/input/input.js";
 import * as uiI18n from "./../../../ui/i18n/i18n.js";
-import * as UI8 from "./../../../ui/legacy/legacy.js";
-import { html as html8, i18nTemplate as unboundI18nTemplate, nothing as nothing4, render as render8 } from "./../../../ui/lit/lit.js";
+import * as UI7 from "./../../../ui/legacy/legacy.js";
+import { html as html7, i18nTemplate as unboundI18nTemplate, nothing as nothing4, render as render7 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/protocolHandlersView.css.js
@@ -2471,7 +2527,7 @@ input.devtools-text-input[type="text"]::placeholder {
 
 // gen/front_end/panels/application/components/ProtocolHandlersView.js
 var PROTOCOL_DOCUMENT_URL = "https://web.dev/url-protocol-handler/";
-var UIStrings9 = {
+var UIStrings8 = {
   /**
    * @description Status message for when protocol handlers are detected in the manifest
    * @example {protocolhandler/manifest.json} PH1
@@ -2512,18 +2568,18 @@ var UIStrings9 = {
    */
   textboxPlaceholder: "Enter URL"
 };
-var str_9 = i18n17.i18n.registerUIStrings("panels/application/components/ProtocolHandlersView.ts", UIStrings9);
-var i18nString8 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
-var i18nTemplate = unboundI18nTemplate.bind(void 0, str_9);
+var str_8 = i18n15.i18n.registerUIStrings("panels/application/components/ProtocolHandlersView.ts", UIStrings8);
+var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
+var i18nTemplate = unboundI18nTemplate.bind(void 0, str_8);
 function renderStatusMessage(protocolHandlers, manifestLink) {
-  const statusString = protocolHandlers.length > 0 ? UIStrings9.protocolDetected : UIStrings9.protocolNotDetected;
-  return html8`
+  const statusString = protocolHandlers.length > 0 ? UIStrings8.protocolDetected : UIStrings8.protocolNotDetected;
+  return html7`
     <div class="protocol-handlers-row status">
       <devtools-icon class="inline-icon"
                      name=${protocolHandlers.length > 0 ? "check-circle" : "info"}>
       </devtools-icon>
-      ${uiI18n.getFormatLocalizedStringTemplate(str_9, statusString, { PH1: html8`
-        <devtools-link href=${manifestLink} jslogcontext="manifest">${i18nString8(UIStrings9.manifest)}</devtools-link>
+      ${uiI18n.getFormatLocalizedStringTemplate(str_8, statusString, { PH1: html7`
+        <devtools-link href=${manifestLink} jslogcontext="manifest">${i18nString7(UIStrings8.manifest)}</devtools-link>
         ` })}
     </div>`;
 }
@@ -2531,39 +2587,39 @@ function renderProtocolTest(protocolHandlers, queryInputState, protocolSelectHan
   if (protocolHandlers.length === 0) {
     return nothing4;
   }
-  return html8`
+  return html7`
     <div class="protocol-handlers-row">
       <select class="protocol-select" @change=${protocolSelectHandler}
-              aria-label=${i18nString8(UIStrings9.dropdownLabel)}>
-        ${protocolHandlers.filter((p) => p.protocol).map(({ protocol }) => html8`
+              aria-label=${i18nString7(UIStrings8.dropdownLabel)}>
+        ${protocolHandlers.filter((p) => p.protocol).map(({ protocol }) => html7`
           <option value=${protocol} jslog=${VisualLogging6.item(protocol).track({ click: true })}>
             ${protocol}://
           </option>`)}
       </select>
       <input .value=${queryInputState} class="devtools-text-input" type="text"
-             @change=${queryInputChangeHandler} aria-label=${i18nString8(UIStrings9.textboxLabel)}
-             placeholder=${i18nString8(UIStrings9.textboxPlaceholder)} />
+             @change=${queryInputChangeHandler} aria-label=${i18nString7(UIStrings8.textboxLabel)}
+             placeholder=${i18nString7(UIStrings8.textboxPlaceholder)} />
       <devtools-button .variant=${"primary"} @click=${testProtocolClickHandler}>
-        ${i18nString8(UIStrings9.testProtocol)}
+        ${i18nString7(UIStrings8.testProtocol)}
       </devtools-button>
     </div>`;
 }
 var DEFAULT_VIEW7 = (input, _output, target) => {
-  render8(html8`
+  render7(html7`
     <style>${protocolHandlersView_css_default}</style>
-    <style>${UI8.inspectorCommonStyles}</style>
+    <style>${UI7.inspectorCommonStyles}</style>
     <style>${Input.textInputStyles}</style>
     ${renderStatusMessage(input.protocolHandler, input.manifestLink)}
     <div class="protocol-handlers-row">
-      ${i18nTemplate(UIStrings9.needHelpReadOur, { PH1: html8`
+      ${i18nTemplate(UIStrings8.needHelpReadOur, { PH1: html7`
         <devtools-link href=${PROTOCOL_DOCUMENT_URL} class="devtools-link" autofocus jslogcontext="learn-more">
-          ${i18nString8(UIStrings9.protocolHandlerRegistrations)}
+          ${i18nString7(UIStrings8.protocolHandlerRegistrations)}
         </devtools-link>` })}
     </div>
     ${renderProtocolTest(input.protocolHandler, input.queryInputState, input.protocolSelectHandler, input.queryInputChangeHandler, input.testProtocolClickHandler)}
   `, target, { container: { classes: ["vbox"] } });
 };
-var ProtocolHandlersView = class extends UI8.Widget.Widget {
+var ProtocolHandlersView = class extends UI7.Widget.Widget {
   #protocolHandlers = [];
   #manifestLink = Platform.DevToolsPath.EmptyUrlString;
   #selectedProtocolState = "";
@@ -2621,14 +2677,14 @@ var ReportsGrid_exports = {};
 __export(ReportsGrid_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW8,
   ReportsGrid: () => ReportsGrid,
-  i18nString: () => i18nString9
+  i18nString: () => i18nString8
 });
 import "./../../../ui/kit/kit.js";
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n19 from "./../../../core/i18n/i18n.js";
+import * as i18n17 from "./../../../core/i18n/i18n.js";
 import * as Root from "./../../../core/root/root.js";
-import * as UI9 from "./../../../ui/legacy/legacy.js";
-import * as Lit5 from "./../../../ui/lit/lit.js";
+import * as UI8 from "./../../../ui/legacy/legacy.js";
+import * as Lit4 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/reportsGrid.css.js
@@ -2670,7 +2726,7 @@ var reportsGrid_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./reportsGrid.css")} */`;
 
 // gen/front_end/panels/application/components/ReportsGrid.js
-var UIStrings10 = {
+var UIStrings9 = {
   /**
    * @description Placeholder text when there are no Reporting API reports.
    *(https://developers.google.com/web/updates/2018/09/reportingapi#sending)
@@ -2701,41 +2757,41 @@ var UIStrings10 = {
    */
   generatedAt: "Generated at"
 };
-var str_10 = i18n19.i18n.registerUIStrings("panels/application/components/ReportsGrid.ts", UIStrings10);
-var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
-var { render: render9, html: html9 } = Lit5;
+var str_9 = i18n17.i18n.registerUIStrings("panels/application/components/ReportsGrid.ts", UIStrings9);
+var i18nString8 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
+var { render: render8, html: html8 } = Lit4;
 var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilities/web-apis/reporting-api";
 var DEFAULT_VIEW8 = (input, output, target) => {
-  render9(html9`
+  render8(html8`
     <style>${reportsGrid_css_default}</style>
-    <style>${UI9.inspectorCommonStyles}</style>
+    <style>${UI8.inspectorCommonStyles}</style>
     <div class="reporting-container" jslog=${VisualLogging7.section("reports")}>
-      <div class="reporting-header">${i18n19.i18n.lockedString("Reports")}</div>
-      ${input.reports.length > 0 ? html9`
+      <div class="reporting-header">${i18n17.i18n.lockedString("Reports")}</div>
+      ${input.reports.length > 0 ? html8`
         <devtools-data-grid striped>
           <table>
             <tr>
-              ${input.protocolMonitorExperimentEnabled ? html9`
-                <th id="id" weight="30">${i18n19.i18n.lockedString("ID")}</th>
+              ${input.protocolMonitorExperimentEnabled ? html8`
+                <th id="id" weight="30">${i18n17.i18n.lockedString("ID")}</th>
               ` : ""}
-              <th id="url" weight="30">${i18n19.i18n.lockedString("URL")}</th>
-              <th id="type" weight="20">${i18n19.i18n.lockedString("Type")}</th>
+              <th id="url" weight="30">${i18n17.i18n.lockedString("URL")}</th>
+              <th id="type" weight="20">${i18n17.i18n.lockedString("Type")}</th>
               <th id="status" weight="20">
                 <style>${reportsGrid_css_default}</style>
-                <span class="status-header">${i18nString9(UIStrings10.status)}</span>
+                <span class="status-header">${i18nString8(UIStrings9.status)}</span>
                 <devtools-link href="https://web.dev/reporting-api/#report-status"
                 jslogcontext="report-status">
                   <devtools-icon class="inline-icon medium" name="help" style="color: var(--icon-link);"
                   ></devtools-icon>
                 </devtools-link>
               </th>
-              <th id="destination" weight="20">${i18nString9(UIStrings10.destination)}</th>
-              <th id="timestamp" weight="20">${i18nString9(UIStrings10.generatedAt)}</th>
-              <th id="body" weight="20">${i18n19.i18n.lockedString("Body")}</th>
+              <th id="destination" weight="20">${i18nString8(UIStrings9.destination)}</th>
+              <th id="timestamp" weight="20">${i18nString8(UIStrings9.generatedAt)}</th>
+              <th id="body" weight="20">${i18n17.i18n.lockedString("Body")}</th>
             </tr>
-            ${input.reports.map((report) => html9`
+            ${input.reports.map((report) => html8`
               <tr @select=${() => input.onSelect(report.id)}>
-                ${input.protocolMonitorExperimentEnabled ? html9`<td>${report.id}</td>` : ""}
+                ${input.protocolMonitorExperimentEnabled ? html8`<td>${report.id}</td>` : ""}
                 <td>${report.initiatorUrl}</td>
                 <td>${report.type}</td>
                 <td>${report.status}</td>
@@ -2746,23 +2802,23 @@ var DEFAULT_VIEW8 = (input, output, target) => {
             `)}
           </table>
         </devtools-data-grid>
-      ` : html9`
+      ` : html8`
         <div class="empty-state">
-          <span class="empty-state-header">${i18nString9(UIStrings10.noReportsToDisplay)}</span>
+          <span class="empty-state-header">${i18nString8(UIStrings9.noReportsToDisplay)}</span>
           <div class="empty-state-description">
-            <span>${i18nString9(UIStrings10.reportingApiDescription)}</span>
+            <span>${i18nString8(UIStrings9.reportingApiDescription)}</span>
             <devtools-link
               class="devtools-link"
               href=${REPORTING_API_EXPLANATION_URL}
               jslogcontext="learn-more"
-            >${i18nString9(UIStrings10.learnMore)}</devtools-link>
+            >${i18nString8(UIStrings9.learnMore)}</devtools-link>
           </div>
         </div>
       `}
     </div>
   `, target);
 };
-var ReportsGrid = class extends UI9.Widget.Widget {
+var ReportsGrid = class extends UI8.Widget.Widget {
   reports = [];
   #protocolMonitorExperimentEnabled = false;
   #view;
@@ -2789,8 +2845,8 @@ var ServiceWorkerRouterView_exports = {};
 __export(ServiceWorkerRouterView_exports, {
   ServiceWorkerRouterView: () => ServiceWorkerRouterView
 });
-import * as UI10 from "./../../../ui/legacy/legacy.js";
-import { html as html10, render as render10 } from "./../../../ui/lit/lit.js";
+import * as UI9 from "./../../../ui/legacy/legacy.js";
+import { html as html9, render as render9 } from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/components/serviceWorkerRouterView.css.js
 var serviceWorkerRouterView_css_default = `/*
@@ -2853,7 +2909,7 @@ var serviceWorkerRouterView_css_default = `/*
 
 // gen/front_end/panels/application/components/ServiceWorkerRouterView.js
 function renderRouterRule(rule) {
-  return html10`
+  return html9`
     <li class="router-rule">
       <div class="rule-id">Rule ${rule.id}</div>
       <ul class="item">
@@ -2869,13 +2925,13 @@ function renderRouterRule(rule) {
     </li>`;
 }
 var DEFAULT_VIEW9 = (input, _output, target) => {
-  render10(html10`
+  render9(html9`
     <style>${serviceWorkerRouterView_css_default}</style>
     <ul class="router-rules">
       ${input.rules.map(renderRouterRule)}
     </ul>`, target);
 };
-var ServiceWorkerRouterView = class extends UI10.Widget.Widget {
+var ServiceWorkerRouterView = class extends UI9.Widget.Widget {
   #rules = [];
   #view;
   constructor(element, view = DEFAULT_VIEW9) {
@@ -2901,13 +2957,13 @@ var SharedStorageAccessGrid_exports = {};
 __export(SharedStorageAccessGrid_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW10,
   SharedStorageAccessGrid: () => SharedStorageAccessGrid,
-  i18nString: () => i18nString10
+  i18nString: () => i18nString9
 });
 import "./../../../ui/kit/kit.js";
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n21 from "./../../../core/i18n/i18n.js";
-import * as UI11 from "./../../../ui/legacy/legacy.js";
-import * as Lit6 from "./../../../ui/lit/lit.js";
+import * as i18n19 from "./../../../core/i18n/i18n.js";
+import * as UI10 from "./../../../ui/legacy/legacy.js";
+import * as Lit5 from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/sharedStorageAccessGrid.css.js
@@ -2945,8 +3001,8 @@ var sharedStorageAccessGrid_css_default = `/*
 
 // gen/front_end/panels/application/components/SharedStorageAccessGrid.js
 var SHARED_STORAGE_EXPLANATION_URL = "https://developers.google.com/privacy-sandbox/private-advertising/shared-storage";
-var { render: render11, html: html11 } = Lit6;
-var UIStrings11 = {
+var { render: render10, html: html10 } = Lit5;
+var UIStrings10 = {
   /**
    * @description Text in Shared Storage Events View of the Application panel
    */
@@ -2964,7 +3020,7 @@ var UIStrings11 = {
   /**
    * @description Text in Shared Storage Events View of the Application panel
    * Scope of shared storage event such as 'window', 'sharedStorageWorklet',
-   * 'protectedAudienceWorklet', or 'header'.
+   * or 'header'.
    */
   eventScope: "Access Scope",
   /**
@@ -3005,54 +3061,54 @@ var UIStrings11 = {
    */
   learnMore: "Learn more"
 };
-var str_11 = i18n21.i18n.registerUIStrings("panels/application/components/SharedStorageAccessGrid.ts", UIStrings11);
-var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
+var str_10 = i18n19.i18n.registerUIStrings("panels/application/components/SharedStorageAccessGrid.ts", UIStrings10);
+var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
 var DEFAULT_VIEW10 = (input, _output, target) => {
-  render11(html11`
+  render10(html10`
     <style>${sharedStorageAccessGrid_css_default}</style>
-    ${input.events.length === 0 ? html11`
+    ${input.events.length === 0 ? html10`
         <div class="empty-state" jslog=${VisualLogging8.section().context("empty-view")}>
-          <div class="empty-state-header">${i18nString10(UIStrings11.noEvents)}</div>
+          <div class="empty-state-header">${i18nString9(UIStrings10.noEvents)}</div>
           <div class="empty-state-description">
-            <span>${i18nString10(UIStrings11.sharedStorageDescription)}</span>
+            <span>${i18nString9(UIStrings10.sharedStorageDescription)}</span>
             <devtools-link
               class="devtools-link"
               href=${SHARED_STORAGE_EXPLANATION_URL}
               .jslogContext=${"learn-more"}
-            >${i18nString10(UIStrings11.learnMore)}</devtools-link>
+            >${i18nString9(UIStrings10.learnMore)}</devtools-link>
           </div>
-        </div>` : html11`
+        </div>` : html10`
         <div jslog=${VisualLogging8.section("events-table")}>
-          <span class="heading">${i18nString10(UIStrings11.sharedStorage)}</span>
+          <span class="heading">${i18nString9(UIStrings10.sharedStorage)}</span>
           <devtools-icon class="info-icon medium" name="info"
-                          title=${i18nString10(UIStrings11.allSharedStorageEvents)}>
+                          title=${i18nString9(UIStrings10.allSharedStorageEvents)}>
           </devtools-icon>
           <devtools-data-grid striped inline>
             <table>
               <thead>
                 <tr>
                   <th id="event-time" weight="10" sortable>
-                    ${i18nString10(UIStrings11.eventTime)}
+                    ${i18nString9(UIStrings10.eventTime)}
                   </th>
                   <th id="event-scope" weight="10" sortable>
-                    ${i18nString10(UIStrings11.eventScope)}
+                    ${i18nString9(UIStrings10.eventScope)}
                   </th>
                   <th id="event-method" weight="10" sortable>
-                    ${i18nString10(UIStrings11.eventMethod)}
+                    ${i18nString9(UIStrings10.eventMethod)}
                   </th>
                   <th id="event-owner-origin" weight="10" sortable>
-                    ${i18nString10(UIStrings11.ownerOrigin)}
+                    ${i18nString9(UIStrings10.ownerOrigin)}
                   </th>
                   <th id="event-owner-site" weight="10" sortable>
-                    ${i18nString10(UIStrings11.ownerSite)}
+                    ${i18nString9(UIStrings10.ownerSite)}
                   </th>
                   <th id="event-params" weight="10" sortable>
-                    ${i18nString10(UIStrings11.eventParams)}
+                    ${i18nString9(UIStrings10.eventParams)}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                ${input.events.map((event) => html11`
+                ${input.events.map((event) => html10`
                   <tr @select=${() => input.onSelect(event)}>
                     <td data-value=${event.accessTime}>
                       ${new Date(1e3 * event.accessTime).toLocaleString()}
@@ -3069,7 +3125,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
           </devtools-data-grid>
         </div>`}`, target);
 };
-var SharedStorageAccessGrid = class extends UI11.Widget.Widget {
+var SharedStorageAccessGrid = class extends UI10.Widget.Widget {
   #view;
   #events = [];
   #onSelect = () => {
@@ -3104,9 +3160,9 @@ __export(SharedStorageMetadataView_exports, {
   SharedStorageMetadataView: () => SharedStorageMetadataView
 });
 import "./../../../ui/kit/kit.js";
-import * as i18n25 from "./../../../core/i18n/i18n.js";
+import * as i18n23 from "./../../../core/i18n/i18n.js";
 import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
-import * as Lit7 from "./../../../ui/lit/lit.js";
+import * as Lit6 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/components/sharedStorageMetadataView.css.js
 var sharedStorageMetadataView_css_default = `/*
@@ -3149,14 +3205,14 @@ __export(StorageMetadataView_exports, {
 });
 import "./../../../ui/components/report_view/report_view.js";
 import "./../../../ui/kit/kit.js";
-import * as Common3 from "./../../../core/common/common.js";
-import * as i18n23 from "./../../../core/i18n/i18n.js";
+import * as Common4 from "./../../../core/common/common.js";
+import * as i18n21 from "./../../../core/i18n/i18n.js";
 import * as SDK5 from "./../../../core/sdk/sdk.js";
 import * as Buttons5 from "./../../../ui/components/buttons/buttons.js";
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI12 from "./../../../ui/legacy/legacy.js";
-import { html as html12, nothing as nothing5, render as render12 } from "./../../../ui/lit/lit.js";
+import * as UI11 from "./../../../ui/legacy/legacy.js";
+import { html as html11, nothing as nothing5, render as render11 } from "./../../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/storageMetadataView.css.js
@@ -3173,7 +3229,7 @@ var storageMetadataView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./storageMetadataView.css")} */`;
 
 // gen/front_end/panels/application/components/StorageMetadataView.js
-var UIStrings12 = {
+var UIStrings11 = {
   /**
    * @description The origin of a URL (https://web.dev/same-site-same-origin/#origin).
    *(for a lot of languages this does not need to be translated, please translate only where necessary)
@@ -3266,8 +3322,8 @@ var UIStrings12 = {
    */
   bucketWillBeRemoved: "The selected storage bucket and contained data will be removed."
 };
-var str_12 = i18n23.i18n.registerUIStrings("panels/application/components/StorageMetadataView.ts", UIStrings12);
-var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
+var str_11 = i18n21.i18n.registerUIStrings("panels/application/components/StorageMetadataView.ts", UIStrings11);
+var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
 var StorageBucketRevealInfo = class {
   bucketInfo;
   constructor(bucketInfo) {
@@ -3299,9 +3355,9 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
   }
   render() {
     return RenderCoordinator.write("StorageMetadataView render", async () => {
-      render12(html12`
+      render11(html11`
         <style>${storageMetadataView_css_default}</style>
-        <devtools-report .data=${{ reportTitle: this.getTitle() ?? i18nString11(UIStrings12.loading) }}>
+        <devtools-report .data=${{ reportTitle: this.getTitle() ?? i18nString10(UIStrings11.loading) }}>
           ${await this.renderReportContent()}
         </devtools-report>`, this.#shadow, { host: this });
     });
@@ -3311,14 +3367,14 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       return;
     }
     const origin = this.#storageKey.origin;
-    const bucketName = this.#storageBucket?.bucket.name || i18nString11(UIStrings12.defaultBucket);
+    const bucketName = this.#storageBucket?.bucket.name || i18nString10(UIStrings11.defaultBucket);
     return this.#storageBucketsModel ? `${bucketName} - ${origin}` : origin;
   }
   key(content) {
-    return html12`<devtools-report-key>${content}</devtools-report-key>`;
+    return html11`<devtools-report-key>${content}</devtools-report-key>`;
   }
   value(content) {
-    return html12`<devtools-report-value>${content}</devtools-report-value>`;
+    return html11`<devtools-report-value>${content}</devtools-report-value>`;
   }
   async renderReportContent() {
     if (!this.#storageKey) {
@@ -3341,19 +3397,19 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       "0"
       /* SDK.StorageKeyManager.StorageKeyComponent.TOP_LEVEL_SITE */
     );
-    const thirdPartyReason = ancestorChainHasCrossSite ? i18nString11(UIStrings12.yesBecauseAncestorChainHasCrossSite) : hasNonce ? i18nString11(UIStrings12.yesBecauseKeyIsOpaque) : topLevelSiteIsOpaque ? i18nString11(UIStrings12.yesBecauseTopLevelIsOpaque) : topLevelSite && origin !== topLevelSite ? i18nString11(UIStrings12.yesBecauseOriginNotInTopLevelSite) : null;
+    const thirdPartyReason = ancestorChainHasCrossSite ? i18nString10(UIStrings11.yesBecauseAncestorChainHasCrossSite) : hasNonce ? i18nString10(UIStrings11.yesBecauseKeyIsOpaque) : topLevelSiteIsOpaque ? i18nString10(UIStrings11.yesBecauseTopLevelIsOpaque) : topLevelSite && origin !== topLevelSite ? i18nString10(UIStrings11.yesBecauseOriginNotInTopLevelSite) : null;
     const isIframeOrEmbedded = topLevelSite && origin !== topLevelSite;
-    return html12`
-        ${isIframeOrEmbedded ? html12`${this.key(i18nString11(UIStrings12.origin))}
-            ${this.value(html12`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}` : nothing5}
-        ${topLevelSite || topLevelSiteIsOpaque ? this.key(i18nString11(UIStrings12.topLevelSite)) : nothing5}
+    return html11`
+        ${isIframeOrEmbedded ? html11`${this.key(i18nString10(UIStrings11.origin))}
+            ${this.value(html11`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}` : nothing5}
+        ${topLevelSite || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.topLevelSite)) : nothing5}
         ${topLevelSite ? this.value(topLevelSite) : nothing5}
-        ${topLevelSiteIsOpaque ? this.value(i18nString11(UIStrings12.opaque)) : nothing5}
-        ${thirdPartyReason ? html12`
-          ${this.key(i18nString11(UIStrings12.isThirdParty))}${this.value(thirdPartyReason)}` : nothing5}
-        ${hasNonce || topLevelSiteIsOpaque ? this.key(i18nString11(UIStrings12.isOpaque)) : nothing5}
-        ${hasNonce ? this.value(i18nString11(UIStrings12.yes)) : nothing5}
-        ${topLevelSiteIsOpaque ? this.value(i18nString11(UIStrings12.yesBecauseTopLevelIsOpaque)) : nothing5}
+        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.opaque)) : nothing5}
+        ${thirdPartyReason ? html11`
+          ${this.key(i18nString10(UIStrings11.isThirdParty))}${this.value(thirdPartyReason)}` : nothing5}
+        ${hasNonce || topLevelSiteIsOpaque ? this.key(i18nString10(UIStrings11.isOpaque)) : nothing5}
+        ${hasNonce ? this.value(i18nString10(UIStrings11.yes)) : nothing5}
+        ${topLevelSiteIsOpaque ? this.value(i18nString10(UIStrings11.yesBecauseTopLevelIsOpaque)) : nothing5}
         ${this.#storageBucket ? this.#renderStorageBucketInfo() : nothing5}
         ${this.#storageBucketsModel ? this.#renderBucketControls() : nothing5}`;
   }
@@ -3365,16 +3421,16 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     const isDefault = !name;
     const renderBucketName = () => {
       if (isDefault) {
-        return html12`<span class="default-bucket">${i18nString11(UIStrings12.defaultBucket)}</span>`;
+        return html11`<span class="default-bucket">${i18nString10(UIStrings11.defaultBucket)}</span>`;
       }
       if (!this.#showOnlyBucket) {
-        return html12`${name}`;
+        return html11`${name}`;
       }
       const revealBucket = (e) => {
         e.preventDefault();
-        void Common3.Revealer.reveal(new StorageBucketRevealInfo(this.#storageBucket));
+        void Common4.Revealer.reveal(new StorageBucketRevealInfo(this.#storageBucket));
       };
-      return html12`<devtools-link
+      return html11`<devtools-link
         @click=${revealBucket}
         title=${name}
         jslog=${VisualLogging9.action("storage-bucket").track({
@@ -3383,22 +3439,22 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
       >${name}</devtools-link>`;
     };
     if (this.#showOnlyBucket) {
-      return html12`
-        ${this.key(i18nString11(UIStrings12.bucketName))}
+      return html11`
+        ${this.key(i18nString10(UIStrings11.bucketName))}
         ${this.value(renderBucketName())}`;
     }
-    return html12`
-      ${this.key(i18nString11(UIStrings12.bucketName))}
+    return html11`
+      ${this.key(i18nString10(UIStrings11.bucketName))}
       ${this.value(renderBucketName())}
-      ${this.key(i18nString11(UIStrings12.persistent))}
-      ${this.value(persistent ? i18nString11(UIStrings12.yes) : i18nString11(UIStrings12.no))}
-      ${this.key(i18nString11(UIStrings12.durability))}
+      ${this.key(i18nString10(UIStrings11.persistent))}
+      ${this.value(persistent ? i18nString10(UIStrings11.yes) : i18nString10(UIStrings11.no))}
+      ${this.key(i18nString10(UIStrings11.durability))}
       ${this.value(durability)}
-      ${quota !== 0 ? html12`
-        ${this.key(i18nString11(UIStrings12.quota))}
-        ${this.value(i18n23.ByteUtilities.bytesToString(quota))}
+      ${quota !== 0 ? html11`
+        ${this.key(i18nString10(UIStrings11.quota))}
+        ${this.value(i18n21.ByteUtilities.bytesToString(quota))}
       ` : nothing5}
-      ${this.key(i18nString11(UIStrings12.expiration))}
+      ${this.key(i18nString10(UIStrings11.expiration))}
       ${this.value(this.#getExpirationString())}`;
   }
   #getExpirationString() {
@@ -3407,18 +3463,18 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     const { expiration } = this.#storageBucket;
     if (expiration === 0) {
-      return i18nString11(UIStrings12.none);
+      return i18nString10(UIStrings11.none);
     }
     return new Date(expiration * 1e3).toLocaleString();
   }
   #renderBucketControls() {
-    return html12`
+    return html11`
     <devtools-report-divider></devtools-report-divider>
     <devtools-report-section>
-      <devtools-button aria-label=${i18nString11(UIStrings12.deleteBucket)}
+      <devtools-button aria-label=${i18nString10(UIStrings11.deleteBucket)}
                        .variant=${"outlined"}
                        @click=${this.#deleteBucket}>
-        ${i18nString11(UIStrings12.deleteBucket)}
+        ${i18nString10(UIStrings11.deleteBucket)}
       </devtools-button>
     </devtools-report-section>`;
   }
@@ -3426,7 +3482,7 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
     if (!this.#storageBucketsModel || !this.#storageBucket) {
       throw new Error("Should not call #deleteBucket if #storageBucketsModel or #storageBucket is null.");
     }
-    const ok = await UI12.UIUtils.ConfirmDialog.show(i18nString11(UIStrings12.bucketWillBeRemoved), i18nString11(UIStrings12.confirmBucketDeletion, { PH1: this.#storageBucket.bucket.name || "" }), this, { jslogContext: "delete-bucket-confirmation" });
+    const ok = await UI11.UIUtils.ConfirmDialog.show(i18nString10(UIStrings11.bucketWillBeRemoved), i18nString10(UIStrings11.confirmBucketDeletion, { PH1: this.#storageBucket.bucket.name || "" }), this, { jslogContext: "delete-bucket-confirmation" });
     if (ok) {
       this.#storageBucketsModel.deleteBucket(this.#storageBucket.bucket);
     }
@@ -3435,8 +3491,8 @@ var StorageMetadataView = class extends LegacyWrapper.LegacyWrapper.WrappableCom
 customElements.define("devtools-storage-metadata-view", StorageMetadataView);
 
 // gen/front_end/panels/application/components/SharedStorageMetadataView.js
-var { html: html13 } = Lit7;
-var UIStrings13 = {
+var { html: html12 } = Lit6;
+var UIStrings12 = {
   /**
    * @description Text in SharedStorage Metadata View of the Application panel
    */
@@ -3470,8 +3526,8 @@ var UIStrings13 = {
    */
   numBytesUsed: "Number of Bytes Used"
 };
-var str_13 = i18n25.i18n.registerUIStrings("panels/application/components/SharedStorageMetadataView.ts", UIStrings13);
-var i18nString12 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
+var str_12 = i18n23.i18n.registerUIStrings("panels/application/components/SharedStorageMetadataView.ts", UIStrings12);
+var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
 var SharedStorageMetadataView = class extends StorageMetadataView {
   #sharedStorageMetadataGetter;
   #creationTime = null;
@@ -3489,7 +3545,7 @@ var SharedStorageMetadataView = class extends StorageMetadataView {
     await this.render();
   }
   getTitle() {
-    return i18nString12(UIStrings13.sharedStorage);
+    return i18nString11(UIStrings12.sharedStorage);
   }
   async renderReportContent() {
     const metadata = await this.#sharedStorageMetadataGetter.getMetadata();
@@ -3497,31 +3553,31 @@ var SharedStorageMetadataView = class extends StorageMetadataView {
     this.#length = metadata?.length ?? 0;
     this.#bytesUsed = metadata?.bytesUsed ?? 0;
     this.#remainingBudget = metadata?.remainingBudget ?? 0;
-    return html13`
+    return html12`
       <style>${sharedStorageMetadataView_css_default}</style>
       ${await super.renderReportContent()}
-      ${this.key(i18nString12(UIStrings13.creation))}
+      ${this.key(i18nString11(UIStrings12.creation))}
       ${this.value(this.#renderDateForCreationTime())}
-      ${this.key(i18nString12(UIStrings13.numEntries))}
+      ${this.key(i18nString11(UIStrings12.numEntries))}
       ${this.value(String(this.#length))}
-      ${this.key(i18nString12(UIStrings13.numBytesUsed))}
+      ${this.key(i18nString11(UIStrings12.numBytesUsed))}
       ${this.value(String(this.#bytesUsed))}
-      ${this.key(html13`<span class="entropy-budget">${i18nString12(UIStrings13.entropyBudget)}<devtools-icon name="info" title=${i18nString12(UIStrings13.budgetExplanation)}></devtools-icon></span>`)}
-      ${this.value(html13`<span class="entropy-budget">${this.#remainingBudget}${this.#renderResetBudgetButton()}</span>`)}`;
+      ${this.key(html12`<span class="entropy-budget">${i18nString11(UIStrings12.entropyBudget)}<devtools-icon name="info" title=${i18nString11(UIStrings12.budgetExplanation)}></devtools-icon></span>`)}
+      ${this.value(html12`<span class="entropy-budget">${this.#remainingBudget}${this.#renderResetBudgetButton()}</span>`)}`;
   }
   #renderDateForCreationTime() {
     if (!this.#creationTime) {
-      return html13`${i18nString12(UIStrings13.notYetCreated)}`;
+      return html12`${i18nString11(UIStrings12.notYetCreated)}`;
     }
     const date = new Date(1e3 * this.#creationTime);
-    return html13`${date.toLocaleString()}`;
+    return html12`${date.toLocaleString()}`;
   }
   #renderResetBudgetButton() {
-    return html13`
+    return html12`
       <devtools-button .iconName=${"undo"}
                        .jslogContext=${"reset-entropy-budget"}
                        .size=${"SMALL"}
-                       .title=${i18nString12(UIStrings13.resetBudget)}
+                       .title=${i18nString11(UIStrings12.resetBudget)}
                        .variant=${"icon"}
                        @click=${this.#resetBudget.bind(this)}></devtools-button>
     `;
@@ -3533,15 +3589,15 @@ customElements.define("devtools-shared-storage-metadata-view", SharedStorageMeta
 var TrustTokensView_exports = {};
 __export(TrustTokensView_exports, {
   TrustTokensView: () => TrustTokensView,
-  i18nString: () => i18nString13
+  i18nString: () => i18nString12
 });
 import "./../../../ui/kit/kit.js";
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n27 from "./../../../core/i18n/i18n.js";
+import * as i18n25 from "./../../../core/i18n/i18n.js";
 import * as SDK6 from "./../../../core/sdk/sdk.js";
 import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
-import * as UI13 from "./../../../ui/legacy/legacy.js";
-import * as Lit8 from "./../../../ui/lit/lit.js";
+import * as UI12 from "./../../../ui/legacy/legacy.js";
+import * as Lit7 from "./../../../ui/lit/lit.js";
 import * as VisualLogging10 from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/components/trustTokensView.css.js
@@ -3583,8 +3639,8 @@ devtools-icon {
 
 // gen/front_end/panels/application/components/TrustTokensView.js
 var PRIVATE_STATE_TOKENS_EXPLANATION_URL = "https://developers.google.com/privacy-sandbox/protections/private-state-tokens";
-var { html: html14 } = Lit8;
-var UIStrings14 = {
+var { html: html13 } = Lit7;
+var UIStrings13 = {
   /**
    * @description Text for the issuer of an item
    */
@@ -3621,39 +3677,39 @@ var UIStrings14 = {
    */
   learnMore: "Learn more"
 };
-var str_14 = i18n27.i18n.registerUIStrings("panels/application/components/TrustTokensView.ts", UIStrings14);
-var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
+var str_13 = i18n25.i18n.registerUIStrings("panels/application/components/TrustTokensView.ts", UIStrings13);
+var i18nString12 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
 var REFRESH_INTERVAL_MS = 1e3;
 function renderGridOrNoDataMessage(input) {
   if (input.tokens.length === 0) {
-    return html14`
+    return html13`
         <div jslog=${VisualLogging10.pane("trust-tokens")}>
           <div class="empty-state" jslog=${VisualLogging10.section().context("empty-view")}>
-            <div class="empty-state-header">${i18nString13(UIStrings14.noTrustTokens)}</div>
+            <div class="empty-state-header">${i18nString12(UIStrings13.noTrustTokens)}</div>
             <div class="empty-state-description">
-              <span>${i18nString13(UIStrings14.trustTokensDescription)}</span>
+              <span>${i18nString12(UIStrings13.trustTokensDescription)}</span>
               <devtools-link
                 class="devtools-link"
                 href=${PRIVATE_STATE_TOKENS_EXPLANATION_URL}
                 .jslogContext=${"learn-more"}
-              >${i18nString13(UIStrings14.learnMore)}</devtools-link>
+              >${i18nString12(UIStrings13.learnMore)}</devtools-link>
             </div>
           </div>
         </div>
       `;
   }
-  return html14`
+  return html13`
       <div jslog=${VisualLogging10.pane("trust-tokens")}>
-        <span class="heading">${i18nString13(UIStrings14.trustTokens)}</span>
-        <devtools-icon name="info" title=${i18nString13(UIStrings14.allStoredTrustTokensAvailableIn)}></devtools-icon>
+        <span class="heading">${i18nString12(UIStrings13.trustTokens)}</span>
+        <devtools-icon name="info" title=${i18nString12(UIStrings13.allStoredTrustTokensAvailableIn)}></devtools-icon>
         <devtools-data-grid striped inline>
           <table>
             <tr>
-              <th id="issuer" weight="10" sortable>${i18nString13(UIStrings14.issuer)}</th>
-              <th id="count" weight="5" sortable>${i18nString13(UIStrings14.storedTokenCount)}</th>
+              <th id="issuer" weight="10" sortable>${i18nString12(UIStrings13.issuer)}</th>
+              <th id="count" weight="5" sortable>${i18nString12(UIStrings13.storedTokenCount)}</th>
               <th id="delete-button" weight="1" sortable></th>
             </tr>
-            ${input.tokens.filter((token) => token.count > 0).map((token) => html14`
+            ${input.tokens.filter((token) => token.count > 0).map((token) => html13`
                 <tr>
                   <td>${removeTrailingSlash(token.issuerOrigin)}</td>
                   <td>${token.count}</td>
@@ -3661,7 +3717,7 @@ function renderGridOrNoDataMessage(input) {
                     <devtools-button .iconName=${"bin"}
                                     .jslogContext=${"delete-all"}
                                     .size=${"SMALL"}
-                                    .title=${i18nString13(UIStrings14.deleteTrustTokens, { PH1: removeTrailingSlash(token.issuerOrigin) })}
+                                    .title=${i18nString12(UIStrings13.deleteTrustTokens, { PH1: removeTrailingSlash(token.issuerOrigin) })}
                                     .variant=${"icon"}
                                     @click=${() => input.deleteClickHandler(removeTrailingSlash(token.issuerOrigin))}></devtools-button>
                   </td>
@@ -3673,13 +3729,13 @@ function renderGridOrNoDataMessage(input) {
     `;
 }
 var DEFAULT_VIEW11 = (input, output, target) => {
-  Lit8.render(html14`
+  Lit7.render(html13`
     <style>${trustTokensView_css_default}</style>
-    <style>${UI13.inspectorCommonStyles}</style>
+    <style>${UI12.inspectorCommonStyles}</style>
     ${renderGridOrNoDataMessage(input)}
   `, target);
 };
-var TrustTokensView = class extends UI13.Widget.VBox {
+var TrustTokensView = class extends UI12.Widget.VBox {
   #updateInterval = 0;
   #tokens = [];
   #view;
@@ -3690,11 +3746,11 @@ var TrustTokensView = class extends UI13.Widget.VBox {
   wasShown() {
     super.wasShown();
     this.requestUpdate();
-    this.#updateInterval = setInterval(this.requestUpdate.bind(this), REFRESH_INTERVAL_MS);
+    this.#updateInterval = window.setInterval(this.requestUpdate.bind(this), REFRESH_INTERVAL_MS);
   }
   willHide() {
     super.willHide();
-    clearInterval(this.#updateInterval);
+    window.clearInterval(this.#updateInterval);
     this.#updateInterval = 0;
   }
   async performUpdate() {
@@ -3721,7 +3777,6 @@ export {
   BounceTrackingMitigationsView_exports as BounceTrackingMitigationsView,
   CrashReportContextGrid_exports as CrashReportContextGrid,
   EndpointsGrid_exports as EndpointsGrid,
-  InterestGroupAccessGrid_exports as InterestGroupAccessGrid,
   PermissionsPolicySection_exports as PermissionsPolicySection,
   ProtocolHandlersView_exports as ProtocolHandlersView,
   ReportsGrid_exports as ReportsGrid,

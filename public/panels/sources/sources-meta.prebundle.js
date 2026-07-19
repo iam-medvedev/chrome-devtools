@@ -361,7 +361,7 @@ const UIStrings = {
     /**
      * @description Title of an option under the Sources category that can be invoked through the Command Menu
      */
-    doNotDisplayVariableValuesInline: 'Don\'t show variable values inline',
+    doNotDisplayVariableValuesInline: 'Don’t show variable values inline',
     /**
      * @description Title of a setting under the Sources category in Settings
      */

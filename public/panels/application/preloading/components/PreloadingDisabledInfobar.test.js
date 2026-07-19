@@ -51,7 +51,7 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
             header: i18n.i18n.lockedString('Speculative loading is disabled'),
             warnings: [{
                     key: i18n.i18n.lockedString('Data Saver'),
-                    valueId: 'Speculative loading is disabled because of the operating system\'s Data Saver mode.',
+                    valueId: 'Speculative loading is disabled because of the operating system’s Data Saver mode.',
                 }],
         });
     });
@@ -64,7 +64,7 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
             header: i18n.i18n.lockedString('Speculative loading is disabled'),
             warnings: [{
                     key: i18n.i18n.lockedString('Battery Saver'),
-                    valueId: 'Speculative loading is disabled because of the operating system\'s Battery Saver mode.',
+                    valueId: 'Speculative loading is disabled because of the operating system’s Battery Saver mode.',
                 }],
         });
     });
@@ -122,11 +122,11 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
                 },
                 {
                     key: i18n.i18n.lockedString('Data Saver'),
-                    valueId: 'Speculative loading is disabled because of the operating system\'s Data Saver mode.',
+                    valueId: 'Speculative loading is disabled because of the operating system’s Data Saver mode.',
                 },
                 {
                     key: i18n.i18n.lockedString('Battery Saver'),
-                    valueId: 'Speculative loading is disabled because of the operating system\'s Battery Saver mode.',
+                    valueId: 'Speculative loading is disabled because of the operating system’s Battery Saver mode.',
                 },
                 {
                     key: i18n.i18n.lockedString('Prefetch was disabled, but is force-enabled now'),

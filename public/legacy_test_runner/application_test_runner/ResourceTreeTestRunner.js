@@ -42,7 +42,11 @@ export const dumpResourcesURLMap = function() {
   TestRunner.resourceTreeModel.forAllResources(collect);
 
   function collect(resource) {
-    results.push({url: resource.url, resource: SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(resource.url)});
+    results.push({
+      url: resource.url,
+      resource: SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(SDK.TargetManager.TargetManager.instance(),
+                                                                       resource.url)
+    });
   }
 
   function comparator(result1, result2) {

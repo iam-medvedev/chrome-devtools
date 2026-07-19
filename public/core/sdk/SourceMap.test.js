@@ -8,6 +8,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
 import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
+import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
@@ -137,7 +138,7 @@ describeWithEnvironment('SourceMap', () => {
             '1:0',
             // clang-format on
         ]);
-        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
         assertMapping(sourceMap.findEntry(0, 9), 0, 'example.js', 0, 9);
         assertMapping(sourceMap.findEntry(0, 13), 0, 'example.js', 0, 13);
         assertMapping(sourceMap.findEntry(0, 15), 0, 'example.js', 0, 25);
@@ -163,7 +164,7 @@ describeWithEnvironment('SourceMap', () => {
             '10:5 => other.js:5:0',
             // clang-format on
         ]);
-        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
         // Exact match for source location.
         assert.deepEqual(sourceMap.findReverseRanges(sourceUrlExample, 3, 0).map(r => r.serializeToObject()), [
             { startLine: 1, startColumn: 0, endLine: 2, endColumn: 0 },
@@ -211,7 +212,7 @@ describeWithEnvironment('SourceMap', () => {
             '8:0 => example.js:1:0',
             // clang-format on
         ]);
-        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
         assert.deepEqual(sourceMap.findReverseRanges(sourceUrlExample, 1, 0).map(r => r.serializeToObject()), [
             { startLine: 0, startColumn: 0, endLine: 1, endColumn: 0 },
             { startLine: 2, startColumn: 0, endLine: 5, endColumn: 0 },
@@ -233,7 +234,7 @@ describeWithEnvironment('SourceMap', () => {
             '5:0 => example.js:1:0',
             // clang-format on
         ]);
-        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
         // Without filtering, we should get all entries.
         assert.deepEqual(sourceMap.findReverseEntries(sourceUrlExample, 1, 0).map(e => e.lineNumber), [0, 1, 2, 4, 5]);
         // With filtering, we should only get the first of contiguous blocks:
@@ -247,7 +248,7 @@ describeWithEnvironment('SourceMap', () => {
             sources: [sourceUrlExample],
             version: 3,
         };
-        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
         assertMapping(sourceMap.findEntry(0, 0), 0, 'example.js', 0, 0);
         assertMapping(sourceMap.findEntry(0, 2), 0, 'example.js', 0, 2);
         const emptyEntry = sourceMap.findEntry(0, 1);
@@ -262,7 +263,7 @@ describeWithEnvironment('SourceMap', () => {
             sources: [sourceUrlExample],
             version: 3,
         };
-        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
         assertMapping(sourceMap.findEntry(0, 0), 0, 'example.js', 0, 0);
         assertReverseMapping(sourceMap.sourceLineMapping(sourceUrlExample, 1, 0), 3, 1);
     });
@@ -279,7 +280,7 @@ describeWithEnvironment('SourceMap', () => {
             mappings: 'GAAA,DAAC,DAAC,DAAC',
             sources: ['example.js'],
             version: 3,
-        });
+        }, new Common.Console.Console());
         assertMapping(sourceMap.findEntry(0, 0), 0, 'example.js', 0, 3);
         assertMapping(sourceMap.findEntry(0, 1), 0, 'example.js', 0, 2);
         assertMapping(sourceMap.findEntry(0, 2), 0, 'example.js', 0, 1);
@@ -307,7 +308,7 @@ describeWithEnvironment('SourceMap', () => {
             ],
             version: 3,
         };
-        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
         assert.lengthOf(sourceMap.sourceURLs(), 3, 'unexpected number of original source URLs');
         assertMapping(sourceMap.findEntry(0, 0), 0, 'source1.js', 0, 0);
         assertMapping(sourceMap.findEntry(0, 1), 0, 'source1.js', 2, 1);
@@ -348,7 +349,7 @@ describeWithEnvironment('SourceMap', () => {
             sources: ['chrome_issue_611738.cljs'],
             mappings: ';AAAA;;AAGA,kBAAA,dAAMA;AAAN,AACE,IAAAC,uBAAA;AAAA,AAAA',
             names: ['name1', 'generated31465'],
-        });
+        }, new Common.Console.Console());
         assert.propertyVal(sourceMap.findEntry(1, 0), 'name', undefined);
         assert.propertyVal(sourceMap.findEntry(3, 0), 'name', undefined);
         assert.propertyVal(sourceMap.findEntry(3, 4), 'name', 'name1');
@@ -371,7 +372,7 @@ describeWithEnvironment('SourceMap', () => {
             // clang-format on
         ], 'wp:///' /* sourceRoot */);
         const sourceMapJsonUrl = urlString `wp://test/source-map.json`;
-        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
         assertMapping(sourceMap.findEntry(0, 0), 0, 'wp:///example.js', 1, 0);
         assertMapping(sourceMap.findEntry(1, 0), 1, 'wp:///example.js', 3, 0);
         assertMapping(sourceMap.findEntry(4, 0), 2, 'wp:///other.js', 5, 0);
@@ -389,8 +390,8 @@ describeWithEnvironment('SourceMap', () => {
                 sourcesContent: ['function foo() {\n  console.log("Hello world!");\n}'],
                 version: 3,
             };
-            const sourceMap1 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload);
-            const sourceMap2 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload);
+            const sourceMap1 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload, new Common.Console.Console());
+            const sourceMap2 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload, new Common.Console.Console());
             assert.isTrue(sourceMap1.compatibleForURL(sourceURL, sourceMap2));
             assert.isTrue(sourceMap2.compatibleForURL(sourceURL, sourceMap1));
         });
@@ -401,8 +402,8 @@ describeWithEnvironment('SourceMap', () => {
                 sources: ['foo.ts'],
                 version: 3,
             };
-            const sourceMap1 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload);
-            const sourceMap2 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload);
+            const sourceMap1 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload, new Common.Console.Console());
+            const sourceMap2 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload, new Common.Console.Console());
             assert.isTrue(sourceMap1.compatibleForURL(sourceURL, sourceMap2));
             assert.isTrue(sourceMap2.compatibleForURL(sourceURL, sourceMap1));
         });
@@ -413,14 +414,14 @@ describeWithEnvironment('SourceMap', () => {
                 sources: ['foo.ts'],
                 sourcesContent: ['function foo() {\n  console.log("Hello from first!");\n}'],
                 version: 3,
-            });
+            }, new Common.Console.Console());
             const sourceMap2 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, {
                 mappings: '',
                 sourceRoot,
                 sources: ['foo.ts'],
                 sourcesContent: ['function foo() {\n  console.log("Hello from second!");\n}'],
                 version: 3,
-            });
+            }, new Common.Console.Console());
             assert.isFalse(sourceMap1.compatibleForURL(sourceURL, sourceMap2));
             assert.isFalse(sourceMap2.compatibleForURL(sourceURL, sourceMap1));
         });
@@ -436,8 +437,8 @@ describeWithEnvironment('SourceMap', () => {
                 ...payload1,
                 ignoreList: [0],
             };
-            const sourceMap1 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload1);
-            const sourceMap2 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload2);
+            const sourceMap1 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload1, new Common.Console.Console());
+            const sourceMap2 = new SDK.SourceMap.SourceMap(compiledURL, sourceMappingURL, payload2, new Common.Console.Console());
             assert.isFalse(sourceMap1.compatibleForURL(sourceURL, sourceMap2));
             assert.isFalse(sourceMap2.compatibleForURL(sourceURL, sourceMap1));
         });
@@ -737,7 +738,7 @@ describeWithEnvironment('SourceMap', () => {
         for (const { sourceRoot, sourceURL, sourceMapURL, expected } of cases) {
             it(`can resolve sourceURL "${sourceURL}" with sourceRoot "${sourceRoot}" and sourceMapURL "${sourceMapURL}"`, () => {
                 const mappingPayload = { mappings: 'AAAA;;;CACA', sourceRoot, sources: [sourceURL], version: 3 };
-                const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, urlString `${sourceMapURL}`, mappingPayload);
+                const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, urlString `${sourceMapURL}`, mappingPayload, new Common.Console.Console());
                 const sourceURLs = sourceMap.sourceURLs();
                 assert.lengthOf(sourceURLs, 1, 'unexpected number of original source URLs');
                 assert.strictEqual(sourceURLs[0], expected);
@@ -751,7 +752,7 @@ describeWithEnvironment('SourceMap', () => {
                 sources: [sourceURL],
                 sourcesContent: ['console.log(42)'],
                 mappings: '',
-            });
+            }, new Common.Console.Console());
             const sourceURLs = sourceMap.sourceURLs();
             assert.lengthOf(sourceURLs, 1);
             assert.strictEqual(sourceURLs[0], sourceURL);
@@ -769,7 +770,7 @@ describeWithEnvironment('SourceMap', () => {
             ], 'wp:///' /* sourceRoot */);
             mappingPayload.ignoreList = [0 /* vendor.js */, 3 /* other.js */];
             const sourceMapJsonUrl = urlString `wp://test/source-map.json`;
-            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
             assert.isTrue(sourceMap.hasIgnoreListHint(urlString `wp:///vendor.js`));
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///main.js`));
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///example.js`));
@@ -786,7 +787,7 @@ describeWithEnvironment('SourceMap', () => {
             ], 'wp:///' /* sourceRoot */);
             mappingPayload.x_google_ignoreList = [0 /* vendor.js */, 3 /* other.js */];
             const sourceMapJsonUrl = urlString `wp://test/source-map.json`;
-            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
             assert.isTrue(sourceMap.hasIgnoreListHint(urlString `wp:///vendor.js`));
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///main.js`));
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///example.js`));
@@ -804,7 +805,7 @@ describeWithEnvironment('SourceMap', () => {
             mappingPayload.ignoreList = [0 /* vendor.js */, 3 /* other.js */];
             mappingPayload.x_google_ignoreList = [1 /* main.js */, 2 /* example.js */];
             const sourceMapJsonUrl = urlString `wp://test/source-map.json`;
-            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
             assert.isTrue(sourceMap.hasIgnoreListHint(urlString `wp:///vendor.js`));
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///main.js`));
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///example.js`));
@@ -821,7 +822,7 @@ describeWithEnvironment('SourceMap', () => {
             ], 'wp:///' /* sourceRoot */);
             mappingPayload.ignoreList = [0 /* vendor1.js */, 1 /* vendor2.js */, 2 /* vendor3.js */];
             const sourceMapJsonUrl = urlString `wp://test/source-map.json`;
-            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///foo.js`));
             assert.isTrue(sourceMap.hasIgnoreListHint(urlString `wp:///vendor1.js`));
             assert.isTrue(sourceMap.hasIgnoreListHint(urlString `wp:///vendor2.js`));
@@ -852,7 +853,7 @@ describeWithEnvironment('SourceMap', () => {
             ], 'wp:///' /* sourceRoot */);
             mappingPayload.ignoreList = [1 /* vendor1.js */, 3 /* vendor2.js */, 5 /* vendor3.js */];
             const sourceMapJsonUrl = urlString `wp://test/source-map.json`;
-            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///foo.js`));
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///bar.js`));
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///baz.js`));
@@ -891,7 +892,7 @@ describeWithEnvironment('SourceMap', () => {
             ], 'wp:///' /* sourceRoot */);
             mappingPayload.ignoreList = [0 /* vendor1.js */, 1 /* vendor2.js */, 2 /* vendor3.js */];
             const sourceMapJsonUrl = urlString `wp://test/source-map.json`;
-            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///foo.js`));
             assert.isTrue(sourceMap.hasIgnoreListHint(urlString `wp:///vendor1.js`));
             assert.isTrue(sourceMap.hasIgnoreListHint(urlString `wp:///vendor2.js`));
@@ -925,7 +926,7 @@ describeWithEnvironment('SourceMap', () => {
             ], 'wp:///' /* sourceRoot */);
             mappingPayload.ignoreList = [1 /* vendor1.js */, 2 /* vendor2.js */, 3 /* vendor3.js */];
             const sourceMapJsonUrl = urlString `wp://test/source-map.json`;
-            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload);
+            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, mappingPayload, new Common.Console.Console());
             assert.isFalse(sourceMap.hasIgnoreListHint(urlString `wp:///foo.js`));
             assert.isTrue(sourceMap.hasIgnoreListHint(urlString `wp:///vendor1.js`));
             assert.isTrue(sourceMap.hasIgnoreListHint(urlString `wp:///vendor2.js`));
@@ -970,7 +971,7 @@ describeWithEnvironment('SourceMap', () => {
         const { SourceMap } = SDK.SourceMap;
         const { TextRange } = TextUtils.TextRange;
         it('yields an empty array for unknown source URLs', () => {
-            const sourceMap = new SourceMap(compiledUrl, sourceMapJsonUrl, encodeSourceMap(['0:0 => example.js:0:0']));
+            const sourceMap = new SourceMap(compiledUrl, sourceMapJsonUrl, encodeSourceMap(['0:0 => example.js:0:0']), new Common.Console.Console());
             assert.isEmpty(sourceMap.reverseMapTextRanges(sourceUrlOther, new TextRange(0, 0, 1, 1)));
         });
         it('yields a single range for trivial single-line, fully contained mappings', () => {
@@ -979,7 +980,7 @@ describeWithEnvironment('SourceMap', () => {
                 '0:5 => example.js:0:6',
                 '1:0 => other.js:0:0',
                 '1:8 => other.js:0:9',
-            ]));
+            ]), new Common.Console.Console());
             const exampleRanges = sourceMap.reverseMapTextRanges(sourceUrlExample, new TextRange(0, 0, 0, 6));
             assert.lengthOf(exampleRanges, 1, 'expected a single range');
             assert.deepEqual(exampleRanges[0], new TextRange(0, 0, 0, 5));
@@ -995,7 +996,7 @@ describeWithEnvironment('SourceMap', () => {
                 '5:0 => other.js:1:1',
                 '5:1 => other.js:1:4',
                 '5:8 => other.js:1:8',
-            ]));
+            ]), new Common.Console.Console());
             const exampleRanges = sourceMap.reverseMapTextRanges(sourceUrlExample, new TextRange(0, 1, 0, 6));
             assert.lengthOf(exampleRanges, 1, 'expected a single range');
             assert.deepEqual(exampleRanges[0], new TextRange(0, 0, 0, 9));
@@ -1008,7 +1009,7 @@ describeWithEnvironment('SourceMap', () => {
                 '0:0 => example.js:0:0',
                 '2:5 => example.js:1:5',
                 '9:9 => example.js:1:9',
-            ]));
+            ]), new Common.Console.Console());
             let exampleRanges = sourceMap.reverseMapTextRanges(sourceUrlExample, new TextRange(0, 0, 1, 6));
             assert.lengthOf(exampleRanges, 1, 'expected a single range');
             assert.deepEqual(exampleRanges[0], new TextRange(0, 0, 9, 9));
@@ -1020,7 +1021,7 @@ describeWithEnvironment('SourceMap', () => {
             const sourceMap = new SourceMap(compiledUrl, sourceMapJsonUrl, encodeSourceMap([
                 '0:0 => example.js:0:0',
                 '0:1 => example.js:0:3',
-            ]));
+            ]), new Common.Console.Console());
             const exampleRanges = sourceMap.reverseMapTextRanges(sourceUrlExample, new TextRange(0, 0, 0, 3));
             assert.lengthOf(exampleRanges, 1, 'expected a single range');
             assert.deepEqual(exampleRanges[0], new TextRange(0, 0, 0, 1));
@@ -1029,7 +1030,7 @@ describeWithEnvironment('SourceMap', () => {
             const sourceMap = new SourceMap(compiledUrl, sourceMapJsonUrl, encodeSourceMap([
                 '1:2 => example.js:4:0',
                 '3:4 => example.js:4:5',
-            ]));
+            ]), new Common.Console.Console());
             const exampleRanges = sourceMap.reverseMapTextRanges(sourceUrlExample, new TextRange(0, 0, 4, 1));
             assert.lengthOf(exampleRanges, 1, 'expected a single range');
             assert.deepEqual(exampleRanges[0], new TextRange(1, 2, 3, 4));
@@ -1038,7 +1039,7 @@ describeWithEnvironment('SourceMap', () => {
             const sourceMap = new SourceMap(compiledUrl, sourceMapJsonUrl, encodeSourceMap([
                 '1:2 => example.js:4:0',
                 '3:4 => example.js:4:5',
-            ]));
+            ]), new Common.Console.Console());
             let exampleRanges = sourceMap.reverseMapTextRanges(sourceUrlExample, new TextRange(4, 0, 10, 0));
             assert.lengthOf(exampleRanges, 1, 'expected a single range');
             assert.deepEqual(exampleRanges[0], TextRange.createUnboundedFromLocation(1, 2));
@@ -1060,7 +1061,7 @@ describeWithEnvironment('SourceMap', () => {
                 '1:5 => example.js:4:8',
                 '1:6 => example.js:1:0',
                 '1:7 => example.js:4:9',
-            ]));
+            ]), new Common.Console.Console());
             let exampleRanges = sourceMap.reverseMapTextRanges(sourceUrlExample, new TextRange(4, 1, 4, 6));
             assert.lengthOf(exampleRanges, 2, 'expected two distinct ranges');
             assert.deepEqual(exampleRanges[0], new TextRange(1, 0, 1, 1));
@@ -1082,7 +1083,7 @@ describeWithEnvironment('SourceMap', () => {
                 '1:5 => example.js:1:8',
                 '2:6 => example.js:1:1',
                 '2:7 => example.js:1:9',
-            ]));
+            ]), new Common.Console.Console());
             const exampleRanges = sourceMap.reverseMapTextRanges(sourceUrlExample, new TextRange(1, 2, 1, 7));
             assert.lengthOf(exampleRanges, 2, 'expected two distinct ranges');
             assert.deepEqual(exampleRanges[0], new TextRange(1, 4, 1, 5));
@@ -1097,7 +1098,7 @@ describeWithEnvironment('SourceMap', () => {
                 '1:5 => example.js:1:8',
                 '2:6 => example.js:1:1',
                 '2:7 => example.js:1:9',
-            ]));
+            ]), new Common.Console.Console());
             const exampleRanges = sourceMap.reverseMapTextRanges(sourceUrlExample, new TextRange(1, 0, 1, 9));
             assert.lengthOf(exampleRanges, 1, 'expected a single maximally merged range');
             assert.deepEqual(exampleRanges[0], new TextRange(1, 0, 2, 7));
@@ -1123,7 +1124,7 @@ describeWithEnvironment('SourceMap', () => {
                 .endRange(0, 10)
                 .endRange(0, 10)
                 .endRange(0, 10);
-            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, ScopesCodec.encode(builder.build(), { version: 3, sources: ['foo.ts'], mappings: '' }));
+            const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, ScopesCodec.encode(builder.build(), { version: 3, sources: ['foo.ts'], mappings: '' }), new Common.Console.Console());
             assert.isNull(sourceMap.findEntry(0, 7, 0)); // We don't have mappings, so inlineFrameIndex = 0 ('baz') has no entry.
             const barEntry = sourceMap.findEntry(0, 7, 1);
             assert.isNotNull(barEntry);
@@ -1173,7 +1174,7 @@ describeWithEnvironment('SourceMap', () => {
                 { offset: { line: 1, column: 100 }, map: map2 },
             ],
         };
-        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, indexMap);
+        const sourceMap = new SDK.SourceMap.SourceMap(compiledUrl, sourceMapJsonUrl, indexMap, new Common.Console.Console());
         assert.strictEqual(sourceMap.findOriginalFunctionName({ line: 0, column: 10 }), 'foo');
         assert.strictEqual(sourceMap.findOriginalFunctionName({ line: 1, column: 110 }), 'bar');
     });
@@ -1183,7 +1184,7 @@ describeWithEnvironment('SourceMap', () => {
             mappings: 'A',
             sources: [],
             names: [],
-        });
+        }, new Common.Console.Console());
         assert.doesNotThrow(() => sourceMap.mappings());
     });
     it('handles source maps with illegal source indices (https://crbug.com/395822775)', () => {
@@ -1192,7 +1193,7 @@ describeWithEnvironment('SourceMap', () => {
             mappings: 'ACAA', // [0, 1, 0, 0]
             sources: [],
             names: [],
-        });
+        }, new Common.Console.Console());
         assert.doesNotThrow(() => sourceMap.mappings());
     });
     it('builds scopes fallback when the source map does not have any scope information', async () => {
@@ -1208,7 +1209,7 @@ describeWithEnvironment('SourceMap', () => {
             mappings: 'ACAA,qCAAA',
             sources: ['module1.js', 'module2.js'],
             names: [],
-        }, script);
+        }, new Common.Console.Console(), script);
         sinon.assert.notCalled(scopeTreeStub);
         await sourceMap.waitForScopeInfo();
         assert.isTrue(sourceMap.hasScopeInfo());

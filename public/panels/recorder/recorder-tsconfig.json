@@ -36,9 +36,18 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/panels/recorder/RecorderController.ts",
+    "../../../../../../front_end/panels/recorder/ControlButton.ts",
+    "../../../../../../front_end/panels/recorder/CreateRecordingView.ts",
+    "../../../../../../front_end/panels/recorder/ExtensionView.ts",
     "../../../../../../front_end/panels/recorder/RecorderEvents.ts",
     "../../../../../../front_end/panels/recorder/RecorderPanel.ts",
+    "../../../../../../front_end/panels/recorder/RecordingListView.ts",
+    "../../../../../../front_end/panels/recorder/RecordingView.ts",
+    "../../../../../../front_end/panels/recorder/ReplaySection.ts",
+    "../../../../../../front_end/panels/recorder/SelectorPicker.ts",
+    "../../../../../../front_end/panels/recorder/StepEditor.ts",
+    "../../../../../../front_end/panels/recorder/StepView.ts",
+    "../../../../../../front_end/panels/recorder/TimelineSection.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts"
@@ -63,6 +72,12 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../generated/generated-tsconfig.json"
+    },
+    {
+      "path": "../../models/badges/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/bindings/bundle-tsconfig.json"
     },
     {
@@ -81,16 +96,34 @@
       "path": "../../services/tracing/bundle-tsconfig.json"
     },
     {
+      "path": "../../third_party/codemirror.next/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../third_party/puppeteer/bundle-tsconfig.json"
+    },
+    {
       "path": "../../third_party/puppeteer-replay/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/code_highlighter/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/dialogs/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/input/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/menus/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/suggestion_input/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/text_editor/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/kit/bundle-tsconfig.json"
@@ -105,9 +138,6 @@
       "path": "../../ui/visual_logging/bundle-tsconfig.json"
     },
     {
-      "path": "components/bundle-tsconfig.json"
-    },
-    {
       "path": "converters/bundle-tsconfig.json"
     },
     {
@@ -117,7 +147,13 @@
       "path": "models/bundle-tsconfig.json"
     },
     {
+      "path": "models/recorder-tsconfig.json"
+    },
+    {
       "path": "recorder-actions/bundle-tsconfig.json"
+    },
+    {
+      "path": "util/bundle-tsconfig.json"
     }
   ]
 }

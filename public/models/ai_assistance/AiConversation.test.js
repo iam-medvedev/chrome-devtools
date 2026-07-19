@@ -8,25 +8,30 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { createNetworkRequest, mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
-import { createTarget, describeWithEnvironment, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Logs from '../logs/logs.js';
 import * as NetworkTimeCalculator from '../network_time_calculator/network_time_calculator.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as AiAssistance from './ai_assistance.js';
-describeWithEnvironment('AiConversation', () => {
+describe('AiConversation', () => {
+    setupLocaleHooks();
+    after(async () => {
+        await deinitializeGlobalVars();
+    });
+    let universe;
     beforeEach(() => {
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
+        universe = new TestUniverse();
+        const { targetManager, workspace, settings, networkLog, ignoreListManager, debuggerWorkspaceBinding } = universe;
+        sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(workspace);
+        sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(targetManager);
+        sinon.stub(Common.Settings.Settings, 'instance').returns(settings);
+        sinon.stub(Logs.NetworkLog.NetworkLog, 'instance').returns(networkLog);
+        sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(ignoreListManager);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(debuggerWorkspaceBinding);
     });
     it('should be able to switch agent type based on context', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
@@ -43,7 +48,7 @@ describeWithEnvironment('AiConversation', () => {
     });
     it('should update context when agent returns CONTEXT_CHANGE', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const workspace = universe.workspace;
         const project = {
             id: () => 'test-project',
             type: () => Workspace.Workspace.projectTypes.Network,
@@ -141,7 +146,7 @@ describeWithEnvironment('AiConversation', () => {
         });
         const contentData = new TextUtils.ContentData.ContentData('test content', false, 'text/plain');
         sinon.stub(networkRequest, 'requestContentData').resolves(contentData);
-        sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requests').returns([networkRequest]);
+        sinon.stub(universe.networkLog, 'requests').returns([networkRequest]);
         assert.isUndefined(conversation.origin);
         await Array.fromAsync(conversation.run('test query'));
         assert.strictEqual(conversation.origin, 'https://example.com');
@@ -193,7 +198,7 @@ describeWithEnvironment('AiConversation', () => {
         });
         sinon.stub(networkRequest, 'requestContentData')
             .resolves(new TextUtils.ContentData.ContentData('test content', false, 'text/plain'));
-        sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requests').returns([networkRequest]);
+        sinon.stub(universe.networkLog, 'requests').returns([networkRequest]);
         await Array.fromAsync(conversation.run('test query 1'));
         // Called two time as we pass the convestation to the new agent.
         assert.lengthOf(aidaClient.doConversation.getCalls(), 2);
@@ -218,7 +223,7 @@ describeWithEnvironment('AiConversation', () => {
         const otherOrigin = Platform.DevToolsPath.urlString `https://other.com`;
         const target = sinon.createStubInstance(SDK.Target.Target);
         target.inspectedURL.returns(Platform.DevToolsPath.urlString `${origin}/`);
-        sinon.stub(SDK.TargetManager.TargetManager.instance(), 'primaryPageTarget').returns(target);
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
         const sameOriginRequest = SDK.NetworkRequest.NetworkRequest.create('requestId1', Platform.DevToolsPath.urlString `${origin}/foo`, Platform.DevToolsPath.urlString `${origin}/foo`, null, null, null);
         sameOriginRequest.statusCode = 200;
         sameOriginRequest.setIssueTime(0, 0);
@@ -227,7 +232,7 @@ describeWithEnvironment('AiConversation', () => {
         crossOriginRequest.statusCode = 200;
         crossOriginRequest.setIssueTime(0, 0);
         crossOriginRequest.endTime = 1;
-        const networkLog = Logs.NetworkLog.NetworkLog.instance();
+        const networkLog = universe.networkLog;
         sinon.stub(networkLog, 'requests').returns([sameOriginRequest, crossOriginRequest]);
         const aidaClient = mockAidaClient([
             [{
@@ -267,12 +272,12 @@ describeWithEnvironment('AiConversation', () => {
         const otherOrigin = Platform.DevToolsPath.urlString `https://other.com`;
         const target = sinon.createStubInstance(SDK.Target.Target);
         target.inspectedURL.returns(Platform.DevToolsPath.urlString `${origin}/`);
-        sinon.stub(SDK.TargetManager.TargetManager.instance(), 'primaryPageTarget').returns(target);
+        sinon.stub(universe.targetManager, 'primaryPageTarget').returns(target);
         const request1 = SDK.NetworkRequest.NetworkRequest.create('requestId1', Platform.DevToolsPath.urlString `${origin}/foo`, Platform.DevToolsPath.urlString `${origin}/foo`, null, null, null);
         request1.statusCode = 200;
         request1.setIssueTime(0, 0);
         request1.endTime = 1;
-        const networkLog = Logs.NetworkLog.NetworkLog.instance();
+        const networkLog = universe.networkLog;
         const requestsStub = sinon.stub(networkLog, 'requests').returns([request1]);
         const aidaClient = mockAidaClient([
             [{
@@ -374,13 +379,13 @@ describeWithEnvironment('AiConversation', () => {
     async function testNavigationDuringRun({ navigationUrl, expectBlocked, }) {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
         const origin = Platform.DevToolsPath.urlString `https://example.com`;
-        const target = createTarget({ url: Platform.DevToolsPath.urlString `${origin}/` });
+        const target = universe.createTarget({ url: Platform.DevToolsPath.urlString `${origin}/` });
         target.setInspectedURL(Platform.DevToolsPath.urlString `${origin}/`);
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId1', Platform.DevToolsPath.urlString `${origin}/foo`, Platform.DevToolsPath.urlString `${origin}/foo`, null, null, null);
         request.statusCode = 200;
         request.setIssueTime(0, 0);
         request.endTime = 1;
-        const networkLog = Logs.NetworkLog.NetworkLog.instance();
+        const networkLog = universe.networkLog;
         sinon.stub(networkLog, 'requests').returns([request]);
         const aidaClient = mockAidaClient([
             [{
@@ -495,7 +500,7 @@ describeWithEnvironment('AiConversation', () => {
         });
         sinon.stub(networkRequest, 'requestContentData')
             .resolves(new TextUtils.ContentData.ContentData('test content', false, 'text/plain'));
-        sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requests').returns([networkRequest]);
+        sinon.stub(universe.networkLog, 'requests').returns([networkRequest]);
         conversation.setContext(new AiAssistance.RequestContext.RequestContext(networkRequest, new NetworkTimeCalculator.NetworkTransferTimeCalculator()));
         await Array.fromAsync(conversation.run('test network query'));
         assert.lengthOf(aidaClient.doConversation.getCalls(), 2);

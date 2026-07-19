@@ -119,5 +119,103 @@ describeWithEnvironment('LighthouseProtocolService', () => {
         });
         sinon.assert.notCalled(handleDialogStub);
     });
+    describe('worker protocol proxying', () => {
+        const MAIN_SESSION_ID = 'LH_MAIN_SESSION';
+        const CHILD_SESSION_ID = 'LH_CHILD_SESSION';
+        const OTHER_SESSION_ID = 'OTHER_SESSION';
+        let connection;
+        let connectionSend;
+        let workerPostMessage;
+        let mockWorker;
+        let workerStub;
+        let service;
+        function workerSend(payload) {
+            mockWorker.dispatchEvent(new MessageEvent('message', {
+                data: { action: 'sendProtocolMessage', args: { message: JSON.stringify(payload) } },
+            }));
+        }
+        function attachedToTargetEvent(outerSessionId, innerSessionId) {
+            return {
+                method: 'Target.attachedToTarget',
+                params: {
+                    sessionId: innerSessionId,
+                    targetInfo: {
+                        targetId: 'x',
+                        type: 'page',
+                        title: '',
+                        url: 'http://example.com/',
+                        attached: true,
+                        canAccessOpener: false,
+                    },
+                    waitingForDebugger: true,
+                },
+                sessionId: outerSessionId,
+            };
+        }
+        beforeEach(async () => {
+            mockWorker = new EventTarget();
+            workerPostMessage = sinon.stub();
+            mockWorker.postMessage = workerPostMessage;
+            mockWorker.terminate = sinon.stub();
+            workerStub = sinon.stub(globalThis, 'Worker').returns(mockWorker);
+            const router = rootTarget.router();
+            assert.exists(router);
+            connection = router.connection;
+            connection.setSuccessHandler('Target.attachToTarget', () => ({ sessionId: MAIN_SESSION_ID }));
+            service = new Lighthouse.LighthouseProtocolService.ProtocolService();
+            await service.attach(urlString `https://example.com/page`);
+            connectionSend = sinon.stub(connection, 'send').resolves({ result: {} });
+            // Ensure the worker promise is resolved so that send() does not queue.
+            const workerReady = service.ensureWorkerExists();
+            mockWorker.dispatchEvent(new MessageEvent('message', { data: 'workerReady' }));
+            await workerReady;
+            workerPostMessage.resetHistory();
+        });
+        afterEach(() => {
+            workerStub.restore();
+        });
+        it('only relays worker commands targeting sessions created for the run', () => {
+            workerSend({ id: 1, method: 'Runtime.enable', sessionId: MAIN_SESSION_ID });
+            sinon.assert.calledOnceWithExactly(connectionSend, 'Runtime.enable', undefined, MAIN_SESSION_ID);
+            connectionSend.resetHistory();
+            workerSend({ id: 2, method: 'Target.setAutoAttach', params: { autoAttach: true } });
+            workerSend({ id: 3, method: 'Target.setAutoAttach', params: { autoAttach: true }, sessionId: '' });
+            workerSend({ id: 4, method: 'Runtime.enable', sessionId: OTHER_SESSION_ID });
+            sinon.assert.notCalled(connectionSend);
+        });
+        it('relays worker commands targeting auto-attached child sessions', () => {
+            service.onEvent(attachedToTargetEvent(MAIN_SESSION_ID, CHILD_SESSION_ID));
+            workerSend({ id: 1, method: 'Runtime.enable', sessionId: CHILD_SESSION_ID });
+            sinon.assert.calledOnceWithExactly(connectionSend, 'Runtime.enable', undefined, CHILD_SESSION_ID);
+            connectionSend.resetHistory();
+            service.onEvent({
+                method: 'Target.detachedFromTarget',
+                params: { sessionId: CHILD_SESSION_ID, targetId: 'x' },
+                sessionId: MAIN_SESSION_ID,
+            });
+            workerSend({ id: 2, method: 'Runtime.enable', sessionId: CHILD_SESSION_ID });
+            sinon.assert.notCalled(connectionSend);
+        });
+        it('does not adopt empty child session ids from attachedToTarget', () => {
+            service.onEvent(attachedToTargetEvent(MAIN_SESSION_ID, ''));
+            workerSend({ id: 1, method: 'Target.setAutoAttach', sessionId: '' });
+            workerSend({ id: 2, method: 'Target.setAutoAttach' });
+            sinon.assert.notCalled(connectionSend);
+        });
+        it('only forwards events from sessions created for the run', async () => {
+            service.onEvent({ method: 'Runtime.executionContextsCleared', params: undefined, sessionId: MAIN_SESSION_ID });
+            service.onEvent({ method: 'Runtime.executionContextsCleared', params: undefined, sessionId: OTHER_SESSION_ID });
+            service.onEvent(attachedToTargetEvent(OTHER_SESSION_ID, CHILD_SESSION_ID));
+            await new Promise(resolve => setTimeout(resolve, 0));
+            const forwarded = workerPostMessage.getCalls()
+                .map(call => call.args[0])
+                .filter(message => message.action === 'dispatchProtocolMessage');
+            assert.lengthOf(forwarded, 1);
+            assert.strictEqual(forwarded[0].args.message.sessionId, MAIN_SESSION_ID);
+            // Child session ids introduced by events on unrelated sessions are not adopted.
+            workerSend({ id: 1, method: 'Runtime.enable', sessionId: CHILD_SESSION_ID });
+            sinon.assert.notCalled(connectionSend);
+        });
+    });
 });
 //# sourceMappingURL=LighthouseProtocolService.test.js.map

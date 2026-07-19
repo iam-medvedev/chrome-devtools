@@ -538,7 +538,7 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(aiLabelButtonWrapper);
             const tooltip = aiLabelButtonWrapper.querySelector('devtools-tooltip');
             assert.isOk(tooltip);
-            assert.strictEqual(cleanTextContent(tooltip.innerText), 'The selected call stack is sent to Google. This data may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\'t always get it right. Learn more in settings');
+            assert.strictEqual(cleanTextContent(tooltip.innerText), 'The selected call stack is sent to Google. This data may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right. Learn more in settings');
         });
         it('does not show the AI button if there is already a label', async function () {
             const { elementsWrapper } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50, 'initial entry label');
@@ -564,7 +564,7 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(aiLabelButtonWrapper);
             const tooltip = aiLabelButtonWrapper.querySelector('devtools-tooltip');
             assert.isOk(tooltip);
-            assert.strictEqual(cleanTextContent(tooltip.innerText), 'The selected call stack is sent to Google. This data will not be used to improve Google\'s AI models. Your organization may change these settings at any time. This is an experimental AI feature and won\'t always get it right. Learn more in settings');
+            assert.strictEqual(cleanTextContent(tooltip.innerText), 'The selected call stack is sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time. This is an experimental AI feature and won’t always get it right. Learn more in settings');
         });
         it('Does not show `generate ai label` button if the label is not empty', async function () {
             updateHostConfig({
@@ -602,7 +602,7 @@ describeWithEnvironment('Overlays', () => {
             const aiLabelButtonWrapper = elementsWrapper.querySelector('.ai-label-disabled-button-wrapper');
             assert.isOk(aiLabelButtonWrapper);
         });
-        it('Shows disabled `generate ai label` button if the user is not logged into their google account or is under 18', async function () {
+        it('Shows disabled `generate ai label` button if the user is not logged in to their Google account or is under 18', async function () {
             updateHostConfig({
                 devToolsAiGeneratedTimelineLabels: {
                     enabled: true,

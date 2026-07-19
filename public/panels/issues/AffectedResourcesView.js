@@ -23,7 +23,7 @@ const UIStrings = {
     /**
      * @description Tooltip for button linking to the Elements panel
      */
-    clickToRevealTheFramesDomNodeIn: 'Click to reveal the frame\'s DOM node in the Elements panel',
+    clickToRevealTheFramesDomNodeIn: 'Click to reveal the frame’s DOM node in the Elements panel',
     /**
      * @description Replacement text for a link to an HTML element which is not available (anymore).
      */
@@ -57,7 +57,7 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
         this.affectedResourcesCountElement = this.createAffectedResourcesCounter();
         this.affectedResources = this.createAffectedResources();
         this.#affectedResourcesCount = 0;
-        this.requestResolver = new Logs.RequestResolver.RequestResolver();
+        this.requestResolver = new Logs.RequestResolver.RequestResolver(Logs.NetworkLog.NetworkLog.instance());
         this.#frameListeners = [];
         this.#unresolvedFrameIds = new Set();
     }

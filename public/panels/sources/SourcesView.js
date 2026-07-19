@@ -15,6 +15,7 @@ import { createIcon } from '../../ui/kit/kit.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Components from './components/components.js';
 import { EditingLocationHistoryManager } from './EditingLocationHistoryManager.js';
@@ -282,10 +283,16 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         if (view instanceof UI.View.SimpleView) {
             void view.toolbarItems().then(items => {
                 this.#scriptViewToolbar.removeToolbarItems();
-                for (const action of getRegisteredEditorActions()) {
-                    this.#scriptViewToolbar.appendToolbarItem(action.getOrCreateButton(this));
+                if (Array.isArray(items)) {
+                    items.map(item => this.#scriptViewToolbar.appendToolbarItem(item));
                 }
-                items.map(item => this.#scriptViewToolbar.appendToolbarItem(item));
+                else {
+                    const wrapper = document.createElement('div');
+                    wrapper.style.display = 'contents';
+                    // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+                    render(items, wrapper);
+                    this.#scriptViewToolbar.appendToolbarItem(new UI.Toolbar.ToolbarItem(wrapper));
+                }
             });
         }
     }
@@ -523,13 +530,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     toggleBreakpointsActiveState(active) {
         this.editorContainer.view.element.classList.toggle('breakpoints-deactivated', !active);
     }
-}
-const registeredEditorActions = [];
-export function registerEditorAction(editorAction) {
-    registeredEditorActions.push(editorAction);
-}
-export function getRegisteredEditorActions() {
-    return registeredEditorActions.map(editorAction => editorAction());
 }
 export class SwitchFileActionDelegate {
     static nextFile(currentUISourceCode) {

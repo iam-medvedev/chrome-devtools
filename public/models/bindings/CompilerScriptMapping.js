@@ -46,7 +46,8 @@ export class CompilerScriptMapping {
         this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
         this.#debuggerModel = debuggerModel;
         this.#ignoreListManager = debuggerWorkspaceBinding.ignoreListManager;
-        this.#stubProject = new ContentProviderBasedProject(workspace, 'jsSourceMaps:stub:' + debuggerModel.target().id(), Workspace.Workspace.projectTypes.Service, '', true /* isServiceProject */);
+        this.#stubProject =
+            new ContentProviderBasedProject(workspace, 'jsSourceMaps:stub:' + debuggerModel.target().id(), Workspace.Workspace.projectTypes.Service, '', true /* isServiceProject */);
         this.#eventListeners = [
             this.#sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapWillAttach, this.sourceMapWillAttach, this),
             this.#sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapFailedToAttach, this.sourceMapFailedToAttach, this),
@@ -383,7 +384,8 @@ export class CompilerScriptMapping {
         if (!project) {
             const projectType = script.isContentScript() ? Workspace.Workspace.projectTypes.ContentScripts :
                 Workspace.Workspace.projectTypes.Network;
-            project = new ContentProviderBasedProject(this.#stubProject.workspace(), projectId, projectType, /* displayName */ '', /* isServiceProject */ false);
+            project = new ContentProviderBasedProject(this.#stubProject.workspace(), projectId, projectType, 
+            /* displayName */ '', /* isServiceProject */ false);
             NetworkProject.setTargetForProject(project, target);
             this.#projects.set(projectId, project);
         }
@@ -397,7 +399,7 @@ export class CompilerScriptMapping {
             const content = sourceMap.embeddedContentByURL(url);
             const contentProvider = content !== null ?
                 TextUtils.StaticContentProvider.StaticContentProvider.fromString(url, contentType, content) :
-                new SDK.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, contentType, script.createPageResourceLoadInitiator());
+                new SDK.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, contentType, script.createPageResourceLoadInitiator(), target.targetManager().getPageResourceLoader());
             let metadata = null;
             if (content !== null) {
                 const encoder = new TextEncoder();

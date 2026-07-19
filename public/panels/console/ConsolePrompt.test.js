@@ -17,6 +17,7 @@ function compileScriptResponse(exception) {
 }
 describeWithEnvironment('ConsoleContextSelector', () => {
     let target;
+    let targetContext;
     let consolePrompt;
     let evaluateOnTarget;
     let compileScript;
@@ -30,7 +31,7 @@ describeWithEnvironment('ConsoleContextSelector', () => {
         editor = consolePrompt.element.querySelector('devtools-text-editor');
         setCodeMirrorContent('foo');
         target = createTarget();
-        const targetContext = createExecutionContext(target);
+        targetContext = createExecutionContext(target);
         UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, targetContext);
         evaluateOnTarget = sinon.stub(target.runtimeAgent(), 'invoke_evaluate');
         compileScript = sinon.stub(target.runtimeAgent(), 'invoke_compileScript').resolves(compileScriptResponse());
@@ -72,7 +73,29 @@ describeWithEnvironment('ConsoleContextSelector', () => {
     it('evaluates on enter', async () => {
         dispatchKeydown('Enter');
         await new Promise(resolve => setTimeout(resolve, 0));
-        sinon.assert.called(evaluateOnTarget);
+        sinon.assert.calledOnce(evaluateOnTarget);
+        const args = evaluateOnTarget.firstCall.args[0];
+        assert.strictEqual(args.expression, 'foo');
+        assert.strictEqual(args.uniqueContextId, targetContext.uniqueId);
+        const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+        assert.exists(consoleModel);
+        const messages = consoleModel.messages();
+        assert.lengthOf(messages, 1);
+        assert.strictEqual(messages[0].messageText, 'foo');
+    });
+    it('evaluates object literal on enter', async () => {
+        setCodeMirrorContent('{a: 1, b: 2}');
+        dispatchKeydown('Enter');
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.calledOnce(evaluateOnTarget);
+        const args = evaluateOnTarget.firstCall.args[0];
+        assert.strictEqual(args.expression, '({a: 1, b: 2})');
+        assert.strictEqual(args.uniqueContextId, targetContext.uniqueId);
+        const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
+        assert.exists(consoleModel);
+        const messages = consoleModel.messages();
+        assert.lengthOf(messages, 1);
+        assert.strictEqual(messages[0].messageText, '{a: 1, b: 2}');
     });
     it('allows user to enable pasting by typing \'allow pasting\'', async () => {
         const setting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);

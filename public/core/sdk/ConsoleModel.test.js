@@ -159,5 +159,36 @@ describe('ConsoleMessage', () => {
         assert.strictEqual(consoleClearEventsMainFrameTarget, 1);
         assert.strictEqual(consoleClearEventsSubframeTarget, 0);
     });
+    it('does not clear when main frame global object cleared if preserve-console-log is true', async () => {
+        universe.settings.moduleSetting('preserve-console-log').set(true);
+        const tabTarget = universe.createTarget({ type: SDK.Target.Type.TAB });
+        const mainFrameTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
+        const subframeTarget = universe.createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
+        const clearGlobalObjectOnTarget = (target) => {
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, resourceTreeModel);
+            const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(debuggerModel);
+            debuggerModel.dispatchEventToListeners(SDK.DebuggerModel.Events.GlobalObjectCleared, debuggerModel);
+        };
+        let consoleClearEventsTabTarget = 0;
+        let consoleClearEventsMainFrameTarget = 0;
+        let consoleClearEventsSubframeTarget = 0;
+        tabTarget.model(SDK.ConsoleModel.ConsoleModel)
+            ?.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, () => ++consoleClearEventsTabTarget);
+        mainFrameTarget.model(SDK.ConsoleModel.ConsoleModel)
+            ?.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, () => ++consoleClearEventsMainFrameTarget);
+        subframeTarget.model(SDK.ConsoleModel.ConsoleModel)
+            ?.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, () => ++consoleClearEventsSubframeTarget);
+        clearGlobalObjectOnTarget(subframeTarget);
+        assert.strictEqual(consoleClearEventsTabTarget, 0);
+        assert.strictEqual(consoleClearEventsMainFrameTarget, 0);
+        assert.strictEqual(consoleClearEventsSubframeTarget, 0);
+        clearGlobalObjectOnTarget(mainFrameTarget);
+        assert.strictEqual(consoleClearEventsTabTarget, 0);
+        assert.strictEqual(consoleClearEventsMainFrameTarget, 0);
+        assert.strictEqual(consoleClearEventsSubframeTarget, 0);
+    });
 });
 //# sourceMappingURL=ConsoleModel.test.js.map

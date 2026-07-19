@@ -3817,7 +3817,9 @@ __export(Gzip_exports, {
   createMonitoredStream: () => createMonitoredStream,
   decompress: () => decompress,
   decompressDeflate: () => decompressDeflate,
+  decompressDeflateToBuffer: () => decompressDeflateToBuffer,
   decompressStream: () => decompressStream,
+  decompressToBuffer: () => decompressToBuffer,
   fileToString: () => fileToString,
   isGzip: () => isGzip
 });
@@ -3845,18 +3847,23 @@ async function fileToString(file) {
   return str;
 }
 async function decompress(gzippedBuffer, charset = "utf-8") {
-  const buffer = await gzipCodec(gzippedBuffer, new DecompressionStream("gzip"));
+  const buffer = await decompressToBuffer(gzippedBuffer);
   const str = new TextDecoder(charset).decode(buffer);
   return str;
 }
+async function decompressToBuffer(gzippedBuffer) {
+  return await gzipCodec(gzippedBuffer, new DecompressionStream("gzip"));
+}
 async function decompressDeflate(buffer, charset = "utf-8") {
-  let decompressedBuffer;
-  try {
-    decompressedBuffer = await gzipCodec(buffer, new DecompressionStream("deflate"));
-  } catch {
-    decompressedBuffer = await gzipCodec(buffer, new DecompressionStream("deflate-raw"));
-  }
+  const decompressedBuffer = await decompressDeflateToBuffer(buffer);
   return new TextDecoder(charset).decode(decompressedBuffer);
+}
+async function decompressDeflateToBuffer(buffer) {
+  try {
+    return await gzipCodec(buffer, new DecompressionStream("deflate"));
+  } catch {
+    return await gzipCodec(buffer, new DecompressionStream("deflate-raw"));
+  }
 }
 async function compress(str) {
   const encoded = new TextEncoder().encode(str);
@@ -6191,9 +6198,6 @@ var Settings = class _Settings {
       const evaluatedDefaultValue = typeof defaultValue === "function" ? defaultValue(Root4.Runtime.hostConfig) : defaultValue;
       const setting = isRegex && typeof evaluatedDefaultValue === "string" ? this.createRegExpSetting(settingName, evaluatedDefaultValue, void 0, storageType) : this.createSetting(settingName, evaluatedDefaultValue, storageType);
       setting.setTitleFunction(registration.title);
-      if (registration.userActionCondition) {
-        setting.setRequiresUserAction(Boolean(Root4.Runtime.Runtime.queryParam(registration.userActionCondition)));
-      }
       setting.setRegistration(registration);
       this.registerModuleSetting(setting);
     }
@@ -6338,6 +6342,53 @@ var Settings = class _Settings {
   }
   getRegistry() {
     return this.#registry;
+  }
+  /**
+   * Resolves a setting descriptor to a concrete {@link Setting} instance.
+   *
+   * If a setting with the same name already exists (either pre-registered or
+   * previously resolved), that instance is returned. Otherwise, a new setting
+   * is created and registered.
+   *
+   * @param descriptor The descriptor defining the setting. Must not be conditional.
+   * @throws If the descriptor is conditional (contains `isAvailable`). Use `maybeResolve` instead.
+   */
+  resolve(descriptor) {
+    if ("isAvailable" in descriptor) {
+      throw new Error("Use Settings#maybeResolve for conditional descriptors.");
+    }
+    return this.#resolve(descriptor);
+  }
+  #resolve(descriptor) {
+    let setting = this.moduleSettings.get(descriptor.name);
+    if (setting) {
+      return setting;
+    }
+    const { name, type, defaultValue, storageType } = descriptor;
+    const isRegex = type === "regex";
+    const isGetter = (value) => typeof value === "function";
+    const evaluatedDefaultValue = isGetter(defaultValue) ? defaultValue(Root4.Runtime.hostConfig) : defaultValue;
+    setting = isRegex && typeof evaluatedDefaultValue === "string" ? this.createRegExpSetting(name, evaluatedDefaultValue, void 0, storageType) : this.createSetting(name, evaluatedDefaultValue, storageType);
+    this.registerModuleSetting(setting);
+    return setting;
+  }
+  /**
+   * Resolves a conditional setting descriptor to a concrete {@link Setting} instance if it is available.
+   *
+   * This method checks the availability of the setting using the descriptor's `isAvailable` function
+   * and the current `hostConfig`. If available, it resolves and returns the setting (caching it if
+   * necessary). If not available (either unavailable or disabled), it returns the availability status
+   * and the reason.
+   *
+   * @param descriptor The conditional descriptor defining the setting.
+   * @returns An object with either the resolved `setting` or the availability `status` and `reason`.
+   */
+  maybeResolve(descriptor) {
+    const available = descriptor.isAvailable(Root4.Runtime.hostConfig);
+    if (available.status === 1) {
+      return { setting: this.#resolve(descriptor) };
+    }
+    return available;
   }
 };
 var InMemoryStorage = class {

@@ -916,8 +916,8 @@ import * as Common4 from "./../../core/common/common.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 var uiSourceCodeToAttributionMap = /* @__PURE__ */ new WeakMap();
-var projectToTargetMap = /* @__PURE__ */ new WeakMap();
 var NetworkProjectManager = class _NetworkProjectManager extends Common4.ObjectWrapper.ObjectWrapper {
+  #projectToTargetMap = /* @__PURE__ */ new WeakMap();
   static instance({ forceNew } = { forceNew: false }) {
     if (!Root.DevToolsContext.globalInstance().has(_NetworkProjectManager) || forceNew) {
       Root.DevToolsContext.globalInstance().set(_NetworkProjectManager, new _NetworkProjectManager());
@@ -926,6 +926,15 @@ var NetworkProjectManager = class _NetworkProjectManager extends Common4.ObjectW
   }
   static removeInstance() {
     Root.DevToolsContext.globalInstance().delete(_NetworkProjectManager);
+  }
+  setTargetForProject(project, target) {
+    this.#projectToTargetMap.set(project, target);
+  }
+  getTargetForProject(project) {
+    return this.#projectToTargetMap.get(project) ?? null;
+  }
+  getTargetForUISourceCode(uiSourceCode) {
+    return this.#projectToTargetMap.get(uiSourceCode.project()) ?? null;
   }
 };
 var NetworkProject = class _NetworkProject {
@@ -997,13 +1006,13 @@ var NetworkProject = class _NetworkProject {
     NetworkProjectManager.instance().dispatchEventToListeners("FrameAttributionRemoved", data);
   }
   static targetForUISourceCode(uiSourceCode) {
-    return projectToTargetMap.get(uiSourceCode.project()) || null;
+    return NetworkProjectManager.instance().getTargetForUISourceCode(uiSourceCode);
   }
   static setTargetForProject(project, target) {
-    projectToTargetMap.set(project, target);
+    NetworkProjectManager.instance().setTargetForProject(project, target);
   }
   static getTargetForProject(project) {
-    return projectToTargetMap.get(project) || null;
+    return NetworkProjectManager.instance().getTargetForProject(project);
   }
   static framesForUISourceCode(uiSourceCode) {
     const target = _NetworkProject.targetForUISourceCode(uiSourceCode);
@@ -1383,7 +1392,7 @@ var CompilerScriptMapping = class {
         uiSourceCode.markKnownThirdParty();
       }
       const content = sourceMap.embeddedContentByURL(url);
-      const contentProvider = content !== null ? TextUtils2.StaticContentProvider.StaticContentProvider.fromString(url, contentType, content) : new SDK3.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, contentType, script.createPageResourceLoadInitiator());
+      const contentProvider = content !== null ? TextUtils2.StaticContentProvider.StaticContentProvider.fromString(url, contentType, content) : new SDK3.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, contentType, script.createPageResourceLoadInitiator(), target.targetManager().getPageResourceLoader());
       let metadata = null;
       if (content !== null) {
         const encoder = new TextEncoder();
@@ -1575,7 +1584,7 @@ var SASSSourceMapping = class {
     for (const sourceURL of sourceMap.sourceURLs()) {
       let binding = bindings.get(sourceURL);
       if (!binding) {
-        binding = new Binding(project, sourceURL, header.createPageResourceLoadInitiator());
+        binding = new Binding(project, sourceURL, header.createPageResourceLoadInitiator(), header.cssModel().target().targetManager().getPageResourceLoader());
         bindings.set(sourceURL, binding);
       }
       binding.addSourceMap(sourceMap, header.frameId);
@@ -1657,12 +1666,14 @@ var Binding = class {
   #project;
   #url;
   #initiator;
+  #pageResourceLoader;
   referringSourceMaps;
   uiSourceCode;
-  constructor(project, url, initiator) {
+  constructor(project, url, initiator, pageResourceLoader) {
     this.#project = project;
     this.#url = url;
     this.#initiator = initiator;
+    this.#pageResourceLoader = pageResourceLoader;
     this.referringSourceMaps = [];
     this.uiSourceCode = null;
   }
@@ -1670,7 +1681,7 @@ var Binding = class {
     const sourceMap = this.referringSourceMaps[this.referringSourceMaps.length - 1];
     const contentType = Common6.ResourceType.resourceTypes.SourceMapStyleSheet;
     const embeddedContent = sourceMap.embeddedContentByURL(this.#url);
-    const contentProvider = embeddedContent !== null ? TextUtils3.StaticContentProvider.StaticContentProvider.fromString(this.#url, contentType, embeddedContent) : new SDK4.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(this.#url, contentType, this.#initiator);
+    const contentProvider = embeddedContent !== null ? TextUtils3.StaticContentProvider.StaticContentProvider.fromString(this.#url, contentType, embeddedContent) : new SDK4.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(this.#url, contentType, this.#initiator, this.#pageResourceLoader);
     const newUISourceCode = this.#project.createUISourceCode(this.#url, contentType);
     uiSourceCodeToBinding.set(newUISourceCode, this);
     const mimeType = Common6.ResourceType.ResourceType.mimeFromURL(this.#url) || contentType.canonicalMimeType();
@@ -1737,7 +1748,7 @@ import * as Platform3 from "./../../core/platform/platform.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as Workspace7 from "./../workspace/workspace.js";
 function resourceForURL(url) {
-  return SDK5.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+  return SDK5.ResourceTreeModel.ResourceTreeModel.resourceForURL(SDK5.TargetManager.TargetManager.instance(), url);
 }
 function displayNameForURL(url) {
   if (!url) {
@@ -2353,7 +2364,7 @@ var UIStrings2 = {
    * @example {C/C++ DevTools Support (DWARF)} PH1
    * @example {http://web.dev/file.wasm} PH2
    */
-  loadedDebugSymbolsForButDidnt: "[{PH1}] Loaded debug symbols for {PH2}, but didn't find any source files",
+  loadedDebugSymbolsForButDidnt: "[{PH1}] Loaded debug symbols for {PH2}, but didn\u2019t find any source files",
   /**
    * @description Status message that is shown in the Console when debugging information is successfully loaded
    * @example {C/C++ DevTools Support (DWARF)} PH1
@@ -3232,7 +3243,7 @@ var ModelData = class {
         uiSourceCode = this.project.createUISourceCode(url, Common10.ResourceType.resourceTypes.SourceMapScript);
         NetworkProject.setInitialFrameAttribution(uiSourceCode, script.frameId);
         this.uiSourceCodeToScripts.set(uiSourceCode, [script]);
-        const contentProvider = new SDK8.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, Common10.ResourceType.resourceTypes.SourceMapScript, initiator);
+        const contentProvider = new SDK8.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, Common10.ResourceType.resourceTypes.SourceMapScript, initiator, script.target().targetManager().getPageResourceLoader());
         const mimeType = Common10.ResourceType.ResourceType.mimeFromURL(url) || "text/javascript";
         this.project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, null, mimeType);
       } else {
@@ -5488,9 +5499,12 @@ var TempFile_exports = {};
 __export(TempFile_exports, {
   TempFile: () => TempFile
 });
-import * as Common16 from "./../../core/common/common.js";
 var TempFile = class {
   #lastBlob = null;
+  #console;
+  constructor(console2) {
+    this.#console = console2;
+  }
   write(pieces) {
     if (this.#lastBlob) {
       pieces.unshift(this.#lastBlob);
@@ -5505,7 +5519,7 @@ var TempFile = class {
   }
   async readRange(startOffset, endOffset) {
     if (!this.#lastBlob) {
-      Common16.Console.Console.instance().error("Attempt to read a temp file that was never written");
+      this.#console.error("Attempt to read a temp file that was never written");
       return "";
     }
     const blob = typeof startOffset === "number" || typeof endOffset === "number" ? this.#lastBlob.slice(startOffset, endOffset) : this.#lastBlob;
@@ -5517,7 +5531,7 @@ var TempFile = class {
         reader.readAsText(blob);
       });
     } catch (error) {
-      Common16.Console.Console.instance().error("Failed to read from temp file: " + error.message);
+      this.#console.error("Failed to read from temp file: " + error.message);
     }
     return reader.result;
   }

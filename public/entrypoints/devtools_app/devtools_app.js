@@ -1059,7 +1059,7 @@ var UIStrings4 = {
   /**
    * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
-  dontGroupNetworkLogItemsByFrame: "Don't group network log items by frame",
+  dontGroupNetworkLogItemsByFrame: "Don\u2019t group network log items by frame",
   /**
    * @description Title of a button for clearing the network log
    */
@@ -1081,12 +1081,12 @@ var UIStrings4 = {
    * @description Title of an action in the Network panel that disables options in the UI to copy or export
    *              HAR (not translatable) with sensitive data.
    */
-  dontAllowToGenerateHarWithSensitiveData: "Don't allow to generate `HAR` with sensitive data",
+  dontAllowToGenerateHarWithSensitiveData: "Don\u2019t allow to generate `HAR` with sensitive data",
   /**
    * @description Tooltip shown as documentation when hovering the (?) icon next to the "Allow to generate
    *              HAR with sensitive data" option in the Settings panel.
    */
-  allowToGenerateHarWithSensitiveDataDocumentation: "By default generated HAR logs are sanitized and don't include `Cookie`, `Set-Cookie`, or `Authorization` HTTP headers. When this setting is enabled, options to export/copy HAR with sensitive data are provided."
+  allowToGenerateHarWithSensitiveDataDocumentation: "By default generated HAR logs are sanitized and don\u2019t include `Cookie`, `Set-Cookie`, or `Authorization` HTTP headers. When this setting is enabled, options to export/copy HAR with sensitive data are provided."
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/network/network-meta.ts", UIStrings4);
 var i18nLazyString4 = i18n7.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
@@ -1879,11 +1879,11 @@ import * as UI9 from "./../../ui/legacy/legacy.js";
 var loadedAnimationModule;
 var UIStrings9 = {
   /**
-   * @description Title for the 'Animations' tool in the bottom drawer
+   * @description Title for the 'Animations' tool in the bottom drawer.
    */
   animations: "Animations",
   /**
-   * @description Command for showing the 'Animations' tool in the bottom drawer
+   * @description Command for showing the 'Animations' tool in the bottom drawer.
    */
   showAnimations: "Show Animations"
 };
@@ -2009,53 +2009,52 @@ import * as i18n23 from "./../../core/i18n/i18n.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
   /**
-   * @description Title of the Rendering tool. The rendering tool is a collection of settings that
+   * @description Title of the Rendering panel. The Rendering panel is a collection of settings that
    * lets the user debug the rendering (i.e. how the website is drawn onto the screen) of the
-   * website.
-   * https://developer.chrome.com/docs/devtools/evaluate-performance/reference#rendering
+   * website (https://developer.chrome.com/docs/devtools/evaluate-performance/reference#rendering).
    */
   rendering: "Rendering",
   /**
-   * @description Command for showing the 'Rendering' tool
+   * @description Command for showing the Rendering panel.
    */
   showRendering: "Show Rendering",
   /**
-   * @description Command Menu search query that points to the Rendering tool. This refers to the
+   * @description Command Menu search query that points to the Rendering panel. This refers to the
    * process of drawing pixels onto the screen (called painting).
    */
   paint: "paint",
   /**
-   * @description Command Menu search query that points to the Rendering tool. Layout is a phase of
+   * @description Command Menu search query that points to the Rendering panel. Layout is a phase of
    * rendering a website where the browser calculates where different elements in the website will go
    * on the screen.
    */
   layout: "layout",
   /**
-   * @description Command Menu search query that points to the Rendering tool. 'fps' is an acronym
+   * @description Command Menu search query that points to the Rendering panel. 'fps' is an acronym
    * for 'Frames per second'. It is in lowercase here because the search box the user will type this
    * into is case-insensitive. If there is an equivalent acronym/shortening in the target language
    * then a translation would be appropriate, otherwise it can be left in English.
    */
   fps: "fps",
   /**
-   * @description Command Menu search query that points to the Rendering tool.
-   * https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types. This is something the user
+   * @description Command Menu search query that points to the Rendering panel
+   * (https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types). This is something the user
    * might type in to search for the setting to change the CSS media type.
    */
   cssMediaType: "CSS media type",
   /**
-   * @description Command Menu search query that points to the Rendering tool.
-   * https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_features This is something the
+   * @description Command Menu search query that points to the Rendering panel
+   * (https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_features). This is something the
    * user might type in to search for the setting to change the value of various CSS media features.
    */
   cssMediaFeature: "CSS media feature",
   /**
-   * @description Command Menu search query that points to the Rendering tool. Possible search term
+   * @description Command Menu search query that points to the Rendering panel. Possible search term
    * when the user wants to find settings related to visual impairment e.g. blurry vision, blindness.
    */
   visionDeficiency: "vision deficiency",
   /**
-   * @description Command Menu search query that points to the Rendering tool. Possible search term
+   * @description Command Menu search query that points to the Rendering panel. Possible search term
    * when the user wants to find settings related to color vision deficiency/color blindness.
    */
   colorVisionDeficiency: "color vision deficiency",
@@ -2064,7 +2063,7 @@ var UIStrings12 = {
    */
   reloadPage: "Reload page",
   /**
-   * @description Title of an action that 'hard' reloads the inspected page. A hard reload also
+   * @description Title of an action that hard reloads the inspected page. A hard reload also
    * clears the browser's cache, forcing it to reload the most recent version of the page.
    */
   hardReloadPage: "Hard reload page",
@@ -2092,10 +2091,9 @@ var UIStrings12 = {
    */
   doNotAutoOpen: "Do not auto-open DevTools for popups",
   /**
-   * @description Title of an action that toggle
-   * "forces CSS prefers-color-scheme" color
+   * @description Title of an action that toggles the "forces CSS prefers-color-scheme" media feature.
    */
-  toggleCssPrefersColorSchemeMedia: "Toggle CSS media feature prefers-color-scheme"
+  toggleCssPrefersColorSchemeMedia: "Toggle CSS media feature `prefers-color-scheme`"
 };
 var str_12 = i18n23.i18n.registerUIStrings("entrypoints/inspector_main/inspector_main-meta.ts", UIStrings12);
 var i18nLazyString12 = i18n23.i18n.getLazilyComputedLocalizedString.bind(void 0, str_12);
@@ -2237,10 +2235,10 @@ UI12.Toolbar.registerToolbarItem({
   location: "main-toolbar-left"
 });
 UI12.Toolbar.registerToolbarItem({
-  async loadItem() {
+  loadItem: Common7.Lazy.lazy(async () => {
     const InspectorMain = await loadInspectorMainModule();
-    return InspectorMain.OutermostTargetSelector.OutermostTargetSelector.instance();
-  },
+    return new InspectorMain.OutermostTargetSelector.OutermostTargetSelector();
+  }),
   order: 97,
   location: "main-toolbar-right"
 });
@@ -2872,8 +2870,8 @@ UI20.ViewManager.registerViewExtension({
   order: 50,
   async loadView(universe) {
     const Timeline = await loadTimelineModule();
-    const { pageResourceLoader: resourceLoader } = universe;
-    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader });
+    const { pageResourceLoader: resourceLoader, targetManager, isolateManager } = universe;
+    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, targetManager, isolateManager });
   }
 });
 UI20.ActionRegistration.registerActionExtension({
@@ -3430,27 +3428,27 @@ import * as i18n47 from "./../../core/i18n/i18n.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
 var UIStrings24 = {
   /**
-   * @description Title of the Recorder Panel
+   * @description Title of the Recorder panel.
    */
   recorder: "Recorder",
   /**
-   * @description Title of the Recorder Panel
+   * @description Command for showing the Recorder panel.
    */
   showRecorder: "Show Recorder",
   /**
-   * @description Title of start/stop recording action in command menu
+   * @description Title of the start/stop recording action in the command menu.
    */
-  startStopRecording: "Start/Stop recording",
+  startStopRecording: "Start/stop recording",
   /**
-   * @description Title of create a new recording action in command menu
+   * @description Title of the create new recording action in the command menu.
    */
   createRecording: "Create a new recording",
   /**
-   * @description Title of start a new recording action in command menu
+   * @description Title of the replay recording action in the command menu.
    */
   replayRecording: "Replay recording",
   /**
-   * @description Title for toggling code action in command menu
+   * @description Title for the toggle code action in the command menu.
    */
   toggleCode: "Toggle code view"
 };

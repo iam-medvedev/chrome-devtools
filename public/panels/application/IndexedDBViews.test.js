@@ -4,8 +4,10 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { assertScreenshot, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { getAllRows, getCellByIndexes, getValuesOfAllBodyRows, } from '../../testing/DataGridHelpers.js';
+import { assertScreenshot, doubleRaf, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../ui/components/report_view/report_view.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
@@ -181,16 +183,43 @@ describeWithEnvironment('IDBDatabaseView', () => {
         sinon.assert.calledOnceWithExactly(model.refreshDatabase, databaseId);
     });
 });
-describeWithEnvironment('IDBDataGridNode', () => {
-    it('creates a read-only object properties section for value column', async () => {
-        const remoteObject = SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: 'bar' });
-        const node = new Application.IndexedDBViews.IDBDataGridNode({ value: remoteObject });
-        const cell = node.createCell('value');
-        const widgetElement = cell.firstElementChild;
-        assert.exists(widgetElement);
-        const widget = UI.Widget.Widget.get(widgetElement);
-        assert.exists(widget);
+describeWithEnvironment('IDBDataView', () => {
+    async function performActionAndWaitForSettle(component, action) {
+        const stub = sinon.stub(component, 'updatedDataForTests');
+        const updatedDataPromise = expectCall(stub);
+        await action();
+        await updatedDataPromise;
         await UI.Widget.Widget.allUpdatesComplete;
+        await doubleRaf();
+        stub.restore();
+    }
+    it('creates a read-only object properties section for value column', async () => {
+        const model = sinon.createStubInstance(Application.IndexedDBModel.IndexedDBModel);
+        model.loadObjectStoreData.callsFake((dbId, storeName, keyRange, skipCount, pageSize, callback) => {
+            const entries = [
+                {
+                    key: SDK.RemoteObject.RemoteObject.fromLocalObject(1),
+                    primaryKey: SDK.RemoteObject.RemoteObject.fromLocalObject(1),
+                    value: SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: 'bar' }),
+                },
+            ];
+            callback(entries, false);
+        });
+        model.getMetadata.resolves({ entriesCount: 1, keyGeneratorValue: 0 });
+        const databaseId = new Application.IndexedDBModel.DatabaseId({ storageKey: 'https://example.com' }, 'My Database');
+        const objectStore = new Application.IndexedDBModel.ObjectStore('My Object Store', 'key', false);
+        const refreshCallback = sinon.spy();
+        const component = new Application.IndexedDBViews.IDBDataView(model, databaseId, objectStore, null, refreshCallback);
+        component.element.style.height = '500px';
+        renderElementIntoDOM(component, { includeCommonStyles: true });
+        await performActionAndWaitForSettle(component, () => {
+            component.update(objectStore);
+        });
+        const dataGrid = component.element.querySelector('devtools-data-grid');
+        assert.isNotNull(dataGrid);
+        const valueCell = getCellByIndexes(dataGrid?.shadowRoot, { column: 2, row: 1 });
+        const widgetElement = valueCell.firstElementChild;
+        assert.exists(widgetElement);
         const presentation = ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(widgetElement.firstElementChild);
         assert.exists(presentation);
         const rootElement = presentation.objectTreeElement();
@@ -198,10 +227,7 @@ describeWithEnvironment('IDBDataGridNode', () => {
         const child = rootElement.childAt(0);
         assert.instanceOf(child, ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement);
         assert.isFalse(child.editable);
-        await UI.Widget.Widget.allUpdatesComplete;
     });
-});
-describeWithEnvironment('IDBDataView', () => {
     it('renders toolbar and data grid', async () => {
         const model = sinon.createStubInstance(Application.IndexedDBModel.IndexedDBModel);
         model.loadObjectStoreData.callsFake((dbId, storeName, keyRange, skipCount, pageSize, callback) => {
@@ -232,18 +258,107 @@ describeWithEnvironment('IDBDataView', () => {
         renderElementIntoDOM(component, { includeCommonStyles: true });
         component.element.style.height = '200px';
         component.element.style.width = '600px';
-        component.update(objectStore);
+        // Wait for async decoration and rendering
+        await performActionAndWaitForSettle(component, () => {
+            component.update(objectStore);
+        });
         // Verify toolbar elements exist
         const toolbar = component.element.querySelector('devtools-toolbar');
         assert.isNotNull(toolbar);
         // Verify datagrid exists
-        const dataGrid = component.element.querySelector('.data-grid');
+        const dataGrid = component.element.querySelector('devtools-data-grid');
         assert.isNotNull(dataGrid);
-        // Verify row rendered
-        const rows = dataGrid?.querySelectorAll('.data-grid-data-grid-node');
-        assert.strictEqual(rows?.length, 3);
+        // Verify rows rendered
+        const bodyRows = getValuesOfAllBodyRows(dataGrid.shadowRoot);
+        assert.lengthOf(bodyRows, 3);
         await UI.Widget.Widget.allUpdatesComplete;
+        await doubleRaf();
         await assertScreenshot('application/idb_data_view_baseline.png');
+    });
+    it('deletes entry from object store', async () => {
+        const model = sinon.createStubInstance(Application.IndexedDBModel.IndexedDBModel);
+        model.loadObjectStoreData.callsFake((dbId, storeName, keyRange, skipCount, pageSize, callback) => {
+            const entries = [
+                {
+                    key: SDK.RemoteObject.RemoteObject.fromLocalObject('testKey1'),
+                    primaryKey: SDK.RemoteObject.RemoteObject.fromLocalObject('testKey1'),
+                    value: SDK.RemoteObject.RemoteObject.fromLocalObject('testValue'),
+                },
+            ];
+            callback(entries, false);
+        });
+        model.getMetadata.resolves({ entriesCount: 1, keyGeneratorValue: 0 });
+        const databaseId = new Application.IndexedDBModel.DatabaseId({ storageKey: 'https://example.com' }, 'My Database');
+        const objectStore = new Application.IndexedDBModel.ObjectStore('My Object Store', 'key', false);
+        const refreshCallback = sinon.spy();
+        const component = new Application.IndexedDBViews.IDBDataView(model, databaseId, objectStore, null, refreshCallback);
+        renderElementIntoDOM(component);
+        await performActionAndWaitForSettle(component, () => {
+            component.update(objectStore);
+        });
+        const dataGrid = component.element.querySelector('devtools-data-grid');
+        assert.isNotNull(dataGrid);
+        const allRows = getAllRows(dataGrid.shadowRoot, { withJslog: false });
+        const dataRows = allRows.filter(r => r.querySelector('td') !== null);
+        assert.lengthOf(dataRows, 1);
+        dataRows[0].click();
+        const buttons = component.element.querySelectorAll('devtools-button');
+        const deleteButton = Array.from(buttons).find(b => b.title === 'Delete selected');
+        assert.exists(deleteButton, 'Delete button not found');
+        assert.isFalse(deleteButton.disabled);
+        const deleteEntriesPromise = expectCall(model.deleteEntries);
+        deleteButton.click();
+        await deleteEntriesPromise;
+        sinon.assert.calledOnce(model.deleteEntries);
+        const args = model.deleteEntries.getCall(0).args;
+        assert.strictEqual(args[0], databaseId);
+        assert.strictEqual(args[1], 'My Object Store');
+        assert.strictEqual(args[2].lower, 'testKey1');
+        assert.strictEqual(args[2].upper, 'testKey1');
+        sinon.assert.calledOnce(refreshCallback);
+    });
+    it('deletes entry from index', async () => {
+        const model = sinon.createStubInstance(Application.IndexedDBModel.IndexedDBModel);
+        model.loadIndexData.callsFake((dbId, storeName, indexName, keyRange, skipCount, pageSize, callback) => {
+            const entries = [
+                {
+                    key: SDK.RemoteObject.RemoteObject.fromLocalObject('indexKey1'),
+                    primaryKey: SDK.RemoteObject.RemoteObject.fromLocalObject('primaryKey1'),
+                    value: SDK.RemoteObject.RemoteObject.fromLocalObject('testValue'),
+                },
+            ];
+            callback(entries, false);
+        });
+        model.getMetadata.resolves({ entriesCount: 1, keyGeneratorValue: 0 });
+        const databaseId = new Application.IndexedDBModel.DatabaseId({ storageKey: 'https://example.com' }, 'My Database');
+        const objectStore = new Application.IndexedDBModel.ObjectStore('My Object Store', 'key', false);
+        const index = new Application.IndexedDBModel.Index('My Index', 'index_key', false, false);
+        const refreshCallback = sinon.spy();
+        const component = new Application.IndexedDBViews.IDBDataView(model, databaseId, objectStore, index, refreshCallback);
+        renderElementIntoDOM(component);
+        await performActionAndWaitForSettle(component, () => {
+            component.update(objectStore, index);
+        });
+        const dataGrid = component.element.querySelector('devtools-data-grid');
+        assert.isNotNull(dataGrid);
+        const allRows = getAllRows(dataGrid.shadowRoot, { withJslog: false });
+        const dataRows = allRows.filter(r => r.querySelector('td') !== null);
+        assert.lengthOf(dataRows, 1);
+        dataRows[0].click();
+        const buttons = component.element.querySelectorAll('devtools-button');
+        const deleteButton = Array.from(buttons).find(b => b.title === 'Delete selected');
+        assert.exists(deleteButton, 'Delete button not found');
+        assert.isFalse(deleteButton.disabled);
+        const deleteEntriesPromise = expectCall(model.deleteEntries);
+        deleteButton.click();
+        await deleteEntriesPromise;
+        sinon.assert.calledOnce(model.deleteEntries);
+        const args = model.deleteEntries.getCall(0).args;
+        assert.strictEqual(args[0], databaseId);
+        assert.strictEqual(args[1], 'My Object Store');
+        assert.strictEqual(args[2].lower, 'primaryKey1');
+        assert.strictEqual(args[2].upper, 'primaryKey1');
+        sinon.assert.calledOnce(refreshCallback);
     });
 });
 //# sourceMappingURL=IndexedDBViews.test.js.map

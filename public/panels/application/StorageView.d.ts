@@ -12,6 +12,7 @@ export declare class StorageView extends UI.Widget.VBox {
     private storageKey;
     private settings;
     private includeThirdPartyCookiesSetting;
+    private includeThirdPartyCookiesCheckbox;
     private quotaRow;
     private quotaUsage;
     private pieChart;
@@ -23,7 +24,11 @@ export declare class StorageView extends UI.Widget.VBox {
     private clearButton;
     private readonly throttler;
     constructor();
-    private appendItem;
+    private appendSettingCheckbox;
+    private onCookiesSettingChanged;
+    private onIncludeThirdPartyCookiesSettingChanged;
+    private syncCheckboxAttributeState;
+    private updateThirdPartyCookiesCheckboxState;
     targetAdded(target: SDK.Target.Target): void;
     targetRemoved(target: SDK.Target.Target): void;
     private originChanged;

@@ -44,7 +44,7 @@ function prefetchStatusCode(requestId) {
   return void 0;
 }
 function prerenderStatusCode(loaderId) {
-  const frame = SDK.ResourceTreeModel.ResourceTreeModel.frames().find((f) => f.loaderId === loaderId);
+  const frame = SDK.ResourceTreeModel.ResourceTreeModel.frames(SDK.TargetManager.TargetManager.instance()).find((f) => f.loaderId === loaderId);
   if (!frame) {
     return void 0;
   }

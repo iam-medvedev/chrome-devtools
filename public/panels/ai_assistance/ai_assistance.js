@@ -4898,7 +4898,7 @@ async function makeSourceCodeWidget(widgetData) {
   let code = widgetData.data.code;
   if (TextUtils.TextUtils.isMinified(code)) {
     const canonicalMimeType = uiSourceCode?.contentType().canonicalMimeType() || "text/javascript";
-    const formatted = await Formatter.ScriptFormatter.formatScriptContent(canonicalMimeType, code, "  ");
+    const formatted = await Formatter.ScriptFormatter.formatScriptContent(Common5.Settings.Settings.instance(), canonicalMimeType, code, "  ");
     code = formatted.formattedContent;
   }
   const renderedWidget = html8`
@@ -7534,10 +7534,8 @@ async function saveToDisk(conversation) {
   const prefix = "devtools_";
   const suffix = ".md";
   const maxTitleLength = 63 - prefix.length - suffix.length;
-  let finalTitle = titleFormatted || "conversation";
-  if (finalTitle.length > maxTitleLength) {
-    finalTitle = finalTitle.substring(0, maxTitleLength);
-  }
+  const truncatedTitle = titleFormatted ? Platform7.StringUtilities.truncateToCodeUnitLength(titleFormatted, maxTitleLength) : "";
+  const finalTitle = truncatedTitle || "conversation";
   const filename = `${prefix}${finalTitle}${suffix}`;
   await Workspace7.FileManager.FileManager.instance().save(filename, contentData, true);
   Workspace7.FileManager.FileManager.instance().close(filename);
@@ -7596,7 +7594,7 @@ var UIStrings6 = {
    */
   noPastConversations: "No past conversations",
   /**
-   * @description Placeholder text for an inactive text field. When active, it’s used for the user’s input to AI assistance.
+   * @description Placeholder text for an inactive text field. When active, it's used for the user's input to AI assistance.
    */
   followTheSteps: "Follow the steps above to ask a question",
   /**

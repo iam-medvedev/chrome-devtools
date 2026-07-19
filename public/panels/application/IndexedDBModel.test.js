@@ -184,5 +184,16 @@ describeWithEnvironment('IndexedDBModel', () => {
         });
         sinon.assert.calledOnceWithExactly(dispatcherSpy, Resources.IndexedDBModel.Events.IndexedDBContentUpdated, { databaseId: testDBId, objectStoreName: 'test-store', model: indexedDBModel });
     });
+    it('handles protocol error and does not invoke callback when loading object store data fails', async () => {
+        const callbackSpy = sinon.spy();
+        connection.setSuccessHandler('IndexedDB.requestDatabaseNames', () => ({ databaseNames: ['test-database'] }));
+        connection.setFailureHandler('IndexedDB.requestData', () => ({ message: 'Aborted upgrade.', code: -32000 }));
+        indexedDBModel.enable();
+        manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
+        await indexedDBModel.refreshDatabaseNames();
+        indexedDBModel.loadObjectStoreData(testDBId, 'test-store', null, 0, 2, callbackSpy);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.notCalled(callbackSpy);
+    });
 });
 //# sourceMappingURL=IndexedDBModel.test.js.map

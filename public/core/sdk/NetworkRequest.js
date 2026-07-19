@@ -25,11 +25,11 @@ const UIStrings = {
     /**
      * @description Tooltip to explain why a cookie was blocked
      */
-    notOnPath: 'This cookie was blocked because its path was not an exact match for or a superdirectory of the request url\'s path.',
+    notOnPath: 'This cookie was blocked because its path was not an exact match for or a superdirectory of the request url’s path.',
     /**
      * @description Tooltip to explain why a cookie was blocked
      */
-    domainMismatch: 'This cookie was blocked because neither did the request URL\'s domain exactly match the cookie\'s domain, nor was the request URL\'s domain a subdomain of the cookie\'s Domain attribute value.',
+    domainMismatch: 'This cookie was blocked because neither did the request URL’s domain exactly match the cookie’s domain, nor was the request URL’s domain a subdomain of the cookie’s Domain attribute value.',
     /**
      * @description Tooltip to explain why a cookie was blocked
      */
@@ -41,7 +41,7 @@ const UIStrings = {
     /**
      * @description Tooltip to explain why a cookie was blocked
      */
-    sameSiteUnspecifiedTreatedAsLax: 'This cookie didn\'t specify a "`SameSite`" attribute when it was stored and was defaulted to "SameSite=Lax," and was blocked because the request was made from a different site and was not initiated by a top-level navigation. The cookie had to have been set with "`SameSite=None`" to enable cross-site usage.',
+    sameSiteUnspecifiedTreatedAsLax: 'This cookie didn’t specify a "`SameSite`" attribute when it was stored and was defaulted to "SameSite=Lax," and was blocked because the request was made from a different site and was not initiated by a top-level navigation. The cookie had to have been set with "`SameSite=None`" to enable cross-site usage.',
     /**
      * @description Tooltip to explain why a cookie was blocked
      */
@@ -69,7 +69,7 @@ const UIStrings = {
     /**
      * @description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
      */
-    schemefulSameSiteUnspecifiedTreatedAsLax: 'This cookie didn\'t specify a "`SameSite`" attribute when it was stored, was defaulted to "`SameSite=Lax"`, and was blocked because the request was cross-site and was not initiated by a top-level navigation. This request is considered cross-site because the URL has a different scheme than the current site.',
+    schemefulSameSiteUnspecifiedTreatedAsLax: 'This cookie didn’t specify a "`SameSite`" attribute when it was stored, was defaulted to "`SameSite=Lax"`, and was blocked because the request was cross-site and was not initiated by a top-level navigation. This request is considered cross-site because the URL has a different scheme than the current site.',
     /**
      * @description Tooltip to explain why a cookie was blocked due to exceeding the maximum size
      */
@@ -106,7 +106,7 @@ const UIStrings = {
     /**
      * @description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
      */
-    thisSetcookieDidntSpecifyASamesite: 'This `Set-Cookie` header didn\'t specify a "`SameSite`" attribute, was defaulted to "`SameSite=Lax"`, and was blocked because it came from a cross-site response which was not the response to a top-level navigation. This response is considered cross-site because the URL has a different scheme than the current site.',
+    thisSetcookieDidntSpecifyASamesite: 'This `Set-Cookie` header didn’t specify a "`SameSite`" attribute, was defaulted to "`SameSite=Lax"`, and was blocked because it came from a cross-site response which was not the response to a top-level navigation. This response is considered cross-site because the URL has a different scheme than the current site.',
     /**
      * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
      */
@@ -119,7 +119,7 @@ const UIStrings = {
     /**
      * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
      */
-    blockedReasonSameSiteUnspecifiedTreatedAsLax: 'This `Set-Cookie` header didn\'t specify a "`SameSite`" attribute and was defaulted to "`SameSite=Lax,`" and was blocked because it came from a cross-site response which was not the response to a top-level navigation. The `Set-Cookie` had to have been set with "`SameSite=None`" to enable cross-site usage.',
+    blockedReasonSameSiteUnspecifiedTreatedAsLax: 'This `Set-Cookie` header didn’t specify a "`SameSite`" attribute and was defaulted to "`SameSite=Lax,`" and was blocked because it came from a cross-site response which was not the response to a top-level navigation. The `Set-Cookie` had to have been set with "`SameSite=None`" to enable cross-site usage.',
     /**
      * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
      */
@@ -285,7 +285,10 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #isAdRelated;
     #isLinkPreload;
     #appliedNetworkConditionsId;
-    constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
+    #console;
+    constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture, 
+    // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
+    console = Common.Console.Console.instance()) {
         super();
         this.#requestId = requestId;
         this.#backendRequestId = backendRequestId;
@@ -297,15 +300,16 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#hasUserGesture = hasUserGesture;
         this.#isAdRelated = false;
         this.#isLinkPreload = false;
+        this.#console = console;
     }
-    static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
-        return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
+    static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture, console) {
+        return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture, console);
     }
-    static createForSocket(backendRequestId, requestURL, initiator) {
-        return new NetworkRequest(backendRequestId, backendRequestId, requestURL, Platform.DevToolsPath.EmptyUrlString, null, null, initiator || null);
+    static createForSocket(backendRequestId, requestURL, initiator, console) {
+        return new NetworkRequest(backendRequestId, backendRequestId, requestURL, Platform.DevToolsPath.EmptyUrlString, null, null, initiator || null, undefined, console);
     }
-    static createWithoutBackendRequest(requestId, url, documentURL, initiator) {
-        return new NetworkRequest(requestId, undefined, url, documentURL, null, null, initiator);
+    static createWithoutBackendRequest(requestId, url, documentURL, initiator, console) {
+        return new NetworkRequest(requestId, undefined, url, documentURL, null, null, initiator, undefined, console);
     }
     identityCompare(other) {
         const thisId = this.requestId();
@@ -765,6 +769,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#requestFormDataPromise = hasData && data === null ? null : Promise.resolve(data);
         this.#formParametersPromise = null;
     }
+    /**
+     * Returns the raw request body as ContentData, preserving base64 encoding
+     * for binary payloads. This enables binary viewers (hex, base64, utf-8)
+     * in the Payload tab.
+     */
+    requestFormDataContentData() {
+        return NetworkManager.requestPostDataContentData(this);
+    }
     filteredProtocolName() {
         const protocol = this.protocol.toLowerCase();
         if (protocol === 'h2') {
@@ -946,7 +958,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     get serverTimings() {
         if (typeof this.#serverTimings === 'undefined') {
-            this.#serverTimings = ServerTiming.parseHeaders(this.responseHeaders);
+            this.#serverTimings = ServerTiming.parseHeaders(this.responseHeaders.map(x => ({ name: x.name, value: x.value })), this.#console);
         }
         return this.#serverTimings;
     }

@@ -3,19 +3,10 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import * as Common from '../common/common.js';
+import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
-function resetSavedSetting(forcedState = []) {
-    const setting = Common.Settings.Settings.instance().createLocalSetting('persistent-highlight-setting', []);
-    setting.set(forcedState);
-}
-function assertSavedSettingState(expected) {
-    const setting = Common.Settings.Settings.instance().createLocalSetting('persistent-highlight-setting', []);
-    assert.deepEqual(setting.get(), expected);
-}
 const NON_RELATED_DOCUMENT_URL_FOR_TEST = urlString `https://notexample.com/`;
 const DOCUMENT_URL_FOR_TEST = urlString `https://example.com/`;
 const NODE_PATH_FOR_TEST = 'body > div';
@@ -39,11 +30,21 @@ function createStubDOMNode(nodeId) {
     domNode.id = nodeId;
     return domNode;
 }
-describeWithEnvironment('OverlayPersistentHighlighter', () => {
+describe('OverlayPersistentHighlighter', () => {
+    let universe;
     let mockOverlayModel;
     let stubbedCallbacks;
     let highlighter;
+    function resetSavedSetting(forcedState = []) {
+        const setting = universe.settings.createLocalSetting('persistent-highlight-setting', []);
+        setting.set(forcedState);
+    }
+    function assertSavedSettingState(expected) {
+        const setting = universe.settings.createLocalSetting('persistent-highlight-setting', []);
+        assert.deepEqual(setting.get(), expected);
+    }
     beforeEach(() => {
+        universe = new TestUniverse();
         stubbedCallbacks = {
             onFlexOverlayStateChanged: sinon.stub(),
             onGridOverlayStateChanged: sinon.stub(),
@@ -73,7 +74,7 @@ describeWithEnvironment('OverlayPersistentHighlighter', () => {
                 },
             }),
         });
-        highlighter = new SDK.OverlayPersistentHighlighter.OverlayPersistentHighlighter(mockOverlayModel, Common.Settings.Settings.instance(), stubbedCallbacks);
+        highlighter = new SDK.OverlayPersistentHighlighter.OverlayPersistentHighlighter(mockOverlayModel, universe.settings, stubbedCallbacks);
         resetSavedSetting();
     });
     it('is able to highlight flexbox elements', () => {

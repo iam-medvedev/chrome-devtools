@@ -19654,6 +19654,8 @@ var CdpBrowser = class _CdpBrowser extends Browser {
 };
 export {
   CdpBrowser as Browser,
+  CDPSession,
+  CDPSessionEvent,
   Connection,
   CdpElementHandle as ElementHandle,
   CdpFrame as Frame,

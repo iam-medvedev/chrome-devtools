@@ -42,7 +42,6 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Foundation from '../../foundation/foundation.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
-import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
@@ -61,56 +60,56 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ExecutionContextSelector } from './ExecutionContextSelector.js';
 const UIStrings = {
     /**
-     * @description Title of item in main
+     * @description Title of the menu item in the main toolbar to customize and control DevTools.
      */
     customizeAndControlDevtools: 'Customize and control DevTools',
     /**
-     * @description Title element text content in Main
+     * @description Label for the dock side menu options in the customize and control menu.
      */
     dockSide: 'Dock side',
     /**
-     * @description Title element title in Main
+     * @description Tooltip for the dock side menu options explaining how to restore the last dock position.
      * @example {Ctrl+Shift+D} PH1
      */
     placementOfDevtoolsRelativeToThe: 'Placement of DevTools relative to the page. ({PH1} to restore last position)',
     /**
-     * @description Text to undock the DevTools
+     * @description Tooltip and label for the button to undock DevTools into a separate window.
      */
     undockIntoSeparateWindow: 'Undock into separate window',
     /**
-     * @description Text to dock the DevTools to the bottom of the browser tab
+     * @description Tooltip and label for the button to dock DevTools to the bottom of the browser window.
      */
     dockToBottom: 'Dock to bottom',
     /**
-     * @description Text to dock the DevTools to the right of the browser tab
+     * @description Tooltip and label for the button to dock DevTools to the right of the browser window.
      */
     dockToRight: 'Dock to right',
     /**
-     * @description Text to dock the DevTools to the left of the browser tab
+     * @description Tooltip and label for the button to dock DevTools to the left of the browser window.
      */
     dockToLeft: 'Dock to left',
     /**
-     * @description Text in Main
+     * @description Action item in the customize and control menu to focus the page being debugged.
      */
     focusDebuggee: 'Focus page',
     /**
-     * @description Text in Main
+     * @description Action item in the customize and control menu to hide the Console drawer.
      */
-    hideConsoleDrawer: 'Hide console drawer',
+    hideConsoleDrawer: 'Hide Console drawer',
     /**
-     * @description Text in Main
+     * @description Action item in the customize and control menu to show the Console drawer.
      */
-    showConsoleDrawer: 'Show console drawer',
+    showConsoleDrawer: 'Show Console drawer',
     /**
-     * @description A context menu item in the Main
+     * @description Submenu item in the customize and control menu to open additional tools and panels.
      */
     moreTools: 'More tools',
     /**
-     * @description Text for the viewing the help options
+     * @description Submenu item in the customize and control menu to view help and documentation options.
      */
     help: 'Help',
     /**
-     * @description Text describing how to navigate the dock side menu
+     * @description Screen reader announcement explaining how to navigate the dock side options using arrow keys.
      */
     dockSideNavigation: 'Use left and right arrow keys to navigate the options',
     /**
@@ -118,7 +117,7 @@ const UIStrings = {
      */
     aiModelDownloaded: 'AI model downloaded',
     /**
-     * @description A title of the menu item in the main menu leading to https://github.com/ChromeDevTools/chrome-devtools-mcp.
+     * @description Title of the menu item in the customize and control menu leading to the DevTools MCP repository.
      */
     getDevToolsMcp: 'Get `DevTools MCP`'
 };
@@ -198,6 +197,10 @@ export class MainImpl {
         };
         this.#universe = new Foundation.Universe.Universe(creationOptions);
         Root.DevToolsContext.setGlobalInstance(this.#universe.context);
+        // Mark 'cache-disabled' as requiring user interaction when multiple CDP clients are attached.
+        if (Root.Runtime.Runtime.queryParam('hasOtherClients')) {
+            this.#universe.settings.moduleSetting('cache-disabled').setRequiresUserAction(true);
+        }
         Root.Runtime.experiments.cleanUpStaleExperiments();
         await this.requestAndRegisterLocaleData();
         Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting('sync-preferences').get());
@@ -388,7 +391,7 @@ export class MainImpl {
         IssuesManager.IssuesManager.IssuesManager.instance({
             forceNew: true,
             ensureFirst: true,
-            showThirdPartyIssuesSetting: IssuesManager.Issue.getShowThirdPartyIssuesSetting(),
+            showThirdPartyIssuesSetting: IssuesManager.Issue.getShowThirdPartyIssuesSetting(Common.Settings.Settings.instance()),
             hideIssueSetting: IssuesManager.IssuesManager.getHideIssueByCodeSetting(),
         });
         UI.DockController.DockController.instance({ forceNew: true, canDock });
@@ -430,8 +433,8 @@ export class MainImpl {
                         'no-profile-and-not-eligible';
                 void VisualLogging.logFunctionCall('gdp-client-initialize', contextString);
             });
-            void Badges.UserBadges.instance().initialize();
-            Badges.UserBadges.instance().addEventListener("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */, async (ev) => {
+            void this.#universe.userBadges.initialize();
+            this.#universe.userBadges.addEventListener("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */, async (ev) => {
                 loadedPanelCommonModule ??= await import('../../panels/common/common.js');
                 const badgeNotification = new loadedPanelCommonModule.BadgeNotification();
                 const { badge, reason } = ev.data;

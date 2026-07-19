@@ -7,6 +7,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
@@ -25,6 +26,7 @@ function renderPreviewView(request) {
 }
 describe('RequestPreviewView', () => {
     setupLocaleHooks();
+    setupSettingsHooks();
     it('prevents previewed html from making same-site requests', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `http://devtools-frontend.test/content`, urlString ``, null, null, null);
         request.setContentDataProvider(contentData);

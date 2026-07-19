@@ -1,12 +1,15 @@
+import '../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
-import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
+import type * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { type TemplateResult } from '../../ui/lit/lit.js';
 import { BottomUpProfileDataGridTree } from './BottomUpProfileDataGrid.js';
 import { HeapTimelineOverview, type IdsRangeChangedEvent } from './HeapTimelineOverview.js';
 import { type Formatter, type ProfileDataGridNode, ProfileDataGridTree } from './ProfileDataGrid.js';
@@ -21,10 +24,11 @@ export declare const enum ViewTypes {
     HEAVY = "Heavy"
 }
 export declare class HeapProfileView extends UI.View.SimpleView implements UI.SearchableView.Searchable {
+    #private;
     profileHeader: SamplingHeapProfileHeader;
     readonly profileType: SamplingHeapProfileTypeBase;
     adjustedTotal: number;
-    readonly selectedSizeText: UI.Toolbar.ToolbarText;
+    selectedSizeText: HTMLElement | undefined;
     timestamps: number[];
     sizes: number[];
     max: number[];
@@ -34,11 +38,11 @@ export declare class HeapProfileView extends UI.View.SimpleView implements UI.Se
     readonly timelineOverview: HeapTimelineOverview;
     profileInternal: CPUProfile.ProfileTreeModel.ProfileTreeModel | null;
     searchableViewInternal: UI.SearchableView.SearchableView;
-    dataGrid: DataGrid.DataGrid.DataGridImpl<unknown>;
-    viewSelectComboBox: UI.Toolbar.ToolbarComboBox;
-    focusButton: UI.Toolbar.ToolbarButton;
-    excludeButton: UI.Toolbar.ToolbarButton;
-    resetButton: UI.Toolbar.ToolbarButton;
+    dataGrid: UI.Widget.Widget;
+    viewSelectComboBox: HTMLSelectElement | undefined;
+    focusButton: Buttons.Button.Button | undefined;
+    excludeButton: Buttons.Button.Button | undefined;
+    resetButton: Buttons.Button.Button | undefined;
     readonly linkifierInternal: Components.Linkifier.Linkifier;
     nodeFormatter: Formatter;
     viewType: Common.Settings.Setting<ViewTypes>;
@@ -47,11 +51,11 @@ export declare class HeapProfileView extends UI.View.SimpleView implements UI.Se
     currentSearchResultIndex?: number;
     dataProvider?: ProfileFlameChartDataProvider;
     flameChart?: ProfileFlameChart;
-    visibleView?: ProfileFlameChart | DataGrid.DataGrid.DataGridWidget<unknown>;
+    visibleView?: UI.Widget.Widget;
     searchableElement?: ProfileDataGridTree | ProfileFlameChart;
     profileDataGridTree?: ProfileDataGridTree;
     constructor(profileHeader: SamplingHeapProfileHeader);
-    toolbarItems(): Promise<UI.Toolbar.ToolbarItem[]>;
+    toolbarItems(): Promise<TemplateResult>;
     onIdsRangeChanged(event: Common.EventTarget.EventTargetEvent<IdsRangeChangedEvent>): void;
     setSelectionRange(minId: number, maxId: number): void;
     onStatsUpdate(event: Common.EventTarget.EventTargetEvent<Protocol.HeapProfiler.SamplingHeapProfile | null>): void;
@@ -83,12 +87,13 @@ export declare class HeapProfileView extends UI.View.SimpleView implements UI.Se
     linkifier(): Components.Linkifier.Linkifier;
     ensureFlameChartCreated(): void;
     onEntryInvoked(event: Common.EventTarget.EventTargetEvent<number>): Promise<void>;
-    changeView(): void;
+    changeView(e?: Event): void;
     nodeSelected(selected: boolean): void;
     focusClicked(): void;
     excludeClicked(): void;
     resetClicked(): void;
     sortProfile(): void;
+    performUpdate(): void;
 }
 declare const SamplingHeapProfileTypeBase_base: (new (...args: any[]) => {
     __events: Common.ObjectWrapper.ObjectWrapper<SamplingHeapProfileType.EventTypes>;
@@ -177,6 +182,7 @@ export declare class SamplingHeapProfileModel extends CPUProfile.ProfileTreeMode
     constructor(profile: Protocol.HeapProfiler.SamplingHeapProfile, minOrdinal?: number, maxOrdinal?: number);
 }
 export declare class NodeFormatter implements Formatter {
+    #private;
     readonly profileView: HeapProfileView;
     constructor(profileView: HeapProfileView);
     formatValue(value: number): string;

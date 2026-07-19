@@ -41,8 +41,11 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/models/persistence/Automapping.test.ts",
     "../../../../../../front_end/models/persistence/AutomaticFileSystemManager.test.ts",
     "../../../../../../front_end/models/persistence/AutomaticFileSystemWorkspaceBinding.test.ts",
+    "../../../../../../front_end/models/persistence/FileSystemWorkspaceBinding.test.ts",
+    "../../../../../../front_end/models/persistence/IsolatedFileSystemManager.test.ts",
     "../../../../../../front_end/models/persistence/NetworkPersistenceManager.test.ts",
     "../../../../../../front_end/models/persistence/PersistenceImpl.test.ts",
     "../../../../../../front_end/models/persistence/PlatformFileSystem.test.ts",

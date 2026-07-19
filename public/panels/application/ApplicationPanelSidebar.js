@@ -55,8 +55,6 @@ import { ExtensionStorageModel, } from './ExtensionStorageModel.js';
 import { FrameDetailsReportView } from './FrameDetailsView.js';
 import { Events as IndexedDBModelEvents, IndexedDBModel, } from './IndexedDBModel.js';
 import { IDBDatabaseView, IDBDataView } from './IndexedDBViews.js';
-import { InterestGroupStorageModel } from './InterestGroupStorageModel.js';
-import { InterestGroupTreeElement } from './InterestGroupTreeElement.js';
 import { OpenedWindowDetailsView, WorkerDetailsView } from './OpenedWindowDetailsView.js';
 import { PreloadingSummaryTreeElement, } from './PreloadingTreeElement.js';
 import { ReportingApiTreeElement } from './ReportingApiTreeElement.js';
@@ -273,7 +271,7 @@ const UIStrings = {
     /**
      * @description Description text in the Application Panel describing a frame's resources
      */
-    resourceDescription: 'On this page you can view the frame\'s resources.'
+    resourceDescription: 'On this page you can view the frame’s resources.'
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/ApplicationPanelSidebar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -305,7 +303,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     sessionStorageListTreeElement;
     extensionStorageListTreeElement;
     indexedDBListTreeElement;
-    interestGroupTreeElement;
     cookieListTreeElement;
     trustTokensTreeElement;
     cacheStorageListTreeElement;
@@ -413,8 +410,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         storageTreeElement.appendChild(this.cookieListTreeElement);
         this.trustTokensTreeElement = new TrustTokensTreeElement(panel);
         storageTreeElement.appendChild(this.trustTokensTreeElement);
-        this.interestGroupTreeElement = new InterestGroupTreeElement(panel);
-        storageTreeElement.appendChild(this.interestGroupTreeElement);
         this.sharedStorageListTreeElement = new SharedStorageListTreeElement(panel);
         storageTreeElement.appendChild(this.sharedStorageListTreeElement);
         this.cacheStorageListTreeElement = new ServiceWorkerCacheTreeElement(panel);
@@ -485,10 +480,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             modelAdded: (model) => this.indexedDBModelAdded(model),
             modelRemoved: (model) => this.indexedDBModelRemoved(model),
         }, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().observeModels(InterestGroupStorageModel, {
-            modelAdded: (model) => this.interestGroupModelAdded(model),
-            modelRemoved: (model) => this.interestGroupModelRemoved(model),
-        }, { scoped: true });
         SDK.TargetManager.TargetManager.instance().observeModels(SharedStorageModel, {
             modelAdded: (model) => this.sharedStorageModelAdded(model).catch(err => {
                 console.error(err);
@@ -518,10 +509,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             return;
         }
         this.target = target;
-        const interestGroupModel = target.model(InterestGroupStorageModel);
-        if (interestGroupModel) {
-            interestGroupModel.addEventListener("InterestGroupAccess" /* InterestGroupModelEvents.INTEREST_GROUP_ACCESS */, this.interestGroupAccess, this);
-        }
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         if (!resourceTreeModel) {
             return;
@@ -542,22 +529,15 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, this.initialize, this);
             resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.WillLoadCachedResources, this.resetWithFrames, this);
         }
-        const interestGroupModel = target.model(InterestGroupStorageModel);
-        if (interestGroupModel) {
-            interestGroupModel.removeEventListener("InterestGroupAccess" /* InterestGroupModelEvents.INTEREST_GROUP_ACCESS */, this.interestGroupAccess, this);
-        }
         this.resetWithFrames();
     }
     focus() {
         this.sidebarTree.focus();
     }
     initialize() {
-        for (const frame of SDK.ResourceTreeModel.ResourceTreeModel.frames()) {
+        for (const frame of SDK.ResourceTreeModel.ResourceTreeModel.frames(this.target?.targetManager() ??
+            SDK.TargetManager.TargetManager.instance())) {
             this.addCookieDocument(frame);
-        }
-        const interestGroupModel = this.target?.model(InterestGroupStorageModel);
-        if (interestGroupModel) {
-            interestGroupModel.enable();
         }
         this.cacheStorageListTreeElement.initialize();
         const backgroundServiceModel = this.target?.model(BackgroundServiceModel) || null;
@@ -604,14 +584,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     }
     indexedDBModelRemoved(model) {
         this.indexedDBListTreeElement.removeIndexedDBForModel(model);
-    }
-    interestGroupModelAdded(model) {
-        model.enable();
-        model.addEventListener("InterestGroupAccess" /* InterestGroupModelEvents.INTEREST_GROUP_ACCESS */, this.interestGroupAccess, this);
-    }
-    interestGroupModelRemoved(model) {
-        model.disable();
-        model.removeEventListener("InterestGroupAccess" /* InterestGroupModelEvents.INTEREST_GROUP_ACCESS */, this.interestGroupAccess, this);
     }
     async sharedStorageModelAdded(model) {
         await model.enable();
@@ -674,7 +646,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     reset() {
         this.domains = {};
         this.cookieListTreeElement.removeChildren();
-        this.interestGroupTreeElement.clearEvents();
         this.deviceBoundSessionsModel?.clearVisibleSites();
         this.deviceBoundSessionsModel?.clearEvents();
     }
@@ -684,9 +655,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             this.reset();
         }
         this.addCookieDocument(frame);
-    }
-    interestGroupAccess(event) {
-        this.interestGroupTreeElement.addEvent(event.data);
     }
     addCookieDocument(frame) {
         // In case the current frame was unreachable, show its cookies

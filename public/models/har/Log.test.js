@@ -5,10 +5,65 @@ import { assert } from 'chai';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { SnapshotTester } from '../../testing/SnapshotTester.js';
 import * as HAR from './har.js';
 const { urlString } = Platform.DevToolsPath;
-describe('HAR', () => {
-    describe('Log', () => {
+describe('HAR', function () {
+    describe('Log', function () {
+        const snapshotTester = new SnapshotTester(this, import.meta);
+        describe('build', function () {
+            it('converts network requests into a complete HAR log with pages and entries', async function () {
+                const mainRequestId = 'r0';
+                const postRequestId = 'r1';
+                const mainUrl = urlString `http://127.0.0.1:8000/devtools/resources/inspected-page.html`;
+                const postUrl = urlString `http://127.0.0.1:8000/devtools/resources/post-target.cgi`;
+                const mainRequest = SDK.NetworkRequest.NetworkRequest.create(mainRequestId, mainUrl, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+                mainRequest.requestMethod = 'GET';
+                mainRequest.setResourceType(Common.ResourceType.resourceTypes.Document);
+                mainRequest.responseHeaders = [{
+                        name: 'Set-Cookie',
+                        value: 'x=y; Path=/path; Domain=example.com; httpOnly; Secure\nx1=y1; SameSite=Strict\nz2=y2; SameSite=Lax',
+                    }];
+                const cookie1 = new SDK.Cookie.Cookie('a', 'b', 0 /* SDK.Cookie.Type.REQUEST */);
+                cookie1.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/path');
+                cookie1.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, 'example.com');
+                const cookie2 = new SDK.Cookie.Cookie('a1', 'b1', 0 /* SDK.Cookie.Type.REQUEST */);
+                const cookie3 = new SDK.Cookie.Cookie('c1', 'd1', 0 /* SDK.Cookie.Type.REQUEST */);
+                mainRequest.addExtraRequestInfo({
+                    includedRequestCookies: [
+                        { cookie: cookie1, exemptionReason: undefined },
+                        { cookie: cookie2, exemptionReason: undefined },
+                        { cookie: cookie3, exemptionReason: undefined },
+                    ],
+                    blockedRequestCookies: [],
+                    requestHeaders: [{ name: 'version', value: 'HTTP/1.1' }],
+                    connectTiming: { requestTime: 1 },
+                });
+                mainRequest.fetchedViaServiceWorker = true;
+                mainRequest.setResponseCacheStorageCacheName('v1');
+                mainRequest.setServiceWorkerResponseSource("cache-storage" /* Protocol.Network.ServiceWorkerResponseSource.CacheStorage */);
+                mainRequest.serviceWorkerRouterInfo = {
+                    ruleIdMatched: 3,
+                    matchedSourceType: "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */,
+                    actualSourceType: "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */,
+                };
+                const pageLoad = new SDK.PageLoad.PageLoad(mainRequest);
+                pageLoad.id = 1;
+                pageLoad.contentLoadTime = 10;
+                pageLoad.loadTime = 15;
+                pageLoad.bindRequest(mainRequest);
+                const postRequest = SDK.NetworkRequest.NetworkRequest.create(postRequestId, postUrl, Platform.DevToolsPath.EmptyUrlString, null, null, null);
+                postRequest.requestMethod = 'POST';
+                postRequest.setResourceType(Common.ResourceType.resourceTypes.XHR);
+                postRequest.setRequestHeaders([{ name: 'Content-Type', value: 'text/xml' }]);
+                postRequest.setRequestFormData(true, '<xml></xml>');
+                postRequest.mimeType = 'application/xml';
+                pageLoad.bindRequest(postRequest);
+                const log = await HAR.Log.Log.build([mainRequest, postRequest], { sanitize: false });
+                log.creator.version = 'VERSION';
+                snapshotTester.assert(this, JSON.stringify(log, null, 2));
+            });
+        });
         describe('Entry', () => {
             describe('build', () => {
                 const requestId = 'r0';

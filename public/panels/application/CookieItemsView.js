@@ -332,7 +332,7 @@ export class CookieItemsView extends UI.Widget.VBox {
                 return true;
             }
             if (object instanceof SDK.Cookie.Cookie) {
-                return IssuesManager.RelatedIssue.hasIssues(object);
+                return IssuesManager.RelatedIssue.hasIssues(object, IssuesManager.IssuesManager.IssuesManager.instance());
             }
             return false;
         };

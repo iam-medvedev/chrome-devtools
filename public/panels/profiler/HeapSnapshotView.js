@@ -251,7 +251,7 @@ const UIStrings = {
     /**
      * @description Text of a DOM element in Heap Snapshot View of a profiler tool
      */
-    stackWasNotRecordedForThisObject: 'Stack wasn\'t recorded for this object because it had been allocated before this profile recording started.',
+    stackWasNotRecordedForThisObject: 'Stack wasn’t recorded for this object because it had been allocated before this profile recording started.',
     /**
      * @description Text in Heap Snapshot View of a profiler tool.
      * This text is on a button to undo all previous "Ignore this retainer" actions.
@@ -1490,8 +1490,7 @@ export class HeapProfileHeader extends ProfileHeader {
     }
     setupWorker() {
         console.assert(!this.workerProxy, 'HeapSnapshotWorkerProxy already exists');
-        this.workerProxy =
-            new HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotWorkerProxy(this.handleWorkerEvent.bind(this));
+        this.workerProxy = new HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotWorkerProxy(this.handleWorkerEvent.bind(this), Common.Console.Console.instance());
         this.workerProxy.addEventListener("Wait" /* HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotWorkerProxy.Events.WAIT */, event => {
             this.updateStatus(null, event.data);
         }, this);
@@ -1525,7 +1524,7 @@ export class HeapProfileHeader extends ProfileHeader {
     }
     transferChunk(chunk) {
         if (!this.bufferedWriter) {
-            this.bufferedWriter = new Bindings.TempFile.TempFile();
+            this.bufferedWriter = new Bindings.TempFile.TempFile(Common.Console.Console.instance());
         }
         this.bufferedWriter.write([chunk]);
         ++this.totalNumberOfChunks;

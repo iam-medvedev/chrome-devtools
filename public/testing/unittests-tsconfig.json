@@ -52,6 +52,9 @@
   ],
   "references": [
     {
+      "path": "./foundation_unittests-tsconfig.json"
+    },
+    {
       "path": "./testing-tsconfig.json"
     },
     {

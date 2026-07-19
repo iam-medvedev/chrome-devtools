@@ -9,163 +9,163 @@ import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   * @description Text in Main
+   * @description Action title to focus the page being debugged.
    */
   focusDebuggee: "Focus page",
   /**
-   * @description Text in the Shortcuts page in settings to explain a keyboard shortcut
+   * @description Action title and shortcut description to toggle the Console drawer.
    */
   toggleDrawer: "Toggle drawer",
   /**
-   * @description Title of an action that navigates to the next panel
+   * @description Title of an action that navigates to the next panel.
    */
   nextPanel: "Next panel",
   /**
-   * @description Title of an action that navigates to the previous panel
+   * @description Title of an action that navigates to the previous panel.
    */
   previousPanel: "Previous panel",
   /**
-   * @description Title of an action that reloads the DevTools
+   * @description Title of an action that reloads DevTools.
    */
   reloadDevtools: "Reload DevTools",
   /**
-   * @description Title of an action in the main tool to toggle dock
+   * @description Title of an action in the main toolbar to restore the last dock position.
    */
   restoreLastDockPosition: "Restore last dock position",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom in)
+   * @description Shortcut description and action title to zoom in.
    */
   zoomIn: "Zoom in",
   /**
-   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom out)
+   * @description Shortcut description and action title to zoom out.
    */
   zoomOut: "Zoom out",
   /**
-   * @description Title of an action that reset the zoom level to its default
+   * @description Title of an action that resets the zoom level to default.
    */
   resetZoomLevel: "Reset zoom level",
   /**
-   * @description Title of an action to search in panel
+   * @description Title of an action to search within the current panel.
    */
   searchInPanel: "Search in panel",
   /**
-   * @description Title of an action that cancels the current search
+   * @description Title of an action that cancels the current search.
    */
   cancelSearch: "Cancel search",
   /**
-   * @description Title of an action that finds the next search result
+   * @description Title of an action that finds the next search result.
    */
   findNextResult: "Find next result",
   /**
-   * @description Title of an action to find the previous search result
+   * @description Title of an action to find the previous search result.
    */
   findPreviousResult: "Find previous result",
   /**
-   * @description Title of a setting under the Appearance category in Settings
+   * @description Title of the theme setting under the Appearance category in Settings.
    */
   theme: "Theme:",
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to switch to the browser's preferred color theme.
    */
-  switchToBrowserPreferredTheme: "Switch to browser's preferred theme",
+  switchToBrowserPreferredTheme: "Switch to browser\u2019s preferred theme",
   /**
-   * @description A drop-down menu option to switch to the same (light or dark) theme as the browser
+   * @description Drop-down menu option to match the browser's color theme.
    */
   autoTheme: "Auto",
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to switch to the light color theme.
    */
   switchToLightTheme: "Switch to light theme",
   /**
-   * @description A drop-down menu option to switch to light theme
+   * @description Drop-down menu option to select the light color theme.
    */
   lightCapital: "Light",
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to switch to the dark color theme.
    */
   switchToDarkTheme: "Switch to dark theme",
   /**
-   * @description A drop-down menu option to switch to dark theme
+   * @description Drop-down menu option to select the dark color theme.
    */
   darkCapital: "Dark",
   /**
-   * @description A tag of theme preference settings that can be searched in the command menu
+   * @description Tag for theme preference settings when searched in the command menu.
    */
   darkLower: "dark",
   /**
-   * @description A tag of theme preference settings that can be searched in the command menu
+   * @description Tag for theme preference settings when searched in the command menu.
    */
   lightLower: "light",
   /**
-   * @description Title of a setting under the Appearance category in Settings
+   * @description Title of the panel layout setting under the Appearance category in Settings.
    */
   panelLayout: "Panel layout:",
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to use a horizontal panel layout.
    */
   useHorizontalPanelLayout: "Use horizontal panel layout",
   /**
-   * @description A drop-down menu option to use horizontal panel layout
+   * @description Drop-down menu option for horizontal panel layout.
    */
   horizontal: "horizontal",
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to use a vertical panel layout.
    */
   useVerticalPanelLayout: "Use vertical panel layout",
   /**
-   * @description A drop-down menu option to use vertical panel layout
+   * @description Drop-down menu option for vertical panel layout.
    */
   vertical: "vertical",
   /**
-   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Command menu option to use automatic panel layout.
    */
   useAutomaticPanelLayout: "Use automatic panel layout",
   /**
-   * @description Text short for automatic
+   * @description Drop-down menu option for automatic panel layout.
    */
   auto: "auto",
   /**
-   * @description Title of a setting under the Appearance category in Settings
+   * @description Checkbox label for the setting to use Ctrl plus number keys to switch panels.
    */
   enableCtrlShortcutToSwitchPanels: "Use Ctrl + 1-9 to switch panels",
   /**
-   * @description (Mac only) Title of a setting under the Appearance category in Settings
+   * @description Checkbox label for the setting to use Command plus number keys to switch panels on Mac.
    */
   enableShortcutToSwitchPanels: "Use \u2318 + 1-9 to switch panels",
   /**
-   * @description A drop-down menu option to dock to right
+   * @description Drop-down menu option to dock DevTools to the right.
    */
   right: "Right",
   /**
-   * @description Text to dock the DevTools to the right of the browser tab
+   * @description Title of the action and setting option to dock DevTools to the right of the browser window.
    */
   dockToRight: "Dock to right",
   /**
-   * @description A drop-down menu option to dock to bottom
+   * @description Drop-down menu option to dock DevTools to the bottom.
    */
   bottom: "Bottom",
   /**
-   * @description Text to dock the DevTools to the bottom of the browser tab
+   * @description Title of the action and setting option to dock DevTools to the bottom of the browser window.
    */
   dockToBottom: "Dock to bottom",
   /**
-   * @description A drop-down menu option to dock to left
+   * @description Drop-down menu option to dock DevTools to the left.
    */
   left: "Left",
   /**
-   * @description Text to dock the DevTools to the left of the browser tab
+   * @description Title of the action and setting option to dock DevTools to the left of the browser window.
    */
   dockToLeft: "Dock to left",
   /**
-   * @description A drop-down menu option to undock into separate window
+   * @description Drop-down menu option for undocked DevTools in a separate window.
    */
   undocked: "Undocked",
   /**
-   * @description Text to undock the DevTools
+   * @description Title of the action and setting option to undock DevTools into a separate window.
    */
   undockIntoSeparateWindow: "Undock into separate window",
   /**
-   * @description Name of the default set of DevTools keyboard shortcuts
+   * @description Option label for the default set of DevTools keyboard shortcuts.
    */
   devtoolsDefault: "DevTools (Default)",
   /**
@@ -220,7 +220,7 @@ var UIStrings = {
   /**
    * @description Command to turn the browser color scheme matching off through the command menu.
    */
-  dontMatchChromeColorSchemeCommand: "Don't match Chrome color scheme",
+  dontMatchChromeColorSchemeCommand: "Don\u2019t match Chrome color scheme",
   /**
    * @description Command to toggle the drawer orientation.
    */
@@ -902,53 +902,52 @@ import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 var UIStrings2 = {
   /**
-   * @description Title of the Rendering tool. The rendering tool is a collection of settings that
+   * @description Title of the Rendering panel. The Rendering panel is a collection of settings that
    * lets the user debug the rendering (i.e. how the website is drawn onto the screen) of the
-   * website.
-   * https://developer.chrome.com/docs/devtools/evaluate-performance/reference#rendering
+   * website (https://developer.chrome.com/docs/devtools/evaluate-performance/reference#rendering).
    */
   rendering: "Rendering",
   /**
-   * @description Command for showing the 'Rendering' tool
+   * @description Command for showing the Rendering panel.
    */
   showRendering: "Show Rendering",
   /**
-   * @description Command Menu search query that points to the Rendering tool. This refers to the
+   * @description Command Menu search query that points to the Rendering panel. This refers to the
    * process of drawing pixels onto the screen (called painting).
    */
   paint: "paint",
   /**
-   * @description Command Menu search query that points to the Rendering tool. Layout is a phase of
+   * @description Command Menu search query that points to the Rendering panel. Layout is a phase of
    * rendering a website where the browser calculates where different elements in the website will go
    * on the screen.
    */
   layout: "layout",
   /**
-   * @description Command Menu search query that points to the Rendering tool. 'fps' is an acronym
+   * @description Command Menu search query that points to the Rendering panel. 'fps' is an acronym
    * for 'Frames per second'. It is in lowercase here because the search box the user will type this
    * into is case-insensitive. If there is an equivalent acronym/shortening in the target language
    * then a translation would be appropriate, otherwise it can be left in English.
    */
   fps: "fps",
   /**
-   * @description Command Menu search query that points to the Rendering tool.
-   * https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types. This is something the user
+   * @description Command Menu search query that points to the Rendering panel
+   * (https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types). This is something the user
    * might type in to search for the setting to change the CSS media type.
    */
   cssMediaType: "CSS media type",
   /**
-   * @description Command Menu search query that points to the Rendering tool.
-   * https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_features This is something the
+   * @description Command Menu search query that points to the Rendering panel
+   * (https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_features). This is something the
    * user might type in to search for the setting to change the value of various CSS media features.
    */
   cssMediaFeature: "CSS media feature",
   /**
-   * @description Command Menu search query that points to the Rendering tool. Possible search term
+   * @description Command Menu search query that points to the Rendering panel. Possible search term
    * when the user wants to find settings related to visual impairment e.g. blurry vision, blindness.
    */
   visionDeficiency: "vision deficiency",
   /**
-   * @description Command Menu search query that points to the Rendering tool. Possible search term
+   * @description Command Menu search query that points to the Rendering panel. Possible search term
    * when the user wants to find settings related to color vision deficiency/color blindness.
    */
   colorVisionDeficiency: "color vision deficiency",
@@ -957,7 +956,7 @@ var UIStrings2 = {
    */
   reloadPage: "Reload page",
   /**
-   * @description Title of an action that 'hard' reloads the inspected page. A hard reload also
+   * @description Title of an action that hard reloads the inspected page. A hard reload also
    * clears the browser's cache, forcing it to reload the most recent version of the page.
    */
   hardReloadPage: "Hard reload page",
@@ -985,10 +984,9 @@ var UIStrings2 = {
    */
   doNotAutoOpen: "Do not auto-open DevTools for popups",
   /**
-   * @description Title of an action that toggle
-   * "forces CSS prefers-color-scheme" color
+   * @description Title of an action that toggles the "forces CSS prefers-color-scheme" media feature.
    */
-  toggleCssPrefersColorSchemeMedia: "Toggle CSS media feature prefers-color-scheme"
+  toggleCssPrefersColorSchemeMedia: "Toggle CSS media feature `prefers-color-scheme`"
 };
 var str_2 = i18n3.i18n.registerUIStrings("entrypoints/inspector_main/inspector_main-meta.ts", UIStrings2);
 var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
@@ -1130,10 +1128,10 @@ UI2.Toolbar.registerToolbarItem({
   location: "main-toolbar-left"
 });
 UI2.Toolbar.registerToolbarItem({
-  async loadItem() {
+  loadItem: Common2.Lazy.lazy(async () => {
     const InspectorMain = await loadInspectorMainModule2();
-    return InspectorMain.OutermostTargetSelector.OutermostTargetSelector.instance();
-  },
+    return new InspectorMain.OutermostTargetSelector.OutermostTargetSelector();
+  }),
   order: 97,
   location: "main-toolbar-right"
 });
@@ -1189,7 +1187,7 @@ var UIStrings3 = {
   /**
    * @description Text of a setting that do turn off the measuring rulers when hover over a target
    */
-  doNotShowRulersOnHover: "Don't show rulers on hover",
+  doNotShowRulersOnHover: "Don\u2019t show rulers on hover",
   /**
    * @description Title of a setting that turns on grid area name labels
    */
@@ -2450,7 +2448,6 @@ Common3.Settings.registerSettingExtension({
   settingType: "boolean",
   order: 0,
   defaultValue: false,
-  userActionCondition: "hasOtherClients",
   options: [
     {
       value: true,
@@ -3823,7 +3820,7 @@ var UIStrings11 = {
   /**
    * @description Title of an option under the Sources category that can be invoked through the Command Menu
    */
-  doNotDisplayVariableValuesInline: "Don't show variable values inline",
+  doNotDisplayVariableValuesInline: "Don\u2019t show variable values inline",
   /**
    * @description Title of a setting under the Sources category in Settings
    */
@@ -5705,8 +5702,8 @@ UI10.ViewManager.registerViewExtension({
   order: 50,
   async loadView(universe) {
     const Timeline = await loadTimelineModule();
-    const { pageResourceLoader: resourceLoader } = universe;
-    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader });
+    const { pageResourceLoader: resourceLoader, targetManager, isolateManager } = universe;
+    return Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, targetManager, isolateManager });
   }
 });
 UI10.ActionRegistration.registerActionExtension({
@@ -6077,7 +6074,7 @@ var UIStrings14 = {
    */
   wrongLocale: "To use this feature, set your language preference to English in DevTools settings.",
   /**
-   * @description Message shown to the user if the user’s region is not
+   * @description Message shown to the user if the user's region is not
    * supported.
    */
   geoRestricted: "This feature is unavailable in your region.",

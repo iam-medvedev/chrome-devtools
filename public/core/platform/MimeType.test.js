@@ -155,8 +155,8 @@ describe('parseContentType', () => {
             expectedMimeType: 'text/html',
         },
     ];
-    for (const test of TEST_CASES) {
-        it(`parses '${test.contentType}'`, () => {
+    for (const [i, test] of TEST_CASES.entries()) {
+        it(`parses test case ${i} '${test.contentType}'`, () => {
             const { mimeType, charset } = Platform.MimeType.parseContentType(test.contentType);
             assert.strictEqual(mimeType, test.expectedMimeType ?? null);
             assert.strictEqual(charset, test.expectedCharset ?? null);

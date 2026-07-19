@@ -9,6 +9,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as SourceMapsResolver from '../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as Tracing from '../../services/tracing/tracing.js';
 import { dispatchClickEvent, doubleRaf, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, expectConsoleLogs, } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
@@ -146,6 +147,38 @@ describeWithEnvironment('TimelineUIUtils', function () {
                 throw new Error('Node was unexpectedly null');
             }
             assert.strictEqual(node.textContent, 'test @ /test.js:1:1');
+        });
+    });
+    describe('stripScriptIds', () => {
+        it('strips scriptIds from stack trace call frames and its parents recursively', () => {
+            const stackTrace = {
+                callFrames: [
+                    {
+                        functionName: 'foo',
+                        scriptId: '1',
+                        url: 'http://example.com/foo.js',
+                        lineNumber: 10,
+                        columnNumber: 20,
+                    },
+                ],
+                parent: {
+                    callFrames: [
+                        {
+                            functionName: 'bar',
+                            scriptId: '2',
+                            url: 'http://example.com/bar.js',
+                            lineNumber: 30,
+                            columnNumber: 40,
+                        },
+                    ],
+                },
+            };
+            const stripped = Timeline.TimelineUIUtils.stripScriptIds(stackTrace);
+            assert.strictEqual(stripped.callFrames[0].scriptId, '');
+            assert.strictEqual(stripped.parent?.callFrames[0].scriptId, '');
+            // Ensure original is not mutated
+            assert.strictEqual(stackTrace.callFrames[0].scriptId, '1');
+            assert.strictEqual(stackTrace.parent?.callFrames[0].scriptId, '2');
         });
     });
     describe('mapping to authored script when recording is fresh', function () {
@@ -1287,6 +1320,7 @@ describeWithEnvironment('TimelineUIUtils - mapping to authored function name whe
             Workers: workersData,
             Renderer: makeMockRendererHandlerData([profileCall]),
         });
+        Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
         const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
         await resolver.install();
         const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, profileCall, new Components.Linkifier.Linkifier(), false, null);
@@ -1329,12 +1363,42 @@ describeWithEnvironment('TimelineUIUtils - mapping to authored function name whe
             Workers: workersData,
             Renderer: makeMockRendererHandlerData([functionCall]),
         });
+        Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
         const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
         await resolver.install();
         const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, functionCall, new Components.Linkifier.Linkifier(), false, null);
         const detailsData = getRowDataForDetailsElement(details).find(row => row.title?.startsWith('Function'));
         assert.exists(detailsData);
-        assert.deepEqual(detailsData, { title: 'Function', value: 'someFunction @ gen.js:1:52' });
+        assert.deepEqual(detailsData, { title: 'Function', value: 'someFunction @ main.js:6:10' });
+    });
+    it('does not map to the authored name and script of a profile call when recording is not fresh', async function () {
+        const { script } = await loadBasicSourceMapExample(target);
+        const columnNumber = 51;
+        const profileCall = makeProfileCall('function', 10, 100, Trace.Types.Events.ProcessID(1), Trace.Types.Events.ThreadID(1));
+        profileCall.callFrame = {
+            columnNumber,
+            functionName: 'minified',
+            lineNumber: 0,
+            scriptId: script.scriptId,
+            url: 'file://gen.js',
+        };
+        const workersData = {
+            workerSessionIdEvents: [],
+            workerIdByThread: new Map(),
+            workerURLById: new Map(),
+        };
+        const parsedTrace = getBaseTraceHandlerData({
+            Samples: makeMockSamplesHandlerData([profileCall]),
+            Workers: workersData,
+            Renderer: makeMockRendererHandlerData([profileCall]),
+        });
+        // Important: we do not register this trace as a fresh recording.
+        const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
+        await resolver.install();
+        const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, profileCall, new Components.Linkifier.Linkifier(), false, null);
+        const stackTraceData = getStackTraceForDetailsElement(details);
+        assert.exists(stackTraceData);
+        assert.strictEqual(stackTraceData[0], 'minified @ gen.js:1:52');
     });
 });
 //# sourceMappingURL=TimelineUIUtils.test.js.map

@@ -1912,7 +1912,7 @@ var UIStrings3 = {
   /**
    * @description Text on a button to close the infobar and never show the infobar in the future
    */
-  dontShowAgain: "Don't show again",
+  dontShowAgain: "Don\u2019t show again",
   /**
    * @description Text to close something
    */
@@ -2877,14 +2877,19 @@ function widgetConfig(widgetClass, widgetParams) {
 var currentUpdateQueue = null;
 var currentlyProcessed = /* @__PURE__ */ new Set();
 var nextUpdateQueue = /* @__PURE__ */ new Map();
-var pendingAnimationFrame = null;
+var pendingAnimationFrames = /* @__PURE__ */ new WeakMap();
 var overallUpdatePromise = null;
 function enqueueIntoNextUpdateQueue(widget2) {
   const scheduledUpdate = nextUpdateQueue.get(widget2) ?? Promise.withResolvers();
   nextUpdateQueue.delete(widget2);
   nextUpdateQueue.set(widget2, scheduledUpdate);
-  if (pendingAnimationFrame === null) {
-    pendingAnimationFrame = requestAnimationFrame(runNextUpdate);
+  const widgetWindow = widget2.contentElement.window() || window;
+  if (!pendingAnimationFrames.has(widgetWindow)) {
+    const frameId = widgetWindow.requestAnimationFrame(() => {
+      pendingAnimationFrames.delete(widgetWindow);
+      runNextUpdate();
+    });
+    pendingAnimationFrames.set(widgetWindow, frameId);
   }
   return scheduledUpdate.promise;
 }
@@ -2916,13 +2921,12 @@ function cancelUpdate(widget2) {
   }
 }
 function resolveOverallUpdatePromise() {
-  if (currentlyProcessed.size === 0 && (!currentUpdateQueue || currentUpdateQueue.size === 0) && nextUpdateQueue.size === 0 && !pendingAnimationFrame && overallUpdatePromise) {
+  if (currentlyProcessed.size === 0 && (!currentUpdateQueue || currentUpdateQueue.size === 0) && nextUpdateQueue.size === 0 && overallUpdatePromise) {
     overallUpdatePromise.resolve();
     overallUpdatePromise = null;
   }
 }
 function runNextUpdate() {
-  pendingAnimationFrame = null;
   if (!currentUpdateQueue) {
     currentUpdateQueue = nextUpdateQueue;
     nextUpdateQueue = /* @__PURE__ */ new Map();
@@ -2949,8 +2953,13 @@ function runNextUpdate() {
         const nextUpdate = nextUpdateQueue.get(widget2);
         if (nextUpdate) {
           void nextUpdate.promise.then(resolve);
-          if (pendingAnimationFrame === null) {
-            pendingAnimationFrame = requestAnimationFrame(runNextUpdate);
+          const widgetWindow = widget2.contentElement.window() || window;
+          if (!pendingAnimationFrames.has(widgetWindow)) {
+            const frameId = widgetWindow.requestAnimationFrame(() => {
+              pendingAnimationFrames.delete(widgetWindow);
+              runNextUpdate();
+            });
+            pendingAnimationFrames.set(widgetWindow, frameId);
           }
         } else {
           resolve();
@@ -3266,7 +3275,7 @@ var Widget = class _Widget {
     return widgetMap.get(node);
   }
   static get allUpdatesComplete() {
-    if (!pendingAnimationFrame && !currentUpdateQueue && currentlyProcessed.size === 0) {
+    if (nextUpdateQueue.size === 0 && !currentUpdateQueue && currentlyProcessed.size === 0) {
       return Promise.resolve();
     }
     if (!overallUpdatePromise) {
@@ -8022,7 +8031,7 @@ var UIStrings9 = {
    * is configured with a different locale than Chrome. This option means DevTools will
    * always try and display the DevTools UI in the same language as Chrome.
    */
-  setToBrowserLanguage: "Always match Chrome's language",
+  setToBrowserLanguage: "Always match Chrome\u2019s language",
   /**
    * @description An option the user can select when DevTools notices that DevTools
    * is configured with a different locale than Chrome. This option means DevTools UI
@@ -11375,6 +11384,16 @@ var textPrompt_css_default = `/*
   min-width: var(--devtools-text-prompt-min-width, auto);
 }
 
+:host([render-as-block]) .text-prompt-root,
+:host([render-as-block]) .text-prompt {
+  flex: auto;
+  width: 100%;
+}
+
+:host([render-as-block]) .text-prompt:focus {
+  outline: none;
+}
+
 .text-prompt::-webkit-scrollbar {
   display: none;
 }
@@ -11438,7 +11457,7 @@ var textPrompt_css_default = `/*
 
 // gen/front_end/ui/legacy/TextPrompt.js
 var TextPromptElement = class _TextPromptElement extends HTMLElement {
-  static observedAttributes = ["editing", "completions", "placeholder", "cancel-on-blur"];
+  static observedAttributes = ["editing", "completions", "placeholder", "cancel-on-blur", "render-as-block"];
   static formAssociated = true;
   #shadow = this.attachShadow({ mode: "open" });
   #internals = this.attachInternals();
@@ -11449,6 +11468,7 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
   #completionObserver = new MutationObserver(this.#onMutate.bind(this));
   #validator;
   #cancelOnBlur = false;
+  #isEditing = false;
   constructor() {
     super();
     this.#textPrompt.initialize(this.#willAutoComplete.bind(this));
@@ -11464,6 +11484,16 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
   }
   get cancelOnBlur() {
     return this.#cancelOnBlur;
+  }
+  set renderAsBlock(renderAsBlock) {
+    if (renderAsBlock) {
+      this.setAttribute("render-as-block", "");
+    } else {
+      this.removeAttribute("render-as-block");
+    }
+  }
+  get renderAsBlock() {
+    return this.hasAttribute("render-as-block");
   }
   #onMutate(changes) {
     const listId = this.getAttribute("completions");
@@ -11517,6 +11547,17 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
           this.#completionObserver.disconnect();
         }
         break;
+      case "render-as-block":
+        if (this.#isEditing) {
+          if (isTruthy(newValue)) {
+            this.#textPrompt.renderAsBlock();
+            this.#entrypoint.style.display = "block";
+          } else {
+            this.#textPrompt.renderAsInlineBlock();
+            this.#entrypoint.style.display = "inline";
+          }
+        }
+        break;
     }
   }
   #updateCompletions() {
@@ -11540,6 +11581,7 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
     return datalist.values().filter((option) => option.textContent.startsWith(filter.toLowerCase())).map((option) => ({ text: option.textContent })).toArray();
   }
   #startEditing() {
+    this.#isEditing = true;
     const truncatedTextPlaceholder = this.getAttribute("placeholder");
     const placeholder = this.#entrypoint.createChild("span");
     const initialText = this.getAttribute("value") ?? this.#slot.deepInnerText();
@@ -11549,6 +11591,13 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
       placeholder.setTextContentTruncatedIfNeeded(initialText, truncatedTextPlaceholder);
     }
     this.#slot.remove();
+    if (this.renderAsBlock) {
+      this.#textPrompt.renderAsBlock();
+      this.#entrypoint.style.display = "block";
+    } else {
+      this.#textPrompt.renderAsInlineBlock();
+      this.#entrypoint.style.display = "inline";
+    }
     const proxy = this.#textPrompt.attachAndStartEditing(placeholder, (e) => this.#done(
       e,
       /* commit=*/
@@ -11559,6 +11608,7 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
     this.#textPrompt.focus();
   }
   #stopEditing() {
+    this.#isEditing = false;
     this.#entrypoint.removeChildren();
     this.#entrypoint.appendChild(this.#slot);
     this.#textPrompt.detach();
@@ -11574,6 +11624,9 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
     }
   }
   #done(e, commit) {
+    if (!this.#isEditing) {
+      return;
+    }
     const target = e.target;
     const text = target.textContent || "";
     if (commit) {
@@ -11586,9 +11639,11 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
       if (!this.#internals.reportValidity()) {
         return;
       }
+      this.#isEditing = false;
       this.dispatchEvent(new _TextPromptElement.CommitEvent(text));
     } else {
       this.#internals.setValidity({});
+      this.#isEditing = false;
       this.dispatchEvent(new _TextPromptElement.CancelEvent());
     }
     e.consume();
@@ -11700,6 +11755,15 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   }
   renderAsBlock() {
     this.proxyElementDisplay = "block";
+    if (this.proxyElement) {
+      this.proxyElement.style.display = "block";
+    }
+  }
+  renderAsInlineBlock() {
+    this.proxyElementDisplay = "inline-block";
+    if (this.proxyElement) {
+      this.proxyElement.style.display = "inline-block";
+    }
   }
   /**
    * Clients should never attach any event listeners to the |element|. Instead,
@@ -14891,7 +14955,7 @@ devtools-toolbar {
 
 .webkit-html-text-node {
   color: var(--text-primary);
-  unicode-bidi: -webkit-isolate;
+  unicode-bidi: isolate;
 }
 
 .webkit-html-entity-value {
@@ -14899,7 +14963,7 @@ devtools-toolbar {
   /* See: crbug.com/1152736 for color variable migration. */
   /* stylelint-disable-next-line plugin/use_theme_colors */
   background-color: rgb(0 0 0 / 15%);
-  unicode-bidi: -webkit-isolate;
+  unicode-bidi: isolate;
 }
 
 .webkit-html-doctype {
@@ -14912,13 +14976,13 @@ devtools-toolbar {
 .webkit-html-attribute-name {
   /* Keep this in sync with view-source.css (.webkit-html-attribute-name) */
   color: var(--sys-color-token-attribute);
-  unicode-bidi: -webkit-isolate;
+  unicode-bidi: isolate;
 }
 
 .webkit-html-attribute-value {
   /* Keep this in sync with view-source.css (.webkit-html-attribute-value) */
   color: var(--sys-color-token-attribute-value);
-  unicode-bidi: -webkit-isolate;
+  unicode-bidi: isolate;
   word-break: break-all;
 }
 
@@ -15910,7 +15974,7 @@ function setTitle(element, title) {
   Tooltip.install(element, title);
 }
 var CheckboxLabel = class _CheckboxLabel extends HTMLElement {
-  static observedAttributes = ["checked", "disabled", "indeterminate", "name", "title", "aria-label"];
+  static observedAttributes = ["checked", "disabled", "indeterminate", "name", "title", "aria-label", "small"];
   #shadowRoot;
   #checkboxElement;
   #textElement;
@@ -15962,6 +16026,8 @@ var CheckboxLabel = class _CheckboxLabel extends HTMLElement {
       this.#textElement.title = newValue ?? "";
     } else if (name === "aria-label") {
       this.#checkboxElement.ariaLabel = newValue;
+    } else if (name === "small") {
+      this.#checkboxElement.classList.toggle("small", newValue !== null);
     }
   }
   getLabelText() {
@@ -15981,6 +16047,12 @@ var CheckboxLabel = class _CheckboxLabel extends HTMLElement {
   }
   set checked(checked) {
     this.toggleAttribute("checked", checked);
+  }
+  get small() {
+    return this.hasAttribute("small");
+  }
+  set small(small) {
+    this.toggleAttribute("small", small);
   }
   set disabled(disabled) {
     this.toggleAttribute("disabled", disabled);
@@ -16650,9 +16722,6 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
     function isLitTemplate(value) {
       return Boolean(typeof value === "object" && value && "_$litType$" in value && "strings" in value && "values" in value && value["_$litType$"] === 1);
     }
-    function isLitDirective(value) {
-      return Boolean(typeof value === "object" && value && "_$litDirective$" in value && "values" in value);
-    }
     function isCallable(value) {
       return typeof value === "function" && Object.getOwnPropertyDescriptor(value, "prototype")?.writable !== false;
     }
@@ -16668,7 +16737,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
         _HTMLElementWithLightDOMTemplate.patchLitTemplate(value);
         return value;
       }
-      if (isLitDirective(value)) {
+      if (Lit2.isLitDirective(value)) {
         for (let i = 0; i < value.values.length; i++) {
           const subvalue = value.values[i];
           if (isCallable(subvalue)) {
@@ -16700,9 +16769,26 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
   }
   #onChange(mutationList) {
     this.onChange(mutationList);
-    for (const mutation of mutationList) {
-      this.removeNodes(mutation.removedNodes);
-      this.addNodes(mutation.addedNodes, mutation.nextSibling);
+    const addedNodes = /* @__PURE__ */ new Set();
+    const removedNodes = /* @__PURE__ */ new Set();
+    for (let i = 0; i < mutationList.length; i++) {
+      const mutation = mutationList[i];
+      for (const node of mutation.addedNodes) {
+        addedNodes.add(node);
+      }
+      for (const node of mutation.removedNodes) {
+        removedNodes.add(node);
+      }
+    }
+    if (removedNodes.size > 0) {
+      this.removeNodes([...removedNodes]);
+    }
+    const finalAddedNodes = [...addedNodes].filter((n) => this.templateRoot.contains(n));
+    if (finalAddedNodes.length > 0) {
+      this.addNodes(finalAddedNodes);
+    }
+    for (let i = 0; i < mutationList.length; i++) {
+      const mutation = mutationList[i];
       this.updateNode(mutation.target, mutation.attributeName);
     }
   }
@@ -16710,7 +16796,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
   }
   updateNode(_node, _attributeName) {
   }
-  addNodes(_nodes, _nextSibling) {
+  addNodes(_nodes) {
   }
   removeNodes(_nodes) {
   }
@@ -23040,14 +23126,21 @@ var TreeElement = class {
 function hasBooleanAttribute(element, name) {
   return element.hasAttribute(name) && element.getAttribute(name) !== "false";
 }
-var TreeSearch = class {
+var TreeSearch = class extends Common19.ObjectWrapper.ObjectWrapper {
   #matches = [];
   #currentMatchIndex = 0;
   #nodeMatchMap;
-  reset() {
+  #reset() {
     this.#matches = [];
     this.#nodeMatchMap = void 0;
     this.#currentMatchIndex = 0;
+  }
+  reset() {
+    this.#reset();
+    this.dispatchEventToListeners(
+      "SearchChanged"
+      /* TreeSearch.Events.SEARCH_CHANGED */
+    );
   }
   currentMatch() {
     return this.#matches.at(this.#currentMatchIndex);
@@ -23090,10 +23183,18 @@ var TreeSearch = class {
   }
   next() {
     this.#currentMatchIndex = Platform23.NumberUtilities.mod(this.#currentMatchIndex + 1, this.#matches.length);
+    this.dispatchEventToListeners(
+      "SearchChanged"
+      /* TreeSearch.Events.SEARCH_CHANGED */
+    );
     return this.currentMatch();
   }
   prev() {
     this.#currentMatchIndex = Platform23.NumberUtilities.mod(this.#currentMatchIndex - 1, this.#matches.length);
+    this.dispatchEventToListeners(
+      "SearchChanged"
+      /* TreeSearch.Events.SEARCH_CHANGED */
+    );
     return this.currentMatch();
   }
   // This is a generator to sidestep stack overflow risks
@@ -23118,7 +23219,7 @@ var TreeSearch = class {
       false
     );
     yield* preOrderMatches.values();
-    for (const child of node.children()) {
+    for (const child of node.treeNodeChildren()) {
       yield* this.#innerSearch(child, currentMatch, jumpBackwards, match);
     }
     const postOrderMatches = match(
@@ -23135,10 +23236,14 @@ var TreeSearch = class {
   }
   search(node, jumpBackwards, match) {
     const currentMatch = this.currentMatch();
-    this.reset();
+    this.#reset();
     for (const _ of this.#innerSearch(node, currentMatch, jumpBackwards, match)) {
     }
     this.#currentMatchIndex = Platform23.NumberUtilities.mod(this.#currentMatchIndex, this.#matches.length);
+    this.dispatchEventToListeners(
+      "SearchChanged"
+      /* TreeSearch.Events.SEARCH_CHANGED */
+    );
     return this.#matches.length;
   }
 };
@@ -23361,7 +23466,7 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       treeElement.updateExpansionFromAttribute();
     }
   }
-  addNodes(nodes, nextSibling) {
+  addNodes(nodes) {
     for (const node of getTreeNodes(nodes)) {
       if (TreeViewTreeElement.get(node)) {
         continue;
@@ -23373,10 +23478,18 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       if (parent.treeElement.childCount() === 0) {
         parent.treeElement.childrenListElement.classList.add(...parent.classes.values());
       }
-      while (nextSibling && nextSibling.nodeType !== Node.ELEMENT_NODE) {
-        nextSibling = nextSibling.nextSibling;
+      let nextElement = null;
+      for (let e = node.nextElementSibling; e; e = e.nextElementSibling) {
+        const nextTreeEl = TreeViewTreeElement.get(e);
+        if (nextTreeEl) {
+          nextElement = nextTreeEl;
+          break;
+        }
+        if (e instanceof TreeElementWrapper && e.treeElement && e.treeElement.parent === parent.treeElement) {
+          nextElement = e.treeElement;
+          break;
+        }
       }
-      const nextElement = nextSibling ? TreeViewTreeElement.get(nextSibling) : null;
       const index = nextElement ? parent.treeElement.indexOfChild(nextElement) : parent.treeElement.children().length;
       let treeElement;
       if (node instanceof HTMLLIElement) {
@@ -23392,6 +23505,9 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
           removeNode(treeElement);
         }
         parent.treeElement.insertChild(treeElement, index);
+        if (parent.treeElement instanceof TreeViewTreeElement) {
+          parent.treeElement.updateExpansionFromAttribute();
+        }
         if (hasBooleanAttribute(node, "selected")) {
           treeElement.revealAndSelect(true);
         }
@@ -23400,7 +23516,7 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
         }
       }
     }
-    for (const element of getStyleElements(nodes)) {
+    for (const element of new Set(getStyleElements(nodes))) {
       this.#treeOutline.shadowRoot.appendChild(element.cloneNode(true));
     }
   }
@@ -23515,6 +23631,9 @@ var ifExpanded = Lit3.Directive.directive(IfExpandedDirective);
 var TreeElementWrapper = class extends HTMLElement {
   #treeElement;
   set treeElement(treeElement) {
+    if (this.#treeElement === treeElement) {
+      return;
+    }
     if (this.#treeElement?.parent) {
       const parent = this.#treeElement.parent;
       const index = parent.indexOfChild(this.#treeElement);

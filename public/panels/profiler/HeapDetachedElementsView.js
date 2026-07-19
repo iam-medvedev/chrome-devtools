@@ -71,7 +71,7 @@ export class DetachedElementsProfileView extends UI.View.SimpleView {
         }
     }
     async toolbarItems() {
-        return [...await super.toolbarItems(), this.selectedSizeText];
+        return [this.selectedSizeText];
     }
 }
 export class DetachedElementsProfileType extends Common.ObjectWrapper.eventMixin(ProfileType) {

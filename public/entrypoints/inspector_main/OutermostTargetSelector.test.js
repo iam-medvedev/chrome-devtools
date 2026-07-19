@@ -25,7 +25,7 @@ describeWithEnvironment('OutermostTargetSelector', () => {
         });
         primaryTarget = createTarget({ parentTarget: tabTarget, url: 'http://example.com/', name: 'primary' });
         prerenderTarget = createTarget({ parentTarget: tabTarget, subtype: 'prerender', url: 'http://example.com/prerender1', name: 'prerender1' });
-        selector = InspectorMain.OutermostTargetSelector.OutermostTargetSelector.instance({ forceNew: true });
+        selector = new InspectorMain.OutermostTargetSelector.OutermostTargetSelector();
     });
     it('creates drop-down with outermost targets', () => {
         assert.deepEqual([...selector.listItems], [primaryTarget, prerenderTarget]);

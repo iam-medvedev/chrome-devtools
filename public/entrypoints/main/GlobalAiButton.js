@@ -12,19 +12,19 @@ import globalAiButtonStyles from './globalAiButton.css.js';
 const { render, html, Directives: { classMap } } = Lit;
 const UIStrings = {
     /**
-     * @description Button's string in promotion state.
+     * @description Text label for the AI assistance button in the main DevTools toolbar when expanded.
      */
     aiAssistance: 'AI assistance',
     /**
-     * @description Button's tooltip text.
+     * @description Tooltip for the AI assistance button in the main DevTools toolbar.
      */
     openAiAssistance: 'Open AI assistance panel',
     /**
-     * @description Button's string in promotion state.
+     * @description Text label for the Gemini button in the main DevTools toolbar when expanded.
      */
     gemini: 'Gemini',
     /**
-     * @description Button's tooltip text.
+     * @description Tooltip for the Gemini button in the main DevTools toolbar.
      */
     openGemini: 'Open Gemini panel',
 };

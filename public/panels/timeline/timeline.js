@@ -1699,43 +1699,7 @@ var UIStrings8 = {
    * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    * @example {2} PH1
    */
-  threadPoolThreadS: "Thread pool worker {PH1}",
-  /**
-   * @description Title of a bidder auction worklet with known URL in the timeline flame chart of the Performance panel
-   * @example {https://google.com} PH1
-   */
-  bidderWorkletS: "Bidder Worklet \u2014 {PH1}",
-  /**
-   * @description Title of a bidder auction worklet in the timeline flame chart of the Performance panel with an unknown URL
-   */
-  bidderWorklet: "Bidder Worklet",
-  /**
-   * @description Title of a seller auction worklet in the timeline flame chart of the Performance panel with an unknown URL
-   */
-  sellerWorklet: "Seller Worklet",
-  /**
-   * @description Title of an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
-   */
-  unknownWorklet: "Auction Worklet",
-  /**
-   * @description Title of control thread of a service process for an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
-   */
-  workletService: "Auction Worklet service",
-  /**
-   * @description Title of a seller auction worklet with known URL in the timeline flame chart of the Performance panel
-   * @example {https://google.com} PH1
-   */
-  sellerWorkletS: "Seller Worklet \u2014 {PH1}",
-  /**
-   * @description Title of an auction worklet with known URL in the timeline flame chart of the Performance panel
-   * @example {https://google.com} PH1
-   */
-  unknownWorkletS: "Auction Worklet \u2014 {PH1}",
-  /**
-   * @description Title of control thread of a service process for an auction worklet with known URL in the timeline flame chart of the Performance panel
-   * @example {https://google.com} PH1
-   */
-  workletServiceS: "Auction Worklet service \u2014 {PH1}"
+  threadPoolThreadS: "Thread pool worker {PH1}"
 };
 var str_8 = i18n15.i18n.registerUIStrings("panels/timeline/ThreadAppender.ts", UIStrings8);
 var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
@@ -1771,9 +1735,6 @@ var ThreadAppender = class {
     this.#threadDefaultName = threadName || i18nString8(UIStrings8.threadS, { PH1: threadId });
     this.isOnMainFrame = Boolean(this.#parsedTrace.data.Renderer?.processes.get(processId)?.isOnMainFrame);
     this.threadType = type;
-    if (this.#parsedTrace.data.AuctionWorklets.worklets.has(processId)) {
-      this.appenderName = "Thread_AuctionWorklet";
-    }
     this.#url = this.#parsedTrace.data.Renderer?.processes.get(this.#processId)?.url || "";
   }
   processId() {
@@ -1866,8 +1827,6 @@ var ThreadAppender = class {
         return "thread.worker";
       case "RASTERIZER":
         return "thread.rasterizer";
-      case "AUCTION_WORKLET":
-        return "thread.auction-worklet";
       case "OTHER":
         return "thread.other";
       case "CPU_PROFILE":
@@ -1941,9 +1900,6 @@ var ThreadAppender = class {
         break;
       case "OTHER":
         break;
-      case "AUCTION_WORKLET":
-        threadTypeLabel = this.#buildNameForAuctionWorklet();
-        break;
       default:
         return Platform4.assertNever(this.threadType, `Unknown thread type: ${this.threadType}`);
     }
@@ -1958,32 +1914,6 @@ var ThreadAppender = class {
   }
   getEntries() {
     return this.#entries;
-  }
-  #buildNameForAuctionWorklet() {
-    const workletMetadataEvent = this.#parsedTrace.data.AuctionWorklets.worklets.get(this.#processId);
-    if (!workletMetadataEvent) {
-      return i18nString8(UIStrings8.unknownWorklet);
-    }
-    const host = workletMetadataEvent.host ? `https://${workletMetadataEvent.host}` : "";
-    const shouldAddHost = host.length > 0;
-    const isUtilityThread = workletMetadataEvent.args.data.utilityThread.tid === this.#threadId;
-    const isBidderOrSeller = workletMetadataEvent.args.data.v8HelperThread.tid === this.#threadId;
-    if (isUtilityThread) {
-      return shouldAddHost ? i18nString8(UIStrings8.workletServiceS, { PH1: host }) : i18nString8(UIStrings8.workletService);
-    }
-    if (isBidderOrSeller) {
-      switch (workletMetadataEvent.type) {
-        case "seller":
-          return shouldAddHost ? i18nString8(UIStrings8.sellerWorkletS, { PH1: host }) : i18nString8(UIStrings8.sellerWorklet);
-        case "bidder":
-          return shouldAddHost ? i18nString8(UIStrings8.bidderWorkletS, { PH1: host }) : i18nString8(UIStrings8.bidderWorklet);
-        case "unknown":
-          return shouldAddHost ? i18nString8(UIStrings8.unknownWorkletS, { PH1: host }) : i18nString8(UIStrings8.unknownWorklet);
-        default:
-          Platform4.assertNever(workletMetadataEvent.type, `Unexpected Auction Worklet Type ${workletMetadataEvent.type}`);
-      }
-    }
-    return shouldAddHost ? i18nString8(UIStrings8.unknownWorkletS, { PH1: host }) : i18nString8(UIStrings8.unknownWorklet);
   }
   #buildNameForWorker() {
     const url = this.#parsedTrace.data.Renderer?.processes.get(this.#processId)?.url || "";
@@ -2900,6 +2830,7 @@ __export(TimelineUIUtils_exports, {
   categoryBreakdownCacheSymbol: () => categoryBreakdownCacheSymbol,
   isMarkerEvent: () => isMarkerEvent,
   previewElementSymbol: () => previewElementSymbol,
+  stripScriptIds: () => stripScriptIds,
   timeStampForEventAdjustedForClosestNavigationIfPossible: () => timeStampForEventAdjustedForClosestNavigationIfPossible
 });
 import "./../../ui/kit/kit.js";
@@ -3211,23 +3142,27 @@ var IsolateSelector = class extends UI2.Toolbar.ToolbarItem {
   options;
   items;
   itemByIsolate = /* @__PURE__ */ new Map();
-  constructor() {
+  #targetManager;
+  #isolateManager;
+  constructor(targetManager, isolateManager) {
     const menu = new Menus.SelectMenu.SelectMenu();
     super(menu);
+    this.#targetManager = targetManager;
+    this.#isolateManager = isolateManager;
     this.menu = menu;
     menu.buttonTitle = i18nString10(UIStrings10.selectJavascriptVmInstance);
     menu.showArrow = true;
     menu.style.whiteSpace = "normal";
     menu.addEventListener("selectmenuselected", this.#onSelectMenuSelected.bind(this));
-    SDK3.IsolateManager.IsolateManager.instance().observeIsolates(this);
-    SDK3.TargetManager.TargetManager.instance().addEventListener("NameChanged", this.targetChanged, this);
-    SDK3.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged", this.targetChanged, this);
+    this.#isolateManager.observeIsolates(this);
+    this.#targetManager.addEventListener("NameChanged", this.targetChanged, this);
+    this.#targetManager.addEventListener("InspectedURLChanged", this.targetChanged, this);
   }
   #updateIsolateItem(isolate, itemForIsolate) {
     const modelCountByName = /* @__PURE__ */ new Map();
     for (const model of isolate.models()) {
       const target = model.target();
-      const name = SDK3.TargetManager.TargetManager.instance().rootTarget() !== target ? target.name() : "";
+      const name = this.#targetManager.rootTarget() !== target ? target.name() : "";
       const parsedURL = new Common5.ParsedURL.ParsedURL(target.inspectedURL());
       const domain = parsedURL.isValid ? parsedURL.domain() : "";
       const title = target.decorateLabel(domain && name ? `${domain}: ${name}` : name || domain || i18nString10(UIStrings10.empty));
@@ -3280,7 +3215,7 @@ var IsolateSelector = class extends UI2.Toolbar.ToolbarItem {
     if (!model) {
       return;
     }
-    const isolate = SDK3.IsolateManager.IsolateManager.instance().isolateByModel(model);
+    const isolate = this.#isolateManager.isolateByModel(model);
     if (isolate) {
       this.isolateChanged(isolate);
     }
@@ -6733,9 +6668,13 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   #onMainEntryHovered;
   #hiddenTracksInfoBarByParsedTrace = /* @__PURE__ */ new WeakMap();
   #resourceLoader;
-  constructor(resourceLoader, traceModel) {
+  #targetManager;
+  #isolateManager;
+  constructor(resourceLoader, targetManager, isolateManager, traceModel) {
     super("timeline");
     this.#resourceLoader = resourceLoader;
+    this.#targetManager = targetManager;
+    this.#isolateManager = isolateManager;
     this.registerRequiredCSS(timelinePanel_css_default);
     const adornerContent = document.createElement("span");
     adornerContent.innerHTML = `<div style="
@@ -6970,7 +6909,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   static instance(opts = void 0) {
     if (opts) {
-      timelinePanelInstance = new _TimelinePanel(opts.resourceLoader, opts.traceModel);
+      timelinePanelInstance = new _TimelinePanel(opts.resourceLoader, opts.targetManager, opts.isolateManager, opts.traceModel);
     }
     if (!timelinePanelInstance) {
       throw new Error("No TimelinePanel instance");
@@ -7280,7 +7219,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       this.panelToolbar.appendToolbarItem(dimThirdPartiesCheckbox);
     }
     if (this.#isNode) {
-      const isolateSelector = new IsolateSelector();
+      const isolateSelector = new IsolateSelector(this.#targetManager, this.#isolateManager);
       this.panelToolbar.appendSeparator();
       this.panelToolbar.appendToolbarItem(isolateSelector);
     }
@@ -8573,7 +8512,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     async function resolveSourceMap(params) {
       const { scriptId, scriptUrl, sourceUrl, sourceMapUrl, frame, cachedRawSourceMap } = params;
       if (cachedRawSourceMap) {
-        return new SDK7.SourceMap.SourceMap(sourceUrl, sourceMapUrl ?? "", cachedRawSourceMap);
+        return new SDK7.SourceMap.SourceMap(sourceUrl, sourceMapUrl ?? "", cachedRawSourceMap, Common10.Console.Console.instance());
       }
       if (isFreshRecording) {
         const map = await getExistingSourceMap(frame, scriptId, scriptUrl);
@@ -8588,7 +8527,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       if (!isFreshRecording && metadata?.sourceMaps && !isDataUrl) {
         const cachedSourceMap = metadata.sourceMaps.find((m) => m.sourceMapUrl === sourceMapUrl);
         if (cachedSourceMap) {
-          return new SDK7.SourceMap.SourceMap(sourceUrl, sourceMapUrl, cachedSourceMap.sourceMap);
+          return new SDK7.SourceMap.SourceMap(sourceUrl, sourceMapUrl, cachedSourceMap.sourceMap, Common10.Console.Console.instance());
         }
       }
       if (!isFreshRecording && !isDataUrl) {
@@ -8603,7 +8542,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         initiatorUrl: sourceUrl
       };
       const payload = await SDK7.SourceMapManager.tryLoadSourceMap(_TimelinePanel.instance().#resourceLoader, sourceMapUrl, initiator);
-      return payload ? new SDK7.SourceMap.SourceMap(sourceUrl, sourceMapUrl, payload) : null;
+      return payload ? new SDK7.SourceMap.SourceMap(sourceUrl, sourceMapUrl, payload, Common10.Console.Console.instance()) : null;
     }
     const timeout = new Promise((resolve) => setTimeout(() => resolve(null), SOURCE_MAP_LOAD_TIMEOUT_MS));
     return function resolveSourceMapWithTimeout(params) {
@@ -8621,7 +8560,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         continue;
       }
       const url = request.args.data.url;
-      const resource = SDK7.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+      const resource = SDK7.ResourceTreeModel.ResourceTreeModel.resourceForURL(SDK7.TargetManager.TargetManager.instance(), url);
       if (!resource) {
         continue;
       }
@@ -9815,7 +9754,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         }
       }
     }
-    const isFreshOrEnhanced = Boolean(parsedTrace && Tracing3.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace));
+    const isFreshOrEnhanced = Tracing3.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace);
     switch (event.name) {
       case "GCEvent":
       case "MajorGC":
@@ -10256,7 +10195,8 @@ var TimelineUIUtils = class _TimelineUIUtils {
     if (initiator) {
       const stackTrace = Trace23.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(initiator);
       if (stackTrace) {
-        const traceElement = await contentHelper.createChildStackTraceElement(_TimelineUIUtils.stackTraceFromCallFrames(stackTrace));
+        const isFreshOrEnhanced = Tracing3.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace);
+        const traceElement = await contentHelper.createChildStackTraceElement(_TimelineUIUtils.stackTraceFromCallFrames(stackTrace), isFreshOrEnhanced);
         contentHelper.appendSectionWithBodyIfExists(initiatorStackLabel, { body: traceElement });
       }
       const link = this.createEntryLink(initiator);
@@ -10673,6 +10613,18 @@ var EventDispatchTypeDescriptor = class {
     this.eventTypes = eventTypes;
   }
 };
+function stripScriptIds(stackTrace) {
+  const callFrames = stackTrace.callFrames.map((frame) => ({
+    ...frame,
+    scriptId: ""
+  }));
+  const parent = stackTrace.parent ? stripScriptIds(stackTrace.parent) : void 0;
+  return {
+    ...stackTrace,
+    callFrames,
+    parent
+  };
+}
 var TimelineDetailsContentHelper = class {
   fragment;
   #linkifier;
@@ -10734,7 +10686,8 @@ var TimelineDetailsContentHelper = class {
     if (!stackTraceForEvent) {
       return;
     }
-    const traceElement = await this.createChildStackTraceElement(stackTraceForEvent);
+    const isFreshOrEnhanced = Tracing3.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace);
+    const traceElement = await this.createChildStackTraceElement(stackTraceForEvent, isFreshOrEnhanced);
     this.appendSectionWithBodyIfExists(i18nString19(UIStrings19.functionStack), { body: traceElement });
   }
   linkifier() {
@@ -10797,13 +10750,14 @@ var TimelineDetailsContentHelper = class {
    * Creates a stack trace element for the given trace, but checks if it
    * contains any entries, and discards it if it's empty.
    */
-  async createChildStackTraceElement(runtimeStackTrace) {
+  async createChildStackTraceElement(runtimeStackTrace, isFreshOrEnhanced) {
     const targetManager = SDK8.TargetManager.TargetManager.instance();
     const target = this.target ?? targetManager.primaryPageTarget() ?? targetManager.rootTarget();
     if (!target) {
       return null;
     }
-    const stackTrace = await Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createStackTraceFromProtocolRuntime(runtimeStackTrace, target);
+    const stackTraceToUse = isFreshOrEnhanced ? runtimeStackTrace : stripScriptIds(runtimeStackTrace);
+    const stackTrace = await Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createStackTraceFromProtocolRuntime(stackTraceToUse, target);
     const callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent();
     callFrameContents.options = { tabStops: true, showColumnNumber: true };
     callFrameContents.stackTrace = stackTrace;
@@ -13695,7 +13649,7 @@ var UIStrings23 = {
   /**
    * @description Tooltip description '% of slow-path non-matches'
    */
-  slowPathNonMatchesExplanation: "The percentage of non-matching nodes (Match Attempts - Match Count) that couldn't be quickly ruled out by the bloom filter due to high selector complexity. Lower is better.",
+  slowPathNonMatchesExplanation: "The percentage of non-matching nodes (Match Attempts - Match Count) that couldn\u2019t be quickly ruled out by the bloom filter due to high selector complexity. Lower is better.",
   /**
    * @description Column name for count of elements that the engine attempted to match against a style rule
    */
@@ -13727,7 +13681,7 @@ var UIStrings23 = {
   /**
    * @description Tooltip description 'Style Sheet'
    */
-  styleSheetIdExplanation: "Links to the selector rule definition in the style sheets. Note that a selector rule could be defined in multiple places in a style sheet or defined in multiple style sheets. Selector rules from browser user-agent style sheet or dynamic style sheets don't have a link.",
+  styleSheetIdExplanation: "Links to the selector rule definition in the style sheets. Note that a selector rule could be defined in multiple places in a style sheet or defined in multiple style sheets. Selector rules from browser user-agent style sheet or dynamic style sheets don\u2019t have a link.",
   /**
    * @description A context menu item in data grids to copy entire table to clipboard
    */
@@ -15023,7 +14977,7 @@ var TimelineFlameChartNetworkDataProvider = class {
     if (!networkRequest || !Trace32.Types.Events.isSyntheticNetworkRequest(networkRequest)) {
       return;
     }
-    const timelineNetworkRequest = SDK13.TraceObject.RevealableNetworkRequest.create(networkRequest);
+    const timelineNetworkRequest = SDK13.TraceObject.RevealableNetworkRequest.create(SDK13.TargetManager.TargetManager.instance(), networkRequest);
     const contextMenu = new UI16.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(timelineNetworkRequest);
     return contextMenu;
@@ -18580,8 +18534,6 @@ var CompatibilityTracksAppender = class {
         }
         case "WORKER":
           return 3;
-        case "AUCTION_WORKLET":
-          return 3;
         case "RASTERIZER":
           return 4;
         case "THREAD_POOL":
@@ -18600,14 +18552,6 @@ var CompatibilityTracksAppender = class {
         continue;
       }
       if (name && HIDDEN_THREAD_NAMES.has(name) && !showAllEvents) {
-        continue;
-      }
-      const matchingWorklet = this.#parsedTrace.data.AuctionWorklets.worklets.get(pid);
-      if (matchingWorklet) {
-        const tids = [matchingWorklet.args.data.utilityThread.tid, matchingWorklet.args.data.v8HelperThread.tid];
-        if (tids.includes(tid)) {
-          this.#threadAppenders.push(new ThreadAppender(this, this.#parsedTrace, pid, tid, "", "AUCTION_WORKLET", entries, tree));
-        }
         continue;
       }
       this.#threadAppenders.push(new ThreadAppender(this, this.#parsedTrace, pid, tid, name, type, entries, tree));

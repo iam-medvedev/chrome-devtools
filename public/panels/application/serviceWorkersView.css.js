@@ -101,10 +101,6 @@ export default `/*
   min-width: 80px;
 }
 
-.report-field-value {
-  white-space: normal;
-}
-
 .report-field-value-filename,
 .service-worker-client-string {
   max-width: 400px;
@@ -167,5 +163,45 @@ devtools-icon.error-icon {
   vertical-align: bottom;
   width: var(--sys-size-7);
 }
+
+.service-worker-toolbar {
+  margin-left: var(--sys-size-4);
+}
+
+.report-field {
+  display: flex;
+  padding: var(--sys-size-3) 0;
+}
+
+.report-field-name {
+  font: var(--sys-typescale-body5-medium);
+  color: var(--sys-color-on-surface-subtle);
+  flex: 0 0 128px;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+.report-field-value {
+  font: var(--sys-typescale-body4-regular);
+  flex: auto;
+  padding: 0 var(--sys-size-6);
+  white-space: normal;
+  user-select: text;
+}
+
+.service-worker-section {
+  border-bottom: 1px solid var(--sys-color-divider);
+  grid-column: 1 / 3;
+  padding: 0 var(--sys-size-9) 11px var(--sys-size-9);
+}
+
+.service-worker-section-container {
+  display: contents;
+}
+
+devtools-widget {
+  display: block;
+}
+
 
 /*# sourceURL=${import.meta.resolve('./serviceWorkersView.css')} */`;

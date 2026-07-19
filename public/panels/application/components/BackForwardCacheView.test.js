@@ -74,7 +74,7 @@ describeWithEnvironment('BackForwardCacheView', () => {
         const sections = component.contentElement.querySelectorAll('devtools-report-section');
         const sectionsText = Array.from(sections).map(section => section.textContent?.trim());
         const expected = [
-            'Not served from back/forward cache: to trigger back/forward cache, use Chrome\'s back/forward buttons, or use the test button below to automatically navigate away and back.',
+            'Not served from back/forward cache: to trigger back/forward cache, use Chrome’s back/forward buttons, or use the test button below to automatically navigate away and back.',
             'Test back/forward cache',
             'ServiceWorker was unregistered while a page was in back/forward cache.',
             'Pages that use WebLocks are not currently eligible for back/forward cache.',
@@ -167,7 +167,7 @@ describeWithEnvironment('BackForwardCacheView', () => {
         const sections = component.contentElement.querySelectorAll('devtools-report-section');
         const sectionsText = Array.from(sections).map(section => section.textContent?.trim());
         const expected = [
-            'Not served from back/forward cache: to trigger back/forward cache, use Chrome\'s back/forward buttons, or use the test button below to automatically navigate away and back.',
+            'Not served from back/forward cache: to trigger back/forward cache, use Chrome’s back/forward buttons, or use the test button below to automatically navigate away and back.',
             'Test back/forward cache',
             'Pages that use WebLocks are not currently eligible for back/forward cache.',
             'Learn more: back/forward cache eligibility',

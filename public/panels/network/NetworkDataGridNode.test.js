@@ -325,6 +325,34 @@ describeWithEnvironment('NetworkLogView', () => {
         const expected = 'Matched to ServiceWorker router#1, 0.0\xa0kB transferred over network, resource size: 0.0\xa0kB';
         assert.strictEqual(tooltip, expected);
     });
+    it('shows ServiceWorker when the request matches no router rule but is fulfilled by the fetch handler', async () => {
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        request.resourceSize = 4;
+        request.setTransferSize(2);
+        request.statusCode = 200;
+        request.fetchedViaServiceWorker = true;
+        request.serviceWorkerRouterInfo = {};
+        const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
+        const el = document.createElement('div');
+        networkRequestNode.renderCell(el, 'size');
+        assert.strictEqual(el.innerText, '(ServiceWorker)0.0\xa0kB');
+        const tooltip = el.getAttribute('title');
+        assert.strictEqual(tooltip, 'Served from ServiceWorker, resource size: 0.0\xa0kB');
+    });
+    it('shows transferred size when the request matches no router rule and falls back to network', async () => {
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
+        request.resourceSize = 4;
+        request.setTransferSize(2);
+        request.statusCode = 200;
+        request.serviceWorkerRouterInfo = {};
+        const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
+        const el = document.createElement('div');
+        networkRequestNode.renderCell(el, 'size');
+        assert.strictEqual(el.innerText, '0.0\xa0kB0.0\xa0kB');
+        const tooltip = el.getAttribute('title');
+        const expected = '0.0\xa0kB transferred over network, resource size: 0.0\xa0kB, no matching ServiceWorker routes';
+        assert.strictEqual(tooltip, expected);
+    });
     it('styles a prefetch network request error as a warning', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
         request.failed = true;
@@ -606,6 +634,105 @@ describeWithEnvironment('NetworkLogView', () => {
             // null sorts before valid
             assert.isBelow(Network.NetworkDataGridNode.NetworkRequestNode.ExecutionContextComparator(nodeNull, nodeA), 0);
             assert.isAbove(Network.NetworkDataGridNode.NetworkRequestNode.ExecutionContextComparator(nodeA, nodeNull), 0);
+        });
+    });
+    describe('isConsoleOriginated', () => {
+        function createRequestWithInitiator(resourceType, initiator) {
+            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/api`, urlString ``, null, null, null);
+            request.setResourceType(resourceType);
+            if (initiator) {
+                sinon.stub(request, 'initiator').returns(initiator);
+            }
+            else {
+                sinon.stub(request, 'initiator').returns(null);
+            }
+            return request;
+        }
+        it('returns true for a console fetch with single frame', () => {
+            const request = createRequestWithInitiator(Common.ResourceType.resourceTypes.Fetch, {
+                type: "script" /* Protocol.Network.InitiatorType.Script */,
+                url: urlString ``,
+                stack: {
+                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                },
+            });
+            assert.isTrue(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
+        });
+        it('returns true for a console XHR with single frame', () => {
+            const request = createRequestWithInitiator(Common.ResourceType.resourceTypes.XHR, {
+                type: "script" /* Protocol.Network.InitiatorType.Script */,
+                url: urlString ``,
+                stack: {
+                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                },
+            });
+            assert.isTrue(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
+        });
+        it('returns false for a non-fetch/XHR resource type', () => {
+            const request = createRequestWithInitiator(Common.ResourceType.resourceTypes.Document, {
+                type: "script" /* Protocol.Network.InitiatorType.Script */,
+                url: urlString ``,
+                stack: {
+                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                },
+            });
+            assert.isFalse(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
+        });
+        it('returns false for a non-script initiator', () => {
+            const request = createRequestWithInitiator(Common.ResourceType.resourceTypes.Fetch, {
+                type: "parser" /* Protocol.Network.InitiatorType.Parser */,
+                url: urlString `https://example.com`,
+            });
+            assert.isFalse(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
+        });
+        it('returns false when initiator is null', () => {
+            const request = createRequestWithInitiator(Common.ResourceType.resourceTypes.Fetch, null);
+            assert.isFalse(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
+        });
+        it('returns false when initiator has a URL', () => {
+            const request = createRequestWithInitiator(Common.ResourceType.resourceTypes.Fetch, {
+                type: "script" /* Protocol.Network.InitiatorType.Script */,
+                url: urlString `https://example.com/script.js`,
+                stack: {
+                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                },
+            });
+            assert.isFalse(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
+        });
+        it('returns false when there is no stack', () => {
+            const request = createRequestWithInitiator(Common.ResourceType.resourceTypes.Fetch, {
+                type: "script" /* Protocol.Network.InitiatorType.Script */,
+                url: urlString ``,
+            });
+            assert.isFalse(Network.NetworkDataGridNode.NetworkRequestNode.isConsoleOriginated(request));
+        });
+    });
+    describe('console originated icon', () => {
+        it('adds icon to console-originated fetch', () => {
+            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/api`, urlString ``, null, null, null);
+            request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
+            sinon.stub(request, 'initiator').returns({
+                type: "script" /* Protocol.Network.InitiatorType.Script */,
+                url: urlString ``,
+                stack: {
+                    callFrames: [{ url: '', scriptId: '55', functionName: '', lineNumber: 0, columnNumber: 0 }]
+                },
+            });
+            const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
+            const el = document.createElement('div');
+            networkRequestNode.renderCell(el, 'name');
+            const icon = el.querySelector('.network-console-icon');
+            assert.instanceOf(icon, HTMLElement);
+        });
+        it('does not add icon to non-console request', () => {
+            const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
+            request.setResourceType(Common.ResourceType.resourceTypes.Document);
+            request.mimeType = 'text/html';
+            const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
+            const el = document.createElement('div');
+            networkRequestNode.renderCell(el, 'name');
+            const icon = el.querySelector('.network-console-icon');
+            assert.isNull(icon);
         });
     });
 });

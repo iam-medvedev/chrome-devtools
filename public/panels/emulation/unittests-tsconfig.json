@@ -43,6 +43,7 @@
   "files": [
     "../../../../../../front_end/panels/emulation/AdvancedApp.test.ts",
     "../../../../../../front_end/panels/emulation/DeviceModeToolbar.test.ts",
+    "../../../../../../front_end/panels/emulation/DeviceModeView.test.ts",
     "../../../../../../front_end/panels/emulation/MediaQueryInspector.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -84,6 +85,9 @@
     },
     {
       "path": "../../ui/legacy/theme_support/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/visual_logging/bundle-tsconfig.json"
     },
     {
       "path": "../mobile_throttling/bundle-tsconfig.json"

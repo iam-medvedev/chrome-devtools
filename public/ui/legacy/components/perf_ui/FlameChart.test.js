@@ -1350,21 +1350,6 @@ describeWithEnvironment('FlameChart', () => {
         });
         await assertScreenshot('timeline/timings_track.png');
     });
-    it('renders the auction worklets track', async function () {
-        await renderFlameChartIntoDOM(this, {
-            dataProvider: 'MAIN',
-            fileNameOrParsedTrace: 'fenced-frame-fledge.json.gz',
-            filterTracks(trackName) {
-                return trackName.includes('Worklet');
-            },
-            expandTracks() {
-                return true;
-            },
-            customStartTime: Trace.Types.Timing.Milli(220391498.289),
-            customEndTime: Trace.Types.Timing.Milli(220391697.601),
-        });
-        await assertScreenshot('timeline/auction_worklets_track.png');
-    });
     it('renders the layout shifts track', async function () {
         await renderFlameChartIntoDOM(this, {
             dataProvider: 'MAIN',

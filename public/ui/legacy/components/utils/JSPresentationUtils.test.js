@@ -43,6 +43,7 @@ describe('JSPresentationUtils', () => {
         const stackTrace = await createStackTrace(target, debuggerWorkspaceBinding);
         const component = new Components.JSPresentationUtils.StackTracePreviewContent();
         component.options = { tabStops: false, ignoreListManager: universe.ignoreListManager };
+        renderElementIntoDOM(component);
         component.stackTrace = stackTrace;
         await component.updateComplete;
         assert.lengthOf(component.linkElements, 3);

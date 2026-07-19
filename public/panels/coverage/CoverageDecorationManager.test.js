@@ -173,5 +173,27 @@ function mulWithOffset(param1, param2, offset) {
             assert.isUndefined(uiSourceCode.getDecorationData(Coverage.CoverageDecorationManager.decoratorType));
         });
     });
+    it('dispatches DecorationChanged event on subsequent updates after initial decoration', async () => {
+        await backend.addScript(target, { url: URL, content: 'function foo(a,b){return a+b;}' }, null);
+        const uiSourceCode = workspace.uiSourceCodeForURL(URL);
+        assert.exists(uiSourceCode);
+        await uiSourceCode.requestContentData();
+        // 1. Constructing the manager automatically sets the decoration data on the existing uiSourceCode.
+        // This acts as the initial decoration setup.
+        const manager = new CoverageDecorationManager(coverageModel, workspace, debuggerBinding, cssBinding);
+        await manager.usageByLine(uiSourceCode, lineRangesForContent(uiSourceCode.content()));
+        // 2. Start spying on DecorationChanged events.
+        const decorationChangedSpy = sinon.spy();
+        uiSourceCode.addEventListener(Workspace.UISourceCode.Events.DecorationChanged, decorationChangedSpy);
+        const script = debuggerBinding.scriptsForUISourceCode(uiSourceCode)[0];
+        const urlCoverageInfo = new Coverage.CoverageModel.URLCoverageInfo(URL);
+        const coverageInfo = new Coverage.CoverageModel.CoverageInfo(script, 100, 0, 0, 2 /* Coverage.CoverageModel.CoverageType.JAVA_SCRIPT */, urlCoverageInfo);
+        // 3. Call update. This is a subsequent coverage update. Since the decoration data (manager instance)
+        // is already set on the uiSourceCode, we must ensure DecorationChanged is still dispatched to notify the editor.
+        manager.update([coverageInfo]);
+        sinon.assert.calledOnce(decorationChangedSpy);
+        const event = decorationChangedSpy.firstCall.args[0];
+        assert.strictEqual(event.data, Coverage.CoverageDecorationManager.decoratorType);
+    });
 });
 //# sourceMappingURL=CoverageDecorationManager.test.js.map

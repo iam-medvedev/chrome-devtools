@@ -6,9 +6,12 @@ import sinon from 'sinon';
 import * as Common from '../../../../core/common/common.js';
 import * as Host from '../../../../core/host/host.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
-import { assertScreenshot, dispatchClickEvent, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { assertScreenshot, dispatchClickEvent, raf, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../../../testing/ExpectStubCall.js';
+import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
+import { setupSettingsHooks } from '../../../../testing/SettingsHelpers.js';
+import { render } from '../../../lit/lit.js';
 import * as UI from '../../legacy.js';
 import * as ObjectUI from './object_ui.js';
 /**
@@ -86,12 +89,14 @@ export function createDeepRemoteObjectMock(runtimeModel, definition) {
 describe('ObjectPropertiesSection', () => {
     describeWithEnvironment('ObjectPropertiesSection', () => {
         const expandedPropertyNames = async (value, options) => {
-            ObjectUI.ObjectPropertiesSection.sortPropertiesAlphabeticallySetting().set(options?.sortPropertiesAlphabetically ?? false);
             const object = SDK.RemoteObject.RemoteObject.fromLocalObject(value);
             const tree = new ObjectUI.ObjectPropertiesSection.ObjectTree(object, {
                 readOnly: true,
                 propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */
             });
+            if (options?.sortPropertiesAlphabetically !== undefined) {
+                tree.sortPropertiesAlphabetically = options.sortPropertiesAlphabetically;
+            }
             const children = await tree.populateChildrenIfNeeded();
             return (children.properties ?? []).map(p => p.name);
         };
@@ -180,7 +185,7 @@ describe('ObjectPropertiesSection', () => {
             sinon.assert.called(appendCheckboxItemSpy);
             const sortPropertiesItem = appendCheckboxItemSpy.args.find(args => args[0] === 'Sort properties alphabetically');
             assert.exists(sortPropertiesItem);
-            assert.strictEqual(sortPropertiesItem[2]?.checked, ObjectUI.ObjectPropertiesSection.sortPropertiesAlphabeticallySetting().get());
+            assert.strictEqual(sortPropertiesItem[2]?.checked, section.root.sortPropertiesAlphabetically);
             const showAllItem = appendCheckboxItemSpy.args.find(args => args[0] === 'Show all');
             assert.exists(showAllItem);
             assert.isTrue(showAllItem[2]?.checked);
@@ -349,6 +354,135 @@ describeWithEnvironment('ObjectPropertyTreeElement', () => {
         await assertScreenshot('object_ui/expanded_strings.png');
         assert.strictEqual(value.textContent, `"${longString}"`);
     });
+    it('escapes bidi characters in string titles', () => {
+        const object = SDK.RemoteObject.RemoteObject.fromLocalObject({});
+        const section = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection(object, 'title_with_\u202Ebidi');
+        assert.strictEqual(section.titleElement.textContent, 'title_with_\\u202Ebidi');
+    });
+    it('escapes bidi characters in standalone string values', () => {
+        const object = SDK.RemoteObject.RemoteObject.fromLocalObject('\u202Ereversed_string');
+        const value = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(object, false, false);
+        renderElementIntoDOM(value, {
+            includeCommonStyles: true,
+            extraStyles: [ObjectUI.ObjectPropertiesSection.objectValueStyles],
+        });
+        assert.strictEqual(value.textContent, '"\\u202Ereversed_string"');
+    });
+    it('escapes bidi characters in object descriptions when hasPreview is false', () => {
+        const target = createTarget();
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        const object = createDeepRemoteObjectMock(runtimeModel, {});
+        sinon.stub(object, 'description').get(() => 'description_with_\u202Ebidi');
+        // Ensure preview is undefined so hasPreview is false
+        sinon.stub(object, 'preview').get(() => undefined);
+        const value = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(object, false, true);
+        renderElementIntoDOM(value, {
+            includeCommonStyles: true,
+            extraStyles: [ObjectUI.ObjectPropertiesSection.objectValueStyles],
+        });
+        assert.strictEqual(value.textContent, 'description_with_\\u202Ebidi');
+    });
+    it('escapes bidi characters in DOM node previews', () => {
+        const nodeTitle = 'div#\u202Ereversed_id.\u202Ereversed_class';
+        const result = ObjectUI.RemoteObjectPreviewFormatter.renderNodeTitle(nodeTitle);
+        assert.exists(result);
+        const container = document.createElement('div');
+        render(result, container);
+        const tagSpan = container.querySelector('.webkit-html-tag-name');
+        assert.exists(tagSpan);
+        assert.strictEqual(tagSpan.textContent, 'div');
+        const valueSpan = container.querySelector('.webkit-html-attribute-value');
+        assert.exists(valueSpan);
+        assert.strictEqual(valueSpan.textContent, '#\\u202Ereversed_id');
+        const nameSpan = container.querySelector('.webkit-html-attribute-name');
+        assert.exists(nameSpan);
+        assert.strictEqual(nameSpan.textContent, '.\\u202Ereversed_class');
+    });
+    it('escapes bidi characters in OBJECT_PROPERTY_DEFAULT_VIEW for expanded values', () => {
+        const target = createTarget();
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        const propertyValue = createDeepRemoteObjectMock(runtimeModel, {});
+        sinon.stub(propertyValue, 'hasChildren').get(() => true);
+        sinon.stub(propertyValue, 'description').get(() => 'Object_with_\u202Ebidi');
+        sinon.stub(propertyValue, 'type').get(() => 'object');
+        sinon.stub(propertyValue, 'subtype').get(() => undefined);
+        const property = new SDK.RemoteObject.RemoteObjectProperty('\u202Ereversed_name', propertyValue, true, true);
+        const container = document.createElement('div');
+        const input = {
+            editable: false,
+            startEditing: sinon.spy(),
+            invokeGetter: sinon.spy(),
+            onAutoComplete: sinon.spy(),
+            linkifier: undefined,
+            completions: [],
+            expanded: true,
+            editing: false,
+            editingEnded: sinon.spy(),
+            editingCommitted: sinon.spy(),
+            node: new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(property, undefined, {
+                readOnly: false,
+                propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */
+            }),
+        };
+        const output = { valueElement: undefined, nameElement: undefined };
+        ObjectUI.ObjectPropertiesSection.OBJECT_PROPERTY_DEFAULT_VIEW(input, output, container);
+        const nameElement = container.querySelector('.name');
+        assert.exists(nameElement);
+        assert.strictEqual(nameElement.textContent, '\\u202Ereversed_name');
+        const valueElement = container.querySelector('.value');
+        assert.exists(valueElement);
+        assert.strictEqual(valueElement.textContent, 'Object_with_\\u202Ebidi');
+    });
+    it('escapes bidi characters in names created via createNameElement', () => {
+        const name = '\u202Ereversed_name';
+        const element = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(name);
+        assert.strictEqual(element.textContent, '\\u202Ereversed_name');
+    });
+    it('escapes bidi characters in names with whitespace created via createNameElement', () => {
+        const name = ' \u202Ereversed_name ';
+        const element = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(name);
+        assert.strictEqual(element.textContent, '" \\u202Ereversed_name "');
+    });
+    it('escapes bidi characters in private names created via createNameElement', () => {
+        const name = '#\u202Ereversed_name';
+        const element = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(name, true);
+        assert.strictEqual(element.textContent, '#\\u202Ereversed_name');
+    });
+    it('escapes unpaired surrogates in object property names and values', () => {
+        const target = createTarget();
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        const object = createDeepRemoteObjectMock(runtimeModel, {});
+        const brokenSurrogate = '  \uD835\uDC14\uD835\uDC0D\uD835\uDC08\uD835\uDC02\uD835\uDC0E\uD835\uDC03\uD835';
+        sinon.stub(object, 'preview').get(() => ({
+            type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+            overflow: false,
+            properties: [
+                {
+                    name: 'foo',
+                    type: "string" /* Protocol.Runtime.PropertyPreviewType.String */,
+                    value: brokenSurrogate,
+                },
+                {
+                    name: brokenSurrogate,
+                    type: "string" /* Protocol.Runtime.PropertyPreviewType.String */,
+                    value: 'foo',
+                },
+            ],
+        }));
+        const value = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValue(object, false, true);
+        renderElementIntoDOM(value, {
+            includeCommonStyles: true,
+            extraStyles: [ObjectUI.ObjectPropertiesSection.objectValueStyles],
+        });
+        const nameElements = value.querySelectorAll('.name');
+        const valueElements = value.querySelectorAll('.object-value-string');
+        assert.lengthOf(nameElements, 2);
+        assert.lengthOf(valueElements, 2);
+        assert.strictEqual(nameElements[0].textContent, 'foo');
+        assert.strictEqual(valueElements[0].textContent, '\'  \uD835\uDC14\uD835\uDC0D\uD835\uDC08\uD835\uDC02\uD835\uDC0E\uD835\uDC03\\uD835\'');
+        assert.strictEqual(nameElements[1].textContent, '"  \uD835\uDC14\uD835\uDC0D\uD835\uDC08\uD835\uDC02\uD835\uDC0E\uD835\uDC03\\uD835"');
+        assert.strictEqual(valueElements[1].textContent, '\'foo\'');
+    });
 });
 describeWithEnvironment('ArrayGroupingTreeElement', () => {
     let target;
@@ -392,6 +526,58 @@ describeWithEnvironment('ObjectTreeNode', () => {
             propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */
         });
         assert.isTrue(node.canExpandRecursively);
+    });
+    it('only matches string and number property values, cutting off long strings to 50 chars', () => {
+        const hugeString = 'findme' +
+            'a'.repeat(10000) + 'findme_end';
+        const stringProperty = new SDK.RemoteObject.RemoteObjectProperty('str', SDK.RemoteObject.RemoteObject.fromLocalObject(hugeString), true, true);
+        const stringNode = new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(stringProperty, undefined, {
+            readOnly: true,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+        });
+        const startMatches = stringNode.match(/findme/);
+        assert.lengthOf(startMatches, 1);
+        assert.strictEqual(startMatches[0].range.offset, 1);
+        const endMatches = stringNode.match(/findme_end/);
+        assert.lengthOf(endMatches, 0);
+        const funcProperty = new SDK.RemoteObject.RemoteObjectProperty('fn', SDK.RemoteObject.RemoteObject.fromLocalObject(function myFunc() { }), true, true);
+        const funcNode = new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(funcProperty, undefined, {
+            readOnly: true,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+        });
+        assert.lengthOf(funcNode.match(/myFunc/), 0);
+    });
+});
+describe('ObjectTree with TreeSearch', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    const cleanHighlights = () => {
+        CSS.highlights.get('highlighted-search-result')?.clear();
+        CSS.highlights.get('current-search-result')?.clear();
+    };
+    beforeEach(cleanHighlights);
+    afterEach(cleanHighlights);
+    it('highlights search results in rendered section cleanly within cropped string when unexpanded', async () => {
+        const hugeString = 'findme' +
+            'a'.repeat(10000);
+        const object = SDK.RemoteObject.RemoteObject.fromLocalObject({
+            str: hugeString,
+        });
+        const search = new UI.TreeOutline.TreeSearch();
+        const section = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection(object, /* title */ null, /* linkifier */ undefined, /* showOverflow */ true, /* editable */ false, search);
+        await section.root.populateChildrenIfNeeded();
+        const div = document.createElement('div');
+        renderElementIntoDOM(div);
+        div.appendChild(section.element);
+        await section.objectTreeElement().onpopulate();
+        await raf();
+        const regex = /findme/;
+        search.search(section.root, false, (node, isPostOrder) => isPostOrder ?
+            [] :
+            node.match(regex));
+        await raf();
+        const highlights = (section.element.shadowRoot || section.element).querySelectorAll('devtools-highlight');
+        assert.isAbove(highlights.length, 0);
     });
 });
 describeWithEnvironment('ObjectTreeExpansionTracker', () => {

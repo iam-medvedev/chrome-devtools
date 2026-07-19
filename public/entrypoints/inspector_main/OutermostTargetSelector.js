@@ -10,18 +10,17 @@ import * as UI from '../../ui/legacy/legacy.js';
 import outermostTargetSelectorStyles from './outermostTargetSelector.css.js';
 const UIStrings = {
     /**
-     * @description Title of toolbar item in outermost target selector in the main toolbar
+     * @description Title of toolbar item in outermost target selector in the main toolbar.
      */
     targetNotSelected: 'Page: Not selected',
     /**
-     * @description Title of toolbar item in outermost target selector in the main toolbar
+     * @description Title of toolbar item in outermost target selector in the main toolbar.
      * @example {top} PH1
      */
     targetS: 'Page: {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/inspector_main/OutermostTargetSelector.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let outermostTargetSelectorInstance;
 export class OutermostTargetSelector {
     listItems = new UI.ListModel.ListModel();
     #dropDown;
@@ -38,13 +37,6 @@ export class OutermostTargetSelector {
         targetManager.addEventListener("NameChanged" /* SDK.TargetManager.Events.NAME_CHANGED */, this.#onInspectedURLChanged, this);
         targetManager.observeTargets(this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, this.#targetChanged, this);
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!outermostTargetSelectorInstance || forceNew) {
-            outermostTargetSelectorInstance = new OutermostTargetSelector();
-        }
-        return outermostTargetSelectorInstance;
     }
     item() {
         return this.#toolbarItem;
